@@ -1,0 +1,12 @@
+*.pyc
+*.dat
+TAGS
+*.egg-info
+build
+.coverage
+.tox
+cover
+venv
+*.sublime-workspace
+*.sqlite
+var/*

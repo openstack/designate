@@ -1,0 +1,17 @@
+$TTL {{ domain.ttl }}
+
+{{ domain.name }}. IN SOA {{ servers[0].name }}. {{ domain.email | replace("@", ".") }}. (
+    {{ domain.serial }} ; serial
+    {{ domain.refresh }} ; refresh
+    {{ domain.retry }} ; retry
+    {{ domain.expire }} ; expire
+    {{ domain.minimum }} ; minimum
+)
+
+{% for server in servers %}
+{{domain.name}}. IN NS {{server.name}}.
+{%- endfor %}
+
+{% for record in records %}
+{{record.name}}. {{record.ttl or ''}} IN {{record.type}} {{record.priority or ''}} {{record.data}}
+{%- endfor %}

@@ -1,0 +1,3 @@
+{% for domain in domains %}
+zone "{{domain.name}}" { type master; file "{{state_path}}/bind9/{{domain.id}}.zone"; };
+{%- endfor %}

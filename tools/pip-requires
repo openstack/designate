@@ -1,0 +1,6 @@
+Flask==0.9
+iso8601>=0.1.4
+eventlet
+sqlalchemy>=0.7
+jsonschema
+ipaddr

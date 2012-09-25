@@ -1,0 +1,54 @@
+{
+	"folders":
+	[
+		{
+			"file_exclude_patterns":
+			[
+				"*.pyc",
+				"*.pyo",
+				"*.exe",
+				"*.dll",
+				"*.obj",
+				"*.o",
+				"*.a",
+				"*.lib",
+				"*.so",
+				"*.dylib",
+				"*.ncb",
+				"*.sdf",
+				"*.suo",
+				"*.pdb",
+				"*.idb",
+				".DS_Store",
+				"*.class",
+				"*.psd",
+				"*.db",
+				".vagrant",
+				".noseids"
+			],
+			"folder_exclude_patterns":
+			[
+				".svn",
+				".git",
+				".hg",
+				"CVS",
+				"*.egg",
+				"*.egg-info"
+			],
+			"path": "."
+		}
+	],
+	"settings":
+	{
+		"default_line_ending": "unix",
+		"detect_indentation": false,
+		"ensure_newline_at_eof_on_save": true,
+		"rulers":
+		[
+			79
+		],
+		"tab_size": 4,
+		"translate_tabs_to_spaces": true,
+		"trim_trailing_white_space_on_save": true
+	}
+}
