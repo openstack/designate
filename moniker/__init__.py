@@ -19,9 +19,8 @@ from moniker.openstack.common import cfg
 cfg.CONF.register_opts([
     cfg.StrOpt('host', default=socket.gethostname(),
                help='Name of this node'),
-    # TODO(kiall): Common RPC has nova as the default -_-
-    # cfg.StrOpt('control_exchange', default='moniker',
-    #            help='AMQP exchange to connect to if using RabbitMQ or Qpid'),
+    cfg.StrOpt('control_exchange', default='moniker',
+                help='AMQP exchange to connect to if using RabbitMQ or Qpid'),
     cfg.StrOpt('central-topic', default='central', help='Central Topic'),
     cfg.StrOpt('agent-topic', default='agent', help='Agent Topic'),
     cfg.StrOpt('state-path', default='/var/lib/moniker', help='State Path'),

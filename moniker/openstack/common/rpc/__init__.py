@@ -47,19 +47,23 @@ rpc_opts = [
                help='Seconds to wait before a cast expires (TTL). '
                     'Only supported by impl_zmq.'),
     cfg.ListOpt('allowed_rpc_exception_modules',
-                default=['moniker.exceptions',
-                         'moniker.openstack.common.exception',
+                default=['moniker.openstack.common.exception',
                          'nova.exception',
                          'cinder.exception',
                          ],
                 help='Modules of exceptions that are permitted to be recreated'
                      'upon receiving exception data from an rpc call.'),
-    cfg.StrOpt('control_exchange',
-               default='nova',
-               help='AMQP exchange to connect to if using RabbitMQ or Qpid'),
     cfg.BoolOpt('fake_rabbit',
                 default=False,
                 help='If passed, use a fake RabbitMQ provider'),
+    #
+    # The following options are not registered here, but are expected to be
+    # present. The project using this library must register these options with
+    # the configuration so that project-specific defaults may be defined.
+    #
+    #cfg.StrOpt('control_exchange',
+    #           default='nova',
+    #           help='AMQP exchange to connect to if using RabbitMQ or Qpid'),
 ]
 
 cfg.CONF.register_opts(rpc_opts)
