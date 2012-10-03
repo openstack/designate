@@ -46,11 +46,11 @@ def update_domain(context, domain):
     return RPC.fanout_cast(context, msg)
 
 
-def delete_domain(context, domain_id):
+def delete_domain(context, domain):
     msg = {
         'method': 'delete_domain',
         'args': {
-            'domain_id': domain_id,
+            'domain': domain,
         },
     }
 
@@ -82,12 +82,12 @@ def update_record(context, domain, record):
     return RPC.fanout_cast(context, msg)
 
 
-def delete_record(context, domain, record_id):
+def delete_record(context, domain, record):
     msg = {
         'method': 'delete_record',
         'args': {
             'domain': domain,
-            'record_id': record_id,
+            'record': record,
         },
     }
 

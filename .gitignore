@@ -10,3 +10,4 @@ venv
 *.sublime-workspace
 *.sqlite
 var/*
+etc/*.conf

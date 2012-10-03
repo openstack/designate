@@ -19,10 +19,8 @@ from jinja2 import Template
 from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
 from moniker.openstack.common import rpc
-from moniker.openstack.common import manager
+from moniker.openstack.common.rpc import service as rpc_service
 from moniker.openstack.common.context import get_admin_context
-from moniker.openstack.common.rpc import dispatcher as rpc_dispatcher
-from moniker.openstack.common.periodic_task import periodic_task
 from moniker.central import api as central_api
 
 LOG = logging.getLogger(__name__)
@@ -37,42 +35,42 @@ cfg.CONF.register_opts([
 ])
 
 
-class Manager(manager.Manager):
-    def init_host(self):
-        LOG.warn('Init Host')
+class Service(rpc_service.Service):
+    def __init__(self, *args, **kwargs):
+        super(Service, self).__init__(*args, **kwargs)
 
-        self.init_rpc()
+        # TODO: This is a hack to ensure the data dir is 100% up to date
+        admin_context = get_admin_context()
 
-    def init_rpc(self):
-        self.connection = rpc.create_connection()
-        dispatcher = rpc_dispatcher.RpcDispatcher([self])
-        self.connection.create_consumer(cfg.CONF.agent_topic, dispatcher,
-                                        fanout=True)
+        domains = central_api.get_domains(admin_context)
 
-        self.connection.consume_in_thread()
+        for domain in domains:
+            self._sync_domain(domain)
+
+        self._sync_domains()
 
     def create_domain(self, context, domain):
         LOG.debug('Create Domain')
-        self._sync_domain(domain=domain)
+        self._sync_domain(domain)
 
     def update_domain(self, context, domain):
         LOG.debug('Update Domain')
-        self._sync_domain(domain=domain)
+        self._sync_domain(domain)
 
-    def delete_domain(self, context, domain_id):
+    def delete_domain(self, context, domain):
         LOG.debug('Delete Domain')
 
         raise NotImplementedError()
 
     def create_record(self, context, domain, record):
         LOG.debug('Create Record')
-        self._sync_domain(servers, domain, records)
+        self._sync_domain(domain)
 
     def update_record(self, context, domain, record):
         LOG.debug('Update Record')
         self._sync_domain(domain)
 
-    def delete_record(self, context, domain, record_id):
+    def delete_record(self, context, domain, record):
         LOG.debug('Delete Record')
         self._sync_domain(domain)
 
@@ -94,18 +92,27 @@ class Manager(manager.Manager):
         self._render_template(template_path, output_path, domains=domains,
                               state_path=os.path.abspath(cfg.CONF.state_path))
 
-    def _sync_domain(self, domain_id):
+    def _sync_domain(self, domain):
         """ Sync a single domain's zone file """
         # TODO: Rewrite this entire thing ASAP
         LOG.debug('Synchronising Domain: %s' % domain['id'])
 
         admin_context = get_admin_context()
 
+        servers = central_api.get_servers(admin_context)
+        records = central_api.get_records(admin_context, domain['id'])
+
         template_path = os.path.join(os.path.abspath(
             cfg.CONF.templates_path), 'bind9-zone.jinja2')
 
-        output_path = os.path.join(os.path.abspath(cfg.CONF.state_path),
-                                   'bind9', '%s.zone' % domain['id'])
+        output_folder = os.path.join(os.path.abspath(cfg.CONF.state_path),
+                                     'bind9')
+
+        # Create the output folder tree if necessary
+        if not os.path.exists(output_folder):
+            os.makedirs(output_folder)
+
+        output_path = os.path.join(output_folder, '%s.zone' % domain['id'])
 
         self._render_template(template_path, output_path, servers=servers,
                               domain=domain, records=records)

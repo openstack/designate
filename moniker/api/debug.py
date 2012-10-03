@@ -25,3 +25,8 @@ blueprint = flask.Blueprint('debug', __name__)
 @blueprint.route('/config', methods=['GET'])
 def list_config():
     return flask.jsonify(cfg.CONF)
+
+
+@blueprint.route('/context', methods=['GET'])
+def list_config():
+    return flask.jsonify(flask.request.context.to_dict())

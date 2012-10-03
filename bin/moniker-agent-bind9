@@ -19,7 +19,7 @@ import eventlet
 from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
 from moniker.openstack.common import service
-from moniker.agent import bind9
+from moniker.agent import bind9 as bind9_service
 
 eventlet.monkey_patch()
 
@@ -32,7 +32,7 @@ cfg.CONF(sys.argv[1:], project='moniker', prog='moniker-agent-bind9',
 
 logging.setup('moniker')
 
-serv = service.Service(cfg.CONF.host, bind9.Manager(cfg.CONF.host), 10)
+serv = bind9_service.Service(cfg.CONF.host, cfg.CONF.agent_topic)
 
 launcher = service.launch(serv)
 launcher.wait()

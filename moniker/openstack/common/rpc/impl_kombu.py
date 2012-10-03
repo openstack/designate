@@ -33,7 +33,7 @@ from moniker.openstack.common import cfg
 from moniker.openstack.common.gettextutils import _
 from moniker.openstack.common.rpc import amqp as rpc_amqp
 from moniker.openstack.common.rpc import common as rpc_common
-from moniker.openstack.common import utils
+from moniker.openstack.common import network_utils
 
 kombu_opts = [
     cfg.StrOpt('kombu_ssl_version',
@@ -51,10 +51,10 @@ kombu_opts = [
                      '(valid only if SSL enabled)')),
     cfg.StrOpt('rabbit_host',
                default='localhost',
-               help='Deprecated: Use rabbit_hosts instead. The RabbitMQ host'),
+               help='The RabbitMQ broker address where a single node is used'),
     cfg.IntOpt('rabbit_port',
                default=5672,
-               help='Deprecated: Use rabbit_hosts instead. The RabbitMQ port'),
+               help='The RabbitMQ broker port where a single node is used'),
     cfg.ListOpt('rabbit_hosts',
                 default=['$rabbit_host:$rabbit_port'],
                 help='RabbitMQ HA cluster host:port pairs'),
@@ -95,6 +95,20 @@ kombu_opts = [
 cfg.CONF.register_opts(kombu_opts)
 
 LOG = rpc_common.LOG
+
+
+def _get_queue_arguments(conf):
+    """Construct the arguments for declaring a queue.
+
+    If the rabbit_ha_queues option is set, we declare a mirrored queue
+    as described here:
+
+      http://www.rabbitmq.com/ha.html
+
+    Setting x-ha-policy to all means that the queue will be mirrored
+    to all nodes in the cluster.
+    """
+    return {'x-ha-policy': 'all'} if conf.rabbit_ha_queues else {}
 
 
 class ConsumerBase(object):
@@ -201,7 +215,7 @@ class TopicConsumer(ConsumerBase):
     """Consumer class for 'topic'"""
 
     def __init__(self, conf, channel, topic, callback, tag, name=None,
-                 **kwargs):
+                 exchange_name=None, **kwargs):
         """Init a 'topic' queue.
 
         :param channel: the amqp channel to use
@@ -215,13 +229,12 @@ class TopicConsumer(ConsumerBase):
         Other kombu options may be passed as keyword arguments
         """
         # Default options
-        args = {'x-ha-policy': 'all'} if conf.rabbit_ha_queues else {}
         options = {'durable': conf.rabbit_durable_queues,
-                   'queue_arguments': args,
+                   'queue_arguments': _get_queue_arguments(conf),
                    'auto_delete': False,
                    'exclusive': False}
         options.update(kwargs)
-        exchange_name = rpc_amqp.get_control_exchange(conf)
+        exchange_name = exchange_name or rpc_amqp.get_control_exchange(conf)
         exchange = kombu.entity.Exchange(name=exchange_name,
                                          type='topic',
                                          durable=options['durable'],
@@ -347,7 +360,7 @@ class NotifyPublisher(TopicPublisher):
 
     def __init__(self, conf, channel, topic, **kwargs):
         self.durable = kwargs.pop('durable', conf.rabbit_durable_queues)
-        self.rabbit_ha_queues = conf.rabbit_ha_queues
+        self.queue_arguments = _get_queue_arguments(conf)
         super(NotifyPublisher, self).__init__(conf, channel, topic, **kwargs)
 
     def reconnect(self, channel):
@@ -356,13 +369,12 @@ class NotifyPublisher(TopicPublisher):
         # NOTE(jerdfelt): Normally the consumer would create the queue, but
         # we do this to ensure that messages don't get dropped if the
         # consumer is started after we do
-        args = {'x-ha-policy': 'all'} if self.rabbit_ha_queues else {}
         queue = kombu.entity.Queue(channel=channel,
                                    exchange=self.exchange,
                                    durable=self.durable,
                                    name=self.routing_key,
                                    routing_key=self.routing_key,
-                                   queue_arguments=args)
+                                   queue_arguments=self.queue_arguments)
         queue.declare()
 
 
@@ -393,7 +405,8 @@ class Connection(object):
         ssl_params = self._fetch_ssl_params()
         params_list = []
         for adr in self.conf.rabbit_hosts:
-            hostname, port = utils.parse_host_port(adr, default_port=5672)
+            hostname, port = network_utils.parse_host_port(
+                adr, default_port=self.conf.rabbit_port)
 
             params = {}
 
@@ -511,9 +524,9 @@ class Connection(object):
             log_info.update(params)
 
             if self.max_retries and attempt == self.max_retries:
-                LOG.exception(_('Unable to connect to AMQP server on '
-                              '%(hostname)s:%(port)d after %(max_retries)d '
-                              'tries: %(err_str)s') % log_info)
+                LOG.error(_('Unable to connect to AMQP server on '
+                            '%(hostname)s:%(port)d after %(max_retries)d '
+                            'tries: %(err_str)s') % log_info)
                 # NOTE(comstud): Copied from original code.  There's
                 # really no better recourse because if this was a queue we
                 # need to consume on, we have no way to consume anymore.
@@ -527,9 +540,9 @@ class Connection(object):
                 sleep_time = min(sleep_time, self.interval_max)
 
             log_info['sleep_time'] = sleep_time
-            LOG.exception(_('AMQP server on %(hostname)s:%(port)d is'
-                          ' unreachable: %(err_str)s. Trying again in '
-                          '%(sleep_time)d seconds.') % log_info)
+            LOG.error(_('AMQP server on %(hostname)s:%(port)d is '
+                        'unreachable: %(err_str)s. Trying again in '
+                        '%(sleep_time)d seconds.') % log_info)
             time.sleep(sleep_time)
 
     def ensure(self, error_callback, method, *args, **kwargs):
@@ -537,7 +550,8 @@ class Connection(object):
             try:
                 return method(*args, **kwargs)
             except (self.connection_errors, socket.timeout, IOError), e:
-                pass
+                if error_callback:
+                    error_callback(e)
             except Exception, e:
                 # NOTE(comstud): Unfortunately it's possible for amqplib
                 # to return an error not covered by its transport
@@ -547,8 +561,8 @@ class Connection(object):
                 # and try to reconnect in this case.
                 if 'timeout' not in str(e):
                     raise
-            if error_callback:
-                error_callback(e)
+                if error_callback:
+                    error_callback(e)
             self.reconnect()
 
     def get_channel(self):
@@ -650,10 +664,12 @@ class Connection(object):
         """
         self.declare_consumer(DirectConsumer, topic, callback)
 
-    def declare_topic_consumer(self, topic, callback=None, queue_name=None):
+    def declare_topic_consumer(self, topic, callback=None, queue_name=None,
+                               exchange_name=None):
         """Create a 'topic' consumer."""
         self.declare_consumer(functools.partial(TopicConsumer,
                                                 name=queue_name,
+                                                exchange_name=exchange_name,
                                                 ),
                               topic, callback)
 
@@ -686,16 +702,24 @@ class Connection(object):
             except StopIteration:
                 return
 
+    def _consumer_thread_callback(self):
+        """ Consumer thread callback used by consume_in_* """
+        try:
+            self.consume()
+        except greenlet.GreenletExit:
+            return
+
     def consume_in_thread(self):
         """Consumer from all queues/consumers in a greenthread"""
-        def _consumer_thread():
-            try:
-                self.consume()
-            except greenlet.GreenletExit:
-                return
+
         if self.consumer_thread is None:
-            self.consumer_thread = eventlet.spawn(_consumer_thread)
+            self.consumer_thread = eventlet.spawn(
+                self._consumer_thread_callback)
         return self.consumer_thread
+
+    def consume_in_thread_group(self, thread_group):
+        """ Consume from all queues/consumers in the supplied ThreadGroup"""
+        thread_group.add_thread(self._consumer_thread_callback)
 
     def create_consumer(self, topic, proxy, fanout=False):
         """Create a consumer that calls a method in a proxy object"""

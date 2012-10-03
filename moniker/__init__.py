@@ -24,6 +24,6 @@ cfg.CONF.register_opts([
     cfg.StrOpt('central-topic', default='central', help='Central Topic'),
     cfg.StrOpt('agent-topic', default='agent', help='Agent Topic'),
     cfg.StrOpt('state-path', default='/var/lib/moniker', help='State Path'),
-    cfg.StrOpt('templates-path', default='/use/share/moniker/templates',
+    cfg.StrOpt('templates-path', default='/usr/share/moniker/templates',
                help='Templates Path'),
 ])

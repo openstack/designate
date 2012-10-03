@@ -170,7 +170,8 @@ class DirectConsumer(ConsumerBase):
 class TopicConsumer(ConsumerBase):
     """Consumer class for 'topic'"""
 
-    def __init__(self, conf, session, topic, callback, name=None):
+    def __init__(self, conf, session, topic, callback, name=None,
+                 exchange_name=None):
         """Init a 'topic' queue.
 
         :param session: the amqp session to use
@@ -180,7 +181,7 @@ class TopicConsumer(ConsumerBase):
         :param name: optional queue name, defaults to topic
         """
 
-        exchange_name = rpc_amqp.get_control_exchange(conf)
+        exchange_name = exchange_name or rpc_amqp.get_control_exchange(conf)
         super(TopicConsumer, self).__init__(session, callback,
                                             "%s/%s" % (exchange_name, topic),
                                             {}, name or topic, {})
@@ -464,10 +465,12 @@ class Connection(object):
         """
         self.declare_consumer(DirectConsumer, topic, callback)
 
-    def declare_topic_consumer(self, topic, callback=None, queue_name=None):
+    def declare_topic_consumer(self, topic, callback=None, queue_name=None,
+                               exchange_name=None):
         """Create a 'topic' consumer."""
         self.declare_consumer(functools.partial(TopicConsumer,
                                                 name=queue_name,
+                                                exchange_name=exchange_name,
                                                 ),
                               topic, callback)
 
@@ -491,6 +494,13 @@ class Connection(object):
         """Send a notify message on a topic"""
         self.publisher_send(NotifyPublisher, topic, msg)
 
+    def _consumer_thread_callback(self):
+        """ Consumer thread callback used by consume_in_* """
+        try:
+            self.consume()
+        except greenlet.GreenletExit:
+            return
+
     def consume(self, limit=None):
         """Consume from all queues/consumers"""
         it = self.iterconsume(limit=limit)
@@ -502,14 +512,15 @@ class Connection(object):
 
     def consume_in_thread(self):
         """Consumer from all queues/consumers in a greenthread"""
-        def _consumer_thread():
-            try:
-                self.consume()
-            except greenlet.GreenletExit:
-                return
+
         if self.consumer_thread is None:
-            self.consumer_thread = eventlet.spawn(_consumer_thread)
+            self.consumer_thread = eventlet.spawn(
+                self._consumer_thread_callback)
         return self.consumer_thread
+
+    def consume_in_thread_group(self, thread_group):
+        """ Consume from all queues/consumers in the supplied ThreadGroup"""
+        thread_group.add_thread(self._consumer_thread_callback)
 
     def create_consumer(self, topic, proxy, fanout=False):
         """Create a consumer that calls a method in a proxy object"""

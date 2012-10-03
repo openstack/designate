@@ -19,7 +19,7 @@ import eventlet
 from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
 from moniker.openstack.common import service
-from moniker.central import manager
+from moniker.central import service as central_service
 
 eventlet.monkey_patch()
 
@@ -32,7 +32,7 @@ cfg.CONF(sys.argv[1:], project='moniker', prog='moniker-central',
 
 logging.setup('moniker')
 
-serv = service.Service(cfg.CONF.host, manager.Manager(cfg.CONF.host), 10)
+serv = central_service.Service(cfg.CONF.host, cfg.CONF.central_topic)
 
 launcher = service.launch(serv)
 launcher.wait()

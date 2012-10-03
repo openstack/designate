@@ -16,7 +16,7 @@
 import flask
 from moniker.openstack.common import cfg
 from moniker.openstack.common import jsonutils
-from moniker.openstack.common.context import get_admin_context
+from moniker.openstack.common.context import RequestContext
 from moniker import central
 from moniker.api import v1
 from moniker.api import debug
@@ -39,7 +39,10 @@ app.register_blueprint(debug.blueprint, url_prefix='/debug')
 
 
 @app.before_request
-def before_request():
-    flask.request.context = get_admin_context()  # Temp hack
-    flask.request.context.tenant = '12345'       # Temp hack
-    flask.request.context.user = '12345'         # Temp hack
+def attach_context():
+    request = flask.request
+    headers = request.headers
+
+    request.context = RequestContext(auth_tok=headers.get('X-Auth-Token'),
+                                     user=headers.get('X-User-ID'),
+                                     tenant=headers.get('X-Tenant-ID'))

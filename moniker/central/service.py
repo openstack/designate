@@ -16,9 +16,7 @@
 from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
 from moniker.openstack.common import rpc
-from moniker.openstack.common import manager
-from moniker.openstack.common.rpc import dispatcher as rpc_dispatcher
-from moniker.openstack.common.periodic_task import periodic_task
+from moniker.openstack.common.rpc import service as rpc_service
 from moniker import exceptions
 from moniker import database
 from moniker import utils
@@ -28,26 +26,15 @@ from moniker.agent import api as agent_api
 LOG = logging.getLogger(__name__)
 
 
-class Manager(manager.Manager):
-    def init_host(self):
-        LOG.warn('Init Host')
+class Service(rpc_service.Service):
+
+    def __init__(self, *args, **kwargs):
+        super(Service, self).__init__(*args, **kwargs)
 
         self.init_database()
-        self.init_rpc()
 
     def init_database(self):
         self.database = database.get_driver()
-
-    def init_rpc(self):
-        self.connection = rpc.create_connection()
-        dispatcher = rpc_dispatcher.RpcDispatcher([self])
-        self.connection.create_consumer(cfg.CONF.central_topic, dispatcher)
-
-        self.connection.consume_in_thread()
-
-    # @periodic_task
-    # def test(self):
-    #     LOG.critical('TEST')
 
     # Server Methods
     def create_server(self, context, values):
@@ -114,7 +101,7 @@ class Manager(manager.Manager):
     def create_record(self, context, domain_id, values):
         record = self.database.create_record(context, domain_id, values)
 
-        domain = self.database.get_domain(context, domain['id'])
+        domain = self.database.get_domain(context, domain_id)
 
         agent_api.create_record(context, domain, record)
         utils.notify(context, 'api', 'record.create', record)
@@ -130,7 +117,7 @@ class Manager(manager.Manager):
     def update_record(self, context, domain_id, record_id, values):
         record = self.database.update_record(context, record_id, values)
 
-        domain = self.database.get_domain(context, domain['id'])
+        domain = self.database.get_domain(context, domain_id)
 
         agent_api.update_record(context, domain, record)
         utils.notify(context, 'api', 'record.update', record)
@@ -140,7 +127,7 @@ class Manager(manager.Manager):
     def delete_record(self, context, domain_id, record_id):
         record = self.database.get_record(context, record_id)
 
-        domain = self.database.get_domain(context, domain['id'])
+        domain = self.database.get_domain(context, domain_id)
 
         agent_api.delete_record(context, domain, record)
         utils.notify(context, 'api', 'record.delete', record)

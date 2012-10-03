@@ -2,5 +2,8 @@ Flask==0.9
 iso8601>=0.1.4
 eventlet
 sqlalchemy>=0.7
-jsonschema
+jsonschema>=0.6
 ipaddr
+
+# Needed for Keystone Middleware
+https://launchpad.net/keystone/folsom/2012.2/+download/keystone-2012.2.tar.gz#egg=keystone

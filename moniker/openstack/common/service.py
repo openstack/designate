@@ -28,12 +28,20 @@ import time
 
 import eventlet
 import greenlet
+import logging as std_logging
 
+from moniker.openstack.common import cfg
+from moniker.openstack.common import eventlet_backdoor
 from moniker.openstack.common import log as logging
 from moniker.openstack.common import threadgroup
 from moniker.openstack.common.gettextutils import _
 
+try:
+    from openstack.common import rpc
+except ImportError:
+    rpc = None
 
+CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
 
 
@@ -47,6 +55,7 @@ class Launcher(object):
 
         """
         self._services = []
+        eventlet_backdoor.initialize_if_enabled()
 
     @staticmethod
     def run_service(service):
@@ -109,6 +118,9 @@ class ServiceLauncher(Launcher):
         signal.signal(signal.SIGTERM, self._handle_signal)
         signal.signal(signal.SIGINT, self._handle_signal)
 
+        LOG.debug(_('Full set of CONF:'))
+        CONF.log_opt_values(LOG, std_logging.DEBUG)
+
         status = None
         try:
             super(ServiceLauncher, self).wait()
@@ -121,6 +133,8 @@ class ServiceLauncher(Launcher):
             status = exc.code
         finally:
             self.stop()
+            if rpc:
+                rpc.cleanup()
         return status
 
 
@@ -289,35 +303,13 @@ class ProcessLauncher(object):
 
 
 class Service(object):
-    """Service object for binaries running on hosts.
+    """Service object for binaries running on hosts."""
 
-    A service takes a manager and periodically runs tasks on the manager."""
-
-    def __init__(self, host, manager,
-                 periodic_interval=None,
-                 periodic_fuzzy_delay=None):
-        self.host = host
-        self.manager = manager
-        self.periodic_interval = periodic_interval
-        self.periodic_fuzzy_delay = periodic_fuzzy_delay
+    def __init__(self):
         self.tg = threadgroup.ThreadGroup('service')
-        self.periodic_args = []
-        self.periodic_kwargs = {}
 
     def start(self):
-        if self.manager:
-            self.manager.init_host()
-
-        if self.periodic_interval and self.manager:
-            if self.periodic_fuzzy_delay:
-                initial_delay = random.randint(0, self.periodic_fuzzy_delay)
-            else:
-                initial_delay = 0
-            self.tg.add_timer(self.periodic_interval,
-                              self.manager.run_periodic_tasks,
-                              initial_delay,
-                              *self.periodic_args,
-                              **self.periodic_kwargs)
+        pass
 
     def stop(self):
         self.tg.stop()
