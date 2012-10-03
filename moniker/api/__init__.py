@@ -43,6 +43,10 @@ def attach_context():
     request = flask.request
     headers = request.headers
 
-    request.context = RequestContext(auth_tok=headers.get('X-Auth-Token'),
-                                     user=headers.get('X-User-ID'),
-                                     tenant=headers.get('X-Tenant-ID'))
+    if cfg.CONF.enable_keystone:
+        request.context = RequestContext(auth_tok=headers.get('X-Auth-Token'),
+                                         user=headers.get('X-User-ID'),
+                                         tenant=headers.get('X-Tenant-ID'))
+    else:
+        request.context = RequestContext(user=cfg.CONF.default_user,
+                                         tenant=cfg.CONF.default_tenant)
