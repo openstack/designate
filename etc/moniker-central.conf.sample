@@ -16,3 +16,6 @@ logging_context_format_string = %(asctime)s %(levelname)s %(name)s [%(request_id
 
 #
 control_exchange = moniker
+
+#
+allowed_rpc_exception_modules = moniker.exceptions, moniker.openstack.common.exception

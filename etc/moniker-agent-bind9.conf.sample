@@ -16,3 +16,6 @@ state_path = ./var/
 
 #
 templates_path = ./templates/
+
+#
+allowed_rpc_exception_modules = moniker.exceptions, moniker.openstack.common.exception
