@@ -63,6 +63,7 @@ class Base(object):
             session = get_session()
 
         session.delete(self)
+        session.flush()
 
     def __setitem__(self, key, value):
         setattr(self, key, value)
