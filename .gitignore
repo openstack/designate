@@ -11,3 +11,5 @@ venv
 *.sqlite
 var/*
 etc/*.conf
+AUTHORS
+ChangeLog

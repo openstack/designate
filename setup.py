@@ -15,6 +15,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from setuptools import setup, find_packages
+from moniker.openstack.common import setup as common_setup
+
+install_requires = common_setup.parse_requirements(['tools/pip-requires'])
+dependency_links = common_setup.parse_dependency_links(['tools/pip-requires'])
 
 setup(
     name='moniker',
@@ -27,9 +31,12 @@ setup(
     include_package_data=True,
     test_suite='nose.collector',
     setup_requires=['setuptools-git>=0.4'],
+    install_requires=install_requires,
+    dependency_links=dependency_links,
     scripts=[
         'bin/moniker-agent-bind9',
         'bin/moniker-api',
         'bin/moniker-central',
     ],
+    cmdclass=common_setup.get_cmdclass(),
 )
