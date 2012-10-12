@@ -29,8 +29,7 @@ cfg.CONF.register_opts([
     cfg.StrOpt('rndc-path', default='/usr/sbin/rndc', help='RNDC Path'),
     cfg.StrOpt('rndc-host', default='127.0.0.1', help='RNDC Host'),
     cfg.IntOpt('rndc-port', default=953, help='RNDC Port'),
-    cfg.StrOpt('rndc-config-file', default='/etc/rndc.conf',
-               help='RNDC Config File'),
+    cfg.StrOpt('rndc-config-file', default=None, help='RNDC Config File'),
     cfg.StrOpt('rndc-key-file', default=None, help='RNDC Key File'),
 ])
 
@@ -122,10 +121,12 @@ class Service(rpc_service.Service):
         rndc_call = [
             'sudo',
             cfg.CONF.rndc_path,
-            '-c', cfg.CONF.rndc_config_file,
             '-s', cfg.CONF.rndc_host,
             '-p', str(cfg.CONF.rndc_port),
         ]
+
+        if cfg.CONF.rndc_config_file:
+            rndc_call.extend(['-c', cfg.CONF.rndc_config_file])
 
         if cfg.CONF.rndc_key_file:
             rndc_call.extend(['-k', c.cfg.CONF.rndc_key_file])
