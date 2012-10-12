@@ -85,8 +85,14 @@ class Service(rpc_service.Service):
         template_path = os.path.join(os.path.abspath(
             cfg.CONF.templates_path), 'bind9-config.jinja2')
 
-        output_path = os.path.join(os.path.abspath(cfg.CONF.state_path),
-                                   'bind9', 'zones.config')
+        output_folder = os.path.join(os.path.abspath(cfg.CONF.state_path),
+                                     'bind9')
+
+        # Create the output folder tree if necessary
+        if not os.path.exists(output_folder):
+            os.makedirs(output_folder)
+
+        output_path = os.path.join(output_folder, 'zones.config')
 
         self._render_template(template_path, output_path, domains=domains,
                               state_path=os.path.abspath(cfg.CONF.state_path))
@@ -132,6 +138,8 @@ class Service(rpc_service.Service):
             rndc_call.extend(['-k', c.cfg.CONF.rndc_key_file])
 
         rndc_call.extend(['reload', domain['name']])
+
+        LOG.warn(rndc_call)
 
         subprocess.call(rndc_call)
 
