@@ -141,9 +141,6 @@ class ConnectionContext(rpc_common.Connection):
     def consume_in_thread(self):
         self.connection.consume_in_thread()
 
-    def consume_in_thread_group(self, thread_group):
-        self.connection.consume_in_thread_group(thread_group)
-
     def __getattr__(self, key):
         """Proxy all other calls to the Connection instance"""
         if self.connection:
