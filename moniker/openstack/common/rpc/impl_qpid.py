@@ -494,6 +494,13 @@ class Connection(object):
         """Send a notify message on a topic"""
         self.publisher_send(NotifyPublisher, topic, msg)
 
+    def _consumer_thread_callback(self):
+        """ Consumer thread callback used by consume_in_* """
+        try:
+            self.consume()
+        except greenlet.GreenletExit:
+            return
+
     def consume(self, limit=None):
         """Consume from all queues/consumers"""
         it = self.iterconsume(limit=limit)
@@ -505,14 +512,15 @@ class Connection(object):
 
     def consume_in_thread(self):
         """Consumer from all queues/consumers in a greenthread"""
-        def _consumer_thread():
-            try:
-                self.consume()
-            except greenlet.GreenletExit:
-                return
+
         if self.consumer_thread is None:
-            self.consumer_thread = eventlet.spawn(_consumer_thread)
+            self.consumer_thread = eventlet.spawn(
+                self._consumer_thread_callback)
         return self.consumer_thread
+
+    def consume_in_thread_group(self, thread_group):
+        """ Consume from all queues/consumers in the supplied ThreadGroup"""
+        thread_group.add_thread(self._consumer_thread_callback)
 
     def create_consumer(self, topic, proxy, fanout=False):
         """Create a consumer that calls a method in a proxy object"""

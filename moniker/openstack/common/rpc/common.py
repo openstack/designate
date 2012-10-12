@@ -161,6 +161,19 @@ class Connection(object):
         """
         raise NotImplementedError()
 
+    def consume_in_thread_group(self, thread_group):
+        """Spawn a thread to handle incoming messages in the supplied ThreadGroup.
+
+        Spawn a thread that will be responsible for handling all incoming
+        messages for consumers that were set up on this connection.
+
+        Message dispatching inside of this is expected to be implemented in a
+        non-blocking manner.  An example implementation would be having this
+        thread pull messages in for all of the consumers, but utilize a thread
+        pool for dispatching the messages to the proxy objects.
+        """
+        raise NotImplementedError()
+
 
 def _safe_log(log_func, msg, msg_data):
     """Sanitizes the msg_data field before logging."""

@@ -58,7 +58,7 @@ class Service(service.Service):
         self.conn.create_consumer(self.topic, dispatcher, fanout=True)
 
         # Consume from all consumers in a thread
-        self.conn.consume_in_thread()
+        self.conn.consume_in_thread_group(self.tg)
 
     def stop(self):
         # Try to shut the connection down, but if we get any sort of

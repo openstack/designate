@@ -113,6 +113,9 @@ class Connection(object):
     def consume_in_thread(self):
         pass
 
+    def consume_in_thread_group(self, thread_group):
+        pass
+
 
 def create_connection(conf, new=True):
     """Create a connection"""
