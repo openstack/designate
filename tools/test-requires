@@ -1,4 +1,5 @@
 nose
+mox
 coverage
 pep8>=1.0
 setuptools-git>=0.4
