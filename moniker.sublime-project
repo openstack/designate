@@ -33,7 +33,9 @@
 				".hg",
 				"CVS",
 				"*.egg",
-				"*.egg-info"
+				"*.egg-info",
+				".tox",
+				"venv"
 			],
 			"path": "."
 		}
