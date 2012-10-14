@@ -111,13 +111,13 @@ class Server(Base):
 
     name = Column(String, nullable=False, unique=True)
     ipv4 = Column(Inet, nullable=False, unique=True)
-    ipv6 = Column(Inet, default=None, unique=True)
+    ipv6 = Column(Inet, default=None, nullable=True, unique=True)
 
 
 class Domain(Base):
     __tablename__ = 'domains'
 
-    tenant_id = Column(String, nullable=False)
+    tenant_id = Column(String, default=None, nullable=True)
     name = Column(String, nullable=False, unique=True)
     email = Column(String, nullable=False)
 
