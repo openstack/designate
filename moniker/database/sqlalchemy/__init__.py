@@ -33,7 +33,11 @@ cfg.CONF.register_opts([
 class Sqlalchemy(BaseDatabase):
     def __init__(self):
         self.session = get_session()
-        models.Base.metadata.create_all(self.session.bind)  # HACK: Remove me
+        self._initialize_database()  # HACK: Remove me
+
+    def _initialize_database(self):
+        """ Semi-Private Method to create the database schema """
+        models.Base.metadata.create_all(self.session.bind)
 
     # Server Methods
     def create_server(self, context, values):
