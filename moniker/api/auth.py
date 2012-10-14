@@ -48,6 +48,4 @@ class KeystoneContextMiddleware(wsgi.Middleware):
 
 class NoAuthMiddleware(wsgi.Middleware):
     def process_request(self, request):
-        context = RequestContext(user=cfg.CONF.default_user,
-                                 tenant=cfg.CONF.default_tenant)
-        request.environ['context'] = context
+        request.environ['context'] = RequestContext()
