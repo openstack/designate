@@ -23,7 +23,6 @@ import moniker.api.v1.records
 
 
 def factory(global_config, **local_conf):
-    import flask
     app = flask.Flask('moniker.api.v1')
     app.register_blueprint(blueprint)
 
