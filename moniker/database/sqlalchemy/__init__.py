@@ -22,6 +22,7 @@ from moniker.database import BaseDatabase
 from moniker.database.sqlalchemy import models
 from moniker.database.sqlalchemy.session import get_session
 
+
 LOG = logging.getLogger(__name__)
 
 cfg.CONF.register_opts([

@@ -52,3 +52,10 @@ def get_engine():
     engine.connect()
 
     return engine
+
+
+def reset_session():
+    global _ENGINE, _SESSION
+
+    _ENGINE = None
+    _SESSION = None
