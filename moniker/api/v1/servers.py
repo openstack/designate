@@ -42,7 +42,7 @@ def get_servers_schema():
 
 @blueprint.route('/servers', methods=['POST'])
 def create_server():
-    context = flask.request.context
+    context = flask.request.environ.get('context')
     values = flask.request.json
 
     try:
@@ -66,7 +66,7 @@ def create_server():
 
 @blueprint.route('/servers', methods=['GET'])
 def get_servers():
-    context = flask.request.context
+    context = flask.request.environ.get('context')
 
     servers = central_api.get_servers(context)
 
@@ -77,7 +77,7 @@ def get_servers():
 
 @blueprint.route('/servers/<server_id>', methods=['GET'])
 def get_server(server_id):
-    context = flask.request.context
+    context = flask.request.environ.get('context')
 
     try:
         server = central_api.get_server(context, server_id)
@@ -93,7 +93,7 @@ def get_server(server_id):
 
 @blueprint.route('/servers/<server_id>', methods=['PUT'])
 def update_server(server_id):
-    context = flask.request.context
+    context = flask.request.environ.get('context')
     values = flask.request.json
 
     try:
@@ -115,7 +115,7 @@ def update_server(server_id):
 
 @blueprint.route('/servers/<server_id>', methods=['DELETE'])
 def delete_server(server_id):
-    context = flask.request.context
+    context = flask.request.environ.get('context')
 
     try:
         central_api.delete_server(context, server_id)

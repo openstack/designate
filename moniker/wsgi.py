@@ -13,18 +13,15 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import flask
-
-blueprint = flask.Blueprint('v1', __name__)
-
-import moniker.api.v1.servers
-import moniker.api.v1.domains
-import moniker.api.v1.records
+from moniker.openstack.common import wsgi
 
 
-def factory(global_config, **local_conf):
-    import flask
-    app = flask.Flask('moniker.api.v1')
-    app.register_blueprint(blueprint)
+class Middleware(wsgi.Middleware):
+    @classmethod
+    def factory(cls, global_config, **local_conf):
+        """ Used for paste app factories in paste.deploy config files """
 
-    return app
+        def _factory(app):
+            return cls(app, **local_conf)
+
+        return _factory

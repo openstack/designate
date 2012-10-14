@@ -11,5 +11,6 @@ venv
 *.sqlite
 var/*
 etc/*.conf
+etc/*.ini
 AUTHORS
 ChangeLog

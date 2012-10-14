@@ -56,7 +56,7 @@ class Service(service.Service):
     """
 
     def __init__(self, threads=1000):
-        super(Service, self).start()
+        super(Service, self).__init__()
         self.pool = eventlet.GreenPool(threads)
 
     def start(self, application, port, host='0.0.0.0', backlog=128):
