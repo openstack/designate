@@ -18,7 +18,9 @@ from setuptools import setup, find_packages
 from moniker.openstack.common import setup as common_setup
 
 install_requires = common_setup.parse_requirements(['tools/pip-requires'])
-dependency_links = common_setup.parse_dependency_links(['tools/pip-requires'])
+tests_require = common_setup.parse_requirements(['tools/test-requires'])
+dependency_links = common_setup.parse_dependency_links(['tools/pip-requires',
+                                                        'tools/test-requires'])
 
 setup(
     name='moniker',
@@ -32,6 +34,8 @@ setup(
     test_suite='nose.collector',
     setup_requires=['setuptools-git>=0.4'],
     install_requires=install_requires,
+    tests_require=tests_require,
+    extras_require={'test': tests_require},
     dependency_links=dependency_links,
     scripts=[
         'bin/moniker-agent-bind9',
