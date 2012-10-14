@@ -43,7 +43,7 @@ def get_domains_schema():
 
 @blueprint.route('/domains', methods=['POST'])
 def create_domain():
-    context = flask.request.context
+    context = flask.request.environ.get('context')
     values = flask.request.json
 
     try:
@@ -67,7 +67,7 @@ def create_domain():
 
 @blueprint.route('/domains', methods=['GET'])
 def get_domains():
-    context = flask.request.context
+    context = flask.request.environ.get('context')
 
     domains = central_api.get_domains(context)
 
@@ -78,7 +78,7 @@ def get_domains():
 
 @blueprint.route('/domains/<domain_id>', methods=['GET'])
 def get_domain(domain_id):
-    context = flask.request.context
+    context = flask.request.environ.get('context')
 
     try:
         domain = central_api.get_domain(context, domain_id)
@@ -94,7 +94,7 @@ def get_domain(domain_id):
 
 @blueprint.route('/domains/<domain_id>', methods=['PUT'])
 def update_domain(domain_id):
-    context = flask.request.context
+    context = flask.request.environ.get('context')
     values = flask.request.json
 
     try:
@@ -116,7 +116,7 @@ def update_domain(domain_id):
 
 @blueprint.route('/domains/<domain_id>', methods=['DELETE'])
 def delete_domain(domain_id):
-    context = flask.request.context
+    context = flask.request.environ.get('context')
 
     try:
         central_api.delete_domain(context, domain_id)

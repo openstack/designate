@@ -44,7 +44,7 @@ def get_records_schema():
 
 @blueprint.route('/domains/<domain_id>/records', methods=['POST'])
 def create_record(domain_id):
-    context = flask.request.context
+    context = flask.request.environ.get('context')
     values = flask.request.json
 
     try:
@@ -69,7 +69,7 @@ def create_record(domain_id):
 
 @blueprint.route('/domains/<domain_id>/records', methods=['GET'])
 def get_records(domain_id):
-    context = flask.request.context
+    context = flask.request.environ.get('context')
 
     records = central_api.get_records(context, domain_id)
 
@@ -78,7 +78,7 @@ def get_records(domain_id):
 
 @blueprint.route('/domains/<domain_id>/records/<record_id>', methods=['GET'])
 def get_record(domain_id, record_id):
-    context = flask.request.context
+    context = flask.request.environ.get('context')
 
     try:
         record = central_api.get_record(context, domain_id, record_id)
@@ -94,7 +94,7 @@ def get_record(domain_id, record_id):
 
 @blueprint.route('/domains/<domain_id>/records/<record_id>', methods=['PUT'])
 def update_record(domain_id, record_id):
-    context = flask.request.context
+    context = flask.request.environ.get('context')
     values = flask.request.json
 
     try:
@@ -118,7 +118,7 @@ def update_record(domain_id, record_id):
 @blueprint.route('/domains/<domain_id>/records/<record_id>',
                  methods=['DELETE'])
 def delete_record(domain_id, record_id):
-    context = flask.request.context
+    context = flask.request.environ.get('context')
 
     try:
         central_api.delete_record(context, domain_id, record_id)

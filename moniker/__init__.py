@@ -28,12 +28,4 @@ cfg.CONF.register_opts([
                help='Templates Path'),
     cfg.StrOpt('templates-path', default='/usr/share/moniker/templates',
                help='Templates Path'),
-
-    # Temp Config Options
-    cfg.BoolOpt('enable-keystone', default=False,
-                help='Disable Keystone Integration'),
-    cfg.StrOpt('default-tenant', default='12345',
-               help='Tenant to use when keystone is disabled'),
-    cfg.StrOpt('default-user', default='12345',
-               help='User to use when keystone is disabled'),
 ])

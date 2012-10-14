@@ -73,3 +73,9 @@ def get_driver(*args, **kwargs):
     from moniker.database.sqlalchemy import Sqlalchemy
 
     return Sqlalchemy(*args, **kwargs)
+
+
+def reinitialize(*args, **kwargs):
+    """ Reset the DB to default - Used for testing purposes """
+    from moniker.database.sqlalchemy.session import reset_session
+    reset_session(*args, **kwargs)

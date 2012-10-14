@@ -18,7 +18,6 @@ import subprocess
 from jinja2 import Template
 from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
-from moniker.openstack.common import rpc
 from moniker.openstack.common.rpc import service as rpc_service
 from moniker.openstack.common.context import get_admin_context
 from moniker.central import api as central_api
@@ -36,6 +35,11 @@ cfg.CONF.register_opts([
 
 class Service(rpc_service.Service):
     def __init__(self, *args, **kwargs):
+        kwargs.update(
+            host=cfg.CONF.host,
+            topic=cfg.CONF.agent_topic
+        )
+
         super(Service, self).__init__(*args, **kwargs)
 
         # TODO: This is a hack to ensure the data dir is 100% up to date

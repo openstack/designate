@@ -15,9 +15,7 @@
 # under the License.
 from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
-from moniker.openstack.common import rpc
 from moniker.openstack.common.rpc import service as rpc_service
-from moniker import exceptions
 from moniker import database
 from moniker import utils
 from moniker.agent import api as agent_api
@@ -27,8 +25,12 @@ LOG = logging.getLogger(__name__)
 
 
 class Service(rpc_service.Service):
-
     def __init__(self, *args, **kwargs):
+        kwargs.update(
+            host=cfg.CONF.host,
+            topic=cfg.CONF.central_topic
+        )
+
         super(Service, self).__init__(*args, **kwargs)
 
         self.init_database()

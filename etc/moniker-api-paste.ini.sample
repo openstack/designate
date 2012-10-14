@@ -1,0 +1,29 @@
+[composite:osapi_dns]
+use = egg:Paste#urlmap
+/v1: osapi_dns_api_v1
+
+[composite:osapi_dns_api_v1]
+use = call:moniker.api.auth:pipeline_factory
+noauth = noauth osapi_dns_app_v1
+keystone = authtoken keystonecontext osapi_dns_app_v1
+
+[app:osapi_dns_app_v1]
+paste.app_factory = moniker.api.v1:factory
+
+[filter:noauth]
+paste.filter_factory = moniker.api.auth:NoAuthMiddleware.factory
+
+[filter:keystonecontext]
+paste.filter_factory = moniker.api.auth:KeystoneContextMiddleware.factory
+
+[filter:authtoken]
+paste.filter_factory = keystone.middleware.auth_token:filter_factory
+service_protocol = http
+service_host = 127.0.0.1
+service_port = 5000
+auth_host = 127.0.0.1
+auth_port = 35357
+auth_protocol = http
+admin_tenant_name = %SERVICE_TENANT_NAME%
+admin_user = %SERVICE_USER%
+admin_password = %SERVICE_PASSWORD%

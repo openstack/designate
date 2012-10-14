@@ -88,6 +88,9 @@ class CollectionSchema(object):
         self.item_schema = item_schema
 
     def filter(self, obj):
+        if not obj:
+            return []
+
         return [self.item_schema.filter(o) for o in obj]
 
     def raw(self):

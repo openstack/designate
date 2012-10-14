@@ -14,8 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from uuid import uuid4
-from sqlalchemy import (Column, DateTime, Boolean, String, Integer, ForeignKey,
-                        Enum)
+from sqlalchemy import Column, DateTime, String, Integer, ForeignKey, Enum
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import relationship, backref, object_mapper
 from sqlalchemy.ext.declarative import declarative_base
@@ -112,13 +111,13 @@ class Server(Base):
 
     name = Column(String, nullable=False, unique=True)
     ipv4 = Column(Inet, nullable=False, unique=True)
-    ipv6 = Column(Inet, default=None, unique=True)
+    ipv6 = Column(Inet, default=None, nullable=True, unique=True)
 
 
 class Domain(Base):
     __tablename__ = 'domains'
 
-    tenant_id = Column(String, nullable=False)
+    tenant_id = Column(String, default=None, nullable=True)
     name = Column(String, nullable=False, unique=True)
     email = Column(String, nullable=False)
 

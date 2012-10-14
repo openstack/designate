@@ -13,20 +13,15 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import flask
-from moniker.openstack.common import cfg
-from moniker.openstack.common import log as logging
-
-LOG = logging.getLogger(__name__)
-
-blueprint = flask.Blueprint('debug', __name__)
+from moniker.openstack.common import wsgi
 
 
-@blueprint.route('/config', methods=['GET'])
-def list_config():
-    return flask.jsonify(cfg.CONF)
+class Middleware(wsgi.Middleware):
+    @classmethod
+    def factory(cls, global_config, **local_conf):
+        """ Used for paste app factories in paste.deploy config files """
 
+        def _factory(app):
+            return cls(app, **local_conf)
 
-@blueprint.route('/context', methods=['GET'])
-def list_config():
-    return flask.jsonify(flask.request.context.to_dict())
+        return _factory

@@ -15,29 +15,22 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import sys
+import eventlet
 from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
-from moniker.api import app
+from moniker.openstack.common import service
+from moniker.api import service as api_service
 
-config_files = cfg.find_config_files(project='moniker', prog='moniker-api')
+eventlet.monkey_patch()
+
+config_files = cfg.find_config_files(project='moniker',
+                                     prog='moniker-api')
 config_files.append('./etc/moniker-api.conf')
-
-# Jerry Rig the keystone middleware.
-from keystone.middleware import auth_token
-auth_token.CONF = cfg.CONF
-cfg.CONF.register_opts(auth_token.opts, group='keystone_authtoken')
 
 cfg.CONF(sys.argv[1:], project='moniker', prog='moniker-api',
          default_config_files=config_files)
 
 logging.setup('moniker')
 
-if cfg.CONF.verbose or cfg.CONF.debug:
-    app.debug = True
-
-if cfg.CONF.enable_keystone:
-    # Add Keystone Middleware
-    middleware_conf = {'delay_auth_decision': False}
-    app.wsgi_app = auth_token.AuthProtocol(app.wsgi_app, middleware_conf)
-
-app.run(host=cfg.CONF.api_host, port=cfg.CONF.api_port)
+launcher = service.launch(api_service.Service())
+launcher.wait()

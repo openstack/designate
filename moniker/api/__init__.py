@@ -16,37 +16,20 @@
 import flask
 from moniker.openstack.common import cfg
 from moniker.openstack.common import jsonutils
-from moniker.openstack.common.context import RequestContext
-from moniker import central
-from moniker.api import v1
-from moniker.api import debug
 
-# Allows us to serialize datetime's etc
-flask.helpers.json = jsonutils
 
 cfg.CONF.register_opts([
     cfg.StrOpt('api_host', default='0.0.0.0',
                help='API Host'),
     cfg.IntOpt('api_port', default=9001,
                help='API Port Number'),
+    cfg.StrOpt('api_paste_config', default='moniker-api-paste.ini',
+               help='File name for the paste.deploy config for moniker-api'),
+    cfg.StrOpt('auth_strategy', default='noauth',
+               help='The strategy to use for auth. Supports noauth or '
+                    'keystone'),
 ])
 
-app = flask.Flask('moniker.api')
 
-# Blueprints
-app.register_blueprint(v1.blueprint, url_prefix='/v1')
-app.register_blueprint(debug.blueprint, url_prefix='/debug')
-
-
-@app.before_request
-def attach_context():
-    request = flask.request
-    headers = request.headers
-
-    if cfg.CONF.enable_keystone:
-        request.context = RequestContext(auth_tok=headers.get('X-Auth-Token'),
-                                         user=headers.get('X-User-ID'),
-                                         tenant=headers.get('X-Tenant-ID'))
-    else:
-        request.context = RequestContext(user=cfg.CONF.default_user,
-                                         tenant=cfg.CONF.default_tenant)
+# Allows us to serialize datetime's etc
+flask.helpers.json = jsonutils

@@ -20,3 +20,10 @@ blueprint = flask.Blueprint('v1', __name__)
 import moniker.api.v1.servers
 import moniker.api.v1.domains
 import moniker.api.v1.records
+
+
+def factory(global_config, **local_conf):
+    app = flask.Flask('moniker.api.v1')
+    app.register_blueprint(blueprint)
+
+    return app

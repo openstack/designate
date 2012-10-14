@@ -19,6 +19,10 @@ class Base(Exception):
     pass
 
 
+class ConfigNotFound(Base):
+    pass
+
+
 class InvalidObject(Base):
     pass
 

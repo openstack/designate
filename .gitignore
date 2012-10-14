@@ -7,9 +7,11 @@ build
 .tox
 cover
 venv
+.venv
 *.sublime-workspace
 *.sqlite
 var/*
 etc/*.conf
+etc/*.ini
 AUTHORS
 ChangeLog

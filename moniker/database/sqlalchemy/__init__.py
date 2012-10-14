@@ -14,13 +14,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
+from sqlalchemy.orm.exc import NoResultFound
 from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
 from moniker import exceptions
 from moniker.database import BaseDatabase
 from moniker.database.sqlalchemy import models
 from moniker.database.sqlalchemy.session import get_session
+
 
 LOG = logging.getLogger(__name__)
 
@@ -33,7 +34,11 @@ cfg.CONF.register_opts([
 class Sqlalchemy(BaseDatabase):
     def __init__(self):
         self.session = get_session()
-        models.Base.metadata.create_all(self.session.bind)  # HACK: Remove me
+        self._initialize_database()  # HACK: Remove me
+
+    def _initialize_database(self):
+        """ Semi-Private Method to create the database schema """
+        models.Base.metadata.create_all(self.session.bind)
 
     # Server Methods
     def create_server(self, context, values):
