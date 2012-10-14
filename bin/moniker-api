@@ -17,7 +17,7 @@
 import sys
 from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
-from moniker.api import app
+from moniker.api.app import app
 
 config_files = cfg.find_config_files(project='moniker', prog='moniker-api')
 config_files.append('./etc/moniker-api.conf')
