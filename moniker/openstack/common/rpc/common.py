@@ -162,7 +162,9 @@ class Connection(object):
         raise NotImplementedError()
 
     def consume_in_thread_group(self, thread_group):
-        """Spawn a thread to handle incoming messages in the supplied ThreadGroup.
+        """
+        Spawn a thread to handle incoming messages in the supplied
+        ThreadGroup.
 
         Spawn a thread that will be responsible for handling all incoming
         messages for consumers that were set up on this connection.
