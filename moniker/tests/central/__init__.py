@@ -20,4 +20,4 @@ from moniker.tests import TestCase
 
 class CentralTestCase(TestCase):
     def get_central_service(self):
-        return central_service.Service(cfg.CONF.host, cfg.CONF.central_topic)
+        return central_service.Service()

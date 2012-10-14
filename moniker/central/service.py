@@ -13,6 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
 from moniker.openstack.common.rpc import service as rpc_service
 from moniker import database
@@ -24,8 +25,12 @@ LOG = logging.getLogger(__name__)
 
 
 class Service(rpc_service.Service):
-
     def __init__(self, *args, **kwargs):
+        kwargs.update(
+            host=cfg.CONF.host,
+            topic=cfg.CONF.central_topic
+        )
+
         super(Service, self).__init__(*args, **kwargs)
 
         self.init_database()

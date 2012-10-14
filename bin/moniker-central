@@ -32,7 +32,5 @@ cfg.CONF(sys.argv[1:], project='moniker', prog='moniker-central',
 
 logging.setup('moniker')
 
-serv = central_service.Service(cfg.CONF.host, cfg.CONF.central_topic)
-
-launcher = service.launch(serv)
+launcher = service.launch(central_service.Service())
 launcher.wait()

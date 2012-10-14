@@ -24,11 +24,11 @@ LOG = logging.getLogger(__name__)
 
 
 class Service(wsgi.Service):
-    def __init__(self, port, host='0.0.0.0', backlog=128, threads=1000):
+    def __init__(self, backlog=128, threads=1000):
         super(Service, self).__init__(threads)
 
-        self.host = host
-        self.port = port
+        self.host = cfg.CONF.api_host
+        self.port = cfg.CONF.api_port
         self.backlog = backlog
 
         config_path = cfg.CONF.api_paste_config
