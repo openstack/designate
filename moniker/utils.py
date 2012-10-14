@@ -13,8 +13,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import functools
-from moniker.openstack.common import cfg
 from moniker.openstack.common import rpc
 from moniker.openstack.common.notifier import api as notifier_api
 

@@ -14,7 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
+from sqlalchemy.orm.exc import NoResultFound
 from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
 from moniker import exceptions

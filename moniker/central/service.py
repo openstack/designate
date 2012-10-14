@@ -13,11 +13,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
-from moniker.openstack.common import rpc
 from moniker.openstack.common.rpc import service as rpc_service
-from moniker import exceptions
 from moniker import database
 from moniker import utils
 from moniker.agent import api as agent_api

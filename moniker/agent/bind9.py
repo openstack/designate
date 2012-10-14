@@ -18,7 +18,6 @@ import subprocess
 from jinja2 import Template
 from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
-from moniker.openstack.common import rpc
 from moniker.openstack.common.rpc import service as rpc_service
 from moniker.openstack.common.context import get_admin_context
 from moniker.central import api as central_api

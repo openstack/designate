@@ -14,8 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from uuid import uuid4
-from sqlalchemy import (Column, DateTime, Boolean, String, Integer, ForeignKey,
-                        Enum)
+from sqlalchemy import Column, DateTime, String, Integer, ForeignKey, Enum
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import relationship, backref, object_mapper
 from sqlalchemy.ext.declarative import declarative_base
