@@ -19,8 +19,12 @@ from moniker.openstack.common import setup as common_setup
 
 install_requires = common_setup.parse_requirements(['tools/pip-requires'])
 tests_require = common_setup.parse_requirements(['tools/test-requires'])
-dependency_links = common_setup.parse_dependency_links(['tools/pip-requires',
-                                                        'tools/test-requires'])
+setup_require = common_setup.parse_requirements(['tools/setup-requires'])
+dependency_links = common_setup.parse_dependency_links([
+    'tools/pip-requires',
+    'tools/test-requires',
+    'tools/setup-requires'
+])
 
 setup(
     name='moniker',
@@ -32,7 +36,7 @@ setup(
     packages=find_packages(exclude=['bin']),
     include_package_data=True,
     test_suite='nose.collector',
-    setup_requires=['setuptools-git>=0.4'],
+    setup_requires=setup_require,
     install_requires=install_requires,
     tests_require=tests_require,
     extras_require={'test': tests_require},
