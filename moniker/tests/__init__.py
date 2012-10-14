@@ -25,7 +25,9 @@ class TestCase(unittest.TestCase):
     def setUp(self):
         super(TestCase, self).setUp()
         self.mox = mox.Mox()
-        self.config(database_driver='sqlalchemy', sql_connection='sqlite://')
+        self.config(database_driver='sqlalchemy', sql_connection='sqlite://',
+                    rpc_backend='moniker.openstack.common.rpc.impl_fake',
+                    notification_driver=[])
         reinitialize_database()
 
     def tearDown(self):
