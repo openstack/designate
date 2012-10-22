@@ -1,4 +1,4 @@
 nose
 mox
 coverage
-pep8>=1.0
+pep8==1.3.3
