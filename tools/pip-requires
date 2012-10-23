@@ -4,6 +4,7 @@ sqlalchemy>=0.7
 jsonschema>=0.6
 ipaddr
 PasteDeploy
+sqlalchemy-migrate>=0.7.2
 
 # From OpenStack Common
 routes==1.12.3
