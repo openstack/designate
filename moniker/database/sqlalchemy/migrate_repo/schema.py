@@ -1,6 +1,6 @@
 # vim: tabstop=4 shiftwidth=4 softtabstop=4
 
-# Copyright 2012 Hewlett-Packard Development Company, L.P. 
+# Copyright 2012 Hewlett-Packard Development Company, L.P.
 # All Rights Reserved.
 #
 # Author: Patrick Galbraith <patg@hp.com>
@@ -20,23 +20,10 @@
 """
 Various conveniences used for migration scripts
 """
-
-import logging
-
 import sqlalchemy.types
-from uuid import uuid4
-from sqlalchemy import (Column, DateTime, Boolean, String, Text, Integer, ForeignKey,
-                        Enum, relationship)
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import relationship, backref, object_mapper
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.ext.hybrid import hybrid_property
-from moniker import exceptions
-from moniker.openstack.common import timeutils
+from sqlalchemy import (DateTime, Boolean, String, Text, Integer, Enum)
 from moniker.openstack.common import log as logging
-from moniker.database.sqlalchemy.session import get_session
 from moniker.database.sqlalchemy.types import UUID, Inet
-from sqlalchemy.schema import MetaData
 
 logger = logging.getLogger('moniker.database.migrate_repo.schema')
 
@@ -63,10 +50,10 @@ DateTime = lambda: sqlalchemy.types.DateTime(timezone=False)
 Integer = lambda: sqlalchemy.types.Integer()
 
 
-UUID = lambda: moniker.database.sqlalchemy.types.UUID() 
+UUID = lambda: moniker.database.sqlalchemy.types.UUID()
 
 
-Inet = lambda: moniker.database.sqlalchemy.types.Inet() 
+Inet = lambda: moniker.database.sqlalchemy.types.Inet()
 
 
 RECORD_TYPES = ['A', 'AAAA', 'CNAME', 'MX', 'SRV', 'TXT', 'NS']

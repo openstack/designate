@@ -1,4 +1,4 @@
-# Copyright 2012 Hewlett-Packard Development Company, L.P. 
+# Copyright 2012 Hewlett-Packard Development Company, L.P.
 # Copyright 2012 Managed I.T.
 #
 # Author: Kiall Mac Innes <kiall@managedit.ie>
