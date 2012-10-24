@@ -94,7 +94,7 @@ class Service(rpc_service.Service):
     def delete_domain(self, context, domain_id):
         domain = self.database.get_domain(context, domain_id)
 
-        agent_api.delete_domain(context, domain_id)
+        agent_api.delete_domain(context, domain)
         utils.notify(context, 'api', 'domain.delete', domain)
 
         return self.database.delete_domain(context, domain_id)
