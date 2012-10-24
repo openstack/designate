@@ -120,7 +120,7 @@ class Server(Base):
 class Domain(Base):
     __tablename__ = 'domains'
 
-    tenant_id = Column(String(36), nullable=False)
+    tenant_id = Column(String(36), default=None, nullable=True)
     name = Column(String(255), nullable=False, unique=True)
     email = Column(String(36), nullable=False)
 

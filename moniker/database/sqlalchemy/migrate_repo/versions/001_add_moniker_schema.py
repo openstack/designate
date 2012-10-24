@@ -26,7 +26,7 @@ from moniker.database.sqlalchemy.migrate_repo.schema import (
 meta = MetaData()
 
 domains = Table('domains',
-                Column('tenant_id', String(36), nullable=False),
+                Column('tenant_id', String(36), default=None, nullable=True),
                 Column('name', String(255), nullable=False, unique=True),
                 Column('email', String(36), nullable=False),
                 Column('ttl', Integer, default=3600, nullable=False),
