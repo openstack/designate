@@ -1,6 +1,8 @@
+# Copyright 2012 Hewlett-Packard Development Company, L.P.
 # Copyright 2012 Managed I.T.
 #
 # Author: Kiall Mac Innes <kiall@managedit.ie>
+# Modified: Patrick Galbraith <patg@hp.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -14,7 +16,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from uuid import uuid4
-from sqlalchemy import Column, DateTime, String, Integer, ForeignKey, Enum
+from sqlalchemy import (Column, DateTime, String, Text, Integer, ForeignKey,
+                        Enum)
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import relationship, backref, object_mapper
 from sqlalchemy.ext.declarative import declarative_base
@@ -109,7 +112,7 @@ RECORD_TYPES = ['A', 'AAAA', 'CNAME', 'MX', 'SRV', 'TXT', 'NS']
 class Server(Base):
     __tablename__ = 'servers'
 
-    name = Column(String, nullable=False, unique=True)
+    name = Column(String(255), nullable=False, unique=True)
     ipv4 = Column(Inet, nullable=False, unique=True)
     ipv6 = Column(Inet, default=None, nullable=True, unique=True)
 
@@ -117,9 +120,9 @@ class Server(Base):
 class Domain(Base):
     __tablename__ = 'domains'
 
-    tenant_id = Column(String, default=None, nullable=True)
-    name = Column(String, nullable=False, unique=True)
-    email = Column(String, nullable=False)
+    tenant_id = Column(String(36), nullable=False)
+    name = Column(String(255), nullable=False, unique=True)
+    email = Column(String(36), nullable=False)
 
     ttl = Column(Integer, default=3600, nullable=False)
     refresh = Column(Integer, default=3600, nullable=False)
@@ -154,8 +157,8 @@ class Record(Base):
     __tablename__ = 'records'
 
     type = Column(Enum(name='record_types', *RECORD_TYPES), nullable=False)
-    name = Column(String, nullable=False)
-    data = Column(String, nullable=False)
+    name = Column(String(255), nullable=False)
+    data = Column(Text, nullable=False)
     priority = Column(Integer, default=None)
     ttl = Column(Integer, default=3600, nullable=False)
 
