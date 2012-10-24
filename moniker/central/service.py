@@ -18,6 +18,7 @@ from moniker.openstack.common import log as logging
 from moniker.openstack.common.rpc import service as rpc_service
 from moniker import database
 from moniker import utils
+from moniker import policy
 from moniker.agent import api as agent_api
 
 
@@ -30,6 +31,8 @@ class Service(rpc_service.Service):
             host=cfg.CONF.host,
             topic=cfg.CONF.central_topic
         )
+
+        policy.init_policy()
 
         super(Service, self).__init__(*args, **kwargs)
 
