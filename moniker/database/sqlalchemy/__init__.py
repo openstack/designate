@@ -48,11 +48,8 @@ class Sqlalchemy(BaseDatabase):
 
         try:
             server.save()
-        except IntegrityError, e:
-            if ' unique ' in str(e):
-                raise exceptions.DuplicateServer()
-            else:
-                raise
+        except exceptions.Duplicate:
+            raise exceptions.DuplicateServer()
 
         return dict(server)
 
@@ -89,11 +86,8 @@ class Sqlalchemy(BaseDatabase):
 
         try:
             server.save()
-        except IntegrityError, e:
-            if ' unique ' in str(e):
-                raise exceptions.DuplicateServer()
-            else:
-                raise
+        except exceptions.Duplicate:
+            raise exceptions.DuplicateServer()
 
         return dict(server)
 
@@ -110,11 +104,8 @@ class Sqlalchemy(BaseDatabase):
 
         try:
             domain.save()
-        except IntegrityError, e:
-            if ' unique ' in str(e):
-                raise exceptions.DuplicateDomain()
-            else:
-                raise
+        except exceptions.Duplicate:
+            raise exceptions.DuplicateDomain()
 
         return dict(domain)
 
@@ -151,11 +142,8 @@ class Sqlalchemy(BaseDatabase):
 
         try:
             domain.save()
-        except IntegrityError, e:
-            if ' unique ' in str(e):
-                raise exceptions.DuplicateDomain()
-            else:
-                raise
+        except exceptions.Duplicate:
+            raise exceptions.DuplicateDomain()
 
         return dict(domain)
 

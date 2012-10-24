@@ -51,7 +51,7 @@ class Base(object):
         try:
             session.flush()
         except IntegrityError, e:
-            if 'is not unique' in str(e):
+            if 'not unique' in str(e):
                 raise exceptions.Duplicate(str(e))
             else:
                 raise
