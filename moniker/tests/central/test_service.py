@@ -22,6 +22,8 @@ LOG = logging.getLogger(__name__)
 
 
 class ServiceTest(CentralTestCase):
+    __test__ = True
+
     def setUp(self):
         super(ServiceTest, self).setUp()
         self.config(rpc_backend='moniker.openstack.common.rpc.impl_fake')

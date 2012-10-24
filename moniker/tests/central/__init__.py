@@ -13,11 +13,12 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from moniker.openstack.common import cfg
 from moniker.central import service as central_service
 from moniker.tests import TestCase
 
 
 class CentralTestCase(TestCase):
+    __test__ = False
+
     def get_central_service(self):
         return central_service.Service()
