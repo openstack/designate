@@ -14,9 +14,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import os
+from moniker.openstack.common import log as logging
 from moniker.openstack.common import cfg
 from moniker.openstack.common.notifier import api as notifier_api
 from moniker import exceptions
+
+LOG = logging.getLogger(__name__)
 
 
 def notify(context, service, event_type, payload):
@@ -47,7 +50,8 @@ def find_config(config_path):
     ]
 
     for path in possible_locations:
+        LOG.debug('Checking path: %s' % path)
         if os.path.exists(path):
             return os.path.abspath(path)
 
-    raise exceptions.ConfigNotFound(os.path.abspath(config_path))
+    raise exceptions.ConfigNotFound(config_path)
