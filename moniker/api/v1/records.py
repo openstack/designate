@@ -50,6 +50,8 @@ def create_record(domain_id):
     try:
         record_schema.validate(values)
         record = central_api.create_record(context, domain_id, values)
+    except exceptions.Forbidden:
+        return flask.Response(status=401)
     except exceptions.InvalidObject, e:
         return flask.Response(status=400, response=str(e))
     except exceptions.DuplicateRecord:
@@ -71,7 +73,10 @@ def create_record(domain_id):
 def get_records(domain_id):
     context = flask.request.environ.get('context')
 
-    records = central_api.get_records(context, domain_id)
+    try:
+        records = central_api.get_records(context, domain_id)
+    except exceptions.Forbidden:
+        return flask.Response(status=401)
 
     return flask.jsonify(records=records)
 
@@ -82,6 +87,8 @@ def get_record(domain_id, record_id):
 
     try:
         record = central_api.get_record(context, domain_id, record_id)
+    except exceptions.Forbidden:
+        return flask.Response(status=401)
     except exceptions.RecordNotFound:
         return flask.Response(status=404)
     else:
@@ -101,6 +108,8 @@ def update_record(domain_id, record_id):
         record_schema.validate(values)
         record = central_api.update_record(context, domain_id, record_id,
                                            values)
+    except exceptions.Forbidden:
+        return flask.Response(status=401)
     except exceptions.InvalidObject, e:
         return flask.Response(status=400, response=str(e))
     except exceptions.RecordNotFound:
@@ -122,6 +131,8 @@ def delete_record(domain_id, record_id):
 
     try:
         central_api.delete_record(context, domain_id, record_id)
+    except exceptions.Forbidden:
+        return flask.Response(status=401)
     except exceptions.RecordNotFound:
         return flask.Response(status=404)
     else:

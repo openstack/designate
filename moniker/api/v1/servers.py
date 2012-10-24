@@ -48,6 +48,8 @@ def create_server():
     try:
         server_schema.validate(values)
         server = central_api.create_server(context, values=flask.request.json)
+    except exceptions.Forbidden:
+        return flask.Response(status=401)
     except exceptions.InvalidObject, e:
         return flask.Response(status=400, response=str(e))
     except exceptions.DuplicateServer:
@@ -68,7 +70,10 @@ def create_server():
 def get_servers():
     context = flask.request.environ.get('context')
 
-    servers = central_api.get_servers(context)
+    try:
+        servers = central_api.get_servers(context)
+    except exceptions.Forbidden:
+        return flask.Response(status=401)
 
     servers = servers_schema.filter(servers)
 
@@ -81,6 +86,8 @@ def get_server(server_id):
 
     try:
         server = central_api.get_server(context, server_id)
+    except exceptions.Forbidden:
+        return flask.Response(status=401)
     except exceptions.ServerNotFound:
         return flask.Response(status=404)
     else:
@@ -99,6 +106,8 @@ def update_server(server_id):
     try:
         server_schema.validate(values)
         server = central_api.update_server(context, server_id, values=values)
+    except exceptions.Forbidden:
+        return flask.Response(status=401)
     except exceptions.InvalidObject, e:
         return flask.Response(status=400, response=str(e))
     except exceptions.ServerNotFound:
@@ -119,6 +128,8 @@ def delete_server(server_id):
 
     try:
         central_api.delete_server(context, server_id)
+    except exceptions.Forbidden:
+        return flask.Response(status=401)
     except exceptions.ServerNotFound:
         return flask.Response(status=404)
     else:

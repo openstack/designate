@@ -49,6 +49,8 @@ def create_domain():
     try:
         domain_schema.validate(values)
         domain = central_api.create_domain(context, values)
+    except exceptions.Forbidden:
+        return flask.Response(status=401)
     except exceptions.InvalidObject, e:
         return flask.Response(status=400, response=str(e))
     except exceptions.DuplicateDomain:
@@ -69,7 +71,10 @@ def create_domain():
 def get_domains():
     context = flask.request.environ.get('context')
 
-    domains = central_api.get_domains(context)
+    try:
+        domains = central_api.get_domains(context)
+    except exceptions.Forbidden:
+        return flask.Response(status=401)
 
     domains = domains_schema.filter(domains)
 
@@ -82,6 +87,8 @@ def get_domain(domain_id):
 
     try:
         domain = central_api.get_domain(context, domain_id)
+    except exceptions.Forbidden:
+        return flask.Response(status=401)
     except exceptions.DomainNotFound:
         return flask.Response(status=404)
     else:
@@ -100,6 +107,8 @@ def update_domain(domain_id):
     try:
         domain_schema.validate(values)
         domain = central_api.update_domain(context, domain_id, values)
+    except exceptions.Forbidden:
+        return flask.Response(status=401)
     except exceptions.InvalidObject, e:
         return flask.Response(status=400, response=str(e))
     except exceptions.DomainNotFound:
@@ -120,6 +129,8 @@ def delete_domain(domain_id):
 
     try:
         central_api.delete_domain(context, domain_id)
+    except exceptions.Forbidden:
+        return flask.Response(status=401)
     except exceptions.DomainNotFound:
         return flask.Response(status=404)
     else:
