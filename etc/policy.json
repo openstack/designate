@@ -1,0 +1,6 @@
+{
+    "admin": "role:admin or is_admin:True",
+    "admin_or_owner": "rule:admin or tenant:%(tenant)s",
+
+    "default": "@"
+}
