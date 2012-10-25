@@ -1,9 +1,16 @@
 language: python
 
 python:
-  - 2.5
   - 2.6
   - 2.7
   - pypy
 
-script: nosetests --no-path-adjustment
+install:
+  - "pip install -r tools/pip-requires -r tools/setup-requires -r tools/test-requires --use-mirrors"
+  - "python setup.py develop"
+
+before_script:
+ - "pep8 --repeat --show-source --exclude=.venv,.tox,dist,doc,openstack moniker setup.py bin/moniker-api bin/moniker-central bin/moniker-agent-bind9"
+
+script:
+ - "nosetests --no-path-adjustment"
