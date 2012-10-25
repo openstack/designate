@@ -15,3 +15,5 @@ $TTL {{ domain.ttl }}
 {% for record in records %}
 {{record.name}}. {{record.ttl or ''}} IN {{record.type}} {{record.priority or ''}} {{record.data}}
 {%- endfor %}
+
+
