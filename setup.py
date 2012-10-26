@@ -46,5 +46,11 @@ setup(
         'bin/moniker-api',
         'bin/moniker-central',
     ],
+    entry_points={
+        'moniker.cli': [
+            'database init = moniker.cli.database:InitCommand',
+            'database sync = moniker.cli.database:SyncCommand',
+        ],
+    },
     cmdclass=common_setup.get_cmdclass(),
 )

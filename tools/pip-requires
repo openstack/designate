@@ -5,6 +5,7 @@ jsonschema>=0.6
 ipaddr
 PasteDeploy
 sqlalchemy-migrate>=0.7.2
+-e git://github.com/managedit/python-monikerclient.git#egg=monikerclient
 
 # From OpenStack Common
 routes==1.12.3
