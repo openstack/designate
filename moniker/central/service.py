@@ -68,10 +68,8 @@ class Service(rpc_service.Service):
 
     # Domain Methods
     def create_domain(self, context, values):
-        values['tenant_id'] = context.tenant
-        # DB table defines this column "NOT NULL"
-        if values['tenant_id'] is None:
-            values['tenant_id'] = '' 
+        # DB table defines this column "NOT NULL" and if none, database syntax error
+        values['tenant_id'] = context.tenant or ''
 
         domain = self.storage_conn.create_domain(context, values)
 

@@ -17,17 +17,26 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+# should this be in schema.py?
+from uuid import uuid4
 from migrate import *
 from sqlalchemy import ForeignKey
 from sqlalchemy.schema import (Column, MetaData)
 from sqlalchemy.orm import relationship, backref
 from moniker.storage.impl_sqlalchemy.migrate_repo.schema import (
-    Table, Integer, String, Text, create_tables,
-    drop_tables, RECORD_TYPES)
+    Table, Integer, String, Text, create_tables, 
+    UUID, drop_tables, DateTime, RECORD_TYPES)
+from moniker.storage.impl_sqlalchemy.types import (
+    Inet)
+from moniker.openstack.common import timeutils
 
 meta = MetaData()
 
-domains = Table('domains',
+domains = Table('domains', meta,
+                Column('id', UUID(), default=uuid4, primary_key=True),
+                Column('created_at', DateTime(), default=timeutils.utcnow),
+                Column('updated_at', DateTime(), onupdate=timeutils.utcnow),
+                Column('version', Integer(), default=1, nullable=False),
                 Column('tenant_id', String(36), default=None, nullable=True),
                 Column('name', String(255), nullable=False, unique=True),
                 Column('email', String(36), nullable=False),
@@ -38,33 +47,39 @@ domains = Table('domains',
                 Column('minimum', Integer(), default=3600, nullable=False),
                 useexisting=True)
 
-servers = Table('servers',
+servers = Table('servers', meta,
+                Column('id', UUID(), default=uuid4, primary_key=True),
+                Column('created_at', DateTime(), default=timeutils.utcnow),
+                Column('updated_at', DateTime(), onupdate=timeutils.utcnow),
+                Column('version', Integer(), default=1, nullable=False),
                 Column('name', String(255), nullable=False, unique=True),
-                Column('ipv4', Inet, nullable=False, unique=True),
-                Column('ipv6', Inet, default=None, unique=True),
+                Column('ipv4', Inet(), nullable=False, unique=True),
+                Column('ipv6', Inet(), default=None, unique=True),
                 useexisting=True)
 
-records = Table('records',
+records = Table('records', meta,
+                Column('id', UUID(), default=uuid4, primary_key=True),
+                Column('created_at', DateTime(), default=timeutils.utcnow),
+                Column('updated_at', DateTime(), onupdate=timeutils.utcnow),
+                Column('version', Integer(), default=1, nullable=False),
                 Column('type', Enum(name='record_types', *RECORD_TYPES),
                        nullable=False),
                 Column('name', String(255), nullable=False),
-                Column('data', Text, nullable=False),
-                Column('priority', Integer, default=None),
-                Column('ttl', Integer, default=3600, nullable=False),
-                Column('domain_id', UUID, ForeignKey('domains.id'),
+                Column('data', Text(), nullable=False),
+                Column('priority', Integer(), default=None),
+                Column('ttl', Integer(), default=3600, nullable=False),
+                Column('domain_id', UUID(), ForeignKey('domains.id'),
                        nullable=False),
                 useexisting=True)
 
 
 def upgrade(migrate_engine):
-    meta = MetaData()
     meta.bind = migrate_engine
     tables = [domains, servers, records, ]
     create_tables(tables)
 
 
 def downgrade(migrate_engine):
-    meta = MetaData()
     meta.bind = migrate_engine
     tables = [domains, servers, records, ]
     drop_tables(tables)

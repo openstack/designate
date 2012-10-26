@@ -23,7 +23,7 @@ Various conveniences used for migration scripts
 import sqlalchemy.types
 from sqlalchemy.schema import MetaData
 from moniker.openstack.common import log as logging
-from moniker.storage.impl_sqlalchemy.types import UUID, Inet
+import moniker.storage.impl_sqlalchemy.types
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +38,9 @@ Text = lambda: sqlalchemy.types.Text(
     unicode_error=None, _warn_on_bytestring=False)
 
 
-Enum = lambda: sqlalchemy.types.Enum()
+RECORD_TYPES = ['A', 'AAAA', 'CNAME', 'MX', 'SRV', 'TXT', 'NS']
+# headaches getting this to work
+Enum = sqlalchemy.types.Enum(name=None, *RECORD_TYPES)
 
 
 Boolean = lambda: sqlalchemy.types.Boolean(create_constraint=True, name=None)
@@ -54,9 +56,6 @@ UUID = lambda: moniker.storage.impl_sqlalchemy.types.UUID()
 
 
 Inet = lambda: moniker.storage.impl_sqlalchemy.types.Inet()
-
-
-RECORD_TYPES = ['A', 'AAAA', 'CNAME', 'MX', 'SRV', 'TXT', 'NS']
 
 
 def create_tables(tables):
