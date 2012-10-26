@@ -18,9 +18,11 @@
 #    under the License.
 
 from migrate import *
-from sqlalchemy.schema import (Column, MetaData, Table)
-from moniker.storage.sqla.migrate_repo.schema import (
-    Integer, String, Text, create_tables,
+from sqlalchemy import ForeignKey
+from sqlalchemy.schema import (Column, MetaData)
+from sqlalchemy.orm import relationship, backref
+from moniker.storage.impl_sqlalchemy.migrate_repo.schema import (
+    Table, Integer, String, Text, create_tables,
     drop_tables, RECORD_TYPES)
 
 meta = MetaData()
@@ -29,21 +31,17 @@ domains = Table('domains',
                 Column('tenant_id', String(36), default=None, nullable=True),
                 Column('name', String(255), nullable=False, unique=True),
                 Column('email', String(36), nullable=False),
-                Column('ttl', Integer, default=3600, nullable=False),
-                Column('refresh', Integer, default=3600, nullable=False),
-                Column('retry', Integer, default=3600, nullable=False),
-                Column('expire', Integer, default=3600, nullable=False),
-                Column('minimum', Integer, default=3600, nullable=False),
-                relationship('Record', backref=backref('domain',
-                                                       uselist=False)),
-                mysql_engine='InnoDB',
+                Column('ttl', Integer(), default=3600, nullable=False),
+                Column('refresh', Integer(), default=3600, nullable=False),
+                Column('retry', Integer(), default=3600, nullable=False),
+                Column('expire', Integer(), default=3600, nullable=False),
+                Column('minimum', Integer(), default=3600, nullable=False),
                 useexisting=True)
 
 servers = Table('servers',
                 Column('name', String(255), nullable=False, unique=True),
                 Column('ipv4', Inet, nullable=False, unique=True),
                 Column('ipv6', Inet, default=None, unique=True),
-                mysql_engine='InnoDB',
                 useexisting=True)
 
 records = Table('records',
@@ -55,7 +53,6 @@ records = Table('records',
                 Column('ttl', Integer, default=3600, nullable=False),
                 Column('domain_id', UUID, ForeignKey('domains.id'),
                        nullable=False),
-                mysql_engine='InnoDB',
                 useexisting=True)
 
 

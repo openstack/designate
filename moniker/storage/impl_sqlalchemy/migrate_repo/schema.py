@@ -21,8 +21,7 @@
 Various conveniences used for migration scripts
 """
 import sqlalchemy.types
-from sqlalchemy import (DateTime, Boolean, String, Text, Integer, Enum)
-
+from sqlalchemy.schema import MetaData
 from moniker.openstack.common import log as logging
 from moniker.storage.impl_sqlalchemy.types import UUID, Inet
 
