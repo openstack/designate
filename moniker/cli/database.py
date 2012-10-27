@@ -49,7 +49,7 @@ class SyncCommand(Command):
         try:
             LOG.info('Attempting to synchronize database')
             versioning_api.upgrade(url=URL, repository=REPOSITORY,
-                                  version=None)
+                                   version=None)
             LOG.info('Database synchronized sucessfully')
         except DatabaseAlreadyControlledError:
             LOG.error('Database synchronize failed')
