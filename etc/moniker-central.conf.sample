@@ -5,8 +5,8 @@ verbose = True
 # Show debugging output in logs (sets DEBUG log level output)
 debug = False
 
-# SQLAlchemy connection string.
-sql_connection = sqlite://
+# Database connection string.
+database_connection = sqlite://
 
 #
 notification_driver=moniker.openstack.common.notifier.rabbit_notifier

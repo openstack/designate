@@ -14,16 +14,16 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import os
-from moniker.openstack.common import log as logging
-from moniker.openstack.common import cfg
 from migrate.exceptions import DatabaseAlreadyControlledError
 from migrate.versioning import api as versioning_api
 from cliff.command import Command
-from moniker.database import sqlalchemy  # Import for sql_connection cfg def.
+from moniker.openstack.common import log as logging
+from moniker.openstack.common import cfg
+import moniker.database  # Import for database_connection cfg def.
 
 LOG = logging.getLogger(__name__)
 
-URL = cfg.CONF.sql_connection
+URL = cfg.CONF.database_connection
 REPOSITORY = os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
                                           'database', 'sqlalchemy',
                                           'migrate_repo'))

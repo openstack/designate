@@ -38,7 +38,7 @@ def get_session():
 
 
 def get_engine():
-    url = cfg.CONF.sql_connection
+    url = cfg.CONF.database_connection
 
     engine_args = {
         'echo': False,

@@ -18,6 +18,8 @@ from moniker.openstack.common import cfg
 cfg.CONF.register_opts([
     cfg.StrOpt('database-driver', default='sqlalchemy',
                help='The database driver to use'),
+    cfg.StrOpt('database-connection', default='sqlite:///test.sqlite',
+               help='The database connection string'),
 ])
 
 

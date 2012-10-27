@@ -13,9 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
-from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
 from moniker import exceptions
 from moniker.database import BaseDatabase
@@ -24,11 +22,6 @@ from moniker.database.sqlalchemy.session import get_session
 
 
 LOG = logging.getLogger(__name__)
-
-cfg.CONF.register_opts([
-    cfg.StrOpt('sql-connection', default='sqlite:///test.sqlite',
-               help='The database connection string'),
-])
 
 
 class Sqlalchemy(BaseDatabase):
