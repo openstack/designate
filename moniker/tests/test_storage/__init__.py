@@ -49,6 +49,25 @@ class StorageDriverTestCase(StorageTestCase):
         'ipv6': '2001:db8::2',
     }]
 
+    domain_fixtures = [{
+        'name': 'example.com',
+        'email': 'example@example.com',
+    }, {
+        'name': 'example.net',
+        'email': 'example@example.net',
+    }]
+
+    record_fixtures = {
+        'example.com': [
+            {'name': 'www.example.com', 'type': 'A', 'data': '127.0.0.1'},
+            {'name': 'mail.example.com', 'type': 'A', 'data': '127.0.0.2'},
+        ],
+        'example.net': [
+            {'name': 'www.example.net', 'type': 'A', 'data': '127.0.0.1'},
+            {'name': 'mail.example.net', 'type': 'A', 'data': '127.0.0.2'},
+        ]
+    }
+
     def setUp(self):
         super(StorageDriverTestCase, self).setUp()
         self.storage_conn = self.get_storage_driver()
@@ -59,6 +78,20 @@ class StorageDriverTestCase(StorageTestCase):
         _values.update(values)
 
         return self.storage_conn.create_server(self.admin_context, _values)
+
+    def create_domain_fixture(self, fixture=0, values={}):
+        _values = copy.copy(self.domain_fixtures[fixture])
+        _values.update(values)
+
+        return self.storage_conn.create_domain(self.admin_context, _values)
+
+    def create_record_fixture(self, domain, fixture=0,
+                              values={}):
+        _values = copy.copy(self.record_fixtures[domain['name']][fixture])
+        _values.update(values)
+
+        return self.storage_conn.create_record(self.admin_context,
+                                               domain['id'], _values)
 
     def test_init(self):
         self.get_storage_driver()
@@ -243,10 +276,44 @@ class StorageDriverTestCase(StorageTestCase):
         raise SkipTest()
 
     def test_get_records(self):
-        raise SkipTest()
+        domain = self.create_domain_fixture()
+        actual = self.storage_conn.get_records(self.admin_context,
+                                               domain['id'])
+        self.assertEqual(actual, [])
+
+        # Create a single record
+        record_one = self.create_record_fixture(domain, 0)
+
+        actual = self.storage_conn.get_records(self.admin_context,
+                                               domain['id'])
+        self.assertEqual(len(actual), 1)
+
+        self.assertEqual(actual[0]['name'], record_one['name'])
+        self.assertEqual(actual[0]['type'], record_one['type'])
+        self.assertEqual(actual[0]['data'], record_one['data'])
+
+        # Create a second record
+        record_two = self.create_record_fixture(domain, 1)
+
+        actual = self.storage_conn.get_records(self.admin_context,
+                                               domain['id'])
+        self.assertEqual(len(actual), 2)
+
+        self.assertEqual(actual[1]['name'], record_two['name'])
+        self.assertEqual(actual[1]['type'], record_two['type'])
+        self.assertEqual(actual[1]['data'], record_two['data'])
 
     def test_get_record(self):
-        raise SkipTest()
+        domain = self.create_domain_fixture()
+
+        expected = self.create_record_fixture(domain)
+
+        actual = self.storage_conn.get_record(self.admin_context,
+                                              expected['id'])
+
+        self.assertEqual(actual['name'], expected['name'])
+        self.assertEqual(actual['type'], expected['type'])
+        self.assertEqual(actual['data'], expected['data'])
 
     def test_get_record_missing(self):
         raise SkipTest()
