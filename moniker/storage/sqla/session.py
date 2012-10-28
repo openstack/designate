@@ -1,6 +1,6 @@
-# Copyright 2012 Managed I.T.
-#
-# Author: Kiall Mac Innes <kiall@managedit.ie>
+# Copyright 2010 United States Government as represented by the
+#   Administrator of the National Aeronautics and Space Administration.
+#   All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain

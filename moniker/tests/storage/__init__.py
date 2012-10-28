@@ -28,8 +28,7 @@ class StorageTestCase(TestCase):
     __test__ = False
 
     def get_storage_driver(self, conf=cfg.CONF):
-        engine = storage.get_engine(conf)
-        connection = engine.get_connection(conf)
+        connection = storage.get_connection(conf)
         return connection
 
 

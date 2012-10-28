@@ -36,9 +36,7 @@ class Service(rpc_service.Service):
 
         super(Service, self).__init__(*args, **kwargs)
 
-        engine = storage.get_engine(cfg.CONF)
-        self.storage_driver = engine
-        self.storage_conn = engine.get_connection(cfg.CONF)
+        self.storage_conn = storage.get_connection(cfg.CONF)
 
     # Server Methods
     def create_server(self, context, values):
