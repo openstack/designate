@@ -14,13 +14,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from urlparse import urlparse
-
 from stevedore import driver
-
 from moniker.openstack.common import cfg
-from moniker.openstack.common import log
+from moniker.openstack.common import log as logging
 
-LOG = log.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 DRIVER_NAMESPACE = 'moniker.storage'
 
@@ -55,6 +53,6 @@ def get_connection(conf):
 
 def reset_data(*args, **kwargs):
     """ Reset the DB to default - Used for testing purposes """
-    from moniker.storage.sqla.models import Base
+    from moniker.storage.impl_sqlalchemy.models import Base
     conn = get_connection(cfg.CONF)
     Base.metadata.drop_all(conn.session.bind)

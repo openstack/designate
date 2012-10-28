@@ -15,24 +15,9 @@
 # under the License.
 from moniker.openstack.common import log as logging
 from moniker.tests.storage import StorageDriverTestCase
-from moniker import exceptions
 
 LOG = logging.getLogger(__name__)
 
 
 class SqlalchemyTest(StorageDriverTestCase):
     __test__ = True
-
-    # def create_server(self, **kwargs):
-    #     context = kwargs.pop('context', self.get_admin_context())
-    #     service = kwargs.pop('service', self.get_central_service())
-
-    #     values = dict(
-    #         name='ns1.example.org',
-    #         ipv4='192.0.2.1',
-    #         ipv6='2001:db8::1',
-    #     )
-
-    #     values.update(kwargs)
-
-    #     return service.create_server(context, values=values)

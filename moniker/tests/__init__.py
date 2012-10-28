@@ -18,8 +18,8 @@ import unittest
 import mox
 from moniker.openstack.common import cfg
 from moniker.openstack.common.context import RequestContext, get_admin_context
+from moniker import storage  # Import for database_connection cfg def.
 from moniker.storage import reset_data
-from moniker.storage import sqla  # Import for database_connection cfg def.
 
 
 class TestCase(unittest.TestCase):

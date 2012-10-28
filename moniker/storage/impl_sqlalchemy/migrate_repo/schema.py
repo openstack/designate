@@ -24,9 +24,9 @@ import sqlalchemy.types
 from sqlalchemy import (DateTime, Boolean, String, Text, Integer, Enum)
 
 from moniker.openstack.common import log as logging
-from moniker.storage.sqla.types import UUID, Inet
+from moniker.storage.impl_sqlalchemy.types import UUID, Inet
 
-logger = logging.getLogger('moniker.storage.sqla.migrate_repo.schema')
+logger = logging.getLogger(__name__)
 
 
 String = lambda length: sqlalchemy.types.String(
@@ -51,10 +51,10 @@ DateTime = lambda: sqlalchemy.types.DateTime(timezone=False)
 Integer = lambda: sqlalchemy.types.Integer()
 
 
-UUID = lambda: moniker.storage.sqla.types.UUID()
+UUID = lambda: moniker.storage.impl_sqlalchemy.types.UUID()
 
 
-Inet = lambda: moniker.storage.sqla.types.Inet()
+Inet = lambda: moniker.storage.impl_sqlalchemy.types.Inet()
 
 
 RECORD_TYPES = ['A', 'AAAA', 'CNAME', 'MX', 'SRV', 'TXT', 'NS']

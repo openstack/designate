@@ -17,20 +17,18 @@
 # under the License.
 from uuid import uuid4
 from urlparse import urlparse
-
 from sqlalchemy import (Column, DateTime, String, Text, Integer, ForeignKey,
                         Enum)
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import relationship, backref, object_mapper
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.hybrid import hybrid_property
-
-from moniker import exceptions
 from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
 from moniker.openstack.common import timeutils
-from moniker.storage.sqla.session import get_session
-from moniker.storage.sqla.types import UUID, Inet
+from moniker import exceptions
+from moniker.storage.impl_sqlalchemy.session import get_session
+from moniker.storage.impl_sqlalchemy.types import UUID, Inet
 
 LOG = logging.getLogger(__name__)
 

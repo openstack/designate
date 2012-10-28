@@ -14,12 +14,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from sqlalchemy.orm import exc
-
 from moniker.openstack.common import log as logging
 from moniker import exceptions
 from moniker.storage import base
-from moniker.storage.sqla import models
-from moniker.storage.sqla.session import get_session
+from moniker.storage.impl_sqlalchemy import models
+from moniker.storage.impl_sqlalchemy.session import get_session
 
 
 LOG = logging.getLogger(__name__)
