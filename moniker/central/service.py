@@ -68,9 +68,6 @@ class Service(rpc_service.Service):
 
     # Domain Methods
     def create_domain(self, context, values):
-        # DB table defines this column "NOT NULL" and if none, database syntax error
-        values['tenant_id'] = context.tenant or ''
-
         domain = self.storage_conn.create_domain(context, values)
 
         agent_api.create_domain(context, domain)
