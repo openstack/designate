@@ -41,8 +41,6 @@ class Connection(base.Connection):
     def __init__(self, conf):
         LOG.info('connecting to %s', conf.database_connection)
         self.session = self._get_connection(conf)
-        # NOTE: Need to fix this properly...
-        self.register_models()
 
     def _get_connection(self, conf):
         """
@@ -50,9 +48,13 @@ class Connection(base.Connection):
         """
         return get_session()
 
-    def register_models(self):
+    def setup_schema(self):
         """ Semi-Private Method to create the database schema """
         models.Base.metadata.create_all(self.session.bind)
+
+    def teardown_schema(self):
+        """ Semi-Private Method to reset the database schema """
+        models.Base.metadata.drop_all(self.session.bind)
 
     # Server Methods
     def create_server(self, context, values):

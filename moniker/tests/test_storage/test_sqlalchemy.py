@@ -14,7 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from moniker.openstack.common import log as logging
-from moniker.tests.storage import StorageDriverTestCase
+from moniker.tests.test_storage import StorageDriverTestCase
 
 LOG = logging.getLogger(__name__)
 

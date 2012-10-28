@@ -15,7 +15,7 @@
 # under the License.
 import random
 from moniker.openstack.common import log as logging
-from moniker.tests.central import CentralTestCase
+from moniker.tests.test_central import CentralTestCase
 from moniker import exceptions
 
 LOG = logging.getLogger(__name__)

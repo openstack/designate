@@ -50,8 +50,13 @@ def get_connection(conf):
     return engine.get_connection(conf)
 
 
-def reset_data(*args, **kwargs):
+def setup_schema():
+    """ Create the DB - Used for testing purposes """
+    connection = get_connection(cfg.CONF)
+    connection.setup_schema()
+
+
+def teardown_schema():
     """ Reset the DB to default - Used for testing purposes """
-    from moniker.storage.impl_sqlalchemy.models import Base
-    conn = get_connection(cfg.CONF)
-    Base.metadata.drop_all(conn.session.bind)
+    connection = get_connection(cfg.CONF)
+    connection.teardown_schema()
