@@ -13,19 +13,22 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import os
 import socket
 from moniker.openstack.common import cfg
 
 cfg.CONF.register_opts([
+    cfg.StrOpt('pybasedir',
+               default=os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                                    '../')),
+               help='Directory where the nova python module is installed'),
     cfg.StrOpt('host', default=socket.gethostname(),
                help='Name of this node'),
     cfg.StrOpt('control_exchange', default='moniker',
                help='AMQP exchange to connect to if using RabbitMQ or Qpid'),
     cfg.StrOpt('central-topic', default='central', help='Central Topic'),
     cfg.StrOpt('agent-topic', default='agent', help='Agent Topic'),
-    cfg.StrOpt('state-path', default='/var/lib/moniker', help='State Path'),
-    cfg.StrOpt('templates-path', default='/usr/share/moniker/templates',
-               help='Templates Path'),
-    cfg.StrOpt('templates-path', default='/usr/share/moniker/templates',
+    cfg.StrOpt('state-path', default='$pybasedir', help='State Path'),
+    cfg.StrOpt('templates-path', default='$pybasedir/templates',
                help='Templates Path'),
 ])

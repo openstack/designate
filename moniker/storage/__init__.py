@@ -25,7 +25,7 @@ DRIVER_NAMESPACE = 'moniker.storage'
 cfg.CONF.register_opts([
     cfg.StrOpt(
         'database_connection',
-        default='sqlite:///moniker.db',
+        default='sqlite:///$state_path/moniker.sqlite',
         help='The database driver to use')
 ])
 
