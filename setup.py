@@ -15,6 +15,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from setuptools import setup, find_packages
+import textwrap
+
 from moniker.openstack.common import setup as common_setup
 
 install_requires = common_setup.parse_requirements(['tools/pip-requires'])
@@ -46,11 +48,14 @@ setup(
         'bin/moniker-api',
         'bin/moniker-central',
     ],
-    entry_points={
-        'moniker.cli': [
-            'database init = moniker.cli.database:InitCommand',
-            'database sync = moniker.cli.database:SyncCommand',
-        ],
-    },
     cmdclass=common_setup.get_cmdclass(),
+    entry_points=textwrap.dedent("""
+        [moniker.storage]
+        mysql = moniker.storage.impl_sqlalchemy:SQLAlchemyStorage
+        postgresql = moniker.storage.impl_sqlalchemy:SQLAlchemyStorage
+        sqlite = moniker.storage.impl_sqlalchemy:SQLAlchemyStorage
+        [moniker.cli]
+        database init = InitCommand
+        database sync = moniker.cli.database:SyncCommand
+        """)
 )

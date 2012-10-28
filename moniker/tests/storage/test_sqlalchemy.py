@@ -14,18 +14,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from moniker.openstack.common import log as logging
-from moniker.tests.database import DatabaseDriverTestCase
+from moniker.tests.storage import StorageDriverTestCase
 from moniker import exceptions
 
 LOG = logging.getLogger(__name__)
 
 
-class SqlalchemyTest(DatabaseDriverTestCase):
+class SqlalchemyTest(StorageDriverTestCase):
     __test__ = True
-
-    def setUp(self):
-        super(SqlalchemyTest, self).setUp()
-        self.config(database_driver='sqlalchemy')
 
     # def create_server(self, **kwargs):
     #     context = kwargs.pop('context', self.get_admin_context())

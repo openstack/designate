@@ -13,23 +13,45 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.orm import exc
+
 from moniker.openstack.common import log as logging
 from moniker import exceptions
-from moniker.database import BaseDatabase
-from moniker.database.sqlalchemy import models
-from moniker.database.sqlalchemy.session import get_session
+from moniker.storage import base
+from moniker.storage.sqla import models
+from moniker.storage.sqla.session import get_session
 
 
 LOG = logging.getLogger(__name__)
 
 
-class Sqlalchemy(BaseDatabase):
-    def __init__(self):
-        self.session = get_session()
-        self._initialize_database()  # HACK: Remove me
+class SQLAlchemyStorage(base.StorageEngine):
+    OPTIONS = []
 
-    def _initialize_database(self):
+    def register_opts(self, conf):
+        conf.register_opts(self.OPTIONS)
+
+    def get_connection(self, conf):
+        return Connection(conf)
+
+
+class Connection(base.Connection):
+    """
+    SQLAlchemy connection
+    """
+    def __init__(self, conf):
+        LOG.info('connecting to %s', conf.database_connection)
+        self.session = self._get_connection(conf)
+        # NOTE: Need to fix this properly...
+        self.register_models()
+
+    def _get_connection(self, conf):
+        """
+        Return a connection to the database.
+        """
+        return get_session()
+
+    def register_models(self):
         """ Semi-Private Method to create the database schema """
         models.Base.metadata.create_all(self.session.bind)
 
@@ -40,7 +62,7 @@ class Sqlalchemy(BaseDatabase):
         server.update(values)
 
         try:
-            server.save()
+            server.save(self.session)
         except exceptions.Duplicate:
             raise exceptions.DuplicateServer()
 
@@ -51,7 +73,7 @@ class Sqlalchemy(BaseDatabase):
 
         try:
             result = query.all()
-        except NoResultFound:
+        except exc.NoResultFound:
             LOG.debug('No results found')
             return []
         else:
@@ -62,7 +84,7 @@ class Sqlalchemy(BaseDatabase):
 
         try:
             server = query.filter(models.Server.id == server_id).one()
-        except NoResultFound:
+        except exc.NoResultFound:
             raise exceptions.ServerNotFound(server_id)
         else:
             return server
@@ -78,7 +100,7 @@ class Sqlalchemy(BaseDatabase):
         server.update(values)
 
         try:
-            server.save()
+            server.save(self.session)
         except exceptions.Duplicate:
             raise exceptions.DuplicateServer()
 
@@ -87,7 +109,7 @@ class Sqlalchemy(BaseDatabase):
     def delete_server(self, context, server_id):
         server = self._get_server(context, server_id)
 
-        server.delete()
+        server.delete(self.session)
 
     # Domain Methods
     def create_domain(self, context, values):
@@ -96,7 +118,7 @@ class Sqlalchemy(BaseDatabase):
         domain.update(values)
 
         try:
-            domain.save()
+            domain.save(self.session)
         except exceptions.Duplicate:
             raise exceptions.DuplicateDomain()
 
@@ -107,7 +129,7 @@ class Sqlalchemy(BaseDatabase):
 
         try:
             result = query.all()
-        except NoResultFound:
+        except exc.NoResultFound:
             LOG.debug('No results found')
             return []
         else:
@@ -118,7 +140,7 @@ class Sqlalchemy(BaseDatabase):
 
         try:
             domain = query.filter(models.Domain.id == domain_id).one()
-        except NoResultFound:
+        except exc.NoResultFound:
             raise exceptions.DomainNotFound(domain_id)
         else:
             return domain
@@ -134,7 +156,7 @@ class Sqlalchemy(BaseDatabase):
         domain.update(values)
 
         try:
-            domain.save()
+            domain.save(self.session)
         except exceptions.Duplicate:
             raise exceptions.DuplicateDomain()
 
@@ -143,7 +165,7 @@ class Sqlalchemy(BaseDatabase):
     def delete_domain(self, context, domain_id):
         domain = self._get_domain(context, domain_id)
 
-        domain.delete()
+        domain.delete(self.session)
 
     # Record Methods
     def create_record(self, context, domain_id, values):
@@ -154,7 +176,7 @@ class Sqlalchemy(BaseDatabase):
 
         domain.records.append(record)
 
-        domain.save()
+        domain.save(self.session)
 
         return dict(record)
 
@@ -168,7 +190,7 @@ class Sqlalchemy(BaseDatabase):
 
         try:
             record = query.filter(models.Record.id == record_id).one()
-        except NoResultFound:
+        except exc.NoResultFound:
             raise exceptions.RecordNotFound(record_id)
         else:
             return record
@@ -183,11 +205,11 @@ class Sqlalchemy(BaseDatabase):
 
         record.update(values)
 
-        record.save()
+        record.save(self.session)
 
         return dict(record)
 
     def delete_record(self, context, record_id):
         record = self._get_record(context, record_id)
 
-        record.delete()
+        record.delete(self.session)

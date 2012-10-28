@@ -19,7 +19,7 @@
 
 from migrate import *
 from sqlalchemy.schema import (Column, MetaData, Table)
-from moniker.database.sqlalchemy.migrate_repo.schema import (
+from moniker.storage.sqla.migrate_repo.schema import (
     Integer, String, Text, create_tables,
     drop_tables, RECORD_TYPES)
 

@@ -16,7 +16,7 @@
 from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
 from moniker.openstack.common.rpc import service as rpc_service
-from moniker import database
+from moniker import storage
 from moniker import utils
 from moniker import policy
 from moniker.agent import api as agent_api
@@ -36,44 +36,41 @@ class Service(rpc_service.Service):
 
         super(Service, self).__init__(*args, **kwargs)
 
-        self.init_database()
-
-    def init_database(self):
-        self.database = database.get_driver()
+        self.storage_conn = storage.get_connection(cfg.CONF)
 
     # Server Methods
     def create_server(self, context, values):
-        server = self.database.create_server(context, values)
+        server = self.storage_conn.create_server(context, values)
 
         utils.notify(context, 'api', 'server.create', server)
 
         return server
 
     def get_servers(self, context):
-        return self.database.get_servers(context)
+        return self.storage_conn.get_servers(context)
 
     def get_server(self, context, server_id):
-        return self.database.get_server(context, server_id)
+        return self.storage_conn.get_server(context, server_id)
 
     def update_server(self, context, server_id, values):
-        server = self.database.update_server(context, server_id, values)
+        server = self.storage_conn.update_server(context, server_id, values)
 
         utils.notify(context, 'api', 'server.update', server)
 
         return server
 
     def delete_server(self, context, server_id):
-        server = self.database.get_server(context, server_id)
+        server = self.storage_conn.get_server(context, server_id)
 
         utils.notify(context, 'api', 'server.delete', server)
 
-        return self.database.delete_server(context, server_id)
+        return self.storage_conn.delete_server(context, server_id)
 
     # Domain Methods
     def create_domain(self, context, values):
         values['tenant_id'] = context.tenant
 
-        domain = self.database.create_domain(context, values)
+        domain = self.storage_conn.create_domain(context, values)
 
         agent_api.create_domain(context, domain)
         utils.notify(context, 'api', 'domain.create', domain)
@@ -81,13 +78,13 @@ class Service(rpc_service.Service):
         return domain
 
     def get_domains(self, context):
-        return self.database.get_domains(context)
+        return self.storage_conn.get_domains(context)
 
     def get_domain(self, context, domain_id):
-        return self.database.get_domain(context, domain_id)
+        return self.storage_conn.get_domain(context, domain_id)
 
     def update_domain(self, context, domain_id, values):
-        domain = self.database.update_domain(context, domain_id, values)
+        domain = self.storage_conn.update_domain(context, domain_id, values)
 
         agent_api.update_domain(context, domain)
         utils.notify(context, 'api', 'domain.update', domain)
@@ -95,18 +92,18 @@ class Service(rpc_service.Service):
         return domain
 
     def delete_domain(self, context, domain_id):
-        domain = self.database.get_domain(context, domain_id)
+        domain = self.storage_conn.get_domain(context, domain_id)
 
         agent_api.delete_domain(context, domain)
         utils.notify(context, 'api', 'domain.delete', domain)
 
-        return self.database.delete_domain(context, domain_id)
+        return self.storage_conn.delete_domain(context, domain_id)
 
     # Record Methods
     def create_record(self, context, domain_id, values):
-        record = self.database.create_record(context, domain_id, values)
+        record = self.storage_conn.create_record(context, domain_id, values)
 
-        domain = self.database.get_domain(context, domain_id)
+        domain = self.storage_conn.get_domain(context, domain_id)
 
         agent_api.create_record(context, domain, record)
         utils.notify(context, 'api', 'record.create', record)
@@ -114,15 +111,15 @@ class Service(rpc_service.Service):
         return record
 
     def get_records(self, context, domain_id):
-        return self.database.get_records(context, domain_id)
+        return self.storage_conn.get_records(context, domain_id)
 
     def get_record(self, context, domain_id, record_id):
-        return self.database.get_record(context, record_id)
+        return self.storage_conn.get_record(context, record_id)
 
     def update_record(self, context, domain_id, record_id, values):
-        record = self.database.update_record(context, record_id, values)
+        record = self.storage_conn.update_record(context, record_id, values)
 
-        domain = self.database.get_domain(context, domain_id)
+        domain = self.storage_conn.get_domain(context, domain_id)
 
         agent_api.update_record(context, domain, record)
         utils.notify(context, 'api', 'record.update', record)
@@ -130,11 +127,11 @@ class Service(rpc_service.Service):
         return record
 
     def delete_record(self, context, domain_id, record_id):
-        record = self.database.get_record(context, record_id)
+        record = self.storage_conn.get_record(context, record_id)
 
-        domain = self.database.get_domain(context, domain_id)
+        domain = self.storage_conn.get_domain(context, domain_id)
 
         agent_api.delete_record(context, domain, record)
         utils.notify(context, 'api', 'record.delete', record)
 
-        return self.database.delete_record(context, record_id)
+        return self.storage_conn.delete_record(context, record_id)

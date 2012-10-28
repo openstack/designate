@@ -18,22 +18,22 @@ import unittest
 import mox
 from moniker.openstack.common import cfg
 from moniker.openstack.common.context import RequestContext, get_admin_context
-from moniker.database import reinitialize as reinitialize_database
+from moniker.storage import reset_data
+from moniker.storage import sqla  # Import for database_connection cfg def.
 
 
 class TestCase(unittest.TestCase):
     def setUp(self):
         super(TestCase, self).setUp()
         self.mox = mox.Mox()
-        self.config(database_driver='sqlalchemy',
-                    database_connection='sqlite://',
+        self.config(database_connection='sqlite://',
                     rpc_backend='moniker.openstack.common.rpc.impl_fake',
                     notification_driver=[])
-        reinitialize_database()
 
     def tearDown(self):
         cfg.CONF.reset()
         self.mox.UnsetStubs()
+        reset_data()
         super(TestCase, self).tearDown()
 
     def config(self, **kwargs):
