@@ -59,12 +59,12 @@ class StorageDriverTestCase(StorageTestCase):
 
     record_fixtures = {
         'example.com': [
-            {'name': 'www.example.com', 'type': 'A', 'data': '127.0.0.1'},
-            {'name': 'mail.example.com', 'type': 'A', 'data': '127.0.0.2'},
+            {'name': 'www.example.com', 'type': 'A', 'data': '192.0.2.1'},
+            {'name': 'mail.example.com', 'type': 'A', 'data': '192.0.2.2'},
         ],
         'example.net': [
-            {'name': 'www.example.net', 'type': 'A', 'data': '127.0.0.1'},
-            {'name': 'mail.example.net', 'type': 'A', 'data': '127.0.0.2'},
+            {'name': 'www.example.net', 'type': 'A', 'data': '192.0.2.1'},
+            {'name': 'mail.example.net', 'type': 'A', 'data': '192.0.2.2'},
         ]
     }
 
@@ -178,10 +178,14 @@ class StorageDriverTestCase(StorageTestCase):
         self.assertEqual(str(actual[0]['ipv6']), str(server_one['ipv6']))
 
         # Create a second server
-        self.create_server_fixture(fixture=1)
+        server_two = self.create_server_fixture(fixture=1)
 
         actual = self.storage_conn.get_servers(self.admin_context)
         self.assertEqual(len(actual), 2)
+
+        self.assertEqual(str(actual[1]['name']), str(server_two['name']))
+        self.assertEqual(str(actual[1]['ipv4']), str(server_two['ipv4']))
+        self.assertEqual(str(actual[1]['ipv6']), str(server_two['ipv6']))
 
     def test_get_server(self):
         # Create a server
@@ -240,40 +244,120 @@ class StorageDriverTestCase(StorageTestCase):
             self.storage_conn.delete_server(self.admin_context, uuid)
 
     def test_create_domain(self):
-        raise SkipTest()
+        values = {
+            'name': 'example.net',
+            'email': 'example@example.net'
+        }
+
+        result = self.storage_conn.create_domain(self.admin_context,
+                                                 values=values)
+
+        self.assertIsNotNone(result['id'])
+        self.assertIsNotNone(result['created_at'])
+        self.assertIsNone(result['updated_at'])
+
+        self.assertEqual(result['name'], values['name'])
+        self.assertEqual(result['email'], values['email'])
 
     def test_create_domain_duplicate(self):
-        raise SkipTest()
+        # Create the Initial Domain
+        self.create_domain_fixture()
 
-    def test_create_domain_missing(self):
-        raise SkipTest()
+        with self.assertRaises(exceptions.DuplicateDomain):
+            self.create_domain_fixture()
 
     def test_get_domains(self):
-        raise SkipTest()
+        actual = self.storage_conn.get_domains(self.admin_context)
+        self.assertEqual(actual, [])
+
+        # Create a single domain
+        domain_one = self.create_domain_fixture()
+
+        actual = self.storage_conn.get_domains(self.admin_context)
+        self.assertEqual(len(actual), 1)
+
+        self.assertEqual(actual[0]['name'], domain_one['name'])
+        self.assertEqual(actual[0]['email'], domain_one['email'])
+
+        # Create a second domain
+        self.create_domain_fixture(fixture=1)
+
+        actual = self.storage_conn.get_domains(self.admin_context)
+        self.assertEqual(len(actual), 2)
 
     def test_get_domain(self):
-        raise SkipTest()
+        # Create a domain
+        expected = self.create_domain_fixture()
+        actual = self.storage_conn.get_domain(self.admin_context,
+                                              expected['id'])
+
+        self.assertEqual(actual['name'], expected['name'])
+        self.assertEqual(actual['email'], expected['email'])
 
     def test_get_domain_missing(self):
-        raise SkipTest()
+        with self.assertRaises(exceptions.DomainNotFound):
+            uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
+            self.storage_conn.get_domain(self.admin_context, uuid)
 
     def test_update_domain(self):
-        raise SkipTest()
+        # Create a domain
+        domain = self.create_domain_fixture()
+
+        values = self.domain_fixtures[1]
+        updated = self.storage_conn.update_domain(self.admin_context,
+                                                  domain['id'], values)
+
+        self.assertEqual(updated['name'], values['name'])
+        self.assertEqual(updated['email'], values['email'])
 
     def test_update_domain_duplicate(self):
-        raise SkipTest()
+        # Create two domains
+        self.create_domain_fixture(fixture=0)
+        domain = self.create_domain_fixture(fixture=1)
+
+        values = self.domain_fixtures[0]
+
+        with self.assertRaises(exceptions.DuplicateDomain):
+            self.storage_conn.update_domain(self.admin_context, domain['id'],
+                                            values)
 
     def test_update_domain_missing(self):
-        raise SkipTest()
+        with self.assertRaises(exceptions.DomainNotFound):
+            uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
+            self.storage_conn.update_domain(self.admin_context, uuid, {})
 
     def test_delete_domain(self):
-        raise SkipTest()
+        domain = self.create_domain_fixture()
+
+        self.storage_conn.delete_domain(self.admin_context, domain['id'])
+
+        with self.assertRaises(exceptions.DomainNotFound):
+            self.storage_conn.get_domain(self.admin_context, domain['id'])
 
     def test_delete_domain_missing(self):
-        raise SkipTest()
+        with self.assertRaises(exceptions.DomainNotFound):
+            uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
+            self.storage_conn.delete_domain(self.admin_context, uuid)
 
     def test_create_record(self):
-        raise SkipTest()
+        domain = self.create_domain_fixture()
+
+        values = {
+            'name': 'www.%s' % domain['name'],
+            'type': 'A',
+            'data': '192.0.2.1',
+        }
+
+        result = self.storage_conn.create_record(self.admin_context,
+                                                 domain['id'], values=values)
+
+        self.assertIsNotNone(result['id'])
+        self.assertIsNotNone(result['created_at'])
+        self.assertIsNone(result['updated_at'])
+
+        self.assertEqual(result['name'], values['name'])
+        self.assertEqual(result['type'], values['type'])
+        self.assertEqual(result['data'], values['data'])
 
     def test_get_records(self):
         domain = self.create_domain_fixture()
@@ -316,16 +400,42 @@ class StorageDriverTestCase(StorageTestCase):
         self.assertEqual(actual['data'], expected['data'])
 
     def test_get_record_missing(self):
-        raise SkipTest()
+        with self.assertRaises(exceptions.RecordNotFound):
+            uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
+            self.storage_conn.get_record(self.admin_context, uuid)
 
     def test_update_record(self):
-        raise SkipTest()
+        domain = self.create_domain_fixture()
+
+        # Create a record
+        record = self.create_record_fixture(domain)
+
+        values = self.record_fixtures[domain['name']][1]
+
+        updated = self.storage_conn.update_record(self.admin_context,
+                                                  record['id'], values)
+
+        self.assertEqual(updated['name'], values['name'])
+        self.assertEqual(updated['type'], values['type'])
+        self.assertEqual(updated['data'], values['data'])
 
     def test_update_record_missing(self):
-        raise SkipTest()
+        with self.assertRaises(exceptions.RecordNotFound):
+            uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
+            self.storage_conn.update_record(self.admin_context, uuid, {})
 
     def test_delete_record(self):
-        raise SkipTest()
+        domain = self.create_domain_fixture()
+
+        # Create a record
+        record = self.create_record_fixture(domain)
+
+        self.storage_conn.delete_record(self.admin_context, record['id'])
+
+        with self.assertRaises(exceptions.RecordNotFound):
+            self.storage_conn.get_record(self.admin_context, record['id'])
 
     def test_delete_record_missing(self):
-        raise SkipTest()
+        with self.assertRaises(exceptions.RecordNotFound):
+            uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
+            self.storage_conn.delete_record(self.admin_context, uuid)
