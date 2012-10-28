@@ -27,6 +27,7 @@ LOG = logging.getLogger(__name__)
 class TestCase(unittest.TestCase):
     def setUp(self):
         super(TestCase, self).setUp()
+
         self.mox = mox.Mox()
         self.config(database_connection='sqlite://',
                     rpc_backend='moniker.openstack.common.rpc.impl_fake',
@@ -34,9 +35,10 @@ class TestCase(unittest.TestCase):
         storage.setup_schema()
 
     def tearDown(self):
-        self.mox.UnsetStubs()
         storage.teardown_schema()
         cfg.CONF.reset()
+        self.mox.UnsetStubs()
+
         super(TestCase, self).tearDown()
 
     def config(self, **kwargs):
