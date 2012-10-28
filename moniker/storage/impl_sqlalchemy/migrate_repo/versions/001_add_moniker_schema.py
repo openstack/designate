@@ -19,18 +19,25 @@
 
 # should this be in schema.py?
 from uuid import uuid4
-from migrate import *
-from sqlalchemy import ForeignKey
-from sqlalchemy.schema import (Column, MetaData)
-from sqlalchemy.orm import relationship, backref
-from moniker.storage.impl_sqlalchemy.migrate_repo.schema import (
-    Table, Integer, String, Text, create_tables, 
-    UUID, drop_tables, DateTime, RECORD_TYPES)
-from moniker.storage.impl_sqlalchemy.types import (
-    Inet)
+from sqlalchemy import ForeignKey, Enum, Integer, String, DateTime, Text
+from sqlalchemy.schema import Column, MetaData
 from moniker.openstack.common import timeutils
+from moniker.storage.impl_sqlalchemy.migrate_repo.utils import (
+    Table, create_tables, drop_tables)
+from moniker.storage.impl_sqlalchemy.types import Inet, UUID
 
 meta = MetaData()
+
+RECORD_TYPES = ['A', 'AAAA', 'CNAME', 'MX', 'SRV', 'TXT', 'NS']
+
+servers = Table('servers', meta,
+                Column('id', UUID(), default=uuid4, primary_key=True),
+                Column('created_at', DateTime(), default=timeutils.utcnow),
+                Column('updated_at', DateTime(), onupdate=timeutils.utcnow),
+                Column('version', Integer(), default=1, nullable=False),
+                Column('name', String(255), nullable=False, unique=True),
+                Column('ipv4', Inet(), nullable=False, unique=True),
+                Column('ipv6', Inet(), default=None, unique=True))
 
 domains = Table('domains', meta,
                 Column('id', UUID(), default=uuid4, primary_key=True),
@@ -44,18 +51,7 @@ domains = Table('domains', meta,
                 Column('refresh', Integer(), default=3600, nullable=False),
                 Column('retry', Integer(), default=3600, nullable=False),
                 Column('expire', Integer(), default=3600, nullable=False),
-                Column('minimum', Integer(), default=3600, nullable=False),
-                useexisting=True)
-
-servers = Table('servers', meta,
-                Column('id', UUID(), default=uuid4, primary_key=True),
-                Column('created_at', DateTime(), default=timeutils.utcnow),
-                Column('updated_at', DateTime(), onupdate=timeutils.utcnow),
-                Column('version', Integer(), default=1, nullable=False),
-                Column('name', String(255), nullable=False, unique=True),
-                Column('ipv4', Inet(), nullable=False, unique=True),
-                Column('ipv6', Inet(), default=None, unique=True),
-                useexisting=True)
+                Column('minimum', Integer(), default=3600, nullable=False))
 
 records = Table('records', meta,
                 Column('id', UUID(), default=uuid4, primary_key=True),
@@ -69,8 +65,7 @@ records = Table('records', meta,
                 Column('priority', Integer(), default=None),
                 Column('ttl', Integer(), default=3600, nullable=False),
                 Column('domain_id', UUID(), ForeignKey('domains.id'),
-                       nullable=False),
-                useexisting=True)
+                       nullable=False))
 
 
 def upgrade(migrate_engine):

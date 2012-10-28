@@ -35,7 +35,8 @@
 				"*.egg",
 				"*.egg-info",
 				".tox",
-				"venv"
+				"venv",
+                ".venv"
 			],
 			"path": "."
 		}

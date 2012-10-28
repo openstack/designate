@@ -55,7 +55,7 @@ setup(
         postgresql = moniker.storage.impl_sqlalchemy:SQLAlchemyStorage
         sqlite = moniker.storage.impl_sqlalchemy:SQLAlchemyStorage
         [moniker.cli]
-        database init = InitCommand
+        database init = moniker.cli.database:InitCommand
         database sync = moniker.cli.database:SyncCommand
         """)
 )

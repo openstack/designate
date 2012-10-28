@@ -24,7 +24,7 @@ from moniker import storage  # Import for database_connection cfg def.
 LOG = logging.getLogger(__name__)
 
 REPOSITORY = os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
-                                          'database', 'sqlalchemy',
+                                          'storage', 'impl_sqlalchemy',
                                           'migrate_repo'))
 
 
@@ -33,6 +33,11 @@ class InitCommand(Command):
 
     def take_action(self, parsed_args):
         url = cfg.CONF.database_connection
+
+        if not os.path.exists(REPOSITORY):
+            raise Exception('Migration Respository Not Found')
+
+        LOG.warn(url)
 
         try:
             LOG.info('Attempting to initialize database')
@@ -48,6 +53,11 @@ class SyncCommand(Command):
     def take_action(self, parsed_args):
         # TODO: Support specifying version
         url = cfg.CONF.database_connection
+
+        if not os.path.exists(REPOSITORY):
+            raise Exception('Migration Respository Not Found')
+
+        LOG.warn(url)
 
         try:
             LOG.info('Attempting to synchronize database')
