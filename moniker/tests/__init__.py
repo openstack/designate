@@ -26,7 +26,7 @@ class TestCase(unittest.TestCase):
     def setUp(self):
         super(TestCase, self).setUp()
         self.mox = mox.Mox()
-        self.config(database_connection='sqlite://',
+        self.config(database_connection='sqlite:///:memory:',
                     rpc_backend='moniker.openstack.common.rpc.impl_fake',
                     notification_driver=[])
 

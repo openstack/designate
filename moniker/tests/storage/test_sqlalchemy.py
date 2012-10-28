@@ -21,3 +21,7 @@ LOG = logging.getLogger(__name__)
 
 class SqlalchemyTest(StorageDriverTestCase):
     __test__ = True
+
+    def setUp(self):
+        super(SqlalchemyTest, self).setUp()
+        self.config(database_connection='sqlite:///:memory:')
