@@ -44,9 +44,9 @@ setup(
     extras_require={'test': tests_require},
     dependency_links=dependency_links,
     scripts=[
-        'bin/moniker-agent-bind9',
-        'bin/moniker-api',
         'bin/moniker-central',
+        'bin/moniker-api',
+        'bin/moniker-agent-bind9',
     ],
     cmdclass=common_setup.get_cmdclass(),
     entry_points=textwrap.dedent("""
