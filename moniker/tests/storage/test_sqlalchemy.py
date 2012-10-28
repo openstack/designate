@@ -24,4 +24,4 @@ class SqlalchemyTest(StorageDriverTestCase):
 
     def setUp(self):
         super(SqlalchemyTest, self).setUp()
-        self.config(database_connection='sqlite:///:memory:')
+        self.config(database_connection='sqlite://')
