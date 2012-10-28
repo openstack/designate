@@ -20,6 +20,7 @@ from cliff.command import Command
 from moniker.openstack.common import log as logging
 from moniker.openstack.common import cfg
 from moniker import storage  # Import for database_connection cfg def.
+from moniker.cli import utils
 
 LOG = logging.getLogger(__name__)
 
@@ -32,19 +33,19 @@ class InitCommand(Command):
     "Init database"
 
     def take_action(self, parsed_args):
+        utils.read_config('moniker-central')
+
         url = cfg.CONF.database_connection
 
         if not os.path.exists(REPOSITORY):
             raise Exception('Migration Respository Not Found')
 
-        LOG.warn(url)
-
         try:
             LOG.info('Attempting to initialize database')
             versioning_api.version_control(url=url, repository=REPOSITORY)
-            LOG.info('Database initialize sucessfully')
+            LOG.info('Database initialized sucessfully')
         except DatabaseAlreadyControlledError:
-            LOG.error('Database already initialized')
+            raise Exception('Database already initialized')
 
 
 class SyncCommand(Command):
@@ -52,17 +53,14 @@ class SyncCommand(Command):
 
     def take_action(self, parsed_args):
         # TODO: Support specifying version
+        utils.read_config('moniker-central')
+
         url = cfg.CONF.database_connection
 
         if not os.path.exists(REPOSITORY):
             raise Exception('Migration Respository Not Found')
 
-        LOG.warn(url)
-
-        try:
-            LOG.info('Attempting to synchronize database')
-            versioning_api.upgrade(url=url, repository=REPOSITORY,
-                                   version=None)
-            LOG.info('Database synchronized sucessfully')
-        except DatabaseAlreadyControlledError:
-            LOG.error('Database synchronize failed')
+        LOG.info('Attempting to synchronize database')
+        versioning_api.upgrade(url=url, repository=REPOSITORY,
+                               version=None)
+        LOG.info('Database synchronized sucessfully')
