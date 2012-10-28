@@ -38,6 +38,8 @@ sql_opts = [
 
 cfg.CONF.register_opts(sql_opts)
 
+RECORD_TYPES = ['A', 'AAAA', 'CNAME', 'MX', 'SRV', 'TXT', 'NS']
+
 
 def table_args():
     engine_name = urlparse(cfg.CONF.database_connection).scheme
@@ -76,9 +78,6 @@ class Base(object):
 
     def delete(self, session):
         """ Delete this object """
-        if not session:
-            session = get_session()
-
         session.delete(self)
         session.flush()
 
@@ -121,7 +120,6 @@ class Base(object):
 
 
 Base = declarative_base(cls=Base)
-RECORD_TYPES = ['A', 'AAAA', 'CNAME', 'MX', 'SRV', 'TXT', 'NS']
 
 
 class Server(Base):
