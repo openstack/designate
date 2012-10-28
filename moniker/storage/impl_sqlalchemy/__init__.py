@@ -83,9 +83,9 @@ class Connection(base.Connection):
     def _get_server(self, context, server_id):
         query = self.session.query(models.Server)
 
-        try:
-            server = query.filter(models.Server.id == server_id).one()
-        except exc.NoResultFound:
+        server = query.get(server_id)
+
+        if not server:
             raise exceptions.ServerNotFound(server_id)
         else:
             return server
@@ -139,9 +139,9 @@ class Connection(base.Connection):
     def _get_domain(self, context, domain_id):
         query = self.session.query(models.Domain)
 
-        try:
-            domain = query.filter(models.Domain.id == domain_id).one()
-        except exc.NoResultFound:
+        domain = query.get(domain_id)
+
+        if not domain:
             raise exceptions.DomainNotFound(domain_id)
         else:
             return domain
@@ -189,9 +189,9 @@ class Connection(base.Connection):
     def _get_record(self, context, record_id):
         query = self.session.query(models.Record)
 
-        try:
-            record = query.filter(models.Record.id == record_id).one()
-        except exc.NoResultFound:
+        record = query.get(record_id)
+
+        if not record:
             raise exceptions.RecordNotFound(record_id)
         else:
             return record
