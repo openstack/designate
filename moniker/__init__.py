@@ -24,7 +24,7 @@ cfg.CONF.register_opts([
                help='Directory where the nova python module is installed'),
     cfg.StrOpt('host', default=socket.gethostname(),
                help='Name of this node'),
-    cfg.StrOpt('control_exchange', default='moniker',
+    cfg.StrOpt('control-exchange', default='moniker',
                help='AMQP exchange to connect to if using RabbitMQ or Qpid'),
     cfg.StrOpt('central-topic', default='central', help='Central Topic'),
     cfg.StrOpt('agent-topic', default='agent', help='Agent Topic'),

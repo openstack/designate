@@ -5,17 +5,15 @@ verbose = True
 # Show debugging output in logs (sets DEBUG log level output)
 debug = False
 
+#
+state_path = ./var/
+
 # Database connection string.
 database_connection = sqlite://
 
 #
 notification_driver=moniker.openstack.common.notifier.rabbit_notifier
 
-#
-logging_context_format_string = %(asctime)s %(levelname)s %(name)s [%(request_id)s %(user)s %(tenant)s] %(instance)s %(message)s
-
-#
-control_exchange = moniker
-
-#
+# There has to be a better way to set these defaults
 allowed_rpc_exception_modules = moniker.exceptions, moniker.openstack.common.exception
+logging_context_format_string = %(asctime)s %(levelname)s %(name)s [%(request_id)s %(user)s %(tenant)s] %(instance)s %(message)s

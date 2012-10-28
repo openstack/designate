@@ -6,16 +6,11 @@ verbose = True
 debug = False
 
 #
-logging_context_format_string = %(asctime)s %(levelname)s %(name)s [%(request_id)s %(user)s %(tenant)s] %(instance)s %(message)s
-
-#
-control_exchange = moniker
-
-#
 state_path = ./var/
 
 #
 templates_path = ./templates/
 
-#
+# There has to be a better way to set these defaults
 allowed_rpc_exception_modules = moniker.exceptions, moniker.openstack.common.exception
+logging_context_format_string = %(asctime)s %(levelname)s %(name)s [%(request_id)s %(user)s %(tenant)s] %(instance)s %(message)s
