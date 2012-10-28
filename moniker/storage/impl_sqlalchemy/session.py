@@ -33,7 +33,7 @@ _MAKER = None
 _ENGINE = None
 
 sql_opts = [
-    cfg.IntOpt('sql_connection_debug', default=100,
+    cfg.IntOpt('sql_connection_debug', default=0,
                help='Verbosity of SQL debugging information. 0=None,'
                ' 100=Everything'),
     cfg.BoolOpt('sql_connection_trace', default=False,
