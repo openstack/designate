@@ -15,22 +15,25 @@
 # under the License.
 import copy
 from nose import SkipTest
+from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
 from moniker.tests import TestCase
-from moniker import database
+from moniker import storage
 from moniker import exceptions
 
 LOG = logging.getLogger(__name__)
 
 
-class DatabaseTestCase(TestCase):
+class StorageTestCase(TestCase):
     __test__ = False
 
-    def get_database_driver(self, *args, **kwargs):
-        return database.get_driver(*args, **kwargs)
+    def get_storage_driver(self, conf=cfg.CONF):
+        engine = storage.get_engine(conf)
+        connection = engine.get_connection(conf)
+        return connection
 
 
-class DatabaseDriverTestCase(DatabaseTestCase):
+class StorageDriverTestCase(StorageTestCase):
     __test__ = False
 
     server_fixtures = [{
@@ -48,18 +51,18 @@ class DatabaseDriverTestCase(DatabaseTestCase):
     }]
 
     def setUp(self):
-        super(DatabaseDriverTestCase, self).setUp()
-        self.driver = self.get_database_driver()
+        super(StorageDriverTestCase, self).setUp()
+        self.storage_conn = self.get_storage_driver()
         self.admin_context = self.get_admin_context()
 
     def create_server_fixture(self, fixture=0, values={}):
         _values = copy.copy(self.server_fixtures[fixture])
         _values.update(values)
 
-        return self.driver.create_server(self.admin_context, _values)
+        return self.storage_conn.create_server(self.admin_context, _values)
 
     def test_init(self):
-        self.get_database_driver()
+        self.get_storage_driver()
 
     def test_create_server(self):
         values = {
@@ -68,7 +71,8 @@ class DatabaseDriverTestCase(DatabaseTestCase):
             'ipv6': '2001:db8::1',
         }
 
-        result = self.driver.create_server(self.admin_context, values=values)
+        result = self.storage_conn.create_server(
+            self.admin_context, values=values)
 
         self.assertIsNotNone(result['id'])
         self.assertIsNotNone(result['created_at'])
@@ -89,8 +93,8 @@ class DatabaseDriverTestCase(DatabaseTestCase):
         }]
 
         for value in values:
-            result = self.driver.create_server(self.admin_context,
-                                               values=value)
+            result = self.storage_conn.create_server(
+                self.admin_context, values=value)
 
             self.assertIsNotNone(result['id'])
             self.assertIsNotNone(result['created_at'])
@@ -128,13 +132,13 @@ class DatabaseDriverTestCase(DatabaseTestCase):
                 self.create_server_fixture(values=value)
 
     def test_get_servers(self):
-        actual = self.driver.get_servers(self.admin_context)
+        actual = self.storage_conn.get_servers(self.admin_context)
         self.assertEqual(actual, [])
 
         # Create a single server
         server_one = self.create_server_fixture()
 
-        actual = self.driver.get_servers(self.admin_context)
+        actual = self.storage_conn.get_servers(self.admin_context)
         self.assertEqual(len(actual), 1)
 
         self.assertEqual(str(actual[0]['name']), str(server_one['name']))
@@ -144,13 +148,14 @@ class DatabaseDriverTestCase(DatabaseTestCase):
         # Create a second server
         self.create_server_fixture(fixture=1)
 
-        actual = self.driver.get_servers(self.admin_context)
+        actual = self.storage_conn.get_servers(self.admin_context)
         self.assertEqual(len(actual), 2)
 
     def test_get_server(self):
         # Create a server
         expected = self.create_server_fixture()
-        actual = self.driver.get_server(self.admin_context, expected['id'])
+        actual = self.storage_conn.get_server(
+            self.admin_context, expected['id'])
 
         self.assertEqual(str(actual['name']), str(expected['name']))
         self.assertEqual(str(actual['ipv4']), str(expected['ipv4']))
@@ -159,15 +164,15 @@ class DatabaseDriverTestCase(DatabaseTestCase):
     def test_get_server_missing(self):
         with self.assertRaises(exceptions.ServerNotFound):
             uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
-            self.driver.get_server(self.admin_context, uuid)
+            self.storage_conn.get_server(self.admin_context, uuid)
 
     def test_update_server(self):
         # Create a server
         server = self.create_server_fixture()
 
         values = self.server_fixtures[1]
-        updated = self.driver.update_server(self.admin_context, server['id'],
-                                            values)
+        updated = self.storage_conn.update_server(
+            self.admin_context, server['id'], values)
 
         self.assertEqual(str(updated['name']), str(values['name']))
         self.assertEqual(str(updated['ipv4']), str(values['ipv4']))
@@ -181,25 +186,26 @@ class DatabaseDriverTestCase(DatabaseTestCase):
         values = self.server_fixtures[0]
 
         with self.assertRaises(exceptions.DuplicateServer):
-            self.driver.update_server(self.admin_context, server['id'], values)
+            self.storage_conn.update_server(
+                self.admin_context, server['id'], values)
 
     def test_update_server_missing(self):
         with self.assertRaises(exceptions.ServerNotFound):
             uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
-            self.driver.update_server(self.admin_context, uuid, {})
+            self.storage_conn.update_server(self.admin_context, uuid, {})
 
     def test_delete_server(self):
         server = self.create_server_fixture(fixture=0)
 
-        self.driver.delete_server(self.admin_context, server['id'])
+        self.storage_conn.delete_server(self.admin_context, server['id'])
 
         with self.assertRaises(exceptions.ServerNotFound):
-            self.driver.get_server(self.admin_context, server['id'])
+            self.storage_conn.get_server(self.admin_context, server['id'])
 
     def test_delete_server_missing(self):
         with self.assertRaises(exceptions.ServerNotFound):
             uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
-            self.driver.delete_server(self.admin_context, uuid)
+            self.storage_conn.delete_server(self.admin_context, uuid)
 
     def test_create_domain(self):
         raise SkipTest()

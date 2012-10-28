@@ -16,19 +16,36 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from uuid import uuid4
+from urlparse import urlparse
+
 from sqlalchemy import (Column, DateTime, String, Text, Integer, ForeignKey,
                         Enum)
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import relationship, backref, object_mapper
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.hybrid import hybrid_property
+
 from moniker import exceptions
-from moniker.openstack.common import timeutils
+from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
-from moniker.database.sqlalchemy.session import get_session
-from moniker.database.sqlalchemy.types import UUID, Inet
+from moniker.openstack.common import timeutils
+from moniker.storage.sqla.session import get_session
+from moniker.storage.sqla.types import UUID, Inet
 
 LOG = logging.getLogger(__name__)
+
+sql_opts = [
+    cfg.IntOpt('mysql_engine', default='InnoDB', help='MySQL engine')
+]
+
+cfg.CONF.register_opts(sql_opts)
+
+
+def table_args():
+    engine_name = urlparse(cfg.CONF.database_connection).scheme
+    if engine_name == 'mysql':
+        return {'mysql_engine': cfg.CONF.mysql_engine}
+    return None
 
 
 class Base(object):
@@ -44,11 +61,11 @@ class Base(object):
         'version_id_col': version
     }
 
-    def save(self, session=None):
-        """ Save this object """
-        if not session:
-            session = get_session()
+    __table_args__ = table_args()
+    __table_initialized__ = False
 
+    def save(self, session):
+        """ Save this object """
         session.add(self)
 
         try:
@@ -59,7 +76,7 @@ class Base(object):
             else:
                 raise
 
-    def delete(self, session=None):
+    def delete(self, session):
         """ Delete this object """
         if not session:
             session = get_session()

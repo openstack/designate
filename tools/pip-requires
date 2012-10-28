@@ -6,6 +6,8 @@ ipaddr
 PasteDeploy
 sqlalchemy-migrate>=0.7.2
 https://github.com/managedit/python-monikerclient/tarball/master#egg=monikerclient
+stevedore
+
 # From OpenStack Common
 routes==1.12.3
 iso8601>=0.1.4

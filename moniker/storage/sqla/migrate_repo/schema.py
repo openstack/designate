@@ -22,10 +22,11 @@ Various conveniences used for migration scripts
 """
 import sqlalchemy.types
 from sqlalchemy import (DateTime, Boolean, String, Text, Integer, Enum)
-from moniker.openstack.common import log as logging
-from moniker.database.sqlalchemy.types import UUID, Inet
 
-logger = logging.getLogger('moniker.database.migrate_repo.schema')
+from moniker.openstack.common import log as logging
+from moniker.storage.sqla.types import UUID, Inet
+
+logger = logging.getLogger('moniker.storage.sqla.migrate_repo.schema')
 
 
 String = lambda length: sqlalchemy.types.String(
@@ -50,10 +51,10 @@ DateTime = lambda: sqlalchemy.types.DateTime(timezone=False)
 Integer = lambda: sqlalchemy.types.Integer()
 
 
-UUID = lambda: moniker.database.sqlalchemy.types.UUID()
+UUID = lambda: moniker.storage.sqla.types.UUID()
 
 
-Inet = lambda: moniker.database.sqlalchemy.types.Inet()
+Inet = lambda: moniker.storage.sqla.types.Inet()
 
 
 RECORD_TYPES = ['A', 'AAAA', 'CNAME', 'MX', 'SRV', 'TXT', 'NS']
