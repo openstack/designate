@@ -1,4 +1,4 @@
-Flask==0.9
+Flask>=0.8
 eventlet
 jsonschema>=0.6
 ipaddr
@@ -8,13 +8,6 @@ https://github.com/managedit/python-monikerclient/tarball/master#egg=monikerclie
 stevedore
 
 # From OpenStack Common
-routes==1.12.3
+routes>=1.12.3
 iso8601>=0.1.4
-WebOb==1.0.8
-
-# Needed for Keystone Middleware
-https://launchpad.net/keystone/folsom/2012.2/+download/keystone-2012.2.tar.gz#egg=keystone
-
-# Optional Stuff that is used by default
-sqlalchemy>=0.7
-kombu
+WebOb>=1.0.8
