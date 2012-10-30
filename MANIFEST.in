@@ -2,3 +2,10 @@ exclude .gitignore
 exclude .gitreview
 
 global-exclude *.pyc
+
+include *.txt *.ini *.cfg *.rst *.md
+
+recursive-include moniker *
+recursive-include etc *
+recursive-include templates *
+
