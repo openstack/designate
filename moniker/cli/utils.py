@@ -13,11 +13,14 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import os
 from moniker.openstack.common import cfg
 
 
 def read_config(prog):
     config_files = cfg.find_config_files(project='moniker', prog=prog)
-    config_files.append('./etc/%s.conf' % prog)
+
+    if os.path.exists('./etc/%s.conf' % prog):
+        config_files.append('./etc/%s.conf' % prog)
 
     cfg.CONF(project='moniker', prog=prog, default_config_files=config_files)
