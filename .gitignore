@@ -19,3 +19,4 @@ doc/source/api/*
 doc/build/*
 dist
 moniker/versioninfo
+*.orig

@@ -71,7 +71,6 @@ class StorageDriverTestCase(StorageTestCase):
     def setUp(self):
         super(StorageDriverTestCase, self).setUp()
         self.storage_conn = self.get_storage_driver()
-        self.admin_context = self.get_admin_context()
 
     def create_server_fixture(self, fixture=0, values={}):
         _values = copy.copy(self.server_fixtures[fixture])

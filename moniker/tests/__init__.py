@@ -20,6 +20,7 @@ from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
 from moniker.openstack.common.context import RequestContext, get_admin_context
 from moniker import storage
+from moniker.central import service as central_service
 
 LOG = logging.getLogger(__name__)
 
@@ -34,6 +35,8 @@ class TestCase(unittest.TestCase):
                     notification_driver=[])
         storage.setup_schema()
 
+        self.admin_context = self.get_admin_context()
+
     def tearDown(self):
         storage.teardown_schema()
         cfg.CONF.reset()
@@ -45,6 +48,9 @@ class TestCase(unittest.TestCase):
         group = kwargs.pop('group', None)
         for k, v in kwargs.iteritems():
             cfg.CONF.set_override(k, v, group)
+
+    def get_central_service(self):
+        return central_service.Service()
 
     def get_context(self, **kwargs):
         return RequestContext(**kwargs)
@@ -66,6 +72,34 @@ if sys.version_info < (2, 7):
         return self.assertNotEqual(expr, None, msg)
 
     TestCase.assertIsNotNone = assertIsNotNone
+
+    def assertIn(self, test_value, expected_set):
+        msg = "%s did not occur in %s" % (test_value, expected_set)
+        self.assert_(test_value in expected_set, msg)
+
+    TestCase.assertIn = assertIn
+
+    def assertNotIn(self, test_value, expected_set):
+        msg = "%s occurred in %s" % (test_value, expected_set)
+        self.assert_(test_value not in expected_set, msg)
+
+    TestCase.assertNotIn = assertNotIn
+
+    def assertGreaterEqual(self, a, b, msg=None):
+        if not msg:
+            msg = '%r not greater than or equal to %r' % (a, b)
+
+        self.assert_(a >= b, msg)
+
+    TestCase.assertGreaterEqual = assertGreaterEqual
+
+    def assertLessEqual(self, a, b, msg=None):
+        if not msg:
+            msg = '%r not less than or equal to %r' % (a, b)
+
+        self.assert_(a <= b, msg)
+
+    TestCase.assertLessEqual = assertLessEqual
 
     def assertRaises(self, excClass, callableObj=None, *args, **kwargs):
         @contextmanager

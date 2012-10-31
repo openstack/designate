@@ -17,9 +17,7 @@ import abc
 
 
 class StorageEngine(object):
-    """
-    Base class for storage engines
-    """
+    """ Base class for storage engines """
 
     __metaclass__ = abc.ABCMeta
 

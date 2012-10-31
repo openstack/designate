@@ -15,14 +15,21 @@
 # under the License.
 from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
+from moniker.openstack.common import rpc
 from moniker.openstack.common.rpc import service as rpc_service
+from stevedore.named import NamedExtensionManager
 from moniker import storage
 from moniker import utils
 from moniker import policy
 from moniker.agent import api as agent_api
 
-
 LOG = logging.getLogger(__name__)
+
+HANDLER_NAMESPACE = 'moniker.notification.handler'
+
+cfg.CONF.register_opts([
+    cfg.ListOpt('enabled-handlers', default=[], help='Enabled Handlers'),
+])
 
 
 class Service(rpc_service.Service):
@@ -36,7 +43,93 @@ class Service(rpc_service.Service):
 
         super(Service, self).__init__(*args, **kwargs)
 
+        # Get a storage connection
         self.storage_conn = storage.get_connection(cfg.CONF)
+
+        # Initialize extensions
+        self.handlers = self._init_extensions()
+
+        if self.handlers:
+            # Get a rpc connection if needed
+            self.rpc_conn = rpc.create_connection()
+
+    def _init_extensions(self):
+        """ Loads and prepares all enabled extensions """
+        self.extensions_manager = NamedExtensionManager(
+            HANDLER_NAMESPACE, names=cfg.CONF.enabled_handlers)
+
+        def _load_extension(ext):
+            handler_cls = ext.plugin
+            handler_cls.register_opts(cfg.CONF)
+
+            return handler_cls(central_service=self)
+
+        try:
+            return self.extensions_manager.map(_load_extension)
+        except RuntimeError:
+            # No handlers enabled. No problem.
+            return []
+
+    def start(self):
+        super(Service, self).start()
+
+        if self.handlers:
+            # Setup notification subscriptions and start consuming
+            self._setup_subscriptions()
+            self.rpc_conn.consume_in_thread_group(self.tg)
+
+    def stop(self):
+        if self.handlers:
+            # Try to shut the connection down, but if we get any sort of
+            # errors, go ahead and ignore them.. as we're shutting down anyway
+            try:
+                self.rpc_conn.close()
+            except Exception:
+                pass
+
+        super(Service, self).stop()
+
+    def _setup_subscriptions(self):
+        """
+        Set's up subscriptions for the various exchange+topic combinations that
+        we have a handler for.
+        """
+        for handler in self.handlers:
+            exchange, topics = handler.get_exchange_topics()
+
+            for topic in topics:
+                queue_name = "moniker.notifications.%s.%s" % (exchange, topic)
+
+                self.rpc_conn.declare_topic_consumer(
+                    queue_name=queue_name,
+                    topic=topic,
+                    exchange_name=exchange,
+                    callback=self._process_notification)
+
+    def _process_notification(self, notification):
+        """
+        Processes an incoming notification, offering each extension the
+        opportunity to handle it.
+        """
+        event_type = notification.get('event_type')
+
+        LOG.debug('Processing notification: %s' % event_type)
+
+        for handler in self.handlers:
+            self._process_notification_for_handler(handler, notification)
+
+    def _process_notification_for_handler(self, handler, notification):
+        """
+        Processes an incoming notification for a specific handler, checking
+        to see if the handler is interested in the notification before
+        handing it over.
+        """
+        event_type = notification['event_type']
+        payload = notification['payload']
+
+        if event_type in handler.get_event_types():
+            LOG.debug('Found handler for: %s' % event_type)
+            handler.process_notification(event_type, payload)
 
     # Server Methods
     def create_server(self, context, values):

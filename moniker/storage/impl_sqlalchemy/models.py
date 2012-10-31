@@ -18,7 +18,7 @@
 from uuid import uuid4
 from urlparse import urlparse
 from sqlalchemy import (Column, DateTime, String, Text, Integer, ForeignKey,
-                        Enum)
+                        Enum, Boolean, Unicode)
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import relationship, backref, object_mapper
 from sqlalchemy.ext.declarative import declarative_base
@@ -175,6 +175,10 @@ class Record(Base):
     data = Column(Text, nullable=False)
     priority = Column(Integer, default=None)
     ttl = Column(Integer, default=3600, nullable=False)
+
+    managed_resource = Column(Boolean, default=False)
+    managed_resource_type = Column(Unicode(50), default=None, nullable=True)
+    managed_resource_id = Column(UUID, default=None, nullable=True)
 
     domain_id = Column(UUID, ForeignKey('domains.id'), nullable=False)
 

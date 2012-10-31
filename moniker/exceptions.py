@@ -23,6 +23,14 @@ class ConfigNotFound(Base):
     pass
 
 
+class ConfigurationError(Base):
+    pass
+
+
+class NoServersConfigured(ConfigurationError):
+    pass
+
+
 class InvalidObject(Base):
     pass
 
@@ -32,10 +40,6 @@ class Forbidden(Base):
 
 
 class InvalidSortKey(Base):
-    pass
-
-
-class NoServersConfigured(Base):
     pass
 
 

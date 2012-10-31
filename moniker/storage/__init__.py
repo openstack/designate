@@ -44,7 +44,7 @@ def get_engine_name(string):
 def get_engine(conf):
     scheme = urlparse(conf.database_connection).scheme
     engine_name = get_engine_name(scheme)
-    LOG.debug('looking for %r engine in %r', engine_name, DRIVER_NAMESPACE)
+    LOG.debug('Looking for %r engine in %r', engine_name, DRIVER_NAMESPACE)
     mgr = driver.DriverManager(
         DRIVER_NAMESPACE,
         engine_name,
