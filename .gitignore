@@ -15,3 +15,5 @@ etc/*.conf
 etc/*.ini
 AUTHORS
 ChangeLog
+doc/source/api/*
+doc/build/*
