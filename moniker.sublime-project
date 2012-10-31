@@ -36,7 +36,9 @@
 				"*.egg-info",
 				".tox",
 				"venv",
-                ".venv"
+                ".venv",
+                "doc/build",
+                "doc/source/api"
 			],
 			"path": "."
 		}
