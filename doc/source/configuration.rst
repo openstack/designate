@@ -60,8 +60,6 @@ General options
 
 The following is the list of openstack-common options that we use:
 
-The following is the list of openstack-common options that we use:
-
 ===========================  ====================================  ==============================================================
 Parameter                    Default                               Note
 ===========================  ====================================  ==============================================================
