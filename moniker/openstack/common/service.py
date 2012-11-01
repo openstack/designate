@@ -32,9 +32,9 @@ import logging as std_logging
 
 from moniker.openstack.common import cfg
 from moniker.openstack.common import eventlet_backdoor
+from moniker.openstack.common.gettextutils import _
 from moniker.openstack.common import log as logging
 from moniker.openstack.common import threadgroup
-from moniker.openstack.common.gettextutils import _
 
 try:
     from openstack.common import rpc

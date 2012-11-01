@@ -22,8 +22,8 @@ import sys
 from eventlet import event
 from eventlet import greenthread
 
-from moniker.openstack.common import log as logging
 from moniker.openstack.common.gettextutils import _
+from moniker.openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)
 

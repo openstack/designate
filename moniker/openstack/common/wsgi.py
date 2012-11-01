@@ -33,8 +33,8 @@ from xml.parsers import expat
 
 from moniker.openstack.common import exception
 from moniker.openstack.common.gettextutils import _
-from moniker.openstack.common import log as logging
 from moniker.openstack.common import jsonutils
+from moniker.openstack.common import log as logging
 from moniker.openstack.common import service
 
 

@@ -23,8 +23,8 @@ import logging
 import random
 import shlex
 
-from eventlet import greenthread
 from eventlet.green import subprocess
+from eventlet import greenthread
 
 from moniker.openstack.common import exception
 from moniker.openstack.common.gettextutils import _
