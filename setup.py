@@ -62,5 +62,15 @@ setup(
         [moniker.cli]
         database init = moniker.cli.database:InitCommand
         database sync = moniker.cli.database:SyncCommand
-        """)
+        """),
+    classifiers=[
+        'Development Status :: 3 - Alpha',
+        'Topic :: Internet :: Name Service (DNS)',
+        'License :: OSI Approved :: Apache Software License',
+        'Operating System :: POSIX :: Linux',
+        'Programming Language :: Python :: 2.6',
+        'Programming Language :: Python :: 2.7',
+        'Environment :: No Input/Output (Daemon)',
+        'Environment :: OpenStack',
+    ],
 )
