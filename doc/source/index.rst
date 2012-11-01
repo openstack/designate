@@ -11,7 +11,11 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
+   architecture
+   configuration
+   install
    rest
+   glossary
 
 
 Indices and tables
