@@ -16,8 +16,8 @@
 # under the License.
 from setuptools import setup, find_packages
 import textwrap
-
 from moniker.openstack.common import setup as common_setup
+from moniker.version import version_info as version
 
 install_requires = common_setup.parse_requirements(['tools/pip-requires'])
 install_options = common_setup.parse_requirements(['tools/pip-options'])
@@ -32,7 +32,7 @@ dependency_links = common_setup.parse_dependency_links([
 
 setup(
     name='moniker',
-    version='0.0',
+    version=version.canonical_version_string(always=True),
     description='DNS as a Service',
     author='Kiall Mac Innes',
     author_email='kiall@managedit.ie',
