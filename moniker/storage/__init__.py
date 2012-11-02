@@ -34,8 +34,16 @@ def register_opts(conf):
     engine.register_opts(conf)
 
 
+def get_engine_name(string):
+    """
+    Return the engine name from either a non-dialected or dialected string
+    """
+    return string.split("+")[0]
+
+
 def get_engine(conf):
-    engine_name = urlparse(conf.database_connection).scheme
+    scheme = urlparse(conf.database_connection).scheme
+    engine_name = get_engine_name(scheme)
     LOG.debug('looking for %r engine in %r', engine_name, DRIVER_NAMESPACE)
     mgr = driver.DriverManager(
         DRIVER_NAMESPACE,
