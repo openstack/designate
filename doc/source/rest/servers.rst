@@ -55,6 +55,57 @@ Create Server
    :statuscode 409: Conflict
 
 
+Update Server
+-------------
+
+.. http:put:: /servers/(uuid:server_id)
+
+   Create a DNS server
+
+   **Example request**:
+
+   .. sourcecode:: http
+
+      PUT /servers/879c1100-9c92-4244-bc83-9535ee6534d0 HTTP/1.1
+      Content-Type: application/json
+      Accept: application/json
+      Context-Type: application/json
+
+      {
+        "name": 'ns1.example.org',
+        "ipv4": '1.2.3.5'
+      }
+
+   **Example response**:
+
+   .. sourcecode:: http
+
+      HTTP/1.1 200 OK
+      Vary: Accept
+      Content-Type: application/json
+
+      {
+        "id": "879c1100-9c92-4244-bc83-9535ee6534d0"t
+        "name": "ns1.example.org",
+        "ipv4": "1.2.3.5",
+        "created_at": "2012-11-02T02:55:44.000000",
+        "updated_at": "2012-11-02T02:58:41.993556",
+        "self": "/v1/servers/879c1100-9c92-4244-bc83-9535ee6534d0",
+        "schema": "/v1/schemas/server",
+      }
+
+   :form id: UUID server_id
+   :form name: Server hostname
+   :form ipv4: Server IPv4 address
+   :form created_at: timestamp
+   :form updated_at: timestamp
+   :form self: String, link to server
+   :form schema: link to the JSON schema that describes this resource 
+   :statuscode 200: Success
+   :statuscode 401: Access Denied
+   :statuscode 404: Server Not Found
+   :statuscode 409: Duplicate Server
+
 List Servers
 ------------
 
@@ -97,6 +148,12 @@ List Servers
         }
       ]
 
+   :form id: UUID server_id
+   :form name: Server hostname
+   :form ipv4: Server IPv4 address
+   :form ipv6: Server IPv6 address
+   :form created_at: timestamp
+   :form updated_at: timestamp
    :statuscode 200: Success
    :statuscode 401: Access Denied
 
@@ -134,6 +191,39 @@ Get Server
 
    :param server_id: The server's unique id
    :type server_id: uuid
+   :form name: Server hostname
+   :form ipv4: Server IPv4 address
+   :form ipv6: Server IPv6 address
+   :form created_at: timestamp
+   :form updated_at: timestamp
    :statuscode 200: Success
    :statuscode 401: Access Denied
    :statuscode 404: Not Found
+
+Delete Server
+-------------
+
+.. http:delete:: /servers/(uuid:server_id)
+
+   Deletes a specified server
+
+  **Example request**:
+
+  .. sourcecode:: http
+
+     DELETE /servers/5d1d7879-b778-4f77-bb95-02f4a5a224d8 HTTP/1.1
+     Host: example.com
+
+  **Example response**
+
+  .. sourcecode:: http
+
+      HTTP/1.1 200 OK
+      Content-Type: text/html; charset=utf-8
+      Content-Length: 0
+      Date: Thu, 01 Nov 2012 10:00:00 GMT
+
+   :statuscode 200: Success
+   :statuscode 401: Access Denied
+   :statuscode 404: Not Found
+
