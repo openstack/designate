@@ -187,6 +187,32 @@ class StorageDriverTestCase(StorageTestCase):
         self.assertEqual(str(actual[1]['ipv4']), str(server_two['ipv4']))
         self.assertEqual(str(actual[1]['ipv6']), str(server_two['ipv6']))
 
+    def test_get_servers_criterion(self):
+        server_one = self.create_server_fixture(0)
+        server_two = self.create_server_fixture(1)
+
+        criterion = dict(
+            name=server_one['name']
+        )
+
+        results = self.storage_conn.get_servers(self.admin_context,
+                                                criterion)
+
+        self.assertEqual(len(results), 1)
+
+        self.assertEqual(results[0]['name'], server_one['name'])
+
+        criterion = dict(
+            name=server_two['name']
+        )
+
+        results = self.storage_conn.get_servers(self.admin_context,
+                                                criterion)
+
+        self.assertEqual(len(results), 1)
+
+        self.assertEqual(results[0]['name'], server_two['name'])
+
     def test_get_server(self):
         # Create a server
         expected = self.create_server_fixture()
@@ -284,6 +310,34 @@ class StorageDriverTestCase(StorageTestCase):
 
         actual = self.storage_conn.get_domains(self.admin_context)
         self.assertEqual(len(actual), 2)
+
+    def test_get_domains_criterion(self):
+        domain_one = self.create_domain_fixture(0)
+        domain_two = self.create_domain_fixture(1)
+
+        criterion = dict(
+            name=domain_one['name']
+        )
+
+        results = self.storage_conn.get_domains(self.admin_context,
+                                                criterion)
+
+        self.assertEqual(len(results), 1)
+
+        self.assertEqual(results[0]['name'], domain_one['name'])
+        self.assertEqual(results[0]['email'], domain_one['email'])
+
+        criterion = dict(
+            name=domain_two['name']
+        )
+
+        results = self.storage_conn.get_domains(self.admin_context,
+                                                criterion)
+
+        self.assertEqual(len(results), 1)
+
+        self.assertEqual(results[0]['name'], domain_two['name'])
+        self.assertEqual(results[0]['email'], domain_two['email'])
 
     def test_get_domain(self):
         # Create a domain
@@ -386,6 +440,32 @@ class StorageDriverTestCase(StorageTestCase):
         self.assertEqual(actual[1]['name'], record_two['name'])
         self.assertEqual(actual[1]['type'], record_two['type'])
         self.assertEqual(actual[1]['data'], record_two['data'])
+
+    def test_get_records_criterion(self):
+        domain = self.create_domain_fixture()
+
+        record_one = self.create_record_fixture(domain, 0)
+        self.create_record_fixture(domain, 1)
+
+        criterion = dict(
+            data=record_one['data']
+        )
+
+        results = self.storage_conn.get_records(self.admin_context,
+                                                domain['id'],
+                                                criterion)
+
+        self.assertEqual(len(results), 1)
+
+        criterion = dict(
+            type='A'
+        )
+
+        results = self.storage_conn.get_records(self.admin_context,
+                                                domain['id'],
+                                                criterion)
+
+        self.assertEqual(len(results), 2)
 
     def test_get_record(self):
         domain = self.create_domain_fixture()

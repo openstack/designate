@@ -143,7 +143,8 @@ class Domain(Base):
     expire = Column(Integer, default=3600, nullable=False)
     minimum = Column(Integer, default=3600, nullable=False)
 
-    records = relationship('Record', backref=backref('domain', uselist=False))
+    records = relationship('Record', backref=backref('domain', uselist=False),
+                           lazy='dynamic')
 
     @hybrid_property
     def serial(self):

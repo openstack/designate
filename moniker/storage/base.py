@@ -57,11 +57,12 @@ class Connection(object):
         """
 
     @abc.abstractmethod
-    def get_servers(self, context):
+    def get_servers(self, context, criterion=None):
         """
         Get Servers.
 
         :param context: RPC Context.
+        :param criterion: Criteria to filter by.
         """
 
     @abc.abstractmethod
@@ -102,11 +103,12 @@ class Connection(object):
         """
 
     @abc.abstractmethod
-    def get_domains(self, context):
+    def get_domains(self, context, criterion=None):
         """
         Get all Domains.
 
         :param context: RPC Context.
+        :param criterion: Criteria to filter by.
         """
 
     @abc.abstractmethod
@@ -148,12 +150,13 @@ class Connection(object):
         """
 
     @abc.abstractmethod
-    def get_records(self, context, domain_id):
+    def get_records(self, context, domain_id, criterion=None):
         """
         Get a list of records via a Domain's ID
 
         :param context: RPC Context.
-        :param domain_id: Domain ID where the records recide.
+        :param domain_id: Domain ID where the records reside.
+        :param criterion: Criteria to filter by.
         """
 
     @abc.abstractmethod

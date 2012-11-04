@@ -34,9 +34,12 @@ def create_server(context, values):
     return RPC.call(context, msg)
 
 
-def get_servers(context):
+def get_servers(context, criterion=None):
     msg = {
         'method': 'get_servers',
+        'args': {
+            'criterion': criterion,
+        },
     }
 
     return RPC.call(context, msg)
@@ -88,9 +91,12 @@ def create_domain(context, values):
     return RPC.call(context, msg)
 
 
-def get_domains(context):
+def get_domains(context, criterion=None):
     msg = {
         'method': 'get_domains',
+        'args': {
+            'criterion': criterion,
+        },
     }
 
     return RPC.call(context, msg)
@@ -143,11 +149,12 @@ def create_record(context, domain_id, values):
     return RPC.call(context, msg)
 
 
-def get_records(context, domain_id):
+def get_records(context, domain_id, criterion=None):
     msg = {
         'method': 'get_records',
         'args': {
             'domain_id': domain_id,
+            'criterion': criterion,
         },
     }
 

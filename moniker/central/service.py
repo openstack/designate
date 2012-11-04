@@ -46,8 +46,8 @@ class Service(rpc_service.Service):
 
         return server
 
-    def get_servers(self, context):
-        return self.storage_conn.get_servers(context)
+    def get_servers(self, context, criterion=None):
+        return self.storage_conn.get_servers(context, criterion)
 
     def get_server(self, context, server_id):
         return self.storage_conn.get_server(context, server_id)
@@ -75,8 +75,8 @@ class Service(rpc_service.Service):
 
         return domain
 
-    def get_domains(self, context):
-        return self.storage_conn.get_domains(context)
+    def get_domains(self, context, criterion=None):
+        return self.storage_conn.get_domains(context, criterion)
 
     def get_domain(self, context, domain_id):
         return self.storage_conn.get_domain(context, domain_id)
@@ -108,8 +108,8 @@ class Service(rpc_service.Service):
 
         return record
 
-    def get_records(self, context, domain_id):
-        return self.storage_conn.get_records(context, domain_id)
+    def get_records(self, context, domain_id, criterion=None):
+        return self.storage_conn.get_records(context, domain_id, criterion)
 
     def get_record(self, context, domain_id, record_id):
         return self.storage_conn.get_record(context, record_id)

@@ -69,8 +69,11 @@ class Connection(base.Connection):
 
         return dict(server)
 
-    def get_servers(self, context):
+    def get_servers(self, context, criterion=None):
         query = self.session.query(models.Server)
+
+        if criterion:
+            query = query.filter_by(**criterion)
 
         try:
             result = query.all()
@@ -125,8 +128,11 @@ class Connection(base.Connection):
 
         return dict(domain)
 
-    def get_domains(self, context):
+    def get_domains(self, context, criterion=None):
         query = self.session.query(models.Domain)
+
+        if criterion:
+            query = query.filter_by(**criterion)
 
         try:
             result = query.all()
@@ -181,10 +187,15 @@ class Connection(base.Connection):
 
         return dict(record)
 
-    def get_records(self, context, domain_id):
+    def get_records(self, context, domain_id, criterion=None):
         domain = self._get_domain(context, domain_id)
 
-        return [dict(o) for o in domain.records]
+        query = domain.records
+
+        if criterion:
+            query = query.filter_by(**criterion)
+
+        return [dict(o) for o in query.all()]
 
     def _get_record(self, context, record_id):
         query = self.session.query(models.Record)
