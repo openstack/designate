@@ -16,6 +16,7 @@
 import sys
 import unittest
 import mox
+from contextlib import contextmanager
 from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
 from moniker.openstack.common.context import RequestContext, get_admin_context
@@ -58,65 +59,46 @@ class TestCase(unittest.TestCase):
     def get_admin_context(self):
         return get_admin_context()
 
+    if sys.version_info < (2, 7):
+        # Add in some of the nicer methods not present in 2.6
+        def assertIsNone(self, expr, msg=None):
+            return self.assertEqual(expr, None, msg)
 
-if sys.version_info < (2, 7):
-    # Add in some of the nicer methods not present in 2.6
-    from contextlib import contextmanager
+        def assertIsNotNone(self, expr, msg=None):
+            return self.assertNotEqual(expr, None, msg)
 
-    def assertIsNone(self, expr, msg=None):
-        return self.assertEqual(expr, None, msg)
+        def assertIn(self, test_value, expected_set):
+            msg = "%s did not occur in %s" % (test_value, expected_set)
+            self.assert_(test_value in expected_set, msg)
 
-    TestCase.assertIsNone = assertIsNone
+        def assertNotIn(self, test_value, expected_set):
+            msg = "%s occurred in %s" % (test_value, expected_set)
+            self.assert_(test_value not in expected_set, msg)
 
-    def assertIsNotNone(self, expr, msg=None):
-        return self.assertNotEqual(expr, None, msg)
+        def assertGreaterEqual(self, a, b, msg=None):
+            if not msg:
+                msg = '%r not greater than or equal to %r' % (a, b)
 
-    TestCase.assertIsNotNone = assertIsNotNone
+            self.assert_(a >= b, msg)
 
-    def assertIn(self, test_value, expected_set):
-        msg = "%s did not occur in %s" % (test_value, expected_set)
-        self.assert_(test_value in expected_set, msg)
+        def assertLessEqual(self, a, b, msg=None):
+            if not msg:
+                msg = '%r not less than or equal to %r' % (a, b)
 
-    TestCase.assertIn = assertIn
+        def assertRaises(self, excClass, callableObj=None, *args, **kwargs):
+            @contextmanager
+            def context():
+                raised = None
+                try:
+                    yield
+                except Exception, e:
+                    raised = e
+                finally:
+                    if not isinstance(raised, excClass):
+                        raise self.failureException(
+                            "%s not raised" % str(excClass))
 
-    def assertNotIn(self, test_value, expected_set):
-        msg = "%s occurred in %s" % (test_value, expected_set)
-        self.assert_(test_value not in expected_set, msg)
-
-    TestCase.assertNotIn = assertNotIn
-
-    def assertGreaterEqual(self, a, b, msg=None):
-        if not msg:
-            msg = '%r not greater than or equal to %r' % (a, b)
-
-        self.assert_(a >= b, msg)
-
-    TestCase.assertGreaterEqual = assertGreaterEqual
-
-    def assertLessEqual(self, a, b, msg=None):
-        if not msg:
-            msg = '%r not less than or equal to %r' % (a, b)
-
-        self.assert_(a <= b, msg)
-
-    TestCase.assertLessEqual = assertLessEqual
-
-    def assertRaises(self, excClass, callableObj=None, *args, **kwargs):
-        @contextmanager
-        def context():
-            raised = None
-            try:
-                yield
-            except Exception, e:
-                raised = e
-            finally:
-                if not isinstance(raised, excClass):
-                    raise self.failureException(
-                        "%s not raised" % str(excClass))
-
-        if callableObj is None:
-            return context()
-        with context:
-            callableObj(*args, **kwargs)
-
-    TestCase.assertRaises = assertRaises
+            if callableObj is None:
+                return context()
+            with context:
+                callableObj(*args, **kwargs)
