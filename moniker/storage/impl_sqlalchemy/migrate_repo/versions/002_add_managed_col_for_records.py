@@ -13,7 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from sqlalchemy import MetaData, Table, Column, Boolean
+from sqlalchemy import MetaData, Table, Column, Boolean, Unicode
 from moniker.storage.impl_sqlalchemy.types import UUID
 
 meta = MetaData()
@@ -27,7 +27,7 @@ def upgrade(migrate_engine):
     managed_resource = Column('managed_resource', Boolean(), default=False)
     managed_resource.create(records_table, populate_default=True)
 
-    managed_resource_type = Column('managed_resource_type', UUID(),
+    managed_resource_type = Column('managed_resource_type', Unicode(50),
                                    default=None, nullable=True)
     managed_resource_type.create(records_table, populate_default=True)
 
@@ -45,7 +45,7 @@ def downgrade(migrate_engine):
                                  nullable=True)
     managed_resource_id.drop(records_table)
 
-    managed_resource_type = Column('managed_resource_type', UUID(),
+    managed_resource_type = Column('managed_resource_type', Unicode(50),
                                    default=None, nullable=True)
     managed_resource_type.drop(records_table)
 
