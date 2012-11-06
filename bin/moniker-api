@@ -14,24 +14,16 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import os
 import sys
 import eventlet
-from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
 from moniker.openstack.common import service
+from moniker import utils
 from moniker.api import service as api_service
 
 eventlet.monkey_patch()
 
-config_files = cfg.find_config_files(project='moniker',
-                                     prog='moniker-api')
-
-if os.path.exists('./etc/moniker-api.conf'):
-    config_files.append('./etc/moniker-api.conf')
-
-cfg.CONF(sys.argv[1:], project='moniker', prog='moniker-api',
-         default_config_files=config_files)
+utils.read_config('moniker-api', sys.argv[1:])
 
 logging.setup('moniker')
 

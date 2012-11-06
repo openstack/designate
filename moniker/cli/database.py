@@ -20,7 +20,7 @@ from cliff.command import Command
 from moniker.openstack.common import log as logging
 from moniker.openstack.common import cfg
 from moniker import storage  # Import for database_connection cfg def.
-from moniker.cli import utils
+from moniker import utils
 
 LOG = logging.getLogger(__name__)
 

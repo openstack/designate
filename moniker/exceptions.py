@@ -19,11 +19,11 @@ class Base(Exception):
     pass
 
 
-class ConfigNotFound(Base):
+class ConfigurationError(Base):
     pass
 
 
-class ConfigurationError(Base):
+class ConfigNotFound(ConfigurationError):
     pass
 
 

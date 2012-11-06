@@ -30,19 +30,17 @@ def notify(context, service, event_type, payload):
 
 
 def find_config(config_path):
-    """ Find a configuration file using the given hint.
+    """
+    Find a configuration file using the given hint.
 
     Code nabbed from cinder.
 
     :param config_path: Full or relative path to the config.
     :returns: Full path of the config, if it exists.
     :raises: `moniker.exceptions.ConfigNotFound`
-
     """
     possible_locations = [
         config_path,
-        os.path.join("etc", "moniker", config_path),
-        os.path.join("etc", config_path),
         os.path.join(cfg.CONF.state_path, "etc", "moniker", config_path),
         os.path.join(cfg.CONF.state_path, "etc", config_path),
         os.path.join(cfg.CONF.state_path, config_path),
@@ -50,8 +48,17 @@ def find_config(config_path):
     ]
 
     for path in possible_locations:
-        LOG.debug('Checking path: %s' % path)
+        LOG.debug('Searching for configuration at path: %s' % path)
         if os.path.exists(path):
+            LOG.debug('Found configuration at path: %s' % path)
             return os.path.abspath(path)
 
-    raise exceptions.ConfigNotFound(config_path)
+    msg = 'No configuration file found for %s' % config_path
+    raise exceptions.ConfigNotFound(msg)
+
+
+def read_config(prog, argv=None):
+    config_files = [find_config('%s.conf' % prog)]
+
+    cfg.CONF(argv, project='moniker', prog=prog,
+             default_config_files=config_files)
