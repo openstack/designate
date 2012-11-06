@@ -1,7 +1,9 @@
 nose
+nosexcover
+openstack.nose_plugin
+nosehtmloutput
 mox
 coverage
 pep8==1.3.3
-openstack.nose_plugin
 sphinx
 sphinxcontrib-httpdomain
