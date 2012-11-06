@@ -109,6 +109,12 @@ class Service(rpc_service.Service):
         admin_context = get_admin_context()
 
         servers = central_api.get_servers(admin_context)
+
+        if len(servers) == 0:
+            LOG.critical('No servers configured. Please create at least one '
+                         'server via the REST API')
+            return
+
         records = central_api.get_records(admin_context, domain['id'])
 
         template_path = os.path.join(os.path.abspath(
