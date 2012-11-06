@@ -9,10 +9,10 @@ debug = False
 state_path = ./var/
 
 # Database connection string.
-database_connection = sqlite://
+#database_connection = sqlite:///$state_path/moniker.sqlite
 
 # Driver used for issuing notifications
-# notification_driver=moniker.openstack.common.notifier.rabbit_notifier
+#notification_driver=moniker.openstack.common.notifier.rabbit_notifier
 
 # List of notification handlers to enable
 #enabled_handlers = nova

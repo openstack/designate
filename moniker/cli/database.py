@@ -36,6 +36,7 @@ class InitCommand(Command):
         utils.read_config('moniker-central')
 
         url = cfg.CONF.database_connection
+
         if not os.path.exists(REPOSITORY):
             raise Exception('Migration Respository Not Found')
 
