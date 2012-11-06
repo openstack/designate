@@ -5,8 +5,8 @@ verbose = True
 # Show debugging output in logs (sets DEBUG log level output)
 debug = False
 
-#
-state_path = ./var/
+# Top-level directory for maintaining moniker's state
+#state_path = /var/lib/moniker
 
 # Database connection string.
 #database_connection = sqlite:///$state_path/moniker.sqlite
