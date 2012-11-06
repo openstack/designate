@@ -1,5 +1,6 @@
 # Optional Stuff that is used by default
-sqlalchemy>=0.7
+SQLAlchemy>=0.7.8,<=0.7.9
+sqlalchemy-migrate>=0.7.2
 kombu
 
 # Needed for Keystone Middleware
