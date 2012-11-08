@@ -15,7 +15,7 @@ debug = False
 #notification_driver=moniker.openstack.common.notifier.rabbit_notifier
 
 # List of notification handlers to enable
-#enabled_handlers = nova
+#enabled_notification_handlers = nova
 
 # There has to be a better way to set these defaults
 allowed_rpc_exception_modules = moniker.exceptions, moniker.openstack.common.exception

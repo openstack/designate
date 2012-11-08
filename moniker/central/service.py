@@ -28,7 +28,8 @@ LOG = logging.getLogger(__name__)
 HANDLER_NAMESPACE = 'moniker.notification.handler'
 
 cfg.CONF.register_opts([
-    cfg.ListOpt('enabled-handlers', default=[], help='Enabled Handlers'),
+    cfg.ListOpt('enabled-notification-handlers', default=[],
+                help='Enabled Notification Handlers'),
 ])
 
 
@@ -56,7 +57,7 @@ class Service(rpc_service.Service):
     def _init_extensions(self):
         """ Loads and prepares all enabled extensions """
         self.extensions_manager = NamedExtensionManager(
-            HANDLER_NAMESPACE, names=cfg.CONF.enabled_handlers)
+            HANDLER_NAMESPACE, names=cfg.CONF.enabled_notification_handlers)
 
         def _load_extension(ext):
             handler_cls = ext.plugin
