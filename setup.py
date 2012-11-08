@@ -51,7 +51,7 @@ setup(
     scripts=[
         'bin/moniker-central',
         'bin/moniker-api',
-        'bin/moniker-agent-bind9',
+        'bin/moniker-agent',
     ],
     cmdclass=common_setup.get_cmdclass(),
     entry_points=textwrap.dedent("""
@@ -62,6 +62,10 @@ setup(
 
         [moniker.notification.handler]
         nova = moniker.notification_handler.nova:NovaHandler
+
+        [moniker.backend]
+        bind9 = moniker.backend.impl_bind9:Bind9Backend
+        fake = moniker.backend.impl_fake:FakeBackend
 
         [moniker.cli]
         database init = moniker.cli.database:InitCommand

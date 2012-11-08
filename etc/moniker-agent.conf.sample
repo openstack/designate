@@ -8,8 +8,8 @@ debug = False
 # Top-level directory for maintaining moniker's state
 state_path = ./var/
 
-#
-templates_path = ./templates/
+# Driver used for backend communication (e.g. bind9, powerdns)
+#backend_driver=bind9
 
 # There has to be a better way to set these defaults
 allowed_rpc_exception_modules = moniker.exceptions, moniker.openstack.common.exception

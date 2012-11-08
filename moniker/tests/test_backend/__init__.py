@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Copyright 2012 Managed I.T.
 #
 # Author: Kiall Mac Innes <kiall@managedit.ie>
@@ -14,18 +13,24 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import sys
-import eventlet
 from moniker.openstack.common import log as logging
-from moniker.openstack.common import service
-from moniker import utils
-from moniker.agent import bind9 as bind9_service
+from moniker.tests import TestCase
+from moniker import backend
 
-eventlet.monkey_patch()
+LOG = logging.getLogger(__name__)
 
-utils.read_config('moniker-agent-bind9', sys.argv[1:])
 
-logging.setup('moniker')
+class BackendDriverTestCase(TestCase):
+    __test__ = False
 
-launcher = service.launch(bind9_service.Service())
-launcher.wait()
+    def get_backend_driver(self):
+        return backend.get_backend()
+
+    def setUp(self):
+        super(BackendDriverTestCase, self).setUp()
+        self.backend = self.get_backend_driver()
+
+    def test_dummy(self):
+        # Right now we just check that we can instantiate the driver via the
+        # setUp above. Proper tests TODO.
+        pass

@@ -29,9 +29,7 @@ class TestCase(unittest2.TestCase):
         super(TestCase, self).setUp()
 
         self.mox = mox.Mox()
-        self.config(database_connection='sqlite://',
-                    rpc_backend='moniker.openstack.common.rpc.impl_fake',
-                    notification_driver=[])
+        self.config(**self.get_config_overrides())
         storage.setup_schema()
 
         self.admin_context = self.get_admin_context()
@@ -47,6 +45,14 @@ class TestCase(unittest2.TestCase):
         group = kwargs.pop('group', None)
         for k, v in kwargs.iteritems():
             cfg.CONF.set_override(k, v, group)
+
+    def get_config_overrides(self):
+        return dict(
+            database_connection='sqlite://',
+            rpc_backend='moniker.openstack.common.rpc.impl_fake',
+            notification_driver=[],
+            backend_driver='fake'
+        )
 
     def get_central_service(self):
         return central_service.Service()

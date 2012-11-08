@@ -30,6 +30,4 @@ cfg.CONF.register_opts([
     cfg.StrOpt('agent-topic', default='agent', help='Agent Topic'),
     cfg.StrOpt('state-path', default='$pybasedir',
                help='Top-level directory for maintaining moniker\'s state'),
-    cfg.StrOpt('templates-path', default='$pybasedir/templates',
-               help='Templates Path'),
 ])

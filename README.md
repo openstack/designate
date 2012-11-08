@@ -31,7 +31,7 @@ NOTE: This is probably incomplete!
 1. Open 3 consoles/screen sessions for each command:
   * `./bin/moniker-api`
   * `./bin/moniker-central`
-  * `./bin/moniker-agent-bind9`
+  * `./bin/moniker-agent`
 1. Make use of the API..
 
 # TODOs:

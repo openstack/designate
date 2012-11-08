@@ -14,6 +14,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import os
+import pkg_resources
+from jinja2 import Template
 from moniker.openstack.common import log as logging
 from moniker.openstack.common import cfg
 from moniker.openstack.common.notifier import api as notifier_api
@@ -62,3 +64,37 @@ def read_config(prog, argv=None):
 
     cfg.CONF(argv, project='moniker', prog=prog,
              default_config_files=config_files)
+
+
+def load_template(template_name):
+    template_path = os.path.join('resources', 'templates', template_name)
+
+    if not pkg_resources.resource_exists('moniker', template_path):
+        raise exceptions.TemplateNotFound('Could not find the requested '
+                                          'template: %s' % template_name)
+
+    template_string = pkg_resources.resource_string('moniker', template_path)
+
+    return Template(template_string)
+
+
+def render_template(template, **template_context):
+    if not isinstance(template, Template):
+        template = load_template(template)
+
+    return template.render(**template_context)
+
+
+def render_template_to_file(template_name, output_path, makedirs=True,
+                            **template_context):
+    output_folder = os.path.dirname(output_path)
+
+    # Create the output folder tree if necessary
+    if makedirs and not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+
+    # Render the template
+    content = render_template(template_name, **template_context)
+
+    with open(output_path, 'w') as output_fh:
+        output_fh.write(content)

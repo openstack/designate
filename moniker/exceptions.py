@@ -73,3 +73,7 @@ class DomainNotFound(NotFound):
 
 class RecordNotFound(NotFound):
     pass
+
+
+class TemplateNotFound(NotFound):
+    pass
