@@ -5,7 +5,7 @@ verbose = True
 # Show debugging output in logs (sets DEBUG log level output)
 debug = False
 
-#
+# Top-level directory for maintaining moniker's state
 state_path = ./var/
 
 #
@@ -14,3 +14,4 @@ templates_path = ./templates/
 # There has to be a better way to set these defaults
 allowed_rpc_exception_modules = moniker.exceptions, moniker.openstack.common.exception
 logging_context_format_string = %(asctime)s %(levelname)s %(name)s [%(request_id)s %(user)s %(tenant)s] %(instance)s %(message)s
+default_log_levels = amqplib=WARN, sqlalchemy=WARN, boto=WARN, suds=INFO, keystone=INFO, eventlet.wsgi.server=WARN, stevedore=WARN
