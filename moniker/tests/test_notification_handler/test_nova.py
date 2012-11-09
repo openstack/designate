@@ -16,17 +16,17 @@
 from nose import SkipTest
 from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
-from moniker.tests.test_handler import HandlerTestCase
+from moniker.tests.test_notification_handler import NotificationHandlerTestCase
 from moniker.notification_handler import nova
 
 LOG = logging.getLogger(__name__)
 
 
-class NovaHandlerTest(HandlerTestCase):
+class NovaNotificationHandlerTestCase(NotificationHandlerTestCase):
     __test__ = True
 
     def setUp(self):
-        super(NovaHandlerTest, self).setUp()
+        super(NovaNotificationHandlerTestCase, self).setUp()
 
         self._init_handler()
 

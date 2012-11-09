@@ -15,8 +15,6 @@
 # under the License.
 import json
 import os
-from moniker.openstack.common import cfg
-from moniker import storage
 from moniker.tests import TestCase
 
 FIXTURES_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__),
@@ -24,11 +22,11 @@ FIXTURES_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              'sample_notifications'))
 
 
-class HandlerTestCase(TestCase):
+class NotificationHandlerTestCase(TestCase):
     __test__ = False
 
     def setUp(self):
-        super(HandlerTestCase, self).setUp()
+        super(NotificationHandlerTestCase, self).setUp()
         self.central_service = self.get_central_service()
 
     def get_notification_fixture(self, service, name):
