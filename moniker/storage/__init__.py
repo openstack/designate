@@ -23,7 +23,7 @@ LOG = logging.getLogger(__name__)
 DRIVER_NAMESPACE = 'moniker.storage'
 
 cfg.CONF.register_opts([
-    cfg.StrOpt('database_connection',
+    cfg.StrOpt('database-connection',
                default='sqlite:///$state_path/moniker.sqlite',
                help='The database driver to use')
 ])
