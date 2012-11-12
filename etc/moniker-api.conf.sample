@@ -5,6 +5,9 @@ verbose = True
 # Show debugging output in logs (sets DEBUG log level output)
 debug = False
 
+# Top-level directory for maintaining moniker's state
+#state_path = /var/lib/moniker
+
 # Address to bind the API server
 api_host = 0.0.0.0
 
