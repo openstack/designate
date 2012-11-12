@@ -75,5 +75,5 @@ class RecordNotFound(NotFound):
     pass
 
 
-class TemplateNotFound(NotFound):
+class ResourceNotFound(NotFound):
     pass

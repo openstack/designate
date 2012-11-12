@@ -66,14 +66,21 @@ def read_config(prog, argv=None):
              default_config_files=config_files)
 
 
+def resource_string(*args):
+    if len(args) == 0:
+        raise ValueError()
+
+    resource_path = os.path.join('resources', *args)
+
+    if not pkg_resources.resource_exists('moniker', resource_path):
+        raise exceptions.ResourceNotFound('Could not find the requested '
+                                          'resource: %s' % resource_path)
+
+    return pkg_resources.resource_string('moniker', resource_path)
+
+
 def load_template(template_name):
-    template_path = os.path.join('resources', 'templates', template_name)
-
-    if not pkg_resources.resource_exists('moniker', template_path):
-        raise exceptions.TemplateNotFound('Could not find the requested '
-                                          'template: %s' % template_name)
-
-    template_string = pkg_resources.resource_string('moniker', template_path)
+    template_string = resource_string('templates', template_name)
 
     return Template(template_string)
 
