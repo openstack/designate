@@ -23,10 +23,13 @@ LOG = logging.getLogger(__name__)
 
 class Service(rpc_service.Service):
     def __init__(self, *args, **kwargs):
+        manager = backend.get_backend()
+        manager.register_opts(cfg.CONF)
+
         kwargs.update(
             host=cfg.CONF.host,
             topic=cfg.CONF.agent_topic,
-            manager=backend.get_backend()
+            manager=manager
         )
 
         super(Service, self).__init__(*args, **kwargs)
