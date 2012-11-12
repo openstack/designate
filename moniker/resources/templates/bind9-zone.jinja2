@@ -13,7 +13,11 @@ $TTL {{ domain.ttl }}
 {%- endfor %}
 
 {% for record in records %}
+{% if record.type in ('NS', 'MX', 'CNAME', 'SRV') -%}
+{{record.name}}. {{record.ttl or ''}} IN {{record.type}} {{record.priority or ''}} {{record.data}}.
+{%- else -%}
 {{record.name}}. {{record.ttl or ''}} IN {{record.type}} {{record.priority or ''}} {{record.data}}
+{%- endif %}
 {%- endfor %}
 
 
