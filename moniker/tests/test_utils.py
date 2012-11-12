@@ -22,6 +22,19 @@ from moniker import utils
 
 
 class TestUtils(TestCase):
+    def test_resource_string(self):
+        name = ['templates', 'bind9-config.jinja2']
+
+        resource_string = utils.resource_string(*name)
+
+        self.assertIsNotNone(resource_string)
+
+    def test_resource_string_missing(self):
+        name = 'invalid.jinja2'
+
+        with self.assertRaises(exceptions.ResourceNotFound):
+            utils.resource_string(name)
+
     def test_load_template(self):
         name = 'bind9-config.jinja2'
 
@@ -32,7 +45,7 @@ class TestUtils(TestCase):
     def test_load_template_missing(self):
         name = 'invalid.jinja2'
 
-        with self.assertRaises(exceptions.TemplateNotFound):
+        with self.assertRaises(exceptions.ResourceNotFound):
             utils.load_template(name)
 
     def test_render_template(self):
