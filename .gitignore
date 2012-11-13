@@ -2,6 +2,7 @@
 *.dat
 TAGS
 *.egg-info
+*.egg
 build
 .coverage
 .tox
