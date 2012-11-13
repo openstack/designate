@@ -15,8 +15,8 @@
 # under the License.
 from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
-from moniker.openstack.common.context import get_admin_context
 from moniker import exceptions
+from moniker.context import MonikerContext
 from moniker.notification_handler.base import Handler
 
 LOG = logging.getLogger(__name__)
@@ -83,7 +83,7 @@ class NovaHandler(Handler):
             raise ValueError('NovaHandler recieved an invalid event type')
 
     def handle_instance_create(self, payload):
-        context = get_admin_context()
+        context = MonikerContext.get_admin_context()
 
         # Fetch the FixedIP Domain
         fixed_ip_domain = self.central_service.get_domain(context,
@@ -110,7 +110,7 @@ class NovaHandler(Handler):
                                                record_values)
 
     def handle_instance_delete(self, payload):
-        context = get_admin_context()
+        context = MonikerContext.get_admin_context()
 
         # Fetch the instances managed records
         criterion = {

@@ -17,7 +17,7 @@ import unittest2
 import mox
 from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
-from moniker.openstack.common.context import RequestContext, get_admin_context
+from moniker.context import MonikerContext
 from moniker import storage
 from moniker.central import service as central_service
 
@@ -58,7 +58,7 @@ class TestCase(unittest2.TestCase):
         return central_service.Service()
 
     def get_context(self, **kwargs):
-        return RequestContext(**kwargs)
+        return MonikerContext(**kwargs)
 
     def get_admin_context(self):
-        return get_admin_context()
+        return MonikerContext.get_admin_context()

@@ -17,10 +17,10 @@ import os
 import subprocess
 from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
-from moniker.openstack.common.context import get_admin_context
 from moniker import utils
 from moniker.backend import base
 from moniker.central import api as central_api
+from moniker.context import MonikerContext
 
 LOG = logging.getLogger(__name__)
 
@@ -41,7 +41,7 @@ class Bind9Backend(base.Backend):
         super(Bind9Backend, self).start()
 
         # TODO: This is a hack to ensure the data dir is 100% up to date
-        admin_context = get_admin_context()
+        admin_context = MonikerContext.get_admin_context()
 
         domains = central_api.get_domains(admin_context)
 
@@ -80,7 +80,7 @@ class Bind9Backend(base.Backend):
         # TODO: Rewrite this entire thing ASAP
         LOG.debug('Synchronising domains')
 
-        admin_context = get_admin_context()
+        admin_context = MonikerContext.get_admin_context()
 
         domains = central_api.get_domains(admin_context)
 
@@ -105,7 +105,7 @@ class Bind9Backend(base.Backend):
         # TODO: Rewrite this entire thing ASAP
         LOG.debug('Synchronising Domain: %s' % domain['id'])
 
-        admin_context = get_admin_context()
+        admin_context = MonikerContext.get_admin_context()
 
         servers = central_api.get_servers(admin_context)
 
