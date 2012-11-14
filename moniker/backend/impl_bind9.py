@@ -52,7 +52,7 @@ class Bind9Backend(base.Backend):
 
     def create_domain(self, context, domain):
         LOG.debug('Create Domain')
-        self._sync_domain(domain)
+        self._sync_domain(domain, new_domain_flag=True)
 
     def update_domain(self, context, domain):
         LOG.debug('Update Domain')
@@ -100,7 +100,7 @@ class Bind9Backend(base.Backend):
                                       domains=domains,
                                       state_path=abs_state_path)
 
-    def _sync_domain(self, domain):
+    def _sync_domain(self, domain, new_domain_flag=False):
         """ Sync a single domain's zone file """
         # TODO: Rewrite this entire thing ASAP
         LOG.debug('Synchronising Domain: %s' % domain['id'])
@@ -142,8 +142,11 @@ class Bind9Backend(base.Backend):
         if cfg.CONF.rndc_key_file:
             rndc_call.extend(['-k', cfg.CONF.rndc_key_file])
 
-        rndc_call.extend(['reload', domain['name']])
+        rndc_op = 'reconfig' if new_domain_flag else 'reload'
+        rndc_call.extend([rndc_op])
 
-        LOG.warn(rndc_call)
+        if not new_domain_flag:
+            rndc_call.extend([domain['name']])
 
+        LOG.debug('Calling RNDC with: %s' % " ".join(rndc_call))
         subprocess.call(rndc_call)
