@@ -143,7 +143,8 @@ class Domain(Base):
     minimum = Column(Integer, default=3600, nullable=False)
 
     records = relationship('Record', backref=backref('domain', uselist=False),
-                           lazy='dynamic')
+                           lazy='dynamic', cascade="all, delete-orphan",
+                           passive_deletes=True)
 
     @hybrid_property
     def serial(self):
@@ -181,7 +182,8 @@ class Record(Base):
     managed_resource_type = Column(Unicode(50), default=None, nullable=True)
     managed_resource_id = Column(UUID, default=None, nullable=True)
 
-    domain_id = Column(UUID, ForeignKey('domains.id'), nullable=False)
+    domain_id = Column(UUID, ForeignKey('domains.id', ondelete='CASCADE'),
+                       nullable=False)
 
     @hybrid_property
     def tenant_id(self):

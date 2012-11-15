@@ -65,8 +65,7 @@ class Bind9Backend(base.Backend):
 
     def delete_domain(self, context, domain):
         LOG.debug('Delete Domain')
-
-        raise NotImplementedError()
+        self._sync_delete_domain(domain)
 
     def create_record(self, context, domain, record):
         LOG.debug('Create Record')
@@ -105,6 +104,40 @@ class Bind9Backend(base.Backend):
                                       domains=domains,
                                       state_path=abs_state_path)
 
+    """ Remove domain zone files and reload bind config """
+    def _sync_delete_domain(self, domain, new_domain_flag=False):
+        """ delete a single domain's zone file """
+        # TODO: Rewrite this entire thing ASAP
+        LOG.debug('Delete Domain: %s' % domain['id'])
+
+        output_folder = os.path.join(os.path.abspath(cfg.CONF.state_path),
+                                     'bind9')
+
+        output_path = os.path.join(output_folder, '%s.zone' % domain['id'])
+
+        os.remove(output_path)
+
+        self._sync_domains()
+
+        rndc_call = [
+            'sudo',
+            cfg.CONF.rndc_path,
+            '-s', cfg.CONF.rndc_host,
+            '-p', str(cfg.CONF.rndc_port),
+        ]
+
+        if cfg.CONF.rndc_config_file:
+            rndc_call.extend(['-c', cfg.CONF.rndc_config_file])
+
+        if cfg.CONF.rndc_key_file:
+            rndc_call.extend(['-k', cfg.CONF.rndc_key_file])
+
+        rndc_call.extend(['reload'])
+
+        LOG.debug('Calling RNDC with: %s' % " ".join(rndc_call))
+        subprocess.call(rndc_call)
+
+    """ Update the bind to read in new zone files or changes to existin """
     def _sync_domain(self, domain, new_domain_flag=False):
         """ Sync a single domain's zone file """
         # TODO: Rewrite this entire thing ASAP
