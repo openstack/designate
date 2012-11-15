@@ -38,7 +38,6 @@ class TestCase(unittest2.TestCase):
         storage.teardown_schema()
         cfg.CONF.reset()
         self.mox.UnsetStubs()
-
         super(TestCase, self).tearDown()
 
     def config(self, **kwargs):

@@ -15,3 +15,11 @@ debug = False
 allowed_rpc_exception_modules = moniker.exceptions, moniker.openstack.common.exception
 logging_context_format_string = %(asctime)s %(levelname)s %(name)s [%(request_id)s %(user)s %(tenant)s] %(instance)s %(message)s
 default_log_levels = amqplib=WARN, sqlalchemy=WARN, boto=WARN, suds=INFO, keystone=INFO, eventlet.wsgi.server=WARN, stevedore=WARN
+
+# Ability to configure each backend individually
+#[backend:bind9]
+#rndc-path = /usr/sbin/rndc
+#rndc-host = 127.0.0.1
+#rndc-port = 953
+#rndc-config-file = /etc/rndc.conf
+#rndc-key-file = /etc/rndc.key

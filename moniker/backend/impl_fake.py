@@ -20,6 +20,8 @@ LOG = logging.getLogger(__name__)
 
 
 class FakeBackend(base.Backend):
+    __plugin_name__ = 'fake'
+
     def __init__(self, *args, **kwargs):
         super(FakeBackend, self).__init__(*args, **kwargs)
 

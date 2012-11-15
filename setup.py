@@ -61,7 +61,7 @@ setup(
         sqlite = moniker.storage.impl_sqlalchemy:SQLAlchemyStorage
 
         [moniker.notification.handler]
-        nova = moniker.notification_handler.nova:NovaHandler
+        nova_fixed = moniker.notification_handler.nova:NovaFixedHandler
 
         [moniker.backend]
         bind9 = moniker.backend.impl_bind9:Bind9Backend

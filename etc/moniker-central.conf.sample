@@ -8,16 +8,32 @@ debug = False
 # Top-level directory for maintaining moniker's state
 #state_path = /var/lib/moniker
 
-# Database connection string.
+# Database connection string - to configure options for a given implementation
+# like sqlalchemy or other see below
 #database_connection = sqlite:///$state_path/moniker.sqlite
-
-# Driver used for issuing notifications
-#notification_driver=moniker.openstack.common.notifier.rabbit_notifier
-
-# List of notification handlers to enable
-#enabled_notification_handlers = nova
 
 # There has to be a better way to set these defaults
 allowed_rpc_exception_modules = moniker.exceptions, moniker.openstack.common.exception
 logging_context_format_string = %(asctime)s %(levelname)s %(name)s [%(request_id)s %(user)s %(tenant)s] %(instance)s %(message)s
 default_log_levels = amqplib=WARN, sqlalchemy=WARN, boto=WARN, suds=INFO, keystone=INFO, eventlet.wsgi.server=WARN, stevedore=WARN
+
+# Driver used for issuing notifications
+#notification_driver=moniker.openstack.common.notifier.rabbit_notifier
+
+# List of notification handlers to enable, configuration of these needs to
+# correspond to a [handler:my_driver] section below or else in the config
+#enabled_notification_handlers = nova_fixed
+
+# Sections for *SQL storages
+#[storage:sqlalchemy]
+#connection_debug = 100
+#connection_trace = False
+#sqlite_synchronous = True
+#idle_timeout = 3600
+#max_retries = 10
+#retry_interval = 10
+
+#[handler:nova_fixed]
+#domain_id = <random uuid>
+#notification_topics = monitor
+#control_exchange = 'nova'

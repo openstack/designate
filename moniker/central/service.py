@@ -62,7 +62,6 @@ class Service(rpc_service.Service):
         def _load_extension(ext):
             handler_cls = ext.plugin
             handler_cls.register_opts(cfg.CONF)
-
             return handler_cls(central_service=self)
 
         try:

@@ -27,7 +27,7 @@ cfg.CONF.register_opts([
 ])
 
 
-def get_backend():
-    mgr = driver.DriverManager(BACKEND_NAMESPACE, cfg.CONF.backend_driver,
-                               invoke_on_load=True)
-    return mgr.driver
+def get_backend(conf):
+    mgr = driver.DriverManager(BACKEND_NAMESPACE, cfg.CONF.backend_driver)
+    mgr.driver.register_opts(conf)
+    return mgr.driver()

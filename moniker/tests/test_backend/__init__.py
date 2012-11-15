@@ -13,6 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
 from moniker.tests import TestCase
 from moniker import backend
@@ -24,7 +25,7 @@ class BackendDriverTestCase(TestCase):
     __test__ = False
 
     def get_backend_driver(self):
-        return backend.get_backend()
+        return backend.get_backend(cfg.CONF)
 
     def setUp(self):
         super(BackendDriverTestCase, self).setUp()

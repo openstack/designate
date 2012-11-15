@@ -32,25 +32,6 @@ LOG = logging.getLogger(__name__)
 _MAKER = None
 _ENGINE = None
 
-sql_opts = [
-    cfg.IntOpt('sql_connection_debug', default=0,
-               help='Verbosity of SQL debugging information. 0=None,'
-               ' 100=Everything'),
-    cfg.BoolOpt('sql_connection_trace', default=False,
-                help='Add python stack traces to SQL as comment strings'),
-    cfg.BoolOpt('sqlite_synchronous', default=True,
-                help='If passed, use synchronous mode for sqlite'),
-    cfg.IntOpt('sql_idle_timeout', default=3600,
-               help='timeout before idle sql connections are reaped'),
-    cfg.IntOpt('sql_max_retries', default=10,
-               help='maximum db connection retries during startup. '
-               '(setting -1 implies an infinite retry count)'),
-    cfg.IntOpt('sql_retry_interval', default=10,
-               help='interval between retries of opening a sql connection')
-]
-
-cfg.CONF.register_opts(sql_opts)
-
 
 def get_session(autocommit=True, expire_on_commit=False, autoflush=True):
     """Return a SQLAlchemy session."""
@@ -115,15 +96,15 @@ def get_engine():
             cfg.CONF.database_connection)
 
         engine_args = {
-            "pool_recycle": cfg.CONF.sql_idle_timeout,
+            "pool_recycle": cfg.CONF['storage:sqlalchemy'].idle_timeout,
             "echo": False,
             'convert_unicode': True,
         }
 
         # Map our SQL debug level to SQLAlchemy's options
-        if cfg.CONF.sql_connection_debug >= 100:
+        if cfg.CONF['storage:sqlalchemy'].connection_debug >= 100:
             engine_args['echo'] = 'debug'
-        elif cfg.CONF.sql_connection_debug >= 50:
+        elif cfg.CONF['storage:sqlalchemy'].connection_debug >= 50:
             engine_args['echo'] = True
 
         if "sqlite" in connection_dict.drivername:
@@ -139,12 +120,12 @@ def get_engine():
         if 'mysql' in connection_dict.drivername:
             sqlalchemy.event.listen(_ENGINE, 'checkout', ping_listener)
         elif "sqlite" in connection_dict.drivername:
-            if not cfg.CONF.sqlite_synchronous:
+            if not cfg.CONF['storage:sqlalchemy'].sqlite_synchronous:
                 sqlalchemy.event.listen(_ENGINE, 'connect',
                                         synchronous_switch_listener)
             sqlalchemy.event.listen(_ENGINE, 'connect', add_regexp_listener)
 
-        if (cfg.CONF.sql_connection_trace and
+        if (cfg.CONF['storage:sqlalchemy'].connection_trace and
                 _ENGINE.dialect.dbapi.__name__ == 'MySQLdb'):
             import MySQLdb.cursors
             _do_query = debug_mysql_do_query()
@@ -156,7 +137,7 @@ def get_engine():
             if not is_db_connection_error(e.args[0]):
                 raise
 
-            remaining = cfg.CONF.sql_max_retries
+            remaining = cfg.CONF['storage:sqlalchemy'].max_retries
             if remaining == -1:
                 remaining = 'infinite'
             while True:
@@ -164,7 +145,7 @@ def get_engine():
                 LOG.warn(msg % remaining)
                 if remaining != 'infinite':
                     remaining -= 1
-                time.sleep(cfg.CONF.sql_retry_interval)
+                time.sleep(cfg.CONF['storage:sqlalchemy'].retry_interval)
                 try:
                     _ENGINE.connect()
                     break

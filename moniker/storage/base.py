@@ -14,18 +14,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import abc
+from moniker.plugin import Plugin
 
 
-class StorageEngine(object):
+class StorageEngine(Plugin):
     """ Base class for storage engines """
 
-    __metaclass__ = abc.ABCMeta
-
-    @abc.abstractmethod
-    def register_opts(self, conf):
-        """
-        Register any configuration options used by this engine.
-        """
+    __plugin_type__ = 'storage'
 
     @abc.abstractmethod
     def get_connection(self, conf):

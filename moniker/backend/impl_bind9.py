@@ -26,8 +26,12 @@ LOG = logging.getLogger(__name__)
 
 
 class Bind9Backend(base.Backend):
-    def register_opts(self, conf):
-        conf.register_opts([
+    __plugin_name__ = 'bind9'
+
+    @classmethod
+    def get_opts(cls):
+        opts = super(Bind9Backend, cls).get_opts()
+        opts.extend([
             cfg.StrOpt('rndc-path', default='/usr/sbin/rndc',
                        help='RNDC Path'),
             cfg.StrOpt('rndc-host', default='127.0.0.1', help='RNDC Host'),
@@ -36,6 +40,7 @@ class Bind9Backend(base.Backend):
                        help='RNDC Config File'),
             cfg.StrOpt('rndc-key-file', default=None, help='RNDC Key File'),
         ])
+        return opts
 
     def start(self):
         super(Bind9Backend, self).start()
@@ -131,16 +136,16 @@ class Bind9Backend(base.Backend):
 
         rndc_call = [
             'sudo',
-            cfg.CONF.rndc_path,
-            '-s', cfg.CONF.rndc_host,
-            '-p', str(cfg.CONF.rndc_port),
+            self.config.rndc_path,
+            '-s', self.config.rndc_host,
+            '-p', str(self.config.rndc_port),
         ]
 
-        if cfg.CONF.rndc_config_file:
-            rndc_call.extend(['-c', cfg.CONF.rndc_config_file])
+        if self.config.rndc_config_file:
+            rndc_call.extend(['-c', self.config.rndc_config_file])
 
-        if cfg.CONF.rndc_key_file:
-            rndc_call.extend(['-k', cfg.CONF.rndc_key_file])
+        if self.config.rndc_key_file:
+            rndc_call.extend(['-k', self.config.rndc_key_file])
 
         rndc_op = 'reconfig' if new_domain_flag else 'reload'
         rndc_call.extend([rndc_op])

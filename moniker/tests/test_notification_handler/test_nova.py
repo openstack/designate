@@ -35,16 +35,17 @@ class NovaNotificationHandlerTestCase(NotificationHandlerTestCase):
         values = {'name': 'exampe.com', 'email': 'info@example.com'}
 
         domain = self.central_service.create_domain(self.admin_context, values)
-        self.fixed_ip_domain = domain['id']
+        self.domain_id = domain['id']
 
         # Register handler specific config options
-        nova.NovaHandler.register_opts(cfg.CONF)
+        nova.NovaFixedHandler.register_opts(cfg.CONF)
 
         # Override default config values
-        self.config(nova_fixed_ip_domain=self.fixed_ip_domain)
+        self.config(domain_id=self.domain_id, group='handler:nova_fixed')
 
         # Initialize the handler
-        self.handler = nova.NovaHandler(central_service=self.central_service)
+        self.handler = nova.NovaFixedHandler(
+            central_service=self.central_service)
 
     def test_instance_create_end(self):
         event_type = 'compute.instance.create.end'
@@ -54,7 +55,7 @@ class NovaNotificationHandlerTestCase(NotificationHandlerTestCase):
 
         # Ensure we start with 0 records
         records = self.central_service.get_records(self.admin_context,
-                                                   self.fixed_ip_domain)
+                                                   self.domain_id)
 
         self.assertEqual(0, len(records))
 
@@ -62,7 +63,7 @@ class NovaNotificationHandlerTestCase(NotificationHandlerTestCase):
 
         # Ensure we now have exactly 1 record
         records = self.central_service.get_records(self.admin_context,
-                                                   self.fixed_ip_domain)
+                                                   self.domain_id)
 
         self.assertEqual(len(records), 1)
 
@@ -82,7 +83,7 @@ class NovaNotificationHandlerTestCase(NotificationHandlerTestCase):
 
         # Ensure we start with at least 1 record
         records = self.central_service.get_records(self.admin_context,
-                                                   self.fixed_ip_domain)
+                                                   self.domain_id)
 
         self.assertGreaterEqual(len(records), 1)
 
@@ -90,7 +91,7 @@ class NovaNotificationHandlerTestCase(NotificationHandlerTestCase):
 
         # Ensure we now have exactly 0 records
         records = self.central_service.get_records(self.admin_context,
-                                                   self.fixed_ip_domain)
+                                                   self.domain_id)
 
         self.assertEqual(0, len(records))
 

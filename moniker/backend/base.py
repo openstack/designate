@@ -15,27 +15,15 @@
 # under the License.
 import abc
 from moniker.openstack.common import log as logging
+from moniker.plugin import Plugin
 
 
 LOG = logging.getLogger(__name__)
 
 
-class Backend(object):
+class Backend(Plugin):
     """ Base class for backend implementations """
-
-    __metaclass__ = abc.ABCMeta
-
-    @staticmethod
-    def register_opts(conf):
-        """ Register configuration options """
-
-    def start(self):
-        """ Hook for any necessary startup code """
-        pass
-
-    def stop(self):
-        """ Hook for any necessary shutdown code """
-        pass
+    __plugin_type__ = 'backend'
 
     @abc.abstractmethod
     def create_domain(self, context, domain):
