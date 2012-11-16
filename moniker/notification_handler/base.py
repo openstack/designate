@@ -113,7 +113,9 @@ class BaseAddressHandler(Handler):
                 'data': addr['address']}
             if managed:
                 record_values.update({
-                    'managed_resource': managed,
+                    'managed': managed,
+                    'managed_plugin_name': self.get_plugin_name(),
+                    'managed_plugin_type': self.get_plugin_type(),
                     'managed_resource_type': resource_type,
                     'managed_resource_id': resource_id})
             self.central_service.create_record(context, domain['id'],
@@ -130,7 +132,9 @@ class BaseAddressHandler(Handler):
 
         if managed:
             criterion.update({
-                'managed_resource': managed,
+                'managed': managed,
+                'managed_plugin_name': self.get_plugin_name(),
+                'managed_plugin_type': self.get_plugin_type(),
                 'managed_resource_id': resource_id,
                 'managed_resource_type': resource_type
             })

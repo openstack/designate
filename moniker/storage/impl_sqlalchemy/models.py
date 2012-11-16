@@ -176,7 +176,9 @@ class Record(Base):
     priority = Column(Integer, default=None)
     ttl = Column(Integer, default=3600, nullable=False)
 
-    managed_resource = Column(Boolean, default=False)
+    managed = Column(Boolean, default=False)
+    managed_plugin_type = Column(Unicode(50), default=None, nullable=True)
+    managed_plugin_name = Column(Unicode(50), default=None, nullable=True)
     managed_resource_type = Column(Unicode(50), default=None, nullable=True)
     managed_resource_id = Column(UUID, default=None, nullable=True)
 
