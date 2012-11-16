@@ -39,21 +39,67 @@ os-auth-url                      http://localhost:5000/v2.0            Auth URL 
 database_connection              sqlite:///$pystatepath/moniker.db     Database connection string
 ===============================  ====================================  ==============================================================
 
-SQL Alchemy
-===========
+Storage - SQL Alchemy
+=====================
 
 ==========================  ====================================  ==============================================================
 Parameter                   Default                               Note
 ==========================  ====================================  ==============================================================
-sql_connection_debug        0                                     Verbosity of SQL debugging information. 0=None, 100=Everything
-sql_connection_trace        False                                 Add python stack traces to SQL as comment strings
-sql_idle_timeout            3600                                  timeout before idle sql connections are reaped
-sql_max_retries             10                                    maximum db connection retries during startup.
+connection_debug            0                                     Verbosity of SQL debugging information. 0=None, 100=Everything
+connection_trace            False                                 Add python stack traces to SQL as comment strings
+idle_timeout                3600                                  timeout before idle sql connections are reaped
+max_retries                 10                                    maximum db connection retries during startup.
                                                                   (setting -1 implies an infinite retry count)
-sql_retry_interval          10                                    interval between retries of opening a sql connection
+retry_interval              10                                    interval between retries of opening a sql connection
 mysql_engine                InnoDB                                MySQL engine to use
 sqlite_synchronous          True                                  If passed, use synchronous mode for sqlite
 ==========================  ====================================  ==============================================================
+
+
+Backend - General
+=================
+
+===========================  ====================================  ==============================================================
+Parameter                    Default                               Note
+===========================  ====================================  ==============================================================
+some_opt                     Insert something                      Insert something
+===========================  ====================================  ==============================================================
+
+
+Backend - Bind9
+=================
+
+===========================  ====================================  ==============================================================
+Parameter                    Default                               Note
+===========================  ====================================  ==============================================================
+rndc_path                    /usr/sbin/rndc                        RNDC Path
+rndc_host                    127.0.0.1                             RNDC Host
+rndc_port                    953                                   RNDC Port
+rndc_config-file             None                                  RNDC Config File
+rndc_key-file                None                                  RNDC Key File
+===========================  ====================================  ==============================================================
+
+
+Handler - General
+=================
+
+===========================  ====================================  ==============================================================
+Parameter                    Default                               Note
+===========================  ====================================  ==============================================================
+domain_id                    None                                  The domain ID to use
+===========================  ====================================  ==============================================================
+
+
+Handler - Nova *
+================
+
+===========================  ====================================  ==============================================================
+Parameter                    Default                               Note
+===========================  ====================================  ==============================================================
+notification_topics          monitor                               Notification Topics
+control_exchange             nova                                  Nova Control Exchange
+===========================  ====================================  ==============================================================
+
 
 General options
 ===============
@@ -128,4 +174,3 @@ rpc_response_timeout         60                                    Seconds to wa
 rpc_cast_timeout             30                                    Seconds to wait before a cast expires (TTL).
                                                                    Only supported by impl_zmq.
 ===========================  ====================================  ==============================================================
-
