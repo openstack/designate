@@ -14,7 +14,7 @@ NOTE: This is probably incomplete!
 
 ## Install Moniker
 
-1. `virtualenv .venv`
+1. `virtualenv --no-site-packages .venv`
 1. `source .venv/bin/activate`
 1. `python setup.py develop`
 1. create config files (See `*.sample` in the `etc` folder)
