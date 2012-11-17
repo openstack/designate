@@ -171,6 +171,12 @@ class Service(rpc_service.Service):
 
     # Domain Methods
     def create_domain(self, context, values):
+        if 'tenant_id' not in values:
+            values['tenant_id'] = None
+
+        target = {'tenant_id': values['tenant_id']}
+        policy.check('create_domain', context, target)
+
         domain = self.storage_conn.create_domain(context, values)
 
         agent_api.create_domain(context, domain)
@@ -179,12 +185,29 @@ class Service(rpc_service.Service):
         return domain
 
     def get_domains(self, context, criterion=None):
+        policy.check('get_domains', context, {'tenant_id': context.tenant_id})
+
+        if criterion is None:
+            criterion = {}
+
+        criterion['tenant_id'] = context.tenant_id
+
         return self.storage_conn.get_domains(context, criterion)
 
     def get_domain(self, context, domain_id):
-        return self.storage_conn.get_domain(context, domain_id)
+        domain = self.storage_conn.get_domain(context, domain_id)
+
+        target = {'domain_id': domain_id, 'tenant_id': domain['tenant_id']}
+        policy.check('get_domain', context, target)
+
+        return domain
 
     def update_domain(self, context, domain_id, values):
+        domain = self.storage_conn.get_domain(context, domain_id)
+
+        target = {'domain_id': domain_id, 'tenant_id': domain['tenant_id']}
+        policy.check('update_domain', context, target)
+
         domain = self.storage_conn.update_domain(context, domain_id, values)
 
         agent_api.update_domain(context, domain)
@@ -195,6 +218,9 @@ class Service(rpc_service.Service):
     def delete_domain(self, context, domain_id):
         domain = self.storage_conn.get_domain(context, domain_id)
 
+        target = {'domain_id': domain_id, 'tenant_id': domain['tenant_id']}
+        policy.check('delete_domain', context, target)
+
         agent_api.delete_domain(context, domain)
         utils.notify(context, 'api', 'domain.delete', domain)
 
@@ -202,9 +228,12 @@ class Service(rpc_service.Service):
 
     # Record Methods
     def create_record(self, context, domain_id, values):
-        record = self.storage_conn.create_record(context, domain_id, values)
-
         domain = self.storage_conn.get_domain(context, domain_id)
+
+        target = {'domain_id': domain_id, 'tenant_id': domain['tenant_id']}
+        policy.check('create_record', context, target)
+
+        record = self.storage_conn.create_record(context, domain_id, values)
 
         agent_api.create_record(context, domain, record)
         utils.notify(context, 'api', 'record.create', record)
@@ -212,15 +241,32 @@ class Service(rpc_service.Service):
         return record
 
     def get_records(self, context, domain_id, criterion=None):
+        domain = self.storage_conn.get_domain(context, domain_id)
+
+        target = {'domain_id': domain_id, 'tenant_id': domain['tenant_id']}
+        policy.check('get_records', context, target)
+
         return self.storage_conn.get_records(context, domain_id, criterion)
 
     def get_record(self, context, domain_id, record_id):
+        domain = self.storage_conn.get_domain(context, domain_id)
+
+        target = {'domain_id': domain_id, 'tenant_id': domain['tenant_id']}
+        policy.check('get_record', context, target)
+
         return self.storage_conn.get_record(context, record_id)
 
     def update_record(self, context, domain_id, record_id, values):
-        record = self.storage_conn.update_record(context, record_id, values)
-
         domain = self.storage_conn.get_domain(context, domain_id)
+
+        target = {
+            'domain_id': domain_id,
+            'record_id': record_id,
+            'tenant_id': domain['tenant_id']
+        }
+        policy.check('update_record', context, target)
+
+        record = self.storage_conn.update_record(context, record_id, values)
 
         agent_api.update_record(context, domain, record)
         utils.notify(context, 'api', 'record.update', record)
@@ -228,9 +274,16 @@ class Service(rpc_service.Service):
         return record
 
     def delete_record(self, context, domain_id, record_id):
-        record = self.storage_conn.get_record(context, record_id)
-
         domain = self.storage_conn.get_domain(context, domain_id)
+
+        target = {
+            'domain_id': domain_id,
+            'record_id': record_id,
+            'tenant_id': domain['tenant_id']
+        }
+        policy.check('delete_record', context, target)
+
+        record = self.storage_conn.get_record(context, record_id)
 
         agent_api.delete_record(context, domain, record)
         utils.notify(context, 'api', 'record.delete', record)
