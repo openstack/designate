@@ -22,11 +22,7 @@ LOG = logging.getLogger(__name__)
 class FakeBackendDriverTestCase(BackendDriverTestCase):
     __test__ = True
 
-    def get_config_overrides(self):
-        overrides = BackendDriverTestCase.get_config_overrides(self)
+    def setUp(self):
+        super(FakeBackendDriverTestCase, self).setUp()
 
-        overrides.update(
-            backend_driver='fake'
-        )
-
-        return overrides
+        self.config(backend_driver='fake')

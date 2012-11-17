@@ -27,11 +27,5 @@ class BackendDriverTestCase(TestCase):
     def get_backend_driver(self):
         return backend.get_backend(cfg.CONF)
 
-    def setUp(self):
-        super(BackendDriverTestCase, self).setUp()
-        self.backend = self.get_backend_driver()
-
-    def test_dummy(self):
-        # Right now we just check that we can instantiate the driver via the
-        # setUp above. Proper tests TODO.
-        pass
+    def test_constructor(self):
+        self.get_backend_driver()

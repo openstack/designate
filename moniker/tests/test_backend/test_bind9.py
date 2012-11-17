@@ -22,11 +22,7 @@ LOG = logging.getLogger(__name__)
 class Bind9BackendDriverTestCase(BackendDriverTestCase):
     __test__ = True
 
-    def get_config_overrides(self):
-        overrides = BackendDriverTestCase.get_config_overrides(self)
+    def setUp(self):
+        super(Bind9BackendDriverTestCase, self).setUp()
 
-        overrides.update(
-            backend_driver='bind9'
-        )
-
-        return overrides
+        self.config(backend_driver='bind9')
