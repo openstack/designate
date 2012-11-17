@@ -19,7 +19,8 @@ from moniker.openstack.common import context
 
 class MonikerContext(context.RequestContext):
     def __init__(self, auth_tok=None, user=None, tenant=None, is_admin=False,
-                 read_only=False, show_deleted=False, request_id=None):
+                 read_only=False, show_deleted=False, request_id=None,
+                 roles=[]):
         super(MonikerContext, self).__init__(
             auth_tok=auth_tok,
             user=user,
@@ -31,6 +32,7 @@ class MonikerContext(context.RequestContext):
 
         self.user_id = user
         self.tenant_id = tenant
+        self.roles = roles
 
     def to_dict(self):
         d = super(MonikerContext, self).to_dict()
@@ -38,6 +40,7 @@ class MonikerContext(context.RequestContext):
         d.update({
             'user_id': self.user_id,
             'tenant_id': self.tenant_id,
+            'roles': self.roles,
         })
 
         return d

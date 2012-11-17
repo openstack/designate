@@ -13,10 +13,10 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from moniker.openstack.common.context import RequestContext
 from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
 from moniker import wsgi
+from moniker.context import MonikerContext
 
 LOG = logging.getLogger(__name__)
 
@@ -40,12 +40,16 @@ def pipeline_factory(loader, global_conf, **local_conf):
 class KeystoneContextMiddleware(wsgi.Middleware):
     def process_request(self, request):
         headers = request.headers
-        context = RequestContext(auth_tok=headers.get('X-Auth-Token'),
+
+        roles = headers.get('X-Roles').split(',')
+
+        context = MonikerContext(auth_tok=headers.get('X-Auth-Token'),
                                  user=headers.get('X-User-ID'),
-                                 tenant=headers.get('X-Tenant-ID'))
+                                 tenant=headers.get('X-Tenant-ID'),
+                                 roles=roles)
         request.environ['context'] = context
 
 
 class NoAuthMiddleware(wsgi.Middleware):
     def process_request(self, request):
-        request.environ['context'] = RequestContext()
+        request.environ['context'] = MonikerContext()
