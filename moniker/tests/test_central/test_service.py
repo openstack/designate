@@ -21,12 +21,11 @@ from moniker import exceptions
 LOG = logging.getLogger(__name__)
 
 
-class ServiceTest(CentralTestCase):
+class CentralServiceTest(CentralTestCase):
     __test__ = True
 
     def setUp(self):
-        super(ServiceTest, self).setUp()
-        self.config(rpc_backend='moniker.openstack.common.rpc.impl_fake')
+        super(CentralServiceTest, self).setUp()
         self.service = self.get_central_service()
 
     def create_server(self, **kwargs):

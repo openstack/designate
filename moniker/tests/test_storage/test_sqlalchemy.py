@@ -19,9 +19,9 @@ from moniker.tests.test_storage import StorageDriverTestCase
 LOG = logging.getLogger(__name__)
 
 
-class SqlalchemyTest(StorageDriverTestCase):
+class SqlalchemyStorageTest(StorageDriverTestCase):
     __test__ = True
 
     def setUp(self):
-        super(SqlalchemyTest, self).setUp()
+        super(SqlalchemyStorageTest, self).setUp()
         self.config(database_connection='sqlite://')

@@ -19,6 +19,7 @@ from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
 from moniker.context import MonikerContext
 from moniker import storage
+from moniker.api import service as api_service
 from moniker.central import service as central_service
 
 LOG = logging.getLogger(__name__)
@@ -49,6 +50,9 @@ class TestCase(unittest2.TestCase):
         group = kwargs.pop('group', None)
         for k, v in kwargs.iteritems():
             cfg.CONF.set_override(k, v, group)
+
+    def get_api_service(self):
+        return api_service.Service()
 
     def get_central_service(self):
         return central_service.Service()
