@@ -133,6 +133,8 @@ class Service(rpc_service.Service):
 
     # Server Methods
     def create_server(self, context, values):
+        policy.check('create_server', context)
+
         server = self.storage_conn.create_server(context, values)
 
         utils.notify(context, 'api', 'server.create', server)
@@ -140,12 +142,18 @@ class Service(rpc_service.Service):
         return server
 
     def get_servers(self, context, criterion=None):
+        policy.check('get_servers', context)
+
         return self.storage_conn.get_servers(context, criterion)
 
     def get_server(self, context, server_id):
+        policy.check('get_server', context, {'server_id': server_id})
+
         return self.storage_conn.get_server(context, server_id)
 
     def update_server(self, context, server_id, values):
+        policy.check('update_server', context, {'server_id': server_id})
+
         server = self.storage_conn.update_server(context, server_id, values)
 
         utils.notify(context, 'api', 'server.update', server)
@@ -153,6 +161,8 @@ class Service(rpc_service.Service):
         return server
 
     def delete_server(self, context, server_id):
+        policy.check('delete_server', context, {'server_id': server_id})
+
         server = self.storage_conn.get_server(context, server_id)
 
         utils.notify(context, 'api', 'server.delete', server)

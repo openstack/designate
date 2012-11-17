@@ -52,4 +52,6 @@ class KeystoneContextMiddleware(wsgi.Middleware):
 
 class NoAuthMiddleware(wsgi.Middleware):
     def process_request(self, request):
-        request.environ['context'] = MonikerContext()
+        # NOTE(kiall): This makes the assumption that disabling authentication
+        #              means you wish to allow full access to everyone.
+        request.environ['context'] = MonikerContext(is_admin=True)
