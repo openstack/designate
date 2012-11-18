@@ -15,6 +15,7 @@
 #
 # NOTE(kiall): Copied from Glance
 import jsonschema
+from moniker.openstack.common.gettextutils import _
 from moniker import exceptions
 
 
@@ -56,7 +57,7 @@ class Schema(object):
             props = ', '.join(conflicting_keys)
             reason = _("custom properties (%(props)s) conflict "
                        "with base properties")
-            raise exception.SchemaLoadError(reason=reason % {'props': props})
+            raise exceptions.SchemaLoadError(reason=reason % {'props': props})
 
         self.properties.update(properties)
 

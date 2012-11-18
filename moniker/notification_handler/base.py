@@ -19,7 +19,6 @@ from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
 from moniker.context import MonikerContext
 from moniker.plugin import Plugin
-from moniker import exceptions
 
 
 LOG = logging.getLogger(__name__)

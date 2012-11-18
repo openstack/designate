@@ -13,8 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from sqlalchemy import MetaData, Table, Column, Boolean, Unicode
-from moniker.storage.impl_sqlalchemy.types import UUID
+from sqlalchemy import MetaData, Table, Column, Unicode
 
 meta = MetaData()
 

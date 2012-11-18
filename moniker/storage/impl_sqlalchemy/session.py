@@ -26,6 +26,7 @@ from sqlalchemy.pool import NullPool, StaticPool
 
 from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
+from moniker.openstack.common.gettextutils import _
 
 LOG = logging.getLogger(__name__)
 
@@ -162,3 +163,44 @@ def get_maker(engine, autocommit=True, expire_on_commit=False, autoflush=True):
                                        autocommit=autocommit,
                                        autoflush=autoflush,
                                        expire_on_commit=expire_on_commit)
+
+
+def debug_mysql_do_query():
+    """Return a debug version of MySQLdb.cursors._do_query"""
+    import MySQLdb.cursors
+    import traceback
+
+    old_mysql_do_query = MySQLdb.cursors.BaseCursor._do_query
+
+    def _do_query(self, q):
+        stack = ''
+        for file, line, method, function in traceback.extract_stack():
+            # exclude various common things from trace
+            if file.endswith('session.py') and method == '_do_query':
+                continue
+            if file.endswith('api.py') and method == 'wrapper':
+                continue
+            if file.endswith('utils.py') and method == '_inner':
+                continue
+            if file.endswith('exception.py') and method == '_wrap':
+                continue
+            # nova/db/api is just a wrapper around nova/db/sqlalchemy/api
+            if file.endswith('nova/db/api.py'):
+                continue
+            # only trace inside nova
+            index = file.rfind('nova')
+            if index == -1:
+                continue
+            stack += "File:%s:%s Method:%s() Line:%s | " \
+                     % (file[index:], line, method, function)
+
+        # strip trailing " | " from stack
+        if stack:
+            stack = stack[:-3]
+            qq = "%s /* %s */" % (q, stack)
+        else:
+            qq = q
+        old_mysql_do_query(self, qq)
+
+    # return the new _do_query method
+    return _do_query

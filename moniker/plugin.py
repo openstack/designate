@@ -17,7 +17,6 @@ import abc
 
 from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
-from moniker import exceptions
 
 
 LOG = logging.getLogger(__name__)

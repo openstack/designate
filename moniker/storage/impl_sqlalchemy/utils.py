@@ -25,6 +25,7 @@
 import sqlalchemy
 
 from moniker.openstack.common import log as logging
+from moniker.openstack.common.gettextutils import _
 from moniker import exceptions
 
 

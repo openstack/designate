@@ -27,7 +27,6 @@ from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
 from moniker.openstack.common import timeutils
 from moniker import exceptions
-from moniker.storage.impl_sqlalchemy.session import get_session
 from moniker.storage.impl_sqlalchemy.types import UUID, Inet
 
 LOG = logging.getLogger(__name__)
