@@ -14,38 +14,16 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from nose import SkipTest
-from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
-from moniker.tests.test_notification_handler import NotificationHandlerTestCase
+from moniker.tests.test_notification_handler import AddressHandlerTestCase
 from moniker.notification_handler import nova
 
 LOG = logging.getLogger(__name__)
 
 
-class NovaNotificationHandlerTestCase(NotificationHandlerTestCase):
+class NovaTestCase(AddressHandlerTestCase):
     __test__ = True
-
-    def setUp(self):
-        super(NovaNotificationHandlerTestCase, self).setUp()
-
-        self._init_handler()
-
-    def _init_handler(self):
-        # Create provider domain
-        values = {'name': 'exampe.com', 'email': 'info@example.com'}
-
-        domain = self.central_service.create_domain(self.admin_context, values)
-        self.domain_id = domain['id']
-
-        # Register handler specific config options
-        nova.NovaFixedHandler.register_opts(cfg.CONF)
-
-        # Override default config values
-        self.config(domain_id=self.domain_id, group='handler:nova_fixed')
-
-        # Initialize the handler
-        self.handler = nova.NovaFixedHandler(
-            central_service=self.central_service)
+    handler_cls = nova.NovaFixedHandler
 
     def test_instance_create_end(self):
         event_type = 'compute.instance.create.end'

@@ -15,6 +15,7 @@
 # under the License.
 import json
 import os
+from moniker.openstack.common import cfg
 from moniker.tests import TestCase
 
 FIXTURES_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__),
@@ -24,10 +25,32 @@ FIXTURES_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__),
 
 class NotificationHandlerTestCase(TestCase):
     __test__ = False
+    handler_cls = None
 
     def setUp(self):
         super(NotificationHandlerTestCase, self).setUp()
         self.central_service = self.get_central_service()
+        self._init_handler()
+
+    def _pre_init_handler(self):
+        """
+        Stuff to run before actually initializing the handler.
+
+        Should return a dict that will be passed to the handler's register_opts
+        """
+        return {}
+
+    def _init_handler(self):
+        """
+        Initialize the Handler doing _pre_init_handler before
+        instantiating the handler
+        """
+        self.handler_cls.register_opts(cfg.CONF)
+
+        handler_conf = self._pre_init_handler() or {}
+        self.config(group=self.handler_cls.get_canonical_name(),
+                    **handler_conf)
+        self.handler = self.handler_cls(self.central_service)
 
     def get_notification_fixture(self, service, name):
         filename = os.path.join(FIXTURES_PATH, service, '%s.json' % name)
@@ -45,3 +68,16 @@ class NotificationHandlerTestCase(TestCase):
 
         with self.assertRaises(ValueError):
             self.handler.process_notification(event_type, 'payload')
+
+
+class AddressHandlerTestCase(NotificationHandlerTestCase):
+    """
+    Test something that receives notifications with regards to addresses
+    """
+    def _pre_init_handler(self):
+        # Create provider domain
+        values = {'name': 'exampe.com', 'email': 'info@example.com'}
+
+        domain = self.central_service.create_domain(self.admin_context, values)
+        self.domain_id = str(domain['id'])
+        return {"domain_id": str(domain["id"])}
