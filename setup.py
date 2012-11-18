@@ -62,6 +62,8 @@ setup(
 
         [moniker.notification.handler]
         nova_fixed = moniker.notification_handler.nova:NovaFixedHandler
+        quantum_floatingip = moniker.notification_handler.quantum\
+                             :QuantumFloatingHandler
 
         [moniker.backend]
         bind9 = moniker.backend.impl_bind9:Bind9Backend
