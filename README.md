@@ -2,6 +2,11 @@
 
 Moniker is an OpenStack inspired DNSaaS.
 
+Docs: http://moniker.rtfd.org and some below for now.
+Bugs / Blueprints: http://launchpad.net/moniker
+
+IRC: #openstack-dns
+
 # Developer Guide:
 
 NOTE: This is probably incomplete!
