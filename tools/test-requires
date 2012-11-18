@@ -1,9 +1,7 @@
 unittest2
 nose
-nosexcover
 openstack.nose_plugin
 nosehtmloutput
 mox
-coverage
 sphinx
 sphinxcontrib-httpdomain
