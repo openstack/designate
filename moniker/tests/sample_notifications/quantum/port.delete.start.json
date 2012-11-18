@@ -1,0 +1,18 @@
+{
+   "priority" : "INFO",
+   "message_id" : "95ecdca3-967f-40aa-9469-d9fccc91d64b",
+   "event_type" : "port.delete.start",
+   "_context_roles" : [
+      "Member"
+   ],
+   "_context_tenant_id" : "c97027dd880d4c129ae7a4ba7edade05",
+   "timestamp" : "2012-11-16 12:56:17.155860",
+   "_context_is_admin" : false,
+   "_context_user_id" : "4ce5c085e09a478ea4edcd667a92df78",
+   "payload" : {
+      "port_id" : "bfdcb007-f68d-46bd-8150-abcae9fb3af6"
+   },
+   "_context_timestamp" : "2012-11-16 12:56:17.154672",
+   "publisher_id" : "network.svc02.os.lan",
+   "_context_read_deleted" : "no"
+}

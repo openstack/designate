@@ -1,0 +1,27 @@
+{
+   "priority" : "INFO",
+   "message_id" : "e9667b80-d2dc-4687-b2c6-2e648520157c",
+   "event_type" : "floatingip.update.end",
+   "_context_roles" : [
+      "Member",
+      "admin"
+   ],
+   "_context_tenant_id" : "c97027dd880d4c129ae7a4ba7edade05",
+   "timestamp" : "2012-11-18 01:35:08.312766",
+   "_context_is_admin" : false,
+   "_context_user_id" : "4ce5c085e09a478ea4edcd667a92df78",
+   "payload" : {
+      "floatingip" : {
+         "floating_network_id" : "d9edfcd5-f245-4f45-be26-4383942fd74c",
+         "tenant_id" : "c97027dd880d4c129ae7a4ba7edade05",
+         "fixed_ip_address" : null,
+         "router_id" : null,
+         "port_id" : null,
+         "floating_ip_address" : "192.168.5.201",
+         "id" : "19b93b6b-8396-4800-b711-f810fc214722"
+      }
+   },
+   "_context_timestamp" : "2012-11-18 01:35:08.281731",
+   "publisher_id" : "network.svc02.os.lan",
+   "_context_read_deleted" : "no"
+}
