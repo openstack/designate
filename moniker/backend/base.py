@@ -24,6 +24,7 @@ LOG = logging.getLogger(__name__)
 class Backend(Plugin):
     """ Base class for backend implementations """
     __plugin_type__ = 'backend'
+    __plugin_ns__ = 'moniker.backend'
 
     @abc.abstractmethod
     def create_domain(self, context, domain):

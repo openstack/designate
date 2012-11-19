@@ -13,13 +13,11 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from stevedore import driver
 from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
+from moniker.plugin import Plugin
 
 LOG = logging.getLogger(__name__)
-
-BACKEND_NAMESPACE = 'moniker.backend'
 
 cfg.CONF.register_opts([
     cfg.StrOpt('backend-driver', default='bind9',
@@ -28,6 +26,4 @@ cfg.CONF.register_opts([
 
 
 def get_backend(conf):
-    mgr = driver.DriverManager(BACKEND_NAMESPACE, cfg.CONF.backend_driver)
-    mgr.driver.register_opts(conf)
-    return mgr.driver()
+    return Plugin.get_plugin(cfg.CONF.backend_driver, ns=__name__, conf=conf)

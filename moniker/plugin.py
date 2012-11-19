@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import abc
+from stevedore import driver
 
 from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
@@ -24,6 +25,8 @@ LOG = logging.getLogger(__name__)
 
 class Plugin(object):
     __metaclass__ = abc.ABCMeta
+
+    __plugin_ns__ = None
 
     __plugin_name__ = None
     __plugin_type__ = None
@@ -40,6 +43,23 @@ class Plugin(object):
         :retval: Boolean
         """
         return True
+
+    @classmethod
+    def get_plugin(cls, name, ns=None, conf=None, invoke_on_load=False,
+                   invoke_args=(), invoke_kwds={}):
+        """
+        Load a plugin from namespace
+        """
+        ns = ns or cls.__plugin_ns__
+        if ns is None:
+            raise RuntimeError('No namespace provided or __plugin_ns__ unset')
+
+        LOG.debug('Looking for plugin %s in %s', name, ns)
+        mgr = driver.DriverManager(ns, name)
+        if conf:
+            mgr.driver.register_opts(conf)
+        return mgr.driver(*invoke_args, **invoke_kwds) if invoke_on_load \
+            else mgr.driver
 
     @classmethod
     def get_canonical_name(cls):

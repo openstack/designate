@@ -43,6 +43,7 @@ def get_ip_data(addr_dict):
 
 class Handler(Plugin):
     """ Base class for notification handlers """
+    __plugin_ns__ = 'moniker.notification.handler'
     __plugin_type__ = 'handler'
 
     def __init__(self, central_service):

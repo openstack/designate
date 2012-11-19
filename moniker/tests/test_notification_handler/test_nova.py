@@ -13,23 +13,21 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from nose import SkipTest
 from moniker.openstack.common import log as logging
 from moniker.tests.test_notification_handler import AddressHandlerTestCase
-from moniker.notification_handler import nova
 
 LOG = logging.getLogger(__name__)
 
 
 class NovaTestCase(AddressHandlerTestCase):
     __test__ = True
-    handler_cls = nova.NovaFixedHandler
+    __plugin_name__ = 'nova_fixed'
 
     def test_instance_create_end(self):
         event_type = 'compute.instance.create.end'
         fixture = self.get_notification_fixture('nova', event_type)
 
-        self.assertIn(event_type, self.handler.get_event_types())
+        self.assertIn(event_type, self.plugin.get_event_types())
 
         # Ensure we start with 0 records
         records = self.central_service.get_records(self.admin_context,
@@ -37,7 +35,7 @@ class NovaTestCase(AddressHandlerTestCase):
 
         self.assertEqual(0, len(records))
 
-        self.handler.process_notification(event_type, fixture['payload'])
+        self.plugin.process_notification(event_type, fixture['payload'])
 
         # Ensure we now have exactly 1 record
         records = self.central_service.get_records(self.admin_context,
@@ -50,14 +48,14 @@ class NovaTestCase(AddressHandlerTestCase):
         start_event_type = 'compute.instance.create.end'
         start_fixture = self.get_notification_fixture('nova', start_event_type)
 
-        self.handler.process_notification(start_event_type,
-                                          start_fixture['payload'])
+        self.plugin.process_notification(start_event_type,
+                                         start_fixture['payload'])
 
         # Now - Onto the real test
         event_type = 'compute.instance.delete.start'
         fixture = self.get_notification_fixture('nova', event_type)
 
-        self.assertIn(event_type, self.handler.get_event_types())
+        self.assertIn(event_type, self.plugin.get_event_types())
 
         # Ensure we start with at least 1 record
         records = self.central_service.get_records(self.admin_context,
@@ -65,30 +63,10 @@ class NovaTestCase(AddressHandlerTestCase):
 
         self.assertGreaterEqual(len(records), 1)
 
-        self.handler.process_notification(event_type, fixture['payload'])
+        self.plugin.process_notification(event_type, fixture['payload'])
 
         # Ensure we now have exactly 0 records
         records = self.central_service.get_records(self.admin_context,
                                                    self.domain_id)
 
         self.assertEqual(0, len(records))
-
-    def test_floating_ip_associate(self):
-        raise SkipTest()
-
-        event_type = 'network.floating_ip.associate'
-        fixture = self.get_notification_fixture('nova', event_type)
-
-        self.assertIn(event_type, self.handler.get_event_types())
-
-        self.handler.process_notification(event_type, fixture['payload'])
-
-    def test_floating_ip_disassociate(self):
-        raise SkipTest()
-
-        event_type = 'network.floating_ip.disassociate'
-        fixture = self.get_notification_fixture('nova', event_type)
-
-        self.assertIn(event_type, self.handler.get_event_types())
-
-        self.handler.process_notification(event_type, fixture['payload'])
