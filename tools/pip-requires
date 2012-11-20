@@ -4,6 +4,7 @@ jsonschema>=0.6
 ipaddr
 PasteDeploy
 stevedore
+cliff
 
 # From OpenStack Common
 routes>=1.12.3
