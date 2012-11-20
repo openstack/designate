@@ -3,7 +3,6 @@ eventlet
 jsonschema>=0.6
 ipaddr
 PasteDeploy
-https://github.com/stackforge/python-monikerclient/tarball/master#egg=python-monikerclient
 stevedore
 
 # From OpenStack Common

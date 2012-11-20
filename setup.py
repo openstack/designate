@@ -52,6 +52,7 @@ setup(
         'bin/moniker-central',
         'bin/moniker-api',
         'bin/moniker-agent',
+        'bin/moniker-manage'
     ],
     cmdclass=common_setup.get_cmdclass(),
     entry_points=textwrap.dedent("""
@@ -69,9 +70,9 @@ setup(
         bind9 = moniker.backend.impl_bind9:Bind9Backend
         fake = moniker.backend.impl_fake:FakeBackend
 
-        [moniker.cli]
-        database init = moniker.cli.database:InitCommand
-        database sync = moniker.cli.database:SyncCommand
+        [moniker.manage]
+        database init = moniker.manage.database:InitCommand
+        database sync = moniker.manage.database:SyncCommand
         """),
     classifiers=[
         'Development Status :: 3 - Alpha',
