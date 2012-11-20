@@ -26,4 +26,5 @@ cfg.CONF.register_opts([
 
 
 def get_backend(conf):
-    return Plugin.get_plugin(cfg.CONF.backend_driver, ns=__name__, conf=conf)
+    return Plugin.get_plugin(cfg.CONF.backend_driver, ns=__name__,
+                             conf=conf, invoke_on_load=True)
