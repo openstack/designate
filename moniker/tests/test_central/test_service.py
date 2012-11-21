@@ -26,45 +26,7 @@ class CentralServiceTest(CentralTestCase):
 
     def setUp(self):
         super(CentralServiceTest, self).setUp()
-        self.service = self.get_central_service()
-
-    def create_server(self, **kwargs):
-        context = kwargs.pop('context', self.get_admin_context())
-
-        values = dict(
-            name='ns1.example.org',
-            ipv4='192.0.2.1',
-            ipv6='2001:db8::1',
-        )
-
-        values.update(kwargs)
-
-        return self.service.create_server(context, values=values)
-
-    def create_domain(self, **kwargs):
-        context = kwargs.pop('context', self.get_admin_context())
-
-        values = dict(
-            name='example.com',
-            email='info@example.com',
-        )
-
-        values.update(kwargs)
-
-        return self.service.create_domain(context, values=values)
-
-    def create_record(self, domain_id, **kwargs):
-        context = kwargs.pop('context', self.get_admin_context())
-
-        values = dict(
-            name='www.example.com',
-            type='A',
-            data='127.0.0.1'
-        )
-
-        values.update(kwargs)
-
-        return self.service.create_record(context, domain_id, values=values)
+        self.central_service = self.get_central_service()
 
     # Server Tests
     def test_create_server(self):
@@ -77,7 +39,7 @@ class CentralServiceTest(CentralTestCase):
         )
 
         # Create a server
-        server = self.service.create_server(context, values=values)
+        server = self.central_service.create_server(context, values=values)
 
         # Ensure all values have been set correctly
         self.assertIsNotNone(server['id'])
@@ -89,14 +51,14 @@ class CentralServiceTest(CentralTestCase):
         context = self.get_admin_context()
 
         # Ensure we have no servers to start with.
-        servers = self.service.get_servers(context)
+        servers = self.central_service.get_servers(context)
         self.assertEqual(len(servers), 0)
 
         # Create a single server (using default values)
         self.create_server()
 
         # Ensure we can retrieve the newly created server
-        servers = self.service.get_servers(context)
+        servers = self.central_service.get_servers(context)
         self.assertEqual(len(servers), 1)
         self.assertEqual(servers[0]['name'], 'ns1.example.org')
 
@@ -105,7 +67,7 @@ class CentralServiceTest(CentralTestCase):
                            ipv6='2001:db8::2')
 
         # Ensure we can retrieve both servers
-        servers = self.service.get_servers(context)
+        servers = self.central_service.get_servers(context)
         self.assertEqual(len(servers), 2)
         self.assertEqual(servers[0]['name'], 'ns1.example.org')
         self.assertEqual(servers[1]['name'], 'ns2.example.org')
@@ -118,7 +80,8 @@ class CentralServiceTest(CentralTestCase):
         expected_server = self.create_server(name=server_name)
 
         # Retrieve it, and ensure it's the same
-        server = self.service.get_server(context, expected_server['id'])
+        server = self.central_service.get_server(context,
+                                                 expected_server['id'])
         self.assertEqual(server['id'], expected_server['id'])
         self.assertEqual(server['name'], expected_server['name'])
         self.assertEqual(str(server['ipv4']), expected_server['ipv4'])
@@ -132,11 +95,12 @@ class CentralServiceTest(CentralTestCase):
 
         # Update the server
         values = dict(ipv4='127.0.0.1')
-        self.service.update_server(context, expected_server['id'],
-                                   values=values)
+        self.central_service.update_server(context, expected_server['id'],
+                                           values=values)
 
         # Fetch the server again
-        server = self.service.get_server(context, expected_server['id'])
+        server = self.central_service.get_server(context,
+                                                 expected_server['id'])
 
         # Ensure the server was updated correctly
         self.assertEqual(str(server['ipv4']), '127.0.0.1')
@@ -148,11 +112,11 @@ class CentralServiceTest(CentralTestCase):
         server = self.create_server()
 
         # Delete the server
-        self.service.delete_server(context, server['id'])
+        self.central_service.delete_server(context, server['id'])
 
         # Fetch the server again, ensuring an exception is raised
         with self.assertRaises(exceptions.ServerNotFound):
-            self.service.get_server(context, server['id'])
+            self.central_service.get_server(context, server['id'])
 
     # Domain Tests
     def test_create_domain(self):
@@ -164,7 +128,7 @@ class CentralServiceTest(CentralTestCase):
         )
 
         # Create a domain
-        domain = self.service.create_domain(context, values=values)
+        domain = self.central_service.create_domain(context, values=values)
 
         # Ensure all values have been set correctly
         self.assertIsNotNone(domain['id'])
@@ -175,14 +139,14 @@ class CentralServiceTest(CentralTestCase):
         context = self.get_admin_context()
 
         # Ensure we have no domains to start with.
-        domains = self.service.get_domains(context)
+        domains = self.central_service.get_domains(context)
         self.assertEqual(len(domains), 0)
 
         # Create a single domain (using default values)
         self.create_domain()
 
         # Ensure we can retrieve the newly created domain
-        domains = self.service.get_domains(context)
+        domains = self.central_service.get_domains(context)
         self.assertEqual(len(domains), 1)
         self.assertEqual(domains[0]['name'], 'example.com')
 
@@ -190,7 +154,7 @@ class CentralServiceTest(CentralTestCase):
         self.create_domain(name='example.net')
 
         # Ensure we can retrieve both domain
-        domains = self.service.get_domains(context)
+        domains = self.central_service.get_domains(context)
         self.assertEqual(len(domains), 2)
         self.assertEqual(domains[0]['name'], 'example.com')
         self.assertEqual(domains[1]['name'], 'example.net')
@@ -203,7 +167,8 @@ class CentralServiceTest(CentralTestCase):
         expected_domain = self.create_domain(name=domain_name)
 
         # Retrieve it, and ensure it's the same
-        domain = self.service.get_domain(context, expected_domain['id'])
+        domain = self.central_service.get_domain(context,
+                                                 expected_domain['id'])
         self.assertEqual(domain['id'], expected_domain['id'])
         self.assertEqual(domain['name'], expected_domain['name'])
         self.assertEqual(domain['email'], expected_domain['email'])
@@ -216,11 +181,12 @@ class CentralServiceTest(CentralTestCase):
 
         # Update the domain
         values = dict(email='new@example.com')
-        self.service.update_domain(context, expected_domain['id'],
-                                   values=values)
+        self.central_service.update_domain(context, expected_domain['id'],
+                                           values=values)
 
         # Fetch the domain again
-        domain = self.service.get_domain(context, expected_domain['id'])
+        domain = self.central_service.get_domain(context,
+                                                 expected_domain['id'])
 
         # Ensure the domain was updated correctly
         self.assertEqual(domain['email'], 'new@example.com')
@@ -232,11 +198,11 @@ class CentralServiceTest(CentralTestCase):
         domain = self.create_domain()
 
         # Delete the domain
-        self.service.delete_domain(context, domain['id'])
+        self.central_service.delete_domain(context, domain['id'])
 
         # Fetch the domain again, ensuring an exception is raised
         with self.assertRaises(exceptions.DomainNotFound):
-            self.service.get_domain(context, domain['id'])
+            self.central_service.get_domain(context, domain['id'])
 
     # Record Tests
     def test_create_record(self):
@@ -250,8 +216,8 @@ class CentralServiceTest(CentralTestCase):
         )
 
         # Create a record
-        record = self.service.create_record(context, domain['id'],
-                                            values=values)
+        record = self.central_service.create_record(context, domain['id'],
+                                                    values=values)
 
         # Ensure all values have been set correctly
         self.assertIsNotNone(record['id'])
@@ -265,14 +231,14 @@ class CentralServiceTest(CentralTestCase):
         domain = self.create_domain()
 
         # Ensure we have no records to start with.
-        records = self.service.get_records(context, domain['id'])
+        records = self.central_service.get_records(context, domain['id'])
         self.assertEqual(len(records), 0)
 
         # Create a single record (using default values)
         self.create_record(domain['id'])
 
         # Ensure we can retrieve the newly created record
-        records = self.service.get_records(context, domain['id'])
+        records = self.central_service.get_records(context, domain['id'])
         self.assertEqual(len(records), 1)
         self.assertEqual(records[0]['name'], 'www.example.com')
 
@@ -280,7 +246,7 @@ class CentralServiceTest(CentralTestCase):
         self.create_record(domain['id'], name='mail.example.com')
 
         # Ensure we can retrieve both records
-        records = self.service.get_records(context, domain['id'])
+        records = self.central_service.get_records(context, domain['id'])
         self.assertEqual(len(records), 2)
         self.assertEqual(records[0]['name'], 'www.example.com')
         self.assertEqual(records[1]['name'], 'mail.example.com')
@@ -294,8 +260,8 @@ class CentralServiceTest(CentralTestCase):
         expected_record = self.create_record(domain['id'], name=record_name)
 
         # Retrieve it, and ensure it's the same
-        record = self.service.get_record(context, domain['id'],
-                                         expected_record['id'])
+        record = self.central_service.get_record(context, domain['id'],
+                                                 expected_record['id'])
         self.assertEqual(record['id'], expected_record['id'])
         self.assertEqual(record['name'], expected_record['name'])
 
@@ -308,12 +274,13 @@ class CentralServiceTest(CentralTestCase):
 
         # Update the server
         values = dict(data='127.0.0.2')
-        self.service.update_record(context, domain['id'],
-                                   expected_record['id'], values=values)
+        self.central_service.update_record(context, domain['id'],
+                                           expected_record['id'],
+                                           values=values)
 
         # Fetch the record again
-        record = self.service.get_record(context, domain['id'],
-                                         expected_record['id'])
+        record = self.central_service.get_record(context, domain['id'],
+                                                 expected_record['id'])
 
         # Ensure the record was updated correctly
         self.assertEqual(record['data'], '127.0.0.2')
@@ -326,8 +293,9 @@ class CentralServiceTest(CentralTestCase):
         record = self.create_record(domain['id'])
 
         # Delete the record
-        self.service.delete_record(context, domain['id'], record['id'])
+        self.central_service.delete_record(context, domain['id'], record['id'])
 
         # Fetch the record again, ensuring an exception is raised
         with self.assertRaises(exceptions.RecordNotFound):
-            self.service.get_record(context, domain['id'], record['id'])
+            self.central_service.get_record(context, domain['id'],
+                                            record['id'])

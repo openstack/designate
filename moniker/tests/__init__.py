@@ -34,7 +34,8 @@ class TestCase(unittest2.TestCase):
             database_connection='sqlite://',
             rpc_backend='moniker.openstack.common.rpc.impl_fake',
             notification_driver=[],
-            backend_driver='fake'
+            backend_driver='fake',
+            auth_strategy='noauth'
         )
         storage.setup_schema()
 
@@ -62,3 +63,43 @@ class TestCase(unittest2.TestCase):
 
     def get_admin_context(self):
         return MonikerContext.get_admin_context()
+
+    # Fixture methods
+    def create_server(self, **kwargs):
+        context = kwargs.pop('context', self.get_admin_context())
+
+        values = dict(
+            name='ns1.example.org',
+            ipv4='192.0.2.1',
+            ipv6='2001:db8::1',
+        )
+
+        values.update(kwargs)
+
+        return self.central_service.create_server(context, values=values)
+
+    def create_domain(self, **kwargs):
+        context = kwargs.pop('context', self.get_admin_context())
+
+        values = dict(
+            name='example.com',
+            email='info@example.com',
+        )
+
+        values.update(kwargs)
+
+        return self.central_service.create_domain(context, values=values)
+
+    def create_record(self, domain_id, **kwargs):
+        context = kwargs.pop('context', self.get_admin_context())
+
+        values = dict(
+            name='www.example.com',
+            type='A',
+            data='127.0.0.1'
+        )
+
+        values.update(kwargs)
+
+        return self.central_service.create_record(context, domain_id,
+                                                  values=values)
