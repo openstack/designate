@@ -65,7 +65,7 @@ Common steps
    moniker installer::
    $ cd moniker
    $ sudo python setup.py develop
-   $ pip install -r tools/pip-options -r pip/pip-requires
+   $ pip install -r tools/pip-options -r tools/pip-requires
 
    Copy sample configs to usable ones, inside the ´etc´ folder do::
    $ ls *.sample | while read f; do cp $f $(echo $f | sed "s/.sample$//g"); done
