@@ -14,7 +14,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from sqlalchemy import MetaData, Table, ForeignKeyConstraint
+from sqlalchemy import MetaData, Table
+from migrate import ForeignKeyConstraint
 
 meta = MetaData()
 
@@ -29,7 +30,7 @@ def upgrade(migrate_engine):
     # add foreignkey if not sqlite
     if not dialect.startswith('sqlite'):
         ForeignKeyConstraint(columns=[records.c.domain_id],
-                             refcolumns=[domains.c.id]).drop()
+                             refcolumns=[domains.c.id]).drop
         ForeignKeyConstraint(columns=[records.c.domain_id],
                              refcolumns=[domains.c.id],
                              ondelete='CASCADE').create()
