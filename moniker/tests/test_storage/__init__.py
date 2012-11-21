@@ -34,60 +34,20 @@ class StorageTestCase(TestCase):
 class StorageDriverTestCase(StorageTestCase):
     __test__ = False
 
-    server_fixtures = [{
-        'name': 'ns1.example.org',
-        'ipv4': '192.0.2.1',
-        'ipv6': '2001:db8::1',
-    }, {
-        'name': 'ns2.example.org',
-        'ipv4': '192.0.2.2',
-        'ipv6': '2001:db8::2',
-    }, {
-        'name': 'ns2.example.org',
-        'ipv4': '192.0.2.2',
-        'ipv6': '2001:db8::2',
-    }]
-
-    domain_fixtures = [{
-        'name': 'example.com',
-        'email': 'example@example.com',
-    }, {
-        'name': 'example.net',
-        'email': 'example@example.net',
-    }]
-
-    record_fixtures = {
-        'example.com': [
-            {'name': 'www.example.com', 'type': 'A', 'data': '192.0.2.1'},
-            {'name': 'mail.example.com', 'type': 'A', 'data': '192.0.2.2'},
-        ],
-        'example.net': [
-            {'name': 'www.example.net', 'type': 'A', 'data': '192.0.2.1'},
-            {'name': 'mail.example.net', 'type': 'A', 'data': '192.0.2.2'},
-        ]
-    }
-
     def setUp(self):
         super(StorageDriverTestCase, self).setUp()
         self.storage_conn = self.get_storage_driver()
 
     def create_server_fixture(self, fixture=0, values={}):
-        _values = copy.copy(self.server_fixtures[fixture])
-        _values.update(values)
-
+        _values = self.get_server_fixture(fixture, values)
         return self.storage_conn.create_server(self.admin_context, _values)
 
     def create_domain_fixture(self, fixture=0, values={}):
-        _values = copy.copy(self.domain_fixtures[fixture])
-        _values.update(values)
-
+        _values = self.get_domain_fixture(fixture, values)
         return self.storage_conn.create_domain(self.admin_context, _values)
 
-    def create_record_fixture(self, domain, fixture=0,
-                              values={}):
-        _values = copy.copy(self.record_fixtures[domain['name']][fixture])
-        _values.update(values)
-
+    def create_record_fixture(self, domain, fixture=0, values={}):
+        _values = self.get_record_fixture(domain, fixture, values)
         return self.storage_conn.create_record(self.admin_context,
                                                domain['id'], _values)
 
