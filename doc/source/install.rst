@@ -39,17 +39,60 @@ Common steps
 ================
 
 .. index::
-    double: installing; rename_configs
+    double: installing; common_steps
 
 .. note::
    The below operations should take place underneath your <project>/etc folder.
 
-** Renaming configuration files is easy if you want to do it one by one then
-   do::
-   $ mv moniker-central.conf.sample moniker-central.conf
+1. Install system package dependencies (Ubuntu)::
+   $ apt-get install python-pip python-virtualenv python-setuptools-git
+   $ apt-get install rabbitmq-server bind9
+   $ apt-get build-dep python-lxml git
 
-** You can also do it in one swoop::
-   $ rename 's/\.sample$//' *.sample
+2. Clone the Moniker repo off of Stackforge::
+   $ cd /opt/stack
+   $ git clone https://github.com/stackforge/moniker.git
+   $ cd moniker
+
+3. Setup virtualenv
+.. note::
+   This is to not interfere with system packages etc.
+
+   $ virtualenv --no-site-packages .venv
+   $ . .venv/bin/activate
+
+4. As a user with ``root`` permissions or ``sudo`` privileges, run the
+   moniker installer::
+   $ cd moniker
+   $ sudo python setup.py develop
+   $ pip install -r tools/pip-options -r pip/pip-requires
+
+   Copy sample configs to usable ones, inside the ´etc´ folder do::
+   $ ls *.sample | while read f; do cp $f $(echo $f | sed "s/.sample$//g"); done
+
+6. Configure Bind or other if needed::
+   $ vi ``/etc/bind/named.conf``
+
+   Add
+   $ include "$CHECKOUT_PATH/var/bind9/zones.config"
+
+7. Restart bind::
+   $ sudo service bind9 restart
+
+8. If you intend to run Moniker as a non-root user, then permissions and other
+   things needs to be fixed up::
+   $ MUSER=moniker
+   $ useradd -m -d /opt/stack/moniker $MUSER
+   $ chown $MUSER:$MUSER /opt/stack/moniker
+
+   $ echo "$MUSER ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/90-moniker-$USER
+   $ chmod 0440 /etc/sudoers.d/90-moniker-$MUSER
+
+
+Note on running processes
+=========================
+You can start each of the processes mentioned below in for example a screen
+session to view output
 
 
 Installing the Central
@@ -58,26 +101,22 @@ Installing the Central
 .. index::
    double: installing; central
 
-1. Clone the Moniker repo off of Stackforge::
-   $ cd /opt/stack
-   $ git clone https://github.com/stackforge/moniker.git
+1. See :common_steps before proceeding.
 
-2. As a user with ``root`` permissions or ``sudo`` privileges, run the
-   moniker installer::
-   $ cd moniker
-   $ sudo python setup.py install
+2. Configure the :term:`central` service
 
-3. See :rename_configs:
-
-4. Configure the :term:`central` service
-
-   Change the wanted configuration settings to match your environment
+   Change the wanted configuration settings to match your environment, the file
+   is in the ´etc´ folder
    ::
     $ vi moniker-central.conf
 
    Refer to :doc:`configuration` details on configuring the service.
 
-5. Start the central service::
+3. Initialize and sync the :term:`central`::
+   $ moniker-manage database init
+   $ moniker-manage database sync
+
+4. Start the central service::
    $ moniker-central
 
 
@@ -88,26 +127,18 @@ Installing the Agent
    double: installing; agent
 
 
-1. Clone the Moniker repo off of Stackforge::
-   $ cd /opt/stack
-   $ git clone https://github.com/stackforge/moniker.git
+1. See :common_steps before proceeding.
 
-2. As a user with ``root`` permissions or ``sudo`` privileges, run the
-   moniker installer::
-   $ cd moniker
-   $ sudo python setup.py install
+2. Configure the :term:`agent` service
 
-3. See :rename_configs:
-
-4. Configure the :term:`agent` service
-
-   Change the wanted configuration settings to match your environment
+   Change the wanted configuration settings to match your environment, the file
+   is in the ´etc´ folder
    ::
     $ vi moniker-agent.conf
 
    Refer to :doc:`configuration` details on configuring the service.
 
-5. Start the agent service::
+3. Start the agent service::
    $ moniker-agent
 
 
@@ -121,25 +152,17 @@ Installing the API
    The API Server needs to able to talk to Keystone for AuthN + Z and
    communicates via MQ to other services.
 
-1. Clone the Moniker repo off of Stackforge::
-   $ cd /opt/stack
-   $ git clone https://github.com/stackforge/moniker.git
+1. See :common_steps before proceeding.
 
-2. As a user with ``root`` permissions or ``sudo`` privileges, run the
-   moniker installer::
-   $ cd moniker
-   $ sudo python setup.py install
+2. Configure the :term:`api` service
 
-3. See :rename_configs:
-
-4. Configure the :term:`api` service
-
-   Change the wanted configuration settings to match your environment
+   Change the wanted configuration settings to match your environment, the file
+   is in the ´etc´ folder
    ::
     $ vi moniker-api.conf
     $ vi moniker-api-paste.ini
 
    Refer to :doc:`configuration` details on configuring the service.
 
-5. Start the API service::
+3. Start the API service::
    $ moniker-api
