@@ -23,6 +23,9 @@ NOTE: This is probably incomplete!
 1. `source .venv/bin/activate`
 1. `python setup.py develop`
 1. create config files (See `*.sample` in the `etc` folder)
+1. create the database
+   * `moniker database init`
+   * `moniker database sync`
 1. Ensure the user you intend to run moniker as has passwordless sudo rights:
    * `echo "$USER ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/90-moniker-$USER`
    * `chmod 0440 /etc/sudoers.d/90-moniker-$USER`
