@@ -106,6 +106,13 @@ class Service(rpc_service.Service):
                     exchange_name=exchange,
                     callback=self._process_notification)
 
+    def _get_handler_event_types(self):
+        event_types = set()
+        for handler in self.handlers:
+            for et in handler.get_event_types():
+                event_types.add(et)
+        return event_types
+
     def _process_notification(self, notification):
         """
         Processes an incoming notification, offering each extension the
@@ -113,10 +120,11 @@ class Service(rpc_service.Service):
         """
         event_type = notification.get('event_type')
 
-        LOG.debug('Processing notification: %s' % event_type)
-
-        for handler in self.handlers:
-            self._process_notification_for_handler(handler, notification)
+        # NOTE(zykes): Only bother to actually do processing if there's any
+        # matching events, skips logging of things like compute.exists etc.
+        if event_type in self._get_handler_event_types():
+            for handler in self.handlers:
+                self._process_notification_for_handler(handler, notification)
 
     def _process_notification_for_handler(self, handler, notification):
         """
