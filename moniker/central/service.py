@@ -198,7 +198,8 @@ class Service(rpc_service.Service):
         if criterion is None:
             criterion = {}
 
-        criterion['tenant_id'] = context.tenant_id
+        if context.tenant_id is not None:
+            criterion['tenant_id'] = context.tenant_id
 
         return self.storage_conn.get_domains(context, criterion)
 

@@ -68,6 +68,7 @@ setup(
 
         [moniker.backend]
         bind9 = moniker.backend.impl_bind9:Bind9Backend
+        mysqlbind9 = moniker.backend.impl_mysqlbind9:MySQLBind9Backend
         fake = moniker.backend.impl_fake:FakeBackend
 
         [moniker.manage]

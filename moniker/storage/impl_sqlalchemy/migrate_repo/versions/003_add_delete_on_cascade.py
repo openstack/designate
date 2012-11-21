@@ -30,7 +30,7 @@ def upgrade(migrate_engine):
     # add foreignkey if not sqlite
     if not dialect.startswith('sqlite'):
         ForeignKeyConstraint(columns=[records.c.domain_id],
-                             refcolumns=[domains.c.id]).drop
+                             refcolumns=[domains.c.id]).drop()
         ForeignKeyConstraint(columns=[records.c.domain_id],
                              refcolumns=[domains.c.id],
                              ondelete='CASCADE').create()
