@@ -60,21 +60,6 @@ class TestCase(unittest2.TestCase):
         ]
     }
 
-    def get_server_fixture(self, fixture=0, values={}):
-        _values = copy.copy(self.server_fixtures[fixture])
-        _values.update(values)
-        return _values
-
-    def get_domain_fixture(self, fixture=0, values={}):
-        _values = copy.copy(self.domain_fixtures[fixture])
-        _values.update(values)
-        return _values
-
-    def get_record_fixture(self, domain, fixture=0, values={}):
-        _values = copy.copy(self.record_fixtures[domain['name']][fixture])
-        _values.update(values)
-        return _values
-
     def setUp(self):
         super(TestCase, self).setUp()
 
@@ -113,30 +98,34 @@ class TestCase(unittest2.TestCase):
     def get_admin_context(self):
         return MonikerContext.get_admin_context()
 
+    def get_server_fixture(self, fixture=0, values={}):
+        _values = copy.copy(self.server_fixtures[fixture])
+        _values.update(values)
+        return _values
+
+    def get_domain_fixture(self, fixture=0, values={}):
+        _values = copy.copy(self.domain_fixtures[fixture])
+        _values.update(values)
+        return _values
+
+    def get_record_fixture(self, domain, fixture=0, values={}):
+        _values = copy.copy(self.record_fixtures[domain['name']][fixture])
+        _values.update(values)
+        return _values
+
     # Fixture methods
     def create_server(self, **kwargs):
         context = kwargs.pop('context', self.get_admin_context())
+        fixture = kwargs.pop('fixture', 0)
 
-        values = dict(
-            name='ns1.example.org',
-            ipv4='192.0.2.1',
-            ipv6='2001:db8::1',
-        )
-
-        values.update(kwargs)
-
+        values = self.get_server_fixture(fixture=fixture, values=kwargs)
         return self.central_service.create_server(context, values=values)
 
     def create_domain(self, **kwargs):
         context = kwargs.pop('context', self.get_admin_context())
+        fixture = kwargs.pop('fixture', 0)
 
-        values = dict(
-            name='example.com',
-            email='info@example.com',
-        )
-
-        values.update(kwargs)
-
+        values = self.get_domain_fixture(fixture=fixture, values=kwargs)
         return self.central_service.create_domain(context, values=values)
 
     def create_record(self, domain_id, **kwargs):
