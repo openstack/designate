@@ -18,8 +18,8 @@ default_log_levels = amqplib=WARN, sqlalchemy=WARN, boto=WARN, suds=INFO, keysto
 
 # Ability to configure each backend individually
 #[backend:bind9]
-#rndc-path = /usr/sbin/rndc
-#rndc-host = 127.0.0.1
-#rndc-port = 953
-#rndc-config-file = /etc/rndc.conf
-#rndc-key-file = /etc/rndc.key
+#rndc_path = /usr/sbin/rndc
+#rndc_host = 127.0.0.1
+#rndc_port = 953
+#rndc_config_file = /etc/rndc.conf
+#rndc_key_file = /etc/rndc.key
