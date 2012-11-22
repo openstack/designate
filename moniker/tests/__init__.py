@@ -31,7 +31,7 @@ class AssertMixin(object):
     Mixin to hold assert helpers.
 
     """
-    def assertLen(self, obj, expected_length):
+    def assertLen(self, expected_length, obj):
         """
         Assert a length of a object
 
@@ -39,6 +39,28 @@ class AssertMixin(object):
         :param expected_length: The length in Int that's expected from len(obj)
         """
         self.assertEqual(len(obj), expected_length)
+
+    def assertData(self, expected_data, data):
+        """
+        A simple helper to very that at least fixture data is the same
+        as returned
+
+        :param expected_data: Data that's expected
+        :param data: Data to check expected_data against
+        """
+        for key, value in expected_data.items():
+            self.assertEqual(data[key], value)
+
+    def assertResponse(self, expected_data, data, schema=None):
+        """
+        If passed schema, do schema.validate() on data and pass
+        expected_data + data to self.assertData()
+
+        :param schema: A schema to validate data with
+        """
+        if schema:
+            schema.validate(data)
+        self.assertData(expected_data, data)
 
 
 class TestCase(unittest2.TestCase, AssertMixin):
@@ -64,16 +86,10 @@ class TestCase(unittest2.TestCase, AssertMixin):
         'email': 'example@example.net',
     }]
 
-    record_fixtures = {
-        'example.com': [
-            {'name': 'www.example.com', 'type': 'A', 'data': '192.0.2.1'},
-            {'name': 'mail.example.com', 'type': 'A', 'data': '192.0.2.2'}
-        ],
-        'example.net': [
-            {'name': 'www.example.net', 'type': 'A', 'data': '192.0.2.1'},
-            {'name': 'mail.example.net', 'type': 'A', 'data': '192.0.2.2'}
-        ]
-    }
+    record_fixtures = [
+        {'name': 'www.%s.com', 'type': 'A', 'data': '192.0.2.1'},
+        {'name': 'mail.%s.com', 'type': 'A', 'data': '192.0.2.2'}
+    ]
 
     def setUp(self):
         super(TestCase, self).setUp()
@@ -124,7 +140,7 @@ class TestCase(unittest2.TestCase, AssertMixin):
         return _values
 
     def get_record_fixture(self, domain, fixture=0, values={}):
-        _values = copy.copy(self.record_fixtures[domain['name']][fixture])
+        _values = copy.copy(self.record_fixtures[fixture])
         _values.update(values)
         return _values
 

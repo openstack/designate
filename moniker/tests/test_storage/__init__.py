@@ -13,7 +13,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import copy
 from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
 from moniker.tests import TestCase
@@ -38,18 +37,24 @@ class StorageDriverTestCase(StorageTestCase):
         super(StorageDriverTestCase, self).setUp()
         self.storage_conn = self.get_storage_driver()
 
-    def create_server_fixture(self, fixture=0, values={}):
-        _values = self.get_server_fixture(fixture, values)
-        return self.storage_conn.create_server(self.admin_context, _values)
+    def create_server(self, fixture=0, values={}):
+        fixture = self.get_server_fixture(fixture, values)
+        return fixture, self.storage_conn.create_server(
+            self.admin_context,
+            fixture)
 
-    def create_domain_fixture(self, fixture=0, values={}):
-        _values = self.get_domain_fixture(fixture, values)
-        return self.storage_conn.create_domain(self.admin_context, _values)
+    def create_domain(self, fixture=0, values={}):
+        fixture = self.get_domain_fixture(fixture, values)
+        return fixture, self.storage_conn.create_domain(
+            self.admin_context,
+            fixture)
 
-    def create_record_fixture(self, domain, fixture=0, values={}):
-        _values = self.get_record_fixture(domain, fixture, values)
-        return self.storage_conn.create_record(self.admin_context,
-                                               domain['id'], _values)
+    def create_record(self, domain, fixture=0, values={}):
+        fixture = self.get_record_fixture(domain, fixture, values)
+        return fixture, self.storage_conn.create_record(
+            self.admin_context,
+            domain['id'],
+            fixture)
 
     def test_init(self):
         self.get_storage_driver()
@@ -96,7 +101,7 @@ class StorageDriverTestCase(StorageTestCase):
 
     def test_create_server_duplicate(self):
         # Create the Initial Server
-        self.create_server_fixture()
+        self.create_server()
 
         values = [{
             # No Changes/Identical
@@ -119,14 +124,14 @@ class StorageDriverTestCase(StorageTestCase):
 
         for value in values:
             with self.assertRaises(exceptions.DuplicateServer):
-                self.create_server_fixture(values=value)
+                self.create_server(values=value)
 
     def test_get_servers(self):
         actual = self.storage_conn.get_servers(self.admin_context)
         self.assertEqual(actual, [])
 
         # Create a single server
-        server_one = self.create_server_fixture()
+        server_one = self.create_server()[1]
 
         actual = self.storage_conn.get_servers(self.admin_context)
         self.assertEqual(len(actual), 1)
@@ -136,7 +141,7 @@ class StorageDriverTestCase(StorageTestCase):
         self.assertEqual(str(actual[0]['ipv6']), str(server_one['ipv6']))
 
         # Create a second server
-        server_two = self.create_server_fixture(fixture=1)
+        server_two = self.create_server(fixture=1)[1]
 
         actual = self.storage_conn.get_servers(self.admin_context)
         self.assertEqual(len(actual), 2)
@@ -146,8 +151,8 @@ class StorageDriverTestCase(StorageTestCase):
         self.assertEqual(str(actual[1]['ipv6']), str(server_two['ipv6']))
 
     def test_get_servers_criterion(self):
-        server_one = self.create_server_fixture(0)
-        server_two = self.create_server_fixture(1)
+        server_one = self.create_server(0)[1]
+        server_two = self.create_server(1)[1]
 
         criterion = dict(
             name=server_one['name']
@@ -173,7 +178,7 @@ class StorageDriverTestCase(StorageTestCase):
 
     def test_get_server(self):
         # Create a server
-        expected = self.create_server_fixture()
+        expected = self.create_server()[1]
         actual = self.storage_conn.get_server(
             self.admin_context, expected['id'])
 
@@ -188,20 +193,19 @@ class StorageDriverTestCase(StorageTestCase):
 
     def test_update_server(self):
         # Create a server
-        server = self.create_server_fixture()
+        fixture, server = self.create_server()
 
-        values = self.server_fixtures[1]
         updated = self.storage_conn.update_server(
-            self.admin_context, server['id'], values)
+            self.admin_context, server['id'], fixture)
 
-        self.assertEqual(str(updated['name']), str(values['name']))
-        self.assertEqual(str(updated['ipv4']), str(values['ipv4']))
-        self.assertEqual(str(updated['ipv6']), str(values['ipv6']))
+        self.assertEqual(str(updated['name']), str(fixture['name']))
+        self.assertEqual(str(updated['ipv4']), str(fixture['ipv4']))
+        self.assertEqual(str(updated['ipv6']), str(fixture['ipv6']))
 
     def test_update_server_duplicate(self):
         # Create two servers
-        self.create_server_fixture(fixture=0)
-        server = self.create_server_fixture(fixture=1)
+        self.create_server(fixture=0)
+        server = self.create_server(fixture=1)[1]
 
         values = self.server_fixtures[0]
 
@@ -215,7 +219,7 @@ class StorageDriverTestCase(StorageTestCase):
             self.storage_conn.update_server(self.admin_context, uuid, {})
 
     def test_delete_server(self):
-        server = self.create_server_fixture(fixture=0)
+        server_fixture, server = self.create_server()
 
         self.storage_conn.delete_server(self.admin_context, server['id'])
 
@@ -245,17 +249,17 @@ class StorageDriverTestCase(StorageTestCase):
 
     def test_create_domain_duplicate(self):
         # Create the Initial Domain
-        self.create_domain_fixture()
+        self.create_domain()
 
         with self.assertRaises(exceptions.DuplicateDomain):
-            self.create_domain_fixture()
+            self.create_domain()
 
     def test_get_domains(self):
         actual = self.storage_conn.get_domains(self.admin_context)
         self.assertEqual(actual, [])
 
         # Create a single domain
-        domain_one = self.create_domain_fixture()
+        fixture_one, domain_one = self.create_domain()
 
         actual = self.storage_conn.get_domains(self.admin_context)
         self.assertEqual(len(actual), 1)
@@ -264,14 +268,14 @@ class StorageDriverTestCase(StorageTestCase):
         self.assertEqual(actual[0]['email'], domain_one['email'])
 
         # Create a second domain
-        self.create_domain_fixture(fixture=1)
+        self.create_domain(fixture=1)
 
         actual = self.storage_conn.get_domains(self.admin_context)
         self.assertEqual(len(actual), 2)
 
     def test_get_domains_criterion(self):
-        domain_one = self.create_domain_fixture(0)
-        domain_two = self.create_domain_fixture(1)
+        domain_one = self.create_domain(0)[1]
+        domain_two = self.create_domain(1)[1]
 
         criterion = dict(
             name=domain_one['name']
@@ -299,7 +303,7 @@ class StorageDriverTestCase(StorageTestCase):
 
     def test_get_domain(self):
         # Create a domain
-        expected = self.create_domain_fixture()
+        fixture, expected = self.create_domain()
         actual = self.storage_conn.get_domain(self.admin_context,
                                               expected['id'])
 
@@ -313,25 +317,24 @@ class StorageDriverTestCase(StorageTestCase):
 
     def test_update_domain(self):
         # Create a domain
-        domain = self.create_domain_fixture()
+        fixture, domain = self.create_domain()
 
-        values = self.domain_fixtures[1]
         updated = self.storage_conn.update_domain(self.admin_context,
-                                                  domain['id'], values)
+                                                  domain['id'], fixture)
 
-        self.assertEqual(updated['name'], values['name'])
-        self.assertEqual(updated['email'], values['email'])
+        self.assertEqual(updated['name'], fixture['name'])
+        self.assertEqual(updated['email'], fixture['email'])
 
     def test_update_domain_duplicate(self):
         # Create two domains
-        self.create_domain_fixture(fixture=0)
-        domain = self.create_domain_fixture(fixture=1)
-
-        values = self.domain_fixtures[0]
+        fixture_one, domain_one = self.create_domain(fixture=0)
+        domain_two = self.create_domain(fixture=1)[1]
 
         with self.assertRaises(exceptions.DuplicateDomain):
-            self.storage_conn.update_domain(self.admin_context, domain['id'],
-                                            values)
+            self.storage_conn.update_domain(
+                self.admin_context,
+                domain_two['id'],
+                fixture_one)
 
     def test_update_domain_missing(self):
         with self.assertRaises(exceptions.DomainNotFound):
@@ -339,7 +342,7 @@ class StorageDriverTestCase(StorageTestCase):
             self.storage_conn.update_domain(self.admin_context, uuid, {})
 
     def test_delete_domain(self):
-        domain = self.create_domain_fixture()
+        domain_fixture, domain = self.create_domain()
 
         self.storage_conn.delete_domain(self.admin_context, domain['id'])
 
@@ -352,7 +355,7 @@ class StorageDriverTestCase(StorageTestCase):
             self.storage_conn.delete_domain(self.admin_context, uuid)
 
     def test_create_record(self):
-        domain = self.create_domain_fixture()
+        domain_fixture, domain = self.create_domain()
 
         values = {
             'name': 'www.%s' % domain['name'],
@@ -372,13 +375,13 @@ class StorageDriverTestCase(StorageTestCase):
         self.assertEqual(result['data'], values['data'])
 
     def test_get_records(self):
-        domain = self.create_domain_fixture()
+        domain = self.create_domain()[1]
         actual = self.storage_conn.get_records(self.admin_context,
                                                domain['id'])
         self.assertEqual(actual, [])
 
         # Create a single record
-        record_one = self.create_record_fixture(domain, 0)
+        record_one = self.create_record(domain, fixture=0)[1]
 
         actual = self.storage_conn.get_records(self.admin_context,
                                                domain['id'])
@@ -389,7 +392,7 @@ class StorageDriverTestCase(StorageTestCase):
         self.assertEqual(actual[0]['data'], record_one['data'])
 
         # Create a second record
-        record_two = self.create_record_fixture(domain, 1)
+        record_two = self.create_record(domain, fixture=1)[1]
 
         actual = self.storage_conn.get_records(self.admin_context,
                                                domain['id'])
@@ -400,10 +403,10 @@ class StorageDriverTestCase(StorageTestCase):
         self.assertEqual(actual[1]['data'], record_two['data'])
 
     def test_get_records_criterion(self):
-        domain = self.create_domain_fixture()
+        domain = self.create_domain()[1]
 
-        record_one = self.create_record_fixture(domain, 0)
-        self.create_record_fixture(domain, 1)
+        record_one = self.create_record(domain, fixture=0)[1]
+        self.create_record(domain, fixture=1)
 
         criterion = dict(
             data=record_one['data']
@@ -426,9 +429,9 @@ class StorageDriverTestCase(StorageTestCase):
         self.assertEqual(len(results), 2)
 
     def test_get_record(self):
-        domain = self.create_domain_fixture()
+        domain = self.create_domain()[1]
 
-        expected = self.create_record_fixture(domain)
+        expected = self.create_record(domain)[1]
 
         actual = self.storage_conn.get_record(self.admin_context,
                                               expected['id'])
@@ -443,19 +446,17 @@ class StorageDriverTestCase(StorageTestCase):
             self.storage_conn.get_record(self.admin_context, uuid)
 
     def test_update_record(self):
-        domain = self.create_domain_fixture()
+        domain_fixture, domain = self.create_domain()
 
         # Create a record
-        record = self.create_record_fixture(domain)
-
-        values = self.record_fixtures[domain['name']][1]
+        record_fixture, record = self.create_record(domain)
 
         updated = self.storage_conn.update_record(self.admin_context,
-                                                  record['id'], values)
+                                                  record['id'], record_fixture)
 
-        self.assertEqual(updated['name'], values['name'])
-        self.assertEqual(updated['type'], values['type'])
-        self.assertEqual(updated['data'], values['data'])
+        self.assertEqual(updated['name'], record_fixture['name'])
+        self.assertEqual(updated['type'], record_fixture['type'])
+        self.assertEqual(updated['data'], record_fixture['data'])
 
     def test_update_record_missing(self):
         with self.assertRaises(exceptions.RecordNotFound):
@@ -463,10 +464,10 @@ class StorageDriverTestCase(StorageTestCase):
             self.storage_conn.update_record(self.admin_context, uuid, {})
 
     def test_delete_record(self):
-        domain = self.create_domain_fixture()
+        domain = self.create_domain()[1]
 
         # Create a record
-        record = self.create_record_fixture(domain)
+        record = self.create_record(domain)[1]
 
         self.storage_conn.delete_record(self.admin_context, record['id'])
 
