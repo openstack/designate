@@ -45,42 +45,48 @@ Common steps
    The below operations should take place underneath your <project>/etc folder.
 
 1. Install system package dependencies (Ubuntu)::
-   $ apt-get install python-pip python-virtualenv python-setuptools-git
+
+   $ apt-get install python-pip python-virtualenv
    $ apt-get install rabbitmq-server bind9
    $ apt-get build-dep python-lxml git
 
 2. Clone the Moniker repo off of Stackforge::
+
    $ cd /opt/stack
    $ git clone https://github.com/stackforge/moniker.git
    $ cd moniker
 
-3. Setup virtualenv
+3. Setup virtualenv::
+
 .. note::
    This is to not interfere with system packages etc.
 
    $ virtualenv --no-site-packages .venv
    $ . .venv/bin/activate
 
-4. As a user with ``root`` permissions or ``sudo`` privileges, run the
-   moniker installer::
+4. Install Moniker and it's dependencies::
+
    $ cd moniker
-   $ sudo python setup.py develop
-   $ pip install -r tools/pip-options -r tools/pip-requires
+   $ pip install -rtools/setup-requires -rtools/pip-requres -rtools/pip-options
+   $ python setup.py develop
 
    Copy sample configs to usable ones, inside the ´etc´ folder do::
    $ ls *.sample | while read f; do cp $f $(echo $f | sed "s/.sample$//g"); done
 
-6. Configure Bind or other if needed::
+5. Configure Bind or other if needed::
+
    $ vi ``/etc/bind/named.conf``
 
    Add
-   $ include "$CHECKOUT_PATH/var/bind9/zones.config"
+   include "$CHECKOUT_PATH/var/bind9/zones.config"
 
-7. Restart bind::
+6. Restart bind::
+
    $ sudo service bind9 restart
 
-8. If you intend to run Moniker as a non-root user, then permissions and other
+7. If you intend to run Moniker as a non-root user, then permissions and other
    things needs to be fixed up::
+
    $ MUSER=moniker
    $ useradd -m -d /opt/stack/moniker $MUSER
    $ chown $MUSER:$MUSER /opt/stack/moniker
@@ -103,20 +109,22 @@ Installing the Central
 
 1. See :common_steps before proceeding.
 
-2. Configure the :term:`central` service
+2. Configure the :term:`central` service::
 
    Change the wanted configuration settings to match your environment, the file
-   is in the ´etc´ folder
-   ::
-    $ vi moniker-central.conf
+   is in the ´etc´ folder::
+
+   $ vi moniker-central.conf
 
    Refer to :doc:`configuration` details on configuring the service.
 
 3. Initialize and sync the :term:`central`::
+
    $ moniker-manage database init
    $ moniker-manage database sync
 
 4. Start the central service::
+
    $ moniker-central
 
 
@@ -129,16 +137,17 @@ Installing the Agent
 
 1. See :common_steps before proceeding.
 
-2. Configure the :term:`agent` service
+2. Configure the :term:`agent` service::
 
    Change the wanted configuration settings to match your environment, the file
-   is in the ´etc´ folder
-   ::
+   is in the ´etc´ folder::
+
     $ vi moniker-agent.conf
 
    Refer to :doc:`configuration` details on configuring the service.
 
 3. Start the agent service::
+
    $ moniker-agent
 
 
@@ -154,7 +163,7 @@ Installing the API
 
 1. See :common_steps before proceeding.
 
-2. Configure the :term:`api` service
+2. Configure the :term:`api` service::
 
    Change the wanted configuration settings to match your environment, the file
    is in the ´etc´ folder
@@ -165,4 +174,5 @@ Installing the API
    Refer to :doc:`configuration` details on configuring the service.
 
 3. Start the API service::
+
    $ moniker-api
