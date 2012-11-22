@@ -121,16 +121,16 @@ class Bind9Backend(base.Backend):
 
         rndc_call = [
             'sudo',
-            cfg.CONF.rndc_path,
-            '-s', cfg.CONF.rndc_host,
-            '-p', str(cfg.CONF.rndc_port),
+            self.config.rndc_path,
+            '-s', self.config.rndc_host,
+            '-p', str(self.config.rndc_port),
         ]
 
-        if cfg.CONF.rndc_config_file:
-            rndc_call.extend(['-c', cfg.CONF.rndc_config_file])
+        if self.config.rndc_config_file:
+            rndc_call.extend(['-c', self.config.rndc_config_file])
 
-        if cfg.CONF.rndc_key_file:
-            rndc_call.extend(['-k', cfg.CONF.rndc_key_file])
+        if self.config.rndc_key_file:
+            rndc_call.extend(['-k', self.config.rndc_key_file])
 
         rndc_call.extend(['reload'])
 
