@@ -33,7 +33,6 @@ class Plugin(object):
 
     def __init__(self):
         self.name = self.get_canonical_name()
-        self.config = cfg.CONF[self.name]
         LOG.debug("Loaded plugin %s", self.name)
 
     def is_enabled(self):

@@ -121,16 +121,16 @@ class Bind9Backend(base.Backend):
 
         rndc_call = [
             'sudo',
-            self.config.rndc_path,
-            '-s', self.config.rndc_host,
-            '-p', str(self.config.rndc_port),
+            cfg.CONF[self.name].rndc_path,
+            '-s', cfg.CONF[self.name].rndc_host,
+            '-p', str(cfg.CONF[self.name].rndc_port),
         ]
 
-        if self.config.rndc_config_file:
-            rndc_call.extend(['-c', self.config.rndc_config_file])
+        if cfg.CONF[self.name].rndc_config_file:
+            rndc_call.extend(['-c', cfg.CONF[self.name].rndc_config_file])
 
-        if self.config.rndc_key_file:
-            rndc_call.extend(['-k', self.config.rndc_key_file])
+        if cfg.CONF[self.name].rndc_key_file:
+            rndc_call.extend(['-k', cfg.CONF[self.name].rndc_key_file])
 
         rndc_call.extend(['reload'])
 
@@ -169,16 +169,16 @@ class Bind9Backend(base.Backend):
 
         rndc_call = [
             'sudo',
-            self.config.rndc_path,
-            '-s', self.config.rndc_host,
-            '-p', str(self.config.rndc_port),
+            cfg.CONF[self.name].rndc_path,
+            '-s', cfg.CONF[self.name].rndc_host,
+            '-p', str(cfg.CONF[self.name].rndc_port),
         ]
 
-        if self.config.rndc_config_file:
-            rndc_call.extend(['-c', self.config.rndc_config_file])
+        if cfg.CONF[self.name].rndc_config_file:
+            rndc_call.extend(['-c', cfg.CONF[self.name].rndc_config_file])
 
-        if self.config.rndc_key_file:
-            rndc_call.extend(['-k', self.config.rndc_key_file])
+        if cfg.CONF[self.name].rndc_key_file:
+            rndc_call.extend(['-k', cfg.CONF[self.name].rndc_key_file])
 
         rndc_op = 'reconfig' if new_domain_flag else 'reload'
         rndc_call.extend([rndc_op])

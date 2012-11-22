@@ -95,7 +95,7 @@ class BaseAddressHandler(Handler):
         :param resource_type: The managed resource type
         :param resource_id: The managed resource ID
         """
-        domain = self.get_domain(self.config.domain_id)
+        domain = self.get_domain(cfg.CONF[self.name].domain_id)
 
         data = extra.copy()
         data['domain'] = domain['name']
@@ -139,10 +139,14 @@ class BaseAddressHandler(Handler):
                 'managed_resource_type': resource_type
             })
 
-        records = self.central_service.get_records(context,
-                                                   self.config.domain_id,
-                                                   criterion)
+        records = self.central_service.get_records(
+            context,
+            cfg.CONF[self.name].domain_id,
+            criterion)
+
         for record in records:
             LOG.debug('Deleting record %s' % record['id'])
-            self.central_service.delete_record(context, self.config.domain_id,
-                                               record['id'])
+            self.central_service.delete_record(
+                context,
+                cfg.CONF[self.name].domain_id,
+                record['id'])

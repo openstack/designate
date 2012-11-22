@@ -33,10 +33,10 @@ class QuantumFloatingHandler(BaseAddressHandler):
         return opts
 
     def get_exchange_topics(self):
-        exchange = self.config.control_exchange
+        exchange = cfg.CONF[self.name].control_exchange
 
         topics = [topic + ".info"
-                  for topic in self.config.notification_topics]
+                  for topic in cfg.CONF[self.name].notification_topics]
 
         return (exchange, topics)
 
