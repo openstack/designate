@@ -20,9 +20,32 @@ from moniker.tests import TestCase
 class ApiTestCase(TestCase):
     __test__ = False
 
-    def post(self, path, data, content_type="application/json"):
+    def get(self, path, **kw):
+        expected_status_code = kw.pop('status_code', 200)
+
+        resp = self.client.get(path=path)
+        self.assertEqual(resp.status_code, expected_status_code)
+
+        resp.json = json.loads(resp.data)
+        return resp
+
+    def post(self, path, data, content_type="application/json", **kw):
+        expected_status_code = kw.pop('status_code', 200)
+
         content = json.dumps(data)
         resp = self.client.post(path=path, content_type=content_type,
                                 data=content)
+
+        self.assertEqual(resp.status_code, expected_status_code)
+
         resp.json = json.loads(resp.data)
+        return resp
+
+    def delete(self, path, **kw):
+        expected_status_code = kw.pop('status_code', 200)
+
+        resp = self.client.delete(path=path)
+
+        self.assertEqual(resp.status_code, expected_status_code)
+
         return resp

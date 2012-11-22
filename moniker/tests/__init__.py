@@ -26,7 +26,22 @@ from moniker.central import service as central_service
 LOG = logging.getLogger(__name__)
 
 
-class TestCase(unittest2.TestCase):
+class AssertMixin(object):
+    """
+    Mixin to hold assert helpers.
+
+    """
+    def assertLen(self, obj, expected_length):
+        """
+        Assert a length of a object
+
+        :param obj: The object ot run len() on
+        :param expected_length: The length in Int that's expected from len(obj)
+        """
+        self.assertEqual(len(obj), expected_length)
+
+
+class TestCase(unittest2.TestCase, AssertMixin):
     server_fixtures = [{
         'name': 'ns1.example.org',
         'ipv4': '192.0.2.1',
