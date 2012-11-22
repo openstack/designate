@@ -20,26 +20,24 @@ Install
 ========================
 
 Moniker is comprised of three components for more info on these please
-consolidate :architecture:.
+see :doc:`architecture`.
 
 .. note::
-    Moniker makes extensive use of the messaging bus, but has not
-    yet been tested with ZeroMQ. We recommend using Rabbit or qpid
-    for now.
+   Moniker makes extensive use of the messaging bus, but has not
+   yet been tested with ZeroMQ. We recommend using RabbitMQ for now.
 
 
 From Packages
 +++++++++++++
 
-
 From Source / GIT
 +++++++++++++++++
 
-Common steps
-================
+Common Steps
+============
 
 .. index::
-    double: installing; common_steps
+   double: installing; common_steps
 
 .. note::
    The below operations should take place underneath your <project>/etc folder.
@@ -90,13 +88,13 @@ Common steps
    $ MUSER=moniker
    $ useradd -m -d /opt/stack/moniker $MUSER
    $ chown $MUSER:$MUSER /opt/stack/moniker
-
    $ echo "$MUSER ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/90-moniker-$USER
    $ chmod 0440 /etc/sudoers.d/90-moniker-$MUSER
 
 
 Note on running processes
 =========================
+
 You can start each of the processes mentioned below in for example a screen
 session to view output
 
@@ -107,7 +105,7 @@ Installing the Central
 .. index::
    double: installing; central
 
-1. See :common_steps before proceeding.
+1. See `Common Steps`_ before proceeding.
 
 2. Configure the :term:`central` service::
 
@@ -134,15 +132,14 @@ Installing the Agent
 .. index::
    double: installing; agent
 
-
-1. See :common_steps before proceeding.
+1. See `Common Steps`_ before proceeding.
 
 2. Configure the :term:`agent` service::
 
    Change the wanted configuration settings to match your environment, the file
    is in the ´etc´ folder::
 
-    $ vi moniker-agent.conf
+   $ vi moniker-agent.conf
 
    Refer to :doc:`configuration` details on configuring the service.
 
@@ -161,15 +158,15 @@ Installing the API
    The API Server needs to able to talk to Keystone for AuthN + Z and
    communicates via MQ to other services.
 
-1. See :common_steps before proceeding.
+1. See `Common Steps`_ before proceeding.
 
 2. Configure the :term:`api` service::
 
    Change the wanted configuration settings to match your environment, the file
-   is in the ´etc´ folder
-   ::
-    $ vi moniker-api.conf
-    $ vi moniker-api-paste.ini
+   is in the ´etc´ folder::
+
+   $ vi moniker-api.conf
+   $ vi moniker-api-paste.ini
 
    Refer to :doc:`configuration` details on configuring the service.
 
