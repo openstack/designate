@@ -13,8 +13,16 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from moniker.openstack.common import jsonutils as json
 from moniker.tests import TestCase
 
 
 class ApiTestCase(TestCase):
     __test__ = False
+
+    def post(self, path, data, content_type="application/json"):
+        content = json.dumps(data)
+        resp = self.client.post(path=path, content_type=content_type,
+                                data=content)
+        resp.json = json.loads(resp.data)
+        return resp
