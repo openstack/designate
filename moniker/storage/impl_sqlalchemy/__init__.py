@@ -19,7 +19,7 @@ from moniker.openstack.common import log as logging
 from moniker import exceptions
 from moniker.storage import base
 from moniker.storage.impl_sqlalchemy import models
-from moniker.storage.impl_sqlalchemy.session import get_session
+from moniker.sqlalchemy.session import get_session
 
 
 LOG = logging.getLogger(__name__)
