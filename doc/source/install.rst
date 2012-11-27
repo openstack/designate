@@ -65,7 +65,7 @@ Common Steps
 4. Install Moniker and it's dependencies::
 
    $ cd moniker
-   $ pip install -rtools/setup-requires -rtools/pip-requres -rtools/pip-options
+   $ pip install -rtools/setup-requires -rtools/pip-requires -rtools/pip-options
    $ python setup.py develop
 
    Copy sample configs to usable ones, inside the ´etc´ folder do::
