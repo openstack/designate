@@ -1,4 +1,6 @@
-# Copyright 2012 Red Hat, Inc.
+# vim: tabstop=4 shiftwidth=4 softtabstop=4
+
+# Copyright (c) 2012 Intel Corporation.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -13,17 +15,25 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+"""
+UUID related utilities and helper functions.
+"""
 
-from moniker.openstack.common.gettextutils import _
-from moniker.openstack.common import log as logging
-from moniker.openstack.common.notifier import rpc_notifier
-
-LOG = logging.getLogger(__name__)
+import uuid
 
 
-def notify(context, message):
-    """Deprecated in Grizzly. Please use rpc_notifier instead."""
+def generate_uuid():
+    return str(uuid.uuid4())
 
-    LOG.deprecated(_("The rabbit_notifier is now deprecated."
-                     " Please use rpc_notifier instead."))
-    rpc_notifier.notify(context, message)
+
+def is_uuid_like(val):
+    """Returns validation of a value as a UUID.
+
+    For our purposes, a UUID is a canonical form string:
+    aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+
+    """
+    try:
+        return str(uuid.UUID(val)) == val
+    except (TypeError, ValueError, AttributeError):
+        return False

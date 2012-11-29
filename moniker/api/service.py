@@ -27,8 +27,8 @@ class Service(wsgi.Service):
     def __init__(self, backlog=128, threads=1000):
         super(Service, self).__init__(threads)
 
-        self.host = cfg.CONF.api_host
-        self.port = cfg.CONF.api_port
+        self._host = cfg.CONF.api_host
+        self._port = cfg.CONF.api_port
         self.backlog = backlog
 
         config_path = utils.find_config(cfg.CONF.api_paste_config)

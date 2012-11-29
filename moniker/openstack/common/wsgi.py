@@ -56,8 +56,7 @@ class Service(service.Service):
     """
 
     def __init__(self, threads=1000):
-        super(Service, self).__init__()
-        self.pool = eventlet.GreenPool(threads)
+        super(Service, self).__init__(threads)
 
     def start(self, application, port, host='0.0.0.0', backlog=128):
         """Start serving this service using the provided server instance.
@@ -67,7 +66,16 @@ class Service(service.Service):
         """
         super(Service, self).start()
         socket = eventlet.listen((host, port), backlog=backlog)
-        self.pool.spawn_n(self._run, application, socket)
+        (self._host, self._port) = socket.getsockname()
+        self.tg.add_thread(self._run, application, socket)
+
+    @property
+    def host(self):
+        return self._host
+
+    @property
+    def port(self):
+        return self._port
 
     def stop(self):
         """Stop serving this API.
@@ -77,18 +85,10 @@ class Service(service.Service):
         """
         super(Service, self).stop()
 
-    def wait(self):
-        """Wait until all servers have completed running."""
-        super(Service, self).wait()
-        try:
-            self.pool.waitall()
-        except KeyboardInterrupt:
-            pass
-
     def _run(self, application, socket):
         """Start a WSGI server in a new green thread."""
         logger = logging.getLogger('eventlet.wsgi.server')
-        eventlet.wsgi.server(socket, application, custom_pool=self.pool,
+        eventlet.wsgi.server(socket, application, custom_pool=self.tg.pool,
                              log=logging.WritableLogger(logger))
 
 
@@ -568,9 +568,9 @@ class RequestDeserializer(object):
         """Extract necessary pieces of the request.
 
         :param request: Request object
-        :returns tuple of expected controller action name, dictionary of
-                 keyword arguments to pass to the controller, the expected
-                 content type of the response
+        :returns: tuple of (expected controller action name, dictionary of
+                  keyword arguments to pass to the controller, the expected
+                  content type of the response)
 
         """
         action_args = self.get_action_args(request.environ)

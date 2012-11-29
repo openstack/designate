@@ -27,7 +27,7 @@ import sys
 import time
 
 import eventlet
-import greenlet
+import extras
 import logging as std_logging
 
 from moniker.openstack.common import cfg
@@ -36,11 +36,8 @@ from moniker.openstack.common.gettextutils import _
 from moniker.openstack.common import log as logging
 from moniker.openstack.common import threadgroup
 
-try:
-    from openstack.common import rpc
-except ImportError:
-    rpc = None
 
+rpc = extras.try_import('moniker.openstack.common.rpc')
 CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
 
@@ -54,7 +51,7 @@ class Launcher(object):
         :returns: None
 
         """
-        self._services = []
+        self._services = threadgroup.ThreadGroup('launcher')
         eventlet_backdoor.initialize_if_enabled()
 
     @staticmethod
@@ -75,8 +72,7 @@ class Launcher(object):
         :returns: None
 
         """
-        gt = eventlet.spawn(self.run_service, service)
-        self._services.append(gt)
+        self._services.add_thread(self.run_service, service)
 
     def stop(self):
         """Stop all services which are currently running.
@@ -84,8 +80,7 @@ class Launcher(object):
         :returns: None
 
         """
-        for service in self._services:
-            service.kill()
+        self._services.stop()
 
     def wait(self):
         """Waits until all services have been stopped, and then returns.
@@ -93,11 +88,7 @@ class Launcher(object):
         :returns: None
 
         """
-        for service in self._services:
-            try:
-                service.wait()
-            except greenlet.GreenletExit:
-                pass
+        self._services.wait()
 
 
 class SignalExit(SystemExit):
@@ -132,9 +123,9 @@ class ServiceLauncher(Launcher):
         except SystemExit as exc:
             status = exc.code
         finally:
-            self.stop()
             if rpc:
                 rpc.cleanup()
+            self.stop()
         return status
 
 
@@ -191,7 +182,7 @@ class ProcessLauncher(object):
         # Close write to ensure only parent has it open
         os.close(self.writepipe)
         # Create greenthread to watch for parent to close pipe
-        eventlet.spawn(self._pipe_watcher)
+        eventlet.spawn_n(self._pipe_watcher)
 
         # Reseed random number generator
         random.seed()
@@ -260,10 +251,12 @@ class ProcessLauncher(object):
 
         if os.WIFSIGNALED(status):
             sig = os.WTERMSIG(status)
-            LOG.info(_('Child %(pid)d killed by signal %(sig)d'), locals())
+            LOG.info(_('Child %(pid)d killed by signal %(sig)d'),
+                     dict(pid=pid, sig=sig))
         else:
             code = os.WEXITSTATUS(status)
-            LOG.info(_('Child %(pid)d exited with status %(code)d'), locals())
+            LOG.info(_('Child %(pid)s exited with status %(code)d'),
+                     dict(pid=pid, code=code))
 
         if pid not in self.children:
             LOG.warning(_('pid %d not in child list'), pid)
@@ -275,6 +268,10 @@ class ProcessLauncher(object):
 
     def wait(self):
         """Loop waiting on children to die and respawning as necessary"""
+
+        LOG.debug(_('Full set of CONF:'))
+        CONF.log_opt_values(LOG, std_logging.DEBUG)
+
         while self.running:
             wrap = self._wait_child()
             if not wrap:
@@ -305,8 +302,8 @@ class ProcessLauncher(object):
 class Service(object):
     """Service object for binaries running on hosts."""
 
-    def __init__(self):
-        self.tg = threadgroup.ThreadGroup('service')
+    def __init__(self, threads=1000):
+        self.tg = threadgroup.ThreadGroup('service', threads)
 
     def start(self):
         pass
