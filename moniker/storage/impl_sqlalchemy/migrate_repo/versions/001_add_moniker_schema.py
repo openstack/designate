@@ -24,7 +24,7 @@ from sqlalchemy.schema import Column, MetaData
 from moniker.openstack.common import timeutils
 from moniker.storage.impl_sqlalchemy.migrate_repo.utils import (
     Table, create_tables, drop_tables)
-from moniker.storage.impl_sqlalchemy.types import Inet, UUID
+from moniker.sqlalchemy.types import Inet, UUID
 
 meta = MetaData()
 

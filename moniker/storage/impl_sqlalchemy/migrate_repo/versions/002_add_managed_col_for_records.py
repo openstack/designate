@@ -14,7 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from sqlalchemy import MetaData, Table, Column, Boolean, Unicode
-from moniker.storage.impl_sqlalchemy.types import UUID
+from moniker.sqlalchemy.types import UUID
 
 meta = MetaData()
 
