@@ -16,11 +16,12 @@
 import flask
 from moniker.openstack.common import log as logging
 from moniker import exceptions
-from moniker.api.v1 import blueprint
 from moniker.api.v1.schemas import domain_schema, domains_schema
 from moniker.central import api as central_api
 
+
 LOG = logging.getLogger(__name__)
+blueprint = flask.Blueprint('domains', __name__)
 
 
 def _append_domain_links(values, domain_id):

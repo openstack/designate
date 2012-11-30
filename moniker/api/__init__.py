@@ -15,7 +15,7 @@
 # under the License.
 import flask
 from moniker.openstack.common import cfg
-from moniker.openstack.common import jsonutils
+from moniker.openstack.common import jsonutils as json
 
 
 cfg.CONF.register_opts([
@@ -32,4 +32,4 @@ cfg.CONF.register_opts([
 
 
 # Allows us to serialize datetime's etc
-flask.helpers.json = jsonutils
+flask.helpers.json = json

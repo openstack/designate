@@ -15,38 +15,14 @@
 # under the License.
 from moniker.openstack.common import log as logging
 from moniker.openstack.common import jsonutils as json
-from flask import Flask
-from moniker.api.v1 import blueprint
-from moniker.api.auth import NoAuthMiddleware
-from moniker.tests.test_api import ApiTestCase
+from moniker.tests.test_api.test_v1 import ApiV1Test
 
 
 LOG = logging.getLogger(__name__)
 
 
-class ApiV1Test(ApiTestCase):
+class ApiV1DomainsTest(ApiV1Test):
     __test__ = True
-
-    def setUp(self):
-        super(ApiV1Test, self).setUp()
-
-        # Create a Flask application and register the V1 blueprint
-        self.app = Flask(__name__)
-        self.app.register_blueprint(blueprint)
-
-        # Inject the NoAuth middleware
-        self.app.wsgi_app = NoAuthMiddleware(self.app.wsgi_app)
-
-        # Obtain a test client
-        self.client = self.app.test_client()
-
-        # Create and start an instance of the central service
-        self.central_service = self.get_central_service()
-        self.central_service.start()
-
-    def tearDown(self):
-        super(ApiV1Test, self).tearDown()
-        self.central_service.stop()
 
     def test_list_servers(self):
         response = self.client.get('servers')

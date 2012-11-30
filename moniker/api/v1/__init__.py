@@ -14,16 +14,16 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import flask
-
-blueprint = flask.Blueprint('v1', __name__)
-
-import moniker.api.v1.servers
-import moniker.api.v1.domains
-import moniker.api.v1.records
+from moniker.api.v1.servers import blueprint as servers_blueprint
+from moniker.api.v1.domains import blueprint as domains_blueprint
+from moniker.api.v1.records import blueprint as records_blueprint
 
 
 def factory(global_config, **local_conf):
     app = flask.Flask('moniker.api.v1')
-    app.register_blueprint(blueprint)
+
+    app.register_blueprint(servers_blueprint)
+    app.register_blueprint(domains_blueprint)
+    app.register_blueprint(records_blueprint)
 
     return app

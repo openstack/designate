@@ -16,11 +16,12 @@
 import flask
 from moniker.openstack.common import log as logging
 from moniker import exceptions
-from moniker.api.v1 import blueprint
 from moniker.api.v1.schemas import record_schema, records_schema
 from moniker.central import api as central_api
 
+
 LOG = logging.getLogger(__name__)
+blueprint = flask.Blueprint('records', __name__)
 
 
 def _append_record_links(values, domain_id, record_id):
