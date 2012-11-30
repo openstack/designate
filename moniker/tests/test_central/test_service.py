@@ -44,8 +44,8 @@ class CentralServiceTest(CentralTestCase):
         # Ensure all values have been set correctly
         self.assertIsNotNone(server['id'])
         self.assertEqual(server['name'], values['name'])
-        self.assertEqual(str(server['ipv4']), values['ipv4'])
-        self.assertEqual(str(server['ipv6']), values['ipv6'])
+        self.assertEqual(server['ipv4'], values['ipv4'])
+        self.assertEqual(server['ipv6'], values['ipv6'])
 
     def test_get_servers(self):
         context = self.get_admin_context()
@@ -84,8 +84,8 @@ class CentralServiceTest(CentralTestCase):
                                                  expected_server['id'])
         self.assertEqual(server['id'], expected_server['id'])
         self.assertEqual(server['name'], expected_server['name'])
-        self.assertEqual(str(server['ipv4']), expected_server['ipv4'])
-        self.assertEqual(str(server['ipv6']), expected_server['ipv6'])
+        self.assertEqual(server['ipv4'], expected_server['ipv4'])
+        self.assertEqual(server['ipv6'], expected_server['ipv6'])
 
     def test_update_server(self):
         context = self.get_admin_context()
@@ -103,7 +103,7 @@ class CentralServiceTest(CentralTestCase):
                                                  expected_server['id'])
 
         # Ensure the server was updated correctly
-        self.assertEqual(str(server['ipv4']), '127.0.0.1')
+        self.assertEqual(server['ipv4'], '127.0.0.1')
 
     def test_delete_server(self):
         context = self.get_admin_context()

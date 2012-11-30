@@ -38,8 +38,6 @@ import inspect
 import itertools
 import json
 import xmlrpclib
-import uuid
-import ipaddr
 
 from moniker.openstack.common import timeutils
 
@@ -106,10 +104,6 @@ def to_primitive(value, convert_instances=False, level=0):
             return o
         elif isinstance(value, datetime.datetime):
             return timeutils.strtime(value)
-        elif isinstance(value, uuid.UUID):
-            return str(value)
-        elif isinstance(value, ipaddr.IPAddress):
-            return str(value)
         elif hasattr(value, 'iteritems'):
             return to_primitive(dict(value.iteritems()),
                                 convert_instances=convert_instances,

@@ -18,10 +18,10 @@
 #    under the License.
 
 # should this be in schema.py?
-from uuid import uuid4
 from sqlalchemy import ForeignKey, Enum, Integer, String, DateTime, Text
 from sqlalchemy.schema import Column, MetaData
 from moniker.openstack.common import timeutils
+from moniker.openstack.common.uuidutils import generate_uuid
 from moniker.storage.impl_sqlalchemy.migrate_repo.utils import (
     Table, create_tables, drop_tables)
 from moniker.sqlalchemy.types import Inet, UUID
@@ -31,7 +31,7 @@ meta = MetaData()
 RECORD_TYPES = ['A', 'AAAA', 'CNAME', 'MX', 'SRV', 'TXT', 'NS']
 
 servers = Table('servers', meta,
-                Column('id', UUID(), default=uuid4, primary_key=True),
+                Column('id', UUID(), default=generate_uuid, primary_key=True),
                 Column('created_at', DateTime(), default=timeutils.utcnow),
                 Column('updated_at', DateTime(), onupdate=timeutils.utcnow),
                 Column('version', Integer(), default=1, nullable=False),
@@ -40,7 +40,7 @@ servers = Table('servers', meta,
                 Column('ipv6', Inet(), default=None, unique=True))
 
 domains = Table('domains', meta,
-                Column('id', UUID(), default=uuid4, primary_key=True),
+                Column('id', UUID(), default=generate_uuid, primary_key=True),
                 Column('created_at', DateTime(), default=timeutils.utcnow),
                 Column('updated_at', DateTime(), onupdate=timeutils.utcnow),
                 Column('version', Integer(), default=1, nullable=False),
@@ -54,7 +54,7 @@ domains = Table('domains', meta,
                 Column('minimum', Integer(), default=3600, nullable=False))
 
 records = Table('records', meta,
-                Column('id', UUID(), default=uuid4, primary_key=True),
+                Column('id', UUID(), default=generate_uuid, primary_key=True),
                 Column('created_at', DateTime(), default=timeutils.utcnow),
                 Column('updated_at', DateTime(), onupdate=timeutils.utcnow),
                 Column('version', Integer(), default=1, nullable=False),

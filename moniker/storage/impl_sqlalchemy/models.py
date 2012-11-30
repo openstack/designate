@@ -15,7 +15,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from uuid import uuid4
 from urlparse import urlparse
 from sqlalchemy import (Column, DateTime, String, Text, Integer, ForeignKey,
                         Enum, Boolean, Unicode)
@@ -26,6 +25,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
 from moniker.openstack.common import timeutils
+from moniker.openstack.common.uuidutils import generate_uuid
 from moniker import exceptions
 from moniker.sqlalchemy.types import UUID, Inet
 
@@ -50,7 +50,7 @@ def table_args():
 class Base(object):
     __abstract__ = True
 
-    id = Column(UUID, default=uuid4, primary_key=True)
+    id = Column(UUID, default=generate_uuid, primary_key=True)
 
     created_at = Column(DateTime, default=timeutils.utcnow)
     updated_at = Column(DateTime, onupdate=timeutils.utcnow)

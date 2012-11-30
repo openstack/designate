@@ -52,7 +52,7 @@ class UUID(TypeDecorator):
         if value is None:
             return value
         else:
-            return uuid.UUID(value)
+            return str(uuid.UUID(value))
 
 
 class Inet(TypeDecorator):
@@ -69,9 +69,3 @@ class Inet(TypeDecorator):
             return value
         else:
             return str(value)
-
-    def process_result_value(self, value, dialect):
-        if value is None:
-            return value
-        else:
-            return ipaddr.IPAddress(value)
