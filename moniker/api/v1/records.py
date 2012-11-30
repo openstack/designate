@@ -27,7 +27,7 @@ blueprint = flask.Blueprint('records', __name__)
 def _append_record_links(values, domain_id, record_id):
     values['self'] = flask.url_for('.get_record', domain_id=domain_id,
                                    record_id=record_id)
-    values['domain'] = flask.url_for('.get_domain', domain_id=domain_id)
+    values['domain'] = flask.url_for('domains.get_domain', domain_id=domain_id)
     values['schema'] = flask.url_for('.get_record_schema')
 
     return values
