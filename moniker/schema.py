@@ -1,114 +1,214 @@
-# Copyright 2012 OpenStack LLC.
-# All Rights Reserved.
+# Copyright 2012 Managed I.T.
 #
-#    Licensed under the Apache License, Version 2.0 (the "License"); you may
-#    not use this file except in compliance with the License. You may obtain
-#    a copy of the License at
+# Author: Kiall Mac Innes <kiall@managedit.ie>
 #
-#         http://www.apache.org/licenses/LICENSE-2.0
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
 #
-#    Unless required by applicable law or agreed to in writing, software
-#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-#    License for the specific language governing permissions and limitations
-#    under the License.
+#      http://www.apache.org/licenses/LICENSE-2.0
 #
-# NOTE(kiall): Copied from Glance
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+import re
 import jsonschema
-from moniker.openstack.common.gettextutils import _
+import ipaddr
+import iso8601
+from moniker.openstack.common import log as logging
 from moniker import exceptions
+from moniker import utils
+
+LOG = logging.getLogger(__name__)
+
+# TODO: We shouldn't hard code this list..
+resolver = jsonschema.RefResolver(store={
+    '/schemas/domain': utils.load_schema('v1', 'domain'),
+    '/schemas/domains': utils.load_schema('v1', 'domains'),
+    '/schemas/record': utils.load_schema('v1', 'record'),
+    '/schemas/records': utils.load_schema('v1', 'records'),
+    '/schemas/server': utils.load_schema('v1', 'server'),
+    '/schemas/servers': utils.load_schema('v1', 'servers'),
+})
+
+
+class SchemaValidator(jsonschema.Draft3Validator):
+    def validate_format(self, format, instance, schema):
+        if format == "date-time":
+            # ISO 8601 format
+            if self.is_type(instance, "string"):
+                try:
+                    iso8601.parse_date(instance)
+                except:
+                    msg = "%s is not an ISO 8601 date" % (instance)
+                    yield jsonschema.ValidationError(msg)
+        elif format == "date":
+            # YYYY-MM-DD
+            if self.is_type(instance, "string"):
+                # TODO: I'm sure there is a more accurate regex than this..
+                pattern = ('^[0-9]{4}-(((0[13578]|(10|12))-'
+                           '(0[1-9]|[1-2][0-9]|3[0-1]))|'
+                           '(02-(0[1-9]|[1-2][0-9]))|((0[469]|11)-'
+                           '(0[1-9]|[1-2][0-9]|30)))$')
+
+                if not re.match(pattern, instance):
+                    msg = "%s is not a date" % (instance)
+                    yield jsonschema.ValidationError(msg)
+        elif format == "time":
+            # hh:mm:ss
+            if self.is_type(instance, "string"):
+                # TODO: I'm sure there is a more accurate regex than this..
+                pattern = "^(?:(?:([01]?\d|2[0-3]):)?([0-5]?\d):)?([0-5]?\d)$"
+                if not re.match(pattern, instance):
+                    msg = "%s is not a time" % (instance)
+                    yield jsonschema.ValidationError(msg)
+            pass
+        elif format == "email":
+            # A valid email address
+            pass
+        elif format == "ip-address":
+            # IPv4 Address
+            if self.is_type(instance, "string"):
+                try:
+                    ipaddr.IPv4Address(instance)
+                except ipaddr.AddressValueError:
+                    msg = "%s is not an IPv4 address" % (instance)
+                    yield jsonschema.ValidationError(msg)
+        elif format == "ipv6":
+            # IPv6 Address
+            if self.is_type(instance, "string"):
+                try:
+                    ipaddr.IPv6Address(instance)
+                except ipaddr.AddressValueError:
+                    msg = "%s is not an IPv6 address" % (instance)
+                    yield jsonschema.ValidationError(msg)
+        elif format == "host-name":
+            # A valid hostname
+            if self.is_type(instance, "string"):
+                # TODO: I'm sure there is a more accurate regex than this..
+                pattern = ('^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*'
+                           '([A-Za-z]|[A-Za-z][A-Za-z0-9\-]*[A-Za-z0-9])\.$')
+
+                if not re.match(pattern, instance):
+                    msg = "%s is not a host name" % (instance)
+                    yield jsonschema.ValidationError(msg)
+
+    def validate_anyOf(self, schemas, instance, schema):
+        for s in schemas:
+            if self.is_valid(instance, s):
+                return
+        else:
+            yield jsonschema.ValidationError(
+                "%r is not valid for any of listed schemas %r" %
+                (instance, schemas)
+            )
+
+    def validate_allOf(self, schemas, instance, schema):
+        for s in schemas:
+            if not self.is_valid(instance, s):
+                yield jsonschema.ValidationError(
+                    "%r is not valid against %r" % (instance, s)
+                )
+
+    def validate_oneOf(self, schemas, instance, schema):
+        match = False
+        for s in schemas:
+            if self.is_valid(instance, s):
+                if match:
+                    yield jsonschema.ValidationError(
+                        "%r matches more than one schema in %r" %
+                        (instance, schemas)
+                    )
+                match = True
+        if not match:
+            yield jsonschema.ValidationError(
+                "%r is not valid for any of listed schemas %r" %
+                (instance, schemas)
+            )
 
 
 class Schema(object):
-    def __init__(self, name, properties=None, links=None):
-        self.name = name
-        if properties is None:
-            properties = {}
-        self.properties = properties
-        self.links = links
+    def __init__(self, version, name):
+        self.raw_schema = utils.load_schema(version, name)
+        self.validator = SchemaValidator(self.raw_schema, resolver=resolver)
+
+    @property
+    def schema(self):
+        return self.validator.schema
+
+    @property
+    def properties(self):
+        return self.schema['properties']
+
+    @property
+    def resolver(self):
+        return self.validator.resolver
+
+    @property
+    def links(self):
+        return self.schema['links']
+
+    @property
+    def raw(self):
+        return self.raw_schema
 
     def validate(self, obj):
-        try:
-            jsonschema.validate(obj, self.raw())
-        except jsonschema.ValidationError as e:
-            raise exceptions.InvalidObject("Provided object does not match "
-                                           "schema '%s': %s"
-                                           % (self.name, str(e)))
+        errors = []
 
-    def filter(self, obj):
+        for error in self.validator.iter_errors(obj):
+            errors.append({
+                'path': ".".join(reversed(error.path)),
+                'message': error.message,
+                'validator': error.validator
+            })
+
+        if len(errors) > 0:
+            raise exceptions.InvalidObject("Provided object does not match "
+                                           "schema", errors=errors)
+
+    def filter(self, instance, properties=None):
+        if not properties:
+            properties = self.properties
+
         filtered = {}
-        for key, value in obj.iteritems():
-            if self._filter_func(self.properties, key) and value is not None:
-                filtered[key] = value
+
+        for name, subschema in properties.items():
+            if 'type' in subschema and subschema['type'] == 'array':
+                subinstance = instance.get(name, None)
+                filtered[name] = self._filter_array(subinstance, subschema)
+            elif 'type' in subschema and subschema['type'] == 'object':
+                subinstance = instance.get(name, None)
+                properties = subschema['properties']
+                filtered[name] = self.filter(subinstance, properties)
+            else:
+                filtered[name] = instance.get(name, None)
+
         return filtered
 
-    @staticmethod
-    def _filter_func(properties, key):
-        return key in properties
+    def _filter_array(self, instance, schema):
+        if 'items' in schema and isinstance(schema['items'], list):
+            # TODO: We currently don't make use of this..
+            raise NotImplementedError()
 
-    def merge_properties(self, properties):
-        # Ensure custom props aren't attempting to override base props
-        original_keys = set(self.properties.keys())
-        new_keys = set(properties.keys())
-        intersecting_keys = original_keys.intersection(new_keys)
-        conflicting_keys = [k for k in intersecting_keys
-                            if self.properties[k] != properties[k]]
-        if len(conflicting_keys) > 0:
-            props = ', '.join(conflicting_keys)
-            reason = _("custom properties (%(props)s) conflict "
-                       "with base properties")
-            raise exceptions.SchemaLoadError(reason=reason % {'props': props})
+        elif 'items' in schema:
+            schema = schema['items']
 
-        self.properties.update(properties)
+            if '$ref' in schema:
+                schema = self.resolver.resolve(self.schema, schema['$ref'])
 
-    def raw(self):
-        raw = {
-            'name': self.name,
-            'properties': self.properties,
-            'additionalProperties': False,
-        }
-        if self.links:
-            raw['links'] = self.links
-        return raw
+            properties = schema['properties']
 
+            return [self.filter(i, properties) for i in instance]
 
-class PermissiveSchema(Schema):
-    @staticmethod
-    def _filter_func(properties, key):
-        return True
+        elif 'properties' in schema:
+            schema = schema['properties']
 
-    def raw(self):
-        raw = super(PermissiveSchema, self).raw()
-        raw['additionalProperties'] = {'type': 'string'}
-        return raw
+            if '$ref' in schema:
+                schema = self.resolver.resolve(self.schema, schema['$ref'])
 
+            return [self.filter(i, schema) for i in instance]
 
-class CollectionSchema(object):
-    def __init__(self, name, item_schema):
-        self.name = name
-        self.item_schema = item_schema
-
-    def filter(self, obj):
-        if not obj:
-            return []
-
-        return [self.item_schema.filter(o) for o in obj]
-
-    def raw(self):
-        return {
-            'name': self.name,
-            'properties': {
-                self.name: {
-                    'type': 'array',
-                    'items': self.item_schema.raw(),
-                },
-                'first': {'type': 'string'},
-                'next': {'type': 'string'},
-                'schema': {'type': 'string'},
-            },
-            'links': [
-                {'rel': 'first', 'href': '{first}'},
-                {'rel': 'next', 'href': '{next}'},
-                {'rel': 'describedby', 'href': '{schema}'},
-            ],
-        }
+        else:
+            raise NotImplementedError('Can\'t filter unknown array type')

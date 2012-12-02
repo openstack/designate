@@ -1,0 +1,16 @@
+{
+    "id": "/schemas/domains",
+
+    "$schema": "http://json-schema.org/draft-03/hyper-schema",
+
+    "title": "domains",
+    "description": "Domains",
+
+    "properties": {
+        "domains": {
+            "type": "array",
+            "description": "Domains",
+            "items": {"$ref": "/schemas/domain"}
+        }
+    }
+}

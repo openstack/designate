@@ -15,32 +15,25 @@
 # under the License.
 import flask
 from moniker.openstack.common import log as logging
+from moniker.openstack.common import jsonutils as json
 from moniker import exceptions
-from moniker.api.v1.schemas import domain_schema, domains_schema
+from moniker import schema
 from moniker.central import api as central_api
-
 
 LOG = logging.getLogger(__name__)
 blueprint = flask.Blueprint('domains', __name__)
-
-
-def _append_domain_links(values, domain_id):
-    values['self'] = flask.url_for('.get_domain', domain_id=domain_id)
-    values['records'] = flask.url_for('records.get_records',
-                                      domain_id=domain_id)
-    values['schema'] = flask.url_for('.get_domain_schema')
-
-    return values
+domain_schema = schema.Schema('v1', 'domain')
+domains_schema = schema.Schema('v1', 'domains')
 
 
 @blueprint.route('/schemas/domain', methods=['GET'])
 def get_domain_schema():
-    return flask.jsonify(domain_schema.raw())
+    return flask.jsonify(domain_schema.raw)
 
 
 @blueprint.route('/schemas/domains', methods=['GET'])
 def get_domains_schema():
-    return flask.jsonify(domains_schema.raw())
+    return flask.jsonify(domains_schema.raw)
 
 
 @blueprint.route('/domains', methods=['POST'])
@@ -55,12 +48,11 @@ def create_domain():
     except exceptions.Forbidden:
         return flask.Response(status=401)
     except exceptions.InvalidObject, e:
-        return flask.Response(status=400, response=str(e))
+        response_body = json.dumps({'errors': e.errors})
+        return flask.Response(status=400, response=response_body)
     except exceptions.DuplicateDomain:
         return flask.Response(status=409)
     else:
-        domain = _append_domain_links(domain, domain['id'])
-
         domain = domain_schema.filter(domain)
 
         response = flask.jsonify(domain)
@@ -79,9 +71,9 @@ def get_domains():
     except exceptions.Forbidden:
         return flask.Response(status=401)
 
-    domains = domains_schema.filter(domains)
+    domains = domains_schema.filter({'domains': domains})
 
-    return flask.jsonify(domains=domains)
+    return flask.jsonify(domains)
 
 
 @blueprint.route('/domains/<domain_id>', methods=['GET'])
@@ -95,8 +87,6 @@ def get_domain(domain_id):
     except exceptions.DomainNotFound:
         return flask.Response(status=404)
     else:
-        domain = _append_domain_links(domain, domain['id'])
-
         domain = domain_schema.filter(domain)
 
         return flask.jsonify(domain)
@@ -113,14 +103,13 @@ def update_domain(domain_id):
     except exceptions.Forbidden:
         return flask.Response(status=401)
     except exceptions.InvalidObject, e:
-        return flask.Response(status=400, response=str(e))
+        response_body = json.dumps({'errors': e.errors})
+        return flask.Response(status=400, response=response_body)
     except exceptions.DomainNotFound:
         return flask.Response(status=404)
     except exceptions.DuplicateDomain:
         return flask.Response(status=409)
     else:
-        domain = _append_domain_links(domain, domain['id'])
-
         domain = domain_schema.filter(domain)
 
         return flask.jsonify(domain)

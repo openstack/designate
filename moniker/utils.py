@@ -15,6 +15,7 @@
 # under the License.
 import os
 import pkg_resources
+import json
 from jinja2 import Template
 from moniker.openstack.common import log as logging
 from moniker.openstack.common import cfg
@@ -77,6 +78,12 @@ def resource_string(*args):
                                           'resource: %s' % resource_path)
 
     return pkg_resources.resource_string('moniker', resource_path)
+
+
+def load_schema(version, name):
+    schema_string = resource_string('schemas', version, '%s.json' % name)
+
+    return json.loads(schema_string)
 
 
 def load_template(template_name):

@@ -1,0 +1,68 @@
+{
+    "id": "/schemas/server",
+
+    "$schema": "http://json-schema.org/draft-03/hyper-schema",
+
+    "title": "server",
+    "description": "Server",
+
+    "properties": {
+        "id": {
+            "type": "string",
+            "description": "Server Identifier",
+            "pattern": "^([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}$",
+            "readonly": true
+        },
+        "name": {
+            "type": "string",
+            "description": "Server DNS name",
+            "format": "host-name",
+            "maxLength": 255,
+            "required": true
+        },
+        "ipv4": {
+            "type": "string",
+            "description": "IPv4 address of server",
+            "format": "ip-address"
+        },
+        "ipv6": {
+            "type": "string",
+            "description": "IPv6 address of server",
+            "format": "ipv6"
+        },
+        "created_at": {
+            "type": "string",
+            "description": "Date and time of server creation",
+            "format": "date-time",
+            "readonly": true
+        },
+        "updated_at": {
+            "type": ["string", "null"],
+            "description": "Date and time of last server update",
+            "format": "date-time",
+            "readonly": true
+        }
+    },
+    "anyOf": [{
+        "description": "IPv4",
+        "properties": {
+            "ipv4": {
+                "required": true
+            }
+        }
+    }, {
+        "description": "IPv6",
+        "properties": {
+            "ipv6": {
+                "required": true
+            }
+        }
+    }],
+    "links": [{
+        "rel": "self",
+        "href": "/servers/{id}"
+    }, {
+        "rel": "collection",
+        "href": "/servers"
+    }]
+}

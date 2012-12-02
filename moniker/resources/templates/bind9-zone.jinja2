@@ -1,6 +1,6 @@
 $TTL {{ domain.ttl }}
 
-{{ domain.name }}. IN SOA {{ servers[0].name }}. {{ domain.email | replace("@", ".") }}. (
+{{ domain.name }} IN SOA {{ servers[0].name }} {{ domain.email | replace("@", ".") }}. (
     {{ domain.serial }} ; serial
     {{ domain.refresh }} ; refresh
     {{ domain.retry }} ; retry
@@ -14,9 +14,9 @@ $TTL {{ domain.ttl }}
 
 {% for record in records %}
 {% if record.type in ('NS', 'MX', 'CNAME', 'SRV') -%}
-{{record.name}}. {{record.ttl or ''}} IN {{record.type}} {{record.priority or ''}} {{record.data}}.
+{{record.name}} {{record.ttl or ''}} IN {{record.type}} {{record.priority or ''}} {{record.data}}.
 {%- else -%}
-{{record.name}}. {{record.ttl or ''}} IN {{record.type}} {{record.priority or ''}} {{record.data}}
+{{record.name}} {{record.ttl or ''}} IN {{record.type}} {{record.priority or ''}} {{record.data}}
 {%- endif %}
 {%- endfor %}
 

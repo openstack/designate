@@ -1,0 +1,62 @@
+{
+    "id": "/schemas/domain",
+
+    "$schema": "http://json-schema.org/draft-03/hyper-schema",
+
+    "title": "domain",
+    "description": "Domain",
+
+    "properties": {
+        "id": {
+            "type": "string",
+            "description": "Domain Identifier",
+            "pattern": "^([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}$",
+            "readonly": true
+        },
+        "name": {
+            "type": "string",
+            "description": "Domain name",
+            "format": "host-name",
+            "maxLength": 255,
+            "required": true
+        },
+        "email": {
+            "type": "string",
+            "description": "Hostmaster email address",
+            "format": "email",
+            "maxLength": 255,
+            "required": true
+        },
+        "ttl": {
+            "type": "integer",
+            "description": "Time to live"
+        },
+        "serial": {
+            "type": "integer",
+            "description": "Serial Number",
+            "readonly": true
+        },
+        "created_at": {
+            "type": "string",
+            "description": "Date and time of image registration",
+            "format": "date-time",
+            "readonly": true
+        },
+        "updated_at": {
+            "type": ["string", "null"],
+            "description": "Date and time of image registration",
+            "format": "date-time",
+            "readonly": true
+        }
+    },
+    "links": [{
+        "rel": "self",
+        "href": "/domains/{id}"
+    }, {
+        "rel": "records",
+        "href": "/domains/{id}/records"
+    }, {
+        "rel": "collection",
+        "href": "/domains"
+    }]
+}
