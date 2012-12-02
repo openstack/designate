@@ -43,7 +43,12 @@ class MySQLBind9Backend(base.Backend):
             cfg.StrOpt('rndc-config-file',
                        default=None, help='RNDC Config File'),
             cfg.StrOpt('rndc-key-file', default=None, help='RNDC Key File'),
-            cfg.StrOpt('database-connection', default=None,
+            cfg.StrOpt('dns-server-type', default='master',
+                       help='slave or master DNS server?'),
+            cfg.BoolOpt('write-database', default=True,
+                        help='Write to the DNS mysqlbind database?'),
+            cfg.StrOpt('database-connection',
+                       default=cfg.CONF.database_connection,
                        help='SQL Connection'),
             cfg.StrOpt('database-dns-table',
                        default='dns_domains',
@@ -67,9 +72,8 @@ class MySQLBind9Backend(base.Backend):
     def start(self):
         super(MySQLBind9Backend, self).start()
 
-        LOG.debug("DB_CONN %s" % cfg.CONF[self.name].database_connection)
-
-        self._db = SqlSoup(cfg.CONF[self.name].database_connection)
+        if cfg.CONF[self.name].write_database:
+            self._db = SqlSoup(cfg.CONF[self.name].database_connection)
 
         self._sync_domains()
 
@@ -230,33 +234,39 @@ class MySQLBind9Backend(base.Backend):
     def create_domain(self, context, domain):
         LOG.debug('create_domain()')
 
-        self._add_soa_record(domain)
-        self._add_ns_records(domain)
+        if cfg.CONF[self.name].write_database:
+            self._add_soa_record(domain)
+            self._add_ns_records(domain)
 
         self._sync_domains()
 
     def update_domain(self, context, domain):
         LOG.debug('update_domain()')
-        self._update_soa_record(domain)
-        self._update_ns_records(domain)
+        if cfg.CONF[self.name].write_database:
+            self._update_soa_record(domain)
+            self._update_ns_records(domain)
 
     def delete_domain(self, context, domain):
         LOG.debug('delete_domain()')
-        self._delete_db_domain_records(domain['id'])
+        if cfg.CONF[self.name].write_database:
+            self._delete_db_domain_records(domain['id'])
 
         self._sync_domains()
 
     def create_record(self, context, domain, record):
         LOG.debug('create_record()')
-        self._insert_db_record(domain['id'], record)
+        if cfg.CONF[self.name].write_database:
+            self._insert_db_record(domain['id'], record)
 
     def update_record(self, context, domain, record):
         LOG.debug('update_record()')
-        self._update_db_record(record)
+        if cfg.CONF[self.name].write_database:
+            self._update_db_record(record)
 
     def delete_record(self, context, domain, record):
         LOG.debug('Delete Record')
-        self._delete_db_record(record)
+        if cfg.CONF[self.name].write_database:
+            self._delete_db_record(record)
 
     def _sync_domains(self):
         """
@@ -292,6 +302,8 @@ class MySQLBind9Backend(base.Backend):
                                       output_path,
                                       domains=domains,
                                       state_path=abs_state_path,
+                                      dns_server_type=cfg.CONF[self.name].
+                                      dns_server_type,
                                       dns_db_schema=url['database'],
                                       dns_db_table=cfg.CONF[self.name].
                                       database_dns_table,

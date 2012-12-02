@@ -18,10 +18,10 @@ from moniker.openstack.common import log as logging
 from moniker.openstack.common import rpc
 from moniker.openstack.common.rpc import service as rpc_service
 from stevedore.named import NamedExtensionManager
+from moniker import policy
 from moniker import storage
 from moniker import utils
-from moniker import policy
-from moniker.agent import api as agent_api
+from moniker import backend
 
 LOG = logging.getLogger(__name__)
 
@@ -35,9 +35,12 @@ cfg.CONF.register_opts([
 
 class Service(rpc_service.Service):
     def __init__(self, *args, **kwargs):
+
+        self.backend = backend.get_backend(cfg.CONF)
+
         kwargs.update(
             host=cfg.CONF.host,
-            topic=cfg.CONF.central_topic
+            topic=cfg.CONF.central_topic,
         )
 
         policy.init_policy()
@@ -71,6 +74,7 @@ class Service(rpc_service.Service):
             return []
 
     def start(self):
+        self.backend.start()
         super(Service, self).start()
 
         if self.handlers:
@@ -88,6 +92,7 @@ class Service(rpc_service.Service):
                 pass
 
         super(Service, self).stop()
+        self.backend.stop()
 
     def _setup_subscriptions(self):
         """
@@ -187,7 +192,7 @@ class Service(rpc_service.Service):
 
         domain = self.storage_conn.create_domain(context, values)
 
-        agent_api.create_domain(context, domain)
+        self.backend.create_domain(context, domain)
         utils.notify(context, 'api', 'domain.create', domain)
 
         return domain
@@ -219,7 +224,7 @@ class Service(rpc_service.Service):
 
         domain = self.storage_conn.update_domain(context, domain_id, values)
 
-        agent_api.update_domain(context, domain)
+        self.backend.update_domain(context, domain)
         utils.notify(context, 'api', 'domain.update', domain)
 
         return domain
@@ -230,7 +235,7 @@ class Service(rpc_service.Service):
         target = {'domain_id': domain_id, 'tenant_id': domain['tenant_id']}
         policy.check('delete_domain', context, target)
 
-        agent_api.delete_domain(context, domain)
+        self.backend.delete_domain(context, domain)
         utils.notify(context, 'api', 'domain.delete', domain)
 
         return self.storage_conn.delete_domain(context, domain_id)
@@ -244,7 +249,7 @@ class Service(rpc_service.Service):
 
         record = self.storage_conn.create_record(context, domain_id, values)
 
-        agent_api.create_record(context, domain, record)
+        self.backend.create_record(context, domain, record)
         utils.notify(context, 'api', 'record.create', record)
 
         return record
@@ -277,7 +282,7 @@ class Service(rpc_service.Service):
 
         record = self.storage_conn.update_record(context, record_id, values)
 
-        agent_api.update_record(context, domain, record)
+        self.backend.update_record(context, domain, record)
         utils.notify(context, 'api', 'record.update', record)
 
         return record
@@ -294,7 +299,7 @@ class Service(rpc_service.Service):
 
         record = self.storage_conn.get_record(context, record_id)
 
-        agent_api.delete_record(context, domain, record)
+        self.backend.delete_record(context, domain, record)
         utils.notify(context, 'api', 'record.delete', record)
 
         return self.storage_conn.delete_record(context, record_id)
