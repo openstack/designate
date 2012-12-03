@@ -1,0 +1,16 @@
+{
+    "id": "/schemas/servers",
+
+    "$schema": "http://json-schema.org/draft-03/hyper-schema",
+
+    "title": "servers",
+    "description": "Servers",
+
+    "properties": {
+        "servers": {
+            "type": "array",
+            "description": "Servers",
+            "items": {"$ref": "/schemas/server"}
+        }
+    }
+}

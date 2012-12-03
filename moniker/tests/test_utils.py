@@ -35,6 +35,15 @@ class TestUtils(TestCase):
         with self.assertRaises(exceptions.ResourceNotFound):
             utils.resource_string(name)
 
+    def test_load_schema(self):
+        schema = utils.load_schema('v1', 'domain')
+
+        self.assertIsInstance(schema, dict)
+
+    def test_load_schema_missing(self):
+        with self.assertRaises(exceptions.ResourceNotFound):
+            utils.load_schema('v1', 'missing')
+
     def test_load_template(self):
         name = 'bind9-config.jinja2'
 

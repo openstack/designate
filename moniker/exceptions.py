@@ -32,7 +32,9 @@ class NoServersConfigured(ConfigurationError):
 
 
 class InvalidObject(Base):
-    pass
+    def __init__(self, *args, **kwargs):
+        self.errors = kwargs.pop('errors', None)
+        super(InvalidObject, self).__init__(*args, **kwargs)
 
 
 class Forbidden(Base):

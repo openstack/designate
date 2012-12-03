@@ -33,7 +33,7 @@ class InitCommand(Command):
     "Init database"
 
     def take_action(self, parsed_args):
-        utils.read_config('moniker-central')
+        utils.read_config('moniker-central', [])
 
         url = cfg.CONF.database_connection
 
@@ -53,7 +53,7 @@ class SyncCommand(Command):
 
     def take_action(self, parsed_args):
         # TODO: Support specifying version
-        utils.read_config('moniker-central')
+        utils.read_config('moniker-central', [])
 
         url = cfg.CONF.database_connection
 

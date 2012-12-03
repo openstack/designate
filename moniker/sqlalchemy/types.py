@@ -17,7 +17,6 @@ from sqlalchemy.types import TypeDecorator, CHAR, VARCHAR
 from sqlalchemy.dialects.postgresql import UUID as pgUUID
 from sqlalchemy.dialects.postgresql import INET as pgINET
 import uuid
-import ipaddr
 
 
 class UUID(TypeDecorator):

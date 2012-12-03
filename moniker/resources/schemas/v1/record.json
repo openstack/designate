@@ -1,0 +1,186 @@
+{
+    "id": "/schemas/record",
+
+    "$schema": "http://json-schema.org/draft-03/hyper-schema",
+
+    "title": "record",
+    "description": "Record",
+
+    "properties": {
+        "id": {
+            "type": "string",
+            "description": "Record Identifier",
+            "pattern": "^([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}$",
+            "readonly": true
+        },
+        "domain_id": {
+            "type": "string",
+            "description": "Domain Identifier",
+            "pattern": "^([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}$",
+            "readonly": true
+        },
+        "name": {
+            "type": "string",
+            "description": "DNS Record Name",
+            "format": "host-name",
+            "maxLength": 255,
+            "required": true
+        },
+        "type": {
+            "type": "string",
+            "description": "DNS Record Type",
+            "enum": ["A", "AAAA", "CNAME", "MX", "SRV", "TXT", "SPF", "NS"],
+            "required": true
+        },
+        "data": {
+            "type": "string",
+            "description": "DNS Record Value",
+            "maxLength": 255,
+            "required": true
+        },
+        "priority": {
+            "type": ["integer", "null"],
+            "description": "DNS Record Priority",
+            "min": 0,
+            "max": 99999
+        },
+        "ttl": {
+            "type": ["integer", "null"],
+            "description": "Time to live",
+            "min": 60
+        },
+        "created_at": {
+            "type": "string",
+            "description": "Date and time of image registration",
+            "format": "date-time",
+            "readonly": true
+        },
+        "updated_at": {
+            "type": ["string", "null"],
+            "description": "Date and time of image registration",
+            "format": "date-time",
+            "readonly": true
+        }
+    },
+    "oneOf": [{
+        "description": "An A Record",
+        "properties": {
+            "type": {
+                "type": "string",
+                "enum": ["A"]
+            },
+            "data": {
+                "format": "ip-address",
+                "required": true
+            },
+            "priority": {
+                "type": "null"
+            }
+        }
+    }, {
+        "description": "An AAAA Record",
+        "properties": {
+            "type": {
+                "type": "string",
+                "enum": ["AAAA"]
+            },
+            "data": {
+                "format": "ipv6",
+                "required": true
+            },
+            "priority": {
+                "type": "null"
+            }
+        }
+    }, {
+        "description": "A CNAME Record",
+        "properties": {
+            "type": {
+                "type": "string",
+                "enum": ["CNAME"]
+            },
+            "data": {
+                "format": "host-name",
+                "required": true
+            },
+            "priority": {
+                "type": "null"
+            }
+        }
+    }, {
+        "description": "A MX Record",
+        "properties": {
+            "type": {
+                "type": "string",
+                "enum": ["MX"]
+            },
+            "data": {
+                "format": "host-name",
+                "required": true
+            },
+            "priority": {
+                "type": "integer",
+                "required": true
+            }
+        }
+    }, {
+        "description": "A SRV Record",
+        "properties": {
+            "type": {
+                "type": "string",
+                "enum": ["SRV"]
+            },
+            "priority": {
+                "type": "integer",
+                "required": true
+            }
+        }
+    }, {
+        "description": "A TXT Record",
+        "properties": {
+            "type": {
+                "type": "string",
+                "enum": ["TXT"]
+            },
+            "priority": {
+                "type": "null"
+            }
+        }
+    }, {
+        "description": "A SPF Record",
+        "properties": {
+            "type": {
+                "type": "string",
+                "enum": ["SPF"]
+            },
+            "priority": {
+                "type": "null"
+            }
+        }
+    }, {
+        "description": "A NS Record",
+        "properties": {
+            "type": {
+                "type": "string",
+                "enum": ["NS"]
+            },
+            "data": {
+                "format": "host-name",
+                "required": true
+            },
+            "priority": {
+                "type": "null"
+            }
+        }
+    }],
+    "links": [{
+        "rel": "self",
+        "href": "/domains/{domain_id}/records/{id}"
+    }, {
+        "rel": "domain",
+        "href": "/domains/{domain_id}"
+    }, {
+        "rel": "collection",
+        "href": "/domains/{domain_id}/records"
+    }]
+}

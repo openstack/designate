@@ -1,0 +1,16 @@
+{
+    "id": "/schemas/records",
+
+    "$schema": "http://json-schema.org/draft-03/hyper-schema",
+
+    "title": "records",
+    "description": "Records",
+
+    "properties": {
+        "records": {
+            "type": "array",
+            "description": "Records",
+            "items": {"$ref": "/schemas/record"}
+        }
+    }
+}

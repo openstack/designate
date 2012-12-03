@@ -15,30 +15,25 @@
 # under the License.
 import flask
 from moniker.openstack.common import log as logging
+from moniker.openstack.common import jsonutils as json
 from moniker import exceptions
-from moniker.api.v1.schemas import server_schema, servers_schema
+from moniker import schema
 from moniker.central import api as central_api
-
 
 LOG = logging.getLogger(__name__)
 blueprint = flask.Blueprint('servers', __name__)
-
-
-def _append_server_links(values, server_id):
-    values['self'] = flask.url_for('.get_server', server_id=server_id)
-    values['schema'] = flask.url_for('.get_server_schema')
-
-    return values
+server_schema = schema.Schema('v1', 'server')
+servers_schema = schema.Schema('v1', 'servers')
 
 
 @blueprint.route('/schemas/server', methods=['GET'])
 def get_server_schema():
-    return flask.jsonify(server_schema.raw())
+    return flask.jsonify(server_schema.raw)
 
 
 @blueprint.route('/schemas/servers', methods=['GET'])
 def get_servers_schema():
-    return flask.jsonify(servers_schema.raw())
+    return flask.jsonify(servers_schema.raw)
 
 
 @blueprint.route('/servers', methods=['POST'])
@@ -52,12 +47,11 @@ def create_server():
     except exceptions.Forbidden:
         return flask.Response(status=401)
     except exceptions.InvalidObject, e:
-        return flask.Response(status=400, response=str(e))
+        response_body = json.dumps({'errors': e.errors})
+        return flask.Response(status=400, response=response_body)
     except exceptions.DuplicateServer:
         return flask.Response(status=409)
     else:
-        server = _append_server_links(server, server['id'])
-
         server = server_schema.filter(server)
 
         response = flask.jsonify(server)
@@ -76,9 +70,9 @@ def get_servers():
     except exceptions.Forbidden:
         return flask.Response(status=401)
 
-    servers = servers_schema.filter(servers)
+    servers = servers_schema.filter({'servers': servers})
 
-    return flask.jsonify(servers=servers)
+    return flask.jsonify(servers)
 
 
 @blueprint.route('/servers/<server_id>', methods=['GET'])
@@ -92,8 +86,6 @@ def get_server(server_id):
     except exceptions.ServerNotFound:
         return flask.Response(status=404)
     else:
-        server = _append_server_links(server, server['id'])
-
         server = server_schema.filter(server)
 
         return flask.jsonify(server)
@@ -110,14 +102,13 @@ def update_server(server_id):
     except exceptions.Forbidden:
         return flask.Response(status=401)
     except exceptions.InvalidObject, e:
-        return flask.Response(status=400, response=str(e))
+        response_body = json.dumps({'errors': e.errors})
+        return flask.Response(status=400, response=response_body)
     except exceptions.ServerNotFound:
         return flask.Response(status=404)
     except exceptions.DuplicateServer:
         return flask.Response(status=409)
     else:
-        server = _append_server_links(server, server['id'])
-
         server = server_schema.filter(server)
 
         return flask.jsonify(server)

@@ -15,32 +15,25 @@
 # under the License.
 import flask
 from moniker.openstack.common import log as logging
+from moniker.openstack.common import jsonutils as json
 from moniker import exceptions
-from moniker.api.v1.schemas import record_schema, records_schema
+from moniker import schema
 from moniker.central import api as central_api
-
 
 LOG = logging.getLogger(__name__)
 blueprint = flask.Blueprint('records', __name__)
-
-
-def _append_record_links(values, domain_id, record_id):
-    values['self'] = flask.url_for('.get_record', domain_id=domain_id,
-                                   record_id=record_id)
-    values['domain'] = flask.url_for('domains.get_domain', domain_id=domain_id)
-    values['schema'] = flask.url_for('.get_record_schema')
-
-    return values
+record_schema = schema.Schema('v1', 'record')
+records_schema = schema.Schema('v1', 'records')
 
 
 @blueprint.route('/schemas/record', methods=['GET'])
 def get_record_schema():
-    return flask.jsonify(record_schema.raw())
+    return flask.jsonify(record_schema.raw)
 
 
 @blueprint.route('/schemas/records', methods=['GET'])
 def get_records_schema():
-    return flask.jsonify(records_schema.raw())
+    return flask.jsonify(records_schema.raw)
 
 
 @blueprint.route('/domains/<domain_id>/records', methods=['POST'])
@@ -54,12 +47,11 @@ def create_record(domain_id):
     except exceptions.Forbidden:
         return flask.Response(status=401)
     except exceptions.InvalidObject, e:
-        return flask.Response(status=400, response=str(e))
+        response_body = json.dumps({'errors': e.errors})
+        return flask.Response(status=400, response=response_body)
     except exceptions.DuplicateRecord:
         return flask.Response(status=409)
     else:
-        record = _append_record_links(record, record['domain_id'],
-                                      record['id'])
         record = record_schema.filter(record)
 
         response = flask.jsonify(record)
@@ -79,7 +71,9 @@ def get_records(domain_id):
     except exceptions.Forbidden:
         return flask.Response(status=401)
 
-    return flask.jsonify(records=records)
+    records = records_schema.filter({'records': records})
+
+    return flask.jsonify(records)
 
 
 @blueprint.route('/domains/<domain_id>/records/<record_id>', methods=['GET'])
@@ -93,8 +87,6 @@ def get_record(domain_id, record_id):
     except exceptions.RecordNotFound:
         return flask.Response(status=404)
     else:
-        record = _append_record_links(record, record['domain_id'],
-                                      record['id'])
         record = record_schema.filter(record)
 
         return flask.jsonify(record)
@@ -112,14 +104,13 @@ def update_record(domain_id, record_id):
     except exceptions.Forbidden:
         return flask.Response(status=401)
     except exceptions.InvalidObject, e:
-        return flask.Response(status=400, response=str(e))
+        response_body = json.dumps({'errors': e.errors})
+        return flask.Response(status=400, response=response_body)
     except exceptions.RecordNotFound:
         return flask.Response(status=404)
     except exceptions.DuplicateRecord:
         return flask.Response(status=409)
     else:
-        record = _append_record_links(record, record['domain_id'],
-                                      record['id'])
         record = record_schema.filter(record)
 
         return flask.jsonify(record)
