@@ -57,9 +57,7 @@ setup(
     cmdclass=common_setup.get_cmdclass(),
     entry_points=textwrap.dedent("""
         [moniker.storage]
-        mysql = moniker.storage.impl_sqlalchemy:SQLAlchemyStorage
-        postgresql = moniker.storage.impl_sqlalchemy:SQLAlchemyStorage
-        sqlite = moniker.storage.impl_sqlalchemy:SQLAlchemyStorage
+        sqlalchemy = moniker.storage.impl_sqlalchemy:SQLAlchemyStorage
 
         [moniker.notification.handler]
         nova_fixed = moniker.notification_handler.nova:NovaFixedHandler

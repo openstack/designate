@@ -25,6 +25,7 @@ from moniker.central import api as central_api
 from moniker.context import MonikerContext
 from sqlalchemy.ext.sqlsoup import SqlSoup
 from sqlalchemy.engine.url import _parse_rfc1738_args
+from moniker.sqlalchemy.session import get_engine
 
 LOG = logging.getLogger(__name__)
 
@@ -73,7 +74,8 @@ class MySQLBind9Backend(base.Backend):
         super(MySQLBind9Backend, self).start()
 
         if cfg.CONF[self.name].write_database:
-            self._db = SqlSoup(cfg.CONF[self.name].database_connection)
+            self._engine = get_engine(self.name)
+            self._db = SqlSoup(self._engine)
 
         self._sync_domains()
 

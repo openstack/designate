@@ -25,6 +25,10 @@ from moniker.central import service as central_service
 
 LOG = logging.getLogger(__name__)
 
+# NOTE(kiall): Awful kludge, to be removed in the next patchset
+from moniker.storage.impl_sqlalchemy import SQLAlchemyStorage
+SQLAlchemyStorage.register_opts()
+
 
 class AssertMixin(object):
     """
@@ -96,11 +100,16 @@ class TestCase(unittest2.TestCase, AssertMixin):
 
         self.mox = mox.Mox()
         self.config(
-            database_connection='sqlite://',
-            rpc_backend='moniker.openstack.common.rpc.impl_fake',
-            notification_driver=[],
+            storage_driver='sqlalchemy',
             backend_driver='fake',
+            notification_driver=[],
+            rpc_backend='moniker.openstack.common.rpc.impl_fake',
             auth_strategy='noauth'
+        )
+
+        self.config(
+            database_connection='sqlite://',
+            group='storage:sqlalchemy'
         )
         storage.setup_schema()
 
@@ -114,6 +123,7 @@ class TestCase(unittest2.TestCase, AssertMixin):
 
     def config(self, **kwargs):
         group = kwargs.pop('group', None)
+
         for k, v in kwargs.iteritems():
             cfg.CONF.set_override(k, v, group)
 

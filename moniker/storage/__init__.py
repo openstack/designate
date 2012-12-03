@@ -13,18 +13,11 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from urlparse import urlparse
 from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
 from moniker.storage.base import StorageEngine
 
 LOG = logging.getLogger(__name__)
-
-cfg.CONF.register_opts([
-    cfg.StrOpt('database-connection',
-               default='sqlite:///$state_path/moniker.sqlite',
-               help='The database driver to use')
-])
 
 
 def get_engine_name(string):
@@ -34,15 +27,15 @@ def get_engine_name(string):
     return string.split("+")[0]
 
 
-def get_engine():
-    scheme = urlparse(cfg.CONF.database_connection).scheme
-    engine_name = get_engine_name(scheme)
-    return StorageEngine.get_plugin(
-        engine_name, invoke_on_load=True)
+def get_engine(engine_name):
+    """
+    Return the engine class from the provided engine name
+    """
+    return StorageEngine.get_plugin(engine_name, invoke_on_load=True)
 
 
 def get_connection():
-    engine = get_engine()
+    engine = get_engine(cfg.CONF.storage_driver)
     return engine.get_connection()
 
 

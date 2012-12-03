@@ -15,14 +15,12 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from urlparse import urlparse
 from sqlalchemy import (Column, DateTime, String, Text, Integer, ForeignKey,
                         Enum, Boolean, Unicode)
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import relationship, backref, object_mapper
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.hybrid import hybrid_property
-from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
 from moniker.openstack.common import timeutils
 from moniker.openstack.common.uuidutils import generate_uuid
@@ -31,24 +29,12 @@ from moniker.sqlalchemy.types import UUID, Inet
 
 LOG = logging.getLogger(__name__)
 
-sql_opts = [
-    cfg.IntOpt('mysql_engine', default='InnoDB', help='MySQL engine')
-]
-
-cfg.CONF.register_opts(sql_opts)
-
 RECORD_TYPES = ['A', 'AAAA', 'CNAME', 'MX', 'SRV', 'TXT', 'NS']
-
-
-def table_args():
-    engine_name = urlparse(cfg.CONF.database_connection).scheme
-    if engine_name == 'mysql':
-        return {'mysql_engine': cfg.CONF.mysql_engine}
-    return None
 
 
 class Base(object):
     __abstract__ = True
+    __table_initialized__ = False
 
     id = Column(UUID, default=generate_uuid, primary_key=True)
 
@@ -59,9 +45,6 @@ class Base(object):
     __mapper_args__ = {
         'version_id_col': version
     }
-
-    __table_args__ = table_args()
-    __table_initialized__ = False
 
     def save(self, session):
         """ Save this object """

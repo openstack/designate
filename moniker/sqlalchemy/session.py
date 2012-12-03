@@ -30,19 +30,25 @@ from moniker.openstack.common.gettextutils import _
 
 LOG = logging.getLogger(__name__)
 
-_MAKER = None
-_ENGINE = None
+_MAKERS = {}
+_ENGINES = {}
 
 
-def get_session(autocommit=True, expire_on_commit=False, autoflush=True):
+def get_session(config_group,
+                autocommit=True,
+                expire_on_commit=False,
+                autoflush=True):
     """Return a SQLAlchemy session."""
-    global _MAKER
+    global _MAKERS
 
-    if _MAKER is None:
-        engine = get_engine()
-        _MAKER = get_maker(engine, autocommit, expire_on_commit, autoflush)
+    if config_group not in _MAKERS:
+        engine = get_engine(config_group)
+        _MAKERS[config_group] = get_maker(engine,
+                                          autocommit,
+                                          expire_on_commit,
+                                          autoflush)
 
-    session = _MAKER()
+    session = _MAKERS[config_group]()
     return session
 
 
@@ -89,56 +95,64 @@ def is_db_connection_error(args):
     return False
 
 
-def get_engine():
+def get_engine(config_group):
     """Return a SQLAlchemy engine."""
-    global _ENGINE
-    if _ENGINE is None:
+    global _ENGINES
+
+    database_connection = cfg.CONF[config_group].database_connection
+
+    if config_group not in _ENGINES:
         connection_dict = sqlalchemy.engine.url.make_url(
-            cfg.CONF.database_connection)
+            database_connection)
 
         engine_args = {
-            "pool_recycle": cfg.CONF['storage:sqlalchemy'].idle_timeout,
+            "pool_recycle": cfg.CONF[config_group].idle_timeout,
             "echo": False,
             'convert_unicode': True,
         }
 
         # Map our SQL debug level to SQLAlchemy's options
-        if cfg.CONF['storage:sqlalchemy'].connection_debug >= 100:
+        if cfg.CONF[config_group].connection_debug >= 100:
             engine_args['echo'] = 'debug'
-        elif cfg.CONF['storage:sqlalchemy'].connection_debug >= 50:
+        elif cfg.CONF[config_group].connection_debug >= 50:
             engine_args['echo'] = True
 
         if "sqlite" in connection_dict.drivername:
             engine_args["poolclass"] = NullPool
 
-            if cfg.CONF.database_connection == "sqlite://":
+            if database_connection == "sqlite://":
                 engine_args["poolclass"] = StaticPool
                 engine_args["connect_args"] = {'check_same_thread': False}
 
-        _ENGINE = sqlalchemy.create_engine(cfg.CONF.database_connection,
-                                           **engine_args)
+        _ENGINES[config_group] = sqlalchemy.create_engine(database_connection,
+                                                          **engine_args)
 
         if 'mysql' in connection_dict.drivername:
-            sqlalchemy.event.listen(_ENGINE, 'checkout', ping_listener)
+            sqlalchemy.event.listen(_ENGINES[config_group],
+                                    'checkout',
+                                    ping_listener)
         elif "sqlite" in connection_dict.drivername:
-            if not cfg.CONF['storage:sqlalchemy'].sqlite_synchronous:
-                sqlalchemy.event.listen(_ENGINE, 'connect',
+            if not cfg.CONF[config_group].sqlite_synchronous:
+                sqlalchemy.event.listen(_ENGINES[config_group],
+                                        'connect',
                                         synchronous_switch_listener)
-            sqlalchemy.event.listen(_ENGINE, 'connect', add_regexp_listener)
+            sqlalchemy.event.listen(_ENGINES[config_group],
+                                    'connect',
+                                    add_regexp_listener)
 
-        if (cfg.CONF['storage:sqlalchemy'].connection_trace and
-                _ENGINE.dialect.dbapi.__name__ == 'MySQLdb'):
+        if (cfg.CONF[config_group].connection_trace and
+                _ENGINES[config_group].dialect.dbapi.__name__ == 'MySQLdb'):
             import MySQLdb.cursors
             _do_query = debug_mysql_do_query()
             setattr(MySQLdb.cursors.BaseCursor, '_do_query', _do_query)
 
         try:
-            _ENGINE.connect()
+            _ENGINES[config_group].connect()
         except OperationalError, e:
             if not is_db_connection_error(e.args[0]):
                 raise
 
-            remaining = cfg.CONF['storage:sqlalchemy'].max_retries
+            remaining = cfg.CONF[config_group].max_retries
             if remaining == -1:
                 remaining = 'infinite'
             while True:
@@ -146,15 +160,15 @@ def get_engine():
                 LOG.warn(msg % remaining)
                 if remaining != 'infinite':
                     remaining -= 1
-                time.sleep(cfg.CONF['storage:sqlalchemy'].retry_interval)
+                time.sleep(cfg.CONF[config_group].retry_interval)
                 try:
-                    _ENGINE.connect()
+                    _ENGINES[config_group].connect()
                     break
                 except OperationalError, e:
                     if (remaining != 'infinite' and remaining == 0) or \
                             not is_db_connection_error(e.args[0]):
                         raise
-    return _ENGINE
+    return _ENGINES[config_group]
 
 
 def get_maker(engine, autocommit=True, expire_on_commit=False, autoflush=True):

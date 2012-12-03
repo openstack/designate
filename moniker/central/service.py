@@ -30,6 +30,8 @@ HANDLER_NAMESPACE = 'moniker.notification.handler'
 cfg.CONF.register_opts([
     cfg.StrOpt('backend-driver', default='rpc',
                help='The backend driver to use'),
+    cfg.StrOpt('storage-driver', default='sqlalchemy',
+               help='The storage driver to use'),
     cfg.ListOpt('enabled-notification-handlers', default=[],
                 help='Enabled Notification Handlers'),
 ])

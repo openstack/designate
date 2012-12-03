@@ -21,10 +21,12 @@ from moniker.storage import base
 from moniker.storage.impl_sqlalchemy import models
 from moniker.sqlalchemy.session import get_session
 
-
 LOG = logging.getLogger(__name__)
 
 SQL_OPTS = [
+    cfg.StrOpt('database_connection',
+               default='sqlite:///$state_path/moniker.sqlite',
+               help='The database driver to use'),
     cfg.IntOpt('connection_debug', default=0,
                help='Verbosity of SQL debugging information. 0=None,'
                ' 100=Everything'),
@@ -52,22 +54,21 @@ class SQLAlchemyStorage(base.StorageEngine):
         return opts
 
     def get_connection(self):
-        return Connection()
+        return Connection(self.name)
 
 
 class Connection(base.Connection):
     """
     SQLAlchemy connection
     """
-    def __init__(self):
-        LOG.info('connecting to %s', cfg.CONF.database_connection)
-        self.session = self._get_connection()
+    def __init__(self, config_group):
+        self.session = self._get_connection(config_group)
 
-    def _get_connection(self):
+    def _get_connection(self, config_group):
         """
         Return a connection to the database.
         """
-        return get_session()
+        return get_session(config_group)
 
     def setup_schema(self):
         """ Semi-Private Method to create the database schema """
