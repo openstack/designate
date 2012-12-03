@@ -48,7 +48,7 @@ class MySQLBind9Backend(base.Backend):
             cfg.BoolOpt('write-database', default=True,
                         help='Write to the DNS mysqlbind database?'),
             cfg.StrOpt('database-connection',
-                       default=cfg.CONF.database_connection,
+                       default='mysql://dns:dns@localhost/dns',
                        help='SQL Connection'),
             cfg.StrOpt('database-dns-table',
                        default='dns_domains',
@@ -92,8 +92,12 @@ class MySQLBind9Backend(base.Backend):
                    domain['expire'],
                    domain['minimum'])
 
+        # use the domain id for records that don't have a match
+        # in moniker's records table
         table.insert(
+            tenant_id=domain['tenant_id'],
             domain_id=domain['id'],
+            moniker_rec_id=domain['id'],
             name=domain['name'],
             ttl=domain['ttl'],
             type='SOA',
@@ -108,9 +112,13 @@ class MySQLBind9Backend(base.Backend):
         admin_context = MonikerContext.get_admin_context()
         servers = central_api.get_servers(admin_context)
 
+        # use the domain id for records that don't have a match
+        # in moniker's records table
         for server in servers:
             table.insert(
+                tenant_id=domain['tenant_id'],
                 domain_id=domain['id'],
+                moniker_rec_id=domain['id'],
                 name=domain['name'],
                 ttl=domain['ttl'],
                 type='NS',
@@ -118,13 +126,15 @@ class MySQLBind9Backend(base.Backend):
 
         self._db.commit()
 
-    def _insert_db_record(self, domain_id, record):
+    def _insert_db_record(self, tenant_id, domain_id, record):
         """
         generic db insertion method for a domain record
         """
         table = self.get_dns_table()
         table.insert(
+            tenant_id=tenant_id,
             domain_id=domain_id,
+            moniker_rec_id=record['id'],
             name=record['name'],
             ttl=record['ttl'],
             type=record['type'],
@@ -139,7 +149,8 @@ class MySQLBind9Backend(base.Backend):
         """
         table = self.get_dns_table()
 
-        all_ns_rec = table.filter_by(domain_id=domain['id'],
+        all_ns_rec = table.filter_by(tenant_id=domain['tenant_id'],
+                                     domain_id=domain['id'],
                                      type=u'NS')
 
         # delete all NS records
@@ -149,16 +160,17 @@ class MySQLBind9Backend(base.Backend):
 
         self._add_ns_records(domain)
 
-    def _update_db_record(self, record):
+    def _update_db_record(self, tenant_id, record):
         """
         generic domain db record update method
         """
         table = self.get_dns_table()
 
         q = table.filter_by(
+            tenant_id=tenant_id,
             domain_id=record['domain_id'],
-            name=record['name'],
-            type=record['type'])
+            moniker_rec_id=record['id'])
+
         q.update({'ttl': record['ttl'],
                   'type': record['type'],
                   'data': record['data']})
@@ -173,8 +185,10 @@ class MySQLBind9Backend(base.Backend):
         table = self.get_dns_table()
 
         # there will only ever be -one- of these
-        existing_record = table.filter_by(domain_id=domain['id'],
+        existing_record = table.filter_by(tenant_id=domain['tenant_id'],
+                                          domain_id=domain['id'],
                                           type=u'SOA')
+
         data_rec = "%s. %s. %d %d %d %d %d" % (
                    domain['name'],
                    domain['email'].replace("@", "."),
@@ -202,7 +216,7 @@ class MySQLBind9Backend(base.Backend):
 #
 #        self._db.commit()
 
-    def _delete_db_record(self, record):
+    def _delete_db_record(self, tenant_id, record):
         """
         delete a specific record for a given domain
         """
@@ -210,15 +224,15 @@ class MySQLBind9Backend(base.Backend):
         LOG.debug("_delete_db_record")
 
         q = table.filter_by(
-            name=record['name'],
-            type=record['type'],
-            domain_id=record['domain_id'])
+            tenant_id=tenant_id,
+            domain_id=record['domain_id'],
+            moniker_rec_id=record['id'])
 
         q.delete()
 
         self._db.commit()
 
-    def _delete_db_domain_records(self, domain_id):
+    def _delete_db_domain_records(self, tenant_id, domain_id):
         """
          delete all records for a given domain
          """
@@ -226,7 +240,8 @@ class MySQLBind9Backend(base.Backend):
         table = self.get_dns_table()
 
         # delete all records for the domain id
-        q = table.filter_by(domain_id=domain_id)
+        q = table.filter_by(tenant_id=tenant_id,
+                            domain_id=domain_id)
         q.delete()
 
         self._db.commit()
@@ -249,24 +264,29 @@ class MySQLBind9Backend(base.Backend):
     def delete_domain(self, context, domain):
         LOG.debug('delete_domain()')
         if cfg.CONF[self.name].write_database:
-            self._delete_db_domain_records(domain['id'])
+            self._delete_db_domain_records(domain['tenant_id'],
+                                           domain['id'])
 
         self._sync_domains()
 
     def create_record(self, context, domain, record):
         LOG.debug('create_record()')
         if cfg.CONF[self.name].write_database:
-            self._insert_db_record(domain['id'], record)
+            self._insert_db_record(domain['tenant_id'],
+                                   domain['id'],
+                                   record)
 
     def update_record(self, context, domain, record):
         LOG.debug('update_record()')
         if cfg.CONF[self.name].write_database:
-            self._update_db_record(record)
+            self._update_db_record(domain['tenant_id'],
+                                   record)
 
     def delete_record(self, context, domain, record):
         LOG.debug('Delete Record')
         if cfg.CONF[self.name].write_database:
-            self._delete_db_record(record)
+            self._delete_db_record(domain['tenant_id'],
+                                   record)
 
     def _sync_domains(self):
         """
