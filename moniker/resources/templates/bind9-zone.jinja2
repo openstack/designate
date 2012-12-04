@@ -9,12 +9,12 @@ $TTL {{ domain.ttl }}
 )
 
 {% for server in servers %}
-{{domain.name}}. IN NS {{server.name}}.
+{{domain.name}} IN NS {{server.name}}
 {%- endfor %}
 
 {% for record in records %}
 {% if record.type in ('NS', 'MX', 'CNAME', 'SRV') -%}
-{{record.name}} {{record.ttl or ''}} IN {{record.type}} {{record.priority or ''}} {{record.data}}.
+{{record.name}} {{record.ttl or ''}} IN {{record.type}} {{record.priority or ''}} {{record.data}}
 {%- else -%}
 {{record.name}} {{record.ttl or ''}} IN {{record.type}} {{record.priority or ''}} {{record.data}}
 {%- endif %}
