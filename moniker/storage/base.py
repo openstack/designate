@@ -24,7 +24,7 @@ class StorageEngine(Plugin):
     __plugin_type__ = 'storage'
 
     @abc.abstractmethod
-    def get_connection(self, conf):
+    def get_connection(self):
         """
         Return a Connection instance based on the configuration settings.
         """
@@ -37,7 +37,7 @@ class Connection(object):
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
-    def __init__(self, conf):
+    def __init__(self):
         """
         Constructor...
         """

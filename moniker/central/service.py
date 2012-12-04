@@ -36,7 +36,7 @@ cfg.CONF.register_opts([
 class Service(rpc_service.Service):
     def __init__(self, *args, **kwargs):
 
-        self.backend = backend.get_backend(cfg.CONF)
+        self.backend = backend.get_backend()
 
         kwargs.update(
             host=cfg.CONF.host,
@@ -48,7 +48,7 @@ class Service(rpc_service.Service):
         super(Service, self).__init__(*args, **kwargs)
 
         # Get a storage connection
-        self.storage_conn = storage.get_connection(cfg.CONF)
+        self.storage_conn = storage.get_connection()
 
         # Initialize extensions
         self.handlers = self._init_extensions()

@@ -51,19 +51,19 @@ class SQLAlchemyStorage(base.StorageEngine):
         opts.extend(SQL_OPTS)
         return opts
 
-    def get_connection(self, conf):
-        return Connection(conf)
+    def get_connection(self):
+        return Connection()
 
 
 class Connection(base.Connection):
     """
     SQLAlchemy connection
     """
-    def __init__(self, conf):
-        LOG.info('connecting to %s', conf.database_connection)
-        self.session = self._get_connection(conf)
+    def __init__(self):
+        LOG.info('connecting to %s', cfg.CONF.database_connection)
+        self.session = self._get_connection()
 
-    def _get_connection(self, conf):
+    def _get_connection(self):
         """
         Return a connection to the database.
         """

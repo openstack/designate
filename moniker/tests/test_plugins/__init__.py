@@ -1,5 +1,4 @@
 from moniker.tests import TestCase
-from moniker.openstack.common import cfg
 
 
 class PluginTestCase(TestCase):
@@ -18,7 +17,7 @@ class PluginTestCase(TestCase):
         plugin_opts = self.pre_invoke() or {}
 
         # NOTE: Load plugin and register it's opts
-        plugin_cls = self.get_plugin(conf=cfg.CONF)
+        plugin_cls = self.get_plugin()
 
         self.config(group=plugin_cls.get_canonical_name(), **plugin_opts)
 

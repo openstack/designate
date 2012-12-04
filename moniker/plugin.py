@@ -44,7 +44,7 @@ class Plugin(object):
         return True
 
     @classmethod
-    def get_plugin(cls, name, ns=None, conf=None, invoke_on_load=False,
+    def get_plugin(cls, name, ns=None, invoke_on_load=False,
                    invoke_args=(), invoke_kwds={}):
         """
         Load a plugin from namespace
@@ -55,8 +55,8 @@ class Plugin(object):
 
         LOG.debug('Looking for plugin %s in %s', name, ns)
         mgr = driver.DriverManager(ns, name)
-        if conf:
-            mgr.driver.register_opts(conf)
+        mgr.driver.register_opts()
+
         return mgr.driver(*invoke_args, **invoke_kwds) if invoke_on_load \
             else mgr.driver
 
@@ -78,12 +78,11 @@ class Plugin(object):
         return cls.__plugin_type__
 
     @classmethod
-    def register_group_opts(cls, conf, group_name=None, opts=None):
+    def register_group_opts(cls, group_name=None, opts=None):
         """
         Register a set of Options underneath a new Group or Section
         if you will.
 
-        :param conf: Configuration object
         :param group_name: Optional group name to register this under
                            Default: ClassName to class_name
         :param opts: The options to register.
@@ -96,22 +95,20 @@ class Plugin(object):
         group = cfg.OptGroup(
             name=group_name,
             title="Configuration for %s" % group_name)
-        conf.register_group(group)
+        cfg.CONF.register_group(group)
         if opts:
-            conf.register_opts(opts, group=group)
+            cfg.CONF.register_opts(opts, group=group)
         else:
             LOG.debug("No options for %s, skipping registration", group_name)
 
     @classmethod
-    def register_opts(cls, conf):
+    def register_opts(cls):
         """
         Register the options for this Plugin using the options from
         cls.get_opts() as a default
-
-        :param conf: Configration object
         """
         opts = cls.get_opts()
-        cls.register_group_opts(conf, opts=opts)
+        cls.register_group_opts(opts=opts)
 
     @classmethod
     def get_opts(cls):

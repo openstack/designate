@@ -23,7 +23,7 @@ LOG = logging.getLogger(__name__)
 
 class Service(rpc_service.Service):
     def __init__(self, *args, **kwargs):
-        manager = backend.get_backend(cfg.CONF)
+        manager = backend.get_backend()
 
         kwargs.update(
             host=cfg.CONF.host,

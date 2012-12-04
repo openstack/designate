@@ -25,7 +25,7 @@ cfg.CONF.register_opts([
 ])
 
 
-def get_backend(conf):
-    LOG.debug("backend_driver: %s" % cfg.CONF.backend_driver)
+def get_backend():
+    LOG.debug("Loading backend driver: %s" % cfg.CONF.backend_driver)
     return Plugin.get_plugin(cfg.CONF.backend_driver, ns=__name__,
-                             conf=conf, invoke_on_load=True)
+                             invoke_on_load=True)

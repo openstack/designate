@@ -34,27 +34,27 @@ def get_engine_name(string):
     return string.split("+")[0]
 
 
-def get_engine(conf):
-    scheme = urlparse(conf.database_connection).scheme
+def get_engine():
+    scheme = urlparse(cfg.CONF.database_connection).scheme
     engine_name = get_engine_name(scheme)
     return StorageEngine.get_plugin(
-        engine_name, conf=conf, invoke_on_load=True)
+        engine_name, invoke_on_load=True)
 
 
-def get_connection(conf):
-    engine = get_engine(conf)
-    return engine.get_connection(conf)
+def get_connection():
+    engine = get_engine()
+    return engine.get_connection()
 
 
 def setup_schema():
     """ Create the DB - Used for testing purposes """
     LOG.debug("Setting up Schema")
-    connection = get_connection(cfg.CONF)
+    connection = get_connection()
     connection.setup_schema()
 
 
 def teardown_schema():
     """ Reset the DB to default - Used for testing purposes """
     LOG.debug("Tearing down Schema")
-    connection = get_connection(cfg.CONF)
+    connection = get_connection()
     connection.teardown_schema()

@@ -13,7 +13,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
 from moniker.tests import TestCase
 from moniker import storage
@@ -25,8 +24,8 @@ LOG = logging.getLogger(__name__)
 class StorageTestCase(TestCase):
     __test__ = False
 
-    def get_storage_driver(self, conf=cfg.CONF):
-        connection = storage.get_connection(conf)
+    def get_storage_driver(self):
+        connection = storage.get_connection()
         return connection
 
 
