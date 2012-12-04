@@ -28,6 +28,8 @@ LOG = logging.getLogger(__name__)
 HANDLER_NAMESPACE = 'moniker.notification.handler'
 
 cfg.CONF.register_opts([
+    cfg.StrOpt('backend-driver', default='rpc',
+               help='The backend driver to use'),
     cfg.ListOpt('enabled-notification-handlers', default=[],
                 help='Enabled Notification Handlers'),
 ])
@@ -36,7 +38,7 @@ cfg.CONF.register_opts([
 class Service(rpc_service.Service):
     def __init__(self, *args, **kwargs):
 
-        self.backend = backend.get_backend()
+        self.backend = backend.get_backend(cfg.CONF.backend_driver)
 
         kwargs.update(
             host=cfg.CONF.host,

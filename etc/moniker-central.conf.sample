@@ -9,7 +9,7 @@ debug = False
 #state_path = /var/lib/moniker
 
 # Driver used for backend communication (e.g. rpc, bind9, powerdns)
-backend_driver=rpc
+#backend_driver=rpc
 
 # Database connection string - to configure options for a given implementation
 # like sqlalchemy or other see below

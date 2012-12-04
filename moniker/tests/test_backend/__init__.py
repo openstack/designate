@@ -25,7 +25,7 @@ class BackendDriverTestCase(TestCase):
     __test__ = False
 
     def get_backend_driver(self):
-        return backend.get_backend()
+        return backend.get_backend(cfg.CONF.backend_driver)
 
     def test_constructor(self):
         self.get_backend_driver()

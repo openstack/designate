@@ -20,10 +20,15 @@ from moniker import backend
 
 LOG = logging.getLogger(__name__)
 
+cfg.CONF.register_opts([
+    cfg.StrOpt('backend-driver', default='bind9',
+               help='The backend driver to use'),
+])
+
 
 class Service(rpc_service.Service):
     def __init__(self, *args, **kwargs):
-        manager = backend.get_backend()
+        manager = backend.get_backend(cfg.CONF.backend_driver)
 
         kwargs.update(
             host=cfg.CONF.host,

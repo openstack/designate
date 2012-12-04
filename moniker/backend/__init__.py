@@ -13,19 +13,12 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
 from moniker.plugin import Plugin
 
 LOG = logging.getLogger(__name__)
 
-cfg.CONF.register_opts([
-    cfg.StrOpt('backend-driver', default='bind9',
-               help='The backend driver to use')
-])
 
-
-def get_backend():
-    LOG.debug("Loading backend driver: %s" % cfg.CONF.backend_driver)
-    return Plugin.get_plugin(cfg.CONF.backend_driver, ns=__name__,
-                             invoke_on_load=True)
+def get_backend(backend_driver):
+    LOG.debug("Loading backend driver: %s" % backend_driver)
+    return Plugin.get_plugin(backend_driver, ns=__name__, invoke_on_load=True)
