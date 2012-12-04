@@ -19,14 +19,13 @@ from migrate.versioning import api as versioning_api
 from cliff.command import Command
 from moniker.openstack.common import log as logging
 from moniker.openstack.common import cfg
-from moniker import storage  # Import for database_connection cfg def.
 from moniker import utils
 
 LOG = logging.getLogger(__name__)
-
 REPOSITORY = os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
                                           'storage', 'impl_sqlalchemy',
                                           'migrate_repo'))
+cfg.CONF.import_opt('database_connection', 'moniker.storage')
 
 
 class InitCommand(Command):
