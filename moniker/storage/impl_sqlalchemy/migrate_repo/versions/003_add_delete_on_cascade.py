@@ -29,11 +29,18 @@ def upgrade(migrate_engine):
 
     # add foreignkey if not sqlite
     if not dialect.startswith('sqlite'):
-        ForeignKeyConstraint(columns=[records.c.domain_id],
-                             refcolumns=[domains.c.id]).drop()
+        if dialect.startswith('mysql'):
+            ForeignKeyConstraint(columns=[records.c.domain_id],
+                                 refcolumns=[domains.c.id],
+                                 name='records_ibfk_1').drop()
+        else:
+            ForeignKeyConstraint(columns=[records.c.domain_id],
+                                 refcolumns=[domains.c.id]).drop()
+
         ForeignKeyConstraint(columns=[records.c.domain_id],
                              refcolumns=[domains.c.id],
-                             ondelete='CASCADE').create()
+                             ondelete='CASCADE',
+                             name='fkey_records_domain_id').create()
 
 
 def downgrade(migrate_engine):
