@@ -23,3 +23,14 @@ default_log_levels = amqplib=WARN, sqlalchemy=WARN, boto=WARN, suds=INFO, keysto
 #rndc_port = 953
 #rndc_config_file = /etc/rndc.conf
 #rndc_key_file = /etc/rndc.key
+
+# MySQLBind agent options
+#[backend:mysqlbind9]
+#database_connection = mysql://user:password@host/schema
+#rndc_path = /usr/sbin/rndc
+#rndc_host = 127.0.0.1
+#rndc_port = 953
+#rndc_config_file = /etc/rndc.conf
+#rndc_key_file = /etc/rndc.key
+#write_database = True
+#dns_server_type = master
