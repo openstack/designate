@@ -19,18 +19,21 @@ from moniker.notification_handler.base import BaseAddressHandler
 
 LOG = logging.getLogger(__name__)
 
+cfg.CONF.register_group(cfg.OptGroup(
+    name='handler:quantum_floatingip',
+    title="Configuration for Quantum Notification Handler"
+))
+
+cfg.CONF.register_opts([
+    cfg.ListOpt('notification-topics', default=['monitor']),
+    cfg.StrOpt('control-exchange', default='quantum'),
+    cfg.StrOpt('domain_id', default=None),
+], group='handler:quantum_floatingip')
+
 
 class QuantumFloatingHandler(BaseAddressHandler):
-    __plugin_name__ = 'quantum_floatingip'
     """ Handler for Quantum's notifications """
-
-    @classmethod
-    def get_opts(cls):
-        opts = super(QuantumFloatingHandler, cls).get_opts()
-        opts.extend([
-            cfg.ListOpt('notification-topics', default=['monitor']),
-            cfg.StrOpt('control-exchange', default='quantum')])
-        return opts
+    __plugin_name__ = 'quantum_floatingip'
 
     def get_exchange_topics(self):
         exchange = cfg.CONF[self.name].control_exchange

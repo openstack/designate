@@ -19,18 +19,21 @@ from moniker.notification_handler.base import BaseAddressHandler
 
 LOG = logging.getLogger(__name__)
 
+cfg.CONF.register_group(cfg.OptGroup(
+    name='handler:nova_fixed',
+    title="Configuration for Nova Notification Handler"
+))
+
+cfg.CONF.register_opts([
+    cfg.ListOpt('notification-topics', default=['monitor']),
+    cfg.StrOpt('control-exchange', default='nova'),
+    cfg.StrOpt('domain_id', default=None),
+], group='handler:nova_fixed')
+
 
 class NovaFixedHandler(BaseAddressHandler):
-    __plugin_name__ = 'nova_fixed'
     """ Handler for Nova's notifications """
-
-    @classmethod
-    def get_opts(cls):
-        opts = super(NovaFixedHandler, cls).get_opts()
-        opts.extend([
-            cfg.ListOpt('notification-topics', default=['monitor']),
-            cfg.StrOpt('control-exchange', default='nova')])
-        return opts
+    __plugin_name__ = 'nova_fixed'
 
     def get_exchange_topics(self):
         exchange = cfg.CONF[self.name].control_exchange

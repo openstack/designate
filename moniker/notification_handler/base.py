@@ -68,10 +68,6 @@ class Handler(Plugin):
     def process_notification(self, event_type, payload):
         """ Processes a given notification """
 
-    @classmethod
-    def get_opts(cls):
-        return [cfg.StrOpt('domain_id', default=None)]
-
     def get_domain(self, domain_id):
         """
         Return the domain for this context

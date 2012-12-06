@@ -24,23 +24,23 @@ from moniker.context import MonikerContext
 
 LOG = logging.getLogger(__name__)
 
+cfg.CONF.register_group(cfg.OptGroup(
+    name='backend:bind9', title="Configuration for BIND9 Backend"
+))
+
+cfg.CONF.register_opts([
+    cfg.StrOpt('rndc-path', default='/usr/sbin/rndc',
+               help='RNDC Path'),
+    cfg.StrOpt('rndc-host', default='127.0.0.1', help='RNDC Host'),
+    cfg.IntOpt('rndc-port', default=953, help='RNDC Port'),
+    cfg.StrOpt('rndc-config-file', default=None,
+               help='RNDC Config File'),
+    cfg.StrOpt('rndc-key-file', default=None, help='RNDC Key File'),
+], group='backend:bind9')
+
 
 class Bind9Backend(base.Backend):
     __plugin_name__ = 'bind9'
-
-    @classmethod
-    def get_opts(cls):
-        opts = super(Bind9Backend, cls).get_opts()
-        opts.extend([
-            cfg.StrOpt('rndc-path', default='/usr/sbin/rndc',
-                       help='RNDC Path'),
-            cfg.StrOpt('rndc-host', default='127.0.0.1', help='RNDC Host'),
-            cfg.IntOpt('rndc-port', default=953, help='RNDC Port'),
-            cfg.StrOpt('rndc-config-file', default=None,
-                       help='RNDC Config File'),
-            cfg.StrOpt('rndc-key-file', default=None, help='RNDC Key File'),
-        ])
-        return opts
 
     def start(self):
         super(Bind9Backend, self).start()

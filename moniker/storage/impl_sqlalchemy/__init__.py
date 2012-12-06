@@ -23,7 +23,11 @@ from moniker.sqlalchemy.session import get_session
 
 LOG = logging.getLogger(__name__)
 
-SQL_OPTS = [
+cfg.CONF.register_group(cfg.OptGroup(
+    name='storage:sqlalchemy', title="Configuration for SQLAlchemy Storage"
+))
+
+cfg.CONF.register_opts([
     cfg.StrOpt('database_connection',
                default='sqlite:///$state_path/moniker.sqlite',
                help='The database driver to use'),
@@ -41,17 +45,11 @@ SQL_OPTS = [
                '(setting -1 implies an infinite retry count)'),
     cfg.IntOpt('retry_interval', default=10,
                help='interval between retries of opening a sql connection')
-]
+], group='storage:sqlalchemy')
 
 
 class SQLAlchemyStorage(base.StorageEngine):
     __plugin_name__ = 'sqlalchemy'
-
-    @classmethod
-    def get_opts(cls):
-        opts = super(SQLAlchemyStorage, cls).get_opts()
-        opts.extend(SQL_OPTS)
-        return opts
 
     def get_connection(self):
         return Connection(self.name)

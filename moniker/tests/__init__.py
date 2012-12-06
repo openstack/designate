@@ -25,9 +25,8 @@ from moniker.central import service as central_service
 
 LOG = logging.getLogger(__name__)
 
-# NOTE(kiall): Awful kludge, to be removed in the next patchset
-from moniker.storage.impl_sqlalchemy import SQLAlchemyStorage
-SQLAlchemyStorage.register_opts()
+cfg.CONF.import_opt('database_connection', 'moniker.storage.impl_sqlalchemy',
+                    group='storage:sqlalchemy')
 
 
 class AssertMixin(object):

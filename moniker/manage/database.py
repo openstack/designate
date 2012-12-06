@@ -25,7 +25,8 @@ LOG = logging.getLogger(__name__)
 REPOSITORY = os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
                                           'storage', 'impl_sqlalchemy',
                                           'migrate_repo'))
-cfg.CONF.import_opt('database_connection', 'moniker.storage')
+cfg.CONF.import_opt('database_connection', 'moniker.storage.impl_sqlalchemy',
+                    group='storage:sqlalchemy')
 
 
 class InitCommand(Command):

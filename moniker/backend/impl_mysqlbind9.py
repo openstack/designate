@@ -29,33 +29,33 @@ from moniker.sqlalchemy.session import get_engine
 
 LOG = logging.getLogger(__name__)
 
+cfg.CONF.register_group(cfg.OptGroup(
+    name='backend:mysqlbind9', title="Configuration for BIND9+MySQL Backend"
+))
+
+cfg.CONF.register_opts([
+    cfg.StrOpt('rndc-path',
+               default='/usr/sbin/rndc', help='RNDC Path'),
+    cfg.StrOpt('rndc-host', default='127.0.0.1', help='RNDC Host'),
+    cfg.IntOpt('rndc-port', default=953, help='RNDC Port'),
+    cfg.StrOpt('rndc-config-file',
+               default=None, help='RNDC Config File'),
+    cfg.StrOpt('rndc-key-file', default=None, help='RNDC Key File'),
+    cfg.StrOpt('dns-server-type', default='master',
+               help='slave or master DNS server?'),
+    cfg.BoolOpt('write-database', default=True,
+                help='Write to the DNS mysqlbind database?'),
+    cfg.StrOpt('database-connection',
+               default='mysql://dns:dns@localhost/dns',
+               help='SQL Connection'),
+    cfg.StrOpt('database-dns-table',
+               default='dns_domains',
+               help='DNS schema'),
+], group='backend:mysqlbind9')
+
 
 class MySQLBind9Backend(base.Backend):
     __plugin_name__ = 'mysqlbind9'
-
-    @classmethod
-    def get_opts(cls):
-        opts = super(MySQLBind9Backend, cls).get_opts()
-        opts.extend([
-            cfg.StrOpt('rndc-path',
-                       default='/usr/sbin/rndc', help='RNDC Path'),
-            cfg.StrOpt('rndc-host', default='127.0.0.1', help='RNDC Host'),
-            cfg.IntOpt('rndc-port', default=953, help='RNDC Port'),
-            cfg.StrOpt('rndc-config-file',
-                       default=None, help='RNDC Config File'),
-            cfg.StrOpt('rndc-key-file', default=None, help='RNDC Key File'),
-            cfg.StrOpt('dns-server-type', default='master',
-                       help='slave or master DNS server?'),
-            cfg.BoolOpt('write-database', default=True,
-                        help='Write to the DNS mysqlbind database?'),
-            cfg.StrOpt('database-connection',
-                       default='mysql://dns:dns@localhost/dns',
-                       help='SQL Connection'),
-            cfg.StrOpt('database-dns-table',
-                       default='dns_domains',
-                       help='DNS schema'),
-        ])
-        return opts
 
     def get_url_data(self):
         url = _parse_rfc1738_args(cfg.CONF[self.name].database_connection)
