@@ -53,10 +53,17 @@ class Base(object):
         try:
             session.flush()
         except IntegrityError, e:
-            if 'not unique' in str(e):
-                raise exceptions.Duplicate(str(e))
-            else:
-                raise
+            non_unique_strings = (
+                'duplicate entry',
+                'not unique'
+            )
+
+            for non_unique_string in non_unique_strings:
+                if non_unique_string in str(e).lower():
+                    raise exceptions.Duplicate(str(e))
+
+            # Not a Duplicate error.. Re-raise.
+            raise
 
     def delete(self, session):
         """ Delete this object """
