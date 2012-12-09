@@ -35,7 +35,7 @@ class InitCommand(Command):
     def take_action(self, parsed_args):
         utils.read_config('moniker-central', [])
 
-        url = cfg.CONF.database_connection
+        url = cfg.CONF['storage:sqlalchemy'].database_connection
 
         if not os.path.exists(REPOSITORY):
             raise Exception('Migration Respository Not Found')
@@ -55,7 +55,7 @@ class SyncCommand(Command):
         # TODO: Support specifying version
         utils.read_config('moniker-central', [])
 
-        url = cfg.CONF.database_connection
+        url = cfg.CONF['storage:sqlalchemy'].database_connection
 
         if not os.path.exists(REPOSITORY):
             raise Exception('Migration Respository Not Found')
