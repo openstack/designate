@@ -68,15 +68,17 @@ Common Steps
    $ pip install -rtools/setup-requires -rtools/pip-requires -rtools/pip-options
    $ python setup.py develop
 
-   Copy sample configs to usable ones, inside the ´etc´ folder do::
+   Copy sample configs to usable ones, inside the `etc` folder do::
+
    $ ls *.sample | while read f; do cp $f $(echo $f | sed "s/.sample$//g"); done
 
 5. Configure Bind or other if needed::
 
-   $ vi ``/etc/bind/named.conf``
+   $ vi /etc/bind/named.conf
 
-   Add
-   include "$CHECKOUT_PATH/var/bind9/zones.config"
+   Add the following line to the file::
+
+   include "$CHECKOUT_PATH/bind9/zones.config"
 
 6. Restart bind::
 
@@ -85,11 +87,9 @@ Common Steps
 7. If you intend to run Moniker as a non-root user, then permissions and other
    things needs to be fixed up::
 
-   $ MUSER=moniker
-   $ useradd -m -d /opt/stack/moniker $MUSER
-   $ chown $MUSER:$MUSER /opt/stack/moniker
-   $ echo "$MUSER ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/90-moniker-$USER
-   $ chmod 0440 /etc/sudoers.d/90-moniker-$MUSER
+   $ MUSER=username
+   $ echo "$MUSER ALL=(ALL) NOPASSWD:ALL" | sudo tee -a /etc/sudoers.d/90-moniker-$MUSER
+   $ sudo chmod 0440 /etc/sudoers.d/90-moniker-$MUSER
 
 
 Note on running processes
@@ -110,7 +110,7 @@ Installing the Central
 2. Configure the :term:`central` service::
 
    Change the wanted configuration settings to match your environment, the file
-   is in the ´etc´ folder::
+   is in the `etc` folder::
 
    $ vi moniker-central.conf
 
@@ -137,7 +137,7 @@ Installing the Agent
 2. Configure the :term:`agent` service::
 
    Change the wanted configuration settings to match your environment, the file
-   is in the ´etc´ folder::
+   is in the `etc` folder::
 
    $ vi moniker-agent.conf
 
@@ -163,7 +163,7 @@ Installing the API
 2. Configure the :term:`api` service::
 
    Change the wanted configuration settings to match your environment, the file
-   is in the ´etc´ folder::
+   is in the `etc` folder::
 
    $ vi moniker-api.conf
    $ vi moniker-api-paste.ini
