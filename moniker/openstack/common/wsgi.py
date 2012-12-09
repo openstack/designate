@@ -87,7 +87,7 @@ class Service(service.Service):
 
     def _run(self, application, socket):
         """Start a WSGI server in a new green thread."""
-        logger = logging.getLogger('eventlet.wsgi.server')
+        logger = logging.getLogger('eventlet.wsgi')
         eventlet.wsgi.server(socket, application, custom_pool=self.tg.pool,
                              log=logging.WritableLogger(logger))
 

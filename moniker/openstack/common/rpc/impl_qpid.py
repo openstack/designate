@@ -279,6 +279,13 @@ class Connection(object):
         self.consumer_thread = None
         self.conf = conf
 
+        if server_params and 'hostname' in server_params:
+            # NOTE(russellb) This enables support for cast_to_server.
+            server_params['qpid_hosts'] = [
+                '%s:%d' % (server_params['hostname'],
+                           server_params.get('port', 5672))
+            ]
+
         params = {
             'qpid_hosts': self.conf.qpid_hosts,
             'username': self.conf.qpid_username,

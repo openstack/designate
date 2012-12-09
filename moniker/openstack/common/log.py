@@ -289,6 +289,12 @@ def setup(product_name):
         _setup_logging_from_conf(product_name)
 
 
+def set_defaults(logging_context_format_string):
+    cfg.set_defaults(log_opts,
+                     logging_context_format_string=
+                     logging_context_format_string)
+
+
 def _find_facility_from_conf():
     facility_names = logging.handlers.SysLogHandler.facility_names
     facility = getattr(logging.handlers.SysLogHandler,
