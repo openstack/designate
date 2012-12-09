@@ -15,7 +15,7 @@ api_host = 0.0.0.0
 api_port = 9001
 
 # Authentication strategy to use - can be either "noauth" or "keystone"
-auth_strategy = noauth
+# auth_strategy = noauth
 
 # There has to be a better way to set these defaults
 allowed_rpc_exception_modules = moniker.exceptions, moniker.openstack.common.exception
