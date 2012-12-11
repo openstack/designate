@@ -46,11 +46,10 @@ Common Steps
 
    $ apt-get install python-pip python-virtualenv
    $ apt-get install rabbitmq-server bind9
-   $ apt-get build-dep python-lxml git
+   $ apt-get build-dep python-lxml
 
 2. Clone the Moniker repo off of Stackforge::
 
-   $ cd /opt/stack
    $ git clone https://github.com/stackforge/moniker.git
    $ cd moniker
 
