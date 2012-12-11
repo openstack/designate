@@ -98,7 +98,10 @@ def update_record(domain_id, record_id):
     values = flask.request.json
 
     try:
-        record_schema.validate(values)
+        record = central_api.get_record(context, domain_id, record_id)
+        record.update(values)
+
+        record_schema.validate(record)
         record = central_api.update_record(context, domain_id, record_id,
                                            values)
     except exceptions.Forbidden:

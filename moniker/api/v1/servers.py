@@ -97,7 +97,10 @@ def update_server(server_id):
     values = flask.request.json
 
     try:
-        server_schema.validate(values)
+        server = central_api.get_server(context, server_id)
+        server.update(values)
+
+        server_schema.validate(server)
         server = central_api.update_server(context, server_id, values=values)
     except exceptions.Forbidden:
         return flask.Response(status=401)

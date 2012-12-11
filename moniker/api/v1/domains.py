@@ -98,7 +98,10 @@ def update_domain(domain_id):
     values = flask.request.json
 
     try:
-        domain_schema.validate(values)
+        domain = central_api.get_domain(context, domain_id)
+        domain.update(values)
+
+        domain_schema.validate(domain)
         domain = central_api.update_domain(context, domain_id, values)
     except exceptions.Forbidden:
         return flask.Response(status=401)
