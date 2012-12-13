@@ -11,10 +11,6 @@ debug = False
 # Driver used for backend communication (e.g. rpc, bind9, powerdns)
 #backend_driver=rpc
 
-# Database connection string - to configure options for a given implementation
-# like sqlalchemy or other see below
-#database_connection = sqlite:///$state_path/moniker.sqlite
-
 # There has to be a better way to set these defaults
 allowed_rpc_exception_modules = moniker.exceptions, moniker.openstack.common.exception
 logging_context_format_string = %(asctime)s %(levelname)s %(name)s [%(request_id)s %(user)s %(tenant)s] %(instance)s %(message)s
@@ -29,6 +25,9 @@ default_log_levels = amqplib=WARN, sqlalchemy=WARN, boto=WARN, suds=INFO, keysto
 
 # Sections for *SQL storages
 #[storage:sqlalchemy]
+# Database connection string - to configure options for a given implementation
+# like sqlalchemy or other see below
+#database_connection = sqlite:///$state_path/moniker.sqlite
 #connection_debug = 100
 #connection_trace = False
 #sqlite_synchronous = True
