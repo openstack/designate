@@ -163,8 +163,8 @@ class Record(Base):
     type = Column(Enum(name='record_types', *RECORD_TYPES), nullable=False)
     name = Column(String(255), nullable=False)
     data = Column(Text, nullable=False)
-    priority = Column(Integer, default=None)
-    ttl = Column(Integer, default=3600, nullable=False)
+    priority = Column(Integer, default=None, nullable=True)
+    ttl = Column(Integer, default=None, nullable=True)
 
     managed = Column(Boolean, default=False)
     managed_plugin_type = Column(Unicode(50), default=None, nullable=True)

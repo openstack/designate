@@ -221,7 +221,7 @@ class CentralServiceTest(CentralTestCase):
 
         # Ensure all values have been set correctly
         self.assertIsNotNone(record['id'])
-        self.assertIsNotNone(record['ttl'])
+        self.assertIsNone(record['ttl'])
         self.assertEqual(record['name'], values['name'])
         self.assertEqual(record['type'], values['type'])
         self.assertEqual(record['data'], values['data'])
