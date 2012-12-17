@@ -19,7 +19,7 @@ from moniker.openstack.common import log as logging
 from moniker import exceptions
 from moniker.storage import base
 from moniker.storage.impl_sqlalchemy import models
-from moniker.sqlalchemy.session import get_session
+from moniker.sqlalchemy.session import get_session, SQLOPTS
 
 LOG = logging.getLogger(__name__)
 
@@ -27,25 +27,7 @@ cfg.CONF.register_group(cfg.OptGroup(
     name='storage:sqlalchemy', title="Configuration for SQLAlchemy Storage"
 ))
 
-cfg.CONF.register_opts([
-    cfg.StrOpt('database_connection',
-               default='sqlite:///$state_path/moniker.sqlite',
-               help='The database driver to use'),
-    cfg.IntOpt('connection_debug', default=0,
-               help='Verbosity of SQL debugging information. 0=None,'
-               ' 100=Everything'),
-    cfg.BoolOpt('connection_trace', default=False,
-                help='Add python stack traces to SQL as comment strings'),
-    cfg.BoolOpt('sqlite_synchronous', default=True,
-                help='If passed, use synchronous mode for sqlite'),
-    cfg.IntOpt('idle_timeout', default=3600,
-               help='timeout before idle sql connections are reaped'),
-    cfg.IntOpt('max_retries', default=10,
-               help='maximum db connection retries during startup. '
-               '(setting -1 implies an infinite retry count)'),
-    cfg.IntOpt('retry_interval', default=10,
-               help='interval between retries of opening a sql connection')
-], group='storage:sqlalchemy')
+cfg.CONF.register_opts(SQLOPTS, group='storage:sqlalchemy')
 
 
 class SQLAlchemyStorage(base.StorageEngine):

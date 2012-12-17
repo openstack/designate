@@ -25,7 +25,7 @@ from moniker.central import api as central_api
 from moniker.context import MonikerContext
 from sqlalchemy.ext.sqlsoup import SqlSoup
 from sqlalchemy.engine.url import _parse_rfc1738_args
-from moniker.sqlalchemy.session import get_engine
+from moniker.sqlalchemy.session import get_engine, SQLOPTS
 
 LOG = logging.getLogger(__name__)
 
@@ -45,13 +45,12 @@ cfg.CONF.register_opts([
                help='slave or master DNS server?'),
     cfg.BoolOpt('write-database', default=True,
                 help='Write to the DNS mysqlbind database?'),
-    cfg.StrOpt('database-connection',
-               default='mysql://dns:dns@localhost/dns',
-               help='SQL Connection'),
     cfg.StrOpt('database-dns-table',
                default='dns_domains',
                help='DNS schema'),
 ], group='backend:mysqlbind9')
+
+cfg.CONF.register_opts(SQLOPTS, group='backend:mysqlbind9')
 
 
 class MySQLBind9Backend(base.Backend):
