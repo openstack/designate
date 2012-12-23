@@ -15,5 +15,4 @@
 # under the License.
 from moniker.openstack.common import version as common_version
 
-PRE_VERSION = '2013.1'
-version_info = common_version.VersionInfo('moniker', pre_version=PRE_VERSION)
+version_info = common_version.VersionInfo('moniker')
