@@ -1,5 +1,6 @@
 exclude .gitignore
 exclude .gitreview
+exclude *.sublime-project
 
 global-exclude *.pyc
 
