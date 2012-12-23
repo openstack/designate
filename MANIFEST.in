@@ -1,12 +1,10 @@
+include AUTHORS
+include ChangeLog
+include moniker/versioninfo
+include *.txt *.ini *.cfg *.rst *.md
+recursive-include etc *
+
 exclude .gitignore
 exclude .gitreview
 exclude *.sublime-project
-
 global-exclude *.pyc
-
-include *.txt *.ini *.cfg *.rst *.md
-
-recursive-include moniker *
-recursive-include etc *
-recursive-include templates *
-
