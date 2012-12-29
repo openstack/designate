@@ -8,6 +8,9 @@ debug = False
 # Top-level directory for maintaining moniker's state
 #state_path = /var/lib/moniker
 
+# Log directory
+#logdir=/var/log/moniker
+
 # Address to bind the API server
 api_host = 0.0.0.0
 
