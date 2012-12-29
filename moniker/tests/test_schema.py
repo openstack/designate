@@ -17,6 +17,37 @@ from moniker.tests import TestCase
 from moniker import schema
 
 
+class TestSchemaValidator(TestCase):
+    def test_validate_format_hostname(self):
+        test_schema = {
+            "properties": {
+                "hostname": {
+                    "type": "string",
+                    "format": "host-name",
+                    "required": True
+                },
+            }
+        }
+
+        validator = schema.SchemaValidator(test_schema)
+
+        valid_hostnames = [
+            'example.com.',
+            'www.example.com.',
+            '12345.example.com.',
+            '192-0-2-1.example.com.',
+            'ip192-0-2-1.example.com.',
+            'www.ip192-0-2-1.example.com.',
+            'ip192-0-2-1.www.example.com.',
+            'abc-123.example.com.',
+            '_tcp.example.com.',
+            '_service._tcp.example.com.',
+        ]
+
+        for hostname in valid_hostnames:
+            validator.validate({'hostname': hostname})
+
+
 class TestSchema(TestCase):
     def test_constructor(self):
         domain = schema.Schema('v1', 'domain')

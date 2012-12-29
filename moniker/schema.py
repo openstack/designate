@@ -22,6 +22,9 @@ from moniker import exceptions
 from moniker import utils
 
 LOG = logging.getLogger(__name__)
+# TODO: I'm sure there is a more accurate regex than this..
+_RE_HOSTNAME = ('^(([a-zA-Z0-9_]|[a-zA-Z0-9_][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*'
+                '([A-Za-z0-9_]|[A-Za-z0-9_][A-Za-z0-9\-]*[A-Za-z0-9])\.$')
 
 # TODO: We shouldn't hard code this list..
 resolver = jsonschema.RefResolver(store={
@@ -87,11 +90,7 @@ class SchemaValidator(jsonschema.Draft3Validator):
         elif format == "host-name":
             # A valid hostname
             if self.is_type(instance, "string"):
-                # TODO: I'm sure there is a more accurate regex than this..
-                pattern = ('^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*'
-                           '([A-Za-z]|[A-Za-z][A-Za-z0-9\-]*[A-Za-z0-9])\.$')
-
-                if not re.match(pattern, instance):
+                if not re.match(_RE_HOSTNAME, instance):
                     msg = "%s is not a host name" % (instance)
                     yield jsonschema.ValidationError(msg)
 
