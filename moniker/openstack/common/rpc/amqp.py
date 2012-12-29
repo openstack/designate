@@ -33,7 +33,6 @@ from eventlet import greenpool
 from eventlet import pools
 from eventlet import semaphore
 
-from moniker.openstack.common import cfg
 from moniker.openstack.common import excutils
 from moniker.openstack.common.gettextutils import _
 from moniker.openstack.common import local
@@ -431,7 +430,4 @@ def cleanup(connection_pool):
 
 
 def get_control_exchange(conf):
-    try:
-        return conf.control_exchange
-    except cfg.NoSuchOptError:
-        return 'openstack'
+    return conf.control_exchange

@@ -25,18 +25,14 @@ LOG = logging.getLogger(__name__)
 
 class Service(wsgi.Service):
     def __init__(self, backlog=128, threads=1000):
-        super(Service, self).__init__(threads)
-
-        self._host = cfg.CONF.api_host
-        self._port = cfg.CONF.api_port
-        self.backlog = backlog
 
         config_path = utils.find_config(cfg.CONF.api_paste_config)
 
-        self.application = deploy.loadapp("config:%s" % config_path,
-                                          name='osapi_dns')
+        application = deploy.loadapp("config:%s" % config_path,
+                                     name='osapi_dns')
 
-    def start(self):
-        return super(Service, self).start(application=self.application,
-                                          port=self.port, host=self.host,
-                                          backlog=self.backlog)
+        super(Service, self).__init__(application=application,
+                                      host=cfg.CONF.api_host,
+                                      port=cfg.CONF.api_port,
+                                      backlog=backlog,
+                                      threads=threads)

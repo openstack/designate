@@ -55,27 +55,32 @@ class Service(service.Service):
     Launcher classes in service.py.
     """
 
-    def __init__(self, threads=1000):
+    def __init__(self, application, port,
+                 host='0.0.0.0', backlog=128, threads=1000):
+        self.application = application
+        self._port = port
+        self._host = host
+        self.backlog = backlog
         super(Service, self).__init__(threads)
 
-    def start(self, application, port, host='0.0.0.0', backlog=128):
+    def start(self):
         """Start serving this service using the provided server instance.
 
         :returns: None
 
         """
         super(Service, self).start()
-        socket = eventlet.listen((host, port), backlog=backlog)
-        (self._host, self._port) = socket.getsockname()
-        self.tg.add_thread(self._run, application, socket)
+        self._socket = eventlet.listen((self._host, self._port),
+                                       backlog=self.backlog)
+        self.tg.add_thread(self._run, self.application, self._socket)
 
     @property
     def host(self):
-        return self._host
+        return self._socket.getsockname()[0] if self._socket else self._host
 
     @property
     def port(self):
-        return self._port
+        return self._socket.getsockname()[1] if self._socket else self._port
 
     def stop(self):
         """Stop serving this API.
