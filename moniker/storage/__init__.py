@@ -20,13 +20,6 @@ from moniker.storage.base import StorageEngine
 LOG = logging.getLogger(__name__)
 
 
-def get_engine_name(string):
-    """
-    Return the engine name from either a non-dialected or dialected string
-    """
-    return string.split("+")[0]
-
-
 def get_engine(engine_name):
     """
     Return the engine class from the provided engine name
