@@ -17,6 +17,7 @@ import re
 import jsonschema
 import ipaddr
 import iso8601
+from datetime import datetime
 from moniker.openstack.common import log as logging
 from moniker import exceptions
 from moniker import utils
@@ -38,6 +39,21 @@ resolver = jsonschema.RefResolver(store={
 
 
 class SchemaValidator(jsonschema.Draft3Validator):
+    def validate_type(self, types, instance, schema):
+        LOG.warn(instance)
+        LOG.warn(schema)
+
+        # NOTE(kiall): A datetime object is not a string, but is still valid.
+        if ('format' in schema and schema['format'] == 'date-time'
+                and isinstance(instance, datetime)):
+            return
+
+        errors = super(SchemaValidator, self).validate_type(types, instance,
+                                                            schema)
+
+        for error in errors:
+            yield error
+
     def validate_format(self, format, instance, schema):
         if format == "date-time":
             # ISO 8601 format

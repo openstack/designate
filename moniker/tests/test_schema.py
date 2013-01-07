@@ -13,6 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from datetime import datetime
 from moniker.tests import TestCase
 from moniker import schema
 
@@ -46,6 +47,26 @@ class TestSchemaValidator(TestCase):
 
         for hostname in valid_hostnames:
             validator.validate({'hostname': hostname})
+
+    def test_validate_format_datetime(self):
+        test_schema = {
+            "properties": {
+                "date_time": {
+                    "type": "string",
+                    "format": "date-time",
+                    "required": True
+                },
+            }
+        }
+
+        validator = schema.SchemaValidator(test_schema)
+
+        valid_datetimes = [
+            datetime(2013, 1, 1)
+        ]
+
+        for dt in valid_datetimes:
+            validator.validate({'date_time': dt})
 
 
 class TestSchema(TestCase):
