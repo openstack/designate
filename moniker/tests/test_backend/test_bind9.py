@@ -14,12 +14,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from moniker.openstack.common import log as logging
-from moniker.tests.test_backend import BackendDriverTestCase
+from moniker.tests.test_backend import BackendTestCase
 
 LOG = logging.getLogger(__name__)
 
 
-class Bind9BackendDriverTestCase(BackendDriverTestCase):
+class Bind9BackendDriverTestCase(BackendTestCase):
     __test__ = True
 
     def setUp(self):

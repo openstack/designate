@@ -21,7 +21,7 @@ from moniker import backend
 LOG = logging.getLogger(__name__)
 
 
-class BackendDriverTestCase(TestCase):
+class BackendTestCase(TestCase):
     __test__ = False
 
     def get_backend_driver(self):
