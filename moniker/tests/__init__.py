@@ -68,30 +68,30 @@ class AssertMixin(object):
 
 class TestCase(unittest2.TestCase, AssertMixin):
     server_fixtures = [{
-        'name': 'ns1.example.org',
+        'name': 'ns1.example.org.',
         'ipv4': '192.0.2.1',
         'ipv6': '2001:db8::1',
     }, {
-        'name': 'ns2.example.org',
+        'name': 'ns2.example.org.',
         'ipv4': '192.0.2.2',
         'ipv6': '2001:db8::2',
     }, {
-        'name': 'ns2.example.org',
+        'name': 'ns2.example.org.',
         'ipv4': '192.0.2.2',
         'ipv6': '2001:db8::2',
     }]
 
     domain_fixtures = [{
-        'name': 'example.com',
+        'name': 'example.com.',
         'email': 'example@example.com',
     }, {
-        'name': 'example.net',
+        'name': 'example.net.',
         'email': 'example@example.net',
     }]
 
     record_fixtures = [
-        {'name': 'www.%s.com', 'type': 'A', 'data': '192.0.2.1'},
-        {'name': 'mail.%s.com', 'type': 'A', 'data': '192.0.2.2'}
+        {'name': 'www.%s', 'type': 'A', 'data': '192.0.2.1'},
+        {'name': 'mail.%s', 'type': 'A', 'data': '192.0.2.2'}
     ]
 
     def setUp(self):
@@ -138,6 +138,7 @@ class TestCase(unittest2.TestCase, AssertMixin):
     def get_admin_context(self):
         return MonikerContext.get_admin_context()
 
+    # Fixture methods
     def get_server_fixture(self, fixture=0, values={}):
         _values = copy.copy(self.server_fixtures[fixture])
         _values.update(values)
@@ -148,12 +149,17 @@ class TestCase(unittest2.TestCase, AssertMixin):
         _values.update(values)
         return _values
 
-    def get_record_fixture(self, domain, fixture=0, values={}):
+    def get_record_fixture(self, domain_name, fixture=0, values={}):
         _values = copy.copy(self.record_fixtures[fixture])
         _values.update(values)
+
+        try:
+            _values['name'] = _values['name'] % domain_name
+        except TypeError:
+            pass
+
         return _values
 
-    # Fixture methods
     def create_server(self, **kwargs):
         context = kwargs.pop('context', self.get_admin_context())
         fixture = kwargs.pop('fixture', 0)
@@ -168,16 +174,11 @@ class TestCase(unittest2.TestCase, AssertMixin):
         values = self.get_domain_fixture(fixture=fixture, values=kwargs)
         return self.central_service.create_domain(context, values=values)
 
-    def create_record(self, domain_id, **kwargs):
+    def create_record(self, domain, **kwargs):
         context = kwargs.pop('context', self.get_admin_context())
+        fixture = kwargs.pop('fixture', 0)
 
-        values = dict(
-            name='www.example.com',
-            type='A',
-            data='127.0.0.1'
-        )
-
-        values.update(kwargs)
-
-        return self.central_service.create_record(context, domain_id,
+        values = self.get_record_fixture(domain['name'], fixture=fixture,
+                                         values=kwargs)
+        return self.central_service.create_record(context, domain['id'],
                                                   values=values)

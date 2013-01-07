@@ -49,7 +49,7 @@ class StorageDriverTestCase(StorageTestCase):
             fixture)
 
     def create_record(self, domain, fixture=0, values={}):
-        fixture = self.get_record_fixture(domain, fixture, values)
+        fixture = self.get_record_fixture(domain['name'], fixture, values)
         return fixture, self.storage_conn.create_record(
             self.admin_context,
             domain['id'],
@@ -60,7 +60,7 @@ class StorageDriverTestCase(StorageTestCase):
 
     def test_create_server(self):
         values = {
-            'name': 'ns1.example.org',
+            'name': 'ns1.example.org.',
             'ipv4': '192.0.2.1',
             'ipv6': '2001:db8::1',
         }
@@ -78,11 +78,11 @@ class StorageDriverTestCase(StorageTestCase):
 
     def test_create_server_ipv4_only(self):
         values = [{
-            'name': 'ns1.example.org',
+            'name': 'ns1.example.org.',
             'ipv4': '192.0.2.1',
             'ipv6': None,
         }, {
-            'name': 'ns2.example.org',
+            'name': 'ns2.example.org.',
             'ipv4': '192.0.2.2'
         }]
 
@@ -112,12 +112,12 @@ class StorageDriverTestCase(StorageTestCase):
         }, {
             'ipv6': '::1',
         }, {
-            'name': 'localhost',
+            'name': 'localhost.',
         }, {
-            'name': 'localhost',
+            'name': 'localhost.',
             'ipv4': '127.0.0.1',
         }, {
-            'name': 'localhost',
+            'name': 'localhost.',
             'ipv6': '::1',
         }]
 
@@ -232,7 +232,7 @@ class StorageDriverTestCase(StorageTestCase):
 
     def test_create_domain(self):
         values = {
-            'name': 'example.net',
+            'name': 'example.net.',
             'email': 'example@example.net'
         }
 

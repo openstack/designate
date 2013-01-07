@@ -33,7 +33,7 @@ class CentralServiceTest(CentralTestCase):
         context = self.get_admin_context()
 
         values = dict(
-            name='ns1.example.org',
+            name='ns1.example.org.',
             ipv4='192.0.2.1',
             ipv6='2001:db8::1',
         )
@@ -60,23 +60,23 @@ class CentralServiceTest(CentralTestCase):
         # Ensure we can retrieve the newly created server
         servers = self.central_service.get_servers(context)
         self.assertEqual(len(servers), 1)
-        self.assertEqual(servers[0]['name'], 'ns1.example.org')
+        self.assertEqual(servers[0]['name'], 'ns1.example.org.')
 
         # Create a second server
-        self.create_server(name='ns2.example.org', ipv4='192.0.2.2',
+        self.create_server(name='ns2.example.org.', ipv4='192.0.2.2',
                            ipv6='2001:db8::2')
 
         # Ensure we can retrieve both servers
         servers = self.central_service.get_servers(context)
         self.assertEqual(len(servers), 2)
-        self.assertEqual(servers[0]['name'], 'ns1.example.org')
-        self.assertEqual(servers[1]['name'], 'ns2.example.org')
+        self.assertEqual(servers[0]['name'], 'ns1.example.org.')
+        self.assertEqual(servers[1]['name'], 'ns2.example.org.')
 
     def test_get_server(self):
         context = self.get_admin_context()
 
         # Create a server
-        server_name = 'ns%d.example.org' % random.randint(10, 1000)
+        server_name = 'ns%d.example.org.' % random.randint(10, 1000)
         expected_server = self.create_server(name=server_name)
 
         # Retrieve it, and ensure it's the same
@@ -123,7 +123,7 @@ class CentralServiceTest(CentralTestCase):
         context = self.get_admin_context()
 
         values = dict(
-            name='example.com',
+            name='example.com.',
             email='info@example.com'
         )
 
@@ -148,22 +148,22 @@ class CentralServiceTest(CentralTestCase):
         # Ensure we can retrieve the newly created domain
         domains = self.central_service.get_domains(context)
         self.assertEqual(len(domains), 1)
-        self.assertEqual(domains[0]['name'], 'example.com')
+        self.assertEqual(domains[0]['name'], 'example.com.')
 
         # Create a second domain
-        self.create_domain(name='example.net')
+        self.create_domain(name='example.net.')
 
         # Ensure we can retrieve both domain
         domains = self.central_service.get_domains(context)
         self.assertEqual(len(domains), 2)
-        self.assertEqual(domains[0]['name'], 'example.com')
-        self.assertEqual(domains[1]['name'], 'example.net')
+        self.assertEqual(domains[0]['name'], 'example.com.')
+        self.assertEqual(domains[1]['name'], 'example.net.')
 
     def test_get_domain(self):
         context = self.get_admin_context()
 
         # Create a domain
-        domain_name = '%d.example.com' % random.randint(10, 1000)
+        domain_name = '%d.example.com.' % random.randint(10, 1000)
         expected_domain = self.create_domain(name=domain_name)
 
         # Retrieve it, and ensure it's the same
@@ -210,7 +210,7 @@ class CentralServiceTest(CentralTestCase):
         domain = self.create_domain()
 
         values = dict(
-            name='www.example.com',
+            name='www.example.com.',
             type='A',
             data='127.0.0.1'
         )
@@ -235,21 +235,21 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(len(records), 0)
 
         # Create a single record (using default values)
-        self.create_record(domain['id'])
+        self.create_record(domain)
 
         # Ensure we can retrieve the newly created record
         records = self.central_service.get_records(context, domain['id'])
         self.assertEqual(len(records), 1)
-        self.assertEqual(records[0]['name'], 'www.example.com')
+        self.assertEqual(records[0]['name'], 'www.example.com.')
 
         # Create a second record
-        self.create_record(domain['id'], name='mail.example.com')
+        self.create_record(domain, name='mail.example.com.')
 
         # Ensure we can retrieve both records
         records = self.central_service.get_records(context, domain['id'])
         self.assertEqual(len(records), 2)
-        self.assertEqual(records[0]['name'], 'www.example.com')
-        self.assertEqual(records[1]['name'], 'mail.example.com')
+        self.assertEqual(records[0]['name'], 'www.example.com.')
+        self.assertEqual(records[1]['name'], 'mail.example.com.')
 
     def test_get_record(self):
         context = self.get_admin_context()
@@ -257,7 +257,7 @@ class CentralServiceTest(CentralTestCase):
 
         # Create a record
         record_name = '%d.example.com' % random.randint(10, 1000)
-        expected_record = self.create_record(domain['id'], name=record_name)
+        expected_record = self.create_record(domain, name=record_name)
 
         # Retrieve it, and ensure it's the same
         record = self.central_service.get_record(context, domain['id'],
@@ -270,7 +270,7 @@ class CentralServiceTest(CentralTestCase):
         domain = self.create_domain()
 
         # Create a record
-        expected_record = self.create_record(domain['id'])
+        expected_record = self.create_record(domain)
 
         # Update the server
         values = dict(data='127.0.0.2')
@@ -290,7 +290,7 @@ class CentralServiceTest(CentralTestCase):
         domain = self.create_domain()
 
         # Create a record
-        record = self.create_record(domain['id'])
+        record = self.create_record(domain)
 
         # Delete the record
         self.central_service.delete_record(context, domain['id'], record['id'])

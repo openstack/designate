@@ -40,9 +40,6 @@ resolver = jsonschema.RefResolver(store={
 
 class SchemaValidator(jsonschema.Draft3Validator):
     def validate_type(self, types, instance, schema):
-        LOG.warn(instance)
-        LOG.warn(schema)
-
         # NOTE(kiall): A datetime object is not a string, but is still valid.
         if ('format' in schema and schema['format'] == 'date-time'
                 and isinstance(instance, datetime)):
