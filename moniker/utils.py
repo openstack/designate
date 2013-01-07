@@ -60,10 +60,10 @@ def find_config(config_path):
     raise exceptions.ConfigNotFound(msg)
 
 
-def read_config(prog, argv=None):
+def read_config(prog, argv):
     config_files = [find_config('%s.conf' % prog)]
 
-    cfg.CONF(argv, project='moniker', prog=prog,
+    cfg.CONF(argv[1:], project='moniker', prog=prog,
              default_config_files=config_files)
 
 
