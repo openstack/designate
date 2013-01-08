@@ -17,6 +17,7 @@ from paste import deploy
 from moniker.openstack.common import log as logging
 from moniker.openstack.common import wsgi
 from moniker.openstack.common import cfg
+from moniker import exceptions
 from moniker import utils
 
 
@@ -26,9 +27,15 @@ LOG = logging.getLogger(__name__)
 class Service(wsgi.Service):
     def __init__(self, backlog=128, threads=1000):
 
-        config_path = utils.find_config(cfg.CONF.api_paste_config)
+        config_paths = utils.find_config(cfg.CONF.api_paste_config)
 
-        application = deploy.loadapp("config:%s" % config_path,
+        if len(config_paths) == 0:
+            msg = 'Unable to determine appropriate api-paste-config file'
+            raise exceptions.ConfigurationError(msg)
+
+        LOG.info('Using api-paste-config found at: %s' % config_paths[0])
+
+        application = deploy.loadapp("config:%s" % config_paths[0],
                                      name='osapi_dns')
 
         super(Service, self).__init__(application=application,

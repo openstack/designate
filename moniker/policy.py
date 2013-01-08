@@ -30,7 +30,15 @@ cfg.CONF.register_opts([
 def init_policy():
     LOG.info('Initializing Policy')
 
-    with open(utils.find_config(cfg.CONF.policy_file)) as fh:
+    policy_files = utils.find_config(cfg.CONF.policy_file)
+
+    if len(policy_files) == 0:
+        msg = 'Unable to determine appropriate policy json file'
+        raise exceptions.ConfigurationError(msg)
+
+    LOG.info('Using policy_file found at: %s' % policy_files[0])
+
+    with open(policy_files[0]) as fh:
         policy_json = fh.read()
 
     rules = policy.Rules.load_json(policy_json, cfg.CONF.policy_default_rule)

@@ -23,10 +23,6 @@ class ConfigurationError(Base):
     pass
 
 
-class ConfigNotFound(ConfigurationError):
-    pass
-
-
 class NoServersConfigured(ConfigurationError):
     pass
 
