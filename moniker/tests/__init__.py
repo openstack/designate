@@ -20,11 +20,18 @@ from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
 from moniker.context import MonikerContext
 from moniker import storage
+from moniker.agent import service as agent_service
 from moniker.api import service as api_service
 from moniker.central import service as central_service
 
 LOG = logging.getLogger(__name__)
 
+cfg.CONF.import_opt('storage_driver', 'moniker.central',
+                    group='service:central')
+cfg.CONF.import_opt('backend_driver', 'moniker.agent',
+                    group='service:agent')
+cfg.CONF.import_opt('auth_strategy', 'moniker.api',
+                    group='service:api')
 cfg.CONF.import_opt('database_connection', 'moniker.storage.impl_sqlalchemy',
                     group='storage:sqlalchemy')
 
@@ -98,18 +105,33 @@ class TestCase(unittest2.TestCase, AssertMixin):
         super(TestCase, self).setUp()
 
         self.mox = mox.Mox()
+
+        self.config(
+            notification_driver=[],
+            rpc_backend='moniker.openstack.common.rpc.impl_fake',
+        )
+
         self.config(
             storage_driver='sqlalchemy',
             backend_driver='fake',
-            notification_driver=[],
-            rpc_backend='moniker.openstack.common.rpc.impl_fake',
-            auth_strategy='noauth'
+            group='service:central'
+        )
+
+        self.config(
+            backend_driver='fake',
+            group='service:agent'
+        )
+
+        self.config(
+            auth_strategy='noauth',
+            group='service:api'
         )
 
         self.config(
             database_connection='sqlite://',
             group='storage:sqlalchemy'
         )
+
         storage.setup_schema()
 
         self.admin_context = self.get_admin_context()
@@ -125,6 +147,9 @@ class TestCase(unittest2.TestCase, AssertMixin):
 
         for k, v in kwargs.iteritems():
             cfg.CONF.set_override(k, v, group)
+
+    def get_agent_service(self):
+        return agent_service.Service()
 
     def get_api_service(self):
         return api_service.Service()

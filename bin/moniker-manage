@@ -15,7 +15,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import sys
+from moniker import utils
 from moniker.manage import MonikerShell
 
+# TODO: Sypport passing --config-file and --config-dir to read_config
+utils.read_config('moniker', [])
+
 shell = MonikerShell()
-sys.exit(shell.run(sys.argv))
+sys.exit(shell.run(sys.argv[1:]))

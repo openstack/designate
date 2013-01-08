@@ -28,7 +28,7 @@ def get_engine(engine_name):
 
 
 def get_connection():
-    engine = get_engine(cfg.CONF.storage_driver)
+    engine = get_engine(cfg.CONF['service:central'].storage_driver)
     return engine.get_connection()
 
 

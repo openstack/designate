@@ -19,7 +19,6 @@ from migrate.versioning import api as versioning_api
 from cliff.command import Command
 from moniker.openstack.common import log as logging
 from moniker.openstack.common import cfg
-from moniker import utils
 
 LOG = logging.getLogger(__name__)
 REPOSITORY = os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
@@ -33,8 +32,6 @@ class InitCommand(Command):
     "Init database"
 
     def take_action(self, parsed_args):
-        utils.read_config('moniker-central', [])
-
         url = cfg.CONF['storage:sqlalchemy'].database_connection
 
         if not os.path.exists(REPOSITORY):
@@ -53,8 +50,6 @@ class SyncCommand(Command):
 
     def take_action(self, parsed_args):
         # TODO: Support specifying version
-        utils.read_config('moniker-central', [])
-
         url = cfg.CONF['storage:sqlalchemy'].database_connection
 
         if not os.path.exists(REPOSITORY):

@@ -27,7 +27,7 @@ def pipeline_factory(loader, global_conf, **local_conf):
 
     Code nabbed from cinder.
     """
-    pipeline = local_conf[cfg.CONF.auth_strategy]
+    pipeline = local_conf[cfg.CONF['service:api'].auth_strategy]
     pipeline = pipeline.split()
     filters = [loader.get_filter(n) for n in pipeline[:-1]]
     app = loader.get_app(pipeline[-1])

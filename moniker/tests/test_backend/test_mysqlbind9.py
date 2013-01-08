@@ -25,4 +25,4 @@ class MySQLBind9BackendDriverTestCase(BackendTestCase):
     def setUp(self):
         super(MySQLBind9BackendDriverTestCase, self).setUp()
 
-        self.config(backend_driver='mysqlbind9')
+        self.config(backend_driver='mysqlbind9', group='service:agent')

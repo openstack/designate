@@ -27,20 +27,12 @@ LOG = logging.getLogger(__name__)
 
 HANDLER_NAMESPACE = 'moniker.notification.handler'
 
-cfg.CONF.register_opts([
-    cfg.StrOpt('backend-driver', default='rpc',
-               help='The backend driver to use'),
-    cfg.StrOpt('storage-driver', default='sqlalchemy',
-               help='The storage driver to use'),
-    cfg.ListOpt('enabled-notification-handlers', default=[],
-                help='Enabled Notification Handlers'),
-])
-
 
 class Service(rpc_service.Service):
     def __init__(self, *args, **kwargs):
 
-        self.backend = backend.get_backend(cfg.CONF.backend_driver)
+        backend_driver = cfg.CONF['service:central'].backend_driver
+        self.backend = backend.get_backend(backend_driver)
 
         kwargs.update(
             host=cfg.CONF.host,
@@ -63,12 +55,14 @@ class Service(rpc_service.Service):
 
     def _init_extensions(self):
         """ Loads and prepares all enabled extensions """
+        enabled_notification_handlers = \
+            cfg.CONF['service:central'].enabled_notification_handlers
+
         self.extensions_manager = NamedExtensionManager(
-            HANDLER_NAMESPACE, names=cfg.CONF.enabled_notification_handlers)
+            HANDLER_NAMESPACE, names=enabled_notification_handlers)
 
         def _load_extension(ext):
             handler_cls = ext.plugin
-            handler_cls.register_opts(cfg.CONF)
             return handler_cls(central_service=self)
 
         try:

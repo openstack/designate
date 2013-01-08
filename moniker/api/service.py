@@ -27,7 +27,8 @@ LOG = logging.getLogger(__name__)
 class Service(wsgi.Service):
     def __init__(self, backlog=128, threads=1000):
 
-        config_paths = utils.find_config(cfg.CONF.api_paste_config)
+        api_paste_config = cfg.CONF['service:api'].api_paste_config
+        config_paths = utils.find_config(api_paste_config)
 
         if len(config_paths) == 0:
             msg = 'Unable to determine appropriate api-paste-config file'
@@ -39,7 +40,7 @@ class Service(wsgi.Service):
                                      name='osapi_dns')
 
         super(Service, self).__init__(application=application,
-                                      host=cfg.CONF.api_host,
-                                      port=cfg.CONF.api_port,
+                                      host=cfg.CONF['service:api'].api_host,
+                                      port=cfg.CONF['service:api'].api_port,
                                       backlog=backlog,
                                       threads=threads)

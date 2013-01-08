@@ -1,7 +1,6 @@
-#!/usr/bin/env python
-# Copyright 2012 Managed I.T.
+# Copyright 2012 Hewlett-Packard Development Company, L.P. All Rights Reserved.
 #
-# Author: Kiall Mac Innes <kiall@managedit.ie>
+# Author: Kiall Mac Innes <kiall@hp.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -14,18 +13,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import sys
-import eventlet
-from moniker.openstack.common import log as logging
-from moniker.openstack.common import service
-from moniker import utils
-from moniker.api import service as api_service
+from moniker.tests import TestCase
 
-eventlet.monkey_patch()
 
-utils.read_config('moniker', sys.argv)
-
-logging.setup('moniker')
-
-launcher = service.launch(api_service.Service())
-launcher.wait()
+class AgentTestCase(TestCase):
+    __test__ = False

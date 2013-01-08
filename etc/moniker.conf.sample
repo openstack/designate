@@ -1,4 +1,5 @@
 [DEFAULT]
+## General Configuration
 # Show more verbose log output (sets INFO log level output)
 verbose = True
 
@@ -11,9 +12,6 @@ debug = False
 # Log directory
 #logdir=/var/log/moniker
 
-# Driver used for backend communication (e.g. rpc, bind9, powerdns)
-#backend_driver=rpc
-
 # There has to be a better way to set these defaults
 allowed_rpc_exception_modules = moniker.exceptions, moniker.openstack.common.exception
 logging_context_format_string = %(asctime)s %(levelname)s %(name)s [%(request_id)s %(user)s %(tenant)s] %(instance)s %(message)s
@@ -22,11 +20,30 @@ default_log_levels = amqplib=WARN, sqlalchemy=WARN, boto=WARN, suds=INFO, keysto
 # Driver used for issuing notifications
 #notification_driver=moniker.openstack.common.notifier.rabbit_notifier
 
+## Service Configuration
+[service:central]
+
+# Driver used for backend communication (e.g. rpc, bind9, powerdns)
+#backend_driver=rpc
+
 # List of notification handlers to enable, configuration of these needs to
 # correspond to a [handler:my_driver] section below or else in the config
 #enabled_notification_handlers = nova_fixed
 
-# Sections for *SQL storages
+[service:api]
+# Address to bind the API server
+api_host = 0.0.0.0
+
+# Port the bind the API server to
+api_port = 9001
+# Authentication strategy to use - can be either "noauth" or "keystone"
+# auth_strategy = noauth
+
+[service:agent]
+# Driver used for backend communication (e.g. bind9, powerdns)
+#backend_driver=bind9
+
+## Storage Configuration
 #[storage:sqlalchemy]
 # Database connection string - to configure options for a given implementation
 # like sqlalchemy or other see below
@@ -38,7 +55,26 @@ default_log_levels = amqplib=WARN, sqlalchemy=WARN, boto=WARN, suds=INFO, keysto
 #max_retries = 10
 #retry_interval = 10
 
+## Notification Handler Configuration
 #[handler:nova_fixed]
 #domain_id = <random uuid>
 #notification_topics = monitor
 #control_exchange = 'nova'
+
+## Backend Configuration
+#[backend:bind9]
+#rndc_path = /usr/sbin/rndc
+#rndc_host = 127.0.0.1
+#rndc_port = 953
+#rndc_config_file = /etc/rndc.conf
+#rndc_key_file = /etc/rndc.key
+
+#[backend:mysqlbind9]
+#database_connection = mysql://user:password@host/schema
+#rndc_path = /usr/sbin/rndc
+#rndc_host = 127.0.0.1
+#rndc_port = 953
+#rndc_config_file = /etc/rndc.conf
+#rndc_key_file = /etc/rndc.key
+#write_database = True
+#dns_server_type = master

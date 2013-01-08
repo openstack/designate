@@ -17,6 +17,9 @@ import flask
 from moniker.openstack.common import cfg
 from moniker.openstack.common import jsonutils as json
 
+cfg.CONF.register_group(cfg.OptGroup(
+    name='service:api', title="Configuration for API Service"
+))
 
 cfg.CONF.register_opts([
     cfg.StrOpt('api_host', default='0.0.0.0',
@@ -28,7 +31,7 @@ cfg.CONF.register_opts([
     cfg.StrOpt('auth_strategy', default='noauth',
                help='The strategy to use for auth. Supports noauth or '
                     'keystone'),
-])
+], group='service:api')
 
 
 # Allows us to serialize datetime's etc

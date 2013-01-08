@@ -23,7 +23,7 @@ from moniker.central import service as central_service
 
 eventlet.monkey_patch()
 
-utils.read_config('moniker-central', sys.argv)
+utils.read_config('moniker', sys.argv)
 
 logging.setup('moniker')
 

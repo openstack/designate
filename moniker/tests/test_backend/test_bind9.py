@@ -25,4 +25,4 @@ class Bind9BackendDriverTestCase(BackendTestCase):
     def setUp(self):
         super(Bind9BackendDriverTestCase, self).setUp()
 
-        self.config(backend_driver='bind9')
+        self.config(backend_driver='bind9', group='service:agent')

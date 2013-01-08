@@ -28,6 +28,11 @@ class CentralServiceTest(CentralTestCase):
         super(CentralServiceTest, self).setUp()
         self.central_service = self.get_central_service()
 
+    def test_start_and_stop(self):
+        # Ensures the start/stop actions don't raise
+        self.central_service.start()
+        self.central_service.stop()
+
     # Server Tests
     def test_create_server(self):
         context = self.get_admin_context()

@@ -25,4 +25,4 @@ class FakeBackendDriverTestCase(BackendTestCase):
     def setUp(self):
         super(FakeBackendDriverTestCase, self).setUp()
 
-        self.config(backend_driver='fake')
+        self.config(backend_driver='fake', group='service:agent')
