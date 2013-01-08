@@ -29,7 +29,6 @@ class ApiV1RecordsTest(ApiV1Test):
         self.domain = self.create_domain()
 
     def test_create_record(self):
-        # Create a domain
         fixture = self.get_record_fixture(self.domain['name'], 0)
 
         # Create a record
@@ -39,6 +38,41 @@ class ApiV1RecordsTest(ApiV1Test):
         self.assertIn('id', response.json)
         self.assertIn('name', response.json)
         self.assertEqual(response.json['name'], fixture['name'])
+
+    def test_create_wildcard_record(self):
+        # Prepare a record
+        fixture = self.get_record_fixture(self.domain['name'], 0)
+        fixture['name'] = '*.%s' % fixture['name']
+
+        # Create a record
+        response = self.post('domains/%s/records' % self.domain['id'],
+                             data=fixture)
+
+        self.assertIn('id', response.json)
+        self.assertIn('name', response.json)
+        self.assertEqual(response.json['name'], fixture['name'])
+
+    def test_create_invalid_record_name(self):
+        # Prepare a record
+        fixture = self.get_record_fixture(self.domain['name'], 0)
+
+        invalid_names = [
+            'org',
+            'example.org',
+            '$$.example.org',
+            '*example.org.',
+            '*.*.example.org.',
+            'abc.*.example.org.',
+        ]
+
+        for invalid_name in invalid_names:
+            fixture['name'] = invalid_name
+
+            # Create a record
+            response = self.post('domains/%s/records' % self.domain['id'],
+                                 data=fixture, status_code=400)
+
+            self.assertNotIn('id', response.json)
 
     def test_get_records(self):
         response = self.get('domains/%s/records' % self.domain['id'])
