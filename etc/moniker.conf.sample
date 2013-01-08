@@ -10,7 +10,7 @@ debug = False
 #state_path = /var/lib/moniker
 
 # Log directory
-#logdir=/var/log/moniker
+#logdir = /var/log/moniker
 
 # There has to be a better way to set these defaults
 allowed_rpc_exception_modules = moniker.exceptions, moniker.openstack.common.exception
@@ -22,7 +22,6 @@ default_log_levels = amqplib=WARN, sqlalchemy=WARN, boto=WARN, suds=INFO, keysto
 
 ## Service Configuration
 [service:central]
-
 # Driver used for backend communication (e.g. rpc, bind9, powerdns)
 #backend_driver=rpc
 
@@ -36,8 +35,9 @@ api_host = 0.0.0.0
 
 # Port the bind the API server to
 api_port = 9001
+
 # Authentication strategy to use - can be either "noauth" or "keystone"
-# auth_strategy = noauth
+#auth_strategy = noauth
 
 [service:agent]
 # Driver used for backend communication (e.g. bind9, powerdns)
