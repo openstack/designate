@@ -2,7 +2,7 @@
     "admin": "role:admin or is_admin:True",
     "admin_or_owner": "rule:admin or tenant_id:%(tenant_id)s",
 
-    "default": "admin_or_owner",
+    "default": "rule:admin_or_owner",
 
     "create_server": "rule:admin",
     "get_servers": "rule:admin",
