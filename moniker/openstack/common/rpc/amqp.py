@@ -171,7 +171,7 @@ def msg_reply(conf, msg_id, connection_pool, reply=None, failure=None,
                    'failure': failure}
         if ending:
             msg['ending'] = True
-        conn.direct_send(msg_id, msg)
+        conn.direct_send(msg_id, rpc_common.serialize_msg(msg))
 
 
 class RpcContext(rpc_common.CommonRpcContext):
@@ -296,6 +296,10 @@ class ProxyCallback(object):
             ctxt.reply(None, sys.exc_info(),
                        connection_pool=self.connection_pool)
 
+    def wait(self):
+        """Wait for all callback threads to exit."""
+        self.pool.waitall()
+
 
 class MulticallWaiter(object):
     def __init__(self, conf, connection, timeout):
@@ -358,7 +362,7 @@ def multicall(conf, context, topic, msg, timeout, connection_pool):
     # that will continue to use the connection.  When it's done,
     # connection.close() will get called which will put it back into
     # the pool
-    LOG.debug(_('Making asynchronous call on %s ...'), topic)
+    LOG.debug(_('Making synchronous call on %s ...'), topic)
     msg_id = uuid.uuid4().hex
     msg.update({'_msg_id': msg_id})
     LOG.debug(_('MSG_ID is %s') % (msg_id))
@@ -367,7 +371,7 @@ def multicall(conf, context, topic, msg, timeout, connection_pool):
     conn = ConnectionContext(conf, connection_pool)
     wait_msg = MulticallWaiter(conf, conn, timeout)
     conn.declare_direct_consumer(msg_id, wait_msg)
-    conn.topic_send(topic, msg)
+    conn.topic_send(topic, rpc_common.serialize_msg(msg))
     return wait_msg
 
 
@@ -386,7 +390,7 @@ def cast(conf, context, topic, msg, connection_pool):
     LOG.debug(_('Making asynchronous cast on %s...'), topic)
     pack_context(msg, context)
     with ConnectionContext(conf, connection_pool) as conn:
-        conn.topic_send(topic, msg)
+        conn.topic_send(topic, rpc_common.serialize_msg(msg))
 
 
 def fanout_cast(conf, context, topic, msg, connection_pool):
@@ -394,7 +398,7 @@ def fanout_cast(conf, context, topic, msg, connection_pool):
     LOG.debug(_('Making asynchronous fanout cast...'))
     pack_context(msg, context)
     with ConnectionContext(conf, connection_pool) as conn:
-        conn.fanout_send(topic, msg)
+        conn.fanout_send(topic, rpc_common.serialize_msg(msg))
 
 
 def cast_to_server(conf, context, server_params, topic, msg, connection_pool):
@@ -402,7 +406,7 @@ def cast_to_server(conf, context, server_params, topic, msg, connection_pool):
     pack_context(msg, context)
     with ConnectionContext(conf, connection_pool, pooled=False,
                            server_params=server_params) as conn:
-        conn.topic_send(topic, msg)
+        conn.topic_send(topic, rpc_common.serialize_msg(msg))
 
 
 def fanout_cast_to_server(conf, context, server_params, topic, msg,
@@ -411,16 +415,18 @@ def fanout_cast_to_server(conf, context, server_params, topic, msg,
     pack_context(msg, context)
     with ConnectionContext(conf, connection_pool, pooled=False,
                            server_params=server_params) as conn:
-        conn.fanout_send(topic, msg)
+        conn.fanout_send(topic, rpc_common.serialize_msg(msg))
 
 
-def notify(conf, context, topic, msg, connection_pool):
+def notify(conf, context, topic, msg, connection_pool, envelope):
     """Sends a notification event on a topic."""
     LOG.debug(_('Sending %(event_type)s on %(topic)s'),
               dict(event_type=msg.get('event_type'),
                    topic=topic))
     pack_context(msg, context)
     with ConnectionContext(conf, connection_pool) as conn:
+        if envelope:
+            msg = rpc_common.serialize_msg(msg, force_envelope=True)
         conn.notify_send(topic, msg)
 
 

@@ -24,39 +24,6 @@ import pkg_resources
 import setup
 
 
-class _deferred_version_string(str):
-    """Internal helper class which provides delayed version calculation."""
-
-    def __new__(cls, version_info, prefix):
-        new_obj = str.__new__(cls, "")
-        new_obj._version_info = version_info
-        new_obj._prefix = prefix
-        new_obj._cached_version = None
-        return new_obj
-
-    def _get_cached_version(self):
-        if not self._cached_version:
-            self._cached_version = \
-                "%s%s" % (self._prefix,
-                self._version_info.version_string())
-        return self._cached_version
-
-    def __len__(self):
-        return self._get_cached_version().__len__()
-
-    def __contains__(self, item):
-        return self._get_cached_version().__contains__(item)
-
-    def __getslice__(self, i, j):
-        return self._get_cached_version().__getslice__(i, j)
-
-    def __str__(self):
-        return self._get_cached_version()
-
-    def __repr__(self):
-        return self._get_cached_version()
-
-
 class VersionInfo(object):
 
     def __init__(self, package, python_package=None, pre_version=None):
@@ -77,6 +44,7 @@ class VersionInfo(object):
             self.python_package = python_package
         self.pre_version = pre_version
         self.version = None
+        self._cached_version = None
 
     def _generate_version(self):
         """Defer to the openstack.common.setup routines for making a
@@ -158,11 +126,14 @@ class VersionInfo(object):
         else:
             return '%s-dev' % (version_parts[0],)
 
-    def deferred_version_string(self, prefix=""):
+    def cached_version_string(self, prefix=""):
         """Generate an object which will expand in a string context to
         the results of version_string(). We do this so that don't
         call into pkg_resources every time we start up a program when
         passing version information into the CONF constructor, but
         rather only do the calculation when and if a version is requested
         """
-        return _deferred_version_string(self, prefix)
+        if not self._cached_version:
+            self._cached_version = "%s%s" % (prefix,
+                                             self.version_string())
+        return self._cached_version

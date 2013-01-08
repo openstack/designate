@@ -124,7 +124,8 @@ class ConsumerBase(object):
         """Fetch the message and pass it to the callback object"""
         message = self.receiver.fetch()
         try:
-            self.callback(message.content)
+            msg = rpc_common.deserialize_msg(message.content)
+            self.callback(msg)
         except Exception:
             LOG.exception(_("Failed to process message... skipping it."))
         finally:
@@ -277,6 +278,7 @@ class Connection(object):
         self.session = None
         self.consumers = {}
         self.consumer_thread = None
+        self.proxy_callbacks = []
         self.conf = conf
 
         if server_params and 'hostname' in server_params:
@@ -374,12 +376,14 @@ class Connection(object):
     def close(self):
         """Close/release this connection"""
         self.cancel_consumer_thread()
+        self.wait_on_proxy_callbacks()
         self.connection.close()
         self.connection = None
 
     def reset(self):
         """Reset a connection so it can be used again"""
         self.cancel_consumer_thread()
+        self.wait_on_proxy_callbacks()
         self.session.close()
         self.session = self.connection.session()
         self.consumers = {}
@@ -433,6 +437,11 @@ class Connection(object):
             except greenlet.GreenletExit:
                 pass
             self.consumer_thread = None
+
+    def wait_on_proxy_callbacks(self):
+        """Wait for all proxy callback threads to exit."""
+        for proxy_cb in self.proxy_callbacks:
+            proxy_cb.wait()
 
     def publisher_send(self, cls, topic, msg):
         """Send to a publisher based on the publisher class"""
@@ -517,6 +526,7 @@ class Connection(object):
         proxy_cb = rpc_amqp.ProxyCallback(
             self.conf, proxy,
             rpc_amqp.get_connection_pool(self.conf, Connection))
+        self.proxy_callbacks.append(proxy_cb)
 
         if fanout:
             consumer = FanoutConsumer(self.conf, self.session, topic, proxy_cb)
@@ -532,6 +542,7 @@ class Connection(object):
         proxy_cb = rpc_amqp.ProxyCallback(
             self.conf, proxy,
             rpc_amqp.get_connection_pool(self.conf, Connection))
+        self.proxy_callbacks.append(proxy_cb)
 
         consumer = TopicConsumer(self.conf, self.session, topic, proxy_cb,
                                  name=pool_name)
@@ -590,10 +601,11 @@ def fanout_cast_to_server(conf, context, server_params, topic, msg):
         rpc_amqp.get_connection_pool(conf, Connection))
 
 
-def notify(conf, context, topic, msg):
+def notify(conf, context, topic, msg, envelope):
     """Sends a notification event on a topic."""
     return rpc_amqp.notify(conf, context, topic, msg,
-                           rpc_amqp.get_connection_pool(conf, Connection))
+                           rpc_amqp.get_connection_pool(conf, Connection),
+                           envelope)
 
 
 def cleanup():

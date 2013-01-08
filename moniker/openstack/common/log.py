@@ -49,19 +49,20 @@ from moniker.openstack.common import notifier
 
 log_opts = [
     cfg.StrOpt('logging_context_format_string',
-               default='%(asctime)s %(levelname)s %(name)s [%(request_id)s '
-                       '%(user)s %(tenant)s] %(instance)s'
+               default='%(asctime)s.%(msecs)d %(levelname)s %(name)s '
+                       '[%(request_id)s %(user)s %(tenant)s] %(instance)s'
                        '%(message)s',
                help='format string to use for log messages with context'),
     cfg.StrOpt('logging_default_format_string',
-               default='%(asctime)s %(process)d %(levelname)s %(name)s [-]'
-                       ' %(instance)s%(message)s',
+               default='%(asctime)s.%(msecs)d %(process)d %(levelname)s '
+                       '%(name)s [-] %(instance)s%(message)s',
                help='format string to use for log messages without context'),
     cfg.StrOpt('logging_debug_format_suffix',
                default='%(funcName)s %(pathname)s:%(lineno)d',
                help='data to append to log format when level is DEBUG'),
     cfg.StrOpt('logging_exception_prefix',
-               default='%(asctime)s %(process)d TRACE %(name)s %(instance)s',
+               default='%(asctime)s.%(msecs)d %(process)d TRACE %(name)s '
+               '%(instance)s',
                help='prefix each line of exception output with this format'),
     cfg.ListOpt('default_log_levels',
                 default=[
