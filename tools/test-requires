@@ -3,5 +3,6 @@ nose
 openstack.nose_plugin
 nosehtmloutput
 mox
+mock
 sphinx
 sphinxcontrib-httpdomain

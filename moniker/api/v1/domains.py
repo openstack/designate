@@ -16,6 +16,7 @@
 import flask
 from moniker.openstack.common import log as logging
 from moniker.openstack.common import jsonutils as json
+from moniker.openstack.common.rpc import common as rpc_common
 from moniker import exceptions
 from moniker import schema
 from moniker.central import api as central_api
@@ -52,6 +53,8 @@ def create_domain():
         return flask.Response(status=400, response=response_body)
     except exceptions.DuplicateDomain:
         return flask.Response(status=409)
+    except rpc_common.Timeout:
+        return flask.Response(status=504)
     else:
         domain = domain_schema.filter(domain)
 
@@ -70,6 +73,8 @@ def get_domains():
         domains = central_api.get_domains(context)
     except exceptions.Forbidden:
         return flask.Response(status=401)
+    except rpc_common.Timeout:
+        return flask.Response(status=504)
 
     domains = domains_schema.filter({'domains': domains})
 
@@ -86,6 +91,8 @@ def get_domain(domain_id):
         return flask.Response(status=401)
     except exceptions.DomainNotFound:
         return flask.Response(status=404)
+    except rpc_common.Timeout:
+        return flask.Response(status=504)
     else:
         domain = domain_schema.filter(domain)
 
@@ -112,6 +119,8 @@ def update_domain(domain_id):
         return flask.Response(status=404)
     except exceptions.DuplicateDomain:
         return flask.Response(status=409)
+    except rpc_common.Timeout:
+        return flask.Response(status=504)
     else:
         domain = domain_schema.filter(domain)
 
@@ -128,5 +137,7 @@ def delete_domain(domain_id):
         return flask.Response(status=401)
     except exceptions.DomainNotFound:
         return flask.Response(status=404)
+    except rpc_common.Timeout:
+        return flask.Response(status=504)
     else:
         return flask.Response(status=200)

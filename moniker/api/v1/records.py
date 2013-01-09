@@ -16,6 +16,7 @@
 import flask
 from moniker.openstack.common import log as logging
 from moniker.openstack.common import jsonutils as json
+from moniker.openstack.common.rpc import common as rpc_common
 from moniker import exceptions
 from moniker import schema
 from moniker.central import api as central_api
@@ -51,6 +52,8 @@ def create_record(domain_id):
         return flask.Response(status=400, response=response_body)
     except exceptions.DuplicateRecord:
         return flask.Response(status=409)
+    except rpc_common.Timeout:
+        return flask.Response(status=504)
     else:
         record = record_schema.filter(record)
 
@@ -70,6 +73,8 @@ def get_records(domain_id):
         records = central_api.get_records(context, domain_id)
     except exceptions.Forbidden:
         return flask.Response(status=401)
+    except rpc_common.Timeout:
+        return flask.Response(status=504)
 
     records = records_schema.filter({'records': records})
 
@@ -86,6 +91,8 @@ def get_record(domain_id, record_id):
         return flask.Response(status=401)
     except exceptions.RecordNotFound:
         return flask.Response(status=404)
+    except rpc_common.Timeout:
+        return flask.Response(status=504)
     else:
         record = record_schema.filter(record)
 
@@ -113,6 +120,8 @@ def update_record(domain_id, record_id):
         return flask.Response(status=404)
     except exceptions.DuplicateRecord:
         return flask.Response(status=409)
+    except rpc_common.Timeout:
+        return flask.Response(status=504)
     else:
         record = record_schema.filter(record)
 
@@ -130,5 +139,7 @@ def delete_record(domain_id, record_id):
         return flask.Response(status=401)
     except exceptions.RecordNotFound:
         return flask.Response(status=404)
+    except rpc_common.Timeout:
+        return flask.Response(status=504)
     else:
         return flask.Response(status=200)

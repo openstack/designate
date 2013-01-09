@@ -16,6 +16,7 @@
 import flask
 from moniker.openstack.common import log as logging
 from moniker.openstack.common import jsonutils as json
+from moniker.openstack.common.rpc import common as rpc_common
 from moniker import exceptions
 from moniker import schema
 from moniker.central import api as central_api
@@ -51,6 +52,8 @@ def create_server():
         return flask.Response(status=400, response=response_body)
     except exceptions.DuplicateServer:
         return flask.Response(status=409)
+    except rpc_common.Timeout:
+        return flask.Response(status=504)
     else:
         server = server_schema.filter(server)
 
@@ -69,6 +72,8 @@ def get_servers():
         servers = central_api.get_servers(context)
     except exceptions.Forbidden:
         return flask.Response(status=401)
+    except rpc_common.Timeout:
+        return flask.Response(status=504)
 
     servers = servers_schema.filter({'servers': servers})
 
@@ -85,6 +90,8 @@ def get_server(server_id):
         return flask.Response(status=401)
     except exceptions.ServerNotFound:
         return flask.Response(status=404)
+    except rpc_common.Timeout:
+        return flask.Response(status=504)
     else:
         server = server_schema.filter(server)
 
@@ -111,6 +118,8 @@ def update_server(server_id):
         return flask.Response(status=404)
     except exceptions.DuplicateServer:
         return flask.Response(status=409)
+    except rpc_common.Timeout:
+        return flask.Response(status=504)
     else:
         server = server_schema.filter(server)
 
@@ -127,5 +136,7 @@ def delete_server(server_id):
         return flask.Response(status=401)
     except exceptions.ServerNotFound:
         return flask.Response(status=404)
+    except rpc_common.Timeout:
+        return flask.Response(status=504)
     else:
         return flask.Response(status=200)

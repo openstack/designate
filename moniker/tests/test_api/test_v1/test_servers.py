@@ -13,7 +13,10 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from mock import patch
 from moniker.openstack.common import log as logging
+from moniker.openstack.common.rpc import common as rpc_common
+from moniker.central import service as central_service
 from moniker.tests.test_api.test_v1 import ApiV1Test
 
 
@@ -32,6 +35,14 @@ class ApiV1ServersTest(ApiV1Test):
         self.assertIn('id', response.json)
         self.assertIn('name', response.json)
         self.assertEqual(response.json['name'], fixture['name'])
+
+    @patch.object(central_service.Service, 'create_server',
+                  side_effect=rpc_common.Timeout())
+    def test_create_server_timeout(self, _):
+        # Create a server
+        fixture = self.get_server_fixture(0)
+
+        self.post('servers', data=fixture, status_code=504)
 
     def test_get_servers(self):
         response = self.get('servers')
@@ -55,6 +66,11 @@ class ApiV1ServersTest(ApiV1Test):
         self.assertIn('servers', response.json)
         self.assertEqual(2, len(response.json['servers']))
 
+    @patch.object(central_service.Service, 'get_servers',
+                  side_effect=rpc_common.Timeout())
+    def test_get_servers_timeout(self, _):
+        self.get('servers', status_code=504)
+
     def test_get_server(self):
         # Create a server
         server = self.create_server()
@@ -63,6 +79,14 @@ class ApiV1ServersTest(ApiV1Test):
 
         self.assertIn('id', response.json)
         self.assertEqual(response.json['id'], server['id'])
+
+    @patch.object(central_service.Service, 'get_server',
+                  side_effect=rpc_common.Timeout())
+    def test_get_server_timeout(self, _):
+        # Create a server
+        server = self.create_server()
+
+        self.get('servers/%s' % server['id'], status_code=504)
 
     def test_update_server(self):
         # Create a server
@@ -78,6 +102,16 @@ class ApiV1ServersTest(ApiV1Test):
         self.assertIn('name', response.json)
         self.assertEqual(response.json['name'], 'test.example.org.')
 
+    @patch.object(central_service.Service, 'update_server',
+                  side_effect=rpc_common.Timeout())
+    def test_update_server_timeout(self, _):
+        # Create a server
+        server = self.create_server()
+
+        data = {'name': 'test.example.org.'}
+
+        self.put('servers/%s' % server['id'], data=data, status_code=504)
+
     def test_delete_server(self):
         # Create a server
         server = self.create_server()
@@ -86,3 +120,11 @@ class ApiV1ServersTest(ApiV1Test):
 
         # Esnure we can no longer fetch the server
         self.get('servers/%s' % server['id'], status_code=404)
+
+    @patch.object(central_service.Service, 'delete_server',
+                  side_effect=rpc_common.Timeout())
+    def test_delete_server_timeout(self, _):
+        # Create a server
+        server = self.create_server()
+
+        self.delete('servers/%s' % server['id'], status_code=504)
