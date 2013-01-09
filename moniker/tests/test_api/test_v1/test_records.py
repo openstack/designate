@@ -64,7 +64,7 @@ class ApiV1RecordsTest(ApiV1Test):
         self.assertIn('name', response.json)
         self.assertEqual(response.json['name'], fixture['name'])
 
-    def test_create_invalid_record_name(self):
+    def test_create_invalid_name(self):
         # Prepare a record
         fixture = self.get_record_fixture(self.domain['name'], 0)
 
@@ -114,6 +114,10 @@ class ApiV1RecordsTest(ApiV1Test):
         self.get('domains/%s/records' % self.domain['id'],
                  status_code=504)
 
+    def test_get_records_missing_domain(self):
+        self.get('domains/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980/records',
+                 status_code=404)
+
     def test_get_record(self):
         # Create a record
         record = self.create_record(self.domain)
@@ -151,6 +155,22 @@ class ApiV1RecordsTest(ApiV1Test):
         self.put('domains/%s/records/%s' % (self.domain['id'], record['id']),
                  data=data, status_code=504)
 
+    def test_update_record_missing(self):
+        data = {'name': 'test.example.org.'}
+
+        self.put('domains/%s/records/2fdadfb1-cf96-4259-ac6b-'
+                 'bb7b6d2ff980' % self.domain['id'],
+                 data=data,
+                 status_code=404)
+
+    def test_update_record_missing_domain(self):
+        data = {'name': 'test.example.org.'}
+
+        self.put('domains/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980/records/'
+                 '2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980',
+                 data=data,
+                 status_code=404)
+
     def test_delete_record(self):
         # Create a record
         record = self.create_record(self.domain)
@@ -172,3 +192,13 @@ class ApiV1RecordsTest(ApiV1Test):
         self.delete('domains/%s/records/%s' % (self.domain['id'],
                                                record['id']),
                     status_code=504)
+
+    def test_delete_record_missing(self):
+        self.delete('domains/%s/records/2fdadfb1-cf96-4259-ac6b-'
+                    'bb7b6d2ff980' % self.domain['id'],
+                    status_code=404)
+
+    def test_delete_record_missing_domain(self):
+        self.delete('domains/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980/records/'
+                    '2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980',
+                    status_code=404)

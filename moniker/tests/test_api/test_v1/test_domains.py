@@ -71,6 +71,46 @@ class ApiV1DomainsTest(ApiV1Test):
     def test_get_domains_timeout(self, _):
         self.get('domains', status_code=504)
 
+    def test_create_invalid_name(self):
+        # Prepare a domain
+        fixture = self.get_domain_fixture(0)
+
+        invalid_names = [
+            'org',
+            'example.org',
+            'example.321',
+        ]
+
+        for invalid_name in invalid_names:
+            fixture['name'] = invalid_name
+
+            # Create a record
+            response = self.post('domains', data=fixture, status_code=400)
+
+            self.assertNotIn('id', response.json)
+
+    # TODO: Failing..
+    # def test_create_invalid_email(self):
+    #     # Prepare a domain
+    #     fixture = self.get_domain_fixture(0)
+
+    #     invalid_emails = [
+    #         'org',
+    #         'example.org',
+    #         'bla.example.org',
+    #         'org.',
+    #         'example.org.',
+    #         'bla.example.org.',
+    #     ]
+
+    #     for invalid_email in invalid_emails:
+    #         fixture['email'] = invalid_email
+
+    #         # Create a record
+    #         response = self.post('domains', data=fixture, status_code=400)
+
+    #         self.assertNotIn('id', response.json)
+
     def test_get_domain(self):
         # Create a domain
         domain = self.create_domain()
@@ -87,6 +127,10 @@ class ApiV1DomainsTest(ApiV1Test):
         domain = self.create_domain()
 
         self.get('domains/%s' % domain['id'], status_code=504)
+
+    def test_get_domain_missing(self):
+        self.get('domains/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980',
+                 status_code=404)
 
     def test_update_domain(self):
         # Create a domain
@@ -112,6 +156,12 @@ class ApiV1DomainsTest(ApiV1Test):
 
         self.put('domains/%s' % domain['id'], data=data, status_code=504)
 
+    def test_update_domain_missing(self):
+        data = {'name': 'test.org.'}
+
+        self.put('domains/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980', data=data,
+                 status_code=404)
+
     def test_delete_domain(self):
         # Create a domain
         domain = self.create_domain()
@@ -128,3 +178,7 @@ class ApiV1DomainsTest(ApiV1Test):
         domain = self.create_domain()
 
         self.delete('domains/%s' % domain['id'], status_code=504)
+
+    def test_delete_domain_missing(self):
+        self.delete('domains/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980',
+                    status_code=404)

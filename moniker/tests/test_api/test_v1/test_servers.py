@@ -88,6 +88,10 @@ class ApiV1ServersTest(ApiV1Test):
 
         self.get('servers/%s' % server['id'], status_code=504)
 
+    def test_get_server_missing(self):
+        self.get('servers/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980',
+                 status_code=404)
+
     def test_update_server(self):
         # Create a server
         server = self.create_server()
@@ -112,6 +116,12 @@ class ApiV1ServersTest(ApiV1Test):
 
         self.put('servers/%s' % server['id'], data=data, status_code=504)
 
+    def test_update_server_missing(self):
+        data = {'name': 'test.example.org.'}
+
+        self.get('servers/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980', data=data,
+                 status_code=404)
+
     def test_delete_server(self):
         # Create a server
         server = self.create_server()
@@ -128,3 +138,7 @@ class ApiV1ServersTest(ApiV1Test):
         server = self.create_server()
 
         self.delete('servers/%s' % server['id'], status_code=504)
+
+    def test_delete_server_missing(self):
+        self.delete('servers/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980',
+                    status_code=404)

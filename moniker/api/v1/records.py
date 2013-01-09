@@ -73,6 +73,8 @@ def get_records(domain_id):
         records = central_api.get_records(context, domain_id)
     except exceptions.Forbidden:
         return flask.Response(status=401)
+    except exceptions.DomainNotFound:
+        return flask.Response(status=404)
     except rpc_common.Timeout:
         return flask.Response(status=504)
 
@@ -89,7 +91,7 @@ def get_record(domain_id, record_id):
         record = central_api.get_record(context, domain_id, record_id)
     except exceptions.Forbidden:
         return flask.Response(status=401)
-    except exceptions.RecordNotFound:
+    except (exceptions.RecordNotFound, exceptions.DomainNotFound):
         return flask.Response(status=404)
     except rpc_common.Timeout:
         return flask.Response(status=504)
@@ -116,7 +118,7 @@ def update_record(domain_id, record_id):
     except exceptions.InvalidObject, e:
         response_body = json.dumps({'errors': e.errors})
         return flask.Response(status=400, response=response_body)
-    except exceptions.RecordNotFound:
+    except (exceptions.RecordNotFound, exceptions.DomainNotFound):
         return flask.Response(status=404)
     except exceptions.DuplicateRecord:
         return flask.Response(status=409)
@@ -137,7 +139,7 @@ def delete_record(domain_id, record_id):
         central_api.delete_record(context, domain_id, record_id)
     except exceptions.Forbidden:
         return flask.Response(status=401)
-    except exceptions.RecordNotFound:
+    except (exceptions.RecordNotFound, exceptions.DomainNotFound):
         return flask.Response(status=404)
     except rpc_common.Timeout:
         return flask.Response(status=504)
