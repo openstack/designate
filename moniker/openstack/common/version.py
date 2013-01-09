@@ -50,9 +50,9 @@ class VersionInfo(object):
         """Defer to the openstack.common.setup routines for making a
         version from git."""
         if self.pre_version is None:
-            return setup.get_post_version(self.python_package)
+            return setup.get_post_version(self.package)
         else:
-            return setup.get_pre_version(self.python_package, self.pre_version)
+            return setup.get_pre_version(self.package, self.pre_version)
 
     def _newer_version(self, pending_version):
         """Check to see if we're working with a stale version or not.

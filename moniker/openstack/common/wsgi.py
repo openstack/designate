@@ -387,7 +387,7 @@ class JSONDictSerializer(DictSerializer):
             if isinstance(obj, datetime.datetime):
                 _dtime = obj - datetime.timedelta(microseconds=obj.microsecond)
                 return _dtime.isoformat()
-            return obj
+            return unicode(obj)
         return jsonutils.dumps(data, default=sanitizer)
 
 
