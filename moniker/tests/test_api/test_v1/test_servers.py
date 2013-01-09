@@ -16,6 +16,7 @@
 from mock import patch
 from moniker.openstack.common import log as logging
 from moniker.openstack.common.rpc import common as rpc_common
+from moniker import exceptions
 from moniker.central import service as central_service
 from moniker.tests.test_api.test_v1 import ApiV1Test
 
@@ -43,6 +44,14 @@ class ApiV1ServersTest(ApiV1Test):
         fixture = self.get_server_fixture(0)
 
         self.post('servers', data=fixture, status_code=504)
+
+    @patch.object(central_service.Service, 'create_server',
+                  side_effect=exceptions.DuplicateServer())
+    def test_create_server_duplicate(self, _):
+        # Create a server
+        fixture = self.get_server_fixture(0)
+
+        self.post('servers', data=fixture, status_code=409)
 
     def test_get_servers(self):
         response = self.get('servers')
@@ -115,6 +124,15 @@ class ApiV1ServersTest(ApiV1Test):
         data = {'name': 'test.example.org.'}
 
         self.put('servers/%s' % server['id'], data=data, status_code=504)
+
+    @patch.object(central_service.Service, 'update_server',
+                  side_effect=exceptions.DuplicateServer())
+    def test_update_server_duplicate(self, _):
+        server = self.create_server()
+
+        data = {'name': 'test.example.org.'}
+
+        self.put('servers/%s' % server['id'], data=data, status_code=409)
 
     def test_update_server_missing(self):
         data = {'name': 'test.example.org.'}
