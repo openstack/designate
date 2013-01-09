@@ -23,7 +23,7 @@ Create Domain
       Context-Type: application/json
 
       {
-        "name": "domain1.com",
+        "name": "domain1.com.",
         "ttl": 3600,
         "email": "nsadmin@example.org"
       }
@@ -38,7 +38,7 @@ Create Domain
 
       {
         "created_at": "2012-11-01T20:09:48.094457",
-        "name": "domain1.com",
+        "name": "domain1.com.",
         "self": "/v1/domains/89acac79-38e7-497d-807c-a011e1310438",
         "id": "89acac79-38e7-497d-807c-a011e1310438",
         "records": "/v1/domains/89acac79-38e7-497d-807c-a011e1310438/records",
@@ -89,7 +89,7 @@ Get a Domain
 
       {
         "created_at": "2012-11-01T20:11:08.000000",
-        "name": "domain1.com",
+        "name": "domain1.com.",
         "self": "/v1/domains/09494b72-b65b-4297-9efb-187f65a0553e",
         "id": "09494b72-b65b-4297-9efb-187f65a0553e",
         "records": "/v1/domains/09494b72-b65b-4297-9efb-187f65a0553e/records",
@@ -144,7 +144,7 @@ Update a Domain
       Date: Fri, 02 Nov 2012 01:06:19 GMT
 
       {
-        "name": "domain1.com",
+        "name": "domain1.com.",
         "created_at": "2012-11-02T00:58:42.000000",
         "updated_at": "2012-11-02T01:06:07.000000",
         "id": "09494b72-b65b-4297-9efb-187f65a0553e",
@@ -227,7 +227,7 @@ List Domains
       {
         "domains": [
           {
-            "name": "domain1.com",
+            "name": "domain1.com.",
             "created_at": "2012-11-01T20:11:08.000000",
             "email": "nsadmin@example.org",
             "ttl": 3600,
@@ -235,7 +235,7 @@ List Domains
             "id": "09494b72-b65b-4297-9efb-187f65a0553e"
           },
           {
-            "name": "domain2.com",
+            "name": "domain2.com.",
             "created_at": "2012-11-01T20:09:48.000000",
             "email": "nsadmin@example.org",
             "ttl": 3600,

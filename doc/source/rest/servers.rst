@@ -25,7 +25,7 @@ Create Server
       Context-Type: application/json
 
       {
-        "name": 'ns1.example.org',
+        "name": 'ns1.example.org.',
         "ipv4": '192.0.2.1',
         "ipv6": '2001:db8::1'
       }
@@ -40,7 +40,7 @@ Create Server
 
       {
         "id": "384a9b20-239c-11e2-81c1-0800200c9a66",
-        "name": "ns1.example.org",
+        "name": "ns1.example.org.",
         "ipv4": "192.0.2.1",
         "ipv6": "2001:db8::1",
         "created_at": "2011-01-21T11:33:21Z",
@@ -72,7 +72,7 @@ Update Server
       Context-Type: application/json
 
       {
-        "name": 'ns1.example.org',
+        "name": 'ns1.example.org.',
         "ipv4": '1.2.3.5'
       }
 
@@ -86,7 +86,7 @@ Update Server
 
       {
         "id": "879c1100-9c92-4244-bc83-9535ee6534d0"t
-        "name": "ns1.example.org",
+        "name": "ns1.example.org.",
         "ipv4": "1.2.3.5",
         "created_at": "2012-11-02T02:55:44.000000",
         "updated_at": "2012-11-02T02:58:41.993556",
@@ -132,7 +132,7 @@ List Servers
       [
         {
           "id": "384a9b20-239c-11e2-81c1-0800200c9a66",
-          "name": "ns1.example.org",
+          "name": "ns1.example.org.",
           "ipv4": "192.0.2.1",
           "ipv6": "2001:db8::1",
           "created_at": "2011-01-21T11:33:21Z",
@@ -140,7 +140,7 @@ List Servers
         },
         {
           "id": "cf661142-e577-40b5-b3eb-75795cdc0cd7",
-          "name": "ns2.example.org",
+          "name": "ns2.example.org.",
           "ipv4": "192.0.2.2",
           "ipv6": "2001:db8::2",
           "created_at": '2011-01-21T11:33:21Z",
@@ -182,7 +182,7 @@ Get Server
 
       {
         "id": "384a9b20-239c-11e2-81c1-0800200c9a66",
-        "name": "ns1.example.org",
+        "name": "ns1.example.org.",
         "ipv4": "192.0.2.1",
         "ipv6": "2001:db8::1",
         "created_at": "2011-01-21T11:33:21Z",
