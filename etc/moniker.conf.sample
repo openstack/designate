@@ -1,5 +1,7 @@
 [DEFAULT]
+########################
 ## General Configuration
+########################
 # Show more verbose log output (sets INFO log level output)
 verbose = True
 
@@ -12,39 +14,54 @@ debug = False
 # Log directory
 #logdir = /var/log/moniker
 
+# Driver used for issuing notifications
+#notification_driver = moniker.openstack.common.notifier.rabbit_notifier
+
 # There has to be a better way to set these defaults
 allowed_rpc_exception_modules = moniker.exceptions, moniker.openstack.common.exception
-logging_context_format_string = %(asctime)s %(levelname)s %(name)s [%(request_id)s %(user)s %(tenant)s] %(instance)s %(message)s
 default_log_levels = amqplib=WARN, sqlalchemy=WARN, boto=WARN, suds=INFO, keystone=INFO, eventlet.wsgi.server=WARN, stevedore=WARN
 
-# Driver used for issuing notifications
-#notification_driver=moniker.openstack.common.notifier.rabbit_notifier
-
+########################
 ## Service Configuration
+########################
+#-----------------------
+# Central Service
+#-----------------------
 [service:central]
 # Driver used for backend communication (e.g. rpc, bind9, powerdns)
-#backend_driver=rpc
+#backend_driver = rpc
 
 # List of notification handlers to enable, configuration of these needs to
 # correspond to a [handler:my_driver] section below or else in the config
 #enabled_notification_handlers = nova_fixed
 
+#-----------------------
+# API Service
+#-----------------------
 [service:api]
 # Address to bind the API server
-api_host = 0.0.0.0
+#api_host = 0.0.0.0
 
 # Port the bind the API server to
-api_port = 9001
+#api_port = 9001
 
 # Authentication strategy to use - can be either "noauth" or "keystone"
 #auth_strategy = noauth
 
+#-----------------------
+# Agent Service
+#-----------------------
 [service:agent]
 # Driver used for backend communication (e.g. bind9, powerdns)
-#backend_driver=bind9
+#backend_driver = bind9
 
+########################
 ## Storage Configuration
-#[storage:sqlalchemy]
+########################
+#-----------------------
+# SQLAlchemy Storage
+#-----------------------
+[storage:sqlalchemy]
 # Database connection string - to configure options for a given implementation
 # like sqlalchemy or other see below
 #database_connection = sqlite:///$state_path/moniker.sqlite
@@ -55,21 +72,34 @@ api_port = 9001
 #max_retries = 10
 #retry_interval = 10
 
-## Notification Handler Configuration
-#[handler:nova_fixed]
+########################
+## Handler Configuration
+########################
+#-----------------------
+# Nova Fixed Handler
+#-----------------------
+[handler:nova_fixed]
 #domain_id = <random uuid>
 #notification_topics = monitor
 #control_exchange = 'nova'
 
+########################
 ## Backend Configuration
-#[backend:bind9]
+########################
+#-----------------------
+# Bind9 Backend
+#-----------------------
+[backend:bind9]
 #rndc_path = /usr/sbin/rndc
 #rndc_host = 127.0.0.1
 #rndc_port = 953
 #rndc_config_file = /etc/rndc.conf
 #rndc_key_file = /etc/rndc.key
 
-#[backend:mysqlbind9]
+#-----------------------
+# Bind9+MySQL Backend
+#-----------------------
+[backend:mysqlbind9]
 #database_connection = mysql://user:password@host/schema
 #rndc_path = /usr/sbin/rndc
 #rndc_host = 127.0.0.1
