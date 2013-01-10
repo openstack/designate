@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import random
+# from mock import patch
 from moniker.openstack.common import log as logging
 from moniker.tests.test_central import CentralTestCase
 from moniker import exceptions
@@ -32,6 +33,29 @@ class CentralServiceTest(CentralTestCase):
         # Ensures the start/stop actions don't raise
         self.central_service.start()
         self.central_service.stop()
+
+    def test_check_reserved_domain_suffixes(self):
+        self.config(reserved_domain_suffixes=['example.org.', 'net.'],
+                    group='service:central')
+
+        # Set the policy to reject the authz
+        self.policy({'use_reserved_domain_suffix': '!'})
+
+        context = self.get_context()
+
+        self.central_service._check_reserved_domain_suffixes(context, 'org.')
+
+        with self.assertRaises(exceptions.Forbidden):
+            self.central_service._check_reserved_domain_suffixes(
+                context, 'www.example.org.')
+
+        with self.assertRaises(exceptions.Forbidden):
+            self.central_service._check_reserved_domain_suffixes(
+                context, 'example.org.')
+
+        with self.assertRaises(exceptions.Forbidden):
+            self.central_service._check_reserved_domain_suffixes(
+                context, 'example.net.')
 
     # Server Tests
     def test_create_server(self):
@@ -140,6 +164,46 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(domain['name'], values['name'])
         self.assertEqual(domain['email'], values['email'])
 
+    def test_create_reserved_domain_success(self):
+        self.config(reserved_domain_suffixes=['reserved.com.'],
+                    group='service:central')
+
+        # Set the policy to accept the authz
+        self.policy({'use_reserved_domain_suffix': '@'})
+
+        context = self.get_admin_context()
+
+        values = dict(
+            name='reserved.com.',
+            email='info@reserved.com'
+        )
+
+        # Create a domain
+        domain = self.central_service.create_domain(context, values=values)
+
+        # Ensure all values have been set correctly
+        self.assertIsNotNone(domain['id'])
+        self.assertEqual(domain['name'], values['name'])
+        self.assertEqual(domain['email'], values['email'])
+
+    def test_create_reserved_domain_fail(self):
+        self.config(reserved_domain_suffixes=['reserved.com.'],
+                    group='service:central')
+
+        # Set the policy to reject the authz
+        self.policy({'use_reserved_domain_suffix': '!'})
+
+        context = self.get_admin_context()
+
+        values = dict(
+            name='reserved.com.',
+            email='info@reserved.com'
+        )
+
+        with self.assertRaises(exceptions.Forbidden):
+            # Create a domain
+            self.central_service.create_domain(context, values=values)
+
     def test_get_domains(self):
         context = self.get_admin_context()
 
@@ -195,6 +259,48 @@ class CentralServiceTest(CentralTestCase):
 
         # Ensure the domain was updated correctly
         self.assertEqual(domain['email'], 'new@example.com')
+
+    def test_update_reserved_domain_success(self):
+        self.config(reserved_domain_suffixes=['reserved.com.'],
+                    group='service:central')
+
+        context = self.get_admin_context()
+
+        # Create a domain
+        expected_domain = self.create_domain()
+
+        # Set the policy to accept the authz
+        self.policy({'use_reserved_domain_suffix': '@'})
+
+        # Update the domain
+        values = dict(name='reserved.com.')
+        self.central_service.update_domain(context, expected_domain['id'],
+                                           values=values)
+
+        # Fetch the domain again
+        domain = self.central_service.get_domain(context,
+                                                 expected_domain['id'])
+
+        # Ensure the domain was updated correctly
+        self.assertEqual(domain['name'], 'reserved.com.')
+
+    def test_update_reserved_domain_fail(self):
+        self.config(reserved_domain_suffixes=['reserved.com.'],
+                    group='service:central')
+
+        context = self.get_admin_context()
+
+        # Create a domain
+        expected_domain = self.create_domain()
+
+        # Set the policy to reject the authz
+        self.policy({'use_reserved_domain_suffix': '!'})
+
+        # Update the domain
+        with self.assertRaises(exceptions.Forbidden):
+            values = dict(name='reserved.com.')
+            self.central_service.update_domain(context, expected_domain['id'],
+                                               values=values)
 
     def test_delete_domain(self):
         context = self.get_admin_context()

@@ -17,6 +17,7 @@ import copy
 import unittest2
 import mox
 from moniker.openstack.common import cfg
+from moniker.openstack.common import policy
 from moniker.openstack.common import log as logging
 from moniker.context import MonikerContext
 from moniker import storage
@@ -137,17 +138,32 @@ class TestCase(unittest2.TestCase, AssertMixin):
         self.admin_context = self.get_admin_context()
 
     def tearDown(self):
+        policy.reset()
         storage.teardown_schema()
         cfg.CONF.reset()
         self.mox.UnsetStubs()
         super(TestCase, self).tearDown()
 
+    # Config Methods
     def config(self, **kwargs):
         group = kwargs.pop('group', None)
 
         for k, v in kwargs.iteritems():
             cfg.CONF.set_override(k, v, group)
 
+    def policy(self, rules, default_rule='allow'):
+        # Inject an allow and deny rule
+        rules['allow'] = '@'
+        rules['deny'] = '!'
+
+        # Parse the rules
+        rules = dict((k, policy.parse_rule(v)) for k, v in rules.items())
+        rules = policy.Rules(rules, default_rule)
+
+        # Set the rules
+        policy.set_rules(rules)
+
+    # Service Methods
     def get_agent_service(self):
         return agent_service.Service()
 
@@ -157,6 +173,7 @@ class TestCase(unittest2.TestCase, AssertMixin):
     def get_central_service(self):
         return central_service.Service()
 
+    # Context Methods
     def get_context(self, **kwargs):
         return MonikerContext(**kwargs)
 

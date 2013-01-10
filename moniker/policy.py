@@ -42,6 +42,7 @@ def init_policy():
         policy_json = fh.read()
 
     rules = policy.Rules.load_json(policy_json, cfg.CONF.policy_default_rule)
+
     policy.set_rules(rules)
 
 

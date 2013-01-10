@@ -142,6 +142,19 @@ class Service(rpc_service.Service):
             LOG.debug('Found handler for: %s' % event_type)
             handler.process_notification(event_type, payload)
 
+    def _check_reserved_domain_suffixes(self, context, domain_name):
+        """
+        Ensures the provided domain_name does not end with any of the
+        configured reserved suffixes.
+        """
+
+        suffixes = cfg.CONF['service:central'].reserved_domain_suffixes
+
+        for suffix in suffixes:
+            if domain_name.endswith(suffix):
+                policy.check('use_reserved_domain_suffix', context,
+                             {'suffix': suffix})
+
     # Server Methods
     def create_server(self, context, values):
         policy.check('create_server', context)
@@ -188,6 +201,9 @@ class Service(rpc_service.Service):
         target = {'tenant_id': values['tenant_id']}
         policy.check('create_domain', context, target)
 
+        # Ensure the domain does not end with a reserved suffix.
+        self._check_reserved_domain_suffixes(context, values['name'])
+
         domain = self.storage_conn.create_domain(context, values)
 
         self.backend.create_domain(context, domain)
@@ -219,6 +235,10 @@ class Service(rpc_service.Service):
 
         target = {'domain_id': domain_id, 'tenant_id': domain['tenant_id']}
         policy.check('update_domain', context, target)
+
+        if 'name' in values:
+            # Ensure the domain does not end with a reserved suffix.
+            self._check_reserved_domain_suffixes(context, values['name'])
 
         domain = self.storage_conn.update_domain(context, domain_id, values)
 

@@ -20,5 +20,7 @@
     "get_records": "rule:admin_or_owner",
     "get_record": "rule:admin_or_owner",
     "update_record": "rule:admin_or_owner",
-    "delete_record": "rule:admin_or_owner"
+    "delete_record": "rule:admin_or_owner",
+
+    "use_reserved_domain_suffix": "rule:admin"
 }
