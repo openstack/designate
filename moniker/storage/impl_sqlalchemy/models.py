@@ -29,7 +29,7 @@ from moniker.sqlalchemy.types import UUID, Inet
 
 LOG = logging.getLogger(__name__)
 
-RECORD_TYPES = ['A', 'AAAA', 'CNAME', 'MX', 'SRV', 'TXT', 'NS']
+RECORD_TYPES = ['A', 'AAAA', 'CNAME', 'MX', 'SRV', 'TXT', 'NS', 'PTR']
 
 
 class Base(object):
@@ -166,14 +166,14 @@ class Record(Base):
     priority = Column(Integer, default=None, nullable=True)
     ttl = Column(Integer, default=None, nullable=True)
 
+    domain_id = Column(UUID, ForeignKey('domains.id', ondelete='CASCADE'),
+                       nullable=False)
+
     managed = Column(Boolean, default=False)
     managed_plugin_type = Column(Unicode(50), default=None, nullable=True)
     managed_plugin_name = Column(Unicode(50), default=None, nullable=True)
     managed_resource_type = Column(Unicode(50), default=None, nullable=True)
     managed_resource_id = Column(UUID, default=None, nullable=True)
-
-    domain_id = Column(UUID, ForeignKey('domains.id', ondelete='CASCADE'),
-                       nullable=False)
 
     @hybrid_property
     def tenant_id(self):

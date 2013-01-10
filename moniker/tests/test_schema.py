@@ -43,6 +43,9 @@ class TestSchemaValidator(TestCase):
             'abc-123.example.com.',
             '_tcp.example.com.',
             '_service._tcp.example.com.',
+            ('1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.8.b.d.0.1.0.0.2'
+             '.ip6.arpa.'),
+            '1.1.1.1.in-addr.arpa.',
         ]
 
         for hostname in valid_hostnames:
