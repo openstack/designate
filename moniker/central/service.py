@@ -101,7 +101,8 @@ class Service(rpc_service.Service):
             exchange, topics = handler.get_exchange_topics()
 
             for topic in topics:
-                queue_name = "moniker.notifications.%s.%s" % (exchange, topic)
+                queue_name = "moniker.notifications.%s.%s.%s" % (
+                    handler.get_canonical_name(), exchange, topic)
 
                 self.rpc_conn.declare_topic_consumer(
                     queue_name=queue_name,
