@@ -44,7 +44,6 @@ def create_domain():
 
     try:
         domain_schema.validate(values)
-        values['tenant_id'] = context.tenant_id
         domain = central_api.create_domain(context, values)
     except exceptions.Forbidden:
         return flask.Response(status=401)

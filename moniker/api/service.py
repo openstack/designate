@@ -19,6 +19,7 @@ from moniker.openstack.common import wsgi
 from moniker.openstack.common import cfg
 from moniker import exceptions
 from moniker import utils
+from moniker import policy
 
 
 LOG = logging.getLogger(__name__)
@@ -35,6 +36,8 @@ class Service(wsgi.Service):
             raise exceptions.ConfigurationError(msg)
 
         LOG.info('Using api-paste-config found at: %s' % config_paths[0])
+
+        policy.init_policy()
 
         application = deploy.loadapp("config:%s" % config_paths[0],
                                      name='osapi_dns')

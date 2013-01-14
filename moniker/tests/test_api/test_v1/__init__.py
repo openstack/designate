@@ -15,7 +15,7 @@
 # under the License.
 from moniker.openstack.common import log as logging
 from moniker.api.v1 import factory
-from moniker.api.auth import NoAuthMiddleware
+from moniker.api.auth import NoAuthContextMiddleware
 from moniker.tests.test_api import ApiTestCase
 
 
@@ -32,7 +32,7 @@ class ApiV1Test(ApiTestCase):
         self.app = factory({})
 
         # Inject the NoAuth middleware
-        self.app.wsgi_app = NoAuthMiddleware(self.app.wsgi_app)
+        self.app.wsgi_app = NoAuthContextMiddleware(self.app.wsgi_app)
 
         # Obtain a test client
         self.client = self.app.test_client()

@@ -47,10 +47,17 @@ class KeystoneContextMiddleware(wsgi.Middleware):
                                  user=headers.get('X-User-ID'),
                                  tenant=headers.get('X-Tenant-ID'),
                                  roles=roles)
+
+        # Attempt to sudo, if requested.
+        sudo_tenant_id = headers.get('X-Moniker-Tenant-ID', None)
+
+        if sudo_tenant_id:
+            context.sudo(sudo_tenant_id)
+
         request.environ['context'] = context
 
 
-class NoAuthMiddleware(wsgi.Middleware):
+class NoAuthContextMiddleware(wsgi.Middleware):
     def process_request(self, request):
         # NOTE(kiall): This makes the assumption that disabling authentication
         #              means you wish to allow full access to everyone.
