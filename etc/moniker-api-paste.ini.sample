@@ -8,14 +8,14 @@ paste.app_factory = moniker.api.versions:factory
 
 [composite:osapi_dns_v1]
 use = call:moniker.api.auth:pipeline_factory
-noauth = noauth osapi_dns_app_v1
+noauth = noauthcontext osapi_dns_app_v1
 keystone = authtoken keystonecontext osapi_dns_app_v1
 
 [app:osapi_dns_app_v1]
 paste.app_factory = moniker.api.v1:factory
 
-[filter:noauth]
-paste.filter_factory = moniker.api.auth:NoAuthMiddleware.factory
+[filter:noauthcontext]
+paste.filter_factory = moniker.api.auth:NoAuthContextMiddleware.factory
 
 [filter:keystonecontext]
 paste.filter_factory = moniker.api.auth:KeystoneContextMiddleware.factory

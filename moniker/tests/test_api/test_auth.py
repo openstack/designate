@@ -17,14 +17,15 @@ from moniker.tests.test_api import ApiTestCase
 from moniker.api import auth
 
 
+class FakeRequest(object):
+    headers = {}
+    environ = {}
+
+
 class KeystoneContextMiddlewareTest(ApiTestCase):
     __test__ = True
 
     def test_process_request(self):
-        class FakeRequest(object):
-            headers = {}
-            environ = {}
-
         app = {}
         middleware = auth.KeystoneContextMiddleware(app)
 
@@ -50,17 +51,44 @@ class KeystoneContextMiddlewareTest(ApiTestCase):
         self.assertEqual('TenantID', context.tenant_id)
         self.assertEqual(['admin', 'Member'], context.roles)
 
+    def test_process_request_sudo(self):
+        # Set the policy to accept the authz
+        self.policy({'use_sudo': '@'})
 
-class NoAuthMiddlewareTest(ApiTestCase):
+        app = {}
+        middleware = auth.KeystoneContextMiddleware(app)
+
+        request = FakeRequest()
+
+        request.headers = {
+            'X-Auth-Token': 'AuthToken',
+            'X-User-ID': 'UserID',
+            'X-Tenant-ID': 'TenantID',
+            'X-Roles': 'admin,Member',
+            'X-Moniker-Tenant-ID': 'SudoTenantID'
+        }
+
+        # Process the request
+        middleware.process_request(request)
+
+        self.assertIn('context', request.environ)
+
+        context = request.environ['context']
+
+        self.assertFalse(context.is_admin)
+        self.assertEqual('AuthToken', context.auth_tok)
+        self.assertEqual('UserID', context.user_id)
+        self.assertEqual('TenantID', context.tenant_id)
+        self.assertEqual('SudoTenantID', context.effective_tenant_id)
+        self.assertEqual(['admin', 'Member'], context.roles)
+
+
+class NoAuthContextMiddlewareTest(ApiTestCase):
     __test__ = True
 
     def test_process_request(self):
-        class FakeRequest(object):
-            headers = {}
-            environ = {}
-
         app = {}
-        middleware = auth.NoAuthMiddleware(app)
+        middleware = auth.NoAuthContextMiddleware(app)
 
         request = FakeRequest()
 

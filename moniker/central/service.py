@@ -195,8 +195,7 @@ class Service(rpc_service.Service):
 
     # Domain Methods
     def create_domain(self, context, values):
-        if 'tenant_id' not in values:
-            values['tenant_id'] = None
+        values['tenant_id'] = context.effective_tenant_id
 
         target = {'tenant_id': values['tenant_id']}
         policy.check('create_domain', context, target)
@@ -212,13 +211,13 @@ class Service(rpc_service.Service):
         return domain
 
     def get_domains(self, context, criterion=None):
-        policy.check('get_domains', context, {'tenant_id': context.tenant_id})
+        target = {'tenant_id': context.effective_tenant_id}
+        policy.check('get_domains', context, target)
 
         if criterion is None:
             criterion = {}
 
-        if context.tenant_id is not None:
-            criterion['tenant_id'] = context.tenant_id
+        criterion['tenant_id'] = context.effective_tenant_id
 
         return self.storage_conn.get_domains(context, criterion)
 
@@ -235,6 +234,10 @@ class Service(rpc_service.Service):
 
         target = {'domain_id': domain_id, 'tenant_id': domain['tenant_id']}
         policy.check('update_domain', context, target)
+
+        if 'tenant_id' in values:
+            target = {'domain_id': domain_id, 'tenant_id': values['tenant_id']}
+            policy.check('create_domain', context, target)
 
         if 'name' in values:
             # Ensure the domain does not end with a reserved suffix.

@@ -1,6 +1,7 @@
 {
     "admin": "role:admin or is_admin:True",
-    "admin_or_owner": "rule:admin or tenant_id:%(tenant_id)s",
+    "owner": "tenant_id:%(tenant_id)s or tenant_id:%(effective_tenant_id)s",
+    "admin_or_owner": "rule:admin or rule:owner",
 
     "default": "rule:admin_or_owner",
 
@@ -22,5 +23,6 @@
     "update_record": "rule:admin_or_owner",
     "delete_record": "rule:admin_or_owner",
 
+    "use_sudo": "rule:admin",
     "use_reserved_domain_suffix": "rule:admin"
 }
