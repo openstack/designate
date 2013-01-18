@@ -19,6 +19,10 @@ class Base(Exception):
     pass
 
 
+class Backend(Base):
+    pass
+
+
 class ConfigurationError(Base):
     pass
 

@@ -17,95 +17,29 @@
 # under the License.
 from sqlalchemy import (Column, DateTime, String, Text, Integer, ForeignKey,
                         Enum, Boolean, Unicode)
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import relationship, backref, object_mapper
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.hybrid import hybrid_property
 from moniker.openstack.common import log as logging
 from moniker.openstack.common import timeutils
 from moniker.openstack.common.uuidutils import generate_uuid
-from moniker import exceptions
 from moniker.sqlalchemy.types import UUID, Inet
+from moniker.sqlalchemy.models import Base as CommonBase
+from sqlalchemy.ext.declarative import declarative_base
 
 LOG = logging.getLogger(__name__)
 
 RECORD_TYPES = ['A', 'AAAA', 'CNAME', 'MX', 'SRV', 'TXT', 'NS', 'PTR']
 
 
-class Base(object):
-    __abstract__ = True
-    __table_initialized__ = False
-
+class Base(CommonBase):
     id = Column(UUID, default=generate_uuid, primary_key=True)
-
+    version = Column(Integer, default=1, nullable=False)
     created_at = Column(DateTime, default=timeutils.utcnow)
     updated_at = Column(DateTime, onupdate=timeutils.utcnow)
-    version = Column(Integer, default=1, nullable=False)
 
     __mapper_args__ = {
         'version_id_col': version
     }
-
-    def save(self, session):
-        """ Save this object """
-        session.add(self)
-
-        try:
-            session.flush()
-        except IntegrityError, e:
-            non_unique_strings = (
-                'duplicate entry',
-                'not unique'
-            )
-
-            for non_unique_string in non_unique_strings:
-                if non_unique_string in str(e).lower():
-                    raise exceptions.Duplicate(str(e))
-
-            # Not a Duplicate error.. Re-raise.
-            raise
-
-    def delete(self, session):
-        """ Delete this object """
-        session.delete(self)
-        session.flush()
-
-    def __setitem__(self, key, value):
-        setattr(self, key, value)
-
-    def __getitem__(self, key):
-        return getattr(self, key)
-
-    def __iter__(self):
-        columns = dict(object_mapper(self).columns).keys()
-        # NOTE(russellb): Allow models to specify other keys that can be looked
-        # up, beyond the actual db columns.  An example would be the 'name'
-        # property for an Instance.
-        if hasattr(self, '_extra_keys'):
-            columns.extend(self._extra_keys())
-        self._i = iter(columns)
-        return self
-
-    def next(self):
-        n = self._i.next()
-        return n, getattr(self, n)
-
-    def update(self, values):
-        """ Make the model object behave like a dict """
-        for k, v in values.iteritems():
-            setattr(self, k, v)
-
-    def iteritems(self):
-        """
-        Make the model object behave like a dict.
-
-        Includes attributes from joins.
-        """
-        local = dict(self)
-        joined = dict([(k, v) for k, v in self.__dict__.iteritems()
-                      if not k[0] == '_'])
-        local.update(joined)
-        return local.iteritems()
 
 
 Base = declarative_base(cls=Base)
