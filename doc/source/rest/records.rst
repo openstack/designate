@@ -51,13 +51,14 @@ Create Record
       }
 
 
+   :param domain_id: domain ID
    :form id: record id
    :form name: name of record FQDN
    :form type: type of record
    :form created_at: timestamp
    :form ttl: time-to-live numeric value in seconds
    :form data: value of record
-   :form domain_id: domain ID 
+   :form domain_id: domain ID
    :form priority: priority of MX record
    :statuscode 200: Success
    :statuscode 401: Access Denied
@@ -89,7 +90,7 @@ Create Record
 
       HTTP/1.1 200 OK
       Content-Type: application/json
-      Content-Length: 420 
+      Content-Length: 420
       Location: http://localhost:9001/v1/domains/89acac79-38e7-497d-807c-a011e1310438/records/11112222-3333-4444-5555-666677778888
       Date: Fri, 02 Nov 2012 19:56:26 GMT
 
@@ -106,23 +107,73 @@ Create Record
       }
 
 
+   :param domain_id: domain ID
    :form id: record id
    :form name: name of record FQDN
    :form type: type of record
    :form created_at: timestamp
    :form ttl: time-to-live numeric value in seconds
    :form data: value of record
-   :form domain_id: domain ID 
+   :form domain_id: domain ID
    :form priority: priority of MX record
    :statuscode 200: Success
    :statuscode 401: Access Denied
    :statuscode 400: Invalid Object
    :statuscode 409: Duplicate Domain
 
+Get a Record
+-------------
+
+.. http:get:: /domains/(uuid:domain_id)/records/(uuid:id)
+
+   Get a particular record
+
+   **Example request**:
+
+   .. sourcecode:: http
+
+      GET /domains/09494b72b65b42979efb187f65a0553e/records/2e32e609-3a4f-45ba-bdef-e50eacd345ad HTTP/1.1
+      Host: example.com
+      Accept: application/json
+
+   **Example response**:
+
+   .. sourcecode:: http
+
+      HTTP/1.1 200 OK
+      Vary: Accept
+      Content-Type: application/json
+
+      {
+        "id": "2e32e609-3a4f-45ba-bdef-e50eacd345ad",
+        "name": "www.example.com.",
+        "type": "A",
+        "created_at": "2012-11-02T19:56:26.366792",
+        "updated_at": "2012-11-04T13:22:36.859786",
+        "priority": null,
+        "ttl": 3600,
+        "data": "15.185.172.153",
+        "domain_id": "89acac79-38e7-497d-807c-a011e1310438"
+      }
+
+   :param domain_id: Domain ID
+   :param id: Record ID
+   :form id: record id
+   :form name: name of record FQDN
+   :form type: type of record
+   :form created_at: timestamp
+   :form updated_at: timestamp
+   :form priority: priority of record
+   :form ttl: time-to-live numeric value in seconds
+   :form data: value of record
+   :form domain_id: domain ID
+   :statuscode 200: Success
+   :statuscode 401: Access Denied
+
 Update a record
 ---------------
 
-.. http:put:: /domains/(uuid:domain_id)/records/(uuid:record_id)
+.. http:put:: /domains/(uuid:domain_id)/records/(uuid:id)
 
    Updates a record
 
@@ -161,25 +212,26 @@ Update a record
         "domain_id": "89acac79-38e7-497d-807c-a011e1310438"
       }
 
+   :param domain_id: domain ID
    :param id: record ID
-   :type id: uuid
+   :form id: record id
    :form name: name of record FQDN
    :form type: type of record
    :form created_at: timestamp
    :form updated_at: timestamp
+   :form priority: priority of record
    :form ttl: time-to-live numeric value in seconds
-   :form priority: priority of MX record
    :form data: value of record
-   :form domain_id: domain ID 
+   :form domain_id: domain ID
    :statuscode 200: Success
    :statuscode 401: Access Denied
    :statuscode 400: Invalid Object
    :statuscode 409: Duplicate Domain
 
-Delete a record of a domain
----------------------------
+Delete a record
+---------------
 
-.. http:delete:: /domains/(uuid:domain_id)/records/(uuid:record_id)
+.. http:delete:: /domains/(uuid:domain_id)/records/(uuid:id)
 
    Delete a DNS resource record
 
@@ -189,6 +241,9 @@ Delete a record of a domain
 
       DELETE /domains/89acac79-38e7-497d-807c-a011e1310438/records/4ad19089-3e62-40f8-9482-17cc8ccb92cb HTTP/1.1
 
+   :param domain_id: domain ID
+   :param id: record ID
+
    **Example response**:
 
       Content-Type: text/html; charset=utf-8
@@ -196,8 +251,8 @@ Delete a record of a domain
       Date: Sun, 04 Nov 2012 14:35:57 GMT
 
 
-List a Records of a Domain
---------------------------
+List Records in a Domain
+------------------------
 
 .. http:get:: /domains/(uuid:domain_id)/records
 
@@ -263,18 +318,15 @@ List a Records of a Domain
         ]
       }
 
-   :param id: record ID
-   :type id: uuid
-   :form name: domain name
-   :form type: record type
-   :form ttl: time-to-live numeric value in seconds
+   :param domain_id: domain ID
+   :form id: record id
+   :form name: name of record FQDN
+   :form type: type of record
    :form created_at: timestamp
    :form updated_at: timestamp
+   :form priority: priority of record
+   :form ttl: time-to-live numeric value in seconds
    :form data: value of record
-   :param id: Domain ID
-   :type id: uuid
-   :form tenant_id: uuid of tenant
-   :form priority: priority
-   :form version: record version
+   :form domain_id: domain ID
    :statuscode 200: Success
    :statuscode 401: Access Denied

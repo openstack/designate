@@ -54,6 +54,48 @@ Create Server
    :statuscode 401: Access Denied
    :statuscode 409: Conflict
 
+Get Server
+----------
+
+.. http:get:: /servers/(uuid:server_id)
+
+   Lists all configured DNS servers
+
+   **Example request**:
+
+   .. sourcecode:: http
+
+      GET /servers/384a9b20-239c-11e2-81c1-0800200c9a66 HTTP/1.1
+      Host: example.com
+      Accept: application/json
+
+   **Example response**:
+
+   .. sourcecode:: http
+
+      HTTP/1.1 200 OK
+      Vary: Accept
+      Content-Type: application/json
+
+      {
+        "id": "384a9b20-239c-11e2-81c1-0800200c9a66",
+        "name": "ns1.example.org.",
+        "ipv4": "192.0.2.1",
+        "ipv6": "2001:db8::1",
+        "created_at": "2011-01-21T11:33:21Z",
+        "updated_at": null
+      }
+
+   :param server_id: The server's unique id
+   :type server_id: uuid
+   :form name: Server hostname
+   :form ipv4: Server IPv4 address
+   :form ipv6: Server IPv6 address
+   :form created_at: timestamp
+   :form updated_at: timestamp
+   :statuscode 200: Success
+   :statuscode 401: Access Denied
+   :statuscode 404: Not Found
 
 Update Server
 -------------
@@ -100,7 +142,7 @@ Update Server
    :form created_at: timestamp
    :form updated_at: timestamp
    :form self: String, link to server
-   :form schema: link to the JSON schema that describes this resource 
+   :form schema: link to the JSON schema that describes this resource
    :statuscode 200: Success
    :statuscode 401: Access Denied
    :statuscode 404: Server Not Found
@@ -156,49 +198,6 @@ List Servers
    :form updated_at: timestamp
    :statuscode 200: Success
    :statuscode 401: Access Denied
-
-Get Server
-----------
-
-.. http:get:: /servers/(uuid:server_id)
-
-   Lists all configured DNS servers
-
-   **Example request**:
-
-   .. sourcecode:: http
-
-      GET /servers/384a9b20-239c-11e2-81c1-0800200c9a66 HTTP/1.1
-      Host: example.com
-      Accept: application/json
-
-   **Example response**:
-
-   .. sourcecode:: http
-
-      HTTP/1.1 200 OK
-      Vary: Accept
-      Content-Type: application/json
-
-      {
-        "id": "384a9b20-239c-11e2-81c1-0800200c9a66",
-        "name": "ns1.example.org.",
-        "ipv4": "192.0.2.1",
-        "ipv6": "2001:db8::1",
-        "created_at": "2011-01-21T11:33:21Z",
-        "updated_at": null
-      }
-
-   :param server_id: The server's unique id
-   :type server_id: uuid
-   :form name: Server hostname
-   :form ipv4: Server IPv4 address
-   :form ipv6: Server IPv6 address
-   :form created_at: timestamp
-   :form updated_at: timestamp
-   :statuscode 200: Success
-   :statuscode 401: Access Denied
-   :statuscode 404: Not Found
 
 Delete Server
 -------------
