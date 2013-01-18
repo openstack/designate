@@ -108,3 +108,15 @@ default_log_levels = amqplib=WARN, sqlalchemy=WARN, boto=WARN, suds=INFO, keysto
 #rndc_key_file = /etc/rndc.key
 #write_database = True
 #dns_server_type = master
+
+#-----------------------
+# PowerDNS Backend
+#-----------------------
+[backend:powerdns]
+#database_connection = mysql://user:password@host/pdns
+#connection_debug = 100
+#connection_trace = False
+#sqlite_synchronous = True
+#idle_timeout = 3600
+#max_retries = 10
+#retry_interval = 10
