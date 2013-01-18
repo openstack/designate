@@ -12,8 +12,8 @@ Contents:
    :maxdepth: 2
 
    architecture
-   configuration
    install
+   configuration
    rest
    glossary
 
