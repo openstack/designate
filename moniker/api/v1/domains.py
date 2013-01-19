@@ -52,6 +52,8 @@ def create_domain():
         return flask.Response(status=400, response=response_body)
     except exceptions.DuplicateDomain:
         return flask.Response(status=409)
+    except exceptions.NoServersConfigured:
+        return flask.Response(status=500)
     except rpc_common.Timeout:
         return flask.Response(status=504)
     else:

@@ -22,8 +22,6 @@ from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
 from moniker import exceptions
 from moniker.backend import base
-from moniker.central import api as central_api
-from moniker.context import MonikerContext
 from moniker.sqlalchemy.session import get_session, SQLOPTS
 from moniker.sqlalchemy.models import Base as CommonBase
 from moniker.sqlalchemy.types import UUID
@@ -79,11 +77,7 @@ class PowerDNSBackend(base.Backend):
 
         self.session = get_session(self.name)
 
-    def create_domain(self, context, domain):
-        admin_context = MonikerContext.get_admin_context()
-
-        servers = central_api.get_servers(admin_context)
-
+    def create_domain(self, context, domain, servers):
         domain_m = Domain()
         domain_m.update({
             'moniker_id': domain['id'],
@@ -113,22 +107,24 @@ class PowerDNSBackend(base.Backend):
             'domain_id': domain_m.id,
             'name': domain['name'].rstrip('.'),
             'type': 'SOA',
-            'content': self._build_soa_content(domain)
+            'content': self._build_soa_content(domain, servers)
         })
         record_m.save(self.session)
 
-    def update_domain(self, context, domain):
+    def update_domain(self, context, domain, servers):
         domain_m = self._get_domain(domain['id'])
+
+        # TODO: Sync Server List
 
         soa_record_m = self._get_record(domain=domain_m, type='SOA')
 
         soa_record_m.update({
-            'content': self._build_soa_content(domain)
+            'content': self._build_soa_content(domain, servers)
         })
 
         soa_record_m.save(self.session)
 
-    def delete_domain(self, context, domain):
+    def delete_domain(self, context, domain, servers):
         domain_m = self._get_domain(domain['id'])
         domain_m.delete(self.session)
 
@@ -167,8 +163,8 @@ class PowerDNSBackend(base.Backend):
         record_m = self._get_record(record['id'])
         record_m.delete(self.session)
 
-    def _build_soa_content(self, domain):
-        return "%s %s. %d %d %d %d %d" % (domain['name'],
+    def _build_soa_content(self, domain, servers):
+        return "%s %s. %d %d %d %d %d" % (servers[0]['name'],
                                           domain['email'].replace("@", "."),
                                           domain['serial'],
                                           domain['refresh'],

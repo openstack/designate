@@ -78,14 +78,14 @@ class MySQLBind9Backend(base.Backend):
 
         self._sync_domains()
 
-    def _add_soa_record(self, domain):
+    def _add_soa_record(self, domain, servers):
         """
         add the single SOA record for this domain. Must create the
         data from attributes of the domain
         """
         table = self.get_dns_table()
         data_rec = "%s. %s. %d %d %d %d %d" % (
-                   domain['name'],
+                   servers[0]['name'],
                    domain['email'].replace("@", "."),
                    domain['serial'],
                    domain['refresh'],
@@ -105,13 +105,11 @@ class MySQLBind9Backend(base.Backend):
             data=data_rec)
         self._db.commit()
 
-    def _add_ns_records(self, domain):
+    def _add_ns_records(self, domain, servers):
         """
         add the NS records, one for each server, for this domain
         """
         table = self.get_dns_table()
-        admin_context = MonikerContext.get_admin_context()
-        servers = central_api.get_servers(admin_context)
 
         # use the domain id for records that don't have a match
         # in moniker's records table
@@ -142,7 +140,7 @@ class MySQLBind9Backend(base.Backend):
             data=record['data'])
         self._db.commit()
 
-    def _update_ns_records(self, domain):
+    def _update_ns_records(self, domain, servers):
         """
         delete and re-add all NS records : easier to just delete all
         NS records and then replace - in the case of adding new NS
@@ -159,7 +157,7 @@ class MySQLBind9Backend(base.Backend):
         # add all NS records (might have new servers)
         self._db.commit()
 
-        self._add_ns_records(domain)
+        self._add_ns_records(domain, servers)
 
     def _update_db_record(self, tenant_id, record):
         """
@@ -178,7 +176,7 @@ class MySQLBind9Backend(base.Backend):
 
         self._db.commit()
 
-    def _update_soa_record(self, domain):
+    def _update_soa_record(self, domain, servers):
         """
         update the one single SOA record for the domain
         """
@@ -191,7 +189,7 @@ class MySQLBind9Backend(base.Backend):
                                           type=u'SOA')
 
         data_rec = "%s. %s. %d %d %d %d %d" % (
-                   domain['name'],
+                   servers[0]['name'],
                    domain['email'].replace("@", "."),
                    domain['serial'],
                    domain['refresh'],
@@ -247,22 +245,22 @@ class MySQLBind9Backend(base.Backend):
 
         self._db.commit()
 
-    def create_domain(self, context, domain):
+    def create_domain(self, context, domain, servers):
         LOG.debug('create_domain()')
 
         if cfg.CONF[self.name].write_database:
-            self._add_soa_record(domain)
-            self._add_ns_records(domain)
+            self._add_soa_record(domain, servers)
+            self._add_ns_records(domain, servers)
 
         self._sync_domains()
 
-    def update_domain(self, context, domain):
+    def update_domain(self, context, domain, servers):
         LOG.debug('update_domain()')
         if cfg.CONF[self.name].write_database:
-            self._update_soa_record(domain)
-            self._update_ns_records(domain)
+            self._update_soa_record(domain, servers)
+            self._update_ns_records(domain, servers)
 
-    def delete_domain(self, context, domain):
+    def delete_domain(self, context, domain, servers):
         LOG.debug('delete_domain()')
         if cfg.CONF[self.name].write_database:
             self._delete_db_domain_records(domain['tenant_id'],

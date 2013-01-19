@@ -32,17 +32,17 @@ class FakeBackend(base.Backend):
         self.update_record_calls = []
         self.delete_record_calls = []
 
-    def create_domain(self, context, domain):
+    def create_domain(self, context, domain, servers):
         LOG.info('Create Domain %r' % domain)
-        self.create_domain_calls.append((context, domain))
+        self.create_domain_calls.append((context, domain, servers))
 
-    def update_domain(self, context, domain):
+    def update_domain(self, context, domain, servers):
         LOG.debug('Update Domain %r' % domain)
-        self.update_domain_calls.append((context, domain))
+        self.update_domain_calls.append((context, domain, servers))
 
-    def delete_domain(self, context, domain):
+    def delete_domain(self, context, domain, servers):
         LOG.debug('Delete Domain %r' % domain)
-        self.delete_domain_calls.append((context, domain))
+        self.delete_domain_calls.append((context, domain, servers))
 
     def create_record(self, context, domain, record):
         LOG.debug('Create Record %r / %r' % (domain, record))

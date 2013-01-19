@@ -28,6 +28,9 @@ class ApiV1DomainsTest(ApiV1Test):
     __test__ = True
 
     def test_create_domain(self):
+        # Create a server
+        self.create_server()
+
         # Create a domain
         fixture = self.get_domain_fixture(0)
 
@@ -36,6 +39,12 @@ class ApiV1DomainsTest(ApiV1Test):
         self.assertIn('id', response.json)
         self.assertIn('name', response.json)
         self.assertEqual(response.json['name'], fixture['name'])
+
+    def test_create_domain_no_servers(self):
+        # Create a domain
+        fixture = self.get_domain_fixture(0)
+
+        self.post('domains', data=fixture, status_code=500)
 
     @patch.object(central_service.Service, 'create_domain',
                   side_effect=rpc_common.Timeout())

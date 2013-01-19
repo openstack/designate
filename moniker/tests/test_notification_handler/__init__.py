@@ -55,8 +55,8 @@ class AddressHandlerTestCase(NotificationHandlerTestCase):
     """
     def pre_invoke(self):
         super(AddressHandlerTestCase, self).pre_invoke()
-        values = {'name': 'exampe.com', 'email': 'info@example.com'}
-        domain = self.central_service.create_domain(self.admin_context, values)
+
+        domain = self.create_domain()
         self.domain_id = str(domain['id'])
 
         return {'domain_id': self.domain_id}

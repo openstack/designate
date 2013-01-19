@@ -21,6 +21,7 @@ from moniker.openstack.common import policy
 from moniker.openstack.common import log as logging
 from moniker.context import MonikerContext
 from moniker import storage
+from moniker import exceptions
 from moniker.agent import service as agent_service
 from moniker.api import service as api_service
 from moniker.central import service as central_service
@@ -212,6 +213,12 @@ class TestCase(unittest2.TestCase, AssertMixin):
     def create_domain(self, **kwargs):
         context = kwargs.pop('context', self.get_admin_context())
         fixture = kwargs.pop('fixture', 0)
+
+        # We always need a server to create a domain..
+        try:
+            self.create_server()
+        except exceptions.DuplicateServer:
+            pass
 
         values = self.get_domain_fixture(fixture=fixture, values=kwargs)
         return self.central_service.create_domain(context, values=values)

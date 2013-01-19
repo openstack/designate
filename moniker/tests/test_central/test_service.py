@@ -149,6 +149,9 @@ class CentralServiceTest(CentralTestCase):
 
     # Domain Tests
     def test_create_domain(self):
+        # Create a server
+        self.create_server()
+
         context = self.get_admin_context()
 
         values = dict(
@@ -170,6 +173,9 @@ class CentralServiceTest(CentralTestCase):
 
         # Set the policy to accept the authz
         self.policy({'use_reserved_domain_suffix': '@'})
+
+        # Create a server
+        self.create_server()
 
         context = self.get_admin_context()
 

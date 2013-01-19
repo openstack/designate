@@ -55,17 +55,17 @@ class Bind9Backend(base.Backend):
 
         self._sync_domains()
 
-    def create_domain(self, context, domain):
+    def create_domain(self, context, domain, servers):
         LOG.debug('Create Domain')
-        self._sync_domain(domain, new_domain_flag=True)
+        self._sync_domain(domain, servers, new_domain_flag=True)
 
-    def update_domain(self, context, domain):
+    def update_domain(self, context, domain, servers):
         LOG.debug('Update Domain')
-        self._sync_domain(domain)
+        self._sync_domain(domain, servers)
 
-    def delete_domain(self, context, domain):
+    def delete_domain(self, context, domain, servers):
         LOG.debug('Delete Domain')
-        self._sync_delete_domain(domain)
+        self._sync_delete_domain(domain, servers)
 
     def create_record(self, context, domain, record):
         LOG.debug('Create Record')
@@ -138,19 +138,15 @@ class Bind9Backend(base.Backend):
         subprocess.call(rndc_call)
 
     """ Update the bind to read in new zone files or changes to existin """
-    def _sync_domain(self, domain, new_domain_flag=False):
+    def _sync_domain(self, domain, servers=None, new_domain_flag=False):
         """ Sync a single domain's zone file """
         # TODO: Rewrite this entire thing ASAP
         LOG.debug('Synchronising Domain: %s' % domain['id'])
 
-        admin_context = MonikerContext.get_admin_context()
-
-        servers = central_api.get_servers(admin_context)
-
-        if len(servers) == 0:
-            LOG.critical('No servers configured. Please create at least one '
-                         'server via the REST API')
-            return
+        if not servers:
+            # TODO: This is a hack... FIXME
+            admin_context = MonikerContext.get_admin_context()
+            servers = central_api.get_servers(admin_context)
 
         records = central_api.get_records(admin_context, domain['id'])
 

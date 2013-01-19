@@ -24,33 +24,36 @@ RPC = RpcProxy(cfg.CONF.agent_topic, DEFAULT_VERSION)
 
 
 # Domain Methods
-def create_domain(context, domain):
+def create_domain(context, domain, servers):
     msg = {
         'method': 'create_domain',
         'args': {
             'domain': domain,
+            'servers': servers,
         },
     }
 
     return RPC.fanout_cast(context, msg)
 
 
-def update_domain(context, domain):
+def update_domain(context, domain, servers):
     msg = {
         'method': 'update_domain',
         'args': {
             'domain': domain,
+            'servers': servers,
         },
     }
 
     return RPC.fanout_cast(context, msg)
 
 
-def delete_domain(context, domain):
+def delete_domain(context, domain, servers):
     msg = {
         'method': 'delete_domain',
         'args': {
             'domain': domain,
+            'servers': servers,
         },
     }
 

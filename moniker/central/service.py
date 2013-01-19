@@ -18,6 +18,7 @@ from moniker.openstack.common import log as logging
 from moniker.openstack.common import rpc
 from moniker.openstack.common.rpc import service as rpc_service
 from stevedore.named import NamedExtensionManager
+from moniker import exceptions
 from moniker import policy
 from moniker import storage
 from moniker import utils
@@ -204,9 +205,19 @@ class Service(rpc_service.Service):
         # Ensure the domain does not end with a reserved suffix.
         self._check_reserved_domain_suffixes(context, values['name'])
 
+        # NOTE(kiall): Fetch the servers before creating the domain, this way
+        #              we can prevent domain creation if no servers are
+        #              configured.
+        servers = self.storage_conn.get_servers(context)
+
+        if len(servers) == 0:
+            LOG.critical('No servers configured. Please create at least one '
+                         'server')
+            raise exceptions.NoServersConfigured()
+
         domain = self.storage_conn.create_domain(context, values)
 
-        self.backend.create_domain(context, domain)
+        self.backend.create_domain(context, domain, servers)
         utils.notify(context, 'api', 'domain.create', domain)
 
         return domain
@@ -245,8 +256,9 @@ class Service(rpc_service.Service):
             self._check_reserved_domain_suffixes(context, values['name'])
 
         domain = self.storage_conn.update_domain(context, domain_id, values)
+        servers = self.storage_conn.get_servers(context)
 
-        self.backend.update_domain(context, domain)
+        self.backend.update_domain(context, domain, servers)
         utils.notify(context, 'api', 'domain.update', domain)
 
         return domain
@@ -257,7 +269,9 @@ class Service(rpc_service.Service):
         target = {'domain_id': domain_id, 'tenant_id': domain['tenant_id']}
         policy.check('delete_domain', context, target)
 
-        self.backend.delete_domain(context, domain)
+        servers = self.storage_conn.get_servers(context)
+
+        self.backend.delete_domain(context, domain, servers)
         utils.notify(context, 'api', 'domain.delete', domain)
 
         return self.storage_conn.delete_domain(context, domain_id)

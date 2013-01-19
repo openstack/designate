@@ -27,15 +27,15 @@ class Backend(Plugin):
     __plugin_ns__ = 'moniker.backend'
 
     @abc.abstractmethod
-    def create_domain(self, context, domain):
+    def create_domain(self, context, domain, servers):
         """ Create a DNS domain """
 
     @abc.abstractmethod
-    def update_domain(self, context, domain):
+    def update_domain(self, context, domain, servers):
         """ Update a DNS domain """
 
     @abc.abstractmethod
-    def delete_domain(self, context, domain):
+    def delete_domain(self, context, domain, servers):
         """ Delete a DNS domain """
 
     @abc.abstractmethod
