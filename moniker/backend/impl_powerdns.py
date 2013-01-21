@@ -139,7 +139,7 @@ class PowerDNSBackend(base.Backend):
             'domain_id': domain_m.id,
             'name': record['name'].rstrip('.'),
             'type': record['type'],
-            'content': record['data'],
+            'content': self._sanitize_content(record['type'], record['data']),
             'ttl': record['ttl'],
             'prio': record['priority']
         })
@@ -152,7 +152,7 @@ class PowerDNSBackend(base.Backend):
         record_m.update({
             'name': record['name'].rstrip('.'),
             'type': record['type'],
-            'content': record['data'],
+            'content': self._sanitize_content(record['type'], record['data']),
             'ttl': record['ttl'],
             'prio': record['priority']
         })
@@ -162,6 +162,12 @@ class PowerDNSBackend(base.Backend):
     def delete_record(self, context, domain, record):
         record_m = self._get_record(record['id'])
         record_m.delete(self.session)
+
+    def _sanitize_content(self, type, content):
+        if type in ('CNAME', 'MX', 'SRV', 'NS', 'PTR'):
+            return content.rstrip('.')
+
+        return content
 
     def _build_soa_content(self, domain, servers):
         return "%s %s. %d %d %d %d %d" % (servers[0]['name'],
