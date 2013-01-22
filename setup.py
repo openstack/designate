@@ -52,7 +52,8 @@ setup(
         'bin/moniker-central',
         'bin/moniker-api',
         'bin/moniker-agent',
-        'bin/moniker-manage'
+        'bin/moniker-manage',
+        'bin/moniker-rootwrap'
     ],
     cmdclass=common_setup.get_cmdclass(),
     entry_points=textwrap.dedent("""

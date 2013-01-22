@@ -16,7 +16,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import os
-import subprocess
 from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
 from moniker import utils
@@ -34,8 +33,6 @@ cfg.CONF.register_group(cfg.OptGroup(
 ))
 
 cfg.CONF.register_opts([
-    cfg.StrOpt('rndc-path',
-               default='/usr/sbin/rndc', help='RNDC Path'),
     cfg.StrOpt('rndc-host', default='127.0.0.1', help='RNDC Host'),
     cfg.IntOpt('rndc-port', default=953, help='RNDC Port'),
     cfg.StrOpt('rndc-config-file',
@@ -332,8 +329,7 @@ class MySQLBind9Backend(base.Backend):
 
         # only do this if domain create, domain delete
         rndc_call = [
-            'sudo',
-            cfg.CONF[self.name].rndc_path,
+            'rndc',
             '-s', cfg.CONF[self.name].rndc_host,
             '-p', str(cfg.CONF[self.name].rndc_port),
         ]
@@ -346,6 +342,4 @@ class MySQLBind9Backend(base.Backend):
 
         rndc_call.extend(['reconfig'])
 
-        LOG.warn(rndc_call)
-
-        subprocess.call(rndc_call)
+        utils.execute(*rndc_call)

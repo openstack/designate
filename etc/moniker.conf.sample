@@ -17,6 +17,11 @@ debug = False
 # Driver used for issuing notifications
 #notification_driver = moniker.openstack.common.notifier.rabbit_notifier
 
+# Use "sudo moniker-rootwrap /etc/moniker/rootwrap.conf" to use the real
+# root filter facility.
+# Change to "sudo" to skip the filtering and just run the comand directly
+root_helper = sudo
+
 # There has to be a better way to set these defaults
 allowed_rpc_exception_modules = moniker.exceptions, moniker.openstack.common.exception
 default_log_levels = amqplib=WARN, sqlalchemy=WARN, boto=WARN, suds=INFO, keystone=INFO, eventlet.wsgi.server=WARN, stevedore=WARN, keystoneclient.middleware.auth_token=INFO
@@ -90,7 +95,6 @@ default_log_levels = amqplib=WARN, sqlalchemy=WARN, boto=WARN, suds=INFO, keysto
 # Bind9 Backend
 #-----------------------
 [backend:bind9]
-#rndc_path = /usr/sbin/rndc
 #rndc_host = 127.0.0.1
 #rndc_port = 953
 #rndc_config_file = /etc/rndc.conf
@@ -101,7 +105,6 @@ default_log_levels = amqplib=WARN, sqlalchemy=WARN, boto=WARN, suds=INFO, keysto
 #-----------------------
 [backend:mysqlbind9]
 #database_connection = mysql://user:password@host/schema
-#rndc_path = /usr/sbin/rndc
 #rndc_host = 127.0.0.1
 #rndc_port = 953
 #rndc_config_file = /etc/rndc.conf

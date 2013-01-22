@@ -19,10 +19,17 @@ import json
 from jinja2 import Template
 from moniker.openstack.common import log as logging
 from moniker.openstack.common import cfg
+from moniker.openstack.common import processutils
 from moniker.openstack.common.notifier import api as notifier_api
 from moniker import exceptions
 
 LOG = logging.getLogger(__name__)
+
+
+cfg.CONF.register_opts([
+    cfg.StrOpt('root-helper',
+               default='sudo moniker-rootwrap /etc/moniker/rootwrap.conf')
+])
 
 
 def notify(context, service, event_type, payload):
@@ -112,3 +119,10 @@ def render_template_to_file(template_name, output_path, makedirs=True,
 
     with open(output_path, 'w') as output_fh:
         output_fh.write(content)
+
+
+def execute(*cmd, **kw):
+    root_helper = kw.pop('root_helper', cfg.CONF.root_helper)
+    run_as_root = kw.pop('run_as_root', True)
+    return processutils.execute(*cmd, run_as_root=run_as_root,
+                                root_helper=root_helper, **kw)

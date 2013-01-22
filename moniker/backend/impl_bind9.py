@@ -14,7 +14,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import os
-import subprocess
 from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
 from moniker import utils
@@ -29,8 +28,6 @@ cfg.CONF.register_group(cfg.OptGroup(
 ))
 
 cfg.CONF.register_opts([
-    cfg.StrOpt('rndc-path', default='/usr/sbin/rndc',
-               help='RNDC Path'),
     cfg.StrOpt('rndc-host', default='127.0.0.1', help='RNDC Host'),
     cfg.IntOpt('rndc-port', default=953, help='RNDC Port'),
     cfg.StrOpt('rndc-config-file', default=None,
@@ -104,6 +101,21 @@ class Bind9Backend(base.Backend):
                                       domains=domains,
                                       state_path=abs_state_path)
 
+    def _rndc_base(self):
+        rndc_call = [
+            'rndc',
+            '-s', cfg.CONF[self.name].rndc_host,
+            '-p', str(cfg.CONF[self.name].rndc_port),
+        ]
+
+        if cfg.CONF[self.name].rndc_config_file:
+            rndc_call.extend(['-c', cfg.CONF[self.name].rndc_config_file])
+
+        if cfg.CONF[self.name].rndc_key_file:
+            rndc_call.extend(['-k', cfg.CONF[self.name].rndc_key_file])
+
+        return rndc_call
+
     """ Remove domain zone files and reload bind config """
     def _sync_delete_domain(self, domain, new_domain_flag=False):
         """ delete a single domain's zone file """
@@ -119,23 +131,9 @@ class Bind9Backend(base.Backend):
 
         self._sync_domains()
 
-        rndc_call = [
-            'sudo',
-            cfg.CONF[self.name].rndc_path,
-            '-s', cfg.CONF[self.name].rndc_host,
-            '-p', str(cfg.CONF[self.name].rndc_port),
-        ]
+        rndc_call = self._rndc_base() + ['reload']
 
-        if cfg.CONF[self.name].rndc_config_file:
-            rndc_call.extend(['-c', cfg.CONF[self.name].rndc_config_file])
-
-        if cfg.CONF[self.name].rndc_key_file:
-            rndc_call.extend(['-k', cfg.CONF[self.name].rndc_key_file])
-
-        rndc_call.extend(['reload'])
-
-        LOG.debug('Calling RNDC with: %s' % " ".join(rndc_call))
-        subprocess.call(rndc_call)
+        utils.execute(*rndc_call)
 
     """ Update the bind to read in new zone files or changes to existin """
     def _sync_domain(self, domain, servers=None, new_domain_flag=False):
@@ -163,24 +161,12 @@ class Bind9Backend(base.Backend):
 
         self._sync_domains()
 
-        rndc_call = [
-            'sudo',
-            cfg.CONF[self.name].rndc_path,
-            '-s', cfg.CONF[self.name].rndc_host,
-            '-p', str(cfg.CONF[self.name].rndc_port),
-        ]
-
-        if cfg.CONF[self.name].rndc_config_file:
-            rndc_call.extend(['-c', cfg.CONF[self.name].rndc_config_file])
-
-        if cfg.CONF[self.name].rndc_key_file:
-            rndc_call.extend(['-k', cfg.CONF[self.name].rndc_key_file])
-
         rndc_op = 'reconfig' if new_domain_flag else 'reload'
-        rndc_call.extend([rndc_op])
+
+        rndc_call = self._rndc_base() + [rndc_op]
 
         if not new_domain_flag:
             rndc_call.extend([domain['name']])
 
         LOG.debug('Calling RNDC with: %s' % " ".join(rndc_call))
-        subprocess.call(rndc_call)
+        utils.execute(*rndc_call)
