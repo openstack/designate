@@ -28,8 +28,9 @@
             "required": true
         },
         "ttl": {
-            "type": "integer",
-            "description": "Time to live"
+            "type": ["integer", "null"],
+            "description": "Time to live",
+            "min": 60
         },
         "serial": {
             "type": "integer",
