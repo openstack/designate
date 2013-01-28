@@ -27,17 +27,17 @@ import sys
 import time
 
 import eventlet
-import extras
 import logging as std_logging
 
 from moniker.openstack.common import cfg
 from moniker.openstack.common import eventlet_backdoor
 from moniker.openstack.common.gettextutils import _
+from moniker.openstack.common import importutils
 from moniker.openstack.common import log as logging
 from moniker.openstack.common import threadgroup
 
 
-rpc = extras.try_import('moniker.openstack.common.rpc')
+rpc = importutils.try_import('moniker.openstack.common.rpc')
 CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
 
@@ -51,7 +51,7 @@ class Launcher(object):
         :returns: None
 
         """
-        self._services = threadgroup.ThreadGroup('launcher')
+        self._services = threadgroup.ThreadGroup()
         eventlet_backdoor.initialize_if_enabled()
 
     @staticmethod
@@ -310,7 +310,7 @@ class Service(object):
     """Service object for binaries running on hosts."""
 
     def __init__(self, threads=1000):
-        self.tg = threadgroup.ThreadGroup('service', threads)
+        self.tg = threadgroup.ThreadGroup(threads)
 
     def start(self):
         pass
