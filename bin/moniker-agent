@@ -16,6 +16,7 @@
 # under the License.
 import sys
 import eventlet
+from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
 from moniker.openstack.common import service
 from moniker import utils
@@ -27,5 +28,6 @@ utils.read_config('moniker', sys.argv)
 
 logging.setup('moniker')
 
-launcher = service.launch(agent_service.Service())
+launcher = service.launch(agent_service.Service(),
+                          cfg.CONF['service:agent'].workers)
 launcher.wait()

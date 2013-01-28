@@ -22,6 +22,8 @@ cfg.CONF.register_group(cfg.OptGroup(
 ))
 
 cfg.CONF.register_opts([
+    cfg.IntOpt('workers', default=None,
+               help='Number of worker processes to spawn'),
     cfg.StrOpt('api_host', default='0.0.0.0',
                help='API Host'),
     cfg.IntOpt('api_port', default=9001,
