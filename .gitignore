@@ -12,8 +12,8 @@ venv
 *.sublime-workspace
 *.sqlite
 var/*
-etc/*.conf
-etc/*.ini
+etc/moniker/*.conf
+etc/moniker/*.ini
 AUTHORS
 ChangeLog
 doc/source/api/*
