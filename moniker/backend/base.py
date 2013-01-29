@@ -49,3 +49,9 @@ class Backend(Plugin):
     @abc.abstractmethod
     def delete_record(self, context, domain, record):
         """ Delete a DNS record """
+
+    def ping(self, context):
+        """ Ping the Backend service """
+        return {
+            'status': None
+        }

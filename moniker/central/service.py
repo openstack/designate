@@ -339,3 +339,29 @@ class Service(rpc_service.Service):
         utils.notify(context, 'api', 'record.delete', record)
 
         return self.storage_conn.delete_record(context, record_id)
+
+    # Diagnostics Methods
+    def ping(self, context):
+        policy.check('diagnostics', context)
+
+        try:
+            backend_status = self.backend.ping(context)
+        except Exception, e:
+            backend_status = {'status': False, 'message': str(e)}
+
+        try:
+            storage_status = self.storage_conn.ping(context)
+        except Exception, e:
+            storage_status = {'status': False, 'message': str(e)}
+
+        if backend_status and storage_status:
+            status = True
+        else:
+            status = False
+
+        return {
+            'host': cfg.CONF.host,
+            'status': status,
+            'backend': backend_status,
+            'storage': storage_status
+        }

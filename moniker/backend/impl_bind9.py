@@ -116,9 +116,8 @@ class Bind9Backend(base.Backend):
 
         return rndc_call
 
-    """ Remove domain zone files and reload bind config """
     def _sync_delete_domain(self, domain, new_domain_flag=False):
-        """ delete a single domain's zone file """
+        """ Remove domain zone files and reload bind config """
         # TODO: Rewrite this entire thing ASAP
         LOG.debug('Delete Domain: %s' % domain['id'])
 
@@ -135,7 +134,6 @@ class Bind9Backend(base.Backend):
 
         utils.execute(*rndc_call)
 
-    """ Update the bind to read in new zone files or changes to existin """
     def _sync_domain(self, domain, servers=None, new_domain_flag=False):
         """ Sync a single domain's zone file """
         # TODO: Rewrite this entire thing ASAP

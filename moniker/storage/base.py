@@ -179,3 +179,9 @@ class Connection(object):
         :param context: RPC Context
         :param record_id: Record ID to delete
         """
+
+    def ping(self, context):
+        """ Ping the Storage connection """
+        return {
+            'status': None
+        }

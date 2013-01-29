@@ -13,13 +13,14 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import time
 from sqlalchemy.orm import exc
 from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
 from moniker import exceptions
 from moniker.storage import base
 from moniker.storage.impl_sqlalchemy import models
-from moniker.sqlalchemy.session import get_session, SQLOPTS
+from moniker.sqlalchemy.session import get_session, get_engine, SQLOPTS
 
 LOG = logging.getLogger(__name__)
 
@@ -42,13 +43,8 @@ class Connection(base.Connection):
     SQLAlchemy connection
     """
     def __init__(self, config_group):
-        self.session = self._get_connection(config_group)
-
-    def _get_connection(self, config_group):
-        """
-        Return a connection to the database.
-        """
-        return get_session(config_group)
+        self.engine = get_engine(config_group)
+        self.session = get_session(config_group)
 
     def setup_schema(self):
         """ Semi-Private Method to create the database schema """
@@ -227,3 +223,18 @@ class Connection(base.Connection):
         record = self._get_record(context, record_id)
 
         record.delete(self.session)
+
+    def ping(self, context):
+        start_time = time.time()
+
+        try:
+            result = self.engine.execute('SELECT 1').first()
+        except:
+            status = False
+        else:
+            status = True if result[0] == 1 else False
+
+        return {
+            'status': status,
+            'rtt': "%f" % (time.time() - start_time)
+        }

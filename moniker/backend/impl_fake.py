@@ -55,3 +55,8 @@ class FakeBackend(base.Backend):
     def delete_record(self, context, domain, record):
         LOG.debug('Delete Record %r / %r' % (domain, record))
         self.delete_record_calls.append((context, domain, record))
+
+    def ping(self, context):
+        return {
+            'status': True
+        }

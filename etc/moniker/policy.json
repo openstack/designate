@@ -24,5 +24,6 @@
     "delete_record": "rule:admin_or_owner",
 
     "use_sudo": "rule:admin",
-    "use_reserved_domain_suffix": "rule:admin"
+    "use_reserved_domain_suffix": "rule:admin",
+    "diagnostics": "rule:admin"
 }

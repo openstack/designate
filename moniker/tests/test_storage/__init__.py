@@ -477,3 +477,9 @@ class StorageDriverTestCase(StorageTestCase):
         with self.assertRaises(exceptions.RecordNotFound):
             uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
             self.storage_conn.delete_record(self.admin_context, uuid)
+
+    def test_ping(self):
+        pong = self.storage_conn.ping(self.admin_context)
+
+        self.assertEqual(pong['status'], True)
+        self.assertIsNotNone(pong['rtt'])
