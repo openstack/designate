@@ -49,4 +49,19 @@ def init_policy():
 def check(rule, ctxt, target={}, exc=exceptions.Forbidden):
     creds = ctxt.to_dict()
 
-    return policy.check(rule, target, creds, exc)
+    try:
+        result = policy.check(rule, target, creds, exc)
+    except:
+        result = False
+        raise
+    else:
+        return result
+    finally:
+        extra = {'policy': {'rule': rule, 'target': target}}
+
+        if result:
+            LOG.audit("Policy check succeeded for rule '%s' on target %s",
+                      rule, repr(target), extra=extra)
+        else:
+            LOG.audit("Policy check failed for rule '%s' on target: %s",
+                      rule, repr(target), extra=extra)

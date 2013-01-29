@@ -199,7 +199,11 @@ class Service(rpc_service.Service):
     def create_domain(self, context, values):
         values['tenant_id'] = context.effective_tenant_id
 
-        target = {'tenant_id': values['tenant_id']}
+        target = {
+            'tenant_id': values['tenant_id'],
+            'domain_name': values['name']
+        }
+
         policy.check('create_domain', context, target)
 
         # Ensure the domain does not end with a reserved suffix.
@@ -236,7 +240,11 @@ class Service(rpc_service.Service):
     def get_domain(self, context, domain_id):
         domain = self.storage_conn.get_domain(context, domain_id)
 
-        target = {'domain_id': domain_id, 'tenant_id': domain['tenant_id']}
+        target = {
+            'domain_id': domain_id,
+            'domain_name': domain['name'],
+            'tenant_id': domain['tenant_id']
+        }
         policy.check('get_domain', context, target)
 
         return domain
@@ -244,7 +252,12 @@ class Service(rpc_service.Service):
     def update_domain(self, context, domain_id, values):
         domain = self.storage_conn.get_domain(context, domain_id)
 
-        target = {'domain_id': domain_id, 'tenant_id': domain['tenant_id']}
+        target = {
+            'domain_id': domain_id,
+            'domain_name': domain['name'],
+            'tenant_id': domain['tenant_id']
+        }
+
         policy.check('update_domain', context, target)
 
         if 'tenant_id' in values:
@@ -266,7 +279,12 @@ class Service(rpc_service.Service):
     def delete_domain(self, context, domain_id):
         domain = self.storage_conn.get_domain(context, domain_id)
 
-        target = {'domain_id': domain_id, 'tenant_id': domain['tenant_id']}
+        target = {
+            'domain_id': domain_id,
+            'domain_name': domain['name'],
+            'tenant_id': domain['tenant_id']
+        }
+
         policy.check('delete_domain', context, target)
 
         servers = self.storage_conn.get_servers(context)
@@ -280,7 +298,13 @@ class Service(rpc_service.Service):
     def create_record(self, context, domain_id, values):
         domain = self.storage_conn.get_domain(context, domain_id)
 
-        target = {'domain_id': domain_id, 'tenant_id': domain['tenant_id']}
+        target = {
+            'domain_id': domain_id,
+            'domain_name': domain['name'],
+            'record_name': values['name'],
+            'tenant_id': domain['tenant_id']
+        }
+
         policy.check('create_record', context, target)
 
         record = self.storage_conn.create_record(context, domain_id, values)
@@ -293,7 +317,12 @@ class Service(rpc_service.Service):
     def get_records(self, context, domain_id, criterion=None):
         domain = self.storage_conn.get_domain(context, domain_id)
 
-        target = {'domain_id': domain_id, 'tenant_id': domain['tenant_id']}
+        target = {
+            'domain_id': domain_id,
+            'domain_name': domain['name'],
+            'tenant_id': domain['tenant_id']
+        }
+
         policy.check('get_records', context, target)
 
         return self.storage_conn.get_records(context, domain_id, criterion)
@@ -301,7 +330,13 @@ class Service(rpc_service.Service):
     def get_record(self, context, domain_id, record_id):
         domain = self.storage_conn.get_domain(context, domain_id)
 
-        target = {'domain_id': domain_id, 'tenant_id': domain['tenant_id']}
+        target = {
+            'domain_id': domain_id,
+            'domain_name': domain['name'],
+            'record_id': record_id,
+            'tenant_id': domain['tenant_id']
+        }
+
         policy.check('get_record', context, target)
 
         return self.storage_conn.get_record(context, record_id)
@@ -311,9 +346,11 @@ class Service(rpc_service.Service):
 
         target = {
             'domain_id': domain_id,
+            'domain_name': domain['name'],
             'record_id': record_id,
             'tenant_id': domain['tenant_id']
         }
+
         policy.check('update_record', context, target)
 
         record = self.storage_conn.update_record(context, record_id, values)
@@ -328,9 +365,11 @@ class Service(rpc_service.Service):
 
         target = {
             'domain_id': domain_id,
+            'domain_name': domain['name'],
             'record_id': record_id,
             'tenant_id': domain['tenant_id']
         }
+
         policy.check('delete_record', context, target)
 
         record = self.storage_conn.get_record(context, record_id)
