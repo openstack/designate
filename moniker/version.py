@@ -13,15 +13,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from cliff.app import App
-from cliff.commandmanager import CommandManager
-from moniker.version import version_info as version
+from moniker.openstack.common import version as common_version
 
-
-class MonikerShell(App):
-    def __init__(self):
-        super(MonikerShell, self).__init__(
-            description='Moniker Server Side Management CLI',
-            version=version.version_string(),
-            command_manager=CommandManager('moniker.manage')
-        )
+version_info = common_version.VersionInfo('moniker')
