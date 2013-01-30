@@ -79,6 +79,9 @@ class Handler(Plugin):
 class BaseAddressHandler(Handler):
     default_format = '%(octet0)s-%(octet1)s-%(octet2)s-%(octet3)s.%(domain)s'
 
+    def _get_format(self):
+        return cfg.CONF[self.name].get('format') or self.default_format
+
     def _create(self, addresses, extra, managed=True,
                 resource_type=None, resource_id=None):
         """
@@ -102,7 +105,7 @@ class BaseAddressHandler(Handler):
             record_data = data.copy()
             record_data.update(get_ip_data(addr))
 
-            record_name = self.default_format % record_data
+            record_name = self._get_format() % record_data
             record_values = {
                 'type': 'A' if addr['version'] == 4 else 'AAAA',
                 'name': record_name,

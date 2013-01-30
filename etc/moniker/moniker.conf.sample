@@ -90,6 +90,17 @@ default_log_levels = amqplib=WARN, sqlalchemy=WARN, boto=WARN, suds=INFO, keysto
 #domain_id = <random uuid>
 #notification_topics = monitor
 #control_exchange = 'nova'
+#format = '%(octet0)s-%(octet1)s-%(octet2)s-%(octet3)s.%(domain)s'
+
+#------------------------
+# Quantum Floating Handler
+#------------------------
+[handler:quantum_floating]
+#domain_id = <random uuid>
+#notification_topics = monitor
+#control_exchange = 'quantum'
+#format = '%(octet0)s-%(octet1)s-%(octet2)s-%(octet3)s.%(domain)s'
+
 
 ########################
 ## Backend Configuration

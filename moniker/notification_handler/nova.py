@@ -28,6 +28,7 @@ cfg.CONF.register_opts([
     cfg.ListOpt('notification-topics', default=['monitor']),
     cfg.StrOpt('control-exchange', default='nova'),
     cfg.StrOpt('domain_id', default=None),
+    cfg.StrOpt('format', default=None)
 ], group='handler:nova_fixed')
 
 
