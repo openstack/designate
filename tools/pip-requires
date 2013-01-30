@@ -1,6 +1,6 @@
 Flask>=0.8
 eventlet
-https://github.com/Julian/jsonschema/archive/870869b4e6b210fac66823bd2c1ca103dc9eb9d9.tar.gz#egg=jsonschema
+jsonschema>=0.8
 ipaddr
 Paste
 PasteDeploy
