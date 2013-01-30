@@ -28,6 +28,7 @@ cfg.CONF.register_opts([
                help='The storage driver to use'),
     cfg.ListOpt('enabled-notification-handlers', default=[],
                 help='Enabled Notification Handlers'),
-    cfg.ListOpt('reserved-domain-suffixes', default=['arpa.'],
+    cfg.ListOpt('domain-name-blacklist',
+                default=['arpa.$', '^com.$', '^net.$', '^org.$'],
                 help='Reserved DNS domain name suffixes'),
 ], group='service:central')

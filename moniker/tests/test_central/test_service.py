@@ -34,27 +34,26 @@ class CentralServiceTest(CentralTestCase):
         self.central_service.start()
         self.central_service.stop()
 
-    def test_check_reserved_domain_suffixes(self):
-        self.config(reserved_domain_suffixes=['example.org.', 'net.'],
+    def test_check_domain_name_blacklist(self):
+        self.config(domain_name_blacklist=['^example.org.$', 'net.$'],
                     group='service:central')
 
         # Set the policy to reject the authz
-        self.policy({'use_reserved_domain_suffix': '!'})
+        self.policy({'use_blacklisted_domain': '!'})
 
         context = self.get_context()
 
-        self.central_service._check_reserved_domain_suffixes(context, 'org.')
+        self.central_service._check_domain_name_blacklist(context, 'org.')
+
+        self.central_service._check_domain_name_blacklist(
+            context, 'www.example.org.')
 
         with self.assertRaises(exceptions.Forbidden):
-            self.central_service._check_reserved_domain_suffixes(
-                context, 'www.example.org.')
-
-        with self.assertRaises(exceptions.Forbidden):
-            self.central_service._check_reserved_domain_suffixes(
+            self.central_service._check_domain_name_blacklist(
                 context, 'example.org.')
 
         with self.assertRaises(exceptions.Forbidden):
-            self.central_service._check_reserved_domain_suffixes(
+            self.central_service._check_domain_name_blacklist(
                 context, 'example.net.')
 
     # Server Tests
@@ -167,12 +166,12 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(domain['name'], values['name'])
         self.assertEqual(domain['email'], values['email'])
 
-    def test_create_reserved_domain_success(self):
-        self.config(reserved_domain_suffixes=['reserved.com.'],
+    def test_create_blacklisted_domain_success(self):
+        self.config(domain_name_blacklist=['^blacklisted.com.$'],
                     group='service:central')
 
         # Set the policy to accept the authz
-        self.policy({'use_reserved_domain_suffix': '@'})
+        self.policy({'use_blacklisted_domain': '@'})
 
         # Create a server
         self.create_server()
@@ -180,8 +179,8 @@ class CentralServiceTest(CentralTestCase):
         context = self.get_admin_context()
 
         values = dict(
-            name='reserved.com.',
-            email='info@reserved.com'
+            name='blacklisted.com.',
+            email='info@blacklisted.com'
         )
 
         # Create a domain
@@ -192,18 +191,18 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(domain['name'], values['name'])
         self.assertEqual(domain['email'], values['email'])
 
-    def test_create_reserved_domain_fail(self):
-        self.config(reserved_domain_suffixes=['reserved.com.'],
+    def test_create_blacklisted_domain_fail(self):
+        self.config(domain_name_blacklist=['^blacklisted.com.$'],
                     group='service:central')
 
         # Set the policy to reject the authz
-        self.policy({'use_reserved_domain_suffix': '!'})
+        self.policy({'use_blacklisted_domain': '!'})
 
         context = self.get_admin_context()
 
         values = dict(
-            name='reserved.com.',
-            email='info@reserved.com'
+            name='blacklisted.com.',
+            email='info@blacklisted.com'
         )
 
         with self.assertRaises(exceptions.Forbidden):
@@ -266,8 +265,8 @@ class CentralServiceTest(CentralTestCase):
         # Ensure the domain was updated correctly
         self.assertEqual(domain['email'], 'new@example.com')
 
-    def test_update_reserved_domain_success(self):
-        self.config(reserved_domain_suffixes=['reserved.com.'],
+    def test_update_blacklisted_domain_success(self):
+        self.config(domain_name_blacklist=['^blacklisted.com.$'],
                     group='service:central')
 
         context = self.get_admin_context()
@@ -276,10 +275,10 @@ class CentralServiceTest(CentralTestCase):
         expected_domain = self.create_domain()
 
         # Set the policy to accept the authz
-        self.policy({'use_reserved_domain_suffix': '@'})
+        self.policy({'use_blacklisted_domain': '@'})
 
         # Update the domain
-        values = dict(name='reserved.com.')
+        values = dict(name='blacklisted.com.')
         self.central_service.update_domain(context, expected_domain['id'],
                                            values=values)
 
@@ -288,10 +287,10 @@ class CentralServiceTest(CentralTestCase):
                                                  expected_domain['id'])
 
         # Ensure the domain was updated correctly
-        self.assertEqual(domain['name'], 'reserved.com.')
+        self.assertEqual(domain['name'], 'blacklisted.com.')
 
-    def test_update_reserved_domain_fail(self):
-        self.config(reserved_domain_suffixes=['reserved.com.'],
+    def test_update_blacklisted_domain_fail(self):
+        self.config(domain_name_blacklist=['^blacklisted.com.$'],
                     group='service:central')
 
         context = self.get_admin_context()
@@ -300,11 +299,11 @@ class CentralServiceTest(CentralTestCase):
         expected_domain = self.create_domain()
 
         # Set the policy to reject the authz
-        self.policy({'use_reserved_domain_suffix': '!'})
+        self.policy({'use_blacklisted_domain': '!'})
 
         # Update the domain
         with self.assertRaises(exceptions.Forbidden):
-            values = dict(name='reserved.com.')
+            values = dict(name='blacklisted.com.')
             self.central_service.update_domain(context, expected_domain['id'],
                                                values=values)
 

@@ -13,6 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import re
 from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
 from moniker.openstack.common import rpc
@@ -144,18 +145,16 @@ class Service(rpc_service.Service):
             LOG.debug('Found handler for: %s' % event_type)
             handler.process_notification(event_type, payload)
 
-    def _check_reserved_domain_suffixes(self, context, domain_name):
+    def _check_domain_name_blacklist(self, context, domain_name):
         """
-        Ensures the provided domain_name does not end with any of the
-        configured reserved suffixes.
+        Ensures the provided domain_name is not blacklisted.
         """
 
-        suffixes = cfg.CONF['service:central'].reserved_domain_suffixes
+        blacklists = cfg.CONF['service:central'].domain_name_blacklist
 
-        for suffix in suffixes:
-            if domain_name.endswith(suffix):
-                policy.check('use_reserved_domain_suffix', context,
-                             {'suffix': suffix})
+        for blacklist in blacklists:
+            if bool(re.search(blacklist, domain_name)):
+                policy.check('use_blacklisted_domain', context)
 
     # Server Methods
     def create_server(self, context, values):
@@ -206,8 +205,8 @@ class Service(rpc_service.Service):
 
         policy.check('create_domain', context, target)
 
-        # Ensure the domain does not end with a reserved suffix.
-        self._check_reserved_domain_suffixes(context, values['name'])
+        # Ensure the domain is not blacklisted
+        self._check_domain_name_blacklist(context, values['name'])
 
         # NOTE(kiall): Fetch the servers before creating the domain, this way
         #              we can prevent domain creation if no servers are
@@ -266,7 +265,7 @@ class Service(rpc_service.Service):
 
         if 'name' in values:
             # Ensure the domain does not end with a reserved suffix.
-            self._check_reserved_domain_suffixes(context, values['name'])
+            self._check_domain_name_blacklist(context, values['name'])
 
         domain = self.storage_conn.update_domain(context, domain_id, values)
         servers = self.storage_conn.get_servers(context)

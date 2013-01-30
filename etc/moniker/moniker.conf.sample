@@ -40,8 +40,8 @@ default_log_levels = amqplib=WARN, sqlalchemy=WARN, boto=WARN, suds=INFO, keysto
 # correspond to a [handler:my_driver] section below or else in the config
 #enabled_notification_handlers = nova_fixed
 
-# List of reserved DNS domain name suffixes
-#reserved_domain_suffixes = arpa.
+# List of blacklist domain name regexes
+#domain_name_blacklist = arpa.$, ^com.$, ^net.$, ^org.$
 
 #-----------------------
 # API Service
