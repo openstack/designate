@@ -314,6 +314,38 @@ class StorageDriverTestCase(StorageTestCase):
             uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
             self.storage_conn.get_domain(self.admin_context, uuid)
 
+    def test_find_domain_criterion(self):
+        domain_one = self.create_domain(0)[1]
+        domain_two = self.create_domain(1)[1]
+
+        criterion = dict(
+            name=domain_one['name']
+        )
+
+        result = self.storage_conn.find_domain(self.admin_context, criterion)
+
+        self.assertEqual(result['name'], domain_one['name'])
+        self.assertEqual(result['email'], domain_one['email'])
+
+        criterion = dict(
+            name=domain_two['name']
+        )
+
+        result = self.storage_conn.find_domain(self.admin_context, criterion)
+
+        self.assertEqual(result['name'], domain_two['name'])
+        self.assertEqual(result['email'], domain_two['email'])
+
+    def test_find_domain_criterion_missing(self):
+        expected = self.create_domain(0)[1]
+
+        criterion = dict(
+            name=expected['name'] + "NOT FOUND"
+        )
+
+        with self.assertRaises(exceptions.DomainNotFound):
+            self.storage_conn.find_domain(self.admin_context, criterion)
+
     def test_update_domain(self):
         # Create a domain
         fixture, domain = self.create_domain()
@@ -443,6 +475,37 @@ class StorageDriverTestCase(StorageTestCase):
         with self.assertRaises(exceptions.RecordNotFound):
             uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
             self.storage_conn.get_record(self.admin_context, uuid)
+
+    def test_find_record_criterion(self):
+        domain = self.create_domain(0)[1]
+
+        expected = self.create_record(domain)[1]
+
+        criterion = dict(
+            name=expected['name']
+        )
+
+        actual = self.storage_conn.find_record(self.admin_context,
+                                               domain['id'],
+                                               criterion)
+
+        self.assertEqual(actual['name'], expected['name'])
+        self.assertEqual(actual['type'], expected['type'])
+        self.assertEqual(actual['data'], expected['data'])
+
+    def test_find_record_criterion_missing(self):
+        domain = self.create_domain(0)[1]
+
+        expected = self.create_record(domain)[1]
+
+        criterion = dict(
+            name=expected['name'] + "NOT FOUND"
+        )
+
+        with self.assertRaises(exceptions.RecordNotFound):
+            self.storage_conn.find_record(self.admin_context,
+                                          domain['id'],
+                                          criterion)
 
     def test_update_record(self):
         domain_fixture, domain = self.create_domain()

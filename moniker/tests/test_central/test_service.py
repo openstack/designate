@@ -34,7 +34,7 @@ class CentralServiceTest(CentralTestCase):
         self.central_service.start()
         self.central_service.stop()
 
-    def test_check_domain_name_blacklist(self):
+    def test_is_blacklisted_domain_name(self):
         self.config(domain_name_blacklist=['^example.org.$', 'net.$'],
                     group='service:central')
 
@@ -43,18 +43,41 @@ class CentralServiceTest(CentralTestCase):
 
         context = self.get_context()
 
-        self.central_service._check_domain_name_blacklist(context, 'org.')
+        result = self.central_service._is_blacklisted_domain_name(
+            context, 'org.')
+        self.assertFalse(result)
 
-        self.central_service._check_domain_name_blacklist(
+        result = self.central_service._is_blacklisted_domain_name(
             context, 'www.example.org.')
+        self.assertFalse(result)
 
-        with self.assertRaises(exceptions.Forbidden):
-            self.central_service._check_domain_name_blacklist(
-                context, 'example.org.')
+        result = self.central_service._is_blacklisted_domain_name(
+            context, 'example.org.')
+        self.assertTrue(result)
 
-        with self.assertRaises(exceptions.Forbidden):
-            self.central_service._check_domain_name_blacklist(
-                context, 'example.net.')
+        result = self.central_service._is_blacklisted_domain_name(
+            context, 'example.net.')
+        self.assertTrue(result)
+
+    def test_is_subdomain(self):
+        context = self.get_context()
+
+        # Create a domain (using the specified domain name)
+        self.create_domain(name='example.org.')
+
+        result = self.central_service._is_subdomain(context, 'org.')
+        self.assertFalse(result)
+
+        result = self.central_service._is_subdomain(context,
+                                                    'www.example.net.')
+        self.assertFalse(result)
+
+        result = self.central_service._is_subdomain(context, 'example.org.')
+        self.assertFalse(result)
+
+        result = self.central_service._is_subdomain(context,
+                                                    'www.example.org.')
+        self.assertTrue(result)
 
     # Server Tests
     def test_create_server(self):
@@ -165,6 +188,48 @@ class CentralServiceTest(CentralTestCase):
         self.assertIsNotNone(domain['id'])
         self.assertEqual(domain['name'], values['name'])
         self.assertEqual(domain['email'], values['email'])
+
+    def test_create_subdomain(self):
+        context = self.get_admin_context()
+
+        # Explicitly set a tenant_id
+        context.tenant_id = '1'
+
+        # Create the Parent Domain using fixture 0
+        parent_domain = self.create_domain(fixture=0, context=context)
+
+        # Prepare values for the subdomain using fixture 1 as a base
+        values = self.get_domain_fixture(1)
+        values['name'] = 'www.%s' % parent_domain['name']
+
+        # Create the subdomain
+        domain = self.central_service.create_domain(context, values=values)
+
+        # Ensure all values have been set correctly
+        self.assertIsNotNone(domain['id'])
+        self.assertEqual(domain['parent_domain_id'], parent_domain['id'])
+
+    def test_create_subdomain_failure(self):
+        context = self.get_admin_context()
+
+        # Explicitly set a tenant_id
+        context.tenant_id = '1'
+
+        # Create the Parent Domain using fixture 0
+        parent_domain = self.create_domain(fixture=0, context=context)
+
+        context = self.get_admin_context()
+
+        # Explicitly use a different tenant_id
+        context.tenant_id = '2'
+
+        # Prepare values for the subdomain using fixture 1 as a base
+        values = self.get_domain_fixture(1)
+        values['name'] = 'www.%s' % parent_domain['name']
+
+        # Attempt to create the subdomain
+        with self.assertRaises(exceptions.Forbidden):
+            self.central_service.create_domain(context, values=values)
 
     def test_create_blacklisted_domain_success(self):
         self.config(domain_name_blacklist=['^blacklisted.com.$'],

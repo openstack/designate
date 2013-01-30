@@ -145,16 +145,36 @@ class Service(rpc_service.Service):
             LOG.debug('Found handler for: %s' % event_type)
             handler.process_notification(event_type, payload)
 
-    def _check_domain_name_blacklist(self, context, domain_name):
+    def _is_blacklisted_domain_name(self, context, domain_name):
         """
         Ensures the provided domain_name is not blacklisted.
         """
-
         blacklists = cfg.CONF['service:central'].domain_name_blacklist
 
         for blacklist in blacklists:
             if bool(re.search(blacklist, domain_name)):
-                policy.check('use_blacklisted_domain', context)
+                return blacklist
+
+        return False
+
+    def _is_subdomain(self, context, domain_name):
+        # Break the name up into it's component labels
+        labels = domain_name.split(".")
+
+        i = 1
+
+        # Starting with label #2, search for matching domain's in the database
+        while (i < len(labels)):
+            name = '.'.join(labels[i:])
+
+            try:
+                domain = self.storage_conn.find_domain(context, {'name': name})
+            except exceptions.DomainNotFound:
+                i += 1
+            else:
+                return domain
+
+        return False
 
     # Server Methods
     def create_server(self, context, values):
@@ -206,7 +226,20 @@ class Service(rpc_service.Service):
         policy.check('create_domain', context, target)
 
         # Ensure the domain is not blacklisted
-        self._check_domain_name_blacklist(context, values['name'])
+        if self._is_blacklisted_domain_name(context, values['name']):
+            # Raises an exception if the policy check is denied
+            policy.check('use_blacklisted_domain', context)
+
+        # Handle sub-domains appropriately
+        parent_domain = self._is_subdomain(context, values['name'])
+
+        if parent_domain:
+            if parent_domain['tenant_id'] == values['tenant_id']:
+                # Record the Parent Domain ID
+                values['parent_domain_id'] = parent_domain['id']
+            else:
+                raise exceptions.Forbidden('Unable to create subdomain in '
+                                           'another tenants domain')
 
         # NOTE(kiall): Fetch the servers before creating the domain, this way
         #              we can prevent domain creation if no servers are
@@ -264,8 +297,10 @@ class Service(rpc_service.Service):
             policy.check('create_domain', context, target)
 
         if 'name' in values:
-            # Ensure the domain does not end with a reserved suffix.
-            self._check_domain_name_blacklist(context, values['name'])
+            # Ensure the domain is not blacklisted
+            if self._is_blacklisted_domain_name(context, values['name']):
+                # Raises an exception if the policy check is denied
+                policy.check('use_blacklisted_domain', context)
 
         domain = self.storage_conn.update_domain(context, domain_id, values)
         servers = self.storage_conn.get_servers(context)

@@ -155,6 +155,16 @@ class Connection(base.Connection):
 
         return dict(domain)
 
+    def find_domain(self, context, criterion):
+        query = self.session.query(models.Domain)
+
+        try:
+            domain = query.filter_by(**criterion).one()
+        except (exc.NoResultFound, exc.MultipleResultsFound):
+            raise exceptions.DomainNotFound()
+        else:
+            return dict(domain)
+
     def update_domain(self, context, domain_id, values):
         domain = self._get_domain(context, domain_id)
 
@@ -209,6 +219,18 @@ class Connection(base.Connection):
         record = self._get_record(context, record_id)
 
         return dict(record)
+
+    def find_record(self, context, domain_id, criterion):
+        domain = self._get_domain(context, domain_id)
+
+        query = domain.records
+
+        try:
+            record = query.filter_by(**criterion).one()
+        except (exc.NoResultFound, exc.MultipleResultsFound):
+            raise exceptions.RecordNotFound()
+        else:
+            return dict(record)
 
     def update_record(self, context, record_id, values):
         record = self._get_record(context, record_id)

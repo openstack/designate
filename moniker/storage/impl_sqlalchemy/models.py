@@ -57,6 +57,7 @@ class Domain(Base):
     __tablename__ = 'domains'
 
     tenant_id = Column(String(36), default=None, nullable=True)
+
     name = Column(String(255), nullable=False, unique=True)
     email = Column(String(36), nullable=False)
 
@@ -69,6 +70,9 @@ class Domain(Base):
     records = relationship('Record', backref=backref('domain', uselist=False),
                            lazy='dynamic', cascade="all, delete-orphan",
                            passive_deletes=True)
+
+    parent_domain_id = Column(UUID, ForeignKey('domains.id'), default=None,
+                              nullable=True)
 
     @hybrid_property
     def serial(self):

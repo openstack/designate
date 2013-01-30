@@ -34,9 +34,7 @@ class MonikerContext(context.RequestContext):
             show_deleted=show_deleted,
             request_id=request_id)
 
-        self.user_id = user
-        self.tenant_id = tenant
-        self.effective_tenant_id = self.tenant_id
+        self._effective_tenant_id = None
         self.roles = roles
 
     def sudo(self, tenant_id):
@@ -65,6 +63,33 @@ class MonikerContext(context.RequestContext):
         })
 
         return d
+
+    @property
+    def user_id(self):
+        return self.user
+
+    @user_id.setter
+    def user_id(self, value):
+        self.user = value
+
+    @property
+    def tenant_id(self):
+        return self.tenant
+
+    @tenant_id.setter
+    def tenant_id(self, value):
+        self.tenant = value
+
+    @property
+    def effective_tenant_id(self):
+        if self._effective_tenant_id:
+            return self._effective_tenant_id
+        else:
+            return self.tenant
+
+    @effective_tenant_id.setter
+    def effective_tenant_id(self, value):
+        self._effective_tenant_id = value
 
     @classmethod
     def get_admin_context(cls):
