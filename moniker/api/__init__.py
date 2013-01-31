@@ -28,7 +28,7 @@ cfg.CONF.register_opts([
                help='API Host'),
     cfg.IntOpt('api_port', default=9001,
                help='API Port Number'),
-    cfg.StrOpt('api_paste_config', default='moniker-api-paste.ini',
+    cfg.StrOpt('api_paste_config', default='api-paste.ini',
                help='File name for the paste.deploy config for moniker-api'),
     cfg.StrOpt('auth_strategy', default='noauth',
                help='The strategy to use for auth. Supports noauth or '
