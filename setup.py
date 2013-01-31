@@ -69,6 +69,7 @@ setup(
         mysqlbind9 = moniker.backend.impl_mysqlbind9:MySQLBind9Backend
         powerdns = moniker.backend.impl_powerdns:PowerDNSBackend
         rpc = moniker.backend.impl_rpc:RPCBackend
+        dnsmasq = moniker.backend.impl_dnsmasq:DnsmasqBackend
         fake = moniker.backend.impl_fake:FakeBackend
 
         [moniker.manage]
