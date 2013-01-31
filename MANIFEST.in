@@ -2,8 +2,8 @@ include AUTHORS
 include ChangeLog
 include moniker/versioninfo
 include *.txt *.ini *.cfg *.rst *.md
-include etc/*.sample
-include etc/policy.json
+include etc/moniker/*.sample
+include etc/moniker/policy.json
 
 exclude .gitignore
 exclude .gitreview
