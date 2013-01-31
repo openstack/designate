@@ -34,7 +34,7 @@ class MonikerContext(context.RequestContext):
             show_deleted=show_deleted,
             request_id=request_id)
 
-        self._effective_tenant_id = None
+        self._original_tenant_id = None
         self.roles = roles
 
     def sudo(self, tenant_id):
@@ -47,7 +47,9 @@ class MonikerContext(context.RequestContext):
         if allowed_sudo:
             LOG.warn('Accepted sudo from user_id %s for tenant_id %s'
                      % (self.user_id, tenant_id))
-            self.effective_tenant_id = tenant_id
+            self.original_tenant_id = self.tenant_id
+            self.tenant_id = tenant_id
+
         else:
             LOG.warn('Rejected sudo from user_id %s for tenant_id %s'
                      % (self.user_id, tenant_id))
@@ -58,7 +60,7 @@ class MonikerContext(context.RequestContext):
         d.update({
             'user_id': self.user_id,
             'tenant_id': self.tenant_id,
-            'effective_tenant_id': self.effective_tenant_id,
+            'original_tenant_id': self.original_tenant_id,
             'roles': self.roles,
         })
 
@@ -81,15 +83,15 @@ class MonikerContext(context.RequestContext):
         self.tenant = value
 
     @property
-    def effective_tenant_id(self):
-        if self._effective_tenant_id:
-            return self._effective_tenant_id
+    def original_tenant_id(self):
+        if self._original_tenant_id:
+            return self._original_tenant_id
         else:
             return self.tenant
 
-    @effective_tenant_id.setter
-    def effective_tenant_id(self, value):
-        self._effective_tenant_id = value
+    @original_tenant_id.setter
+    def original_tenant_id(self, value):
+        self._original_tenant_id = value
 
     @classmethod
     def get_admin_context(cls):

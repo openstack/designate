@@ -78,8 +78,8 @@ class KeystoneContextMiddlewareTest(ApiTestCase):
         self.assertFalse(context.is_admin)
         self.assertEqual('AuthToken', context.auth_tok)
         self.assertEqual('UserID', context.user_id)
-        self.assertEqual('TenantID', context.tenant_id)
-        self.assertEqual('SudoTenantID', context.effective_tenant_id)
+        self.assertEqual('TenantID', context.original_tenant_id)
+        self.assertEqual('SudoTenantID', context.tenant_id)
         self.assertEqual(['admin', 'Member'], context.roles)
 
 

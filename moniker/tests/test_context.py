@@ -25,8 +25,8 @@ class TestMonikerContext(TestCase):
         ctxt = context.MonikerContext(tenant='original')
         ctxt.sudo('effective')
 
-        self.assertEqual('original', ctxt.tenant_id)
-        self.assertEqual('effective', ctxt.effective_tenant_id)
+        self.assertEqual('effective', ctxt.tenant_id)
+        self.assertEqual('original', ctxt.original_tenant_id)
 
     def test_sudo_fail(self):
         # Set the policy to deny the authz
@@ -36,4 +36,4 @@ class TestMonikerContext(TestCase):
         ctxt.sudo('effective')
 
         self.assertEqual('original', ctxt.tenant_id)
-        self.assertEqual('original', ctxt.effective_tenant_id)
+        self.assertEqual('original', ctxt.original_tenant_id)

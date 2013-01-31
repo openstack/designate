@@ -216,7 +216,7 @@ class Service(rpc_service.Service):
 
     # Domain Methods
     def create_domain(self, context, values):
-        values['tenant_id'] = context.effective_tenant_id
+        values['tenant_id'] = context.tenant_id
 
         target = {
             'tenant_id': values['tenant_id'],
@@ -259,13 +259,13 @@ class Service(rpc_service.Service):
         return domain
 
     def get_domains(self, context, criterion=None):
-        target = {'tenant_id': context.effective_tenant_id}
+        target = {'tenant_id': context.tenant_id}
         policy.check('get_domains', context, target)
 
         if criterion is None:
             criterion = {}
 
-        criterion['tenant_id'] = context.effective_tenant_id
+        criterion['tenant_id'] = context.tenant_id
 
         return self.storage_conn.get_domains(context, criterion)
 
