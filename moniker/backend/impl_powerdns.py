@@ -184,9 +184,9 @@ class PowerDNSBackend(base.Backend):
         try:
             domain = query.filter_by(moniker_id=domain_id).one()
         except sqlalchemy_exceptions.NoResultFound:
-            raise exceptions.Backend('No domain found')
+            raise exceptions.DomainNotFound('No domain found')
         except sqlalchemy_exceptions.MultipleResultsFound:
-            raise exceptions.Backend('Too many domains found')
+            raise exceptions.DomainNotFound('Too many domains found')
         else:
             return domain
 
@@ -205,8 +205,8 @@ class PowerDNSBackend(base.Backend):
         try:
             record = query.one()
         except sqlalchemy_exceptions.NoResultFound:
-            raise exceptions.Backend('No record found')
+            raise exceptions.RecordNotFound('No record found')
         except sqlalchemy_exceptions.MultipleResultsFound:
-            raise exceptions.Backend('Too many records found')
+            raise exceptions.RecordNotFound('Too many records found')
         else:
             return record

@@ -19,7 +19,7 @@ class Base(Exception):
     pass
 
 
-class Backend(Base):
+class NotImplemented(Base, NotImplementedError):
     pass
 
 

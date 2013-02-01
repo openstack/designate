@@ -31,6 +31,9 @@ class FakeBackend(base.Backend):
         self.create_record_calls = []
         self.update_record_calls = []
         self.delete_record_calls = []
+        self.sync_domain_calls = []
+        self.sync_record_calls = []
+        self.ping_calls = []
 
     def create_domain(self, context, domain, servers):
         LOG.info('Create Domain %r' % domain)
@@ -56,7 +59,18 @@ class FakeBackend(base.Backend):
         LOG.debug('Delete Record %r / %r' % (domain, record))
         self.delete_record_calls.append((context, domain, record))
 
+    def sync_domain(self, context, domain, records, servers):
+        LOG.debug('Sync Domain %r / %r / %r' % (domain, records, servers))
+        self.sync_domain_calls.append((context, domain, records, servers))
+
+    def sync_record(self, context, domain, record):
+        LOG.debug('Sync Record %r / %r' % (domain, record))
+        self.sync_record_calls.append((context, domain, record))
+
     def ping(self, context):
+        LOG.debug('Ping')
+        self.ping_calls.append((context))
+
         return {
             'status': True
         }

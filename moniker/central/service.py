@@ -414,8 +414,57 @@ class Service(rpc_service.Service):
         return self.storage_conn.delete_record(context, record_id)
 
     # Diagnostics Methods
+    def sync_all(self, context):
+        policy.check('diagnostics_sync_all', context)
+
+        domains = self.storage_conn.get_domains(context)
+        results = {}
+
+        for domain in domains:
+            servers = self.storage_conn.get_servers(context)
+            records = self.storage_conn.get_records(context, domain['id'])
+
+            results[domain['id']] = self.backend.sync_domain(context,
+                                                             domain,
+                                                             records,
+                                                             servers)
+
+        return results
+
+    def sync_domain(self, context, domain_id):
+        domain = self.storage_conn.get_domain(context, domain_id)
+
+        target = {
+            'domain_id': domain_id,
+            'domain_name': domain['name'],
+            'tenant_id': domain['tenant_id']
+        }
+
+        policy.check('diagnostics_sync_domain', context, target)
+
+        servers = self.storage_conn.get_servers(context)
+        records = self.storage_conn.get_records(context, domain_id)
+
+        return self.backend.sync_domain(context, domain, records, servers)
+
+    def sync_record(self, context, domain_id, record_id):
+        domain = self.storage_conn.get_domain(context, domain_id)
+
+        target = {
+            'domain_id': domain_id,
+            'domain_name': domain['name'],
+            'record_id': record_id,
+            'tenant_id': domain['tenant_id']
+        }
+
+        policy.check('diagnostics_sync_record', context, target)
+
+        record = self.storage_conn.get_record(context, record_id)
+
+        return self.backend.sync_record(context, domain, record)
+
     def ping(self, context):
-        policy.check('diagnostics', context)
+        policy.check('diagnostics_ping', context)
 
         try:
             backend_status = self.backend.ping(context)

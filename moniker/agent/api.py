@@ -95,3 +95,29 @@ def delete_record(context, domain, record):
     }
 
     return RPC.fanout_cast(context, msg)
+
+
+# Diagnostics Methods
+def sync_domain(context, domain, records, servers):
+    msg = {
+        'method': 'sync_domain',
+        'args': {
+            'domain': domain,
+            'records': records,
+            'servers': servers,
+        },
+    }
+
+    return RPC.call(context, msg)
+
+
+def sync_record(context, domain, record):
+    msg = {
+        'method': 'sync_record',
+        'args': {
+            'domain': domain,
+            'record': record,
+        },
+    }
+
+    return RPC.call(context, msg)

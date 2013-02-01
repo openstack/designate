@@ -196,3 +196,35 @@ def delete_record(context, domain_id, record_id):
     }
 
     return RPC.call(context, msg)
+
+
+def sync_all(context):
+    msg = {
+        'method': 'sync_all',
+        'args': {},
+    }
+
+    return RPC.call(context, msg)
+
+
+def sync_domain(context, domain_id):
+    msg = {
+        'method': 'sync_domain',
+        'args': {
+            'domain_id': domain_id,
+        },
+    }
+
+    return RPC.call(context, msg)
+
+
+def sync_record(context, domain_id, record_id):
+    msg = {
+        'method': 'sync_record',
+        'args': {
+            'domain_id': domain_id,
+            'record_id': record_id,
+        },
+    }
+
+    return RPC.call(context, msg)

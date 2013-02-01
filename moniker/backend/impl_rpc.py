@@ -35,3 +35,9 @@ class RPCBackend(base.Backend):
 
     def delete_record(self, *args, **kw):
         return agent_api.delete_record(*args, **kw)
+
+    def sync_domain(self, *args, **kw):
+        return agent_api.delete_record(*args, **kw)
+
+    def sync_record(self, *args, **kw):
+        return agent_api.delete_record(*args, **kw)

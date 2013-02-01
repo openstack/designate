@@ -16,6 +16,8 @@
 import flask
 from moniker.openstack.common import rpc
 from moniker.openstack.common.rpc import common as rpc_common
+from moniker import exceptions
+from moniker.central import api as central_api
 
 
 def factory(global_config, **local_conf):
@@ -39,5 +41,48 @@ def factory(global_config, **local_conf):
             return flask.Response(status=500)
         else:
             return flask.jsonify(pong)
+
+    @app.route('/sync/all', methods=['POST'])
+    def sync_all():
+        context = flask.request.environ.get('context')
+
+        try:
+            central_api.sync_all(context)
+        except exceptions.Forbidden:
+            return flask.Response(status=401)
+        except rpc_common.Timeout:
+            return flask.Response(status=504)
+        else:
+            return flask.Response(status=200)
+
+    @app.route('/sync/domain/<domain_id>', methods=['POST'])
+    def sync_domain(domain_id):
+        context = flask.request.environ.get('context')
+
+        try:
+            central_api.sync_domain(context, domain_id)
+        except exceptions.Forbidden:
+            return flask.Response(status=401)
+        except exceptions.DomainNotFound:
+            return flask.Response(status=404)
+        except rpc_common.Timeout:
+            return flask.Response(status=504)
+        else:
+            return flask.Response(status=200)
+
+    @app.route('/sync/record/<domain_id>/<record_id>', methods=['POST'])
+    def sync_record(domain_id, record_id):
+        context = flask.request.environ.get('context')
+
+        try:
+            central_api.sync_record(context, domain_id, record_id)
+        except exceptions.Forbidden:
+            return flask.Response(status=401)
+        except exceptions.RecordNotFound:
+            return flask.Response(status=404)
+        except rpc_common.Timeout:
+            return flask.Response(status=504)
+        else:
+            return flask.Response(status=200)
 
     return app

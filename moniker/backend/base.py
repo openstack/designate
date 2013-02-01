@@ -15,6 +15,7 @@
 # under the License.
 import abc
 from moniker.openstack.common import log as logging
+from moniker import exceptions
 from moniker.plugin import Plugin
 
 
@@ -50,8 +51,49 @@ class Backend(Plugin):
     def delete_record(self, context, domain, record):
         """ Delete a DNS record """
 
+    def sync_domain(self, context, domain, records, servers):
+        """
+        Re-Sync a DNS domain
+
+        This is the default, naive, domain synchronization implementation.
+        """
+        # First up, delete the domain from the backend.
+        try:
+            self.delete_domain(context, domain, servers)
+        except exceptions.DomainNotFound, e:
+            # NOTE(Kiall): This means a domain was missing from the backend.
+            #              Good thing we're doing a sync!
+            LOG.warn("Failed to delete domain '%s' during sync. Message: %s",
+                     domain['id'], str(e))
+
+        # Next, re-create the domain in the backend.
+        self.create_domain(context, domain, servers)
+
+        # Finally, sync the records for the domain.
+        for record in records:
+            self.sync_record(context, domain, record)
+
+    def sync_record(self, context, domain, record):
+        """
+        Re-Sync a DNS record.
+
+        This is the default, naive, record synchronization implementation.
+        """
+        # First up, delete the record from the backend.
+        try:
+            self.delete_record(context, domain, record)
+        except exceptions.RecordNotFound, e:
+            # NOTE(Kiall): This means a record was missing from the backend.
+            #              Good thing we're doing a sync!
+            LOG.warn("Failed to delete record '%s' in domain '%s' during sync."
+                     " Message: %s", record['id'], domain['id'], str(e))
+
+        # Finally, re-create the record in the backend.
+        self.create_record(context, domain, record)
+
     def ping(self, context):
         """ Ping the Backend service """
+
         return {
             'status': None
         }
