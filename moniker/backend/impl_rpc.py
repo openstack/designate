@@ -18,26 +18,26 @@ from moniker.agent import api as agent_api
 
 
 class RPCBackend(base.Backend):
-    def create_domain(self, *args, **kw):
-        return agent_api.create_domain(*args, **kw)
+    def create_domain(self, context, domain, servers):
+        return agent_api.create_domain(context, domain, servers)
 
-    def update_domain(self, *args, **kw):
-        return agent_api.update_domain(*args, **kw)
+    def update_domain(self, context, domain, servers):
+        return agent_api.update_domain(context, domain, servers)
 
-    def delete_domain(self, *args, **kw):
-        return agent_api.delete_domain(*args, **kw)
+    def delete_domain(self, context, domain, servers):
+        return agent_api.delete_domain(context, domain, servers)
 
-    def create_record(self, *args, **kw):
-        return agent_api.create_record(*args, **kw)
+    def create_record(self, context, domain, record):
+        return agent_api.create_record(context, domain, record)
 
-    def update_record(self, *args, **kw):
-        return agent_api.update_record(*args, **kw)
+    def update_record(self, context, domain, record):
+        return agent_api.update_record(context, domain, record)
 
-    def delete_record(self, *args, **kw):
-        return agent_api.delete_record(*args, **kw)
+    def delete_record(self, context, domain, record):
+        return agent_api.delete_record(context, domain, record)
 
-    def sync_domain(self, *args, **kw):
-        return agent_api.delete_record(*args, **kw)
+    def sync_domain(self, context, domain, records, servers):
+        return agent_api.sync_domain(context, domain, records, servers)
 
-    def sync_record(self, *args, **kw):
-        return agent_api.delete_record(*args, **kw)
+    def sync_record(self, context, domain, record):
+        return agent_api.sync_record(context, domain, record)
