@@ -36,10 +36,6 @@ default_log_levels = amqplib=WARN, sqlalchemy=WARN, boto=WARN, suds=INFO, keysto
 # Driver used for backend communication (e.g. rpc, bind9, powerdns)
 #backend_driver = rpc
 
-# List of notification handlers to enable, configuration of these needs to
-# correspond to a [handler:my_driver] section below or else in the config
-#enabled_notification_handlers = nova_fixed
-
 # List of blacklist domain name regexes
 #domain_name_blacklist = arpa.$, ^com.$, ^net.$, ^org.$, novalocal.$
 
@@ -62,6 +58,14 @@ default_log_levels = amqplib=WARN, sqlalchemy=WARN, boto=WARN, suds=INFO, keysto
 [service:agent]
 # Driver used for backend communication (e.g. bind9, powerdns)
 #backend_driver = bind9
+
+#-----------------------
+# Sink Service
+#-----------------------
+[service:sink]
+# List of notification handlers to enable, configuration of these needs to
+# correspond to a [handler:my_driver] section below or else in the config
+#enabled_notification_handlers = nova_fixed
 
 ########################
 ## Storage Configuration

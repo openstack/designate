@@ -16,9 +16,7 @@
 import re
 from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
-from moniker.openstack.common import rpc
 from moniker.openstack.common.rpc import service as rpc_service
-from stevedore.named import NamedExtensionManager
 from moniker import exceptions
 from moniker import policy
 from moniker import storage
@@ -27,12 +25,9 @@ from moniker import backend
 
 LOG = logging.getLogger(__name__)
 
-HANDLER_NAMESPACE = 'moniker.notification.handler'
-
 
 class Service(rpc_service.Service):
     def __init__(self, *args, **kwargs):
-
         backend_driver = cfg.CONF['service:central'].backend_driver
         self.backend = backend.get_backend(backend_driver,
                                            central_service=self)
@@ -49,102 +44,15 @@ class Service(rpc_service.Service):
         # Get a storage connection
         self.storage = storage.get_storage()
 
-        # Initialize extensions
-        self.handlers = self._init_extensions()
-
-        if self.handlers:
-            # Get a rpc connection if needed
-            self.rpc_conn = rpc.create_connection()
-
-    def _init_extensions(self):
-        """ Loads and prepares all enabled extensions """
-        enabled_notification_handlers = \
-            cfg.CONF['service:central'].enabled_notification_handlers
-
-        self.extensions_manager = NamedExtensionManager(
-            HANDLER_NAMESPACE, names=enabled_notification_handlers)
-
-        def _load_extension(ext):
-            handler_cls = ext.plugin
-            return handler_cls(central_service=self)
-
-        try:
-            return self.extensions_manager.map(_load_extension)
-        except RuntimeError:
-            # No handlers enabled. No problem.
-            return []
-
     def start(self):
         self.backend.start()
+
         super(Service, self).start()
 
-        if self.handlers:
-            # Setup notification subscriptions and start consuming
-            self._setup_subscriptions()
-            self.rpc_conn.consume_in_thread_group(self.tg)
-
     def stop(self):
-        if self.handlers:
-            # Try to shut the connection down, but if we get any sort of
-            # errors, go ahead and ignore them.. as we're shutting down anyway
-            try:
-                self.rpc_conn.close()
-            except Exception:
-                pass
-
         super(Service, self).stop()
+
         self.backend.stop()
-
-    def _setup_subscriptions(self):
-        """
-        Set's up subscriptions for the various exchange+topic combinations that
-        we have a handler for.
-        """
-        for handler in self.handlers:
-            exchange, topics = handler.get_exchange_topics()
-
-            for topic in topics:
-                queue_name = "moniker.notifications.%s.%s.%s" % (
-                    handler.get_canonical_name(), exchange, topic)
-
-                self.rpc_conn.declare_topic_consumer(
-                    queue_name=queue_name,
-                    topic=topic,
-                    exchange_name=exchange,
-                    callback=self._process_notification)
-
-    def _get_handler_event_types(self):
-        event_types = set()
-        for handler in self.handlers:
-            for et in handler.get_event_types():
-                event_types.add(et)
-        return event_types
-
-    def _process_notification(self, notification):
-        """
-        Processes an incoming notification, offering each extension the
-        opportunity to handle it.
-        """
-        event_type = notification.get('event_type')
-
-        # NOTE(zykes): Only bother to actually do processing if there's any
-        # matching events, skips logging of things like compute.exists etc.
-        if event_type in self._get_handler_event_types():
-            for handler in self.handlers:
-                self._process_notification_for_handler(handler, notification)
-
-    def _process_notification_for_handler(self, handler, notification):
-        """
-        Processes an incoming notification for a specific handler, checking
-        to see if the handler is interested in the notification before
-        handing it over.
-        """
-        event_type = notification['event_type']
-        payload = notification['payload']
-
-        if event_type in handler.get_event_types():
-            LOG.debug('Found handler for: %s' % event_type)
-            handler.process_notification(event_type, payload)
 
     def _is_blacklisted_domain_name(self, context, domain_name):
         """

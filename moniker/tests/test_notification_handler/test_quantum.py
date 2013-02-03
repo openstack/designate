@@ -30,7 +30,7 @@ class QuantumFloatingHandlerTest(NotificationHandlerTestCase):
         self.domain_id = domain['id']
         self.config(domain_id=domain['id'], group='handler:quantum_floatingip')
 
-        self.plugin = QuantumFloatingHandler(self.central_service)
+        self.plugin = QuantumFloatingHandler()
 
     def test_floatingip_associate(self):
         event_type = 'floatingip.update.end'

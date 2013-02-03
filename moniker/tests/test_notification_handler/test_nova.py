@@ -30,7 +30,7 @@ class NovaFixedHandlerTest(NotificationHandlerTestCase):
         self.domain_id = domain['id']
         self.config(domain_id=domain['id'], group='handler:nova_fixed')
 
-        self.plugin = NovaFixedHandler(self.central_service)
+        self.plugin = NovaFixedHandler()
 
     def test_instance_create_end(self):
         event_type = 'compute.instance.create.end'

@@ -17,6 +17,7 @@
 import abc
 from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
+from moniker.central import api as central_api
 from moniker.context import MonikerContext
 from moniker.plugin import Plugin
 
@@ -46,11 +47,6 @@ class Handler(Plugin):
     __plugin_ns__ = 'moniker.notification.handler'
     __plugin_type__ = 'handler'
 
-    def __init__(self, central_service):
-        super(Handler, self).__init__()
-        LOG.debug('Loaded handler: %s' % __name__)
-        self.central_service = central_service
-
     @abc.abstractmethod
     def get_exchange_topics(self):
         """
@@ -73,7 +69,7 @@ class Handler(Plugin):
         Return the domain for this context
         """
         context = MonikerContext.get_admin_context()
-        return self.central_service.get_domain(context, domain_id)
+        return central_api.get_domain(context, domain_id)
 
 
 class BaseAddressHandler(Handler):
@@ -94,7 +90,9 @@ class BaseAddressHandler(Handler):
         :param resource_type: The managed resource type
         :param resource_id: The managed resource ID
         """
+        LOG.debug('Using DomainID: %s' % cfg.CONF[self.name].domain_id)
         domain = self.get_domain(cfg.CONF[self.name].domain_id)
+        LOG.debug('Domain: %r' % domain)
 
         data = extra.copy()
         data['domain'] = domain['name']
@@ -117,8 +115,7 @@ class BaseAddressHandler(Handler):
                     'managed_plugin_type': self.get_plugin_type(),
                     'managed_resource_type': resource_type,
                     'managed_resource_id': resource_id})
-            self.central_service.create_record(context, domain['id'],
-                                               record_values)
+            central_api.create_record(context, domain['id'], record_values)
 
     def _delete(self, managed=True, resource_id=None, resource_type='instance',
                 criterion={}):
@@ -138,14 +135,12 @@ class BaseAddressHandler(Handler):
                 'managed_resource_type': resource_type
             })
 
-        records = self.central_service.get_records(
-            context,
-            cfg.CONF[self.name].domain_id,
-            criterion)
+        records = central_api.get_records(context,
+                                          cfg.CONF[self.name].domain_id,
+                                          criterion)
 
         for record in records:
             LOG.debug('Deleting record %s' % record['id'])
-            self.central_service.delete_record(
-                context,
-                cfg.CONF[self.name].domain_id,
-                record['id'])
+
+            central_api.delete_record(context, cfg.CONF[self.name].domain_id,
+                                      record['id'])

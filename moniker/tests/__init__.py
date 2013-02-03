@@ -25,6 +25,7 @@ from moniker import exceptions
 from moniker.agent import service as agent_service
 from moniker.api import service as api_service
 from moniker.central import service as central_service
+from moniker.sink import service as sink_service
 
 LOG = logging.getLogger(__name__)
 
@@ -179,6 +180,9 @@ class TestCase(unittest2.TestCase, AssertMixin):
     def get_central_service(self):
         return central_service.Service()
 
+    def get_sink_service(self):
+        return sink_service.Service()
+
     # Context Methods
     def get_context(self, **kwargs):
         return MonikerContext(**kwargs)
@@ -228,6 +232,7 @@ class TestCase(unittest2.TestCase, AssertMixin):
         return self.central_service.create_tsigkey(context, values=values)
 
     def create_domain(self, **kwargs):
+        LOG.critical('*************CREATE DOMAIN CALLED*************')
         context = kwargs.pop('context', self.get_admin_context())
         fixture = kwargs.pop('fixture', 0)
 

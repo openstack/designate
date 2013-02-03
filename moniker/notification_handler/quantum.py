@@ -27,7 +27,7 @@ cfg.CONF.register_group(cfg.OptGroup(
 cfg.CONF.register_opts([
     cfg.ListOpt('notification-topics', default=['monitor']),
     cfg.StrOpt('control-exchange', default='quantum'),
-    cfg.StrOpt('domain_id', default=None),
+    cfg.StrOpt('domain-id', default=None),
     cfg.StrOpt('format', default=None)
 ], group='handler:quantum_floatingip')
 

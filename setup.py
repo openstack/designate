@@ -48,11 +48,12 @@ setup(
     },
     dependency_links=dependency_links,
     scripts=[
-        'bin/moniker-central',
-        'bin/moniker-api',
         'bin/moniker-agent',
+        'bin/moniker-api',
+        'bin/moniker-central',
         'bin/moniker-manage',
-        'bin/moniker-rootwrap'
+        'bin/moniker-rootwrap',
+        'bin/moniker-sink',
     ],
     cmdclass=common_setup.get_cmdclass(),
     entry_points=textwrap.dedent("""
