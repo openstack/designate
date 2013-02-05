@@ -131,9 +131,7 @@ Update Server
         "name": "ns1.example.org.",
         "ipv4": "1.2.3.5",
         "created_at": "2012-11-02T02:55:44.000000",
-        "updated_at": "2012-11-02T02:58:41.993556",
-        "self": "/v1/servers/879c1100-9c92-4244-bc83-9535ee6534d0",
-        "schema": "/v1/schemas/server",
+        "updated_at": "2012-11-02T02:58:41.993556"
       }
 
    :form id: UUID server_id
@@ -141,8 +139,6 @@ Update Server
    :form ipv4: Server IPv4 address
    :form created_at: timestamp
    :form updated_at: timestamp
-   :form self: String, link to server
-   :form schema: link to the JSON schema that describes this resource
    :statuscode 200: Success
    :statuscode 401: Access Denied
    :statuscode 404: Server Not Found
