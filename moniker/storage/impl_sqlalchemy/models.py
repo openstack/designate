@@ -28,7 +28,7 @@ from sqlalchemy.ext.declarative import declarative_base
 
 LOG = logging.getLogger(__name__)
 
-RECORD_TYPES = ['A', 'AAAA', 'CNAME', 'MX', 'SRV', 'TXT', 'NS', 'PTR']
+RECORD_TYPES = ['A', 'AAAA', 'CNAME', 'MX', 'SRV', 'TXT', 'SPF', 'NS', 'PTR']
 
 
 class Base(CommonBase):
