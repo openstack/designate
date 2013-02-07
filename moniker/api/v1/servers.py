@@ -45,11 +45,13 @@ def create_server():
     try:
         server_schema.validate(values)
         server = central_api.create_server(context, values=flask.request.json)
-    except exceptions.Forbidden:
-        return flask.Response(status=401)
     except exceptions.InvalidObject, e:
         response_body = json.dumps({'errors': e.errors})
         return flask.Response(status=400, response=response_body)
+    except exceptions.BadRequest:
+        return flask.Response(status=400)
+    except exceptions.Forbidden:
+        return flask.Response(status=401)
     except exceptions.DuplicateServer:
         return flask.Response(status=409)
     except rpc_common.Timeout:
@@ -70,6 +72,8 @@ def get_servers():
 
     try:
         servers = central_api.get_servers(context)
+    except exceptions.BadRequest:
+        return flask.Response(status=400)
     except exceptions.Forbidden:
         return flask.Response(status=401)
     except rpc_common.Timeout:
@@ -86,6 +90,8 @@ def get_server(server_id):
 
     try:
         server = central_api.get_server(context, server_id)
+    except exceptions.BadRequest:
+        return flask.Response(status=400)
     except exceptions.Forbidden:
         return flask.Response(status=401)
     except exceptions.ServerNotFound:
@@ -109,11 +115,13 @@ def update_server(server_id):
 
         server_schema.validate(server)
         server = central_api.update_server(context, server_id, values=values)
-    except exceptions.Forbidden:
-        return flask.Response(status=401)
     except exceptions.InvalidObject, e:
         response_body = json.dumps({'errors': e.errors})
         return flask.Response(status=400, response=response_body)
+    except exceptions.BadRequest:
+        return flask.Response(status=400)
+    except exceptions.Forbidden:
+        return flask.Response(status=401)
     except exceptions.ServerNotFound:
         return flask.Response(status=404)
     except exceptions.DuplicateServer:
@@ -132,6 +140,8 @@ def delete_server(server_id):
 
     try:
         central_api.delete_server(context, server_id)
+    except exceptions.BadRequest:
+        return flask.Response(status=400)
     except exceptions.Forbidden:
         return flask.Response(status=401)
     except exceptions.ServerNotFound:

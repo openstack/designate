@@ -293,14 +293,17 @@ class Service(rpc_service.Service):
         policy.check('update_domain', context, target)
 
         if 'tenant_id' in values:
+            # NOTE(kiall): Ensure the user is allowed to delete a domain from
+            #              the original tenant.
+            policy.check('delete_domain', context, target)
+
+            # NOTE(kiall): Ensure the user is allowed to create a domain in
+            #              the new tenant.
             target = {'domain_id': domain_id, 'tenant_id': values['tenant_id']}
             policy.check('create_domain', context, target)
 
-        if 'name' in values:
-            # Ensure the domain is not blacklisted
-            if self._is_blacklisted_domain_name(context, values['name']):
-                # Raises an exception if the policy check is denied
-                policy.check('use_blacklisted_domain', context)
+        if 'name' in values and values['name'] != domain['name']:
+            raise exceptions.BadRequest('Renaming a domain is not allowed')
 
         domain = self.storage_conn.update_domain(context, domain_id, values)
         servers = self.storage_conn.get_servers(context)
@@ -340,6 +343,10 @@ class Service(rpc_service.Service):
         }
 
         policy.check('create_record', context, target)
+
+        if not values['name'].endswith(domain['name']):
+            raise exceptions.BadRequest('Records must be contained within '
+                                        'their parent zone.')
 
         record = self.storage_conn.create_record(context, domain_id, values)
 
@@ -386,6 +393,10 @@ class Service(rpc_service.Service):
         }
 
         policy.check('update_record', context, target)
+
+        if 'name' in values and not values['name'].endswith(domain['name']):
+            raise exceptions.BadRequest('Records must be contained within '
+                                        'their parent zone.')
 
         record = self.storage_conn.update_record(context, record_id, values)
 

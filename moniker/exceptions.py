@@ -37,6 +37,10 @@ class InvalidObject(Base):
         super(InvalidObject, self).__init__(*args, **kwargs)
 
 
+class BadRequest(Base):
+    pass
+
+
 class Forbidden(Base):
     pass
 

@@ -330,45 +330,15 @@ class CentralServiceTest(CentralTestCase):
         # Ensure the domain was updated correctly
         self.assertEqual(domain['email'], 'new@example.com')
 
-    def test_update_blacklisted_domain_success(self):
-        self.config(domain_name_blacklist=['^blacklisted.com.$'],
-                    group='service:central')
-
+    def test_update_domain_name_fail(self):
         context = self.get_admin_context()
 
         # Create a domain
         expected_domain = self.create_domain()
 
-        # Set the policy to accept the authz
-        self.policy({'use_blacklisted_domain': '@'})
-
         # Update the domain
-        values = dict(name='blacklisted.com.')
-        self.central_service.update_domain(context, expected_domain['id'],
-                                           values=values)
-
-        # Fetch the domain again
-        domain = self.central_service.get_domain(context,
-                                                 expected_domain['id'])
-
-        # Ensure the domain was updated correctly
-        self.assertEqual(domain['name'], 'blacklisted.com.')
-
-    def test_update_blacklisted_domain_fail(self):
-        self.config(domain_name_blacklist=['^blacklisted.com.$'],
-                    group='service:central')
-
-        context = self.get_admin_context()
-
-        # Create a domain
-        expected_domain = self.create_domain()
-
-        # Set the policy to reject the authz
-        self.policy({'use_blacklisted_domain': '!'})
-
-        # Update the domain
-        with self.assertRaises(exceptions.Forbidden):
-            values = dict(name='blacklisted.com.')
+        with self.assertRaises(exceptions.BadRequest):
+            values = dict(name='renamed-domain.com.')
             self.central_service.update_domain(context, expected_domain['id'],
                                                values=values)
 
@@ -391,7 +361,7 @@ class CentralServiceTest(CentralTestCase):
         domain = self.create_domain()
 
         values = dict(
-            name='www.example.com.',
+            name='www.%s' % domain['name'],
             type='A',
             data='127.0.0.1'
         )
@@ -421,23 +391,23 @@ class CentralServiceTest(CentralTestCase):
         # Ensure we can retrieve the newly created record
         records = self.central_service.get_records(context, domain['id'])
         self.assertEqual(len(records), 1)
-        self.assertEqual(records[0]['name'], 'www.example.com.')
+        self.assertEqual(records[0]['name'], 'www.%s' % domain['name'])
 
         # Create a second record
-        self.create_record(domain, name='mail.example.com.')
+        self.create_record(domain, name='mail.%s' % domain['name'])
 
         # Ensure we can retrieve both records
         records = self.central_service.get_records(context, domain['id'])
         self.assertEqual(len(records), 2)
-        self.assertEqual(records[0]['name'], 'www.example.com.')
-        self.assertEqual(records[1]['name'], 'mail.example.com.')
+        self.assertEqual(records[0]['name'], 'www.%s' % domain['name'])
+        self.assertEqual(records[1]['name'], 'mail.%s' % domain['name'])
 
     def test_get_record(self):
         context = self.get_admin_context()
         domain = self.create_domain()
 
         # Create a record
-        record_name = '%d.example.com' % random.randint(10, 1000)
+        record_name = '%d.%s' % (random.randint(10, 1000), domain['name'])
         expected_record = self.create_record(domain, name=record_name)
 
         # Retrieve it, and ensure it's the same

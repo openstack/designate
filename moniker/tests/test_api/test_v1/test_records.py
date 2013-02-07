@@ -132,7 +132,7 @@ class ApiV1RecordsTest(ApiV1Test):
         # Create a record
         record = self.create_record(self.domain)
 
-        data = {'name': 'test.example.org.'}
+        data = {'name': 'prefix-%s' % record['name']}
 
         response = self.put('domains/%s/records/%s' % (self.domain['id'],
                                                        record['id']),
@@ -142,7 +142,16 @@ class ApiV1RecordsTest(ApiV1Test):
         self.assertEqual(response.json['id'], record['id'])
 
         self.assertIn('name', response.json)
-        self.assertEqual(response.json['name'], 'test.example.org.')
+        self.assertEqual(response.json['name'], 'prefix-%s' % record['name'])
+
+    def test_update_record_outside_domain_fail(self):
+        # Create a record
+        record = self.create_record(self.domain)
+
+        data = {'name': 'test.someotherdomain.com'}
+
+        self.put('domains/%s/records/%s' % (self.domain['id'], record['id']),
+                 data=data, status_code=400)
 
     @patch.object(central_service.Service, 'update_record',
                   side_effect=rpc_common.Timeout())

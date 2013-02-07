@@ -153,15 +153,23 @@ class ApiV1DomainsTest(ApiV1Test):
         # Create a domain
         domain = self.create_domain()
 
-        data = {'name': 'test.org.'}
+        data = {'email': 'prefix-%s' % domain['email']}
 
         response = self.put('domains/%s' % domain['id'], data=data)
 
         self.assertIn('id', response.json)
         self.assertEqual(response.json['id'], domain['id'])
 
-        self.assertIn('name', response.json)
-        self.assertEqual(response.json['name'], 'test.org.')
+        self.assertIn('email', response.json)
+        self.assertEqual(response.json['email'], 'prefix-%s' % domain['email'])
+
+    def test_update_domain_name_fail(self):
+        # Create a domain
+        domain = self.create_domain()
+
+        data = {'name': 'renamed.com.'}
+
+        self.put('domains/%s' % domain['id'], data=data, status_code=400)
 
     @patch.object(central_service.Service, 'update_domain',
                   side_effect=rpc_common.Timeout())
@@ -169,7 +177,7 @@ class ApiV1DomainsTest(ApiV1Test):
         # Create a domain
         domain = self.create_domain()
 
-        data = {'name': 'test.org.'}
+        data = {'email': 'prefix-%s' % domain['email']}
 
         self.put('domains/%s' % domain['id'], data=data, status_code=504)
 
@@ -179,12 +187,12 @@ class ApiV1DomainsTest(ApiV1Test):
         # Create a domain
         domain = self.create_domain()
 
-        data = {'name': 'test.org.'}
+        data = {'email': 'prefix-%s' % domain['email']}
 
         self.put('domains/%s' % domain['id'], data=data, status_code=409)
 
     def test_update_domain_missing(self):
-        data = {'name': 'test.org.'}
+        data = {'email': 'bla@bla.com'}
 
         self.put('domains/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980', data=data,
                  status_code=404)
