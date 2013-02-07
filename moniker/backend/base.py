@@ -69,9 +69,10 @@ class Backend(Plugin):
         # Next, re-create the domain in the backend.
         self.create_domain(context, domain, servers)
 
-        # Finally, sync the records for the domain.
+        # Finally, re-create the records for the domain.
         for record in records:
-            self.sync_record(context, domain, record)
+            # Re-create the record in the backend.
+            self.create_record(context, domain, record)
 
     def sync_record(self, context, domain, record):
         """
