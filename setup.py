@@ -74,6 +74,8 @@ setup(
         [moniker.manage]
         database init = moniker.manage.database:InitCommand
         database sync = moniker.manage.database:SyncCommand
+        powerdns database init = moniker.manage.powerdns:DatabaseInitCommand
+        powerdns database sync = moniker.manage.powerdns:DatabaseSyncCommand
         """),
     classifiers=[
         'Development Status :: 3 - Alpha',

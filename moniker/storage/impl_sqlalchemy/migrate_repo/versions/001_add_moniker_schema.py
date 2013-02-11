@@ -16,8 +16,6 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-
-# should this be in schema.py?
 from sqlalchemy import ForeignKey, Enum, Integer, String, DateTime, Text
 from sqlalchemy.schema import Column, MetaData
 from moniker.openstack.common import timeutils
