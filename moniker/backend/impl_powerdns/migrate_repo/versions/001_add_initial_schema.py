@@ -42,7 +42,7 @@ records = Table('records', meta,
                 Column('content', String(255), default=None, nullable=True),
                 Column('ttl', Integer(), default=None, nullable=True),
                 Column('prio', Integer(), default=None, nullable=True),
-                Column('change_data', Integer(), default=None,
+                Column('change_date', Integer(), default=None,
                        nullable=True),
                 Column('ordername', String(255), default=None, nullable=True),
                 Column('auth', Boolean(), default=None, nullable=True))

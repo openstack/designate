@@ -28,6 +28,24 @@ class Base(CommonBase):
 Base = declarative_base(cls=Base)
 
 
+class TsigKey(Base):
+    __tablename__ = 'tsigkeys'
+
+    moniker_id = Column(UUID, nullable=False)
+
+    name = Column(String(255), default=None, nullable=True)
+    algorithm = Column(String(255), default=None, nullable=True)
+    secret = Column(String(255), default=None, nullable=True)
+
+
+class DomainMetadata(Base):
+    __tablename__ = 'domainmetadata'
+
+    domain_id = Column(Integer(), nullable=False)
+    kind = Column(String(16), default=None, nullable=True)
+    content = Column(Text())
+
+
 class Domain(Base):
     __tablename__ = 'domains'
 
