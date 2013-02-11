@@ -19,6 +19,12 @@ from moniker.plugin import Plugin
 LOG = logging.getLogger(__name__)
 
 
-def get_backend(backend_driver):
+def get_backend(backend_driver, central_service):
     LOG.debug("Loading backend driver: %s" % backend_driver)
-    return Plugin.get_plugin(backend_driver, ns=__name__, invoke_on_load=True)
+
+    invoke_kwds = {
+        'central_service': central_service
+    }
+
+    return Plugin.get_plugin(backend_driver, ns=__name__, invoke_on_load=True,
+                             invoke_kwds=invoke_kwds)

@@ -25,7 +25,9 @@ class BackendTestCase(TestCase):
     __test__ = False
 
     def get_backend_driver(self):
-        return backend.get_backend(cfg.CONF['service:agent'].backend_driver)
+        central_service = self.get_central_service()
+        return backend.get_backend(cfg.CONF['service:agent'].backend_driver,
+                                   central_service=central_service)
 
     def test_constructor(self):
         self.get_backend_driver()

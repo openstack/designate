@@ -17,13 +17,15 @@ from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
 from moniker.openstack.common.rpc import service as rpc_service
 from moniker import backend
+from moniker.central import api as central_api
 
 LOG = logging.getLogger(__name__)
 
 
 class Service(rpc_service.Service):
     def __init__(self, *args, **kwargs):
-        manager = backend.get_backend(cfg.CONF['service:agent'].backend_driver)
+        manager = backend.get_backend(cfg.CONF['service:agent'].backend_driver,
+                                      central_service=central_api)
 
         kwargs.update(
             host=cfg.CONF.host,

@@ -77,7 +77,9 @@ class PowerDNSBackend(base.Backend):
 
         self.session = get_session(self.name)
 
-    def create_domain(self, context, domain, servers):
+    def create_domain(self, context, domain):
+        servers = self.central_service.get_servers()
+
         domain_m = Domain()
         domain_m.update({
             'moniker_id': domain['id'],
@@ -111,7 +113,9 @@ class PowerDNSBackend(base.Backend):
         })
         record_m.save(self.session)
 
-    def update_domain(self, context, domain, servers):
+    def update_domain(self, context, domain):
+        servers = self.central_service.get_servers()
+
         domain_m = self._get_domain(domain['id'])
 
         # TODO: Sync Server List
@@ -124,7 +128,7 @@ class PowerDNSBackend(base.Backend):
 
         soa_record_m.save(self.session)
 
-    def delete_domain(self, context, domain, servers):
+    def delete_domain(self, context, domain):
         domain_m = self._get_domain(domain['id'])
         domain_m.delete(self.session)
 

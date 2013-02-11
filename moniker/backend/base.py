@@ -27,16 +27,20 @@ class Backend(Plugin):
     __plugin_type__ = 'backend'
     __plugin_ns__ = 'moniker.backend'
 
+    def __init__(self, central_service):
+        super(Backend, self).__init__()
+        self.central_service = central_service
+
     @abc.abstractmethod
-    def create_domain(self, context, domain, servers):
+    def create_domain(self, context, domain):
         """ Create a DNS domain """
 
     @abc.abstractmethod
-    def update_domain(self, context, domain, servers):
+    def update_domain(self, context, domain):
         """ Update a DNS domain """
 
     @abc.abstractmethod
-    def delete_domain(self, context, domain, servers):
+    def delete_domain(self, context, domain):
         """ Delete a DNS domain """
 
     @abc.abstractmethod
@@ -51,7 +55,7 @@ class Backend(Plugin):
     def delete_record(self, context, domain, record):
         """ Delete a DNS record """
 
-    def sync_domain(self, context, domain, records, servers):
+    def sync_domain(self, context, domain, records):
         """
         Re-Sync a DNS domain
 
@@ -59,7 +63,7 @@ class Backend(Plugin):
         """
         # First up, delete the domain from the backend.
         try:
-            self.delete_domain(context, domain, servers)
+            self.delete_domain(context, domain)
         except exceptions.DomainNotFound, e:
             # NOTE(Kiall): This means a domain was missing from the backend.
             #              Good thing we're doing a sync!
@@ -67,7 +71,7 @@ class Backend(Plugin):
                      domain['id'], str(e))
 
         # Next, re-create the domain in the backend.
-        self.create_domain(context, domain, servers)
+        self.create_domain(context, domain)
 
         # Finally, re-create the records for the domain.
         for record in records:

@@ -18,14 +18,14 @@ from moniker.agent import api as agent_api
 
 
 class RPCBackend(base.Backend):
-    def create_domain(self, context, domain, servers):
-        return agent_api.create_domain(context, domain, servers)
+    def create_domain(self, context, domain):
+        return agent_api.create_domain(context, domain)
 
-    def update_domain(self, context, domain, servers):
-        return agent_api.update_domain(context, domain, servers)
+    def update_domain(self, context, domain):
+        return agent_api.update_domain(context, domain)
 
-    def delete_domain(self, context, domain, servers):
-        return agent_api.delete_domain(context, domain, servers)
+    def delete_domain(self, context, domain):
+        return agent_api.delete_domain(context, domain)
 
     def create_record(self, context, domain, record):
         return agent_api.create_record(context, domain, record)
@@ -36,8 +36,8 @@ class RPCBackend(base.Backend):
     def delete_record(self, context, domain, record):
         return agent_api.delete_record(context, domain, record)
 
-    def sync_domain(self, context, domain, records, servers):
-        return agent_api.sync_domain(context, domain, records, servers)
+    def sync_domain(self, context, domain, records):
+        return agent_api.sync_domain(context, domain, records)
 
     def sync_record(self, context, domain, record):
         return agent_api.sync_record(context, domain, record)

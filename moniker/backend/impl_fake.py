@@ -35,17 +35,17 @@ class FakeBackend(base.Backend):
         self.sync_record_calls = []
         self.ping_calls = []
 
-    def create_domain(self, context, domain, servers):
+    def create_domain(self, context, domain):
         LOG.info('Create Domain %r' % domain)
-        self.create_domain_calls.append((context, domain, servers))
+        self.create_domain_calls.append((context, domain))
 
-    def update_domain(self, context, domain, servers):
+    def update_domain(self, context, domain):
         LOG.debug('Update Domain %r' % domain)
-        self.update_domain_calls.append((context, domain, servers))
+        self.update_domain_calls.append((context, domain))
 
-    def delete_domain(self, context, domain, servers):
+    def delete_domain(self, context, domain):
         LOG.debug('Delete Domain %r' % domain)
-        self.delete_domain_calls.append((context, domain, servers))
+        self.delete_domain_calls.append((context, domain))
 
     def create_record(self, context, domain, record):
         LOG.debug('Create Record %r / %r' % (domain, record))
@@ -59,9 +59,9 @@ class FakeBackend(base.Backend):
         LOG.debug('Delete Record %r / %r' % (domain, record))
         self.delete_record_calls.append((context, domain, record))
 
-    def sync_domain(self, context, domain, records, servers):
-        LOG.debug('Sync Domain %r / %r / %r' % (domain, records, servers))
-        self.sync_domain_calls.append((context, domain, records, servers))
+    def sync_domain(self, context, domain, records):
+        LOG.debug('Sync Domain %r / %r' % (domain, records))
+        self.sync_domain_calls.append((context, domain, records))
 
     def sync_record(self, context, domain, record):
         LOG.debug('Sync Record %r / %r' % (domain, record))

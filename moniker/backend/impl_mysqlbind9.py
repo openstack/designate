@@ -20,7 +20,6 @@ from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
 from moniker import utils
 from moniker.backend import base
-from moniker.central import api as central_api
 from moniker.context import MonikerContext
 from sqlalchemy.ext.sqlsoup import SqlSoup
 from sqlalchemy.engine.url import _parse_rfc1738_args
@@ -242,23 +241,29 @@ class MySQLBind9Backend(base.Backend):
 
         self._db.commit()
 
-    def create_domain(self, context, domain, servers):
+    def create_domain(self, context, domain):
         LOG.debug('create_domain()')
 
         if cfg.CONF[self.name].write_database:
+            servers = self.central_service.get_servers()
+
             self._add_soa_record(domain, servers)
             self._add_ns_records(domain, servers)
 
         self._sync_domains()
 
-    def update_domain(self, context, domain, servers):
+    def update_domain(self, context, domain):
         LOG.debug('update_domain()')
+
         if cfg.CONF[self.name].write_database:
+            servers = self.central_service.get_servers()
+
             self._update_soa_record(domain, servers)
             self._update_ns_records(domain, servers)
 
-    def delete_domain(self, context, domain, servers):
+    def delete_domain(self, context, domain):
         LOG.debug('delete_domain()')
+
         if cfg.CONF[self.name].write_database:
             self._delete_db_domain_records(domain['tenant_id'],
                                            domain['id'])
@@ -296,7 +301,7 @@ class MySQLBind9Backend(base.Backend):
         admin_context = MonikerContext.get_admin_context()
         LOG.debug("admin_context: %r" % admin_context)
 
-        domains = central_api.get_domains(admin_context)
+        domains = self.central_service.get_domains(admin_context)
         LOG.debug("domains: %r" % domains)
 
         output_folder = os.path.join(os.path.abspath(cfg.CONF.state_path),

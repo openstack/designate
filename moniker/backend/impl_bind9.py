@@ -18,7 +18,6 @@ from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
 from moniker import utils
 from moniker.backend import base
-from moniker.central import api as central_api
 from moniker.context import MonikerContext
 
 LOG = logging.getLogger(__name__)
@@ -45,24 +44,24 @@ class Bind9Backend(base.Backend):
         # TODO: This is a hack to ensure the data dir is 100% up to date
         admin_context = MonikerContext.get_admin_context()
 
-        domains = central_api.get_domains(admin_context)
+        domains = self.central_service.get_domains(admin_context)
 
         for domain in domains:
             self._sync_domain(domain)
 
         self._sync_domains()
 
-    def create_domain(self, context, domain, servers):
+    def create_domain(self, context, domain):
         LOG.debug('Create Domain')
-        self._sync_domain(domain, servers, new_domain_flag=True)
+        self._sync_domain(domain, new_domain_flag=True)
 
-    def update_domain(self, context, domain, servers):
+    def update_domain(self, context, domain):
         LOG.debug('Update Domain')
-        self._sync_domain(domain, servers)
+        self._sync_domain(domain)
 
-    def delete_domain(self, context, domain, servers):
+    def delete_domain(self, context, domain):
         LOG.debug('Delete Domain')
-        self._sync_delete_domain(domain, servers)
+        self._sync_delete_domain(domain)
 
     def create_record(self, context, domain, record):
         LOG.debug('Create Record')
@@ -83,7 +82,7 @@ class Bind9Backend(base.Backend):
 
         admin_context = MonikerContext.get_admin_context()
 
-        domains = central_api.get_domains(admin_context)
+        domains = self.central_service.get_domains(admin_context)
 
         output_folder = os.path.join(os.path.abspath(cfg.CONF.state_path),
                                      'bind9')
@@ -134,18 +133,15 @@ class Bind9Backend(base.Backend):
 
         utils.execute(*rndc_call)
 
-    def _sync_domain(self, domain, servers=None, new_domain_flag=False):
+    def _sync_domain(self, domain, new_domain_flag=False):
         """ Sync a single domain's zone file """
-        # TODO: Rewrite this entire thing ASAP
         LOG.debug('Synchronising Domain: %s' % domain['id'])
 
         admin_context = MonikerContext.get_admin_context()
 
-        if not servers:
-            # TODO: This is a hack... FIXME
-            servers = central_api.get_servers(admin_context)
+        servers = self.central_service.get_servers(admin_context)
 
-        records = central_api.get_records(admin_context, domain['id'])
+        records = self.central_service.get_records(admin_context, domain['id'])
 
         output_folder = os.path.join(os.path.abspath(cfg.CONF.state_path),
                                      'bind9')

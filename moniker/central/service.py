@@ -34,7 +34,8 @@ class Service(rpc_service.Service):
     def __init__(self, *args, **kwargs):
 
         backend_driver = cfg.CONF['service:central'].backend_driver
-        self.backend = backend.get_backend(backend_driver)
+        self.backend = backend.get_backend(backend_driver,
+                                           central_service=self)
 
         kwargs.update(
             host=cfg.CONF.host,
@@ -253,7 +254,7 @@ class Service(rpc_service.Service):
 
         domain = self.storage_conn.create_domain(context, values)
 
-        self.backend.create_domain(context, domain, servers)
+        self.backend.create_domain(context, domain)
         utils.notify(context, 'api', 'domain.create', domain)
 
         return domain
@@ -306,9 +307,8 @@ class Service(rpc_service.Service):
             raise exceptions.BadRequest('Renaming a domain is not allowed')
 
         domain = self.storage_conn.update_domain(context, domain_id, values)
-        servers = self.storage_conn.get_servers(context)
 
-        self.backend.update_domain(context, domain, servers)
+        self.backend.update_domain(context, domain)
         utils.notify(context, 'api', 'domain.update', domain)
 
         return domain
@@ -324,9 +324,7 @@ class Service(rpc_service.Service):
 
         policy.check('delete_domain', context, target)
 
-        servers = self.storage_conn.get_servers(context)
-
-        self.backend.delete_domain(context, domain, servers)
+        self.backend.delete_domain(context, domain)
         utils.notify(context, 'api', 'domain.delete', domain)
 
         return self.storage_conn.delete_domain(context, domain_id)
@@ -453,10 +451,9 @@ class Service(rpc_service.Service):
 
         policy.check('diagnostics_sync_domain', context, target)
 
-        servers = self.storage_conn.get_servers(context)
         records = self.storage_conn.get_records(context, domain_id)
 
-        return self.backend.sync_domain(context, domain, records, servers)
+        return self.backend.sync_domain(context, domain, records)
 
     def sync_record(self, context, domain_id, record_id):
         domain = self.storage_conn.get_domain(context, domain_id)

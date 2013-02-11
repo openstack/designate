@@ -24,36 +24,33 @@ RPC = RpcProxy(cfg.CONF.agent_topic, DEFAULT_VERSION)
 
 
 # Domain Methods
-def create_domain(context, domain, servers):
+def create_domain(context, domain):
     msg = {
         'method': 'create_domain',
         'args': {
             'domain': domain,
-            'servers': servers,
         },
     }
 
     return RPC.fanout_cast(context, msg)
 
 
-def update_domain(context, domain, servers):
+def update_domain(context, domain):
     msg = {
         'method': 'update_domain',
         'args': {
             'domain': domain,
-            'servers': servers,
         },
     }
 
     return RPC.fanout_cast(context, msg)
 
 
-def delete_domain(context, domain, servers):
+def delete_domain(context, domain):
     msg = {
         'method': 'delete_domain',
         'args': {
             'domain': domain,
-            'servers': servers,
         },
     }
 
@@ -98,13 +95,12 @@ def delete_record(context, domain, record):
 
 
 # Diagnostics Methods
-def sync_domain(context, domain, records, servers):
+def sync_domain(context, domain, records):
     msg = {
         'method': 'sync_domain',
         'args': {
             'domain': domain,
             'records': records,
-            'servers': servers,
         },
     }
 
