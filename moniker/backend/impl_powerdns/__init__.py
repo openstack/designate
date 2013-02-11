@@ -15,16 +15,13 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from sqlalchemy import Column, String, Text, Integer
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import exc as sqlalchemy_exceptions
 from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
 from moniker import exceptions
 from moniker.backend import base
+from moniker.backend.impl_powerdns import models
 from moniker.sqlalchemy.session import get_session, SQLOPTS
-from moniker.sqlalchemy.models import Base as CommonBase
-from moniker.sqlalchemy.types import UUID
 
 LOG = logging.getLogger(__name__)
 
@@ -33,40 +30,6 @@ cfg.CONF.register_group(cfg.OptGroup(
 ))
 
 cfg.CONF.register_opts(SQLOPTS, group='backend:powerdns')
-
-
-class Base(CommonBase):
-    id = Column(Integer, primary_key=True, autoincrement=True)
-
-
-Base = declarative_base(cls=Base)
-
-
-class Domain(Base):
-    __tablename__ = 'domains'
-
-    moniker_id = Column(UUID, nullable=False)
-
-    name = Column(String(255), nullable=False, unique=True)
-    master = Column(String(128), nullable=True)
-    last_check = Column(Integer, default=None, nullable=True)
-    type = Column(String(6), nullable=False)
-    notified_serial = Column(Integer, default=None, nullable=True)
-    account = Column(String(40), default=None, nullable=True)
-
-
-class Record(Base):
-    __tablename__ = 'records'
-
-    moniker_id = Column(UUID, nullable=False)
-
-    domain_id = Column(Integer, default=None, nullable=True)
-    name = Column(String(255), default=None, nullable=True)
-    type = Column(String(10), default=None, nullable=True)
-    content = Column(Text, default=None, nullable=True)
-    ttl = Column(Integer, default=None, nullable=True)
-    prio = Column(Integer, default=None, nullable=True)
-    change_date = Column(Integer, default=None, nullable=True)
 
 
 class PowerDNSBackend(base.Backend):
@@ -80,7 +43,7 @@ class PowerDNSBackend(base.Backend):
     def create_domain(self, context, domain):
         servers = self.central_service.get_servers()
 
-        domain_m = Domain()
+        domain_m = models.Domain()
         domain_m.update({
             'moniker_id': domain['id'],
             'name': domain['name'].rstrip('.'),
@@ -91,7 +54,7 @@ class PowerDNSBackend(base.Backend):
         domain_m.save(self.session)
 
         for server in servers:
-            record_m = Record()
+            record_m = models.Record()
             record_m.update({
                 'moniker_id': server['id'],
                 'domain_id': domain_m.id,
@@ -103,7 +66,7 @@ class PowerDNSBackend(base.Backend):
 
         # NOTE(kiall): Do the SOA last, ensuring we don't trigger a NOTIFY
         #              before the NS records are in place.
-        record_m = Record()
+        record_m = models.Record()
         record_m.update({
             'moniker_id': domain['id'],
             'domain_id': domain_m.id,
@@ -132,11 +95,12 @@ class PowerDNSBackend(base.Backend):
         domain_m = self._get_domain(domain['id'])
         domain_m.delete(self.session)
 
-        self.session.query(Record).filter_by(domain_id=domain_m.id).delete()
+        query = self.session.query(models.Record)
+        query.filter_by(domain_id=domain_m.id).delete()
 
     def create_record(self, context, domain, record):
         domain_m = self._get_domain(domain['id'])
-        record_m = Record()
+        record_m = models.Record()
 
         record_m.update({
             'moniker_id': record['id'],
@@ -183,7 +147,7 @@ class PowerDNSBackend(base.Backend):
                                           domain['minimum'])
 
     def _get_domain(self, domain_id):
-        query = self.session.query(Domain)
+        query = self.session.query(models.Domain)
 
         try:
             domain = query.filter_by(moniker_id=domain_id).one()
@@ -195,7 +159,7 @@ class PowerDNSBackend(base.Backend):
             return domain
 
     def _get_record(self, record_id=None, domain=None, type=None):
-        query = self.session.query(Record)
+        query = self.session.query(models.Record)
 
         if record_id:
             query = query.filter_by(moniker_id=record_id)
