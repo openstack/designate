@@ -72,6 +72,8 @@ resolver = StaticResolver(store={
     '/schemas/records': utils.load_schema('v1', 'records'),
     '/schemas/server': utils.load_schema('v1', 'server'),
     '/schemas/servers': utils.load_schema('v1', 'servers'),
+    '/schemas/tsigkey': utils.load_schema('v1', 'tsigkey'),
+    '/schemas/tsigkeys': utils.load_schema('v1', 'tsigkeys'),
 })
 
 

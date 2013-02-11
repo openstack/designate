@@ -215,6 +215,44 @@ class Service(rpc_service.Service):
 
         return self.storage_conn.delete_server(context, server_id)
 
+    # TSIG Key Methods
+    def create_tsigkey(self, context, values):
+        policy.check('create_tsigkey', context)
+
+        tsigkey = self.storage_conn.create_tsigkey(context, values)
+
+        utils.notify(context, 'api', 'tsigkey.create', tsigkey)
+
+        return tsigkey
+
+    def get_tsigkeys(self, context, criterion=None):
+        policy.check('get_tsigkeys', context)
+
+        return self.storage_conn.get_tsigkeys(context, criterion)
+
+    def get_tsigkey(self, context, tsigkey_id):
+        policy.check('get_tsigkey', context, {'tsigkey_id': tsigkey_id})
+
+        return self.storage_conn.get_tsigkey(context, tsigkey_id)
+
+    def update_tsigkey(self, context, tsigkey_id, values):
+        policy.check('update_tsigkey', context, {'tsigkey_id': tsigkey_id})
+
+        tsigkey = self.storage_conn.update_tsigkey(context, tsigkey_id, values)
+
+        utils.notify(context, 'api', 'tsigkey.update', tsigkey)
+
+        return tsigkey
+
+    def delete_tsigkey(self, context, tsigkey_id):
+        policy.check('delete_tsigkey', context, {'tsigkey_id': tsigkey_id})
+
+        tsigkey = self.storage_conn.get_tsigkey(context, tsigkey_id)
+
+        utils.notify(context, 'api', 'tsigkey.delete', tsigkey)
+
+        return self.storage_conn.delete_tsigkey(context, tsigkey_id)
+
     # Domain Methods
     def create_domain(self, context, values):
         values['tenant_id'] = context.tenant_id

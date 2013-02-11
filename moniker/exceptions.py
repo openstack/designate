@@ -57,6 +57,10 @@ class DuplicateServer(Duplicate):
     pass
 
 
+class DuplicateTsigKey(Duplicate):
+    pass
+
+
 class DuplicateDomain(Duplicate):
     pass
 
@@ -70,6 +74,10 @@ class NotFound(Base):
 
 
 class ServerNotFound(NotFound):
+    pass
+
+
+class TsigKeyNotFound(NotFound):
     pass
 
 

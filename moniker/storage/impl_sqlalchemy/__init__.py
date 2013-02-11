@@ -113,6 +113,65 @@ class Connection(base.Connection):
 
         server.delete(self.session)
 
+    # TSIG Key Methods
+    def create_tsigkey(self, context, values):
+        tsigkey = models.TsigKey()
+
+        tsigkey.update(values)
+
+        try:
+            tsigkey.save(self.session)
+        except exceptions.Duplicate:
+            raise exceptions.DuplicateTsigKey()
+
+        return dict(tsigkey)
+
+    def get_tsigkeys(self, context, criterion=None):
+        query = self.session.query(models.TsigKey)
+
+        if criterion:
+            query = query.filter_by(**criterion)
+
+        try:
+            result = query.all()
+        except exc.NoResultFound:
+            LOG.debug('No results found')
+            return []
+        else:
+            return [dict(o) for o in result]
+
+    def _get_tsigkey(self, context, tsigkey_id):
+        query = self.session.query(models.TsigKey)
+
+        tsigkey = query.get(tsigkey_id)
+
+        if not tsigkey:
+            raise exceptions.TsigKeyNotFound(tsigkey_id)
+        else:
+            return tsigkey
+
+    def get_tsigkey(self, context, tsigkey_id):
+        tsigkey = self._get_tsigkey(context, tsigkey_id)
+
+        return dict(tsigkey)
+
+    def update_tsigkey(self, context, tsigkey_id, values):
+        tsigkey = self._get_tsigkey(context, tsigkey_id)
+
+        tsigkey.update(values)
+
+        try:
+            tsigkey.save(self.session)
+        except exceptions.Duplicate:
+            raise exceptions.DuplicateTsigKey()
+
+        return dict(tsigkey)
+
+    def delete_tsigkey(self, context, tsigkey_id):
+        tsigkey = self._get_tsigkey(context, tsigkey_id)
+
+        tsigkey.delete(self.session)
+
     # Domain Methods
     def create_domain(self, context, values):
         domain = models.Domain()

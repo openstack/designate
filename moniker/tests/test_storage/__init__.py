@@ -42,6 +42,12 @@ class StorageDriverTestCase(StorageTestCase):
             self.admin_context,
             fixture)
 
+    def create_tsigkey(self, fixture=0, values={}):
+        fixture = self.get_tsigkey_fixture(fixture, values)
+        return fixture, self.storage_conn.create_tsigkey(
+            self.admin_context,
+            fixture)
+
     def create_domain(self, fixture=0, values={}):
         fixture = self.get_domain_fixture(fixture, values)
         return fixture, self.storage_conn.create_domain(
@@ -58,6 +64,7 @@ class StorageDriverTestCase(StorageTestCase):
     def test_init(self):
         self.get_storage_driver()
 
+    # Server Tests
     def test_create_server(self):
         values = {
             'name': 'ns1.example.org.',
@@ -130,7 +137,7 @@ class StorageDriverTestCase(StorageTestCase):
         self.assertEqual(actual, [])
 
         # Create a single server
-        server_one = self.create_server()[1]
+        _, server_one = self.create_server()
 
         actual = self.storage_conn.get_servers(self.admin_context)
         self.assertEqual(len(actual), 1)
@@ -140,7 +147,7 @@ class StorageDriverTestCase(StorageTestCase):
         self.assertEqual(str(actual[0]['ipv6']), str(server_one['ipv6']))
 
         # Create a second server
-        server_two = self.create_server(fixture=1)[1]
+        _, server_two = self.create_server(fixture=1)
 
         actual = self.storage_conn.get_servers(self.admin_context)
         self.assertEqual(len(actual), 2)
@@ -150,8 +157,8 @@ class StorageDriverTestCase(StorageTestCase):
         self.assertEqual(str(actual[1]['ipv6']), str(server_two['ipv6']))
 
     def test_get_servers_criterion(self):
-        server_one = self.create_server(0)[1]
-        server_two = self.create_server(1)[1]
+        _, server_one = self.create_server(0)
+        _, server_two = self.create_server(1)
 
         criterion = dict(
             name=server_one['name']
@@ -177,9 +184,9 @@ class StorageDriverTestCase(StorageTestCase):
 
     def test_get_server(self):
         # Create a server
-        expected = self.create_server()[1]
-        actual = self.storage_conn.get_server(
-            self.admin_context, expected['id'])
+        _, expected = self.create_server()
+        actual = self.storage_conn.get_server(self.admin_context,
+                                              expected['id'])
 
         self.assertEqual(str(actual['name']), str(expected['name']))
         self.assertEqual(str(actual['ipv4']), str(expected['ipv4']))
@@ -204,7 +211,7 @@ class StorageDriverTestCase(StorageTestCase):
     def test_update_server_duplicate(self):
         # Create two servers
         self.create_server(fixture=0)
-        server = self.create_server(fixture=1)[1]
+        _, server = self.create_server(fixture=1)
 
         values = self.server_fixtures[0]
 
@@ -230,6 +237,140 @@ class StorageDriverTestCase(StorageTestCase):
             uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
             self.storage_conn.delete_server(self.admin_context, uuid)
 
+    # TSIG Key Tests
+    def test_create_tsigkey(self):
+        values = self.get_tsigkey_fixture()
+
+        result = self.storage_conn.create_tsigkey(self.admin_context,
+                                                  values=values)
+
+        self.assertIsNotNone(result['id'])
+        self.assertIsNotNone(result['created_at'])
+        self.assertIsNone(result['updated_at'])
+
+        self.assertEqual(result['name'], values['name'])
+        self.assertEqual(result['algorithm'], values['algorithm'])
+        self.assertEqual(result['secret'], values['secret'])
+
+    def test_create_tsigkey_duplicate(self):
+        # Create the Initial TsigKey
+        _, tsigkey_one = self.create_tsigkey()
+
+        values = self.get_tsigkey_fixture(1)
+        values['name'] = tsigkey_one['name']
+
+        with self.assertRaises(exceptions.DuplicateTsigKey):
+            self.create_tsigkey(values=values)
+
+    def test_get_tsigkeys(self):
+        actual = self.storage_conn.get_tsigkeys(self.admin_context)
+        self.assertEqual(actual, [])
+
+        # Create a single tsigkey
+        _, tsigkey_one = self.create_tsigkey()
+
+        actual = self.storage_conn.get_tsigkeys(self.admin_context)
+        self.assertEqual(len(actual), 1)
+
+        self.assertEqual(actual[0]['name'], tsigkey_one['name'])
+        self.assertEqual(actual[0]['algorithm'], tsigkey_one['algorithm'])
+        self.assertEqual(actual[0]['secret'], tsigkey_one['secret'])
+
+        # Create a second tsigkey
+        _, tsigkey_two = self.create_tsigkey(fixture=1)
+
+        actual = self.storage_conn.get_tsigkeys(self.admin_context)
+        self.assertEqual(len(actual), 2)
+
+        self.assertEqual(actual[1]['name'], tsigkey_two['name'])
+        self.assertEqual(actual[1]['algorithm'], tsigkey_two['algorithm'])
+        self.assertEqual(actual[1]['secret'], tsigkey_two['secret'])
+
+    def test_get_tsigkeys_criterion(self):
+        _, tsigkey_one = self.create_tsigkey(fixture=0)
+        _, tsigkey_two = self.create_tsigkey(fixture=1)
+
+        criterion = dict(
+            name=tsigkey_one['name']
+        )
+
+        results = self.storage_conn.get_tsigkeys(self.admin_context,
+                                                 criterion)
+
+        self.assertEqual(len(results), 1)
+
+        self.assertEqual(results[0]['name'], tsigkey_one['name'])
+
+        criterion = dict(
+            name=tsigkey_two['name']
+        )
+
+        results = self.storage_conn.get_tsigkeys(self.admin_context,
+                                                 criterion)
+
+        self.assertEqual(len(results), 1)
+
+        self.assertEqual(results[0]['name'], tsigkey_two['name'])
+
+    def test_get_tsigkey(self):
+        # Create a tsigkey
+        _, expected = self.create_tsigkey()
+
+        actual = self.storage_conn.get_tsigkey(self.admin_context,
+                                               expected['id'])
+
+        self.assertEqual(actual['name'], expected['name'])
+        self.assertEqual(actual['algorithm'], expected['algorithm'])
+        self.assertEqual(actual['secret'], expected['secret'])
+
+    def test_get_tsigkey_missing(self):
+        with self.assertRaises(exceptions.TsigKeyNotFound):
+            uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
+            self.storage_conn.get_tsigkey(self.admin_context, uuid)
+
+    def test_update_tsigkey(self):
+        # Create a tsigkey
+        fixture, tsigkey = self.create_tsigkey()
+
+        updated = self.storage_conn.update_tsigkey(self.admin_context,
+                                                   tsigkey['id'],
+                                                   fixture)
+
+        self.assertEqual(updated['name'], fixture['name'])
+        self.assertEqual(updated['algorithm'], fixture['algorithm'])
+        self.assertEqual(updated['secret'], fixture['secret'])
+
+    def test_update_tsigkey_duplicate(self):
+        # Create two tsigkeys
+        self.create_tsigkey(fixture=0)
+        _, tsigkey = self.create_tsigkey(fixture=1)
+
+        values = self.tsigkey_fixtures[0]
+
+        with self.assertRaises(exceptions.DuplicateTsigKey):
+            self.storage_conn.update_tsigkey(self.admin_context,
+                                             tsigkey['id'],
+                                             values)
+
+    def test_update_tsigkey_missing(self):
+        with self.assertRaises(exceptions.TsigKeyNotFound):
+            uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
+            self.storage_conn.update_tsigkey(self.admin_context, uuid, {})
+
+    def test_delete_tsigkey(self):
+        tsigkey_fixture, tsigkey = self.create_tsigkey()
+
+        self.storage_conn.delete_tsigkey(self.admin_context, tsigkey['id'])
+
+        with self.assertRaises(exceptions.TsigKeyNotFound):
+            self.storage_conn.get_tsigkey(self.admin_context, tsigkey['id'])
+
+    def test_delete_tsigkey_missing(self):
+        with self.assertRaises(exceptions.TsigKeyNotFound):
+            uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
+            self.storage_conn.delete_tsigkey(self.admin_context, uuid)
+
+    # Domain Tests
     def test_create_domain(self):
         values = {
             'name': 'example.net.',
@@ -273,8 +414,8 @@ class StorageDriverTestCase(StorageTestCase):
         self.assertEqual(len(actual), 2)
 
     def test_get_domains_criterion(self):
-        domain_one = self.create_domain(0)[1]
-        domain_two = self.create_domain(1)[1]
+        _, domain_one = self.create_domain(0)
+        _, domain_two = self.create_domain(1)
 
         criterion = dict(
             name=domain_one['name']
@@ -315,8 +456,8 @@ class StorageDriverTestCase(StorageTestCase):
             self.storage_conn.get_domain(self.admin_context, uuid)
 
     def test_find_domain_criterion(self):
-        domain_one = self.create_domain(0)[1]
-        domain_two = self.create_domain(1)[1]
+        _, domain_one = self.create_domain(0)
+        _, domain_two = self.create_domain(1)
 
         criterion = dict(
             name=domain_one['name']
@@ -337,7 +478,7 @@ class StorageDriverTestCase(StorageTestCase):
         self.assertEqual(result['email'], domain_two['email'])
 
     def test_find_domain_criterion_missing(self):
-        expected = self.create_domain(0)[1]
+        _, expected = self.create_domain(0)
 
         criterion = dict(
             name=expected['name'] + "NOT FOUND"
@@ -359,7 +500,7 @@ class StorageDriverTestCase(StorageTestCase):
     def test_update_domain_duplicate(self):
         # Create two domains
         fixture_one, domain_one = self.create_domain(fixture=0)
-        domain_two = self.create_domain(fixture=1)[1]
+        _, domain_two = self.create_domain(fixture=1)
 
         with self.assertRaises(exceptions.DuplicateDomain):
             self.storage_conn.update_domain(
@@ -406,13 +547,13 @@ class StorageDriverTestCase(StorageTestCase):
         self.assertEqual(result['data'], values['data'])
 
     def test_get_records(self):
-        domain = self.create_domain()[1]
+        _, domain = self.create_domain()
         actual = self.storage_conn.get_records(self.admin_context,
                                                domain['id'])
         self.assertEqual(actual, [])
 
         # Create a single record
-        record_one = self.create_record(domain, fixture=0)[1]
+        _, record_one = self.create_record(domain, fixture=0)
 
         actual = self.storage_conn.get_records(self.admin_context,
                                                domain['id'])
@@ -423,7 +564,7 @@ class StorageDriverTestCase(StorageTestCase):
         self.assertEqual(actual[0]['data'], record_one['data'])
 
         # Create a second record
-        record_two = self.create_record(domain, fixture=1)[1]
+        _, record_two = self.create_record(domain, fixture=1)
 
         actual = self.storage_conn.get_records(self.admin_context,
                                                domain['id'])
@@ -434,9 +575,9 @@ class StorageDriverTestCase(StorageTestCase):
         self.assertEqual(actual[1]['data'], record_two['data'])
 
     def test_get_records_criterion(self):
-        domain = self.create_domain()[1]
+        _, domain = self.create_domain()
 
-        record_one = self.create_record(domain, fixture=0)[1]
+        _, record_one = self.create_record(domain, fixture=0)
         self.create_record(domain, fixture=1)
 
         criterion = dict(
@@ -460,9 +601,9 @@ class StorageDriverTestCase(StorageTestCase):
         self.assertEqual(len(results), 2)
 
     def test_get_record(self):
-        domain = self.create_domain()[1]
+        _, domain = self.create_domain()
 
-        expected = self.create_record(domain)[1]
+        _, expected = self.create_record(domain)
 
         actual = self.storage_conn.get_record(self.admin_context,
                                               expected['id'])
@@ -477,9 +618,8 @@ class StorageDriverTestCase(StorageTestCase):
             self.storage_conn.get_record(self.admin_context, uuid)
 
     def test_find_record_criterion(self):
-        domain = self.create_domain(0)[1]
-
-        expected = self.create_record(domain)[1]
+        _, domain = self.create_domain(0)
+        _, expected = self.create_record(domain)
 
         criterion = dict(
             name=expected['name']
@@ -494,9 +634,8 @@ class StorageDriverTestCase(StorageTestCase):
         self.assertEqual(actual['data'], expected['data'])
 
     def test_find_record_criterion_missing(self):
-        domain = self.create_domain(0)[1]
-
-        expected = self.create_record(domain)[1]
+        _, domain = self.create_domain(0)
+        _, expected = self.create_record(domain)
 
         criterion = dict(
             name=expected['name'] + "NOT FOUND"
@@ -526,10 +665,10 @@ class StorageDriverTestCase(StorageTestCase):
             self.storage_conn.update_record(self.admin_context, uuid, {})
 
     def test_delete_record(self):
-        domain = self.create_domain()[1]
+        _, domain = self.create_domain()
 
         # Create a record
-        record = self.create_record(domain)[1]
+        _, record = self.create_record(domain)
 
         self.storage_conn.delete_record(self.admin_context, record['id'])
 

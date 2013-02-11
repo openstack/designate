@@ -169,6 +169,89 @@ class CentralServiceTest(CentralTestCase):
         with self.assertRaises(exceptions.ServerNotFound):
             self.central_service.get_server(context, server['id'])
 
+    # TsigKey Tests
+    def test_create_tsigkey(self):
+        context = self.get_admin_context()
+
+        values = self.get_tsigkey_fixture(fixture=0)
+
+        # Create a tsigkey
+        tsigkey = self.central_service.create_tsigkey(context, values=values)
+
+        # Ensure all values have been set correctly
+        self.assertIsNotNone(tsigkey['id'])
+        self.assertEqual(tsigkey['name'], values['name'])
+        self.assertEqual(tsigkey['algorithm'], values['algorithm'])
+        self.assertEqual(tsigkey['secret'], values['secret'])
+
+    def test_get_tsigkeys(self):
+        context = self.get_admin_context()
+
+        # Ensure we have no tsigkeys to start with.
+        tsigkeys = self.central_service.get_tsigkeys(context)
+        self.assertEqual(len(tsigkeys), 0)
+
+        # Create a single tsigkey (using default values)
+        tsigkey_one = self.create_tsigkey()
+
+        # Ensure we can retrieve the newly created tsigkey
+        tsigkeys = self.central_service.get_tsigkeys(context)
+        self.assertEqual(len(tsigkeys), 1)
+        self.assertEqual(tsigkeys[0]['name'], tsigkey_one['name'])
+
+        # Create a second tsigkey
+        tsigkey_two = self.create_tsigkey(fixture=1)
+
+        # Ensure we can retrieve both tsigkeys
+        tsigkeys = self.central_service.get_tsigkeys(context)
+        self.assertEqual(len(tsigkeys), 2)
+        self.assertEqual(tsigkeys[0]['name'], tsigkey_one['name'])
+        self.assertEqual(tsigkeys[1]['name'], tsigkey_two['name'])
+
+    def test_get_tsigkey(self):
+        context = self.get_admin_context()
+
+        # Create a tsigkey
+        expected = self.create_tsigkey()
+
+        # Retrieve it, and ensure it's the same
+        tsigkey = self.central_service.get_tsigkey(context, expected['id'])
+        self.assertEqual(tsigkey['id'], expected['id'])
+        self.assertEqual(tsigkey['name'], expected['name'])
+        self.assertEqual(tsigkey['algorithm'], expected['algorithm'])
+        self.assertEqual(tsigkey['secret'], expected['secret'])
+
+    def test_update_tsigkey(self):
+        context = self.get_admin_context()
+
+        # Create a tsigkey using default values
+        expected = self.create_tsigkey()
+
+        # Update the tsigkey
+        fixture = self.get_tsigkey_fixture(fixture=1)
+        values = dict(name=fixture['name'])
+        self.central_service.update_tsigkey(context, expected['id'],
+                                            values=values)
+
+        # Fetch the tsigkey again
+        tsigkey = self.central_service.get_tsigkey(context, expected['id'])
+
+        # Ensure the tsigkey was updated correctly
+        self.assertEqual(tsigkey['name'], fixture['name'])
+
+    def test_delete_tsigkey(self):
+        context = self.get_admin_context()
+
+        # Create a tsigkey
+        tsigkey = self.create_tsigkey()
+
+        # Delete the tsigkey
+        self.central_service.delete_tsigkey(context, tsigkey['id'])
+
+        # Fetch the tsigkey again, ensuring an exception is raised
+        with self.assertRaises(exceptions.TsigKeyNotFound):
+            self.central_service.get_tsigkey(context, tsigkey['id'])
+
     # Domain Tests
     def test_create_domain(self):
         # Create a server

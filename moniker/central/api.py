@@ -23,6 +23,7 @@ LOG = logging.getLogger(__name__)
 RPC = RpcProxy(cfg.CONF.central_topic, DEFAULT_VERSION)
 
 
+# Server Methods
 def create_server(context, values):
     msg = {
         'method': 'create_server',
@@ -73,6 +74,63 @@ def delete_server(context, server_id):
         'method': 'delete_server',
         'args': {
             'server_id': server_id,
+        },
+    }
+
+    return RPC.call(context, msg)
+
+
+# TSIG Key Methods
+def create_tsigkey(context, values):
+    msg = {
+        'method': 'create_tsigkey',
+        'args': {
+            'values': values,
+        },
+    }
+
+    return RPC.call(context, msg)
+
+
+def get_tsigkeys(context, criterion=None):
+    msg = {
+        'method': 'get_tsigkeys',
+        'args': {
+            'criterion': criterion,
+        },
+    }
+
+    return RPC.call(context, msg)
+
+
+def get_tsigkey(context, tsigkey_id):
+    msg = {
+        'method': 'get_tsigkey',
+        'args': {
+            'tsigkey_id': tsigkey_id,
+        },
+    }
+
+    return RPC.call(context, msg)
+
+
+def update_tsigkey(context, tsigkey_id, values):
+    msg = {
+        'method': 'update_tsigkey',
+        'args': {
+            'tsigkey_id': tsigkey_id,
+            'values': values,
+        },
+    }
+
+    return RPC.call(context, msg)
+
+
+def delete_tsigkey(context, tsigkey_id):
+    msg = {
+        'method': 'delete_tsigkey',
+        'args': {
+            'tsigkey_id': tsigkey_id,
         },
     }
 

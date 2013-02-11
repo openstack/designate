@@ -11,6 +11,12 @@
     "update_server": "rule:admin",
     "delete_server": "rule:admin",
 
+    "create_tsigkey": "rule:admin",
+    "get_tsigkeys": "rule:admin",
+    "get_tsigkey": "rule:admin",
+    "update_tsigkey": "rule:admin",
+    "delete_tsigkey": "rule:admin",
+
     "create_domain": "rule:admin_or_owner",
     "get_domains": "rule:admin_or_owner",
     "get_domain": "rule:admin_or_owner",

@@ -29,6 +29,8 @@ from sqlalchemy.ext.declarative import declarative_base
 LOG = logging.getLogger(__name__)
 
 RECORD_TYPES = ['A', 'AAAA', 'CNAME', 'MX', 'SRV', 'TXT', 'SPF', 'NS', 'PTR']
+TSIG_ALGORITHMS = ['hmac-md5', 'hmac-sha1', 'hmac-sha224', 'hmac-sha256',
+                   'hmac-sha384', 'hmac-sha512']
 
 
 class Base(CommonBase):
@@ -119,3 +121,12 @@ class Record(Base):
 
     def _extra_keys(self):
         return ['tenant_id']
+
+
+class TsigKey(Base):
+    __tablename__ = 'tsigkeys'
+
+    name = Column(String(255), nullable=False, unique=True)
+    algorithm = Column(Enum(name='tsig_algorithms', *TSIG_ALGORITHMS),
+                       nullable=False)
+    secret = Column(String(255), nullable=False)

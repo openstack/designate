@@ -1,0 +1,16 @@
+{
+    "id": "/schemas/tsigkeys",
+
+    "$schema": "http://json-schema.org/draft-03/hyper-schema",
+
+    "title": "tsigkeys",
+    "description": "TSIG Keys",
+
+    "properties": {
+        "tsigkeys": {
+            "type": "array",
+            "description": "TSIG Keys",
+            "items": {"$ref": "/schemas/tsigkey"}
+        }
+    }
+}

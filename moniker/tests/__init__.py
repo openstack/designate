@@ -90,6 +90,16 @@ class TestCase(unittest2.TestCase, AssertMixin):
         'ipv6': '2001:db8::2',
     }]
 
+    tsigkey_fixtures = [{
+        'name': 'test-key-one',
+        'algorithm': 'hmac-md5',
+        'secret': 'SomeSecretKey',
+    }, {
+        'name': 'test-key-two',
+        'algorithm': 'hmac-sha256',
+        'secret': 'AnotherSecretKey',
+    }]
+
     domain_fixtures = [{
         'name': 'example.com.',
         'email': 'example@example.com',
@@ -187,6 +197,11 @@ class TestCase(unittest2.TestCase, AssertMixin):
         _values.update(values)
         return _values
 
+    def get_tsigkey_fixture(self, fixture=0, values={}):
+        _values = copy.copy(self.tsigkey_fixtures[fixture])
+        _values.update(values)
+        return _values
+
     def get_domain_fixture(self, fixture=0, values={}):
         _values = copy.copy(self.domain_fixtures[fixture])
         _values.update(values)
@@ -209,6 +224,13 @@ class TestCase(unittest2.TestCase, AssertMixin):
 
         values = self.get_server_fixture(fixture=fixture, values=kwargs)
         return self.central_service.create_server(context, values=values)
+
+    def create_tsigkey(self, **kwargs):
+        context = kwargs.pop('context', self.get_admin_context())
+        fixture = kwargs.pop('fixture', 0)
+
+        values = self.get_tsigkey_fixture(fixture=fixture, values=kwargs)
+        return self.central_service.create_tsigkey(context, values=values)
 
     def create_domain(self, **kwargs):
         context = kwargs.pop('context', self.get_admin_context())
