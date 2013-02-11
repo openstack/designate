@@ -31,6 +31,21 @@ class Backend(Plugin):
         super(Backend, self).__init__()
         self.central_service = central_service
 
+    def create_tsigkey(self, context, tsigkey):
+        """ Create a TSIG Key """
+        raise exceptions.NotImplemented(
+            'TSIG is not supported by this backend')
+
+    def update_tsigkey(self, context, tsigkey):
+        """ Update a TSIG Key """
+        raise exceptions.NotImplemented(
+            'TSIG is not supported by this backend')
+
+    def delete_tsigkey(self, context, tsigkey):
+        """ Delete a TSIG Key """
+        raise exceptions.NotImplemented(
+            'TSIG is not supported by this backend')
+
     @abc.abstractmethod
     def create_domain(self, context, domain):
         """ Create a DNS domain """

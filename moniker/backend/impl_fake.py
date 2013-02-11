@@ -25,6 +25,9 @@ class FakeBackend(base.Backend):
     def __init__(self, *args, **kwargs):
         super(FakeBackend, self).__init__(*args, **kwargs)
 
+        self.create_tsigkey_calls = []
+        self.update_tsigkey_calls = []
+        self.delete_tsigkey_calls = []
         self.create_domain_calls = []
         self.update_domain_calls = []
         self.delete_domain_calls = []
@@ -34,6 +37,18 @@ class FakeBackend(base.Backend):
         self.sync_domain_calls = []
         self.sync_record_calls = []
         self.ping_calls = []
+
+    def create_tsigkey(self, context, tsigkey):
+        LOG.info('Create TSIG Key %r' % tsigkey)
+        self.create_tsigkey_calls.append((context, tsigkey))
+
+    def update_tsigkey(self, context, tsigkey):
+        LOG.info('Update TSIG Key %r' % tsigkey)
+        self.update_tsigkey_calls.append((context, tsigkey))
+
+    def delete_tsigkey(self, context, tsigkey):
+        LOG.info('Delete TSIG Key %r' % tsigkey)
+        self.delete_tsigkey_calls.append((context, tsigkey))
 
     def create_domain(self, context, domain):
         LOG.info('Create Domain %r' % domain)

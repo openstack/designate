@@ -23,6 +23,40 @@ LOG = logging.getLogger(__name__)
 RPC = RpcProxy(cfg.CONF.agent_topic, DEFAULT_VERSION)
 
 
+# TsigKey Methods
+def create_tsigkey(context, tsigkey):
+    msg = {
+        'method': 'create_tsigkey',
+        'args': {
+            'tsigkey': tsigkey,
+        },
+    }
+
+    return RPC.fanout_cast(context, msg)
+
+
+def update_tsigkey(context, tsigkey):
+    msg = {
+        'method': 'update_tsigkey',
+        'args': {
+            'tsigkey': tsigkey,
+        },
+    }
+
+    return RPC.fanout_cast(context, msg)
+
+
+def delete_tsigkey(context, tsigkey):
+    msg = {
+        'method': 'delete_tsigkey',
+        'args': {
+            'tsigkey': tsigkey,
+        },
+    }
+
+    return RPC.fanout_cast(context, msg)
+
+
 # Domain Methods
 def create_domain(context, domain):
     msg = {

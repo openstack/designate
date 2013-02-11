@@ -18,6 +18,15 @@ from moniker.agent import api as agent_api
 
 
 class RPCBackend(base.Backend):
+    def create_tsigkey(self, context, tsigkey):
+        return agent_api.create_tsigkey(context, tsigkey)
+
+    def update_tsigkey(self, context, tsigkey):
+        return agent_api.update_tsigkey(context, tsigkey)
+
+    def delete_tsigkey(self, context, tsigkey):
+        return agent_api.delete_tsigkey(context, tsigkey)
+
     def create_domain(self, context, domain):
         return agent_api.create_domain(context, domain)
 

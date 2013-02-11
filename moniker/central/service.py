@@ -221,6 +221,7 @@ class Service(rpc_service.Service):
 
         tsigkey = self.storage_conn.create_tsigkey(context, values)
 
+        self.backend.create_tsigkey(context, tsigkey)
         utils.notify(context, 'api', 'tsigkey.create', tsigkey)
 
         return tsigkey
@@ -240,6 +241,7 @@ class Service(rpc_service.Service):
 
         tsigkey = self.storage_conn.update_tsigkey(context, tsigkey_id, values)
 
+        self.backend.update_tsigkey(context, tsigkey)
         utils.notify(context, 'api', 'tsigkey.update', tsigkey)
 
         return tsigkey
@@ -249,6 +251,7 @@ class Service(rpc_service.Service):
 
         tsigkey = self.storage_conn.get_tsigkey(context, tsigkey_id)
 
+        self.backend.delete_tsigkey(context, tsigkey)
         utils.notify(context, 'api', 'tsigkey.delete', tsigkey)
 
         return self.storage_conn.delete_tsigkey(context, tsigkey_id)
