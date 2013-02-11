@@ -139,9 +139,10 @@ class Bind9Backend(base.Backend):
         # TODO: Rewrite this entire thing ASAP
         LOG.debug('Synchronising Domain: %s' % domain['id'])
 
+        admin_context = MonikerContext.get_admin_context()
+
         if not servers:
             # TODO: This is a hack... FIXME
-            admin_context = MonikerContext.get_admin_context()
             servers = central_api.get_servers(admin_context)
 
         records = central_api.get_records(admin_context, domain['id'])
