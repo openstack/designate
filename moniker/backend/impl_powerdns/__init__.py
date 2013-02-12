@@ -91,7 +91,7 @@ class PowerDNSBackend(base.Backend):
         if original_name != tsigkey['name']:
             self.session.query(models.DomainMetadata)\
                 .filter_by(kind='TSIG-ALLOW-AXFR', content=original_name)\
-                .update(name=tsigkey['name'])
+                .update(content=tsigkey['name'])
 
     def delete_tsigkey(self, context, tsigkey):
         """ Delete a TSIG Key """
