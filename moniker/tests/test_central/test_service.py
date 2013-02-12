@@ -499,6 +499,20 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(record['id'], expected_record['id'])
         self.assertEqual(record['name'], expected_record['name'])
 
+    def test_get_record_incorrect_domain_id(self):
+        context = self.get_admin_context()
+        domain = self.create_domain()
+        other_domain = self.create_domain(fixture=1)
+
+        # Create a record
+        record_name = '%d.%s' % (random.randint(10, 1000), domain['name'])
+        expected_record = self.create_record(domain, name=record_name)
+
+        # Ensure we get a 404 if we use the incorrect domain_id
+        with self.assertRaises(exceptions.RecordNotFound):
+            self.central_service.get_record(context, other_domain['id'],
+                                            expected_record['id'])
+
     def test_update_record(self):
         context = self.get_admin_context()
         domain = self.create_domain()
@@ -506,7 +520,7 @@ class CentralServiceTest(CentralTestCase):
         # Create a record
         expected_record = self.create_record(domain)
 
-        # Update the server
+        # Update the record
         values = dict(data='127.0.0.2')
         self.central_service.update_record(context, domain['id'],
                                            expected_record['id'],
@@ -518,6 +532,23 @@ class CentralServiceTest(CentralTestCase):
 
         # Ensure the record was updated correctly
         self.assertEqual(record['data'], '127.0.0.2')
+
+    def test_update_record_incorrect_domain_id(self):
+        context = self.get_admin_context()
+        domain = self.create_domain()
+        other_domain = self.create_domain(fixture=1)
+
+        # Create a record
+        expected_record = self.create_record(domain)
+
+        # Update the record
+        values = dict(data='127.0.0.2')
+
+        # Ensure we get a 404 if we use the incorrect domain_id
+        with self.assertRaises(exceptions.RecordNotFound):
+            self.central_service.update_record(context, other_domain['id'],
+                                               expected_record['id'],
+                                               values=values)
 
     def test_delete_record(self):
         context = self.get_admin_context()
@@ -533,3 +564,16 @@ class CentralServiceTest(CentralTestCase):
         with self.assertRaises(exceptions.RecordNotFound):
             self.central_service.get_record(context, domain['id'],
                                             record['id'])
+
+    def test_delete_record_incorrect_domain_id(self):
+        context = self.get_admin_context()
+        domain = self.create_domain()
+        other_domain = self.create_domain(fixture=1)
+
+        # Create a record
+        record = self.create_record(domain)
+
+        # Ensure we get a 404 if we use the incorrect domain_id
+        with self.assertRaises(exceptions.RecordNotFound):
+            self.central_service.delete_record(context, other_domain['id'],
+                                               record['id'])
