@@ -409,25 +409,35 @@ class Service(rpc_service.Service):
 
     def get_record(self, context, domain_id, record_id):
         domain = self.storage_conn.get_domain(context, domain_id)
+        record = self.storage_conn.get_record(context, record_id)
+
+        # Ensure the domain_id matches the record's domain_id
+        if domain['id'] != record['domain_id']:
+            raise exceptions.RecordNotFound()
 
         target = {
             'domain_id': domain_id,
             'domain_name': domain['name'],
-            'record_id': record_id,
+            'record_id': record['id'],
             'tenant_id': domain['tenant_id']
         }
 
         policy.check('get_record', context, target)
 
-        return self.storage_conn.get_record(context, record_id)
+        return record
 
     def update_record(self, context, domain_id, record_id, values):
         domain = self.storage_conn.get_domain(context, domain_id)
+        record = self.storage_conn.get_record(context, record_id)
+
+        # Ensure the domain_id matches the record's domain_id
+        if domain['id'] != record['domain_id']:
+            raise exceptions.RecordNotFound()
 
         target = {
             'domain_id': domain_id,
             'domain_name': domain['name'],
-            'record_id': record_id,
+            'record_id': record['id'],
             'tenant_id': domain['tenant_id']
         }
 
@@ -446,17 +456,20 @@ class Service(rpc_service.Service):
 
     def delete_record(self, context, domain_id, record_id):
         domain = self.storage_conn.get_domain(context, domain_id)
+        record = self.storage_conn.get_record(context, record_id)
+
+        # Ensure the domain_id matches the record's domain_id
+        if domain['id'] != record['domain_id']:
+            raise exceptions.RecordNotFound()
 
         target = {
             'domain_id': domain_id,
             'domain_name': domain['name'],
-            'record_id': record_id,
+            'record_id': record['id'],
             'tenant_id': domain['tenant_id']
         }
 
         policy.check('delete_record', context, target)
-
-        record = self.storage_conn.get_record(context, record_id)
 
         self.backend.delete_record(context, domain, record)
         utils.notify(context, 'api', 'record.delete', record)
