@@ -117,8 +117,8 @@ Installing the Central
 
 3. Initialize and sync the :term:`central`::
 
-   $ moniker-manage database init
-   $ moniker-manage database sync
+   $ moniker-manage database-init
+   $ moniker-manage database-sync
 
 4. Start the central service::
 
