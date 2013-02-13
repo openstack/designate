@@ -76,6 +76,18 @@ setup(
         database-sync = moniker.manage.database:SyncCommand
         powerdns database-init = moniker.manage.powerdns:DatabaseInitCommand
         powerdns database-sync = moniker.manage.powerdns:DatabaseSyncCommand
+
+        server-list = moniker.manage.servers:ListServersCommand
+        server-get = moniker.manage.servers:GetServerCommand
+        server-create = moniker.manage.servers:CreateServerCommand
+        server-update = moniker.manage.servers:UpdateServerCommand
+        server-delete = moniker.manage.servers:DeleteServerCommand
+
+        tsigkey-list = moniker.manage.tsigkeys:ListTsigKeysCommand
+        tsigkey-get = moniker.manage.tsigkeys:GetTsigKeyCommand
+        tsigkey-create = moniker.manage.tsigkeys:CreateTsigKeyCommand
+        tsigkey-update = moniker.manage.tsigkeys:UpdateTsigKeyCommand
+        tsigkey-delete = moniker.manage.tsigkeys:DeleteTsigKeyCommand
         """),
     classifiers=[
         'Development Status :: 3 - Alpha',
