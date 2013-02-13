@@ -28,6 +28,7 @@ from moniker.sqlalchemy.session import get_session, SQLOPTS
 from moniker.sqlalchemy.expressions import InsertFromSelect
 
 LOG = logging.getLogger(__name__)
+TSIG_SUPPORTED_ALGORITHMS = ['hmac-md5']
 
 cfg.CONF.register_group(cfg.OptGroup(
     name='backend:powerdns', title="Configuration for Powerdns Backend"
@@ -47,6 +48,10 @@ class PowerDNSBackend(base.Backend):
     # TSIG Key Methods
     def create_tsigkey(self, context, tsigkey):
         """ Create a TSIG Key """
+
+        if tsigkey['algorithm'] not in TSIG_SUPPORTED_ALGORITHMS:
+            raise exceptions.NotImplemented('Unsupported algorithm')
+
         tsigkey_m = models.TsigKey()
 
         tsigkey_m.update({
