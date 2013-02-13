@@ -106,7 +106,7 @@ class PowerDNSBackend(base.Backend):
 
     # Domain Methods
     def create_domain(self, context, domain):
-        servers = self.central_service.get_servers(context)
+        servers = self.central_service.get_servers(self.admin_context)
 
         domain_m = models.Domain()
         domain_m.update({
@@ -154,7 +154,7 @@ class PowerDNSBackend(base.Backend):
         record_m.save(self.session)
 
     def update_domain(self, context, domain):
-        servers = self.central_service.get_servers(context)
+        servers = self.central_service.get_servers(self.admin_context)
 
         domain_m = self._get_domain(domain['id'])
 

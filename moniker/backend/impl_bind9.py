@@ -18,7 +18,6 @@ from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
 from moniker import utils
 from moniker.backend import base
-from moniker.context import MonikerContext
 
 LOG = logging.getLogger(__name__)
 
@@ -42,9 +41,7 @@ class Bind9Backend(base.Backend):
         super(Bind9Backend, self).start()
 
         # TODO: This is a hack to ensure the data dir is 100% up to date
-        admin_context = MonikerContext.get_admin_context()
-
-        domains = self.central_service.get_domains(admin_context)
+        domains = self.central_service.get_domains(self.admin_context)
 
         for domain in domains:
             self._sync_domain(domain)
@@ -80,9 +77,7 @@ class Bind9Backend(base.Backend):
         # TODO: Rewrite this entire thing ASAP
         LOG.debug('Synchronising domains')
 
-        admin_context = MonikerContext.get_admin_context()
-
-        domains = self.central_service.get_domains(admin_context)
+        domains = self.central_service.get_domains(self.admin_context)
 
         output_folder = os.path.join(os.path.abspath(cfg.CONF.state_path),
                                      'bind9')
@@ -137,11 +132,10 @@ class Bind9Backend(base.Backend):
         """ Sync a single domain's zone file """
         LOG.debug('Synchronising Domain: %s' % domain['id'])
 
-        admin_context = MonikerContext.get_admin_context()
+        servers = self.central_service.get_servers(self.admin_context)
 
-        servers = self.central_service.get_servers(admin_context)
-
-        records = self.central_service.get_records(admin_context, domain['id'])
+        records = self.central_service.get_records(self.admin_context,
+                                                   domain['id'])
 
         output_folder = os.path.join(os.path.abspath(cfg.CONF.state_path),
                                      'bind9')

@@ -16,6 +16,7 @@
 import abc
 from moniker.openstack.common import log as logging
 from moniker import exceptions
+from moniker.context import MonikerContext
 from moniker.plugin import Plugin
 
 
@@ -30,6 +31,7 @@ class Backend(Plugin):
     def __init__(self, central_service):
         super(Backend, self).__init__()
         self.central_service = central_service
+        self.admin_context = MonikerContext.get_admin_context()
 
     def create_tsigkey(self, context, tsigkey):
         """ Create a TSIG Key """
