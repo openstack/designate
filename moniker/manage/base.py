@@ -25,7 +25,8 @@ class Command(CliffCommand):
     __metaclass__ = abc.ABCMeta
 
     def run(self, parsed_args):
-        self.context = MonikerContext.get_admin_context()
+        self.context = MonikerContext.get_admin_context(
+            request_id="moniker-manage")
 
         return super(Command, self).run(parsed_args)
 

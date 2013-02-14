@@ -88,6 +88,10 @@ setup(
         tsigkey-create = moniker.manage.tsigkeys:CreateTsigKeyCommand
         tsigkey-update = moniker.manage.tsigkeys:UpdateTsigKeyCommand
         tsigkey-delete = moniker.manage.tsigkeys:DeleteTsigKeyCommand
+
+        sync-all = moniker.manage.sync:SyncAllCommand
+        sync-domain = moniker.manage.sync:SyncDomainCommand
+        sync-record = moniker.manage.sync:SyncRecordCommand
         """),
     classifiers=[
         'Development Status :: 3 - Alpha',
