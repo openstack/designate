@@ -381,6 +381,32 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(domains[0]['name'], 'example.com.')
         self.assertEqual(domains[1]['name'], 'example.net.')
 
+    def test_get_domains_tenant_restrictions(self):
+        admin_context = self.get_admin_context()
+        tenant_one_context = self.get_context(tenant=1)
+        tenant_two_context = self.get_context(tenant=2)
+
+        # Ensure we have no domains to start with.
+        domains = self.central_service.get_domains(admin_context)
+        self.assertEqual(len(domains), 0)
+
+        # Create a single domain (using default values)
+        self.create_domain(context=tenant_one_context)
+
+        # Ensure admins can retrieve the newly created domain
+        domains = self.central_service.get_domains(admin_context)
+        self.assertEqual(len(domains), 1)
+        self.assertEqual(domains[0]['name'], 'example.com.')
+
+        # Ensure tenant=1 can retrieve the newly created domain
+        domains = self.central_service.get_domains(tenant_one_context)
+        self.assertEqual(len(domains), 1)
+        self.assertEqual(domains[0]['name'], 'example.com.')
+
+        # Ensure tenant=2 can NOT retrieve the newly created domain
+        domains = self.central_service.get_domains(tenant_two_context)
+        self.assertEqual(len(domains), 0)
+
     def test_get_domain(self):
         context = self.get_admin_context()
 
