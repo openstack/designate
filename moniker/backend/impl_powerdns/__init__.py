@@ -130,7 +130,8 @@ class PowerDNSBackend(base.Backend):
                 'domain_id': domain_m.id,
                 'name': domain['name'].rstrip('.'),
                 'type': 'NS',
-                'content': server['name'].rstrip('.')
+                'content': server['name'].rstrip('.'),
+                'auth': True
             })
             record_m.save(self.session)
 
@@ -154,7 +155,8 @@ class PowerDNSBackend(base.Backend):
             'domain_id': domain_m.id,
             'name': domain['name'].rstrip('.'),
             'type': 'SOA',
-            'content': self._build_soa_content(domain, servers)
+            'content': self._build_soa_content(domain, servers),
+            'auth': True
         })
         record_m.save(self.session)
 
@@ -197,7 +199,8 @@ class PowerDNSBackend(base.Backend):
             'type': record['type'],
             'content': self._sanitize_content(record['type'], record['data']),
             'ttl': record['ttl'],
-            'prio': record['priority']
+            'prio': record['priority'],
+            'auth': self._is_authoritative(domain, record)
         })
 
         record_m.save(self.session)
@@ -210,7 +213,8 @@ class PowerDNSBackend(base.Backend):
             'type': record['type'],
             'content': self._sanitize_content(record['type'], record['data']),
             'ttl': record['ttl'],
-            'prio': record['priority']
+            'prio': record['priority'],
+            'auth': self._is_authoritative(domain, record)
         })
 
         record_m.save(self.session)
@@ -220,6 +224,14 @@ class PowerDNSBackend(base.Backend):
         record_m.delete(self.session)
 
     # Internal Methods
+    def _is_authoritative(self, domain, record):
+        # NOTE(kiall): See http://doc.powerdns.com/dnssec-modes.html
+        if (record['type'] == 'NS' and
+                record['name'] != domain['name']):
+            return False
+        else:
+            return True
+
     def _sanitize_content(self, type, content):
         if type in ('CNAME', 'MX', 'SRV', 'NS', 'PTR'):
             return content.rstrip('.')
