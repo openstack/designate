@@ -15,7 +15,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from sqlalchemy import Column, String, Text, Integer
+from sqlalchemy import Column, String, Text, Integer, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from moniker.sqlalchemy.models import Base as CommonBase
 from moniker.sqlalchemy.types import UUID
@@ -71,3 +71,5 @@ class Record(Base):
     ttl = Column(Integer, default=None, nullable=True)
     prio = Column(Integer, default=None, nullable=True)
     change_date = Column(Integer, default=None, nullable=True)
+    ordername = Column(String(255), default=None, nullable=True)
+    auth = Column(Boolean(), default=None, nullable=True)
