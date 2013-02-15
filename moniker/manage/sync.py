@@ -23,7 +23,7 @@ LOG = logging.getLogger(__name__)
 class SyncAllCommand(base.Command):
     """ Sync Everything """
 
-    def take_action(self, parsed_args):
+    def execute(self, parsed_args):
         return central_api.sync_all(self.context)
 
 
@@ -37,7 +37,7 @@ class SyncDomainCommand(base.Command):
 
         return parser
 
-    def take_action(self, parsed_args):
+    def execute(self, parsed_args):
         return central_api.sync_domain(self.context, parsed_args.id)
 
 
@@ -52,6 +52,6 @@ class SyncRecordCommand(base.Command):
 
         return parser
 
-    def take_action(self, parsed_args):
+    def execute(self, parsed_args):
         return central_api.sync_record(self.context, parsed_args.domain_id,
                                        parsed_args.id)
