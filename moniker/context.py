@@ -94,8 +94,11 @@ class MonikerContext(context.RequestContext):
         self._original_tenant_id = value
 
     @classmethod
-    def get_admin_context(cls):
-        return cls(None, tenant=None, is_admin=True, roles=['admin'])
+    def get_admin_context(cls, **kwargs):
+        kwargs['is_admin'] = True
+        kwargs['roles'] = ['admin']
+
+        return cls(None, **kwargs)
 
     @classmethod
     def get_context_from_function_and_args(cls, function, args, kwargs):
