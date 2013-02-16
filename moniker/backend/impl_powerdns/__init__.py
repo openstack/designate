@@ -34,7 +34,9 @@ cfg.CONF.register_group(cfg.OptGroup(
     name='backend:powerdns', title="Configuration for Powerdns Backend"
 ))
 
-cfg.CONF.register_opts(SQLOPTS, group='backend:powerdns')
+cfg.CONF.register_opts([
+    cfg.StrOpt('domain-type', default='NATIVE', help='PowerDNS Domain Type'),
+] + SQLOPTS, group='backend:powerdns')
 
 
 class PowerDNSBackend(base.Backend):
@@ -118,7 +120,7 @@ class PowerDNSBackend(base.Backend):
             'moniker_id': domain['id'],
             'name': domain['name'].rstrip('.'),
             'master': servers[0]['name'].rstrip('.'),
-            'type': 'NATIVE',
+            'type': cfg.CONF['backend:powerdns'].domain_type,
             'account': context.tenant_id
         })
         domain_m.save(self.session)
