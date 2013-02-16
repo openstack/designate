@@ -161,19 +161,9 @@ class PowerDNSBackend(base.Backend):
         record_m.save(self.session)
 
     def update_domain(self, context, domain):
-        servers = self.central_service.get_servers(self.admin_context)
-
-        domain_m = self._get_domain(domain['id'])
-
         # TODO: Sync Server List
 
-        soa_record_m = self._get_record(domain=domain_m, type='SOA')
-
-        soa_record_m.update({
-            'content': self._build_soa_content(domain, servers)
-        })
-
-        soa_record_m.save(self.session)
+        self._update_soa(domain)
 
     def delete_domain(self, context, domain):
         domain_m = self._get_domain(domain['id'])
@@ -205,6 +195,8 @@ class PowerDNSBackend(base.Backend):
 
         record_m.save(self.session)
 
+        self._update_soa(domain)
+
     def update_record(self, context, domain, record):
         record_m = self._get_record(record['id'])
 
@@ -219,11 +211,26 @@ class PowerDNSBackend(base.Backend):
 
         record_m.save(self.session)
 
+        self._update_soa(domain)
+
     def delete_record(self, context, domain, record):
         record_m = self._get_record(record['id'])
         record_m.delete(self.session)
 
+        self._update_soa(domain)
+
     # Internal Methods
+    def _update_soa(self, domain):
+        servers = self.central_service.get_servers(self.admin_context)
+        domain_m = self._get_domain(domain['id'])
+        record_m = self._get_record(domain=domain_m, type='SOA')
+
+        record_m.update({
+            'content': self._build_soa_content(domain, servers)
+        })
+
+        record_m.save(self.session)
+
     def _is_authoritative(self, domain, record):
         # NOTE(kiall): See http://doc.powerdns.com/dnssec-modes.html
         if (record['type'] == 'NS' and
