@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from moniker.openstack.common import cfg
+from moniker.openstack.common import local
 from moniker.openstack.common import log as logging
 from moniker import wsgi
 from moniker.context import MonikerContext
@@ -54,6 +55,10 @@ class KeystoneContextMiddleware(wsgi.Middleware):
         if sudo_tenant_id:
             context.sudo(sudo_tenant_id)
 
+        # Store the context where oslo-log exepcts to find it.
+        local.store.context = context
+
+        # Attach the context to the request environment
         request.environ['context'] = context
 
 
@@ -61,4 +66,10 @@ class NoAuthContextMiddleware(wsgi.Middleware):
     def process_request(self, request):
         # NOTE(kiall): This makes the assumption that disabling authentication
         #              means you wish to allow full access to everyone.
-        request.environ['context'] = MonikerContext(is_admin=True)
+        context = MonikerContext(is_admin=True)
+
+        # Store the context where oslo-log exepcts to find it.
+        local.store.context = context
+
+        # Attach the context to the request environment
+        request.environ['context'] = context
