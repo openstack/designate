@@ -136,6 +136,7 @@ class TestCase(unittest2.TestCase, AssertMixin):
 
         self.config(
             auth_strategy='noauth',
+            api_paste_config='api-paste.ini.sample',
             group='service:api'
         )
 
