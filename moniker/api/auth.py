@@ -49,14 +49,14 @@ class KeystoneContextMiddleware(wsgi.Middleware):
                                  tenant=headers.get('X-Tenant-ID'),
                                  roles=roles)
 
+        # Store the context where oslo-log exepcts to find it.
+        local.store.context = context
+
         # Attempt to sudo, if requested.
         sudo_tenant_id = headers.get('X-Moniker-Tenant-ID', None)
 
         if sudo_tenant_id:
             context.sudo(sudo_tenant_id)
-
-        # Store the context where oslo-log exepcts to find it.
-        local.store.context = context
 
         # Attach the context to the request environment
         request.environ['context'] = context
