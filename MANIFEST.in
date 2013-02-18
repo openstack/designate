@@ -5,6 +5,7 @@ include *.txt *.ini *.cfg *.rst *.md
 include etc/moniker/*.sample
 include etc/moniker/policy.json
 recursive-include moniker/resources *
+recursive-include tools *
 
 exclude .gitignore
 exclude .gitreview
