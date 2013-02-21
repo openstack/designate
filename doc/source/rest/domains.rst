@@ -20,7 +20,7 @@ Create Domain
       POST /domains HTTP/1.1
       Host: example.com
       Accept: application/json
-      Context-Type: application/json
+      Content-Type: application/json
 
       {
         "name": "domain1.com.",

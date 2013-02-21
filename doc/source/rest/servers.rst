@@ -22,7 +22,7 @@ Create Server
       POST /servers HTTP/1.1
       Host: example.com
       Accept: application/json
-      Context-Type: application/json
+      Content-Type: application/json
 
       {
         "name": 'ns1.example.org.',
@@ -111,7 +111,7 @@ Update Server
       PUT /servers/879c1100-9c92-4244-bc83-9535ee6534d0 HTTP/1.1
       Content-Type: application/json
       Accept: application/json
-      Context-Type: application/json
+      Content-Type: application/json
 
       {
         "name": 'ns1.example.org.',
