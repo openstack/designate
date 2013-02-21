@@ -211,16 +211,12 @@ Get Servers Hosting a Domain
         {
           "id": "384a9b20-239c-11e2-81c1-0800200c9a66",
           "name": "ns1.provider.com.",
-          "ipv4": "192.0.2.1",
-          "ipv6": "2001:db8::1",
           "created_at": "2011-01-21T11:33:21Z",
           "updated_at": null
         },
         {
           "id": "cf661142-e577-40b5-b3eb-75795cdc0cd7",
           "name": "ns2.provider.com.",
-          "ipv4": "192.0.2.2",
-          "ipv6": "2001:db8::2",
           "created_at": "2011-01-21T11:33:21Z",
           "updated_at": "2011-01-21T11:33:21Z"
         }
@@ -228,8 +224,6 @@ Get Servers Hosting a Domain
 
    :form id: UUID server_id
    :form name: Server hostname
-   :form ipv4: Server IPv4 address
-   :form ipv6: Server IPv6 address
    :form created_at: timestamp
    :form updated_at: timestamp
    :statuscode 200: Success

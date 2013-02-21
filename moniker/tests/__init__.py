@@ -78,16 +78,10 @@ class AssertMixin(object):
 class TestCase(unittest2.TestCase, AssertMixin):
     server_fixtures = [{
         'name': 'ns1.example.org.',
-        'ipv4': '192.0.2.1',
-        'ipv6': '2001:db8::1',
     }, {
         'name': 'ns2.example.org.',
-        'ipv4': '192.0.2.2',
-        'ipv6': '2001:db8::2',
     }, {
         'name': 'ns2.example.org.',
-        'ipv4': '192.0.2.2',
-        'ipv6': '2001:db8::2',
     }]
 
     tsigkey_fixtures = [{

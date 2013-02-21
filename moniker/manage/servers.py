@@ -48,16 +48,12 @@ class CreateServerCommand(base.CreateCommand):
         parser = super(CreateServerCommand, self).get_parser(prog_name)
 
         parser.add_argument('--name', help="Server Name", required=True)
-        parser.add_argument('--ipv4', help="Server IPv4 Address")
-        parser.add_argument('--ipv6', help="Server IPv6 Address")
 
         return parser
 
     def execute(self, parsed_args):
         server = dict(
             name=parsed_args.name,
-            ipv4=parsed_args.ipv4,
-            ipv6=parsed_args.ipv6,
         )
 
         return central_api.create_server(self.context, server)
@@ -72,14 +68,6 @@ class UpdateServerCommand(base.UpdateCommand):
         parser.add_argument('id', help="Server ID")
         parser.add_argument('--name', help="Server Name")
 
-        ipv4_group = parser.add_mutually_exclusive_group()
-        ipv4_group.add_argument('--ipv4', help="Server IPv4 Address")
-        ipv4_group.add_argument('--no-ipv4', action='store_true')
-
-        ipv6_group = parser.add_mutually_exclusive_group()
-        ipv6_group.add_argument('--ipv6', help="Server IPv6 Address")
-        ipv6_group.add_argument('--no-ipv6', action='store_true')
-
         return parser
 
     def execute(self, parsed_args):
@@ -87,16 +75,6 @@ class UpdateServerCommand(base.UpdateCommand):
 
         if parsed_args.name:
             server['name'] = parsed_args.name
-
-        if parsed_args.no_ipv4:
-            server['ipv4'] = None
-        elif parsed_args.ipv4:
-            server['ipv4'] = parsed_args.ipv4
-
-        if parsed_args.no_ipv6:
-            server['ipv6'] = None
-        elif parsed_args.ipv6:
-            server['ipv6'] = parsed_args.ipv6
 
         return central_api.update_server(self.context, parsed_args.id, server)
 

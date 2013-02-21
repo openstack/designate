@@ -20,16 +20,6 @@
             "maxLength": 255,
             "required": true
         },
-        "ipv4": {
-            "type": ["string", "null"],
-            "description": "IPv4 address of server",
-            "format": "ip-address"
-        },
-        "ipv6": {
-            "type": ["string", "null"],
-            "description": "IPv6 address of server",
-            "format": "ipv6"
-        },
         "created_at": {
             "type": "string",
             "description": "Date and time of server creation",
@@ -43,23 +33,6 @@
             "readonly": true
         }
     },
-    "anyOf": [{
-        "description": "IPv4",
-        "properties": {
-            "ipv4": {
-                "type": "string",
-                "required": true
-            }
-        }
-    }, {
-        "description": "IPv6",
-        "properties": {
-            "ipv6": {
-                "type": "string",
-                "required": true
-            }
-        }
-    }],
     "links": [{
         "rel": "self",
         "href": "/servers/{id}"

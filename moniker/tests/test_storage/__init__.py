@@ -67,9 +67,7 @@ class StorageDriverTestCase(StorageTestCase):
     # Server Tests
     def test_create_server(self):
         values = {
-            'name': 'ns1.example.org.',
-            'ipv4': '192.0.2.1',
-            'ipv6': '2001:db8::1',
+            'name': 'ns1.example.org.'
         }
 
         result = self.storage_conn.create_server(
@@ -80,57 +78,13 @@ class StorageDriverTestCase(StorageTestCase):
         self.assertIsNone(result['updated_at'])
 
         self.assertEqual(result['name'], values['name'])
-        self.assertEqual(result['ipv4'], values['ipv4'])
-        self.assertEqual(result['ipv6'], values['ipv6'])
-
-    def test_create_server_ipv4_only(self):
-        values = [{
-            'name': 'ns1.example.org.',
-            'ipv4': '192.0.2.1',
-            'ipv6': None,
-        }, {
-            'name': 'ns2.example.org.',
-            'ipv4': '192.0.2.2'
-        }]
-
-        for value in values:
-            result = self.storage_conn.create_server(
-                self.admin_context, values=value)
-
-            self.assertIsNotNone(result['id'])
-            self.assertIsNotNone(result['created_at'])
-            self.assertIsNone(result['updated_at'])
-
-            self.assertEqual(result['name'], value['name'])
-            self.assertEqual(result['ipv4'], value['ipv4'])
-            self.assertIsNone(result['ipv6'])
 
     def test_create_server_duplicate(self):
         # Create the Initial Server
         self.create_server()
 
-        values = [{
-            # No Changes/Identical
-        }, {
-            'ipv4': '127.0.0.1',
-        }, {
-            'ipv4': '127.0.0.1',
-            'ipv6': '::1',
-        }, {
-            'ipv6': '::1',
-        }, {
-            'name': 'localhost.',
-        }, {
-            'name': 'localhost.',
-            'ipv4': '127.0.0.1',
-        }, {
-            'name': 'localhost.',
-            'ipv6': '::1',
-        }]
-
-        for value in values:
-            with self.assertRaises(exceptions.DuplicateServer):
-                self.create_server(values=value)
+        with self.assertRaises(exceptions.DuplicateServer):
+            self.create_server()
 
     def test_get_servers(self):
         actual = self.storage_conn.get_servers(self.admin_context)
@@ -143,8 +97,6 @@ class StorageDriverTestCase(StorageTestCase):
         self.assertEqual(len(actual), 1)
 
         self.assertEqual(str(actual[0]['name']), str(server_one['name']))
-        self.assertEqual(str(actual[0]['ipv4']), str(server_one['ipv4']))
-        self.assertEqual(str(actual[0]['ipv6']), str(server_one['ipv6']))
 
         # Create a second server
         _, server_two = self.create_server(fixture=1)
@@ -153,8 +105,6 @@ class StorageDriverTestCase(StorageTestCase):
         self.assertEqual(len(actual), 2)
 
         self.assertEqual(str(actual[1]['name']), str(server_two['name']))
-        self.assertEqual(str(actual[1]['ipv4']), str(server_two['ipv4']))
-        self.assertEqual(str(actual[1]['ipv6']), str(server_two['ipv6']))
 
     def test_get_servers_criterion(self):
         _, server_one = self.create_server(0)
@@ -189,8 +139,6 @@ class StorageDriverTestCase(StorageTestCase):
                                               expected['id'])
 
         self.assertEqual(str(actual['name']), str(expected['name']))
-        self.assertEqual(str(actual['ipv4']), str(expected['ipv4']))
-        self.assertEqual(str(actual['ipv6']), str(expected['ipv6']))
 
     def test_get_server_missing(self):
         with self.assertRaises(exceptions.ServerNotFound):
@@ -205,8 +153,6 @@ class StorageDriverTestCase(StorageTestCase):
             self.admin_context, server['id'], fixture)
 
         self.assertEqual(str(updated['name']), str(fixture['name']))
-        self.assertEqual(str(updated['ipv4']), str(fixture['ipv4']))
-        self.assertEqual(str(updated['ipv6']), str(fixture['ipv6']))
 
     def test_update_server_duplicate(self):
         # Create two servers

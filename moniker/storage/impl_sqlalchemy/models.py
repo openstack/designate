@@ -22,7 +22,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from moniker.openstack.common import log as logging
 from moniker.openstack.common import timeutils
 from moniker.openstack.common.uuidutils import generate_uuid
-from moniker.sqlalchemy.types import UUID, Inet
+from moniker.sqlalchemy.types import UUID
 from moniker.sqlalchemy.models import Base as CommonBase
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -51,8 +51,6 @@ class Server(Base):
     __tablename__ = 'servers'
 
     name = Column(String(255), nullable=False, unique=True)
-    ipv4 = Column(Inet, nullable=False, unique=True)
-    ipv6 = Column(Inet, default=None, nullable=True, unique=True)
 
 
 class Domain(Base):

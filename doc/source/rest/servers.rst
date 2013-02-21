@@ -25,9 +25,7 @@ Create Server
       Content-Type: application/json
 
       {
-        "name": "ns1.example.org.",
-        "ipv4": "192.0.2.1",
-        "ipv6": "2001:db8::1"
+        "name": "ns1.example.org."
       }
 
    **Example response**:
@@ -40,16 +38,12 @@ Create Server
 
       {
         "id": "384a9b20-239c-11e2-81c1-0800200c9a66",
-        "name": "ns1.example.org.",
-        "ipv4": "192.0.2.1",
-        "ipv6": "2001:db8::1",
+        "name": "ns1.example.org."
         "created_at": "2011-01-21T11:33:21Z",
         "updated_at": null
       }
 
    :form name: Server hostname
-   :form ipv4: Server IPv4 address
-   :form ipv6: Server IPv6 address
    :statuscode 200: Success
    :statuscode 401: Access Denied
    :statuscode 409: Conflict
@@ -80,8 +74,6 @@ Get Server
       {
         "id": "384a9b20-239c-11e2-81c1-0800200c9a66",
         "name": "ns1.example.org.",
-        "ipv4": "192.0.2.1",
-        "ipv6": "2001:db8::1",
         "created_at": "2011-01-21T11:33:21Z",
         "updated_at": null
       }
@@ -89,8 +81,6 @@ Get Server
    :param server_id: The server's unique id
    :type server_id: uuid
    :form name: Server hostname
-   :form ipv4: Server IPv4 address
-   :form ipv6: Server IPv6 address
    :form created_at: timestamp
    :form updated_at: timestamp
    :statuscode 200: Success
@@ -114,8 +104,7 @@ Update Server
       Content-Type: application/json
 
       {
-        "name": "ns1.example.org.",
-        "ipv4": "1.2.3.5"
+        "name": "ns1.example.org."
       }
 
    **Example response**:
@@ -128,15 +117,13 @@ Update Server
 
       {
         "id": "879c1100-9c92-4244-bc83-9535ee6534d0"t
-        "name": "ns1.example.org.",
-        "ipv4": "1.2.3.5",
+        "name": "ns1.example.org."
         "created_at": "2012-11-02T02:55:44.000000",
         "updated_at": "2012-11-02T02:58:41.993556"
       }
 
    :form id: UUID server_id
    :form name: Server hostname
-   :form ipv4: Server IPv4 address
    :form created_at: timestamp
    :form updated_at: timestamp
    :statuscode 200: Success
@@ -170,17 +157,13 @@ List Servers
       [
         {
           "id": "384a9b20-239c-11e2-81c1-0800200c9a66",
-          "name": "ns1.example.org.",
-          "ipv4": "192.0.2.1",
-          "ipv6": "2001:db8::1",
+          "name": "ns1.example.org."
           "created_at": "2011-01-21T11:33:21Z",
           "updated_at": null
         },
         {
           "id": "cf661142-e577-40b5-b3eb-75795cdc0cd7",
-          "name": "ns2.example.org.",
-          "ipv4": "192.0.2.2",
-          "ipv6": "2001:db8::2",
+          "name": "ns2.example.org."
           "created_at": "2011-01-21T11:33:21Z",
           "updated_at": "2011-01-21T11:33:21Z"
         }
@@ -188,8 +171,6 @@ List Servers
 
    :form id: UUID server_id
    :form name: Server hostname
-   :form ipv4: Server IPv4 address
-   :form ipv6: Server IPv6 address
    :form created_at: timestamp
    :form updated_at: timestamp
    :statuscode 200: Success
