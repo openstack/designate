@@ -25,9 +25,9 @@ Create Server
       Content-Type: application/json
 
       {
-        "name": 'ns1.example.org.',
-        "ipv4": '192.0.2.1',
-        "ipv6": '2001:db8::1'
+        "name": "ns1.example.org.",
+        "ipv4": "192.0.2.1",
+        "ipv6": "2001:db8::1"
       }
 
    **Example response**:
@@ -114,8 +114,8 @@ Update Server
       Content-Type: application/json
 
       {
-        "name": 'ns1.example.org.',
-        "ipv4": '1.2.3.5'
+        "name": "ns1.example.org.",
+        "ipv4": "1.2.3.5"
       }
 
    **Example response**:
@@ -181,8 +181,8 @@ List Servers
           "name": "ns2.example.org.",
           "ipv4": "192.0.2.2",
           "ipv6": "2001:db8::2",
-          "created_at": '2011-01-21T11:33:21Z",
-          "updated_at": '2011-01-21T11:33:21Z"
+          "created_at": "2011-01-21T11:33:21Z",
+          "updated_at": "2011-01-21T11:33:21Z"
         }
       ]
 
