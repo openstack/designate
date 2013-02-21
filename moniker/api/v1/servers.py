@@ -78,10 +78,10 @@ def get_servers():
         return flask.Response(status=401)
     except rpc_common.Timeout:
         return flask.Response(status=504)
+    else:
+        servers = servers_schema.filter({'servers': servers})
 
-    servers = servers_schema.filter({'servers': servers})
-
-    return flask.jsonify(servers)
+        return flask.jsonify(servers)
 
 
 @blueprint.route('/servers/<server_id>', methods=['GET'])

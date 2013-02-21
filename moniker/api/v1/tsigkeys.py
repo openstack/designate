@@ -79,10 +79,10 @@ def get_tsigkeys():
         return flask.Response(status=401)
     except rpc_common.Timeout:
         return flask.Response(status=504)
+    else:
+        tsigkeys = tsigkeys_schema.filter({'tsigkeys': tsigkeys})
 
-    tsigkeys = tsigkeys_schema.filter({'tsigkeys': tsigkeys})
-
-    return flask.jsonify(tsigkeys)
+        return flask.jsonify(tsigkeys)
 
 
 @blueprint.route('/tsigkeys/<tsigkey_id>', methods=['GET'])

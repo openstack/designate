@@ -80,10 +80,10 @@ def get_domains():
         return flask.Response(status=401)
     except rpc_common.Timeout:
         return flask.Response(status=504)
+    else:
+        domains = domains_schema.filter({'domains': domains})
 
-    domains = domains_schema.filter({'domains': domains})
-
-    return flask.jsonify(domains)
+        return flask.jsonify(domains)
 
 
 @blueprint.route('/domains/<domain_id>', methods=['GET'])

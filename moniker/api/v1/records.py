@@ -81,10 +81,10 @@ def get_records(domain_id):
         return flask.Response(status=404)
     except rpc_common.Timeout:
         return flask.Response(status=504)
+    else:
+        records = records_schema.filter({'records': records})
 
-    records = records_schema.filter({'records': records})
-
-    return flask.jsonify(records)
+        return flask.jsonify(records)
 
 
 @blueprint.route('/domains/<domain_id>/records/<record_id>', methods=['GET'])
