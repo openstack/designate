@@ -464,6 +464,17 @@ class CentralServiceTest(CentralTestCase):
         with self.assertRaises(exceptions.DomainNotFound):
             self.central_service.get_domain(context, domain['id'])
 
+    def test_get_domain_servers(self):
+        context = self.get_admin_context()
+
+        # Create a domain
+        domain = self.create_domain()
+
+        # Retrieve the servers list
+        servers = self.central_service.get_domain_servers(context,
+                                                          domain['id'])
+        self.assertGreater(len(servers), 0)
+
     # Record Tests
     def test_create_record(self):
         context = self.get_admin_context()

@@ -194,6 +194,17 @@ def delete_domain(context, domain_id):
     return RPC.call(context, msg)
 
 
+def get_domain_servers(context, domain_id):
+    msg = {
+        'method': 'get_domain_servers',
+        'args': {
+            'domain_id': domain_id,
+        },
+    }
+
+    return RPC.call(context, msg)
+
+
 # Record Methods
 def create_record(context, domain_id, values):
     msg = {

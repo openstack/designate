@@ -371,6 +371,27 @@ class Service(rpc_service.Service):
 
         return self.storage_conn.delete_domain(context, domain_id)
 
+    def get_domain_servers(self, context, domain_id, criterion=None):
+        domain = self.storage_conn.get_domain(context, domain_id)
+
+        target = {
+            'domain_id': domain_id,
+            'domain_name': domain['name'],
+            'tenant_id': domain['tenant_id']
+        }
+
+        policy.check('get_domain_servers', context, target)
+
+        if criterion is None:
+            criterion = {}
+
+        if not context.is_admin:
+            criterion['tenant_id'] = context.tenant_id
+
+        # TODO: Once we allow domains to be allocated on 1 of N server
+        #       pools, return the filtered list here.
+        return self.storage_conn.get_servers(context, criterion)
+
     # Record Methods
     def create_record(self, context, domain_id, values):
         domain = self.storage_conn.get_domain(context, domain_id)

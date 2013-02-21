@@ -69,7 +69,7 @@ Get a Domain
 
    .. sourcecode:: http
 
-      GET /domains/09494b72b65b42979efb187f65a0553e HTTP/1.1
+      GET /domains/09494b72-b65b-4297-9efb-187f65a0553e HTTP/1.1
       Host: example.com
       Accept: application/json
 
@@ -111,9 +111,10 @@ Update a Domain
 
    .. sourcecode:: http
 
-      PUT /domains/09494b72b65b42979efb187f65a0553e HTTP/1.1
+      PUT /domains/09494b72-b65b-4297-9efb-187f65a0553e HTTP/1.1
       Host: example.com
       Accept: application/json
+      Content-Type: application/json
 
       {
         "name": "domainnamex.com",
@@ -166,7 +167,7 @@ Delete a Domain
 
    .. sourcecode:: http
 
-      DELETE /domains/09494b72b65b42979efb187f65a0553e HTTP/1.1
+      DELETE /domains/09494b72-b65b-4297-9efb-187f65a0553e HTTP/1.1
       Host: example.com
 
    **Example response**:
@@ -182,6 +183,58 @@ Delete a Domain
    :statuscode 401: Access Denied
    :statuscode 400: Invalid Object
    :statuscode 404: Domain not found
+
+Get Servers Hosting a Domain
+----------------------------
+
+.. http:get:: /domains/(uuid:id)/servers
+
+   Lists the nameservers hosting a particular domain
+
+   **Example request**:
+
+   .. sourcecode:: http
+
+      GET /domains/09494b72-b65b-4297-9efb-187f65a0553e/servers HTTP/1.1
+      Host: example.com
+      Accept: application/json
+
+   **Example response**:
+
+   .. sourcecode:: http
+
+      HTTP/1.1 200 OK
+      Vary: Accept
+      Content-Type: application/json
+
+      [
+        {
+          "id": "384a9b20-239c-11e2-81c1-0800200c9a66",
+          "name": "ns1.provider.com.",
+          "ipv4": "192.0.2.1",
+          "ipv6": "2001:db8::1",
+          "created_at": "2011-01-21T11:33:21Z",
+          "updated_at": null
+        },
+        {
+          "id": "cf661142-e577-40b5-b3eb-75795cdc0cd7",
+          "name": "ns2.provider.com.",
+          "ipv4": "192.0.2.2",
+          "ipv6": "2001:db8::2",
+          "created_at": "2011-01-21T11:33:21Z",
+          "updated_at": "2011-01-21T11:33:21Z"
+        }
+      ]
+
+   :form id: UUID server_id
+   :form name: Server hostname
+   :form ipv4: Server IPv4 address
+   :form ipv6: Server IPv6 address
+   :form created_at: timestamp
+   :form updated_at: timestamp
+   :statuscode 200: Success
+   :statuscode 401: Access Denied
+   :statuscode 404: Domain Not Found
 
 List Domains
 ------------

@@ -22,6 +22,7 @@
     "get_domain": "rule:admin_or_owner",
     "update_domain": "rule:admin_or_owner",
     "delete_domain": "rule:admin_or_owner",
+    "get_domain_servers": "rule:admin_or_owner",
 
     "create_record": "rule:admin_or_owner",
     "get_records": "rule:admin_or_owner",

@@ -25,6 +25,7 @@ LOG = logging.getLogger(__name__)
 blueprint = flask.Blueprint('domains', __name__)
 domain_schema = schema.Schema('v1', 'domain')
 domains_schema = schema.Schema('v1', 'domains')
+servers_schema = schema.Schema('v1', 'servers')
 
 
 @blueprint.route('/schemas/domain', methods=['GET'])
@@ -152,3 +153,23 @@ def delete_domain(domain_id):
         return flask.Response(status=504)
     else:
         return flask.Response(status=200)
+
+
+@blueprint.route('/domains/<domain_id>/servers', methods=['GET'])
+def get_domain_servers(domain_id):
+    context = flask.request.environ.get('context')
+
+    try:
+        servers = central_api.get_domain_servers(context, domain_id)
+    except exceptions.BadRequest:
+        return flask.Response(status=400)
+    except exceptions.Forbidden:
+        return flask.Response(status=401)
+    except exceptions.DomainNotFound:
+        return flask.Response(status=404)
+    except rpc_common.Timeout:
+        return flask.Response(status=504)
+    else:
+        servers = servers_schema.filter({'servers': servers})
+
+        return flask.jsonify(servers)
