@@ -56,6 +56,12 @@ setup(
     ],
     cmdclass=common_setup.get_cmdclass(),
     entry_points=textwrap.dedent("""
+        [moniker.api.v1]
+        domains = moniker.api.v1.domains:blueprint
+        records = moniker.api.v1.records:blueprint
+        servers = moniker.api.v1.servers:blueprint
+        tsigkeys = moniker.api.v1.tsigkeys:blueprint
+
         [moniker.storage]
         sqlalchemy = moniker.storage.impl_sqlalchemy:SQLAlchemyStorage
 

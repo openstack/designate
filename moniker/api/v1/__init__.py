@@ -14,18 +14,22 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import flask
-from moniker.api.v1.domains import blueprint as domains_blueprint
-from moniker.api.v1.records import blueprint as records_blueprint
-from moniker.api.v1.servers import blueprint as servers_blueprint
-from moniker.api.v1.tsigkeys import blueprint as tsigkeys_blueprint
+from stevedore import extension
+from moniker.openstack.common import log as logging
+
+LOG = logging.getLogger(__name__)
 
 
 def factory(global_config, **local_conf):
     app = flask.Flask('moniker.api.v1')
 
-    app.register_blueprint(domains_blueprint)
-    app.register_blueprint(records_blueprint)
-    app.register_blueprint(servers_blueprint)
-    app.register_blueprint(tsigkeys_blueprint)
+    # TODO(kiall): Ideally, we want to make use of the Plugin class here.
+    #              This works for the moment though.
+    mgr = extension.ExtensionManager('moniker.api.v1')
+
+    def _load_extension(ext):
+        app.register_blueprint(ext.plugin)
+
+    mgr.map(_load_extension)
 
     return app
