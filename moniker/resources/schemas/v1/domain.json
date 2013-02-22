@@ -58,6 +58,9 @@
         "rel": "records",
         "href": "/domains/{id}/records"
     }, {
+        "rel": "servers",
+        "href": "/domains/{id}/servers"
+    }, {
         "rel": "collection",
         "href": "/domains"
     }]
