@@ -1,19 +1,10 @@
 [composite:osapi_dns]
 use = egg:Paste#urlmap
 /: osapi_dns_app_versions
-/diagnostics: osapi_dns_diagnostics
 /v1: osapi_dns_v1
 
 [app:osapi_dns_app_versions]
 paste.app_factory = moniker.api.versions:factory
-
-[composite:osapi_dns_diagnostics]
-use = call:moniker.api.auth:pipeline_factory
-noauth = noauthcontext osapi_dns_app_diagnostics
-keystone = authtoken keystonecontext osapi_dns_app_diagnostics
-
-[app:osapi_dns_app_diagnostics]
-paste.app_factory = moniker.api.diagnostics:factory
 
 [composite:osapi_dns_v1]
 use = call:moniker.api.auth:pipeline_factory

@@ -61,6 +61,8 @@ setup(
         records = moniker.api.v1.records:blueprint
         servers = moniker.api.v1.servers:blueprint
         tsigkeys = moniker.api.v1.tsigkeys:blueprint
+        diagnostics = moniker.api.v1.diagnostics:blueprint
+        sync = moniker.api.v1.sync:blueprint
 
         [moniker.storage]
         sqlalchemy = moniker.storage.impl_sqlalchemy:SQLAlchemyStorage
