@@ -24,11 +24,8 @@ def upgrade(migrate_engine):
 
     servers_table = Table('servers', meta, autoload=True)
 
-    ipv4 = Column('ipv4', Inet(), nullable=False, unique=True)
-    ipv6 = Column('ipv6', Inet(), default=None, unique=True)
-
-    ipv4.create(servers_table, populate_default=True)
-    ipv6.create(servers_table, populate_default=True)
+    servers_table.c.ipv4.drop()
+    servers_table.c.ipv6.drop()
 
 
 def downgrade(migrate_engine):
@@ -39,5 +36,5 @@ def downgrade(migrate_engine):
     ipv4 = Column('ipv4', Inet(), nullable=False, unique=True)
     ipv6 = Column('ipv6', Inet(), default=None, unique=True)
 
-    ipv4.drop(servers_table)
-    ipv6.drop(servers_table)
+    ipv4.create(servers_table, populate_default=True)
+    ipv6.create(servers_table, populate_default=True)
