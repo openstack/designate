@@ -13,6 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import jsonschema
 from datetime import datetime
 from moniker.tests import TestCase
 from moniker import schema
@@ -35,6 +36,7 @@ class TestSchemaValidator(TestCase):
         valid_hostnames = [
             'example.com.',
             'www.example.com.',
+            '*.example.com.',
             '12345.example.com.',
             '192-0-2-1.example.com.',
             'ip192-0-2-1.example.com.',
@@ -46,10 +48,57 @@ class TestSchemaValidator(TestCase):
             ('1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.8.b.d.0.1.0.0.2'
              '.ip6.arpa.'),
             '1.1.1.1.in-addr.arpa.',
+            'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk.',
+            ('abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk.'
+             'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk.'
+             'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk.'
+             'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghi.'),
+        ]
+
+        invalid_hostnames = [
+            '**.example.com.',
+            '*.*.example.org.',
+            'a.*.example.org.',
+            # Exceeds single lable length limit
+            ('abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijkL'
+             '.'),
+            ('abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk.'
+             'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk.'
+             'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk.'
+             'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijkL'
+             '.'),
+            # Exceeds total length limit
+            ('abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk.'
+             'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk.'
+             'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk.'
+             'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk.'
+             'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopq.'),
+            # Empty label part
+            'abc..def.',
+            '..',
+            # Invalid character
+            'abc$.def.',
+            'abc.def$.',
+            # Labels must not start with a -
+            '-abc.',
+            'abc.-def.',
+            'abc.-def.ghi.',
+            # Labels must not end with a -
+            'abc-.',
+            'abc.def-.',
+            'abc.def-.ghi.',
+            # Labels must not start or end with a -
+            '-abc-.',
+            'abc.-def-.',
+            'abc.-def-.ghi.',
         ]
 
         for hostname in valid_hostnames:
             validator.validate({'hostname': hostname})
+
+        for hostname in invalid_hostnames:
+            with self.assertRaises(jsonschema.ValidationError):
+                validator.validate({'hostname': hostname})
 
     def test_validate_format_datetime(self):
         test_schema = {

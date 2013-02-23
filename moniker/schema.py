@@ -25,9 +25,7 @@ from moniker import exceptions
 from moniker import utils
 
 LOG = logging.getLogger(__name__)
-# TODO: I'm sure there is a more accurate regex than this..
-_RE_HOSTNAME = ('^(([a-zA-Z0-9_]|[a-zA-Z0-9_][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*'
-                '([A-Za-z0-9_]|[A-Za-z0-9_][A-Za-z0-9\-]*[A-Za-z0-9])\.$')
+_RE_HOSTNAME = '^(?!.{255,})((^\*|(?!\-)[A-Za-z0-9_\-]{1,63})(?<!\-)\.)+$'
 
 
 class StaticResolver(object):
