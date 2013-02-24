@@ -65,7 +65,7 @@ class KeystoneContextMiddlewareTest(ApiTestCase):
             'X-User-ID': 'UserID',
             'X-Tenant-ID': 'TenantID',
             'X-Roles': 'admin,Member',
-            'X-Moniker-Tenant-ID': 'SudoTenantID'
+            'X-Moniker-Sudo-Tenant-ID': 'SudoTenantID'
         }
 
         # Process the request

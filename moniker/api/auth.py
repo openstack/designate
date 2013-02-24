@@ -53,7 +53,7 @@ class KeystoneContextMiddleware(wsgi.Middleware):
         local.store.context = context
 
         # Attempt to sudo, if requested.
-        sudo_tenant_id = headers.get('X-Moniker-Tenant-ID', None)
+        sudo_tenant_id = headers.get('X-Moniker-Sudo-Tenant-ID', None)
 
         if sudo_tenant_id:
             context.sudo(sudo_tenant_id)
