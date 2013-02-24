@@ -29,7 +29,7 @@
         "type": {
             "type": "string",
             "description": "DNS Record Type",
-            "enum": ["A", "AAAA", "CNAME", "MX", "SRV", "TXT", "SPF", "NS", "PTR"],
+            "enum": ["A", "AAAA", "CNAME", "MX", "SRV", "TXT", "SPF", "NS", "PTR", "SSHFP"],
             "required": true
         },
         "data": {
@@ -185,6 +185,21 @@
             },
             "data": {
                 "format": "host-name",
+                "required": true
+            },
+            "priority": {
+                "type": "null"
+            }
+        }
+    }, {
+        "description": "A SSHFP Record",
+        "properties": {
+            "type": {
+                "type": "string",
+                "enum": ["SSHFP"]
+            },
+            "data": {
+                "pattern": "^[1-2] 1 [0-9A-Fa-f]{40}$",
                 "required": true
             },
             "priority": {

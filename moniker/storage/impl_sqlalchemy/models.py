@@ -28,7 +28,8 @@ from sqlalchemy.ext.declarative import declarative_base
 
 LOG = logging.getLogger(__name__)
 
-RECORD_TYPES = ['A', 'AAAA', 'CNAME', 'MX', 'SRV', 'TXT', 'SPF', 'NS', 'PTR']
+RECORD_TYPES = ['A', 'AAAA', 'CNAME', 'MX', 'SRV', 'TXT', 'SPF', 'NS', 'PTR',
+                'SSHFP']
 TSIG_ALGORITHMS = ['hmac-md5', 'hmac-sha1', 'hmac-sha224', 'hmac-sha256',
                    'hmac-sha384', 'hmac-sha512']
 

@@ -21,7 +21,8 @@ meta = MetaData()
 def upgrade(migrate_engine):
     meta.bind = migrate_engine
 
-    RECORD_TYPES = ['A', 'AAAA', 'CNAME', 'MX', 'SRV', 'TXT', 'NS', 'PTR']
+    RECORD_TYPES = ['A', 'AAAA', 'CNAME', 'MX', 'SRV', 'TXT', 'SPF', 'NS',
+                    'PTR', 'SSHFP']
 
     records_table = Table('records', meta, autoload=True)
     records_table.c.type.alter(name='type', type=Enum(*RECORD_TYPES))
@@ -30,12 +31,13 @@ def upgrade(migrate_engine):
 def downgrade(migrate_engine):
     meta.bind = migrate_engine
 
-    RECORD_TYPES = ['A', 'AAAA', 'CNAME', 'MX', 'SRV', 'TXT', 'NS']
+    RECORD_TYPES = ['A', 'AAAA', 'CNAME', 'MX', 'SRV', 'TXT', 'SPF', 'NS',
+                    'PTR']
 
     records_table = Table('records', meta, autoload=True)
 
-    # Delete all PTR records
-    records_table.filter_by(type='PTR').delete()
+    # Delete all SSHFP records
+    records_table.filter_by(type='SSHFP').delete()
 
-    # Remove PTR from the ENUM
+    # Remove SSHFP from the ENUM
     records_table.c.type.alter(name='type', type=Enum(*RECORD_TYPES))

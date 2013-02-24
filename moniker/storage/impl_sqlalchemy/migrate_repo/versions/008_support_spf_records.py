@@ -35,6 +35,8 @@ def downgrade(migrate_engine):
 
     records_table = Table('records', meta, autoload=True)
 
-    # Delete all PTR records
+    # Delete all SPF records
     records_table.filter_by(type='SPF').delete()
+
+    # Remove SPF from the ENUM
     records_table.c.type.alter(name='type', type=Enum(*RECORD_TYPES))
