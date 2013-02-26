@@ -293,6 +293,9 @@ class Service(rpc_service.Service):
                          'server')
             raise exceptions.NoServersConfigured()
 
+        # Set the serial number
+        values['serial'] = utils.increment_serial()
+
         domain = self.storage_conn.create_domain(context, values)
 
         self.backend.create_domain(context, domain)
@@ -347,6 +350,9 @@ class Service(rpc_service.Service):
 
         if 'name' in values and values['name'] != domain['name']:
             raise exceptions.BadRequest('Renaming a domain is not allowed')
+
+        # Increment the serial number
+        values['serial'] = utils.increment_serial(domain['serial'])
 
         domain = self.storage_conn.update_domain(context, domain_id, values)
 
@@ -412,6 +418,14 @@ class Service(rpc_service.Service):
         record = self.storage_conn.create_record(context, domain_id, values)
 
         self.backend.create_record(context, domain, record)
+
+        # Increment the domains serial number
+        domain_values = {
+            'serial': utils.increment_serial(domain['serial'])
+        }
+        self.storage_conn.update_domain(context, domain_id, domain_values)
+
+        # Send Record creation notification
         utils.notify(context, 'api', 'record.create', record)
 
         return record
@@ -472,6 +486,14 @@ class Service(rpc_service.Service):
         record = self.storage_conn.update_record(context, record_id, values)
 
         self.backend.update_record(context, domain, record)
+
+        # Increment the domains serial number
+        domain_values = {
+            'serial': utils.increment_serial(domain['serial'])
+        }
+        self.storage_conn.update_domain(context, domain_id, domain_values)
+
+        # Send Record update notification
         utils.notify(context, 'api', 'record.update', record)
 
         return record
@@ -494,6 +516,14 @@ class Service(rpc_service.Service):
         policy.check('delete_record', context, target)
 
         self.backend.delete_record(context, domain, record)
+
+        # Increment the domains serial number
+        domain_values = {
+            'serial': utils.increment_serial(domain['serial'])
+        }
+        self.storage_conn.update_domain(context, domain_id, domain_values)
+
+        # Send Record deletion notification
         utils.notify(context, 'api', 'record.delete', record)
 
         return self.storage_conn.delete_record(context, record_id)

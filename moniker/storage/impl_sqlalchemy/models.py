@@ -67,6 +67,7 @@ class Domain(Base):
     retry = Column(Integer, default=3600, nullable=False)
     expire = Column(Integer, default=3600, nullable=False)
     minimum = Column(Integer, default=3600, nullable=False)
+    serial = Column(Integer, default=timeutils.utcnow_ts, nullable=False)
 
     records = relationship('Record', backref=backref('domain', uselist=False),
                            lazy='dynamic', cascade="all, delete-orphan",
@@ -74,26 +75,6 @@ class Domain(Base):
 
     parent_domain_id = Column(UUID, ForeignKey('domains.id'), default=None,
                               nullable=True)
-
-    @hybrid_property
-    def serial(self):
-        # TODO: Terrible terrible hack.. Cleanup ;)
-        last_change = self.updated_at
-
-        if last_change is None or self.created_at > last_change:
-            last_change = self.created_at
-
-        for record in self.records:
-            if (record.updated_at is not None
-                    and record.updated_at > last_change):
-                last_change = record.updated_at
-            elif record.created_at > last_change:
-                last_change = record.created_at
-
-        return int(last_change.strftime("%s"))
-
-    def _extra_keys(self):
-        return ['serial']
 
 
 class Record(Base):

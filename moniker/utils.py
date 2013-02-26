@@ -20,6 +20,7 @@ from jinja2 import Template
 from moniker.openstack.common import log as logging
 from moniker.openstack.common import cfg
 from moniker.openstack.common import processutils
+from moniker.openstack.common import timeutils
 from moniker.openstack.common.notifier import api as notifier_api
 from moniker import exceptions
 
@@ -172,3 +173,13 @@ def get_columns(data):
 
     map(lambda item: map(_seen, item.keys()), data)
     return list(columns)
+
+
+def increment_serial(serial=0):
+    # This provides for *roughly* unix timestamp based serial numbers
+    new_serial = timeutils.utcnow_ts()
+
+    if new_serial <= serial:
+        new_serial = serial + 1
+
+    return new_serial

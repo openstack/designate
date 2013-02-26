@@ -243,14 +243,12 @@ class Connection(base.Connection):
 
     # Record Methods
     def create_record(self, context, domain_id, values):
-        domain = self._get_domain(context, domain_id)
-
         record = models.Record()
+
         record.update(values)
+        record.domain_id = domain_id
 
-        domain.records.append(record)
-
-        domain.save(self.session)
+        record.save(self.session)
 
         return dict(record)
 
