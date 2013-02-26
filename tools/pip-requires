@@ -1,6 +1,6 @@
 Flask>=0.8
 eventlet
-jsonschema>=0.8
+jsonschema>=0.8,<1
 ipaddr
 Paste
 PasteDeploy
