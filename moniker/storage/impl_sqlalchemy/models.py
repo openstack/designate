@@ -64,8 +64,8 @@ class Domain(Base):
 
     ttl = Column(Integer, default=3600, nullable=False)
     refresh = Column(Integer, default=3600, nullable=False)
-    retry = Column(Integer, default=3600, nullable=False)
-    expire = Column(Integer, default=3600, nullable=False)
+    retry = Column(Integer, default=600, nullable=False)
+    expire = Column(Integer, default=86400, nullable=False)
     minimum = Column(Integer, default=3600, nullable=False)
     serial = Column(Integer, default=timeutils.utcnow_ts, nullable=False)
 
