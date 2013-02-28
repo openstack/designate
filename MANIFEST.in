@@ -4,6 +4,8 @@ include moniker/versioninfo
 include *.txt *.ini *.cfg *.rst *.md
 include etc/moniker/*.sample
 include etc/moniker/policy.json
+include moniker/storage/impl_sqlalchemy/migrate_repo/migrate.cfg
+include moniker/backend/impl_powerdns/migrate_repo/migrate.cfg
 recursive-include moniker/resources *
 recursive-include tools *
 
