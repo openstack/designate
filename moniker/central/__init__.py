@@ -29,6 +29,7 @@ cfg.CONF.register_opts([
     cfg.ListOpt('enabled-notification-handlers', default=[],
                 help='Enabled Notification Handlers'),
     cfg.ListOpt('domain-name-blacklist',
-                default=['arpa.$', '^com.$', '^net.$', '^org.$'],
+                default=['arpa.$', '^com.$', '^net.$', '^org.$',
+                         'novalocal.$'],
                 help='Reserved DNS domain name suffixes'),
 ], group='service:central')
