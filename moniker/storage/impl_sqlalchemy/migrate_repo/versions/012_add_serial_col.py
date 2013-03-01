@@ -27,11 +27,15 @@ def upgrade(migrate_engine):
     domains_table = Table('domains', meta, autoload=True)
 
     serial = Column('serial', Integer(), default=timeutils.utcnow_ts,
-                    nullable=False)
+                    nullable=False, server_default="1")
     serial.create(domains_table, populate_default=True)
 
-    LOG.warn('A domain-sync is now necessary in order for the API provided, '
-             'and backend provided serial numbers to align')
+    # Do we have any domains?
+    domain_count = domains_table.count().execute().first()[0]
+
+    if domain_count > 0:
+        LOG.warn('A sync-all is now required in order for the API provided, '
+                 'and backend provided serial numbers to align')
 
 
 def downgrade(migrate_engine):

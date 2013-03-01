@@ -14,7 +14,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import os
-from migrate.exceptions import DatabaseAlreadyControlledError
+from migrate.exceptions import (DatabaseAlreadyControlledError,
+                                DatabaseNotControlledError)
 from migrate.versioning import api as versioning_api
 from cliff.command import Command
 from moniker.openstack.common import log as logging
@@ -48,14 +49,35 @@ class InitCommand(Command):
 class SyncCommand(Command):
     "Sync database"
 
+    def get_parser(self, prog_name):
+        parser = super(SyncCommand, self).get_parser(prog_name)
+
+        parser.add_argument('--to-version', help="Migrate to version",
+                            default=None, type=int)
+
+        return parser
+
     def take_action(self, parsed_args):
-        # TODO: Support specifying version
         url = cfg.CONF['storage:sqlalchemy'].database_connection
 
         if not os.path.exists(REPOSITORY):
             raise Exception('Migration Respository Not Found')
 
-        LOG.info('Attempting to synchronize database')
-        versioning_api.upgrade(url=url, repository=REPOSITORY,
-                               version=None)
+        try:
+            target_version = int(parsed_args.to_version)
+            current_version = versioning_api.db_version(url=url,
+                                                        repository=REPOSITORY)
+        except DatabaseNotControlledError:
+            raise Exception('Database not yet initialized')
+
+        LOG.info("Attempting to synchronize database from version '%s' to '%s'"
+                 % (current_version, target_version))
+
+        if target_version and target_version < current_version:
+            versioning_api.downgrade(url=url, repository=REPOSITORY,
+                                     version=parsed_args.to_version)
+        else:
+            versioning_api.upgrade(url=url, repository=REPOSITORY,
+                                   version=parsed_args.to_version)
+
         LOG.info('Database synchronized sucessfully')
