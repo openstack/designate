@@ -158,6 +158,51 @@ class Service(rpc_service.Service):
 
         return False
 
+    def _is_valid_record_name(self, context, domain, record_name, record_type):
+        if not record_name.endswith('.'):
+            raise ValueError('Please supply a FQDN')
+
+        # Record must be contained in the parent zone.
+        if not record_name.endswith(domain['name']):
+            raise exceptions.BadRequest('Records must be contained within '
+                                        'their parent zone.')
+
+        # CNAME's must not be created at the zone apex.
+        if record_type == 'CNAME' and record_name == domain['name']:
+            raise exceptions.BadRequest('%s records may not be created at '
+                                        'the zone apex' % record_type)
+
+        # CNAME's must not share a name with other records
+        criterion = {'name': record_name}
+
+        if record_type != 'CNAME':
+            criterion['type'] = 'CNAME'
+
+        records = self.storage_conn.get_records(context, domain['id'],
+                                                criterion=criterion)
+        if len(records) > 0:
+            raise exceptions.BadRequest('CNAME records must not share a name'
+                                        'with any other records')
+
+        if record_type == 'CNAME':
+            # CNAME's may not have children. Ever.
+            criterion = {'name': '%%.%s' % record_name}
+            records = self.storage_conn.get_records(context, domain['id'],
+                                                    criterion=criterion)
+
+            if len(records) > 0:
+                raise exceptions.BadRequest('CNAME records must not have any '
+                                            'child records')
+
+        else:
+            # No record may have a CNAME as a parent
+            if self._is_subrecord(context, domain, record_name,
+                                  {'type': 'CNAME'}):
+                raise exceptions.BadRequest('Records must not be children of '
+                                            'a CNAME record')
+
+        return True
+
     def _is_subdomain(self, context, domain_name):
         # Break the name up into it's component labels
         labels = domain_name.split(".")
@@ -174,6 +219,25 @@ class Service(rpc_service.Service):
                 i += 1
             else:
                 return domain
+
+        return False
+
+    def _is_subrecord(self, context, domain, record_name, criterion):
+        # Break the name up into it's component labels
+        labels = record_name.split(".")
+
+        i = 1
+
+        # Starting with label #2, search for matching records's in the database
+        while (i < len(labels)):
+            criterion['name'] = '.'.join(labels[i:])
+            records = self.storage_conn.get_records(context, domain['id'],
+                                                    criterion)
+
+            if len(records) == 0:
+                i += 1
+            else:
+                return records
 
         return False
 
@@ -411,9 +475,9 @@ class Service(rpc_service.Service):
 
         policy.check('create_record', context, target)
 
-        if not values['name'].endswith(domain['name']):
-            raise exceptions.BadRequest('Records must be contained within '
-                                        'their parent zone.')
+        # Ensure the record name is valid
+        self._is_valid_record_name(context, domain, values['name'],
+                                   values['type'])
 
         record = self.storage_conn.create_record(context, domain_id, values)
 
@@ -479,10 +543,13 @@ class Service(rpc_service.Service):
 
         policy.check('update_record', context, target)
 
-        if 'name' in values and not values['name'].endswith(domain['name']):
-            raise exceptions.BadRequest('Records must be contained within '
-                                        'their parent zone.')
+        # Ensure the record name is valid
+        record_name = values['name'] if 'name' in values else record['name']
+        record_type = values['type'] if 'type' in values else record['type']
 
+        self._is_valid_record_name(context, domain, record_name, record_type)
+
+        # Update the record
         record = self.storage_conn.update_record(context, record_id, values)
 
         self.backend.update_record(context, domain, record)

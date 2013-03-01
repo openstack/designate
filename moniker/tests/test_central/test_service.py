@@ -490,6 +490,117 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(record['type'], values['type'])
         self.assertEqual(record['data'], values['data'])
 
+    def test_create_cname_record_at_apex(self):
+        context = self.get_admin_context()
+        domain = self.create_domain()
+
+        values = dict(
+            name=domain['name'],
+            type='CNAME',
+            data='example.org.'
+        )
+
+        # Attempt to create a CNAME record at the apex
+        with self.assertRaises(exceptions.BadRequest):
+            self.central_service.create_record(context, domain['id'],
+                                               values=values)
+
+    def test_create_cname_record_alongside_an_a_record(self):
+        context = self.get_admin_context()
+        domain = self.create_domain()
+
+        values = dict(
+            name='www.%s' % domain['name'],
+            type='A',
+            data='127.0.0.1'
+        )
+
+        self.central_service.create_record(context, domain['id'],
+                                           values=values)
+
+        # Attempt to create a CNAME record alongside an A record
+        with self.assertRaises(exceptions.BadRequest):
+            values = dict(
+                name='www.%s' % domain['name'],
+                type='CNAME',
+                data='example.org.'
+            )
+
+            self.central_service.create_record(context, domain['id'],
+                                               values=values)
+
+    def test_create_cname_record_above_an_a_record(self):
+        context = self.get_admin_context()
+        domain = self.create_domain()
+
+        values = dict(
+            name='t.www.%s' % domain['name'],
+            type='A',
+            data='127.0.0.1'
+        )
+
+        self.central_service.create_record(context, domain['id'],
+                                           values=values)
+
+        # Attempt to create a CNAME record alongside an A record
+        with self.assertRaises(exceptions.BadRequest):
+            values = dict(
+                name='www.%s' % domain['name'],
+                type='CNAME',
+                data='example.org.'
+            )
+
+            self.central_service.create_record(context, domain['id'],
+                                               values=values)
+
+    def test_create_an_a_record_alongside_a_cname_record(self):
+        context = self.get_admin_context()
+        domain = self.create_domain()
+
+        values = dict(
+            name='www.%s' % domain['name'],
+            type='CNAME',
+            data='example.org.'
+        )
+
+        self.central_service.create_record(context, domain['id'],
+                                           values=values)
+
+        # Attempt to create a CNAME record alongside an A record
+        with self.assertRaises(exceptions.BadRequest):
+            values = dict(
+                name='www.%s' % domain['name'],
+                type='A',
+                data='127.0.0.1'
+            )
+
+            self.central_service.create_record(context, domain['id'],
+                                               values=values)
+
+    def test_create_an_a_record_below_a_cname_record(self):
+        context = self.get_admin_context()
+        domain = self.create_domain()
+
+        values = dict(
+            name='www.%s' % domain['name'],
+            type='CNAME',
+            data='example.org.'
+        )
+
+        self.central_service.create_record(context, domain['id'],
+                                           values=values)
+
+        # Attempt to create a CNAME record alongside an A record
+        with self.assertRaises(exceptions.BadRequest):
+            values = dict(
+                name='t.www.%s' % domain['name'],
+                type='A',
+                data='127.0.0.1'
+            )
+
+            self.central_service.create_record(context, domain['id'],
+                                               values=values)
+
     def test_get_records(self):
         context = self.get_admin_context()
         domain = self.create_domain()

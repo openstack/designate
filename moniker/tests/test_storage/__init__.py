@@ -546,6 +546,22 @@ class StorageDriverTestCase(StorageTestCase):
 
         self.assertEqual(len(results), 2)
 
+    def test_get_records_criterion_wildcard(self):
+        _, domain = self.create_domain()
+
+        values = {'name': 'one.%s' % domain['name']}
+
+        self.create_record(domain, fixture=0, values=values)
+        criterion = dict(
+            name="%%%s" % domain['name']
+        )
+
+        results = self.storage_conn.get_records(self.admin_context,
+                                                domain['id'],
+                                                criterion)
+
+        self.assertEqual(len(results), 1)
+
     def test_get_record(self):
         _, domain = self.create_domain()
 

@@ -54,6 +54,18 @@ class Connection(base.Connection):
         """ Semi-Private Method to reset the database schema """
         models.Base.metadata.drop_all(self.session.bind)
 
+    def _apply_criterion(self, model, query, criterion):
+        if criterion:
+            for name, value in criterion.items():
+                column = getattr(model, name)
+
+                if isinstance(value, basestring) and '%' in value:
+                    query = query.filter(column.like(value))
+                else:
+                    query = query.filter(column == value)
+
+        return query
+
     # Server Methods
     def create_server(self, context, values):
         server = models.Server()
@@ -69,9 +81,7 @@ class Connection(base.Connection):
 
     def get_servers(self, context, criterion=None):
         query = self.session.query(models.Server)
-
-        if criterion:
-            query = query.filter_by(**criterion)
+        query = self._apply_criterion(models.Server, query, criterion)
 
         try:
             result = query.all()
@@ -128,9 +138,7 @@ class Connection(base.Connection):
 
     def get_tsigkeys(self, context, criterion=None):
         query = self.session.query(models.TsigKey)
-
-        if criterion:
-            query = query.filter_by(**criterion)
+        query = self._apply_criterion(models.TsigKey, query, criterion)
 
         try:
             result = query.all()
@@ -187,9 +195,7 @@ class Connection(base.Connection):
 
     def get_domains(self, context, criterion=None):
         query = self.session.query(models.Domain)
-
-        if criterion:
-            query = query.filter_by(**criterion)
+        query = self._apply_criterion(models.Domain, query, criterion)
 
         try:
             result = query.all()
@@ -216,9 +222,10 @@ class Connection(base.Connection):
 
     def find_domain(self, context, criterion):
         query = self.session.query(models.Domain)
+        query = self._apply_criterion(models.Domain, query, criterion)
 
         try:
-            domain = query.filter_by(**criterion).one()
+            domain = query.one()
         except (exc.NoResultFound, exc.MultipleResultsFound):
             raise exceptions.DomainNotFound()
         else:
@@ -253,12 +260,9 @@ class Connection(base.Connection):
         return dict(record)
 
     def get_records(self, context, domain_id, criterion=None):
-        domain = self._get_domain(context, domain_id)
-
-        query = domain.records
-
-        if criterion:
-            query = query.filter_by(**criterion)
+        query = self.session.query(models.Record)
+        query = query.filter_by(domain_id=domain_id)
+        query = self._apply_criterion(models.Record, query, criterion)
 
         return [dict(o) for o in query.all()]
 
@@ -278,12 +282,12 @@ class Connection(base.Connection):
         return dict(record)
 
     def find_record(self, context, domain_id, criterion):
-        domain = self._get_domain(context, domain_id)
-
-        query = domain.records
+        query = self.session.query(models.Record)
+        query = query.filter_by(domain_id=domain_id)
+        query = self._apply_criterion(models.Record, query, criterion)
 
         try:
-            record = query.filter_by(**criterion).one()
+            record = query.one()
         except (exc.NoResultFound, exc.MultipleResultsFound):
             raise exceptions.RecordNotFound()
         else:
