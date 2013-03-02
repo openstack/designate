@@ -455,9 +455,6 @@ class Service(rpc_service.Service):
         if criterion is None:
             criterion = {}
 
-        if not context.is_admin:
-            criterion['tenant_id'] = context.tenant_id
-
         # TODO: Once we allow domains to be allocated on 1 of N server
         #       pools, return the filtered list here.
         return self.storage_conn.get_servers(context, criterion)
