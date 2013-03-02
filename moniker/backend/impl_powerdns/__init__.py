@@ -36,6 +36,8 @@ cfg.CONF.register_group(cfg.OptGroup(
 
 cfg.CONF.register_opts([
     cfg.StrOpt('domain-type', default='NATIVE', help='PowerDNS Domain Type'),
+    cfg.ListOpt('also-notify', default=[], help='List of additional IPs to '
+                                                'send NOTIFYs to'),
 ] + SQLOPTS, group='backend:powerdns')
 
 
@@ -137,17 +139,15 @@ class PowerDNSBackend(base.Backend):
             })
             record_m.save(self.session)
 
-        # Install All TSIG Keys on this domain
+        # Install all TSIG Keys on this domain
         tsigkeys = self.session.query(models.TsigKey).all()
+        values = [t.name for t in tsigkeys]
 
-        for tsigkey in tsigkeys:
-            domainmetadata_m = models.DomainMetadata()
-            domainmetadata_m.update({
-                'domain_id': domain_m.id,
-                'kind': "TSIG-ALLOW-AXFR",
-                'content': tsigkey['name']
-            })
-            domainmetadata_m.save(self.session)
+        self._update_domainmetadata(domain_m.id, 'TSIG-ALLOW-AXFR', values)
+
+        # Install all Also Notify's on this domain
+        self._update_domainmetadata(domain_m.id, 'ALSO-NOTIFY',
+                                    cfg.CONF['backend:powerdns'].also_notify)
 
         # NOTE(kiall): Do the SOA last, ensuring we don't trigger a NOTIFY
         #              before the NS records are in place.
@@ -233,10 +233,36 @@ class PowerDNSBackend(base.Backend):
 
         record_m.save(self.session)
 
+    def _update_domainmetadata(self, domain_id, kind, values=[], delete=True):
+        """ Updates a domain's metadata with new values """
+        # Fetch all current metadata of the specified kind
+        query = self.session.query(models.DomainMetadata)
+        query = query.filter_by(domain_id=domain_id, kind=kind)
+
+        metadatas = query.all()
+
+        for metadata in metadatas:
+            if metadata.content not in values:
+                if delete:
+                    LOG.debug('Deleting stale domain metadata: %r',
+                              (domain_id, kind, metadata.value))
+                    # Delete no longer necessary values
+                    metadata.delete(self.session)
+            else:
+                # Remove pre-existing values from the list of values to insert
+                values.remove(metadata.content)
+
+        # Insert new values
+        for value in values:
+            LOG.debug('Inserting new domain metadata: %r',
+                      (domain_id, kind, value))
+            m = models.DomainMetadata(domain_id=domain_id, kind=kind,
+                                      content=value)
+            m.save(self.session)
+
     def _is_authoritative(self, domain, record):
         # NOTE(kiall): See http://doc.powerdns.com/dnssec-modes.html
-        if (record['type'] == 'NS' and
-                record['name'] != domain['name']):
+        if record['type'] == 'NS' and record['name'] != domain['name']:
             return False
         else:
             return True
