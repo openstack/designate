@@ -20,11 +20,11 @@ from moniker.central import api as central_api
 LOG = logging.getLogger(__name__)
 
 
-class SyncAllCommand(base.Command):
-    """ Sync Everything """
+class SyncDomainsCommand(base.Command):
+    """ Sync All Domains """
 
     def execute(self, parsed_args):
-        return central_api.sync_all(self.context)
+        return central_api.sync_domains(self.context)
 
 
 class SyncDomainCommand(base.Command):

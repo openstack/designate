@@ -97,7 +97,7 @@ setup(
         tsigkey-update = moniker.manage.tsigkeys:UpdateTsigKeyCommand
         tsigkey-delete = moniker.manage.tsigkeys:DeleteTsigKeyCommand
 
-        sync-all = moniker.manage.sync:SyncAllCommand
+        sync-domains = moniker.manage.sync:SyncDomainsCommand
         sync-domain = moniker.manage.sync:SyncDomainCommand
         sync-record = moniker.manage.sync:SyncRecordCommand
         """),

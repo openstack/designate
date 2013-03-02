@@ -34,7 +34,7 @@
     "use_blacklisted_domain": "rule:admin",
 
     "diagnostics_ping": "rule:admin",
-    "diagnostics_sync_all": "rule:admin",
+    "diagnostics_sync_domains": "rule:admin",
     "diagnostics_sync_domain": "rule:admin",
     "diagnostics_sync_record": "rule:admin"
 }

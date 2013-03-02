@@ -267,9 +267,9 @@ def delete_record(context, domain_id, record_id):
     return RPC.call(context, msg)
 
 
-def sync_all(context):
+def sync_domains(context):
     msg = {
-        'method': 'sync_all',
+        'method': 'sync_domains',
         'args': {},
     }
 

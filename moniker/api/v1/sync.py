@@ -23,12 +23,12 @@ LOG = logging.getLogger(__name__)
 blueprint = flask.Blueprint('sync', __name__)
 
 
-@blueprint.route('/sync', methods=['POST'])
-def sync_all():
+@blueprint.route('/domains/sync', methods=['POST'])
+def sync_domains():
     context = flask.request.environ.get('context')
 
     try:
-        central_api.sync_all(context)
+        central_api.sync_domains(context)
     except exceptions.Forbidden:
         return flask.Response(status=401)
     except rpc_common.Timeout:

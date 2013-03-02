@@ -34,8 +34,8 @@ def upgrade(migrate_engine):
     domain_count = domains_table.count().execute().first()[0]
 
     if domain_count > 0:
-        LOG.warn('A sync-all is now required in order for the API provided, '
-                 'and backend provided serial numbers to align')
+        LOG.warn('A sync-domains is now required in order for the API '
+                 'provided, and backend provided serial numbers to align')
 
 
 def downgrade(migrate_engine):

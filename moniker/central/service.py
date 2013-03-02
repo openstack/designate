@@ -596,8 +596,8 @@ class Service(rpc_service.Service):
         return self.storage_conn.delete_record(context, record_id)
 
     # Diagnostics Methods
-    def sync_all(self, context):
-        policy.check('diagnostics_sync_all', context)
+    def sync_domains(self, context):
+        policy.check('diagnostics_sync_domains', context)
 
         domains = self.storage_conn.get_domains(context)
         results = {}
