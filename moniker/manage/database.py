@@ -64,7 +64,9 @@ class SyncCommand(Command):
             raise Exception('Migration Respository Not Found')
 
         try:
-            target_version = int(parsed_args.to_version)
+            target_version = int(parsed_args.to_version) \
+                if parsed_args.to_version else None
+
             current_version = versioning_api.db_version(url=url,
                                                         repository=REPOSITORY)
         except DatabaseNotControlledError:
