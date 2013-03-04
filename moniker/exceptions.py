@@ -19,6 +19,10 @@ class Base(Exception):
     pass
 
 
+class Backend(Exception):
+    pass
+
+
 class NotImplemented(Base, NotImplementedError):
     pass
 
