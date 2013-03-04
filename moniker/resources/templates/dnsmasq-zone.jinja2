@@ -1,0 +1,3 @@
+{% for record in records if record.type in ['A', 'AAAA'] %}
+{{record.data}} {{record.name}}
+{%- endfor %}
