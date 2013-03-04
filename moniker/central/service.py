@@ -285,7 +285,14 @@ class Service(rpc_service.Service):
 
         tsigkey = self.storage_conn.create_tsigkey(context, values)
 
-        self.backend.create_tsigkey(context, tsigkey)
+        try:
+            self.backend.create_tsigkey(context, tsigkey)
+        except exceptions.Backend:
+            # Re-raise Backend exceptions as is..
+            raise
+        except Exception, e:
+            raise exceptions.Backend('Unknown backend failure: %s' % e)
+
         utils.notify(context, 'api', 'tsigkey.create', tsigkey)
 
         return tsigkey
@@ -305,7 +312,14 @@ class Service(rpc_service.Service):
 
         tsigkey = self.storage_conn.update_tsigkey(context, tsigkey_id, values)
 
-        self.backend.update_tsigkey(context, tsigkey)
+        try:
+            self.backend.update_tsigkey(context, tsigkey)
+        except exceptions.Backend:
+            # Re-raise Backend exceptions as is..
+            raise
+        except Exception, e:
+            raise exceptions.Backend('Unknown backend failure: %s' % e)
+
         utils.notify(context, 'api', 'tsigkey.update', tsigkey)
 
         return tsigkey
@@ -315,7 +329,14 @@ class Service(rpc_service.Service):
 
         tsigkey = self.storage_conn.get_tsigkey(context, tsigkey_id)
 
-        self.backend.delete_tsigkey(context, tsigkey)
+        try:
+            self.backend.delete_tsigkey(context, tsigkey)
+        except exceptions.Backend:
+            # Re-raise Backend exceptions as is..
+            raise
+        except Exception, e:
+            raise exceptions.Backend('Unknown backend failure: %s' % e)
+
         utils.notify(context, 'api', 'tsigkey.delete', tsigkey)
 
         return self.storage_conn.delete_tsigkey(context, tsigkey_id)
@@ -362,7 +383,14 @@ class Service(rpc_service.Service):
 
         domain = self.storage_conn.create_domain(context, values)
 
-        self.backend.create_domain(context, domain)
+        try:
+            self.backend.create_domain(context, domain)
+        except exceptions.Backend:
+            # Re-raise Backend exceptions as is..
+            raise
+        except Exception, e:
+            raise exceptions.Backend('Unknown backend failure: %s' % e)
+
         utils.notify(context, 'api', 'domain.create', domain)
 
         return domain
@@ -420,7 +448,14 @@ class Service(rpc_service.Service):
 
         domain = self.storage_conn.update_domain(context, domain_id, values)
 
-        self.backend.update_domain(context, domain)
+        try:
+            self.backend.update_domain(context, domain)
+        except exceptions.Backend:
+            # Re-raise Backend exceptions as is..
+            raise
+        except Exception, e:
+            raise exceptions.Backend('Unknown backend failure: %s' % e)
+
         utils.notify(context, 'api', 'domain.update', domain)
 
         return domain
@@ -436,7 +471,14 @@ class Service(rpc_service.Service):
 
         policy.check('delete_domain', context, target)
 
-        self.backend.delete_domain(context, domain)
+        try:
+            self.backend.delete_domain(context, domain)
+        except exceptions.Backend:
+            # Re-raise Backend exceptions as is..
+            raise
+        except Exception, e:
+            raise exceptions.Backend('Unknown backend failure: %s' % e)
+
         utils.notify(context, 'api', 'domain.delete', domain)
 
         return self.storage_conn.delete_domain(context, domain_id)
@@ -478,7 +520,13 @@ class Service(rpc_service.Service):
 
         record = self.storage_conn.create_record(context, domain_id, values)
 
-        self.backend.create_record(context, domain, record)
+        try:
+            self.backend.create_record(context, domain, record)
+        except exceptions.Backend:
+            # Re-raise Backend exceptions as is..
+            raise
+        except Exception, e:
+            raise exceptions.Backend('Unknown backend failure: %s' % e)
 
         # Increment the domains serial number
         domain_values = {
@@ -549,7 +597,13 @@ class Service(rpc_service.Service):
         # Update the record
         record = self.storage_conn.update_record(context, record_id, values)
 
-        self.backend.update_record(context, domain, record)
+        try:
+            self.backend.update_record(context, domain, record)
+        except exceptions.Backend:
+            # Re-raise Backend exceptions as is..
+            raise
+        except Exception, e:
+            raise exceptions.Backend('Unknown backend failure: %s' % e)
 
         # Increment the domains serial number
         domain_values = {
@@ -579,7 +633,13 @@ class Service(rpc_service.Service):
 
         policy.check('delete_record', context, target)
 
-        self.backend.delete_record(context, domain, record)
+        try:
+            self.backend.delete_record(context, domain, record)
+        except exceptions.Backend:
+            # Re-raise Backend exceptions as is..
+            raise
+        except Exception, e:
+            raise exceptions.Backend('Unknown backend failure: %s' % e)
 
         # Increment the domains serial number
         domain_values = {
