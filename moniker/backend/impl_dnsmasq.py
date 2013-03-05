@@ -14,12 +14,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import os
+import glob
 import shutil
 from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
 from moniker import utils
 from moniker.backend import base
-from moniker.context import MonikerContext
 
 LOG = logging.getLogger(__name__)
 
@@ -30,91 +30,94 @@ class DnsmasqBackend(base.Backend):
     def start(self):
         super(DnsmasqBackend, self).start()
 
-        output_folder = os.path.join(os.path.abspath(cfg.CONF.state_path),
-                                     'dnsmasq')
+        self.output_folder = os.path.join(os.path.abspath(cfg.CONF.state_path),
+                                          'dnsmasq')
 
         # Create the output folder tree if necessary
-        if not os.path.exists(output_folder):
-            os.makedirs(output_folder)
+        if not os.path.exists(self.output_folder):
+            os.makedirs(self.output_folder)
 
+        # TODO: Remove this..
+        self._sync_domains_hack()
+
+    def _sync_domains_hack(self):
         # TODO: This is a hack to ensure the data dir is 100% up to date
-        admin_context = MonikerContext.get_admin_context()
+        domains = self.central_service.get_domains(self.admin_context)
 
-        domains = self.central_service.get_domains(admin_context)
         for domain in domains:
             self._sync_domain(domain)
+
         self._sync_domains()
 
     def create_domain(self, context, domain):
         LOG.debug('Create Domain')
-        self._sync_domain(domain)
+
+        self._write_zonefile(domain)
+        self._merge_zonefiles()
+        self._reload_dnsmasq()
 
     def update_domain(self, context, domain):
         LOG.debug('Update Domain')
-        self._sync_domain(domain)
+
+        self._write_zonefile(domain)
+        self._merge_zonefiles()
+        self._reload_dnsmasq()
 
     def delete_domain(self, context, domain):
         LOG.debug('Delete Domain')
-        self._sync_delete_domain(domain)
+
+        self._purge_zonefile(domain)
+        self._merge_zonefiles()
+        self._reload_dnsmasq()
 
     def create_record(self, context, domain, record):
         LOG.debug('Create Record')
-        self._sync_domain(domain)
+
+        self._write_zonefile(domain)
+        self._merge_zonefiles()
+        self._reload_dnsmasq()
 
     def update_record(self, context, domain, record):
         LOG.debug('Update Record')
-        self._sync_domain(domain)
+
+        self._write_zonefile(domain)
+        self._merge_zonefiles()
+        self._reload_dnsmasq()
 
     def delete_record(self, context, domain, record):
         LOG.debug('Delete Record')
-        self._sync_domain(domain)
 
-    def _sync_domains(self):
-        """ Sync the list of domains this server handles """
-        LOG.debug('Synchronising domains')
+        self._write_zonefile(domain)
+        self._merge_zonefiles()
+        self._reload_dnsmasq()
 
-        admin_context = MonikerContext.get_admin_context()
-        domains = self.central_service.get_domains(admin_context)
+    def _write_zonefile(self, domain):
+        records = self.central_service.get_records(self.admin_context,
+                                                   domain['id'])
 
-        output_path = os.path.join(os.path.abspath(cfg.CONF.state_path),
-                                   'dnsmasq', 'flatdns.zone')
+        filename = os.path.join(self.output_folder, '%s.zone' % domain['id'])
 
-        output_file = open(output_path, 'w+')
-        for domain in domains:
-            zone_file = os.path.join(os.path.abspath(cfg.CONF.state_path),
-                                     'dnsmasq', '%s.zone' % domain['id'])
-            LOG.debug('Merging %s' % zone_file)
-            if os.path.exists(zone_file):
-                shutil.copyfileobj(open(zone_file, 'r'), output_file)
-        output_file.close()
-
-        # Send HUP to dnsmasq
-        utils.execute('killall', '-HUP', 'dnsmasq')
-
-    def _sync_delete_domain(self, domain):
-        """ Remove domain zone files rebuild flat zone """
-        LOG.debug('Delete Domain: %s' % domain['id'])
-
-        output_folder = os.path.join(os.path.abspath(cfg.CONF.state_path),
-                                     'dnsmasq')
-
-        output_path = os.path.join(output_folder, '%s.zone' % domain['id'])
-        os.remove(output_path)
-        self._sync_domains()
-
-    def _sync_domain(self, domain):
-        """ Sync a single domain's zone file """
-        LOG.debug('Synchronising Domain: %s' % domain['id'])
-
-        admin_context = MonikerContext.get_admin_context()
-        records = self.central_service.get_records(admin_context, domain['id'])
-
-        output_folder = os.path.join(os.path.abspath(cfg.CONF.state_path),
-                                     'dnsmasq')
-
-        output_path = os.path.join(output_folder, '%s.zone' % domain['id'])
         utils.render_template_to_file('dnsmasq-zone.jinja2',
-                                      output_path,
+                                      filename,
                                       records=records)
 
-        self._sync_domains()
+    def _purge_zonefile(self, domain):
+        filename = os.path.join(self.output_folder, '%s.zone' % domain['id'])
+
+        if os.exists(filename):
+            os.unlink(filename)
+
+    def _merge_zonefiles(self):
+        filename = os.path.join(self.output_folder, 'dnsmasq.conf')
+        zonefiles = glob.glob(os.path.join(self.output_folder, '*.zone'))
+
+        with open(filename, 'w+') as out_fh:
+            for zonefile in zonefiles:
+                with open(zonefile, 'r') as in_fh:
+                    # Append the zone to the output file
+                    shutil.copyfileobj(in_fh, out_fh)
+
+    def _reload_dnsmasq(self):
+        # Send HUP to dnsmasq
+        # TODO: Lets be a little more targetted that every dnsmasq instance
+        utils.execute('killall', '-HUP', 'dnsmasq')
