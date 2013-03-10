@@ -31,20 +31,15 @@ cfg.CONF.register_group(cfg.OptGroup(
 cfg.CONF.register_opts(SQLOPTS, group='storage:sqlalchemy')
 
 
-class SQLAlchemyStorage(base.StorageEngine):
+class SQLAlchemyStorage(base.Storage):
+    """ SQLAlchemy connection """
     __plugin_name__ = 'sqlalchemy'
 
-    def get_connection(self):
-        return Connection(self.name)
+    def __init__(self):
+        super(SQLAlchemyStorage, self).__init__()
 
-
-class Connection(base.Connection):
-    """
-    SQLAlchemy connection
-    """
-    def __init__(self, config_group):
-        self.engine = get_engine(config_group)
-        self.session = get_session(config_group)
+        self.engine = get_engine(self.name)
+        self.session = get_session(self.name)
 
     def setup_schema(self):
         """ Semi-Private Method to create the database schema """

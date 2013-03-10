@@ -47,7 +47,7 @@ class Service(rpc_service.Service):
         super(Service, self).__init__(*args, **kwargs)
 
         # Get a storage connection
-        self.storage_conn = storage.get_connection()
+        self.storage = storage.get_storage()
 
         # Initialize extensions
         self.handlers = self._init_extensions()
@@ -178,8 +178,8 @@ class Service(rpc_service.Service):
         if record_type != 'CNAME':
             criterion['type'] = 'CNAME'
 
-        records = self.storage_conn.get_records(context, domain['id'],
-                                                criterion=criterion)
+        records = self.storage.get_records(context, domain['id'],
+                                           criterion=criterion)
         if len(records) > 0:
             raise exceptions.BadRequest('CNAME records must not share a name'
                                         'with any other records')
@@ -187,8 +187,8 @@ class Service(rpc_service.Service):
         if record_type == 'CNAME':
             # CNAME's may not have children. Ever.
             criterion = {'name': '%%.%s' % record_name}
-            records = self.storage_conn.get_records(context, domain['id'],
-                                                    criterion=criterion)
+            records = self.storage.get_records(context, domain['id'],
+                                               criterion=criterion)
 
             if len(records) > 0:
                 raise exceptions.BadRequest('CNAME records must not have any '
@@ -214,7 +214,7 @@ class Service(rpc_service.Service):
             name = '.'.join(labels[i:])
 
             try:
-                domain = self.storage_conn.find_domain(context, {'name': name})
+                domain = self.storage.find_domain(context, {'name': name})
             except exceptions.DomainNotFound:
                 i += 1
             else:
@@ -231,8 +231,8 @@ class Service(rpc_service.Service):
         # Starting with label #2, search for matching records's in the database
         while (i < len(labels)):
             criterion['name'] = '.'.join(labels[i:])
-            records = self.storage_conn.get_records(context, domain['id'],
-                                                    criterion)
+            records = self.storage.get_records(context, domain['id'],
+                                               criterion)
 
             if len(records) == 0:
                 i += 1
@@ -245,7 +245,7 @@ class Service(rpc_service.Service):
     def create_server(self, context, values):
         policy.check('create_server', context)
 
-        server = self.storage_conn.create_server(context, values)
+        server = self.storage.create_server(context, values)
 
         utils.notify(context, 'api', 'server.create', server)
 
@@ -254,17 +254,17 @@ class Service(rpc_service.Service):
     def get_servers(self, context, criterion=None):
         policy.check('get_servers', context)
 
-        return self.storage_conn.get_servers(context, criterion)
+        return self.storage.get_servers(context, criterion)
 
     def get_server(self, context, server_id):
         policy.check('get_server', context, {'server_id': server_id})
 
-        return self.storage_conn.get_server(context, server_id)
+        return self.storage.get_server(context, server_id)
 
     def update_server(self, context, server_id, values):
         policy.check('update_server', context, {'server_id': server_id})
 
-        server = self.storage_conn.update_server(context, server_id, values)
+        server = self.storage.update_server(context, server_id, values)
 
         utils.notify(context, 'api', 'server.update', server)
 
@@ -273,17 +273,17 @@ class Service(rpc_service.Service):
     def delete_server(self, context, server_id):
         policy.check('delete_server', context, {'server_id': server_id})
 
-        server = self.storage_conn.get_server(context, server_id)
+        server = self.storage.get_server(context, server_id)
 
         utils.notify(context, 'api', 'server.delete', server)
 
-        return self.storage_conn.delete_server(context, server_id)
+        return self.storage.delete_server(context, server_id)
 
     # TSIG Key Methods
     def create_tsigkey(self, context, values):
         policy.check('create_tsigkey', context)
 
-        tsigkey = self.storage_conn.create_tsigkey(context, values)
+        tsigkey = self.storage.create_tsigkey(context, values)
 
         try:
             self.backend.create_tsigkey(context, tsigkey)
@@ -300,17 +300,17 @@ class Service(rpc_service.Service):
     def get_tsigkeys(self, context, criterion=None):
         policy.check('get_tsigkeys', context)
 
-        return self.storage_conn.get_tsigkeys(context, criterion)
+        return self.storage.get_tsigkeys(context, criterion)
 
     def get_tsigkey(self, context, tsigkey_id):
         policy.check('get_tsigkey', context, {'tsigkey_id': tsigkey_id})
 
-        return self.storage_conn.get_tsigkey(context, tsigkey_id)
+        return self.storage.get_tsigkey(context, tsigkey_id)
 
     def update_tsigkey(self, context, tsigkey_id, values):
         policy.check('update_tsigkey', context, {'tsigkey_id': tsigkey_id})
 
-        tsigkey = self.storage_conn.update_tsigkey(context, tsigkey_id, values)
+        tsigkey = self.storage.update_tsigkey(context, tsigkey_id, values)
 
         try:
             self.backend.update_tsigkey(context, tsigkey)
@@ -327,7 +327,7 @@ class Service(rpc_service.Service):
     def delete_tsigkey(self, context, tsigkey_id):
         policy.check('delete_tsigkey', context, {'tsigkey_id': tsigkey_id})
 
-        tsigkey = self.storage_conn.get_tsigkey(context, tsigkey_id)
+        tsigkey = self.storage.get_tsigkey(context, tsigkey_id)
 
         try:
             self.backend.delete_tsigkey(context, tsigkey)
@@ -339,7 +339,7 @@ class Service(rpc_service.Service):
 
         utils.notify(context, 'api', 'tsigkey.delete', tsigkey)
 
-        return self.storage_conn.delete_tsigkey(context, tsigkey_id)
+        return self.storage.delete_tsigkey(context, tsigkey_id)
 
     # Domain Methods
     def create_domain(self, context, values):
@@ -371,7 +371,7 @@ class Service(rpc_service.Service):
         # NOTE(kiall): Fetch the servers before creating the domain, this way
         #              we can prevent domain creation if no servers are
         #              configured.
-        servers = self.storage_conn.get_servers(context)
+        servers = self.storage.get_servers(context)
 
         if len(servers) == 0:
             LOG.critical('No servers configured. Please create at least one '
@@ -381,7 +381,7 @@ class Service(rpc_service.Service):
         # Set the serial number
         values['serial'] = utils.increment_serial()
 
-        domain = self.storage_conn.create_domain(context, values)
+        domain = self.storage.create_domain(context, values)
 
         try:
             self.backend.create_domain(context, domain)
@@ -405,10 +405,10 @@ class Service(rpc_service.Service):
         if not context.is_admin:
             criterion['tenant_id'] = context.tenant_id
 
-        return self.storage_conn.get_domains(context, criterion)
+        return self.storage.get_domains(context, criterion)
 
     def get_domain(self, context, domain_id):
-        domain = self.storage_conn.get_domain(context, domain_id)
+        domain = self.storage.get_domain(context, domain_id)
 
         target = {
             'domain_id': domain_id,
@@ -420,7 +420,7 @@ class Service(rpc_service.Service):
         return domain
 
     def update_domain(self, context, domain_id, values):
-        domain = self.storage_conn.get_domain(context, domain_id)
+        domain = self.storage.get_domain(context, domain_id)
 
         target = {
             'domain_id': domain_id,
@@ -446,7 +446,7 @@ class Service(rpc_service.Service):
         # Increment the serial number
         values['serial'] = utils.increment_serial(domain['serial'])
 
-        domain = self.storage_conn.update_domain(context, domain_id, values)
+        domain = self.storage.update_domain(context, domain_id, values)
 
         try:
             self.backend.update_domain(context, domain)
@@ -461,7 +461,7 @@ class Service(rpc_service.Service):
         return domain
 
     def delete_domain(self, context, domain_id):
-        domain = self.storage_conn.get_domain(context, domain_id)
+        domain = self.storage.get_domain(context, domain_id)
 
         target = {
             'domain_id': domain_id,
@@ -481,10 +481,10 @@ class Service(rpc_service.Service):
 
         utils.notify(context, 'api', 'domain.delete', domain)
 
-        return self.storage_conn.delete_domain(context, domain_id)
+        return self.storage.delete_domain(context, domain_id)
 
     def get_domain_servers(self, context, domain_id, criterion=None):
-        domain = self.storage_conn.get_domain(context, domain_id)
+        domain = self.storage.get_domain(context, domain_id)
 
         target = {
             'domain_id': domain_id,
@@ -499,11 +499,11 @@ class Service(rpc_service.Service):
 
         # TODO: Once we allow domains to be allocated on 1 of N server
         #       pools, return the filtered list here.
-        return self.storage_conn.get_servers(context, criterion)
+        return self.storage.get_servers(context, criterion)
 
     # Record Methods
     def create_record(self, context, domain_id, values):
-        domain = self.storage_conn.get_domain(context, domain_id)
+        domain = self.storage.get_domain(context, domain_id)
 
         target = {
             'domain_id': domain_id,
@@ -518,7 +518,7 @@ class Service(rpc_service.Service):
         self._is_valid_record_name(context, domain, values['name'],
                                    values['type'])
 
-        record = self.storage_conn.create_record(context, domain_id, values)
+        record = self.storage.create_record(context, domain_id, values)
 
         try:
             self.backend.create_record(context, domain, record)
@@ -532,7 +532,7 @@ class Service(rpc_service.Service):
         domain_values = {
             'serial': utils.increment_serial(domain['serial'])
         }
-        self.storage_conn.update_domain(context, domain_id, domain_values)
+        self.storage.update_domain(context, domain_id, domain_values)
 
         # Send Record creation notification
         utils.notify(context, 'api', 'record.create', record)
@@ -540,7 +540,7 @@ class Service(rpc_service.Service):
         return record
 
     def get_records(self, context, domain_id, criterion=None):
-        domain = self.storage_conn.get_domain(context, domain_id)
+        domain = self.storage.get_domain(context, domain_id)
 
         target = {
             'domain_id': domain_id,
@@ -550,11 +550,11 @@ class Service(rpc_service.Service):
 
         policy.check('get_records', context, target)
 
-        return self.storage_conn.get_records(context, domain_id, criterion)
+        return self.storage.get_records(context, domain_id, criterion)
 
     def get_record(self, context, domain_id, record_id):
-        domain = self.storage_conn.get_domain(context, domain_id)
-        record = self.storage_conn.get_record(context, record_id)
+        domain = self.storage.get_domain(context, domain_id)
+        record = self.storage.get_record(context, record_id)
 
         # Ensure the domain_id matches the record's domain_id
         if domain['id'] != record['domain_id']:
@@ -572,8 +572,8 @@ class Service(rpc_service.Service):
         return record
 
     def update_record(self, context, domain_id, record_id, values):
-        domain = self.storage_conn.get_domain(context, domain_id)
-        record = self.storage_conn.get_record(context, record_id)
+        domain = self.storage.get_domain(context, domain_id)
+        record = self.storage.get_record(context, record_id)
 
         # Ensure the domain_id matches the record's domain_id
         if domain['id'] != record['domain_id']:
@@ -595,7 +595,7 @@ class Service(rpc_service.Service):
         self._is_valid_record_name(context, domain, record_name, record_type)
 
         # Update the record
-        record = self.storage_conn.update_record(context, record_id, values)
+        record = self.storage.update_record(context, record_id, values)
 
         try:
             self.backend.update_record(context, domain, record)
@@ -609,7 +609,7 @@ class Service(rpc_service.Service):
         domain_values = {
             'serial': utils.increment_serial(domain['serial'])
         }
-        self.storage_conn.update_domain(context, domain_id, domain_values)
+        self.storage.update_domain(context, domain_id, domain_values)
 
         # Send Record update notification
         utils.notify(context, 'api', 'record.update', record)
@@ -617,8 +617,8 @@ class Service(rpc_service.Service):
         return record
 
     def delete_record(self, context, domain_id, record_id):
-        domain = self.storage_conn.get_domain(context, domain_id)
-        record = self.storage_conn.get_record(context, record_id)
+        domain = self.storage.get_domain(context, domain_id)
+        record = self.storage.get_record(context, record_id)
 
         # Ensure the domain_id matches the record's domain_id
         if domain['id'] != record['domain_id']:
@@ -645,23 +645,23 @@ class Service(rpc_service.Service):
         domain_values = {
             'serial': utils.increment_serial(domain['serial'])
         }
-        self.storage_conn.update_domain(context, domain_id, domain_values)
+        self.storage.update_domain(context, domain_id, domain_values)
 
         # Send Record deletion notification
         utils.notify(context, 'api', 'record.delete', record)
 
-        return self.storage_conn.delete_record(context, record_id)
+        return self.storage.delete_record(context, record_id)
 
     # Diagnostics Methods
     def sync_domains(self, context):
         policy.check('diagnostics_sync_domains', context)
 
-        domains = self.storage_conn.get_domains(context)
+        domains = self.storage.get_domains(context)
         results = {}
 
         for domain in domains:
-            servers = self.storage_conn.get_servers(context)
-            records = self.storage_conn.get_records(context, domain['id'])
+            servers = self.storage.get_servers(context)
+            records = self.storage.get_records(context, domain['id'])
 
             results[domain['id']] = self.backend.sync_domain(context,
                                                              domain,
@@ -671,7 +671,7 @@ class Service(rpc_service.Service):
         return results
 
     def sync_domain(self, context, domain_id):
-        domain = self.storage_conn.get_domain(context, domain_id)
+        domain = self.storage.get_domain(context, domain_id)
 
         target = {
             'domain_id': domain_id,
@@ -681,12 +681,12 @@ class Service(rpc_service.Service):
 
         policy.check('diagnostics_sync_domain', context, target)
 
-        records = self.storage_conn.get_records(context, domain_id)
+        records = self.storage.get_records(context, domain_id)
 
         return self.backend.sync_domain(context, domain, records)
 
     def sync_record(self, context, domain_id, record_id):
-        domain = self.storage_conn.get_domain(context, domain_id)
+        domain = self.storage.get_domain(context, domain_id)
 
         target = {
             'domain_id': domain_id,
@@ -697,7 +697,7 @@ class Service(rpc_service.Service):
 
         policy.check('diagnostics_sync_record', context, target)
 
-        record = self.storage_conn.get_record(context, record_id)
+        record = self.storage.get_record(context, record_id)
 
         return self.backend.sync_record(context, domain, record)
 
@@ -710,7 +710,7 @@ class Service(rpc_service.Service):
             backend_status = {'status': False, 'message': str(e)}
 
         try:
-            storage_status = self.storage_conn.ping(context)
+            storage_status = self.storage.ping(context)
         except Exception, e:
             storage_status = {'status': False, 'message': str(e)}
 

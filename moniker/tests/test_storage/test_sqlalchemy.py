@@ -14,15 +14,15 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from moniker.openstack.common import log as logging
-from moniker.tests.test_storage import StorageDriverTestCase
+from moniker.tests.test_storage import StorageTestCase
 
 LOG = logging.getLogger(__name__)
 
 
-class SqlalchemyStorageTest(StorageDriverTestCase):
+class SqlalchemyStorageTest(StorageTestCase):
     __test__ = True
 
     def setUp(self):
-        super(SqlalchemyStorageTest, self).setUp()
         self.config(database_connection='sqlite://',
                     group='storage:sqlalchemy')
+        super(SqlalchemyStorageTest, self).setUp()

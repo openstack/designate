@@ -15,32 +15,26 @@
 # under the License.
 from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
-from moniker.storage.base import StorageEngine
+from moniker.storage.base import Storage
 
 LOG = logging.getLogger(__name__)
 
 
-def get_engine(engine_name):
-    """
-    Return the engine class from the provided engine name
-    """
-    return StorageEngine.get_plugin(engine_name, invoke_on_load=True)
-
-
-def get_connection():
-    engine = get_engine(cfg.CONF['service:central'].storage_driver)
-    return engine.get_connection()
+def get_storage():
+    """ Return the engine class from the provided engine name """
+    storage_driver = cfg.CONF['service:central'].storage_driver
+    return Storage.get_plugin(storage_driver, invoke_on_load=True)
 
 
 def setup_schema():
     """ Create the DB - Used for testing purposes """
     LOG.debug("Setting up Schema")
-    connection = get_connection()
-    connection.setup_schema()
+    storage = get_storage()
+    storage.setup_schema()
 
 
 def teardown_schema():
     """ Reset the DB to default - Used for testing purposes """
     LOG.debug("Tearing down Schema")
-    connection = get_connection()
-    connection.teardown_schema()
+    storage = get_storage()
+    storage.teardown_schema()

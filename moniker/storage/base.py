@@ -17,30 +17,11 @@ import abc
 from moniker.plugin import Plugin
 
 
-class StorageEngine(Plugin):
-    """ Base class for storage engines """
-
+class Storage(Plugin):
+    """ Base class for storage plugins """
+    __metaclass__ = abc.ABCMeta
     __plugin_ns__ = 'moniker.storage'
     __plugin_type__ = 'storage'
-
-    @abc.abstractmethod
-    def get_connection(self):
-        """
-        Return a Connection instance based on the configuration settings.
-        """
-
-
-class Connection(object):
-    """
-    A Connection
-    """
-    __metaclass__ = abc.ABCMeta
-
-    @abc.abstractmethod
-    def __init__(self):
-        """
-        Constructor...
-        """
 
     @abc.abstractmethod
     def create_server(self, context):
