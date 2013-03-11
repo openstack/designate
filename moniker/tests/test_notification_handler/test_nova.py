@@ -14,14 +14,23 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from moniker.openstack.common import log as logging
-from moniker.tests.test_notification_handler import AddressHandlerTestCase
+from moniker.notification_handler.nova import NovaFixedHandler
+from moniker.tests.test_notification_handler import NotificationHandlerTestCase
 
 LOG = logging.getLogger(__name__)
 
 
-class NovaTestCase(AddressHandlerTestCase):
+class NovaFixedHandlerTest(NotificationHandlerTestCase):
     __test__ = True
-    __plugin_name__ = 'nova_fixed'
+
+    def setUp(self):
+        super(NovaFixedHandlerTest, self).setUp()
+
+        domain = self.create_domain()
+        self.domain_id = domain['id']
+        self.config(domain_id=domain['id'], group='handler:nova_fixed')
+
+        self.plugin = NovaFixedHandler(self.central_service)
 
     def test_instance_create_end(self):
         event_type = 'compute.instance.create.end'

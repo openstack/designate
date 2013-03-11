@@ -16,16 +16,26 @@
 import json
 import os
 from moniker.notification_handler.base import Handler
-from moniker.tests.test_plugins import PluginTestCase
+from moniker.tests import TestCase
 
 FIXTURES_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              '..',
                                              'sample_notifications'))
 
 
-class NotificationHandlerTestCase(PluginTestCase):
+class NotificationHandlerTestCase(TestCase):
     __test__ = False
     __plugin_base__ = Handler
+
+    def setUp(self):
+        super(NotificationHandlerTestCase, self).setUp()
+
+        self.central_service = self.get_central_service()
+        self.central_service.start()
+
+    def tearDown(self):
+        self.central_service.stop()
+        super(NotificationHandlerTestCase, self).tearDown()
 
     def get_notification_fixture(self, service, name):
         filename = os.path.join(FIXTURES_PATH, service, '%s.json' % name)
@@ -43,20 +53,3 @@ class NotificationHandlerTestCase(PluginTestCase):
 
         with self.assertRaises(ValueError):
             self.plugin.process_notification(event_type, 'payload')
-
-    def pre_invoke(self):
-        self.central_service = self.get_central_service()
-        self.invoke_args = [self.central_service]
-
-
-class AddressHandlerTestCase(NotificationHandlerTestCase):
-    """
-    Test something that receives notifications with regards to addresses
-    """
-    def pre_invoke(self):
-        super(AddressHandlerTestCase, self).pre_invoke()
-
-        domain = self.create_domain()
-        self.domain_id = str(domain['id'])
-
-        return {'domain_id': self.domain_id}

@@ -14,14 +14,23 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from moniker.openstack.common import log as logging
-from moniker.tests.test_notification_handler import AddressHandlerTestCase
+from moniker.notification_handler.quantum import QuantumFloatingHandler
+from moniker.tests.test_notification_handler import NotificationHandlerTestCase
 
 LOG = logging.getLogger(__name__)
 
 
-class QuantumFloatingTestCase(AddressHandlerTestCase):
+class QuantumFloatingHandlerTest(NotificationHandlerTestCase):
     __test__ = True
-    __plugin_name__ = 'quantum_floatingip'
+
+    def setUp(self):
+        super(QuantumFloatingHandlerTest, self).setUp()
+
+        domain = self.create_domain()
+        self.domain_id = domain['id']
+        self.config(domain_id=domain['id'], group='handler:quantum_floatingip')
+
+        self.plugin = QuantumFloatingHandler(self.central_service)
 
     def test_floatingip_associate(self):
         event_type = 'floatingip.update.end'
