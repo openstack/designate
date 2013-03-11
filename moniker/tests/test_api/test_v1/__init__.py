@@ -42,5 +42,5 @@ class ApiV1Test(ApiTestCase):
         self.central_service.start()
 
     def tearDown(self):
-        super(ApiV1Test, self).tearDown()
         self.central_service.stop()
+        super(ApiV1Test, self).tearDown()
