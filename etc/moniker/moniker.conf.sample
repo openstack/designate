@@ -33,8 +33,8 @@ default_log_levels = amqplib=WARN, sqlalchemy=WARN, boto=WARN, suds=INFO, keysto
 # Central Service
 #-----------------------
 [service:central]
-# Driver used for backend communication (e.g. rpc, bind9, powerdns)
-#backend_driver = rpc
+# Driver used for backend communication (e.g. fake, rpc, bind9, powerdns)
+#backend_driver = fake
 
 # List of blacklist domain name regexes
 #domain_name_blacklist = arpa.$, ^com.$, ^net.$, ^org.$, novalocal.$
