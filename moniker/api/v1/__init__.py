@@ -15,9 +15,16 @@
 # under the License.
 import flask
 from stevedore import extension
+from stevedore import named
+from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)
+
+cfg.CONF.register_opts([
+    cfg.ListOpt('enabled-extensions-v1', default=[],
+                help='Enabled API Extensions'),
+], group='service:api')
 
 
 def factory(global_config, **local_conf):
@@ -25,11 +32,19 @@ def factory(global_config, **local_conf):
 
     # TODO(kiall): Ideally, we want to make use of the Plugin class here.
     #              This works for the moment though.
-    mgr = extension.ExtensionManager('moniker.api.v1')
-
-    def _load_extension(ext):
+    def _register_blueprint(ext):
         app.register_blueprint(ext.plugin)
 
-    mgr.map(_load_extension)
+    # Add all in-built APIs
+    mgr = extension.ExtensionManager('moniker.api.v1')
+    mgr.map(_register_blueprint)
+
+    # Add any (enabled) optional extensions
+    extensions = cfg.CONF['service:api'].enabled_extensions_v1
+
+    if len(extensions) > 0:
+        extmgr = named.NamedExtensionManager('moniker.api.v1.extensions',
+                                             names=extensions)
+        extmgr.map(_register_blueprint)
 
     return app
