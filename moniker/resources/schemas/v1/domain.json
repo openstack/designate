@@ -29,7 +29,7 @@
             "required": true
         },
         "ttl": {
-            "type": "integer",
+            "type": ["integer", "null"],
             "description": "Time to live",
             "min": 60
         },
