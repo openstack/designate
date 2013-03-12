@@ -131,14 +131,17 @@ class Service(rpc_service.Service):
         return False
 
     def _is_subrecord(self, context, domain, record_name, criterion):
-        # Break the name up into it's component labels
-        labels = record_name.split(".")
+        # Break the names up into their component labels
+        domain_labels = domain['name'].split(".")
+        record_labels = record_name.split(".")
 
         i = 1
+        j = len(record_labels) - len(domain_labels)
 
         # Starting with label #2, search for matching records's in the database
-        while (i < len(labels)):
-            criterion['name'] = '.'.join(labels[i:])
+        while (i <= j):
+            criterion['name'] = '.'.join(record_labels[i:])
+
             records = self.storage.get_records(context, domain['id'],
                                                criterion)
 
