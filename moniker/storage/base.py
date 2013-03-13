@@ -113,6 +113,14 @@ class Storage(Plugin):
         :param context: RPC Context.
         :param domain_id: Domain ID to delete.
         """
+    @abc.abstractmethod
+    def count_domains(self, context, criterion=None):
+        """
+        Count all Domains, across all accounts, applying criteria
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        """
 
     @abc.abstractmethod
     def create_record(self, context, domain_id, values):
@@ -159,6 +167,23 @@ class Storage(Plugin):
 
         :param context: RPC Context
         :param record_id: Record ID to delete
+        """
+
+    @abc.abstractmethod
+    def count_records(self, context, criterion=None):
+        """
+        Count records, across all domains unless otherwise specified
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        """
+
+    @abc.abstractmethod
+    def count_tenants(self, context):
+        """
+        Count tenants, across all domains
+
+        :param context: RPC Context.
         """
 
     def ping(self, context):

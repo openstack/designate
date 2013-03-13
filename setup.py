@@ -66,6 +66,7 @@ setup(
         [moniker.api.v1.extensions]
         diagnostics = moniker.api.v1.extensions.diagnostics:blueprint
         sync = moniker.api.v1.extensions.sync:blueprint
+        reports = moniker.api.v1.extensions.reports:blueprint
 
         [moniker.storage]
         sqlalchemy = moniker.storage.impl_sqlalchemy:SQLAlchemyStorage

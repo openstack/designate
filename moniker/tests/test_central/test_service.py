@@ -718,3 +718,59 @@ class CentralServiceTest(CentralTestCase):
         with self.assertRaises(exceptions.RecordNotFound):
             self.central_service.delete_record(context, other_domain['id'],
                                                record['id'])
+
+    def test_count_domains(self):
+        # in the beginning, there should be nothing
+        domains = self.central_service.count_domains(self.admin_context)
+        self.assertEqual(domains, 0)
+
+        # Create a single domain
+        self.create_domain()
+
+        # count 'em up
+        domains = self.central_service.count_domains(self.admin_context)
+
+        # well, did we get 1?
+        self.assertEqual(domains, 1)
+
+    def test_count_domains_admin_only(self):
+        with self.assertRaises(exceptions.Forbidden):
+            self.central_service.count_domains(self.get_context())
+
+    def test_count_records(self):
+        # in the beginning, there should be nothing
+        records = self.central_service.count_records(self.admin_context)
+        self.assertEqual(records, 0)
+
+        # Create a domain to put our record in
+        domain = self.create_domain()
+
+        # Create a record
+        self.create_record(domain)
+
+        # we should have 1 record now
+        records = self.central_service.count_domains(self.admin_context)
+        self.assertEqual(records, 1)
+
+    def test_count_records_admin_only(self):
+        with self.assertRaises(exceptions.Forbidden):
+            self.central_service.count_records(self.get_context())
+
+    def test_count_tenants(self):
+        context = self.get_admin_context()
+        # in the beginning, there should be nothing
+        tenants = self.central_service.count_tenants(self.admin_context)
+        self.assertEqual(tenants, 0)
+
+        # Explicitly set a tenant_id
+        context.tenant_id = '1'
+        self.create_domain(fixture=0, context=context)
+        context.tenant_id = '2'
+        self.create_domain(fixture=1, context=context)
+
+        tenants = self.central_service.count_tenants(self.admin_context)
+        self.assertEqual(tenants, 2)
+
+    def test_count_tenants_admin_only(self):
+        with self.assertRaises(exceptions.Forbidden):
+            self.central_service.count_tenants(self.get_context())
