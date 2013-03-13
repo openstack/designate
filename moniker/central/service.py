@@ -330,7 +330,7 @@ class Service(rpc_service.Service):
 
         return domain
 
-    def update_domain(self, context, domain_id, values):
+    def update_domain(self, context, domain_id, values, increment_serial=True):
         domain = self.storage.get_domain(context, domain_id)
 
         target = {
@@ -354,8 +354,9 @@ class Service(rpc_service.Service):
         if 'name' in values and values['name'] != domain['name']:
             raise exceptions.BadRequest('Renaming a domain is not allowed')
 
-        # Increment the serial number
-        values['serial'] = utils.increment_serial(domain['serial'])
+        if increment_serial:
+            # Increment the serial number
+            values['serial'] = utils.increment_serial(domain['serial'])
 
         domain = self.storage.update_domain(context, domain_id, values)
 
@@ -413,7 +414,7 @@ class Service(rpc_service.Service):
         return self.storage.get_servers(context, criterion)
 
     # Record Methods
-    def create_record(self, context, domain_id, values):
+    def create_record(self, context, domain_id, values, increment_serial=True):
         domain = self.storage.get_domain(context, domain_id)
 
         target = {
@@ -439,11 +440,12 @@ class Service(rpc_service.Service):
         except Exception, e:
             raise exceptions.Backend('Unknown backend failure: %s' % e)
 
-        # Increment the domains serial number
-        domain_values = {
-            'serial': utils.increment_serial(domain['serial'])
-        }
-        self.storage.update_domain(context, domain_id, domain_values)
+        if increment_serial:
+            # Increment the domains serial number
+            domain_values = {
+                'serial': utils.increment_serial(domain['serial'])
+            }
+            self.storage.update_domain(context, domain_id, domain_values)
 
         # Send Record creation notification
         utils.notify(context, 'api', 'record.create', record)
@@ -482,7 +484,8 @@ class Service(rpc_service.Service):
 
         return record
 
-    def update_record(self, context, domain_id, record_id, values):
+    def update_record(self, context, domain_id, record_id, values,
+                      increment_serial=True):
         domain = self.storage.get_domain(context, domain_id)
         record = self.storage.get_record(context, record_id)
 
@@ -516,18 +519,20 @@ class Service(rpc_service.Service):
         except Exception, e:
             raise exceptions.Backend('Unknown backend failure: %s' % e)
 
-        # Increment the domains serial number
-        domain_values = {
-            'serial': utils.increment_serial(domain['serial'])
-        }
-        self.storage.update_domain(context, domain_id, domain_values)
+        if increment_serial:
+            # Increment the domains serial number
+            domain_values = {
+                'serial': utils.increment_serial(domain['serial'])
+            }
+            self.storage.update_domain(context, domain_id, domain_values)
 
         # Send Record update notification
         utils.notify(context, 'api', 'record.update', record)
 
         return record
 
-    def delete_record(self, context, domain_id, record_id):
+    def delete_record(self, context, domain_id, record_id,
+                      increment_serial=True):
         domain = self.storage.get_domain(context, domain_id)
         record = self.storage.get_record(context, record_id)
 
@@ -552,11 +557,12 @@ class Service(rpc_service.Service):
         except Exception, e:
             raise exceptions.Backend('Unknown backend failure: %s' % e)
 
-        # Increment the domains serial number
-        domain_values = {
-            'serial': utils.increment_serial(domain['serial'])
-        }
-        self.storage.update_domain(context, domain_id, domain_values)
+        if increment_serial:
+            # Increment the domains serial number
+            domain_values = {
+                'serial': utils.increment_serial(domain['serial'])
+            }
+            self.storage.update_domain(context, domain_id, domain_values)
 
         # Send Record deletion notification
         utils.notify(context, 'api', 'record.delete', record)

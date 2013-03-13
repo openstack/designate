@@ -430,6 +430,27 @@ class CentralServiceTest(CentralTestCase):
                                                  expected_domain['id'])
 
         # Ensure the domain was updated correctly
+        self.assertGreater(domain['serial'], expected_domain['serial'])
+        self.assertEqual(domain['email'], 'new@example.com')
+
+    def test_update_domain_without_incrementing_serial(self):
+        context = self.get_admin_context()
+
+        # Create a domain
+        expected_domain = self.create_domain()
+
+        # Update the domain
+        values = dict(email='new@example.com')
+        self.central_service.update_domain(context, expected_domain['id'],
+                                           values=values,
+                                           increment_serial=False)
+
+        # Fetch the domain again
+        domain = self.central_service.get_domain(context,
+                                                 expected_domain['id'])
+
+        # Ensure the domain was updated correctly
+        self.assertEqual(domain['serial'], expected_domain['serial'])
         self.assertEqual(domain['email'], 'new@example.com')
 
     def test_update_domain_name_fail(self):
@@ -489,6 +510,32 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(record['name'], values['name'])
         self.assertEqual(record['type'], values['type'])
         self.assertEqual(record['data'], values['data'])
+
+    def test_create_record_without_incrementing_serial(self):
+        context = self.get_admin_context()
+        domain = self.create_domain()
+
+        values = dict(
+            name='www.%s' % domain['name'],
+            type='A',
+            data='127.0.0.1'
+        )
+
+        # Create a record
+        record = self.central_service.create_record(context, domain['id'],
+                                                    values=values,
+                                                    increment_serial=False)
+
+        # Ensure all values have been set correctly
+        self.assertIsNotNone(record['id'])
+        self.assertIsNone(record['ttl'])
+        self.assertEqual(record['name'], values['name'])
+        self.assertEqual(record['type'], values['type'])
+        self.assertEqual(record['data'], values['data'])
+
+        # Ensure the domains serial number was not updated
+        updated_domain = self.central_service.get_domain(context, domain['id'])
+        self.assertEqual(domain['serial'], updated_domain['serial'])
 
     def test_create_cname_record_at_apex(self):
         context = self.get_admin_context()
@@ -674,6 +721,35 @@ class CentralServiceTest(CentralTestCase):
         # Ensure the record was updated correctly
         self.assertEqual(record['data'], '127.0.0.2')
 
+    def test_update_record_without_incrementing_serial(self):
+        context = self.get_admin_context()
+        domain = self.create_domain()
+
+        # Create a record
+        expected_record = self.create_record(domain)
+
+        # Fetch the domain so we have the latest serial number
+        domain_before = self.central_service.get_domain(context, domain['id'])
+
+        # Update the record
+        values = dict(data='127.0.0.2')
+        self.central_service.update_record(context,
+                                           domain['id'],
+                                           expected_record['id'],
+                                           values,
+                                           increment_serial=False)
+
+        # Fetch the record again
+        record = self.central_service.get_record(context, domain['id'],
+                                                 expected_record['id'])
+
+        # Ensure the record was updated correctly
+        self.assertEqual(record['data'], '127.0.0.2')
+
+        # Ensure the domains serial number was not updated
+        domain_after = self.central_service.get_domain(context, domain['id'])
+        self.assertEqual(domain_before['serial'], domain_after['serial'])
+
     def test_update_record_incorrect_domain_id(self):
         context = self.get_admin_context()
         domain = self.create_domain()
@@ -705,6 +781,29 @@ class CentralServiceTest(CentralTestCase):
         with self.assertRaises(exceptions.RecordNotFound):
             self.central_service.get_record(context, domain['id'],
                                             record['id'])
+
+    def test_delete_record_without_incrementing_serial(self):
+        context = self.get_admin_context()
+        domain = self.create_domain()
+
+        # Create a record
+        record = self.create_record(domain)
+
+        # Fetch the domain so we have the latest serial number
+        domain_before = self.central_service.get_domain(context, domain['id'])
+
+        # Delete the record
+        self.central_service.delete_record(context, domain['id'], record['id'],
+                                           increment_serial=False)
+
+        # Fetch the record again, ensuring an exception is raised
+        with self.assertRaises(exceptions.RecordNotFound):
+            self.central_service.get_record(context, domain['id'],
+                                            record['id'])
+
+        # Ensure the domains serial number was not updated
+        domain_after = self.central_service.get_domain(context, domain['id'])
+        self.assertEqual(domain_before['serial'], domain_after['serial'])
 
     def test_delete_record_incorrect_domain_id(self):
         context = self.get_admin_context()

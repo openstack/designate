@@ -171,12 +171,13 @@ def get_domain(context, domain_id):
     return RPC.call(context, msg)
 
 
-def update_domain(context, domain_id, values):
+def update_domain(context, domain_id, values, increment_serial=True):
     msg = {
         'method': 'update_domain',
         'args': {
             'domain_id': domain_id,
             'values': values,
+            'increment_serial': increment_serial,
         },
     }
 
@@ -206,12 +207,13 @@ def get_domain_servers(context, domain_id):
 
 
 # Record Methods
-def create_record(context, domain_id, values):
+def create_record(context, domain_id, values, increment_serial=True):
     msg = {
         'method': 'create_record',
         'args': {
             'domain_id': domain_id,
             'values': values,
+            'increment_serial': increment_serial,
         },
     }
 
@@ -242,25 +244,28 @@ def get_record(context, domain_id, record_id):
     return RPC.call(context, msg)
 
 
-def update_record(context, domain_id, record_id, values):
+def update_record(context, domain_id, record_id, values,
+                  increment_serial=True):
     msg = {
         'method': 'update_record',
         'args': {
             'domain_id': domain_id,
             'record_id': record_id,
             'values': values,
+            'increment_serial': increment_serial,
         },
     }
 
     return RPC.call(context, msg)
 
 
-def delete_record(context, domain_id, record_id):
+def delete_record(context, domain_id, record_id, increment_serial=True):
     msg = {
         'method': 'delete_record',
         'args': {
             'domain_id': domain_id,
             'record_id': record_id,
+            'increment_serial': increment_serial,
         },
     }
 

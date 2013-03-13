@@ -232,7 +232,6 @@ class TestCase(unittest2.TestCase, AssertMixin):
         return self.central_service.create_tsigkey(context, values=values)
 
     def create_domain(self, **kwargs):
-        LOG.critical('*************CREATE DOMAIN CALLED*************')
         context = kwargs.pop('context', self.get_admin_context())
         fixture = kwargs.pop('fixture', 0)
 
