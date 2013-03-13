@@ -184,6 +184,17 @@ def update_domain(context, domain_id, values, increment_serial=True):
     return RPC.call(context, msg)
 
 
+def touch_domain(context, domain_id):
+    msg = {
+        'method': 'touch_domain',
+        'args': {
+            'domain_id': domain_id,
+        },
+    }
+
+    return RPC.call(context, msg)
+
+
 def delete_domain(context, domain_id):
     msg = {
         'method': 'delete_domain',

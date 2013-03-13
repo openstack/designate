@@ -372,6 +372,33 @@ class Service(rpc_service.Service):
 
         return domain
 
+    def touch_domain(self, context, domain_id):
+        domain = self.storage.get_domain(context, domain_id)
+
+        target = {
+            'domain_id': domain_id,
+            'domain_name': domain['name'],
+            'tenant_id': domain['tenant_id']
+        }
+
+        policy.check('touch_domain', context, target)
+
+        # Increment the serial number
+        values = {'serial': utils.increment_serial(domain['serial'])}
+        domain = self.storage.update_domain(context, domain_id, values)
+
+        try:
+            self.backend.update_domain(context, domain)
+        except exceptions.Backend:
+            # Re-raise Backend exceptions as is..
+            raise
+        except Exception, e:
+            raise exceptions.Backend('Unknown backend failure: %s' % e)
+
+        utils.notify(context, 'api', 'domain.update', domain)
+
+        return domain
+
     def delete_domain(self, context, domain_id):
         domain = self.storage.get_domain(context, domain_id)
 

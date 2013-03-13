@@ -465,6 +465,22 @@ class CentralServiceTest(CentralTestCase):
             self.central_service.update_domain(context, expected_domain['id'],
                                                values=values)
 
+    def test_touch_domain(self):
+        context = self.get_admin_context()
+
+        # Create a domain
+        expected_domain = self.create_domain()
+
+        # Touch the domain
+        self.central_service.touch_domain(context, expected_domain['id'])
+
+        # Fetch the domain again
+        domain = self.central_service.get_domain(context,
+                                                 expected_domain['id'])
+
+        # Ensure the serial was incremented
+        self.assertGreater(domain['serial'], expected_domain['serial'])
+
     def test_delete_domain(self):
         context = self.get_admin_context()
 
