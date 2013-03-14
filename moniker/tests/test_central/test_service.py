@@ -346,8 +346,34 @@ class CentralServiceTest(CentralTestCase):
             email='info@blacklisted.com'
         )
 
-        with self.assertRaises(exceptions.Forbidden):
+        with self.assertRaises(exceptions.BadRequest):
             # Create a domain
+            self.central_service.create_domain(context, values=values)
+
+    def test_create_domain_invalid_tld_fail(self):
+        self.config(accepted_tld_list=['com'],
+                    group='service:central')
+
+        context = self.get_admin_context()
+
+        # Create a server
+        self.create_server()
+
+        values = dict(
+            name='invalid.cOM.',
+            email='info@invalid.com'
+        )
+
+        # Create a valid domain
+        self.central_service.create_domain(context, values=values)
+
+        values = dict(
+            name='invalid.NeT.',
+            email='info@invalid.com'
+        )
+
+        with self.assertRaises(exceptions.BadRequest):
+            # Create an invalid domain
             self.central_service.create_domain(context, values=values)
 
     def test_get_domains(self):

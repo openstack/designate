@@ -31,5 +31,7 @@ cfg.CONF.register_opts([
     cfg.ListOpt('domain-name-blacklist',
                 default=['arpa.$', '^com.$', '^net.$', '^org.$',
                          'novalocal.$'],
-                help='Reserved DNS domain name suffixes'),
+                help='DNS domain name blacklist'),
+    cfg.ListOpt('accepted-tld-list', default=None,
+                help='Accepted TLDs'),
 ], group='service:central')

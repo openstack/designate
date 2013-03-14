@@ -39,6 +39,9 @@ default_log_levels = amqplib=WARN, sqlalchemy=WARN, boto=WARN, suds=INFO, keysto
 # List of blacklist domain name regexes
 #domain_name_blacklist = arpa.$, ^com.$, ^net.$, ^org.$, novalocal.$
 
+# Accepted TLD list - http://data.iana.org/TLD/tlds-alpha-by-domain.txt
+#accepted_tld_list = COM, NET, ORG, IE, UK, ...
+
 #-----------------------
 # API Service
 #-----------------------

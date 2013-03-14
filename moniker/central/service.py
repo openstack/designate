@@ -54,17 +54,42 @@ class Service(rpc_service.Service):
 
         self.backend.stop()
 
-    def _is_blacklisted_domain_name(self, context, domain_name):
-        """
-        Ensures the provided domain_name is not blacklisted.
-        """
-        blacklists = cfg.CONF['service:central'].domain_name_blacklist
+    @property
+    def accepted_tld_list(self):
+        # Only iterate the list once please..
+        if hasattr(self, '_accepted_tld_list'):
+            return self._accepted_tld_list
 
-        for blacklist in blacklists:
-            if bool(re.search(blacklist, domain_name)):
-                return blacklist
+        accepted_tld_list = cfg.CONF['service:central'].accepted_tld_list
 
-        return False
+        if accepted_tld_list:
+            accepted_tld_list = [tld.lower() for tld in accepted_tld_list]
+
+        self._accepted_tld_list = accepted_tld_list
+
+        return accepted_tld_list
+
+    def _is_valid_domain_name(self, context, domain_name):
+        domain_labels = domain_name.strip('.').split('.')
+
+        # We need more than 1 label.
+        if len(domain_labels) <= 1:
+            raise exceptions.BadRequest('Invalid Domain Name')
+
+        # Check the TLD for validity
+        if self.accepted_tld_list:
+            domain_tld = domain_labels[-1].lower()
+
+            if domain_tld not in self.accepted_tld_list:
+                raise exceptions.BadRequest('Invalid TLD')
+
+        # Check domain name blacklist
+        if self._is_blacklisted_domain_name(context, domain_name):
+            # Some users are allowed bypass the blacklist.. Is this one?
+            if not policy.check('use_blacklisted_domain', context, exc=None):
+                raise exceptions.BadRequest('Blacklisted domain name')
+
+        return True
 
     def _is_valid_record_name(self, context, domain, record_name, record_type):
         if not record_name.endswith('.'):
@@ -110,6 +135,18 @@ class Service(rpc_service.Service):
                                             'a CNAME record')
 
         return True
+
+    def _is_blacklisted_domain_name(self, context, domain_name):
+        """
+        Ensures the provided domain_name is not blacklisted.
+        """
+        blacklists = cfg.CONF['service:central'].domain_name_blacklist
+
+        for blacklist in blacklists:
+            if bool(re.search(blacklist, domain_name)):
+                return blacklist
+
+        return False
 
     def _is_subdomain(self, context, domain_name):
         # Break the name up into it's component labels
@@ -263,10 +300,8 @@ class Service(rpc_service.Service):
 
         policy.check('create_domain', context, target)
 
-        # Ensure the domain is not blacklisted
-        if self._is_blacklisted_domain_name(context, values['name']):
-            # Raises an exception if the policy check is denied
-            policy.check('use_blacklisted_domain', context)
+        # Ensure the domain name is valid
+        self._is_valid_domain_name(context, values['name'])
 
         # Handle sub-domains appropriately
         parent_domain = self._is_subdomain(context, values['name'])
@@ -278,6 +313,8 @@ class Service(rpc_service.Service):
             else:
                 raise exceptions.Forbidden('Unable to create subdomain in '
                                            'another tenants domain')
+
+        # TODO(kiall): Handle super-domains properly
 
         # NOTE(kiall): Fetch the servers before creating the domain, this way
         #              we can prevent domain creation if no servers are
