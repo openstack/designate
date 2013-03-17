@@ -61,6 +61,8 @@ class Service(service.Service):
         self._port = port
         self._host = host
         self.backlog = backlog
+        self._socket = eventlet.listen((self._host, self._port),
+                                       backlog=self.backlog)
         super(Service, self).__init__(threads)
 
     def start(self):
@@ -70,8 +72,6 @@ class Service(service.Service):
 
         """
         super(Service, self).start()
-        self._socket = eventlet.listen((self._host, self._port),
-                                       backlog=self.backlog)
         self.tg.add_thread(self._run, self.application, self._socket)
 
     @property
