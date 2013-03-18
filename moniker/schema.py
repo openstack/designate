@@ -25,6 +25,7 @@ from moniker import exceptions
 from moniker import utils
 
 LOG = logging.getLogger(__name__)
+_RE_DOMAINNAME = '^(?!.{255,})((?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-)\.)+$'
 _RE_HOSTNAME = '^(?!.{255,})((^\*|(?!\-)[A-Za-z0-9_\-]{1,63})(?<!\-)\.)+$'
 
 
@@ -142,6 +143,12 @@ class SchemaValidator(jsonschema.Draft3Validator):
             if self.is_type(instance, "string"):
                 if not re.match(_RE_HOSTNAME, instance):
                     msg = "%s is not a host name" % (instance)
+                    yield jsonschema.ValidationError(msg)
+        elif format == "domain-name":
+            # A valid domainname
+            if self.is_type(instance, "string"):
+                if not re.match(_RE_DOMAINNAME, instance):
+                    msg = "%s is not a domain name" % (instance)
                     yield jsonschema.ValidationError(msg)
 
     def validate_anyOf(self, schemas, instance, schema):

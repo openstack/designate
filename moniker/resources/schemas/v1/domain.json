@@ -16,7 +16,7 @@
         "name": {
             "type": "string",
             "description": "Domain name",
-            "format": "host-name",
+            "format": "domain-name",
             "maxLength": 255,
             "required": true,
             "readonly": true
