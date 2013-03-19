@@ -64,6 +64,67 @@ class ApiV1RecordsTest(ApiV1Test):
         self.assertIn('name', response.json)
         self.assertEqual(response.json['name'], fixture['name'])
 
+    def test_create_srv_record(self):
+        # Prepare a record
+        fixture = self.get_record_fixture(self.domain['name'], 0)
+        fixture['type'] = 'SRV'
+        fixture['name'] = '_sip._udp.%s' % fixture['name']
+        fixture['priority'] = 10
+        fixture['data'] = '0 5060 sip.%s' % self.domain['name']
+
+        # Create a record
+        response = self.post('domains/%s/records' % self.domain['id'],
+                             data=fixture)
+
+        self.assertIn('id', response.json)
+        self.assertEqual(response.json['type'], fixture['type'])
+        self.assertEqual(response.json['name'], fixture['name'])
+        self.assertEqual(response.json['priority'], fixture['priority'])
+        self.assertEqual(response.json['data'], fixture['data'])
+
+    def test_create_invalid_data_srv_record(self):
+        # Prepare a record
+        fixture = self.get_record_fixture(self.domain['name'], 0)
+        fixture['type'] = 'SRV'
+        fixture['name'] = '_sip._udp.%s' % fixture['name']
+        fixture['priority'] = 10
+
+        invalid_datas = [
+            'I 5060 sip.%s' % self.domain['name'],
+            '5060 sip.%s' % self.domain['name'],
+            '5060 I sip.%s' % self.domain['name'],
+            '0 5060 sip',
+            'sip',
+            'sip.%s' % self.domain['name'],
+        ]
+
+        for invalid_data in invalid_datas:
+            fixture['data'] = invalid_data
+            # Attempt to create the record
+            self.post('domains/%s/records' % self.domain['id'], data=fixture,
+                      status_code=400)
+
+    def test_create_invalid_name_srv_record(self):
+        # Prepare a record
+        fixture = self.get_record_fixture(self.domain['name'], 0)
+        fixture['type'] = 'SRV'
+        fixture['priority'] = 10
+        fixture['data'] = '0 5060 sip.%s' % self.domain['name']
+
+        invalid_names = [
+            '%s' % fixture['name'],
+            '_udp.%s' % fixture['name'],
+            'sip._udp.%s' % fixture['name'],
+            '_sip.udp.%s' % fixture['name'],
+        ]
+
+        for invalid_name in invalid_names:
+            fixture['name'] = invalid_name
+
+            # Attempt to create the record
+            self.post('domains/%s/records' % self.domain['id'], data=fixture,
+                      status_code=400)
+
     def test_create_invalid_name(self):
         # Prepare a record
         fixture = self.get_record_fixture(self.domain['name'], 0)
