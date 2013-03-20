@@ -61,6 +61,12 @@ class ApiV1DomainsTest(ApiV1Test):
         fixture = self.get_domain_fixture(0)
         self.post('domains', data=fixture, status_code=409)
 
+    def test_create_domain_null_ttl(self):
+        # Create a domain
+        fixture = self.get_domain_fixture(0)
+        fixture['ttl'] = None
+        self.post('domains', data=fixture, status_code=400)
+
     def test_get_domains(self):
         response = self.get('domains')
 
@@ -106,27 +112,27 @@ class ApiV1DomainsTest(ApiV1Test):
 
             self.assertNotIn('id', response.json)
 
-    # TODO: Failing..
-    # def test_create_invalid_email(self):
-    #     # Prepare a domain
-    #     fixture = self.get_domain_fixture(0)
+    def test_create_invalid_email(self):
+        # Prepare a domain
+        fixture = self.get_domain_fixture(0)
 
-    #     invalid_emails = [
-    #         'org',
-    #         'example.org',
-    #         'bla.example.org',
-    #         'org.',
-    #         'example.org.',
-    #         'bla.example.org.',
-    #     ]
+        invalid_emails = [
+            'org',
+            'example.org',
+            'bla.example.org',
+            'org.',
+            'example.org.',
+            'bla.example.org.',
+            'bla.example.org.',
+        ]
 
-    #     for invalid_email in invalid_emails:
-    #         fixture['email'] = invalid_email
+        for invalid_email in invalid_emails:
+            fixture['email'] = invalid_email
 
-    #         # Create a record
-    #         response = self.post('domains', data=fixture, status_code=400)
+            # Create a record
+            response = self.post('domains', data=fixture, status_code=400)
 
-    #         self.assertNotIn('id', response.json)
+            self.assertNotIn('id', response.json)
 
     def test_get_domain(self):
         # Create a domain
@@ -168,6 +174,14 @@ class ApiV1DomainsTest(ApiV1Test):
         domain = self.create_domain()
 
         data = {'name': 'renamed.com.'}
+
+        self.put('domains/%s' % domain['id'], data=data, status_code=400)
+
+    def test_update_domain_null_ttl(self):
+        # Create a domain
+        domain = self.create_domain()
+
+        data = {'ttl': None}
 
         self.put('domains/%s' % domain['id'], data=data, status_code=400)
 
