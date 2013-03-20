@@ -27,6 +27,8 @@ from moniker import utils
 LOG = logging.getLogger(__name__)
 _RE_DOMAINNAME = '^(?!.{255,})((?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-)\.)+$'
 _RE_HOSTNAME = '^(?!.{255,})((^\*|(?!\-)[A-Za-z0-9_\-]{1,63})(?<!\-)\.)+$'
+_RE_EMAIL = ('^[A-Za-z0-9_\-\.]+@'
+             '(?!.{255,})((?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-)\.)+')
 
 
 class StaticResolver(object):
@@ -121,7 +123,10 @@ class SchemaValidator(jsonschema.Draft3Validator):
             pass
         elif format == "email":
             # A valid email address
-            pass
+            if self.is_type(instance, "string"):
+                if not re.match(_RE_EMAIL, instance):
+                    msg = "%s is not an email" % (instance)
+                    yield jsonschema.ValidationError(msg)
         elif format == "ip-address":
             # IPv4 Address
             if self.is_type(instance, "string"):

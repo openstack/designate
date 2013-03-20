@@ -180,6 +180,50 @@ class TestSchemaValidator(TestCase):
             with self.assertRaises(jsonschema.ValidationError):
                 validator.validate({'domainname': domainname})
 
+    def test_validate_format_email(self):
+        test_schema = {
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "format": "email",
+                    "required": True
+                },
+            }
+        }
+
+        validator = schema.SchemaValidator(test_schema)
+
+        valid_emails = [
+            'user@example.com',
+            'user@emea.example.com',
+            'user@example.com',
+            'first.last@example.com',
+        ]
+
+        invalid_emails = [
+            # We use the email addr for the SOA RNAME field, this means the
+            # entire address, excluding the @ must be chacracters valid
+            # as a DNS name. i.e. + and % addressing is invalid.
+            'user+plus@example.com',
+            'user%example.org@example.com',
+            'example.org',
+            '@example.org',
+            'user@*.example.org',
+            'user',
+            'user@',
+            'user+plus',
+            'user+plus@',
+            'user%example.org',
+            'user%example.org@'
+        ]
+
+        for email in valid_emails:
+            validator.validate({'email': email})
+
+        for email in invalid_emails:
+            with self.assertRaises(jsonschema.ValidationError):
+                validator.validate({'email': email})
+
     def test_validate_format_datetime(self):
         test_schema = {
             "properties": {
