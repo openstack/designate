@@ -42,6 +42,12 @@ default_log_levels = amqplib=WARN, sqlalchemy=WARN, boto=WARN, suds=INFO, keysto
 # Accepted TLD list - http://data.iana.org/TLD/tlds-alpha-by-domain.txt
 #accepted_tld_list = COM, NET, ORG, IE, UK, ...
 
+# Maximum domain name length
+#max_domain_name_len = 255
+
+# Maximum record name length
+#max_record_name_len = 255
+
 #-----------------------
 # API Service
 #-----------------------

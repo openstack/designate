@@ -73,4 +73,8 @@ cfg.CONF.register_opts([
                 help='DNS domain name blacklist'),
     cfg.ListOpt('accepted-tld-list', default=IANA_TLDS,
                 help='Accepted TLDs'),
+    cfg.IntOpt('max_domain_name_len', default=255,
+               help="Maximum domain name length"),
+    cfg.IntOpt('max_record_name_len', default=255,
+               help="Maximum record name length"),
 ], group='service:central')

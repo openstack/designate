@@ -34,6 +34,46 @@ class CentralServiceTest(CentralTestCase):
         self.central_service.start()
         self.central_service.stop()
 
+    def test_is_valid_domain_name(self):
+        self.config(max_domain_name_len=10,
+                    accepted_tld_list=['org'],
+                    group='service:central')
+
+        context = self.get_context()
+
+        self.central_service._is_valid_domain_name(context, 'valid.org.')
+
+        with self.assertRaises(exceptions.BadRequest):
+            self.central_service._is_valid_domain_name(context, 'example.org.')
+
+        with self.assertRaises(exceptions.BadRequest):
+            self.central_service._is_valid_domain_name(context, 'example.tld.')
+
+    def test_is_valid_record_name(self):
+        self.config(max_record_name_len=18,
+                    group='service:central')
+
+        context = self.get_context()
+
+        domain = self.create_domain(name='example.org.')
+
+        self.central_service._is_valid_record_name(context,
+                                                   domain,
+                                                   'valid.example.org.',
+                                                   'A')
+
+        with self.assertRaises(exceptions.BadRequest):
+            self.central_service._is_valid_record_name(
+                context, domain, 'toolong.example.org.', 'A')
+
+        with self.assertRaises(exceptions.BadRequest):
+            self.central_service._is_valid_record_name(
+                context, domain, 'a.example.COM.', 'A')
+
+        with self.assertRaises(exceptions.BadRequest):
+            self.central_service._is_valid_record_name(
+                context, domain, 'example.org.', 'CNAME')
+
     def test_is_blacklisted_domain_name(self):
         self.config(domain_name_blacklist=['^example.org.$', 'net.$'],
                     group='service:central')

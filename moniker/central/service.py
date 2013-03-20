@@ -70,6 +70,11 @@ class Service(rpc_service.Service):
         return accepted_tld_list
 
     def _is_valid_domain_name(self, context, domain_name):
+        # Validate domain name length
+        if len(domain_name) > cfg.CONF['service:central'].max_domain_name_len:
+            raise exceptions.BadRequest('Domain name too long')
+
+        # Break the domain name up into its component labels
         domain_labels = domain_name.strip('.').split('.')
 
         # We need more than 1 label.
@@ -94,6 +99,10 @@ class Service(rpc_service.Service):
     def _is_valid_record_name(self, context, domain, record_name, record_type):
         if not record_name.endswith('.'):
             raise ValueError('Please supply a FQDN')
+
+        # Validate record name length
+        if len(record_name) > cfg.CONF['service:central'].max_record_name_len:
+            raise exceptions.BadRequest('Record name too long')
 
         # Record must be contained in the parent zone.
         if not record_name.endswith(domain['name']):
