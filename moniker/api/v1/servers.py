@@ -15,9 +15,6 @@
 # under the License.
 import flask
 from moniker.openstack.common import log as logging
-from moniker.openstack.common import jsonutils as json
-from moniker.openstack.common.rpc import common as rpc_common
-from moniker import exceptions
 from moniker import schema
 from moniker.central import api as central_api
 
@@ -42,66 +39,32 @@ def create_server():
     context = flask.request.environ.get('context')
     values = flask.request.json
 
-    try:
-        server_schema.validate(values)
-        server = central_api.create_server(context, values=flask.request.json)
-    except exceptions.InvalidObject, e:
-        response_body = json.dumps({'errors': e.errors})
-        return flask.Response(status=400, response=response_body)
-    except exceptions.BadRequest:
-        return flask.Response(status=400)
-    except exceptions.Forbidden:
-        return flask.Response(status=401)
-    except exceptions.DuplicateServer:
-        return flask.Response(status=409)
-    except rpc_common.Timeout:
-        return flask.Response(status=504)
-    else:
-        server = server_schema.filter(server)
+    server_schema.validate(values)
+    server = central_api.create_server(context, values=flask.request.json)
 
-        response = flask.jsonify(server)
-        response.status_int = 201
-        response.location = flask.url_for('.get_server',
-                                          server_id=server['id'])
-        return response
+    response = flask.jsonify(server_schema.filter(server))
+    response.status_int = 201
+    response.location = flask.url_for('.get_server', server_id=server['id'])
+
+    return response
 
 
 @blueprint.route('/servers', methods=['GET'])
 def get_servers():
     context = flask.request.environ.get('context')
 
-    try:
-        servers = central_api.get_servers(context)
-    except exceptions.BadRequest:
-        return flask.Response(status=400)
-    except exceptions.Forbidden:
-        return flask.Response(status=401)
-    except rpc_common.Timeout:
-        return flask.Response(status=504)
-    else:
-        servers = servers_schema.filter({'servers': servers})
+    servers = central_api.get_servers(context)
 
-        return flask.jsonify(servers)
+    return flask.jsonify(servers_schema.filter({'servers': servers}))
 
 
 @blueprint.route('/servers/<server_id>', methods=['GET'])
 def get_server(server_id):
     context = flask.request.environ.get('context')
 
-    try:
-        server = central_api.get_server(context, server_id)
-    except exceptions.BadRequest:
-        return flask.Response(status=400)
-    except exceptions.Forbidden:
-        return flask.Response(status=401)
-    except exceptions.ServerNotFound:
-        return flask.Response(status=404)
-    except rpc_common.Timeout:
-        return flask.Response(status=504)
-    else:
-        server = server_schema.filter(server)
+    server = central_api.get_server(context, server_id)
 
-        return flask.jsonify(server)
+    return flask.jsonify(server_schema.filter(server))
 
 
 @blueprint.route('/servers/<server_id>', methods=['PUT'])
@@ -109,44 +72,19 @@ def update_server(server_id):
     context = flask.request.environ.get('context')
     values = flask.request.json
 
-    try:
-        server = central_api.get_server(context, server_id)
-        server.update(values)
+    server = central_api.get_server(context, server_id)
+    server.update(values)
 
-        server_schema.validate(server)
-        server = central_api.update_server(context, server_id, values=values)
-    except exceptions.InvalidObject, e:
-        response_body = json.dumps({'errors': e.errors})
-        return flask.Response(status=400, response=response_body)
-    except exceptions.BadRequest:
-        return flask.Response(status=400)
-    except exceptions.Forbidden:
-        return flask.Response(status=401)
-    except exceptions.ServerNotFound:
-        return flask.Response(status=404)
-    except exceptions.DuplicateServer:
-        return flask.Response(status=409)
-    except rpc_common.Timeout:
-        return flask.Response(status=504)
-    else:
-        server = server_schema.filter(server)
+    server_schema.validate(server)
+    server = central_api.update_server(context, server_id, values=values)
 
-        return flask.jsonify(server)
+    return flask.jsonify(server_schema.filter(server))
 
 
 @blueprint.route('/servers/<server_id>', methods=['DELETE'])
 def delete_server(server_id):
     context = flask.request.environ.get('context')
 
-    try:
-        central_api.delete_server(context, server_id)
-    except exceptions.BadRequest:
-        return flask.Response(status=400)
-    except exceptions.Forbidden:
-        return flask.Response(status=401)
-    except exceptions.ServerNotFound:
-        return flask.Response(status=404)
-    except rpc_common.Timeout:
-        return flask.Response(status=504)
-    else:
-        return flask.Response(status=200)
+    central_api.delete_server(context, server_id)
+
+    return flask.Response(status=200)

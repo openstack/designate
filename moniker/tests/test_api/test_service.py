@@ -21,6 +21,10 @@ class ApiServiceTest(ApiTestCase):
 
     def setUp(self):
         super(ApiServiceTest, self).setUp()
+
+        # Use a random port for the API
+        self.config(api_port=0, group='service:api')
+
         self.service = self.get_api_service()
 
     def test_start_and_stop(self):

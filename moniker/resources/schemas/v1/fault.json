@@ -1,0 +1,48 @@
+{
+    "id": "/schemas/fault",
+
+    "$schema": "http://json-schema.org/draft-03/hyper-schema",
+
+    "title": "fault",
+    "description": "Fault",
+
+    "properties": {
+        "code": {
+            "type": "integer",
+            "description": "Fault Code",
+            "required": true,
+            "readonly": true
+        },
+        "type": {
+            "type": "string",
+            "description": "Fault Type",
+            "required": true,
+            "readonly": true
+        },
+        "message": {
+            "type": "string",
+            "description": "Fault Message",
+            "readonly": true
+        },
+        "errors": {
+            "type": "array",
+            "description": "List of Errors",
+            "readonly": true,
+            "items": {
+                "type": "object",
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "description": "Error Path",
+                        "readonly": true
+                    },
+                    "type": {
+                        "type": "string",
+                        "description": "Error Type",
+                        "readonly": true
+                    }
+                }
+            }
+        }
+    }
+}

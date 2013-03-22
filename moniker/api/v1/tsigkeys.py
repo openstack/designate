@@ -15,9 +15,6 @@
 # under the License.
 import flask
 from moniker.openstack.common import log as logging
-from moniker.openstack.common import jsonutils as json
-from moniker.openstack.common.rpc import common as rpc_common
-from moniker import exceptions
 from moniker import schema
 from moniker.central import api as central_api
 
@@ -42,67 +39,32 @@ def create_tsigkey():
     context = flask.request.environ.get('context')
     values = flask.request.json
 
-    try:
-        tsigkey_schema.validate(values)
-        tsigkey = central_api.create_tsigkey(context,
-                                             values=flask.request.json)
-    except exceptions.InvalidObject, e:
-        response_body = json.dumps({'errors': e.errors})
-        return flask.Response(status=400, response=response_body)
-    except exceptions.BadRequest:
-        return flask.Response(status=400)
-    except exceptions.Forbidden:
-        return flask.Response(status=401)
-    except exceptions.DuplicateTsigKey:
-        return flask.Response(status=409)
-    except rpc_common.Timeout:
-        return flask.Response(status=504)
-    else:
-        tsigkey = tsigkey_schema.filter(tsigkey)
+    tsigkey_schema.validate(values)
+    tsigkey = central_api.create_tsigkey(context, values=flask.request.json)
 
-        response = flask.jsonify(tsigkey)
-        response.status_int = 201
-        response.location = flask.url_for('.get_tsigkey',
-                                          tsigkey_id=tsigkey['id'])
-        return response
+    response = flask.jsonify(tsigkey_schema.filter(tsigkey))
+    response.status_int = 201
+    response.location = flask.url_for('.get_tsigkey', tsigkey_id=tsigkey['id'])
+
+    return response
 
 
 @blueprint.route('/tsigkeys', methods=['GET'])
 def get_tsigkeys():
     context = flask.request.environ.get('context')
 
-    try:
-        tsigkeys = central_api.get_tsigkeys(context)
-    except exceptions.BadRequest:
-        return flask.Response(status=400)
-    except exceptions.Forbidden:
-        return flask.Response(status=401)
-    except rpc_common.Timeout:
-        return flask.Response(status=504)
-    else:
-        tsigkeys = tsigkeys_schema.filter({'tsigkeys': tsigkeys})
+    tsigkeys = central_api.get_tsigkeys(context)
 
-        return flask.jsonify(tsigkeys)
+    return flask.jsonify(tsigkeys_schema.filter({'tsigkeys': tsigkeys}))
 
 
 @blueprint.route('/tsigkeys/<tsigkey_id>', methods=['GET'])
 def get_tsigkey(tsigkey_id):
     context = flask.request.environ.get('context')
 
-    try:
-        tsigkey = central_api.get_tsigkey(context, tsigkey_id)
-    except exceptions.BadRequest:
-        return flask.Response(status=400)
-    except exceptions.Forbidden:
-        return flask.Response(status=401)
-    except exceptions.TsigKeyNotFound:
-        return flask.Response(status=404)
-    except rpc_common.Timeout:
-        return flask.Response(status=504)
-    else:
-        tsigkey = tsigkey_schema.filter(tsigkey)
+    tsigkey = central_api.get_tsigkey(context, tsigkey_id)
 
-        return flask.jsonify(tsigkey)
+    return flask.jsonify(tsigkey_schema.filter(tsigkey))
 
 
 @blueprint.route('/tsigkeys/<tsigkey_id>', methods=['PUT'])
@@ -110,45 +72,19 @@ def update_tsigkey(tsigkey_id):
     context = flask.request.environ.get('context')
     values = flask.request.json
 
-    try:
-        tsigkey = central_api.get_tsigkey(context, tsigkey_id)
-        tsigkey.update(values)
+    tsigkey = central_api.get_tsigkey(context, tsigkey_id)
+    tsigkey.update(values)
 
-        tsigkey_schema.validate(tsigkey)
-        tsigkey = central_api.update_tsigkey(context, tsigkey_id,
-                                             values=values)
-    except exceptions.InvalidObject, e:
-        response_body = json.dumps({'errors': e.errors})
-        return flask.Response(status=400, response=response_body)
-    except exceptions.BadRequest:
-        return flask.Response(status=400)
-    except exceptions.Forbidden:
-        return flask.Response(status=401)
-    except exceptions.TsigKeyNotFound:
-        return flask.Response(status=404)
-    except exceptions.DuplicateTsigKey:
-        return flask.Response(status=409)
-    except rpc_common.Timeout:
-        return flask.Response(status=504)
-    else:
-        tsigkey = tsigkey_schema.filter(tsigkey)
+    tsigkey_schema.validate(tsigkey)
+    tsigkey = central_api.update_tsigkey(context, tsigkey_id, values=values)
 
-        return flask.jsonify(tsigkey)
+    return flask.jsonify(tsigkey_schema.filter(tsigkey))
 
 
 @blueprint.route('/tsigkeys/<tsigkey_id>', methods=['DELETE'])
 def delete_tsigkey(tsigkey_id):
     context = flask.request.environ.get('context')
 
-    try:
-        central_api.delete_tsigkey(context, tsigkey_id)
-    except exceptions.BadRequest:
-        return flask.Response(status=400)
-    except exceptions.Forbidden:
-        return flask.Response(status=401)
-    except exceptions.TsigKeyNotFound:
-        return flask.Response(status=404)
-    except rpc_common.Timeout:
-        return flask.Response(status=504)
-    else:
-        return flask.Response(status=200)
+    central_api.delete_tsigkey(context, tsigkey_id)
+
+    return flask.Response(status=200)

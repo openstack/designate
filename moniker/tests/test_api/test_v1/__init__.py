@@ -14,8 +14,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from moniker.openstack.common import log as logging
-from moniker.api.v1 import factory
-from moniker.api.auth import NoAuthContextMiddleware
+from moniker.api import v1 as api_v1
+from moniker.api import auth
 from moniker.tests.test_api import ApiTestCase
 
 
@@ -29,10 +29,13 @@ class ApiV1Test(ApiTestCase):
         super(ApiV1Test, self).setUp()
 
         # Create a Flask application
-        self.app = factory({})
+        self.app = api_v1.factory({})
+
+        # Inject the FaultWrapper middleware
+        self.app.wsgi_app = api_v1.FaultWrapperMiddleware(self.app.wsgi_app)
 
         # Inject the NoAuth middleware
-        self.app.wsgi_app = NoAuthContextMiddleware(self.app.wsgi_app)
+        self.app.wsgi_app = auth.NoAuthContextMiddleware(self.app.wsgi_app)
 
         # Obtain a test client
         self.client = self.app.test_client()

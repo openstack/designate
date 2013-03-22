@@ -16,7 +16,18 @@
 
 
 class Base(Exception):
-    pass
+    error_code = 500
+    error_type = None
+    error_message = None
+    errors = None
+
+    def __init__(self, *args, **kwargs):
+        self.errors = kwargs.pop('errors', None)
+
+        super(Base, self).__init__(*args, **kwargs)
+
+        if len(args) > 0 and isinstance(args[0], basestring):
+            self.error_message = args[0]
 
 
 class Backend(Exception):
@@ -28,7 +39,7 @@ class NotImplemented(Base, NotImplementedError):
 
 
 class ConfigurationError(Base):
-    pass
+    error_type = 'configuration_error'
 
 
 class NoServersConfigured(ConfigurationError):
@@ -36,17 +47,33 @@ class NoServersConfigured(ConfigurationError):
 
 
 class InvalidObject(Base):
-    def __init__(self, *args, **kwargs):
-        self.errors = kwargs.pop('errors', None)
-        super(InvalidObject, self).__init__(*args, **kwargs)
+    error_code = 400
+    error_type = 'invalid_object'
 
 
 class BadRequest(Base):
-    pass
+    error_code = 400
+    error_type = 'bad_request'
+
+
+class InvalidDomainName(Base):
+    error_code = 400
+    error_type = 'invalid_domain_name'
+
+
+class InvalidRecordName(Base):
+    error_code = 400
+    error_type = 'invalid_record_name'
+
+
+class InvalidRecordLocation(Base):
+    error_code = 400
+    error_type = 'invalid_record_location'
 
 
 class Forbidden(Base):
-    pass
+    error_code = 401
+    error_type = 'forbidden'
 
 
 class InvalidSortKey(Base):
@@ -54,44 +81,47 @@ class InvalidSortKey(Base):
 
 
 class Duplicate(Base):
-    pass
+    error_code = 409
+    error_type = 'duplicate'
 
 
 class DuplicateServer(Duplicate):
-    pass
+    error_type = 'duplicate_server'
 
 
 class DuplicateTsigKey(Duplicate):
-    pass
+    error_type = 'duplicate_tsigkey'
 
 
 class DuplicateDomain(Duplicate):
-    pass
+    error_type = 'duplicate_domain'
 
 
 class DuplicateRecord(Duplicate):
-    pass
+    error_type = 'duplicate_record'
 
 
 class NotFound(Base):
-    pass
+    error_code = 404
+    error_type = 'not_found'
 
 
 class ServerNotFound(NotFound):
-    pass
+    error_type = 'server_not_found'
 
 
 class TsigKeyNotFound(NotFound):
-    pass
+    error_type = 'tsigkey_not_found'
 
 
 class DomainNotFound(NotFound):
-    pass
+    error_type = 'domain_not_found'
 
 
 class RecordNotFound(NotFound):
-    pass
+    error_type = 'record_not_found'
 
 
 class ResourceNotFound(NotFound):
+    # TODO(kiall): Should this be extending NotFound??
     pass

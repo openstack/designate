@@ -43,10 +43,10 @@ class CentralServiceTest(CentralTestCase):
 
         self.central_service._is_valid_domain_name(context, 'valid.org.')
 
-        with self.assertRaises(exceptions.BadRequest):
+        with self.assertRaises(exceptions.InvalidDomainName):
             self.central_service._is_valid_domain_name(context, 'example.org.')
 
-        with self.assertRaises(exceptions.BadRequest):
+        with self.assertRaises(exceptions.InvalidDomainName):
             self.central_service._is_valid_domain_name(context, 'example.tld.')
 
     def test_is_valid_record_name(self):
@@ -62,15 +62,15 @@ class CentralServiceTest(CentralTestCase):
                                                    'valid.example.org.',
                                                    'A')
 
-        with self.assertRaises(exceptions.BadRequest):
+        with self.assertRaises(exceptions.InvalidRecordName):
             self.central_service._is_valid_record_name(
                 context, domain, 'toolong.example.org.', 'A')
 
-        with self.assertRaises(exceptions.BadRequest):
+        with self.assertRaises(exceptions.InvalidRecordLocation):
             self.central_service._is_valid_record_name(
                 context, domain, 'a.example.COM.', 'A')
 
-        with self.assertRaises(exceptions.BadRequest):
+        with self.assertRaises(exceptions.InvalidRecordLocation):
             self.central_service._is_valid_record_name(
                 context, domain, 'example.org.', 'CNAME')
 
@@ -386,7 +386,7 @@ class CentralServiceTest(CentralTestCase):
             email='info@blacklisted.com'
         )
 
-        with self.assertRaises(exceptions.BadRequest):
+        with self.assertRaises(exceptions.InvalidDomainName):
             # Create a domain
             self.central_service.create_domain(context, values=values)
 
@@ -412,7 +412,7 @@ class CentralServiceTest(CentralTestCase):
             email='info@invalid.com'
         )
 
-        with self.assertRaises(exceptions.BadRequest):
+        with self.assertRaises(exceptions.InvalidDomainName):
             # Create an invalid domain
             self.central_service.create_domain(context, values=values)
 
@@ -630,7 +630,7 @@ class CentralServiceTest(CentralTestCase):
         )
 
         # Attempt to create a CNAME record at the apex
-        with self.assertRaises(exceptions.BadRequest):
+        with self.assertRaises(exceptions.InvalidRecordLocation):
             self.central_service.create_record(context, domain['id'],
                                                values=values)
 
@@ -648,7 +648,7 @@ class CentralServiceTest(CentralTestCase):
                                            values=values)
 
         # Attempt to create a CNAME record alongside an A record
-        with self.assertRaises(exceptions.BadRequest):
+        with self.assertRaises(exceptions.InvalidRecordLocation):
             values = dict(
                 name='www.%s' % domain['name'],
                 type='CNAME',
@@ -672,7 +672,7 @@ class CentralServiceTest(CentralTestCase):
                                            values=values)
 
         # Attempt to create a CNAME record alongside an A record
-        with self.assertRaises(exceptions.BadRequest):
+        with self.assertRaises(exceptions.InvalidRecordLocation):
             values = dict(
                 name='www.%s' % domain['name'],
                 type='CNAME',
@@ -696,7 +696,7 @@ class CentralServiceTest(CentralTestCase):
                                            values=values)
 
         # Attempt to create a CNAME record alongside an A record
-        with self.assertRaises(exceptions.BadRequest):
+        with self.assertRaises(exceptions.InvalidRecordLocation):
             values = dict(
                 name='www.%s' % domain['name'],
                 type='A',
@@ -720,7 +720,7 @@ class CentralServiceTest(CentralTestCase):
                                            values=values)
 
         # Attempt to create a CNAME record alongside an A record
-        with self.assertRaises(exceptions.BadRequest):
+        with self.assertRaises(exceptions.InvalidRecordLocation):
             values = dict(
                 name='t.www.%s' % domain['name'],
                 type='A',

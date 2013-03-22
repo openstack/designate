@@ -72,27 +72,28 @@ class Service(rpc_service.Service):
     def _is_valid_domain_name(self, context, domain_name):
         # Validate domain name length
         if len(domain_name) > cfg.CONF['service:central'].max_domain_name_len:
-            raise exceptions.BadRequest('Domain name too long')
+            raise exceptions.InvalidDomainName('Name too long')
 
         # Break the domain name up into its component labels
         domain_labels = domain_name.strip('.').split('.')
 
         # We need more than 1 label.
         if len(domain_labels) <= 1:
-            raise exceptions.BadRequest('Invalid Domain Name')
+            raise exceptions.InvalidDomainName('More than one label is '
+                                               'required')
 
         # Check the TLD for validity
         if self.accepted_tld_list:
             domain_tld = domain_labels[-1].lower()
 
             if domain_tld not in self.accepted_tld_list:
-                raise exceptions.BadRequest('Invalid TLD')
+                raise exceptions.InvalidDomainName('Unknown or invalid TLD')
 
         # Check domain name blacklist
         if self._is_blacklisted_domain_name(context, domain_name):
             # Some users are allowed bypass the blacklist.. Is this one?
             if not policy.check('use_blacklisted_domain', context, exc=None):
-                raise exceptions.BadRequest('Blacklisted domain name')
+                raise exceptions.InvalidDomainName('Blacklisted domain name')
 
         return True
 
@@ -102,17 +103,18 @@ class Service(rpc_service.Service):
 
         # Validate record name length
         if len(record_name) > cfg.CONF['service:central'].max_record_name_len:
-            raise exceptions.BadRequest('Record name too long')
+            raise exceptions.InvalidRecordName('Name too long')
 
         # Record must be contained in the parent zone.
         if not record_name.endswith(domain['name']):
-            raise exceptions.BadRequest('Records must be contained within '
-                                        'their parent zone.')
+            raise exceptions.InvalidRecordLocation('Record is not contained '
+                                                   'within it\'s parent '
+                                                   'domain')
 
         # CNAME's must not be created at the zone apex.
         if record_type == 'CNAME' and record_name == domain['name']:
-            raise exceptions.BadRequest('%s records may not be created at '
-                                        'the zone apex' % record_type)
+            raise exceptions.InvalidRecordLocation('CNAME records may not be '
+                                                   'created at the zone apex')
 
         # CNAME's must not share a name with other records
         criterion = {'name': record_name}
@@ -123,8 +125,9 @@ class Service(rpc_service.Service):
         records = self.storage.get_records(context, domain['id'],
                                            criterion=criterion)
         if len(records) > 0:
-            raise exceptions.BadRequest('CNAME records must not share a name'
-                                        'with any other records')
+            raise exceptions.InvalidRecordLocation('CNAME records may not '
+                                                   'share a name with any '
+                                                   'other records')
 
         if record_type == 'CNAME':
             # CNAME's may not have children. Ever.
@@ -133,15 +136,17 @@ class Service(rpc_service.Service):
                                                criterion=criterion)
 
             if len(records) > 0:
-                raise exceptions.BadRequest('CNAME records must not have any '
-                                            'child records')
+                raise exceptions.InvalidRecordLocation('CNAME records may not '
+                                                       'have any child '
+                                                       'records')
 
         else:
             # No record may have a CNAME as a parent
             if self._is_subrecord(context, domain, record_name,
                                   {'type': 'CNAME'}):
-                raise exceptions.BadRequest('Records must not be children of '
-                                            'a CNAME record')
+                raise exceptions.InvalidRecordLocation('CNAME records may not '
+                                                       'have any child '
+                                                       'records')
 
         return True
 
