@@ -33,6 +33,10 @@
     "use_sudo": "rule:admin",
     "use_blacklisted_domain": "rule:admin",
 
+    "count_domains": "rule:admin",
+    "count_records": "rule:admin",
+    "count_tenants": "rule:admin",
+
     "diagnostics_ping": "rule:admin",
     "diagnostics_sync_domains": "rule:admin",
     "diagnostics_sync_domain": "rule:admin",

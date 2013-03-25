@@ -468,6 +468,10 @@ class Service(rpc_service.Service):
 
         return self.storage.delete_domain(context, domain_id)
 
+    def count_domains(self, context, criterion=None):
+        policy.check('count_domains', context)
+        return self.storage.count_domains(context, criterion)
+
     def get_domain_servers(self, context, domain_id, criterion=None):
         domain = self.storage.get_domain(context, domain_id)
 
@@ -641,6 +645,14 @@ class Service(rpc_service.Service):
         utils.notify(context, 'api', 'record.delete', record)
 
         return self.storage.delete_record(context, record_id)
+
+    def count_records(self, context, criterion=None):
+        policy.check('count_records', context)
+        return self.storage.count_records(context, criterion)
+
+    def count_tenants(self, context):
+        policy.check('count_tenants', context)
+        return self.storage.count_tenants(context)
 
     # Diagnostics Methods
     def sync_domains(self, context):

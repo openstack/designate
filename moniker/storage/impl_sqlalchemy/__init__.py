@@ -15,6 +15,7 @@
 # under the License.
 import time
 from sqlalchemy.orm import exc
+from sqlalchemy import distinct
 from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
 from moniker import exceptions
@@ -243,6 +244,11 @@ class SQLAlchemyStorage(base.Storage):
 
         domain.delete(self.session)
 
+    def count_domains(self, context, criterion=None):
+        query = self.session.query(models.Domain)
+        query = self._apply_criterion(models.Domain, query, criterion)
+        return query.count()
+
     # Record Methods
     def create_record(self, context, domain_id, values):
         record = models.Record()
@@ -302,6 +308,17 @@ class SQLAlchemyStorage(base.Storage):
 
         record.delete(self.session)
 
+    def count_records(self, context, criterion=None):
+        query = self.session.query(models.Record)
+        query = self._apply_criterion(models.Record, query, criterion)
+        return query.count()
+
+    # tenants are the owner of domains, count the number of unique tenants
+    # select count(distinct tenant_id) from domains
+    def count_tenants(self, context):
+        return self.session.query(distinct(models.Domain.tenant_id)).count()
+
+    # diagnostics
     def ping(self, context):
         start_time = time.time()
 

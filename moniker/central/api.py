@@ -206,6 +206,17 @@ def delete_domain(context, domain_id):
     return RPC.call(context, msg)
 
 
+def count_domains(context, criterion=None):
+    msg = {
+        'method': 'count_domains',
+        'args': {
+            'criterion': criterion,
+        },
+    }
+
+    return RPC.call(context, msg)
+
+
 def get_domain_servers(context, domain_id):
     msg = {
         'method': 'get_domain_servers',
@@ -278,6 +289,25 @@ def delete_record(context, domain_id, record_id, increment_serial=True):
             'record_id': record_id,
             'increment_serial': increment_serial,
         },
+    }
+
+    return RPC.call(context, msg)
+
+
+def count_records(context, criterion=None):
+    msg = {
+        'method': 'count_records',
+        'args': {
+            'criterion': criterion,
+        },
+    }
+
+    return RPC.call(context, msg)
+
+
+def count_tenants(context):
+    msg = {
+        'method': 'count_tenants',
     }
 
     return RPC.call(context, msg)
