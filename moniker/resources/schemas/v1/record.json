@@ -41,13 +41,14 @@
         "priority": {
             "type": ["integer", "null"],
             "description": "DNS Record Priority",
-            "min": 0,
-            "max": 99999
+            "min": 1,
+            "max": 65535
         },
         "ttl": {
             "type": ["integer", "null"],
             "description": "Time to live",
-            "min": 60
+            "min": 1,
+            "max": 4294967295
         },
         "created_at": {
             "type": "string",
