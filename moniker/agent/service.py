@@ -17,9 +17,10 @@ from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
 from moniker.openstack.common.rpc import service as rpc_service
 from moniker import backend
-from moniker.central import api as central_api
+from moniker.central import rpcapi as central_rpcapi
 
 LOG = logging.getLogger(__name__)
+central_api = central_rpcapi.CentralAPI()
 
 
 class Service(rpc_service.Service):

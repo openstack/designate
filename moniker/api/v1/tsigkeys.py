@@ -16,9 +16,10 @@
 import flask
 from moniker.openstack.common import log as logging
 from moniker import schema
-from moniker.central import api as central_api
+from moniker.central import rpcapi as central_rpcapi
 
 LOG = logging.getLogger(__name__)
+central_api = central_rpcapi.CentralAPI()
 blueprint = flask.Blueprint('tsigkeys', __name__)
 tsigkey_schema = schema.Schema('v1', 'tsigkey')
 tsigkeys_schema = schema.Schema('v1', 'tsigkeys')

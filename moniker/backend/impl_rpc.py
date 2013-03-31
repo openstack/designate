@@ -14,7 +14,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from moniker.backend import base
-from moniker.agent import api as agent_api
+from moniker.agent import rpcapi as agent_rpcapi
+
+agent_api = agent_rpcapi.AgentAPI()
 
 
 class RPCBackend(base.Backend):

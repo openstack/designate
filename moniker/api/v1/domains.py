@@ -16,9 +16,10 @@
 import flask
 from moniker.openstack.common import log as logging
 from moniker import schema
-from moniker.central import api as central_api
+from moniker.central import rpcapi as central_rpcapi
 
 LOG = logging.getLogger(__name__)
+central_api = central_rpcapi.CentralAPI()
 blueprint = flask.Blueprint('domains', __name__)
 domain_schema = schema.Schema('v1', 'domain')
 domains_schema = schema.Schema('v1', 'domains')

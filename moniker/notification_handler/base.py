@@ -17,12 +17,13 @@
 import abc
 from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
-from moniker.central import api as central_api
+from moniker.central import rpcapi as central_rpcapi
 from moniker.context import MonikerContext
 from moniker.plugin import Plugin
 
 
 LOG = logging.getLogger(__name__)
+central_api = central_rpcapi.CentralAPI()
 
 
 def get_ip_data(addr_dict):
