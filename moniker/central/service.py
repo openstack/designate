@@ -203,6 +203,23 @@ class Service(rpc_service.Service):
 
         return False
 
+    def _increment_domain_serial(self, context, domain_id):
+        domain = self.storage.get_domain(context, domain_id)
+
+        # Increment the serial number
+        values = {'serial': utils.increment_serial(domain['serial'])}
+        domain = self.storage.update_domain(context, domain_id, values)
+
+        try:
+            self.backend.update_domain(context, domain)
+        except exceptions.Backend:
+            # Re-raise Backend exceptions as is..
+            raise
+        except Exception, e:
+            raise exceptions.Backend('Unknown backend failure: %s' % e)
+
+        return domain
+
     # Server Methods
     def create_server(self, context, values):
         policy.check('create_server', context)
@@ -434,19 +451,9 @@ class Service(rpc_service.Service):
 
         policy.check('touch_domain', context, target)
 
-        # Increment the serial number
-        values = {'serial': utils.increment_serial(domain['serial'])}
-        domain = self.storage.update_domain(context, domain_id, values)
+        domain = self._increment_domain_serial(context, domain_id)
 
-        try:
-            self.backend.update_domain(context, domain)
-        except exceptions.Backend:
-            # Re-raise Backend exceptions as is..
-            raise
-        except Exception, e:
-            raise exceptions.Backend('Unknown backend failure: %s' % e)
-
-        utils.notify(context, 'api', 'domain.update', domain)
+        utils.notify(context, 'api', 'domain.touch', domain)
 
         return domain
 
@@ -523,11 +530,7 @@ class Service(rpc_service.Service):
             raise exceptions.Backend('Unknown backend failure: %s' % e)
 
         if increment_serial:
-            # Increment the domains serial number
-            domain_values = {
-                'serial': utils.increment_serial(domain['serial'])
-            }
-            self.storage.update_domain(context, domain_id, domain_values)
+            self._increment_domain_serial(context, domain_id)
 
         # Send Record creation notification
         utils.notify(context, 'api', 'record.create', record)
@@ -602,11 +605,7 @@ class Service(rpc_service.Service):
             raise exceptions.Backend('Unknown backend failure: %s' % e)
 
         if increment_serial:
-            # Increment the domains serial number
-            domain_values = {
-                'serial': utils.increment_serial(domain['serial'])
-            }
-            self.storage.update_domain(context, domain_id, domain_values)
+            self._increment_domain_serial(context, domain_id)
 
         # Send Record update notification
         utils.notify(context, 'api', 'record.update', record)
@@ -640,11 +639,7 @@ class Service(rpc_service.Service):
             raise exceptions.Backend('Unknown backend failure: %s' % e)
 
         if increment_serial:
-            # Increment the domains serial number
-            domain_values = {
-                'serial': utils.increment_serial(domain['serial'])
-            }
-            self.storage.update_domain(context, domain_id, domain_values)
+            self._increment_domain_serial(context, domain_id)
 
         # Send Record deletion notification
         utils.notify(context, 'api', 'record.delete', record)
