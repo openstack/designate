@@ -23,6 +23,43 @@ LOG = logging.getLogger(__name__)
 
 
 class TestSchemaValidator(TestCase):
+    def test_validate_format_ipaddress(self):
+        test_schema = {
+            "properties": {
+                "ipaddress": {
+                    "type": "string",
+                    "format": "ip-address",
+                    "required": True
+                },
+            }
+        }
+
+        validator = schema.SchemaValidator(test_schema)
+
+        valid_ipaddresses = [
+            '0.0.0.1',
+            '127.0.0.1',
+            '10.0.0.1',
+            '192.0.2.2',
+        ]
+
+        invalid_ipaddresses = [
+            '0.0.0.0',
+            '0.0.0.256',
+            '0.0.256.0',
+            '0.256.0.0',
+            '256.0.0.0',
+        ]
+
+        for ipaddress in valid_ipaddresses:
+            LOG.debug('Expecting success for: %s' % ipaddress)
+            validator.validate({'ipaddress': ipaddress})
+
+        for ipaddress in invalid_ipaddresses:
+            with self.assertRaises(jsonschema.ValidationError):
+                LOG.debug('Expecting failure for: %s' % ipaddress)
+                validator.validate({'ipaddress': ipaddress})
+
     def test_validate_format_hostname(self):
         test_schema = {
             "properties": {

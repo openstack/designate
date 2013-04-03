@@ -139,6 +139,10 @@ class SchemaValidator(jsonschema.Draft3Validator):
                 except ipaddr.AddressValueError:
                     msg = "%s is not an IPv4 address" % (instance)
                     yield jsonschema.ValidationError(msg)
+                else:
+                    if instance == '0.0.0.0':  # RFC5735
+                        msg = "%s is not an IPv4 address" % (instance)
+                        yield jsonschema.ValidationError(msg)
         elif format == "ipv6":
             # IPv6 Address
             if self.is_type(instance, "string"):
