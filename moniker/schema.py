@@ -25,10 +25,9 @@ from moniker import exceptions
 from moniker import utils
 
 LOG = logging.getLogger(__name__)
-_RE_DOMAINNAME = '^(?!.{255,})((?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-)\.)+$'
-_RE_HOSTNAME = '^(?!.{255,})((^\*|(?!\-)[A-Za-z0-9_\-]{1,63})(?<!\-)\.)+$'
-_RE_EMAIL = ('^[A-Za-z0-9_\-\.]+@'
-             '(?!.{255,})((?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-)\.)+')
+
+_RE_DOMAINNAME = r'^(?!.{255,})((?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-)\.)+$'
+_RE_HOSTNAME = r'^(?!.{255,})((^\*|(?!\-)[A-Za-z0-9_\-]{1,63})(?<!\-)\.)+$'
 
 
 class StaticResolver(object):
@@ -122,11 +121,16 @@ class SchemaValidator(jsonschema.Draft3Validator):
                     yield jsonschema.ValidationError(msg)
             pass
         elif format == "email":
-            # A valid email address
+            # A valid email address. We use the RFC1035 version of "valid"
             if self.is_type(instance, "string"):
-                if not re.match(_RE_EMAIL, instance):
+                if instance.count('@') != 1:
                     msg = "%s is not an email" % (instance)
                     yield jsonschema.ValidationError(msg)
+                else:
+                    rname = instance.replace('@', '.', 1)
+                    if not re.match(_RE_DOMAINNAME, "%s." % rname):
+                        msg = "%s is not an email" % (instance)
+                        yield jsonschema.ValidationError(msg)
         elif format == "ip-address":
             # IPv4 Address
             if self.is_type(instance, "string"):

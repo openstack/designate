@@ -15,8 +15,11 @@
 # under the License.
 import jsonschema
 from datetime import datetime
+from moniker.openstack.common import log as logging
 from moniker.tests import TestCase
 from moniker import schema
+
+LOG = logging.getLogger(__name__)
 
 
 class TestSchemaValidator(TestCase):
@@ -94,10 +97,12 @@ class TestSchemaValidator(TestCase):
         ]
 
         for hostname in valid_hostnames:
+            LOG.debug('Expecting success for: %s' % hostname)
             validator.validate({'hostname': hostname})
 
         for hostname in invalid_hostnames:
             with self.assertRaises(jsonschema.ValidationError):
+                LOG.debug('Expecting failure for: %s' % hostname)
                 validator.validate({'hostname': hostname})
 
     def test_validate_format_domainname(self):
@@ -143,6 +148,9 @@ class TestSchemaValidator(TestCase):
             ('abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijkL'
              '.'),
             ('abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk.'
+             'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijkL'
+             '.'),
+            ('abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk.'
              'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk.'
              'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk.'
              'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijkL'
@@ -174,10 +182,12 @@ class TestSchemaValidator(TestCase):
         ]
 
         for domainname in valid_domainnames:
+            LOG.debug('Expecting success for: %s' % domainname)
             validator.validate({'domainname': domainname})
 
         for domainname in invalid_domainnames:
             with self.assertRaises(jsonschema.ValidationError):
+                LOG.debug('Expecting failure for: %s' % domainname)
                 validator.validate({'domainname': domainname})
 
     def test_validate_format_email(self):
@@ -214,14 +224,31 @@ class TestSchemaValidator(TestCase):
             'user+plus',
             'user+plus@',
             'user%example.org',
-            'user%example.org@'
+            'user%example.org@',
+            # Exceeds total length limit
+            ('user@fghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk.'
+             'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk.'
+             'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk.'
+             'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk.'
+             'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopq.'),
+            # Exceeds single lable length limit
+            ('user@abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefg'
+             'hijkL.'),
+            ('user@abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefg'
+             'hijk.abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefg'
+             'hijkL.'),
+            # Exceeds single lable length limit in username part
+            ('abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijkL'
+             '@example.com.'),
         ]
 
         for email in valid_emails:
+            LOG.debug('Expecting success for: %s' % email)
             validator.validate({'email': email})
 
         for email in invalid_emails:
             with self.assertRaises(jsonschema.ValidationError):
+                LOG.debug('Expecting failure for: %s' % email)
                 validator.validate({'email': email})
 
     def test_validate_format_datetime(self):

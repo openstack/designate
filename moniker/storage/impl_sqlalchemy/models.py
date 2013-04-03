@@ -60,7 +60,7 @@ class Domain(Base):
     tenant_id = Column(String(36), default=None, nullable=True)
 
     name = Column(String(255), nullable=False, unique=True)
-    email = Column(String(36), nullable=False)
+    email = Column(String(255), nullable=False)
 
     ttl = Column(Integer, default=3600, nullable=False)
     refresh = Column(Integer, default=3600, nullable=False)
