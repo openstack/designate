@@ -262,6 +262,7 @@ class TestSchemaValidator(TestCase):
             'user+plus@',
             'user%example.org',
             'user%example.org@',
+            'user@example.org.',
             # Exceeds total length limit
             ('user@fghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk.'
              'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk.'
