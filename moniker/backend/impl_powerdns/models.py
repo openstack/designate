@@ -52,7 +52,7 @@ class Domain(Base):
     moniker_id = Column(UUID, nullable=False)
 
     name = Column(String(255), nullable=False, unique=True)
-    master = Column(String(128), nullable=True)
+    master = Column(String(255), nullable=True)
     last_check = Column(Integer, default=None, nullable=True)
     type = Column(String(6), nullable=False)
     notified_serial = Column(Integer, default=None, nullable=True)
