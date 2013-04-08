@@ -36,7 +36,7 @@ cfg.CONF.register_opts([
 def notify(context, service, event_type, payload):
     priority = 'INFO'
     publisher_id = notifier_api.publisher_id(service)
-
+    event_type = "dns.%s" % event_type
     notifier_api.notify(context, publisher_id, event_type, priority, payload)
 
 
