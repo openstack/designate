@@ -16,6 +16,7 @@
 from moniker.openstack.common import cfg
 from moniker.openstack.common import local
 from moniker.openstack.common import log as logging
+from moniker.openstack.common import uuidutils
 from moniker import wsgi
 from moniker.context import MonikerContext
 
@@ -55,7 +56,8 @@ class KeystoneContextMiddleware(wsgi.Middleware):
         # Attempt to sudo, if requested.
         sudo_tenant_id = headers.get('X-Moniker-Sudo-Tenant-ID', None)
 
-        if sudo_tenant_id:
+        if sudo_tenant_id and (uuidutils.is_uuid_like(sudo_tenant_id)
+                               or sudo_tenant_id.isdigit()):
             context.sudo(sudo_tenant_id)
 
         # Attach the context to the request environment

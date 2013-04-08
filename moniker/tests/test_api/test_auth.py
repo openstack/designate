@@ -65,7 +65,7 @@ class KeystoneContextMiddlewareTest(ApiTestCase):
             'X-User-ID': 'UserID',
             'X-Tenant-ID': 'TenantID',
             'X-Roles': 'admin,Member',
-            'X-Moniker-Sudo-Tenant-ID': 'SudoTenantID'
+            'X-Moniker-Sudo-Tenant-ID': '5a993bf8-d521-420a-81e1-192d9cc3d5a0'
         }
 
         # Process the request
@@ -79,7 +79,8 @@ class KeystoneContextMiddlewareTest(ApiTestCase):
         self.assertEqual('AuthToken', context.auth_tok)
         self.assertEqual('UserID', context.user_id)
         self.assertEqual('TenantID', context.original_tenant_id)
-        self.assertEqual('SudoTenantID', context.tenant_id)
+        self.assertEqual('5a993bf8-d521-420a-81e1-192d9cc3d5a0',
+                         context.tenant_id)
         self.assertEqual(['admin', 'Member'], context.roles)
 
 
