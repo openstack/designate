@@ -17,9 +17,9 @@ import os
 from migrate.exceptions import (DatabaseAlreadyControlledError,
                                 DatabaseNotControlledError)
 from migrate.versioning import api as versioning_api
-from cliff.command import Command
 from moniker.openstack.common import log as logging
 from moniker.openstack.common import cfg
+from moniker.manage import base
 
 LOG = logging.getLogger(__name__)
 REPOSITORY = os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
@@ -29,10 +29,10 @@ cfg.CONF.import_opt('database_connection', 'moniker.storage.impl_sqlalchemy',
                     group='storage:sqlalchemy')
 
 
-class InitCommand(Command):
+class InitCommand(base.Command):
     "Init database"
 
-    def take_action(self, parsed_args):
+    def execute(self, parsed_args):
         url = cfg.CONF['storage:sqlalchemy'].database_connection
 
         if not os.path.exists(REPOSITORY):
@@ -46,7 +46,7 @@ class InitCommand(Command):
             raise Exception('Database already initialized')
 
 
-class SyncCommand(Command):
+class SyncCommand(base.Command):
     "Sync database"
 
     def get_parser(self, prog_name):
@@ -57,7 +57,7 @@ class SyncCommand(Command):
 
         return parser
 
-    def take_action(self, parsed_args):
+    def execute(self, parsed_args):
         url = cfg.CONF['storage:sqlalchemy'].database_connection
 
         if not os.path.exists(REPOSITORY):

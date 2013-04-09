@@ -16,9 +16,9 @@
 import os
 from migrate.exceptions import DatabaseAlreadyControlledError
 from migrate.versioning import api as versioning_api
-from cliff.command import Command
 from moniker.openstack.common import log as logging
 from moniker.openstack.common import cfg
+from moniker.manage import base
 
 LOG = logging.getLogger(__name__)
 REPOSITORY = os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
@@ -28,10 +28,10 @@ cfg.CONF.import_opt('database_connection', 'moniker.backend.impl_powerdns',
                     group='backend:powerdns')
 
 
-class DatabaseInitCommand(Command):
+class DatabaseInitCommand(base.Command):
     """ Init PowerDNS database """
 
-    def take_action(self, parsed_args):
+    def execute(self, parsed_args):
         url = cfg.CONF['backend:powerdns'].database_connection
 
         if not os.path.exists(REPOSITORY):
@@ -45,10 +45,10 @@ class DatabaseInitCommand(Command):
             raise Exception('Database already initialized')
 
 
-class DatabaseSyncCommand(Command):
+class DatabaseSyncCommand(base.Command):
     """ Sync PowerDNS database """
 
-    def take_action(self, parsed_args):
+    def execute(self, parsed_args):
         # TODO: Support specifying version
         url = cfg.CONF['backend:powerdns'].database_connection
 
