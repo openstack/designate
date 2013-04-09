@@ -15,9 +15,6 @@
 # under the License.
 import abc
 from cliff.command import Command as CliffCommand
-from cliff.lister import Lister
-from cliff.show import ShowOne
-from moniker import utils
 from moniker.context import MonikerContext
 
 
@@ -53,32 +50,3 @@ class Command(CliffCommand):
         # TODO: Common Exception Handling Here
         results = self.execute(parsed_args)
         return self.post_execute(results)
-
-
-class ListCommand(Command, Lister):
-    def post_execute(self, results):
-        if len(results) > 0:
-            columns = utils.get_columns(results)
-            data = [utils.get_item_properties(i, columns) for i in results]
-            return columns, data
-        else:
-            return [], ()
-
-
-class GetCommand(Command, ShowOne):
-    def post_execute(self, results):
-        return results.keys(), results.values()
-
-
-class CreateCommand(Command, ShowOne):
-    def post_execute(self, results):
-        return results.keys(), results.values()
-
-
-class UpdateCommand(Command, ShowOne):
-    def post_execute(self, results):
-        return results.keys(), results.values()
-
-
-class DeleteCommand(Command):
-    pass
