@@ -19,6 +19,8 @@ from moniker.version import version_info as version
 
 
 class MonikerShell(App):
+    CONSOLE_MESSAGE_FORMAT = '%(levelname)s: %(message)s'
+
     def __init__(self):
         super(MonikerShell, self).__init__(
             description='Moniker Server Side Management CLI',
