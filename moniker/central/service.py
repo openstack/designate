@@ -27,6 +27,8 @@ LOG = logging.getLogger(__name__)
 
 
 class Service(rpc_service.Service):
+    RPC_API_VERSION = '1.1'
+
     def __init__(self, *args, **kwargs):
         backend_driver = cfg.CONF['service:central'].backend_driver
         self.backend = backend.get_backend(backend_driver,
@@ -398,6 +400,24 @@ class Service(rpc_service.Service):
 
         return domain
 
+    def find_domains(self, context, criterion):
+        target = {'tenant_id': context.tenant_id}
+        policy.check('find_domains', context, target)
+
+        if not context.is_admin:
+            criterion['tenant_id'] = context.tenant_id
+
+        return self.storage.find_domains(context, criterion)
+
+    def find_domain(self, context, criterion):
+        target = {'tenant_id': context.tenant_id}
+        policy.check('find_domain', context, target)
+
+        if not context.is_admin:
+            criterion['tenant_id'] = context.tenant_id
+
+        return self.storage.find_domain(context, criterion)
+
     def update_domain(self, context, domain_id, values, increment_serial=True):
         domain = self.storage.get_domain(context, domain_id)
 
@@ -568,6 +588,24 @@ class Service(rpc_service.Service):
         policy.check('get_record', context, target)
 
         return record
+
+    def find_records(self, context, criterion):
+        target = {'tenant_id': context.tenant_id}
+        policy.check('find_records', context, target)
+
+        if not context.is_admin:
+            criterion['tenant_id'] = context.tenant_id
+
+        return self.storage.find_records(context, criterion)
+
+    def find_record(self, context, criterion):
+        target = {'tenant_id': context.tenant_id}
+        policy.check('find_record', context, target)
+
+        if not context.is_admin:
+            criterion['tenant_id'] = context.tenant_id
+
+        return self.storage.find_record(context, criterion)
 
     def update_record(self, context, domain_id, record_id, values,
                       increment_serial=True):

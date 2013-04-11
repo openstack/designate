@@ -20,6 +20,8 @@
     "create_domain": "rule:admin_or_owner",
     "get_domains": "rule:admin_or_owner",
     "get_domain": "rule:admin_or_owner",
+    "find_domains": "rule:admin_or_owner",
+    "find_domain": "rule:admin_or_owner",
     "update_domain": "rule:admin_or_owner",
     "delete_domain": "rule:admin_or_owner",
     "get_domain_servers": "rule:admin_or_owner",
@@ -27,6 +29,8 @@
     "create_record": "rule:admin_or_owner",
     "get_records": "rule:admin_or_owner",
     "get_record": "rule:admin_or_owner",
+    "find_records": "rule:admin_or_owner",
+    "find_record": "rule:admin_or_owner",
     "update_record": "rule:admin_or_owner",
     "delete_record": "rule:admin_or_owner",
 

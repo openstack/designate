@@ -96,6 +96,24 @@ class Storage(Plugin):
         """
 
     @abc.abstractmethod
+    def find_domains(self, context, criterion):
+        """
+        Find Domains
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        """
+
+    @abc.abstractmethod
+    def find_domain(self, context, criterion):
+        """
+        Find a single Domain.
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        """
+
+    @abc.abstractmethod
     def update_domain(self, context, domain_id, values):
         """
         Update a Domain via ID.
@@ -149,6 +167,24 @@ class Storage(Plugin):
 
         :param context: RPC Context.
         :param record_id: Record ID to get
+        """
+
+    @abc.abstractmethod
+    def find_records(self, context, criterion):
+        """
+        Find Records.
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        """
+
+    @abc.abstractmethod
+    def find_record(self, context, criterion):
+        """
+        Find a single Record.
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
         """
 
     @abc.abstractmethod

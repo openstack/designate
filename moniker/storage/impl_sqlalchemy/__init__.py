@@ -216,16 +216,25 @@ class SQLAlchemyStorage(base.Storage):
 
         return dict(domain)
 
-    def find_domain(self, context, criterion):
+    def _find_domains(self, context, criterion, one=False):
         query = self.session.query(models.Domain)
         query = self._apply_criterion(models.Domain, query, criterion)
 
-        try:
-            domain = query.one()
-        except (exc.NoResultFound, exc.MultipleResultsFound):
-            raise exceptions.DomainNotFound()
+        if one:
+            try:
+                domain = query.one()
+                return dict(domain)
+            except (exc.NoResultFound, exc.MultipleResultsFound):
+                raise exceptions.DomainNotFound()
         else:
-            return dict(domain)
+            domains = query.all()
+            return [dict(d) for d in domains]
+
+    def find_domains(self, context, criterion):
+        return self._find_domains(context, criterion)
+
+    def find_domain(self, context, criterion):
+        return self._find_domains(context, criterion, one=True)
 
     def update_domain(self, context, domain_id, values):
         domain = self._get_domain(context, domain_id)
@@ -282,17 +291,25 @@ class SQLAlchemyStorage(base.Storage):
 
         return dict(record)
 
-    def find_record(self, context, domain_id, criterion):
+    def _find_records(self, context, criterion, one=False):
         query = self.session.query(models.Record)
-        query = query.filter_by(domain_id=domain_id)
         query = self._apply_criterion(models.Record, query, criterion)
 
-        try:
-            record = query.one()
-        except (exc.NoResultFound, exc.MultipleResultsFound):
-            raise exceptions.RecordNotFound()
+        if one:
+            try:
+                record = query.one()
+                return dict(record)
+            except (exc.NoResultFound, exc.MultipleResultsFound):
+                raise exceptions.RecordNotFound()
         else:
-            return dict(record)
+            records = query.all()
+            return [dict(r) for r in records]
+
+    def find_records(self, context, criterion):
+        return self._find_records(context, criterion)
+
+    def find_record(self, context, criterion):
+        return self._find_records(context, criterion, one=True)
 
     def update_record(self, context, record_id, values):
         record = self._get_record(context, record_id)

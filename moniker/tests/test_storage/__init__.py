@@ -549,8 +549,7 @@ class StorageTestCase(TestCase):
             name=expected['name']
         )
 
-        actual = self.storage.find_record(self.admin_context, domain['id'],
-                                          criterion)
+        actual = self.storage.find_record(self.admin_context, criterion)
 
         self.assertEqual(actual['name'], expected['name'])
         self.assertEqual(actual['type'], expected['type'])
@@ -565,8 +564,7 @@ class StorageTestCase(TestCase):
         )
 
         with self.assertRaises(exceptions.RecordNotFound):
-            self.storage.find_record(self.admin_context, domain['id'],
-                                     criterion)
+            self.storage.find_record(self.admin_context, criterion)
 
     def test_update_record(self):
         domain_fixture, domain = self.create_domain()

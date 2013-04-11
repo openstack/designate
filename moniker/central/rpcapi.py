@@ -27,6 +27,7 @@ class CentralAPI(rpc_proxy.RpcProxy):
     API version history:
 
         1.0 - Initial version
+        1.1 - Add new finder methods
     """
     def __init__(self, topic=None):
         topic = topic if topic else cfg.CONF.central_topic
@@ -102,6 +103,16 @@ class CentralAPI(rpc_proxy.RpcProxy):
 
         return self.call(context, msg)
 
+    def find_domains(self, context, criterion):
+        msg = self.make_msg('find_domains', criterion=criterion)
+
+        return self.call(context, msg, version='1.1')
+
+    def find_domain(self, context, criterion):
+        msg = self.make_msg('find_domain', criterion=criterion)
+
+        return self.call(context, msg, version='1.1')
+
     def update_domain(self, context, domain_id, values, increment_serial=True):
         msg = self.make_msg('update_domain',
                             domain_id=domain_id,
@@ -147,6 +158,16 @@ class CentralAPI(rpc_proxy.RpcProxy):
                             record_id=record_id)
 
         return self.call(context, msg)
+
+    def find_records(self, context, criterion):
+        msg = self.make_msg('find_records', criterion=criterion)
+
+        return self.call(context, msg, version='1.1')
+
+    def find_record(self, context, criterion):
+        msg = self.make_msg('find_record', criterion=criterion)
+
+        return self.call(context, msg, version='1.1')
 
     def update_record(self, context, domain_id, record_id, values,
                       increment_serial=True):

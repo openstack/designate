@@ -480,6 +480,20 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(domain['name'], expected_domain['name'])
         self.assertEqual(domain['email'], expected_domain['email'])
 
+    def test_find_domain(self):
+        context = self.get_admin_context()
+
+        # Create a domain
+        domain_name = '%d.example.com.' % random.randint(10, 1000)
+        expected_domain = self.create_domain(name=domain_name)
+
+        # Retrieve it, and ensure it's the same
+        criterion = {'name': domain_name}
+        domain = self.central_service.find_domain(context, criterion)
+        self.assertEqual(domain['id'], expected_domain['id'])
+        self.assertEqual(domain['name'], expected_domain['name'])
+        self.assertEqual(domain['email'], expected_domain['email'])
+
     def test_update_domain(self):
         context = self.get_admin_context()
 
@@ -766,6 +780,20 @@ class CentralServiceTest(CentralTestCase):
         # Retrieve it, and ensure it's the same
         record = self.central_service.get_record(context, domain['id'],
                                                  expected_record['id'])
+        self.assertEqual(record['id'], expected_record['id'])
+        self.assertEqual(record['name'], expected_record['name'])
+
+    def test_find_record(self):
+        context = self.get_admin_context()
+        domain = self.create_domain()
+
+        # Create a record
+        record_name = '%d.%s' % (random.randint(10, 1000), domain['name'])
+        expected_record = self.create_record(domain, name=record_name)
+
+        # Retrieve it, and ensure it's the same
+        criterion = {'name': record_name}
+        record = self.central_service.find_record(context, criterion)
         self.assertEqual(record['id'], expected_record['id'])
         self.assertEqual(record['name'], expected_record['name'])
 
