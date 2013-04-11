@@ -37,12 +37,15 @@ class MonikerContext(context.RequestContext):
         self._original_tenant_id = None
         self.roles = roles
 
-    def sudo(self, tenant_id):
-        # We use exc=None here since the context is built early in the request
-        # lifecycle, outside of our ordinary error handling.
-        # For now, we silently ignore failed sudo requests.
-        allowed_sudo = policy.check('use_sudo', self, {'tenant_id': tenant_id},
-                                    exc=None)
+    def sudo(self, tenant_id, force=False):
+        if force:
+            allowed_sudo = True
+        else:
+            # We use exc=None here since the context is built early in the
+            # request lifecycle, outside of our ordinary error handling.
+            # For now, we silently ignore failed sudo requests.
+            target = {'tenant_id': tenant_id}
+            allowed_sudo = policy.check('use_sudo', self, target, exc=None)
 
         if allowed_sudo:
             LOG.warn('Accepted sudo from user_id %s for tenant_id %s'
