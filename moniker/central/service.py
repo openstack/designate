@@ -228,7 +228,7 @@ class Service(rpc_service.Service):
 
         server = self.storage.create_server(context, values)
 
-        utils.notify(context, 'api', 'server.create', server)
+        utils.notify(context, 'central', 'server.create', server)
 
         return server
 
@@ -247,7 +247,7 @@ class Service(rpc_service.Service):
 
         server = self.storage.update_server(context, server_id, values)
 
-        utils.notify(context, 'api', 'server.update', server)
+        utils.notify(context, 'central', 'server.update', server)
 
         return server
 
@@ -256,7 +256,7 @@ class Service(rpc_service.Service):
 
         server = self.storage.get_server(context, server_id)
 
-        utils.notify(context, 'api', 'server.delete', server)
+        utils.notify(context, 'central', 'server.delete', server)
 
         return self.storage.delete_server(context, server_id)
 
@@ -274,7 +274,7 @@ class Service(rpc_service.Service):
         except Exception, e:
             raise exceptions.Backend('Unknown backend failure: %s' % e)
 
-        utils.notify(context, 'api', 'tsigkey.create', tsigkey)
+        utils.notify(context, 'central', 'tsigkey.create', tsigkey)
 
         return tsigkey
 
@@ -301,7 +301,7 @@ class Service(rpc_service.Service):
         except Exception, e:
             raise exceptions.Backend('Unknown backend failure: %s' % e)
 
-        utils.notify(context, 'api', 'tsigkey.update', tsigkey)
+        utils.notify(context, 'central', 'tsigkey.update', tsigkey)
 
         return tsigkey
 
@@ -318,7 +318,7 @@ class Service(rpc_service.Service):
         except Exception, e:
             raise exceptions.Backend('Unknown backend failure: %s' % e)
 
-        utils.notify(context, 'api', 'tsigkey.delete', tsigkey)
+        utils.notify(context, 'central', 'tsigkey.delete', tsigkey)
 
         return self.storage.delete_tsigkey(context, tsigkey_id)
 
@@ -372,7 +372,7 @@ class Service(rpc_service.Service):
         except Exception, e:
             raise exceptions.Backend('Unknown backend failure: %s' % e)
 
-        utils.notify(context, 'api', 'domain.create', domain)
+        utils.notify(context, 'central', 'domain.create', domain)
 
         return domain
 
@@ -456,7 +456,7 @@ class Service(rpc_service.Service):
         except Exception, e:
             raise exceptions.Backend('Unknown backend failure: %s' % e)
 
-        utils.notify(context, 'api', 'domain.update', domain)
+        utils.notify(context, 'central', 'domain.update', domain)
 
         return domain
 
@@ -473,7 +473,7 @@ class Service(rpc_service.Service):
 
         domain = self._increment_domain_serial(context, domain_id)
 
-        utils.notify(context, 'api', 'domain.touch', domain)
+        utils.notify(context, 'central', 'domain.touch', domain)
 
         return domain
 
@@ -496,7 +496,7 @@ class Service(rpc_service.Service):
         except Exception, e:
             raise exceptions.Backend('Unknown backend failure: %s' % e)
 
-        utils.notify(context, 'api', 'domain.delete', domain)
+        utils.notify(context, 'central', 'domain.delete', domain)
 
         return self.storage.delete_domain(context, domain_id)
 
@@ -553,7 +553,7 @@ class Service(rpc_service.Service):
             self._increment_domain_serial(context, domain_id)
 
         # Send Record creation notification
-        utils.notify(context, 'api', 'record.create', record)
+        utils.notify(context, 'central', 'record.create', record)
 
         return record
 
@@ -646,7 +646,7 @@ class Service(rpc_service.Service):
             self._increment_domain_serial(context, domain_id)
 
         # Send Record update notification
-        utils.notify(context, 'api', 'record.update', record)
+        utils.notify(context, 'central', 'record.update', record)
 
         return record
 
@@ -680,7 +680,7 @@ class Service(rpc_service.Service):
             self._increment_domain_serial(context, domain_id)
 
         # Send Record deletion notification
-        utils.notify(context, 'api', 'record.delete', record)
+        utils.notify(context, 'central', 'record.delete', record)
 
         return self.storage.delete_record(context, record_id)
 
