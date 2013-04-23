@@ -290,6 +290,9 @@ class CentralServiceTest(CentralTestCase):
         # Create a server
         self.create_server()
 
+        # Reset the list of notifications
+        self.reset_notifications()
+
         context = self.get_admin_context()
 
         values = dict(
@@ -304,6 +307,23 @@ class CentralServiceTest(CentralTestCase):
         self.assertIsNotNone(domain['id'])
         self.assertEqual(domain['name'], values['name'])
         self.assertEqual(domain['email'], values['email'])
+
+        # Ensure we sent exactly 1 notification
+        notifications = self.get_notifications()
+        self.assertEqual(len(notifications), 1)
+
+        # Ensure the notification wrapper contains the correct info
+        notification = notifications.pop()
+        self.assertEqual(notification['event_type'], 'dns.domain.create')
+        self.assertEqual(notification['priority'], 'INFO')
+        self.assertIsNotNone(notification['timestamp'])
+        self.assertIsNotNone(notification['message_id'])
+
+        # Ensure the notification payload contains the correct info
+        payload = notification['payload']
+        self.assertEqual(payload['id'], domain['id'])
+        self.assertEqual(payload['name'], domain['name'])
+        self.assertEqual(payload['tenant_id'], domain['tenant_id'])
 
     def test_create_subdomain(self):
         context = self.get_admin_context()
@@ -500,6 +520,9 @@ class CentralServiceTest(CentralTestCase):
         # Create a domain
         expected_domain = self.create_domain()
 
+        # Reset the list of notifications
+        self.reset_notifications()
+
         # Update the domain
         values = dict(email='new@example.com')
         self.central_service.update_domain(context, expected_domain['id'],
@@ -512,6 +535,23 @@ class CentralServiceTest(CentralTestCase):
         # Ensure the domain was updated correctly
         self.assertGreater(domain['serial'], expected_domain['serial'])
         self.assertEqual(domain['email'], 'new@example.com')
+
+        # Ensure we sent exactly 1 notification
+        notifications = self.get_notifications()
+        self.assertEqual(len(notifications), 1)
+
+        # Ensure the notification wrapper contains the correct info
+        notification = notifications.pop()
+        self.assertEqual(notification['event_type'], 'dns.domain.update')
+        self.assertEqual(notification['priority'], 'INFO')
+        self.assertIsNotNone(notification['timestamp'])
+        self.assertIsNotNone(notification['message_id'])
+
+        # Ensure the notification payload contains the correct info
+        payload = notification['payload']
+        self.assertEqual(payload['id'], domain['id'])
+        self.assertEqual(payload['name'], domain['name'])
+        self.assertEqual(payload['tenant_id'], domain['tenant_id'])
 
     def test_update_domain_without_incrementing_serial(self):
         context = self.get_admin_context()
@@ -567,12 +607,32 @@ class CentralServiceTest(CentralTestCase):
         # Create a domain
         domain = self.create_domain()
 
+        # Reset the list of notifications
+        self.reset_notifications()
+
         # Delete the domain
         self.central_service.delete_domain(context, domain['id'])
 
         # Fetch the domain again, ensuring an exception is raised
         with self.assertRaises(exceptions.DomainNotFound):
             self.central_service.get_domain(context, domain['id'])
+
+        # Ensure we sent exactly 1 notification
+        notifications = self.get_notifications()
+        self.assertEqual(len(notifications), 1)
+
+        # Ensure the notification wrapper contains the correct info
+        notification = notifications.pop()
+        self.assertEqual(notification['event_type'], 'dns.domain.delete')
+        self.assertEqual(notification['priority'], 'INFO')
+        self.assertIsNotNone(notification['timestamp'])
+        self.assertIsNotNone(notification['message_id'])
+
+        # Ensure the notification payload contains the correct info
+        payload = notification['payload']
+        self.assertEqual(payload['id'], domain['id'])
+        self.assertEqual(payload['name'], domain['name'])
+        self.assertEqual(payload['tenant_id'], domain['tenant_id'])
 
     def test_get_domain_servers(self):
         context = self.get_admin_context()

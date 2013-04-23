@@ -17,8 +17,9 @@ import copy
 import unittest2
 import mox
 from moniker.openstack.common import cfg
-from moniker.openstack.common import policy
 from moniker.openstack.common import log as logging
+from moniker.openstack.common.notifier import test_notifier
+from moniker.openstack.common import policy
 from moniker.context import MonikerContext
 from moniker import storage
 from moniker import exceptions
@@ -77,7 +78,9 @@ class TestCase(unittest2.TestCase):
         self.mox = mox.Mox()
 
         self.config(
-            notification_driver=[],
+            notification_driver=[
+                'moniker.openstack.common.notifier.test_notifier',
+            ],
             rpc_backend='moniker.openstack.common.rpc.impl_fake',
         )
 
@@ -108,6 +111,7 @@ class TestCase(unittest2.TestCase):
         self.admin_context = self.get_admin_context()
 
     def tearDown(self):
+        self.reset_notifications()
         policy.reset()
         storage.teardown_schema()
         cfg.CONF.reset()
@@ -132,6 +136,13 @@ class TestCase(unittest2.TestCase):
 
         # Set the rules
         policy.set_rules(rules)
+
+    # Other Utility Methods
+    def get_notifications(self):
+        return test_notifier.NOTIFICATIONS
+
+    def reset_notifications(self):
+        test_notifier.NOTIFICATIONS = []
 
     # Service Methods
     def get_agent_service(self):
