@@ -39,44 +39,7 @@ cfg.CONF.import_opt('database_connection', 'moniker.storage.impl_sqlalchemy',
                     group='storage:sqlalchemy')
 
 
-class AssertMixin(object):
-    """
-    Mixin to hold assert helpers.
-
-    """
-    def assertLen(self, expected_length, obj):
-        """
-        Assert a length of a object
-
-        :param obj: The object ot run len() on
-        :param expected_length: The length in Int that's expected from len(obj)
-        """
-        self.assertEqual(len(obj), expected_length)
-
-    def assertData(self, expected_data, data):
-        """
-        A simple helper to very that at least fixture data is the same
-        as returned
-
-        :param expected_data: Data that's expected
-        :param data: Data to check expected_data against
-        """
-        for key, value in expected_data.items():
-            self.assertEqual(data[key], value)
-
-    def assertResponse(self, expected_data, data, schema=None):
-        """
-        If passed schema, do schema.validate() on data and pass
-        expected_data + data to self.assertData()
-
-        :param schema: A schema to validate data with
-        """
-        if schema:
-            schema.validate(data)
-        self.assertData(expected_data, data)
-
-
-class TestCase(unittest2.TestCase, AssertMixin):
+class TestCase(unittest2.TestCase):
     server_fixtures = [{
         'name': 'ns1.example.org.',
     }, {
