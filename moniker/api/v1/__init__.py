@@ -17,6 +17,7 @@ import flask
 import webob.dec
 from stevedore import extension
 from stevedore import named
+from werkzeug import exceptions as wexceptions
 from moniker.openstack.common import cfg
 from moniker.openstack.common import jsonutils as json
 from moniker.openstack.common import log as logging
@@ -37,6 +38,25 @@ def factory(global_config, **local_conf):
     app.config.update(
         PROPAGATE_EXCEPTIONS=True
     )
+
+    # Ensure all error responses are JSON
+    def _json_error(ex):
+        code = ex.code if isinstance(ex, wexceptions.HTTPException) else 500
+
+        response = {
+            'code': code
+        }
+
+        if code == 405:
+            response['type'] = 'invalid_method'
+
+        response = flask.jsonify(**response)
+        response.status_code = code
+
+        return response
+
+    for code in wexceptions.default_exceptions.iterkeys():
+        app.error_handler_spec[None][code] = _json_error
 
     # TODO(kiall): Ideally, we want to make use of the Plugin class here.
     #              This works for the moment though.
