@@ -5,6 +5,7 @@
 
     "title": "server",
     "description": "Server",
+    "additionalProperties": false,
 
     "properties": {
         "id": {

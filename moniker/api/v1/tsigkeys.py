@@ -74,6 +74,7 @@ def update_tsigkey(tsigkey_id):
     values = flask.request.json
 
     tsigkey = central_api.get_tsigkey(context, tsigkey_id)
+    tsigkey = tsigkey_schema.filter(tsigkey)
     tsigkey.update(values)
 
     tsigkey_schema.validate(tsigkey)

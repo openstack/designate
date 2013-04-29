@@ -75,6 +75,7 @@ def update_record(domain_id, record_id):
     values = flask.request.json
 
     record = central_api.get_record(context, domain_id, record_id)
+    record = record_schema.filter(record)
     record.update(values)
 
     record_schema.validate(record)

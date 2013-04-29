@@ -5,6 +5,7 @@
 
     "title": "tsigkeys",
     "description": "TSIG Keys",
+    "additionalProperties": false,
 
     "properties": {
         "tsigkeys": {

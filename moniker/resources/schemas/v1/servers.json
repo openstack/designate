@@ -5,6 +5,7 @@
 
     "title": "servers",
     "description": "Servers",
+    "additionalProperties": false,
 
     "properties": {
         "servers": {

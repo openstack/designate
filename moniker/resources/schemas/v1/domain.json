@@ -5,6 +5,7 @@
 
     "title": "domain",
     "description": "Domain",
+    "additionalProperties": false,
 
     "properties": {
         "id": {

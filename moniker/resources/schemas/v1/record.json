@@ -5,6 +5,7 @@
 
     "title": "record",
     "description": "Record",
+    "additionalProperties": false,
 
     "properties": {
         "id": {

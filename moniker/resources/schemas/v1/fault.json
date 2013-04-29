@@ -5,6 +5,7 @@
 
     "title": "fault",
     "description": "Fault",
+    "additionalProperties": false,
 
     "properties": {
         "code": {

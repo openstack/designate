@@ -42,6 +42,16 @@ class ApiV1RecordsTest(ApiV1Test):
         self.assertIn('name', response.json)
         self.assertEqual(response.json['name'], fixture['name'])
 
+    def test_create_record_junk(self):
+        fixture = self.get_record_fixture(self.domain['name'], 0)
+
+        # Add a junk property
+        fixture['junk'] = 'Junk Field'
+
+        # Create a record, Ensuring it fails with a 400
+        self.post('domains/%s/records' % self.domain['id'], data=fixture,
+                  status_code=400)
+
     @patch.object(central_service.Service, 'create_record',
                   side_effect=rpc_common.Timeout())
     def test_create_domain_timeout(self, _):
@@ -204,6 +214,15 @@ class ApiV1RecordsTest(ApiV1Test):
 
         self.assertIn('name', response.json)
         self.assertEqual(response.json['name'], 'prefix-%s' % record['name'])
+
+    def test_update_record_junk(self):
+        # Create a record
+        record = self.create_record(self.domain)
+
+        data = {'name': 'prefix-%s' % record['name'], 'junk': 'Junk Field'}
+
+        self.put('domains/%s/records/%s' % (self.domain['id'], record['id']),
+                 data=data, status_code=400)
 
     def test_update_record_outside_domain_fail(self):
         # Create a record

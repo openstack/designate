@@ -75,6 +75,7 @@ def update_domain(domain_id):
     values = flask.request.json
 
     domain = central_api.get_domain(context, domain_id)
+    domain = domain_schema.filter(domain)
     domain.update(values)
 
     domain_schema.validate(domain)

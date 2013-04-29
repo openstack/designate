@@ -40,6 +40,19 @@ class ApiV1DomainsTest(ApiV1Test):
         self.assertIn('name', response.json)
         self.assertEqual(response.json['name'], fixture['name'])
 
+    def test_create_domain_junk(self):
+        # Create a server
+        self.create_server()
+
+        # Create a domain
+        fixture = self.get_domain_fixture(0)
+
+        # Add a junk property
+        fixture['junk'] = 'Junk Field'
+
+        # Ensure it fails with a 400
+        self.post('domains', data=fixture, status_code=400)
+
     def test_create_domain_no_servers(self):
         # Create a domain
         fixture = self.get_domain_fixture(0)
@@ -168,6 +181,14 @@ class ApiV1DomainsTest(ApiV1Test):
 
         self.assertIn('email', response.json)
         self.assertEqual(response.json['email'], 'prefix-%s' % domain['email'])
+
+    def test_update_domain_junk(self):
+        # Create a domain
+        domain = self.create_domain()
+
+        data = {'email': 'prefix-%s' % domain['email'], 'junk': 'Junk Field'}
+
+        self.put('domains/%s' % domain['id'], data=data, status_code=400)
 
     def test_update_domain_name_fail(self):
         # Create a domain

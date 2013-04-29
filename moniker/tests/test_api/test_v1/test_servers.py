@@ -37,6 +37,16 @@ class ApiV1ServersTest(ApiV1Test):
         self.assertIn('name', response.json)
         self.assertEqual(response.json['name'], fixture['name'])
 
+    def test_create_server_junk(self):
+        # Create a server
+        fixture = self.get_server_fixture(0)
+
+        # Add a junk property
+        fixture['junk'] = 'Junk Field'
+
+        # Ensure it fails with a 400
+        self.post('servers', data=fixture, status_code=400)
+
     @patch.object(central_service.Service, 'create_server',
                   side_effect=rpc_common.Timeout())
     def test_create_server_timeout(self, _):
@@ -114,6 +124,14 @@ class ApiV1ServersTest(ApiV1Test):
 
         self.assertIn('name', response.json)
         self.assertEqual(response.json['name'], 'test.example.org.')
+
+    def test_update_server_junk(self):
+        # Create a server
+        server = self.create_server()
+
+        data = {'name': 'test.example.org.', 'junk': 'Junk Field'}
+
+        self.put('servers/%s' % server['id'], data=data, status_code=400)
 
     @patch.object(central_service.Service, 'update_server',
                   side_effect=rpc_common.Timeout())

@@ -74,6 +74,7 @@ def update_server(server_id):
     values = flask.request.json
 
     server = central_api.get_server(context, server_id)
+    server = server_schema.filter(server)
     server.update(values)
 
     server_schema.validate(server)
