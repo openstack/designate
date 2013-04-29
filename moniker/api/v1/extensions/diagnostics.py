@@ -16,7 +16,6 @@
 import flask
 from moniker.openstack.common import log as logging
 from moniker.openstack.common import rpc
-from moniker.openstack.common.rpc import common as rpc_common
 
 LOG = logging.getLogger(__name__)
 blueprint = flask.Blueprint('diagnostics', __name__)
@@ -32,11 +31,6 @@ def ping_host(topic, host):
         'args': {},
     }
 
-    try:
-        pong = rpc.call(context, queue, msg, timeout=10)
-    except rpc_common.Timeout:
-        return flask.Response(status=504)
-    except:
-        return flask.Response(status=500)
-    else:
-        return flask.jsonify(pong)
+    pong = rpc.call(context, queue, msg, timeout=10)
+
+    return flask.jsonify(pong)

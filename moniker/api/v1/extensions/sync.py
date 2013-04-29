@@ -15,8 +15,6 @@
 # under the License.
 import flask
 from moniker.openstack.common import log as logging
-from moniker.openstack.common.rpc import common as rpc_common
-from moniker import exceptions
 from moniker.central import rpcapi as central_rpcapi
 
 LOG = logging.getLogger(__name__)
@@ -28,30 +26,18 @@ blueprint = flask.Blueprint('sync', __name__)
 def sync_domains():
     context = flask.request.environ.get('context')
 
-    try:
-        central_api.sync_domains(context)
-    except exceptions.Forbidden:
-        return flask.Response(status=401)
-    except rpc_common.Timeout:
-        return flask.Response(status=504)
-    else:
-        return flask.Response(status=200)
+    central_api.sync_domains(context)
+
+    return flask.Response(status=200)
 
 
 @blueprint.route('/domains/<domain_id>/sync', methods=['POST'])
 def sync_domain(domain_id):
     context = flask.request.environ.get('context')
 
-    try:
-        central_api.sync_domain(context, domain_id)
-    except exceptions.Forbidden:
-        return flask.Response(status=401)
-    except exceptions.DomainNotFound:
-        return flask.Response(status=404)
-    except rpc_common.Timeout:
-        return flask.Response(status=504)
-    else:
-        return flask.Response(status=200)
+    central_api.sync_domain(context, domain_id)
+
+    return flask.Response(status=200)
 
 
 @blueprint.route('/domains/<domain_id>/records/<record_id>/sync',
@@ -59,13 +45,6 @@ def sync_domain(domain_id):
 def sync_record(domain_id, record_id):
     context = flask.request.environ.get('context')
 
-    try:
-        central_api.sync_record(context, domain_id, record_id)
-    except exceptions.Forbidden:
-        return flask.Response(status=401)
-    except exceptions.RecordNotFound:
-        return flask.Response(status=404)
-    except rpc_common.Timeout:
-        return flask.Response(status=504)
-    else:
-        return flask.Response(status=200)
+    central_api.sync_record(context, domain_id, record_id)
+
+    return flask.Response(status=200)

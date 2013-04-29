@@ -15,8 +15,6 @@
 # under the License.
 import flask
 from moniker.openstack.common import log as logging
-from moniker.openstack.common.rpc import common as rpc_common
-from moniker import exceptions
 from moniker.central import rpcapi as central_rpcapi
 
 LOG = logging.getLogger(__name__)
@@ -24,69 +22,39 @@ central_api = central_rpcapi.CentralAPI()
 blueprint = flask.Blueprint('reports', __name__)
 
 
-@blueprint.route('/reports', methods=['GET'])
+@blueprint.route('/reports/counts', methods=['GET'])
 def reports():
     context = flask.request.environ.get('context')
 
-    try:
-        domains = central_api.count_domains(context)
-        records = central_api.count_records(context)
-        tenants = central_api.count_tenants(context)
-    except exceptions.Forbidden:
-        return flask.Response(status=401)
-    except exceptions.DomainNotFound:
-        return flask.Response(status=404)
-    except rpc_common.Timeout:
-        return flask.Response(status=504)
-    else:
-        return flask.jsonify(domains=int(domains), records=int(records),
-                             tenants=int(tenants))
+    domains = central_api.count_domains(context)
+    records = central_api.count_records(context)
+    tenants = central_api.count_tenants(context)
+
+    return flask.jsonify(domains=domains, records=records, tenants=tenants)
 
 
-@blueprint.route('/reports/domains', methods=['GET'])
+@blueprint.route('/reports/counts/domains', methods=['GET'])
 def reports_domains():
     context = flask.request.environ.get('context')
 
-    try:
-        count = central_api.count_domains(context)
-    except exceptions.Forbidden:
-        return flask.Response(status=401)
-    except exceptions.DomainNotFound:
-        return flask.Response(status=404)
-    except rpc_common.Timeout:
-        return flask.Response(status=504)
-    else:
-        return flask.jsonify(domains=int(count))
+    count = central_api.count_domains(context)
+
+    return flask.jsonify(domains=count)
 
 
-@blueprint.route('/reports/records', methods=['GET'])
+@blueprint.route('/reports/counts/records', methods=['GET'])
 def reports_records():
     context = flask.request.environ.get('context')
 
-    try:
-        count = central_api.count_records(context)
-    except exceptions.Forbidden:
-        return flask.Response(status=401)
-    except exceptions.DomainNotFound:
-        return flask.Response(status=404)
-    except rpc_common.Timeout:
-        return flask.Response(status=504)
-    else:
-        return flask.jsonify(records=int(count))
+    count = central_api.count_records(context)
+
+    return flask.jsonify(records=count)
 
 
-@blueprint.route('/reports/tenants', methods=['GET'])
+@blueprint.route('/reports/counts/tenants', methods=['GET'])
 def reports_tenants():
     context = flask.request.environ.get('context')
 
-    try:
-        count = central_api.count_tenants(context)
-    except exceptions.Forbidden:
-        return flask.Response(status=401)
-    except exceptions.DomainNotFound:
-        return flask.Response(status=404)
-    except rpc_common.Timeout:
-        return flask.Response(status=504)
-    else:
-        LOG.debug(count)
-        return flask.jsonify(tenants=int(count))
+    count = central_api.count_tenants(context)
+
+    return flask.jsonify(tenants=count)
