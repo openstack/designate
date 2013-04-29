@@ -87,6 +87,12 @@ class CentralAPI(rpc_proxy.RpcProxy):
 
         return self.call(context, msg)
 
+    # Tenant Methods
+    def count_tenants(self, context):
+        msg = self.make_msg('count_tenants')
+
+        return self.call(context, msg)
+
     # Domain Methods
     def create_domain(self, context, values):
         msg = self.make_msg('create_domain', values=values)
@@ -100,6 +106,11 @@ class CentralAPI(rpc_proxy.RpcProxy):
 
     def get_domain(self, context, domain_id):
         msg = self.make_msg('get_domain', domain_id=domain_id)
+
+        return self.call(context, msg)
+
+    def get_domain_servers(self, context, domain_id):
+        msg = self.make_msg('get_domain_servers', domain_id=domain_id)
 
         return self.call(context, msg)
 
@@ -126,13 +137,13 @@ class CentralAPI(rpc_proxy.RpcProxy):
 
         return self.call(context, msg)
 
-    def touch_domain(self, context, domain_id):
-        msg = self.make_msg('touch_domain', domain_id=domain_id)
+    def count_domains(self, context, criterion=None):
+        msg = self.make_msg('count_domains', criterion=criterion)
 
         return self.call(context, msg)
 
-    def get_domain_servers(self, context, domain_id):
-        msg = self.make_msg('get_domain_servers', domain_id=domain_id)
+    def touch_domain(self, context, domain_id):
+        msg = self.make_msg('touch_domain', domain_id=domain_id)
 
         return self.call(context, msg)
 
@@ -188,19 +199,8 @@ class CentralAPI(rpc_proxy.RpcProxy):
 
         return self.call(context, msg)
 
-    # Count Methods
-    def count_domains(self, context, criterion=None):
-        msg = self.make_msg('count_domains', criterion=criterion)
-
-        return self.call(context, msg)
-
     def count_records(self, context, criterion=None):
         msg = self.make_msg('count_records', criterion=criterion)
-
-        return self.call(context, msg)
-
-    def count_tenants(self, context):
-        msg = self.make_msg('count_tenants')
 
         return self.call(context, msg)
 

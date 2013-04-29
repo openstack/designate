@@ -26,11 +26,20 @@ blueprint = flask.Blueprint('reports', __name__)
 def reports_counts():
     context = flask.request.environ.get('context')
 
+    tenants = central_api.count_tenants(context)
     domains = central_api.count_domains(context)
     records = central_api.count_records(context)
-    tenants = central_api.count_tenants(context)
 
-    return flask.jsonify(domains=domains, records=records, tenants=tenants)
+    return flask.jsonify(tenants=tenants, domains=domains, records=records)
+
+
+@blueprint.route('/reports/counts/tenants', methods=['GET'])
+def reports_counts_tenants():
+    context = flask.request.environ.get('context')
+
+    count = central_api.count_tenants(context)
+
+    return flask.jsonify(tenants=count)
 
 
 @blueprint.route('/reports/counts/domains', methods=['GET'])
@@ -49,12 +58,3 @@ def reports_counts_records():
     count = central_api.count_records(context)
 
     return flask.jsonify(records=count)
-
-
-@blueprint.route('/reports/counts/tenants', methods=['GET'])
-def reports_counts_tenants():
-    context = flask.request.environ.get('context')
-
-    count = central_api.count_tenants(context)
-
-    return flask.jsonify(tenants=count)

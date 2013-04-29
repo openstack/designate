@@ -322,6 +322,11 @@ class Service(rpc_service.Service):
 
         return self.storage.delete_tsigkey(context, tsigkey_id)
 
+    # Tenant Methods
+    def count_tenants(self, context):
+        policy.check('count_tenants', context)
+        return self.storage.count_tenants(context)
+
     # Domain Methods
     def create_domain(self, context, values):
         values['tenant_id'] = context.tenant_id
@@ -400,6 +405,24 @@ class Service(rpc_service.Service):
 
         return domain
 
+    def get_domain_servers(self, context, domain_id, criterion=None):
+        domain = self.storage.get_domain(context, domain_id)
+
+        target = {
+            'domain_id': domain_id,
+            'domain_name': domain['name'],
+            'tenant_id': domain['tenant_id']
+        }
+
+        policy.check('get_domain_servers', context, target)
+
+        if criterion is None:
+            criterion = {}
+
+        # TODO: Once we allow domains to be allocated on 1 of N server
+        #       pools, return the filtered list here.
+        return self.storage.get_servers(context, criterion)
+
     def find_domains(self, context, criterion):
         target = {'tenant_id': context.tenant_id}
         policy.check('find_domains', context, target)
@@ -460,23 +483,6 @@ class Service(rpc_service.Service):
 
         return domain
 
-    def touch_domain(self, context, domain_id):
-        domain = self.storage.get_domain(context, domain_id)
-
-        target = {
-            'domain_id': domain_id,
-            'domain_name': domain['name'],
-            'tenant_id': domain['tenant_id']
-        }
-
-        policy.check('touch_domain', context, target)
-
-        domain = self._increment_domain_serial(context, domain_id)
-
-        utils.notify(context, 'central', 'domain.touch', domain)
-
-        return domain
-
     def delete_domain(self, context, domain_id):
         domain = self.storage.get_domain(context, domain_id)
 
@@ -501,10 +507,18 @@ class Service(rpc_service.Service):
         return self.storage.delete_domain(context, domain_id)
 
     def count_domains(self, context, criterion=None):
-        policy.check('count_domains', context)
+        if criterion is None:
+            criterion = {}
+
+        target = {
+            'tenant_id': criterion.get('tenant_id', None)
+        }
+
+        policy.check('count_domains', context, target)
+
         return self.storage.count_domains(context, criterion)
 
-    def get_domain_servers(self, context, domain_id, criterion=None):
+    def touch_domain(self, context, domain_id):
         domain = self.storage.get_domain(context, domain_id)
 
         target = {
@@ -513,14 +527,13 @@ class Service(rpc_service.Service):
             'tenant_id': domain['tenant_id']
         }
 
-        policy.check('get_domain_servers', context, target)
+        policy.check('touch_domain', context, target)
 
-        if criterion is None:
-            criterion = {}
+        domain = self._increment_domain_serial(context, domain_id)
 
-        # TODO: Once we allow domains to be allocated on 1 of N server
-        #       pools, return the filtered list here.
-        return self.storage.get_servers(context, criterion)
+        utils.notify(context, 'central', 'domain.touch', domain)
+
+        return domain
 
     # Record Methods
     def create_record(self, context, domain_id, values, increment_serial=True):
@@ -685,12 +698,15 @@ class Service(rpc_service.Service):
         return self.storage.delete_record(context, record_id)
 
     def count_records(self, context, criterion=None):
-        policy.check('count_records', context)
-        return self.storage.count_records(context, criterion)
+        if criterion is None:
+            criterion = {}
 
-    def count_tenants(self, context):
-        policy.check('count_tenants', context)
-        return self.storage.count_tenants(context)
+        target = {
+            'tenant_id': criterion.get('tenant_id', None)
+        }
+
+        policy.check('count_records', context, target)
+        return self.storage.count_records(context, criterion)
 
     # Diagnostics Methods
     def sync_domains(self, context):

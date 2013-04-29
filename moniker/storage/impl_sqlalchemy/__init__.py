@@ -176,6 +176,12 @@ class SQLAlchemyStorage(base.Storage):
 
         tsigkey.delete(self.session)
 
+    # Tenant Methods
+    def count_tenants(self, context):
+        # tenants are the owner of domains, count the number of unique tenants
+        # select count(distinct tenant_id) from domains
+        return self.session.query(distinct(models.Domain.tenant_id)).count()
+
     # Domain Methods
     def create_domain(self, context, values):
         domain = models.Domain()
@@ -329,11 +335,6 @@ class SQLAlchemyStorage(base.Storage):
         query = self.session.query(models.Record)
         query = self._apply_criterion(models.Record, query, criterion)
         return query.count()
-
-    # tenants are the owner of domains, count the number of unique tenants
-    # select count(distinct tenant_id) from domains
-    def count_tenants(self, context):
-        return self.session.query(distinct(models.Domain.tenant_id)).count()
 
     # diagnostics
     def ping(self, context):

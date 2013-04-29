@@ -285,6 +285,29 @@ class CentralServiceTest(CentralTestCase):
         with self.assertRaises(exceptions.TsigKeyNotFound):
             self.central_service.get_tsigkey(context, tsigkey['id'])
 
+    # Tenant Tests
+    def test_count_tenants(self):
+        context = self.get_admin_context()
+        # in the beginning, there should be nothing
+        tenants = self.central_service.count_tenants(self.admin_context)
+        self.assertEqual(tenants, 0)
+
+        # Explicitly set a tenant_id
+        context.tenant_id = '1'
+        self.create_domain(fixture=0, context=context)
+        context.tenant_id = '2'
+        self.create_domain(fixture=1, context=context)
+
+        tenants = self.central_service.count_tenants(self.admin_context)
+        self.assertEqual(tenants, 2)
+
+    def test_count_tenants_policy_check(self):
+        # Set the policy to reject the authz
+        self.policy({'count_tenants': '!'})
+
+        with self.assertRaises(exceptions.Forbidden):
+            self.central_service.count_tenants(self.get_context())
+
     # Domain Tests
     def test_create_domain(self):
         # Create a server
@@ -500,6 +523,17 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(domain['name'], expected_domain['name'])
         self.assertEqual(domain['email'], expected_domain['email'])
 
+    def test_get_domain_servers(self):
+        context = self.get_admin_context()
+
+        # Create a domain
+        domain = self.create_domain()
+
+        # Retrieve the servers list
+        servers = self.central_service.get_domain_servers(context,
+                                                          domain['id'])
+        self.assertGreater(len(servers), 0)
+
     def test_find_domain(self):
         context = self.get_admin_context()
 
@@ -585,22 +619,6 @@ class CentralServiceTest(CentralTestCase):
             self.central_service.update_domain(context, expected_domain['id'],
                                                values=values)
 
-    def test_touch_domain(self):
-        context = self.get_admin_context()
-
-        # Create a domain
-        expected_domain = self.create_domain()
-
-        # Touch the domain
-        self.central_service.touch_domain(context, expected_domain['id'])
-
-        # Fetch the domain again
-        domain = self.central_service.get_domain(context,
-                                                 expected_domain['id'])
-
-        # Ensure the serial was incremented
-        self.assertGreater(domain['serial'], expected_domain['serial'])
-
     def test_delete_domain(self):
         context = self.get_admin_context()
 
@@ -634,16 +652,42 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(payload['name'], domain['name'])
         self.assertEqual(payload['tenant_id'], domain['tenant_id'])
 
-    def test_get_domain_servers(self):
+    def test_count_domains(self):
+        # in the beginning, there should be nothing
+        domains = self.central_service.count_domains(self.admin_context)
+        self.assertEqual(domains, 0)
+
+        # Create a single domain
+        self.create_domain()
+
+        # count 'em up
+        domains = self.central_service.count_domains(self.admin_context)
+
+        # well, did we get 1?
+        self.assertEqual(domains, 1)
+
+    def test_count_domains_policy_check(self):
+        # Set the policy to reject the authz
+        self.policy({'count_domains': '!'})
+
+        with self.assertRaises(exceptions.Forbidden):
+            self.central_service.count_domains(self.get_context())
+
+    def test_touch_domain(self):
         context = self.get_admin_context()
 
         # Create a domain
-        domain = self.create_domain()
+        expected_domain = self.create_domain()
 
-        # Retrieve the servers list
-        servers = self.central_service.get_domain_servers(context,
-                                                          domain['id'])
-        self.assertGreater(len(servers), 0)
+        # Touch the domain
+        self.central_service.touch_domain(context, expected_domain['id'])
+
+        # Fetch the domain again
+        domain = self.central_service.get_domain(context,
+                                                 expected_domain['id'])
+
+        # Ensure the serial was incremented
+        self.assertGreater(domain['serial'], expected_domain['serial'])
 
     # Record Tests
     def test_create_record(self):
@@ -988,24 +1032,6 @@ class CentralServiceTest(CentralTestCase):
             self.central_service.delete_record(context, other_domain['id'],
                                                record['id'])
 
-    def test_count_domains(self):
-        # in the beginning, there should be nothing
-        domains = self.central_service.count_domains(self.admin_context)
-        self.assertEqual(domains, 0)
-
-        # Create a single domain
-        self.create_domain()
-
-        # count 'em up
-        domains = self.central_service.count_domains(self.admin_context)
-
-        # well, did we get 1?
-        self.assertEqual(domains, 1)
-
-    def test_count_domains_admin_only(self):
-        with self.assertRaises(exceptions.Forbidden):
-            self.central_service.count_domains(self.get_context())
-
     def test_count_records(self):
         # in the beginning, there should be nothing
         records = self.central_service.count_records(self.admin_context)
@@ -1021,25 +1047,9 @@ class CentralServiceTest(CentralTestCase):
         records = self.central_service.count_domains(self.admin_context)
         self.assertEqual(records, 1)
 
-    def test_count_records_admin_only(self):
+    def test_count_records_policy_check(self):
+        # Set the policy to reject the authz
+        self.policy({'count_records': '!'})
+
         with self.assertRaises(exceptions.Forbidden):
             self.central_service.count_records(self.get_context())
-
-    def test_count_tenants(self):
-        context = self.get_admin_context()
-        # in the beginning, there should be nothing
-        tenants = self.central_service.count_tenants(self.admin_context)
-        self.assertEqual(tenants, 0)
-
-        # Explicitly set a tenant_id
-        context.tenant_id = '1'
-        self.create_domain(fixture=0, context=context)
-        context.tenant_id = '2'
-        self.create_domain(fixture=1, context=context)
-
-        tenants = self.central_service.count_tenants(self.admin_context)
-        self.assertEqual(tenants, 2)
-
-    def test_count_tenants_admin_only(self):
-        with self.assertRaises(exceptions.Forbidden):
-            self.central_service.count_tenants(self.get_context())

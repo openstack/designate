@@ -24,11 +24,12 @@ class Storage(Plugin):
     __plugin_type__ = 'storage'
 
     @abc.abstractmethod
-    def create_server(self, context):
+    def create_server(self, context, values):
         """
         Create a Server.
 
         :param context: RPC Context.
+        :param values: Values to create the new Domain from.
         """
 
     @abc.abstractmethod
@@ -66,6 +67,59 @@ class Storage(Plugin):
 
         :param context: RPC Context.
         :param server_id: Delete a Server via ID
+        """
+
+    @abc.abstractmethod
+    def create_tsigkey(self, context, values):
+        """
+        Create a TSIG Key.
+
+        :param context: RPC Context.
+        """
+
+    @abc.abstractmethod
+    def get_tsigkeys(self, context, criterion=None):
+        """
+        Get TSIG Keys.
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        """
+
+    @abc.abstractmethod
+    def get_tsigkey(self, context, tsigkey_id):
+        """
+        Get a TSIG Key via ID.
+
+        :param context: RPC Context.
+        :param tsigkey_id: Server ID to get.
+        """
+
+    @abc.abstractmethod
+    def update_tsigkey(self, context, tsigkey_id, values):
+        """
+        Update a TSIG Key via ID
+
+        :param context: RPC Context.
+        :param tsigkey_id: TSIG Key ID to update.
+        :param values: Values to update the TSIG Key from
+        """
+
+    @abc.abstractmethod
+    def delete_tsigkey(self, context, tsigkey_id):
+        """
+        Delete a TSIG Key via ID.
+
+        :param context: RPC Context.
+        :param tsigkey_id: Delete a TSIG Key via ID
+        """
+
+    @abc.abstractmethod
+    def count_tenants(self, context, values):
+        """
+        Count tenants
+
+        :param context: RPC Context.
         """
 
     @abc.abstractmethod
@@ -131,10 +185,11 @@ class Storage(Plugin):
         :param context: RPC Context.
         :param domain_id: Domain ID to delete.
         """
+
     @abc.abstractmethod
     def count_domains(self, context, criterion=None):
         """
-        Count all Domains, across all accounts, applying criteria
+        Count domains
 
         :param context: RPC Context.
         :param criterion: Criteria to filter by.
@@ -208,18 +263,10 @@ class Storage(Plugin):
     @abc.abstractmethod
     def count_records(self, context, criterion=None):
         """
-        Count records, across all domains unless otherwise specified
+        Count records
 
         :param context: RPC Context.
         :param criterion: Criteria to filter by.
-        """
-
-    @abc.abstractmethod
-    def count_tenants(self, context):
-        """
-        Count tenants, across all domains
-
-        :param context: RPC Context.
         """
 
     def ping(self, context):
