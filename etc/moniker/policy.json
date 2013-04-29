@@ -17,6 +17,8 @@
     "update_tsigkey": "rule:admin",
     "delete_tsigkey": "rule:admin",
 
+    "get_tenants": "rule:admin",
+    "get_tenant": "rule:admin",
     "count_tenants": "rule:admin",
 
     "create_domain": "rule:admin_or_owner",

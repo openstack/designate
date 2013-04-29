@@ -27,7 +27,7 @@ LOG = logging.getLogger(__name__)
 
 
 class Service(rpc_service.Service):
-    RPC_API_VERSION = '1.1'
+    RPC_API_VERSION = '1.2'
 
     def __init__(self, *args, **kwargs):
         backend_driver = cfg.CONF['service:central'].backend_driver
@@ -323,6 +323,19 @@ class Service(rpc_service.Service):
         return self.storage.delete_tsigkey(context, tsigkey_id)
 
     # Tenant Methods
+    def get_tenants(self, context):
+        policy.check('get_tenants', context)
+        return self.storage.get_tenants(context)
+
+    def get_tenant(self, context, tenant_id):
+        target = {
+            'tenant_id': tenant_id
+        }
+
+        policy.check('get_tenant', context, target)
+
+        return self.storage.get_tenant(context, tenant_id)
+
     def count_tenants(self, context):
         policy.check('count_tenants', context)
         return self.storage.count_tenants(context)

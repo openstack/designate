@@ -291,6 +291,49 @@ class StorageTestCase(TestCase):
             uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
             self.storage.delete_tsigkey(self.admin_context, uuid)
 
+    # Tenant Tests
+    def test_get_tenants(self):
+        # create 3 domains in 2 tenants
+        self.create_domain(fixture=0, values={'tenant_id': 'One'})
+        self.create_domain(fixture=1, values={'tenant_id': 'One'})
+        self.create_domain(fixture=2, values={'tenant_id': 'Two'})
+
+        result = self.storage.get_tenants(self.admin_context)
+
+        expected = [{
+            'id': 'One',
+            'domain_count': 2
+        }, {
+            'id': 'Two',
+            'domain_count': 1
+        }]
+
+        self.assertEquals(result, expected)
+
+    def test_get_tenant(self):
+        # create 2 domains in a tenant
+        _, domain_1 = self.create_domain(fixture=0, values={'tenant_id': 1})
+        _, domain_2 = self.create_domain(fixture=1, values={'tenant_id': 1})
+
+        result = self.storage.get_tenant(self.admin_context, 1)
+
+        self.assertEquals(result['id'], 1)
+        self.assertEquals(result['domain_count'], 2)
+        self.assertItemsEqual(result['domains'],
+                              [domain_1['name'], domain_2['name']])
+
+    def test_count_tenants(self):
+        # in the beginning, there should be nothing
+        tenants = self.storage.count_tenants(self.admin_context)
+        self.assertEqual(tenants, 0)
+
+        # create 2 domains with 2 tenants
+        self.create_domain(fixture=0, values={'tenant_id': 1})
+        self.create_domain(fixture=1, values={'tenant_id': 2})
+
+        tenants = self.storage.count_tenants(self.admin_context)
+        self.assertEqual(tenants, 2)
+
     # Domain Tests
     def test_create_domain(self):
         values = {
@@ -440,6 +483,20 @@ class StorageTestCase(TestCase):
         with self.assertRaises(exceptions.DomainNotFound):
             uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
             self.storage.delete_domain(self.admin_context, uuid)
+
+    def test_count_domains(self):
+        # in the beginning, there should be nothing
+        domains = self.storage.count_domains(self.admin_context)
+        self.assertEqual(domains, 0)
+
+        # Create a single domain
+        self.create_domain()
+
+        # count 'em up
+        domains = self.storage.count_domains(self.admin_context)
+
+        # well, did we get 1?
+        self.assertEqual(domains, 1)
 
     def test_create_record(self):
         domain_fixture, domain = self.create_domain()
@@ -606,20 +663,6 @@ class StorageTestCase(TestCase):
         self.assertEqual(pong['status'], True)
         self.assertIsNotNone(pong['rtt'])
 
-    def test_count_domains(self):
-        # in the beginning, there should be nothing
-        domains = self.storage.count_domains(self.admin_context)
-        self.assertEqual(domains, 0)
-
-        # Create a single domain
-        self.create_domain()
-
-        # count 'em up
-        domains = self.storage.count_domains(self.admin_context)
-
-        # well, did we get 1?
-        self.assertEqual(domains, 1)
-
     def test_count_records(self):
         # in the beginning, there should be nothing
         records = self.storage.count_records(self.admin_context)
@@ -632,15 +675,3 @@ class StorageTestCase(TestCase):
         # we should have 1 record now
         records = self.storage.count_domains(self.admin_context)
         self.assertEqual(records, 1)
-
-    def test_count_tenants(self):
-        # in the beginning, there should be nothing
-        tenants = self.storage.count_tenants(self.admin_context)
-        self.assertEqual(tenants, 0)
-
-        # create 2 domains with 2 tenants
-        self.create_domain(fixture=0, values={'tenant_id': 1})
-        self.create_domain(fixture=1, values={'tenant_id': 2})
-
-        tenants = self.storage.count_tenants(self.admin_context)
-        self.assertEqual(tenants, 2)

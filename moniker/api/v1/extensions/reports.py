@@ -22,6 +22,24 @@ central_api = central_rpcapi.CentralAPI()
 blueprint = flask.Blueprint('reports', __name__)
 
 
+@blueprint.route('/reports/tenants', methods=['GET'])
+def reports_tenants():
+    context = flask.request.environ.get('context')
+
+    tenants = central_api.get_tenants(context)
+
+    return flask.jsonify(tenants=tenants)
+
+
+@blueprint.route('/reports/tenants/<tenant_id>', methods=['GET'])
+def reports_tenant(tenant_id):
+    context = flask.request.environ.get('context')
+
+    tenant = central_api.get_tenant(context, tenant_id)
+
+    return flask.jsonify(tenant)
+
+
 @blueprint.route('/reports/counts', methods=['GET'])
 def reports_counts():
     context = flask.request.environ.get('context')

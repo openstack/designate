@@ -65,6 +65,9 @@ class TestCase(unittest2.TestCase):
     }, {
         'name': 'example.net.',
         'email': 'example@example.net',
+    }, {
+        'name': 'example.org.',
+        'email': 'example@example.org',
     }]
 
     record_fixtures = [

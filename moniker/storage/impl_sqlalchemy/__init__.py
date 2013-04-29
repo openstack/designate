@@ -15,7 +15,7 @@
 # under the License.
 import time
 from sqlalchemy.orm import exc
-from sqlalchemy import distinct
+from sqlalchemy import distinct, func
 from moniker.openstack.common import cfg
 from moniker.openstack.common import log as logging
 from moniker import exceptions
@@ -177,6 +177,25 @@ class SQLAlchemyStorage(base.Storage):
         tsigkey.delete(self.session)
 
     # Tenant Methods
+    def get_tenants(self, context):
+        query = self.session.query(models.Domain.tenant_id,
+                                   func.count(models.Domain.id))
+        query = query.group_by(models.Domain.tenant_id)
+
+        return [{'id': t[0], 'domain_count': t[1]} for t in query.all()]
+
+    def get_tenant(self, context, tenant_id):
+        query = self.session.query(models.Domain.name)
+        query = query.filter(models.Domain.tenant_id == tenant_id)
+
+        result = query.all()
+
+        return {
+            'id': tenant_id,
+            'domain_count': len(result),
+            'domains': [r[0] for r in result]
+        }
+
     def count_tenants(self, context):
         # tenants are the owner of domains, count the number of unique tenants
         # select count(distinct tenant_id) from domains

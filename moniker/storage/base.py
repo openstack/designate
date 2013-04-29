@@ -115,6 +115,23 @@ class Storage(Plugin):
         """
 
     @abc.abstractmethod
+    def get_tenants(self, context):
+        """
+        Get all Tenants.
+
+        :param context: RPC Context.
+        """
+
+    @abc.abstractmethod
+    def get_tenant(self, context, tenant_id):
+        """
+        Get all Tenants.
+
+        :param context: RPC Context.
+        :param tenant_id: ID of the Tenant.
+        """
+
+    @abc.abstractmethod
     def count_tenants(self, context, values):
         """
         Count tenants
