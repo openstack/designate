@@ -23,7 +23,7 @@ blueprint = flask.Blueprint('reports', __name__)
 
 
 @blueprint.route('/reports/counts', methods=['GET'])
-def reports():
+def reports_counts():
     context = flask.request.environ.get('context')
 
     domains = central_api.count_domains(context)
@@ -34,7 +34,7 @@ def reports():
 
 
 @blueprint.route('/reports/counts/domains', methods=['GET'])
-def reports_domains():
+def reports_counts_domains():
     context = flask.request.environ.get('context')
 
     count = central_api.count_domains(context)
@@ -43,7 +43,7 @@ def reports_domains():
 
 
 @blueprint.route('/reports/counts/records', methods=['GET'])
-def reports_records():
+def reports_counts_records():
     context = flask.request.environ.get('context')
 
     count = central_api.count_records(context)
@@ -52,7 +52,7 @@ def reports_records():
 
 
 @blueprint.route('/reports/counts/tenants', methods=['GET'])
-def reports_tenants():
+def reports_counts_tenants():
     context = flask.request.environ.get('context')
 
     count = central_api.count_tenants(context)
