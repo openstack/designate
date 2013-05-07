@@ -848,6 +848,30 @@ class CentralServiceTest(CentralTestCase):
             self.central_service.create_record(context, domain['id'],
                                                values=values)
 
+    def test_create_duplicate_ptr_record(self):
+        context = self.get_admin_context()
+        domain = self.create_domain(values={'name': '2.0.192.in-addr.arpa.'})
+
+        values = dict(
+            name='1.%s' % domain['name'],
+            type='PTR',
+            data='www.example.org.'
+        )
+
+        self.central_service.create_record(context, domain['id'],
+                                           values=values)
+
+        # Attempt to create a second PTR with the same name.
+        with self.assertRaises(exceptions.DuplicateRecord):
+            values = dict(
+                name='1.%s' % domain['name'],
+                type='PTR',
+                data='www.example.com.'
+            )
+
+            self.central_service.create_record(context, domain['id'],
+                                               values=values)
+
     def test_get_records(self):
         context = self.get_admin_context()
         domain = self.create_domain()
@@ -979,6 +1003,38 @@ class CentralServiceTest(CentralTestCase):
         with self.assertRaises(exceptions.RecordNotFound):
             self.central_service.update_record(context, other_domain['id'],
                                                expected_record['id'],
+                                               values=values)
+
+    def test_update_record_duplicate_ptr(self):
+        context = self.get_admin_context()
+        domain = self.create_domain(values={'name': '2.0.192.in-addr.arpa.'})
+
+        values = dict(
+            name='1.%s' % domain['name'],
+            type='PTR',
+            data='www.example.org.'
+        )
+
+        self.central_service.create_record(context, domain['id'],
+                                           values=values)
+
+        values = dict(
+            name='2.%s' % domain['name'],
+            type='PTR',
+            data='www.example.org.'
+        )
+
+        record = self.central_service.create_record(context, domain['id'],
+                                                    values=values)
+
+        # Attempt to create a second PTR with the same name.
+        with self.assertRaises(exceptions.DuplicateRecord):
+            values = dict(
+                name='1.%s' % domain['name']
+            )
+
+            self.central_service.update_record(context, domain['id'],
+                                               record['id'],
                                                values=values)
 
     def test_delete_record(self):

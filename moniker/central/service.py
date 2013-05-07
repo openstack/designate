@@ -150,6 +150,14 @@ class Service(rpc_service.Service):
                                                        'have any child '
                                                        'records')
 
+        # Duplicate PTR's with the same name are not allowed
+        if record_type == 'PTR':
+            criterion = {'name': record_name, 'type': 'PTR'}
+            records = self.storage.get_records(context, domain['id'],
+                                               criterion=criterion)
+            if len(records) > 0:
+                raise exceptions.DuplicateRecord()
+
         return True
 
     def _is_blacklisted_domain_name(self, context, domain_name):
