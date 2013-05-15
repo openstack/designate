@@ -46,6 +46,15 @@ class NoServersConfigured(ConfigurationError):
     pass
 
 
+class OverQuota(Base):
+    error_code = 413
+    error_type = 'over_quota'
+
+
+class QuotaResourceUnknown(Base):
+    error_type = 'quota_resource_unknown'
+
+
 class InvalidObject(Base):
     error_code = 400
     error_type = 'invalid_object'
@@ -85,6 +94,10 @@ class Duplicate(Base):
     error_type = 'duplicate'
 
 
+class DuplicateQuota(Duplicate):
+    error_type = 'duplicate_quota'
+
+
 class DuplicateServer(Duplicate):
     error_type = 'duplicate_server'
 
@@ -104,6 +117,10 @@ class DuplicateRecord(Duplicate):
 class NotFound(Base):
     error_code = 404
     error_type = 'not_found'
+
+
+class QuotaNotFound(NotFound):
+    error_type = 'quota_not_found'
 
 
 class ServerNotFound(NotFound):

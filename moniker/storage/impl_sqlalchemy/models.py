@@ -16,7 +16,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from sqlalchemy import (Column, DateTime, String, Text, Integer, ForeignKey,
-                        Enum, Boolean, Unicode)
+                        Enum, Boolean, Unicode, UniqueConstraint)
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.hybrid import hybrid_property
 from moniker.openstack.common import log as logging
@@ -46,6 +46,17 @@ class Base(CommonBase):
 
 
 Base = declarative_base(cls=Base)
+
+
+class Quota(Base):
+    __tablename__ = 'quotas'
+    __table_args__ = (
+        UniqueConstraint('tenant_id', 'resource', name='unique_quota'),
+    )
+
+    tenant_id = Column(String(36), nullable=False)
+    resource = Column(String(32), nullable=False)
+    hard_limit = Column(Integer(), nullable=False)
 
 
 class Server(Base):

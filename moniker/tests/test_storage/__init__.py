@@ -28,6 +28,10 @@ class StorageTestCase(TestCase):
         super(StorageTestCase, self).setUp()
         self.storage = storage.get_storage()
 
+    def create_quota(self, fixture=0, values={}):
+        fixture = self.get_quota_fixture(fixture, values)
+        return fixture, self.storage.create_quota(self.admin_context, fixture)
+
     def create_server(self, fixture=0, values={}):
         fixture = self.get_server_fixture(fixture, values)
         return fixture, self.storage.create_server(self.admin_context, fixture)
@@ -47,6 +51,171 @@ class StorageTestCase(TestCase):
         return fixture, self.storage.create_record(self.admin_context,
                                                    domain['id'],
                                                    fixture)
+
+    # Quota Tests
+    def test_create_quota(self):
+        values = self.get_quota_fixture()
+
+        result = self.storage.create_quota(self.admin_context, values=values)
+
+        self.assertIsNotNone(result['id'])
+        self.assertIsNotNone(result['created_at'])
+        self.assertIsNone(result['updated_at'])
+
+        self.assertEqual(result['tenant_id'], values['tenant_id'])
+        self.assertEqual(result['resource'], values['resource'])
+        self.assertEqual(result['hard_limit'], values['hard_limit'])
+
+    def test_create_quota_duplicate(self):
+        # Create the initial quota
+        self.create_quota()
+
+        with self.assertRaises(exceptions.DuplicateQuota):
+            self.create_quota()
+
+    def test_get_quotas(self):
+        actual = self.storage.get_quotas(self.admin_context)
+        self.assertEqual(actual, [])
+
+        # Create a single quota
+        _, quota_one = self.create_quota()
+
+        actual = self.storage.get_quotas(self.admin_context)
+        self.assertEqual(len(actual), 1)
+
+        self.assertEqual(actual[0]['tenant_id'], quota_one['tenant_id'])
+        self.assertEqual(actual[0]['resource'], quota_one['resource'])
+        self.assertEqual(actual[0]['hard_limit'], quota_one['hard_limit'])
+
+        # Create a second quota
+        _, quota_two = self.create_quota(fixture=1)
+
+        actual = self.storage.get_quotas(self.admin_context)
+        self.assertEqual(len(actual), 2)
+
+        self.assertEqual(actual[1]['tenant_id'], quota_two['tenant_id'])
+        self.assertEqual(actual[1]['resource'], quota_two['resource'])
+        self.assertEqual(actual[1]['hard_limit'], quota_two['hard_limit'])
+
+    def test_get_quotas_criterion(self):
+        _, quota_one = self.create_quota(0)
+        _, quota_two = self.create_quota(1)
+
+        criterion = dict(
+            tenant_id=quota_one['tenant_id'],
+            resource=quota_one['resource']
+        )
+
+        results = self.storage.get_quotas(self.admin_context, criterion)
+
+        self.assertEqual(len(results), 1)
+
+        self.assertEqual(results[0]['tenant_id'], quota_one['tenant_id'])
+        self.assertEqual(results[0]['resource'], quota_one['resource'])
+        self.assertEqual(results[0]['hard_limit'], quota_one['hard_limit'])
+
+        criterion = dict(
+            tenant_id=quota_two['tenant_id'],
+            resource=quota_two['resource']
+        )
+
+        results = self.storage.get_quotas(self.admin_context, criterion)
+
+        self.assertEqual(len(results), 1)
+
+        self.assertEqual(results[0]['tenant_id'], quota_two['tenant_id'])
+        self.assertEqual(results[0]['resource'], quota_two['resource'])
+        self.assertEqual(results[0]['hard_limit'], quota_two['hard_limit'])
+
+    def test_get_quota(self):
+        # Create a quota
+        _, expected = self.create_quota()
+        actual = self.storage.get_quota(self.admin_context, expected['id'])
+
+        self.assertEqual(actual['tenant_id'], expected['tenant_id'])
+        self.assertEqual(actual['resource'], expected['resource'])
+        self.assertEqual(actual['hard_limit'], expected['hard_limit'])
+
+    def test_get_quota_missing(self):
+        with self.assertRaises(exceptions.QuotaNotFound):
+            uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
+            self.storage.get_quota(self.admin_context, uuid)
+
+    def test_find_quota_criterion(self):
+        _, quota_one = self.create_quota(0)
+        _, quota_two = self.create_quota(1)
+
+        criterion = dict(
+            tenant_id=quota_one['tenant_id'],
+            resource=quota_one['resource']
+        )
+
+        result = self.storage.find_quota(self.admin_context, criterion)
+
+        self.assertEqual(result['tenant_id'], quota_one['tenant_id'])
+        self.assertEqual(result['resource'], quota_one['resource'])
+        self.assertEqual(result['hard_limit'], quota_one['hard_limit'])
+
+        criterion = dict(
+            tenant_id=quota_two['tenant_id'],
+            resource=quota_two['resource']
+        )
+
+        result = self.storage.find_quota(self.admin_context, criterion)
+
+        self.assertEqual(result['tenant_id'], quota_two['tenant_id'])
+        self.assertEqual(result['resource'], quota_two['resource'])
+        self.assertEqual(result['hard_limit'], quota_two['hard_limit'])
+
+    def test_find_quota_criterion_missing(self):
+        _, expected = self.create_quota(0)
+
+        criterion = dict(
+            tenant_id=expected['tenant_id'] + "NOT FOUND"
+        )
+
+        with self.assertRaises(exceptions.QuotaNotFound):
+            self.storage.find_quota(self.admin_context, criterion)
+
+    def test_update_quota(self):
+        # Create a quota
+        fixture, quota = self.create_quota()
+
+        updated = self.storage.update_quota(self.admin_context, quota['id'],
+                                            fixture)
+
+        self.assertEqual(updated['tenant_id'], fixture['tenant_id'])
+        self.assertEqual(updated['resource'], fixture['resource'])
+        self.assertEqual(updated['hard_limit'], fixture['hard_limit'])
+
+    def test_update_quota_duplicate(self):
+        # Create two quotas
+        self.create_quota(fixture=0)
+        _, quota = self.create_quota(fixture=1)
+
+        values = self.quota_fixtures[0]
+
+        with self.assertRaises(exceptions.DuplicateQuota):
+            self.storage.update_quota(self.admin_context, quota['id'],
+                                      values)
+
+    def test_update_quota_missing(self):
+        with self.assertRaises(exceptions.QuotaNotFound):
+            uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
+            self.storage.update_quota(self.admin_context, uuid, {})
+
+    def test_delete_quota(self):
+        quota_fixture, quota = self.create_quota()
+
+        self.storage.delete_quota(self.admin_context, quota['id'])
+
+        with self.assertRaises(exceptions.QuotaNotFound):
+            self.storage.get_quota(self.admin_context, quota['id'])
+
+    def test_delete_quota_missing(self):
+        with self.assertRaises(exceptions.QuotaNotFound):
+            uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
+            self.storage.delete_quota(self.admin_context, uuid)
 
     # Server Tests
     def test_create_server(self):

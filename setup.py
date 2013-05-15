@@ -59,6 +59,7 @@ setup(
     entry_points=textwrap.dedent("""
         [moniker.api.v1]
         domains = moniker.api.v1.domains:blueprint
+        limits = moniker.api.v1.limits:blueprint
         records = moniker.api.v1.records:blueprint
         servers = moniker.api.v1.servers:blueprint
         tsigkeys = moniker.api.v1.tsigkeys:blueprint
@@ -83,6 +84,10 @@ setup(
         rpc = moniker.backend.impl_rpc:RPCBackend
         dnsmasq = moniker.backend.impl_dnsmasq:DnsmasqBackend
         fake = moniker.backend.impl_fake:FakeBackend
+
+        [moniker.quota]
+        storage = moniker.quota.impl_storage:StorageQuota
+        config =  moniker.quota.impl_config:ConfigQuota
 
         [moniker.manage]
         database-init = moniker.manage.database:InitCommand

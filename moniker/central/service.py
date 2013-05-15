@@ -20,6 +20,7 @@ from moniker.openstack.common.rpc import service as rpc_service
 from moniker import exceptions
 from moniker import policy
 from moniker import storage
+from moniker import quota
 from moniker import utils
 from moniker import backend
 
@@ -27,7 +28,7 @@ LOG = logging.getLogger(__name__)
 
 
 class Service(rpc_service.Service):
-    RPC_API_VERSION = '1.2'
+    RPC_API_VERSION = '1.3'
 
     def __init__(self, *args, **kwargs):
         backend_driver = cfg.CONF['service:central'].backend_driver
@@ -45,6 +46,9 @@ class Service(rpc_service.Service):
 
         # Get a storage connection
         self.storage = storage.get_storage()
+
+        # Get a quota manager instance
+        self.quota = quota.get_quota()
 
     def start(self):
         self.backend.start()
@@ -230,6 +234,10 @@ class Service(rpc_service.Service):
 
         return domain
 
+    # Misc Methods
+    def get_absolute_limits(self, context):
+        return self.quota.get_tenant_quotas(context, context.tenant_id)
+
     # Server Methods
     def create_server(self, context, values):
         policy.check('create_server', context)
@@ -358,6 +366,12 @@ class Service(rpc_service.Service):
         }
 
         policy.check('create_domain', context, target)
+
+        # Ensure the tenant has enough quota to continue
+        quota_criterion = {'tenant_id': values['tenant_id']}
+        domain_count = self.count_domains(context, criterion=quota_criterion)
+        self.quota.limit_check(context, values['tenant_id'],
+                               domains=domain_count)
 
         # Ensure the domain name is valid
         self._is_valid_domain_name(context, values['name'])
@@ -568,6 +582,12 @@ class Service(rpc_service.Service):
         }
 
         policy.check('create_record', context, target)
+
+        # Ensure the tenant has enough quota to continue
+        quota_criterion = {'domain_id': domain_id}
+        record_count = self.count_records(context, criterion=quota_criterion)
+        self.quota.limit_check(context, domain['tenant_id'],
+                               records=record_count)
 
         # Ensure the record name is valid
         self._is_valid_record_name(context, domain, values['name'],

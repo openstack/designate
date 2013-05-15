@@ -62,6 +62,83 @@ class SQLAlchemyStorage(base.Storage):
 
         return query
 
+    # Quota Methods
+    def create_quota(self, context, values):
+        quota = models.Quota()
+
+        quota.update(values)
+
+        try:
+            quota.save(self.session)
+        except exceptions.Duplicate:
+            raise exceptions.DuplicateQuota()
+
+        return dict(quota)
+
+    def get_quotas(self, context, criterion=None):
+        query = self.session.query(models.Quota)
+        query = self._apply_criterion(models.Quota, query, criterion)
+
+        try:
+            result = query.all()
+        except exc.NoResultFound:
+            LOG.debug('No results found')
+            return []
+        else:
+            return [dict(o) for o in result]
+
+    def _get_quota(self, context, quota_id):
+        query = self.session.query(models.Quota)
+
+        quota = query.get(quota_id)
+
+        if not quota:
+            raise exceptions.QuotaNotFound(quota_id)
+        else:
+            return quota
+
+    def get_quota(self, context, quota_id):
+        quota = self._get_quota(context, quota_id)
+
+        return dict(quota)
+
+    def _find_quotas(self, context, criterion, one=False):
+        query = self.session.query(models.Quota)
+        query = self._apply_criterion(models.Quota, query, criterion)
+
+        if one:
+            try:
+                quota = query.one()
+                return dict(quota)
+            except (exc.NoResultFound, exc.MultipleResultsFound):
+                raise exceptions.QuotaNotFound()
+        else:
+            quotas = query.all()
+            return [dict(q) for q in quotas]
+
+    def find_quotas(self, context, criterion):
+        return self._find_quotas(context, criterion)
+
+    def find_quota(self, context, criterion):
+        return self._find_quotas(context, criterion, one=True)
+
+    def update_quota(self, context, quota_id, values):
+        quota = self._get_quota(context, quota_id)
+
+        quota.update(values)
+
+        try:
+            quota.save(self.session)
+        except exceptions.Duplicate:
+            raise exceptions.DuplicateQuota()
+
+        return dict(quota)
+
+    def delete_quota(self, context, quota_id):
+        quota = self._get_quota(context, quota_id)
+
+        quota.delete(self.session)
+
     # Server Methods
     def create_server(self, context, values):
         server = models.Server()

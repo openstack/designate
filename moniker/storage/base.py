@@ -24,6 +24,70 @@ class Storage(Plugin):
     __plugin_type__ = 'storage'
 
     @abc.abstractmethod
+    def create_quota(self, context, values):
+        """
+        Create a Quota.
+
+        :param context: RPC Context.
+        :param values: Values to create the new Quota from.
+        """
+
+    @abc.abstractmethod
+    def get_quotas(self, context, criterion=None):
+        """
+        Get Quotas.
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        """
+
+    @abc.abstractmethod
+    def get_quota(self, context, quota_id):
+        """
+        Get a Quota via ID.
+
+        :param context: RPC Context.
+        :param quota_id: Quota ID to get.
+        """
+
+    @abc.abstractmethod
+    def find_quotas(self, context, criterion):
+        """
+        Find Quotas
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        """
+
+    @abc.abstractmethod
+    def find_quota(self, context, criterion):
+        """
+        Find a single Quota.
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        """
+
+    @abc.abstractmethod
+    def update_quota(self, context, quota_id, values):
+        """
+        Update a Quota via ID
+
+        :param context: RPC Context.
+        :param quota_id: Quota ID to update.
+        :param values: Values to update the Quota from
+        """
+
+    @abc.abstractmethod
+    def delete_quota(self, context, quota_id):
+        """
+        Delete a Quota via ID.
+
+        :param context: RPC Context.
+        :param quota_id: Delete a Quota via ID
+        """
+
+    @abc.abstractmethod
     def create_server(self, context, values):
         """
         Create a Server.

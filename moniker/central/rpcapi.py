@@ -29,10 +29,18 @@ class CentralAPI(rpc_proxy.RpcProxy):
         1.0 - Initial version
         1.1 - Add new finder methods
         1.2 - Add get_tenant and get_tenants
+        1.3 - Add get_absolute_limits
+
     """
     def __init__(self, topic=None):
         topic = topic if topic else cfg.CONF.central_topic
         super(CentralAPI, self).__init__(topic=topic, default_version='1.0')
+
+    # Misc Methods
+    def get_absolute_limits(self, context):
+        msg = self.make_msg('get_absolute_limits')
+
+        return self.call(context, msg, version='1.3')
 
     # Server Methods
     def create_server(self, context, values):

@@ -348,6 +348,14 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(payload['name'], domain['name'])
         self.assertEqual(payload['tenant_id'], domain['tenant_id'])
 
+    def test_create_domain_over_quota(self):
+        self.config(quota_domains=1)
+
+        self.create_domain()
+
+        with self.assertRaises(exceptions.OverQuota):
+            self.create_domain()
+
     def test_create_subdomain(self):
         context = self.get_admin_context()
 
@@ -710,6 +718,16 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(record['name'], values['name'])
         self.assertEqual(record['type'], values['type'])
         self.assertEqual(record['data'], values['data'])
+
+    def test_create_record_over_quota(self):
+        self.config(quota_records=1)
+
+        domain = self.create_domain()
+
+        self.create_record(domain)
+
+        with self.assertRaises(exceptions.OverQuota):
+            self.create_record(domain)
 
     def test_create_record_without_incrementing_serial(self):
         context = self.get_admin_context()

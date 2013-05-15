@@ -19,16 +19,18 @@ from moniker.openstack.common import cfg
 from moniker.openstack.common import rpc
 
 cfg.CONF.register_opts([
+    cfg.StrOpt('host', default=socket.gethostname(),
+               help='Name of this node'),
     cfg.StrOpt('pybasedir',
                default=os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                     '../')),
                help='Directory where the nova python module is installed'),
-    cfg.StrOpt('host', default=socket.gethostname(),
-               help='Name of this node'),
-    cfg.StrOpt('central-topic', default='central', help='Central Topic'),
-    cfg.StrOpt('agent-topic', default='agent', help='Agent Topic'),
     cfg.StrOpt('state-path', default='$pybasedir',
                help='Top-level directory for maintaining moniker\'s state'),
+
+
+    cfg.StrOpt('central-topic', default='central', help='Central Topic'),
+    cfg.StrOpt('agent-topic', default='agent', help='Agent Topic'),
 ])
 
 rpc.set_defaults(control_exchange='moniker')

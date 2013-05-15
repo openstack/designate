@@ -41,6 +41,16 @@ cfg.CONF.import_opt('database_connection', 'moniker.storage.impl_sqlalchemy',
 
 
 class TestCase(unittest2.TestCase):
+    quota_fixtures = [{
+        'tenant_id': '12345',
+        'resource': 'domains',
+        'hard_limit': 5,
+    }, {
+        'tenant_id': '12345',
+        'resource': 'records',
+        'hard_limit': 50,
+    }]
+
     server_fixtures = [{
         'name': 'ns1.example.org.',
     }, {
@@ -168,6 +178,11 @@ class TestCase(unittest2.TestCase):
         return MonikerContext.get_admin_context()
 
     # Fixture methods
+    def get_quota_fixture(self, fixture=0, values={}):
+        _values = copy.copy(self.quota_fixtures[fixture])
+        _values.update(values)
+        return _values
+
     def get_server_fixture(self, fixture=0, values={}):
         _values = copy.copy(self.server_fixtures[fixture])
         _values.update(values)
@@ -193,6 +208,13 @@ class TestCase(unittest2.TestCase):
             pass
 
         return _values
+
+    def create_quota(self, **kwargs):
+        context = kwargs.pop('context', self.get_admin_context())
+        fixture = kwargs.pop('fixture', 0)
+
+        values = self.get_quota_fixture(fixture=fixture, values=kwargs)
+        return self.central_service.create_quota(context, values=values)
 
     def create_server(self, **kwargs):
         context = kwargs.pop('context', self.get_admin_context())
