@@ -37,7 +37,7 @@ class QuotaTestCase(TestCase):
         self.assertIsNotNone(quotas)
         self.assertEqual(quotas, {
             'domains': cfg.CONF.quota_domains,
-            'records': cfg.CONF.quota_records
+            'domain_records': cfg.CONF.quota_domain_records
         })
 
     def test_limit_check_unknown(self):
@@ -53,13 +53,16 @@ class QuotaTestCase(TestCase):
         context = self.get_admin_context()
 
         self.quota.limit_check(context, 'tenant_id', domains=0)
-        self.quota.limit_check(context, 'tenant_id', records=0)
-        self.quota.limit_check(context, 'tenant_id', domains=0, records=0)
+        self.quota.limit_check(context, 'tenant_id', domain_records=0)
+        self.quota.limit_check(context, 'tenant_id', domains=0,
+                               domain_records=0)
 
         self.quota.limit_check(context, 'tenant_id',
                                domains=(cfg.CONF.quota_domains - 1))
-        self.quota.limit_check(context, 'tenant_id',
-                               records=(cfg.CONF.quota_records - 1))
+        self.quota.limit_check(
+            context,
+            'tenant_id',
+            domain_records=(cfg.CONF.quota_domain_records - 1))
 
     def test_limit_check_at(self):
         context = self.get_admin_context()
@@ -69,8 +72,10 @@ class QuotaTestCase(TestCase):
                                    domains=cfg.CONF.quota_domains)
 
         with self.assertRaises(exceptions.OverQuota):
-            self.quota.limit_check(context, 'tenant_id',
-                                   records=cfg.CONF.quota_records)
+            self.quota.limit_check(
+                context,
+                'tenant_id',
+                domain_records=cfg.CONF.quota_domain_records)
 
     def test_limit_check_over(self):
         context = self.get_admin_context()
@@ -79,16 +84,16 @@ class QuotaTestCase(TestCase):
             self.quota.limit_check(context, 'tenant_id', domains=99999)
 
         with self.assertRaises(exceptions.OverQuota):
-            self.quota.limit_check(context, 'tenant_id', records=99999)
+            self.quota.limit_check(context, 'tenant_id', domain_records=99999)
 
         with self.assertRaises(exceptions.OverQuota):
             self.quota.limit_check(context, 'tenant_id', domains=99999,
-                                   records=99999)
+                                   domain_records=99999)
 
         with self.assertRaises(exceptions.OverQuota):
             self.quota.limit_check(context, 'tenant_id', domains=99999,
-                                   records=0)
+                                   domain_records=0)
 
         with self.assertRaises(exceptions.OverQuota):
             self.quota.limit_check(context, 'tenant_id', domains=0,
-                                   records=99999)
+                                   domain_records=99999)

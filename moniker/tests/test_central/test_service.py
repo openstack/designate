@@ -720,7 +720,7 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(record['data'], values['data'])
 
     def test_create_record_over_quota(self):
-        self.config(quota_records=1)
+        self.config(quota_domain_records=1)
 
         domain = self.create_domain()
 

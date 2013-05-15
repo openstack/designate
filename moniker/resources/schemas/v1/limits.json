@@ -15,10 +15,10 @@
                 "absolute": {
                     "type": "object",
                     "properties": {
-                        "domains": {
+                        "maxDomains": {
                             "type": "integer"
                         },
-                        "records": {
+                        "maxDomainRecords": {
                             "type": "integer"
                         }
                     }

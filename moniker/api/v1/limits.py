@@ -37,6 +37,9 @@ def get_limits():
 
     return flask.jsonify(limits_schema.filter({
         "limits": {
-            "absolute": absolute_limits
+            "absolute": {
+                "maxDomains": absolute_limits['domains'],
+                "maxDomainRecords": absolute_limits['domain_records']
+            }
         }
     }))

@@ -587,7 +587,7 @@ class Service(rpc_service.Service):
         quota_criterion = {'domain_id': domain_id}
         record_count = self.count_records(context, criterion=quota_criterion)
         self.quota.limit_check(context, domain['tenant_id'],
-                               records=record_count)
+                               domain_records=record_count)
 
         # Ensure the record name is valid
         self._is_valid_record_name(context, domain, values['name'],

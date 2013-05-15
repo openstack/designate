@@ -34,7 +34,7 @@ class Quota(Plugin):
         """
         quotas = {
             'domains': cfg.CONF.quota_domains,
-            'records': cfg.CONF.quota_records,
+            'domain_records': cfg.CONF.quota_domain_records,
         }
 
         quotas.update(self._get_tenant_quotas(context, tenant_id))
