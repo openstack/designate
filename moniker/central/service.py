@@ -369,7 +369,8 @@ class Service(rpc_service.Service):
 
         # Ensure the tenant has enough quota to continue
         quota_criterion = {'tenant_id': values['tenant_id']}
-        domain_count = self.count_domains(context, criterion=quota_criterion)
+        domain_count = self.storage.count_domains(context,
+                                                  criterion=quota_criterion)
         self.quota.limit_check(context, values['tenant_id'],
                                domains=domain_count)
 
@@ -585,7 +586,8 @@ class Service(rpc_service.Service):
 
         # Ensure the tenant has enough quota to continue
         quota_criterion = {'domain_id': domain_id}
-        record_count = self.count_records(context, criterion=quota_criterion)
+        record_count = self.storage.count_records(context,
+                                                  criterion=quota_criterion)
         self.quota.limit_check(context, domain['tenant_id'],
                                domain_records=record_count)
 
