@@ -21,7 +21,7 @@
 #    under the License.
 
 """
-Installation script for BillingStack's development virtualenv
+Installation script for Moniker's development virtualenv
 """
 
 import os
@@ -33,12 +33,12 @@ import install_venv_common as install_venv
 
 def print_help():
     help = """
- BillingStack development environment setup is complete.
+ Moniker development environment setup is complete.
 
- BillingStack development uses virtualenv to track and manage Python dependencies
+ Moniker development uses virtualenv to track and manage Python dependencies
  while in development and testing.
 
- To activate the BillingStack virtualenv for the extent of your current shell
+ To activate the Moniker virtualenv for the extent of your current shell
  session you can run:
 
  $ source .venv/bin/activate
@@ -56,12 +56,11 @@ def print_help():
 def main(argv):
     root = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
     venv = os.path.join(root, '.venv')
-    pip_requires = os.path.join(root, 'tools', 'pip-requires')
-    pip_options = os.path.join(root, 'tools', 'pip-options')
-    test_requires = os.path.join(root, 'tools', 'test-requires')
+    pip_requires = os.path.join(root, 'requirements.txt')
+    test_requires = os.path.join(root, 'test-requirements.txt')
     py_version = "python%s.%s" % (sys.version_info[0], sys.version_info[1])
-    project = 'quantum'
-    install = install_venv.InstallVenv(root, venv, pip_requires, pip_options, test_requires,
+    project = 'moniker'
+    install = install_venv.InstallVenv(root, venv, pip_requires, test_requires,
                                        py_version, project)
     options = install.parse_args(argv)
     install.check_python_version()

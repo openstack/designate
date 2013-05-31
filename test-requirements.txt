@@ -1,8 +1,6 @@
-unittest2
 nose
 openstack.nose_plugin
 nosehtmloutput
+unittest2
 mox
 mock
-sphinx
-sphinxcontrib-httpdomain
