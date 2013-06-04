@@ -129,6 +129,10 @@ class FaultWrapperMiddleware(wsgi.Middleware):
         if 'type' not in response:
             response['type'] = 'unknown'
 
+        # Set the request ID, if we have one
+        if 'context' in request.environ:
+            response['request_id'] = request.environ['context'].request_id
+
         # TODO(kiall): Send a fault notification
 
         # Return the new response

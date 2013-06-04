@@ -43,6 +43,11 @@
                     }
                 }
             }
+        },
+        "request_id": {
+            "type": "string",
+            "description": "Request ID",
+            "readonly": true
         }
     }
 }
