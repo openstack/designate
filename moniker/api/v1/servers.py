@@ -59,7 +59,7 @@ def get_servers():
     return flask.jsonify(servers_schema.filter({'servers': servers}))
 
 
-@blueprint.route('/servers/<server_id>', methods=['GET'])
+@blueprint.route('/servers/<uuid:server_id>', methods=['GET'])
 def get_server(server_id):
     context = flask.request.environ.get('context')
 
@@ -68,7 +68,7 @@ def get_server(server_id):
     return flask.jsonify(server_schema.filter(server))
 
 
-@blueprint.route('/servers/<server_id>', methods=['PUT'])
+@blueprint.route('/servers/<uuid:server_id>', methods=['PUT'])
 def update_server(server_id):
     context = flask.request.environ.get('context')
     values = flask.request.json
@@ -83,7 +83,7 @@ def update_server(server_id):
     return flask.jsonify(server_schema.filter(server))
 
 
-@blueprint.route('/servers/<server_id>', methods=['DELETE'])
+@blueprint.route('/servers/<uuid:server_id>', methods=['DELETE'])
 def delete_server(server_id):
     context = flask.request.environ.get('context')
 

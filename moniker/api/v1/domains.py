@@ -60,7 +60,7 @@ def get_domains():
     return flask.jsonify(domains_schema.filter({'domains': domains}))
 
 
-@blueprint.route('/domains/<domain_id>', methods=['GET'])
+@blueprint.route('/domains/<uuid:domain_id>', methods=['GET'])
 def get_domain(domain_id):
     context = flask.request.environ.get('context')
 
@@ -69,7 +69,7 @@ def get_domain(domain_id):
     return flask.jsonify(domain_schema.filter(domain))
 
 
-@blueprint.route('/domains/<domain_id>', methods=['PUT'])
+@blueprint.route('/domains/<uuid:domain_id>', methods=['PUT'])
 def update_domain(domain_id):
     context = flask.request.environ.get('context')
     values = flask.request.json
@@ -84,7 +84,7 @@ def update_domain(domain_id):
     return flask.jsonify(domain_schema.filter(domain))
 
 
-@blueprint.route('/domains/<domain_id>', methods=['DELETE'])
+@blueprint.route('/domains/<uuid:domain_id>', methods=['DELETE'])
 def delete_domain(domain_id):
     context = flask.request.environ.get('context')
 
@@ -93,7 +93,7 @@ def delete_domain(domain_id):
     return flask.Response(status=200)
 
 
-@blueprint.route('/domains/<domain_id>/servers', methods=['GET'])
+@blueprint.route('/domains/<uuid:domain_id>/servers', methods=['GET'])
 def get_domain_servers(domain_id):
     context = flask.request.environ.get('context')
 

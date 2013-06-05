@@ -189,6 +189,10 @@ class ApiV1RecordsTest(ApiV1Test):
         self.get('domains/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980/records',
                  status_code=404)
 
+    def test_get_records_invalid_domain_id(self):
+        self.get('domains/2fdadfb1cf964259ac6bbb7b6d2ff980/records',
+                 status_code=404)
+
     def test_get_record(self):
         # Create a record
         record = self.create_record(self.domain)
@@ -252,10 +256,26 @@ class ApiV1RecordsTest(ApiV1Test):
                  data=data,
                  status_code=404)
 
+    def test_update_record_invalid_id(self):
+        data = {'name': 'test.example.org.'}
+
+        self.put('domains/%s/records/2fdadfb1cf964259ac6bbb7b6d2ff980' %
+                 self.domain['id'],
+                 data=data,
+                 status_code=404)
+
     def test_update_record_missing_domain(self):
         data = {'name': 'test.example.org.'}
 
         self.put('domains/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980/records/'
+                 '2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980',
+                 data=data,
+                 status_code=404)
+
+    def test_update_record_invalid_domain_id(self):
+        data = {'name': 'test.example.org.'}
+
+        self.put('domains/2fdadfb1cf964259ac6bbb7b6d2ff980/records/'
                  '2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980',
                  data=data,
                  status_code=404)
@@ -289,5 +309,10 @@ class ApiV1RecordsTest(ApiV1Test):
 
     def test_delete_record_missing_domain(self):
         self.delete('domains/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980/records/'
+                    '2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980',
+                    status_code=404)
+
+    def test_delete_record_invalid_domain_id(self):
+        self.delete('domains/2fdadfb1cf964259ac6bbb7b6d2ff980/records/'
                     '2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980',
                     status_code=404)

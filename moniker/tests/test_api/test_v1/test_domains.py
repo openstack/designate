@@ -168,6 +168,13 @@ class ApiV1DomainsTest(ApiV1Test):
         self.get('domains/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980',
                  status_code=404)
 
+    def test_get_domain_invalid_id(self):
+        # The letter "G" is not valid in a UUID
+        self.get('domains/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff9GG',
+                 status_code=404)
+
+        self.get('domains/2fdadfb1cf964259ac6bbb7b6d2ff980', status_code=404)
+
     def test_update_domain(self):
         # Create a domain
         domain = self.create_domain()
@@ -232,6 +239,16 @@ class ApiV1DomainsTest(ApiV1Test):
         self.put('domains/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980', data=data,
                  status_code=404)
 
+    def test_update_domain_invalid_id(self):
+        data = {'email': 'bla@bla.com'}
+
+        # The letter "G" is not valid in a UUID
+        self.put('domains/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff9GG', data=data,
+                 status_code=404)
+
+        self.put('domains/2fdadfb1cf964259ac6bbb7b6d2ff980', data=data,
+                 status_code=404)
+
     def test_delete_domain(self):
         # Create a domain
         domain = self.create_domain()
@@ -251,4 +268,12 @@ class ApiV1DomainsTest(ApiV1Test):
 
     def test_delete_domain_missing(self):
         self.delete('domains/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980',
+                    status_code=404)
+
+    def test_delete_domain_invalid_id(self):
+        # The letter "G" is not valid in a UUID
+        self.delete('domains/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff9GG',
+                    status_code=404)
+
+        self.delete('domains/2fdadfb1cf964259ac6bbb7b6d2ff980',
                     status_code=404)

@@ -18,9 +18,11 @@ import webob.dec
 from stevedore import extension
 from stevedore import named
 from werkzeug import exceptions as wexceptions
+from werkzeug.routing import BaseConverter, ValidationError
 from moniker.openstack.common import cfg
 from moniker.openstack.common import jsonutils as json
 from moniker.openstack.common import log as logging
+from moniker.openstack.common import uuidutils
 from moniker.openstack.common.rpc import common as rpc_common
 from moniker import exceptions
 from moniker import wsgi
@@ -38,6 +40,9 @@ def factory(global_config, **local_conf):
     app.config.update(
         PROPAGATE_EXCEPTIONS=True
     )
+
+    # Install custom converters (URL param varidators)
+    app.url_map.converters['uuid'] = UUIDConverter
 
     # Ensure all error responses are JSON
     def _json_error(ex):
@@ -76,6 +81,19 @@ def factory(global_config, **local_conf):
         extmgr.map(_register_blueprint)
 
     return app
+
+
+class UUIDConverter(BaseConverter):
+    """ Validates UUID URL paramaters """
+
+    def to_python(self, value):
+        if not uuidutils.is_uuid_like(value):
+            raise ValidationError()
+
+        return value
+
+    def to_url(self, value):
+        return str(value)
 
 
 class FaultWrapperMiddleware(wsgi.Middleware):

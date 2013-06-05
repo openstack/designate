@@ -59,7 +59,7 @@ def get_tsigkeys():
     return flask.jsonify(tsigkeys_schema.filter({'tsigkeys': tsigkeys}))
 
 
-@blueprint.route('/tsigkeys/<tsigkey_id>', methods=['GET'])
+@blueprint.route('/tsigkeys/<uuid:tsigkey_id>', methods=['GET'])
 def get_tsigkey(tsigkey_id):
     context = flask.request.environ.get('context')
 
@@ -68,7 +68,7 @@ def get_tsigkey(tsigkey_id):
     return flask.jsonify(tsigkey_schema.filter(tsigkey))
 
 
-@blueprint.route('/tsigkeys/<tsigkey_id>', methods=['PUT'])
+@blueprint.route('/tsigkeys/<uuid:tsigkey_id>', methods=['PUT'])
 def update_tsigkey(tsigkey_id):
     context = flask.request.environ.get('context')
     values = flask.request.json
@@ -83,7 +83,7 @@ def update_tsigkey(tsigkey_id):
     return flask.jsonify(tsigkey_schema.filter(tsigkey))
 
 
-@blueprint.route('/tsigkeys/<tsigkey_id>', methods=['DELETE'])
+@blueprint.route('/tsigkeys/<uuid:tsigkey_id>', methods=['DELETE'])
 def delete_tsigkey(tsigkey_id):
     context = flask.request.environ.get('context')
 

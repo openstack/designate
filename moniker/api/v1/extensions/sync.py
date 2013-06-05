@@ -31,7 +31,7 @@ def sync_domains():
     return flask.Response(status=200)
 
 
-@blueprint.route('/domains/<domain_id>/sync', methods=['POST'])
+@blueprint.route('/domains/<uuid:domain_id>/sync', methods=['POST'])
 def sync_domain(domain_id):
     context = flask.request.environ.get('context')
 
@@ -40,7 +40,7 @@ def sync_domain(domain_id):
     return flask.Response(status=200)
 
 
-@blueprint.route('/domains/<domain_id>/records/<record_id>/sync',
+@blueprint.route('/domains/<uuid:domain_id>/records/<uuid:record_id>/sync',
                  methods=['POST'])
 def sync_record(domain_id, record_id):
     context = flask.request.environ.get('context')
