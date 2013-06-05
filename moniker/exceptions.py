@@ -85,10 +85,6 @@ class Forbidden(Base):
     error_type = 'forbidden'
 
 
-class InvalidSortKey(Base):
-    pass
-
-
 class Duplicate(Base):
     error_code = 409
     error_type = 'duplicate'
