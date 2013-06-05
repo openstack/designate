@@ -111,7 +111,7 @@ class Service(rpc_service.Service):
         if len(record_name) > cfg.CONF['service:central'].max_record_name_len:
             raise exceptions.InvalidRecordName('Name too long')
 
-        # Record must be contained in the parent zone.
+        # Record must be contained in the parent zone
         if not record_name.endswith(domain['name']):
             raise exceptions.InvalidRecordLocation('Record is not contained '
                                                    'within it\'s parent '
@@ -122,6 +122,8 @@ class Service(rpc_service.Service):
             raise exceptions.InvalidRecordLocation('CNAME records may not be '
                                                    'created at the zone apex')
 
+    def _is_valid_record_placement(self, context, domain, record_name,
+                                   record_type, record_id=None):
         # CNAME's must not share a name with other records
         criterion = {'name': record_name}
 
@@ -130,7 +132,8 @@ class Service(rpc_service.Service):
 
         records = self.storage.get_records(context, domain['id'],
                                            criterion=criterion)
-        if len(records) > 0:
+        if ((len(records) == 1 and records[0]['id'] != record_id)
+                or len(records) > 1):
             raise exceptions.InvalidRecordLocation('CNAME records may not '
                                                    'share a name with any '
                                                    'other records')
@@ -159,7 +162,8 @@ class Service(rpc_service.Service):
             criterion = {'name': record_name, 'type': 'PTR'}
             records = self.storage.get_records(context, domain['id'],
                                                criterion=criterion)
-            if len(records) > 0:
+            if ((len(records) == 1 and records[0]['id'] != record_id)
+                    or len(records) > 1):
                 raise exceptions.DuplicateRecord()
 
         return True
@@ -530,6 +534,8 @@ class Service(rpc_service.Service):
 
         policy.check('delete_domain', context, target)
 
+        # Do we have any child domains?
+
         try:
             self.backend.delete_domain(context, domain)
         except exceptions.Backend:
@@ -591,9 +597,11 @@ class Service(rpc_service.Service):
         self.quota.limit_check(context, domain['tenant_id'],
                                domain_records=record_count)
 
-        # Ensure the record name is valid
+        # Ensure the record name and placement is valid
         self._is_valid_record_name(context, domain, values['name'],
                                    values['type'])
+        self._is_valid_record_placement(context, domain, values['name'],
+                                        values['type'])
 
         record = self.storage.create_record(context, domain_id, values)
 
@@ -686,6 +694,8 @@ class Service(rpc_service.Service):
         record_type = values['type'] if 'type' in values else record['type']
 
         self._is_valid_record_name(context, domain, record_name, record_type)
+        self._is_valid_record_placement(context, domain, record_name,
+                                        record_type, record_id)
 
         # Update the record
         record = self.storage.update_record(context, record_id, values)

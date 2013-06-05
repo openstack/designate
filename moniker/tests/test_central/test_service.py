@@ -1055,6 +1055,51 @@ class CentralServiceTest(CentralTestCase):
                                                record['id'],
                                                values=values)
 
+    def test_update_record_cname_data(self):
+        context = self.get_admin_context()
+        domain = self.create_domain()
+
+        # Create a record
+        expected_record = self.create_record(domain, type='CNAME',
+                                             data='example.org.')
+
+        # Update the record
+        values = dict(data='example.com.')
+        self.central_service.update_record(context, domain['id'],
+                                           expected_record['id'],
+                                           values=values)
+
+        # Fetch the record again
+        record = self.central_service.get_record(context, domain['id'],
+                                                 expected_record['id'])
+
+        # Ensure the record was updated correctly
+        self.assertEqual(record['data'], 'example.com.')
+
+    def test_update_record_ptr_data(self):
+        context = self.get_admin_context()
+        domain = self.create_domain(name='2.0.192.in-addr.arpa.')
+
+        # Create a record
+        expected_record = self.create_record(
+            domain,
+            type='PTR',
+            name='1.2.0.192.in-addr.arpa.',
+            data='example.org.')
+
+        # Update the record
+        values = dict(data='example.com.')
+        self.central_service.update_record(context, domain['id'],
+                                           expected_record['id'],
+                                           values=values)
+
+        # Fetch the record again
+        record = self.central_service.get_record(context, domain['id'],
+                                                 expected_record['id'])
+
+        # Ensure the record was updated correctly
+        self.assertEqual(record['data'], 'example.com.')
+
     def test_delete_record(self):
         context = self.get_admin_context()
         domain = self.create_domain()
