@@ -671,7 +671,7 @@ class CentralServiceTest(CentralTestCase):
         values['name'] = 'www.%s' % parent_domain['name']
 
         # Create the subdomain
-        sub_domain = self.central_service.create_domain(context, values=values)
+        self.central_service.create_domain(context, values=values)
 
         # Attempt to delete the parent domain
         with self.assertRaises(exceptions.DomainHasSubdomain):
