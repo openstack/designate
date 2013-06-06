@@ -660,6 +660,23 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(payload['name'], domain['name'])
         self.assertEqual(payload['tenant_id'], domain['tenant_id'])
 
+    def test_delete_parentdomain(self):
+        context = self.get_admin_context()
+
+        # Create the Parent Domain using fixture 0
+        parent_domain = self.create_domain(fixture=0)
+
+        # Prepare values for the subdomain using fixture 1 as a base
+        values = self.get_domain_fixture(1)
+        values['name'] = 'www.%s' % parent_domain['name']
+
+        # Create the subdomain
+        sub_domain = self.central_service.create_domain(context, values=values)
+
+        # Attempt to delete the parent domain
+        with self.assertRaises(exceptions.DomainHasSubdomain):
+            self.central_service.delete_domain(context, parent_domain['id'])
+
     def test_count_domains(self):
         # in the beginning, there should be nothing
         domains = self.central_service.count_domains(self.admin_context)

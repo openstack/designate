@@ -80,8 +80,13 @@ class InvalidRecordLocation(Base):
     error_type = 'invalid_record_location'
 
 
+class DomainHasSubdomain(Base):
+    error_code = 400
+    error_type = 'domain_has_subdomain'
+
+
 class Forbidden(Base):
-    error_code = 401
+    error_code = 403
     error_type = 'forbidden'
 
 

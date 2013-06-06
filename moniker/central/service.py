@@ -534,7 +534,12 @@ class Service(rpc_service.Service):
 
         policy.check('delete_domain', context, target)
 
-        # Do we have any child domains?
+        # Prevent deletion of a zone which has child zones
+        criterion = {'parent_domain_id': domain_id}
+
+        if self.storage.count_domains(context, criterion) > 0:
+            raise exceptions.DomainHasSubdomain('Please delete any subdomains'
+                                                ' before deleting this domain')
 
         try:
             self.backend.delete_domain(context, domain)
