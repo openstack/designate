@@ -1,6 +1,6 @@
 nose
-openstack.nose_plugin
-nosehtmloutput
+openstack.nose_plugin>=0.7
+nosehtmloutput>=0.0.3
 unittest2
-mox
-mock
+mox>=0.5.3
+mock>=0.8.0
