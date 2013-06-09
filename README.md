@@ -2,12 +2,12 @@
 
 Designate is an OpenStack inspired DNSaaS.
 
-Docs: http://designate.rtfd.org and some below for now.
-Bugs / Blueprints: http://launchpad.net/designate
+Docs: http://moniker.rtfd.org and some below for now.
+Bugs / Blueprints: http://launchpad.net/moniker
 
 IRC: #openstack-dns
 
-Installation: http://designate.readthedocs.org/en/latest/install.html
+Installation: http://moniker.readthedocs.org/en/latest/install.html
 
 # TODOs:
 
