@@ -20,7 +20,7 @@
  Configuration Options
 =======================
 
-Moniker specific
+Designate specific
 ================
 
 ===============================  ====================================  ==============================================================
@@ -28,7 +28,7 @@ Parameter                        Default                               Note
 ===============================  ====================================  ==============================================================
 api_host                         0.0.0.0                               API listen host
 api_port                         0.0.0.0                               API listen port
-control_exchange                 moniker                               The MQ Control exchange
+control_exchange                 designate                               The MQ Control exchange
 agent_topic                      agent                                 The topic that the Agent(s) should use
 central_topic                    central                               The topic that the Central should use
 os-username                      glance                                Username to use for openstack service access
@@ -36,7 +36,7 @@ os-password                      admin                                 Password 
 os-tenant-id                                                           Tenant ID to use for openstack service access
 os-tenant-name                   admin                                 Tenant name to use for openstack service access
 os-auth-url                      http://localhost:5000/v2.0            Auth URL to use for openstack service access
-database_connection              sqlite:///$pystatepath/moniker.db     Database connection string
+database_connection              sqlite:///$pystatepath/designate.db     Database connection string
 ===============================  ====================================  ==============================================================
 
 Storage - SQL Alchemy
@@ -127,9 +127,9 @@ verbose                      False                                 Print more ve
 debug                        False                                 Print debugging output
 state_path                   currentdir                            Top-level directory for maintaining nova state
 sqlite_db                    nova.sqlite                           file name for sqlite
-matchmaker_ringfile          /etc/moniker/matchmaker_ring.json        Matchmaker ring file (JSON)
+matchmaker_ringfile          /etc/designate/matchmaker_ring.json        Matchmaker ring file (JSON)
 rpc_zmq_bind_address         '*'                                   ZeroMQ bind address
-rpc_zmq_matchmaker           moniker.openstack.common.rpc.         MatchMaker drivers
+rpc_zmq_matchmaker           designate.openstack.common.rpc.         MatchMaker drivers
                              matchmaker.MatchMakerLocalhost
 rpc_zmq_port                 9501                                  ZeroMQ receiver listening port
 rpc_zmq_port_pub             9502                                  ZeroMQ fanout publisher port

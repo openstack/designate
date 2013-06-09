@@ -19,11 +19,11 @@
 Install
 ========================
 
-Moniker is comprised of three components for more info on these please
+Designate is comprised of three components for more info on these please
 see :doc:`architecture`.
 
 .. note::
-   Moniker makes extensive use of the messaging bus, but has not
+   Designate makes extensive use of the messaging bus, but has not
    yet been tested with ZeroMQ. We recommend using RabbitMQ for now.
 
 
@@ -48,10 +48,10 @@ Common Steps
    $ apt-get install rabbitmq-server bind9
    $ apt-get build-dep python-lxml
 
-2. Clone the Moniker repo off of Stackforge::
+2. Clone the Designate repo off of Stackforge::
 
-   $ git clone https://github.com/stackforge/moniker.git
-   $ cd moniker
+   $ git clone https://github.com/stackforge/designate.git
+   $ cd designate
 
 3. Setup virtualenv::
 
@@ -61,9 +61,9 @@ Common Steps
    $ virtualenv --no-site-packages .venv
    $ . .venv/bin/activate
 
-4. Install Moniker and it's dependencies::
+4. Install Designate and it's dependencies::
 
-   $ cd moniker
+   $ cd designate
    $ pip install -rtools/setup-requires -rtools/pip-requires -rtools/pip-options
    $ python setup.py develop
 
@@ -83,12 +83,12 @@ Common Steps
 
    $ sudo service bind9 restart
 
-7. If you intend to run Moniker as a non-root user, then permissions and other
+7. If you intend to run Designate as a non-root user, then permissions and other
    things needs to be fixed up::
 
    $ MUSER=username
-   $ echo "$MUSER ALL=(ALL) NOPASSWD:ALL" | sudo tee -a /etc/sudoers.d/90-moniker-$MUSER
-   $ sudo chmod 0440 /etc/sudoers.d/90-moniker-$MUSER
+   $ echo "$MUSER ALL=(ALL) NOPASSWD:ALL" | sudo tee -a /etc/sudoers.d/90-designate-$MUSER
+   $ sudo chmod 0440 /etc/sudoers.d/90-designate-$MUSER
 
 
 Note on running processes
@@ -111,18 +111,18 @@ Installing the Central
    Change the wanted configuration settings to match your environment, the file
    is in the `etc` folder::
 
-   $ vi moniker-central.conf
+   $ vi designate-central.conf
 
    Refer to :doc:`configuration` details on configuring the service.
 
 3. Initialize and sync the :term:`central`::
 
-   $ moniker-manage database-init
-   $ moniker-manage database-sync
+   $ designate-manage database-init
+   $ designate-manage database-sync
 
 4. Start the central service::
 
-   $ moniker-central
+   $ designate-central
 
 
 Installing the Agent
@@ -138,13 +138,13 @@ Installing the Agent
    Change the wanted configuration settings to match your environment, the file
    is in the `etc` folder::
 
-   $ vi moniker-agent.conf
+   $ vi designate-agent.conf
 
    Refer to :doc:`configuration` details on configuring the service.
 
 3. Start the agent service::
 
-   $ moniker-agent
+   $ designate-agent
 
 
 Installing the API
@@ -164,11 +164,11 @@ Installing the API
    Change the wanted configuration settings to match your environment, the file
    is in the `etc` folder::
 
-   $ vi moniker-api.conf
-   $ vi moniker-api-paste.ini
+   $ vi designate-api.conf
+   $ vi designate-api-paste.ini
 
    Refer to :doc:`configuration` details on configuring the service.
 
 3. Start the API service::
 
-   $ moniker-api
+   $ designate-api

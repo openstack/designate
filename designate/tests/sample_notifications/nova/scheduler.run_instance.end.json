@@ -1,0 +1,177 @@
+{
+    "_context_roles": ["Member", "admin"],
+    "_context_request_id": "req-5bef6a23-2e14-4b3f-9eb1-1be293b75fb7",
+    "_context_quota_class": null,
+    "event_type": "scheduler.run_instance.end",
+    "_context_user_name": "user-name",
+    "_context_project_name": "tenant-name",
+    "_context_service_catalog": [{
+        "endpoints_links": [],
+        "endpoints": [{
+            "adminURL": "http://compute/v2/33a88272e06a49c1a0f653abc374b56b",
+            "region": "dub01",
+            "publicURL": "http://compute/v2/33a88272e06a49c1a0f653abc374b56b",
+            "internalURL": "http://compute/v2/33a88272e06a49c1a0f653abc374b56b",
+            "id": "9d4044f4601145eebb60fe0446d640ab"
+        }],
+        "type": "compute",
+        "name": "nova"
+    }, {
+        "endpoints_links": [],
+        "endpoints": [{
+            "adminURL": "http://s3",
+            "region": "dub01",
+            "publicURL": "http://s3",
+            "internalURL": "http://s3",
+            "id": "97e22c600c7141ac916a9be13d8ffbb8"
+        }],
+        "type": "s3",
+        "name": "s3"
+    }, {
+        "endpoints_links": [],
+        "endpoints": [{
+            "adminURL": "http://image:9292/v1",
+            "region": "dub01",
+            "publicURL": "http://image/v1",
+            "internalURL": "http://image:9292/v1",
+            "id": "c5b95f59ccb841e293dfdcafcaaf0a4a"
+        }],
+        "type": "image",
+        "name": "glance"
+    }, {
+        "endpoints_links": [],
+        "endpoints": [{
+            "adminURL": "http://volume/v1/33a88272e06a49c1a0f653abc374b56b",
+            "region": "dub01",
+            "publicURL": "http://volume/v1/33a88272e06a49c1a0f653abc374b56b",
+            "internalURL": "http://volume/v1/33a88272e06a49c1a0f653abc374b56b",
+            "id": "8e9b87c7e3a94697b8656ab845c74017"
+        }],
+        "type": "volume",
+        "name": "cinder"
+    }, {
+        "endpoints_links": [],
+        "endpoints": [{
+            "adminURL": "http://ec2/services/Admin",
+            "region": "dub01",
+            "publicURL": "http://ec2/services/Cloud",
+            "internalURL": "http://ec2/services/Cloud",
+            "id": "e465f3ed91534fe3a3a457f9ff90d839"
+        }],
+        "type": "ec2",
+        "name": "ec2"
+    }, {
+        "endpoints_links": [],
+        "endpoints": [{
+            "adminURL": "http://dns/v1.0",
+            "region": "dub01",
+            "publicURL": "http://dns/v1.0",
+            "internalURL": "http://dns/v1.0",
+            "id": "6dc68974176140c5b1eacd4329e94ae2"
+        }],
+        "type": "dns",
+        "name": "designate"
+    }, {
+        "endpoints_links": [],
+        "endpoints": [{
+            "adminURL": "http://identity:35357/v2.0",
+            "region": "dub01",
+            "publicURL": "http://identity/v2.0",
+            "internalURL": "http://identity/v2.0",
+            "id": "4034b8fb88df41e2abd7b3056fc908fd"
+        }],
+        "type": "identity",
+        "name": "keystone"
+    }],
+    "timestamp": "2012-11-03 17:54:28.466477",
+    "_context_is_admin": false,
+    "message_id": "ca39e28e-d8f2-472b-9841-52ac70e368da",
+    "_context_auth_token": "d7f4118a789f47b8ab708a00f239268f",
+    "_context_instance_lock_checked": false,
+    "_context_project_id": "33a88272e06a49c1a0f653abc374b56b",
+    "_context_timestamp": "2012-11-03T17:54:27.320555",
+    "_context_read_deleted": "no",
+    "_context_user_id": "953f8394fa044302b7d42f47228e427d",
+    "_context_remote_address": "127.0.0.1",
+    "publisher_id": "scheduler.stack01",
+    "payload": {
+        "request_spec": {
+            "block_device_mapping": [],
+            "image": {
+                "status": "active",
+                "name": "ubuntu-precise",
+                "deleted": false,
+                "container_format": "bare",
+                "created_at": "2012-08-23T20:51:48.000000",
+                "disk_format": "qcow2",
+                "updated_at": "2012-09-01T21:14:09.000000",
+                "id": "e52f1321-fb9e-40fb-8057-555a850462e8",
+                "owner": "7964afa81aeb40b0aa0191469f33acb2",
+                "min_ram": 0,
+                "checksum": "28c510b1e49a65d638cfb469754a93d3",
+                "min_disk": 0,
+                "is_public": true,
+                "deleted_at": null,
+                "properties": {},
+                "size": 233177088
+            },
+            "instance_type": {
+                "disabled": false,
+                "root_gb": 0,
+                "name": "m1.tiny",
+                "flavorid": "1",
+                "deleted": false,
+                "created_at": null,
+                "ephemeral_gb": 0,
+                "updated_at": null,
+                "memory_mb": 512,
+                "vcpus": 1,
+                "extra_specs": {},
+                "swap": 0,
+                "rxtx_factor": 1.0,
+                "is_public": true,
+                "deleted_at": null,
+                "vcpu_weight": null,
+                "id": 2
+            },
+            "instance_properties": {
+                "vm_state": "building",
+                "availability_zone": null,
+                "launch_index": 0,
+                "ephemeral_gb": 0,
+                "instance_type_id": 2,
+                "user_data": null,
+                "vm_mode": null,
+                "reservation_id": "r-1ekblkfw",
+                "root_device_name": null,
+                "user_id": "953f8394fa044302b7d42f47228e427d",
+                "display_description": "TestInstance",
+                "key_data": "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAl5eTgQ1IMCr9pFPiR1ZdpnNagRqmfCgqhSsUOb7E6w6anzc/K4Xj9wy5gxvrrG7hVqI7iNQ+Yddfcc4QXfMkUO9CPWUBC2bXs21Sy5nPnGyveJIro+LbBkf+FPyN/WL95O8ymJ/7V0Suo+XSTO25wu4LLe2t33QNtZpPYthD0amHGuVhbL97ie7dwA9iZQfGsGIgrd10+uGYNKlb+NwEF9i+w6t4tGjyjuE4cxo2E+/KmiwNShOXQ7eq4a0qf7kmz6ZIZEBo8Gut0OcmzL8bb4PxVbQsL1IqwkbNa4oN+w7+TLVbdmGxqYO0tgVz2FadgXEnX3jlzPWYyDTk2bbI/w== user-name@wk01-lmst.managedit.ie",
+                "power_state": 0,
+                "progress": 0,
+                "project_id": "33a88272e06a49c1a0f653abc374b56b",
+                "config_drive": "",
+                "ramdisk_id": "",
+                "access_ip_v6": null,
+                "access_ip_v4": null,
+                "kernel_id": "",
+                "key_name": "user-name",
+                "display_name": "TestInstance",
+                "config_drive_id": "",
+                "root_gb": 0,
+                "locked": false,
+                "launch_time": "2012-11-03T17:54:27Z",
+                "memory_mb": 512,
+                "vcpus": 1,
+                "image_ref": "e52f1321-fb9e-40fb-8057-555a850462e8",
+                "architecture": null,
+                "auto_disk_config": null,
+                "os_type": null,
+                "metadata": {}
+            },
+            "security_group": ["default"],
+            "instance_uuids": ["3e301a55-fbbe-478d-92d0-eefabf135c38"]
+        }
+    },
+    "priority": "INFO"
+}

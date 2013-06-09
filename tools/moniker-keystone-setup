@@ -60,7 +60,7 @@ get_user() {
         get_id keystone user-create --name=$username \
                                     --pass="$SERVICE_PASSWORD" \
                                     --tenant_id $SERVICE_TENANT \
-                                    --email=moniker@example.com
+                                    --email=designate@example.com
     fi
 }
 
@@ -188,11 +188,11 @@ echo SERVICE_TENANT $SERVICE_TENANT
 echo SERVICE_PASSWORD $SERVICE_PASSWORD
 echo SERVICE_TOKEN $SERVICE_TOKEN
 
-MONIKER_USERNAME="moniker"
-MONIKER_USERID=$(get_user $MONIKER_USERNAME)
-add_role $MONIKER_USERID $SERVICE_TENANT $ADMIN_ROLE $MONIKER_USERNAME
+DESIGNATE_USERNAME="designate"
+DESIGNATE_USERID=$(get_user $DESIGNATE_USERNAME)
+add_role $DESIGNATE_USERID $SERVICE_TENANT $ADMIN_ROLE $DESIGNATE_USERNAME
 
-MONIKER_SERVICE=$(get_service moniker dns \
-                   "Moniker DNSaaS")
+DESIGNATE_SERVICE=$(get_service designate dns \
+                   "Designate DNSaaS")
 API_URL=${API_URL:-http://localhost:9001/v1}
-add_endpoint $MONIKER_SERVICE $API_URL
+add_endpoint $DESIGNATE_SERVICE $API_URL

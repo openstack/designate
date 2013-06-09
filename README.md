@@ -1,13 +1,13 @@
 # Introduction
 
-Moniker is an OpenStack inspired DNSaaS.
+Designate is an OpenStack inspired DNSaaS.
 
-Docs: http://moniker.rtfd.org and some below for now.
-Bugs / Blueprints: http://launchpad.net/moniker
+Docs: http://designate.rtfd.org and some below for now.
+Bugs / Blueprints: http://launchpad.net/designate
 
 IRC: #openstack-dns
 
-Installation: http://moniker.readthedocs.org/en/latest/install.html
+Installation: http://designate.readthedocs.org/en/latest/install.html
 
 # TODOs:
 

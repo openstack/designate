@@ -1,0 +1,130 @@
+{
+    "_context_roles": ["Member", "admin"],
+    "_context_request_id": "req-951e8b61-6681-4581-8321-02cece4a1830",
+    "_context_quota_class": null,
+    "event_type": "compute.instance.delete.start",
+    "_context_user_name": "user-name",
+    "_context_project_name": "tenant-name",
+    "_context_service_catalog": [{
+        "endpoints_links": [],
+        "endpoints": [{
+            "adminURL": "http://compute/v2/33a88272e06a49c1a0f653abc374b56b",
+            "region": "dub01",
+            "publicURL": "http://compute/v2/33a88272e06a49c1a0f653abc374b56b",
+            "internalURL": "http://compute/v2/33a88272e06a49c1a0f653abc374b56b",
+            "id": "9d4044f4601145eebb60fe0446d640ab"
+        }],
+        "type": "compute",
+        "name": "nova"
+    }, {
+        "endpoints_links": [],
+        "endpoints": [{
+            "adminURL": "http://s3",
+            "region": "dub01",
+            "publicURL": "http://s3",
+            "internalURL": "http://s3",
+            "id": "97e22c600c7141ac916a9be13d8ffbb8"
+        }],
+        "type": "s3",
+        "name": "s3"
+    }, {
+        "endpoints_links": [],
+        "endpoints": [{
+            "adminURL": "http://image:9292/v1",
+            "region": "dub01",
+            "publicURL": "http://image/v1",
+            "internalURL": "http://image:9292/v1",
+            "id": "c5b95f59ccb841e293dfdcafcaaf0a4a"
+        }],
+        "type": "image",
+        "name": "glance"
+    }, {
+        "endpoints_links": [],
+        "endpoints": [{
+            "adminURL": "http://volume/v1/33a88272e06a49c1a0f653abc374b56b",
+            "region": "dub01",
+            "publicURL": "http://volume/v1/33a88272e06a49c1a0f653abc374b56b",
+            "internalURL": "http://volume/v1/33a88272e06a49c1a0f653abc374b56b",
+            "id": "8e9b87c7e3a94697b8656ab845c74017"
+        }],
+        "type": "volume",
+        "name": "cinder"
+    }, {
+        "endpoints_links": [],
+        "endpoints": [{
+            "adminURL": "http://ec2/services/Admin",
+            "region": "dub01",
+            "publicURL": "http://ec2/services/Cloud",
+            "internalURL": "http://ec2/services/Cloud",
+            "id": "e465f3ed91534fe3a3a457f9ff90d839"
+        }],
+        "type": "ec2",
+        "name": "ec2"
+    }, {
+        "endpoints_links": [],
+        "endpoints": [{
+            "adminURL": "http://dns/v1.0",
+            "region": "dub01",
+            "publicURL": "http://dns/v1.0",
+            "internalURL": "http://dns/v1.0",
+            "id": "6dc68974176140c5b1eacd4329e94ae2"
+        }],
+        "type": "dns",
+        "name": "designate"
+    }, {
+        "endpoints_links": [],
+        "endpoints": [{
+            "adminURL": "http://identity:35357/v2.0",
+            "region": "dub01",
+            "publicURL": "http://identity/v2.0",
+            "internalURL": "http://identity/v2.0",
+            "id": "4034b8fb88df41e2abd7b3056fc908fd"
+        }],
+        "type": "identity",
+        "name": "keystone"
+    }],
+    "timestamp": "2012-11-03 18:01:59.882973",
+    "_context_is_admin": false,
+    "message_id": "bc6841d3-73fc-4f17-aede-20802b9e388d",
+    "_context_auth_token": "9b044204adf647c2a5f3e8cf030ecf62",
+    "_context_instance_lock_checked": false,
+    "_context_project_id": "33a88272e06a49c1a0f653abc374b56b",
+    "_context_timestamp": "2012-11-03T18:01:59.435020",
+    "_context_read_deleted": "no",
+    "_context_user_id": "953f8394fa044302b7d42f47228e427d",
+    "_context_remote_address": "127.0.0.1",
+    "publisher_id": "compute.stack01",
+    "payload": {
+        "state_description": "",
+        "availability_zone": null,
+        "ramdisk_id": "",
+        "instance_type_id": 2,
+        "deleted_at": "",
+        "reservation_id": "r-1ekblkfw",
+        "memory_mb": 512,
+        "user_id": "953f8394fa044302b7d42f47228e427d",
+        "state": "active",
+        "launched_at": "2012-11-03T17:54:48.000000",
+        "metadata": [],
+        "ephemeral_gb": 0,
+        "access_ip_v6": null,
+        "disk_gb": 0,
+        "access_ip_v4": null,
+        "kernel_id": "",
+        "host": "stack01",
+        "display_name": "TestInstance",
+        "image_ref_url": "http://192.0.2.98:9292/images/e52f1321-fb9e-40fb-8057-555a850462e8",
+        "root_gb": 0,
+        "tenant_id": "33a88272e06a49c1a0f653abc374b56b",
+        "created_at": "2012-11-03T17:54:27.000000",
+        "instance_id": "3e301a55-fbbe-478d-92d0-eefabf135c38",
+        "instance_type": "m1.tiny",
+        "vcpus": 1,
+        "image_meta": {
+            "base_image_ref": "e52f1321-fb9e-40fb-8057-555a850462e8"
+        },
+        "architecture": null,
+        "os_type": null
+    },
+    "priority": "INFO"
+}

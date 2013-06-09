@@ -1,0 +1,10 @@
+# designate-rootwrap command filters for nodes on which designate is
+# expected to control network
+#
+# This file should be owned by (and only-writeable by) the root user
+
+# format seems to be
+# cmd-name: filter-name, raw-command, user, args
+
+[Filters]
+rndc: CommandFilter, /usr/sbin/rndc, root

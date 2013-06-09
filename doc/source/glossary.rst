@@ -29,7 +29,7 @@ Glossary
      information persistantly in a backend storage using a configurable driver
      like SQLAlchemy or other.
    api
-     HTTP REST API service for Moniker
+     HTTP REST API service for Designate
    mq
      A message queue, typically something like RabbitMQ or ZeroMQ
    storage

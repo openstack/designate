@@ -1,12 +1,12 @@
 include AUTHORS
 include ChangeLog
-include moniker/versioninfo
+include designate/versioninfo
 include *.txt *.ini *.cfg *.rst *.md
-include etc/moniker/*.sample
-include etc/moniker/policy.json
-include moniker/storage/impl_sqlalchemy/migrate_repo/migrate.cfg
-include moniker/backend/impl_powerdns/migrate_repo/migrate.cfg
-recursive-include moniker/resources *
+include etc/designate/*.sample
+include etc/designate/policy.json
+include designate/storage/impl_sqlalchemy/migrate_repo/migrate.cfg
+include designate/backend/impl_powerdns/migrate_repo/migrate.cfg
+recursive-include designate/resources *
 recursive-include tools *
 
 exclude .gitignore

@@ -12,13 +12,13 @@ venv
 *.sublime-workspace
 *.sqlite
 var/*
-etc/moniker/*.conf
-etc/moniker/*.ini
+etc/designate/*.conf
+etc/designate/*.ini
 AUTHORS
 ChangeLog
 doc/source/api/*
 doc/build/*
 dist
-moniker/versioninfo
+designate/versioninfo
 *.orig
 /bind9
