@@ -21,7 +21,9 @@ from moniker.openstack.common import log as logging
 from moniker import exceptions
 from moniker.storage import base
 from moniker.storage.impl_sqlalchemy import models
-from moniker.sqlalchemy.session import get_session, get_engine, SQLOPTS
+from moniker.sqlalchemy.session import get_session
+from moniker.sqlalchemy.session import get_engine
+from moniker.sqlalchemy.session import SQLOPTS
 
 LOG = logging.getLogger(__name__)
 
@@ -438,7 +440,7 @@ class SQLAlchemyStorage(base.Storage):
 
         try:
             result = self.engine.execute('SELECT 1').first()
-        except:
+        except Exception:
             status = False
         else:
             status = True if result[0] == 1 else False

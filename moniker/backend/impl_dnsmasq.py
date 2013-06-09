@@ -37,11 +37,12 @@ class DnsmasqBackend(base.Backend):
         if not os.path.exists(self.output_folder):
             os.makedirs(self.output_folder)
 
-        # TODO: Remove this..
+        # TODO(Andrey): Remove this..
         self._sync_domains_hack()
 
     def _sync_domains_hack(self):
-        # TODO: This is a hack to ensure the data dir is 100% up to date
+        # TODO(Andrey): This is a hack to ensure the data dir is 100% up to
+        #               date
         domains = self.central_service.get_domains(self.admin_context)
 
         for domain in domains:
@@ -118,6 +119,7 @@ class DnsmasqBackend(base.Backend):
                     shutil.copyfileobj(in_fh, out_fh)
 
     def _reload_dnsmasq(self):
-        # Send HUP to dnsmasq
-        # TODO: Lets be a little more targetted that every dnsmasq instance
+        """ Send HUP to dnsmasq """
+        # TODO(Andrey): Lets be a little more targetted that every dnsmasq
+        #               instance
         utils.execute('killall', '-HUP', 'dnsmasq')

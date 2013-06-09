@@ -459,8 +459,8 @@ class Service(rpc_service.Service):
         if criterion is None:
             criterion = {}
 
-        # TODO: Once we allow domains to be allocated on 1 of N server
-        #       pools, return the filtered list here.
+        # TODO(kiall): Once we allow domains to be allocated on 1 of N server
+        #              pools, return the filtered list here.
         return self.storage.get_servers(context, criterion)
 
     def find_domains(self, context, criterion):

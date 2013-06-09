@@ -49,7 +49,7 @@ class DatabaseSyncCommand(base.Command):
     """ Sync PowerDNS database """
 
     def execute(self, parsed_args):
-        # TODO: Support specifying version
+        # TODO(kiall): Support specifying version
         url = cfg.CONF['backend:powerdns'].database_connection
 
         if not os.path.exists(REPOSITORY):

@@ -18,7 +18,8 @@ import webob.dec
 from stevedore import extension
 from stevedore import named
 from werkzeug import exceptions as wexceptions
-from werkzeug.routing import BaseConverter, ValidationError
+from werkzeug.routing import BaseConverter
+from werkzeug.routing import ValidationError
 from moniker.openstack.common import cfg
 from moniker.openstack.common import jsonutils as json
 from moniker.openstack.common import log as logging

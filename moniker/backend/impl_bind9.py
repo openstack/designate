@@ -40,7 +40,7 @@ class Bind9Backend(base.Backend):
     def start(self):
         super(Bind9Backend, self).start()
 
-        # TODO: This is a hack to ensure the data dir is 100% up to date
+        # TODO(kiall): This is a hack to ensure the data dir is 100% up to date
         domains = self.central_service.get_domains(self.admin_context)
 
         for domain in domains:
@@ -74,7 +74,7 @@ class Bind9Backend(base.Backend):
 
     def _sync_domains(self):
         """ Sync the list of domains this server handles """
-        # TODO: Rewrite this entire thing ASAP
+        # TODO(kiall): Rewrite this entire thing ASAP
         LOG.debug('Synchronising domains')
 
         domains = self.central_service.get_domains(self.admin_context)
@@ -112,7 +112,7 @@ class Bind9Backend(base.Backend):
 
     def _sync_delete_domain(self, domain, new_domain_flag=False):
         """ Remove domain zone files and reload bind config """
-        # TODO: Rewrite this entire thing ASAP
+        # TODO(kiall): Rewrite this entire thing ASAP
         LOG.debug('Delete Domain: %s' % domain['id'])
 
         output_folder = os.path.join(os.path.abspath(cfg.CONF.state_path),

@@ -51,7 +51,7 @@ def check(rule, ctxt, target={}, exc=exceptions.Forbidden):
 
     try:
         result = policy.check(rule, target, creds, exc)
-    except:
+    except Exception:
         result = False
         raise
     else:

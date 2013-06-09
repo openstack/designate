@@ -64,7 +64,8 @@ class StaticResolver(object):
         return document
 
 
-# TODO: We shouldn't hard code this list.. Or define it half way down the page
+# TODO(kiall): We shouldn't hard code this list.. Or define it half way down
+#              the page.
 resolver = StaticResolver(store={
     '/schemas/domain': utils.load_schema('v1', 'domain'),
     '/schemas/domains': utils.load_schema('v1', 'domains'),
@@ -96,13 +97,14 @@ class SchemaValidator(jsonschema.Draft3Validator):
             if self.is_type(instance, "string"):
                 try:
                     iso8601.parse_date(instance)
-                except:
+                except Exception:
                     msg = "%s is not an ISO 8601 date" % (instance)
                     yield jsonschema.ValidationError(msg)
         elif format == "date":
             # YYYY-MM-DD
             if self.is_type(instance, "string"):
-                # TODO: I'm sure there is a more accurate regex than this..
+                # TODO(kiall): I'm sure there is a more accurate regex than
+                #              this..
                 pattern = ('^[0-9]{4}-(((0[13578]|(10|12))-'
                            '(0[1-9]|[1-2][0-9]|3[0-1]))|'
                            '(02-(0[1-9]|[1-2][0-9]))|((0[469]|11)-'
@@ -114,7 +116,8 @@ class SchemaValidator(jsonschema.Draft3Validator):
         elif format == "time":
             # hh:mm:ss
             if self.is_type(instance, "string"):
-                # TODO: I'm sure there is a more accurate regex than this..
+                # TODO(kiall): I'm sure there is a more accurate regex than
+                #              this..
                 pattern = "^(?:(?:([01]?\d|2[0-3]):)?([0-5]?\d):)?([0-5]?\d)$"
                 if not re.match(pattern, instance):
                     msg = "%s is not a time" % (instance)
@@ -258,7 +261,7 @@ class Schema(object):
 
     def _filter_array(self, instance, schema):
         if 'items' in schema and isinstance(schema['items'], list):
-            # TODO: We currently don't make use of this..
+            # NOTE(kiall): We currently don't make use of this..
             raise NotImplementedError()
 
         elif 'items' in schema:

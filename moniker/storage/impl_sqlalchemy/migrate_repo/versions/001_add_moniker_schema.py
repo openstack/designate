@@ -20,9 +20,11 @@ from sqlalchemy import ForeignKey, Enum, Integer, String, DateTime, Text
 from sqlalchemy.schema import Column, MetaData
 from moniker.openstack.common import timeutils
 from moniker.openstack.common.uuidutils import generate_uuid
-from moniker.storage.impl_sqlalchemy.migrate_repo.utils import (
-    Table, create_tables, drop_tables)
-from moniker.sqlalchemy.types import Inet, UUID
+from moniker.storage.impl_sqlalchemy.migrate_repo.utils import Table
+from moniker.storage.impl_sqlalchemy.migrate_repo.utils import create_tables
+from moniker.storage.impl_sqlalchemy.migrate_repo.utils import drop_tables
+from moniker.sqlalchemy.types import Inet
+from moniker.sqlalchemy.types import UUID
 
 meta = MetaData()
 

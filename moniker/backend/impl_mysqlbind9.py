@@ -22,7 +22,8 @@ from moniker import utils
 from moniker.backend import base
 from sqlalchemy.ext.sqlsoup import SqlSoup
 from sqlalchemy.engine.url import _parse_rfc1738_args
-from moniker.sqlalchemy.session import get_engine, SQLOPTS
+from moniker.sqlalchemy.session import get_engine
+from moniker.sqlalchemy.session import SQLOPTS
 
 LOG = logging.getLogger(__name__)
 

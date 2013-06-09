@@ -34,7 +34,7 @@ def get_ip_data(addr_dict):
         'ip_version': version
     }
 
-    # TODO: Add v6 support
+    # TODO(endre): Add v6 support
     if version == 4:
         data['ip_address'] = ip.replace('.', '-')
         ip_data = ip.split(".")

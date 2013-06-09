@@ -39,7 +39,7 @@ def drop_tables(tables):
 
 
 def Table(*args, **kwargs):
-    if not 'mysql_engine' in kwargs:
+    if 'mysql_engine' not in kwargs:
         kwargs['mysql_engine'] = 'INNODB'
 
     return SqlaTable(*args, **kwargs)

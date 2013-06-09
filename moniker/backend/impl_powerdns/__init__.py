@@ -24,7 +24,8 @@ from moniker.openstack.common import log as logging
 from moniker import exceptions
 from moniker.backend import base
 from moniker.backend.impl_powerdns import models
-from moniker.sqlalchemy.session import get_session, SQLOPTS
+from moniker.sqlalchemy.session import get_session
+from moniker.sqlalchemy.session import SQLOPTS
 from moniker.sqlalchemy.expressions import InsertFromSelect
 
 LOG = logging.getLogger(__name__)
@@ -163,7 +164,7 @@ class PowerDNSBackend(base.Backend):
         record_m.save(self.session)
 
     def update_domain(self, context, domain):
-        # TODO: Sync Server List
+        # TODO(kiall): Sync Server List
 
         self._update_soa(domain)
 
