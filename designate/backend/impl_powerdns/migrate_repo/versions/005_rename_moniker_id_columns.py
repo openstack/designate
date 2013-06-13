@@ -1,6 +1,6 @@
-# Copyright 2012 Managed I.T.
+# Copyright 2013 Hewlett-Packard Development Company, L.P.
 #
-# Author: Kiall Mac Innes <kiall@managedit.ie>
+# Author: Kiall Mac Innes <kiall@hp.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -13,8 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from sqlalchemy import MetaData, Table, Column
-from designate.sqlalchemy.types import UUID
+from sqlalchemy import MetaData, Table
 
 meta = MetaData()
 
@@ -26,14 +25,9 @@ def upgrade(migrate_engine):
     domains_table = Table('domains', meta, autoload=True)
     records_table = Table('records', meta, autoload=True)
 
-    tsigkeys_moniker_id = Column('moniker_id', UUID())
-    tsigkeys_moniker_id.create(tsigkeys_table)
-
-    domains_moniker_id = Column('moniker_id', UUID())
-    domains_moniker_id.create(domains_table)
-
-    records_moniker_id = Column('moniker_id', UUID())
-    records_moniker_id.create(records_table)
+    tsigkeys_table.c.moniker_id.alter(name='designate_id')
+    domains_table.c.moniker_id.alter(name='designate_id')
+    records_table.c.moniker_id.alter(name='designate_id')
 
 
 def downgrade(migrate_engine):
@@ -43,11 +37,6 @@ def downgrade(migrate_engine):
     domains_table = Table('domains', meta, autoload=True)
     records_table = Table('records', meta, autoload=True)
 
-    tsigkeys_moniker_id = Column('moniker_id', UUID())
-    tsigkeys_moniker_id.drop(tsigkeys_table)
-
-    domains_moniker_id = Column('moniker_id', UUID())
-    domains_moniker_id.drop(domains_table)
-
-    records_moniker_id = Column('moniker_id', UUID())
-    records_moniker_id.drop(records_table)
+    tsigkeys_table.c.designate_id.alter(name='moniker_id')
+    domains_table.c.designate_id.alter(name='moniker_id')
+    records_table.c.designate_id.alter(name='moniker_id')
