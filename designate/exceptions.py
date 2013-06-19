@@ -65,6 +65,16 @@ class BadRequest(Base):
     error_type = 'bad_request'
 
 
+class UnsupportedAccept(BadRequest):
+    error_code = 406
+    error_type = 'unsupported_accept'
+
+
+class UnsupportedContentType(BadRequest):
+    error_code = 415
+    error_type = 'unsupported_content_type'
+
+
 class InvalidDomainName(Base):
     error_code = 400
     error_type = 'invalid_domain_name'

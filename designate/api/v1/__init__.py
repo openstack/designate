@@ -18,6 +18,7 @@ import webob.dec
 from stevedore import extension
 from stevedore import named
 from werkzeug import exceptions as wexceptions
+from werkzeug import wrappers
 from werkzeug.routing import BaseConverter
 from werkzeug.routing import ValidationError
 from designate.openstack.common import cfg
@@ -36,8 +37,30 @@ cfg.CONF.register_opts([
 ], group='service:api')
 
 
+class DesignateRequest(flask.Request, wrappers.AcceptMixin,
+                       wrappers.CommonRequestDescriptorsMixin):
+    def __init__(self, *args, **kwargs):
+        super(DesignateRequest, self).__init__(*args, **kwargs)
+
+        self._validate_content_type()
+        self._validate_accept()
+
+    def _validate_content_type(self):
+        if (self.method in ['POST', 'PUT', 'PATCH']
+                and self.mimetype != 'application/json'):
+
+            msg = 'Unsupported Content-Type: %s' % self.mimetype
+            raise exceptions.UnsupportedContentType(msg)
+
+    def _validate_accept(self):
+        if 'accept' in self.headers and not self.accept_mimetypes.accept_json:
+            msg = 'Unsupported Accept: %s' % self.accept_mimetypes
+            raise exceptions.UnsupportedAccept(msg)
+
+
 def factory(global_config, **local_conf):
     app = flask.Flask('designate.api.v1')
+    app.request_class = DesignateRequest
     app.config.update(
         PROPAGATE_EXCEPTIONS=True
     )
