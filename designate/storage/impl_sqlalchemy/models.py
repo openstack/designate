@@ -15,8 +15,9 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import hashlib
 from sqlalchemy import (Column, DateTime, String, Text, Integer, ForeignKey,
-                        Enum, Boolean, Unicode, UniqueConstraint)
+                        Enum, Boolean, Unicode, UniqueConstraint, event)
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.hybrid import hybrid_property
 from designate.openstack.common import log as logging
@@ -91,14 +92,16 @@ class Domain(Base):
 class Record(Base):
     __tablename__ = 'records'
 
+    domain_id = Column(UUID, ForeignKey('domains.id', ondelete='CASCADE'),
+                       nullable=False)
+
     type = Column(Enum(name='record_types', *RECORD_TYPES), nullable=False)
     name = Column(String(255), nullable=False)
     data = Column(Text, nullable=False)
     priority = Column(Integer, default=None, nullable=True)
     ttl = Column(Integer, default=None, nullable=True)
 
-    domain_id = Column(UUID, ForeignKey('domains.id', ondelete='CASCADE'),
-                       nullable=False)
+    hash = Column(String(32), nullable=False, unique=True)
 
     managed = Column(Boolean, default=False)
     managed_plugin_type = Column(Unicode(50), default=None, nullable=True)
@@ -110,8 +113,28 @@ class Record(Base):
     def tenant_id(self):
         return self.domain.tenant_id
 
+    def recalculate_hash(self):
+        """
+        Calculates the hash of the record, used to ensure record uniqueness.
+        """
+        md5 = hashlib.md5()
+        md5.update("%s:%s:%s:%s:%s" % (self.domain_id, self.name, self.type,
+                                       self.data, self.priority))
+
+        self.hash = md5.hexdigest()
+
     def _extra_keys(self):
         return ['tenant_id']
+
+
+@event.listens_for(Record, "before_insert")
+def recalculate_record_hash_before_insert(mapper, connection, instance):
+    instance.recalculate_hash()
+
+
+@event.listens_for(Record, "before_update")
+def recalculate_record_hash_before_update(mapper, connection, instance):
+    instance.recalculate_hash()
 
 
 class TsigKey(Base):

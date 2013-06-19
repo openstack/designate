@@ -681,11 +681,22 @@ class StorageTestCase(TestCase):
 
         self.assertIsNotNone(result['id'])
         self.assertIsNotNone(result['created_at'])
+        self.assertIsNotNone(result['hash'])
         self.assertIsNone(result['updated_at'])
 
         self.assertEqual(result['name'], values['name'])
         self.assertEqual(result['type'], values['type'])
         self.assertEqual(result['data'], values['data'])
+
+    def test_create_record_duplicate(self):
+        _, domain = self.create_domain()
+
+        # Create the First Record
+        self.create_record(domain)
+
+        with self.assertRaises(exceptions.DuplicateRecord):
+            # Attempt to create the second/duplicate record
+            self.create_record(domain)
 
     def test_get_records(self):
         _, domain = self.create_domain()
@@ -796,14 +807,33 @@ class StorageTestCase(TestCase):
         domain_fixture, domain = self.create_domain()
 
         # Create a record
-        record_fixture, record = self.create_record(domain)
+        _, record = self.create_record(domain)
 
+        # Get some different values to test the update with
+        record_fixture = self.get_record_fixture(domain['name'], fixture=1)
+
+        # Update the record with the new values...
         updated = self.storage.update_record(self.admin_context, record['id'],
                                              record_fixture)
 
+        # Ensure the update succeeded
+        self.assertEqual(updated['id'], record['id'])
         self.assertEqual(updated['name'], record_fixture['name'])
         self.assertEqual(updated['type'], record_fixture['type'])
         self.assertEqual(updated['data'], record_fixture['data'])
+        self.assertNotEqual(updated['hash'], record['hash'])
+
+    def test_update_record_duplicate(self):
+        _, domain = self.create_domain()
+
+        # Create the first two records
+        record_one_fixture, _ = self.create_record(domain, fixture=0)
+        _, record_two = self.create_record(domain, fixture=1)
+
+        with self.assertRaises(exceptions.DuplicateRecord):
+            # Attempt to update the second record, making it a duplicate record
+            self.storage.update_record(self.admin_context, record_two['id'],
+                                       record_one_fixture)
 
     def test_update_record_missing(self):
         with self.assertRaises(exceptions.RecordNotFound):

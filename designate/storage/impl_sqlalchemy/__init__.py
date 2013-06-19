@@ -369,7 +369,10 @@ class SQLAlchemyStorage(base.Storage):
         record.update(values)
         record.domain_id = domain_id
 
-        record.save(self.session)
+        try:
+            record.save(self.session)
+        except exceptions.Duplicate:
+            raise exceptions.DuplicateRecord()
 
         return dict(record)
 
@@ -420,7 +423,10 @@ class SQLAlchemyStorage(base.Storage):
 
         record.update(values)
 
-        record.save(self.session)
+        try:
+            record.save(self.session)
+        except exceptions.Duplicate:
+            raise exceptions.DuplicateRecord()
 
         return dict(record)
 
