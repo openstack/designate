@@ -1,23 +1,19 @@
+# This file is managed by openstack-depends
+cliff>=1.4
 d2to1>=0.2.10,<0.3
-pbr>=0.5.10,<0.6
-flask==0.9
 eventlet>=0.9.12
-jsonschema>=0.8,<1
+extras
+flask==0.9
 ipaddr
+iso8601>=0.1.4
+jsonschema>=0.8,<1
+kombu>2.4.7
 paste
 pastedeploy>=1.5.0
-stevedore>=0.7
-cliff>=1.3.1
-
+pbr>=0.5.16,<0.6
+python-keystoneclient>=0.2,<0.3
+routes>=1.12.3
 sqlalchemy>=0.7,<=0.7.99
 sqlalchemy-migrate>=0.7
-kombu
-
-# Needed for Keystone Middleware
-python-keystoneclient>=0.2,<0.3
-
-# From OpenStack Common
-routes>=1.12.3
-iso8601>=0.1.4
+stevedore>=0.9
 webob>=1.0.8
-extras
