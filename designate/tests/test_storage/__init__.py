@@ -584,6 +584,15 @@ class StorageTestCase(TestCase):
             uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
             self.storage.get_domain(self.admin_context, uuid)
 
+    def test_get_deleted_domain(self):
+        context = self.get_admin_context()
+        context.show_deleted = True
+
+        _, domain = self.create_domain()
+
+        self.storage.delete_domain(self.admin_context, domain['id'])
+        self.storage.get_domain(context, domain['id'])
+
     def test_find_domain_criterion(self):
         _, domain_one = self.create_domain(0)
         _, domain_two = self.create_domain(1)
