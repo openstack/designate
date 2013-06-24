@@ -17,8 +17,6 @@ import re
 import jsonschema
 import ipaddr
 import iso8601
-import urllib
-import urlparse
 from datetime import datetime
 from designate.openstack.common import log as logging
 from designate import exceptions
@@ -29,46 +27,11 @@ LOG = logging.getLogger(__name__)
 _RE_DOMAINNAME = r'^(?!.{255,})((?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-)\.)+$'
 _RE_HOSTNAME = r'^(?!.{255,})((^\*|(?!\-)[A-Za-z0-9_\-]{1,63})(?<!\-)\.)+$'
 
-
-class StaticResolver(object):
-    def __init__(self, store={}):
-        self.store = store
-
-    def resolve(self, schema, ref):
-        # NOTE(kiall): We're ignoring the `schema` argument here, as we
-        #              expect to recieve a non-relative reference.
-        uri, fragment = urlparse.urldefrag(ref)
-
-        if uri in self.store:
-            document = self.store[uri]
-        else:
-            raise jsonschema.RefResolutionError(
-                "Unresolvable JSON reference: %r" % uri
-            )
-
-        return self.resolve_fragment(document, fragment.lstrip("/"))
-
-    def resolve_fragment(self, document, fragment):
-        parts = urllib.unquote(fragment).split("/") if fragment else []
-
-        for part in parts:
-            part = part.replace("~1", "/").replace("~0", "~")
-
-            if part not in document:
-                raise jsonschema.RefResolutionError(
-                    "Unresolvable JSON pointer: %r" % fragment
-                )
-
-            document = document[part]
-
-        return document
-
-
-# TODO(kiall): We shouldn't hard code this list.. Or define it half way down
-#              the page.
-resolver = StaticResolver(store={
+RESOLVER = jsonschema.RefResolver('/', {}, store={
     '/schemas/domain': utils.load_schema('v1', 'domain'),
     '/schemas/domains': utils.load_schema('v1', 'domains'),
+    '/schemas/fault': utils.load_schema('v1', 'fault'),
+    '/schemas/limits': utils.load_schema('v1', 'domains'),
     '/schemas/record': utils.load_schema('v1', 'record'),
     '/schemas/records': utils.load_schema('v1', 'records'),
     '/schemas/server': utils.load_schema('v1', 'server'),
@@ -204,7 +167,7 @@ class SchemaValidator(jsonschema.Draft3Validator):
 class Schema(object):
     def __init__(self, version, name):
         self.raw_schema = utils.load_schema(version, name)
-        self.validator = SchemaValidator(self.raw_schema, resolver=resolver)
+        self.validator = SchemaValidator(self.raw_schema, resolver=RESOLVER)
 
     @property
     def schema(self):
@@ -268,7 +231,8 @@ class Schema(object):
             schema = schema['items']
 
             if '$ref' in schema:
-                schema = self.resolver.resolve(self.schema, schema['$ref'])
+                with self.resolver.resolving(schema['$ref']) as ischema:
+                    schema = ischema
 
             properties = schema['properties']
 
@@ -277,8 +241,8 @@ class Schema(object):
         elif 'properties' in schema:
             schema = schema['properties']
 
-            if '$ref' in schema:
-                schema = self.resolver.resolve(self.schema, schema['$ref'])
+            with self.resolver.resolving(schema['$ref']) as ischema:
+                    schema = ischema
 
             return [self.filter(i, schema) for i in instance]
 
