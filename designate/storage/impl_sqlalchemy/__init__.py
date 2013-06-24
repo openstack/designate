@@ -21,6 +21,7 @@ from designate.openstack.common import log as logging
 from designate import exceptions
 from designate.storage import base
 from designate.storage.impl_sqlalchemy import models
+from designate.sqlalchemy.models import SoftDeleteMixin
 from designate.sqlalchemy.session import get_session
 from designate.sqlalchemy.session import get_engine
 from designate.sqlalchemy.session import SQLOPTS
@@ -61,6 +62,16 @@ class SQLAlchemyStorage(base.Storage):
                     query = query.filter(column.like(value))
                 else:
                     query = query.filter(column == value)
+
+        return query
+
+    def _apply_deleted_criteria(self, context, model, query):
+        if issubclass(model, SoftDeleteMixin):
+            if context.show_deleted:
+                LOG.debug('Including deleted items in query results')
+            else:
+                LOG.debug('Filtering deleted items from query results')
+                query = query.filter(model.deleted == "0")
 
         return query
 
@@ -281,6 +292,19 @@ class SQLAlchemyStorage(base.Storage):
         return self.session.query(distinct(models.Domain.tenant_id)).count()
 
     # Domain Methods
+    def _find_domains(self, context, criterion, one=False):
+        query = self.session.query(models.Domain)
+        query = self._apply_criterion(models.Domain, query, criterion)
+        query = self._apply_deleted_criteria(context, models.Domain, query)
+
+        if one:
+            try:
+                return query.one()
+            except (exc.NoResultFound, exc.MultipleResultsFound):
+                raise exceptions.DomainNotFound()
+        else:
+            return query.all()
+
     def create_domain(self, context, values):
         domain = models.Domain()
 
@@ -294,54 +318,26 @@ class SQLAlchemyStorage(base.Storage):
         return dict(domain)
 
     def get_domains(self, context, criterion=None):
-        query = self.session.query(models.Domain)
-        query = self._apply_criterion(models.Domain, query, criterion)
+        domains = self._find_domains(context, criterion)
 
-        try:
-            result = query.all()
-        except exc.NoResultFound:
-            LOG.debug('No results found')
-            return []
-        else:
-            return [dict(o) for o in result]
-
-    def _get_domain(self, context, domain_id):
-        query = self.session.query(models.Domain)
-
-        domain = query.get(domain_id)
-
-        if not domain:
-            raise exceptions.DomainNotFound(domain_id)
-        else:
-            return domain
+        return [dict(d) for d in domains]
 
     def get_domain(self, context, domain_id):
-        domain = self._get_domain(context, domain_id)
+        domain = self._find_domains(context, {'id': domain_id}, True)
 
         return dict(domain)
 
-    def _find_domains(self, context, criterion, one=False):
-        query = self.session.query(models.Domain)
-        query = self._apply_criterion(models.Domain, query, criterion)
-
-        if one:
-            try:
-                domain = query.one()
-                return dict(domain)
-            except (exc.NoResultFound, exc.MultipleResultsFound):
-                raise exceptions.DomainNotFound()
-        else:
-            domains = query.all()
-            return [dict(d) for d in domains]
-
     def find_domains(self, context, criterion):
-        return self._find_domains(context, criterion)
+        domains = self._find_domains(context, criterion)
+
+        return [dict(d) for d in domains]
 
     def find_domain(self, context, criterion):
-        return self._find_domains(context, criterion, one=True)
+        domain = self._find_domains(context, criterion, one=True)
+        return dict(domain)
 
     def update_domain(self, context, domain_id, values):
-        domain = self._get_domain(context, domain_id)
+        domain = self._find_domains(context, {'id': domain_id}, True)
 
         domain.update(values)
 
@@ -353,13 +349,15 @@ class SQLAlchemyStorage(base.Storage):
         return dict(domain)
 
     def delete_domain(self, context, domain_id):
-        domain = self._get_domain(context, domain_id)
+        domain = self._find_domains(context, {'id': domain_id}, True)
 
-        domain.delete(self.session)
+        domain.soft_delete(self.session)
 
     def count_domains(self, context, criterion=None):
         query = self.session.query(models.Domain)
         query = self._apply_criterion(models.Domain, query, criterion)
+        query = self._apply_deleted_criteria(context, models.Domain, query)
+
         return query.count()
 
     # Record Methods

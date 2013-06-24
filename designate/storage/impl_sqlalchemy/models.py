@@ -25,6 +25,7 @@ from designate.openstack.common import timeutils
 from designate.openstack.common.uuidutils import generate_uuid
 from designate.sqlalchemy.types import UUID
 from designate.sqlalchemy.models import Base as CommonBase
+from designate.sqlalchemy.models import SoftDeleteMixin
 from sqlalchemy.ext.declarative import declarative_base
 
 LOG = logging.getLogger(__name__)
@@ -66,12 +67,15 @@ class Server(Base):
     name = Column(String(255), nullable=False, unique=True)
 
 
-class Domain(Base):
+class Domain(SoftDeleteMixin, Base):
     __tablename__ = 'domains'
+    __table_args__ = (
+        UniqueConstraint('name', 'deleted', name='unique_domain_name'),
+    )
 
     tenant_id = Column(String(36), default=None, nullable=True)
 
-    name = Column(String(255), nullable=False, unique=True)
+    name = Column(String(255), nullable=False)
     email = Column(String(255), nullable=False)
 
     ttl = Column(Integer, default=3600, nullable=False)

@@ -13,8 +13,11 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from sqlalchemy import Column, DateTime
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import object_mapper
+from sqlalchemy.types import CHAR
+from designate.openstack.common import timeutils
 from designate import exceptions
 
 
@@ -82,3 +85,15 @@ class Base(object):
                       if not k[0] == '_'])
         local.update(joined)
         return local.iteritems()
+
+
+class SoftDeleteMixin(object):
+    deleted = Column(CHAR(32), nullable=False, default="0")
+    deleted_at = Column(DateTime, nullable=True, default=None)
+
+    def soft_delete(self, session=None):
+        """ Mark this object as deleted. """
+        self.deleted = self.id
+        self.deleted_at = timeutils.utcnow()
+
+        self.save(session=session)
