@@ -1,4 +1,5 @@
 # Copyright 2012 Managed I.T.
+# Copyright 2013 Hewlett-Packard Development Company, L.P.
 #
 # Author: Kiall Mac Innes <kiall@managedit.ie>
 #
@@ -234,7 +235,7 @@ class Service(rpc_service.Service):
             # Re-raise Backend exceptions as is..
             raise
         except Exception, e:
-            raise exceptions.Backend('Unknown backend failure: %s' % e)
+            raise exceptions.Backend('Unknown backend failure: %r' % e)
 
         return domain
 
@@ -292,7 +293,7 @@ class Service(rpc_service.Service):
             # Re-raise Backend exceptions as is..
             raise
         except Exception, e:
-            raise exceptions.Backend('Unknown backend failure: %s' % e)
+            raise exceptions.Backend('Unknown backend failure: %r' % e)
 
         utils.notify(context, 'central', 'tsigkey.create', tsigkey)
 
@@ -319,7 +320,7 @@ class Service(rpc_service.Service):
             # Re-raise Backend exceptions as is..
             raise
         except Exception, e:
-            raise exceptions.Backend('Unknown backend failure: %s' % e)
+            raise exceptions.Backend('Unknown backend failure: %r' % e)
 
         utils.notify(context, 'central', 'tsigkey.update', tsigkey)
 
@@ -336,7 +337,7 @@ class Service(rpc_service.Service):
             # Re-raise Backend exceptions as is..
             raise
         except Exception, e:
-            raise exceptions.Backend('Unknown backend failure: %s' % e)
+            raise exceptions.Backend('Unknown backend failure: %r' % e)
 
         utils.notify(context, 'central', 'tsigkey.delete', tsigkey)
 
@@ -362,6 +363,7 @@ class Service(rpc_service.Service):
 
     # Domain Methods
     def create_domain(self, context, values):
+        # TODO(kiall): Refactor this method into *MUCH* smaller chunks.
         values['tenant_id'] = context.tenant_id
 
         target = {
@@ -412,10 +414,23 @@ class Service(rpc_service.Service):
         try:
             self.backend.create_domain(context, domain)
         except exceptions.Backend:
-            # Re-raise Backend exceptions as is..
-            raise
+            try:
+                self.storage.delete_domain(context, domain['id'])
+            except Exception, e:
+                # Log an error, move on.
+                LOG.critical("Failed to delete new domain '%s' from storage "
+                             "after backend failure: %r" % (domain['id'], e))
+
+            raise  # Re-raise Backend exceptions as is..
         except Exception, e:
-            raise exceptions.Backend('Unknown backend failure: %s' % e)
+            try:
+                self.storage.delete_domain(context, domain['id'])
+            except Exception, e:
+                # Log an error, move on.
+                LOG.critical("Failed to delete new domain '%s' from storage "
+                             "after backend failure: %r" % (domain['id'], e))
+
+            raise exceptions.Backend('Unknown backend failure: %r' % e)
 
         utils.notify(context, 'central', 'domain.create', domain)
 
@@ -482,6 +497,7 @@ class Service(rpc_service.Service):
         return self.storage.find_domain(context, criterion)
 
     def update_domain(self, context, domain_id, values, increment_serial=True):
+        # TODO(kiall): Refactor this method into *MUCH* smaller chunks.
         domain = self.storage.get_domain(context, domain_id)
 
         target = {
@@ -517,7 +533,7 @@ class Service(rpc_service.Service):
             # Re-raise Backend exceptions as is..
             raise
         except Exception, e:
-            raise exceptions.Backend('Unknown backend failure: %s' % e)
+            raise exceptions.Backend('Unknown backend failure: %r' % e)
 
         utils.notify(context, 'central', 'domain.update', domain)
 
@@ -538,8 +554,8 @@ class Service(rpc_service.Service):
         criterion = {'parent_domain_id': domain_id}
 
         if self.storage.count_domains(context, criterion) > 0:
-            raise exceptions.DomainHasSubdomain('Please delete any subdomains'
-                                                ' before deleting this domain')
+            raise exceptions.DomainHasSubdomain('Please delete any subdomains '
+                                                'before deleting this domain')
 
         try:
             self.backend.delete_domain(context, domain)
@@ -547,7 +563,7 @@ class Service(rpc_service.Service):
             # Re-raise Backend exceptions as is..
             raise
         except Exception, e:
-            raise exceptions.Backend('Unknown backend failure: %s' % e)
+            raise exceptions.Backend('Unknown backend failure: %r' % e)
 
         utils.notify(context, 'central', 'domain.delete', domain)
 
@@ -616,7 +632,7 @@ class Service(rpc_service.Service):
             # Re-raise Backend exceptions as is..
             raise
         except Exception, e:
-            raise exceptions.Backend('Unknown backend failure: %s' % e)
+            raise exceptions.Backend('Unknown backend failure: %r' % e)
 
         if increment_serial:
             self._increment_domain_serial(context, domain_id)
@@ -711,7 +727,7 @@ class Service(rpc_service.Service):
             # Re-raise Backend exceptions as is..
             raise
         except Exception, e:
-            raise exceptions.Backend('Unknown backend failure: %s' % e)
+            raise exceptions.Backend('Unknown backend failure: %r' % e)
 
         if increment_serial:
             self._increment_domain_serial(context, domain_id)
@@ -745,7 +761,7 @@ class Service(rpc_service.Service):
             # Re-raise Backend exceptions as is..
             raise
         except Exception, e:
-            raise exceptions.Backend('Unknown backend failure: %s' % e)
+            raise exceptions.Backend('Unknown backend failure: %r' % e)
 
         if increment_serial:
             self._increment_domain_serial(context, domain_id)
