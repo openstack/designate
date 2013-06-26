@@ -15,7 +15,7 @@
 # under the License.
 from designate.openstack.common import log as logging
 from designate.api import v1 as api_v1
-from designate.api import auth
+from designate.api import middleware
 from designate.tests.test_api import ApiTestCase
 
 
@@ -35,7 +35,8 @@ class ApiV1Test(ApiTestCase):
         self.app.wsgi_app = api_v1.FaultWrapperMiddleware(self.app.wsgi_app)
 
         # Inject the NoAuth middleware
-        self.app.wsgi_app = auth.NoAuthContextMiddleware(self.app.wsgi_app)
+        self.app.wsgi_app = middleware.NoAuthContextMiddleware(
+            self.app.wsgi_app)
 
         # Obtain a test client
         self.client = self.app.test_client()

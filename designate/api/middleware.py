@@ -13,6 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import flask
 from designate.openstack.common import cfg
 from designate.openstack.common import local
 from designate.openstack.common import log as logging
@@ -22,8 +23,38 @@ from designate.context import DesignateContext
 
 LOG = logging.getLogger(__name__)
 
+cfg.CONF.register_opts([
+    cfg.BoolOpt('maintenance-mode', default=False,
+                help='Enable API Maintenance Mode'),
+    cfg.StrOpt('maintenance-mode-role', default='admin',
+               help='Role allowed to bypass maintaince mode'),
+], group='service:api')
 
-def pipeline_factory(loader, global_conf, **local_conf):
+
+class MaintenanceMiddleware(wsgi.Middleware):
+    def __init__(self, application):
+        super(MaintenanceMiddleware, self).__init__(application)
+
+        self.enabled = cfg.CONF['service:api'].maintenance_mode
+        self.role = cfg.CONF['service:api'].maintenance_mode_role
+
+    def process_request(self, request):
+        # If maintaince mode is not enabled, pass the request on as soon as
+        # possible
+        if not self.enabled:
+            return None
+
+        # If the caller has the bypass role, let them through
+        if ('context' in request.environ
+                and self.role in request.environ['context'].roles):
+            LOG.warning('Request authorized to bypass maintenance mode')
+            return None
+
+        # Otherwise, reject the request with a 503 Service Unavailable
+        return flask.Response(status=503, headers={'Retry-After': 60})
+
+
+def auth_pipeline_factory(loader, global_conf, **local_conf):
     """
     A paste pipeline replica that keys off of auth_strategy.
 

@@ -7,9 +7,9 @@ use = egg:Paste#urlmap
 paste.app_factory = designate.api.versions:factory
 
 [composite:osapi_dns_v1]
-use = call:designate.api.auth:pipeline_factory
-noauth = noauthcontext faultwrapper_v1 osapi_dns_app_v1
-keystone = authtoken keystonecontext faultwrapper_v1 osapi_dns_app_v1
+use = call:designate.api.middleware:auth_pipeline_factory
+noauth = noauthcontext maintenance faultwrapper_v1 osapi_dns_app_v1
+keystone = authtoken keystonecontext maintenance faultwrapper_v1 osapi_dns_app_v1
 
 [app:osapi_dns_app_v1]
 paste.app_factory = designate.api.v1:factory
@@ -17,11 +17,14 @@ paste.app_factory = designate.api.v1:factory
 [filter:faultwrapper_v1]
 paste.filter_factory = designate.api.v1:FaultWrapperMiddleware.factory
 
+[filter:maintenance]
+paste.filter_factory = designate.api.middleware:MaintenanceMiddleware.factory
+
 [filter:noauthcontext]
-paste.filter_factory = designate.api.auth:NoAuthContextMiddleware.factory
+paste.filter_factory = designate.api.middleware:NoAuthContextMiddleware.factory
 
 [filter:keystonecontext]
-paste.filter_factory = designate.api.auth:KeystoneContextMiddleware.factory
+paste.filter_factory = designate.api.middleware:KeystoneContextMiddleware.factory
 
 [filter:authtoken]
 paste.filter_factory = keystoneclient.middleware.auth_token:filter_factory

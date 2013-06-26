@@ -1,4 +1,5 @@
 # Copyright 2012 Managed I.T.
+# Copyright 2013 Hewlett-Packard Development Company, L.P.
 #
 # Author: Kiall Mac Innes <kiall@managedit.ie>
 #
@@ -14,20 +15,102 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from designate.tests.test_api import ApiTestCase
-from designate.api import auth
+from designate.api import middleware
+
+
+class FakeContext(object):
+    def __init__(self, roles=[]):
+        self.roles = roles
 
 
 class FakeRequest(object):
-    headers = {}
-    environ = {}
+    def __init__(self):
+        self.headers = {}
+        self.environ = {}
+
+    def get_response(self, app):
+        return "FakeResponse"
+
+
+class MaintenanceMiddlewareTest(ApiTestCase):
+    __test__ = True
+
+    def test_process_request_disabled(self):
+        self.config(maintenance_mode=False, group='service:api')
+
+        request = FakeRequest()
+        app = middleware.MaintenanceMiddleware({})
+
+        # Process the request
+        response = app(request)
+
+        # Ensure request was not blocked
+        self.assertEqual(response, 'FakeResponse')
+
+    def test_process_request_enabled_reject(self):
+        self.config(maintenance_mode=True, maintenance_mode_role='admin',
+                    group='service:api')
+
+        request = FakeRequest()
+        request.environ['context'] = FakeContext(roles=['user'])
+
+        app = middleware.MaintenanceMiddleware({})
+
+        # Process the request
+        response = app(request)
+
+        # Ensure request was blocked
+        self.assertEqual(response.status_code, 503)
+
+    def test_process_request_enabled_reject_no_roles(self):
+        self.config(maintenance_mode=True, maintenance_mode_role='admin',
+                    group='service:api')
+
+        request = FakeRequest()
+        request.environ['context'] = FakeContext(roles=[])
+
+        app = middleware.MaintenanceMiddleware({})
+
+        # Process the request
+        response = app(request)
+
+        # Ensure request was blocked
+        self.assertEqual(response.status_code, 503)
+
+    def test_process_request_enabled_reject_no_context(self):
+        self.config(maintenance_mode=True, maintenance_mode_role='admin',
+                    group='service:api')
+
+        request = FakeRequest()
+        app = middleware.MaintenanceMiddleware({})
+
+        # Process the request
+        response = app(request)
+
+        # Ensure request was blocked
+        self.assertEqual(response.status_code, 503)
+
+    def test_process_request_enabled_bypass(self):
+        self.config(maintenance_mode=True, maintenance_mode_role='admin',
+                    group='service:api')
+
+        request = FakeRequest()
+        request.environ['context'] = FakeContext(roles=['admin'])
+
+        app = middleware.MaintenanceMiddleware({})
+
+        # Process the request
+        response = app(request)
+
+        # Ensure request was not blocked
+        self.assertEqual(response, 'FakeResponse')
 
 
 class KeystoneContextMiddlewareTest(ApiTestCase):
     __test__ = True
 
     def test_process_request(self):
-        app = {}
-        middleware = auth.KeystoneContextMiddleware(app)
+        app = middleware.KeystoneContextMiddleware({})
 
         request = FakeRequest()
 
@@ -39,7 +122,7 @@ class KeystoneContextMiddlewareTest(ApiTestCase):
         }
 
         # Process the request
-        middleware.process_request(request)
+        app.process_request(request)
 
         self.assertIn('context', request.environ)
 
@@ -55,8 +138,7 @@ class KeystoneContextMiddlewareTest(ApiTestCase):
         # Set the policy to accept the authz
         self.policy({'use_sudo': '@'})
 
-        app = {}
-        middleware = auth.KeystoneContextMiddleware(app)
+        app = middleware.KeystoneContextMiddleware({})
 
         request = FakeRequest()
 
@@ -70,7 +152,7 @@ class KeystoneContextMiddlewareTest(ApiTestCase):
         }
 
         # Process the request
-        middleware.process_request(request)
+        app.process_request(request)
 
         self.assertIn('context', request.environ)
 
@@ -89,13 +171,12 @@ class NoAuthContextMiddlewareTest(ApiTestCase):
     __test__ = True
 
     def test_process_request(self):
-        app = {}
-        middleware = auth.NoAuthContextMiddleware(app)
+        app = middleware.NoAuthContextMiddleware({})
 
         request = FakeRequest()
 
         # Process the request
-        middleware.process_request(request)
+        app.process_request(request)
 
         self.assertIn('context', request.environ)
 
