@@ -22,3 +22,42 @@ Installation: http://moniker.readthedocs.org/en/latest/install.html
   * Listen for server add/remove from security group events - creating "load balancing" DNS RR records as needed.
 * Introduce Server Pools
   * Server pools will allow a provider to 'schedule' a end users domain to one of many available DNS server pools
+
+
+# Development
+Designate follows the [OpenStack Gerrit Workflow](https://wiki.openstack.org/wiki/Gerrit_Workflow)
+
+## Setup
+Setup a working environment:
+
+````
+git clone git@github.com:stackforge/designate.git
+cd designate
+virtualenv .venv
+. .venv/bin/activate
+pip install -r requirements.txt -r test-requirements.txt
+python setup.py develop
+````
+
+## Contributing
+Install the git-review package to make life easier
+
+````
+pip install git-review
+````
+
+Branch, work, & submit:
+
+````
+# cut a new branch, tracking master
+git checkout --track -b bug/id origin/master
+# work work work
+git add stuff
+git commit
+# rebase/squash to a single commit before submitting
+git rebase -i
+# submit
+git-review
+````
+
+
