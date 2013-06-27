@@ -48,8 +48,8 @@
         "ttl": {
             "type": ["integer", "null"],
             "description": "Time to live",
-            "min": 1,
-            "max": 4294967295
+            "min": 0,
+            "max": 2147483647
         },
         "created_at": {
             "type": "string",
