@@ -35,6 +35,8 @@ def upgrade(migrate_engine):
     deleted_at_column.create(domains_table, populate_default=True)
 
     # Drop the old single column unique
+    # NOTE(kiall): It appears this does nothing. Miration 17 has been added.
+    #              leaving this here for reference.
     domains_table.c.name.alter(unique=False)
 
     # Add a new multi-column unique index
@@ -54,6 +56,8 @@ def downgrade(migrate_engine):
     constraint.drop()
 
     # Revert to single column unique
+    # NOTE(kiall): It appears this does nothing. Miration 17 has been added.
+    #              leaving this here for reference.
     domains_table.c.name.alter(unique=True)
 
     # Drop the deleted columns
