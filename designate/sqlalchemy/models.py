@@ -88,7 +88,7 @@ class Base(object):
 
 
 class SoftDeleteMixin(object):
-    deleted = Column(CHAR(32), nullable=False, default="0")
+    deleted = Column(CHAR(32), nullable=False, default="0", server_default="0")
     deleted_at = Column(DateTime, nullable=True, default=None)
 
     def soft_delete(self, session=None):

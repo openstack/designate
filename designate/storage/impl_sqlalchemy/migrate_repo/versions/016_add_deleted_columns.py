@@ -26,7 +26,8 @@ def upgrade(migrate_engine):
     domains_table = Table('domains', meta, autoload=True)
 
     # Create the new columns
-    deleted_column = Column('deleted', CHAR(32), nullable=False, default="0")
+    deleted_column = Column('deleted', CHAR(32), nullable=False, default="0",
+                            server_default="0")
     deleted_column.create(domains_table, populate_default=True)
 
     deleted_at_column = Column('deleted_at', DateTime, nullable=True,
