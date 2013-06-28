@@ -22,7 +22,7 @@ LOG = logging.getLogger(__name__)
 cfg.CONF.register_opts([
     cfg.IntOpt('quota-domains', default=10, help='Number of domains allowed '
                                                  'per tenant'),
-    cfg.StrOpt('quota-domain-records', default=500, help='Number of records '
+    cfg.IntOpt('quota-domain-records', default=500, help='Number of records '
                                                          'allowed per domain'),
 ])
 
