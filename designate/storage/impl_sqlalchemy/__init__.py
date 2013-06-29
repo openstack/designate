@@ -270,6 +270,7 @@ class SQLAlchemyStorage(base.Storage):
     def get_tenants(self, context):
         query = self.session.query(models.Domain.tenant_id,
                                    func.count(models.Domain.id))
+        query = self._apply_deleted_criteria(context, models.Domain, query)
         query = query.group_by(models.Domain.tenant_id)
 
         return [{'id': t[0], 'domain_count': t[1]} for t in query.all()]
@@ -277,6 +278,7 @@ class SQLAlchemyStorage(base.Storage):
     def get_tenant(self, context, tenant_id):
         query = self.session.query(models.Domain.name)
         query = query.filter(models.Domain.tenant_id == tenant_id)
+        query = self._apply_deleted_criteria(context, models.Domain, query)
 
         result = query.all()
 
@@ -289,7 +291,10 @@ class SQLAlchemyStorage(base.Storage):
     def count_tenants(self, context):
         # tenants are the owner of domains, count the number of unique tenants
         # select count(distinct tenant_id) from domains
-        return self.session.query(distinct(models.Domain.tenant_id)).count()
+        query = self.session.query(distinct(models.Domain.tenant_id))
+        query = self._apply_deleted_criteria(context, models.Domain, query)
+
+        return query.count()
 
     # Domain Methods
     def _find_domains(self, context, criterion, one=False):

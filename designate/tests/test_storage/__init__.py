@@ -464,14 +464,18 @@ class StorageTestCase(TestCase):
     def test_get_tenants(self):
         # create 3 domains in 2 tenants
         self.create_domain(fixture=0, values={'tenant_id': 'One'})
-        self.create_domain(fixture=1, values={'tenant_id': 'One'})
+        _, domain = self.create_domain(fixture=1, values={'tenant_id': 'One'})
         self.create_domain(fixture=2, values={'tenant_id': 'Two'})
 
+        # Delete one of the domains.
+        self.storage.delete_domain(self.admin_context, domain['id'])
+
+        # Ensure we get accurate results
         result = self.storage.get_tenants(self.admin_context)
 
         expected = [{
             'id': 'One',
-            'domain_count': 2
+            'domain_count': 1
         }, {
             'id': 'Two',
             'domain_count': 1
@@ -483,6 +487,10 @@ class StorageTestCase(TestCase):
         # create 2 domains in a tenant
         _, domain_1 = self.create_domain(fixture=0, values={'tenant_id': 1})
         _, domain_2 = self.create_domain(fixture=1, values={'tenant_id': 1})
+        _, domain_3 = self.create_domain(fixture=2, values={'tenant_id': 1})
+
+        # Delete one of the domains.
+        self.storage.delete_domain(self.admin_context, domain_3['id'])
 
         result = self.storage.get_tenant(self.admin_context, 1)
 
@@ -499,6 +507,10 @@ class StorageTestCase(TestCase):
         # create 2 domains with 2 tenants
         self.create_domain(fixture=0, values={'tenant_id': 1})
         self.create_domain(fixture=1, values={'tenant_id': 2})
+        _, domain = self.create_domain(fixture=2, values={'tenant_id': 2})
+
+        # Delete one of the domains.
+        self.storage.delete_domain(self.admin_context, domain['id'])
 
         tenants = self.storage.count_tenants(self.admin_context)
         self.assertEqual(tenants, 2)
