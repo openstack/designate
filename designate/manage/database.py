@@ -18,7 +18,7 @@ from migrate.exceptions import (DatabaseAlreadyControlledError,
                                 DatabaseNotControlledError)
 from migrate.versioning import api as versioning_api
 from designate.openstack.common import log as logging
-from designate.openstack.common import cfg
+from oslo.config import cfg
 from designate.manage import base
 
 LOG = logging.getLogger(__name__)

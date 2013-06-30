@@ -15,7 +15,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import abc
-from designate.openstack.common import cfg
+from oslo.config import cfg
 from designate.openstack.common import log as logging
 from designate.central import rpcapi as central_rpcapi
 from designate.context import DesignateContext

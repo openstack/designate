@@ -24,7 +24,7 @@ from sqlalchemy.exc import DisconnectionError, OperationalError
 import sqlalchemy.orm
 from sqlalchemy.pool import NullPool, StaticPool
 
-from designate.openstack.common import cfg
+from oslo.config import cfg
 from designate.openstack.common import log as logging
 from designate.openstack.common.gettextutils import _
 

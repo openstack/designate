@@ -8,6 +8,7 @@ ipaddr
 iso8601>=0.1.4
 jsonschema>=1.0.0,!=1.4.0,<2
 kombu>2.4.7
+oslo.config>=1.1.0
 paste
 pastedeploy>=1.5.0
 pbr>=0.5.16,<0.6

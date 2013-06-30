@@ -129,7 +129,7 @@ class KeystoneContextMiddlewareTest(ApiTestCase):
         context = request.environ['context']
 
         self.assertFalse(context.is_admin)
-        self.assertEqual('AuthToken', context.auth_tok)
+        self.assertEqual('AuthToken', context.auth_token)
         self.assertEqual('UserID', context.user_id)
         self.assertEqual('TenantID', context.tenant_id)
         self.assertEqual(['admin', 'Member'], context.roles)
@@ -159,7 +159,7 @@ class KeystoneContextMiddlewareTest(ApiTestCase):
         context = request.environ['context']
 
         self.assertFalse(context.is_admin)
-        self.assertEqual('AuthToken', context.auth_tok)
+        self.assertEqual('AuthToken', context.auth_token)
         self.assertEqual('UserID', context.user_id)
         self.assertEqual('TenantID', context.original_tenant_id)
         self.assertEqual('5a993bf8-d521-420a-81e1-192d9cc3d5a0',
@@ -183,7 +183,7 @@ class NoAuthContextMiddlewareTest(ApiTestCase):
         context = request.environ['context']
 
         self.assertTrue(context.is_admin)
-        self.assertIsNone(context.auth_tok)
+        self.assertIsNone(context.auth_token)
         self.assertIsNone(context.user_id)
         self.assertIsNone(context.tenant_id)
         self.assertEqual([], context.roles)

@@ -1,6 +1,6 @@
 # vim: tabstop=4 shiftwidth=4 softtabstop=4
 
-#    Copyright 2011 OpenStack LLC
+#    Copyright 2011 OpenStack Foundation
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -28,8 +28,8 @@ import kombu
 import kombu.connection
 import kombu.entity
 import kombu.messaging
+from oslo.config import cfg
 
-from designate.openstack.common import cfg
 from designate.openstack.common.gettextutils import _
 from designate.openstack.common import network_utils
 from designate.openstack.common.rpc import amqp as rpc_amqp
@@ -66,7 +66,8 @@ kombu_opts = [
                help='the RabbitMQ userid'),
     cfg.StrOpt('rabbit_password',
                default='guest',
-               help='the RabbitMQ password'),
+               help='the RabbitMQ password',
+               secret=True),
     cfg.StrOpt('rabbit_virtual_host',
                default='/',
                help='the RabbitMQ virtual host'),
@@ -164,9 +165,10 @@ class ConsumerBase(object):
             try:
                 msg = rpc_common.deserialize_msg(message.payload)
                 callback(msg)
-                message.ack()
             except Exception:
                 LOG.exception(_("Failed to process message... skipping it."))
+            finally:
+                message.ack()
 
         self.queue.consume(*args, callback=_callback, **options)
 
@@ -196,6 +198,7 @@ class DirectConsumer(ConsumerBase):
         """
         # Default options
         options = {'durable': False,
+                   'queue_arguments': _get_queue_arguments(conf),
                    'auto_delete': True,
                    'exclusive': False}
         options.update(kwargs)
@@ -621,8 +624,8 @@ class Connection(object):
 
         def _error_callback(exc):
             if isinstance(exc, socket.timeout):
-                LOG.exception(_('Timed out waiting for RPC response: %s') %
-                              str(exc))
+                LOG.debug(_('Timed out waiting for RPC response: %s') %
+                          str(exc))
                 raise rpc_common.Timeout()
             else:
                 LOG.exception(_('Failed to consume message from queue: %s') %
@@ -718,24 +721,16 @@ class Connection(object):
             except StopIteration:
                 return
 
-    def _consumer_thread_callback(self):
-        """ Consumer thread callback used by consume_in_* """
-        try:
-            self.consume()
-        except greenlet.GreenletExit:
-            return
-
     def consume_in_thread(self):
         """Consumer from all queues/consumers in a greenthread"""
-
+        def _consumer_thread():
+            try:
+                self.consume()
+            except greenlet.GreenletExit:
+                return
         if self.consumer_thread is None:
-            self.consumer_thread = eventlet.spawn(
-                self._consumer_thread_callback)
+            self.consumer_thread = eventlet.spawn(_consumer_thread)
         return self.consumer_thread
-
-    def consume_in_thread_group(self, thread_group):
-        """ Consume from all queues/consumers in the supplied ThreadGroup"""
-        thread_group.add_thread(self._consumer_thread_callback)
 
     def create_consumer(self, topic, proxy, fanout=False):
         """Create a consumer that calls a method in a proxy object"""
@@ -756,6 +751,30 @@ class Connection(object):
             rpc_amqp.get_connection_pool(self.conf, Connection))
         self.proxy_callbacks.append(proxy_cb)
         self.declare_topic_consumer(topic, proxy_cb, pool_name)
+
+    def join_consumer_pool(self, callback, pool_name, topic,
+                           exchange_name=None):
+        """Register as a member of a group of consumers for a given topic from
+        the specified exchange.
+
+        Exactly one member of a given pool will receive each message.
+
+        A message will be delivered to multiple pools, if more than
+        one is created.
+        """
+        callback_wrapper = rpc_amqp.CallbackWrapper(
+            conf=self.conf,
+            callback=callback,
+            connection_pool=rpc_amqp.get_connection_pool(self.conf,
+                                                         Connection),
+        )
+        self.proxy_callbacks.append(callback_wrapper)
+        self.declare_topic_consumer(
+            queue_name=pool_name,
+            topic=topic,
+            exchange_name=exchange_name,
+            callback=callback_wrapper,
+        )
 
 
 def create_connection(conf, new=True):

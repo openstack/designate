@@ -16,7 +16,7 @@
 from paste import deploy
 from designate.openstack.common import log as logging
 from designate.openstack.common import wsgi
-from designate.openstack.common import cfg
+from oslo.config import cfg
 from designate import exceptions
 from designate import utils
 from designate import policy

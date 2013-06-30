@@ -13,7 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from designate.openstack.common import cfg
+from oslo.config import cfg
 
 # NOTE(kiall): See http://data.iana.org/TLD/tlds-alpha-by-domain.txt
 #              Version 2013031800.

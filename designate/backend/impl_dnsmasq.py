@@ -16,7 +16,7 @@
 import os
 import glob
 import shutil
-from designate.openstack.common import cfg
+from oslo.config import cfg
 from designate.openstack.common import log as logging
 from designate import utils
 from designate.backend import base

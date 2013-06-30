@@ -15,7 +15,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import re
-from designate.openstack.common import cfg
+from oslo.config import cfg
 from designate.openstack.common import log as logging
 from designate.openstack.common.rpc import service as rpc_service
 from designate import exceptions
@@ -55,6 +55,10 @@ class Service(rpc_service.Service):
         self.backend.start()
 
         super(Service, self).start()
+
+    def wait(self):
+        super(Service, self).wait()
+        self.conn.consumer_thread.wait()
 
     def stop(self):
         super(Service, self).stop()

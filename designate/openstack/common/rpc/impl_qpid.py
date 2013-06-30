@@ -1,6 +1,6 @@
 # vim: tabstop=4 shiftwidth=4 softtabstop=4
 
-#    Copyright 2011 OpenStack LLC
+#    Copyright 2011 OpenStack Foundation
 #    Copyright 2011 - 2012, Red Hat, Inc.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -22,8 +22,8 @@ import uuid
 
 import eventlet
 import greenlet
+from oslo.config import cfg
 
-from designate.openstack.common import cfg
 from designate.openstack.common.gettextutils import _
 from designate.openstack.common import importutils
 from designate.openstack.common import jsonutils
@@ -40,8 +40,8 @@ qpid_opts = [
     cfg.StrOpt('qpid_hostname',
                default='localhost',
                help='Qpid broker hostname'),
-    cfg.StrOpt('qpid_port',
-               default='5672',
+    cfg.IntOpt('qpid_port',
+               default=5672,
                help='Qpid broker port'),
     cfg.ListOpt('qpid_hosts',
                 default=['$qpid_hostname:$qpid_port'],
@@ -51,7 +51,8 @@ qpid_opts = [
                help='Username for qpid connection'),
     cfg.StrOpt('qpid_password',
                default='',
-               help='Password for qpid connection'),
+               help='Password for qpid connection',
+               secret=True),
     cfg.StrOpt('qpid_sasl_mechanisms',
                default='',
                help='Space separated list of SASL mechanisms to use for auth'),
@@ -67,6 +68,8 @@ qpid_opts = [
 ]
 
 cfg.CONF.register_opts(qpid_opts)
+
+JSON_CONTENT_TYPE = 'application/json; charset=utf8'
 
 
 class ConsumerBase(object):
@@ -122,10 +125,27 @@ class ConsumerBase(object):
         self.receiver = session.receiver(self.address)
         self.receiver.capacity = 1
 
+    def _unpack_json_msg(self, msg):
+        """Load the JSON data in msg if msg.content_type indicates that it
+           is necessary.  Put the loaded data back into msg.content and
+           update msg.content_type appropriately.
+
+        A Qpid Message containing a dict will have a content_type of
+        'amqp/map', whereas one containing a string that needs to be converted
+        back from JSON will have a content_type of JSON_CONTENT_TYPE.
+
+        :param msg: a Qpid Message object
+        :returns: None
+        """
+        if msg.content_type == JSON_CONTENT_TYPE:
+            msg.content = jsonutils.loads(msg.content)
+            msg.content_type = 'amqp/map'
+
     def consume(self):
         """Fetch the message and pass it to the callback object"""
         message = self.receiver.fetch()
         try:
+            self._unpack_json_msg(message)
             msg = rpc_common.deserialize_msg(message.content)
             self.callback(msg)
         except Exception:
@@ -330,15 +350,16 @@ class Connection(object):
 
     def reconnect(self):
         """Handles reconnecting and re-establishing sessions and queues"""
-        if self.connection.opened():
-            try:
-                self.connection.close()
-            except qpid_exceptions.ConnectionError:
-                pass
-
         attempt = 0
         delay = 1
         while True:
+            # Close the session if necessary
+            if self.connection.opened():
+                try:
+                    self.connection.close()
+                except qpid_exceptions.ConnectionError:
+                    pass
+
             broker = self.brokers[attempt % len(self.brokers)]
             attempt += 1
 
@@ -414,8 +435,8 @@ class Connection(object):
 
         def _error_callback(exc):
             if isinstance(exc, qpid_exceptions.Empty):
-                LOG.exception(_('Timed out waiting for RPC response: %s') %
-                              str(exc))
+                LOG.debug(_('Timed out waiting for RPC response: %s') %
+                          str(exc))
                 raise rpc_common.Timeout()
             else:
                 LOG.exception(_('Failed to consume message from queue: %s') %
@@ -509,13 +530,6 @@ class Connection(object):
         """Send a notify message on a topic"""
         self.publisher_send(NotifyPublisher, topic, msg)
 
-    def _consumer_thread_callback(self):
-        """ Consumer thread callback used by consume_in_* """
-        try:
-            self.consume()
-        except greenlet.GreenletExit:
-            return
-
     def consume(self, limit=None):
         """Consume from all queues/consumers"""
         it = self.iterconsume(limit=limit)
@@ -527,15 +541,14 @@ class Connection(object):
 
     def consume_in_thread(self):
         """Consumer from all queues/consumers in a greenthread"""
-
+        def _consumer_thread():
+            try:
+                self.consume()
+            except greenlet.GreenletExit:
+                return
         if self.consumer_thread is None:
-            self.consumer_thread = eventlet.spawn(
-                self._consumer_thread_callback)
+            self.consumer_thread = eventlet.spawn(_consumer_thread)
         return self.consumer_thread
-
-    def consume_in_thread_group(self, thread_group):
-        """ Consume from all queues/consumers in the supplied ThreadGroup"""
-        thread_group.add_thread(self._consumer_thread_callback)
 
     def create_consumer(self, topic, proxy, fanout=False):
         """Create a consumer that calls a method in a proxy object"""
@@ -565,6 +578,34 @@ class Connection(object):
 
         self._register_consumer(consumer)
 
+        return consumer
+
+    def join_consumer_pool(self, callback, pool_name, topic,
+                           exchange_name=None):
+        """Register as a member of a group of consumers for a given topic from
+        the specified exchange.
+
+        Exactly one member of a given pool will receive each message.
+
+        A message will be delivered to multiple pools, if more than
+        one is created.
+        """
+        callback_wrapper = rpc_amqp.CallbackWrapper(
+            conf=self.conf,
+            callback=callback,
+            connection_pool=rpc_amqp.get_connection_pool(self.conf,
+                                                         Connection),
+        )
+        self.proxy_callbacks.append(callback_wrapper)
+
+        consumer = TopicConsumer(conf=self.conf,
+                                 session=self.session,
+                                 topic=topic,
+                                 callback=callback_wrapper,
+                                 name=pool_name,
+                                 exchange_name=exchange_name)
+
+        self._register_consumer(consumer)
         return consumer
 
 

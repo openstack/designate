@@ -15,7 +15,7 @@
 # under the License.
 import os
 import socket
-from designate.openstack.common import cfg
+from oslo.config import cfg
 from designate.openstack.common import rpc
 
 cfg.CONF.register_opts([

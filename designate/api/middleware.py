@@ -14,7 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import flask
-from designate.openstack.common import cfg
+from oslo.config import cfg
 from designate.openstack.common import local
 from designate.openstack.common import log as logging
 from designate.openstack.common import uuidutils
@@ -76,7 +76,7 @@ class KeystoneContextMiddleware(wsgi.Middleware):
 
         roles = headers.get('X-Roles').split(',')
 
-        context = DesignateContext(auth_tok=headers.get('X-Auth-Token'),
+        context = DesignateContext(auth_token=headers.get('X-Auth-Token'),
                                    user=headers.get('X-User-ID'),
                                    tenant=headers.get('X-Tenant-ID'),
                                    roles=roles)

@@ -22,11 +22,11 @@ LOG = logging.getLogger(__name__)
 
 
 class DesignateContext(context.RequestContext):
-    def __init__(self, auth_tok=None, user=None, tenant=None, is_admin=False,
+    def __init__(self, auth_token=None, user=None, tenant=None, is_admin=False,
                  read_only=False, show_deleted=False, request_id=None,
                  roles=[]):
         super(DesignateContext, self).__init__(
-            auth_tok=auth_tok,
+            auth_token=auth_token,
             user=user,
             tenant=tenant,
             is_admin=is_admin,

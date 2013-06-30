@@ -19,7 +19,7 @@ import base64
 from sqlalchemy.sql import select
 from sqlalchemy.sql.expression import null
 from sqlalchemy.orm import exc as sqlalchemy_exceptions
-from designate.openstack.common import cfg
+from oslo.config import cfg
 from designate.openstack.common import log as logging
 from designate import exceptions
 from designate.backend import base

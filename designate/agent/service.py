@@ -13,7 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from designate.openstack.common import cfg
+from oslo.config import cfg
 from designate.openstack.common import log as logging
 from designate.openstack.common.rpc import service as rpc_service
 from designate import backend
@@ -39,6 +39,10 @@ class Service(rpc_service.Service):
     def start(self):
         self.manager.start()
         super(Service, self).start()
+
+    def wait(self):
+        super(Service, self).wait()
+        self.conn.consumer_thread.wait()
 
     def stop(self):
         super(Service, self).stop()

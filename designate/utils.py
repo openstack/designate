@@ -18,7 +18,7 @@ import pkg_resources
 import json
 from jinja2 import Template
 from designate.openstack.common import log as logging
-from designate.openstack.common import cfg
+from oslo.config import cfg
 from designate.openstack.common import processutils
 from designate.openstack.common import timeutils
 from designate.openstack.common.notifier import api as notifier_api

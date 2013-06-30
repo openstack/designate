@@ -16,7 +16,7 @@
 import copy
 import unittest2
 import mox
-from designate.openstack.common import cfg
+from oslo.config import cfg
 from designate.openstack.common import log as logging
 from designate.openstack.common.notifier import test_notifier
 from designate.openstack.common import policy

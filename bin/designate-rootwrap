@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # vim: tabstop=4 shiftwidth=4 softtabstop=4
 
-# Copyright (c) 2011 OpenStack, LLC.
+# Copyright (c) 2011 OpenStack Foundation.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -20,14 +20,17 @@
 
    Filters which commands a service is allowed to run as another user.
 
-   To use this with designate, you should set the following in designate.conf:
+   To use this with designate, you should set the following in
+   designate.conf:
    rootwrap_config=/etc/designate/rootwrap.conf
 
-   You also need to let the designate user run designate-rootwrap as root in sudoers:
-   designate ALL = (root) NOPASSWD: /usr/bin/designate-rootwrap /etc/designate/rootwrap.conf *
+   You also need to let the designate user run designate-rootwrap
+   as root in sudoers:
+   designate ALL = (root) NOPASSWD: /usr/bin/designate-rootwrap
+                                   /etc/designate/rootwrap.conf *
 
-   Service packaging should deploy .filters files only on nodes where they are
-   needed, to avoid allowing more than is necessary.
+   Service packaging should deploy .filters files only on nodes where
+   they are needed, to avoid allowing more than is necessary.
 """
 
 import ConfigParser
@@ -102,8 +105,8 @@ if __name__ == '__main__':
                                               exec_dirs=config.exec_dirs)
             if config.use_syslog:
                 logging.info("(%s > %s) Executing %s (filter match = %s)" % (
-                     os.getlogin(), pwd.getpwuid(os.getuid())[0],
-                     command, filtermatch.name))
+                    os.getlogin(), pwd.getpwuid(os.getuid())[0],
+                    command, filtermatch.name))
 
             obj = subprocess.Popen(command,
                                    stdin=sys.stdin,

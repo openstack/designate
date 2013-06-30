@@ -21,7 +21,8 @@ import copy
 import sys
 import traceback
 
-from designate.openstack.common import cfg
+from oslo.config import cfg
+
 from designate.openstack.common.gettextutils import _
 from designate.openstack.common import importutils
 from designate.openstack.common import jsonutils
@@ -48,8 +49,8 @@ deserialize_msg().
 The current message format (version 2.0) is very simple.  It is:
 
     {
-        'designate.version': <RPC Envelope Version as a String>,
-        'designate.message': <Application Message Payload, JSON encoded>
+        'oslo.version': <RPC Envelope Version as a String>,
+        'oslo.message': <Application Message Payload, JSON encoded>
     }
 
 Message format version '1.0' is just considered to be the messages we sent
@@ -65,8 +66,8 @@ to the messaging libraries as a dict.
 '''
 _RPC_ENVELOPE_VERSION = '2.0'
 
-_VERSION_KEY = 'designate.version'
-_MESSAGE_KEY = 'designate.message'
+_VERSION_KEY = 'oslo.version'
+_MESSAGE_KEY = 'oslo.message'
 
 
 # TODO(russellb) Turn this on after Grizzly.
@@ -122,6 +123,10 @@ class Timeout(RPCException):
     waiting for a response from the remote side.
     """
     message = _("Timeout while waiting on RPC response.")
+
+
+class DuplicateMessageError(RPCException):
+    message = _("Found duplicate message(%(msg_id)s). Skipping it.")
 
 
 class InvalidRPCConnectionReuse(RPCException):
@@ -196,23 +201,30 @@ class Connection(object):
         """
         raise NotImplementedError()
 
-    def consume_in_thread(self):
-        """Spawn a thread to handle incoming messages.
+    def join_consumer_pool(self, callback, pool_name, topic, exchange_name):
+        """Register as a member of a group of consumers for a given topic from
+        the specified exchange.
 
-        Spawn a thread that will be responsible for handling all incoming
-        messages for consumers that were set up on this connection.
+        Exactly one member of a given pool will receive each message.
 
-        Message dispatching inside of this is expected to be implemented in a
-        non-blocking manner.  An example implementation would be having this
-        thread pull messages in for all of the consumers, but utilize a thread
-        pool for dispatching the messages to the proxy objects.
+        A message will be delivered to multiple pools, if more than
+        one is created.
+
+        :param callback: Callable to be invoked for each message.
+        :type callback: callable accepting one argument
+        :param pool_name: The name of the consumer pool.
+        :type pool_name: str
+        :param topic: The routing topic for desired messages.
+        :type topic: str
+        :param exchange_name: The name of the message exchange where
+                              the client should attach. Defaults to
+                              the configured exchange.
+        :type exchange_name: str
         """
         raise NotImplementedError()
 
-    def consume_in_thread_group(self, thread_group):
-        """
-        Spawn a thread to handle incoming messages in the supplied
-        ThreadGroup.
+    def consume_in_thread(self):
+        """Spawn a thread to handle incoming messages.
 
         Spawn a thread that will be responsible for handling all incoming
         messages for consumers that were set up on this connection.
@@ -304,7 +316,7 @@ def deserialize_remote_exception(conf, data):
 
     # NOTE(ameade): We DO NOT want to allow just any module to be imported, in
     # order to prevent arbitrary code execution.
-    if not module in conf.allowed_rpc_exception_modules:
+    if module not in conf.allowed_rpc_exception_modules:
         return RemoteError(name, failure.get('message'), trace)
 
     try:
@@ -313,7 +325,7 @@ def deserialize_remote_exception(conf, data):
         if not issubclass(klass, Exception):
             raise TypeError("Can only deserialize Exceptions")
 
-        failure = klass(*failure.get('args', []), **failure.get('kwargs', {}))
+        failure = klass(**failure.get('kwargs', {}))
     except (AttributeError, TypeError, ImportError):
         return RemoteError(name, failure.get('message'), trace)
 

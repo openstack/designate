@@ -16,7 +16,7 @@
 import time
 from sqlalchemy.orm import exc
 from sqlalchemy import distinct, func
-from designate.openstack.common import cfg
+from oslo.config import cfg
 from designate.openstack.common import log as logging
 from designate import exceptions
 from designate.storage import base

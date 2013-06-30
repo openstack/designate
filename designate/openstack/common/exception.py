@@ -1,6 +1,6 @@
 # vim: tabstop=4 shiftwidth=4 softtabstop=4
 
-# Copyright 2011 OpenStack LLC.
+# Copyright 2011 OpenStack Foundation.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -22,6 +22,8 @@ Exceptions common to OpenStack projects
 import logging
 
 from designate.openstack.common.gettextutils import _
+
+_FATAL_EXCEPTION_FORMAT_ERRORS = False
 
 
 class Error(Exception):
@@ -121,9 +123,12 @@ class OpenstackException(Exception):
         try:
             self._error_string = self.message % kwargs
 
-        except Exception:
-            # at least get the core message out if something happened
-            self._error_string = self.message
+        except Exception as e:
+            if _FATAL_EXCEPTION_FORMAT_ERRORS:
+                raise e
+            else:
+                # at least get the core message out if something happened
+                self._error_string = self.message
 
     def __str__(self):
         return self._error_string

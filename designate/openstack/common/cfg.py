@@ -220,7 +220,7 @@ log files::
 This module also contains a global instance of the ConfigOpts class
 in order to support a common usage pattern in OpenStack::
 
-    from designate.openstack.common import cfg
+    from oslo.config import cfg
 
     opts = [
         cfg.StrOpt('bind_host', default='0.0.0.0'),

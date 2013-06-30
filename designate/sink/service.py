@@ -13,11 +13,12 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from designate.openstack.common import cfg
+from oslo.config import cfg
 from designate.openstack.common import log as logging
 from designate.openstack.common import rpc
 from designate.openstack.common import service
 from stevedore.named import NamedExtensionManager
+from designate import exceptions
 
 LOG = logging.getLogger(__name__)
 
@@ -49,15 +50,20 @@ class Service(service.Service):
         try:
             return self.extensions_manager.map(_load_extension)
         except RuntimeError:
-            # No handlers enabled. No problem.
-            return []
+            # No handlers enabled. Bail!
+            raise exceptions.ConfigurationError('No designate-sink handlers '
+                                                'enabled')
 
     def start(self):
         super(Service, self).start()
 
         # Setup notification subscriptions and start consuming
         self._setup_subscriptions()
-        self.rpc_conn.consume_in_thread_group(self.tg)
+        self.rpc_conn.consume_in_thread()
+
+    def wait(self):
+        super(Service, self).wait()
+        self.rpc_conn.consumer_thread.wait()
 
     def stop(self):
         # Try to shut the connection down, but if we get any sort of
