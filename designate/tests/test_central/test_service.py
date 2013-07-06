@@ -14,7 +14,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import random
-from mock import patch
 from designate.openstack.common import log as logging
 from designate import exceptions
 from designate.tests.test_central import CentralTestCase
@@ -347,30 +346,6 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(payload['id'], domain['id'])
         self.assertEqual(payload['name'], domain['name'])
         self.assertEqual(payload['tenant_id'], domain['tenant_id'])
-
-    def test_create_domain_backend_failure(self):
-        context = self.get_admin_context()
-
-        # Sanity Test: There should be 0 domains to start with
-        self.assertEqual([], self.central_service.storage.get_domains(context))
-
-        # Test the 'except exceptions.Backend' branch
-        with patch.object(self.central_service.backend, 'create_domain',
-                          side_effect=exceptions.Backend()):
-            with self.assertRaises(exceptions.Backend):
-                self.create_domain()
-
-        # There should still be 0 domains
-        self.assertEqual([], self.central_service.storage.get_domains(context))
-
-        # Test the 'except Exception' branch
-        with patch.object(self.central_service.backend, 'create_domain',
-                          side_effect=Exception()):
-            with self.assertRaises(exceptions.Backend):
-                self.create_domain()
-
-        # There should still be 0 domains
-        self.assertEqual([], self.central_service.storage.get_domains(context))
 
     def test_create_domain_over_quota(self):
         self.config(quota_domains=1)
