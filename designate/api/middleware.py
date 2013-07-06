@@ -70,7 +70,20 @@ def auth_pipeline_factory(loader, global_conf, **local_conf):
     return app
 
 
-class KeystoneContextMiddleware(wsgi.Middleware):
+class ContextMiddleware(wsgi.Middleware):
+    def process_response(self, response):
+        try:
+            context = local.store.context
+        except Exception:
+            pass
+        else:
+            # Add the Request ID as a response header
+            response.headers['X-DNS-Request-ID'] = context.request_id
+
+        return response
+
+
+class KeystoneContextMiddleware(ContextMiddleware):
     def process_request(self, request):
         headers = request.headers
 
@@ -95,7 +108,7 @@ class KeystoneContextMiddleware(wsgi.Middleware):
         request.environ['context'] = context
 
 
-class NoAuthContextMiddleware(wsgi.Middleware):
+class NoAuthContextMiddleware(ContextMiddleware):
     def process_request(self, request):
         # NOTE(kiall): This makes the assumption that disabling authentication
         #              means you wish to allow full access to everyone.
