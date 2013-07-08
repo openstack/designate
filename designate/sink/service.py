@@ -87,11 +87,11 @@ class Service(service.Service):
                 queue_name = "designate.notifications.%s.%s.%s" % (
                     handler.get_canonical_name(), exchange, topic)
 
-                self.rpc_conn.declare_topic_consumer(
-                    queue_name=queue_name,
-                    topic=topic,
-                    exchange_name=exchange,
-                    callback=self._process_notification)
+                self.rpc_conn.join_consumer_pool(
+                    self._process_notification,
+                    queue_name,
+                    topic,
+                    exchange_name=exchange)
 
     def _get_handler_event_types(self):
         event_types = set()
