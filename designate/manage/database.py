@@ -72,8 +72,10 @@ class SyncCommand(base.Command):
         except DatabaseNotControlledError:
             raise Exception('Database not yet initialized')
 
-        LOG.info("Attempting to synchronize database from version '%s' to '%s'"
-                 % (current_version, target_version))
+        LOG.info("Attempting to synchronize database from version "
+                 "'%s' to '%s'",
+                 current_version,
+                 target_version if target_version is not None else "latest")
 
         if target_version and target_version < current_version:
             versioning_api.downgrade(url=url, repository=REPOSITORY,

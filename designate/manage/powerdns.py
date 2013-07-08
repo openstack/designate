@@ -14,7 +14,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import os
-from migrate.exceptions import DatabaseAlreadyControlledError
+from migrate.exceptions import (DatabaseAlreadyControlledError,
+                                DatabaseNotControlledError)
 from migrate.versioning import api as versioning_api
 from designate.openstack.common import log as logging
 from oslo.config import cfg
@@ -38,24 +39,49 @@ class DatabaseInitCommand(base.Command):
             raise Exception('Migration Respository Not Found')
 
         try:
-            LOG.info('Attempting to initialize database')
+            LOG.info('Attempting to initialize PowerDNS database')
             versioning_api.version_control(url=url, repository=REPOSITORY)
-            LOG.info('Database initialized sucessfully')
+            LOG.info('PowerDNS database initialized sucessfully')
         except DatabaseAlreadyControlledError:
-            raise Exception('Database already initialized')
+            raise Exception('PowerDNS Database already initialized')
 
 
 class DatabaseSyncCommand(base.Command):
     """ Sync PowerDNS database """
 
+    def get_parser(self, prog_name):
+        parser = super(DatabaseSyncCommand, self).get_parser(prog_name)
+
+        parser.add_argument('--to-version', help="Migrate to version",
+                            default=None, type=int)
+
+        return parser
+
     def execute(self, parsed_args):
-        # TODO(kiall): Support specifying version
         url = cfg.CONF['backend:powerdns'].database_connection
 
         if not os.path.exists(REPOSITORY):
             raise Exception('Migration Respository Not Found')
 
-        LOG.info('Attempting to synchronize database')
-        versioning_api.upgrade(url=url, repository=REPOSITORY,
-                               version=None)
-        LOG.info('Database synchronized sucessfully')
+        try:
+            target_version = int(parsed_args.to_version) \
+                if parsed_args.to_version else None
+
+            current_version = versioning_api.db_version(url=url,
+                                                        repository=REPOSITORY)
+        except DatabaseNotControlledError:
+            raise Exception('PowerDNS database not yet initialized')
+
+        LOG.info("Attempting to synchronize PowerDNS database from version "
+                 "'%s' to '%s'",
+                 current_version,
+                 target_version if target_version is not None else "latest")
+
+        if target_version and target_version < current_version:
+            versioning_api.downgrade(url=url, repository=REPOSITORY,
+                                     version=parsed_args.to_version)
+        else:
+            versioning_api.upgrade(url=url, repository=REPOSITORY,
+                                   version=parsed_args.to_version)
+
+        LOG.info('PowerDNS database synchronized sucessfully')
