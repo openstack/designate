@@ -1,2 +1,4 @@
+sphinx
+sphinxcontrib-httpdomain
 -r ../requirements.txt
 -r ../test-requirements.txt
