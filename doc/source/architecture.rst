@@ -35,3 +35,10 @@ Brief overview
 
     :term:`api` standard OpenStack alike REST api service that communicates via
     :term:`mq` to do actions like adding records and so on.
+
+    :term:`sink` is a service which listens for notications from Nova/Quantum,
+    and takes action based on the event, and the configured plugins.
+
+    :term:`storage`s are drivers for a particular SQL/NoSQL server.
+
+    :term:`backend`s are drivers for a particular DNS server.
