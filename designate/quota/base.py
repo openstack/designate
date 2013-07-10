@@ -25,24 +25,8 @@ class Quota(Plugin):
     __plugin_ns__ = 'designate.quota'
     __plugin_type__ = 'quota'
 
-    def get_tenant_quotas(self, context, tenant_id):
-        """
-        Get quotas for a tenant.
-
-        :param context: RPC Context.
-        :param tenant_id: Tenant ID to fetch quotas for
-        """
-        quotas = {
-            'domains': cfg.CONF.quota_domains,
-            'domain_records': cfg.CONF.quota_domain_records,
-        }
-
-        quotas.update(self._get_tenant_quotas(context, tenant_id))
-
-        return quotas
-
     def limit_check(self, context, tenant_id, **values):
-        quotas = self.get_tenant_quotas(context, tenant_id)
+        quotas = self.get_quotas(context, tenant_id)
 
         for resource, value in values.items():
             if resource in quotas:
@@ -51,6 +35,33 @@ class Quota(Plugin):
             else:
                 raise exceptions.QuotaResourceUnknown()
 
+    def get_quotas(self, context, tenant_id):
+        quotas = self.get_default_quotas(context)
+
+        quotas.update(self._get_quotas(context, tenant_id))
+
+        return quotas
+
     @abc.abstractmethod
-    def _get_tenant_quotas(self, context, tenant_id):
+    def _get_quotas(self, context, tenant_id):
         pass
+
+    def get_default_quotas(self, context):
+        return {
+            'domains': cfg.CONF.quota_domains,
+            'domain_records': cfg.CONF.quota_domain_records,
+        }
+
+    def get_quota(self, context, tenant_id, resource):
+        quotas = self._get_quotas(context, tenant_id)
+
+        if resource not in quotas:
+            raise exceptions.QuotaResourceUnknown()
+
+        return quotas[resource]
+
+    def set_quota(self, context, tenant_id, resource, hard_limit):
+        raise NotImplementedError()
+
+    def reset_quotas(self, context, tenant_id):
+        raise NotImplementedError()

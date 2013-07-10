@@ -31,6 +31,7 @@ class CentralAPI(rpc_proxy.RpcProxy):
         1.2 - Add get_tenant and get_tenants
         1.3 - Add get_absolute_limits
         2.0 - Renamed most get_resources to find_resources
+        2.1 - Add quota methods
 
     """
     def __init__(self, topic=None):
@@ -42,6 +43,29 @@ class CentralAPI(rpc_proxy.RpcProxy):
         msg = self.make_msg('get_absolute_limits')
 
         return self.call(context, msg)
+
+    # Quota Methods
+    def get_quotas(self, context, tenant_id):
+        msg = self.make_msg('get_quotas', tenant_id=tenant_id)
+
+        return self.call(context, msg, version='2.1')
+
+    def get_quota(self, context, tenant_id, resource):
+        msg = self.make_msg('get_quota', tenant_id=tenant_id,
+                            resource=resource)
+
+        return self.call(context, msg, version='2.1')
+
+    def set_quota(self, context, tenant_id, resource, hard_limit):
+        msg = self.make_msg('set_quota', tenant_id=tenant_id,
+                            resource=resource, hard_limit=hard_limit)
+
+        return self.call(context, msg, version='2.1')
+
+    def reset_quotas(self, context, tenant_id):
+        msg = self.make_msg('reset_quotas', tenant_id=tenant_id)
+
+        return self.call(context, msg, version='2.1')
 
     # Server Methods
     def create_server(self, context, values):

@@ -23,5 +23,68 @@ class StorageQuotaTest(QuotaTestCase):
     __test__ = True
 
     def setUp(self):
-        self.config(quota_driver='storage', group='service:central')
+        self.config(quota_driver='storage')
         super(StorageQuotaTest, self).setUp()
+
+    def test_set_quota_create(self):
+        quota = self.quota.set_quota(self.admin_context, 'tenant_id',
+                                     'domains', 1500)
+
+        self.assertEquals(quota, {'domains': 1500})
+
+        # Drop into the storage layer directly to ensure the quota was created
+        # sucessfully.
+        criterion = {
+            'tenant_id': 'tenant_id',
+            'resource': 'domains'
+        }
+
+        quota = self.quota.storage_api.find_quota(self.admin_context,
+                                                  criterion)
+
+        self.assertEquals(quota['tenant_id'], 'tenant_id')
+        self.assertEquals(quota['resource'], 'domains')
+        self.assertEquals(quota['hard_limit'], 1500)
+
+    def test_set_quota_update(self):
+        # First up, Create the quota
+        self.quota.set_quota(self.admin_context, 'tenant_id', 'domains', 1500)
+
+        # Next, update the quota
+        self.quota.set_quota(self.admin_context, 'tenant_id', 'domains', 1234)
+
+        # Drop into the storage layer directly to ensure the quota was updated
+        # sucessfully
+        criterion = {
+            'tenant_id': 'tenant_id',
+            'resource': 'domains'
+        }
+
+        quota = self.quota.storage_api.find_quota(self.admin_context,
+                                                  criterion)
+
+        self.assertEquals(quota['tenant_id'], 'tenant_id')
+        self.assertEquals(quota['resource'], 'domains')
+        self.assertEquals(quota['hard_limit'], 1234)
+
+    def test_reset_quotas(self):
+        # First up, Create a domains quota
+        self.quota.set_quota(self.admin_context, 'tenant_id', 'domains', 1500)
+
+        # Then, Create a domain_records quota
+        self.quota.set_quota(self.admin_context, 'tenant_id', 'domain_records',
+                             800)
+
+        # Now, Reset the tenants quota
+        self.quota.reset_quotas(self.admin_context, 'tenant_id')
+
+        # Drop into the storage layer directly to ensure the tenant has no
+        # specific quotas registed.
+        criterion = {
+            'tenant_id': 'tenant_id'
+        }
+
+        quotas = self.quota.storage_api.find_quotas(self.admin_context,
+                                                    criterion)
+
+        self.assertEquals(0, len(quotas))
