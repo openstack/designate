@@ -39,7 +39,7 @@ Related Projects
 .. _Bug Tracker: https://bugs.launchpad.net/designate
 .. _Blueprints: https://blueprints.launchpad.net/designate
 .. _GitHub: https://github.com/stackforge/designate
-.. _Chef Cookbook: https://github.com/moniker-dns/moniker-cookbook/tree/designate
+.. _Chef Cookbook: https://github.com/moniker-dns/designate-cookbook
 .. _Debian Packaging: https://github.com/moniker-dns/debian-designate
 .. _Launchpad PPA: https://launchpad.net/~kiall/+archive/designate-havana
 .. _Sample Plugin: https://github.com/kiall/designate-ext-samplehandler
