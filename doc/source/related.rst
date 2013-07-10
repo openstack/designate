@@ -33,6 +33,7 @@ Related Projects
 * `Chef Cookbook`_
 * `Debian Packaging`_
 * `Launchpad PPA`_
+* `Sample Plugin`_
 
 
 .. _Bug Tracker: https://bugs.launchpad.net/designate
@@ -41,4 +42,4 @@ Related Projects
 .. _Chef Cookbook: https://github.com/moniker-dns/moniker-cookbook/tree/designate
 .. _Debian Packaging: https://github.com/moniker-dns/debian-designate
 .. _Launchpad PPA: https://launchpad.net/~kiall/+archive/designate-havana
-
+.. _Sample Plugin: https://github.com/kiall/designate-ext-samplehandler
