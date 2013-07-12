@@ -22,10 +22,6 @@ debug = False
 # Change to "sudo" to skip the filtering and just run the comand directly
 root_helper = sudo
 
-# There has to be a better way to set these defaults
-allowed_rpc_exception_modules = designate.exceptions, designate.openstack.common.exception
-default_log_levels = amqplib=WARN, sqlalchemy=WARN, boto=WARN, suds=INFO, keystone=INFO, eventlet.wsgi.server=WARN, stevedore=WARN, keystoneclient.middleware.auth_token=INFO
-
 ########################
 ## Service Configuration
 ########################
