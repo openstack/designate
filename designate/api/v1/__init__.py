@@ -121,6 +121,11 @@ class UUIDConverter(BaseConverter):
 
 
 class FaultWrapperMiddleware(wsgi.Middleware):
+    def __init__(self, application):
+        super(FaultWrapperMiddleware, self).__init__(application)
+
+        LOG.info('Starting designate faultwrapper middleware')
+
     @webob.dec.wsgify
     def __call__(self, request):
         try:

@@ -35,6 +35,8 @@ class MaintenanceMiddleware(wsgi.Middleware):
     def __init__(self, application):
         super(MaintenanceMiddleware, self).__init__(application)
 
+        LOG.info('Starting designate maintaince middleware')
+
         self.enabled = cfg.CONF['service:api'].maintenance_mode
         self.role = cfg.CONF['service:api'].maintenance_mode_role
 
@@ -84,6 +86,11 @@ class ContextMiddleware(wsgi.Middleware):
 
 
 class KeystoneContextMiddleware(ContextMiddleware):
+    def __init__(self, application):
+        super(KeystoneContextMiddleware, self).__init__(application)
+
+        LOG.info('Starting designate keystonecontext middleware')
+
     def process_request(self, request):
         headers = request.headers
 
@@ -109,6 +116,11 @@ class KeystoneContextMiddleware(ContextMiddleware):
 
 
 class NoAuthContextMiddleware(ContextMiddleware):
+    def __init__(self, application):
+        super(NoAuthContextMiddleware, self).__init__(application)
+
+        LOG.info('Starting designate noauthcontext middleware')
+
     def process_request(self, request):
         # NOTE(kiall): This makes the assumption that disabling authentication
         #              means you wish to allow full access to everyone.
