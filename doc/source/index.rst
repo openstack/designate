@@ -15,6 +15,7 @@ Contents:
    install
    configuration
    rest
+   devstack
    related
    glossary
 
