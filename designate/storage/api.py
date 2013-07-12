@@ -42,15 +42,6 @@ class StorageAPI(object):
             self.storage.delete_quota(context, quota['id'])
             raise
 
-    def get_quotas(self, context, criterion=None):
-        """
-        Get Quotas.
-
-        :param context: RPC Context.
-        :param criterion: Criteria to filter by.
-        """
-        return self.storage.get_quotas(context, criterion)
-
     def get_quota(self, context, quota_id):
         """
         Get a Quota via ID.
@@ -124,15 +115,6 @@ class StorageAPI(object):
             self.storage.delete_server(context, server['id'])
             raise
 
-    def get_servers(self, context, criterion=None):
-        """
-        Get Servers.
-
-        :param context: RPC Context.
-        :param criterion: Criteria to filter by.
-        """
-        return self.storage.get_servers(context, criterion)
-
     def get_server(self, context, server_id):
         """
         Get a Server via ID.
@@ -142,7 +124,7 @@ class StorageAPI(object):
         """
         return self.storage.get_server(context, server_id)
 
-    def find_servers(self, context, criterion):
+    def find_servers(self, context, criterion=None):
         """
         Find Servers
 
@@ -205,15 +187,6 @@ class StorageAPI(object):
             self.storage.delete_tsigkey(context, tsigkey['id'])
             raise
 
-    def get_tsigkeys(self, context, criterion=None):
-        """
-        Get TSIG Keys.
-
-        :param context: RPC Context.
-        :param criterion: Criteria to filter by.
-        """
-        return self.storage.get_tsigkeys(context, criterion)
-
     def get_tsigkey(self, context, tsigkey_id):
         """
         Get a TSIG Key via ID.
@@ -223,7 +196,7 @@ class StorageAPI(object):
         """
         return self.storage.get_tsigkey(context, tsigkey_id)
 
-    def find_tsigkeys(self, context, criterion):
+    def find_tsigkeys(self, context, criterion=None):
         """
         Find Tsigkey
 
@@ -271,13 +244,13 @@ class StorageAPI(object):
         yield self.storage.get_tsigkey(context, tsigkey_id)
         self.storage.delete_tsigkey(context, tsigkey_id)
 
-    def get_tenants(self, context):
+    def find_tenants(self, context):
         """
-        Get all Tenants.
+        Find all Tenants.
 
         :param context: RPC Context.
         """
-        return self.storage.get_tenants(context)
+        return self.storage.find_tenants(context)
 
     def get_tenant(self, context, tenant_id):
         """
@@ -312,15 +285,6 @@ class StorageAPI(object):
             self.storage.delete_domain(context, domain['id'])
             raise
 
-    def get_domains(self, context, criterion=None):
-        """
-        Get all Domains.
-
-        :param context: RPC Context.
-        :param criterion: Criteria to filter by.
-        """
-        return self.storage.get_domains(context, criterion)
-
     def get_domain(self, context, domain_id):
         """
         Get a Domain via its ID.
@@ -330,7 +294,7 @@ class StorageAPI(object):
         """
         return self.storage.get_domain(context, domain_id)
 
-    def find_domains(self, context, criterion):
+    def find_domains(self, context, criterion=None):
         """
         Find Domains
 
@@ -404,16 +368,6 @@ class StorageAPI(object):
             self.storage.delete_record(context, record['id'])
             raise
 
-    def get_records(self, context, domain_id, criterion=None):
-        """
-        Get a list of records via a Domain's ID
-
-        :param context: RPC Context.
-        :param domain_id: Domain ID where the records reside.
-        :param criterion: Criteria to filter by.
-        """
-        return self.storage.get_records(context, domain_id, criterion)
-
     def get_record(self, context, record_id):
         """
         Get a record via ID
@@ -423,14 +377,15 @@ class StorageAPI(object):
         """
         return self.storage.get_record(context, record_id)
 
-    def find_records(self, context, criterion):
+    def find_records(self, context, domain_id, criterion=None):
         """
         Find Records.
 
         :param context: RPC Context.
+        :param domain_id: Domain ID to find in
         :param criterion: Criteria to filter by.
         """
-        return self.storage.find_records(context, criterion)
+        return self.storage.find_records(context, domain_id, criterion)
 
     def find_record(self, context, criterion):
         """

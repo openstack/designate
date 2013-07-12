@@ -43,7 +43,7 @@ class DnsmasqBackend(base.Backend):
     def _sync_domains_hack(self):
         # TODO(Andrey): This is a hack to ensure the data dir is 100% up to
         #               date
-        domains = self.central_service.get_domains(self.admin_context)
+        domains = self.central_service.find_domains(self.admin_context)
 
         for domain in domains:
             self._sync_domain(domain)
@@ -93,8 +93,8 @@ class DnsmasqBackend(base.Backend):
         self._reload_dnsmasq()
 
     def _write_zonefile(self, domain):
-        records = self.central_service.get_records(self.admin_context,
-                                                   domain['id'])
+        records = self.central_service.find_records(self.admin_context,
+                                                    domain['id'])
 
         filename = os.path.join(self.output_folder, '%s.zone' % domain['id'])
 

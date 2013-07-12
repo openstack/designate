@@ -54,7 +54,7 @@ def create_server():
 def get_servers():
     context = flask.request.environ.get('context')
 
-    servers = central_api.get_servers(context)
+    servers = central_api.find_servers(context)
 
     return flask.jsonify(servers_schema.filter({'servers': servers}))
 

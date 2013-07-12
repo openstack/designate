@@ -54,7 +54,7 @@ def create_tsigkey():
 def get_tsigkeys():
     context = flask.request.environ.get('context')
 
-    tsigkeys = central_api.get_tsigkeys(context)
+    tsigkeys = central_api.find_tsigkeys(context)
 
     return flask.jsonify(tsigkeys_schema.filter({'tsigkeys': tsigkeys}))
 

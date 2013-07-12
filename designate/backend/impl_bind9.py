@@ -41,7 +41,7 @@ class Bind9Backend(base.Backend):
         super(Bind9Backend, self).start()
 
         # TODO(kiall): This is a hack to ensure the data dir is 100% up to date
-        domains = self.central_service.get_domains(self.admin_context)
+        domains = self.central_service.find_domains(self.admin_context)
 
         for domain in domains:
             self._sync_domain(domain)
@@ -77,7 +77,7 @@ class Bind9Backend(base.Backend):
         # TODO(kiall): Rewrite this entire thing ASAP
         LOG.debug('Synchronising domains')
 
-        domains = self.central_service.get_domains(self.admin_context)
+        domains = self.central_service.find_domains(self.admin_context)
 
         output_folder = os.path.join(os.path.abspath(cfg.CONF.state_path),
                                      'bind9')
@@ -132,10 +132,10 @@ class Bind9Backend(base.Backend):
         """ Sync a single domain's zone file """
         LOG.debug('Synchronising Domain: %s' % domain['id'])
 
-        servers = self.central_service.get_servers(self.admin_context)
+        servers = self.central_service.find_servers(self.admin_context)
 
-        records = self.central_service.get_records(self.admin_context,
-                                                   domain['id'])
+        records = self.central_service.find_records(self.admin_context,
+                                                    domain['id'])
 
         output_folder = os.path.join(os.path.abspath(cfg.CONF.state_path),
                                      'bind9')

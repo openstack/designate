@@ -55,7 +55,7 @@ def create_record(domain_id):
 def get_records(domain_id):
     context = flask.request.environ.get('context')
 
-    records = central_api.get_records(context, domain_id)
+    records = central_api.find_records(context, domain_id)
 
     return flask.jsonify(records_schema.filter({'records': records}))
 

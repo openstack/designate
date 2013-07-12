@@ -133,18 +133,18 @@ class CentralServiceTest(CentralTestCase):
         self.assertIsNotNone(server['id'])
         self.assertEqual(server['name'], values['name'])
 
-    def test_get_servers(self):
+    def test_find_servers(self):
         context = self.get_admin_context()
 
         # Ensure we have no servers to start with.
-        servers = self.central_service.get_servers(context)
+        servers = self.central_service.find_servers(context)
         self.assertEqual(len(servers), 0)
 
         # Create a single server (using default values)
         self.create_server()
 
         # Ensure we can retrieve the newly created server
-        servers = self.central_service.get_servers(context)
+        servers = self.central_service.find_servers(context)
         self.assertEqual(len(servers), 1)
         self.assertEqual(servers[0]['name'], 'ns1.example.org.')
 
@@ -152,7 +152,7 @@ class CentralServiceTest(CentralTestCase):
         self.create_server(name='ns2.example.org.')
 
         # Ensure we can retrieve both servers
-        servers = self.central_service.get_servers(context)
+        servers = self.central_service.find_servers(context)
         self.assertEqual(len(servers), 2)
         self.assertEqual(servers[0]['name'], 'ns1.example.org.')
         self.assertEqual(servers[1]['name'], 'ns2.example.org.')
@@ -216,18 +216,18 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(tsigkey['algorithm'], values['algorithm'])
         self.assertEqual(tsigkey['secret'], values['secret'])
 
-    def test_get_tsigkeys(self):
+    def test_find_tsigkeys(self):
         context = self.get_admin_context()
 
         # Ensure we have no tsigkeys to start with.
-        tsigkeys = self.central_service.get_tsigkeys(context)
+        tsigkeys = self.central_service.find_tsigkeys(context)
         self.assertEqual(len(tsigkeys), 0)
 
         # Create a single tsigkey (using default values)
         tsigkey_one = self.create_tsigkey()
 
         # Ensure we can retrieve the newly created tsigkey
-        tsigkeys = self.central_service.get_tsigkeys(context)
+        tsigkeys = self.central_service.find_tsigkeys(context)
         self.assertEqual(len(tsigkeys), 1)
         self.assertEqual(tsigkeys[0]['name'], tsigkey_one['name'])
 
@@ -235,7 +235,7 @@ class CentralServiceTest(CentralTestCase):
         tsigkey_two = self.create_tsigkey(fixture=1)
 
         # Ensure we can retrieve both tsigkeys
-        tsigkeys = self.central_service.get_tsigkeys(context)
+        tsigkeys = self.central_service.find_tsigkeys(context)
         self.assertEqual(len(tsigkeys), 2)
         self.assertEqual(tsigkeys[0]['name'], tsigkey_one['name'])
         self.assertEqual(tsigkeys[1]['name'], tsigkey_two['name'])
@@ -466,18 +466,18 @@ class CentralServiceTest(CentralTestCase):
             # Create an invalid domain
             self.central_service.create_domain(context, values=values)
 
-    def test_get_domains(self):
+    def test_find_domains(self):
         context = self.get_admin_context()
 
         # Ensure we have no domains to start with.
-        domains = self.central_service.get_domains(context)
+        domains = self.central_service.find_domains(context)
         self.assertEqual(len(domains), 0)
 
         # Create a single domain (using default values)
         self.create_domain()
 
         # Ensure we can retrieve the newly created domain
-        domains = self.central_service.get_domains(context)
+        domains = self.central_service.find_domains(context)
         self.assertEqual(len(domains), 1)
         self.assertEqual(domains[0]['name'], 'example.com.')
 
@@ -485,35 +485,49 @@ class CentralServiceTest(CentralTestCase):
         self.create_domain(name='example.net.')
 
         # Ensure we can retrieve both domain
-        domains = self.central_service.get_domains(context)
+        domains = self.central_service.find_domains(context)
         self.assertEqual(len(domains), 2)
         self.assertEqual(domains[0]['name'], 'example.com.')
         self.assertEqual(domains[1]['name'], 'example.net.')
 
-    def test_get_domains_tenant_restrictions(self):
+    def test_find_domains_criteria(self):
+        context = self.get_admin_context()
+
+        # Create a domain
+        domain_name = '%d.example.com.' % random.randint(10, 1000)
+        expected_domain = self.create_domain(name=domain_name)
+
+        # Retrieve it, and ensure it's the same
+        criterion = {'name': domain_name}
+        domains = self.central_service.find_domains(context, criterion)
+        self.assertEqual(domains[0]['id'], expected_domain['id'])
+        self.assertEqual(domains[0]['name'], expected_domain['name'])
+        self.assertEqual(domains[0]['email'], expected_domain['email'])
+
+    def test_find_domains_tenant_restrictions(self):
         admin_context = self.get_admin_context()
         tenant_one_context = self.get_context(tenant=1)
         tenant_two_context = self.get_context(tenant=2)
 
         # Ensure we have no domains to start with.
-        domains = self.central_service.get_domains(admin_context)
+        domains = self.central_service.find_domains(admin_context)
         self.assertEqual(len(domains), 0)
 
         # Create a single domain (using default values)
         self.create_domain(context=tenant_one_context)
 
         # Ensure admins can retrieve the newly created domain
-        domains = self.central_service.get_domains(admin_context)
+        domains = self.central_service.find_domains(admin_context)
         self.assertEqual(len(domains), 1)
         self.assertEqual(domains[0]['name'], 'example.com.')
 
         # Ensure tenant=1 can retrieve the newly created domain
-        domains = self.central_service.get_domains(tenant_one_context)
+        domains = self.central_service.find_domains(tenant_one_context)
         self.assertEqual(len(domains), 1)
         self.assertEqual(domains[0]['name'], 'example.com.')
 
         # Ensure tenant=2 can NOT retrieve the newly created domain
-        domains = self.central_service.get_domains(tenant_two_context)
+        domains = self.central_service.find_domains(tenant_two_context)
         self.assertEqual(len(domains), 0)
 
     def test_get_domain(self):
@@ -906,19 +920,19 @@ class CentralServiceTest(CentralTestCase):
             self.central_service.create_record(context, domain['id'],
                                                values=values)
 
-    def test_get_records(self):
+    def test_find_records(self):
         context = self.get_admin_context()
         domain = self.create_domain()
 
         # Ensure we have no records to start with.
-        records = self.central_service.get_records(context, domain['id'])
+        records = self.central_service.find_records(context, domain['id'])
         self.assertEqual(len(records), 0)
 
         # Create a single record (using default values)
         self.create_record(domain)
 
         # Ensure we can retrieve the newly created record
-        records = self.central_service.get_records(context, domain['id'])
+        records = self.central_service.find_records(context, domain['id'])
         self.assertEqual(len(records), 1)
         self.assertEqual(records[0]['name'], 'www.%s' % domain['name'])
 
@@ -926,7 +940,7 @@ class CentralServiceTest(CentralTestCase):
         self.create_record(domain, name='mail.%s' % domain['name'])
 
         # Ensure we can retrieve both records
-        records = self.central_service.get_records(context, domain['id'])
+        records = self.central_service.find_records(context, domain['id'])
         self.assertEqual(len(records), 2)
         self.assertEqual(records[0]['name'], 'www.%s' % domain['name'])
         self.assertEqual(records[1]['name'], 'mail.%s' % domain['name'])

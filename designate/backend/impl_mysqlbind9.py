@@ -245,7 +245,7 @@ class MySQLBind9Backend(base.Backend):
         LOG.debug('create_domain()')
 
         if cfg.CONF[self.name].write_database:
-            servers = self.central_service.get_servers(self.admin_context)
+            servers = self.central_service.find_servers(self.admin_context)
 
             self._add_soa_record(domain, servers)
             self._add_ns_records(domain, servers)
@@ -256,7 +256,7 @@ class MySQLBind9Backend(base.Backend):
         LOG.debug('update_domain()')
 
         if cfg.CONF[self.name].write_database:
-            servers = self.central_service.get_servers(self.admin_context)
+            servers = self.central_service.find_servers(self.admin_context)
 
             self._update_soa_record(domain, servers)
             self._update_ns_records(domain, servers)
@@ -298,7 +298,7 @@ class MySQLBind9Backend(base.Backend):
         """
         LOG.debug('Synchronising domains')
 
-        domains = self.central_service.get_domains(self.admin_context)
+        domains = self.central_service.find_domains(self.admin_context)
 
         output_folder = os.path.join(os.path.abspath(cfg.CONF.state_path),
                                      'bind9')

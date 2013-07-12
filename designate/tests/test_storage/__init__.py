@@ -73,14 +73,14 @@ class StorageTestCase(TestCase):
         with self.assertRaises(exceptions.DuplicateQuota):
             self.create_quota()
 
-    def test_get_quotas(self):
-        actual = self.storage.get_quotas(self.admin_context)
+    def test_find_quotas(self):
+        actual = self.storage.find_quotas(self.admin_context)
         self.assertEqual(actual, [])
 
         # Create a single quota
         _, quota_one = self.create_quota()
 
-        actual = self.storage.get_quotas(self.admin_context)
+        actual = self.storage.find_quotas(self.admin_context)
         self.assertEqual(len(actual), 1)
 
         self.assertEqual(actual[0]['tenant_id'], quota_one['tenant_id'])
@@ -90,14 +90,14 @@ class StorageTestCase(TestCase):
         # Create a second quota
         _, quota_two = self.create_quota(fixture=1)
 
-        actual = self.storage.get_quotas(self.admin_context)
+        actual = self.storage.find_quotas(self.admin_context)
         self.assertEqual(len(actual), 2)
 
         self.assertEqual(actual[1]['tenant_id'], quota_two['tenant_id'])
         self.assertEqual(actual[1]['resource'], quota_two['resource'])
         self.assertEqual(actual[1]['hard_limit'], quota_two['hard_limit'])
 
-    def test_get_quotas_criterion(self):
+    def test_find_quotas_criterion(self):
         _, quota_one = self.create_quota(0)
         _, quota_two = self.create_quota(1)
 
@@ -106,7 +106,7 @@ class StorageTestCase(TestCase):
             resource=quota_one['resource']
         )
 
-        results = self.storage.get_quotas(self.admin_context, criterion)
+        results = self.storage.find_quotas(self.admin_context, criterion)
 
         self.assertEqual(len(results), 1)
 
@@ -119,7 +119,7 @@ class StorageTestCase(TestCase):
             resource=quota_two['resource']
         )
 
-        results = self.storage.get_quotas(self.admin_context, criterion)
+        results = self.storage.find_quotas(self.admin_context, criterion)
 
         self.assertEqual(len(results), 1)
 
@@ -238,14 +238,14 @@ class StorageTestCase(TestCase):
         with self.assertRaises(exceptions.DuplicateServer):
             self.create_server()
 
-    def test_get_servers(self):
-        actual = self.storage.get_servers(self.admin_context)
+    def test_find_servers(self):
+        actual = self.storage.find_servers(self.admin_context)
         self.assertEqual(actual, [])
 
         # Create a single server
         _, server_one = self.create_server()
 
-        actual = self.storage.get_servers(self.admin_context)
+        actual = self.storage.find_servers(self.admin_context)
         self.assertEqual(len(actual), 1)
 
         self.assertEqual(str(actual[0]['name']), str(server_one['name']))
@@ -253,12 +253,12 @@ class StorageTestCase(TestCase):
         # Create a second server
         _, server_two = self.create_server(fixture=1)
 
-        actual = self.storage.get_servers(self.admin_context)
+        actual = self.storage.find_servers(self.admin_context)
         self.assertEqual(len(actual), 2)
 
         self.assertEqual(str(actual[1]['name']), str(server_two['name']))
 
-    def test_get_servers_criterion(self):
+    def test_find_servers_criterion(self):
         _, server_one = self.create_server(0)
         _, server_two = self.create_server(1)
 
@@ -266,7 +266,7 @@ class StorageTestCase(TestCase):
             name=server_one['name']
         )
 
-        results = self.storage.get_servers(self.admin_context, criterion)
+        results = self.storage.find_servers(self.admin_context, criterion)
 
         self.assertEqual(len(results), 1)
 
@@ -276,7 +276,7 @@ class StorageTestCase(TestCase):
             name=server_two['name']
         )
 
-        results = self.storage.get_servers(self.admin_context, criterion)
+        results = self.storage.find_servers(self.admin_context, criterion)
 
         self.assertEqual(len(results), 1)
 
@@ -356,14 +356,14 @@ class StorageTestCase(TestCase):
         with self.assertRaises(exceptions.DuplicateTsigKey):
             self.create_tsigkey(values=values)
 
-    def test_get_tsigkeys(self):
-        actual = self.storage.get_tsigkeys(self.admin_context)
+    def test_find_tsigkeys(self):
+        actual = self.storage.find_tsigkeys(self.admin_context)
         self.assertEqual(actual, [])
 
         # Create a single tsigkey
         _, tsigkey_one = self.create_tsigkey()
 
-        actual = self.storage.get_tsigkeys(self.admin_context)
+        actual = self.storage.find_tsigkeys(self.admin_context)
         self.assertEqual(len(actual), 1)
 
         self.assertEqual(actual[0]['name'], tsigkey_one['name'])
@@ -373,14 +373,14 @@ class StorageTestCase(TestCase):
         # Create a second tsigkey
         _, tsigkey_two = self.create_tsigkey(fixture=1)
 
-        actual = self.storage.get_tsigkeys(self.admin_context)
+        actual = self.storage.find_tsigkeys(self.admin_context)
         self.assertEqual(len(actual), 2)
 
         self.assertEqual(actual[1]['name'], tsigkey_two['name'])
         self.assertEqual(actual[1]['algorithm'], tsigkey_two['algorithm'])
         self.assertEqual(actual[1]['secret'], tsigkey_two['secret'])
 
-    def test_get_tsigkeys_criterion(self):
+    def test_find_tsigkeys_criterion(self):
         _, tsigkey_one = self.create_tsigkey(fixture=0)
         _, tsigkey_two = self.create_tsigkey(fixture=1)
 
@@ -388,7 +388,7 @@ class StorageTestCase(TestCase):
             name=tsigkey_one['name']
         )
 
-        results = self.storage.get_tsigkeys(self.admin_context, criterion)
+        results = self.storage.find_tsigkeys(self.admin_context, criterion)
 
         self.assertEqual(len(results), 1)
 
@@ -398,7 +398,7 @@ class StorageTestCase(TestCase):
             name=tsigkey_two['name']
         )
 
-        results = self.storage.get_tsigkeys(self.admin_context, criterion)
+        results = self.storage.find_tsigkeys(self.admin_context, criterion)
 
         self.assertEqual(len(results), 1)
 
@@ -461,7 +461,7 @@ class StorageTestCase(TestCase):
             self.storage.delete_tsigkey(self.admin_context, uuid)
 
     # Tenant Tests
-    def test_get_tenants(self):
+    def test_find_tenants(self):
         # create 3 domains in 2 tenants
         self.create_domain(fixture=0, values={'tenant_id': 'One'})
         _, domain = self.create_domain(fixture=1, values={'tenant_id': 'One'})
@@ -471,7 +471,7 @@ class StorageTestCase(TestCase):
         self.storage.delete_domain(self.admin_context, domain['id'])
 
         # Ensure we get accurate results
-        result = self.storage.get_tenants(self.admin_context)
+        result = self.storage.find_tenants(self.admin_context)
 
         expected = [{
             'id': 'One',
@@ -538,14 +538,14 @@ class StorageTestCase(TestCase):
         with self.assertRaises(exceptions.DuplicateDomain):
             self.create_domain()
 
-    def test_get_domains(self):
-        actual = self.storage.get_domains(self.admin_context)
+    def test_find_domains(self):
+        actual = self.storage.find_domains(self.admin_context)
         self.assertEqual(actual, [])
 
         # Create a single domain
         fixture_one, domain_one = self.create_domain()
 
-        actual = self.storage.get_domains(self.admin_context)
+        actual = self.storage.find_domains(self.admin_context)
         self.assertEqual(len(actual), 1)
 
         self.assertEqual(actual[0]['name'], domain_one['name'])
@@ -554,10 +554,10 @@ class StorageTestCase(TestCase):
         # Create a second domain
         self.create_domain(fixture=1)
 
-        actual = self.storage.get_domains(self.admin_context)
+        actual = self.storage.find_domains(self.admin_context)
         self.assertEqual(len(actual), 2)
 
-    def test_get_domains_criterion(self):
+    def test_find_domains_criterion(self):
         _, domain_one = self.create_domain(0)
         _, domain_two = self.create_domain(1)
 
@@ -565,7 +565,7 @@ class StorageTestCase(TestCase):
             name=domain_one['name']
         )
 
-        results = self.storage.get_domains(self.admin_context, criterion)
+        results = self.storage.find_domains(self.admin_context, criterion)
 
         self.assertEqual(len(results), 1)
 
@@ -576,7 +576,7 @@ class StorageTestCase(TestCase):
             name=domain_two['name']
         )
 
-        results = self.storage.get_domains(self.admin_context, criterion)
+        results = self.storage.find_domains(self.admin_context, criterion)
 
         self.assertEqual(len(results), 1)
 
@@ -719,15 +719,15 @@ class StorageTestCase(TestCase):
             # Attempt to create the second/duplicate record
             self.create_record(domain)
 
-    def test_get_records(self):
+    def test_find_records(self):
         _, domain = self.create_domain()
-        actual = self.storage.get_records(self.admin_context, domain['id'])
+        actual = self.storage.find_records(self.admin_context, domain['id'])
         self.assertEqual(actual, [])
 
         # Create a single record
         _, record_one = self.create_record(domain, fixture=0)
 
-        actual = self.storage.get_records(self.admin_context, domain['id'])
+        actual = self.storage.find_records(self.admin_context, domain['id'])
         self.assertEqual(len(actual), 1)
 
         self.assertEqual(actual[0]['name'], record_one['name'])
@@ -737,14 +737,14 @@ class StorageTestCase(TestCase):
         # Create a second record
         _, record_two = self.create_record(domain, fixture=1)
 
-        actual = self.storage.get_records(self.admin_context, domain['id'])
+        actual = self.storage.find_records(self.admin_context, domain['id'])
         self.assertEqual(len(actual), 2)
 
         self.assertEqual(actual[1]['name'], record_two['name'])
         self.assertEqual(actual[1]['type'], record_two['type'])
         self.assertEqual(actual[1]['data'], record_two['data'])
 
-    def test_get_records_criterion(self):
+    def test_find_records_criterion(self):
         _, domain = self.create_domain()
 
         _, record_one = self.create_record(domain, fixture=0)
@@ -754,8 +754,8 @@ class StorageTestCase(TestCase):
             data=record_one['data']
         )
 
-        results = self.storage.get_records(self.admin_context, domain['id'],
-                                           criterion)
+        results = self.storage.find_records(self.admin_context, domain['id'],
+                                            criterion)
 
         self.assertEqual(len(results), 1)
 
@@ -763,12 +763,12 @@ class StorageTestCase(TestCase):
             type='A'
         )
 
-        results = self.storage.get_records(self.admin_context, domain['id'],
-                                           criterion)
+        results = self.storage.find_records(self.admin_context, domain['id'],
+                                            criterion)
 
         self.assertEqual(len(results), 2)
 
-    def test_get_records_criterion_wildcard(self):
+    def test_find_records_criterion_wildcard(self):
         _, domain = self.create_domain()
 
         values = {'name': 'one.%s' % domain['name']}
@@ -778,8 +778,8 @@ class StorageTestCase(TestCase):
             name="%%%s" % domain['name']
         )
 
-        results = self.storage.get_records(self.admin_context, domain['id'],
-                                           criterion)
+        results = self.storage.find_records(self.admin_context, domain['id'],
+                                            criterion)
 
         self.assertEqual(len(results), 1)
 

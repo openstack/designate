@@ -76,17 +76,6 @@ class StorageAPITest(TestCase):
         self._assert_called_with('create_quota', context, values)
         self._assert_called_with('delete_quota', context, 12345)
 
-    def test_get_quotas(self):
-        context = mock.sentinel.context
-        criterion = mock.sentinel.criterion
-        quota = mock.sentinel.quota
-
-        self._set_side_effect('get_quotas', [[quota]])
-
-        result = self.storage_api.get_quotas(context, criterion)
-        self._assert_called_with('get_quotas', context, criterion)
-        self.assertEquals([quota], result)
-
     def test_get_quota(self):
         context = mock.sentinel.context
         quota_id = mock.sentinel.quota_id
@@ -192,17 +181,6 @@ class StorageAPITest(TestCase):
 
         self._assert_called_with('create_server', context, values)
         self._assert_called_with('delete_server', context, 12345)
-
-    def test_get_servers(self):
-        context = mock.sentinel.context
-        criterion = mock.sentinel.criterion
-        server = mock.sentinel.server
-
-        self._set_side_effect('get_servers', [[server]])
-
-        result = self.storage_api.get_servers(context, criterion)
-        self._assert_called_with('get_servers', context, criterion)
-        self.assertEquals([server], result)
 
     def test_get_server(self):
         context = mock.sentinel.context
@@ -310,17 +288,6 @@ class StorageAPITest(TestCase):
         self._assert_called_with('create_tsigkey', context, values)
         self._assert_called_with('delete_tsigkey', context, 12345)
 
-    def test_get_tsigkeys(self):
-        context = mock.sentinel.context
-        criterion = mock.sentinel.criterion
-        tsigkey = mock.sentinel.tsigkey
-
-        self._set_side_effect('get_tsigkeys', [[tsigkey]])
-
-        result = self.storage_api.get_tsigkeys(context, criterion)
-        self._assert_called_with('get_tsigkeys', context, criterion)
-        self.assertEquals([tsigkey], result)
-
     def test_get_tsigkey(self):
         context = mock.sentinel.context
         tsigkey_id = mock.sentinel.tsigkey_id
@@ -402,14 +369,14 @@ class StorageAPITest(TestCase):
         self._assert_call_count('delete_tsigkey', 0)
 
     # Tenant Tests
-    def test_get_tenants(self):
+    def test_find_tenants(self):
         context = mock.sentinel.context
         tenant = mock.sentinel.tenant
 
-        self._set_side_effect('get_tenants', [[tenant]])
+        self._set_side_effect('find_tenants', [[tenant]])
 
-        result = self.storage_api.get_tenants(context)
-        self._assert_called_with('get_tenants', context)
+        result = self.storage_api.find_tenants(context)
+        self._assert_called_with('find_tenants', context)
         self.assertEquals([tenant], result)
 
     def test_get_tenant(self):
@@ -456,17 +423,6 @@ class StorageAPITest(TestCase):
 
         self._assert_called_with('create_domain', context, values)
         self._assert_called_with('delete_domain', context, 12345)
-
-    def test_get_domains(self):
-        context = mock.sentinel.context
-        criterion = mock.sentinel.criterion
-        domain = mock.sentinel.domain
-
-        self._set_side_effect('get_domains', [[domain]])
-
-        result = self.storage_api.get_domains(context, criterion)
-        self._assert_called_with('get_domains', context, criterion)
-        self.assertEquals([domain], result)
 
     def test_get_domain(self):
         context = mock.sentinel.context
@@ -574,17 +530,6 @@ class StorageAPITest(TestCase):
         self._assert_called_with('create_record', context, 123, values)
         self._assert_called_with('delete_record', context, 12345)
 
-    def test_get_records(self):
-        context = mock.sentinel.context
-        criterion = mock.sentinel.criterion
-        record = mock.sentinel.record
-
-        self._set_side_effect('get_records', [[record]])
-
-        result = self.storage_api.get_records(context, 123, criterion)
-        self._assert_called_with('get_records', context, 123, criterion)
-        self.assertEquals([record], result)
-
     def test_get_record(self):
         context = mock.sentinel.context
         record_id = mock.sentinel.record_id
@@ -598,13 +543,14 @@ class StorageAPITest(TestCase):
 
     def test_find_records(self):
         context = mock.sentinel.context
+        domain_id = mock.sentinel.domain_id
         criterion = mock.sentinel.criterion
         record = mock.sentinel.record
 
         self._set_side_effect('find_records', [[record]])
 
-        result = self.storage_api.find_records(context, criterion)
-        self._assert_called_with('find_records', context, criterion)
+        result = self.storage_api.find_records(context, domain_id, criterion)
+        self._assert_called_with('find_records', context, domain_id, criterion)
         self.assertEquals([record], result)
 
     def test_find_record(self):

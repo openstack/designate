@@ -30,17 +30,18 @@ class CentralAPI(rpc_proxy.RpcProxy):
         1.1 - Add new finder methods
         1.2 - Add get_tenant and get_tenants
         1.3 - Add get_absolute_limits
+        2.0 - Renamed most get_resources to find_resources
 
     """
     def __init__(self, topic=None):
         topic = topic if topic else cfg.CONF.central_topic
-        super(CentralAPI, self).__init__(topic=topic, default_version='1.0')
+        super(CentralAPI, self).__init__(topic=topic, default_version='2.0')
 
     # Misc Methods
     def get_absolute_limits(self, context):
         msg = self.make_msg('get_absolute_limits')
 
-        return self.call(context, msg, version='1.3')
+        return self.call(context, msg)
 
     # Server Methods
     def create_server(self, context, values):
@@ -48,8 +49,8 @@ class CentralAPI(rpc_proxy.RpcProxy):
 
         return self.call(context, msg)
 
-    def get_servers(self, context, criterion=None):
-        msg = self.make_msg('get_servers', criterion=criterion)
+    def find_servers(self, context, criterion=None):
+        msg = self.make_msg('find_servers', criterion=criterion)
 
         return self.call(context, msg)
 
@@ -75,8 +76,8 @@ class CentralAPI(rpc_proxy.RpcProxy):
 
         return self.call(context, msg)
 
-    def get_tsigkeys(self, context, criterion=None):
-        msg = self.make_msg('get_tsigkeys', criterion=criterion)
+    def find_tsigkeys(self, context, criterion=None):
+        msg = self.make_msg('find_tsigkeys', criterion=criterion)
 
         return self.call(context, msg)
 
@@ -97,15 +98,15 @@ class CentralAPI(rpc_proxy.RpcProxy):
         return self.call(context, msg)
 
     # Tenant Methods
-    def get_tenants(self, context):
-        msg = self.make_msg('get_tenants')
+    def find_tenants(self, context):
+        msg = self.make_msg('find_tenants')
 
-        return self.call(context, msg, version='1.2')
+        return self.call(context, msg)
 
     def get_tenant(self, context, tenant_id):
         msg = self.make_msg('get_tenant', tenant_id=tenant_id)
 
-        return self.call(context, msg, version='1.2')
+        return self.call(context, msg)
 
     def count_tenants(self, context):
         msg = self.make_msg('count_tenants')
@@ -115,11 +116,6 @@ class CentralAPI(rpc_proxy.RpcProxy):
     # Domain Methods
     def create_domain(self, context, values):
         msg = self.make_msg('create_domain', values=values)
-
-        return self.call(context, msg)
-
-    def get_domains(self, context, criterion=None):
-        msg = self.make_msg('get_domains', criterion=criterion)
 
         return self.call(context, msg)
 
@@ -133,15 +129,15 @@ class CentralAPI(rpc_proxy.RpcProxy):
 
         return self.call(context, msg)
 
-    def find_domains(self, context, criterion):
+    def find_domains(self, context, criterion=None):
         msg = self.make_msg('find_domains', criterion=criterion)
 
-        return self.call(context, msg, version='1.1')
+        return self.call(context, msg)
 
     def find_domain(self, context, criterion):
         msg = self.make_msg('find_domain', criterion=criterion)
 
-        return self.call(context, msg, version='1.1')
+        return self.call(context, msg)
 
     def update_domain(self, context, domain_id, values, increment_serial=True):
         msg = self.make_msg('update_domain',
@@ -175,13 +171,6 @@ class CentralAPI(rpc_proxy.RpcProxy):
 
         return self.call(context, msg)
 
-    def get_records(self, context, domain_id, criterion=None):
-        msg = self.make_msg('get_records',
-                            domain_id=domain_id,
-                            criterion=criterion)
-
-        return self.call(context, msg)
-
     def get_record(self, context, domain_id, record_id):
         msg = self.make_msg('get_record',
                             domain_id=domain_id,
@@ -189,15 +178,17 @@ class CentralAPI(rpc_proxy.RpcProxy):
 
         return self.call(context, msg)
 
-    def find_records(self, context, criterion):
-        msg = self.make_msg('find_records', criterion=criterion)
+    def find_records(self, context, domain_id, criterion=None):
+        msg = self.make_msg('find_records',
+                            domain_id=domain_id,
+                            criterion=criterion)
 
-        return self.call(context, msg, version='1.1')
+        return self.call(context, msg)
 
     def find_record(self, context, criterion):
         msg = self.make_msg('find_record', criterion=criterion)
 
-        return self.call(context, msg, version='1.1')
+        return self.call(context, msg)
 
     def update_record(self, context, domain_id, record_id, values,
                       increment_serial=True):

@@ -40,16 +40,16 @@ class NovaFixedHandlerTest(NotificationHandlerTestCase):
         self.assertIn(event_type, self.plugin.get_event_types())
 
         # Ensure we start with 0 records
-        records = self.central_service.get_records(self.admin_context,
-                                                   self.domain_id)
+        records = self.central_service.find_records(self.admin_context,
+                                                    self.domain_id)
 
         self.assertEqual(0, len(records))
 
         self.plugin.process_notification(event_type, fixture['payload'])
 
         # Ensure we now have exactly 1 record
-        records = self.central_service.get_records(self.admin_context,
-                                                   self.domain_id)
+        records = self.central_service.find_records(self.admin_context,
+                                                    self.domain_id)
 
         self.assertEqual(len(records), 1)
 
@@ -68,15 +68,15 @@ class NovaFixedHandlerTest(NotificationHandlerTestCase):
         self.assertIn(event_type, self.plugin.get_event_types())
 
         # Ensure we start with at least 1 record
-        records = self.central_service.get_records(self.admin_context,
-                                                   self.domain_id)
+        records = self.central_service.find_records(self.admin_context,
+                                                    self.domain_id)
 
         self.assertGreaterEqual(len(records), 1)
 
         self.plugin.process_notification(event_type, fixture['payload'])
 
         # Ensure we now have exactly 0 records
-        records = self.central_service.get_records(self.admin_context,
-                                                   self.domain_id)
+        records = self.central_service.find_records(self.admin_context,
+                                                    self.domain_id)
 
         self.assertEqual(0, len(records))

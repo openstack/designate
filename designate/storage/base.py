@@ -33,15 +33,6 @@ class Storage(Plugin):
         """
 
     @abc.abstractmethod
-    def get_quotas(self, context, criterion=None):
-        """
-        Get Quotas.
-
-        :param context: RPC Context.
-        :param criterion: Criteria to filter by.
-        """
-
-    @abc.abstractmethod
     def get_quota(self, context, quota_id):
         """
         Get a Quota via ID.
@@ -97,9 +88,9 @@ class Storage(Plugin):
         """
 
     @abc.abstractmethod
-    def get_servers(self, context, criterion=None):
+    def find_servers(self, context, criterion=None):
         """
-        Get Servers.
+        Find Servers.
 
         :param context: RPC Context.
         :param criterion: Criteria to filter by.
@@ -142,9 +133,9 @@ class Storage(Plugin):
         """
 
     @abc.abstractmethod
-    def get_tsigkeys(self, context, criterion=None):
+    def find_tsigkeys(self, context, criterion=None):
         """
-        Get TSIG Keys.
+        Find TSIG Keys.
 
         :param context: RPC Context.
         :param criterion: Criteria to filter by.
@@ -179,9 +170,9 @@ class Storage(Plugin):
         """
 
     @abc.abstractmethod
-    def get_tenants(self, context):
+    def find_tenants(self, context):
         """
-        Get all Tenants.
+        Find all Tenants.
 
         :param context: RPC Context.
         """
@@ -213,15 +204,6 @@ class Storage(Plugin):
         """
 
     @abc.abstractmethod
-    def get_domains(self, context, criterion=None):
-        """
-        Get all Domains.
-
-        :param context: RPC Context.
-        :param criterion: Criteria to filter by.
-        """
-
-    @abc.abstractmethod
     def get_domain(self, context, domain_id):
         """
         Get a Domain via its ID.
@@ -231,7 +213,7 @@ class Storage(Plugin):
         """
 
     @abc.abstractmethod
-    def find_domains(self, context, criterion):
+    def find_domains(self, context, criterion=None):
         """
         Find Domains
 
@@ -287,16 +269,6 @@ class Storage(Plugin):
         """
 
     @abc.abstractmethod
-    def get_records(self, context, domain_id, criterion=None):
-        """
-        Get a list of records via a Domain's ID
-
-        :param context: RPC Context.
-        :param domain_id: Domain ID where the records reside.
-        :param criterion: Criteria to filter by.
-        """
-
-    @abc.abstractmethod
     def get_record(self, context, record_id):
         """
         Get a record via ID
@@ -306,11 +278,12 @@ class Storage(Plugin):
         """
 
     @abc.abstractmethod
-    def find_records(self, context, criterion):
+    def find_records(self, context, domain_id, criterion=None):
         """
         Find Records.
 
         :param context: RPC Context.
+        :param domain_id: Domain ID where the records reside.
         :param criterion: Criteria to filter by.
         """
 
