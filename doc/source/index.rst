@@ -12,6 +12,7 @@ Contents:
    :maxdepth: 2
 
    architecture
+   gettingstarted
    install
    configuration
    rest
