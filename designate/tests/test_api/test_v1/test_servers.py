@@ -85,7 +85,7 @@ class ApiV1ServersTest(ApiV1Test):
         self.assertIn('servers', response.json)
         self.assertEqual(2, len(response.json['servers']))
 
-    @patch.object(central_service.Service, 'get_servers',
+    @patch.object(central_service.Service, 'find_servers',
                   side_effect=rpc_common.Timeout())
     def test_get_servers_timeout(self, _):
         self.get('servers', status_code=504)

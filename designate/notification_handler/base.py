@@ -136,9 +136,9 @@ class BaseAddressHandler(Handler):
                 'managed_resource_type': resource_type
             })
 
-        records = central_api.get_records(context,
-                                          cfg.CONF[self.name].domain_id,
-                                          criterion)
+        records = central_api.find_records(context,
+                                           cfg.CONF[self.name].domain_id,
+                                           criterion)
 
         for record in records:
             LOG.debug('Deleting record %s' % record['id'])

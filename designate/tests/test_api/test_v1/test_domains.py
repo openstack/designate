@@ -102,7 +102,7 @@ class ApiV1DomainsTest(ApiV1Test):
         self.assertIn('domains', response.json)
         self.assertEqual(2, len(response.json['domains']))
 
-    @patch.object(central_service.Service, 'get_domains',
+    @patch.object(central_service.Service, 'find_domains',
                   side_effect=rpc_common.Timeout())
     def test_get_domains_timeout(self, _):
         self.get('domains', status_code=504)

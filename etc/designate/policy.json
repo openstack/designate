@@ -6,18 +6,18 @@
     "default": "rule:admin_or_owner",
 
     "create_server": "rule:admin",
-    "get_servers": "rule:admin",
+    "find_servers": "rule:admin",
     "get_server": "rule:admin",
     "update_server": "rule:admin",
     "delete_server": "rule:admin",
 
     "create_tsigkey": "rule:admin",
-    "get_tsigkeys": "rule:admin",
+    "find_tsigkeys": "rule:admin",
     "get_tsigkey": "rule:admin",
     "update_tsigkey": "rule:admin",
     "delete_tsigkey": "rule:admin",
 
-    "get_tenants": "rule:admin",
+    "find_tenants": "rule:admin",
     "get_tenant": "rule:admin",
     "count_tenants": "rule:admin",
 

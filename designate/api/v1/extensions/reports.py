@@ -26,7 +26,7 @@ blueprint = flask.Blueprint('reports', __name__)
 def reports_tenants():
     context = flask.request.environ.get('context')
 
-    tenants = central_api.get_tenants(context)
+    tenants = central_api.find_tenants(context)
 
     return flask.jsonify(tenants=tenants)
 

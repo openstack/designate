@@ -75,6 +75,16 @@ class SQLAlchemyStorage(base.Storage):
 
         return query
 
+    ## CRUD for our resources (quota, server, tsigkey, tenant, domain & record)
+    ## R - get_*, get_*s, find_*s (get_*s should be removed)
+    ##
+    ## Standard Arguments
+    ## self      - python object for the class
+    ## context   - a dictionary of details about the request (http etc),
+    ##             provided by flask.
+    ## criterion - dictionary of filters to be applied
+    ##
+
     # Quota Methods
     def create_quota(self, context, values):
         quota = models.Quota()
@@ -87,18 +97,6 @@ class SQLAlchemyStorage(base.Storage):
             raise exceptions.DuplicateQuota()
 
         return dict(quota)
-
-    def get_quotas(self, context, criterion=None):
-        query = self.session.query(models.Quota)
-        query = self._apply_criterion(models.Quota, query, criterion)
-
-        try:
-            result = query.all()
-        except exc.NoResultFound:
-            LOG.debug('No results found')
-            return []
-        else:
-            return [dict(o) for o in result]
 
     def _get_quota(self, context, quota_id):
         query = self.session.query(models.Quota)
@@ -129,7 +127,7 @@ class SQLAlchemyStorage(base.Storage):
             quotas = query.all()
             return [dict(q) for q in quotas]
 
-    def find_quotas(self, context, criterion):
+    def find_quotas(self, context, criterion=None):
         return self._find_quotas(context, criterion)
 
     def find_quota(self, context, criterion):
@@ -165,7 +163,7 @@ class SQLAlchemyStorage(base.Storage):
 
         return dict(server)
 
-    def get_servers(self, context, criterion=None):
+    def find_servers(self, context, criterion=None):
         query = self.session.query(models.Server)
         query = self._apply_criterion(models.Server, query, criterion)
 
@@ -222,7 +220,7 @@ class SQLAlchemyStorage(base.Storage):
 
         return dict(tsigkey)
 
-    def get_tsigkeys(self, context, criterion=None):
+    def find_tsigkeys(self, context, criterion=None):
         query = self.session.query(models.TsigKey)
         query = self._apply_criterion(models.TsigKey, query, criterion)
 
@@ -266,8 +264,11 @@ class SQLAlchemyStorage(base.Storage):
 
         tsigkey.delete(self.session)
 
-    # Tenant Methods
-    def get_tenants(self, context):
+    ##
+    ## Tenant Methods
+    ##
+    # returns an array of tenant_id & count of their domains
+    def find_tenants(self, context):
         query = self.session.query(models.Domain.tenant_id,
                                    func.count(models.Domain.id))
         query = self._apply_deleted_criteria(context, models.Domain, query)
@@ -275,6 +276,7 @@ class SQLAlchemyStorage(base.Storage):
 
         return [{'id': t[0], 'domain_count': t[1]} for t in query.all()]
 
+    # get list list & count of all domains owned by given tenant_id
     def get_tenant(self, context, tenant_id):
         query = self.session.query(models.Domain.name)
         query = query.filter(models.Domain.tenant_id == tenant_id)
@@ -288,15 +290,18 @@ class SQLAlchemyStorage(base.Storage):
             'domains': [r[0] for r in result]
         }
 
+    # tenants are the owner of domains, count the number of unique tenants
+    # select count(distinct tenant_id) from domains
     def count_tenants(self, context):
-        # tenants are the owner of domains, count the number of unique tenants
-        # select count(distinct tenant_id) from domains
         query = self.session.query(distinct(models.Domain.tenant_id))
         query = self._apply_deleted_criteria(context, models.Domain, query)
 
         return query.count()
 
-    # Domain Methods
+    ##
+    ## Domain Methods
+    ##
+
     def _find_domains(self, context, criterion, one=False):
         query = self.session.query(models.Domain)
         query = self._apply_criterion(models.Domain, query, criterion)
@@ -322,17 +327,12 @@ class SQLAlchemyStorage(base.Storage):
 
         return dict(domain)
 
-    def get_domains(self, context, criterion=None):
-        domains = self._find_domains(context, criterion)
-
-        return [dict(d) for d in domains]
-
     def get_domain(self, context, domain_id):
         domain = self._find_domains(context, {'id': domain_id}, True)
 
         return dict(domain)
 
-    def find_domains(self, context, criterion):
+    def find_domains(self, context, criterion=None):
         domains = self._find_domains(context, criterion)
 
         return [dict(d) for d in domains]
@@ -379,7 +379,7 @@ class SQLAlchemyStorage(base.Storage):
 
         return dict(record)
 
-    def get_records(self, context, domain_id, criterion=None):
+    def find_records(self, context, domain_id, criterion=None):
         query = self.session.query(models.Record)
         query = query.filter_by(domain_id=domain_id)
         query = self._apply_criterion(models.Record, query, criterion)
@@ -414,9 +414,6 @@ class SQLAlchemyStorage(base.Storage):
         else:
             records = query.all()
             return [dict(r) for r in records]
-
-    def find_records(self, context, criterion):
-        return self._find_records(context, criterion)
 
     def find_record(self, context, criterion):
         return self._find_records(context, criterion, one=True)

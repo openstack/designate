@@ -43,7 +43,7 @@ def wrap_backend_call():
 
 
 class Service(rpc_service.Service):
-    RPC_API_VERSION = '1.3'
+    RPC_API_VERSION = '2.0'
 
     def __init__(self, *args, **kwargs):
         backend_driver = cfg.CONF['service:central'].backend_driver
@@ -148,8 +148,8 @@ class Service(rpc_service.Service):
         if record_type != 'CNAME':
             criterion['type'] = 'CNAME'
 
-        records = self.storage_api.get_records(context, domain['id'],
-                                               criterion=criterion)
+        records = self.storage_api.find_records(context, domain['id'],
+                                                criterion=criterion)
         if ((len(records) == 1 and records[0]['id'] != record_id)
                 or len(records) > 1):
             raise exceptions.InvalidRecordLocation('CNAME records may not '
@@ -159,8 +159,8 @@ class Service(rpc_service.Service):
         if record_type == 'CNAME':
             # CNAME's may not have children. Ever.
             criterion = {'name': '%%.%s' % record_name}
-            records = self.storage_api.get_records(context, domain['id'],
-                                                   criterion=criterion)
+            records = self.storage_api.find_records(context, domain['id'],
+                                                    criterion=criterion)
 
             if len(records) > 0:
                 raise exceptions.InvalidRecordLocation('CNAME records may not '
@@ -178,8 +178,8 @@ class Service(rpc_service.Service):
         # Duplicate PTR's with the same name are not allowed
         if record_type == 'PTR':
             criterion = {'name': record_name, 'type': 'PTR'}
-            records = self.storage_api.get_records(context, domain['id'],
-                                                   criterion=criterion)
+            records = self.storage_api.find_records(context, domain['id'],
+                                                    criterion=criterion)
             if ((len(records) == 1 and records[0]['id'] != record_id)
                     or len(records) > 1):
                 raise exceptions.DuplicateRecord()
@@ -229,8 +229,8 @@ class Service(rpc_service.Service):
         while (i <= j):
             criterion['name'] = '.'.join(record_labels[i:])
 
-            records = self.storage_api.get_records(context, domain['id'],
-                                                   criterion)
+            records = self.storage_api.find_records(context, domain['id'],
+                                                    criterion)
 
             if len(records) == 0:
                 i += 1
@@ -268,10 +268,10 @@ class Service(rpc_service.Service):
 
         return server
 
-    def get_servers(self, context, criterion=None):
-        policy.check('get_servers', context)
+    def find_servers(self, context, criterion=None):
+        policy.check('find_servers', context)
 
-        return self.storage_api.get_servers(context, criterion)
+        return self.storage_api.find_servers(context, criterion)
 
     def get_server(self, context, server_id):
         policy.check('get_server', context, {'server_id': server_id})
@@ -311,10 +311,10 @@ class Service(rpc_service.Service):
 
         return tsigkey
 
-    def get_tsigkeys(self, context, criterion=None):
-        policy.check('get_tsigkeys', context)
+    def find_tsigkeys(self, context, criterion=None):
+        policy.check('find_tsigkeys', context)
 
-        return self.storage_api.get_tsigkeys(context, criterion)
+        return self.storage_api.find_tsigkeys(context, criterion)
 
     def get_tsigkey(self, context, tsigkey_id):
         policy.check('get_tsigkey', context, {'tsigkey_id': tsigkey_id})
@@ -343,9 +343,9 @@ class Service(rpc_service.Service):
         utils.notify(context, 'central', 'tsigkey.delete', tsigkey)
 
     # Tenant Methods
-    def get_tenants(self, context):
-        policy.check('get_tenants', context)
-        return self.storage_api.get_tenants(context)
+    def find_tenants(self, context):
+        policy.check('find_tenants', context)
+        return self.storage_api.find_tenants(context)
 
     def get_tenant(self, context, tenant_id):
         target = {
@@ -398,7 +398,7 @@ class Service(rpc_service.Service):
         # NOTE(kiall): Fetch the servers before creating the domain, this way
         #              we can prevent domain creation if no servers are
         #              configured.
-        servers = self.storage_api.get_servers(context)
+        servers = self.storage_api.find_servers(context)
 
         if len(servers) == 0:
             LOG.critical('No servers configured. Please create at least one '
@@ -415,18 +415,6 @@ class Service(rpc_service.Service):
         utils.notify(context, 'central', 'domain.create', domain)
 
         return domain
-
-    def get_domains(self, context, criterion=None):
-        target = {'tenant_id': context.tenant_id}
-        policy.check('get_domains', context, target)
-
-        if criterion is None:
-            criterion = {}
-
-        if not context.is_admin:
-            criterion['tenant_id'] = context.tenant_id
-
-        return self.storage_api.get_domains(context, criterion)
 
     def get_domain(self, context, domain_id):
         domain = self.storage_api.get_domain(context, domain_id)
@@ -456,11 +444,14 @@ class Service(rpc_service.Service):
 
         # TODO(kiall): Once we allow domains to be allocated on 1 of N server
         #              pools, return the filtered list here.
-        return self.storage_api.get_servers(context, criterion)
+        return self.storage_api.find_servers(context, criterion)
 
-    def find_domains(self, context, criterion):
+    def find_domains(self, context, criterion=None):
         target = {'tenant_id': context.tenant_id}
         policy.check('find_domains', context, target)
+
+        if criterion is None:
+            criterion = {}
 
         if not context.is_admin:
             criterion['tenant_id'] = context.tenant_id
@@ -606,19 +597,6 @@ class Service(rpc_service.Service):
 
         return record
 
-    def get_records(self, context, domain_id, criterion=None):
-        domain = self.storage_api.get_domain(context, domain_id)
-
-        target = {
-            'domain_id': domain_id,
-            'domain_name': domain['name'],
-            'tenant_id': domain['tenant_id']
-        }
-
-        policy.check('get_records', context, target)
-
-        return self.storage_api.get_records(context, domain_id, criterion)
-
     def get_record(self, context, domain_id, record_id):
         domain = self.storage_api.get_domain(context, domain_id)
         record = self.storage_api.get_record(context, record_id)
@@ -638,14 +616,21 @@ class Service(rpc_service.Service):
 
         return record
 
-    def find_records(self, context, criterion):
-        target = {'tenant_id': context.tenant_id}
+    def find_records(self, context, domain_id, criterion=None):
+        domain = self.storage_api.get_domain(context, domain_id)
+
+        target = {
+            'domain_id': domain_id,
+            'domain_name': domain['name'],
+            'tenant_id': domain['tenant_id']
+        }
+
         policy.check('find_records', context, target)
 
         if not context.is_admin:
             criterion['tenant_id'] = context.tenant_id
 
-        return self.storage_api.find_records(context, criterion)
+        return self.storage_api.find_records(context, domain_id, criterion)
 
     def find_record(self, context, criterion):
         target = {'tenant_id': context.tenant_id}
@@ -739,12 +724,12 @@ class Service(rpc_service.Service):
     def sync_domains(self, context):
         policy.check('diagnostics_sync_domains', context)
 
-        domains = self.storage_api.get_domains(context)
+        domains = self.storage_api.find_domains(context)
         results = {}
 
         for domain in domains:
-            servers = self.storage_api.get_servers(context)
-            records = self.storage_api.get_records(context, domain['id'])
+            servers = self.storage_api.find_servers(context)
+            records = self.storage_api.find_records(context, domain['id'])
 
             with wrap_backend_call():
                 results[domain['id']] = self.backend.sync_domain(context,
@@ -765,7 +750,7 @@ class Service(rpc_service.Service):
 
         policy.check('diagnostics_sync_domain', context, target)
 
-        records = self.storage_api.get_records(context, domain_id)
+        records = self.storage_api.find_records(context, domain_id)
 
         with wrap_backend_call():
             return self.backend.sync_domain(context, domain, records)

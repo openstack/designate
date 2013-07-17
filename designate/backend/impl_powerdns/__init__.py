@@ -116,7 +116,7 @@ class PowerDNSBackend(base.Backend):
 
     # Domain Methods
     def create_domain(self, context, domain):
-        servers = self.central_service.get_servers(self.admin_context)
+        servers = self.central_service.find_servers(self.admin_context)
 
         domain_m = models.Domain()
         domain_m.update({
@@ -224,7 +224,7 @@ class PowerDNSBackend(base.Backend):
 
     # Internal Methods
     def _update_soa(self, domain):
-        servers = self.central_service.get_servers(self.admin_context)
+        servers = self.central_service.find_servers(self.admin_context)
         domain_m = self._get_domain(domain['id'])
         record_m = self._get_record(domain=domain_m, type='SOA')
 
