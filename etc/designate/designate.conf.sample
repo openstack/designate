@@ -58,7 +58,7 @@ root_helper = sudo
 #auth_strategy = noauth
 
 # Enabled API Version 1 extensions
-#enabled_extensions_v1 = diagnostics, sync, import, export, reports
+#enabled_extensions_v1 = diagnostics, quotas, reports, sync
 
 #-----------------------
 # Agent Service

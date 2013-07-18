@@ -43,7 +43,7 @@ def wrap_backend_call():
 
 
 class Service(rpc_service.Service):
-    RPC_API_VERSION = '2.0'
+    RPC_API_VERSION = '2.1'
 
     def __init__(self, *args, **kwargs):
         backend_driver = cfg.CONF['service:central'].backend_driver
@@ -254,7 +254,38 @@ class Service(rpc_service.Service):
 
     # Misc Methods
     def get_absolute_limits(self, context):
-        return self.quota.get_tenant_quotas(context, context.tenant_id)
+        # NOTE(Kiall): Currently, we only have quota based limits..
+        return self.quota.get_quotas(context, context.tenant_id)
+
+    # Quota Methods
+    def get_quotas(self, context, tenant_id):
+        target = {'tenant_id': tenant_id}
+        policy.check('get_quotas', context, target)
+
+        return self.quota.get_quotas(context, tenant_id)
+
+    def get_quota(self, context, tenant_id, resource):
+        target = {'tenant_id': tenant_id, 'resource': resource}
+        policy.check('get_quota', context, target)
+
+        return self.quota.get_quota(context, tenant_id, resource)
+
+    def set_quota(self, context, tenant_id, resource, hard_limit):
+        target = {
+            'tenant_id': tenant_id,
+            'resource': resource,
+            'hard_limit': hard_limit,
+        }
+
+        policy.check('set_quota', context, target)
+
+        return self.quota.set_quota(context, tenant_id, resource, hard_limit)
+
+    def reset_quotas(self, context, tenant_id):
+        target = {'tenant_id': tenant_id}
+        policy.check('reset_quotas', context, target)
+
+        self.quota.reset_quotas(context, tenant_id)
 
     # Server Methods
     def create_server(self, context, values):

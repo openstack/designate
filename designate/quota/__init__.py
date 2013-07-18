@@ -20,6 +20,7 @@ from designate.quota.base import Quota
 LOG = logging.getLogger(__name__)
 
 cfg.CONF.register_opts([
+    cfg.StrOpt('quota-driver', default='storage', help='Quota driver to use'),
     cfg.IntOpt('quota-domains', default=10, help='Number of domains allowed '
                                                  'per tenant'),
     cfg.IntOpt('quota-domain-records', default=500, help='Number of records '
@@ -28,6 +29,4 @@ cfg.CONF.register_opts([
 
 
 def get_quota():
-    quota_driver = cfg.CONF['service:central'].quota_driver
-
-    return Quota.get_plugin(quota_driver, invoke_on_load=True)
+    return Quota.get_plugin(cfg.CONF.quota_driver, invoke_on_load=True)

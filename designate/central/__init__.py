@@ -65,8 +65,6 @@ cfg.CONF.register_opts([
                help='The backend driver to use'),
     cfg.StrOpt('storage-driver', default='sqlalchemy',
                help='The storage driver to use'),
-    cfg.StrOpt('quota-driver', default='storage',
-               help='The quota driver to use'),
     cfg.ListOpt('enabled-notification-handlers', default=[],
                 help='Enabled Notification Handlers'),
     cfg.ListOpt('domain-name-blacklist',

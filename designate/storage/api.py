@@ -51,7 +51,7 @@ class StorageAPI(object):
         """
         return self.storage.get_quota(context, quota_id)
 
-    def find_quotas(self, context, criterion):
+    def find_quotas(self, context, criterion=None):
         """
         Find Quotas
 

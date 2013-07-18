@@ -19,9 +19,9 @@ from designate.tests.test_quota import QuotaTestCase
 LOG = logging.getLogger(__name__)
 
 
-class ConfigQuotaTest(QuotaTestCase):
+class NoopQuotaTest(QuotaTestCase):
     __test__ = True
 
     def setUp(self):
-        self.config(quota_driver='config', group='service:central')
-        super(ConfigQuotaTest, self).setUp()
+        self.config(quota_driver='noop')
+        super(NoopQuotaTest, self).setUp()

@@ -19,9 +19,8 @@ from designate.quota.base import Quota
 LOG = logging.getLogger(__name__)
 
 
-class ConfigQuota(Quota):
-    def _get_tenant_quotas(self, context, tenant_id):
-        # NOTE(kiall): The base class handles merging the config defaults into
-        #              the per-tenent values we return. Since we only care
-        #              about the config values, we return an empty dict.
+class NoopQuota(Quota):
+    __plugin_name__ = 'noop'
+
+    def _get_quotas(self, context, tenant_id):
         return {}

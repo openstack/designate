@@ -29,10 +29,10 @@ class QuotaTestCase(TestCase):
         super(QuotaTestCase, self).setUp()
         self.quota = quota.get_quota()
 
-    def test_get_tenant_quotas(self):
+    def test_get_quotas(self):
         context = self.get_admin_context()
 
-        quotas = self.quota.get_tenant_quotas(context, 'DefaultQuotaTenant')
+        quotas = self.quota.get_quotas(context, 'DefaultQuotaTenant')
 
         self.assertIsNotNone(quotas)
         self.assertEqual(quotas, {
