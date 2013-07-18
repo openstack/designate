@@ -21,17 +21,34 @@ Glossary
 ============
 
 .. glossary::
+
    agent
      Software service running on nodes that executes actions towards typically
      nameservers like BIND or similar.
+
    central
      Software service running on a central management node that stores
      information persistantly in a backend storage using a configurable driver
      like SQLAlchemy or other.
+
    api
      HTTP REST API service for Designate
+
    mq
      A message queue, typically something like RabbitMQ or ZeroMQ
+
    storage
      A backend for storing data/information persistantly. Typically MongoDB or
      a SQL based server software.
+
+   node
+     a server, physical or virtual, running some aspect of the designate system.
+
+   sink
+     Optional Software Service that is configured to listen to events from the Nova
+     or Neutron event queue and use the central service to generate simple A records
+     for instances as they are created, and delete A records as they are deleted.
+
+   backend
+     A backend is used by the central service to manipulate the data served by a DNS
+     server.  There are backends that support PowerDNS, BIND, MySQL BIND & dnsmasq.

@@ -39,6 +39,18 @@ pip install -r requirements.txt -r test-requirements.txt
 python setup.py develop
 ````
 
+## Building the documentation
+To build the documentation from the restructred text source, do the following:
+````
+cd doc
+pip install -r requirements.txt
+sphinx-build  source/ html/
+````
+now point your browser at html/index.html
+(the official documentation is published to [readthedocs](http://designate.readthedocs.org/en/latest/install.html) by the
+maintainers.
+
+
 ## Contributing
 Install the git-review package to make life easier
 
@@ -60,4 +72,9 @@ git rebase -i
 git-review
 ````
 
+## Testing
 
+Execute a single test using py27 (test is CentralServiceTest.test_count_domains)
+````
+tox -e py27 -- designate/tests/test_central/test_service.py:CentralServiceTest.test_count_domains
+````

@@ -13,27 +13,21 @@
     License for the specific language governing permissions and limitations
     under the License.
 
-.. _gettingstarted:
+.. _getting-started:
 
 ========================
 Getting Started
 ========================
 
-Designate provides DNS As A Service (DNSaaS) for OpenStack:
+Designate is comprised of three designate components :ref:`designate-api`, :ref:`designate-central` and :ref:`designate-sink`, supported by a few standard open source components. For more info see :doc:`architecture`.
 
-- REST API for domain/record management
-- Multi-tenant
-- Integrated with Keystone for authentication
-- Framework in place to integrate with Nova and Quantum notifications (for auto-generated records)
-
-- Support for PowerDNS and Bind9 out of the box
-
-Designate is comprised of three components. For more info see :doc:`architecture`.
-
-This guide will show how to install a simple development environment for Designate, with a PowerDNS backend.
-You will be able to see Designate in action, although not to its full potential.
+This guide will walk you through setting up a development environment for Designate, using PowerDNS as the DNS
+backend, where possible the simplest options have been chosen for you.  For a more complete discussion on
+installation & configuration options, please see :doc:`architecture` and :doc:`production-architecture`.
 
 For this guide you will need access to an Ubuntu Server (12.04).
+
+.. _Development Environment:
 
 Development Environment
 +++++++++++++++++++++++
@@ -114,6 +108,7 @@ Configure Designate
 
 .. index::
    double: configure; designate
+
 ::
 
   $ editor designate.conf
@@ -174,9 +169,9 @@ You’ll now be seeing the log from the API service.
 
 Exercising the API
 ==================
-Using a web browser, curl statement, or a Rest client calls can be made to the Designate API using the following format where “command” is any of the commands listed in the Designate Documentation_.
+Using a web browser, curl statement, or a REST client calls can be made to the Designate API using the following format where “command” is any of the commands listed in the :doc:`rest`
 
-.. _Documentation: http://designate.readthedocs.org/en/latest/rest.html
+.. _Designate REST Documentation:
 
 http://IP.Address:9001/v1/command
 
