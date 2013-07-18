@@ -68,6 +68,9 @@ def factory(global_config, **local_conf):
     # Install custom converters (URL param varidators)
     app.url_map.converters['uuid'] = UUIDConverter
 
+    # disable strict slashes.  This allows trailing slashes in the URLS.
+    app.url_map.strict_slashes = False
+
     # Ensure all error responses are JSON
     def _json_error(ex):
         code = ex.code if isinstance(ex, wexceptions.HTTPException) else 500

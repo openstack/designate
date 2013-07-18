@@ -42,6 +42,15 @@ class ApiV1RecordsTest(ApiV1Test):
         self.assertIn('name', response.json)
         self.assertEqual(response.json['name'], fixture['name'])
 
+    @patch.object(central_service.Service, 'create_record')
+    def test_create_record_trailing_slash(self, mock):
+        # Create a record with a trailing slash
+        self.post('domains/%s/records/' % self.domain['id'],
+                  data=self.get_record_fixture(self.domain['name'], 0))
+
+        # verify that the central service is called
+        self.assertTrue(mock.called)
+
     def test_create_record_junk(self):
         fixture = self.get_record_fixture(self.domain['name'], 0)
 
@@ -179,6 +188,13 @@ class ApiV1RecordsTest(ApiV1Test):
         self.assertIn('records', response.json)
         self.assertEqual(2, len(response.json['records']))
 
+    @patch.object(central_service.Service, 'find_records')
+    def test_get_records_trailing_slash(self, mock):
+        self.get('domains/%s/records/' % self.domain['id'])
+
+        # verify that the central service is called
+        self.assertTrue(mock.called)
+
     @patch.object(central_service.Service, 'find_records',
                   side_effect=rpc_common.Timeout())
     def test_get_records_timeout(self, _):
@@ -203,6 +219,17 @@ class ApiV1RecordsTest(ApiV1Test):
         self.assertIn('id', response.json)
         self.assertEqual(response.json['id'], record['id'])
 
+    @patch.object(central_service.Service, 'get_record')
+    def test_get_record_trailing_slash(self, mock):
+        # Create a record
+        record = self.create_record(self.domain)
+
+        self.get('domains/%s/records/%s/' % (self.domain['id'],
+                                             record['id']))
+
+        # verify that the central service is called
+        self.assertTrue(mock.called)
+
     def test_update_record(self):
         # Create a record
         record = self.create_record(self.domain)
@@ -218,6 +245,20 @@ class ApiV1RecordsTest(ApiV1Test):
 
         self.assertIn('name', response.json)
         self.assertEqual(response.json['name'], 'prefix-%s' % record['name'])
+
+    @patch.object(central_service.Service, 'update_record')
+    def test_update_record_trailing_slash(self, mock):
+        # Create a record
+        record = self.create_record(self.domain)
+
+        data = {'name': 'prefix-%s' % record['name']}
+
+        self.put('domains/%s/records/%s/' % (self.domain['id'],
+                                             record['id']),
+                 data=data)
+
+        # verify that the central service is called
+        self.assertTrue(mock.called)
 
     def test_update_record_junk(self):
         # Create a record
@@ -291,6 +332,17 @@ class ApiV1RecordsTest(ApiV1Test):
         self.get('domains/%s/records/%s' % (self.domain['id'],
                                             record['id']),
                  status_code=404)
+
+    @patch.object(central_service.Service, 'delete_record')
+    def test_delete_record_trailing_slash(self, mock):
+        # Create a record
+        record = self.create_record(self.domain)
+
+        self.delete('domains/%s/records/%s/' % (self.domain['id'],
+                                                record['id']))
+
+        # verify that the central service is called
+        self.assertTrue(mock.called)
 
     @patch.object(central_service.Service, 'delete_record',
                   side_effect=rpc_common.Timeout())
