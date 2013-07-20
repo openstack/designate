@@ -36,9 +36,9 @@ def wrap_backend_call():
     """
     try:
         yield
-    except exceptions.Backend, exc:
+    except exceptions.Backend as exc:
         raise
-    except Exception, exc:
+    except Exception as exc:
         raise exceptions.Backend('Unknown backend failure: %r' % exc)
 
 
@@ -808,12 +808,12 @@ class Service(rpc_service.Service):
 
         try:
             backend_status = self.backend.ping(context)
-        except Exception, e:
+        except Exception as e:
             backend_status = {'status': False, 'message': str(e)}
 
         try:
             storage_status = self.storage_api.ping(context)
-        except Exception, e:
+        except Exception as e:
             storage_status = {'status': False, 'message': str(e)}
 
         if backend_status and storage_status:

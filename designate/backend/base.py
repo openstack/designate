@@ -81,7 +81,7 @@ class Backend(Plugin):
         # First up, delete the domain from the backend.
         try:
             self.delete_domain(context, domain)
-        except exceptions.DomainNotFound, e:
+        except exceptions.DomainNotFound as e:
             # NOTE(Kiall): This means a domain was missing from the backend.
             #              Good thing we're doing a sync!
             LOG.warn("Failed to delete domain '%s' during sync. Message: %s",
@@ -104,7 +104,7 @@ class Backend(Plugin):
         # First up, delete the record from the backend.
         try:
             self.delete_record(context, domain, record)
-        except exceptions.RecordNotFound, e:
+        except exceptions.RecordNotFound as e:
             # NOTE(Kiall): This means a record was missing from the backend.
             #              Good thing we're doing a sync!
             LOG.warn("Failed to delete record '%s' in domain '%s' during sync."

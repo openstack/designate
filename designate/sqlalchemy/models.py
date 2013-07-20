@@ -31,7 +31,7 @@ class Base(object):
 
         try:
             session.flush()
-        except IntegrityError, e:
+        except IntegrityError as e:
             non_unique_strings = (
                 'duplicate entry',
                 'not unique'

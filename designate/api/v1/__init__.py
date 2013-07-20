@@ -133,7 +133,7 @@ class FaultWrapperMiddleware(wsgi.Middleware):
     def __call__(self, request):
         try:
             return request.get_response(self.application)
-        except exceptions.Base, e:
+        except exceptions.Base as e:
             # Handle Designate Exceptions
             status = e.error_code if hasattr(e, 'error_code') else 500
 
@@ -152,7 +152,7 @@ class FaultWrapperMiddleware(wsgi.Middleware):
                 response['errors'] = e.errors
 
             return self._handle_exception(request, e, status, response)
-        except rpc_common.Timeout, e:
+        except rpc_common.Timeout as e:
             # Special case for RPC timeout's
             response = {
                 'code': 504,
@@ -160,7 +160,7 @@ class FaultWrapperMiddleware(wsgi.Middleware):
             }
 
             return self._handle_exception(request, e, 504, response)
-        except Exception, e:
+        except Exception as e:
             # Handle all other exception types
             return self._handle_exception(request, e)
 

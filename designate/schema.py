@@ -15,7 +15,7 @@
 # under the License.
 import re
 import jsonschema
-import ipaddr
+import netaddr
 import iso8601
 from datetime import datetime
 from designate.openstack.common import log as logging
@@ -101,8 +101,8 @@ class SchemaValidator(jsonschema.Draft3Validator):
             # IPv4 Address
             if self.is_type(instance, "string"):
                 try:
-                    ipaddr.IPv4Address(instance)
-                except ipaddr.AddressValueError:
+                    netaddr.IPAddress(instance, version=4)
+                except netaddr.AddrFormatError:
                     msg = "%s is not an IPv4 address" % (instance)
                     yield jsonschema.ValidationError(msg)
                 else:
@@ -113,8 +113,8 @@ class SchemaValidator(jsonschema.Draft3Validator):
             # IPv6 Address
             if self.is_type(instance, "string"):
                 try:
-                    ipaddr.IPv6Address(instance)
-                except ipaddr.AddressValueError:
+                    netaddr.IPAddress(instance, version=6)
+                except netaddr.AddrFormatError:
                     msg = "%s is not an IPv6 address" % (instance)
                     yield jsonschema.ValidationError(msg)
         elif format == "host-name":
