@@ -470,9 +470,6 @@ class Service(rpc_service.Service):
 
         policy.check('get_domain_servers', context, target)
 
-        if criterion is None:
-            criterion = {}
-
         # TODO(kiall): Once we allow domains to be allocated on 1 of N server
         #              pools, return the filtered list here.
         return self.storage_api.find_servers(context, criterion)
