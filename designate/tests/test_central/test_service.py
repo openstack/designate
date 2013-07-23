@@ -969,7 +969,8 @@ class CentralServiceTest(CentralTestCase):
 
         # Retrieve it, and ensure it's the same
         criterion = {'name': record_name}
-        record = self.central_service.find_record(context, criterion)
+        record = self.central_service.find_record(context, domain['id'],
+                                                  criterion)
         self.assertEqual(record['id'], expected_record['id'])
         self.assertEqual(record['name'], expected_record['name'])
 

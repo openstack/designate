@@ -288,11 +288,12 @@ class Storage(Plugin):
         """
 
     @abc.abstractmethod
-    def find_record(self, context, criterion):
+    def find_record(self, context, domain_id, criterion):
         """
         Find a single Record.
 
         :param context: RPC Context.
+        :param domain_id: Domain ID where the records reside.
         :param criterion: Criteria to filter by.
         """
 

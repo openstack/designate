@@ -660,14 +660,18 @@ class Service(rpc_service.Service):
 
         return self.storage_api.find_records(context, domain_id, criterion)
 
-    def find_record(self, context, criterion):
-        target = {'tenant_id': context.tenant_id}
+    def find_record(self, context, domain_id, criterion=None):
+        domain = self.storage_api.get_domain(context, domain_id)
+
+        target = {
+            'domain_id': domain_id,
+            'domain_name': domain['name'],
+            'tenant_id': domain['tenant_id']
+        }
+
         policy.check('find_record', context, target)
 
-        if not context.is_admin:
-            criterion['tenant_id'] = context.tenant_id
-
-        return self.storage_api.find_record(context, criterion)
+        return self.storage_api.find_record(context, domain_id, criterion)
 
     def update_record(self, context, domain_id, record_id, values,
                       increment_serial=True):

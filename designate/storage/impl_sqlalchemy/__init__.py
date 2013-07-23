@@ -401,22 +401,16 @@ class SQLAlchemyStorage(base.Storage):
 
         return dict(record)
 
-    def _find_records(self, context, criterion, one=False):
+    def find_record(self, context, domain_id, criterion=None):
         query = self.session.query(models.Record)
+        query = query.filter_by(domain_id=domain_id)
         query = self._apply_criterion(models.Record, query, criterion)
 
-        if one:
-            try:
-                record = query.one()
-                return dict(record)
-            except (exc.NoResultFound, exc.MultipleResultsFound):
-                raise exceptions.RecordNotFound()
-        else:
-            records = query.all()
-            return [dict(r) for r in records]
-
-    def find_record(self, context, criterion):
-        return self._find_records(context, criterion, one=True)
+        try:
+            record = query.one()
+            return dict(record)
+        except (exc.NoResultFound, exc.MultipleResultsFound):
+            raise exceptions.RecordNotFound()
 
     def update_record(self, context, record_id, values):
         record = self._get_record(context, record_id)

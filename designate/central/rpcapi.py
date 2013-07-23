@@ -209,8 +209,10 @@ class CentralAPI(rpc_proxy.RpcProxy):
 
         return self.call(context, msg)
 
-    def find_record(self, context, criterion):
-        msg = self.make_msg('find_record', criterion=criterion)
+    def find_record(self, context, domain_id, criterion=None):
+        msg = self.make_msg('find_record',
+                            domain_id=domain_id,
+                            criterion=criterion)
 
         return self.call(context, msg)
 
