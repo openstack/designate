@@ -658,9 +658,6 @@ class Service(rpc_service.Service):
 
         policy.check('find_records', context, target)
 
-        if not context.is_admin:
-            criterion['tenant_id'] = context.tenant_id
-
         return self.storage_api.find_records(context, domain_id, criterion)
 
     def find_record(self, context, criterion):
