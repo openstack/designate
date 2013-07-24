@@ -96,6 +96,7 @@ class BaseAddressHandler(Handler):
         LOG.debug('Domain: %r' % domain)
 
         data = extra.copy()
+        LOG.debug('Event data: %s' % data)
         data['domain'] = domain['name']
 
         context = DesignateContext.get_admin_context()
@@ -116,6 +117,8 @@ class BaseAddressHandler(Handler):
                     'managed_plugin_type': self.get_plugin_type(),
                     'managed_resource_type': resource_type,
                     'managed_resource_id': resource_id})
+            LOG.debug('Creating record in %s with values %r', domain['id'],
+                      record_values)
             central_api.create_record(context, domain['id'], record_values)
 
     def _delete(self, managed=True, resource_id=None, resource_type='instance',
