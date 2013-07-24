@@ -15,6 +15,7 @@
 # under the License.
 import contextlib
 from designate import storage
+from designate.openstack.common import excutils
 
 
 class StorageAPI(object):
@@ -39,8 +40,8 @@ class StorageAPI(object):
         try:
             yield quota
         except Exception:
-            self.storage.delete_quota(context, quota['id'])
-            raise
+            with excutils.save_and_reraise_exception():
+                self.storage.delete_quota(context, quota['id'])
 
     def get_quota(self, context, quota_id):
         """
@@ -84,9 +85,9 @@ class StorageAPI(object):
         try:
             yield quota
         except Exception:
-            restore = self._extract_dict_subset(backup, values.keys())
-            self.storage.update_quota(context, quota_id, restore)
-            raise
+            with excutils.save_and_reraise_exception():
+                restore = self._extract_dict_subset(backup, values.keys())
+                self.storage.update_quota(context, quota_id, restore)
 
     @contextlib.contextmanager
     def delete_quota(self, context, quota_id):
@@ -112,8 +113,8 @@ class StorageAPI(object):
         try:
             yield server
         except Exception:
-            self.storage.delete_server(context, server['id'])
-            raise
+            with excutils.save_and_reraise_exception():
+                self.storage.delete_server(context, server['id'])
 
     def get_server(self, context, server_id):
         """
@@ -157,9 +158,9 @@ class StorageAPI(object):
         try:
             yield server
         except Exception:
-            restore = self._extract_dict_subset(backup, values.keys())
-            self.storage.update_server(context, server_id, restore)
-            raise
+            with excutils.save_and_reraise_exception():
+                restore = self._extract_dict_subset(backup, values.keys())
+                self.storage.update_server(context, server_id, restore)
 
     @contextlib.contextmanager
     def delete_server(self, context, server_id):
@@ -184,8 +185,8 @@ class StorageAPI(object):
         try:
             yield tsigkey
         except Exception:
-            self.storage.delete_tsigkey(context, tsigkey['id'])
-            raise
+            with excutils.save_and_reraise_exception():
+                self.storage.delete_tsigkey(context, tsigkey['id'])
 
     def get_tsigkey(self, context, tsigkey_id):
         """
@@ -229,9 +230,9 @@ class StorageAPI(object):
         try:
             yield tsigkey
         except Exception:
-            restore = self._extract_dict_subset(backup, values.keys())
-            self.storage.update_tsigkey(context, tsigkey_id, restore)
-            raise
+            with excutils.save_and_reraise_exception():
+                restore = self._extract_dict_subset(backup, values.keys())
+                self.storage.update_tsigkey(context, tsigkey_id, restore)
 
     @contextlib.contextmanager
     def delete_tsigkey(self, context, tsigkey_id):
@@ -282,8 +283,8 @@ class StorageAPI(object):
         try:
             yield domain
         except Exception:
-            self.storage.delete_domain(context, domain['id'])
-            raise
+            with excutils.save_and_reraise_exception():
+                self.storage.delete_domain(context, domain['id'])
 
     def get_domain(self, context, domain_id):
         """
@@ -327,9 +328,9 @@ class StorageAPI(object):
         try:
             yield domain
         except Exception:
-            restore = self._extract_dict_subset(backup, values.keys())
-            self.storage.update_domain(context, domain_id, restore)
-            raise
+            with excutils.save_and_reraise_exception():
+                restore = self._extract_dict_subset(backup, values.keys())
+                self.storage.update_domain(context, domain_id, restore)
 
     @contextlib.contextmanager
     def delete_domain(self, context, domain_id):
@@ -365,8 +366,8 @@ class StorageAPI(object):
         try:
             yield record
         except Exception:
-            self.storage.delete_record(context, record['id'])
-            raise
+            with excutils.save_and_reraise_exception():
+                self.storage.delete_record(context, record['id'])
 
     def get_record(self, context, record_id):
         """
@@ -411,9 +412,9 @@ class StorageAPI(object):
         try:
             yield record
         except Exception:
-            restore = self._extract_dict_subset(backup, values.keys())
-            self.storage.update_record(context, record_id, restore)
-            raise
+            with excutils.save_and_reraise_exception():
+                restore = self._extract_dict_subset(backup, values.keys())
+                self.storage.update_record(context, record_id, restore)
 
     @contextlib.contextmanager
     def delete_record(self, context, record_id):
