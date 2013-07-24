@@ -104,7 +104,7 @@ notification_topics          monitor                               Notification 
 control_exchange             nova                                  Nova Control Exchange
 domain_id                    None                                  UUID of a domain/zone where records are to be created/deleted
 format                       None                                  you can use any field in the notification message,
-                                                                   compute.instance.create.start, eg: |br|
+                                                                   compute.instance.create.end, eg: |br|
                                                                    format = '%(octet0)s-%(octet1)s-%(octet2)s-%(octet3)s.%(domain)s' |br|
                                                                    format = '%(display_name)s.%(domain)s'
 ===========================  ====================================  ==============================================================
