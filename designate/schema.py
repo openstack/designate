@@ -109,6 +109,14 @@ class SchemaValidator(jsonschema.Draft3Validator):
                     if instance == '0.0.0.0':  # RFC5735
                         msg = "%s is not an IPv4 address" % (instance)
                         yield jsonschema.ValidationError(msg)
+                    # is it a dotted quad & all 4 fields <= 255
+                    m = re.match('(\d+)\.(\d+)\.(\d+)\.(\d+)$', instance)
+                    if not (m and (int(m.group(1)) <= 255 and
+                                   int(m.group(2)) <= 255 and
+                                   int(m.group(3)) <= 255 and
+                                   int(m.group(4)) <= 255)):
+                        msg = "%s is not an IPv4 address" % (instance)
+                        yield jsonschema.ValidationError(msg)
         elif format == "ipv6":
             # IPv6 Address
             if self.is_type(instance, "string"):
