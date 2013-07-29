@@ -87,10 +87,10 @@ Installing Designate
 ::
 
       $ DEBIAN_FRONTEND=noninteractive apt-get install pdns-server pdns-backend-sqlite3
-      #Update path to SQLite database to /root/designate/powerdns.sqlite or wherever your top level designate directory resides
+      #Update path to SQLite database to /root/designate/pdns.sqlite or wherever your top level designate directory resides
       $ editor /etc/powerdns/pdns.d/pdns.local.gsqlite3
       #Change the corresponding line in the config file to mirror:
-      gsqlite3-database=/root/designate/powerdns.sqlite
+      gsqlite3-database=/root/designate/pdns.sqlite
       #Restart PowerDNS:
       $ service pdns restart
 
@@ -102,6 +102,11 @@ Installing Designate
    $ echo "designate ALL=(ALL) NOPASSWD:ALL" | sudo tee -a /etc/sudoers.d/90-designate
    $ sudo chmod 0440 /etc/sudoers.d/90-designate
 
+8. Make the directory for Designate’s log files
+
+::
+
+   $ mkdir /var/log/designate
 
 Configure Designate
 ===================
@@ -132,6 +137,8 @@ Initialize & Start the Central Service
    #Initialize and sync the PowerDNS database:
    $ designate-manage powerdns database-init
    $ designate-manage powerdns database-sync
+   #Restart PowerDNS
+   $ service pdns restart
    #Start the central service:
    $ designate-central
 
