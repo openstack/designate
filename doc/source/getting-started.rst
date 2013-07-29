@@ -115,7 +115,8 @@ Configure Designate
 
 Copy or mirror the configuration from this sample file here:
 
-.. literalinclude:: ../examples/basic-config-sample.conf
+.. literalinclude:: examples/basic-config-sample.conf
+   :language: ini
 
 Initialize & Start the Central Service
 ======================================
