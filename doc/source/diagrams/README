@@ -1,0 +1,9 @@
+
+
+*.shapes files are from the OSX App Shapes (http://shapesapp.com/)
+
+It's hoped that this diagrams can be replaced by something from a multi-platform tool such as:
+
+* Dia
+* http://sphinx-doc.org/ext/graphviz.html (see http://graphviz.org/content/cluster as a possible example)
+* aafig (https://bitbucket.org/birkenfeld/sphinx-contrib)
