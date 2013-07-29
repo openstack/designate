@@ -33,6 +33,8 @@ cfg.CONF.register_opts([
     cfg.StrOpt('auth_strategy', default='noauth',
                help='The strategy to use for auth. Supports noauth or '
                     'keystone'),
+    cfg.BoolOpt('enable-api-v1', default=True),
+    cfg.BoolOpt('enable-api-v2', default=False),
 ], group='service:api')
 
 

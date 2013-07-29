@@ -1,0 +1,14 @@
+{
+    "$schema": "http://json-schema.org/draft-04/hyper-schema",
+
+    "additionalProperties": false,
+
+    "required": ["address"],
+
+    "properties": {
+        "address": {
+            "type": "string",
+            "format": "ipv6"
+        }
+    }
+}

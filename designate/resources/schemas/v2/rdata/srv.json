@@ -1,0 +1,29 @@
+{
+    "$schema": "http://json-schema.org/draft-04/hyper-schema",
+
+    "additionalProperties": false,
+
+    "required": ["priority", "weight", "port", "target"],
+
+    "properties": {
+        "priority": {
+            "type": "integer",
+            "min": 0,
+            "max": 65535
+        },
+        "weight": {
+            "type": "integer",
+            "min": 0,
+            "max": 65535
+        },
+        "port": {
+            "type": "integer",
+            "min": 0,
+            "max": 65535
+        },
+        "target": {
+            "type": "string",
+            "format": "hostname"
+        }
+    }
+}

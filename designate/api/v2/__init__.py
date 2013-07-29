@@ -1,4 +1,4 @@
-# Copyright 2012 Hewlett-Packard Development Company, L.P. All Rights Reserved.
+# Copyright 2013 Hewlett-Packard Development Company, L.P.
 #
 # Author: Kiall Mac Innes <kiall@hp.com>
 #
@@ -13,31 +13,29 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import flask
+import pecan.deploy
 from oslo.config import cfg
+from designate.openstack.common import log as logging
+
+LOG = logging.getLogger(__name__)
 
 
 def factory(global_config, **local_conf):
-    app = flask.Flask('designate.api.versions')
+    if not cfg.CONF['service:api'].enable_api_v2:
+        def disabled_app(environ, start_response):
+            status = '404 Not Found'
+            start_response(status, [])
+            return []
 
-    versions = []
+        return disabled_app
 
-    if cfg.CONF['service:api'].enable_api_v1:
-        versions.append({
-            "id": "v1",
-            "status": "CURRENT"
-        })
+    conf = {
+        'app': {
+            'root': 'designate.api.v2.controllers.root.RootController',
+            'modules': ['designate.api.v2']
+        }
+    }
 
-    if cfg.CONF['service:api'].enable_api_v2:
-        versions.append({
-            "id": "v2",
-            "status": "EXPERIMENTAL"
-        })
-
-    @app.route('/', methods=['GET'])
-    def version_list():
-        return flask.jsonify({
-            "versions": versions
-        })
+    app = pecan.deploy.deploy(conf)
 
     return app

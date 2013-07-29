@@ -1,4 +1,4 @@
-# Copyright 2012 Hewlett-Packard Development Company, L.P. All Rights Reserved.
+# Copyright 2013 Hewlett-Packard Development Company, L.P.
 #
 # Author: Kiall Mac Innes <kiall@hp.com>
 #
@@ -13,31 +13,26 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import flask
+import pecan
+import pecan.deploy
 from oslo.config import cfg
+from designate.openstack.common import log as logging
+
+LOG = logging.getLogger(__name__)
 
 
-def factory(global_config, **local_conf):
-    app = flask.Flask('designate.api.versions')
+def setup_app(pecan_config):
+    config = dict(pecan_config)
 
-    versions = []
+    if cfg.CONF.debug:
+        config['app']['debug'] = True
 
-    if cfg.CONF['service:api'].enable_api_v1:
-        versions.append({
-            "id": "v1",
-            "status": "CURRENT"
-        })
+    pecan.configuration.set_config(config, overwrite=True)
 
-    if cfg.CONF['service:api'].enable_api_v2:
-        versions.append({
-            "id": "v2",
-            "status": "EXPERIMENTAL"
-        })
-
-    @app.route('/', methods=['GET'])
-    def version_list():
-        return flask.jsonify({
-            "versions": versions
-        })
+    app = pecan.make_app(
+        pecan_config.app.root,
+        debug=getattr(pecan_config.app, 'debug', False),
+        force_canonical=getattr(pecan_config.app, 'force_canonical', True),
+    )
 
     return app

@@ -57,6 +57,12 @@ root_helper = sudo
 # Authentication strategy to use - can be either "noauth" or "keystone"
 #auth_strategy = noauth
 
+# Enable Version 1 API
+#enable_api_v1 = True
+
+# Enable Version 2 API (experimental)
+#enable_api_v2 = False
+
 # Enabled API Version 1 extensions
 #enabled_extensions_v1 = diagnostics, quotas, reports, sync
 

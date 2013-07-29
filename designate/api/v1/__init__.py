@@ -59,6 +59,14 @@ class DesignateRequest(flask.Request, wrappers.AcceptMixin,
 
 
 def factory(global_config, **local_conf):
+    if not cfg.CONF['service:api'].enable_api_v1:
+        def disabled_app(environ, start_response):
+            status = '404 Not Found'
+            start_response(status, [])
+            return []
+
+        return disabled_app
+
     app = flask.Flask('designate.api.v1')
     app.request_class = DesignateRequest
     app.config.update(

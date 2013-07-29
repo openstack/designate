@@ -1,0 +1,38 @@
+{
+    "$schema": "http://json-schema.org/draft-04/hyper-schema",
+
+    "id": "recordsets",
+
+    "title": "recordsets",
+    "description": "RecordSets",
+    "additionalProperties": false,
+
+    "required": ["recordsets"],
+
+    "properties": {
+        "recordsets": {
+            "type": "array",
+            "description": "RecordSets",
+            "items": {"$ref": "recordset#/properties/recordset"}
+        },
+        "links": {
+            "type": "object",
+            "additionalProperties": false,
+
+            "properties": {
+                "self": {
+                    "type": "string",
+                    "format": "url"
+                },
+                "next": {
+                    "type": "string",
+                    "format": "url"
+                },
+                "previous": {
+                    "type": "string",
+                    "format": "url"
+                }
+            }
+        }
+    }
+}

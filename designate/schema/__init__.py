@@ -31,6 +31,9 @@ class Schema(object):
         if version == 'v1':
             self.validator = validators.Draft3Validator(
                 self.raw_schema, resolver=self.resolver)
+        elif version == 'v2':
+            self.validator = validators.Draft4Validator(
+                self.raw_schema, resolver=self.resolver)
         else:
             raise Exception('Unknown API version: %s' % version)
 

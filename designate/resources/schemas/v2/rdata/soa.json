@@ -1,0 +1,43 @@
+{
+    "$schema": "http://json-schema.org/draft-04/hyper-schema",
+
+    "additionalProperties": false,
+
+    "required": ["mname", "rname", "serial", "refresh", "retry", "expire", "minimun"],
+
+    "properties": {
+        "mname": {
+            "type": "string",
+            "format": "hostname"
+        },
+        "rname": {
+            "type": "string",
+            "format": "hostname"
+        },
+        "serial": {
+            "type": "integer",
+            "min": 0,
+            "max": 214748364
+        },
+        "refresh": {
+            "type": "integer",
+            "min": 0,
+            "max": 214748364
+        },
+        "retry": {
+            "type": "integer",
+            "min": 0,
+            "max": 214748364
+        },
+        "expire": {
+            "type": "integer",
+            "min": 0,
+            "max": 214748364
+        },
+        "minimun": {
+            "type": "integer",
+            "min": 0,
+            "max": 214748364
+        }
+    }
+}

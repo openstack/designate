@@ -1,0 +1,122 @@
+{
+    "$schema": "http://json-schema.org/draft-04/hyper-schema",
+
+    "id": "zone",
+
+    "title": "zone",
+    "description": "Zone",
+
+    "additionalProperties": false,
+    "required": ["zone"],
+
+    "properties": {
+        "zone": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "email"],
+
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Zone identifier",
+                    "pattern": "^([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}$",
+                    "readOnly": true
+                },
+                "pool_id": {
+                    "type": "string",
+                    "description": "Pool identifier",
+                    "pattern": "^([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}$",
+                    "immutable": true
+                },
+                "project_id": {
+                    "type": "string",
+                    "description": "Project identifier",
+                    "maxLength": 36,
+                    "immutable": true
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Zone name",
+                    "format": "domain-name",
+                    "maxLength": 255,
+                    "immutable": true
+                },
+                "email": {
+                    "type": "string",
+                    "description": "Hostmaster email address",
+                    "format": "email",
+                    "maxLength": 255
+                },
+                "ttl": {
+                    "type": "integer",
+                    "description": "Default time to live",
+                    "min": 0,
+                    "max": 2147483647
+                },
+                "status": {
+                    "type": "string",
+                    "description": "Zone Status",
+                    "enum": ["ACTIVE", "PENDING", "DELETING", "ERROR"],
+                    "readOnly": true
+                },
+                "serial": {
+                    "type": "integer",
+                    "description": "Zone serial number",
+                    "min": 1,
+                    "max": 4294967295,
+                    "readOnly": true
+                },
+                "notes": {
+                    "type": ["string", "null"],
+                    "description": "Notes",
+                    "maxLength": 100
+                },
+                "version": {
+                    "type": "integer",
+                    "description": "Zone version number",
+                    "readOnly": true
+                },
+                "created_at": {
+                    "type": "string",
+                    "description": "Date and time of Zone creation",
+                    "format": "date-time",
+                    "readOnly": true
+                },
+                "updated_at": {
+                    "type": ["string", "null"],
+                    "description": "Date and time of last zone modification",
+                    "format": "date-time",
+                    "readOnly": true
+                }
+            }
+        },
+        "links": {
+            "type": "object",
+            "additionalProperties": false,
+
+            "properties": {
+                "self": {
+                    "type": "string",
+                    "format": "url"
+                }
+            }
+        }
+    },
+
+    "links": [{
+        "rel": "self",
+        "href": "/zones/{id}"
+    }, {
+        "rel": "recordsets",
+        "href": "/zones/{id}/recordsets"
+    }, {
+        "rel": "nameservers",
+        "href": "/zones/{id}/nameservers"
+    }, {
+        "rel": "pool",
+        "href": "/pools/{pool_id}/nameservers"
+    }, {
+        "rel": "collection",
+        "href": "/zones"
+    }]
+}

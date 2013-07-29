@@ -1,0 +1,14 @@
+{
+    "$schema": "http://json-schema.org/draft-04/hyper-schema",
+
+    "additionalProperties": false,
+
+    "required": ["nsdname"],
+
+    "properties": {
+        "nsdname": {
+            "type": "string",
+            "format": "hostname"
+        }
+    }
+}
