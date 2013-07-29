@@ -61,6 +61,17 @@ root_helper = sudo
 #enabled_extensions_v1 = diagnostics, quotas, reports, sync
 
 #-----------------------
+# Keystone Middleware
+#-----------------------
+[keystone_authtoken]
+#auth_host = 127.0.0.1
+#auth_port = 35357
+#auth_protocol = http
+#admin_tenant_name = service
+#admin_user = designate
+#admin_password = designate
+
+#-----------------------
 # Agent Service
 #-----------------------
 [service:agent]

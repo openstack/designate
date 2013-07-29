@@ -110,7 +110,6 @@ class TestCase(unittest2.TestCase):
 
         self.config(
             auth_strategy='noauth',
-            api_paste_config='api-paste.ini.sample',
             group='service:api'
         )
 
