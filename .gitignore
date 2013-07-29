@@ -13,7 +13,6 @@ venv
 *.sqlite
 var/*
 etc/designate/*.conf
-etc/designate/*.ini
 AUTHORS
 ChangeLog
 doc/source/api/*
