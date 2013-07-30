@@ -1,6 +1,6 @@
-# Copyright 2012 Managed I.T.
+# Copyright 2013 Hewlett-Packard Development Company, L.P.
 #
-# Author: Kiall Mac Innes <kiall@managedit.ie>
+# Author: Kiall Mac Innes <kiall@hp.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -13,29 +13,15 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import jsonschema
-from datetime import datetime
-from designate.openstack.common import log as logging
 from designate.tests import TestCase
-from designate import schema
+from designate.openstack.common import log as logging
+from designate.schema import format
 
 LOG = logging.getLogger(__name__)
 
 
-class TestSchemaValidator(TestCase):
-    def test_validate_format_ipaddress(self):
-        test_schema = {
-            "properties": {
-                "ipaddress": {
-                    "type": "string",
-                    "format": "ip-address",
-                    "required": True
-                },
-            }
-        }
-
-        validator = schema.SchemaValidator(test_schema)
-
+class SchemaFormatTest(TestCase):
+    def test_is_ipv4(self):
         valid_ipaddresses = [
             '0.0.0.1',
             '127.0.0.1',
@@ -59,27 +45,12 @@ class TestSchemaValidator(TestCase):
         ]
 
         for ipaddress in valid_ipaddresses:
-            LOG.debug('Expecting success for: %s' % ipaddress)
-            validator.validate({'ipaddress': ipaddress})
+            self.assertTrue(format.is_ipv4(ipaddress))
 
         for ipaddress in invalid_ipaddresses:
-            with self.assertRaises(jsonschema.ValidationError):
-                LOG.debug('Expecting failure for: %s' % ipaddress)
-                validator.validate({'ipaddress': ipaddress})
+            self.assertFalse(format.is_ipv4(ipaddress))
 
-    def test_validate_format_hostname(self):
-        test_schema = {
-            "properties": {
-                "hostname": {
-                    "type": "string",
-                    "format": "host-name",
-                    "required": True
-                },
-            }
-        }
-
-        validator = schema.SchemaValidator(test_schema)
-
+    def test_is_hostname(self):
         valid_hostnames = [
             'example.com.',
             'www.example.com.',
@@ -141,27 +112,12 @@ class TestSchemaValidator(TestCase):
         ]
 
         for hostname in valid_hostnames:
-            LOG.debug('Expecting success for: %s' % hostname)
-            validator.validate({'hostname': hostname})
+            self.assertTrue(format.is_hostname(hostname))
 
         for hostname in invalid_hostnames:
-            with self.assertRaises(jsonschema.ValidationError):
-                LOG.debug('Expecting failure for: %s' % hostname)
-                validator.validate({'hostname': hostname})
+            self.assertFalse(format.is_hostname(hostname))
 
-    def test_validate_format_domainname(self):
-        test_schema = {
-            "properties": {
-                "domainname": {
-                    "type": "string",
-                    "format": "domain-name",
-                    "required": True
-                },
-            }
-        }
-
-        validator = schema.SchemaValidator(test_schema)
-
+    def test_is_domainname(self):
         valid_domainnames = [
             'example.com.',
             'www.example.com.',
@@ -226,27 +182,12 @@ class TestSchemaValidator(TestCase):
         ]
 
         for domainname in valid_domainnames:
-            LOG.debug('Expecting success for: %s' % domainname)
-            validator.validate({'domainname': domainname})
+            self.assertTrue(format.is_domainname(domainname))
 
         for domainname in invalid_domainnames:
-            with self.assertRaises(jsonschema.ValidationError):
-                LOG.debug('Expecting failure for: %s' % domainname)
-                validator.validate({'domainname': domainname})
+            self.assertFalse(format.is_domainname(domainname))
 
-    def test_validate_format_email(self):
-        test_schema = {
-            "properties": {
-                "email": {
-                    "type": "string",
-                    "format": "email",
-                    "required": True
-                },
-            }
-        }
-
-        validator = schema.SchemaValidator(test_schema)
-
+    def test_is_email(self):
         valid_emails = [
             'user@example.com',
             'user@emea.example.com',
@@ -289,36 +230,8 @@ class TestSchemaValidator(TestCase):
 
         for email in valid_emails:
             LOG.debug('Expecting success for: %s' % email)
-            validator.validate({'email': email})
+            self.assertTrue(format.is_email(email))
 
         for email in invalid_emails:
-            with self.assertRaises(jsonschema.ValidationError):
-                LOG.debug('Expecting failure for: %s' % email)
-                validator.validate({'email': email})
-
-    def test_validate_format_datetime(self):
-        test_schema = {
-            "properties": {
-                "date_time": {
-                    "type": "string",
-                    "format": "date-time",
-                    "required": True
-                },
-            }
-        }
-
-        validator = schema.SchemaValidator(test_schema)
-
-        valid_datetimes = [
-            datetime(2013, 1, 1)
-        ]
-
-        for dt in valid_datetimes:
-            validator.validate({'date_time': dt})
-
-
-class TestSchema(TestCase):
-    def test_constructor(self):
-        domain = schema.Schema('v1', 'domain')
-
-        self.assertIsInstance(domain, schema.Schema)
+            LOG.debug('Expecting failure for: %s' % email)
+            self.assertFalse(format.is_email(email))

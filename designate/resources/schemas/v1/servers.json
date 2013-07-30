@@ -1,5 +1,5 @@
 {
-    "id": "/schemas/servers",
+    "id": "servers",
 
     "$schema": "http://json-schema.org/draft-03/hyper-schema",
 
@@ -11,7 +11,7 @@
         "servers": {
             "type": "array",
             "description": "Servers",
-            "items": {"$ref": "/schemas/server"}
+            "items": {"$ref": "server#"}
         }
     }
 }

@@ -1,5 +1,5 @@
 {
-    "id": "/schemas/server",
+    "id": "server",
 
     "$schema": "http://json-schema.org/draft-03/hyper-schema",
 
