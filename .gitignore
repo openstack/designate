@@ -20,4 +20,5 @@ doc/build/*
 dist
 designate/versioninfo
 *.orig
+*.DS_Store
 /bind9
