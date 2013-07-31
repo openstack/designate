@@ -1,5 +1,5 @@
 {
-    "id": "/schemas/records",
+    "id": "records",
 
     "$schema": "http://json-schema.org/draft-03/hyper-schema",
 
@@ -11,7 +11,7 @@
         "records": {
             "type": "array",
             "description": "Records",
-            "items": {"$ref": "/schemas/record"}
+            "items": {"$ref": "record#"}
         }
     }
 }
