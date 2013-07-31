@@ -105,9 +105,16 @@ class PowerDNSBackend(base.Backend):
 
     def delete_tsigkey(self, context, tsigkey):
         """ Delete a TSIG Key """
-        # Delete this TSIG Key itself
-        tsigkey_m = self._get_tsigkey(tsigkey['id'])
-        tsigkey_m.delete(self.session)
+        try:
+            # Delete this TSIG Key itself
+            tsigkey_m = self._get_tsigkey(tsigkey['id'])
+            tsigkey_m.delete(self.session)
+        except exceptions.TsigKeyNotFound:
+            # If the TSIG Key is already gone, that's ok. We're deleting it
+            # anyway, so just log and continue.
+            LOG.critical('Attempted to delete a TSIG key which is not present '
+                         'in the backend. ID: %s', tsigkey['id'])
+            return
 
         # Delete this TSIG Key from every domain's metadata
         self.session.query(models.DomainMetadata)\
@@ -169,7 +176,15 @@ class PowerDNSBackend(base.Backend):
         self._update_soa(domain)
 
     def delete_domain(self, context, domain):
-        domain_m = self._get_domain(domain['id'])
+        try:
+            domain_m = self._get_domain(domain['id'])
+        except exceptions.DomainNotFound:
+            # If the Domain is already gone, that's ok. We're deleting it
+            # anyway, so just log and continue.
+            LOG.critical('Attempted to delete a domain which is not present '
+                         'in the backend. ID: %s', domain['id'])
+            return
+
         domain_m.delete(self.session)
 
         # Ensure the records are deleted
@@ -217,8 +232,15 @@ class PowerDNSBackend(base.Backend):
         self._update_soa(domain)
 
     def delete_record(self, context, domain, record):
-        record_m = self._get_record(record['id'])
-        record_m.delete(self.session)
+        try:
+            record_m = self._get_record(record['id'])
+        except exceptions.DomainNotFound:
+            # If the Record is already gone, that's ok. We're deleting it
+            # anyway, so just log and continue.
+            LOG.critical('Attempted to delete a record which is not present '
+                         'in the backend. ID: %s', record['id'])
+        else:
+            record_m.delete(self.session)
 
         self._update_soa(domain)
 
