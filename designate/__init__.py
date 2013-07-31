@@ -40,6 +40,7 @@ cfg.CONF.register_opts([
 # Set some Oslo Log defaults
 cfg.CONF.set_default('default_log_levels',
                      ['amqplib=WARN',
+                      'amqp=WARN',
                       'sqlalchemy=WARN',
                       'boto=WARN',
                       'suds=INFO',
