@@ -42,6 +42,9 @@ class SchemaFormatTest(TestCase):
             '-1.0.0.1',
             '1.0.-0.1',
             '1.0.0.-1',
+            'ABCDEF',
+            'ABC/DEF',
+            'ABC\\DEF',
         ]
 
         for ipaddress in valid_ipaddresses:

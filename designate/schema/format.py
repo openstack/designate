@@ -31,7 +31,7 @@ def is_ipv4(instance):
         # netaddr happly accepts, and expands "127.0" into "127.0.0.0"
         if str(address) != instance:
             return False
-    except netaddr.AddrFormatError:
+    except Exception:
         return False
 
     if instance == '0.0.0.0':  # RFC5735
@@ -44,7 +44,7 @@ def is_ipv4(instance):
 def is_ipv6(instance):
     try:
         netaddr.IPAddress(instance, version=6)
-    except netaddr.AddrFormatError:
+    except Exception:
         return False
 
     return True
