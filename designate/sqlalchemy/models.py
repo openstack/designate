@@ -93,7 +93,7 @@ class SoftDeleteMixin(object):
 
     def soft_delete(self, session=None):
         """ Mark this object as deleted. """
-        self.deleted = self.id
+        self.deleted = self.id.replace('-', '')
         self.deleted_at = timeutils.utcnow()
 
         self.save(session=session)
