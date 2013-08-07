@@ -23,8 +23,12 @@ LOG = logging.getLogger(__name__)
 RE_DOMAINNAME = r'^(?!.{255,})((?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-)\.)+$'
 RE_HOSTNAME = r'^(?!.{255,})((^\*|(?!\-)[A-Za-z0-9_\-]{1,63})(?<!\-)\.)+$'
 
+draft3_format_checker = jsonschema.draft3_format_checker
+draft4_format_checker = jsonschema.draft4_format_checker
 
-@jsonschema._checks_drafts(draft3='ip-address', draft4='ipv4')
+
+@draft3_format_checker.checks("ip-address")
+@draft4_format_checker.checks("ipv4")
 def is_ipv4(instance):
     try:
         address = netaddr.IPAddress(instance, version=4)
@@ -40,7 +44,8 @@ def is_ipv4(instance):
     return True
 
 
-@jsonschema._checks_drafts('ipv6')
+@draft3_format_checker.checks("ipv6")
+@draft4_format_checker.checks("ipv6")
 def is_ipv6(instance):
     try:
         netaddr.IPAddress(instance, version=6)
@@ -50,7 +55,8 @@ def is_ipv6(instance):
     return True
 
 
-@jsonschema._checks_drafts(draft3="host-name", draft4="hostname")
+@draft3_format_checker.checks("host-name")
+@draft4_format_checker.checks("hostname")
 def is_hostname(instance):
     if not re.match(RE_HOSTNAME, instance):
         return False
@@ -58,7 +64,8 @@ def is_hostname(instance):
     return True
 
 
-@jsonschema._checks_drafts(draft3="domain-name", draft4="domainname")
+@draft3_format_checker.checks("domain-name")
+@draft4_format_checker.checks("domainname")
 def is_domainname(instance):
     if not re.match(RE_DOMAINNAME, instance):
         return False
@@ -66,7 +73,8 @@ def is_domainname(instance):
     return True
 
 
-@jsonschema._checks_drafts("email")
+@draft3_format_checker.checks("email")
+@draft4_format_checker.checks("email")
 def is_email(instance):
     # A valid email address. We use the RFC1035 version of "valid".
     if instance.count('@') != 1:
@@ -78,10 +86,3 @@ def is_email(instance):
         return False
 
     return True
-
-
-draft3_format_checker = jsonschema.FormatChecker(
-    jsonschema._draft_checkers["draft3"])
-
-draft4_format_checker = jsonschema.FormatChecker(
-    jsonschema._draft_checkers["draft4"])

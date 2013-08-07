@@ -55,24 +55,20 @@ class Draft3Validator(_Draft34CommonMixin, jsonschema.Draft3Validator):
 
     def validate_oneOf(self, oneOf, instance, schema):
         # Backported from Draft4 to Draft3
-        subschemas = enumerate(oneOf)
-        all_errors = []
-        for index, subschema in subschemas:
-            errors = list(self.descend(instance, subschema, schema_path=index))
-            if not errors:
-                first_valid = subschema
-                break
-            all_errors.extend(errors)
-        else:
-            yield jsonschema.ValidationError(
-                "%r is not valid under any of the given schemas" % (instance,),
-                context=all_errors,
-            )
+        subschemas = iter(oneOf)
+        first_valid = next(
+            (s for s in subschemas if self.is_valid(instance, s)), None,
+        )
 
-        more_valid = [s for i, s in subschemas if self.is_valid(instance, s)]
-        if more_valid:
-            more_valid.append(first_valid)
-            reprs = ", ".join(repr(schema) for schema in more_valid)
+        if first_valid is None:
             yield jsonschema.ValidationError(
-                "%r is valid under each of %s" % (instance, reprs)
+                "%r is not valid under any of the given schemas." % (instance,)
             )
+        else:
+            more_valid = [s for s in subschemas if self.is_valid(instance, s)]
+            if more_valid:
+                more_valid.append(first_valid)
+                reprs = ", ".join(repr(schema) for schema in more_valid)
+                yield jsonschema.ValidationError(
+                    "%r is valid under each of %s" % (instance, reprs)
+                )
