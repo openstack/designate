@@ -234,7 +234,7 @@ class PowerDNSBackend(base.Backend):
     def delete_record(self, context, domain, record):
         try:
             record_m = self._get_record(record['id'])
-        except exceptions.DomainNotFound:
+        except exceptions.RecordNotFound:
             # If the Record is already gone, that's ok. We're deleting it
             # anyway, so just log and continue.
             LOG.critical('Attempted to delete a record which is not present '
