@@ -51,6 +51,11 @@
             "min": 0,
             "max": 2147483647
         },
+        "description": {
+            "type": ["string", "null"],
+            "description": "Description for the Domain",
+            "maxLength": 160
+        },
         "created_at": {
             "type": "string",
             "description": "Date and time of image registration",

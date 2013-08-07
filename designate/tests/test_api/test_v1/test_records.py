@@ -1,3 +1,4 @@
+# coding=utf-8
 # Copyright 2012 Managed I.T.
 #
 # Author: Kiall Mac Innes <kiall@managedit.ie>
@@ -58,6 +59,26 @@ class ApiV1RecordsTest(ApiV1Test):
         fixture['junk'] = 'Junk Field'
 
         # Create a record, Ensuring it fails with a 400
+        self.post('domains/%s/records' % self.domain['id'], data=fixture,
+                  status_code=400)
+
+    def test_create_record_utf_description(self):
+        fixture = self.get_record_fixture(self.domain['name'], 0)
+
+        #Add a UTF-8 riddled description
+        fixture['description'] = "utf-8:2H₂+O₂⇌2H₂O,R=4.7kΩ,⌀200mm∮E⋅da=Q,n" \
+                                 ",∑f(i)=∏g(i),∀x∈ℝ:⌈x⌉"
+
+        # Create a record, Ensuring it succeeds
+        self.post('domains/%s/records' % self.domain['id'], data=fixture)
+
+    def test_create_record_description_too_long(self):
+        fixture = self.get_record_fixture(self.domain['name'], 0)
+
+        #Add a description that is too long
+        fixture['description'] = "x" * 161
+
+        # Create a record, Ensuring it Fails with a 400
         self.post('domains/%s/records' % self.domain['id'], data=fixture,
                   status_code=400)
 

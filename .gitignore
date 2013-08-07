@@ -21,4 +21,5 @@ dist
 designate/versioninfo
 *.orig
 *.DS_Store
+*.idea
 /bind9

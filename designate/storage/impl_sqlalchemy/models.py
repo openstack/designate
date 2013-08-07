@@ -77,6 +77,7 @@ class Domain(SoftDeleteMixin, Base):
 
     name = Column(String(255), nullable=False)
     email = Column(String(255), nullable=False)
+    description = Column(Unicode(160), nullable=True)
 
     ttl = Column(Integer, default=3600, nullable=False)
     refresh = Column(Integer, default=3600, nullable=False)
@@ -101,6 +102,8 @@ class Record(Base):
 
     type = Column(Enum(name='record_types', *RECORD_TYPES), nullable=False)
     name = Column(String(255), nullable=False)
+    description = Column(Unicode(160), nullable=True)
+
     data = Column(Text, nullable=False)
     priority = Column(Integer, default=None, nullable=True)
     ttl = Column(Integer, default=None, nullable=True)
