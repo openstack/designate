@@ -1,5 +1,4 @@
 cliff>=1.4
-d2to1>=0.2.10,<0.3
 eventlet>=0.12.0
 extras
 Flask==0.9
