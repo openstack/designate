@@ -101,7 +101,7 @@ Get a Domain
    :statuscode 401: Access Denied
 
 Update a Domain
--------------
+---------------
 
 .. http:put:: /domains/(uuid:id)
 
