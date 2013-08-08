@@ -54,7 +54,7 @@ class SQLAlchemyStorage(base.Storage):
         models.Base.metadata.drop_all(self.session.bind)
 
     def _apply_criterion(self, model, query, criterion):
-        if criterion:
+        if criterion is not None:
             for name, value in criterion.items():
                 column = getattr(model, name)
 
@@ -70,13 +70,34 @@ class SQLAlchemyStorage(base.Storage):
             if context.show_deleted:
                 LOG.debug('Including deleted items in query results')
             else:
-                LOG.debug('Filtering deleted items from query results')
                 query = query.filter(model.deleted == "0")
 
         return query
 
+    def _find(self, model, context, criterion, one=False):
+        """
+        Base "finder" method
+
+        Used to abstract these details from all the _find_*() methods.
+        """
+        # First up, create a query and apply the various filters
+        query = self.session.query(model)
+        query = self._apply_criterion(model, query, criterion)
+        query = self._apply_deleted_criteria(context, model, query)
+
+        if one:
+            # If we're asked to return exactly one record, but multiple or
+            # none match, raise a NotFound
+            try:
+                return query.one()
+            except (exc.NoResultFound, exc.MultipleResultsFound):
+                raise exceptions.NotFound()
+        else:
+            # Othwewise, return all matching records
+            return query.all()
+
     ## CRUD for our resources (quota, server, tsigkey, tenant, domain & record)
-    ## R - get_*, get_*s, find_*s (get_*s should be removed)
+    ## R - get_*, find_*s
     ##
     ## Standard Arguments
     ## self      - python object for the class
@@ -86,6 +107,12 @@ class SQLAlchemyStorage(base.Storage):
     ##
 
     # Quota Methods
+    def _find_quotas(self, context, criterion, one=False):
+        try:
+            return self._find(models.Quota, context, criterion, one)
+        except exceptions.NotFound:
+            raise exceptions.QuotaNotFound()
+
     def create_quota(self, context, values):
         quota = models.Quota()
 
@@ -98,43 +125,23 @@ class SQLAlchemyStorage(base.Storage):
 
         return dict(quota)
 
-    def _get_quota(self, context, quota_id):
-        query = self.session.query(models.Quota)
-
-        quota = query.get(quota_id)
-
-        if not quota:
-            raise exceptions.QuotaNotFound(quota_id)
-        else:
-            return quota
-
     def get_quota(self, context, quota_id):
-        quota = self._get_quota(context, quota_id)
+        quota = self._find_quotas(context, {'id': quota_id}, one=True)
 
         return dict(quota)
 
-    def _find_quotas(self, context, criterion, one=False):
-        query = self.session.query(models.Quota)
-        query = self._apply_criterion(models.Quota, query, criterion)
-
-        if one:
-            try:
-                quota = query.one()
-                return dict(quota)
-            except (exc.NoResultFound, exc.MultipleResultsFound):
-                raise exceptions.QuotaNotFound()
-        else:
-            quotas = query.all()
-            return [dict(q) for q in quotas]
-
     def find_quotas(self, context, criterion=None):
-        return self._find_quotas(context, criterion)
+        quotas = self._find_quotas(context, criterion)
+
+        return [dict(q) for q in quotas]
 
     def find_quota(self, context, criterion):
-        return self._find_quotas(context, criterion, one=True)
+        quota = self._find_quotas(context, criterion, one=True)
+
+        return dict(quota)
 
     def update_quota(self, context, quota_id, values):
-        quota = self._get_quota(context, quota_id)
+        quota = self._find_quotas(context, {'id': quota_id}, one=True)
 
         quota.update(values)
 
@@ -146,11 +153,17 @@ class SQLAlchemyStorage(base.Storage):
         return dict(quota)
 
     def delete_quota(self, context, quota_id):
-        quota = self._get_quota(context, quota_id)
+        quota = self._find_quotas(context, {'id': quota_id}, one=True)
 
         quota.delete(self.session)
 
     # Server Methods
+    def _find_servers(self, context, criterion, one=False):
+        try:
+            return self._find(models.Server, context, criterion, one)
+        except exceptions.NotFound:
+            raise exceptions.ServerNotFound()
+
     def create_server(self, context, values):
         server = models.Server()
 
@@ -164,34 +177,16 @@ class SQLAlchemyStorage(base.Storage):
         return dict(server)
 
     def find_servers(self, context, criterion=None):
-        query = self.session.query(models.Server)
-        query = self._apply_criterion(models.Server, query, criterion)
+        servers = self._find_servers(context, criterion)
 
-        try:
-            result = query.all()
-        except exc.NoResultFound:
-            LOG.debug('No results found')
-            return []
-        else:
-            return [dict(o) for o in result]
-
-    def _get_server(self, context, server_id):
-        query = self.session.query(models.Server)
-
-        server = query.get(server_id)
-
-        if not server:
-            raise exceptions.ServerNotFound(server_id)
-        else:
-            return server
+        return [dict(s) for s in servers]
 
     def get_server(self, context, server_id):
-        server = self._get_server(context, server_id)
-
+        server = self._find_servers(context, {'id': server_id}, one=True)
         return dict(server)
 
     def update_server(self, context, server_id, values):
-        server = self._get_server(context, server_id)
+        server = self._find_servers(context, {'id': server_id}, one=True)
 
         server.update(values)
 
@@ -203,11 +198,17 @@ class SQLAlchemyStorage(base.Storage):
         return dict(server)
 
     def delete_server(self, context, server_id):
-        server = self._get_server(context, server_id)
+        server = self._find_servers(context, {'id': server_id}, one=True)
 
         server.delete(self.session)
 
     # TSIG Key Methods
+    def _find_tsigkeys(self, context, criterion, one=False):
+        try:
+            return self._find(models.TsigKey, context, criterion, one)
+        except exceptions.NotFound:
+            raise exceptions.TsigKeyNotFound()
+
     def create_tsigkey(self, context, values):
         tsigkey = models.TsigKey()
 
@@ -221,34 +222,17 @@ class SQLAlchemyStorage(base.Storage):
         return dict(tsigkey)
 
     def find_tsigkeys(self, context, criterion=None):
-        query = self.session.query(models.TsigKey)
-        query = self._apply_criterion(models.TsigKey, query, criterion)
+        tsigkeys = self._find_tsigkeys(context, criterion)
 
-        try:
-            result = query.all()
-        except exc.NoResultFound:
-            LOG.debug('No results found')
-            return []
-        else:
-            return [dict(o) for o in result]
-
-    def _get_tsigkey(self, context, tsigkey_id):
-        query = self.session.query(models.TsigKey)
-
-        tsigkey = query.get(tsigkey_id)
-
-        if not tsigkey:
-            raise exceptions.TsigKeyNotFound(tsigkey_id)
-        else:
-            return tsigkey
+        return [dict(t) for t in tsigkeys]
 
     def get_tsigkey(self, context, tsigkey_id):
-        tsigkey = self._get_tsigkey(context, tsigkey_id)
+        tsigkey = self._find_tsigkeys(context, {'id': tsigkey_id}, one=True)
 
         return dict(tsigkey)
 
     def update_tsigkey(self, context, tsigkey_id, values):
-        tsigkey = self._get_tsigkey(context, tsigkey_id)
+        tsigkey = self._find_tsigkeys(context, {'id': tsigkey_id}, one=True)
 
         tsigkey.update(values)
 
@@ -260,15 +244,15 @@ class SQLAlchemyStorage(base.Storage):
         return dict(tsigkey)
 
     def delete_tsigkey(self, context, tsigkey_id):
-        tsigkey = self._get_tsigkey(context, tsigkey_id)
+        tsigkey = self._find_tsigkeys(context, {'id': tsigkey_id}, one=True)
 
         tsigkey.delete(self.session)
 
     ##
     ## Tenant Methods
     ##
-    # returns an array of tenant_id & count of their domains
     def find_tenants(self, context):
+        # returns an array of tenant_id & count of their domains
         query = self.session.query(models.Domain.tenant_id,
                                    func.count(models.Domain.id))
         query = self._apply_deleted_criteria(context, models.Domain, query)
@@ -276,8 +260,8 @@ class SQLAlchemyStorage(base.Storage):
 
         return [{'id': t[0], 'domain_count': t[1]} for t in query.all()]
 
-    # get list list & count of all domains owned by given tenant_id
     def get_tenant(self, context, tenant_id):
+        # get list list & count of all domains owned by given tenant_id
         query = self.session.query(models.Domain.name)
         query = query.filter(models.Domain.tenant_id == tenant_id)
         query = self._apply_deleted_criteria(context, models.Domain, query)
@@ -290,9 +274,9 @@ class SQLAlchemyStorage(base.Storage):
             'domains': [r[0] for r in result]
         }
 
-    # tenants are the owner of domains, count the number of unique tenants
-    # select count(distinct tenant_id) from domains
     def count_tenants(self, context):
+        # tenants are the owner of domains, count the number of unique tenants
+        # select count(distinct tenant_id) from domains
         query = self.session.query(distinct(models.Domain.tenant_id))
         query = self._apply_deleted_criteria(context, models.Domain, query)
 
@@ -301,19 +285,11 @@ class SQLAlchemyStorage(base.Storage):
     ##
     ## Domain Methods
     ##
-
     def _find_domains(self, context, criterion, one=False):
-        query = self.session.query(models.Domain)
-        query = self._apply_criterion(models.Domain, query, criterion)
-        query = self._apply_deleted_criteria(context, models.Domain, query)
-
-        if one:
-            try:
-                return query.one()
-            except (exc.NoResultFound, exc.MultipleResultsFound):
-                raise exceptions.DomainNotFound()
-        else:
-            return query.all()
+        try:
+            return self._find(models.Domain, context, criterion, one)
+        except exceptions.NotFound:
+            raise exceptions.DomainNotFound()
 
     def create_domain(self, context, values):
         domain = models.Domain()
@@ -328,7 +304,7 @@ class SQLAlchemyStorage(base.Storage):
         return dict(domain)
 
     def get_domain(self, context, domain_id):
-        domain = self._find_domains(context, {'id': domain_id}, True)
+        domain = self._find_domains(context, {'id': domain_id}, one=True)
 
         return dict(domain)
 
@@ -342,7 +318,7 @@ class SQLAlchemyStorage(base.Storage):
         return dict(domain)
 
     def update_domain(self, context, domain_id, values):
-        domain = self._find_domains(context, {'id': domain_id}, True)
+        domain = self._find_domains(context, {'id': domain_id}, one=True)
 
         domain.update(values)
 
@@ -354,7 +330,7 @@ class SQLAlchemyStorage(base.Storage):
         return dict(domain)
 
     def delete_domain(self, context, domain_id):
-        domain = self._find_domains(context, {'id': domain_id}, True)
+        domain = self._find_domains(context, {'id': domain_id}, one=True)
 
         domain.soft_delete(self.session)
 
@@ -366,6 +342,12 @@ class SQLAlchemyStorage(base.Storage):
         return query.count()
 
     # Record Methods
+    def _find_records(self, context, criterion, one=False):
+        try:
+            return self._find(models.Record, context, criterion, one)
+        except exceptions.NotFound:
+            raise exceptions.RecordNotFound()
+
     def create_record(self, context, domain_id, values):
         record = models.Record()
 
@@ -380,40 +362,32 @@ class SQLAlchemyStorage(base.Storage):
         return dict(record)
 
     def find_records(self, context, domain_id, criterion=None):
-        query = self.session.query(models.Record)
-        query = query.filter_by(domain_id=domain_id)
-        query = self._apply_criterion(models.Record, query, criterion)
+        if criterion is None:
+            criterion = {}
 
-        return [dict(o) for o in query.all()]
+        criterion['domain_id'] = domain_id
 
-    def _get_record(self, context, record_id):
-        query = self.session.query(models.Record)
+        records = self._find_records(context, criterion)
 
-        record = query.get(record_id)
-
-        if not record:
-            raise exceptions.RecordNotFound(record_id)
-        else:
-            return record
+        return [dict(r) for r in records]
 
     def get_record(self, context, record_id):
-        record = self._get_record(context, record_id)
+        record = self._find_records(context, {'id': record_id}, one=True)
 
         return dict(record)
 
     def find_record(self, context, domain_id, criterion=None):
-        query = self.session.query(models.Record)
-        query = query.filter_by(domain_id=domain_id)
-        query = self._apply_criterion(models.Record, query, criterion)
+        if criterion is None:
+            criterion = {}
 
-        try:
-            record = query.one()
-            return dict(record)
-        except (exc.NoResultFound, exc.MultipleResultsFound):
-            raise exceptions.RecordNotFound()
+        criterion['domain_id'] = domain_id
+
+        record = self._find_records(context, criterion, one=True)
+
+        return dict(record)
 
     def update_record(self, context, record_id, values):
-        record = self._get_record(context, record_id)
+        record = self._find_records(context, {'id': record_id}, one=True)
 
         record.update(values)
 
@@ -425,7 +399,7 @@ class SQLAlchemyStorage(base.Storage):
         return dict(record)
 
     def delete_record(self, context, record_id):
-        record = self._get_record(context, record_id)
+        record = self._find_records(context, {'id': record_id}, one=True)
 
         record.delete(self.session)
 
