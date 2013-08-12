@@ -35,7 +35,7 @@ class MaintenanceMiddleware(wsgi.Middleware):
     def __init__(self, application):
         super(MaintenanceMiddleware, self).__init__(application)
 
-        LOG.info('Starting designate maintaince middleware')
+        LOG.info('Starting designate maintenance middleware')
 
         self.enabled = cfg.CONF['service:api'].maintenance_mode
         self.role = cfg.CONF['service:api'].maintenance_mode_role
@@ -64,6 +64,7 @@ def auth_pipeline_factory(loader, global_conf, **local_conf):
     """
     pipeline = local_conf[cfg.CONF['service:api'].auth_strategy]
     pipeline = pipeline.split()
+    LOG.info('Getting auth pipeline: %s' % pipeline[:-1])
     filters = [loader.get_filter(n) for n in pipeline[:-1]]
     app = loader.get_app(pipeline[-1])
     filters.reverse()

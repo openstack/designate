@@ -51,6 +51,7 @@ class Schema(object):
         return self.raw_schema
 
     def validate(self, obj):
+        LOG.debug('Validating values: %r' % obj)
         errors = []
 
         for error in self.validator.iter_errors(obj):
@@ -61,6 +62,7 @@ class Schema(object):
             })
 
         if len(errors) > 0:
+            LOG.debug('Errors in validation: %r', errors)
             raise exceptions.InvalidObject("Provided object does not match "
                                            "schema", errors=errors)
 
