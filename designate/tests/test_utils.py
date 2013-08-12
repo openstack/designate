@@ -64,7 +64,7 @@ class TestUtils(TestCase):
 
         self.assertEqual('Hello World', result)
 
-    def render_template_to_file(self):
+    def test_render_template_to_file(self):
         output_path = tempfile.mktemp()
 
         template = Template("Hello {{name}}")
@@ -79,3 +79,29 @@ class TestUtils(TestCase):
                 self.assertEqual('Hello World', fh.read())
         finally:
             os.unlink(output_path)
+
+    def test_quote_string(self):
+        self.assertEqual('""', utils.quote_string(''))
+        self.assertEqual('""', utils.quote_string('"'))
+        self.assertEqual('""', utils.quote_string('""'))
+        self.assertEqual('"hello"', utils.quote_string('hello'))
+        self.assertEqual('"hello1" "hello2"',
+                         utils.quote_string('hello1 hello2'))
+        self.assertEqual('"hello1" "hello2"',
+                         utils.quote_string('"hello1" hello2'))
+        self.assertEqual('"hello1" "hello2"',
+                         utils.quote_string('hello1 "hello2"'))
+        self.assertEqual('"hello1" "hello2" "hello3"',
+                         utils.quote_string('"hello1" hello2 "hello3"'))
+        self.assertEqual('"properly quoted string"',
+                         utils.quote_string('"properly quoted string"'))
+        self.assertEqual('"not" "properly" "quoted" "string"',
+                         utils.quote_string('not properly quoted string'))
+        self.assertEqual('"properly quoted \\" string"',
+                         utils.quote_string('"properly quoted \\" string"'))
+        self.assertEqual('"single" "quote" "at" "the" "end\\""',
+                         utils.quote_string('single quote at the end"'))
+        self.assertEqual('"single" "quote" "in\\"" "the" "middle"',
+                         utils.quote_string('single quote in\\" the middle'))
+        self.assertEqual('"single quote at the start"',
+                         utils.quote_string('"single quote at the start'))
