@@ -22,6 +22,7 @@ from sqlalchemy.orm import exc as sqlalchemy_exceptions
 from oslo.config import cfg
 from designate.openstack.common import log as logging
 from designate import exceptions
+from designate import utils
 from designate.backend import base
 from designate.backend.impl_powerdns import models
 from designate.sqlalchemy.session import get_session
@@ -293,6 +294,9 @@ class PowerDNSBackend(base.Backend):
     def _sanitize_content(self, type, content):
         if type in ('CNAME', 'MX', 'SRV', 'NS', 'PTR'):
             return content.rstrip('.')
+
+        if type in ('TXT', 'SPF'):
+            return utils.quote_string(content)
 
         return content
 
