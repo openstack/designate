@@ -111,7 +111,7 @@ class Service(rpc_service.Service):
             domain_tld = domain_labels[-1].lower()
 
             if domain_tld not in self.accepted_tld_list:
-                raise exceptions.InvalidDomainName('Unknown or invalid TLD')
+                raise exceptions.InvalidTLD('Unknown or invalid TLD')
 
         # Check domain name blacklist
         if self._is_blacklisted_domain_name(context, domain_name):

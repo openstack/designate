@@ -80,6 +80,11 @@ class InvalidDomainName(Base):
     error_type = 'invalid_domain_name'
 
 
+class InvalidTLD(Base):
+    error_code = 400
+    error_type = 'invalid_tld'
+
+
 class InvalidRecordName(Base):
     error_code = 400
     error_type = 'invalid_record_name'
