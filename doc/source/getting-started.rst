@@ -189,9 +189,6 @@ You can find the IP Address of your server by running
 
    wget http://ipecho.net/plain -O - -q ; echo
 
-If you’d like to see an instance in action, go here:
-http://166.78.183.212:9001/
-
 A couple of notes on the API:
 
 - Before Domains are created, you must create a server.
