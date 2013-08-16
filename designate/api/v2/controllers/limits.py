@@ -13,15 +13,27 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import pecan
+from designate.central import rpcapi as central_rpcapi
 from designate.openstack.common import log as logging
-from designate.api.v2.controllers import schemas
-from designate.api.v2.controllers import limits
+
 
 LOG = logging.getLogger(__name__)
+central_api = central_rpcapi.CentralAPI()
 
 
-class RootController(object):
-    schemas = schemas.SchemasController()
-    limits = limits.LimitsController()
-    # zones = zones.ZonesController()
-    # pools = pools.PoolsController()
+class LimitsController(object):
+    @pecan.expose(template='json:', content_type='application/json')
+    def index(self):
+        context = pecan.request.environ['context']
+
+        absolute_limits = central_api.get_absolute_limits(context)
+
+        return {
+            "limits": {
+                "absolute": {
+                    "maxZones": absolute_limits['domains'],
+                    "maxZoneRecords": absolute_limits['domain_records']
+                }
+            }
+        }
