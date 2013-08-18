@@ -1,7 +1,6 @@
-#!/usr/bin/env python
-# Copyright 2012 Managed I.T.
+# Copyright 2013 Hewlett-Packard Development Company, L.P.
 #
-# Author: Kiall Mac Innes <kiall@managedit.ie>
+# Author: Kiall Mac Innes <kiall@hp.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -15,19 +14,19 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import sys
-import eventlet
 from oslo.config import cfg
 from designate.openstack.common import log as logging
 from designate.openstack.common import service
 from designate import utils
-from designate.api import service as api_service
+from designate.agent import service as agent_service
 
-eventlet.monkey_patch()
+CONF = cfg.CONF
+CONF.import_opt('workers', 'designate.agent', group='service:agent')
 
-utils.read_config('designate', sys.argv)
 
-logging.setup('designate')
-
-launcher = service.launch(api_service.Service(),
-                          cfg.CONF['service:api'].workers)
-launcher.wait()
+def main():
+    utils.read_config('designate', sys.argv)
+    logging.setup('designate')
+    launcher = service.launch(agent_service.Service(),
+                              CONF['service:agent'].workers)
+    launcher.wait()
