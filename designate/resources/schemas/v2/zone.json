@@ -5,8 +5,8 @@
 
     "title": "zone",
     "description": "Zone",
-
     "additionalProperties": false,
+
     "required": ["zone"],
 
     "properties": {
@@ -106,22 +106,5 @@
                 }
             }
         }
-    },
-
-    "links": [{
-        "rel": "self",
-        "href": "/zones/{id}"
-    }, {
-        "rel": "recordsets",
-        "href": "/zones/{id}/recordsets"
-    }, {
-        "rel": "nameservers",
-        "href": "/zones/{id}/nameservers"
-    }, {
-        "rel": "pool",
-        "href": "/pools/{pool_id}/nameservers"
-    }, {
-        "rel": "collection",
-        "href": "/zones"
-    }]
+    }
 }

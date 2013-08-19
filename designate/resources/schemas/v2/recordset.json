@@ -106,13 +106,5 @@
                 }
             }
         }
-    },
-
-    "links": [{
-        "rel": "self",
-        "href": "/zones/{zone_id}/recordsets/{id}"
-    }, {
-        "rel": "collection",
-        "href": "/zones/{zone_id}/recordsets"
-    }]
+    }
 }
