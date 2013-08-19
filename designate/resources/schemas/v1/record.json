@@ -53,18 +53,18 @@
         },
         "description": {
             "type": ["string", "null"],
-            "description": "Description for the Domain",
+            "description": "Description for the record",
             "maxLength": 160
         },
         "created_at": {
             "type": "string",
-            "description": "Date and time of image registration",
+            "description": "Date and time of record creation",
             "format": "date-time",
             "readonly": true
         },
         "updated_at": {
             "type": ["string", "null"],
-            "description": "Date and time of image registration",
+            "description": "Date and time of last record update",
             "format": "date-time",
             "readonly": true
         }
