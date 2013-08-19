@@ -1,7 +1,6 @@
-#!/usr/bin/env python
-# Copyright 2012 Managed I.T.
+# Copyright 2013 Hewlett-Packard Development Company, L.P.
 #
-# Author: Kiall Mac Innes <kiall@managedit.ie>
+# Author: Kiall Mac Innes <kiall@hp.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -15,19 +14,19 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import sys
-import eventlet
 from oslo.config import cfg
 from designate.openstack.common import log as logging
 from designate.openstack.common import service
 from designate import utils
-from designate.central import service as central_service
+from designate.sink import service as sink_service
 
-eventlet.monkey_patch()
+CONF = cfg.CONF
+CONF.import_opt('workers', 'designate.sink', group='service:sink')
 
-utils.read_config('designate', sys.argv)
 
-logging.setup('designate')
-
-launcher = service.launch(central_service.Service(),
-                          cfg.CONF['service:central'].workers)
-launcher.wait()
+def main():
+    utils.read_config('designate', sys.argv)
+    logging.setup('designate')
+    launcher = service.launch(sink_service.Service(),
+                              CONF['service:sink'].workers)
+    launcher.wait()

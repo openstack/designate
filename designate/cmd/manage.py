@@ -1,7 +1,6 @@
-#!/usr/bin/env python
-# Copyright 2012 Managed I.T.
+# Copyright 2012 Bouvet ASA
 #
-# Author: Kiall Mac Innes <kiall@managedit.ie>
+# Author: Endre Karlson <endre.karlson@bouvet.no>
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -15,19 +14,16 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import sys
-import eventlet
-from oslo.config import cfg
 from designate.openstack.common import log as logging
-from designate.openstack.common import service
 from designate import utils
-from designate.agent import service as agent_service
+from designate.manage import DesignateShell
 
-eventlet.monkey_patch()
 
-utils.read_config('designate', sys.argv)
+def main():
+    # TODO(kiall): Support passing --config-file and --config-dir to
+    #              read_config
+    utils.read_config('designate', [])
+    logging.setup('designate')
 
-logging.setup('designate')
-
-launcher = service.launch(agent_service.Service(),
-                          cfg.CONF['service:agent'].workers)
-launcher.wait()
+    shell = DesignateShell()
+    sys.exit(shell.run(sys.argv[1:]))

@@ -1,7 +1,6 @@
-#!/usr/bin/env python
-# Copyright 2012 Bouvet ASA
+# Copyright 2013 Hewlett-Packard Development Company, L.P.
 #
-# Author: Endre Karlson <endre.karlson@bouvet.no>
+# Author: Kiall Mac Innes <kiall@hp.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -14,12 +13,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import sys
-from designate import utils
-from designate.manage import DesignateShell
+import eventlet
 
-# TODO: Sypport passing --config-file and --config-dir to read_config
-utils.read_config('designate', [])
-
-shell = DesignateShell()
-sys.exit(shell.run(sys.argv[1:]))
+eventlet.monkey_patch(os=False)
