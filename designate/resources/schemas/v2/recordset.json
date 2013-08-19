@@ -40,6 +40,11 @@
                     "description": "RecordSet type (TODO: Make types extensible)",
                     "enum": ["A", "MX"]
                 },
+                "description": {
+                    "type": ["string", "null"],
+                    "description": "Description for the RecordSet",
+                    "maxLength": 160
+                },
                 "ttl": {
                     "type": ["integer", "null"],
                     "description": "Default time to live",

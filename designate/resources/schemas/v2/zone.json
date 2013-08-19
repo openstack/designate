@@ -47,6 +47,11 @@
                     "format": "email",
                     "maxLength": 255
                 },
+                "description": {
+                    "type": ["string", "null"],
+                    "description": "Description for the zone",
+                    "maxLength": 160
+                },
                 "ttl": {
                     "type": "integer",
                     "description": "Default time to live",
