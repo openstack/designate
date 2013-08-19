@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from designate.openstack.common import log as logging
+from designate.openstack.common import jsonutils as json
 from designate.api import v1 as api_v1
 from designate.api import middleware
 from designate.tests.test_api import ApiTestCase
@@ -28,7 +29,10 @@ class ApiV1Test(ApiTestCase):
     def setUp(self):
         super(ApiV1Test, self).setUp()
 
-        # Create a Flask application
+        # Ensure the v1 API is enabled
+        self.config(enable_api_v1=True, group='service:api')
+
+        # Create the application
         self.app = api_v1.factory({})
 
         # Inject the FaultWrapper middleware
@@ -48,3 +52,66 @@ class ApiV1Test(ApiTestCase):
     def tearDown(self):
         self.central_service.stop()
         super(ApiV1Test, self).tearDown()
+
+    def get(self, path, **kw):
+        expected_status_code = kw.pop('status_code', 200)
+
+        resp = self.client.get(path=path)
+
+        LOG.debug('Response Body: %r' % resp.data)
+
+        self.assertEqual(resp.status_code, expected_status_code)
+
+        try:
+            resp.json = json.loads(resp.data)
+        except ValueError:
+            resp.json = None
+
+        return resp
+
+    def post(self, path, data, content_type="application/json", **kw):
+        expected_status_code = kw.pop('status_code', 200)
+
+        content = json.dumps(data)
+        resp = self.client.post(path=path, content_type=content_type,
+                                data=content)
+
+        LOG.debug('Response Body: %r' % resp.data)
+
+        self.assertEqual(resp.status_code, expected_status_code)
+
+        try:
+            resp.json = json.loads(resp.data)
+        except ValueError:
+            resp.json = None
+
+        return resp
+
+    def put(self, path, data, content_type="application/json", **kw):
+        expected_status_code = kw.pop('status_code', 200)
+
+        content = json.dumps(data)
+        resp = self.client.put(path=path, content_type=content_type,
+                               data=content)
+
+        LOG.debug('Response Body: %r' % resp.data)
+
+        self.assertEqual(resp.status_code, expected_status_code)
+
+        try:
+            resp.json = json.loads(resp.data)
+        except ValueError:
+            resp.json = None
+
+        return resp
+
+    def delete(self, path, **kw):
+        expected_status_code = kw.pop('status_code', 200)
+
+        resp = self.client.delete(path=path)
+
+        LOG.debug('Response Body: %r' % resp.data)
+
+        self.assertEqual(resp.status_code, expected_status_code)
+
+        return resp
