@@ -462,7 +462,7 @@ class CentralServiceTest(CentralTestCase):
             email='info@invalid.com'
         )
 
-        with self.assertRaises(exceptions.InvalidDomainName):
+        with self.assertRaises(exceptions.InvalidTLD):
             # Create an invalid domain
             self.central_service.create_domain(context, values=values)
 
