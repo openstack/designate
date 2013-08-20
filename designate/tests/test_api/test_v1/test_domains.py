@@ -114,40 +114,6 @@ class ApiV1DomainsTest(ApiV1Test):
         #Create the domain, ensuring it fails with a 400
         self.post('domains', data=fixture, status_code=400)
 
-    def test_get_domains(self):
-        response = self.get('domains')
-
-        self.assertIn('domains', response.json)
-        self.assertEqual(0, len(response.json['domains']))
-
-        # Create a domain
-        self.create_domain()
-
-        response = self.get('domains')
-
-        self.assertIn('domains', response.json)
-        self.assertEqual(1, len(response.json['domains']))
-
-        # Create a second domain
-        self.create_domain(fixture=1)
-
-        response = self.get('domains')
-
-        self.assertIn('domains', response.json)
-        self.assertEqual(2, len(response.json['domains']))
-
-    @patch.object(central_service.Service, 'find_domains')
-    def test_get_domains_trailing_slash(self, mock):
-        self.get('domains/')
-
-        # verify that the central service is called
-        self.assertTrue(mock.called)
-
-    @patch.object(central_service.Service, 'find_domains',
-                  side_effect=rpc_common.Timeout())
-    def test_get_domains_timeout(self, _):
-        self.get('domains', status_code=504)
-
     def test_create_invalid_name(self):
         # Prepare a domain
         fixture = self.get_domain_fixture(0)
@@ -187,6 +153,40 @@ class ApiV1DomainsTest(ApiV1Test):
             response = self.post('domains', data=fixture, status_code=400)
 
             self.assertNotIn('id', response.json)
+
+    def test_get_domains(self):
+        response = self.get('domains')
+
+        self.assertIn('domains', response.json)
+        self.assertEqual(0, len(response.json['domains']))
+
+        # Create a domain
+        self.create_domain()
+
+        response = self.get('domains')
+
+        self.assertIn('domains', response.json)
+        self.assertEqual(1, len(response.json['domains']))
+
+        # Create a second domain
+        self.create_domain(fixture=1)
+
+        response = self.get('domains')
+
+        self.assertIn('domains', response.json)
+        self.assertEqual(2, len(response.json['domains']))
+
+    @patch.object(central_service.Service, 'find_domains')
+    def test_get_domains_trailing_slash(self, mock):
+        self.get('domains/')
+
+        # verify that the central service is called
+        self.assertTrue(mock.called)
+
+    @patch.object(central_service.Service, 'find_domains',
+                  side_effect=rpc_common.Timeout())
+    def test_get_domains_timeout(self, _):
+        self.get('domains', status_code=504)
 
     def test_get_domain(self):
         # Create a domain

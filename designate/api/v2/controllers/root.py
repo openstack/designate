@@ -14,14 +14,18 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from designate.openstack.common import log as logging
-from designate.api.v2.controllers import schemas
 from designate.api.v2.controllers import limits
+from designate.api.v2.controllers import schemas
+from designate.api.v2.controllers import zones
 
 LOG = logging.getLogger(__name__)
 
 
 class RootController(object):
-    schemas = schemas.SchemasController()
+    """
+    This is /v2/ Controller. Pecan will find all controllers via the object
+    properties attached to this.
+    """
     limits = limits.LimitsController()
-    # zones = zones.ZonesController()
-    # pools = pools.PoolsController()
+    schemas = schemas.SchemasController()
+    zones = zones.ZonesController()
