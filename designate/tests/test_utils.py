@@ -64,7 +64,7 @@ class TestUtils(TestCase):
 
         self.assertEqual('Hello World', result)
 
-    def render_template_to_file(self):
+    def test_render_template_to_file(self):
         output_path = tempfile.mktemp()
 
         template = Template("Hello {{name}}")
