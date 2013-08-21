@@ -294,6 +294,9 @@ class PowerDNSBackend(base.Backend):
         if type in ('CNAME', 'MX', 'SRV', 'NS', 'PTR'):
             return content.rstrip('.')
 
+        if type in ('TXT', 'SPF'):
+            return '"%s"' % content.replace('"', '\\"')
+
         return content
 
     def _build_soa_content(self, domain, servers):
