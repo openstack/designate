@@ -41,18 +41,21 @@ Create Domain
         "name": "domain1.com.",
         "ttl": 3600,
         "serial": 1351800588,
-        "email": "nsadmin@example.org"
-        "created_at": "2012-11-01T20:09:48.094457"
+        "email": "nsadmin@example.org",
+        "created_at": "2012-11-01T20:09:48.094457",
+        "updated_at": null,
+        "description": null
       }
 
 
    :form created_at: timestamp
+   :form updated_at: timestamp
    :form name: domain name
-   :param id: Domain ID
-   :type id: uuid
+   :form id: uuid
    :form ttl: time-to-live numeric value in seconds
    :form serial: numeric seconds
    :form email: email address
+   :form description: UTF-8 text field
    :statuscode 200: Success
    :statuscode 401: Access Denied
    :statuscode 400: Invalid Object
@@ -87,16 +90,19 @@ Get a Domain
         "ttl": 3600,
         "serial": 1351800668,
         "email": "nsadmin@example.org",
-        "created_at": "2012-11-01T20:11:08.000000"
+        "created_at": "2012-11-01T20:11:08.000000",
+        "updated_at": null,
+        "description": null
       }
 
    :form created_at: timestamp
+   :form updated_at: timestamp
    :form name: domain name
-   :param id: Domain ID
-   :type id: uuid
+   :form id: uuid
    :form ttl: time-to-live numeric value in seconds
    :form serial: numeric seconds
    :form email: email address
+   :form description: UTF-8 text field
    :statuscode 200: Success
    :statuscode 401: Access Denied
 
@@ -139,17 +145,18 @@ Update a Domain
         "ttl": 7200,
         "serial": 1351818367,
         "created_at": "2012-11-02T00:58:42.000000",
-        "updated_at": "2012-11-02T01:06:07.000000"
+        "updated_at": "2012-11-02T01:06:07.000000",
+        "description": null
       }
 
-   :form name: domain name
    :form created_at: timestamp
    :form updated_at: timestamp
-   :param id: Domain ID
-   :type id: uuid
-   :form email: email address
+   :form name: domain name
+   :form id: uuid
    :form ttl: time-to-live numeric value in seconds
    :form serial: numeric seconds
+   :form email: email address
+   :form description: UTF-8 text field
    :statuscode 200: Success
    :statuscode 401: Access Denied
    :statuscode 400: Invalid Object

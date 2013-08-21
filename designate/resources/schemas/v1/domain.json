@@ -49,13 +49,13 @@
         },
         "created_at": {
             "type": "string",
-            "description": "Date and time of image registration",
+            "description": "Date and time of domain creation",
             "format": "date-time",
             "readonly": true
         },
         "updated_at": {
             "type": ["string", "null"],
-            "description": "Date and time of image registration",
+            "description": "Date and time of last domain update",
             "format": "date-time",
             "readonly": true
         }
