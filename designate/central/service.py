@@ -156,25 +156,6 @@ class Service(rpc_service.Service):
                                                    'share a name with any '
                                                    'other records')
 
-        if record_type == 'CNAME':
-            # CNAME's may not have children. Ever.
-            criterion = {'name': '%%.%s' % record_name}
-            records = self.storage_api.find_records(context, domain['id'],
-                                                    criterion=criterion)
-
-            if len(records) > 0:
-                raise exceptions.InvalidRecordLocation('CNAME records may not '
-                                                       'have any child '
-                                                       'records')
-
-        else:
-            # No record may have a CNAME as a parent
-            if self._is_subrecord(context, domain, record_name,
-                                  {'type': 'CNAME'}):
-                raise exceptions.InvalidRecordLocation('CNAME records may not '
-                                                       'have any child '
-                                                       'records')
-
         # Duplicate PTR's with the same name are not allowed
         if record_type == 'PTR':
             criterion = {'name': record_name, 'type': 'PTR'}

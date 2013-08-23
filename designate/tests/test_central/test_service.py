@@ -800,12 +800,12 @@ class CentralServiceTest(CentralTestCase):
             self.central_service.create_record(context, domain['id'],
                                                values=values)
 
-    def test_create_cname_record_alongside_an_a_record(self):
+    def test_create_cname_record_above_an_a_record(self):
         context = self.get_admin_context()
         domain = self.create_domain()
 
         values = dict(
-            name='www.%s' % domain['name'],
+            name='t.www.%s' % domain['name'],
             type='A',
             data='127.0.0.1'
         )
@@ -813,23 +813,49 @@ class CentralServiceTest(CentralTestCase):
         self.central_service.create_record(context, domain['id'],
                                            values=values)
 
-        # Attempt to create a CNAME record alongside an A record
-        with self.assertRaises(exceptions.InvalidRecordLocation):
-            values = dict(
-                name='www.%s' % domain['name'],
-                type='CNAME',
-                data='example.org.'
-            )
+        # Create a CNAME record alongside an A record
+        values = dict(
+            name='www.%s' % domain['name'],
+            type='CNAME',
+            data='example.org.'
+        )
 
-            self.central_service.create_record(context, domain['id'],
-                                               values=values)
+        record = self.central_service.create_record(context, domain['id'],
+                                                    values=values)
 
-    def test_create_cname_record_above_an_a_record(self):
+        self.assertIn('id', record)
+
+    def test_create_cname_record_below_an_a_record(self):
         context = self.get_admin_context()
         domain = self.create_domain()
 
         values = dict(
-            name='t.www.%s' % domain['name'],
+            name='t.%s' % domain['name'],
+            type='A',
+            data='127.0.0.1'
+        )
+
+        self.central_service.create_record(context, domain['id'],
+                                           values=values)
+
+        # Create a CNAME record alongside an A record
+        values = dict(
+            name='www.t.%s' % domain['name'],
+            type='CNAME',
+            data='example.org.'
+        )
+
+        record = self.central_service.create_record(context, domain['id'],
+                                                    values=values)
+
+        self.assertIn('id', record)
+
+    def test_create_cname_record_alongside_an_a_record(self):
+        context = self.get_admin_context()
+        domain = self.create_domain()
+
+        values = dict(
+            name='www.%s' % domain['name'],
             type='A',
             data='127.0.0.1'
         )
@@ -865,30 +891,6 @@ class CentralServiceTest(CentralTestCase):
         with self.assertRaises(exceptions.InvalidRecordLocation):
             values = dict(
                 name='www.%s' % domain['name'],
-                type='A',
-                data='127.0.0.1'
-            )
-
-            self.central_service.create_record(context, domain['id'],
-                                               values=values)
-
-    def test_create_an_a_record_below_a_cname_record(self):
-        context = self.get_admin_context()
-        domain = self.create_domain()
-
-        values = dict(
-            name='www.%s' % domain['name'],
-            type='CNAME',
-            data='example.org.'
-        )
-
-        self.central_service.create_record(context, domain['id'],
-                                           values=values)
-
-        # Attempt to create a CNAME record alongside an A record
-        with self.assertRaises(exceptions.InvalidRecordLocation):
-            values = dict(
-                name='t.www.%s' % domain['name'],
                 type='A',
                 data='127.0.0.1'
             )
