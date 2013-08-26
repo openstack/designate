@@ -7,7 +7,7 @@ Bugs / Blueprints: http://launchpad.net/moniker
 
 IRC: #openstack-dns
 
-Installation: http://designate.readthedocs.org/en/latest/install.html
+Installation: http://designate.readthedocs.org/en/latest/getting-started.html
 
 # Development
 Designate follows the [OpenStack Gerrit Workflow](https://wiki.openstack.org/wiki/Gerrit_Workflow)
@@ -32,7 +32,7 @@ pip install -r requirements.txt
 sphinx-build  source/ html/
 ````
 now point your browser at html/index.html
-(the official documentation is published to [readthedocs](http://designate.readthedocs.org/en/latest/install.html) by the
+(the official documentation is published to [readthedocs](http://designate.readthedocs.org/en/latest/index.html) by the
 maintainers.
 
 
