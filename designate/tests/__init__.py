@@ -16,6 +16,7 @@
 import copy
 import unittest2
 import mox
+import nose
 from oslo.config import cfg
 from designate.openstack.common import log as logging
 from designate.openstack.common.notifier import test_notifier
@@ -129,6 +130,9 @@ class TestCase(unittest2.TestCase):
         cfg.CONF.reset()
         self.mox.UnsetStubs()
         super(TestCase, self).tearDown()
+
+    def skip(self, message=None):
+        raise nose.SkipTest(message)
 
     # Config Methods
     def config(self, **kwargs):

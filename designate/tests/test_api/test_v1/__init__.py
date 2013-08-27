@@ -36,7 +36,8 @@ class ApiV1Test(ApiTestCase):
         self.app = api_v1.factory({})
 
         # Inject the FaultWrapper middleware
-        self.app.wsgi_app = api_v1.FaultWrapperMiddleware(self.app.wsgi_app)
+        self.app.wsgi_app = middleware.FaultWrapperMiddleware(
+            self.app.wsgi_app)
 
         # Inject the NoAuth middleware
         self.app.wsgi_app = middleware.NoAuthContextMiddleware(

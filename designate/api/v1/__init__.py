@@ -14,7 +14,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import flask
-import webob.dec
 from stevedore import extension
 from stevedore import named
 from werkzeug import exceptions as wexceptions
@@ -22,12 +21,9 @@ from werkzeug import wrappers
 from werkzeug.routing import BaseConverter
 from werkzeug.routing import ValidationError
 from oslo.config import cfg
-from designate.openstack.common import jsonutils as json
 from designate.openstack.common import log as logging
 from designate.openstack.common import uuidutils
-from designate.openstack.common.rpc import common as rpc_common
 from designate import exceptions
-from designate import wsgi
 
 LOG = logging.getLogger(__name__)
 
@@ -129,70 +125,3 @@ class UUIDConverter(BaseConverter):
 
     def to_url(self, value):
         return str(value)
-
-
-class FaultWrapperMiddleware(wsgi.Middleware):
-    def __init__(self, application):
-        super(FaultWrapperMiddleware, self).__init__(application)
-
-        LOG.info('Starting designate faultwrapper middleware')
-
-    @webob.dec.wsgify
-    def __call__(self, request):
-        try:
-            return request.get_response(self.application)
-        except exceptions.Base as e:
-            # Handle Designate Exceptions
-            status = e.error_code if hasattr(e, 'error_code') else 500
-
-            # Start building up a response
-            response = {
-                'code': status
-            }
-
-            if e.error_type:
-                response['type'] = e.error_type
-
-            if e.error_message:
-                response['message'] = e.error_message
-
-            if e.errors:
-                response['errors'] = e.errors
-
-            return self._handle_exception(request, e, status, response)
-        except rpc_common.Timeout as e:
-            # Special case for RPC timeout's
-            response = {
-                'code': 504,
-                'type': 'timeout',
-            }
-
-            return self._handle_exception(request, e, 504, response)
-        except Exception as e:
-            # Handle all other exception types
-            return self._handle_exception(request, e)
-
-    def _handle_exception(self, request, e, status=500, response={}):
-        # Log the exception ASAP
-        LOG.exception(e)
-
-        headers = [
-            ('Content-Type', 'application/json'),
-        ]
-
-        # Set a response code and type, if they are missing.
-        if 'code' not in response:
-            response['code'] = status
-
-        if 'type' not in response:
-            response['type'] = 'unknown'
-
-        # Set the request ID, if we have one
-        if 'context' in request.environ:
-            response['request_id'] = request.environ['context'].request_id
-
-        # TODO(kiall): Send a fault notification
-
-        # Return the new response
-        return flask.Response(status=status, headers=headers,
-                              response=json.dumps(response))

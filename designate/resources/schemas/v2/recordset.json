@@ -79,6 +79,17 @@
                     "description": "Date and time of last recordset modification",
                     "format": "date-time",
                     "readOnly": true
+                },
+                "links": {
+                    "type": "object",
+                    "additionalProperties": false,
+
+                    "properties": {
+                        "self": {
+                            "type": "string",
+                            "format": "url"
+                        }
+                    }
                 }
             },
             "oneOf": [
@@ -94,17 +105,6 @@
                 {"properties": {"type": {"enum": ["SSHFP"]}, "records": {"items": {"$ref": "rdata/sshfp#"}}}},
                 {"properties": {"type": {"enum": ["TXT"]}, "records": {"items": {"$ref": "rdata/txt#"}}}}
             ]
-        },
-        "links": {
-            "type": "object",
-            "additionalProperties": false,
-
-            "properties": {
-                "self": {
-                    "type": "string",
-                    "format": "url"
-                }
-            }
         }
     }
 }

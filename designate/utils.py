@@ -13,6 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import copy
 import os
 import pkg_resources
 import json
@@ -183,3 +184,56 @@ def increment_serial(serial=0):
         new_serial = serial + 1
 
     return new_serial
+
+
+def quote_string(string):
+    inparts = string.split(' ')
+    outparts = []
+    tmp = None
+
+    for part in inparts:
+        if part == '':
+            continue
+        elif part[0] == '"' and part[-1:] == '"' and part[-2:] != '\\"':
+            # Handle Quoted Words
+            outparts.append(part.strip('"'))
+        elif part[0] == '"':
+            # Handle Start of Quoted Sentance
+            tmp = part[1:]
+        elif tmp is not None and part[-1:] == '"' and part[-2:] != '\\"':
+            # Handle End of Quoted Sentance
+            tmp += " " + part.strip('"')
+            outparts.append(tmp)
+            tmp = None
+        elif tmp is not None:
+            # Handle Middle of Quoted Sentance
+            tmp += " " + part
+        else:
+            # Handle Standalone words
+            outparts.append(part)
+
+    if tmp is not None:
+        # Handle unclosed quoted strings
+        outparts.append(tmp)
+
+    # This looks odd, but both calls are necessary to ensure the end results
+    # is always consistent.
+    outparts = [o.replace('\\"', '"') for o in outparts]
+    outparts = [o.replace('"', '\\"') for o in outparts]
+
+    return '"' + '" "'.join(outparts) + '"'
+
+
+def deep_dict_merge(a, b):
+    if not isinstance(b, dict):
+        return b
+
+    result = copy.deepcopy(a)
+
+    for k, v in b.iteritems():
+        if k in result and isinstance(result[k], dict):
+                result[k] = deep_dict_merge(result[k], v)
+        else:
+            result[k] = copy.deepcopy(v)
+
+    return result

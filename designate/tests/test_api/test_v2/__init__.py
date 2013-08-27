@@ -35,6 +35,9 @@ class ApiV2TestCase(ApiTestCase):
         # Create the application
         self.app = api_v2.factory({})
 
+        # Inject the FaultWrapper middleware
+        self.app = middleware.FaultWrapperMiddleware(self.app)
+
         # Inject the NoAuth middleware
         self.app = middleware.NoAuthContextMiddleware(self.app)
 

@@ -29,7 +29,7 @@
                     "immutable": true
                 },
                 "project_id": {
-                    "type": "string",
+                    "type": ["string", "null"],
                     "description": "Project identifier",
                     "maxLength": 36,
                     "immutable": true
@@ -92,17 +92,17 @@
                     "description": "Date and time of last zone modification",
                     "format": "date-time",
                     "readOnly": true
-                }
-            }
-        },
-        "links": {
-            "type": "object",
-            "additionalProperties": false,
+                },
+                "links": {
+                    "type": "object",
+                    "additionalProperties": false,
 
-            "properties": {
-                "self": {
-                    "type": "string",
-                    "format": "url"
+                    "properties": {
+                        "self": {
+                            "type": "string",
+                            "format": "url"
+                        }
+                    }
                 }
             }
         }

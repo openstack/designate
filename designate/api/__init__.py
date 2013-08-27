@@ -24,6 +24,7 @@ cfg.CONF.register_group(cfg.OptGroup(
 cfg.CONF.register_opts([
     cfg.IntOpt('workers', default=None,
                help='Number of worker processes to spawn'),
+    cfg.StrOpt('api-base-uri', default='http://127.0.0.1:9001/'),
     cfg.StrOpt('api_host', default='0.0.0.0',
                help='API Host'),
     cfg.IntOpt('api_port', default=9001,
