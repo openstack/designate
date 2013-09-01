@@ -283,13 +283,13 @@ class CentralAPI(rpc_proxy.RpcProxy):
 
     def sync_domain(self, context, domain_id):
         LOG.info("sync_domain: Calling central's sync_domains.")
-        msg = self.make_msg('sync_domains', domain_id=domain_id)
+        msg = self.make_msg('sync_domain', domain_id=domain_id)
 
         return self.call(context, msg)
 
     def sync_record(self, context, domain_id, record_id):
-        LOG.info("sync_record: Calling central's sync_domains.")
-        msg = self.make_msg('sync_domains',
+        LOG.info("sync_record: Calling central's sync_record.")
+        msg = self.make_msg('sync_record',
                             domain_id=domain_id,
                             record_id=record_id)
 
