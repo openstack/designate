@@ -336,6 +336,7 @@ class CentralServiceTest(CentralTestCase):
         self.assertIsNotNone(domain['id'])
         self.assertEqual(domain['name'], values['name'])
         self.assertEqual(domain['email'], values['email'])
+        self.assertIn('status', domain)
 
         # Ensure we sent exactly 1 notification
         notifications = self.get_notifications()
@@ -575,6 +576,7 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(domain['id'], expected_domain['id'])
         self.assertEqual(domain['name'], expected_domain['name'])
         self.assertEqual(domain['email'], expected_domain['email'])
+        self.assertIn('status', domain)
 
     def test_update_domain(self):
         context = self.get_admin_context()
@@ -755,6 +757,7 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(record['name'], values['name'])
         self.assertEqual(record['type'], values['type'])
         self.assertEqual(record['data'], values['data'])
+        self.assertIn('status', record)
 
     def test_create_record_over_quota(self):
         self.config(quota_domain_records=1)
@@ -967,6 +970,7 @@ class CentralServiceTest(CentralTestCase):
                                                  expected_record['id'])
         self.assertEqual(record['id'], expected_record['id'])
         self.assertEqual(record['name'], expected_record['name'])
+        self.assertIn('status', record)
 
     def test_find_record(self):
         context = self.get_admin_context()
@@ -982,6 +986,7 @@ class CentralServiceTest(CentralTestCase):
                                                   criterion)
         self.assertEqual(record['id'], expected_record['id'])
         self.assertEqual(record['name'], expected_record['name'])
+        self.assertIn('status', record)
 
     def test_get_record_incorrect_domain_id(self):
         context = self.get_admin_context()

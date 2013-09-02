@@ -530,6 +530,7 @@ class StorageTestCase(TestCase):
 
         self.assertEqual(result['name'], values['name'])
         self.assertEqual(result['email'], values['email'])
+        self.assertIn('status', result)
 
     def test_create_domain_duplicate(self):
         # Create the Initial Domain
@@ -571,6 +572,7 @@ class StorageTestCase(TestCase):
 
         self.assertEqual(results[0]['name'], domain_one['name'])
         self.assertEqual(results[0]['email'], domain_one['email'])
+        self.assertIn('status', domain_one)
 
         criterion = dict(
             name=domain_two['name']
@@ -582,6 +584,7 @@ class StorageTestCase(TestCase):
 
         self.assertEqual(results[0]['name'], domain_two['name'])
         self.assertEqual(results[0]['email'], domain_two['email'])
+        self.assertIn('status', domain_two)
 
     def test_get_domain(self):
         # Create a domain
@@ -590,6 +593,7 @@ class StorageTestCase(TestCase):
 
         self.assertEqual(actual['name'], expected['name'])
         self.assertEqual(actual['email'], expected['email'])
+        self.assertIn('status', actual)
 
     def test_get_domain_missing(self):
         with self.assertRaises(exceptions.DomainNotFound):
@@ -617,6 +621,7 @@ class StorageTestCase(TestCase):
 
         self.assertEqual(result['name'], domain_one['name'])
         self.assertEqual(result['email'], domain_one['email'])
+        self.assertIn('status', domain_one)
 
         criterion = dict(
             name=domain_two['name']
@@ -626,6 +631,8 @@ class StorageTestCase(TestCase):
 
         self.assertEqual(result['name'], domain_two['name'])
         self.assertEqual(result['email'], domain_two['email'])
+        self.assertIn('status', domain_one)
+        self.assertIn('status', domain_two)
 
     def test_find_domain_criterion_missing(self):
         _, expected = self.create_domain(0)
@@ -646,6 +653,7 @@ class StorageTestCase(TestCase):
 
         self.assertEqual(updated['name'], fixture['name'])
         self.assertEqual(updated['email'], fixture['email'])
+        self.assertIn('status', updated)
 
     def test_update_domain_duplicate(self):
         # Create two domains
@@ -708,6 +716,7 @@ class StorageTestCase(TestCase):
         self.assertEqual(result['name'], values['name'])
         self.assertEqual(result['type'], values['type'])
         self.assertEqual(result['data'], values['data'])
+        self.assertIn('status', result)
 
     def test_create_record_duplicate(self):
         _, domain = self.create_domain()
@@ -733,6 +742,7 @@ class StorageTestCase(TestCase):
         self.assertEqual(actual[0]['name'], record_one['name'])
         self.assertEqual(actual[0]['type'], record_one['type'])
         self.assertEqual(actual[0]['data'], record_one['data'])
+        self.assertIn('status', record_one)
 
         # Create a second record
         _, record_two = self.create_record(domain, fixture=1)
@@ -743,6 +753,7 @@ class StorageTestCase(TestCase):
         self.assertEqual(actual[1]['name'], record_two['name'])
         self.assertEqual(actual[1]['type'], record_two['type'])
         self.assertEqual(actual[1]['data'], record_two['data'])
+        self.assertIn('status', record_two)
 
     def test_find_records_criterion(self):
         _, domain = self.create_domain()
@@ -793,6 +804,7 @@ class StorageTestCase(TestCase):
         self.assertEqual(actual['name'], expected['name'])
         self.assertEqual(actual['type'], expected['type'])
         self.assertEqual(actual['data'], expected['data'])
+        self.assertIn('status', actual)
 
     def test_get_record_missing(self):
         with self.assertRaises(exceptions.RecordNotFound):
@@ -813,6 +825,7 @@ class StorageTestCase(TestCase):
         self.assertEqual(actual['name'], expected['name'])
         self.assertEqual(actual['type'], expected['type'])
         self.assertEqual(actual['data'], expected['data'])
+        self.assertIn('status', actual)
 
     def test_find_record_criterion_missing(self):
         _, domain = self.create_domain(0)
@@ -845,6 +858,7 @@ class StorageTestCase(TestCase):
         self.assertEqual(updated['type'], record_fixture['type'])
         self.assertEqual(updated['data'], record_fixture['data'])
         self.assertNotEqual(updated['hash'], record['hash'])
+        self.assertIn('status', updated)
 
     def test_update_record_duplicate(self):
         _, domain = self.create_domain()

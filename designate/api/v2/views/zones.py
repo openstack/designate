@@ -39,7 +39,7 @@ class ZonesView(base_view.BaseView):
                 "description": zone['description'],
                 "ttl": zone['ttl'],
                 "serial": zone['serial'],
-                "status": "ACTIVE",
+                "status": zone['status'],
                 "version": zone['version'],
                 "created_at": zone['created_at'],
                 "updated_at": zone['updated_at'],

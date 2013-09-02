@@ -190,6 +190,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
         self.assertIn('zone', response.json)
         self.assertIn('links', response.json['zone'])
         self.assertIn('self', response.json['zone']['links'])
+        self.assertIn('status', response.json['zone'])
 
         # Check the values returned are what we expect
         self.assertIn('id', response.json['zone'])

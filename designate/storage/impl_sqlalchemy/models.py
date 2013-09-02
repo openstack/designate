@@ -32,6 +32,7 @@ from sqlalchemy.ext.declarative import declarative_base
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
 
+RESOURCE_STATUSES = ['ACTIVE', 'PENDING', 'DELETED']
 RECORD_TYPES = ['A', 'AAAA', 'CNAME', 'MX', 'SRV', 'TXT', 'SPF', 'NS', 'PTR',
                 'SSHFP']
 TSIG_ALGORITHMS = ['hmac-md5', 'hmac-sha1', 'hmac-sha224', 'hmac-sha256',
@@ -91,6 +92,9 @@ class Domain(SoftDeleteMixin, Base):
     retry = Column(Integer, default=CONF.default_soa_retry, nullable=False)
     expire = Column(Integer, default=CONF.default_soa_expire, nullable=False)
     minimum = Column(Integer, default=CONF.default_soa_minimum, nullable=False)
+    status = Column(Enum(name='resource_statuses', *RESOURCE_STATUSES),
+                    nullable=False, server_default='ACTIVE',
+                    default='ACTIVE')
 
     records = relationship('Record', backref=backref('domain', uselist=False),
                            lazy='dynamic', cascade="all, delete-orphan",
@@ -121,6 +125,9 @@ class Record(Base):
     managed_plugin_name = Column(Unicode(50), default=None, nullable=True)
     managed_resource_type = Column(Unicode(50), default=None, nullable=True)
     managed_resource_id = Column(UUID, default=None, nullable=True)
+    status = Column(Enum(name='resource_statuses', *RESOURCE_STATUSES),
+                    nullable=False, server_default='ACTIVE',
+                    default='ACTIVE')
 
     @hybrid_property
     def tenant_id(self):

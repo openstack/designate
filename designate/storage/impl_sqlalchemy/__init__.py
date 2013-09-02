@@ -334,6 +334,8 @@ class SQLAlchemyStorage(base.Storage):
 
         domain.soft_delete(self.session)
 
+        return dict(domain)
+
     def count_domains(self, context, criterion=None):
         query = self.session.query(models.Domain)
         query = self._apply_criterion(models.Domain, query, criterion)
@@ -402,6 +404,8 @@ class SQLAlchemyStorage(base.Storage):
         record = self._find_records(context, {'id': record_id}, one=True)
 
         record.delete(self.session)
+
+        return dict(record)
 
     def count_records(self, context, criterion=None):
         query = self.session.query(models.Record)

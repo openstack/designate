@@ -541,11 +541,13 @@ class Service(rpc_service.Service):
             raise exceptions.DomainHasSubdomain('Please delete any subdomains '
                                                 'before deleting this domain')
 
-        with self.storage_api.delete_domain(context, domain_id):
+        with self.storage_api.delete_domain(context, domain_id) as domain:
             with wrap_backend_call():
                 self.backend.delete_domain(context, domain)
 
         utils.notify(context, 'central', 'domain.delete', domain)
+
+        return domain
 
     def count_domains(self, context, criterion=None):
         if criterion is None:
@@ -718,7 +720,7 @@ class Service(rpc_service.Service):
 
         policy.check('delete_record', context, target)
 
-        with self.storage_api.delete_record(context, record_id):
+        with self.storage_api.delete_record(context, record_id) as record:
             with wrap_backend_call():
                 self.backend.delete_record(context, domain, record)
 
@@ -727,6 +729,8 @@ class Service(rpc_service.Service):
 
         # Send Record deletion notification
         utils.notify(context, 'central', 'record.delete', record)
+
+        return record
 
     def count_records(self, context, criterion=None):
         if criterion is None:

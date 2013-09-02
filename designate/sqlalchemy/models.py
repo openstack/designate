@@ -96,4 +96,7 @@ class SoftDeleteMixin(object):
         self.deleted = self.id.replace('-', '')
         self.deleted_at = timeutils.utcnow()
 
+        if hasattr(self, 'status'):
+            self.status = "DELETED"
+
         self.save(session=session)

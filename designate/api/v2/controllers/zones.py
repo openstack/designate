@@ -83,7 +83,13 @@ class ZonesController(rest.RestController):
         zone = central_api.create_domain(context, values)
 
         # Prepare the response headers
-        response.status_int = 201
+        # If the zone has been created asynchronously
+
+        if zone['status'] == 'PENDING':
+            response.status_int = 202
+        else:
+            response.status_int = 201
+
         response.headers['Location'] = self._view._get_resource_href(request,
                                                                      zone)
 
@@ -98,6 +104,7 @@ class ZonesController(rest.RestController):
         request = pecan.request
         context = request.environ['context']
         body = request.body_dict
+        response = pecan.response
 
         # TODO(kiall): Validate we have a sane UUID for zone_id
 
@@ -130,6 +137,11 @@ class ZonesController(rest.RestController):
             values = self._view.load(context, request, body)
             zone = central_api.update_domain(context, zone_id, values)
 
+        if zone['status'] == 'PENDING':
+            response.status_int = 202
+        else:
+            response.status_int = 200
+
         return self._view.detail(context, request, zone)
 
     @pecan.expose(template=None, content_type='application/json')
@@ -141,9 +153,12 @@ class ZonesController(rest.RestController):
 
         # TODO(kiall): Validate we have a sane UUID for zone_id
 
-        central_api.delete_domain(context, zone_id)
+        zone = central_api.delete_domain(context, zone_id)
 
-        response.status_int = 204
+        if zone['status'] == 'DELETING':
+            response.status_int = 202
+        else:
+            response.status_int = 204
 
         # NOTE: This is a hack and a half.. But Pecan needs it.
         return ''
