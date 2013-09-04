@@ -194,12 +194,19 @@ class CentralServiceTest(CentralTestCase):
         # Create a server
         server = self.create_server()
 
-        # Delete the server
+        # Create a second server
+        server2 = self.create_server(fixture=1)
+
+        # Delete one server
         self.central_service.delete_server(context, server['id'])
 
         # Fetch the server again, ensuring an exception is raised
         with self.assertRaises(exceptions.ServerNotFound):
             self.central_service.get_server(context, server['id'])
+
+        # Try to delete last remaining server - expect exception
+        with self.assertRaises(exceptions.LastServerDeleteNotAllowed):
+            self.central_service.delete_server(context, server2['id'])
 
     # TsigKey Tests
     def test_create_tsigkey(self):

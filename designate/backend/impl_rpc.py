@@ -29,6 +29,15 @@ class RPCBackend(base.Backend):
     def delete_tsigkey(self, context, tsigkey):
         return agent_api.delete_tsigkey(context, tsigkey)
 
+    def create_server(self, context, server):
+        return agent_api.create_server(context, server)
+
+    def update_server(self, context, server):
+        return agent_api.update_server(context, server)
+
+    def delete_server(self, context, server):
+        return agent_api.delete_server(context, server)
+
     def create_domain(self, context, domain):
         return agent_api.create_domain(context, domain)
 

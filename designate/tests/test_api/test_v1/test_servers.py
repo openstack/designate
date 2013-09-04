@@ -199,10 +199,18 @@ class ApiV1ServersTest(ApiV1Test):
         # Create a server
         server = self.create_server()
 
+        # Create a second server so that we can delete the first
+        # because the last remaining server is not allowed to be deleted
+        server2 = self.create_server(fixture=1)
+
+        # Now delete the server
         self.delete('servers/%s' % server['id'])
 
-        # Ensure we can no longer fetch the server
+        # Ensure we can no longer fetch the deleted server
         self.get('servers/%s' % server['id'], status_code=404)
+
+        # Also, verify we cannot delete last remaining server
+        self.delete('servers/%s' % server2['id'], status_code=400)
 
     @patch.object(central_service.Service, 'delete_server')
     def test_delete_server_trailing_slash(self, mock):
@@ -223,5 +231,5 @@ class ApiV1ServersTest(ApiV1Test):
         self.delete('servers/%s' % server['id'], status_code=504)
 
     def test_delete_server_missing(self):
-        self.delete('servers/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980',
+        self.delete('servers/9fdadfb1-cf96-4259-ac6b-bb7b6d2ff980',
                     status_code=404)

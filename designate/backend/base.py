@@ -72,6 +72,18 @@ class Backend(Plugin):
     def delete_record(self, context, domain, record):
         """ Delete a DNS record """
 
+    @abc.abstractmethod
+    def create_server(self, context, server):
+        """ Create a DNS server """
+
+    @abc.abstractmethod
+    def update_server(self, context, server):
+        """ Update a DNS server """
+
+    @abc.abstractmethod
+    def delete_server(self, context, server):
+        """ Delete a DNS server """
+
     def sync_domain(self, context, domain, records):
         """
         Re-Sync a DNS domain

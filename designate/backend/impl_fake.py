@@ -34,6 +34,15 @@ class FakeBackend(base.Backend):
     def delete_tsigkey(self, context, tsigkey):
         LOG.info('Delete TSIG Key %r' % tsigkey)
 
+    def create_server(self, context, server):
+        LOG.info('Create Server %r' % server)
+
+    def update_server(self, context, server):
+        LOG.debug('Update Server %r' % server)
+
+    def delete_server(self, context, server):
+        LOG.debug('Delete Server %r' % server)
+
     def create_domain(self, context, domain):
         LOG.info('Create Domain %r' % domain)
 

@@ -50,6 +50,20 @@ class DnsmasqBackend(base.Backend):
 
         self._sync_domains()
 
+    # Since dnsmasq only supports A and AAAA records, create_server,
+    # update_server, and delete_server can be noop's
+    def create_server(self, context, server):
+        LOG.debug('Create Server - noop')
+        pass
+
+    def update_server(self, context, server):
+        LOG.debug('Update Server - noop')
+        pass
+
+    def delete_server(self, context, server):
+        LOG.debug('Delete Server - noop')
+        pass
+
     def create_domain(self, context, domain):
         LOG.debug('Create Domain')
 

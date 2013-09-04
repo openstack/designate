@@ -156,6 +156,10 @@ class RecordNotFound(NotFound):
     error_type = 'record_not_found'
 
 
+class LastServerDeleteNotAllowed(BadRequest):
+    error_type = 'last_server_delete_not_allowed'
+
+
 class ResourceNotFound(NotFound):
     # TODO(kiall): Should this be extending NotFound??
     pass

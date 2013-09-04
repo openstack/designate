@@ -273,8 +273,9 @@ class Service(rpc_service.Service):
         policy.check('create_server', context)
 
         with self.storage_api.create_server(context, values) as server:
-            # TODO(kiall): Update backend with the new server..
-            pass
+            # Update backend with the new server..
+            with wrap_backend_call():
+                self.backend.create_server(context, server)
 
         utils.notify(context, 'central', 'server.create', server)
 
@@ -295,8 +296,9 @@ class Service(rpc_service.Service):
 
         with self.storage_api.update_server(
                 context, server_id, values) as server:
-            # TODO(kiall): Update backend with the new details..
-            pass
+            # Update backend with the new details..
+            with wrap_backend_call():
+                self.backend.update_server(context, server)
 
         utils.notify(context, 'central', 'server.update', server)
 
@@ -305,9 +307,16 @@ class Service(rpc_service.Service):
     def delete_server(self, context, server_id):
         policy.check('delete_server', context, {'server_id': server_id})
 
+        # don't delete last of servers
+        servers = self.storage_api.find_servers(context)
+        if len(servers) == 1 and server_id == servers[0]['id']:
+            raise exceptions.LastServerDeleteNotAllowed(
+                "Not allowed to delete last of servers")
+
         with self.storage_api.delete_server(context, server_id) as server:
-            # TODO(kiall): Update backend with the new server..
-            pass
+            # Update backend with the new server..
+            with wrap_backend_call():
+                self.backend.delete_server(context, server)
 
         utils.notify(context, 'central', 'server.delete', server)
 
