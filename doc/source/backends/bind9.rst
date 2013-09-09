@@ -49,3 +49,8 @@ disabling AppArmour::
     $ touch /etc/apparmor.d/disable/usr.sbin.named
     $ service apparmor reload
     $ service bind9 restart
+
+To ensure rndc addzone/delzone functionality edit named.conf.options, or
+named.conf and add this line under options::
+
+    allow-new-zones yes;
