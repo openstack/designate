@@ -46,6 +46,8 @@ class Base(CommonBase):
         'version_id_col': version
     }
 
+    __table_args__ = {'mysql_engine': 'InnoDB', 'mysql_charset': 'utf8'}
+
 
 Base = declarative_base(cls=Base)
 
@@ -54,6 +56,7 @@ class Quota(Base):
     __tablename__ = 'quotas'
     __table_args__ = (
         UniqueConstraint('tenant_id', 'resource', name='unique_quota'),
+        {'mysql_engine': 'InnoDB', 'mysql_charset': 'utf8'}
     )
 
     tenant_id = Column(String(36), nullable=False)
@@ -71,6 +74,7 @@ class Domain(SoftDeleteMixin, Base):
     __tablename__ = 'domains'
     __table_args__ = (
         UniqueConstraint('name', 'deleted', name='unique_domain_name'),
+        {'mysql_engine': 'InnoDB', 'mysql_charset': 'utf8'}
     )
 
     tenant_id = Column(String(36), default=None, nullable=True)
