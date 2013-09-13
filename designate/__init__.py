@@ -35,6 +35,15 @@ cfg.CONF.register_opts([
 
     cfg.StrOpt('central-topic', default='central', help='Central Topic'),
     cfg.StrOpt('agent-topic', default='agent', help='Agent Topic'),
+
+    # Default TTL
+    cfg.IntOpt('default-ttl', default=3600),
+
+    # Default SOA Values
+    cfg.IntOpt('default-soa-refresh', default=3600),
+    cfg.IntOpt('default-soa-retry', default=600),
+    cfg.IntOpt('default-soa-expire', default=86400),
+    cfg.IntOpt('default-soa-minimum', default=3600),
 ])
 
 # Set some Oslo Log defaults

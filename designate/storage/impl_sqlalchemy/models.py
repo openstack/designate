@@ -16,6 +16,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import hashlib
+from oslo.config import cfg
 from sqlalchemy import (Column, DateTime, String, Text, Integer, ForeignKey,
                         Enum, Boolean, Unicode, UniqueConstraint, event)
 from sqlalchemy.orm import relationship, backref
@@ -29,6 +30,7 @@ from designate.sqlalchemy.models import SoftDeleteMixin
 from sqlalchemy.ext.declarative import declarative_base
 
 LOG = logging.getLogger(__name__)
+CONF = cfg.CONF
 
 RECORD_TYPES = ['A', 'AAAA', 'CNAME', 'MX', 'SRV', 'TXT', 'SPF', 'NS', 'PTR',
                 'SSHFP']
@@ -82,13 +84,13 @@ class Domain(SoftDeleteMixin, Base):
     name = Column(String(255), nullable=False)
     email = Column(String(255), nullable=False)
     description = Column(Unicode(160), nullable=True)
+    ttl = Column(Integer, default=CONF.default_ttl, nullable=False)
 
-    ttl = Column(Integer, default=3600, nullable=False)
-    refresh = Column(Integer, default=3600, nullable=False)
-    retry = Column(Integer, default=600, nullable=False)
-    expire = Column(Integer, default=86400, nullable=False)
-    minimum = Column(Integer, default=3600, nullable=False)
     serial = Column(Integer, default=timeutils.utcnow_ts, nullable=False)
+    refresh = Column(Integer, default=CONF.default_soa_refresh, nullable=False)
+    retry = Column(Integer, default=CONF.default_soa_retry, nullable=False)
+    expire = Column(Integer, default=CONF.default_soa_expire, nullable=False)
+    minimum = Column(Integer, default=CONF.default_soa_minimum, nullable=False)
 
     records = relationship('Record', backref=backref('domain', uselist=False),
                            lazy='dynamic', cascade="all, delete-orphan",
