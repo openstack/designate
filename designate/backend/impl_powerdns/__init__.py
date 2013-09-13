@@ -20,6 +20,7 @@ from sqlalchemy.sql import select
 from sqlalchemy.sql.expression import null
 from sqlalchemy.orm import exc as sqlalchemy_exceptions
 from oslo.config import cfg
+from designate.openstack.common import excutils
 from designate.openstack.common import log as logging
 from designate import exceptions
 from designate.backend import base
@@ -143,6 +144,7 @@ class PowerDNSBackend(base.Backend):
                 'name': domain['name'].rstrip('.'),
                 'type': 'NS',
                 'content': server['name'].rstrip('.'),
+                'ttl': domain['ttl'],
                 'auth': True
             })
             record_m.save(self.session)
@@ -173,7 +175,24 @@ class PowerDNSBackend(base.Backend):
     def update_domain(self, context, domain):
         # TODO(kiall): Sync Server List
 
-        self._update_soa(domain)
+        domain_m = self._get_domain(domain['id'])
+
+        try:
+            self.session.begin()
+
+            # Update the Domains SOA
+            self._update_soa(domain)
+
+            # Update the Records TTLs where necessary
+            self.session.query(models.Record)\
+                        .filter_by(domain_id=domain_m.id, inherit_ttl=True)\
+                        .update({'ttl': domain['ttl']})
+
+        except Exception:
+            with excutils.save_and_reraise_exception():
+                self.session.rollback()
+        else:
+            self.session.commit()
 
     def delete_domain(self, context, domain):
         try:
@@ -206,7 +225,8 @@ class PowerDNSBackend(base.Backend):
             'name': record['name'].rstrip('.'),
             'type': record['type'],
             'content': self._sanitize_content(record['type'], record['data']),
-            'ttl': record['ttl'],
+            'ttl': domain['ttl'] if record['ttl'] is None else record['ttl'],
+            'inherit_ttl': True if record['ttl'] is None else False,
             'prio': record['priority'],
             'auth': self._is_authoritative(domain, record)
         })
@@ -222,7 +242,8 @@ class PowerDNSBackend(base.Backend):
             'name': record['name'].rstrip('.'),
             'type': record['type'],
             'content': self._sanitize_content(record['type'], record['data']),
-            'ttl': record['ttl'],
+            'ttl': domain['ttl'] if record['ttl'] is None else record['ttl'],
+            'inherit_ttl': True if record['ttl'] is None else False,
             'prio': record['priority'],
             'auth': self._is_authoritative(domain, record)
         })
@@ -251,7 +272,8 @@ class PowerDNSBackend(base.Backend):
         record_m = self._get_record(domain=domain_m, type='SOA')
 
         record_m.update({
-            'content': self._build_soa_content(domain, servers)
+            'content': self._build_soa_content(domain, servers),
+            'ttl': domain['ttl']
         })
 
         record_m.save(self.session)

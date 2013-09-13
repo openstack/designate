@@ -73,3 +73,4 @@ class Record(Base):
     change_date = Column(Integer, default=None, nullable=True)
     ordername = Column(String(255), default=None, nullable=True)
     auth = Column(Boolean(), default=None, nullable=True)
+    inherit_ttl = Column(Boolean(), default=True)
