@@ -43,7 +43,8 @@ class ConfigurationError(Base):
 
 
 class NoServersConfigured(ConfigurationError):
-    pass
+    error_code = 500
+    error_type = 'no_servers_configured'
 
 
 class OverQuota(Base):
