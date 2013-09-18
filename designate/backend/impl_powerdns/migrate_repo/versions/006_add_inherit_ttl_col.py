@@ -33,7 +33,7 @@ def upgrade(migrate_engine):
     # Semi-Populate the new inherit_ttl column. We'll need to do a cross-db
     # join from powerdns.records -> powerdns.domains -> designate.domains, so
     # we can't perform the second half here.
-    query = records_table.update.values(inherit_ttl=False)
+    query = records_table.update().values(inherit_ttl=False)
     query = query.where(records_table.c.ttl != None)
     query.execute()
 
