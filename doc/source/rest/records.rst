@@ -203,7 +203,7 @@ Create Record
       {
         "name": "www.example.com.",
         "type": "CNAME",
-        "data": "example.com"
+        "data": "example.com."
       }
 
 
@@ -226,7 +226,7 @@ Create Record
         "domain_id": "89acac79-38e7-497d-807c-a011e1310438",
         "priority": null,
         "ttl": null,
-        "data": "example.com",
+        "data": "example.com.",
         "description": null
       }
 
@@ -321,7 +321,7 @@ Create Record
       {
         "name": "_sip._tcp.example.com.",
         "type": "SRV",
-        "data": "0 5060 sip.example.com"
+        "data": "0 5060 sip.example.com."
         "priority": 30
       }
 
@@ -345,7 +345,7 @@ Create Record
         "domain_id": "89acac79-38e7-497d-807c-a011e1310438",
         "ttl": null,
         "priority" : 30,
-        "data": "0 5060 sip.example.com",
+        "data": "0 5060 sip.example.com.",
         "description": null
       }
 
