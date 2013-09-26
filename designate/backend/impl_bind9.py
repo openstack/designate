@@ -18,6 +18,8 @@ from oslo.config import cfg
 from designate.openstack.common import log as logging
 from designate import utils
 from designate.backend import base
+import glob
+import shutil
 
 LOG = logging.getLogger(__name__)
 
@@ -40,13 +42,14 @@ class Bind9Backend(base.Backend):
     def start(self):
         super(Bind9Backend, self).start()
 
-        # TODO(kiall): This is a hack to ensure the data dir is 100% up to date
         domains = self.central_service.find_domains(self.admin_context)
 
         for domain in domains:
-            self._sync_domain(domain)
-
-        self._sync_domains()
+            rndc_op = 'reload'
+            rndc_call = self._rndc_base() + [rndc_op]
+            rndc_call.extend([domain['name']])
+            LOG.debug('Calling RNDC with: %s' % " ".join(rndc_call))
+            utils.execute(*rndc_call)
 
     def create_domain(self, context, domain):
         LOG.debug('Create Domain')
@@ -72,29 +75,6 @@ class Bind9Backend(base.Backend):
         LOG.debug('Delete Record')
         self._sync_domain(domain)
 
-    def _sync_domains(self):
-        """ Sync the list of domains this server handles """
-        # TODO(kiall): Rewrite this entire thing ASAP
-        LOG.debug('Synchronising domains')
-
-        domains = self.central_service.find_domains(self.admin_context)
-
-        output_folder = os.path.join(os.path.abspath(cfg.CONF.state_path),
-                                     'bind9')
-
-        # Create the output folder tree if necessary
-        if not os.path.exists(output_folder):
-            os.makedirs(output_folder)
-
-        output_path = os.path.join(output_folder, 'zones.config')
-
-        abs_state_path = os.path.abspath(cfg.CONF.state_path)
-
-        utils.render_template_to_file('bind9-config.jinja2',
-                                      output_path,
-                                      domains=domains,
-                                      state_path=abs_state_path)
-
     def _rndc_base(self):
         rndc_call = [
             'rndc',
@@ -112,24 +92,34 @@ class Bind9Backend(base.Backend):
 
     def _sync_delete_domain(self, domain, new_domain_flag=False):
         """ Remove domain zone files and reload bind config """
-        # TODO(kiall): Rewrite this entire thing ASAP
         LOG.debug('Delete Domain: %s' % domain['id'])
 
         output_folder = os.path.join(os.path.abspath(cfg.CONF.state_path),
                                      'bind9')
 
-        output_path = os.path.join(output_folder, '%s.zone' % domain['id'])
+        output_path = os.path.join(output_folder, '%s.zone' %
+                                   "_".join([domain['name'], domain['id']]))
 
         os.remove(output_path)
 
-        self._sync_domains()
+        rndc_op = 'delzone'
 
-        rndc_call = self._rndc_base() + ['reload']
+        rndc_call = self._rndc_base() + [rndc_op, domain['name']]
 
         utils.execute(*rndc_call)
 
+        #This goes and gets the name of the .nzf file that is a mirror of the
+        #zones.config file we wish to maintain. The file name can change as it
+        #is a hash of rndc view name, we're only interested in the first file
+        #name this returns because there is only one .nzf file
+        nzf_name = glob.glob('/var/cache/bind/*.nzf')
+
+        output_file = os.path.join(output_folder, 'zones.config')
+
+        shutil.copyfile(nzf_name[0], output_file)
+
     def _sync_domain(self, domain, new_domain_flag=False):
-        """ Sync a single domain's zone file """
+        """ Sync a single domain's zone file and reload bind config """
         LOG.debug('Synchronising Domain: %s' % domain['id'])
 
         servers = self.central_service.find_servers(self.admin_context)
@@ -140,7 +130,8 @@ class Bind9Backend(base.Backend):
         output_folder = os.path.join(os.path.abspath(cfg.CONF.state_path),
                                      'bind9')
 
-        output_path = os.path.join(output_folder, '%s.zone' % domain['id'])
+        output_path = os.path.join(output_folder, '%s.zone' %
+                                   "_".join([domain['name'], domain['id']]))
 
         utils.render_template_to_file('bind9-zone.jinja2',
                                       output_path,
@@ -148,14 +139,25 @@ class Bind9Backend(base.Backend):
                                       domain=domain,
                                       records=records)
 
-        self._sync_domains()
+        rndc_call = self._rndc_base()
 
-        rndc_op = 'reconfig' if new_domain_flag else 'reload'
-
-        rndc_call = self._rndc_base() + [rndc_op]
-
-        if not new_domain_flag:
+        if new_domain_flag:
+            rndc_op = [
+                'addzone',
+                '%s { type master; file "%s"; };' % (domain['name'],
+                output_path),
+            ]
+            rndc_call.extend(rndc_op)
+        else:
+            rndc_op = 'reload'
+            rndc_call.extend([rndc_op])
             rndc_call.extend([domain['name']])
 
         LOG.debug('Calling RNDC with: %s' % " ".join(rndc_call))
         utils.execute(*rndc_call)
+
+        nzf_name = glob.glob('/var/cache/bind/*.nzf')
+
+        output_file = os.path.join(output_folder, 'zones.config')
+
+        shutil.copyfile(nzf_name[0], output_file)
