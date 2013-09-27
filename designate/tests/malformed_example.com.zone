@@ -1,0 +1,28 @@
+$ORIGIN example.com.
+example.com. 600 IN SOA ns1.example.com. nsadmin.example.com. (
+    2013091101  ; serial
+    7200        ; refresh
+    3600        ; retry
+    2419200     ; expire
+    10800       ; minimum
+)
+ipv4.example.com.       600 IN A        192.0.0.1
+ipv6.example.com.       600 IN AAAA     fd00::1
+
+            _))
+           > *\     _~
+           `;'\\__-' \_
+              | )  _ \ \
+             / / ``   w w
+            w w
+
+cname.example.com.      600 IN CNAME    example.com.
+example.com.            600 IN MX       5   192.0.0.2
+example.com.            600 IN MX       10  192.0.0.3
+_http._tcp.example.com. 600 IN SRV      10  0   80  192.0.0.4
+_http._tcp.example.com. 600 IN SRV      10  5   80  192.0.0.5
+example.com.            600 IN TXT      "abc" "def"
+example.com.            600 IN SPF      "v=spf1 mx a"
+example.com.            600 IN NS       ns1.example.com.
+example.com.            600 IN NS       ns2.example.com.
+1.0.0.192.in-addr.arpa. 600 IN PTR      ipv4.example.com.

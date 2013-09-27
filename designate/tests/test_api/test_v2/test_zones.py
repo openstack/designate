@@ -13,6 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from dns import zone as dnszone
 from mock import patch
 from designate import exceptions
 from designate.central import service as central_service
@@ -28,6 +29,20 @@ class ApiV2ZonesTest(ApiV2TestCase):
 
         # Create a server
         self.create_server()
+
+    def test_missing_accept(self):
+        self.client.get('/zones/123', status=400)
+
+    def test_bad_accept(self):
+        self.client.get('/zones/123', headers={'Accept': 'test/goat'},
+                        status=406)
+
+    def test_missing_content_type(self):
+        self.client.post('/zones', status=415)
+
+    def test_bad_content_type(self):
+        self.client.post('/zones', headers={'Content-type': 'test/goat'},
+                         status=415)
 
     def test_create_zone(self):
         # Create a zone
@@ -128,7 +143,8 @@ class ApiV2ZonesTest(ApiV2TestCase):
         # Create a zone
         zone = self.create_domain()
 
-        response = self.client.get('/zones/%s' % zone['id'])
+        response = self.client.get('/zones/%s' % zone['id'],
+                                   headers=[('Accept', 'application/json')])
 
         # Check the headers are what we expect
         self.assertEqual(200, response.status_int)
@@ -151,12 +167,14 @@ class ApiV2ZonesTest(ApiV2TestCase):
                   side_effect=rpc_common.Timeout())
     def test_get_zone_timeout(self, _):
         self.client.get('/zones/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980',
+                        headers={'Accept': 'application/json'},
                         status=504)
 
     @patch.object(central_service.Service, 'get_domain',
                   side_effect=exceptions.DomainNotFound())
     def test_get_zone_missing(self, _):
         self.client.get('/zones/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980',
+                        headers={'Accept': 'application/json'},
                         status=404)
 
     def test_get_zone_invalid_id(self):
@@ -164,13 +182,18 @@ class ApiV2ZonesTest(ApiV2TestCase):
 
         # The letter "G" is not valid in a UUID
         self.client.get('/zones/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff9GG',
+                        headers={'Accept': 'application/json'},
                         status=404)
 
         # Badly formed UUID
-        self.client.get('/zones/2fdadfb1cf964259ac6bbb7b6d2ff9GG', status=404)
+        self.client.get('/zones/2fdadfb1cf964259ac6bbb7b6d2ff9GG',
+                        headers={'Accept': 'application/json'},
+                        status=404)
 
         # Integer
-        self.client.get('/zones/12345', status=404)
+        self.client.get('/zones/12345',
+                        headers={'Accept': 'application/json'},
+                        status=404)
 
     def test_update_zone(self):
         # Create a zone
@@ -296,3 +319,46 @@ class ApiV2ZonesTest(ApiV2TestCase):
 
         # Integer
         self.client.delete('/zones/12345', status=404)
+
+    # Zone import/export
+    def test_missing_origin(self):
+        self.client.post('/zones',
+                         self.get_zonefile_fixture(variant='noorigin'),
+                         headers={'Content-type': 'text/dns'}, status=400)
+
+    def test_missing_soa(self):
+        self.client.post('/zones',
+                         self.get_zonefile_fixture(variant='nosoa'),
+                         headers={'Content-type': 'text/dns'}, status=400)
+
+    def test_malformed_zonefile(self):
+        self.client.post('/zones',
+                         self.get_zonefile_fixture(variant='malformed'),
+                         headers={'Content-type': 'text/dns'}, status=400)
+
+    def test_import_export(self):
+        # Since v2 doesn't support getting records, import and export the
+        # fixture, making sure they're the same according to dnspython
+        post_response = self.client.post('/zones',
+                                         self.get_zonefile_fixture(),
+                                         headers={'Content-type': 'text/dns'})
+        get_response = self.client.get('/zones/%s' %
+                                       post_response.json['zone']['id'],
+                                       headers={'Accept': 'text/dns'})
+        exported_zonefile = get_response.body
+        imported = dnszone.from_text(self.get_zonefile_fixture())
+        exported = dnszone.from_text(exported_zonefile)
+        # Compare SOA emails, since zone comparison takes care of origin
+        imported_soa = imported.get_rdataset(imported.origin, 'SOA')
+        imported_email = imported_soa[0].rname.to_text()
+        exported_soa = exported.get_rdataset(exported.origin, 'SOA')
+        exported_email = exported_soa[0].rname.to_text()
+        self.assertEqual(imported_email, exported_email)
+        # Delete SOAs since they have, at the very least, different serials,
+        # and dnspython considers that to be not equal.
+        imported.delete_rdataset(imported.origin, 'SOA')
+        exported.delete_rdataset(exported.origin, 'SOA')
+        # Delete non-delegation NS, since they won't be the same
+        imported.delete_rdataset(imported.origin, 'NS')
+        exported.delete_rdataset(exported.origin, 'NS')
+        self.assertEqual(imported, exported)

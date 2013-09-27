@@ -14,6 +14,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import pecan
+import dns
+from designate import exceptions
 from designate import utils
 from designate import schema
 from designate.api.v2.controllers import rest
@@ -21,7 +23,6 @@ from designate.api.v2.controllers import recordsets
 from designate.api.v2.views import zones as zones_view
 from designate.central import rpcapi as central_rpcapi
 from designate.openstack.common import log as logging
-
 
 LOG = logging.getLogger(__name__)
 central_api = central_rpcapi.CentralAPI()
@@ -34,17 +35,41 @@ class ZonesController(rest.RestController):
 
     recordsets = recordsets.RecordSetsController()
 
+    @pecan.expose(template=None, content_type='text/dns')
     @pecan.expose(template='json:', content_type='application/json')
     def get_one(self, zone_id):
         """ Get Zone """
-        request = pecan.request
-        context = request.environ['context']
-
         # TODO(kiall): Validate we have a sane UUID for zone_id
 
+        request = pecan.request
+        context = request.environ['context']
+        if 'Accept' not in request.headers:
+            raise exceptions.BadRequest('Missing Accept header')
+        best_match = request.accept.best_match(['text/dns',
+                                                'application/json'])
+        if best_match == 'text/dns':
+            return self._get_zonefile(request, context, zone_id)
+        elif best_match == 'application/json':
+            return self._get_json(request, context, zone_id)
+        else:
+            raise exceptions.UnsupportedAccept(
+                'Accept must be text/dns or application/json')
+
+    def _get_json(self, request, context, zone_id):
+        """ 'Normal' zone get """
         zone = central_api.get_domain(context, zone_id)
 
         return self._view.detail(context, request, zone)
+
+    def _get_zonefile(self, request, context, zone_id):
+        """ Export zonefile """
+        servers = central_api.get_domain_servers(context, zone_id)
+        domain = central_api.get_domain(context, zone_id)
+        records = central_api.find_records(context, zone_id)
+        return utils.render_template('bind9-zone.jinja2',
+                                     servers=servers,
+                                     domain=domain,
+                                     records=records)
 
     @pecan.expose(template='json:', content_type='application/json')
     def get_all(self, **params):
@@ -71,6 +96,16 @@ class ZonesController(rest.RestController):
         request = pecan.request
         response = pecan.response
         context = request.environ['context']
+        if request.content_type == 'text/dns':
+            return self._post_zonefile(request, response, context)
+        elif request.content_type == 'application/json':
+            return self._post_json(request, response, context)
+        else:
+            raise exceptions.UnsupportedContentType(
+                'Content-type must be text/dns or application/json')
+
+    def _post_json(self, request, response, context):
+        """ 'Normal' zone creation """
         body = request.body_dict
 
         # Validate the request conforms to the schema
@@ -94,6 +129,28 @@ class ZonesController(rest.RestController):
                                                                      zone)
 
         # Prepare and return the response body
+        return self._view.detail(context, request, zone)
+
+    def _post_zonefile(self, request, response, context):
+        """ Import Zone """
+        dnszone = self._parse_zonefile(request)
+        # TODO(artom) This should probably be handled with transactions
+        zone = self._create_zone(context, dnszone)
+
+        try:
+            self._create_records(context, zone['id'], dnszone)
+
+        except exceptions.Base as e:
+            central_api.delete_domain(context, zone['id'])
+            raise e
+
+        if zone['status'] == 'PENDING':
+            response.status_int = 202
+        else:
+            response.status_int = 201
+
+        response.headers['Location'] = self._view._get_resource_href(request,
+                                                                     zone)
         return self._view.detail(context, request, zone)
 
     @pecan.expose(template='json:', content_type='application/json')
@@ -162,3 +219,81 @@ class ZonesController(rest.RestController):
 
         # NOTE: This is a hack and a half.. But Pecan needs it.
         return ''
+
+    #TODO(artom) Methods below may be useful elsewhere, consider putting them
+    # somewhere reusable.
+
+    def _create_zone(self, context, dnszone):
+        """ Creates the initial zone """
+        # dnspython never builds a zone with more than one SOA, even if we give
+        # it a zonefile that contains more than one
+        soa = dnszone.get_rdataset(dnszone.origin, 'SOA')
+        if soa is None:
+            raise exceptions.BadRequest('An SOA record is required')
+        email = soa[0].rname.to_text().rstrip('.')
+        email = email.replace('.', '@', 1)
+        values = {
+            'name': dnszone.origin.to_text(),
+            'email': email,
+            'ttl': str(soa.ttl)
+        }
+        return central_api.create_domain(context, values)
+
+    def _record2json(self, record_type, rdata):
+        if record_type == 'MX':
+            return {
+                'type': record_type,
+                'data': rdata.exchange.to_text(),
+                'priority': str(rdata.preference)
+            }
+        elif record_type == 'SRV':
+            return {
+                'type': record_type,
+                'data': '%s %s %s' % (str(rdata.weight), str(rdata.port),
+                                      rdata.target.to_text()),
+                'priority': str(rdata.priority)
+            }
+        else:
+            return {
+                'type': record_type,
+                'data': rdata.to_text()
+            }
+
+    def _create_records(self, context, zone_id, dnszone):
+        """ Creates the records """
+        for record_name in dnszone.nodes.keys():
+            for rdataset in dnszone.nodes[record_name]:
+                record_type = dns.rdatatype.to_text(rdataset.rdtype)
+                for rdata in rdataset:
+                    if record_type == 'SOA':
+                        # Don't create SOA records
+                        pass
+                    elif record_type == 'NS' and record_name == dnszone.origin:
+                        # Don't create NS records for the domain, they've been
+                        # taken care of as servers
+                        pass
+                    else:
+                        # Everything else, including delegation NS, gets
+                        # created
+                        values = self._record2json(record_type, rdata)
+                        values['name'] = record_name.to_text()
+                        central_api.create_record(context, zone_id, values)
+
+    def _parse_zonefile(self, request):
+        """ Parses a POSTed zonefile into a dnspython zone object """
+        try:
+            dnszone = dns.zone.from_text(request.body,
+                                         # Don't relativize, otherwise we end
+                                         # up with '@' record names.
+                                         relativize=False,
+                                         # Dont check origin, we allow missing
+                                         # NS records (missing SOA records are
+                                         # taken care of in _create_zone).
+                                         check_origin=False)
+        except dns.zone.UnknownOrigin:
+            raise exceptions.BadRequest('The $ORIGIN statement is required and'
+                                        ' must be the first statement in the'
+                                        ' zonefile.')
+        except dns.exception.SyntaxError:
+            raise exceptions.BadRequest('Malformed zonefile.')
+        return dnszone

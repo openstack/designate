@@ -1,3 +1,4 @@
+$ORIGIN {{ domain.name }}
 $TTL {{ domain.ttl }}
 
 {{ domain.name }} IN SOA {{ servers[0].name }} {{ domain.email | replace("@", ".") }}. (

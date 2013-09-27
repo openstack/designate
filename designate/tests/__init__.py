@@ -17,6 +17,7 @@ import copy
 import unittest2
 import mox
 import nose
+import os
 from oslo.config import cfg
 from designate.openstack.common import log as logging
 from designate.openstack.common.notifier import test_notifier
@@ -211,6 +212,15 @@ class TestCase(unittest2.TestCase):
             pass
 
         return _values
+
+    def get_zonefile_fixture(self, variant=None):
+        if variant is None:
+            path = 'example.com.zone'
+        else:
+            path = '%s_example.com.zone' % variant
+        path = os.path.join(os.path.dirname(__file__), path)
+        with open(path) as zonefile:
+            return zonefile.read()
 
     def create_quota(self, **kwargs):
         context = kwargs.pop('context', self.get_admin_context())
