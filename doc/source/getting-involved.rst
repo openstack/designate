@@ -35,7 +35,20 @@ Branch, work, & submit:
   # submit
   git-review
 
+Coding Standards
+----------------
+Designate uses the OpenStack flake8 coding standards guidelines.
+These are stricter than pep8, and are run by gerrit on every commit.
 
+You can use tox to check your code locally by running
+
+  .. code-block:: shell-session
+
+  # For just flake8 tests
+  tox -e flake8
+  # For tests + flake8
+  tox
+  
 .. _Gerrit workflow: https://wiki.openstack.org/wiki/Gerrit_Workflow
 .. _blueprint: https://blueprints.launchpad.net/designate
 .. _bug: https://bugs.launchpad.net/designate
