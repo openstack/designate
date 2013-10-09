@@ -32,14 +32,14 @@
         "ttl": {
             "type": "integer",
             "description": "Time to live",
-            "min": 0,
-            "max": 2147483647
+            "minimum": 0,
+            "maximum": 2147483647
         },
         "serial": {
             "type": "integer",
             "description": "Serial Number",
-            "min": 1,
-            "max": 4294967295,
+            "minimum": 1,
+            "maximum": 4294967295,
             "readonly": true
         },
         "description": {

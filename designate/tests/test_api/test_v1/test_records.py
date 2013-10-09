@@ -82,9 +82,18 @@ class ApiV1RecordsTest(ApiV1Test):
         self.post('domains/%s/records' % self.domain['id'], data=fixture,
                   status_code=400)
 
+    def test_create_record_negative_ttl(self):
+        # Create a record
+        fixture = self.get_record_fixture(self.domain['name'], 0)
+        fixture['ttl'] = -1
+
+        # Create a record, Ensuring it Fails with a 400
+        self.post('domains/%s/records' % self.domain['id'], data=fixture,
+                  status_code=400)
+
     @patch.object(central_service.Service, 'create_record',
                   side_effect=rpc_common.Timeout())
-    def test_create_domain_timeout(self, _):
+    def test_create_record_timeout(self, _):
         fixture = self.get_record_fixture(self.domain['name'], 0)
 
         # Create a record

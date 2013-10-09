@@ -90,6 +90,12 @@ class ApiV1DomainsTest(ApiV1Test):
         fixture['ttl'] = None
         self.post('domains', data=fixture, status_code=400)
 
+    def test_create_domain_negative_ttl(self):
+        # Create a domain
+        fixture = self.get_domain_fixture(0)
+        fixture['ttl'] = -1
+        self.post('domains', data=fixture, status_code=400)
+
     def test_create_domain_utf_description(self):
         # Create a server
         self.create_server()
