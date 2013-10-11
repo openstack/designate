@@ -19,6 +19,7 @@ import os
 from oslo.config import cfg
 from designate.openstack.common import log as logging
 from designate import utils
+from designate import exceptions
 from designate.backend import base
 from sqlalchemy.ext.sqlsoup import SqlSoup
 from sqlalchemy.engine.url import _parse_rfc1738_args
@@ -269,6 +270,57 @@ class MySQLBind9Backend(base.Backend):
                                            domain['id'])
 
         self._sync_domains()
+
+    def create_server(self, context, server):
+        LOG.debug('create_server()')
+
+        raise exceptions.NotImplemented('create_server() for '
+                                        'mysqlbind9 backend is '
+                                        'not implemented')
+
+        """
+        TODO: this first-cut will not scale. Use bulk SQLAlchemy (core) queries
+        if cfg.CONF[self.name].write_database:
+            domains = self.central_service.find_domains(self.admin_context)
+
+            for domain in domains:
+                self._add_ns_records(domain, server)
+
+        self._sync_domains()
+        """
+
+#   This method could be a very expensive and should only be called
+#   (e.g., from central) only if the name of the existing server is
+#   changed.
+    def update_server(self, context, server):
+        LOG.debug('update_server()')
+
+        raise exceptions.NotImplemented('update_server() for '
+                                        'mysqlbind9 backend is '
+                                        'not implemented')
+
+        """
+        TODO: this first-cut will not scale. Use bulk SQLAlchemy (core) queries
+        if cfg.CONF[self.name].write_database:
+            servers = self.central_service.find_servers(self.admin_context)
+            domains = self.central_service.find_domains(self.admin_context)
+
+            for domain in domains:
+                self._update_ns_records(domain, servers)
+
+        self._sync_domains()
+        """
+
+    def delete_server(self, context, server):
+        LOG.debug('delete_server()')
+
+        raise exceptions.NotImplemented('delete_server() for '
+                                        'mysqlbind9 backend is'
+                                        ' not implemented')
+
+        """
+        TODO: For scale, Use bulk SQLAlchemy (core) queries
+        """
 
     def create_record(self, context, domain, record):
         LOG.debug('create_record()')

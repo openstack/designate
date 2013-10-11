@@ -51,6 +51,18 @@ class Bind9Backend(base.Backend):
             LOG.debug('Calling RNDC with: %s' % " ".join(rndc_call))
             utils.execute(*rndc_call)
 
+    def create_server(self, context, server):
+        LOG.debug('Create Server')
+        self._sync_domains_on_server_change()
+
+    def update_server(self, context, server):
+        LOG.debug('Update Server')
+        self._sync_domains_on_server_change()
+
+    def delete_server(self, context, server):
+        LOG.debug('Delete Server')
+        self._sync_domains_on_server_change()
+
     def create_domain(self, context, domain):
         LOG.debug('Create Domain')
         self._sync_domain(domain, new_domain_flag=True)
@@ -161,3 +173,13 @@ class Bind9Backend(base.Backend):
         output_file = os.path.join(output_folder, 'zones.config')
 
         shutil.copyfile(nzf_name[0], output_file)
+
+    def _sync_domains_on_server_change(self):
+        # TODO(eankutse): Improve this so it scales. Need to design
+        # for it in the new Pool Manager/Agent for the backend that is
+        # being proposed
+        LOG.debug('Synchronising domains on server change')
+
+        domains = self.central_service.find_domains(self.admin_context)
+        for domain in domains:
+            self._sync_domain(domain)
