@@ -233,6 +233,21 @@ class Service(rpc_service.Service):
 
         return domain
 
+    # Quota Enforcement Methods
+    def _enforce_domain_quota(self, context, tenant_id):
+        criterion = {'tenant_id': tenant_id}
+        count = self.storage_api.count_domains(context, criterion)
+
+        self.quota.limit_check(context, tenant_id, domains=count)
+
+    def _enforce_record_quota(self, context, domain):
+        # Ensure the records per domain quota is OK
+        criterion = {'domain_id': domain['id']}
+        count = self.storage_api.count_records(context, criterion)
+
+        self.quota.limit_check(context, domain['tenant_id'],
+                               domain_records=count)
+
     # Misc Methods
     def get_absolute_limits(self, context):
         # NOTE(Kiall): Currently, we only have quota based limits..
@@ -394,11 +409,7 @@ class Service(rpc_service.Service):
         policy.check('create_domain', context, target)
 
         # Ensure the tenant has enough quota to continue
-        quota_criterion = {'tenant_id': values['tenant_id']}
-        domain_count = self.storage_api.count_domains(
-            context, criterion=quota_criterion)
-        self.quota.limit_check(context, values['tenant_id'],
-                               domains=domain_count)
+        self._enforce_domain_quota(context, values['tenant_id'])
 
         # Ensure the domain name is valid
         self._is_valid_domain_name(context, values['name'])
@@ -592,11 +603,7 @@ class Service(rpc_service.Service):
         policy.check('create_record', context, target)
 
         # Ensure the tenant has enough quota to continue
-        quota_criterion = {'domain_id': domain_id}
-        record_count = self.storage_api.count_records(
-            context, criterion=quota_criterion)
-        self.quota.limit_check(context, domain['tenant_id'],
-                               domain_records=record_count)
+        self._enforce_record_quota(context, domain)
 
         # Ensure the record name and placement is valid
         self._is_valid_record_name(context, domain, values['name'],
