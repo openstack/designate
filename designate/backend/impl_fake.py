@@ -38,34 +38,34 @@ class FakeBackend(base.Backend):
         LOG.info('Create Server %r' % server)
 
     def update_server(self, context, server):
-        LOG.debug('Update Server %r' % server)
+        LOG.info('Update Server %r' % server)
 
     def delete_server(self, context, server):
-        LOG.debug('Delete Server %r' % server)
+        LOG.info('Delete Server %r' % server)
 
     def create_domain(self, context, domain):
         LOG.info('Create Domain %r' % domain)
 
     def update_domain(self, context, domain):
-        LOG.debug('Update Domain %r' % domain)
+        LOG.info('Update Domain %r' % domain)
 
     def delete_domain(self, context, domain):
-        LOG.debug('Delete Domain %r' % domain)
+        LOG.info('Delete Domain %r' % domain)
 
     def create_record(self, context, domain, record):
-        LOG.debug('Create Record %r / %r' % (domain, record))
+        LOG.info('Create Record %r / %r' % (domain, record))
 
     def update_record(self, context, domain, record):
-        LOG.debug('Update Record %r / %r' % (domain, record))
+        LOG.info('Update Record %r / %r' % (domain, record))
 
     def delete_record(self, context, domain, record):
-        LOG.debug('Delete Record %r / %r' % (domain, record))
+        LOG.info('Delete Record %r / %r' % (domain, record))
 
     def sync_domain(self, context, domain, records):
-        LOG.debug('Sync Domain %r / %r' % (domain, records))
+        LOG.info('Sync Domain %r / %r' % (domain, records))
 
     def sync_record(self, context, domain, record):
-        LOG.debug('Sync Record %r / %r' % (domain, record))
+        LOG.info('Sync Record %r / %r' % (domain, record))
 
     def ping(self, context):
-        LOG.debug('Ping')
+        LOG.info('Ping')
