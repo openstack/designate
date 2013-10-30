@@ -15,6 +15,8 @@
 # under the License.
 import datetime
 import jsonschema
+from jsonschema import _utils
+import jsonschema.validators
 from designate.openstack.common import log as logging
 from designate.schema import format
 
@@ -22,38 +24,33 @@ from designate.schema import format
 LOG = logging.getLogger(__name__)
 
 
-class _Draft34CommonMixin(object):
-    def validate_type(self, types, instance, schema):
-        # NOTE(kiall): A datetime object is not a string, but is still valid.
-        if ('format' in schema and schema['format'] == 'date-time'
-                and isinstance(instance, datetime.datetime)):
+def type_draft3(validator, types, instance, schema):
+    types = _utils.ensure_list(types)
+
+    # NOTE(kiall): A datetime object is not a string, but is still valid.
+    if ('format' in schema and schema['format'] == 'date-time'
+            and isinstance(instance, datetime.datetime)):
+        return
+
+    all_errors = []
+    for index, type in enumerate(types):
+        if type == "any":
             return
-
-        errors = super(_Draft34CommonMixin, self).validate_type(
-            types, instance, schema)
-
-        for error in errors:
-            yield error
-
-
-class Draft4Validator(_Draft34CommonMixin, jsonschema.Draft4Validator):
-    def __init__(self, schema, types=(), resolver=None, format_checker=None):
-        if format_checker is None:
-            format_checker = format.draft4_format_checker
-
-        super(Draft4Validator, self).__init__(schema, types, resolver,
-                                              format_checker)
+        if validator.is_type(type, "object"):
+            errors = list(validator.descend(instance, type, schema_path=index))
+            if not errors:
+                return
+            all_errors.extend(errors)
+        else:
+            if validator.is_type(instance, type):
+                return
+    else:
+        yield jsonschema.ValidationError(
+            _utils.types_msg(instance, types), context=all_errors,
+        )
 
 
-class Draft3Validator(_Draft34CommonMixin, jsonschema.Draft3Validator):
-    def __init__(self, schema, types=(), resolver=None, format_checker=None):
-        if format_checker is None:
-            format_checker = format.draft3_format_checker
-
-        super(Draft3Validator, self).__init__(schema, types, resolver,
-                                              format_checker)
-
-    def validate_oneOf(self, oneOf, instance, schema):
+def oneOf_draft3(self, oneOf, instance, schema):
         # Backported from Draft4 to Draft3
         subschemas = iter(oneOf)
         first_valid = next(
@@ -72,3 +69,48 @@ class Draft3Validator(_Draft34CommonMixin, jsonschema.Draft3Validator):
                 yield jsonschema.ValidationError(
                     "%r is valid under each of %s" % (instance, reprs)
                 )
+
+
+def type_draft4(validator, types, instance, schema):
+    types = _utils.ensure_list(types)
+
+    # NOTE(kiall): A datetime object is not a string, but is still valid.
+    if ('format' in schema and schema['format'] == 'date-time'
+            and isinstance(instance, datetime.datetime)):
+        return
+
+    if not any(validator.is_type(instance, type) for type in types):
+        yield jsonschema.ValidationError(_utils.types_msg(instance, types))
+
+
+Draft3Validator = jsonschema.validators.extend(
+    jsonschema.validators.Draft3Validator,
+    validators={
+        "type": type_draft3,
+        "oneOf": oneOf_draft3,
+    })
+
+
+Draft4Validator = jsonschema.validators.extend(
+    jsonschema.validators.Draft4Validator,
+    validators={
+        "type": type_draft4,
+    })
+
+
+class Draft4Validator(Draft4Validator):
+    def __init__(self, schema, types=(), resolver=None, format_checker=None):
+        if format_checker is None:
+            format_checker = format.draft4_format_checker
+
+        super(Draft4Validator, self).__init__(schema, types, resolver,
+                                              format_checker)
+
+
+class Draft3Validator(Draft3Validator):
+    def __init__(self, schema, types=(), resolver=None, format_checker=None):
+        if format_checker is None:
+            format_checker = format.draft3_format_checker
+
+        super(Draft3Validator, self).__init__(schema, types, resolver,
+                                              format_checker)

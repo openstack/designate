@@ -18,7 +18,6 @@ import unittest2
 import mox
 import nose
 from oslo.config import cfg
-from designate.tests import patches  # flake8: noqa
 from designate.openstack.common import log as logging
 from designate.openstack.common.notifier import test_notifier
 from designate.openstack.common import policy
