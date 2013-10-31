@@ -18,6 +18,7 @@ from designate import exceptions
 from designate import utils
 from designate.schema import validators
 from designate.schema import resolvers
+from designate.schema import format
 
 LOG = logging.getLogger(__name__)
 
@@ -30,10 +31,12 @@ class Schema(object):
 
         if version == 'v1':
             self.validator = validators.Draft3Validator(
-                self.raw_schema, resolver=self.resolver)
+                self.raw_schema, resolver=self.resolver,
+                format_checker=format.draft3_format_checker)
         elif version == 'v2':
             self.validator = validators.Draft4Validator(
-                self.raw_schema, resolver=self.resolver)
+                self.raw_schema, resolver=self.resolver,
+                format_checker=format.draft4_format_checker)
         else:
             raise Exception('Unknown API version: %s' % version)
 
