@@ -14,7 +14,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import pecan
-import dns
+from dns import zone as dnszone
+from dns import rdatatype
+from dns import exception as dnsexception
 from designate import exceptions
 from designate import utils
 from designate import schema
@@ -133,12 +135,12 @@ class ZonesController(rest.RestController):
 
     def _post_zonefile(self, request, response, context):
         """ Import Zone """
-        dnszone = self._parse_zonefile(request)
+        dnspython_zone = self._parse_zonefile(request)
         # TODO(artom) This should probably be handled with transactions
-        zone = self._create_zone(context, dnszone)
+        zone = self._create_zone(context, dnspython_zone)
 
         try:
-            self._create_records(context, zone['id'], dnszone)
+            self._create_records(context, zone['id'], dnspython_zone)
 
         except exceptions.Base as e:
             central_api.delete_domain(context, zone['id'])
@@ -223,17 +225,17 @@ class ZonesController(rest.RestController):
     #TODO(artom) Methods below may be useful elsewhere, consider putting them
     # somewhere reusable.
 
-    def _create_zone(self, context, dnszone):
+    def _create_zone(self, context, dnspython_zone):
         """ Creates the initial zone """
         # dnspython never builds a zone with more than one SOA, even if we give
         # it a zonefile that contains more than one
-        soa = dnszone.get_rdataset(dnszone.origin, 'SOA')
+        soa = dnspython_zone.get_rdataset(dnspython_zone.origin, 'SOA')
         if soa is None:
             raise exceptions.BadRequest('An SOA record is required')
         email = soa[0].rname.to_text().rstrip('.')
         email = email.replace('.', '@', 1)
         values = {
-            'name': dnszone.origin.to_text(),
+            'name': dnspython_zone.origin.to_text(),
             'email': email,
             'ttl': str(soa.ttl)
         }
@@ -259,16 +261,17 @@ class ZonesController(rest.RestController):
                 'data': rdata.to_text()
             }
 
-    def _create_records(self, context, zone_id, dnszone):
+    def _create_records(self, context, zone_id, dnspython_zone):
         """ Creates the records """
-        for record_name in dnszone.nodes.keys():
-            for rdataset in dnszone.nodes[record_name]:
-                record_type = dns.rdatatype.to_text(rdataset.rdtype)
+        for record_name in dnspython_zone.nodes.keys():
+            for rdataset in dnspython_zone.nodes[record_name]:
+                record_type = rdatatype.to_text(rdataset.rdtype)
                 for rdata in rdataset:
                     if record_type == 'SOA':
                         # Don't create SOA records
                         pass
-                    elif record_type == 'NS' and record_name == dnszone.origin:
+                    elif (record_type == 'NS'
+                          and record_name == dnspython_zone.origin):
                         # Don't create NS records for the domain, they've been
                         # taken care of as servers
                         pass
@@ -282,18 +285,17 @@ class ZonesController(rest.RestController):
     def _parse_zonefile(self, request):
         """ Parses a POSTed zonefile into a dnspython zone object """
         try:
-            dnszone = dns.zone.from_text(request.body,
-                                         # Don't relativize, otherwise we end
-                                         # up with '@' record names.
-                                         relativize=False,
-                                         # Dont check origin, we allow missing
-                                         # NS records (missing SOA records are
-                                         # taken care of in _create_zone).
-                                         check_origin=False)
-        except dns.zone.UnknownOrigin:
+            dnspython_zone = dnszone.from_text(
+                request.body,
+                # Don't relativize, otherwise we end up with '@' record names.
+                relativize=False,
+                # Dont check origin, we allow missing NS records (missing SOA
+                # records are taken care of in _create_zone).
+                check_origin=False)
+        except dnszone.UnknownOrigin:
             raise exceptions.BadRequest('The $ORIGIN statement is required and'
                                         ' must be the first statement in the'
                                         ' zonefile.')
-        except dns.exception.SyntaxError:
+        except dnsexception.SyntaxError:
             raise exceptions.BadRequest('Malformed zonefile.')
-        return dnszone
+        return dnspython_zone
