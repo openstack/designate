@@ -14,17 +14,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from testscenarios import load_tests_apply_scenarios as load_tests  # noqa
-from oslo.config import cfg
-from designate.openstack.common import log as logging
-from designate import backend
 from designate import tests
 from designate.tests.test_backend.test_nsd4slave import NSD4Fixture
+from designate.tests.test_backend import BackendTestMixin
 
 
-LOG = logging.getLogger(__name__)
-
-
-class BackendTestCase(tests.TestCase):
+class BackendTestCase(tests.TestCase, BackendTestMixin):
     scenarios = [
         ('bind9', dict(backend_driver='bind9', group='service:agent')),
         ('dnsmasq', dict(backend_driver='dnsmasq', group='service:agent')),
@@ -41,11 +36,3 @@ class BackendTestCase(tests.TestCase):
         if hasattr(self, 'server_fixture'):
             self.useFixture(self.server_fixture())
         self.config(backend_driver=self.backend_driver, group=self.group)
-
-    def get_backend_driver(self):
-        central_service = self.start_service('central')
-        return backend.get_backend(cfg.CONF['service:agent'].backend_driver,
-                                   central_service=central_service)
-
-    def test_constructor(self):
-        self.get_backend_driver()

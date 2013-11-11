@@ -22,9 +22,9 @@ import socket
 import ssl
 from oslo.config import cfg
 
-from designate import backend
 from designate import exceptions
 from designate import tests
+from designate.tests.test_backend import BackendTestMixin
 # impl_nsd4slave needs to register its options before being instanciated.
 # Import it and pretend to use it to avoid flake8 unused import errors.
 from designate.backend import impl_nsd4slave
@@ -85,20 +85,19 @@ class NSD4Fixture(fixtures.Fixture):
 
 # NOTE: We'll only test the specifics to the nsd4 backend here.
 # Rest is handled via scenarios
-class NSD4SlaveBackendTestCase(tests.TestCase):
+class NSD4SlaveBackendTestCase(tests.TestCase, BackendTestMixin):
     def setUp(self):
         super(NSD4SlaveBackendTestCase, self).setUp()
+
         self.server_fixture = NSD4Fixture()
         self.useFixture(self.server_fixture)
-        central_service = self.start_service('central')
-        self.nsd4 = backend.get_backend(
-            cfg.CONF['service:agent'].backend_driver,
-            central_service=central_service)
+
+        self.backend = self.get_backend_driver()
 
     def test_create_domain(self):
         context = self.get_context()
         domain = self.get_domain_fixture()
-        self.nsd4.create_domain(context, domain)
+        self.backend.create_domain(context, domain)
         command = 'NSDCT1 addzone %s test-pattern\n' % domain['name']
         [self.assertEqual(server.recved_command, command)
          for server in self.server_fixture.servers]
@@ -106,7 +105,7 @@ class NSD4SlaveBackendTestCase(tests.TestCase):
     def test_delete_domain(self):
         context = self.get_context()
         domain = self.get_domain_fixture()
-        self.nsd4.delete_domain(context, domain)
+        self.backend.delete_domain(context, domain)
         command = 'NSDCT1 delzone %s\n' % domain['name']
         [self.assertEqual(server.recved_command, command)
          for server in self.server_fixture.servers]
@@ -116,21 +115,21 @@ class NSD4SlaveBackendTestCase(tests.TestCase):
         context = self.get_context()
         domain = self.get_domain_fixture()
         self.assertRaises(exceptions.NSD4SlaveBackendError,
-                          self.nsd4.create_domain,
+                          self.backend.create_domain,
                           context, domain)
 
     def test_ssl_error(self):
-        self.nsd4._command = MagicMock(side_effet=ssl.SSLError)
+        self.backend._command = MagicMock(side_effet=ssl.SSLError)
         context = self.get_context()
         domain = self.get_domain_fixture()
         self.assertRaises(exceptions.NSD4SlaveBackendError,
-                          self.nsd4.create_domain,
+                          self.backend.create_domain,
                           context, domain)
 
     def test_socket_error(self):
-        self.nsd4._command = MagicMock(side_effet=socket.error)
+        self.backend._command = MagicMock(side_effet=socket.error)
         context = self.get_context()
         domain = self.get_domain_fixture()
         self.assertRaises(exceptions.NSD4SlaveBackendError,
-                          self.nsd4.create_domain,
+                          self.backend.create_domain,
                           context, domain)
