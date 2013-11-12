@@ -64,7 +64,7 @@ root_helper = sudo
 #enable_api_v2 = False
 
 # Enabled API Version 1 extensions
-#enabled_extensions_v1 = diagnostics, quotas, reports, sync
+#enabled_extensions_v1 = diagnostics, quotas, reports, sync, touch
 
 #-----------------------
 # Keystone Middleware
