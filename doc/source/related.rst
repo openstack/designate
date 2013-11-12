@@ -41,5 +41,5 @@ Related Projects
 .. _GitHub: https://github.com/stackforge/designate
 .. _Chef Cookbook: https://github.com/moniker-dns/designate-cookbook
 .. _Debian Packaging: https://github.com/moniker-dns/debian-designate
-.. _Launchpad PPA: https://launchpad.net/~kiall/+archive/designate-havana
+.. _Launchpad PPA: https://launchpad.net/~designate-ppa/+archive/havana
 .. _Sample Plugin: https://github.com/kiall/designate-ext-samplehandler
