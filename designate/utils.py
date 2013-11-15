@@ -22,7 +22,6 @@ from designate.openstack.common import log as logging
 from oslo.config import cfg
 from designate.openstack.common import processutils
 from designate.openstack.common import timeutils
-from designate.openstack.common.notifier import api as notifier_api
 from designate import exceptions
 
 LOG = logging.getLogger(__name__)
@@ -32,13 +31,6 @@ cfg.CONF.register_opts([
     cfg.StrOpt('root-helper',
                default='sudo designate-rootwrap /etc/designate/rootwrap.conf')
 ])
-
-
-def notify(context, service, event_type, payload):
-    priority = 'INFO'
-    publisher_id = notifier_api.publisher_id(service)
-    event_type = "dns.%s" % event_type
-    notifier_api.notify(context, publisher_id, event_type, priority, payload)
 
 
 def find_config(config_path):

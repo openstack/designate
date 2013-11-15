@@ -15,6 +15,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from designate.tests.test_api import ApiTestCase
+from designate import exceptions
 from designate.api import middleware
 
 
@@ -181,3 +182,31 @@ class NoAuthContextMiddlewareTest(ApiTestCase):
         self.assertIsNone(context.user_id)
         self.assertIsNone(context.tenant_id)
         self.assertEqual([], context.roles)
+
+
+class FaultMiddlewareTest(ApiTestCase):
+    __test__ = True
+
+    def test_notify_of_fault(self):
+        self.config(notify_api_faults=True)
+        app = middleware.FaultWrapperMiddleware({})
+
+        class RaisingRequest(FakeRequest):
+            def get_response(self, request):
+                raise exceptions.DuplicateDomain()
+
+        request = RaisingRequest()
+        context = FakeContext()
+        context.request_id = 'one'
+        request.environ['context'] = context
+
+        # Process the request
+        app(request)
+
+        notifications = self.get_notifications()
+        self.assertEqual(1, len(notifications))
+
+        self.assertEqual('ERROR', notifications[0]['priority'])
+        self.assertEqual('dns.api.fault', notifications[0]['event_type'])
+        self.assertIn('timestamp', notifications[0])
+        self.assertIn('publisher_id', notifications[0])

@@ -21,6 +21,7 @@ from designate.openstack.common import log as logging
 from designate.openstack.common.rpc import service as rpc_service
 from designate import backend
 from designate import exceptions
+from designate import notifier
 from designate import policy
 from designate import quota
 from designate import utils
@@ -53,6 +54,8 @@ class Service(rpc_service.Service):
             host=cfg.CONF.host,
             topic=cfg.CONF.central_topic,
         )
+
+        self.notifier = notifier.get_notifier('central')
 
         policy.init_policy()
 
@@ -292,7 +295,7 @@ class Service(rpc_service.Service):
             with wrap_backend_call():
                 self.backend.create_server(context, server)
 
-        utils.notify(context, 'central', 'server.create', server)
+        self.notifier.info(context, 'dns.server.create', server)
 
         return server
 
@@ -315,7 +318,7 @@ class Service(rpc_service.Service):
             with wrap_backend_call():
                 self.backend.update_server(context, server)
 
-        utils.notify(context, 'central', 'server.update', server)
+        self.notifier.info(context, 'dns.server.update', server)
 
         return server
 
@@ -333,7 +336,7 @@ class Service(rpc_service.Service):
             with wrap_backend_call():
                 self.backend.delete_server(context, server)
 
-        utils.notify(context, 'central', 'server.delete', server)
+        self.notifier.info(context, 'dns.server.delete', server)
 
     # TSIG Key Methods
     def create_tsigkey(self, context, values):
@@ -343,7 +346,7 @@ class Service(rpc_service.Service):
             with wrap_backend_call():
                 self.backend.create_tsigkey(context, tsigkey)
 
-        utils.notify(context, 'central', 'tsigkey.create', tsigkey)
+        self.notifier.info(context, 'dns.tsigkey.create', tsigkey)
 
         return tsigkey
 
@@ -365,7 +368,7 @@ class Service(rpc_service.Service):
             with wrap_backend_call():
                 self.backend.update_tsigkey(context, tsigkey)
 
-        utils.notify(context, 'central', 'tsigkey.update', tsigkey)
+        self.notifier.info(context, 'dns.tsigkey.update', tsigkey)
 
         return tsigkey
 
@@ -376,7 +379,7 @@ class Service(rpc_service.Service):
             with wrap_backend_call():
                 self.backend.delete_tsigkey(context, tsigkey)
 
-        utils.notify(context, 'central', 'tsigkey.delete', tsigkey)
+        self.notifier.info(context, 'dns.tsigkey.delete', tsigkey)
 
     # Tenant Methods
     def find_tenants(self, context):
@@ -444,7 +447,7 @@ class Service(rpc_service.Service):
             with wrap_backend_call():
                 self.backend.create_domain(context, domain)
 
-        utils.notify(context, 'central', 'domain.create', domain)
+        self.notifier.info(context, 'dns.domain.create', domain)
 
         return domain
 
@@ -530,7 +533,7 @@ class Service(rpc_service.Service):
             with wrap_backend_call():
                 self.backend.update_domain(context, domain)
 
-        utils.notify(context, 'central', 'domain.update', domain)
+        self.notifier.info(context, 'dns.domain.update', domain)
 
         return domain
 
@@ -556,7 +559,7 @@ class Service(rpc_service.Service):
             with wrap_backend_call():
                 self.backend.delete_domain(context, domain)
 
-        utils.notify(context, 'central', 'domain.delete', domain)
+        self.notifier.info(context, 'dns.domain.delete', domain)
 
         return domain
 
@@ -585,7 +588,7 @@ class Service(rpc_service.Service):
 
         domain = self._increment_domain_serial(context, domain_id)
 
-        utils.notify(context, 'central', 'domain.touch', domain)
+        self.notifier.info(context, 'dns.domain.touch', domain)
 
         return domain
 
@@ -620,7 +623,7 @@ class Service(rpc_service.Service):
                 self._increment_domain_serial(context, domain_id)
 
         # Send Record creation notification
-        utils.notify(context, 'central', 'record.create', record)
+        self.notifier.info(context, 'dns.record.create', record)
 
         return record
 
@@ -705,7 +708,7 @@ class Service(rpc_service.Service):
                 self._increment_domain_serial(context, domain_id)
 
         # Send Record update notification
-        utils.notify(context, 'central', 'record.update', record)
+        self.notifier.info(context, 'dns.record.update', record)
 
         return record
 
@@ -735,7 +738,7 @@ class Service(rpc_service.Service):
                 self._increment_domain_serial(context, domain_id)
 
         # Send Record deletion notification
-        utils.notify(context, 'central', 'record.delete', record)
+        self.notifier.info(context, 'dns.record.delete', record)
 
         return record
 

@@ -157,7 +157,7 @@ class Bind9Backend(base.Backend):
             rndc_op = [
                 'addzone',
                 '%s { type master; file "%s"; };' % (domain['name'],
-                output_path),
+                                                     output_path),
             ]
             rndc_call.extend(rndc_op)
         else:

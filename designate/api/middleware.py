@@ -17,6 +17,7 @@ import flask
 import webob.dec
 from oslo.config import cfg
 from designate import exceptions
+from designate import notifications
 from designate import wsgi
 from designate.context import DesignateContext
 from designate.openstack.common import jsonutils as json
@@ -187,6 +188,8 @@ class FaultWrapperMiddleware(wsgi.Middleware):
             ('Content-Type', 'application/json'),
         ]
 
+        url = getattr(request, 'url', None)
+
         # Set a response code and type, if they are missing.
         if 'code' not in response:
             response['code'] = status
@@ -194,11 +197,14 @@ class FaultWrapperMiddleware(wsgi.Middleware):
         if 'type' not in response:
             response['type'] = 'unknown'
 
-        # Set the request ID, if we have one
         if 'context' in request.environ:
             response['request_id'] = request.environ['context'].request_id
 
-        # TODO(kiall): Send a fault notification
+            notifications.send_api_fault(url, response['code'], e)
+        else:
+            #TODO(ekarlso): Remove after verifying that there's actually a
+            # context always set
+            LOG.error('Missing context in request, please check.')
 
         # Return the new response
         return flask.Response(status=status, headers=headers,
