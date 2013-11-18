@@ -1,58 +1,59 @@
 {
-	"folders":
-	[
-		{
-			"file_exclude_patterns":
-			[
-				"*.pyc",
-				"*.pyo",
-				"*.exe",
-				"*.dll",
-				"*.obj",
-				"*.o",
-				"*.a",
-				"*.lib",
-				"*.so",
-				"*.dylib",
-				"*.ncb",
-				"*.sdf",
-				"*.suo",
-				"*.pdb",
-				"*.idb",
-				".DS_Store",
-				"*.class",
-				"*.psd",
-				"*.db",
-				".vagrant",
-			],
-			"folder_exclude_patterns":
-			[
-				".svn",
-				".git",
-				".hg",
-				"CVS",
-				"*.egg",
-				"*.egg-info",
-				".tox",
-				"venv",
+    "folders":
+    [
+        {
+            "file_exclude_patterns":
+            [
+                "*.pyc",
+                "*.pyo",
+                "*.exe",
+                "*.dll",
+                "*.obj",
+                "*.o",
+                "*.a",
+                "*.lib",
+                "*.so",
+                "*.dylib",
+                "*.ncb",
+                "*.sdf",
+                "*.suo",
+                "*.pdb",
+                "*.idb",
+                ".DS_Store",
+                "*.class",
+                "*.psd",
+                "*.db",
+                ".vagrant",
+            ],
+            "folder_exclude_patterns":
+            [
+                ".svn",
+                ".git",
+                ".hg",
+                "CVS",
+                "*.egg",
+                "*.egg-info",
+                ".tox",
+                "venv",
                 ".venv",
+                ".testrepository",
                 "doc/build",
                 "doc/source/api"
-			],
-			"path": "."
-		}
-	],
-	"settings":
-	{
-		"default_line_ending": "unix",
-		"detect_indentation": false,
-		"ensure_newline_at_eof_on_save": true,
-		"rulers":
-		[
-			79
-		],
-		"tab_size": 4,
-		"translate_tabs_to_spaces": true,
-		"trim_trailing_white_space_on_save": true
-	}
+            ],
+            "path": "."
+        }
+    ],
+    "settings":
+    {
+        "default_line_ending": "unix",
+        "detect_indentation": false,
+        "ensure_newline_at_eof_on_save": true,
+        "rulers":
+        [
+            79
+        ],
+        "tab_size": 4,
+        "translate_tabs_to_spaces": true,
+        "trim_trailing_white_space_on_save": true
+    }
 }
