@@ -17,8 +17,6 @@ from designate.tests.test_api import ApiTestCase
 
 
 class ApiServiceTest(ApiTestCase):
-    __test__ = True
-
     def setUp(self):
         super(ApiServiceTest, self).setUp()
 

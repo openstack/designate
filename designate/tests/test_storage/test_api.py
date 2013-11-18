@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import mock
+import testtools
 from designate.openstack.common import log as logging
 from designate.tests import TestCase
 from designate.storage import api as storage_api
@@ -26,8 +27,6 @@ class SentinelException(Exception):
 
 
 class StorageAPITest(TestCase):
-    __test__ = True
-
     def setUp(self):
         super(StorageAPITest, self).setUp()
         self.storage_api = storage_api.StorageAPI()
@@ -69,7 +68,7 @@ class StorageAPITest(TestCase):
 
         self._set_side_effect('create_quota', [{'id': 12345}])
 
-        with self.assertRaises(SentinelException):
+        with testtools.ExpectedException(SentinelException):
             with self.storage_api.create_quota(context, values):
                 raise SentinelException('Something Went Wrong')
 
@@ -85,7 +84,7 @@ class StorageAPITest(TestCase):
 
         result = self.storage_api.get_quota(context, quota_id)
         self._assert_called_with('get_quota', context, quota_id)
-        self.assertEquals(quota, result)
+        self.assertEqual(quota, result)
 
     def test_find_quotas(self):
         context = mock.sentinel.context
@@ -96,7 +95,7 @@ class StorageAPITest(TestCase):
 
         result = self.storage_api.find_quotas(context, criterion)
         self._assert_called_with('find_quotas', context, criterion)
-        self.assertEquals([quota], result)
+        self.assertEqual([quota], result)
 
     def test_find_quota(self):
         context = mock.sentinel.context
@@ -107,7 +106,7 @@ class StorageAPITest(TestCase):
 
         result = self.storage_api.find_quota(context, criterion)
         self._assert_called_with('find_quota', context, criterion)
-        self.assertEquals(quota, result)
+        self.assertEqual(quota, result)
 
     def test_update_quota(self):
         context = mock.sentinel.context
@@ -124,7 +123,7 @@ class StorageAPITest(TestCase):
 
         self._set_side_effect('get_quota', [{'id': 123, 'test': 1}])
 
-        with self.assertRaises(SentinelException):
+        with testtools.ExpectedException(SentinelException):
             with self.storage_api.update_quota(context, 123, values):
                 raise SentinelException('Something Went Wrong')
 
@@ -140,7 +139,7 @@ class StorageAPITest(TestCase):
         self._set_side_effect('get_quota', [quota])
 
         with self.storage_api.delete_quota(context, 123) as q:
-            self.assertEquals(quota, q)
+            self.assertEqual(quota, q)
 
         self._assert_called_with('delete_quota', context, 123)
 
@@ -150,7 +149,7 @@ class StorageAPITest(TestCase):
 
         self._set_side_effect('get_quota', [quota])
 
-        with self.assertRaises(SentinelException):
+        with testtools.ExpectedException(SentinelException):
             with self.storage_api.delete_quota(context, 123):
                 raise SentinelException('Something Went Wrong')
 
@@ -175,7 +174,7 @@ class StorageAPITest(TestCase):
 
         self._set_side_effect('create_server', [{'id': 12345}])
 
-        with self.assertRaises(SentinelException):
+        with testtools.ExpectedException(SentinelException):
             with self.storage_api.create_server(context, values):
                 raise SentinelException('Something Went Wrong')
 
@@ -191,7 +190,7 @@ class StorageAPITest(TestCase):
 
         result = self.storage_api.get_server(context, server_id)
         self._assert_called_with('get_server', context, server_id)
-        self.assertEquals(server, result)
+        self.assertEqual(server, result)
 
     def test_find_servers(self):
         context = mock.sentinel.context
@@ -202,7 +201,7 @@ class StorageAPITest(TestCase):
 
         result = self.storage_api.find_servers(context, criterion)
         self._assert_called_with('find_servers', context, criterion)
-        self.assertEquals([server], result)
+        self.assertEqual([server], result)
 
     def test_find_server(self):
         context = mock.sentinel.context
@@ -213,7 +212,7 @@ class StorageAPITest(TestCase):
 
         result = self.storage_api.find_server(context, criterion)
         self._assert_called_with('find_server', context, criterion)
-        self.assertEquals(server, result)
+        self.assertEqual(server, result)
 
     def test_update_server(self):
         context = mock.sentinel.context
@@ -230,7 +229,7 @@ class StorageAPITest(TestCase):
 
         self._set_side_effect('get_server', [{'id': 123, 'test': 1}])
 
-        with self.assertRaises(SentinelException):
+        with testtools.ExpectedException(SentinelException):
             with self.storage_api.update_server(context, 123, values):
                 raise SentinelException('Something Went Wrong')
 
@@ -246,7 +245,7 @@ class StorageAPITest(TestCase):
         self._set_side_effect('get_server', [server])
 
         with self.storage_api.delete_server(context, 123) as q:
-            self.assertEquals(server, q)
+            self.assertEqual(server, q)
 
         self._assert_called_with('delete_server', context, 123)
 
@@ -256,7 +255,7 @@ class StorageAPITest(TestCase):
 
         self._set_side_effect('get_server', [server])
 
-        with self.assertRaises(SentinelException):
+        with testtools.ExpectedException(SentinelException):
             with self.storage_api.delete_server(context, 123):
                 raise SentinelException('Something Went Wrong')
 
@@ -281,7 +280,7 @@ class StorageAPITest(TestCase):
 
         self._set_side_effect('create_tsigkey', [{'id': 12345}])
 
-        with self.assertRaises(SentinelException):
+        with testtools.ExpectedException(SentinelException):
             with self.storage_api.create_tsigkey(context, values):
                 raise SentinelException('Something Went Wrong')
 
@@ -297,7 +296,7 @@ class StorageAPITest(TestCase):
 
         result = self.storage_api.get_tsigkey(context, tsigkey_id)
         self._assert_called_with('get_tsigkey', context, tsigkey_id)
-        self.assertEquals(tsigkey, result)
+        self.assertEqual(tsigkey, result)
 
     def test_find_tsigkeys(self):
         context = mock.sentinel.context
@@ -308,7 +307,7 @@ class StorageAPITest(TestCase):
 
         result = self.storage_api.find_tsigkeys(context, criterion)
         self._assert_called_with('find_tsigkeys', context, criterion)
-        self.assertEquals([tsigkey], result)
+        self.assertEqual([tsigkey], result)
 
     def test_find_tsigkey(self):
         context = mock.sentinel.context
@@ -319,7 +318,7 @@ class StorageAPITest(TestCase):
 
         result = self.storage_api.find_tsigkey(context, criterion)
         self._assert_called_with('find_tsigkey', context, criterion)
-        self.assertEquals(tsigkey, result)
+        self.assertEqual(tsigkey, result)
 
     def test_update_tsigkey(self):
         context = mock.sentinel.context
@@ -336,7 +335,7 @@ class StorageAPITest(TestCase):
 
         self._set_side_effect('get_tsigkey', [{'id': 123, 'test': 1}])
 
-        with self.assertRaises(SentinelException):
+        with testtools.ExpectedException(SentinelException):
             with self.storage_api.update_tsigkey(context, 123, values):
                 raise SentinelException('Something Went Wrong')
 
@@ -352,7 +351,7 @@ class StorageAPITest(TestCase):
         self._set_side_effect('get_tsigkey', [tsigkey])
 
         with self.storage_api.delete_tsigkey(context, 123) as q:
-            self.assertEquals(tsigkey, q)
+            self.assertEqual(tsigkey, q)
 
         self._assert_called_with('delete_tsigkey', context, 123)
 
@@ -362,7 +361,7 @@ class StorageAPITest(TestCase):
 
         self._set_side_effect('get_tsigkey', [tsigkey])
 
-        with self.assertRaises(SentinelException):
+        with testtools.ExpectedException(SentinelException):
             with self.storage_api.delete_tsigkey(context, 123):
                 raise SentinelException('Something Went Wrong')
 
@@ -377,7 +376,7 @@ class StorageAPITest(TestCase):
 
         result = self.storage_api.find_tenants(context)
         self._assert_called_with('find_tenants', context)
-        self.assertEquals([tenant], result)
+        self.assertEqual([tenant], result)
 
     def test_get_tenant(self):
         context = mock.sentinel.context
@@ -387,7 +386,7 @@ class StorageAPITest(TestCase):
 
         result = self.storage_api.get_tenant(context, 123)
         self._assert_called_with('get_tenant', context, 123)
-        self.assertEquals(tenant, result)
+        self.assertEqual(tenant, result)
 
     def test_count_tenants(self):
         context = mock.sentinel.context
@@ -396,7 +395,7 @@ class StorageAPITest(TestCase):
 
         result = self.storage_api.count_tenants(context)
         self._assert_called_with('count_tenants', context)
-        self.assertEquals(1, result)
+        self.assertEqual(1, result)
 
     # Domain Tests
     def test_create_domain(self):
@@ -417,7 +416,7 @@ class StorageAPITest(TestCase):
 
         self._set_side_effect('create_domain', [{'id': 12345}])
 
-        with self.assertRaises(SentinelException):
+        with testtools.ExpectedException(SentinelException):
             with self.storage_api.create_domain(context, values):
                 raise SentinelException('Something Went Wrong')
 
@@ -433,7 +432,7 @@ class StorageAPITest(TestCase):
 
         result = self.storage_api.get_domain(context, domain_id)
         self._assert_called_with('get_domain', context, domain_id)
-        self.assertEquals(domain, result)
+        self.assertEqual(domain, result)
 
     def test_find_domains(self):
         context = mock.sentinel.context
@@ -444,7 +443,7 @@ class StorageAPITest(TestCase):
 
         result = self.storage_api.find_domains(context, criterion)
         self._assert_called_with('find_domains', context, criterion)
-        self.assertEquals([domain], result)
+        self.assertEqual([domain], result)
 
     def test_find_domain(self):
         context = mock.sentinel.context
@@ -455,7 +454,7 @@ class StorageAPITest(TestCase):
 
         result = self.storage_api.find_domain(context, criterion)
         self._assert_called_with('find_domain', context, criterion)
-        self.assertEquals(domain, result)
+        self.assertEqual(domain, result)
 
     def test_update_domain(self):
         context = mock.sentinel.context
@@ -472,7 +471,7 @@ class StorageAPITest(TestCase):
 
         self._set_side_effect('get_domain', [{'id': 123, 'test': 1}])
 
-        with self.assertRaises(SentinelException):
+        with testtools.ExpectedException(SentinelException):
             with self.storage_api.update_domain(context, 123, values):
                 raise SentinelException('Something Went Wrong')
 
@@ -488,7 +487,7 @@ class StorageAPITest(TestCase):
         self._set_side_effect('get_domain', [domain])
 
         with self.storage_api.delete_domain(context, 123) as q:
-            self.assertEquals(domain, q)
+            self.assertEqual(domain, q)
 
         self._assert_called_with('delete_domain', context, 123)
 
@@ -498,7 +497,7 @@ class StorageAPITest(TestCase):
 
         self._set_side_effect('get_domain', [domain])
 
-        with self.assertRaises(SentinelException):
+        with testtools.ExpectedException(SentinelException):
             with self.storage_api.delete_domain(context, 123):
                 raise SentinelException('Something Went Wrong')
 
@@ -523,7 +522,7 @@ class StorageAPITest(TestCase):
 
         self._set_side_effect('create_record', [{'id': 12345}])
 
-        with self.assertRaises(SentinelException):
+        with testtools.ExpectedException(SentinelException):
             with self.storage_api.create_record(context, 123, values):
                 raise SentinelException('Something Went Wrong')
 
@@ -539,7 +538,7 @@ class StorageAPITest(TestCase):
 
         result = self.storage_api.get_record(context, record_id)
         self._assert_called_with('get_record', context, record_id)
-        self.assertEquals(record, result)
+        self.assertEqual(record, result)
 
     def test_find_records(self):
         context = mock.sentinel.context
@@ -551,7 +550,7 @@ class StorageAPITest(TestCase):
 
         result = self.storage_api.find_records(context, domain_id, criterion)
         self._assert_called_with('find_records', context, domain_id, criterion)
-        self.assertEquals([record], result)
+        self.assertEqual([record], result)
 
     def test_find_record(self):
         context = mock.sentinel.context
@@ -563,7 +562,7 @@ class StorageAPITest(TestCase):
 
         result = self.storage_api.find_record(context, domain_id, criterion)
         self._assert_called_with('find_record', context, domain_id, criterion)
-        self.assertEquals(record, result)
+        self.assertEqual(record, result)
 
     def test_update_record(self):
         context = mock.sentinel.context
@@ -580,7 +579,7 @@ class StorageAPITest(TestCase):
 
         self._set_side_effect('get_record', [{'id': 123, 'test': 1}])
 
-        with self.assertRaises(SentinelException):
+        with testtools.ExpectedException(SentinelException):
             with self.storage_api.update_record(context, 123, values):
                 raise SentinelException('Something Went Wrong')
 
@@ -596,7 +595,7 @@ class StorageAPITest(TestCase):
         self._set_side_effect('get_record', [record])
 
         with self.storage_api.delete_record(context, 123) as q:
-            self.assertEquals(record, q)
+            self.assertEqual(record, q)
 
         self._assert_called_with('delete_record', context, 123)
 
@@ -606,7 +605,7 @@ class StorageAPITest(TestCase):
 
         self._set_side_effect('get_record', [record])
 
-        with self.assertRaises(SentinelException):
+        with testtools.ExpectedException(SentinelException):
             with self.storage_api.delete_record(context, 123):
                 raise SentinelException('Something Went Wrong')
 

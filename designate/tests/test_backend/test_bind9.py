@@ -20,8 +20,6 @@ LOG = logging.getLogger(__name__)
 
 
 class Bind9BackendDriverTestCase(BackendTestCase):
-    __test__ = True
-
     def setUp(self):
         super(Bind9BackendDriverTestCase, self).setUp()
 

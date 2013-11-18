@@ -25,8 +25,6 @@ LOG = logging.getLogger(__name__)
 
 
 class ApiV1ServersTest(ApiV1Test):
-    __test__ = True
-
     def test_create_server(self):
         # Create a server
         fixture = self.get_server_fixture(0)

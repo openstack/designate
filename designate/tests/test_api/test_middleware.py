@@ -33,8 +33,6 @@ class FakeRequest(object):
 
 
 class MaintenanceMiddlewareTest(ApiTestCase):
-    __test__ = True
-
     def test_process_request_disabled(self):
         self.config(maintenance_mode=False, group='service:api')
 
@@ -107,8 +105,6 @@ class MaintenanceMiddlewareTest(ApiTestCase):
 
 
 class KeystoneContextMiddlewareTest(ApiTestCase):
-    __test__ = True
-
     def test_process_request(self):
         app = middleware.KeystoneContextMiddleware({})
 
@@ -168,8 +164,6 @@ class KeystoneContextMiddlewareTest(ApiTestCase):
 
 
 class NoAuthContextMiddlewareTest(ApiTestCase):
-    __test__ = True
-
     def test_process_request(self):
         app = middleware.NoAuthContextMiddleware({})
 

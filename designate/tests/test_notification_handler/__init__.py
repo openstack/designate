@@ -15,16 +15,19 @@
 # under the License.
 import json
 import os
+import six
+import testtools
 from designate.notification_handler.base import Handler
 from designate.tests import TestCase
+from designate.tests import SkipNotImplementedMeta
 
 FIXTURES_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              '..',
                                              'sample_notifications'))
 
 
+@six.add_metaclass(SkipNotImplementedMeta)
 class NotificationHandlerTestCase(TestCase):
-    __test__ = False
     __plugin_base__ = Handler
 
     def setUp(self):
@@ -47,9 +50,11 @@ class NotificationHandlerTestCase(TestCase):
             return json.load(fh)
 
     def test_invalid_event_type(self):
+        if not hasattr(self, 'plugin'):
+            raise NotImplementedError
         event_type = 'invalid'
 
         self.assertNotIn(event_type, self.plugin.get_event_types())
 
-        with self.assertRaises(ValueError):
+        with testtools.ExpectedException(ValueError):
             self.plugin.process_notification(event_type, 'payload')

@@ -20,8 +20,6 @@ LOG = logging.getLogger(__name__)
 
 
 class NoopQuotaTest(QuotaTestCase):
-    __test__ = True
-
     def setUp(self):
         self.config(quota_driver='noop')
         super(NoopQuotaTest, self).setUp()

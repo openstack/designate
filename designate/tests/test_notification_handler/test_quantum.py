@@ -22,8 +22,6 @@ LOG = logging.getLogger(__name__)
 
 
 class QuantumFloatingHandlerTest(NotificationHandlerTestCase):
-    __test__ = True
-
     def setUp(self):
         super(QuantumFloatingHandlerTest, self).setUp()
 
@@ -71,7 +69,7 @@ class QuantumFloatingHandlerTest(NotificationHandlerTestCase):
         records = self.central_service.find_records(self.admin_context,
                                                     self.domain_id)
 
-        self.assertGreaterEqual(len(records), 1)
+        self.assertTrue(len(records) >= 1)
 
         self.plugin.process_notification(event_type, fixture['payload'])
 

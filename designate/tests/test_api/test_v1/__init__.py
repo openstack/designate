@@ -24,8 +24,6 @@ LOG = logging.getLogger(__name__)
 
 
 class ApiV1Test(ApiTestCase):
-    __test__ = False
-
     def setUp(self):
         super(ApiV1Test, self).setUp()
 

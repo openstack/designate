@@ -15,6 +15,7 @@
 # under the License.
 import os
 import tempfile
+import testtools
 from jinja2 import Template
 from designate.tests import TestCase
 from designate import exceptions
@@ -32,7 +33,7 @@ class TestUtils(TestCase):
     def test_resource_string_missing(self):
         name = 'invalid.jinja2'
 
-        with self.assertRaises(exceptions.ResourceNotFound):
+        with testtools.ExpectedException(exceptions.ResourceNotFound):
             utils.resource_string(name)
 
     def test_load_schema(self):
@@ -41,7 +42,7 @@ class TestUtils(TestCase):
         self.assertIsInstance(schema, dict)
 
     def test_load_schema_missing(self):
-        with self.assertRaises(exceptions.ResourceNotFound):
+        with testtools.ExpectedException(exceptions.ResourceNotFound):
             utils.load_schema('v1', 'missing')
 
     def test_load_template(self):
@@ -54,7 +55,7 @@ class TestUtils(TestCase):
     def test_load_template_missing(self):
         name = 'invalid.jinja2'
 
-        with self.assertRaises(exceptions.ResourceNotFound):
+        with testtools.ExpectedException(exceptions.ResourceNotFound):
             utils.load_template(name)
 
     def test_render_template(self):

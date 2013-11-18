@@ -24,7 +24,6 @@
 				"*.psd",
 				"*.db",
 				".vagrant",
-				".noseids"
 			],
 			"folder_exclude_patterns":
 			[

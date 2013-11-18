@@ -20,8 +20,6 @@ LOG = logging.getLogger(__name__)
 
 
 class MySQLBind9BackendDriverTestCase(BackendTestCase):
-    __test__ = True
-
     def setUp(self):
         super(MySQLBind9BackendDriverTestCase, self).setUp()
 

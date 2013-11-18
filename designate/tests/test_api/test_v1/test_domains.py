@@ -26,8 +26,6 @@ LOG = logging.getLogger(__name__)
 
 
 class ApiV1DomainsTest(ApiV1Test):
-    __test__ = True
-
     def test_create_domain(self):
         # Create a server
         self.create_server()

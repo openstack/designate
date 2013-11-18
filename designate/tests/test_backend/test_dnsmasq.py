@@ -20,8 +20,6 @@ LOG = logging.getLogger(__name__)
 
 
 class DnsmasqBackendDriverTestCase(BackendTestCase):
-    __test__ = True
-
     def setUp(self):
         super(DnsmasqBackendDriverTestCase, self).setUp()
 

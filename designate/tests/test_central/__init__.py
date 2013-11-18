@@ -17,4 +17,4 @@ from designate.tests import TestCase
 
 
 class CentralTestCase(TestCase):
-    __test__ = False
+    pass

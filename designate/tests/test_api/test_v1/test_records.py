@@ -25,8 +25,6 @@ LOG = logging.getLogger(__name__)
 
 
 class ApiV1RecordsTest(ApiV1Test):
-    __test__ = True
-
     def setUp(self):
         super(ApiV1RecordsTest, self).setUp()
 

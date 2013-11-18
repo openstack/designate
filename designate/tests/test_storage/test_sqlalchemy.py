@@ -19,6 +19,8 @@ from migrate.versioning import api as versioning_api
 from migrate.versioning import repository
 import sqlalchemy
 from designate.openstack.common import log as logging
+from designate import storage
+from designate.tests import TestCase
 from designate.tests.test_storage import StorageTestCase
 
 LOG = logging.getLogger(__name__)
@@ -27,21 +29,18 @@ REPOSITORY = os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
                                           'migrate_repo'))
 
 
-class SqlalchemyStorageTest(StorageTestCase):
-    __test__ = True
-
+class SqlalchemyStorageTest(StorageTestCase, TestCase):
     def setUp(self):
         self.config(database_connection='sqlite://',
                     group='storage:sqlalchemy')
         super(SqlalchemyStorageTest, self).setUp()
-
+        self.storage = storage.get_storage()
         self.REPOSITORY = repository.Repository(REPOSITORY)
 
     # Migration Test Stuff
     def _init_database(self, url):
         LOG.debug('Building Engine')
         engine = sqlalchemy.create_engine(url)
-
         LOG.debug('Initializing database')
         versioning_api.version_control(engine, repository=self.REPOSITORY)
 

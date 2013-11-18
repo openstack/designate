@@ -13,6 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import testtools
 from designate.openstack.common import log as logging
 from designate import exceptions
 from designate import schema
@@ -22,8 +23,6 @@ LOG = logging.getLogger(__name__)
 
 
 class SchemasV2Test(TestCase):
-    __test__ = True
-
     def test_recordset(self):
         validator = schema.Schema('v2', 'recordset')
 
@@ -54,7 +53,7 @@ class SchemasV2Test(TestCase):
             }
         })
 
-        with self.assertRaises(exceptions.InvalidObject):
+        with testtools.ExpectedException(exceptions.InvalidObject):
             # Fail Expected - Empty Records Array
             validator.validate({
                 'recordset': {
@@ -66,7 +65,7 @@ class SchemasV2Test(TestCase):
                 }
             })
 
-        with self.assertRaises(exceptions.InvalidObject):
+        with testtools.ExpectedException(exceptions.InvalidObject):
             # Fail Expected - No Records
             validator.validate({
                 'recordset': {
@@ -77,7 +76,7 @@ class SchemasV2Test(TestCase):
                 }
             })
 
-        with self.assertRaises(exceptions.InvalidObject):
+        with testtools.ExpectedException(exceptions.InvalidObject):
             # Fail Expected - MX records in an A RRset
             validator.validate({
                 'recordset': {
@@ -92,7 +91,7 @@ class SchemasV2Test(TestCase):
                 }
             })
 
-        with self.assertRaises(exceptions.InvalidObject):
+        with testtools.ExpectedException(exceptions.InvalidObject):
             # Fail Expected - A records in an MX RRset
             validator.validate({
                 'recordset': {
@@ -107,7 +106,7 @@ class SchemasV2Test(TestCase):
                 }
             })
 
-        with self.assertRaises(exceptions.InvalidObject):
+        with testtools.ExpectedException(exceptions.InvalidObject):
             # Fail Expected - AAAA records in an A RRset
             validator.validate({
                 'recordset': {

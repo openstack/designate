@@ -20,8 +20,6 @@ LOG = logging.getLogger(__name__)
 
 
 class PowerDNSBackendDriverTestCase(BackendTestCase):
-    __test__ = True
-
     def setUp(self):
         super(PowerDNSBackendDriverTestCase, self).setUp()
 

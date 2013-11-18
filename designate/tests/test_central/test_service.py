@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import random
+import testtools
 from designate.openstack.common import log as logging
 from designate import exceptions
 from designate.tests.test_central import CentralTestCase
@@ -22,8 +23,6 @@ LOG = logging.getLogger(__name__)
 
 
 class CentralServiceTest(CentralTestCase):
-    __test__ = True
-
     def setUp(self):
         super(CentralServiceTest, self).setUp()
         self.central_service = self.get_central_service()
@@ -42,10 +41,10 @@ class CentralServiceTest(CentralTestCase):
 
         self.central_service._is_valid_domain_name(context, 'valid.org.')
 
-        with self.assertRaises(exceptions.InvalidDomainName):
+        with testtools.ExpectedException(exceptions.InvalidDomainName):
             self.central_service._is_valid_domain_name(context, 'example.org.')
 
-        with self.assertRaises(exceptions.InvalidDomainName):
+        with testtools.ExpectedException(exceptions.InvalidDomainName):
             self.central_service._is_valid_domain_name(context, 'example.tld.')
 
     def test_is_valid_record_name(self):
@@ -61,15 +60,15 @@ class CentralServiceTest(CentralTestCase):
                                                    'valid.example.org.',
                                                    'A')
 
-        with self.assertRaises(exceptions.InvalidRecordName):
+        with testtools.ExpectedException(exceptions.InvalidRecordName):
             self.central_service._is_valid_record_name(
                 context, domain, 'toolong.example.org.', 'A')
 
-        with self.assertRaises(exceptions.InvalidRecordLocation):
+        with testtools.ExpectedException(exceptions.InvalidRecordLocation):
             self.central_service._is_valid_record_name(
                 context, domain, 'a.example.COM.', 'A')
 
-        with self.assertRaises(exceptions.InvalidRecordLocation):
+        with testtools.ExpectedException(exceptions.InvalidRecordLocation):
             self.central_service._is_valid_record_name(
                 context, domain, 'example.org.', 'CNAME')
 
@@ -201,12 +200,15 @@ class CentralServiceTest(CentralTestCase):
         self.central_service.delete_server(context, server['id'])
 
         # Fetch the server again, ensuring an exception is raised
-        with self.assertRaises(exceptions.ServerNotFound):
-            self.central_service.get_server(context, server['id'])
+        self.assertRaises(
+            exceptions.ServerNotFound,
+            self.central_service.get_server,
+            context, server['id'])
 
         # Try to delete last remaining server - expect exception
-        with self.assertRaises(exceptions.LastServerDeleteNotAllowed):
-            self.central_service.delete_server(context, server2['id'])
+        self.assertRaises(
+            exceptions.LastServerDeleteNotAllowed,
+            self.central_service.delete_server, context, server2['id'])
 
     # TsigKey Tests
     def test_create_tsigkey(self):
@@ -288,7 +290,7 @@ class CentralServiceTest(CentralTestCase):
         self.central_service.delete_tsigkey(context, tsigkey['id'])
 
         # Fetch the tsigkey again, ensuring an exception is raised
-        with self.assertRaises(exceptions.TsigKeyNotFound):
+        with testtools.ExpectedException(exceptions.TsigKeyNotFound):
             self.central_service.get_tsigkey(context, tsigkey['id'])
 
     # Tenant Tests
@@ -311,7 +313,7 @@ class CentralServiceTest(CentralTestCase):
         # Set the policy to reject the authz
         self.policy({'count_tenants': '!'})
 
-        with self.assertRaises(exceptions.Forbidden):
+        with testtools.ExpectedException(exceptions.Forbidden):
             self.central_service.count_tenants(self.get_context())
 
     # Domain Tests
@@ -360,7 +362,7 @@ class CentralServiceTest(CentralTestCase):
 
         self.create_domain()
 
-        with self.assertRaises(exceptions.OverQuota):
+        with testtools.ExpectedException(exceptions.OverQuota):
             self.create_domain()
 
     def test_create_subdomain(self):
@@ -402,7 +404,7 @@ class CentralServiceTest(CentralTestCase):
         values['name'] = 'www.%s' % parent_domain['name']
 
         # Attempt to create the subdomain
-        with self.assertRaises(exceptions.Forbidden):
+        with testtools.ExpectedException(exceptions.Forbidden):
             self.central_service.create_domain(context, values=values)
 
     def test_create_blacklisted_domain_success(self):
@@ -444,7 +446,7 @@ class CentralServiceTest(CentralTestCase):
             email='info@blacklisted.com'
         )
 
-        with self.assertRaises(exceptions.InvalidDomainName):
+        with testtools.ExpectedException(exceptions.InvalidDomainName):
             # Create a domain
             self.central_service.create_domain(context, values=values)
 
@@ -470,7 +472,7 @@ class CentralServiceTest(CentralTestCase):
             email='info@invalid.com'
         )
 
-        with self.assertRaises(exceptions.InvalidTLD):
+        with testtools.ExpectedException(exceptions.InvalidTLD):
             # Create an invalid domain
             self.central_service.create_domain(context, values=values)
 
@@ -561,7 +563,7 @@ class CentralServiceTest(CentralTestCase):
         # Retrieve the servers list
         servers = self.central_service.get_domain_servers(context,
                                                           domain['id'])
-        self.assertGreater(len(servers), 0)
+        self.assertTrue(len(servers) > 0)
 
     def test_find_domain(self):
         context = self.get_admin_context()
@@ -597,7 +599,7 @@ class CentralServiceTest(CentralTestCase):
                                                  expected_domain['id'])
 
         # Ensure the domain was updated correctly
-        self.assertGreater(domain['serial'], expected_domain['serial'])
+        self.assertTrue(domain['serial'] > expected_domain['serial'])
         self.assertEqual(domain['email'], 'new@example.com')
 
         # Ensure we sent exactly 1 notification
@@ -644,7 +646,7 @@ class CentralServiceTest(CentralTestCase):
         expected_domain = self.create_domain()
 
         # Update the domain
-        with self.assertRaises(exceptions.BadRequest):
+        with testtools.ExpectedException(exceptions.BadRequest):
             values = dict(name='renamed-domain.com.')
             self.central_service.update_domain(context, expected_domain['id'],
                                                values=values)
@@ -662,7 +664,7 @@ class CentralServiceTest(CentralTestCase):
         self.central_service.delete_domain(context, domain['id'])
 
         # Fetch the domain again, ensuring an exception is raised
-        with self.assertRaises(exceptions.DomainNotFound):
+        with testtools.ExpectedException(exceptions.DomainNotFound):
             self.central_service.get_domain(context, domain['id'])
 
         # Ensure we sent exactly 1 notification
@@ -696,7 +698,7 @@ class CentralServiceTest(CentralTestCase):
         self.central_service.create_domain(context, values=values)
 
         # Attempt to delete the parent domain
-        with self.assertRaises(exceptions.DomainHasSubdomain):
+        with testtools.ExpectedException(exceptions.DomainHasSubdomain):
             self.central_service.delete_domain(context, parent_domain['id'])
 
     def test_count_domains(self):
@@ -717,7 +719,7 @@ class CentralServiceTest(CentralTestCase):
         # Set the policy to reject the authz
         self.policy({'count_domains': '!'})
 
-        with self.assertRaises(exceptions.Forbidden):
+        with testtools.ExpectedException(exceptions.Forbidden):
             self.central_service.count_domains(self.get_context())
 
     def test_touch_domain(self):
@@ -734,7 +736,7 @@ class CentralServiceTest(CentralTestCase):
                                                  expected_domain['id'])
 
         # Ensure the serial was incremented
-        self.assertGreater(domain['serial'], expected_domain['serial'])
+        self.assertTrue(domain['serial'] > expected_domain['serial'])
 
     # Record Tests
     def test_create_record(self):
@@ -766,7 +768,7 @@ class CentralServiceTest(CentralTestCase):
 
         self.create_record(domain)
 
-        with self.assertRaises(exceptions.OverQuota):
+        with testtools.ExpectedException(exceptions.OverQuota):
             self.create_record(domain)
 
     def test_create_record_without_incrementing_serial(self):
@@ -806,7 +808,7 @@ class CentralServiceTest(CentralTestCase):
         )
 
         # Attempt to create a CNAME record at the apex
-        with self.assertRaises(exceptions.InvalidRecordLocation):
+        with testtools.ExpectedException(exceptions.InvalidRecordLocation):
             self.central_service.create_record(context, domain['id'],
                                                values=values)
 
@@ -874,7 +876,7 @@ class CentralServiceTest(CentralTestCase):
                                            values=values)
 
         # Attempt to create a CNAME record alongside an A record
-        with self.assertRaises(exceptions.InvalidRecordLocation):
+        with testtools.ExpectedException(exceptions.InvalidRecordLocation):
             values = dict(
                 name='www.%s' % domain['name'],
                 type='CNAME',
@@ -898,7 +900,7 @@ class CentralServiceTest(CentralTestCase):
                                            values=values)
 
         # Attempt to create a CNAME record alongside an A record
-        with self.assertRaises(exceptions.InvalidRecordLocation):
+        with testtools.ExpectedException(exceptions.InvalidRecordLocation):
             values = dict(
                 name='www.%s' % domain['name'],
                 type='A',
@@ -922,7 +924,7 @@ class CentralServiceTest(CentralTestCase):
                                            values=values)
 
         # Attempt to create a second PTR with the same name.
-        with self.assertRaises(exceptions.DuplicateRecord):
+        with testtools.ExpectedException(exceptions.DuplicateRecord):
             values = dict(
                 name='1.%s' % domain['name'],
                 type='PTR',
@@ -998,7 +1000,7 @@ class CentralServiceTest(CentralTestCase):
         expected_record = self.create_record(domain, name=record_name)
 
         # Ensure we get a 404 if we use the incorrect domain_id
-        with self.assertRaises(exceptions.RecordNotFound):
+        with testtools.ExpectedException(exceptions.RecordNotFound):
             self.central_service.get_record(context, other_domain['id'],
                                             expected_record['id'])
 
@@ -1063,7 +1065,7 @@ class CentralServiceTest(CentralTestCase):
         values = dict(data='127.0.0.2')
 
         # Ensure we get a 404 if we use the incorrect domain_id
-        with self.assertRaises(exceptions.RecordNotFound):
+        with testtools.ExpectedException(exceptions.RecordNotFound):
             self.central_service.update_record(context, other_domain['id'],
                                                expected_record['id'],
                                                values=values)
@@ -1091,7 +1093,7 @@ class CentralServiceTest(CentralTestCase):
                                                     values=values)
 
         # Attempt to create a second PTR with the same name.
-        with self.assertRaises(exceptions.DuplicateRecord):
+        with testtools.ExpectedException(exceptions.DuplicateRecord):
             values = dict(
                 name='1.%s' % domain['name']
             )
@@ -1156,7 +1158,7 @@ class CentralServiceTest(CentralTestCase):
         self.central_service.delete_record(context, domain['id'], record['id'])
 
         # Fetch the record again, ensuring an exception is raised
-        with self.assertRaises(exceptions.RecordNotFound):
+        with testtools.ExpectedException(exceptions.RecordNotFound):
             self.central_service.get_record(context, domain['id'],
                                             record['id'])
 
@@ -1175,7 +1177,7 @@ class CentralServiceTest(CentralTestCase):
                                            increment_serial=False)
 
         # Fetch the record again, ensuring an exception is raised
-        with self.assertRaises(exceptions.RecordNotFound):
+        with testtools.ExpectedException(exceptions.RecordNotFound):
             self.central_service.get_record(context, domain['id'],
                                             record['id'])
 
@@ -1192,7 +1194,7 @@ class CentralServiceTest(CentralTestCase):
         record = self.create_record(domain)
 
         # Ensure we get a 404 if we use the incorrect domain_id
-        with self.assertRaises(exceptions.RecordNotFound):
+        with testtools.ExpectedException(exceptions.RecordNotFound):
             self.central_service.delete_record(context, other_domain['id'],
                                                record['id'])
 
@@ -1215,5 +1217,5 @@ class CentralServiceTest(CentralTestCase):
         # Set the policy to reject the authz
         self.policy({'count_records': '!'})
 
-        with self.assertRaises(exceptions.Forbidden):
+        with testtools.ExpectedException(exceptions.Forbidden):
             self.central_service.count_records(self.get_context())

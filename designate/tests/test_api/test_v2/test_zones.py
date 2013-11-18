@@ -22,8 +22,6 @@ from designate.tests.test_api.test_v2 import ApiV2TestCase
 
 
 class ApiV2ZonesTest(ApiV2TestCase):
-    __test__ = True
-
     def setUp(self):
         super(ApiV2ZonesTest, self).setUp()
 

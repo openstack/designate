@@ -13,6 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import testtools
 from oslo.config import cfg
 from designate.openstack.common import log as logging
 from designate.tests import TestCase
@@ -23,8 +24,6 @@ LOG = logging.getLogger(__name__)
 
 
 class QuotaTestCase(TestCase):
-    __test__ = False
-
     def setUp(self):
         super(QuotaTestCase, self).setUp()
         self.quota = quota.get_quota()
@@ -43,10 +42,10 @@ class QuotaTestCase(TestCase):
     def test_limit_check_unknown(self):
         context = self.get_admin_context()
 
-        with self.assertRaises(exceptions.QuotaResourceUnknown):
+        with testtools.ExpectedException(exceptions.QuotaResourceUnknown):
             self.quota.limit_check(context, 'tenant_id', unknown=0)
 
-        with self.assertRaises(exceptions.QuotaResourceUnknown):
+        with testtools.ExpectedException(exceptions.QuotaResourceUnknown):
             self.quota.limit_check(context, 'tenant_id', unknown=0, domains=0)
 
     def test_limit_check_under(self):
@@ -67,11 +66,11 @@ class QuotaTestCase(TestCase):
     def test_limit_check_at(self):
         context = self.get_admin_context()
 
-        with self.assertRaises(exceptions.OverQuota):
+        with testtools.ExpectedException(exceptions.OverQuota):
             self.quota.limit_check(context, 'tenant_id',
                                    domains=cfg.CONF.quota_domains)
 
-        with self.assertRaises(exceptions.OverQuota):
+        with testtools.ExpectedException(exceptions.OverQuota):
             self.quota.limit_check(
                 context,
                 'tenant_id',
@@ -80,20 +79,20 @@ class QuotaTestCase(TestCase):
     def test_limit_check_over(self):
         context = self.get_admin_context()
 
-        with self.assertRaises(exceptions.OverQuota):
+        with testtools.ExpectedException(exceptions.OverQuota):
             self.quota.limit_check(context, 'tenant_id', domains=99999)
 
-        with self.assertRaises(exceptions.OverQuota):
+        with testtools.ExpectedException(exceptions.OverQuota):
             self.quota.limit_check(context, 'tenant_id', domain_records=99999)
 
-        with self.assertRaises(exceptions.OverQuota):
+        with testtools.ExpectedException(exceptions.OverQuota):
             self.quota.limit_check(context, 'tenant_id', domains=99999,
                                    domain_records=99999)
 
-        with self.assertRaises(exceptions.OverQuota):
+        with testtools.ExpectedException(exceptions.OverQuota):
             self.quota.limit_check(context, 'tenant_id', domains=99999,
                                    domain_records=0)
 
-        with self.assertRaises(exceptions.OverQuota):
+        with testtools.ExpectedException(exceptions.OverQuota):
             self.quota.limit_check(context, 'tenant_id', domains=0,
                                    domain_records=99999)

@@ -22,8 +22,6 @@ LOG = logging.getLogger(__name__)
 
 
 class BackendTestCase(TestCase):
-    __test__ = False
-
     def get_backend_driver(self):
         central_service = self.get_central_service()
         return backend.get_backend(cfg.CONF['service:agent'].backend_driver,

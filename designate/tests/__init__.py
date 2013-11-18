@@ -14,14 +14,16 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import copy
-import unittest2
-import mox
-import nose
+import fixtures
+import functools
 import os
+from testtools import testcase
 from oslo.config import cfg
 from designate.openstack.common import log as logging
 from designate.openstack.common.notifier import test_notifier
+from designate.openstack.common.fixture import config
 from designate.openstack.common import policy
+from designate.openstack.common import test
 from designate.context import DesignateContext
 from designate import storage
 from designate import exceptions
@@ -42,7 +44,18 @@ cfg.CONF.import_opt('database_connection', 'designate.storage.impl_sqlalchemy',
                     group='storage:sqlalchemy')
 
 
-class TestCase(unittest2.TestCase):
+class NotifierFixture(fixtures.Fixture):
+    def tearDown(self):
+        self.clear()
+
+    def get(self):
+        return test_notifier.NOTIFICATIONS
+
+    def clear(self):
+        test_notifier.NOTIFICATIONS = []
+
+
+class TestCase(test.BaseTestCase):
     quota_fixtures = [{
         'tenant_id': '12345',
         'resource': 'domains',
@@ -90,7 +103,7 @@ class TestCase(unittest2.TestCase):
     def setUp(self):
         super(TestCase, self).setUp()
 
-        self.mox = mox.Mox()
+        self.CONF = self.useFixture(config.Config(cfg.CONF)).conf
 
         self.config(
             notification_driver=[
@@ -120,6 +133,11 @@ class TestCase(unittest2.TestCase):
             group='storage:sqlalchemy'
         )
 
+        self.CONF([], project='designate')
+
+        self.notifications = NotifierFixture()
+        self.useFixture(self.notifications)
+
         storage.setup_schema()
 
         self.admin_context = self.get_admin_context()
@@ -128,12 +146,7 @@ class TestCase(unittest2.TestCase):
         self.reset_notifications()
         policy.reset()
         storage.teardown_schema()
-        cfg.CONF.reset()
-        self.mox.UnsetStubs()
         super(TestCase, self).tearDown()
-
-    def skip(self, message=None):
-        raise nose.SkipTest(message)
 
     # Config Methods
     def config(self, **kwargs):
@@ -156,10 +169,10 @@ class TestCase(unittest2.TestCase):
 
     # Other Utility Methods
     def get_notifications(self):
-        return test_notifier.NOTIFICATIONS
+        return self.notifications.get()
 
     def reset_notifications(self):
-        test_notifier.NOTIFICATIONS = []
+        self.notifications.clear()
 
     # Service Methods
     def get_agent_service(self):
@@ -264,3 +277,27 @@ class TestCase(unittest2.TestCase):
                                          values=kwargs)
         return self.central_service.create_record(context, domain['id'],
                                                   values=values)
+
+
+def _skip_decorator(func):
+    @functools.wraps(func)
+    def skip_if_not_implemented(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except NotImplementedError as e:
+            raise testcase.TestSkipped(str(e))
+        except Exception as e:
+            if 'not implemented' in str(e):
+                raise testcase.TestSkipped(str(e))
+            raise
+    return skip_if_not_implemented
+
+
+class SkipNotImplementedMeta(type):
+    def __new__(cls, name, bases, local):
+        for attr in local:
+            value = local[attr]
+            if callable(value) and (
+                    attr.startswith('test_') or attr == 'setUp'):
+                local[attr] = _skip_decorator(value)
+        return type.__new__(cls, name, bases, local)

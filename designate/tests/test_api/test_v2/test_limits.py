@@ -18,8 +18,6 @@ from designate.tests.test_api.test_v2 import ApiV2TestCase
 
 
 class ApiV2LimitsTest(ApiV2TestCase):
-    __test__ = True
-
     def test_get_limits(self):
         response = self.client.get('/limits/')
 

@@ -17,8 +17,6 @@ from designate.tests.test_agent import AgentTestCase
 
 
 class AgentServiceTest(AgentTestCase):
-    __test__ = True
-
     def setUp(self):
         super(AgentServiceTest, self).setUp()
         self.service = self.get_agent_service()

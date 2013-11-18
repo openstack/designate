@@ -20,8 +20,6 @@ LOG = logging.getLogger(__name__)
 
 
 class FakeBackendDriverTestCase(BackendTestCase):
-    __test__ = True
-
     def setUp(self):
         super(FakeBackendDriverTestCase, self).setUp()
 

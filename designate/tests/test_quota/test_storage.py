@@ -20,8 +20,6 @@ LOG = logging.getLogger(__name__)
 
 
 class StorageQuotaTest(QuotaTestCase):
-    __test__ = True
-
     def setUp(self):
         self.config(quota_driver='storage')
         super(StorageQuotaTest, self).setUp()
@@ -30,7 +28,7 @@ class StorageQuotaTest(QuotaTestCase):
         quota = self.quota.set_quota(self.admin_context, 'tenant_id',
                                      'domains', 1500)
 
-        self.assertEquals(quota, {'domains': 1500})
+        self.assertEqual(quota, {'domains': 1500})
 
         # Drop into the storage layer directly to ensure the quota was created
         # sucessfully.
@@ -42,9 +40,9 @@ class StorageQuotaTest(QuotaTestCase):
         quota = self.quota.storage_api.find_quota(self.admin_context,
                                                   criterion)
 
-        self.assertEquals(quota['tenant_id'], 'tenant_id')
-        self.assertEquals(quota['resource'], 'domains')
-        self.assertEquals(quota['hard_limit'], 1500)
+        self.assertEqual(quota['tenant_id'], 'tenant_id')
+        self.assertEqual(quota['resource'], 'domains')
+        self.assertEqual(quota['hard_limit'], 1500)
 
     def test_set_quota_update(self):
         # First up, Create the quota
@@ -63,9 +61,9 @@ class StorageQuotaTest(QuotaTestCase):
         quota = self.quota.storage_api.find_quota(self.admin_context,
                                                   criterion)
 
-        self.assertEquals(quota['tenant_id'], 'tenant_id')
-        self.assertEquals(quota['resource'], 'domains')
-        self.assertEquals(quota['hard_limit'], 1234)
+        self.assertEqual(quota['tenant_id'], 'tenant_id')
+        self.assertEqual(quota['resource'], 'domains')
+        self.assertEqual(quota['hard_limit'], 1234)
 
     def test_reset_quotas(self):
         # First up, Create a domains quota
@@ -87,4 +85,4 @@ class StorageQuotaTest(QuotaTestCase):
         quotas = self.quota.storage_api.find_quotas(self.admin_context,
                                                     criterion)
 
-        self.assertEquals(0, len(quotas))
+        self.assertEqual(0, len(quotas))

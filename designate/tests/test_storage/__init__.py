@@ -13,21 +13,15 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import testtools
+
 from designate.openstack.common import log as logging
-from designate.tests import TestCase
-from designate import storage
 from designate import exceptions
 
 LOG = logging.getLogger(__name__)
 
 
-class StorageTestCase(TestCase):
-    __test__ = False
-
-    def setUp(self):
-        super(StorageTestCase, self).setUp()
-        self.storage = storage.get_storage()
-
+class StorageTestCase(object):
     def create_quota(self, fixture=0, values={}):
         fixture = self.get_quota_fixture(fixture, values)
         return fixture, self.storage.create_quota(self.admin_context, fixture)
@@ -70,7 +64,7 @@ class StorageTestCase(TestCase):
         # Create the initial quota
         self.create_quota()
 
-        with self.assertRaises(exceptions.DuplicateQuota):
+        with testtools.ExpectedException(exceptions.DuplicateQuota):
             self.create_quota()
 
     def test_find_quotas(self):
@@ -137,7 +131,7 @@ class StorageTestCase(TestCase):
         self.assertEqual(actual['hard_limit'], expected['hard_limit'])
 
     def test_get_quota_missing(self):
-        with self.assertRaises(exceptions.QuotaNotFound):
+        with testtools.ExpectedException(exceptions.QuotaNotFound):
             uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
             self.storage.get_quota(self.admin_context, uuid)
 
@@ -174,7 +168,7 @@ class StorageTestCase(TestCase):
             tenant_id=expected['tenant_id'] + "NOT FOUND"
         )
 
-        with self.assertRaises(exceptions.QuotaNotFound):
+        with testtools.ExpectedException(exceptions.QuotaNotFound):
             self.storage.find_quota(self.admin_context, criterion)
 
     def test_update_quota(self):
@@ -195,12 +189,12 @@ class StorageTestCase(TestCase):
 
         values = self.quota_fixtures[0]
 
-        with self.assertRaises(exceptions.DuplicateQuota):
+        with testtools.ExpectedException(exceptions.DuplicateQuota):
             self.storage.update_quota(self.admin_context, quota['id'],
                                       values)
 
     def test_update_quota_missing(self):
-        with self.assertRaises(exceptions.QuotaNotFound):
+        with testtools.ExpectedException(exceptions.QuotaNotFound):
             uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
             self.storage.update_quota(self.admin_context, uuid, {})
 
@@ -209,11 +203,11 @@ class StorageTestCase(TestCase):
 
         self.storage.delete_quota(self.admin_context, quota['id'])
 
-        with self.assertRaises(exceptions.QuotaNotFound):
+        with testtools.ExpectedException(exceptions.QuotaNotFound):
             self.storage.get_quota(self.admin_context, quota['id'])
 
     def test_delete_quota_missing(self):
-        with self.assertRaises(exceptions.QuotaNotFound):
+        with testtools.ExpectedException(exceptions.QuotaNotFound):
             uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
             self.storage.delete_quota(self.admin_context, uuid)
 
@@ -235,7 +229,7 @@ class StorageTestCase(TestCase):
         # Create the Initial Server
         self.create_server()
 
-        with self.assertRaises(exceptions.DuplicateServer):
+        with testtools.ExpectedException(exceptions.DuplicateServer):
             self.create_server()
 
     def test_find_servers(self):
@@ -290,7 +284,7 @@ class StorageTestCase(TestCase):
         self.assertEqual(str(actual['name']), str(expected['name']))
 
     def test_get_server_missing(self):
-        with self.assertRaises(exceptions.ServerNotFound):
+        with testtools.ExpectedException(exceptions.ServerNotFound):
             uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
             self.storage.get_server(self.admin_context, uuid)
 
@@ -310,12 +304,12 @@ class StorageTestCase(TestCase):
 
         values = self.server_fixtures[0]
 
-        with self.assertRaises(exceptions.DuplicateServer):
+        with testtools.ExpectedException(exceptions.DuplicateServer):
             self.storage.update_server(self.admin_context, server['id'],
                                        values)
 
     def test_update_server_missing(self):
-        with self.assertRaises(exceptions.ServerNotFound):
+        with testtools.ExpectedException(exceptions.ServerNotFound):
             uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
             self.storage.update_server(self.admin_context, uuid, {})
 
@@ -324,11 +318,11 @@ class StorageTestCase(TestCase):
 
         self.storage.delete_server(self.admin_context, server['id'])
 
-        with self.assertRaises(exceptions.ServerNotFound):
+        with testtools.ExpectedException(exceptions.ServerNotFound):
             self.storage.get_server(self.admin_context, server['id'])
 
     def test_delete_server_missing(self):
-        with self.assertRaises(exceptions.ServerNotFound):
+        with testtools.ExpectedException(exceptions.ServerNotFound):
             uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
             self.storage.delete_server(self.admin_context, uuid)
 
@@ -353,7 +347,7 @@ class StorageTestCase(TestCase):
         values = self.get_tsigkey_fixture(1)
         values['name'] = tsigkey_one['name']
 
-        with self.assertRaises(exceptions.DuplicateTsigKey):
+        with testtools.ExpectedException(exceptions.DuplicateTsigKey):
             self.create_tsigkey(values=values)
 
     def test_find_tsigkeys(self):
@@ -415,7 +409,7 @@ class StorageTestCase(TestCase):
         self.assertEqual(actual['secret'], expected['secret'])
 
     def test_get_tsigkey_missing(self):
-        with self.assertRaises(exceptions.TsigKeyNotFound):
+        with testtools.ExpectedException(exceptions.TsigKeyNotFound):
             uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
             self.storage.get_tsigkey(self.admin_context, uuid)
 
@@ -438,12 +432,12 @@ class StorageTestCase(TestCase):
 
         values = self.tsigkey_fixtures[0]
 
-        with self.assertRaises(exceptions.DuplicateTsigKey):
+        with testtools.ExpectedException(exceptions.DuplicateTsigKey):
             self.storage.update_tsigkey(self.admin_context, tsigkey['id'],
                                         values)
 
     def test_update_tsigkey_missing(self):
-        with self.assertRaises(exceptions.TsigKeyNotFound):
+        with testtools.ExpectedException(exceptions.TsigKeyNotFound):
             uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
             self.storage.update_tsigkey(self.admin_context, uuid, {})
 
@@ -452,11 +446,11 @@ class StorageTestCase(TestCase):
 
         self.storage.delete_tsigkey(self.admin_context, tsigkey['id'])
 
-        with self.assertRaises(exceptions.TsigKeyNotFound):
+        with testtools.ExpectedException(exceptions.TsigKeyNotFound):
             self.storage.get_tsigkey(self.admin_context, tsigkey['id'])
 
     def test_delete_tsigkey_missing(self):
-        with self.assertRaises(exceptions.TsigKeyNotFound):
+        with testtools.ExpectedException(exceptions.TsigKeyNotFound):
             uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
             self.storage.delete_tsigkey(self.admin_context, uuid)
 
@@ -481,7 +475,7 @@ class StorageTestCase(TestCase):
             'domain_count': 1
         }]
 
-        self.assertEquals(result, expected)
+        self.assertEqual(result, expected)
 
     def test_get_tenant(self):
         # create 2 domains in a tenant
@@ -494,10 +488,10 @@ class StorageTestCase(TestCase):
 
         result = self.storage.get_tenant(self.admin_context, 1)
 
-        self.assertEquals(result['id'], 1)
-        self.assertEquals(result['domain_count'], 2)
-        self.assertItemsEqual(result['domains'],
-                              [domain_1['name'], domain_2['name']])
+        self.assertEqual(result['id'], 1)
+        self.assertEqual(result['domain_count'], 2)
+        self.assertEqual(sorted(result['domains']),
+                         [domain_1['name'], domain_2['name']])
 
     def test_count_tenants(self):
         # in the beginning, there should be nothing
@@ -536,7 +530,7 @@ class StorageTestCase(TestCase):
         # Create the Initial Domain
         self.create_domain()
 
-        with self.assertRaises(exceptions.DuplicateDomain):
+        with testtools.ExpectedException(exceptions.DuplicateDomain):
             self.create_domain()
 
     def test_find_domains(self):
@@ -596,7 +590,7 @@ class StorageTestCase(TestCase):
         self.assertIn('status', actual)
 
     def test_get_domain_missing(self):
-        with self.assertRaises(exceptions.DomainNotFound):
+        with testtools.ExpectedException(exceptions.DomainNotFound):
             uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
             self.storage.get_domain(self.admin_context, uuid)
 
@@ -641,7 +635,7 @@ class StorageTestCase(TestCase):
             name=expected['name'] + "NOT FOUND"
         )
 
-        with self.assertRaises(exceptions.DomainNotFound):
+        with testtools.ExpectedException(exceptions.DomainNotFound):
             self.storage.find_domain(self.admin_context, criterion)
 
     def test_update_domain(self):
@@ -660,12 +654,12 @@ class StorageTestCase(TestCase):
         fixture_one, domain_one = self.create_domain(fixture=0)
         _, domain_two = self.create_domain(fixture=1)
 
-        with self.assertRaises(exceptions.DuplicateDomain):
+        with testtools.ExpectedException(exceptions.DuplicateDomain):
             self.storage.update_domain(self.admin_context, domain_two['id'],
                                        fixture_one)
 
     def test_update_domain_missing(self):
-        with self.assertRaises(exceptions.DomainNotFound):
+        with testtools.ExpectedException(exceptions.DomainNotFound):
             uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
             self.storage.update_domain(self.admin_context, uuid, {})
 
@@ -674,11 +668,11 @@ class StorageTestCase(TestCase):
 
         self.storage.delete_domain(self.admin_context, domain['id'])
 
-        with self.assertRaises(exceptions.DomainNotFound):
+        with testtools.ExpectedException(exceptions.DomainNotFound):
             self.storage.get_domain(self.admin_context, domain['id'])
 
     def test_delete_domain_missing(self):
-        with self.assertRaises(exceptions.DomainNotFound):
+        with testtools.ExpectedException(exceptions.DomainNotFound):
             uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
             self.storage.delete_domain(self.admin_context, uuid)
 
@@ -724,7 +718,7 @@ class StorageTestCase(TestCase):
         # Create the First Record
         self.create_record(domain)
 
-        with self.assertRaises(exceptions.DuplicateRecord):
+        with testtools.ExpectedException(exceptions.DuplicateRecord):
             # Attempt to create the second/duplicate record
             self.create_record(domain)
 
@@ -807,7 +801,7 @@ class StorageTestCase(TestCase):
         self.assertIn('status', actual)
 
     def test_get_record_missing(self):
-        with self.assertRaises(exceptions.RecordNotFound):
+        with testtools.ExpectedException(exceptions.RecordNotFound):
             uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
             self.storage.get_record(self.admin_context, uuid)
 
@@ -835,7 +829,7 @@ class StorageTestCase(TestCase):
             name=expected['name'] + "NOT FOUND"
         )
 
-        with self.assertRaises(exceptions.RecordNotFound):
+        with testtools.ExpectedException(exceptions.RecordNotFound):
             self.storage.find_record(self.admin_context, domain['id'],
                                      criterion)
 
@@ -867,13 +861,13 @@ class StorageTestCase(TestCase):
         record_one_fixture, _ = self.create_record(domain, fixture=0)
         _, record_two = self.create_record(domain, fixture=1)
 
-        with self.assertRaises(exceptions.DuplicateRecord):
+        with testtools.ExpectedException(exceptions.DuplicateRecord):
             # Attempt to update the second record, making it a duplicate record
             self.storage.update_record(self.admin_context, record_two['id'],
                                        record_one_fixture)
 
     def test_update_record_missing(self):
-        with self.assertRaises(exceptions.RecordNotFound):
+        with testtools.ExpectedException(exceptions.RecordNotFound):
             uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
             self.storage.update_record(self.admin_context, uuid, {})
 
@@ -885,11 +879,11 @@ class StorageTestCase(TestCase):
 
         self.storage.delete_record(self.admin_context, record['id'])
 
-        with self.assertRaises(exceptions.RecordNotFound):
+        with testtools.ExpectedException(exceptions.RecordNotFound):
             self.storage.get_record(self.admin_context, record['id'])
 
     def test_delete_record_missing(self):
-        with self.assertRaises(exceptions.RecordNotFound):
+        with testtools.ExpectedException(exceptions.RecordNotFound):
             uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
             self.storage.delete_record(self.admin_context, uuid)
 

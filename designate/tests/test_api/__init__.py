@@ -17,4 +17,4 @@ from designate.tests import TestCase
 
 
 class ApiTestCase(TestCase):
-    __test__ = False
+    pass
