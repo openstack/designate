@@ -35,8 +35,15 @@ root_helper = sudo
 # List of blacklist domain name regexes
 #domain_name_blacklist = \.arpa\.$, \.novalocal\.$, \.localhost\.$, \.localdomain\.$, \.local\.$
 
-# Accepted TLD list - http://data.iana.org/TLD/tlds-alpha-by-domain.txt
-#accepted_tld_list = COM, NET, ORG, IE, UK, ...
+# Accepted TLDs
+# This is a local copy of the list at
+# http://data.iana.org/TLD/tlds-alpha-by-domain.txt
+#accepted_tlds_file = tlds-alpha-by-domain.txt
+
+# Effective TLDs
+# This is a local copy of the list at http://publicsuffix.org/list/
+# This contains domain names that effectively act like TLDs e.g. co.uk or tx.us
+#effective_tlds_file = effective_tld_names.dat
 
 # Maximum domain name length
 #max_domain_name_len = 255
