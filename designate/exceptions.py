@@ -81,6 +81,11 @@ class InvalidDomainName(Base):
     error_type = 'invalid_domain_name'
 
 
+class DomainIsSameAsAnEffectiveTLD(Base):
+    error_code = 400
+    error_type = 'domain_is_same_as_an_effective_tld'
+
+
 class InvalidTLD(Base):
     error_code = 400
     error_type = 'invalid_tld'

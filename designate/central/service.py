@@ -17,6 +17,7 @@
 import re
 import contextlib
 from oslo.config import cfg
+from designate.central import effectivetld
 from designate.openstack.common import log as logging
 from designate.openstack.common.rpc import service as rpc_service
 from designate import backend
@@ -66,6 +67,7 @@ class Service(rpc_service.Service):
 
         # Get a quota manager instance
         self.quota = quota.get_quota()
+        self.effective_tld = effectivetld.EffectiveTld()
 
     def start(self):
         self.backend.start()
@@ -81,21 +83,6 @@ class Service(rpc_service.Service):
 
         self.backend.stop()
 
-    @property
-    def accepted_tld_list(self):
-        # Only iterate the list once please..
-        if hasattr(self, '_accepted_tld_list'):
-            return self._accepted_tld_list
-
-        accepted_tld_list = cfg.CONF['service:central'].accepted_tld_list
-
-        if accepted_tld_list:
-            accepted_tld_list = [tld.lower() for tld in accepted_tld_list]
-
-        self._accepted_tld_list = accepted_tld_list
-
-        return accepted_tld_list
-
     def _is_valid_domain_name(self, context, domain_name):
         # Validate domain name length
         if len(domain_name) > cfg.CONF['service:central'].max_domain_name_len:
@@ -108,13 +95,21 @@ class Service(rpc_service.Service):
         if len(domain_labels) <= 1:
             raise exceptions.InvalidDomainName('More than one label is '
                                                'required')
-
         # Check the TLD for validity
-        if self.accepted_tld_list:
+        # We cannot use the effective TLD list as the publicsuffix.org list is
+        # missing some top level entries.  At the time of coding, the following
+        # entries were missing
+        # arpa, au, bv, gb, gn, kp, lb, lr, sj, tp, tz, xn--80ao21a, xn--l1acc
+        # xn--mgbx4cd0ab
+        if self.effective_tld.accepted_tld_list:
             domain_tld = domain_labels[-1].lower()
-
-            if domain_tld not in self.accepted_tld_list:
+            if domain_tld not in self.effective_tld.accepted_tld_list:
                 raise exceptions.InvalidTLD('Unknown or invalid TLD')
+
+        # Check if the domain_name is the same as an effective TLD.
+        if self.effective_tld.is_effective_tld(domain_name):
+            raise exceptions.DomainIsSameAsAnEffectiveTLD(
+                'Domain name cannot be the same as an effective TLD')
 
         # Check domain name blacklist
         if self._is_blacklisted_domain_name(context, domain_name):
