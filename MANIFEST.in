@@ -3,6 +3,7 @@ include ChangeLog
 include designate/versioninfo
 include *.txt *.ini *.cfg *.rst *.md
 include etc/designate/*.sample
+include etc/designate/*.txt
 include etc/designate/policy.json
 include designate/storage/impl_sqlalchemy/migrate_repo/migrate.cfg
 include designate/backend/impl_powerdns/migrate_repo/migrate.cfg
