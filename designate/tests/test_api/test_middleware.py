@@ -166,6 +166,24 @@ class KeystoneContextMiddlewareTest(ApiTestCase):
                          context.tenant_id)
         self.assertEqual(['admin', 'Member'], context.roles)
 
+    def test_process_request_invalid_keystone_token(self):
+        app = middleware.KeystoneContextMiddleware({})
+
+        request = FakeRequest()
+
+        request.headers = {
+            'X-Auth-Token': 'AuthToken',
+            'X-User-ID': 'UserID',
+            'X-Tenant-ID': 'TenantID',
+            'X-Roles': 'admin,Member',
+            'X-Identity-Status': 'Invalid'
+        }
+
+        # Process the request
+        response = app(request)
+
+        self.assertEqual(response.status_code, 401)
+
 
 class NoAuthContextMiddlewareTest(ApiTestCase):
     __test__ = True

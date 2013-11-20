@@ -99,6 +99,14 @@ class KeystoneContextMiddleware(ContextMiddleware):
     def process_request(self, request):
         headers = request.headers
 
+        try:
+            if headers['X-Identity-Status'] is 'Invalid':
+                #TODO(graham) fix the return to use non-flask resources
+                return flask.Response(status=401)
+        except KeyError:
+            #If the key is valid, Keystone does not include this header at all
+            pass
+
         roles = headers.get('X-Roles').split(',')
 
         context = DesignateContext(auth_token=headers.get('X-Auth-Token'),
