@@ -173,3 +173,12 @@ root_helper = sudo
 #idle_timeout = 3600
 #max_retries = 10
 #retry_interval = 10
+
+#-----------------------
+# NSD4Slave Backend
+#-----------------------
+[backend:nsd4slave]
+#keyfile=/etc/nsd/nsd_control.key
+#certfile=/etc/nsd/nsd_control.pem
+#servers=127.0.0.1,127.0.1.1:4242
+#pattern=slave

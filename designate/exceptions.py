@@ -34,6 +34,10 @@ class Backend(Exception):
     pass
 
 
+class NSD4SlaveBackendError(Backend):
+    pass
+
+
 class NotImplemented(Base, NotImplementedError):
     pass
 
