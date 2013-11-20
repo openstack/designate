@@ -107,16 +107,18 @@ class MultiBackend(base.Backend):
         # Get the "full" domain (including id) from Central first, as we may
         # have to recreate it on slave if delete on master fails
         full_domain = self.central.find_domain(
-            context, criterion={'name': domain['name']})
+            context, {'name': domain['name']})
+
         self.slave.delete_domain(context, domain)
         try:
             self.master.delete_domain(context, domain)
         except (exceptions.Base, exceptions.Backend):
             with excutils.save_and_reraise_exception():
                 self.slave.create_domain(context, domain)
+
                 [self.slave.create_record(context, domain, record)
-                 for record in self.central.find_records(context,
-                                                         full_domain['id'])]
+                 for record in self.central.find_records(
+                     context, {'domain_id': full_domain['id']})]
 
     def create_server(self, context, server):
         self.master.create_server(context, server)
@@ -137,14 +139,23 @@ class MultiBackend(base.Backend):
             with excutils.save_and_reraise_exception():
                 self.slave.create_server(context, server)
 
-    def create_record(self, context, domain, record):
-        self.master.create_record(context, domain, record)
+    def create_recordset(self, context, domain, recordset):
+        self.master.create_recordset(context, domain, recordset)
 
-    def update_record(self, context, domain, record):
-        self.master.update_record(context, domain, record)
+    def update_recordset(self, context, domain, recordset):
+        self.master.update_recordset(context, domain, recordset)
 
-    def delete_record(self, context, domain, record):
-        self.master.delete_record(context, domain, record)
+    def delete_recordset(self, context, domain, recordset):
+        self.master.delete_recordset(context, domain, recordset)
+
+    def create_record(self, context, domain, recordset, record):
+        self.master.create_record(context, domain, recordset, record)
+
+    def update_record(self, context, domain, recordset, record):
+        self.master.update_record(context, domain, recordset, record)
+
+    def delete_record(self, context, domain, recordset, record):
+        self.master.delete_record(context, domain, recordset, record)
 
     def ping(self, context):
         return {

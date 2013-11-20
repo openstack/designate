@@ -26,11 +26,7 @@ from designate import exceptions
 from designate import tests
 from designate.tests.test_backend import BackendTestMixin
 from designate.tests import resources
-
-# impl_nsd4slave needs to register its options before being instanciated.
-# Import it and pretend to use it to avoid flake8 unused import errors.
 from designate.backend import impl_nsd4slave
-impl_nsd4slave
 
 
 class NSD4ServerStub:

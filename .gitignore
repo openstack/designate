@@ -23,4 +23,5 @@ designate/versioninfo
 *.DS_Store
 *.idea
 /bind9
+/dnsmasq
 .testrepository/*

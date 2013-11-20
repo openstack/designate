@@ -357,6 +357,73 @@ class SQLAlchemyStorage(base.Storage):
 
         return query.count()
 
+    # RecordSet Methods
+    def _find_recordsets(self, context, criterion, one=False):
+        try:
+            return self._find(models.RecordSet, context, criterion, one)
+        except exceptions.NotFound:
+            raise exceptions.RecordSetNotFound()
+
+    def create_recordset(self, context, domain_id, values):
+        # Fetch the domain as we need the tenant_id
+        domain = self._find_domains(context, {'id': domain_id}, one=True)
+
+        recordset = models.RecordSet()
+
+        recordset.update(values)
+        recordset.tenant_id = domain['tenant_id']
+        recordset.domain_id = domain_id
+
+        try:
+            recordset.save(self.session)
+        except exceptions.Duplicate:
+            raise exceptions.DuplicateRecordSet()
+
+        return dict(recordset)
+
+    def get_recordset(self, context, recordset_id):
+        recordset = self._find_recordsets(context, {'id': recordset_id},
+                                          one=True)
+
+        return dict(recordset)
+
+    def find_recordsets(self, context, criterion=None):
+        recordsets = self._find_recordsets(context, criterion)
+
+        return [dict(r) for r in recordsets]
+
+    def find_recordset(self, context, criterion):
+        recordset = self._find_recordsets(context, criterion, one=True)
+
+        return dict(recordset)
+
+    def update_recordset(self, context, recordset_id, values):
+        recordset = self._find_recordsets(context, {'id': recordset_id},
+                                          one=True)
+
+        recordset.update(values)
+
+        try:
+            recordset.save(self.session)
+        except exceptions.Duplicate:
+            raise exceptions.DuplicateRecordSet()
+
+        return dict(recordset)
+
+    def delete_recordset(self, context, recordset_id):
+        recordset = self._find_recordsets(context, {'id': recordset_id},
+                                          one=True)
+
+        recordset.delete(self.session)
+
+        return dict(recordset)
+
+    def count_recordsets(self, context, criterion=None):
+        query = self.session.query(models.RecordSet)
+        query = self._apply_criterion(models.RecordSet, query, criterion)
+
+        return query.count()
+
     # Record Methods
     def _find_records(self, context, criterion, one=False):
         try:
@@ -364,15 +431,18 @@ class SQLAlchemyStorage(base.Storage):
         except exceptions.NotFound:
             raise exceptions.RecordNotFound()
 
-    def create_record(self, context, domain_id, values):
+    def create_record(self, context, domain_id, recordset_id, values):
         # Fetch the domain as we need the tenant_id
         domain = self._find_domains(context, {'id': domain_id}, one=True)
+
+        record = models.Record()
 
         # Create and populate the new Record model
         record = models.Record()
         record.update(values)
         record.tenant_id = domain['tenant_id']
         record.domain_id = domain_id
+        record.recordset_id = recordset_id
 
         try:
             # Save the new Record model
@@ -383,9 +453,6 @@ class SQLAlchemyStorage(base.Storage):
         return dict(record)
 
     def find_records(self, context, criterion=None):
-        if criterion is None:
-            criterion = {}
-
         records = self._find_records(context, criterion)
 
         return [dict(r) for r in records]
@@ -396,9 +463,6 @@ class SQLAlchemyStorage(base.Storage):
         return dict(record)
 
     def find_record(self, context, criterion=None):
-        if criterion is None:
-            criterion = {}
-
         record = self._find_records(context, criterion, one=True)
 
         return dict(record)

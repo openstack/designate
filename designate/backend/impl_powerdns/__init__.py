@@ -228,45 +228,67 @@ class PowerDNSBackend(base.Backend):
         query = self.session.query(models.DomainMetadata)
         query.filter_by(domain_id=domain_m.id).delete()
 
+    # RecordSet Methods
+    def update_recordset(self, context, domain, recordset):
+        # Ensure records are updated
+        values = {'ttl': recordset['ttl']}
+
+        query = self.session.query(models.Records)
+        query.filter_by(designate_recordset_id=recordset['id']).update(values)
+
+        self._update_soa(domain)
+
+    def delete_recordset(self, context, domain, recordset):
+        # Ensure records are deleted
+        query = self.session.query(models.Records)
+        query.filter_by(designate_recordset_id=recordset['id']).delete()
+
+        self._update_soa(domain)
+
     # Record Methods
-    def create_record(self, context, domain, record):
+    def create_record(self, context, domain, recordset, record):
         domain_m = self._get_domain(domain['id'])
         record_m = models.Record()
 
+        content = self._sanitize_content(recordset['type'], record['data'])
+        ttl = domain['ttl'] if recordset['ttl'] is None else recordset['ttl']
+
         record_m.update({
             'designate_id': record['id'],
+            'designate_recordset_id': record['recordset_id'],
             'domain_id': domain_m.id,
-            'name': record['name'].rstrip('.'),
-            'type': record['type'],
-            'content': self._sanitize_content(record['type'], record['data']),
-            'ttl': domain['ttl'] if record['ttl'] is None else record['ttl'],
-            'inherit_ttl': True if record['ttl'] is None else False,
+            'name': recordset['name'].rstrip('.'),
+            'type': recordset['type'],
+            'content': content,
+            'ttl': ttl,
+            'inherit_ttl': True if recordset['ttl'] is None else False,
             'prio': record['priority'],
-            'auth': self._is_authoritative(domain, record)
+            'auth': self._is_authoritative(domain, recordset, record)
         })
 
         record_m.save(self.session)
 
         self._update_soa(domain)
 
-    def update_record(self, context, domain, record):
+    def update_record(self, context, domain, recordset, record):
         record_m = self._get_record(record['id'])
 
+        content = self._sanitize_content(recordset['type'], record['data'])
+        ttl = domain['ttl'] if recordset['ttl'] is None else recordset['ttl']
+
         record_m.update({
-            'name': record['name'].rstrip('.'),
-            'type': record['type'],
-            'content': self._sanitize_content(record['type'], record['data']),
-            'ttl': domain['ttl'] if record['ttl'] is None else record['ttl'],
-            'inherit_ttl': True if record['ttl'] is None else False,
+            'content': content,
+            'ttl': ttl,
+            'inherit_ttl': True if recordset['ttl'] is None else False,
             'prio': record['priority'],
-            'auth': self._is_authoritative(domain, record)
+            'auth': self._is_authoritative(domain, recordset, record)
         })
 
         record_m.save(self.session)
 
         self._update_soa(domain)
 
-    def delete_record(self, context, domain, record):
+    def delete_record(self, context, domain, recordset, record):
         try:
             record_m = self._get_record(record['id'])
         except exceptions.RecordNotFound:
@@ -319,9 +341,9 @@ class PowerDNSBackend(base.Backend):
                                       content=value)
             m.save(self.session)
 
-    def _is_authoritative(self, domain, record):
+    def _is_authoritative(self, domain, recordset, record):
         # NOTE(kiall): See http://doc.powerdns.com/dnssec-modes.html
-        if record['type'] == 'NS' and record['name'] != domain['name']:
+        if recordset['type'] == 'NS' and recordset['name'] != domain['name']:
             return False
         else:
             return True

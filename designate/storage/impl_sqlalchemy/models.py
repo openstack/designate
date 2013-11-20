@@ -95,28 +95,50 @@ class Domain(SoftDeleteMixin, Base):
                     nullable=False, server_default='ACTIVE',
                     default='ACTIVE')
 
-    records = relationship('Record', backref=backref('domain', uselist=False),
-                           lazy='dynamic', cascade="all, delete-orphan",
-                           passive_deletes=True)
+    recordsets = relationship('RecordSet',
+                              backref=backref('domain', uselist=False),
+                              cascade="all, delete-orphan",
+                              passive_deletes=True)
 
     parent_domain_id = Column(UUID, ForeignKey('domains.id'), default=None,
                               nullable=True)
 
 
+class RecordSet(Base):
+    __tablename__ = 'recordsets'
+    __table_args__ = (
+        UniqueConstraint('domain_id', 'name', 'type', name='unique_recordset'),
+        {'mysql_engine': 'InnoDB', 'mysql_charset': 'utf8'}
+    )
+
+    tenant_id = Column(String(36), default=None, nullable=True)
+    domain_id = Column(UUID, ForeignKey('domains.id', ondelete='CASCADE'),
+                       nullable=False)
+
+    name = Column(String(255), nullable=False)
+    type = Column(Enum(name='record_types', *RECORD_TYPES), nullable=False)
+    ttl = Column(Integer, default=None, nullable=True)
+    description = Column(Unicode(160), nullable=True)
+
+    records = relationship('Record',
+                           backref=backref('recordset', uselist=False),
+                           cascade="all, delete-orphan",
+                           passive_deletes=True)
+
+
 class Record(Base):
     __tablename__ = 'records'
 
+    tenant_id = Column(String(36), default=None, nullable=True)
     domain_id = Column(UUID, ForeignKey('domains.id', ondelete='CASCADE'),
                        nullable=False)
-    tenant_id = Column(String(36), default=None, nullable=True)
-
-    type = Column(Enum(name='record_types', *RECORD_TYPES), nullable=False)
-    name = Column(String(255), nullable=False)
-    description = Column(Unicode(160), nullable=True)
+    recordset_id = Column(UUID,
+                          ForeignKey('recordsets.id', ondelete='CASCADE'),
+                          nullable=False)
 
     data = Column(Text, nullable=False)
     priority = Column(Integer, default=None, nullable=True)
-    ttl = Column(Integer, default=None, nullable=True)
+    description = Column(Unicode(160), nullable=True)
 
     hash = Column(String(32), nullable=False, unique=True)
 
@@ -134,8 +156,7 @@ class Record(Base):
         Calculates the hash of the record, used to ensure record uniqueness.
         """
         md5 = hashlib.md5()
-        md5.update("%s:%s:%s:%s:%s" % (self.domain_id, self.name, self.type,
-                                       self.data, self.priority))
+        md5.update("%s:%s:%s" % (self.recordset_id, self.data, self.priority))
 
         self.hash = md5.hexdigest()
 

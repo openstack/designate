@@ -114,13 +114,19 @@ class NSD4SlaveBackend(base.Backend):
         sock.close()
         return result.rstrip()
 
-    def create_record(self, context, domain, record):
+    def update_recordset(self, context, domain, recordset):
         pass
 
-    def update_record(self, context, domain, record):
+    def delete_recordset(self, context, domain, recordset):
         pass
 
-    def delete_record(self, context, domain, record):
+    def create_record(self, context, domain, recordset, record):
+        pass
+
+    def update_record(self, context, domain, recordset, record):
+        pass
+
+    def delete_record(self, context, domain, recordset, record):
         pass
 
     def create_server(self, context, server):

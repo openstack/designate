@@ -1,0 +1,38 @@
+{
+    "$schema": "http://json-schema.org/draft-04/hyper-schema",
+
+    "id": "records",
+
+    "title": "records",
+    "description": "Records",
+    "additionalProperties": false,
+
+    "required": ["records"],
+
+    "properties": {
+        "records": {
+            "type": "array",
+            "description": "Records",
+            "items": {"$ref": "record#/properties/record"}
+        },
+        "links": {
+            "type": "object",
+            "additionalProperties": false,
+
+            "properties": {
+                "self": {
+                    "type": "string",
+                    "format": "url"
+                },
+                "next": {
+                    "type": ["string", "null"],
+                    "format": "url"
+                },
+                "previous": {
+                    "type": ["string", "null"],
+                    "format": "url"
+                }
+            }
+        }
+    }
+}

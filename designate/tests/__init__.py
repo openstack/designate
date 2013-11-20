@@ -129,10 +129,34 @@ class TestCase(test.BaseTestCase):
         'email': 'example@example.org',
     }]
 
-    record_fixtures = [
-        {'name': 'www.%s', 'type': 'A', 'data': '192.0.2.1'},
-        {'name': 'mail.%s', 'type': 'A', 'data': '192.0.2.2'}
-    ]
+    recordset_fixtures = {
+        'A': [
+            {'name': 'mail.%s', 'type': 'A'},
+            {'name': 'www.%s', 'type': 'A'},
+        ],
+        'MX': [
+            {'name': 'mail.%s', 'type': 'MX'},
+        ],
+        'SRV': [
+            {'name': '_sip._tcp.%s', 'type': 'SRV'},
+            {'name': '_sip._udp.%s', 'type': 'SRV'},
+        ],
+    }
+
+    record_fixtures = {
+        'A': [
+            {'data': '192.0.2.1'},
+            {'data': '192.0.2.2'}
+        ],
+        'MX': [
+            {'data': 'mail.example.org.', 'priority': 5},
+            {'data': 'mail.example.com.', 'priority': 10},
+        ],
+        'SRV': [
+            {'data': '0 5060 server1.example.org.', 'priority': 5},
+            {'data': '1 5060 server2.example.org.', 'priority': 10},
+        ]
+    }
 
     def setUp(self):
         super(TestCase, self).setUp()
@@ -244,8 +268,9 @@ class TestCase(test.BaseTestCase):
         _values.update(values)
         return _values
 
-    def get_record_fixture(self, domain_name, fixture=0, values={}):
-        _values = copy.copy(self.record_fixtures[fixture])
+    def get_recordset_fixture(self, domain_name, type='A', fixture=0,
+                              values={}):
+        _values = copy.copy(self.recordset_fixtures[type][fixture])
         _values.update(values)
 
         try:
@@ -253,6 +278,11 @@ class TestCase(test.BaseTestCase):
         except TypeError:
             pass
 
+        return _values
+
+    def get_record_fixture(self, recordset_type, fixture=0, values={}):
+        _values = copy.copy(self.record_fixtures[recordset_type][fixture])
+        _values.update(values)
         return _values
 
     def get_zonefile_fixture(self, variant=None):
@@ -302,13 +332,26 @@ class TestCase(test.BaseTestCase):
 
         return self.central_service.create_domain(context, values=values)
 
-    def create_record(self, domain, **kwargs):
+    def create_recordset(self, domain, type='A', **kwargs):
         context = kwargs.pop('context', self.admin_context)
         fixture = kwargs.pop('fixture', 0)
 
-        values = self.get_record_fixture(domain['name'], fixture=fixture,
+        values = self.get_recordset_fixture(domain['name'], type=type,
+                                            fixture=fixture,
+                                            values=kwargs)
+        return self.central_service.create_recordset(context,
+                                                     domain['id'],
+                                                     values=values)
+
+    def create_record(self, domain, recordset, **kwargs):
+        context = kwargs.pop('context', self.admin_context)
+        fixture = kwargs.pop('fixture', 0)
+
+        values = self.get_record_fixture(recordset['type'], fixture=fixture,
                                          values=kwargs)
-        return self.central_service.create_record(context, domain['id'],
+        return self.central_service.create_record(context,
+                                                  domain['id'],
+                                                  recordset['id'],
                                                   values=values)
 
 

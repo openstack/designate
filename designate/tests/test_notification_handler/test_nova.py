@@ -40,9 +40,11 @@ class NovaFixedHandlerTest(TestCase, NotificationHandlerMixin):
 
         self.assertIn(event_type, self.plugin.get_event_types())
 
+        criterion = {'domain_id': self.domain_id}
+
         # Ensure we start with 0 records
         records = self.central_service.find_records(self.admin_context,
-                                                    self.domain_id)
+                                                    criterion)
 
         self.assertEqual(0, len(records))
 
@@ -50,9 +52,9 @@ class NovaFixedHandlerTest(TestCase, NotificationHandlerMixin):
 
         # Ensure we now have exactly 1 record
         records = self.central_service.find_records(self.admin_context,
-                                                    self.domain_id)
+                                                    criterion)
 
-        self.assertEqual(len(records), 1)
+        self.assertEqual(1, len(records))
 
     def test_instance_delete_start(self):
         # Prepare for the test
@@ -68,16 +70,18 @@ class NovaFixedHandlerTest(TestCase, NotificationHandlerMixin):
 
         self.assertIn(event_type, self.plugin.get_event_types())
 
+        criterion = {'domain_id': self.domain_id}
+
         # Ensure we start with at least 1 record
         records = self.central_service.find_records(self.admin_context,
-                                                    self.domain_id)
+                                                    criterion)
 
-        self.assertTrue(len(records) >= 1)
+        self.assertEqual(1, len(records))
 
         self.plugin.process_notification(event_type, fixture['payload'])
 
         # Ensure we now have exactly 0 records
         records = self.central_service.find_records(self.admin_context,
-                                                    self.domain_id)
+                                                    criterion)
 
         self.assertEqual(0, len(records))

@@ -47,29 +47,29 @@ class CentralServiceTest(CentralTestCase):
         with testtools.ExpectedException(exceptions.InvalidDomainName):
             self.central_service._is_valid_domain_name(context, 'example.tld.')
 
-    def test_is_valid_record_name(self):
-        self.config(max_record_name_len=18,
+    def test_is_valid_recordset_name(self):
+        self.config(max_recordset_name_len=18,
                     group='service:central')
 
         context = self.get_context()
 
         domain = self.create_domain(name='example.org.')
 
-        self.central_service._is_valid_record_name(context,
-                                                   domain,
-                                                   'valid.example.org.',
-                                                   'A')
+        self.central_service._is_valid_recordset_name(context,
+                                                      domain,
+                                                      'valid.example.org.',
+                                                      'A')
 
-        with testtools.ExpectedException(exceptions.InvalidRecordName):
-            self.central_service._is_valid_record_name(
+        with testtools.ExpectedException(exceptions.InvalidRecordSetName):
+            self.central_service._is_valid_recordset_name(
                 context, domain, 'toolong.example.org.', 'A')
 
-        with testtools.ExpectedException(exceptions.InvalidRecordLocation):
-            self.central_service._is_valid_record_name(
+        with testtools.ExpectedException(exceptions.InvalidRecordSetLocation):
+            self.central_service._is_valid_recordset_name(
                 context, domain, 'a.example.COM.', 'A')
 
-        with testtools.ExpectedException(exceptions.InvalidRecordLocation):
-            self.central_service._is_valid_record_name(
+        with testtools.ExpectedException(exceptions.InvalidRecordSetLocation):
+            self.central_service._is_valid_recordset_name(
                 context, domain, 'example.org.', 'CNAME')
 
     def test_is_blacklisted_domain_name(self):
@@ -119,31 +119,28 @@ class CentralServiceTest(CentralTestCase):
 
     # Server Tests
     def test_create_server(self):
-        context = self.get_admin_context()
-
         values = dict(
             name='ns1.example.org.'
         )
 
         # Create a server
-        server = self.central_service.create_server(context, values=values)
+        server = self.central_service.create_server(
+            self.admin_context, values=values)
 
         # Ensure all values have been set correctly
         self.assertIsNotNone(server['id'])
         self.assertEqual(server['name'], values['name'])
 
     def test_find_servers(self):
-        context = self.get_admin_context()
-
         # Ensure we have no servers to start with.
-        servers = self.central_service.find_servers(context)
+        servers = self.central_service.find_servers(self.admin_context)
         self.assertEqual(len(servers), 0)
 
         # Create a single server (using default values)
         self.create_server()
 
         # Ensure we can retrieve the newly created server
-        servers = self.central_service.find_servers(context)
+        servers = self.central_service.find_servers(self.admin_context)
         self.assertEqual(len(servers), 1)
         self.assertEqual(servers[0]['name'], 'ns1.example.org.')
 
@@ -151,45 +148,40 @@ class CentralServiceTest(CentralTestCase):
         self.create_server(name='ns2.example.org.')
 
         # Ensure we can retrieve both servers
-        servers = self.central_service.find_servers(context)
+        servers = self.central_service.find_servers(self.admin_context)
         self.assertEqual(len(servers), 2)
         self.assertEqual(servers[0]['name'], 'ns1.example.org.')
         self.assertEqual(servers[1]['name'], 'ns2.example.org.')
 
     def test_get_server(self):
-        context = self.get_admin_context()
-
         # Create a server
         server_name = 'ns%d.example.org.' % random.randint(10, 1000)
         expected_server = self.create_server(name=server_name)
 
         # Retrieve it, and ensure it's the same
-        server = self.central_service.get_server(context,
-                                                 expected_server['id'])
+        server = self.central_service.get_server(
+            self.admin_context, expected_server['id'])
+
         self.assertEqual(server['id'], expected_server['id'])
         self.assertEqual(server['name'], expected_server['name'])
 
     def test_update_server(self):
-        context = self.get_admin_context()
-
         # Create a server
         expected_server = self.create_server()
 
         # Update the server
         values = dict(name='prefix.%s' % expected_server['name'])
-        self.central_service.update_server(context, expected_server['id'],
-                                           values=values)
+        self.central_service.update_server(
+            self.admin_context, expected_server['id'], values=values)
 
         # Fetch the server again
-        server = self.central_service.get_server(context,
-                                                 expected_server['id'])
+        server = self.central_service.get_server(
+            self.admin_context, expected_server['id'])
 
         # Ensure the server was updated correctly
         self.assertEqual(server['name'], 'prefix.%s' % expected_server['name'])
 
     def test_delete_server(self):
-        context = self.get_admin_context()
-
         # Create a server
         server = self.create_server()
 
@@ -197,27 +189,27 @@ class CentralServiceTest(CentralTestCase):
         server2 = self.create_server(fixture=1)
 
         # Delete one server
-        self.central_service.delete_server(context, server['id'])
+        self.central_service.delete_server(self.admin_context, server['id'])
 
         # Fetch the server again, ensuring an exception is raised
         self.assertRaises(
             exceptions.ServerNotFound,
             self.central_service.get_server,
-            context, server['id'])
+            self.admin_context, server['id'])
 
         # Try to delete last remaining server - expect exception
         self.assertRaises(
             exceptions.LastServerDeleteNotAllowed,
-            self.central_service.delete_server, context, server2['id'])
+            self.central_service.delete_server, self.admin_context,
+            server2['id'])
 
     # TsigKey Tests
     def test_create_tsigkey(self):
-        context = self.get_admin_context()
-
         values = self.get_tsigkey_fixture(fixture=0)
 
         # Create a tsigkey
-        tsigkey = self.central_service.create_tsigkey(context, values=values)
+        tsigkey = self.central_service.create_tsigkey(
+            self.admin_context, values=values)
 
         # Ensure all values have been set correctly
         self.assertIsNotNone(tsigkey['id'])
@@ -226,17 +218,15 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(tsigkey['secret'], values['secret'])
 
     def test_find_tsigkeys(self):
-        context = self.get_admin_context()
-
         # Ensure we have no tsigkeys to start with.
-        tsigkeys = self.central_service.find_tsigkeys(context)
+        tsigkeys = self.central_service.find_tsigkeys(self.admin_context)
         self.assertEqual(len(tsigkeys), 0)
 
         # Create a single tsigkey (using default values)
         tsigkey_one = self.create_tsigkey()
 
         # Ensure we can retrieve the newly created tsigkey
-        tsigkeys = self.central_service.find_tsigkeys(context)
+        tsigkeys = self.central_service.find_tsigkeys(self.admin_context)
         self.assertEqual(len(tsigkeys), 1)
         self.assertEqual(tsigkeys[0]['name'], tsigkey_one['name'])
 
@@ -244,54 +234,52 @@ class CentralServiceTest(CentralTestCase):
         tsigkey_two = self.create_tsigkey(fixture=1)
 
         # Ensure we can retrieve both tsigkeys
-        tsigkeys = self.central_service.find_tsigkeys(context)
+        tsigkeys = self.central_service.find_tsigkeys(self.admin_context)
         self.assertEqual(len(tsigkeys), 2)
         self.assertEqual(tsigkeys[0]['name'], tsigkey_one['name'])
         self.assertEqual(tsigkeys[1]['name'], tsigkey_two['name'])
 
     def test_get_tsigkey(self):
-        context = self.get_admin_context()
-
         # Create a tsigkey
         expected = self.create_tsigkey()
 
         # Retrieve it, and ensure it's the same
-        tsigkey = self.central_service.get_tsigkey(context, expected['id'])
+        tsigkey = self.central_service.get_tsigkey(
+            self.admin_context, expected['id'])
+
         self.assertEqual(tsigkey['id'], expected['id'])
         self.assertEqual(tsigkey['name'], expected['name'])
         self.assertEqual(tsigkey['algorithm'], expected['algorithm'])
         self.assertEqual(tsigkey['secret'], expected['secret'])
 
     def test_update_tsigkey(self):
-        context = self.get_admin_context()
-
         # Create a tsigkey using default values
         expected = self.create_tsigkey()
 
         # Update the tsigkey
         fixture = self.get_tsigkey_fixture(fixture=1)
         values = dict(name=fixture['name'])
-        self.central_service.update_tsigkey(context, expected['id'],
-                                            values=values)
+
+        self.central_service.update_tsigkey(
+            self.admin_context, expected['id'], values=values)
 
         # Fetch the tsigkey again
-        tsigkey = self.central_service.get_tsigkey(context, expected['id'])
+        tsigkey = self.central_service.get_tsigkey(
+            self.admin_context, expected['id'])
 
         # Ensure the tsigkey was updated correctly
         self.assertEqual(tsigkey['name'], fixture['name'])
 
     def test_delete_tsigkey(self):
-        context = self.get_admin_context()
-
         # Create a tsigkey
         tsigkey = self.create_tsigkey()
 
         # Delete the tsigkey
-        self.central_service.delete_tsigkey(context, tsigkey['id'])
+        self.central_service.delete_tsigkey(self.admin_context, tsigkey['id'])
 
         # Fetch the tsigkey again, ensuring an exception is raised
         with testtools.ExpectedException(exceptions.TsigKeyNotFound):
-            self.central_service.get_tsigkey(context, tsigkey['id'])
+            self.central_service.get_tsigkey(self.admin_context, tsigkey['id'])
 
     # Tenant Tests
     def test_count_tenants(self):
@@ -327,10 +315,9 @@ class CentralServiceTest(CentralTestCase):
         # Reset the list of notifications
         self.reset_notifications()
 
-        context = self.get_admin_context()
-
         # Create a domain
-        domain = self.central_service.create_domain(context, values=values)
+        domain = self.central_service.create_domain(
+            self.admin_context, values=values)
 
         # Ensure all values have been set correctly
         self.assertIsNotNone(domain['id'])
@@ -809,25 +796,273 @@ class CentralServiceTest(CentralTestCase):
         # Ensure the serial was incremented
         self.assertTrue(domain['serial'] > expected_domain['serial'])
 
-    # Record Tests
-    def test_create_record(self):
+    # RecordSet Tests
+    def test_create_recordset(self):
         domain = self.create_domain()
 
         values = dict(
             name='www.%s' % domain['name'],
-            type='A',
+            type='A'
+        )
+
+        # Create a recordset
+        recordset = self.central_service.create_recordset(
+            self.admin_context, domain['id'], values=values)
+
+        # Ensure all values have been set correctly
+        self.assertIsNotNone(recordset['id'])
+        self.assertEqual(recordset['name'], values['name'])
+        self.assertEqual(recordset['type'], values['type'])
+
+    # def test_create_recordset_over_quota(self):
+    #     self.config(quota_domain_recordsets=1)
+
+    #     domain = self.create_domain()
+
+    #     self.create_recordset(domain)
+
+    #     with testtools.ExpectedException(exceptions.OverQuota):
+    #         self.create_recordset(domain)
+
+    def test_create_invalid_recordset_location(self):
+        domain = self.create_domain()
+
+        values = dict(
+            name=domain['name'],
+            type='CNAME'
+        )
+
+        # Attempt to create a CNAME record at the apex
+        with testtools.ExpectedException(exceptions.InvalidRecordSetLocation):
+            self.central_service.create_recordset(
+                self.admin_context, domain['id'], values=values)
+
+    def test_get_recordset(self):
+        domain = self.create_domain()
+
+        # Create a recordset
+        expected = self.create_recordset(domain)
+
+        # Retrieve it, and ensure it's the same
+        recordset = self.central_service.get_recordset(
+            self.admin_context, domain['id'], expected['id'])
+
+        self.assertEqual(recordset['id'], expected['id'])
+        self.assertEqual(recordset['name'], expected['name'])
+        self.assertEqual(recordset['type'], expected['type'])
+
+    def test_get_recordset_incorrect_domain_id(self):
+        domain = self.create_domain()
+        other_domain = self.create_domain(fixture=1)
+
+        # Create a recordset
+        expected = self.create_recordset(domain)
+
+        # Ensure we get a 404 if we use the incorrect domain_id
+        with testtools.ExpectedException(exceptions.RecordSetNotFound):
+            self.central_service.get_recordset(
+                self.admin_context, other_domain['id'], expected['id'])
+
+    def test_find_recordsets(self):
+        domain = self.create_domain()
+
+        criterion = {'domain_id': domain['id']}
+
+        # Ensure we have no recordsets to start with.
+        recordsets = self.central_service.find_recordsets(
+            self.admin_context, criterion)
+
+        self.assertEqual(len(recordsets), 0)
+
+        # Create a single recordset (using default values)
+        self.create_recordset(domain, name='www.%s' % domain['name'])
+
+        # Ensure we can retrieve the newly created recordset
+        recordsets = self.central_service.find_recordsets(
+            self.admin_context, criterion)
+
+        self.assertEqual(len(recordsets), 1)
+        self.assertEqual(recordsets[0]['name'], 'www.%s' % domain['name'])
+
+        # Create a second recordset
+        self.create_recordset(domain, name='mail.%s' % domain['name'])
+
+        # Ensure we can retrieve both recordsets
+        recordsets = self.central_service.find_recordsets(
+            self.admin_context, criterion)
+
+        self.assertEqual(len(recordsets), 2)
+        self.assertEqual(recordsets[0]['name'], 'mail.%s' % domain['name'])
+        self.assertEqual(recordsets[1]['name'], 'www.%s' % domain['name'])
+
+    def test_find_recordset(self):
+        domain = self.create_domain()
+
+        # Create a recordset
+        expected = self.create_recordset(domain)
+
+        # Retrieve it, and ensure it's the same
+        criterion = {'domain_id': domain['id'], 'name': expected['name']}
+
+        recordset = self.central_service.find_recordset(
+            self.admin_context, criterion)
+
+        self.assertEqual(recordset['id'], expected['id'])
+        self.assertEqual(recordset['name'], expected['name'])
+
+    def test_update_recordset(self):
+        domain = self.create_domain()
+
+        # Create a recordset
+        expected = self.create_recordset(domain)
+
+        # Update the recordset
+        values = dict(ttl=1800)
+        self.central_service.update_recordset(
+            self.admin_context, domain['id'], expected['id'], values=values)
+
+        # Fetch the recordset again
+        recordset = self.central_service.get_recordset(
+            self.admin_context, domain['id'], expected['id'])
+
+        # Ensure the record was updated correctly
+        self.assertEqual(recordset['ttl'], 1800)
+
+    def test_update_recordset_without_incrementing_serial(self):
+        domain = self.create_domain()
+
+        # Create a recordset
+        expected = self.create_recordset(domain)
+
+        # Fetch the domain so we have the latest serial number
+        domain_before = self.central_service.get_domain(
+            self.admin_context, domain['id'])
+
+        # Update the recordset
+        values = dict(ttl=1800)
+        self.central_service.update_recordset(
+            self.admin_context, domain['id'], expected['id'], values,
+            increment_serial=False)
+
+        # Fetch the recordset again
+        recordset = self.central_service.get_recordset(
+            self.admin_context, domain['id'], expected['id'])
+
+        # Ensure the recordset was updated correctly
+        self.assertEqual(recordset['ttl'], 1800)
+
+        # Ensure the domains serial number was not updated
+        domain_after = self.central_service.get_domain(
+            self.admin_context, domain['id'])
+
+        self.assertEqual(domain_before['serial'], domain_after['serial'])
+
+    def test_update_recordset_incorrect_domain_id(self):
+        domain = self.create_domain()
+        other_domain = self.create_domain(fixture=1)
+
+        # Create a recordset
+        expected = self.create_recordset(domain)
+
+        # Update the recordset
+        values = dict(ttl=1800)
+
+        # Ensure we get a 404 if we use the incorrect domain_id
+        with testtools.ExpectedException(exceptions.RecordSetNotFound):
+            self.central_service.update_recordset(
+                self.admin_context, other_domain['id'], expected['id'],
+                values=values)
+
+    def test_delete_recordset(self):
+        domain = self.create_domain()
+
+        # Create a recordset
+        recordset = self.create_recordset(domain)
+
+        # Delete the recordset
+        self.central_service.delete_recordset(
+            self.admin_context, domain['id'], recordset['id'])
+
+        # Fetch the recordset again, ensuring an exception is raised
+        with testtools.ExpectedException(exceptions.RecordSetNotFound):
+            self.central_service.get_recordset(
+                self.admin_context, domain['id'], recordset['id'])
+
+    def test_delete_recordset_without_incrementing_serial(self):
+        domain = self.create_domain()
+
+        # Create a recordset
+        recordset = self.create_recordset(domain)
+
+        # Fetch the domain so we have the latest serial number
+        domain_before = self.central_service.get_domain(
+            self.admin_context, domain['id'])
+
+        # Delete the recordset
+        self.central_service.delete_recordset(
+            self.admin_context, domain['id'], recordset['id'],
+            increment_serial=False)
+
+        # Fetch the record again, ensuring an exception is raised
+        with testtools.ExpectedException(exceptions.RecordSetNotFound):
+            self.central_service.get_recordset(
+                self.admin_context, domain['id'], recordset['id'])
+
+        # Ensure the domains serial number was not updated
+        domain_after = self.central_service.get_domain(
+            self.admin_context, domain['id'])
+
+        self.assertEqual(domain_before['serial'], domain_after['serial'])
+
+    def test_delete_recordset_incorrect_domain_id(self):
+        domain = self.create_domain()
+        other_domain = self.create_domain(fixture=1)
+
+        # Create a recordset
+        recordset = self.create_recordset(domain)
+
+        # Ensure we get a 404 if we use the incorrect domain_id
+        with testtools.ExpectedException(exceptions.RecordSetNotFound):
+            self.central_service.delete_recordset(
+                self.admin_context, other_domain['id'], recordset['id'])
+
+    def test_count_recordsets(self):
+        # in the beginning, there should be nothing
+        recordsets = self.central_service.count_recordsets(self.admin_context)
+        self.assertEqual(recordsets, 0)
+
+        # Create a domain to put our recordset in
+        domain = self.create_domain()
+
+        # Create a recordset
+        self.create_recordset(domain)
+
+        # We should have 1 recordset now
+        recordsets = self.central_service.count_recordsets(self.admin_context)
+        self.assertEqual(recordsets, 1)
+
+    def test_count_recordsets_policy_check(self):
+        # Set the policy to reject the authz
+        self.policy({'count_recordsets': '!'})
+
+        with testtools.ExpectedException(exceptions.Forbidden):
+            self.central_service.count_recordsets(self.get_context())
+
+    # Record Tests
+    def test_create_record(self):
+        domain = self.create_domain()
+        recordset = self.create_recordset(domain, type='A')
+
+        values = dict(
             data='127.0.0.1'
         )
 
         # Create a record
         record = self.central_service.create_record(
-            self.admin_context, domain['id'], values=values)
+            self.admin_context, domain['id'], recordset['id'], values=values)
 
         # Ensure all values have been set correctly
         self.assertIsNotNone(record['id'])
-        self.assertIsNone(record['ttl'])
-        self.assertEqual(record['name'], values['name'])
-        self.assertEqual(record['type'], values['type'])
         self.assertEqual(record['data'], values['data'])
         self.assertIn('status', record)
 
@@ -835,32 +1070,25 @@ class CentralServiceTest(CentralTestCase):
         self.config(quota_domain_records=1)
 
         domain = self.create_domain()
+        recordset = self.create_recordset(domain)
 
-        self.create_record(domain)
+        self.create_record(domain, recordset)
 
         with testtools.ExpectedException(exceptions.OverQuota):
-            self.create_record(domain)
+            self.create_record(domain, recordset)
 
     def test_create_record_without_incrementing_serial(self):
         domain = self.create_domain()
+        recordset = self.create_recordset(domain, type='A')
 
         values = dict(
-            name='www.%s' % domain['name'],
-            type='A',
             data='127.0.0.1'
         )
 
         # Create a record
-        record = self.central_service.create_record(
-            self.admin_context, domain['id'], values=values,
+        self.central_service.create_record(
+            self.admin_context, domain['id'], recordset['id'], values=values,
             increment_serial=False)
-
-        # Ensure all values have been set correctly
-        self.assertIsNotNone(record['id'])
-        self.assertIsNone(record['ttl'])
-        self.assertEqual(record['name'], values['name'])
-        self.assertEqual(record['type'], values['type'])
-        self.assertEqual(record['data'], values['data'])
 
         # Ensure the domains serial number was not updated
         updated_domain = self.central_service.get_domain(
@@ -868,237 +1096,132 @@ class CentralServiceTest(CentralTestCase):
 
         self.assertEqual(domain['serial'], updated_domain['serial'])
 
-    def test_create_cname_record_at_apex(self):
-        domain = self.create_domain()
-
-        values = dict(
-            name=domain['name'],
-            type='CNAME',
-            data='example.org.'
-        )
-
-        # Attempt to create a CNAME record at the apex
-        with testtools.ExpectedException(exceptions.InvalidRecordLocation):
-            self.central_service.create_record(
-                self.admin_context, domain['id'], values=values)
-
-    def test_create_cname_record_above_an_a_record(self):
-        domain = self.create_domain()
-
-        values = dict(
-            name='t.www.%s' % domain['name'],
-            type='A',
-            data='127.0.0.1'
-        )
-
-        self.central_service.create_record(
-            self.admin_context, domain['id'], values=values)
-
-        # Create a CNAME record alongside an A record
-        values = dict(
-            name='www.%s' % domain['name'],
-            type='CNAME',
-            data='example.org.'
-        )
-
-        record = self.central_service.create_record(
-            self.admin_context, domain['id'], values=values)
-
-        self.assertIn('id', record)
-
-    def test_create_cname_record_below_an_a_record(self):
-        domain = self.create_domain()
-
-        values = dict(
-            name='t.%s' % domain['name'],
-            type='A',
-            data='127.0.0.1'
-        )
-
-        self.central_service.create_record(
-            self.admin_context, domain['id'], values=values)
-
-        # Create a CNAME record alongside an A record
-        values = dict(
-            name='www.t.%s' % domain['name'],
-            type='CNAME',
-            data='example.org.'
-        )
-
-        record = self.central_service.create_record(
-            self.admin_context, domain['id'], values=values)
-
-        self.assertIn('id', record)
-
-    def test_create_cname_record_alongside_an_a_record(self):
-        domain = self.create_domain()
-
-        values = dict(
-            name='www.%s' % domain['name'],
-            type='A',
-            data='127.0.0.1'
-        )
-
-        self.central_service.create_record(
-            self.admin_context, domain['id'], values=values)
-
-        # Attempt to create a CNAME record alongside an A record
-        with testtools.ExpectedException(exceptions.InvalidRecordLocation):
-            values = dict(
-                name='www.%s' % domain['name'],
-                type='CNAME',
-                data='example.org.'
-            )
-
-            self.central_service.create_record(
-                self.admin_context, domain['id'], values=values)
-
-    def test_create_an_a_record_alongside_a_cname_record(self):
-        domain = self.create_domain()
-
-        values = dict(
-            name='www.%s' % domain['name'],
-            type='CNAME',
-            data='example.org.'
-        )
-
-        self.central_service.create_record(
-            self.admin_context, domain['id'], values=values)
-
-        # Attempt to create a CNAME record alongside an A record
-        with testtools.ExpectedException(exceptions.InvalidRecordLocation):
-            values = dict(
-                name='www.%s' % domain['name'],
-                type='A',
-                data='127.0.0.1'
-            )
-
-            self.central_service.create_record(
-                self.admin_context, domain['id'], values=values)
-
-    def test_create_duplicate_ptr_record(self):
-        domain = self.create_domain(values={'name': '2.0.192.in-addr.arpa.'})
-
-        values = dict(
-            name='1.%s' % domain['name'],
-            type='PTR',
-            data='www.example.org.'
-        )
-
-        self.central_service.create_record(
-            self.admin_context, domain['id'], values=values)
-
-        # Attempt to create a second PTR with the same name.
-        with testtools.ExpectedException(exceptions.DuplicateRecord):
-            values = dict(
-                name='1.%s' % domain['name'],
-                type='PTR',
-                data='www.example.com.'
-            )
-
-            self.central_service.create_record(
-                self.admin_context, domain['id'], values=values)
-
-    def test_find_records(self):
-        domain = self.create_domain()
-
-        # Ensure we have no records to start with.
-        records = self.central_service.find_records(
-            self.admin_context, domain['id'])
-
-        self.assertEqual(len(records), 0)
-
-        # Create a single record (using default values)
-        self.create_record(domain)
-
-        # Ensure we can retrieve the newly created record
-        records = self.central_service.find_records(
-            self.admin_context, domain['id'])
-
-        self.assertEqual(len(records), 1)
-        self.assertEqual(records[0]['name'], 'www.%s' % domain['name'])
-
-        # Create a second record
-        self.create_record(domain, name='mail.%s' % domain['name'])
-
-        # Ensure we can retrieve both records
-        records = self.central_service.find_records(
-            self.admin_context, domain['id'])
-
-        self.assertEqual(len(records), 2)
-        self.assertEqual(records[0]['name'], 'www.%s' % domain['name'])
-        self.assertEqual(records[1]['name'], 'mail.%s' % domain['name'])
-
     def test_get_record(self):
         domain = self.create_domain()
+        recordset = self.create_recordset(domain)
 
         # Create a record
-        record_name = '%d.%s' % (random.randint(10, 1000), domain['name'])
-        expected_record = self.create_record(domain, name=record_name)
+        expected = self.create_record(domain, recordset)
 
         # Retrieve it, and ensure it's the same
         record = self.central_service.get_record(
-            self.admin_context, domain['id'], expected_record['id'])
+            self.admin_context, domain['id'], recordset['id'], expected['id'])
 
-        self.assertEqual(record['id'], expected_record['id'])
-        self.assertEqual(record['name'], expected_record['name'])
-        self.assertIn('status', record)
-
-    def test_find_record(self):
-        domain = self.create_domain()
-
-        # Create a record
-        record_name = '%d.%s' % (random.randint(10, 1000), domain['name'])
-        expected_record = self.create_record(domain, name=record_name)
-
-        # Retrieve it, and ensure it's the same
-        criterion = {'name': record_name}
-
-        record = self.central_service.find_record(
-            self.admin_context, domain['id'], criterion)
-
-        self.assertEqual(record['id'], expected_record['id'])
-        self.assertEqual(record['name'], expected_record['name'])
+        self.assertEqual(record['id'], expected['id'])
+        self.assertEqual(record['data'], expected['data'])
         self.assertIn('status', record)
 
     def test_get_record_incorrect_domain_id(self):
         domain = self.create_domain()
+        recordset = self.create_recordset(domain)
         other_domain = self.create_domain(fixture=1)
 
         # Create a record
-        record_name = '%d.%s' % (random.randint(10, 1000), domain['name'])
-        expected_record = self.create_record(domain, name=record_name)
+        expected = self.create_record(domain, recordset)
 
         # Ensure we get a 404 if we use the incorrect domain_id
         with testtools.ExpectedException(exceptions.RecordNotFound):
             self.central_service.get_record(
-                self.admin_context, other_domain['id'], expected_record['id'])
+                self.admin_context, other_domain['id'], recordset['id'],
+                expected['id'])
+
+    def test_get_record_incorrect_recordset_id(self):
+        domain = self.create_domain()
+        recordset = self.create_recordset(domain)
+        other_recordset = self.create_recordset(domain, fixture=1)
+
+        # Create a record
+        expected = self.create_record(domain, recordset)
+
+        # Ensure we get a 404 if we use the incorrect recordset_id
+        with testtools.ExpectedException(exceptions.RecordNotFound):
+            self.central_service.get_record(
+                self.admin_context, domain['id'], other_recordset['id'],
+                expected['id'])
+
+    def test_find_records(self):
+        domain = self.create_domain()
+        recordset = self.create_recordset(domain)
+
+        criterion = {
+            'domain_id': domain['id'],
+            'recordset_id': recordset['id']
+        }
+
+        # Ensure we have no records to start with.
+        records = self.central_service.find_records(
+            self.admin_context, criterion)
+
+        self.assertEqual(len(records), 0)
+
+        # Create a single record (using default values)
+        expected_one = self.create_record(domain, recordset)
+
+        # Ensure we can retrieve the newly created record
+        records = self.central_service.find_records(
+            self.admin_context, criterion)
+
+        self.assertEqual(len(records), 1)
+        self.assertEqual(records[0]['data'], expected_one['data'])
+
+        # Create a second record
+        expected_two = self.create_record(domain, recordset, fixture=1)
+
+        # Ensure we can retrieve both records
+        records = self.central_service.find_records(
+            self.admin_context, criterion)
+
+        self.assertEqual(len(records), 2)
+        self.assertEqual(records[0]['data'], expected_one['data'])
+        self.assertEqual(records[1]['data'], expected_two['data'])
+
+    def test_find_record(self):
+        domain = self.create_domain()
+        recordset = self.create_recordset(domain)
+
+        # Create a record
+        expected = self.create_record(domain, recordset)
+
+        # Retrieve it, and ensure it's the same
+        criterion = {
+            'domain_id': domain['id'],
+            'recordset_id': recordset['id'],
+            'data': expected['data']
+        }
+
+        record = self.central_service.find_record(
+            self.admin_context, criterion)
+
+        self.assertEqual(record['id'], expected['id'])
+        self.assertEqual(record['data'], expected['data'])
+        self.assertIn('status', record)
 
     def test_update_record(self):
         domain = self.create_domain()
+        recordset = self.create_recordset(domain, 'A')
 
         # Create a record
-        expected_record = self.create_record(domain)
+        expected = self.create_record(domain, recordset)
 
         # Update the record
         values = dict(data='127.0.0.2')
-
         self.central_service.update_record(
-            self.admin_context, domain['id'], expected_record['id'],
+            self.admin_context, domain['id'], recordset['id'], expected['id'],
             values=values)
 
         # Fetch the record again
         record = self.central_service.get_record(
-            self.admin_context, domain['id'], expected_record['id'])
+            self.admin_context, domain['id'], recordset['id'], expected['id'])
 
         # Ensure the record was updated correctly
         self.assertEqual(record['data'], '127.0.0.2')
 
     def test_update_record_without_incrementing_serial(self):
         domain = self.create_domain()
+        recordset = self.create_recordset(domain, 'A')
 
         # Create a record
-        expected_record = self.create_record(domain)
+        expected = self.create_record(domain, recordset)
 
         # Fetch the domain so we have the latest serial number
         domain_before = self.central_service.get_domain(
@@ -1106,13 +1229,14 @@ class CentralServiceTest(CentralTestCase):
 
         # Update the record
         values = dict(data='127.0.0.2')
+
         self.central_service.update_record(
-            self.admin_context, domain['id'], expected_record['id'],
+            self.admin_context, domain['id'], recordset['id'], expected['id'],
             values, increment_serial=False)
 
         # Fetch the record again
         record = self.central_service.get_record(
-            self.admin_context, domain['id'], expected_record['id'])
+            self.admin_context, domain['id'], recordset['id'], expected['id'])
 
         # Ensure the record was updated correctly
         self.assertEqual(record['data'], '127.0.0.2')
@@ -1125,10 +1249,11 @@ class CentralServiceTest(CentralTestCase):
 
     def test_update_record_incorrect_domain_id(self):
         domain = self.create_domain()
+        recordset = self.create_recordset(domain, 'A')
         other_domain = self.create_domain(fixture=1)
 
         # Create a record
-        expected_record = self.create_record(domain)
+        expected = self.create_record(domain, recordset)
 
         # Update the record
         values = dict(data='127.0.0.2')
@@ -1136,103 +1261,49 @@ class CentralServiceTest(CentralTestCase):
         # Ensure we get a 404 if we use the incorrect domain_id
         with testtools.ExpectedException(exceptions.RecordNotFound):
             self.central_service.update_record(
-                self.admin_context, other_domain['id'], expected_record['id'],
-                values=values)
+                self.admin_context, other_domain['id'], recordset['id'],
+                expected['id'], values=values)
 
-    def test_update_record_duplicate_ptr(self):
-        domain = self.create_domain(values={'name': '2.0.192.in-addr.arpa.'})
-
-        values = dict(
-            name='1.%s' % domain['name'],
-            type='PTR',
-            data='www.example.org.'
-        )
-
-        self.central_service.create_record(
-            self.admin_context, domain['id'], values=values)
-
-        values = dict(
-            name='2.%s' % domain['name'],
-            type='PTR',
-            data='www.example.org.'
-        )
-
-        record = self.central_service.create_record(
-            self.admin_context, domain['id'], values=values)
-
-        # Attempt to create a second PTR with the same name.
-        with testtools.ExpectedException(exceptions.DuplicateRecord):
-            values = dict(
-                name='1.%s' % domain['name']
-            )
-
-            self.central_service.update_record(
-                self.admin_context, domain['id'], record['id'], values=values)
-
-    def test_update_record_cname_data(self):
+    def test_update_record_incorrect_recordset_id(self):
         domain = self.create_domain()
+        recordset = self.create_recordset(domain, 'A')
+        other_recordset = self.create_recordset(domain, 'A', fixture=1)
 
         # Create a record
-        expected_record = self.create_record(domain, type='CNAME',
-                                             data='example.org.')
+        expected = self.create_record(domain, recordset)
 
         # Update the record
-        values = dict(data='example.com.')
-        self.central_service.update_record(self.admin_context, domain['id'],
-                                           expected_record['id'],
-                                           values=values)
+        values = dict(data='127.0.0.2')
 
-        # Fetch the record again
-        record = self.central_service.get_record(
-            self.admin_context, domain['id'], expected_record['id'])
-
-        # Ensure the record was updated correctly
-        self.assertEqual(record['data'], 'example.com.')
-
-    def test_update_record_ptr_data(self):
-        domain = self.create_domain(name='2.0.192.in-addr.arpa.')
-
-        # Create a record
-        expected_record = self.create_record(
-            domain,
-            type='PTR',
-            name='1.2.0.192.in-addr.arpa.',
-            data='example.org.')
-
-        # Update the record
-        values = dict(data='example.com.')
-        self.central_service.update_record(self.admin_context, domain['id'],
-                                           expected_record['id'],
-                                           values=values)
-
-        # Fetch the record again
-        record = self.central_service.get_record(self.admin_context,
-                                                 domain['id'],
-                                                 expected_record['id'])
-
-        # Ensure the record was updated correctly
-        self.assertEqual(record['data'], 'example.com.')
+        # Ensure we get a 404 if we use the incorrect domain_id
+        with testtools.ExpectedException(exceptions.RecordNotFound):
+            self.central_service.update_record(
+                self.admin_context, domain['id'], other_recordset['id'],
+                expected['id'], values=values)
 
     def test_delete_record(self):
         domain = self.create_domain()
+        recordset = self.create_recordset(domain)
 
         # Create a record
-        record = self.create_record(domain)
+        record = self.create_record(domain, recordset)
 
         # Delete the record
-        self.central_service.delete_record(self.admin_context, domain['id'],
-                                           record['id'])
+        self.central_service.delete_record(
+            self.admin_context, domain['id'], recordset['id'], record['id'])
 
         # Fetch the record again, ensuring an exception is raised
         with testtools.ExpectedException(exceptions.RecordNotFound):
-            self.central_service.get_record(self.admin_context, domain['id'],
-                                            record['id'])
+            self.central_service.get_record(
+                self.admin_context, domain['id'], recordset['id'],
+                record['id'])
 
     def test_delete_record_without_incrementing_serial(self):
         domain = self.create_domain()
+        recordset = self.create_recordset(domain)
 
         # Create a record
-        record = self.create_record(domain)
+        record = self.create_record(domain, recordset)
 
         # Fetch the domain so we have the latest serial number
         domain_before = self.central_service.get_domain(
@@ -1240,13 +1311,14 @@ class CentralServiceTest(CentralTestCase):
 
         # Delete the record
         self.central_service.delete_record(
-            self.admin_context, domain['id'], record['id'],
+            self.admin_context, domain['id'], recordset['id'], record['id'],
             increment_serial=False)
 
         # Fetch the record again, ensuring an exception is raised
         with testtools.ExpectedException(exceptions.RecordNotFound):
             self.central_service.get_record(
-                self.admin_context, domain['id'], record['id'])
+                self.admin_context, domain['id'], recordset['id'],
+                record['id'])
 
         # Ensure the domains serial number was not updated
         domain_after = self.central_service.get_domain(
@@ -1256,29 +1328,46 @@ class CentralServiceTest(CentralTestCase):
 
     def test_delete_record_incorrect_domain_id(self):
         domain = self.create_domain()
+        recordset = self.create_recordset(domain)
         other_domain = self.create_domain(fixture=1)
 
         # Create a record
-        record = self.create_record(domain)
+        record = self.create_record(domain, recordset)
 
         # Ensure we get a 404 if we use the incorrect domain_id
         with testtools.ExpectedException(exceptions.RecordNotFound):
             self.central_service.delete_record(
-                self.admin_context, other_domain['id'], record['id'])
+                self.admin_context, other_domain['id'], recordset['id'],
+                record['id'])
+
+    def test_delete_record_incorrect_recordset_id(self):
+        domain = self.create_domain()
+        recordset = self.create_recordset(domain)
+        other_recordset = self.create_recordset(domain, fixture=1)
+
+        # Create a record
+        record = self.create_record(domain, recordset)
+
+        # Ensure we get a 404 if we use the incorrect recordset_id
+        with testtools.ExpectedException(exceptions.RecordNotFound):
+            self.central_service.delete_record(
+                self.admin_context, domain['id'], other_recordset['id'],
+                record['id'])
 
     def test_count_records(self):
         # in the beginning, there should be nothing
         records = self.central_service.count_records(self.admin_context)
         self.assertEqual(records, 0)
 
-        # Create a domain to put our record in
+        # Create a domain and recordset to put our record in
         domain = self.create_domain()
+        recordset = self.create_recordset(domain)
 
         # Create a record
-        self.create_record(domain)
+        self.create_record(domain, recordset)
 
         # we should have 1 record now
-        records = self.central_service.count_domains(self.admin_context)
+        records = self.central_service.count_records(self.admin_context)
         self.assertEqual(records, 1)
 
     def test_count_records_policy_check(self):

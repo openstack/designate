@@ -503,6 +503,112 @@ class StorageAPITest(TestCase):
 
         self._assert_call_count('delete_domain', 0)
 
+    # RecordSet Tests
+    def test_create_recordset(self):
+        context = mock.sentinel.context
+        values = mock.sentinel.values
+        recordset = mock.sentinel.recordset
+
+        self._set_side_effect('create_recordset', [recordset])
+
+        with self.storage_api.create_recordset(context, 123, values) as q:
+            self.assertEqual(recordset, q)
+
+        self._assert_called_with('create_recordset', context, 123, values)
+
+    def test_create_recordset_failure(self):
+        context = mock.sentinel.context
+        values = mock.sentinel.values
+
+        self._set_side_effect('create_recordset', [{'id': 12345}])
+
+        with testtools.ExpectedException(SentinelException):
+            with self.storage_api.create_recordset(context, 123, values):
+                raise SentinelException('Something Went Wrong')
+
+        self._assert_called_with('create_recordset', context, 123, values)
+        self._assert_called_with('delete_recordset', context, 12345)
+
+    def test_get_recordset(self):
+        context = mock.sentinel.context
+        recordset_id = mock.sentinel.recordset_id
+        recordset = mock.sentinel.recordset
+
+        self._set_side_effect('get_recordset', [recordset])
+
+        result = self.storage_api.get_recordset(context, recordset_id)
+        self._assert_called_with('get_recordset', context, recordset_id)
+        self.assertEqual(recordset, result)
+
+    def test_find_recordsets(self):
+        context = mock.sentinel.context
+        criterion = mock.sentinel.criterion
+        recordset = mock.sentinel.recordset
+
+        self._set_side_effect('find_recordsets', [[recordset]])
+
+        result = self.storage_api.find_recordsets(context, criterion)
+        self._assert_called_with('find_recordsets', context, criterion)
+        self.assertEqual([recordset], result)
+
+    def test_find_recordset(self):
+        context = mock.sentinel.context
+        criterion = mock.sentinel.criterion
+        recordset = mock.sentinel.recordset
+
+        self._set_side_effect('find_recordset', [recordset])
+
+        result = self.storage_api.find_recordset(context, criterion)
+        self._assert_called_with('find_recordset', context, criterion)
+        self.assertEqual(recordset, result)
+
+    def test_update_recordset(self):
+        context = mock.sentinel.context
+        values = mock.sentinel.values
+
+        with self.storage_api.update_recordset(context, 123, values):
+            pass
+
+        self._assert_called_with('update_recordset', context, 123, values)
+
+    def test_update_recordset_failure(self):
+        context = mock.sentinel.context
+        values = {'test': 2}
+
+        self._set_side_effect('get_recordset', [{'id': 123, 'test': 1}])
+
+        with testtools.ExpectedException(SentinelException):
+            with self.storage_api.update_recordset(context, 123, values):
+                raise SentinelException('Something Went Wrong')
+
+        self._assert_has_calls('update_recordset', [
+            mock.call(context, 123, values),
+            mock.call(context, 123, {'test': 1}),
+        ])
+
+    def test_delete_recordset(self):
+        context = mock.sentinel.context
+        recordset = mock.sentinel.recordset
+
+        self._set_side_effect('get_recordset', [recordset])
+
+        with self.storage_api.delete_recordset(context, 123) as q:
+            self.assertEqual(recordset, q)
+
+        self._assert_called_with('delete_recordset', context, 123)
+
+    def test_delete_recordset_failure(self):
+        context = mock.sentinel.context
+        recordset = mock.sentinel.recordset
+
+        self._set_side_effect('get_recordset', [recordset])
+
+        with testtools.ExpectedException(SentinelException):
+            with self.storage_api.delete_recordset(context, 123):
+                raise SentinelException('Something Went Wrong')
+
+        self._assert_call_count('delete_recordset', 0)
+
     # Record Tests
     def test_create_record(self):
         context = mock.sentinel.context
@@ -511,10 +617,10 @@ class StorageAPITest(TestCase):
 
         self._set_side_effect('create_record', [record])
 
-        with self.storage_api.create_record(context, 123, values) as q:
+        with self.storage_api.create_record(context, 123, 321, values) as q:
             self.assertEqual(record, q)
 
-        self._assert_called_with('create_record', context, 123, values)
+        self._assert_called_with('create_record', context, 123, 321, values)
 
     def test_create_record_failure(self):
         context = mock.sentinel.context
@@ -523,10 +629,10 @@ class StorageAPITest(TestCase):
         self._set_side_effect('create_record', [{'id': 12345}])
 
         with testtools.ExpectedException(SentinelException):
-            with self.storage_api.create_record(context, 123, values):
+            with self.storage_api.create_record(context, 123, 321, values):
                 raise SentinelException('Something Went Wrong')
 
-        self._assert_called_with('create_record', context, 123, values)
+        self._assert_called_with('create_record', context, 123, 321, values)
         self._assert_called_with('delete_record', context, 12345)
 
     def test_get_record(self):
@@ -549,6 +655,7 @@ class StorageAPITest(TestCase):
 
         result = self.storage_api.find_records(context, criterion)
         self._assert_called_with('find_records', context, criterion)
+
         self.assertEqual([record], result)
 
     def test_find_record(self):
@@ -560,30 +667,33 @@ class StorageAPITest(TestCase):
 
         result = self.storage_api.find_record(context, criterion)
         self._assert_called_with('find_record', context, criterion)
+
         self.assertEqual(record, result)
 
     def test_update_record(self):
         context = mock.sentinel.context
+        record_id = mock.sentinel.record_id
         values = mock.sentinel.values
 
-        with self.storage_api.update_record(context, 123, values):
+        with self.storage_api.update_record(context, record_id, values):
             pass
 
-        self._assert_called_with('update_record', context, 123, values)
+        self._assert_called_with('update_record', context, record_id, values)
 
     def test_update_record_failure(self):
         context = mock.sentinel.context
+        record_id = mock.sentinel.record_id
         values = {'test': 2}
 
-        self._set_side_effect('get_record', [{'id': 123, 'test': 1}])
+        self._set_side_effect('get_record', [{'id': record_id, 'test': 1}])
 
         with testtools.ExpectedException(SentinelException):
-            with self.storage_api.update_record(context, 123, values):
+            with self.storage_api.update_record(context, record_id, values):
                 raise SentinelException('Something Went Wrong')
 
         self._assert_has_calls('update_record', [
-            mock.call(context, 123, values),
-            mock.call(context, 123, {'test': 1}),
+            mock.call(context, record_id, values),
+            mock.call(context, record_id, {'test': 1}),
         ])
 
     def test_delete_record(self):

@@ -67,7 +67,29 @@ class ZonesController(rest.RestController):
         """ Export zonefile """
         servers = central_api.get_domain_servers(context, zone_id)
         domain = central_api.get_domain(context, zone_id)
-        records = central_api.find_records(context, zone_id)
+
+        criterion = {'domain_id': zone_id}
+        recordsets = central_api.find_recordsets(context, criterion)
+
+        records = []
+
+        for recordset in recordsets:
+            criterion = {
+                'domain_id': domain['id'],
+                'recordset_id': recordset['id']
+            }
+
+            raw_records = central_api.find_records(context, criterion)
+
+            for record in raw_records:
+                records.append({
+                    'name': recordset['name'],
+                    'type': recordset['type'],
+                    'ttl': recordset['ttl'],
+                    'priority': record['priority'],
+                    'data': record['data'],
+                })
+
         return utils.render_template('bind9-zone.jinja2',
                                      servers=servers,
                                      domain=domain,
@@ -84,7 +106,7 @@ class ZonesController(rest.RestController):
         #limit = int(params.pop('limit', 30))
 
         # Extract any filter params.
-        accepted_filters = ('name', 'email')
+        accepted_filters = ('name', 'email', )
         criterion = dict((k, params[k]) for k in accepted_filters
                          if k in params)
 
@@ -141,7 +163,6 @@ class ZonesController(rest.RestController):
 
         try:
             self._create_records(context, zone['id'], dnspython_zone)
-
         except exceptions.Base as e:
             central_api.delete_domain(context, zone['id'])
             raise e
@@ -244,20 +265,17 @@ class ZonesController(rest.RestController):
     def _record2json(self, record_type, rdata):
         if record_type == 'MX':
             return {
-                'type': record_type,
                 'data': rdata.exchange.to_text(),
                 'priority': str(rdata.preference)
             }
         elif record_type == 'SRV':
             return {
-                'type': record_type,
                 'data': '%s %s %s' % (str(rdata.weight), str(rdata.port),
                                       rdata.target.to_text()),
                 'priority': str(rdata.priority)
             }
         else:
             return {
-                'type': record_type,
                 'data': rdata.to_text()
             }
 
@@ -266,12 +284,23 @@ class ZonesController(rest.RestController):
         for record_name in dnspython_zone.nodes.keys():
             for rdataset in dnspython_zone.nodes[record_name]:
                 record_type = rdatatype.to_text(rdataset.rdtype)
+
+                if record_type == 'SOA':
+                    continue
+
+                # Create the recordset
+                values = {
+                    'domain_id': zone_id,
+                    'name': record_name.to_text(),
+                    'type': record_type,
+                }
+
+                recordset = central_api.create_recordset(
+                    context, zone_id, values)
+
                 for rdata in rdataset:
-                    if record_type == 'SOA':
-                        # Don't create SOA records
-                        pass
-                    elif (record_type == 'NS'
-                          and record_name == dnspython_zone.origin):
+                    if (record_type == 'NS'
+                            and record_name == dnspython_zone.origin):
                         # Don't create NS records for the domain, they've been
                         # taken care of as servers
                         pass
@@ -279,8 +308,9 @@ class ZonesController(rest.RestController):
                         # Everything else, including delegation NS, gets
                         # created
                         values = self._record2json(record_type, rdata)
-                        values['name'] = record_name.to_text()
-                        central_api.create_record(context, zone_id, values)
+
+                        central_api.create_record(
+                            context, zone_id, recordset['id'], values)
 
     def _parse_zonefile(self, request):
         """ Parses a POSTed zonefile into a dnspython zone object """

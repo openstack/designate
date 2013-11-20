@@ -38,6 +38,7 @@ cfg.CONF.register_opts([
                help='Effective TLDs'),
     cfg.IntOpt('max_domain_name_len', default=255,
                help="Maximum domain name length"),
-    cfg.IntOpt('max_record_name_len', default=255,
-               help="Maximum record name length"),
+    cfg.IntOpt('max_recordset_name_len', default=255,
+               help="Maximum recordset name length",
+               deprecated_name='max_record_name_len'),
 ], group='service:central')

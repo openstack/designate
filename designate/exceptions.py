@@ -70,6 +70,11 @@ class BadRequest(Base):
     error_type = 'bad_request'
 
 
+class InvalidOperation(BadRequest):
+    error_code = 400
+    error_type = 'invalid_operation'
+
+
 class UnsupportedAccept(BadRequest):
     error_code = 406
     error_type = 'unsupported_accept'
@@ -95,14 +100,14 @@ class InvalidTLD(Base):
     error_type = 'invalid_tld'
 
 
-class InvalidRecordName(Base):
+class InvalidRecordSetName(Base):
     error_code = 400
-    error_type = 'invalid_record_name'
+    error_type = 'invalid_recordset_name'
 
 
-class InvalidRecordLocation(Base):
+class InvalidRecordSetLocation(Base):
     error_code = 400
-    error_type = 'invalid_record_location'
+    error_type = 'invalid_recordset_location'
 
 
 class DomainHasSubdomain(Base):
@@ -136,6 +141,10 @@ class DuplicateDomain(Duplicate):
     error_type = 'duplicate_domain'
 
 
+class DuplicateRecordSet(Duplicate):
+    error_type = 'duplicate_recordset'
+
+
 class DuplicateRecord(Duplicate):
     error_type = 'duplicate_record'
 
@@ -159,6 +168,10 @@ class TsigKeyNotFound(NotFound):
 
 class DomainNotFound(NotFound):
     error_type = 'domain_not_found'
+
+
+class RecordSetNotFound(NotFound):
+    error_type = 'recordset_not_found'
 
 
 class RecordNotFound(NotFound):

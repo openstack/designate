@@ -1,71 +1,57 @@
 {
     "$schema": "http://json-schema.org/draft-04/hyper-schema",
 
-    "id": "recordset",
+    "id": "record",
 
-    "title": "recordset",
-    "description": "RecordSet",
+    "title": "record",
+    "description": "Record",
     "additionalProperties": false,
 
-    "required": ["recordset"],
+    "required": ["record"],
 
     "properties": {
-        "recordset": {
+        "record": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["name", "type"],
+            "required": ["data"],
 
             "properties": {
                 "id": {
                     "type": "string",
-                    "description": "RecordSet identifier",
+                    "description": "Record identifier",
                     "pattern": "^([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}$",
                     "readOnly": true
                 },
-                "zone_id": {
+                "recordset_id": {
                     "type": "string",
-                    "description": "Zone identifier",
+                    "description": "RecordSet identifier",
                     "pattern": "^([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}$",
                     "immutable": true
                 },
-                "name": {
+                "data": {
                     "type": "string",
-                    "description": "RecordSet name",
-                    "format": "hostname",
-                    "maxLength": 255,
-                    "immutable": true
-                },
-                "type": {
-                    "type": "string",
-                    "description": "RecordSet type (TODO: Make types extensible)",
-                    "enum": ["A", "MX"]
+                    "description": "Record Value",
+                    "maxLength": 255
                 },
                 "description": {
                     "type": ["string", "null"],
-                    "description": "Description for the RecordSet",
+                    "description": "Description for the Record",
                     "maxLength": 160
-                },
-                "ttl": {
-                    "type": ["integer", "null"],
-                    "description": "Default time to live",
-                    "min": 0,
-                    "max": 2147483647,
-                    "default": null
                 },
                 "version": {
                     "type": "integer",
-                    "description": "RecordSet version number",
+                    "description": "Record version number",
                     "readOnly": true
                 },
                 "created_at": {
                     "type": "string",
-                    "description": "Date and time of RecordSet creation",
+                    "description": "Date and time of Record creation",
                     "format": "date-time",
                     "readOnly": true
                 },
                 "updated_at": {
                     "type": ["string", "null"],
-                    "description": "Date and time of last recordset modification",
+                    "description": "Date and time of last record modification",
                     "format": "date-time",
                     "readOnly": true
                 },

@@ -1,3 +1,10 @@
-{% for record in records if record.type in ['A', 'AAAA'] %}
-{{record.data}} {{record.name}}
+# Example input:
+# {u'mail.example.com.': {u'A': [u'192.0.2.1', u'192.0.2.2']}, u'www.example.com.': {u'A': [u'192.0.2.1', u'192.0.2.2']}}
+{% for name in template_data -%}
+{% for rdtype in template_data[name] -%}
+# RecordSet: {{name}} / {{rdtype}}
+{% for record in template_data[name][rdtype] -%}
+{{record}} {{name}}
+{% endfor %}
+{% endfor %}
 {%- endfor %}

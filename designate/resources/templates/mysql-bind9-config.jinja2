@@ -1,3 +1,0 @@
-{% for domain in domains %}
-zone "{{domain.name}}" { type master; notify no; database "mysqldb {{dns_db_schema}} {{dns_db_table}} {{dns_db_host}} {{dns_db_user}} {{dns_db_password}} {{domain.id}} {{domain.tenant_id}}"; };
-{%- endfor %}

@@ -13,7 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
+import mock
 from mock import call
 from mock import MagicMock
 from designate import exceptions
@@ -101,6 +101,7 @@ class MultiBackendTestCase(tests.TestCase, BackendTestMixin):
     def test_delete_domain(self):
         context = self.get_context()
         domain = self.get_domain_fixture()
+
         # Since multi's delete fetches the domain from central to be able to
         # recreate it if something goes wrong, create the domain first
         self.backend.central_service.create_server(
@@ -146,29 +147,80 @@ class MultiBackendTestCase(tests.TestCase, BackendTestMixin):
                           call.master.delete_server(context, server),
                           call.slave.create_server(context, server)])
 
+    def test_create_recordset(self):
+        context = self.get_context()
+
+        domain = mock.sentinel.domain
+        recordset = mock.sentinel.recordset
+
+        self.backend.create_recordset(context, domain, recordset)
+
+        self.assertEqual(
+            self.backends.mock_calls,
+            [call.master.create_recordset(context, domain, recordset)])
+
+    def test_update_recordset(self):
+        context = self.get_context()
+
+        domain = mock.sentinel.domain
+        recordset = mock.sentinel.recordset
+
+        self.backend.update_recordset(context, domain, recordset)
+
+        self.assertEqual(
+            self.backends.mock_calls,
+            [call.master.update_recordset(context, domain, recordset)])
+
+    def test_delete_recordset(self):
+        context = self.get_context()
+
+        domain = mock.sentinel.domain
+        recordset = mock.sentinel.recordset
+
+        self.backend.delete_recordset(context, domain, recordset)
+
+        self.assertEqual(
+            self.backends.mock_calls,
+            [call.master.delete_recordset(context, domain, recordset)])
+
     def test_create_record(self):
         context = self.get_context()
-        domain = self.get_domain_fixture()
-        record = self.get_record_fixture(domain['name'])
-        self.backend.create_record(context, domain, record)
-        self.assertEqual(self.backends.mock_calls,
-                         [call.master.create_record(context, domain, record)])
+
+        domain = mock.sentinel.domain
+        recordset = mock.sentinel.recordset
+        record = mock.sentinel.record
+
+        self.backend.create_record(context, domain, recordset, record)
+
+        self.assertEqual(
+            self.backends.mock_calls,
+            [call.master.create_record(context, domain, recordset, record)])
 
     def test_update_record(self):
         context = self.get_context()
-        domain = self.get_domain_fixture()
-        record = self.get_record_fixture(domain['name'])
-        self.backend.update_record(context, domain, record)
-        self.assertEqual(self.backends.mock_calls,
-                         [call.master.update_record(context, domain, record)])
+
+        domain = mock.sentinel.domain
+        recordset = mock.sentinel.recordset
+        record = mock.sentinel.record
+
+        self.backend.update_record(context, domain, recordset, record)
+
+        self.assertEqual(
+            self.backends.mock_calls,
+            [call.master.update_record(context, domain, recordset, record)])
 
     def test_delete_record(self):
         context = self.get_context()
-        domain = self.get_domain_fixture()
-        record = self.get_record_fixture(domain['name'])
-        self.backend.delete_record(context, domain, record)
-        self.assertEqual(self.backends.mock_calls,
-                         [call.master.delete_record(context, domain, record)])
+
+        domain = mock.sentinel.domain
+        recordset = mock.sentinel.recordset
+        record = mock.sentinel.record
+
+        self.backend.delete_record(context, domain, recordset, record)
+
+        self.assertEqual(
+            self.backends.mock_calls,
+            [call.master.delete_record(context, domain, recordset, record)])
 
     def test_ping(self):
         context = self.get_context()

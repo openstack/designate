@@ -259,6 +259,72 @@ class Storage(Plugin):
         """
 
     @abc.abstractmethod
+    def create_recordset(self, context, domain_id, values):
+        """
+        Create a recordset on a given Domain ID
+
+        :param context: RPC Context.
+        :param domain_id: Domain ID to create the recordset in.
+        :param values: Values to create the new RecordSet from.
+        """
+
+    @abc.abstractmethod
+    def get_recordset(self, context, recordset_id):
+        """
+        Get a recordset via ID
+
+        :param context: RPC Context.
+        :param recordset_id: RecordSet ID to get
+        """
+
+    @abc.abstractmethod
+    def find_recordsets(self, context, domain_id, criterion=None):
+        """
+        Find RecordSets.
+
+        :param context: RPC Context.
+        :param domain_id: Domain ID where the recordsets reside.
+        :param criterion: Criteria to filter by.
+        """
+
+    @abc.abstractmethod
+    def find_recordset(self, context, domain_id, criterion):
+        """
+        Find a single RecordSet.
+
+        :param context: RPC Context.
+        :param domain_id: Domain ID where the recordsets reside.
+        :param criterion: Criteria to filter by.
+        """
+
+    @abc.abstractmethod
+    def update_recordset(self, context, recordset_id, values):
+        """
+        Update a recordset via ID
+
+        :param context: RPC Context
+        :param recordset_id: RecordSet ID to update
+        """
+
+    @abc.abstractmethod
+    def delete_recordset(self, context, recordset_id):
+        """
+        Delete a recordset
+
+        :param context: RPC Context
+        :param recordset_id: RecordSet ID to delete
+        """
+
+    @abc.abstractmethod
+    def count_recordsets(self, context, criterion=None):
+        """
+        Count recordsets
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        """
+
+    @abc.abstractmethod
     def create_record(self, context, domain_id, values):
         """
         Create a record on a given Domain ID

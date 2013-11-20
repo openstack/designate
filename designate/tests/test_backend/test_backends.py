@@ -24,8 +24,6 @@ class BackendTestCase(tests.TestCase, BackendTestMixin):
         ('bind9', dict(backend_driver='bind9', group='service:agent')),
         ('dnsmasq', dict(backend_driver='dnsmasq', group='service:agent')),
         ('fake', dict(backend_driver='fake', group='service:agent')),
-        ('mysqlbind9', dict(backend_driver='mysqlbind9',
-                            group='service:agent')),
         ('nsd4slave', dict(backend_driver='nsd4slave', group='service:agent',
                            server_fixture=NSD4Fixture)),
         ('powerdns', dict(backend_driver='powerdns', group='service:agent'))
@@ -33,6 +31,8 @@ class BackendTestCase(tests.TestCase, BackendTestMixin):
 
     def setUp(self):
         super(BackendTestCase, self).setUp()
+
         if hasattr(self, 'server_fixture'):
             self.useFixture(self.server_fixture())
+
         self.config(backend_driver=self.backend_driver, group=self.group)

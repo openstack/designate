@@ -52,14 +52,23 @@ class FakeBackend(base.Backend):
     def delete_domain(self, context, domain):
         LOG.info('Delete Domain %r' % domain)
 
-    def create_record(self, context, domain, record):
-        LOG.info('Create Record %r / %r' % (domain, record))
+    def create_recordset(self, context, domain, recordset):
+        LOG.info('Create RecordSet %r / %r' % (domain, recordset))
 
-    def update_record(self, context, domain, record):
-        LOG.info('Update Record %r / %r' % (domain, record))
+    def update_recordset(self, context, domain, recordset):
+        LOG.info('Update RecordSet %r / %r' % (domain, recordset))
 
-    def delete_record(self, context, domain, record):
-        LOG.info('Delete Record %r / %r' % (domain, record))
+    def delete_recordset(self, context, domain, recordset):
+        LOG.info('Delete RecordSet %r / %r' % (domain, recordset))
+
+    def create_record(self, context, domain, recordset, record):
+        LOG.info('Create Record %r / %r / %r' % (domain, recordset, record))
+
+    def update_record(self, context, domain, recordset, record):
+        LOG.info('Update Record %r / %r / %r' % (domain, recordset, record))
+
+    def delete_record(self, context, domain, recordset, record):
+        LOG.info('Delete Record %r / %r / %r' % (domain, recordset, record))
 
     def sync_domain(self, context, domain, records):
         LOG.info('Sync Domain %r / %r' % (domain, records))

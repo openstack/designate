@@ -353,15 +353,101 @@ class StorageAPI(object):
         return self.storage.count_domains(context, criterion)
 
     @contextlib.contextmanager
-    def create_record(self, context, domain_id, values):
+    def create_recordset(self, context, domain_id, values):
+        """
+        Create a recordset on a given Domain ID
+
+        :param context: RPC Context.
+        :param domain_id: Domain ID to create the recordset in.
+        :param values: Values to create the new RecordSet from.
+        """
+        recordset = self.storage.create_recordset(context, domain_id, values)
+
+        try:
+            yield recordset
+        except Exception:
+            with excutils.save_and_reraise_exception():
+                self.storage.delete_recordset(context, recordset['id'])
+
+    def get_recordset(self, context, recordset_id):
+        """
+        Get a recordset via ID
+
+        :param context: RPC Context.
+        :param recordset_id: RecordSet ID to get
+        """
+        return self.storage.get_recordset(context, recordset_id)
+
+    def find_recordsets(self, context, criterion=None):
+        """
+        Find RecordSets.
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        """
+        return self.storage.find_recordsets(context, criterion)
+
+    def find_recordset(self, context, criterion=None):
+        """
+        Find a single RecordSet.
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        """
+        return self.storage.find_recordset(context, criterion)
+
+    @contextlib.contextmanager
+    def update_recordset(self, context, recordset_id, values):
+        """
+        Update a recordset via ID
+
+        :param context: RPC Context
+        :param recordset_id: RecordSet ID to update
+        """
+        backup = self.storage.get_recordset(context, recordset_id)
+
+        recordset = self.storage.update_recordset(
+            context, recordset_id, values)
+
+        try:
+            yield recordset
+        except Exception:
+            with excutils.save_and_reraise_exception():
+                restore = self._extract_dict_subset(backup, values.keys())
+                self.storage.update_recordset(context, recordset_id, restore)
+
+    @contextlib.contextmanager
+    def delete_recordset(self, context, recordset_id):
+        """
+        Delete a recordset
+
+        :param context: RPC Context
+        :param recordset_id: RecordSet ID to delete
+        """
+        yield self.storage.get_recordset(context, recordset_id)
+        self.storage.delete_recordset(context, recordset_id)
+
+    def count_recordsets(self, context, criterion=None):
+        """
+        Count recordsets
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        """
+        return self.storage.count_recordsets(context, criterion)
+
+    @contextlib.contextmanager
+    def create_record(self, context, domain_id, recordset_id, values):
         """
         Create a record on a given Domain ID
 
         :param context: RPC Context.
         :param domain_id: Domain ID to create the record in.
+        :param recordset_id: RecordSet ID to create the record in.
         :param values: Values to create the new Record from.
         """
-        record = self.storage.create_record(context, domain_id, values)
+        record = self.storage.create_record(context, domain_id, recordset_id,
+                                            values)
 
         try:
             yield record

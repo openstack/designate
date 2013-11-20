@@ -49,7 +49,9 @@ class Quota(Plugin):
     def get_default_quotas(self, context):
         return {
             'domains': cfg.CONF.quota_domains,
+            'domain_recordsets': cfg.CONF.quota_domain_recordsets,
             'domain_records': cfg.CONF.quota_domain_records,
+            'recordset_records': cfg.CONF.quota_recordset_records,
         }
 
     def get_quota(self, context, tenant_id, resource):

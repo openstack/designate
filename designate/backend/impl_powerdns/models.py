@@ -63,6 +63,7 @@ class Record(Base):
     __tablename__ = 'records'
 
     designate_id = Column(UUID, nullable=False)
+    designate_recordset_id = Column(UUID, default=None, nullable=True)
 
     domain_id = Column(Integer, default=None, nullable=True)
     name = Column(String(255), default=None, nullable=True)

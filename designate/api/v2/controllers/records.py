@@ -19,35 +19,33 @@ from designate.openstack.common import log as logging
 from designate import schema
 from designate import utils
 from designate.api.v2.controllers import rest
-from designate.api.v2.views import recordsets as recordsets_view
-from designate.api.v2.controllers import records
+from designate.api.v2.views import records as records_view
 
 LOG = logging.getLogger(__name__)
 central_api = central_rpcapi.CentralAPI()
 
 
-class RecordSetsController(rest.RestController):
-    _view = recordsets_view.RecordSetsView()
-    _resource_schema = schema.Schema('v2', 'recordset')
-    _collection_schema = schema.Schema('v2', 'recordsets')
-
-    records = records.RecordsController()
+class RecordsController(rest.RestController):
+    _view = records_view.RecordsView()
+    _resource_schema = schema.Schema('v2', 'record')
+    _collection_schema = schema.Schema('v2', 'records')
 
     @pecan.expose(template='json:', content_type='application/json')
-    def get_one(self, zone_id, recordset_id):
-        """ Get RecordSet """
-        # TODO(kiall): Validate we have a sane UUID for zone_id and
-        #              recordset_id
+    def get_one(self, zone_id, recordset_id, record_id):
+        """ Get Record """
+        # TODO(kiall): Validate we have a sane UUID for zone_id, recordset_id
+        #              and record_id
         request = pecan.request
         context = request.environ['context']
 
-        recordset = central_api.get_recordset(context, zone_id, recordset_id)
+        record = central_api.get_record(context, zone_id, recordset_id,
+                                        record_id)
 
-        return self._view.detail(context, request, recordset)
+        return self._view.detail(context, request, record)
 
     @pecan.expose(template='json:', content_type='application/json')
-    def get_all(self, zone_id, **params):
-        """ List RecordSets """
+    def get_all(self, zone_id, recordset_id, **params):
+        """ List Records """
         request = pecan.request
         context = request.environ['context']
 
@@ -56,19 +54,20 @@ class RecordSetsController(rest.RestController):
         #limit = int(params.pop('limit', 30))
 
         # Extract any filter params.
-        accepted_filters = ('name', 'type', 'ttl', )
+        accepted_filters = ('data', )
         criterion = dict((k, params[k]) for k in accepted_filters
                          if k in params)
 
         criterion['domain_id'] = zone_id
+        criterion['recordset_id'] = recordset_id
 
-        recordsets = central_api.find_recordsets(context, criterion)
+        records = central_api.find_records(context, criterion)
 
-        return self._view.list(context, request, recordsets)
+        return self._view.list(context, request, records)
 
     @pecan.expose(template='json:', content_type='application/json')
-    def post_all(self, zone_id):
-        """ Create RecordSet """
+    def post_all(self, zone_id, recordset_id):
+        """ Create Record """
         request = pecan.request
         response = pecan.response
         context = request.environ['context']
@@ -81,21 +80,26 @@ class RecordSetsController(rest.RestController):
         # Convert from APIv2 -> Central format
         values = self._view.load(context, request, body)
 
-        # Create the recordset
-        recordset = central_api.create_recordset(context, zone_id, values)
+        # Create the records
+        record = central_api.create_record(context, zone_id, recordset_id,
+                                           values)
 
         # Prepare the response headers
-        response.status_int = 201
+        if record['status'] == 'PENDING':
+            response.status_int = 202
+        else:
+            response.status_int = 201
+
         response.headers['Location'] = self._view._get_resource_href(
-            request, recordset)
+            request, record)
 
         # Prepare and return the response body
-        return self._view.detail(context, request, recordset)
+        return self._view.detail(context, request, record)
 
     @pecan.expose(template='json:', content_type='application/json')
     @pecan.expose(template='json:', content_type='application/json-patch+json')
-    def patch_one(self, zone_id, recordset_id):
-        """ Update RecordSet """
+    def patch_one(self, zone_id, recordset_id, record_id):
+        """ Update Record """
         request = pecan.request
         context = request.environ['context']
         body = request.body_dict
@@ -104,31 +108,35 @@ class RecordSetsController(rest.RestController):
         # TODO(kiall): Validate we have a sane UUID for zone_id and
         #              recordset_id
 
-        # Fetch the existing recordset
-        recordset = central_api.get_recordset(context, zone_id, recordset_id)
+        # Fetch the existing record
+        record = central_api.get_record(context, zone_id, recordset_id,
+                                        record_id)
 
         # Convert to APIv2 Format
-        recordset = self._view.detail(context, request, recordset)
+        record = self._view.detail(context, request, record)
 
         if request.content_type == 'application/json-patch+json':
             raise NotImplemented('json-patch not implemented')
         else:
-            recordset = utils.deep_dict_merge(recordset, body)
+            record = utils.deep_dict_merge(record, body)
 
             # Validate the request conforms to the schema
-            self._resource_schema.validate(recordset)
+            self._resource_schema.validate(record)
 
             values = self._view.load(context, request, body)
-            recordset = central_api.update_recordset(
-                context, zone_id, recordset_id, values)
+            record = central_api.update_record(
+                context, zone_id, recordset_id, record_id, values)
 
-        response.status_int = 200
+        if record['status'] == 'PENDING':
+            response.status_int = 202
+        else:
+            response.status_int = 200
 
-        return self._view.detail(context, request, recordset)
+        return self._view.detail(context, request, record)
 
     @pecan.expose(template=None, content_type='application/json')
-    def delete_one(self, zone_id, recordset_id):
-        """ Delete RecordSet """
+    def delete_one(self, zone_id, recordset_id, record_id):
+        """ Delete Record """
         request = pecan.request
         response = pecan.response
         context = request.environ['context']
@@ -136,9 +144,13 @@ class RecordSetsController(rest.RestController):
         # TODO(kiall): Validate we have a sane UUID for zone_id and
         #              recordset_id
 
-        central_api.delete_recordset(context, zone_id, recordset_id)
+        record = central_api.delete_record(context, zone_id, recordset_id,
+                                           record_id)
 
-        response.status_int = 204
+        if record['status'] == 'DELETING':
+            response.status_int = 202
+        else:
+            response.status_int = 204
 
         # NOTE: This is a hack and a half.. But Pecan needs it.
         return ''

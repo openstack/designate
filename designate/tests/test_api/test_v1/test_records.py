@@ -29,9 +29,32 @@ class ApiV1RecordsTest(ApiV1Test):
         super(ApiV1RecordsTest, self).setUp()
 
         self.domain = self.create_domain()
+        self.recordset = self.create_recordset(self.domain, 'A')
 
     def test_create_record(self):
-        fixture = self.get_record_fixture(self.domain['name'], 0)
+        recordset_fixture = self.get_recordset_fixture(
+            self.domain['name'])
+
+        fixture = self.get_record_fixture(recordset_fixture['type'])
+        fixture.update({
+            'name': recordset_fixture['name'],
+            'type': recordset_fixture['type'],
+        })
+
+        # Create a record
+        response = self.post('domains/%s/records' % self.domain['id'],
+                             data=fixture)
+
+        self.assertIn('id', response.json)
+        self.assertIn('name', response.json)
+        self.assertEqual(response.json['name'], fixture['name'])
+
+    def test_create_record_existing_recordset(self):
+        fixture = self.get_record_fixture(self.recordset['type'])
+        fixture.update({
+            'name': self.recordset['name'],
+            'type': self.recordset['type'],
+        })
 
         # Create a record
         response = self.post('domains/%s/records' % self.domain['id'],
@@ -43,15 +66,25 @@ class ApiV1RecordsTest(ApiV1Test):
 
     @patch.object(central_service.Service, 'create_record')
     def test_create_record_trailing_slash(self, mock):
+        fixture = self.get_record_fixture(self.recordset['type'])
+        fixture.update({
+            'name': self.recordset['name'],
+            'type': self.recordset['type'],
+        })
+
         # Create a record with a trailing slash
         self.post('domains/%s/records/' % self.domain['id'],
-                  data=self.get_record_fixture(self.domain['name'], 0))
+                  data=fixture)
 
         # verify that the central service is called
         self.assertTrue(mock.called)
 
     def test_create_record_junk(self):
-        fixture = self.get_record_fixture(self.domain['name'], 0)
+        fixture = self.get_record_fixture(self.recordset['type'])
+        fixture.update({
+            'name': self.recordset['name'],
+            'type': self.recordset['type'],
+        })
 
         # Add a junk property
         fixture['junk'] = 'Junk Field'
@@ -61,7 +94,11 @@ class ApiV1RecordsTest(ApiV1Test):
                   status_code=400)
 
     def test_create_record_utf_description(self):
-        fixture = self.get_record_fixture(self.domain['name'], 0)
+        fixture = self.get_record_fixture(self.recordset['type'])
+        fixture.update({
+            'name': self.recordset['name'],
+            'type': self.recordset['type'],
+        })
 
         #Add a UTF-8 riddled description
         fixture['description'] = "utf-8:2H₂+O₂⇌2H₂O,R=4.7kΩ,⌀200mm∮E⋅da=Q,n" \
@@ -71,9 +108,13 @@ class ApiV1RecordsTest(ApiV1Test):
         self.post('domains/%s/records' % self.domain['id'], data=fixture)
 
     def test_create_record_description_too_long(self):
-        fixture = self.get_record_fixture(self.domain['name'], 0)
+        fixture = self.get_record_fixture(self.recordset['type'])
+        fixture.update({
+            'name': self.recordset['name'],
+            'type': self.recordset['type'],
+        })
 
-        #Add a description that is too long
+        # Add a description that is too long
         fixture['description'] = "x" * 161
 
         # Create a record, Ensuring it Fails with a 400
@@ -81,8 +122,13 @@ class ApiV1RecordsTest(ApiV1Test):
                   status_code=400)
 
     def test_create_record_negative_ttl(self):
-        # Create a record
-        fixture = self.get_record_fixture(self.domain['name'], 0)
+        fixture = self.get_record_fixture(self.recordset['type'])
+        fixture.update({
+            'name': self.recordset['name'],
+            'type': self.recordset['type'],
+        })
+
+        # Set the TTL to a negative value
         fixture['ttl'] = -1
 
         # Create a record, Ensuring it Fails with a 400
@@ -92,7 +138,11 @@ class ApiV1RecordsTest(ApiV1Test):
     @patch.object(central_service.Service, 'create_record',
                   side_effect=rpc_common.Timeout())
     def test_create_record_timeout(self, _):
-        fixture = self.get_record_fixture(self.domain['name'], 0)
+        fixture = self.get_record_fixture(self.recordset['type'])
+        fixture.update({
+            'name': self.recordset['name'],
+            'type': self.recordset['type'],
+        })
 
         # Create a record
         self.post('domains/%s/records' % self.domain['id'], data=fixture,
@@ -100,8 +150,11 @@ class ApiV1RecordsTest(ApiV1Test):
 
     def test_create_wildcard_record(self):
         # Prepare a record
-        fixture = self.get_record_fixture(self.domain['name'], 0)
-        fixture['name'] = '*.%s' % fixture['name']
+        fixture = self.get_record_fixture(self.recordset['type'])
+        fixture.update({
+            'name': '*.%s' % self.recordset['name'],
+            'type': self.recordset['type'],
+        })
 
         # Create a record
         response = self.post('domains/%s/records' % self.domain['id'],
@@ -112,12 +165,14 @@ class ApiV1RecordsTest(ApiV1Test):
         self.assertEqual(response.json['name'], fixture['name'])
 
     def test_create_srv_record(self):
-        # Prepare a record
-        fixture = self.get_record_fixture(self.domain['name'], 0)
-        fixture['type'] = 'SRV'
-        fixture['name'] = '_sip._udp.%s' % fixture['name']
-        fixture['priority'] = 10
-        fixture['data'] = '0 5060 sip.%s' % self.domain['name']
+        recordset_fixture = self.get_recordset_fixture(
+            self.domain['name'], 'SRV')
+
+        fixture = self.get_record_fixture(recordset_fixture['type'])
+        fixture.update({
+            'name': recordset_fixture['name'],
+            'type': recordset_fixture['type'],
+        })
 
         # Create a record
         response = self.post('domains/%s/records' % self.domain['id'],
@@ -130,11 +185,14 @@ class ApiV1RecordsTest(ApiV1Test):
         self.assertEqual(response.json['data'], fixture['data'])
 
     def test_create_invalid_data_srv_record(self):
-        # Prepare a record
-        fixture = self.get_record_fixture(self.domain['name'], 0)
-        fixture['type'] = 'SRV'
-        fixture['name'] = '_sip._udp.%s' % fixture['name']
-        fixture['priority'] = 10
+        recordset_fixture = self.get_recordset_fixture(
+            self.domain['name'], 'SRV')
+
+        fixture = self.get_record_fixture(recordset_fixture['type'])
+        fixture.update({
+            'name': recordset_fixture['name'],
+            'type': recordset_fixture['type'],
+        })
 
         invalid_datas = [
             'I 5060 sip.%s' % self.domain['name'],
@@ -152,17 +210,20 @@ class ApiV1RecordsTest(ApiV1Test):
                       status_code=400)
 
     def test_create_invalid_name_srv_record(self):
-        # Prepare a record
-        fixture = self.get_record_fixture(self.domain['name'], 0)
-        fixture['type'] = 'SRV'
-        fixture['priority'] = 10
-        fixture['data'] = '0 5060 sip.%s' % self.domain['name']
+        recordset_fixture = self.get_recordset_fixture(
+            self.domain['name'], 'SRV')
+
+        fixture = self.get_record_fixture(recordset_fixture['type'])
+        fixture.update({
+            'name': recordset_fixture['name'],
+            'type': recordset_fixture['type'],
+        })
 
         invalid_names = [
-            '%s' % fixture['name'],
-            '_udp.%s' % fixture['name'],
-            'sip._udp.%s' % fixture['name'],
-            '_sip.udp.%s' % fixture['name'],
+            '%s' % self.domain['name'],
+            '_udp.%s' % self.domain['name'],
+            'sip._udp.%s' % self.domain['name'],
+            '_sip.udp.%s' % self.domain['name'],
         ]
 
         for invalid_name in invalid_names:
@@ -174,7 +235,11 @@ class ApiV1RecordsTest(ApiV1Test):
 
     def test_create_invalid_name(self):
         # Prepare a record
-        fixture = self.get_record_fixture(self.domain['name'], 0)
+        fixture = self.get_record_fixture(self.recordset['type'])
+        fixture.update({
+            'name': self.recordset['name'],
+            'type': self.recordset['type'],
+        })
 
         invalid_names = [
             'org',
@@ -201,7 +266,7 @@ class ApiV1RecordsTest(ApiV1Test):
         self.assertEqual(0, len(response.json['records']))
 
         # Create a record
-        self.create_record(self.domain)
+        self.create_record(self.domain, self.recordset)
 
         response = self.get('domains/%s/records' % self.domain['id'])
 
@@ -209,7 +274,7 @@ class ApiV1RecordsTest(ApiV1Test):
         self.assertEqual(1, len(response.json['records']))
 
         # Create a second record
-        self.create_record(self.domain, fixture=1)
+        self.create_record(self.domain, self.recordset, fixture=1)
 
         response = self.get('domains/%s/records' % self.domain['id'])
 
@@ -239,18 +304,20 @@ class ApiV1RecordsTest(ApiV1Test):
 
     def test_get_record(self):
         # Create a record
-        record = self.create_record(self.domain)
+        record = self.create_record(self.domain, self.recordset)
 
         response = self.get('domains/%s/records/%s' % (self.domain['id'],
                                                        record['id']))
 
         self.assertIn('id', response.json)
         self.assertEqual(response.json['id'], record['id'])
+        self.assertEqual(response.json['name'], self.recordset['name'])
+        self.assertEqual(response.json['type'], self.recordset['type'])
 
-    @patch.object(central_service.Service, 'get_record')
+    @patch.object(central_service.Service, 'get_recordset')
     def test_get_record_trailing_slash(self, mock):
         # Create a record
-        record = self.create_record(self.domain)
+        record = self.create_record(self.domain, self.recordset)
 
         self.get('domains/%s/records/%s/' % (self.domain['id'],
                                              record['id']))
@@ -260,26 +327,44 @@ class ApiV1RecordsTest(ApiV1Test):
 
     def test_update_record(self):
         # Create a record
-        record = self.create_record(self.domain)
+        record = self.create_record(self.domain, self.recordset)
 
-        data = {'name': 'prefix-%s' % record['name']}
+        # Fetch another fixture to use in the update
+        fixture = self.get_record_fixture(self.recordset['type'], fixture=1)
 
+        # Update the record
+        data = {'data': fixture['data']}
         response = self.put('domains/%s/records/%s' % (self.domain['id'],
                                                        record['id']),
                             data=data)
 
         self.assertIn('id', response.json)
         self.assertEqual(response.json['id'], record['id'])
+        self.assertEqual(response.json['data'], fixture['data'])
+        self.assertEqual(response.json['type'], self.recordset['type'])
 
-        self.assertIn('name', response.json)
-        self.assertEqual(response.json['name'], 'prefix-%s' % record['name'])
+    def test_update_record_ttl(self):
+        # Create a record
+        record = self.create_record(self.domain, self.recordset)
+
+        # Update the record
+        data = {'ttl': 100}
+        response = self.put('domains/%s/records/%s' % (self.domain['id'],
+                                                       record['id']),
+                            data=data)
+
+        self.assertIn('id', response.json)
+        self.assertEqual(response.json['id'], record['id'])
+        self.assertEqual(response.json['data'], record['data'])
+        self.assertEqual(response.json['type'], self.recordset['type'])
+        self.assertEqual(response.json['ttl'], 100)
 
     @patch.object(central_service.Service, 'update_record')
     def test_update_record_trailing_slash(self, mock):
         # Create a record
-        record = self.create_record(self.domain)
+        record = self.create_record(self.domain, self.recordset)
 
-        data = {'name': 'prefix-%s' % record['name']}
+        data = {'ttl': 100}
 
         self.put('domains/%s/records/%s/' % (self.domain['id'],
                                              record['id']),
@@ -290,27 +375,27 @@ class ApiV1RecordsTest(ApiV1Test):
 
     def test_update_record_junk(self):
         # Create a record
-        record = self.create_record(self.domain)
+        record = self.create_record(self.domain, self.recordset)
 
-        data = {'name': 'prefix-%s' % record['name'], 'junk': 'Junk Field'}
+        data = {'ttl': 100, 'junk': 'Junk Field'}
 
         self.put('domains/%s/records/%s' % (self.domain['id'], record['id']),
                  data=data, status_code=400)
 
     def test_update_record_outside_domain_fail(self):
         # Create a record
-        record = self.create_record(self.domain)
+        record = self.create_record(self.domain, self.recordset)
 
-        data = {'name': 'test.someotherdomain.com'}
+        data = {'name': 'test.someotherdomain.com.'}
 
         self.put('domains/%s/records/%s' % (self.domain['id'], record['id']),
                  data=data, status_code=400)
 
-    @patch.object(central_service.Service, 'update_record',
+    @patch.object(central_service.Service, 'get_domain',
                   side_effect=rpc_common.Timeout())
     def test_update_record_timeout(self, _):
         # Create a record
-        record = self.create_record(self.domain)
+        record = self.create_record(self.domain, self.recordset)
 
         data = {'name': 'test.example.org.'}
 
@@ -351,20 +436,20 @@ class ApiV1RecordsTest(ApiV1Test):
 
     def test_delete_record(self):
         # Create a record
-        record = self.create_record(self.domain)
+        record = self.create_record(self.domain, self.recordset)
 
         self.delete('domains/%s/records/%s' % (self.domain['id'],
                                                record['id']))
 
-        # Esnure we can no longer fetch the record
+        # Ensure we can no longer fetch the record
         self.get('domains/%s/records/%s' % (self.domain['id'],
                                             record['id']),
                  status_code=404)
 
-    @patch.object(central_service.Service, 'delete_record')
+    @patch.object(central_service.Service, 'get_domain')
     def test_delete_record_trailing_slash(self, mock):
         # Create a record
-        record = self.create_record(self.domain)
+        record = self.create_record(self.domain, self.recordset)
 
         self.delete('domains/%s/records/%s/' % (self.domain['id'],
                                                 record['id']))
@@ -372,11 +457,11 @@ class ApiV1RecordsTest(ApiV1Test):
         # verify that the central service is called
         self.assertTrue(mock.called)
 
-    @patch.object(central_service.Service, 'delete_record',
+    @patch.object(central_service.Service, 'get_domain',
                   side_effect=rpc_common.Timeout())
     def test_delete_record_timeout(self, _):
         # Create a record
-        record = self.create_record(self.domain)
+        record = self.create_record(self.domain, self.recordset)
 
         self.delete('domains/%s/records/%s' % (self.domain['id'],
                                                record['id']),

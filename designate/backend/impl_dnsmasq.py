@@ -27,8 +27,8 @@ LOG = logging.getLogger(__name__)
 class DnsmasqBackend(base.Backend):
     __plugin_name__ = 'dnsmasq'
 
-    def start(self):
-        super(DnsmasqBackend, self).start()
+    def __init__(self, central_service):
+        super(DnsmasqBackend, self).__init__(central_service)
 
         self.output_folder = os.path.join(os.path.abspath(cfg.CONF.state_path),
                                           'dnsmasq')
@@ -36,6 +36,9 @@ class DnsmasqBackend(base.Backend):
         # Create the output folder tree if necessary
         if not os.path.exists(self.output_folder):
             os.makedirs(self.output_folder)
+
+    def start(self):
+        super(DnsmasqBackend, self).start()
 
         # TODO(Andrey): Remove this..
         self._sync_domains_hack()
@@ -85,21 +88,35 @@ class DnsmasqBackend(base.Backend):
         self._merge_zonefiles()
         self._reload_dnsmasq()
 
-    def create_record(self, context, domain, record):
+    def update_recordset(self, context, domain, recordset):
+        LOG.debug('Update RecordSet')
+
+        self._write_zonefile(domain)
+        self._merge_zonefiles()
+        self._reload_dnsmasq()
+
+    def delete_recordset(self, context, domain, recordset):
+        LOG.debug('Delete RecordSet')
+
+        self._write_zonefile(domain)
+        self._merge_zonefiles()
+        self._reload_dnsmasq()
+
+    def create_record(self, context, domain, recordset, record):
         LOG.debug('Create Record')
 
         self._write_zonefile(domain)
         self._merge_zonefiles()
         self._reload_dnsmasq()
 
-    def update_record(self, context, domain, record):
+    def update_record(self, context, domain, recordset, record):
         LOG.debug('Update Record')
 
         self._write_zonefile(domain)
         self._merge_zonefiles()
         self._reload_dnsmasq()
 
-    def delete_record(self, context, domain, record):
+    def delete_record(self, context, domain, recordset, record):
         LOG.debug('Delete Record')
 
         self._write_zonefile(domain)
@@ -107,14 +124,37 @@ class DnsmasqBackend(base.Backend):
         self._reload_dnsmasq()
 
     def _write_zonefile(self, domain):
-        records = self.central_service.find_records(self.admin_context,
-                                                    domain['id'])
+        criterion = {'domain_id': domain['id']}
+
+        template_data = {}
+
+        recordsets = self.central_service.find_recordsets(
+            self.admin_context, criterion)
+
+        for recordset in recordsets:
+            # Dnsmasq only supports A and AAAA records
+            if recordset['type'] not in ('A', 'AAAA', ):
+                continue
+
+            template_data.setdefault(recordset['name'], {})
+            template_data[recordset['name']].setdefault(recordset['type'], [])
+
+            criterion = {
+                'domain_id': domain['id'],
+                'recordset_id': recordset['id']
+            }
+
+            records = self.central_service.find_records(
+                self.admin_context, criterion)
+
+            template_data[recordset['name']][recordset['type']] = \
+                [r['data'] for r in records]
 
         filename = os.path.join(self.output_folder, '%s.zone' % domain['id'])
 
         utils.render_template_to_file('dnsmasq-zone.jinja2',
                                       filename,
-                                      records=records)
+                                      template_data=template_data)
 
     def _purge_zonefile(self, domain):
         filename = os.path.join(self.output_folder, '%s.zone' % domain['id'])

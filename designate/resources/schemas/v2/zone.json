@@ -71,11 +71,6 @@
                     "max": 4294967295,
                     "readOnly": true
                 },
-                "notes": {
-                    "type": ["string", "null"],
-                    "description": "Notes",
-                    "maxLength": 100
-                },
                 "version": {
                     "type": "integer",
                     "description": "Zone version number",

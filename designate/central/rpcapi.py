@@ -32,11 +32,12 @@ class CentralAPI(rpc_proxy.RpcProxy):
         1.3 - Add get_absolute_limits
         2.0 - Renamed most get_resources to find_resources
         2.1 - Add quota methods
+        3.0 - RecordSet Changes
 
     """
     def __init__(self, topic=None):
         topic = topic if topic else cfg.CONF.central_topic
-        super(CentralAPI, self).__init__(topic=topic, default_version='2.0')
+        super(CentralAPI, self).__init__(topic=topic, default_version='3.0')
 
     # Misc Methods
     def get_absolute_limits(self, context):
@@ -50,27 +51,27 @@ class CentralAPI(rpc_proxy.RpcProxy):
         LOG.info("get_quotas: Calling central's get_quotas.")
         msg = self.make_msg('get_quotas', tenant_id=tenant_id)
 
-        return self.call(context, msg, version='2.1')
+        return self.call(context, msg)
 
     def get_quota(self, context, tenant_id, resource):
         LOG.info("get_quota: Calling central's get_quota.")
         msg = self.make_msg('get_quota', tenant_id=tenant_id,
                             resource=resource)
 
-        return self.call(context, msg, version='2.1')
+        return self.call(context, msg)
 
     def set_quota(self, context, tenant_id, resource, hard_limit):
         LOG.info("set_quota: Calling central's set_quota.")
         msg = self.make_msg('set_quota', tenant_id=tenant_id,
                             resource=resource, hard_limit=hard_limit)
 
-        return self.call(context, msg, version='2.1')
+        return self.call(context, msg)
 
     def reset_quotas(self, context, tenant_id):
         LOG.info("reset_quotas: Calling central's reset_quotas.")
         msg = self.make_msg('reset_quotas', tenant_id=tenant_id)
 
-        return self.call(context, msg, version='2.1')
+        return self.call(context, msg)
 
     # Server Methods
     def create_server(self, context, values):
@@ -180,7 +181,7 @@ class CentralAPI(rpc_proxy.RpcProxy):
 
         return self.call(context, msg)
 
-    def find_domain(self, context, criterion):
+    def find_domain(self, context, criterion=None):
         LOG.info("find_domain: Calling central's find_domain.")
         msg = self.make_msg('find_domain', criterion=criterion)
 
@@ -213,56 +214,113 @@ class CentralAPI(rpc_proxy.RpcProxy):
 
         return self.call(context, msg)
 
-    # Record Methods
-    def create_record(self, context, domain_id, values, increment_serial=True):
-        LOG.info("create_record: Calling central's create_record.")
-        msg = self.make_msg('create_record',
+    # RecordSet Methods
+    def create_recordset(self, context, domain_id, values):
+        LOG.info("create_recordset: Calling central's create_recordset.")
+        msg = self.make_msg('create_recordset',
                             domain_id=domain_id,
+                            values=values)
+
+        return self.call(context, msg)
+
+    def get_recordset(self, context, domain_id, recordset_id):
+        LOG.info("get_recordset: Calling central's get_recordset.")
+        msg = self.make_msg('get_recordset',
+                            domain_id=domain_id,
+                            recordset_id=recordset_id)
+
+        return self.call(context, msg)
+
+    def find_recordsets(self, context, criterion=None):
+        LOG.info("find_recordsets: Calling central's find_recordsets.")
+        msg = self.make_msg('find_recordsets', criterion=criterion)
+
+        return self.call(context, msg)
+
+    def find_recordset(self, context, criterion=None):
+        LOG.info("find_recordset: Calling central's find_recordset.")
+        msg = self.make_msg('find_recordset', criterion=criterion)
+
+        return self.call(context, msg)
+
+    def update_recordset(self, context, domain_id, recordset_id, values,
+                         increment_serial=True):
+        LOG.info("update_recordset: Calling central's update_recordset.")
+        msg = self.make_msg('update_recordset',
+                            domain_id=domain_id,
+                            recordset_id=recordset_id,
                             values=values,
                             increment_serial=increment_serial)
 
         return self.call(context, msg)
 
-    def get_record(self, context, domain_id, record_id):
+    def delete_recordset(self, context, domain_id, recordset_id,
+                         increment_serial=True):
+        LOG.info("delete_recordset: Calling central's delete_recordset.")
+        msg = self.make_msg('delete_recordset',
+                            domain_id=domain_id,
+                            recordset_id=recordset_id,
+                            increment_serial=increment_serial)
+
+        return self.call(context, msg)
+
+    def count_recordsets(self, context, criterion=None):
+        LOG.info("count_recordsets: Calling central's count_recordsets.")
+        msg = self.make_msg('count_recordsets', criterion=criterion)
+
+        return self.call(context, msg)
+
+    # Record Methods
+    def create_record(self, context, domain_id, recordset_id, values,
+                      increment_serial=True):
+        LOG.info("create_record: Calling central's create_record.")
+        msg = self.make_msg('create_record',
+                            domain_id=domain_id,
+                            recordset_id=recordset_id,
+                            values=values,
+                            increment_serial=increment_serial)
+
+        return self.call(context, msg)
+
+    def get_record(self, context, domain_id, recordset_id, record_id):
         LOG.info("get_record: Calling central's get_record.")
         msg = self.make_msg('get_record',
                             domain_id=domain_id,
+                            recordset_id=recordset_id,
                             record_id=record_id)
 
         return self.call(context, msg)
 
-    def find_records(self, context, domain_id, criterion=None):
+    def find_records(self, context, criterion=None):
         LOG.info("find_records: Calling central's find_records.")
-        msg = self.make_msg('find_records',
-                            domain_id=domain_id,
-                            criterion=criterion)
+        msg = self.make_msg('find_records', criterion=criterion)
 
         return self.call(context, msg)
 
-    def find_record(self, context, domain_id, criterion=None):
+    def find_record(self, context, criterion=None):
         LOG.info("find_record: Calling central's find_record.")
-        msg = self.make_msg('find_record',
-                            domain_id=domain_id,
-                            criterion=criterion)
+        msg = self.make_msg('find_record', criterion=criterion)
 
         return self.call(context, msg)
 
-    def update_record(self, context, domain_id, record_id, values,
-                      increment_serial=True):
+    def update_record(self, context, domain_id, recordset_id, record_id,
+                      values, increment_serial=True):
         LOG.info("update_record: Calling central's update_record.")
         msg = self.make_msg('update_record',
                             domain_id=domain_id,
+                            recordset_id=recordset_id,
                             record_id=record_id,
                             values=values,
                             increment_serial=increment_serial)
 
         return self.call(context, msg)
 
-    def delete_record(self, context, domain_id, record_id,
+    def delete_record(self, context, domain_id, recordset_id, record_id,
                       increment_serial=True):
         LOG.info("delete_record: Calling central's delete_record.")
         msg = self.make_msg('delete_record',
                             domain_id=domain_id,
+                            recordset_id=recordset_id,
                             record_id=record_id,
                             increment_serial=increment_serial)
 
@@ -287,10 +345,11 @@ class CentralAPI(rpc_proxy.RpcProxy):
 
         return self.call(context, msg)
 
-    def sync_record(self, context, domain_id, record_id):
+    def sync_record(self, context, domain_id, recordset_id, record_id):
         LOG.info("sync_record: Calling central's sync_record.")
         msg = self.make_msg('sync_record',
                             domain_id=domain_id,
+                            recordset_id=recordset_id,
                             record_id=record_id)
 
         return self.call(context, msg)

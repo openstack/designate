@@ -42,10 +42,12 @@ class QuotaTestCase(tests.TestCase):
         quotas = self.quota.get_quotas(context, 'DefaultQuotaTenant')
 
         self.assertIsNotNone(quotas)
-        self.assertEqual(quotas, {
+        self.assertEqual({
             'domains': cfg.CONF.quota_domains,
-            'domain_records': cfg.CONF.quota_domain_records
-        })
+            'domain_recordsets': cfg.CONF.quota_domain_recordsets,
+            'domain_records': cfg.CONF.quota_domain_records,
+            'recordset_records': cfg.CONF.quota_recordset_records,
+        }, quotas)
 
     def test_limit_check_unknown(self):
         context = self.get_admin_context()
