@@ -108,12 +108,18 @@ class KeystoneContextMiddleware(ContextMiddleware):
             #If the key is valid, Keystone does not include this header at all
             pass
 
+        if headers.get('X-Service-Catalog'):
+            catalog = json.loads(headers.get('X-Service-Catalog'))
+        else:
+            catalog = None
+
         roles = headers.get('X-Roles').split(',')
 
         context = DesignateContext(auth_token=headers.get('X-Auth-Token'),
                                    user=headers.get('X-User-ID'),
                                    tenant=headers.get('X-Tenant-ID'),
-                                   roles=roles)
+                                   roles=roles,
+                                   service_catalog=catalog)
 
         # Store the context where oslo-log exepcts to find it.
         local.store.context = context
