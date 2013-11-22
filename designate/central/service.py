@@ -141,13 +141,15 @@ class Service(rpc_service.Service):
     def _is_valid_record_placement(self, context, domain, record_name,
                                    record_type, record_id=None):
         # CNAME's must not share a name with other records
-        criterion = {'name': record_name}
+        criterion = {
+            'name': record_name,
+            'domain_id': domain['id']
+        }
 
         if record_type != 'CNAME':
             criterion['type'] = 'CNAME'
 
-        records = self.storage_api.find_records(context, domain['id'],
-                                                criterion=criterion)
+        records = self.storage_api.find_records(context, criterion=criterion)
         if ((len(records) == 1 and records[0]['id'] != record_id)
                 or len(records) > 1):
             raise exceptions.InvalidRecordLocation('CNAME records may not '
@@ -156,8 +158,11 @@ class Service(rpc_service.Service):
 
         # Duplicate PTR's with the same name are not allowed
         if record_type == 'PTR':
-            criterion = {'name': record_name, 'type': 'PTR'}
-            records = self.storage_api.find_records(context, domain['id'],
+            criterion = {
+                'name': record_name,
+                'type': 'PTR',
+                'domain_id': domain['id']}
+            records = self.storage_api.find_records(context,
                                                     criterion=criterion)
             if ((len(records) == 1 and records[0]['id'] != record_id)
                     or len(records) > 1):
@@ -204,12 +209,13 @@ class Service(rpc_service.Service):
         i = 1
         j = len(record_labels) - len(domain_labels)
 
+        criterion['domain_id'] = domain['id']
+
         # Starting with label #2, search for matching records's in the database
         while (i <= j):
             criterion['name'] = '.'.join(record_labels[i:])
 
-            records = self.storage_api.find_records(context, domain['id'],
-                                                    criterion)
+            records = self.storage_api.find_records(context, criterion)
 
             if len(records) == 0:
                 i += 1
@@ -642,6 +648,9 @@ class Service(rpc_service.Service):
         return record
 
     def find_records(self, context, domain_id, criterion=None):
+        if criterion is None:
+            criterion = {}
+
         domain = self.storage_api.get_domain(context, domain_id)
 
         target = {
@@ -652,9 +661,14 @@ class Service(rpc_service.Service):
 
         policy.check('find_records', context, target)
 
-        return self.storage_api.find_records(context, domain_id, criterion)
+        criterion['domain_id'] = domain_id
+
+        return self.storage_api.find_records(context, criterion)
 
     def find_record(self, context, domain_id, criterion=None):
+        if criterion is None:
+            criterion = {}
+
         domain = self.storage_api.get_domain(context, domain_id)
 
         target = {
@@ -665,7 +679,9 @@ class Service(rpc_service.Service):
 
         policy.check('find_record', context, target)
 
-        return self.storage_api.find_record(context, domain_id, criterion)
+        criterion['domain_id'] = domain_id
+
+        return self.storage_api.find_record(context, criterion)
 
     def update_record(self, context, domain_id, record_id, values,
                       increment_serial=True):
@@ -757,7 +773,9 @@ class Service(rpc_service.Service):
 
         for domain in domains:
             servers = self.storage_api.find_servers(context)
-            records = self.storage_api.find_records(context, domain['id'])
+            criterion = {'domain_id': domain['id']}
+            records = self.storage_api.find_records(
+                context, criterion=criterion)
 
             with wrap_backend_call():
                 results[domain['id']] = self.backend.sync_domain(context,
@@ -778,7 +796,8 @@ class Service(rpc_service.Service):
 
         policy.check('diagnostics_sync_domain', context, target)
 
-        records = self.storage_api.find_records(context, domain_id)
+        records = self.storage_api.find_records(
+            context, criterion={'domain_id': domain_id})
 
         with wrap_backend_call():
             return self.backend.sync_domain(context, domain, records)

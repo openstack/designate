@@ -542,26 +542,24 @@ class StorageAPITest(TestCase):
 
     def test_find_records(self):
         context = mock.sentinel.context
-        domain_id = mock.sentinel.domain_id
         criterion = mock.sentinel.criterion
         record = mock.sentinel.record
 
         self._set_side_effect('find_records', [[record]])
 
-        result = self.storage_api.find_records(context, domain_id, criterion)
-        self._assert_called_with('find_records', context, domain_id, criterion)
+        result = self.storage_api.find_records(context, criterion)
+        self._assert_called_with('find_records', context, criterion)
         self.assertEqual([record], result)
 
     def test_find_record(self):
         context = mock.sentinel.context
-        domain_id = mock.sentinel.domain_id
         criterion = mock.sentinel.criterion
         record = mock.sentinel.record
 
         self._set_side_effect('find_record', [record])
 
-        result = self.storage_api.find_record(context, domain_id, criterion)
-        self._assert_called_with('find_record', context, domain_id, criterion)
+        result = self.storage_api.find_record(context, criterion)
+        self._assert_called_with('find_record', context, criterion)
         self.assertEqual(record, result)
 
     def test_update_record(self):

@@ -363,11 +363,9 @@ class SQLAlchemyStorage(base.Storage):
 
         return dict(record)
 
-    def find_records(self, context, domain_id, criterion=None):
+    def find_records(self, context, criterion=None):
         if criterion is None:
             criterion = {}
-
-        criterion['domain_id'] = domain_id
 
         records = self._find_records(context, criterion)
 
@@ -378,11 +376,9 @@ class SQLAlchemyStorage(base.Storage):
 
         return dict(record)
 
-    def find_record(self, context, domain_id, criterion=None):
+    def find_record(self, context, criterion=None):
         if criterion is None:
             criterion = {}
-
-        criterion['domain_id'] = domain_id
 
         record = self._find_records(context, criterion, one=True)
 

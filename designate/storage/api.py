@@ -378,25 +378,23 @@ class StorageAPI(object):
         """
         return self.storage.get_record(context, record_id)
 
-    def find_records(self, context, domain_id, criterion=None):
+    def find_records(self, context, criterion=None):
         """
         Find Records.
 
         :param context: RPC Context.
-        :param domain_id: Domain ID to find in
         :param criterion: Criteria to filter by.
         """
-        return self.storage.find_records(context, domain_id, criterion)
+        return self.storage.find_records(context, criterion)
 
-    def find_record(self, context, domain_id, criterion=None):
+    def find_record(self, context, criterion=None):
         """
         Find a single Record.
 
         :param context: RPC Context.
-        :param domain_id: Domain ID to find in
         :param criterion: Criteria to filter by.
         """
-        return self.storage.find_record(context, domain_id, criterion)
+        return self.storage.find_record(context, criterion)
 
     @contextlib.contextmanager
     def update_record(self, context, record_id, values):

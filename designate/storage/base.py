@@ -278,22 +278,20 @@ class Storage(Plugin):
         """
 
     @abc.abstractmethod
-    def find_records(self, context, domain_id, criterion=None):
+    def find_records(self, context, criterion=None):
         """
         Find Records.
 
         :param context: RPC Context.
-        :param domain_id: Domain ID where the records reside.
         :param criterion: Criteria to filter by.
         """
 
     @abc.abstractmethod
-    def find_record(self, context, domain_id, criterion):
+    def find_record(self, context, criterion):
         """
         Find a single Record.
 
         :param context: RPC Context.
-        :param domain_id: Domain ID where the records reside.
         :param criterion: Criteria to filter by.
         """
 
