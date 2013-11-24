@@ -24,7 +24,7 @@ LOG = logging.getLogger(__name__)
 class DesignateContext(context.RequestContext):
     def __init__(self, auth_token=None, user=None, tenant=None, is_admin=False,
                  read_only=False, show_deleted=False, request_id=None,
-                 roles=[]):
+                 roles=[], service_catalog=None):
         super(DesignateContext, self).__init__(
             auth_token=auth_token,
             user=user,
@@ -36,6 +36,7 @@ class DesignateContext(context.RequestContext):
 
         self._original_tenant_id = None
         self.roles = roles
+        self.service_catalog = service_catalog
 
     def sudo(self, tenant_id, force=False):
         if force:
@@ -65,6 +66,7 @@ class DesignateContext(context.RequestContext):
             'tenant_id': self.tenant_id,
             'original_tenant_id': self.original_tenant_id,
             'roles': self.roles,
+            'service_catalog': self.service_catalog
         })
 
         return d
