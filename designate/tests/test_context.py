@@ -37,3 +37,16 @@ class TestDesignateContext(TestCase):
 
         self.assertEqual('original', ctxt.tenant_id)
         self.assertEqual('original', ctxt.original_tenant_id)
+
+    def test_deepcopy(self):
+        orig = context.DesignateContext(user='12345', tenant='54321')
+        copy = orig.deepcopy()
+
+        self.assertEqual(orig.to_dict(), copy.to_dict())
+
+    def test_elevated(self):
+        ctxt = context.DesignateContext(user='12345', tenant='54321')
+        admin_ctxt = ctxt.elevated()
+
+        self.assertFalse(ctxt.is_admin)
+        self.assertTrue(admin_ctxt.is_admin)

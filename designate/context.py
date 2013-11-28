@@ -24,7 +24,7 @@ LOG = logging.getLogger(__name__)
 class DesignateContext(context.RequestContext):
     def __init__(self, auth_token=None, user=None, tenant=None, is_admin=False,
                  read_only=False, show_deleted=False, request_id=None,
-                 roles=[], service_catalog=None):
+                 original_tenant_id=None, roles=[], service_catalog=None):
         super(DesignateContext, self).__init__(
             auth_token=auth_token,
             user=user,
@@ -34,7 +34,7 @@ class DesignateContext(context.RequestContext):
             show_deleted=show_deleted,
             request_id=request_id)
 
-        self._original_tenant_id = None
+        self._original_tenant_id = original_tenant_id
         self.roles = roles
         self.service_catalog = service_catalog
 
@@ -58,6 +58,15 @@ class DesignateContext(context.RequestContext):
             LOG.warn('Rejected sudo from user_id %s for tenant_id %s'
                      % (self.user_id, tenant_id))
 
+    def deepcopy(self):
+        d = self.to_dict()
+
+        # Remove the user and tenant id fields, this map to user and tenant
+        d.pop('user_id')
+        d.pop('tenant_id')
+
+        return self.from_dict(d)
+
     def to_dict(self):
         d = super(DesignateContext, self).to_dict()
 
@@ -70,6 +79,23 @@ class DesignateContext(context.RequestContext):
         })
 
         return d
+
+    @classmethod
+    def from_dict(cls, values):
+        return cls(**values)
+
+    def elevated(self, show_deleted=None):
+        """Return a version of this context with admin flag set."""
+        context = self.deepcopy()
+        context.is_admin = True
+
+        # NOTE(kiall): Ugly - required to match http://tinyurl.com/o3y8qmw
+        context.roles.append('admin')
+
+        if show_deleted is not None:
+            context.show_deleted = show_deleted
+
+        return context
 
     @property
     def user_id(self):
@@ -100,6 +126,7 @@ class DesignateContext(context.RequestContext):
 
     @classmethod
     def get_admin_context(cls, **kwargs):
+        # TODO(kiall): Remove Me
         kwargs['is_admin'] = True
         kwargs['roles'] = ['admin']
 
