@@ -15,29 +15,29 @@
 # under the License.
 from designate.openstack.common import log as logging
 from designate.tests import TestCase
-from designate.notification_handler.quantum import QuantumFloatingHandler
+from designate.notification_handler.neutron import NeutronFloatingHandler
 from designate.tests.test_notification_handler import \
     NotificationHandlerMixin
 
 LOG = logging.getLogger(__name__)
 
 
-class QuantumFloatingHandlerTest(TestCase, NotificationHandlerMixin):
+class NeutronFloatingHandlerTest(TestCase, NotificationHandlerMixin):
     def setUp(self):
-        super(QuantumFloatingHandlerTest, self).setUp()
+        super(NeutronFloatingHandlerTest, self).setUp()
 
         self.central_service = self.start_service('central')
 
         domain = self.create_domain()
         self.domain_id = domain['id']
-        self.config(domain_id=domain['id'], group='handler:quantum_floatingip')
+        self.config(domain_id=domain['id'], group='handler:neutron_floatingip')
 
-        self.plugin = QuantumFloatingHandler()
+        self.plugin = NeutronFloatingHandler()
 
     def test_floatingip_associate(self):
         event_type = 'floatingip.update.end'
         fixture = self.get_notification_fixture(
-            'quantum', event_type + '_associate')
+            'neutron', event_type + '_associate')
 
         self.assertIn(event_type, self.plugin.get_event_types())
 
@@ -58,13 +58,13 @@ class QuantumFloatingHandlerTest(TestCase, NotificationHandlerMixin):
     def test_floatingip_disassociate(self):
         start_event_type = 'floatingip.update.end'
         start_fixture = self.get_notification_fixture(
-            'quantum', start_event_type + '_associate')
+            'neutron', start_event_type + '_associate')
         self.plugin.process_notification(start_event_type,
                                          start_fixture['payload'])
 
         event_type = 'floatingip.update.end'
         fixture = self.get_notification_fixture(
-            'quantum', event_type + '_disassociate')
+            'neutron', event_type + '_disassociate')
 
         self.assertIn(event_type, self.plugin.get_event_types())
 

@@ -129,12 +129,12 @@ root_helper = sudo
 #format = '%(octet0)s-%(octet1)s-%(octet2)s-%(octet3)s.%(domain)s'
 
 #------------------------
-# Quantum Floating Handler
+# Neutron Floating Handler
 #------------------------
-[handler:quantum_floating]
+[handler:neutron_floatingip]
 #domain_id = <random uuid>
 #notification_topics = monitor
-#control_exchange = 'quantum'
+#control_exchange = 'neutron'
 #format = '%(octet0)s-%(octet1)s-%(octet2)s-%(octet3)s.%(domain)s'
 
 

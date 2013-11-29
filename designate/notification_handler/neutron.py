@@ -20,21 +20,21 @@ from designate.notification_handler.base import BaseAddressHandler
 LOG = logging.getLogger(__name__)
 
 cfg.CONF.register_group(cfg.OptGroup(
-    name='handler:quantum_floatingip',
-    title="Configuration for Quantum Notification Handler"
+    name='handler:neutron_floatingip',
+    title="Configuration for Neutron Notification Handler"
 ))
 
 cfg.CONF.register_opts([
     cfg.ListOpt('notification-topics', default=['monitor']),
-    cfg.StrOpt('control-exchange', default='quantum'),
+    cfg.StrOpt('control-exchange', default='neutron'),
     cfg.StrOpt('domain-id', default=None),
     cfg.StrOpt('format', default=None)
-], group='handler:quantum_floatingip')
+], group='handler:neutron_floatingip')
 
 
-class QuantumFloatingHandler(BaseAddressHandler):
-    """ Handler for Quantum's notifications """
-    __plugin_name__ = 'quantum_floatingip'
+class NeutronFloatingHandler(BaseAddressHandler):
+    """ Handler for Neutron's notifications """
+    __plugin_name__ = 'neutron_floatingip'
 
     def get_exchange_topics(self):
         exchange = cfg.CONF[self.name].control_exchange
@@ -53,7 +53,7 @@ class QuantumFloatingHandler(BaseAddressHandler):
         LOG.debug('%s recieved notification - %s',
                   self.get_canonical_name(), event_type)
 
-        # FIXME: Quantum doesn't send ipv in the payload, should maybe
+        # FIXME: Neutron doesn't send ipv in the payload, should maybe
         # determine this?
         if event_type not in self.get_event_types():
             raise ValueError('NovaFixedHandler recieved an invalid event type')
