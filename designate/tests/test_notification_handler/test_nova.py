@@ -14,16 +14,19 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from designate.openstack.common import log as logging
+from designate.tests import TestCase
 from designate.notification_handler.nova import NovaFixedHandler
 from designate.tests.test_notification_handler import \
-    NotificationHandlerTestCase
+    NotificationHandlerMixin
 
 LOG = logging.getLogger(__name__)
 
 
-class NovaFixedHandlerTest(NotificationHandlerTestCase):
+class NovaFixedHandlerTest(TestCase, NotificationHandlerMixin):
     def setUp(self):
         super(NovaFixedHandlerTest, self).setUp()
+
+        self.central_service = self.start_service('central')
 
         domain = self.create_domain()
         self.domain_id = domain['id']

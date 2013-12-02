@@ -26,11 +26,10 @@ LOG = logging.getLogger(__name__)
 class CentralServiceTest(CentralTestCase):
     def setUp(self):
         super(CentralServiceTest, self).setUp()
-        self.central_service = self.get_central_service()
+        self.central_service = self.start_service('central')
 
-    def test_start_and_stop(self):
-        # Ensures the start/stop actions don't raise
-        self.central_service.start()
+    def test_stop(self):
+        # Test stopping the service
         self.central_service.stop()
 
     def test_is_valid_domain_name(self):

@@ -15,31 +15,14 @@
 # under the License.
 import json
 import os
-import six
 import testtools
-from designate.notification_handler.base import Handler
-from designate.tests import TestCase
-from designate.tests import SkipNotImplementedMeta
 
 FIXTURES_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              '..',
                                              'sample_notifications'))
 
 
-@six.add_metaclass(SkipNotImplementedMeta)
-class NotificationHandlerTestCase(TestCase):
-    __plugin_base__ = Handler
-
-    def setUp(self):
-        super(NotificationHandlerTestCase, self).setUp()
-
-        self.central_service = self.get_central_service()
-        self.central_service.start()
-
-    def tearDown(self):
-        self.central_service.stop()
-        super(NotificationHandlerTestCase, self).tearDown()
-
+class NotificationHandlerMixin(object):
     def get_notification_fixture(self, service, name):
         filename = os.path.join(FIXTURES_PATH, service, '%s.json' % name)
 

@@ -14,16 +14,19 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from designate.openstack.common import log as logging
+from designate.tests import TestCase
 from designate.notification_handler.quantum import QuantumFloatingHandler
 from designate.tests.test_notification_handler import \
-    NotificationHandlerTestCase
+    NotificationHandlerMixin
 
 LOG = logging.getLogger(__name__)
 
 
-class QuantumFloatingHandlerTest(NotificationHandlerTestCase):
+class QuantumFloatingHandlerTest(TestCase, NotificationHandlerMixin):
     def setUp(self):
         super(QuantumFloatingHandlerTest, self).setUp()
+
+        self.central_service = self.start_service('central')
 
         domain = self.create_domain()
         self.domain_id = domain['id']

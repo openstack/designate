@@ -44,13 +44,7 @@ class ApiV1Test(ApiTestCase):
         # Obtain a test client
         self.client = self.app.test_client()
 
-        # Create and start an instance of the central service
-        self.central_service = self.get_central_service()
-        self.central_service.start()
-
-    def tearDown(self):
-        self.central_service.stop()
-        super(ApiV1Test, self).tearDown()
+        self.central_service = self.start_service('central')
 
     def get(self, path, **kw):
         expected_status_code = kw.pop('status_code', 200)

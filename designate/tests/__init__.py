@@ -22,15 +22,12 @@ from oslo.config import cfg
 from designate.openstack.common import log as logging
 from designate.openstack.common.notifier import test_notifier
 from designate.openstack.common.fixture import config
+from designate.openstack.common import importutils
 from designate.openstack.common import policy
 from designate.openstack.common import test
 from designate.context import DesignateContext
 from designate import storage
 from designate import exceptions
-from designate.agent import service as agent_service
-from designate.api import service as api_service
-from designate.central import service as central_service
-from designate.sink import service as sink_service
 
 LOG = logging.getLogger(__name__)
 
@@ -42,17 +39,54 @@ cfg.CONF.import_opt('auth_strategy', 'designate.api',
                     group='service:api')
 cfg.CONF.import_opt('database_connection', 'designate.storage.impl_sqlalchemy',
                     group='storage:sqlalchemy')
+# NOTE: Since we're importing service classes in start_service this breaks
+# if not here.
+cfg.CONF.import_opt(
+    'notification_driver', 'designate.openstack.common.notifier.api')
+
+
+class StorageFixture(fixtures.Fixture):
+    def setUp(self):
+        super(StorageFixture, self).setUp()
+        self.storage = storage.get_storage()
+        self.storage.setup_schema()
+        self.addCleanup(self.storage.teardown_schema)
 
 
 class NotifierFixture(fixtures.Fixture):
-    def tearDown(self):
-        self.clear()
+    def setUp(self):
+        super(NotifierFixture, self).setUp()
+        self.addCleanup(self.clear)
 
     def get(self):
         return test_notifier.NOTIFICATIONS
 
     def clear(self):
         test_notifier.NOTIFICATIONS = []
+
+
+class ServiceFixture(fixtures.Fixture):
+    def __init__(self, svc_name, *args, **kw):
+        cls = importutils.import_class(
+            'designate.%s.service.Service' % svc_name)
+        self.svc = cls(*args, **kw)
+
+    def setUp(self):
+        super(ServiceFixture, self).setUp()
+        self.svc.start()
+        self.addCleanup(self.kill)
+
+    def kill(self):
+        try:
+            self.svc.kill()
+        except Exception:
+            pass
+
+
+class PolicyFixture(fixtures.Fixture):
+    def setUp(self):
+        super(PolicyFixture, self).setUp()
+        self.addCleanup(policy.reset)
 
 
 class TestCase(test.BaseTestCase):
@@ -138,15 +172,12 @@ class TestCase(test.BaseTestCase):
         self.notifications = NotifierFixture()
         self.useFixture(self.notifications)
 
-        storage.setup_schema()
+        storage_fixture = StorageFixture()
+        self.useFixture(storage_fixture)
+
+        self.useFixture(PolicyFixture())
 
         self.admin_context = self.get_admin_context()
-
-    def tearDown(self):
-        self.reset_notifications()
-        policy.reset()
-        storage.teardown_schema()
-        super(TestCase, self).tearDown()
 
     # Config Methods
     def config(self, **kwargs):
@@ -174,18 +205,13 @@ class TestCase(test.BaseTestCase):
     def reset_notifications(self):
         self.notifications.clear()
 
-    # Service Methods
-    def get_agent_service(self):
-        return agent_service.Service()
-
-    def get_api_service(self):
-        return api_service.Service()
-
-    def get_central_service(self):
-        return central_service.Service()
-
-    def get_sink_service(self):
-        return sink_service.Service()
+    def start_service(self, svc_name, *args, **kw):
+        """
+        Convenience method for starting a service!
+        """
+        fixture = ServiceFixture(svc_name, *args, **kw)
+        self.useFixture(fixture)
+        return fixture.svc
 
     # Context Methods
     def get_context(self, **kwargs):

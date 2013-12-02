@@ -10,4 +10,5 @@ pyflakes>=0.7.2,<0.7.4
 python-subunit
 testtools>=0.9.32
 testrepository>=0.0.8
+testscenarios>=0.4
 WebTest>=2.0

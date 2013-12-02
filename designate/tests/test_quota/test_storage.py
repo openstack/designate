@@ -13,16 +13,18 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from designate import quota
+from designate import tests
 from designate.openstack.common import log as logging
-from designate.tests.test_quota import QuotaTestCase
 
 LOG = logging.getLogger(__name__)
 
 
-class StorageQuotaTest(QuotaTestCase):
+class StorageQuotaTest(tests.TestCase):
     def setUp(self):
-        self.config(quota_driver='storage')
         super(StorageQuotaTest, self).setUp()
+        self.config(quota_driver='storage')
+        self.quota = quota.get_quota()
 
     def test_set_quota_create(self):
         quota = self.quota.set_quota(self.admin_context, 'tenant_id',

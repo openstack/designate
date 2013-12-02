@@ -19,9 +19,8 @@ from designate.tests.test_agent import AgentTestCase
 class AgentServiceTest(AgentTestCase):
     def setUp(self):
         super(AgentServiceTest, self).setUp()
-        self.service = self.get_agent_service()
+        self.service = self.start_service('agent')
 
-    def test_start_and_stop(self):
-        # Ensures the start/stop actions don't raise
-        self.service.start()
+    def test_stop(self):
+        # NOTE: Start is already done by the fixture in start_service()
         self.service.stop()

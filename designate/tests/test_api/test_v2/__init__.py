@@ -43,13 +43,10 @@ class ApiV2TestCase(ApiTestCase):
         self.client = TestApp(self.app)
 
         # Create and start an instance of the central service
-        self.central_service = self.get_central_service()
-        self.central_service.start()
+        self.central_service = self.start_service('central')
 
     def tearDown(self):
         self.app = None
         self.client = None
-
-        self.central_service.stop()
 
         super(ApiV2TestCase, self).tearDown()

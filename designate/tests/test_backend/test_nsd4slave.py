@@ -15,12 +15,16 @@
 # under the License.
 
 import eventlet
+import fixtures
+from mock import MagicMock
 import os
 import socket
 import ssl
+from oslo.config import cfg
+
+from designate import backend
 from designate import exceptions
-from designate.tests.test_backend import BackendTestCase
-from mock import MagicMock
+from designate import tests
 # impl_nsd4slave needs to register its options before being instanciated.
 # Import it and pretend to use it to avoid flake8 unused import errors.
 from designate.backend import impl_nsd4slave
@@ -58,28 +62,38 @@ class NSD4ServerStub:
         eventlet.StopServe()
 
 
-class NSD4SlaveBackendTestCase(BackendTestCase):
-    __test__ = True
-
+class NSD4Fixture(fixtures.Fixture):
     def setUp(self):
-        super(NSD4SlaveBackendTestCase, self).setUp()
+        super(NSD4Fixture, self).setUp()
         self.servers = [NSD4ServerStub(), NSD4ServerStub()]
         [server.start() for server in self.servers]
         impl_nsd4slave.DEFAULT_PORT = self.servers[0].port
-        self.config(backend_driver='nsd4slave', group='service:agent')
-        self.config(
-            servers=['127.0.0.1', '127.0.0.1:%d' % self.servers[1].port],
-            group='backend:nsd4slave')
+        cfg.CONF.set_override('backend_driver', 'nsd4slave', 'service:agent')
+        cfg.CONF.set_override(
+            'servers', ['127.0.0.1', '127.0.0.1:%d' % self.servers[1].port],
+            'backend:nsd4slave')
         keyfile = os.path.join(os.path.dirname(__file__), 'nsd_control.key')
         certfile = os.path.join(os.path.dirname(__file__), 'nsd_control.pem')
-        self.config(keyfile=keyfile, group='backend:nsd4slave')
-        self.config(certfile=certfile, group='backend:nsd4slave')
-        self.config(pattern='test-pattern', group='backend:nsd4slave')
-        self.nsd4 = self.get_backend_driver()
+        cfg.CONF.set_override('keyfile', keyfile, 'backend:nsd4slave')
+        cfg.CONF.set_override('certfile', certfile, 'backend:nsd4slave')
+        cfg.CONF.set_override('pattern', 'test-pattern', 'backend:nsd4slave')
+        self.addCleanup(self.tearDown)
 
     def tearDown(self):
-        super(NSD4SlaveBackendTestCase, self).tearDown()
         [server.stop() for server in self.servers]
+
+
+# NOTE: We'll only test the specifics to the nsd4 backend here.
+# Rest is handled via scenarios
+class NSD4SlaveBackendTestCase(tests.TestCase):
+    def setUp(self):
+        super(NSD4SlaveBackendTestCase, self).setUp()
+        self.server_fixture = NSD4Fixture()
+        self.useFixture(self.server_fixture)
+        central_service = self.start_service('central')
+        self.nsd4 = backend.get_backend(
+            cfg.CONF['service:agent'].backend_driver,
+            central_service=central_service)
 
     def test_create_domain(self):
         context = self.get_context()
@@ -87,7 +101,7 @@ class NSD4SlaveBackendTestCase(BackendTestCase):
         self.nsd4.create_domain(context, domain)
         command = 'NSDCT1 addzone %s test-pattern\n' % domain['name']
         [self.assertEqual(server.recved_command, command)
-         for server in self.servers]
+         for server in self.server_fixture.servers]
 
     def test_delete_domain(self):
         context = self.get_context()
@@ -95,10 +109,10 @@ class NSD4SlaveBackendTestCase(BackendTestCase):
         self.nsd4.delete_domain(context, domain)
         command = 'NSDCT1 delzone %s\n' % domain['name']
         [self.assertEqual(server.recved_command, command)
-         for server in self.servers]
+         for server in self.server_fixture.servers]
 
     def test_server_not_ok(self):
-        self.servers[0].response = 'goat'
+        self.server_fixture.servers[0].response = 'goat'
         context = self.get_context()
         domain = self.get_domain_fixture()
         self.assertRaises(exceptions.NSD4SlaveBackendError,

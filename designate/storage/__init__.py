@@ -24,17 +24,3 @@ def get_storage():
     """ Return the engine class from the provided engine name """
     storage_driver = cfg.CONF['service:central'].storage_driver
     return Storage.get_plugin(storage_driver, invoke_on_load=True)
-
-
-def setup_schema():
-    """ Create the DB - Used for testing purposes """
-    LOG.debug("Setting up Schema")
-    storage = get_storage()
-    storage.setup_schema()
-
-
-def teardown_schema():
-    """ Reset the DB to default - Used for testing purposes """
-    LOG.debug("Tearing down Schema")
-    storage = get_storage()
-    storage.teardown_schema()
