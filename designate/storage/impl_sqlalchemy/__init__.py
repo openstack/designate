@@ -65,6 +65,15 @@ class SQLAlchemyStorage(base.Storage):
 
         return query
 
+    def _apply_tenant_criteria(self, context, model, query):
+        if hasattr(model, 'tenant_id'):
+            if context.all_tenants:
+                LOG.debug('Including all tenants items in query results')
+            else:
+                query = query.filter(model.tenant_id == context.tenant_id)
+
+        return query
+
     def _apply_deleted_criteria(self, context, model, query):
         if issubclass(model, SoftDeleteMixin):
             if context.show_deleted:
@@ -83,6 +92,7 @@ class SQLAlchemyStorage(base.Storage):
         # First up, create a query and apply the various filters
         query = self.session.query(model)
         query = self._apply_criterion(model, query, criterion)
+        query = self._apply_tenant_criteria(context, model, query)
         query = self._apply_deleted_criteria(context, model, query)
 
         if one:
@@ -255,6 +265,7 @@ class SQLAlchemyStorage(base.Storage):
         # returns an array of tenant_id & count of their domains
         query = self.session.query(models.Domain.tenant_id,
                                    func.count(models.Domain.id))
+        query = self._apply_tenant_criteria(context, models.Domain, query)
         query = self._apply_deleted_criteria(context, models.Domain, query)
         query = query.group_by(models.Domain.tenant_id)
 
@@ -263,8 +274,9 @@ class SQLAlchemyStorage(base.Storage):
     def get_tenant(self, context, tenant_id):
         # get list list & count of all domains owned by given tenant_id
         query = self.session.query(models.Domain.name)
-        query = query.filter(models.Domain.tenant_id == tenant_id)
+        query = self._apply_tenant_criteria(context, models.Domain, query)
         query = self._apply_deleted_criteria(context, models.Domain, query)
+        query = query.filter(models.Domain.tenant_id == tenant_id)
 
         result = query.all()
 
@@ -278,6 +290,7 @@ class SQLAlchemyStorage(base.Storage):
         # tenants are the owner of domains, count the number of unique tenants
         # select count(distinct tenant_id) from domains
         query = self.session.query(distinct(models.Domain.tenant_id))
+        query = self._apply_tenant_criteria(context, models.Domain, query)
         query = self._apply_deleted_criteria(context, models.Domain, query)
 
         return query.count()
@@ -339,6 +352,7 @@ class SQLAlchemyStorage(base.Storage):
     def count_domains(self, context, criterion=None):
         query = self.session.query(models.Domain)
         query = self._apply_criterion(models.Domain, query, criterion)
+        query = self._apply_tenant_criteria(context, models.Domain, query)
         query = self._apply_deleted_criteria(context, models.Domain, query)
 
         return query.count()
@@ -410,6 +424,7 @@ class SQLAlchemyStorage(base.Storage):
 
     def count_records(self, context, criterion=None):
         query = self.session.query(models.Record)
+        query = self._apply_tenant_criteria(context, models.Record, query)
         query = self._apply_criterion(models.Record, query, criterion)
         return query.count()
 

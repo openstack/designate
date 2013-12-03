@@ -93,11 +93,9 @@ class PolicyFixture(fixtures.Fixture):
 
 class TestCase(test.BaseTestCase):
     quota_fixtures = [{
-        'tenant_id': '12345',
         'resource': 'domains',
         'hard_limit': 5,
     }, {
-        'tenant_id': '12345',
         'resource': 'records',
         'hard_limit': 50,
     }]

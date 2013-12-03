@@ -23,7 +23,7 @@ from designate.context import DesignateContext
 from designate.openstack.common import jsonutils as json
 from designate.openstack.common import local
 from designate.openstack.common import log as logging
-from designate.openstack.common import uuidutils
+from designate.openstack.common import strutils
 from designate.openstack.common.rpc import common as rpc_common
 
 LOG = logging.getLogger(__name__)
@@ -102,10 +102,10 @@ class KeystoneContextMiddleware(ContextMiddleware):
 
         try:
             if headers['X-Identity-Status'] is 'Invalid':
-                #TODO(graham) fix the return to use non-flask resources
+                # TODO(graham) fix the return to use non-flask resources
                 return flask.Response(status=401)
         except KeyError:
-            #If the key is valid, Keystone does not include this header at all
+            # If the key is valid, Keystone does not include this header at all
             pass
 
         if headers.get('X-Service-Catalog'):
@@ -124,13 +124,6 @@ class KeystoneContextMiddleware(ContextMiddleware):
         # Store the context where oslo-log exepcts to find it.
         local.store.context = context
 
-        # Attempt to sudo, if requested.
-        sudo_tenant_id = headers.get('X-Designate-Sudo-Tenant-ID', None)
-
-        if sudo_tenant_id and (uuidutils.is_uuid_like(sudo_tenant_id)
-                               or sudo_tenant_id.isdigit()):
-            context.sudo(sudo_tenant_id)
-
         # Attach the context to the request environment
         request.environ['context'] = context
 
@@ -145,6 +138,34 @@ class NoAuthContextMiddleware(ContextMiddleware):
         # NOTE(kiall): This makes the assumption that disabling authentication
         #              means you wish to allow full access to everyone.
         context = DesignateContext(is_admin=True)
+
+        # Store the context where oslo-log exepcts to find it.
+        local.store.context = context
+
+        # Attach the context to the request environment
+        request.environ['context'] = context
+
+
+class TestContextMiddleware(ContextMiddleware):
+    def __init__(self, application, tenant_id=None, user_id=None):
+        super(TestContextMiddleware, self).__init__(application)
+
+        LOG.critical('Starting designate testcontext middleware')
+        LOG.critical('**** DO NOT USE IN PRODUCTION ****')
+
+        self.default_tenant_id = tenant_id
+        self.default_user_id = user_id
+
+    def process_request(self, request):
+        headers = request.headers
+
+        all_tenants = strutils.bool_from_string(
+            headers.get('X-Test-All-Tenants', 'False'))
+
+        context = DesignateContext(
+            user=headers.get('X-Test-User-ID', self.default_user_id),
+            tenant=headers.get('X-Test-Tenant-ID', self.default_tenant_id),
+            all_tenants=all_tenants)
 
         # Store the context where oslo-log exepcts to find it.
         local.store.context = context

@@ -69,7 +69,7 @@ class Handler(Plugin):
         """
         Return the domain for this context
         """
-        context = DesignateContext.get_admin_context()
+        context = DesignateContext.get_admin_context(all_tenants=True)
         return central_api.get_domain(context, domain_id)
 
 
@@ -99,7 +99,7 @@ class BaseAddressHandler(Handler):
         LOG.debug('Event data: %s' % data)
         data['domain'] = domain['name']
 
-        context = DesignateContext.get_admin_context()
+        context = DesignateContext.get_admin_context(all_tenants=True)
 
         for addr in addresses:
             record_data = data.copy()
@@ -128,7 +128,7 @@ class BaseAddressHandler(Handler):
 
         :param criterion: Criterion to search and destroy records
         """
-        context = DesignateContext.get_admin_context()
+        context = DesignateContext.get_admin_context(all_tenants=True)
 
         if managed:
             criterion.update({

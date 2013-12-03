@@ -37,9 +37,10 @@ class ApiV1Test(ApiTestCase):
         self.app.wsgi_app = middleware.FaultWrapperMiddleware(
             self.app.wsgi_app)
 
-        # Inject the NoAuth middleware
-        self.app.wsgi_app = middleware.NoAuthContextMiddleware(
-            self.app.wsgi_app)
+        # Inject the TestAuth middleware
+        self.app.wsgi_app = middleware.TestContextMiddleware(
+            self.app.wsgi_app, self.admin_context.tenant_id,
+            self.admin_context.user_id)
 
         # Obtain a test client
         self.client = self.app.test_client()

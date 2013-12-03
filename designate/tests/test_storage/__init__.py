@@ -22,37 +22,55 @@ LOG = logging.getLogger(__name__)
 
 
 class StorageTestCase(object):
-    def create_quota(self, fixture=0, values={}):
+    def create_quota(self, fixture=0, values={}, context=None):
+        if not context:
+            context = self.admin_context
+
         fixture = self.get_quota_fixture(fixture, values)
-        return fixture, self.storage.create_quota(self.admin_context, fixture)
 
-    def create_server(self, fixture=0, values={}):
+        if 'tenant_id' not in fixture:
+            fixture['tenant_id'] = context.tenant_id
+
+        return fixture, self.storage.create_quota(context, fixture)
+
+    def create_server(self, fixture=0, values={}, context=None):
+        if not context:
+            context = self.admin_context
+
         fixture = self.get_server_fixture(fixture, values)
-        return fixture, self.storage.create_server(self.admin_context, fixture)
+        return fixture, self.storage.create_server(context, fixture)
 
-    def create_tsigkey(self, fixture=0, values={}):
+    def create_tsigkey(self, fixture=0, values={}, context=None):
+        if not context:
+            context = self.admin_context
+
         fixture = self.get_tsigkey_fixture(fixture, values)
-        return fixture, self.storage.create_tsigkey(self.admin_context,
-                                                    fixture)
+        return fixture, self.storage.create_tsigkey(context, fixture)
 
-    def create_domain(self, fixture=0, values={}):
+    def create_domain(self, fixture=0, values={}, context=None):
+        if not context:
+            context = self.admin_context
+
         fixture = self.get_domain_fixture(fixture, values)
 
-        if 'tenant_id' not in values:
-            fixture['tenant_id'] = self.admin_context.tenant_id
+        if 'tenant_id' not in fixture:
+            fixture['tenant_id'] = context.tenant_id
 
-        return fixture, self.storage.create_domain(self.admin_context,
-                                                   fixture)
+        return fixture, self.storage.create_domain(context, fixture)
 
-    def create_record(self, domain, fixture=0, values={}):
+    def create_record(self, domain, fixture=0, values={}, context=None):
+        if not context:
+            context = self.admin_context
+
         fixture = self.get_record_fixture(domain['name'], fixture, values)
-        return fixture, self.storage.create_record(self.admin_context,
+        return fixture, self.storage.create_record(context,
                                                    domain['id'],
                                                    fixture)
 
     # Quota Tests
     def test_create_quota(self):
         values = self.get_quota_fixture()
+        values['tenant_id'] = self.admin_context.tenant_id
 
         result = self.storage.create_quota(self.admin_context, values=values)
 
@@ -60,7 +78,7 @@ class StorageTestCase(object):
         self.assertIsNotNone(result['created_at'])
         self.assertIsNone(result['updated_at'])
 
-        self.assertEqual(result['tenant_id'], values['tenant_id'])
+        self.assertEqual(result['tenant_id'], self.admin_context.tenant_id)
         self.assertEqual(result['resource'], values['resource'])
         self.assertEqual(result['hard_limit'], values['hard_limit'])
 
@@ -187,15 +205,16 @@ class StorageTestCase(object):
         self.assertEqual(updated['hard_limit'], fixture['hard_limit'])
 
     def test_update_quota_duplicate(self):
-        # Create two quotas
-        self.create_quota(fixture=0)
-        _, quota = self.create_quota(fixture=1)
+        context = self.get_admin_context()
+        context.all_tenants = True
 
-        values = self.quota_fixtures[0]
+        # Create two quotas
+        self.create_quota(fixture=0, values={'tenant_id': '1'})
+        _, quota = self.create_quota(fixture=0, values={'tenant_id': '2'})
 
         with testtools.ExpectedException(exceptions.DuplicateQuota):
-            self.storage.update_quota(self.admin_context, quota['id'],
-                                      values)
+            self.storage.update_quota(context, quota['id'],
+                                      values={'tenant_id': '1'})
 
     def test_update_quota_missing(self):
         with testtools.ExpectedException(exceptions.QuotaNotFound):
@@ -460,16 +479,19 @@ class StorageTestCase(object):
 
     # Tenant Tests
     def test_find_tenants(self):
+        context = self.get_admin_context()
+        context.all_tenants = True
+
         # create 3 domains in 2 tenants
         self.create_domain(fixture=0, values={'tenant_id': 'One'})
         _, domain = self.create_domain(fixture=1, values={'tenant_id': 'One'})
         self.create_domain(fixture=2, values={'tenant_id': 'Two'})
 
         # Delete one of the domains.
-        self.storage.delete_domain(self.admin_context, domain['id'])
+        self.storage.delete_domain(context, domain['id'])
 
         # Ensure we get accurate results
-        result = self.storage.find_tenants(self.admin_context)
+        result = self.storage.find_tenants(context)
 
         expected = [{
             'id': 'One',
@@ -482,15 +504,18 @@ class StorageTestCase(object):
         self.assertEqual(result, expected)
 
     def test_get_tenant(self):
+        context = self.get_admin_context()
+        context.all_tenants = True
+
         # create 2 domains in a tenant
         _, domain_1 = self.create_domain(fixture=0, values={'tenant_id': 1})
         _, domain_2 = self.create_domain(fixture=1, values={'tenant_id': 1})
         _, domain_3 = self.create_domain(fixture=2, values={'tenant_id': 1})
 
         # Delete one of the domains.
-        self.storage.delete_domain(self.admin_context, domain_3['id'])
+        self.storage.delete_domain(context, domain_3['id'])
 
-        result = self.storage.get_tenant(self.admin_context, 1)
+        result = self.storage.get_tenant(context, 1)
 
         self.assertEqual(result['id'], 1)
         self.assertEqual(result['domain_count'], 2)
@@ -498,8 +523,11 @@ class StorageTestCase(object):
                          [domain_1['name'], domain_2['name']])
 
     def test_count_tenants(self):
+        context = self.get_admin_context()
+        context.all_tenants = True
+
         # in the beginning, there should be nothing
-        tenants = self.storage.count_tenants(self.admin_context)
+        tenants = self.storage.count_tenants(context)
         self.assertEqual(tenants, 0)
 
         # create 2 domains with 2 tenants
@@ -508,9 +536,9 @@ class StorageTestCase(object):
         _, domain = self.create_domain(fixture=2, values={'tenant_id': 2})
 
         # Delete one of the domains.
-        self.storage.delete_domain(self.admin_context, domain['id'])
+        self.storage.delete_domain(context, domain['id'])
 
-        tenants = self.storage.count_tenants(self.admin_context)
+        tenants = self.storage.count_tenants(context)
         self.assertEqual(tenants, 2)
 
     # Domain Tests
@@ -586,6 +614,38 @@ class StorageTestCase(object):
         self.assertEqual(results[0]['email'], domain_two['email'])
         self.assertIn('status', domain_two)
 
+    def test_find_domains_all_tenants(self):
+        # Create two contexts with different tenant_id's
+        one_context = self.get_admin_context()
+        one_context.tenant = 1
+        two_context = self.get_admin_context()
+        two_context.tenant = 2
+
+        # Create normal and all_tenants context objects
+        nm_context = self.get_admin_context()
+        at_context = self.get_admin_context()
+        at_context.all_tenants = True
+
+        # Create two domains in different tenants
+        self.create_domain(fixture=0, context=one_context)
+        self.create_domain(fixture=1, context=two_context)
+
+        # Ensure the all_tenants context see's two domains
+        results = self.storage.find_domains(at_context)
+        self.assertEqual(len(results), 2)
+
+        # Ensure the normal context see's no domains
+        results = self.storage.find_domains(nm_context)
+        self.assertEqual(len(results), 0)
+
+        # Ensure the tenant 1 context see's 1 domain
+        results = self.storage.find_domains(one_context)
+        self.assertEqual(len(results), 1)
+
+        # Ensure the tenant 2 context see's 1 domain
+        results = self.storage.find_domains(two_context)
+        self.assertEqual(len(results), 1)
+
     def test_get_domain(self):
         # Create a domain
         fixture, expected = self.create_domain()
@@ -604,7 +664,7 @@ class StorageTestCase(object):
         context = self.get_admin_context()
         context.show_deleted = True
 
-        _, domain = self.create_domain()
+        _, domain = self.create_domain(context=context)
 
         self.storage.delete_domain(context, domain['id'])
         self.storage.get_domain(context, domain['id'])
@@ -799,6 +859,41 @@ class StorageTestCase(object):
 
         results = self.storage.find_records(self.admin_context, criterion)
 
+        self.assertEqual(len(results), 1)
+
+    def test_find_records_all_tenants(self):
+        # Create two contexts with different tenant_id's
+        one_context = self.get_admin_context()
+        one_context.tenant = 1
+        two_context = self.get_admin_context()
+        two_context.tenant = 2
+
+        # Create normal and all_tenants context objects
+        nm_context = self.get_admin_context()
+        at_context = self.get_admin_context()
+        at_context.all_tenants = True
+
+        # Create two domains in different tenants, and 1 record in each
+        _, domain_one = self.create_domain(fixture=0, context=one_context)
+        self.create_record(domain_one, fixture=0, context=one_context)
+
+        _, domain_two = self.create_domain(fixture=1, context=two_context)
+        self.create_record(domain_two, fixture=0, context=two_context)
+
+        # Ensure the all_tenants context see's two records
+        results = self.storage.find_records(at_context)
+        self.assertEqual(len(results), 2)
+
+        # Ensure the normal context see's no records
+        results = self.storage.find_records(nm_context)
+        self.assertEqual(len(results), 0)
+
+        # Ensure the tenant 1 context see's 1 record
+        results = self.storage.find_records(one_context)
+        self.assertEqual(len(results), 1)
+
+        # Ensure the tenant 2 context see's 1 record
+        results = self.storage.find_records(two_context)
         self.assertEqual(len(results), 1)
 
     def test_get_record(self):

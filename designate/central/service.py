@@ -183,6 +183,9 @@ class Service(rpc_service.Service):
         return False
 
     def _is_subdomain(self, context, domain_name):
+        context = context.elevated()
+        context.all_tenants = True
+
         # Break the name up into it's component labels
         labels = domain_name.split(".")
 
@@ -403,7 +406,10 @@ class Service(rpc_service.Service):
     # Domain Methods
     def create_domain(self, context, values):
         # TODO(kiall): Refactor this method into *MUCH* smaller chunks.
-        values['tenant_id'] = context.tenant_id
+
+        # Default to creating in the current users tenant
+        if 'tenant_id' not in values:
+            values['tenant_id'] = context.tenant_id
 
         target = {
             'tenant_id': values['tenant_id'],
@@ -483,20 +489,11 @@ class Service(rpc_service.Service):
         target = {'tenant_id': context.tenant_id}
         policy.check('find_domains', context, target)
 
-        if criterion is None:
-            criterion = {}
-
-        if not context.is_admin:
-            criterion['tenant_id'] = context.tenant_id
-
         return self.storage_api.find_domains(context, criterion)
 
     def find_domain(self, context, criterion):
         target = {'tenant_id': context.tenant_id}
         policy.check('find_domain', context, target)
-
-        if not context.is_admin:
-            criterion['tenant_id'] = context.tenant_id
 
         return self.storage_api.find_domain(context, criterion)
 

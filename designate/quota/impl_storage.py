@@ -40,6 +40,9 @@ class StorageQuota(Quota):
         return dict((q['resource'], q['hard_limit']) for q in quotas)
 
     def get_quota(self, context, tenant_id, resource):
+        context = context.deepcopy()
+        context.all_tenants = True
+
         quota = self.storage_api.find_quota(context, {
             'tenant_id': tenant_id,
             'resource': resource,
@@ -48,6 +51,9 @@ class StorageQuota(Quota):
         return {resource: quota['hard_limit']}
 
     def set_quota(self, context, tenant_id, resource, hard_limit):
+        context = context.deepcopy()
+        context.all_tenants = True
+
         def create_quota():
             values = {
                 'tenant_id': tenant_id,
@@ -81,6 +87,9 @@ class StorageQuota(Quota):
         return {resource: hard_limit}
 
     def reset_quotas(self, context, tenant_id):
+        context = context.deepcopy()
+        context.all_tenants = True
+
         quotas = self.storage_api.find_quotas(context, {
             'tenant_id': tenant_id,
         })

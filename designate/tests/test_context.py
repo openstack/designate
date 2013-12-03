@@ -18,26 +18,6 @@ from designate import context
 
 
 class TestDesignateContext(TestCase):
-    def test_sudo(self):
-        # Set the policy to accept the authz
-        self.policy({'use_sudo': '@'})
-
-        ctxt = context.DesignateContext(tenant='original')
-        ctxt.sudo('effective')
-
-        self.assertEqual('effective', ctxt.tenant_id)
-        self.assertEqual('original', ctxt.original_tenant_id)
-
-    def test_sudo_fail(self):
-        # Set the policy to deny the authz
-        self.policy({'use_sudo': '!'})
-
-        ctxt = context.DesignateContext(tenant='original')
-        ctxt.sudo('effective')
-
-        self.assertEqual('original', ctxt.tenant_id)
-        self.assertEqual('original', ctxt.original_tenant_id)
-
     def test_deepcopy(self):
         orig = context.DesignateContext(user='12345', tenant='54321')
         copy = orig.deepcopy()

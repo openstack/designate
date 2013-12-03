@@ -131,38 +131,6 @@ class KeystoneContextMiddlewareTest(ApiTestCase):
         self.assertEqual('TenantID', context.tenant_id)
         self.assertEqual(['admin', 'Member'], context.roles)
 
-    def test_process_request_sudo(self):
-        # Set the policy to accept the authz
-        self.policy({'use_sudo': '@'})
-
-        app = middleware.KeystoneContextMiddleware({})
-
-        request = FakeRequest()
-
-        request.headers = {
-            'X-Auth-Token': 'AuthToken',
-            'X-User-ID': 'UserID',
-            'X-Tenant-ID': 'TenantID',
-            'X-Roles': 'admin,Member',
-            'X-Designate-Sudo-Tenant-ID':
-            '5a993bf8-d521-420a-81e1-192d9cc3d5a0'
-        }
-
-        # Process the request
-        app.process_request(request)
-
-        self.assertIn('context', request.environ)
-
-        context = request.environ['context']
-
-        self.assertFalse(context.is_admin)
-        self.assertEqual('AuthToken', context.auth_token)
-        self.assertEqual('UserID', context.user_id)
-        self.assertEqual('TenantID', context.original_tenant_id)
-        self.assertEqual('5a993bf8-d521-420a-81e1-192d9cc3d5a0',
-                         context.tenant_id)
-        self.assertEqual(['admin', 'Member'], context.roles)
-
     def test_process_request_invalid_keystone_token(self):
         app = middleware.KeystoneContextMiddleware({})
 

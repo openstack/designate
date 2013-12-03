@@ -36,8 +36,10 @@ class ApiV2TestCase(ApiTestCase):
         # Inject the FaultWrapper middleware
         self.app = middleware.FaultWrapperMiddleware(self.app)
 
-        # Inject the NoAuth middleware
-        self.app = middleware.NoAuthContextMiddleware(self.app)
+        # Inject the TestContext middleware
+        self.app = middleware.TestContextMiddleware(
+            self.app, self.admin_context.tenant_id,
+            self.admin_context.tenant_id)
 
         # Obtain a test client
         self.client = TestApp(self.app)

@@ -16,7 +16,6 @@
 import itertools
 from designate.openstack.common import context
 from designate.openstack.common import log as logging
-from designate import policy
 
 LOG = logging.getLogger(__name__)
 
@@ -24,7 +23,7 @@ LOG = logging.getLogger(__name__)
 class DesignateContext(context.RequestContext):
     def __init__(self, auth_token=None, user=None, tenant=None, is_admin=False,
                  read_only=False, show_deleted=False, request_id=None,
-                 original_tenant_id=None, roles=[], service_catalog=None):
+                 roles=[], service_catalog=None, all_tenants=False):
         super(DesignateContext, self).__init__(
             auth_token=auth_token,
             user=user,
@@ -34,29 +33,9 @@ class DesignateContext(context.RequestContext):
             show_deleted=show_deleted,
             request_id=request_id)
 
-        self._original_tenant_id = original_tenant_id
         self.roles = roles
         self.service_catalog = service_catalog
-
-    def sudo(self, tenant_id, force=False):
-        if force:
-            allowed_sudo = True
-        else:
-            # We use exc=None here since the context is built early in the
-            # request lifecycle, outside of our ordinary error handling.
-            # For now, we silently ignore failed sudo requests.
-            target = {'tenant_id': tenant_id}
-            allowed_sudo = policy.check('use_sudo', self, target, exc=None)
-
-        if allowed_sudo:
-            LOG.warn('Accepted sudo from user_id %s for tenant_id %s'
-                     % (self.user_id, tenant_id))
-            self.original_tenant_id = self.tenant_id
-            self.tenant_id = tenant_id
-
-        else:
-            LOG.warn('Rejected sudo from user_id %s for tenant_id %s'
-                     % (self.user_id, tenant_id))
+        self.all_tenants = all_tenants
 
     def deepcopy(self):
         d = self.to_dict()
@@ -73,9 +52,9 @@ class DesignateContext(context.RequestContext):
         d.update({
             'user_id': self.user_id,
             'tenant_id': self.tenant_id,
-            'original_tenant_id': self.original_tenant_id,
             'roles': self.roles,
-            'service_catalog': self.service_catalog
+            'service_catalog': self.service_catalog,
+            'all_tenants': self.all_tenants,
         })
 
         return d
@@ -112,17 +91,6 @@ class DesignateContext(context.RequestContext):
     @tenant_id.setter
     def tenant_id(self, value):
         self.tenant = value
-
-    @property
-    def original_tenant_id(self):
-        if self._original_tenant_id:
-            return self._original_tenant_id
-        else:
-            return self.tenant
-
-    @original_tenant_id.setter
-    def original_tenant_id(self, value):
-        self._original_tenant_id = value
 
     @classmethod
     def get_admin_context(cls, **kwargs):
