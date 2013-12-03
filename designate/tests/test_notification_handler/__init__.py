@@ -16,10 +16,9 @@
 import json
 import os
 import testtools
+from designate.tests import resources
 
-FIXTURES_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                             '..',
-                                             'sample_notifications'))
+FIXTURES_PATH = os.path.join(resources.path, 'sample_notifications')
 
 
 class NotificationHandlerMixin(object):

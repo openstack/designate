@@ -26,6 +26,7 @@ from designate.openstack.common import importutils
 from designate.openstack.common import policy
 from designate.openstack.common import test
 from designate.context import DesignateContext
+from designate.tests import resources
 from designate import storage
 from designate import exceptions
 
@@ -255,10 +256,10 @@ class TestCase(test.BaseTestCase):
 
     def get_zonefile_fixture(self, variant=None):
         if variant is None:
-            path = 'example.com.zone'
+            f = 'example.com.zone'
         else:
-            path = '%s_example.com.zone' % variant
-        path = os.path.join(os.path.dirname(__file__), path)
+            f = '%s_example.com.zone' % variant
+        path = os.path.join(resources.path, 'zonefiles', f)
         with open(path) as zonefile:
             return zonefile.read()
 

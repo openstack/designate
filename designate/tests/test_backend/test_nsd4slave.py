@@ -25,6 +25,8 @@ from oslo.config import cfg
 from designate import exceptions
 from designate import tests
 from designate.tests.test_backend import BackendTestMixin
+from designate.tests import resources
+
 # impl_nsd4slave needs to register its options before being instanciated.
 # Import it and pretend to use it to avoid flake8 unused import errors.
 from designate.backend import impl_nsd4slave
@@ -34,8 +36,8 @@ impl_nsd4slave
 class NSD4ServerStub:
     recved_command = None
     response = 'ok'
-    keyfile = os.path.join(os.path.dirname(__file__), 'nsd_server.key')
-    certfile = os.path.join(os.path.dirname(__file__), 'nsd_server.pem')
+    keyfile = os.path.join(resources.path, 'ssl', 'nsd_server.key')
+    certfile = os.path.join(resources.path, 'ssl', 'nsd_server.pem')
 
     def handle(self, client_sock, client_addr):
         stream = client_sock.makefile()
@@ -72,8 +74,8 @@ class NSD4Fixture(fixtures.Fixture):
         cfg.CONF.set_override(
             'servers', ['127.0.0.1', '127.0.0.1:%d' % self.servers[1].port],
             'backend:nsd4slave')
-        keyfile = os.path.join(os.path.dirname(__file__), 'nsd_control.key')
-        certfile = os.path.join(os.path.dirname(__file__), 'nsd_control.pem')
+        keyfile = os.path.join(resources.path, 'ssl', 'nsd_control.key')
+        certfile = os.path.join(resources.path, 'ssl', 'nsd_control.pem')
         cfg.CONF.set_override('keyfile', keyfile, 'backend:nsd4slave')
         cfg.CONF.set_override('certfile', certfile, 'backend:nsd4slave')
         cfg.CONF.set_override('pattern', 'test-pattern', 'backend:nsd4slave')
