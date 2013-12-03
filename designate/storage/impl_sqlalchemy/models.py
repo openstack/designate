@@ -20,7 +20,6 @@ from oslo.config import cfg
 from sqlalchemy import (Column, DateTime, String, Text, Integer, ForeignKey,
                         Enum, Boolean, Unicode, UniqueConstraint, event)
 from sqlalchemy.orm import relationship, backref
-from sqlalchemy.ext.hybrid import hybrid_property
 from designate.openstack.common import log as logging
 from designate.openstack.common import timeutils
 from designate.openstack.common.uuidutils import generate_uuid
@@ -62,7 +61,7 @@ class Quota(Base):
         {'mysql_engine': 'InnoDB', 'mysql_charset': 'utf8'}
     )
 
-    tenant_id = Column(String(36), nullable=False)
+    tenant_id = Column(String(36), default=None, nullable=True)
     resource = Column(String(32), nullable=False)
     hard_limit = Column(Integer(), nullable=False)
 
@@ -109,6 +108,7 @@ class Record(Base):
 
     domain_id = Column(UUID, ForeignKey('domains.id', ondelete='CASCADE'),
                        nullable=False)
+    tenant_id = Column(String(36), default=None, nullable=True)
 
     type = Column(Enum(name='record_types', *RECORD_TYPES), nullable=False)
     name = Column(String(255), nullable=False)
@@ -129,10 +129,6 @@ class Record(Base):
                     nullable=False, server_default='ACTIVE',
                     default='ACTIVE')
 
-    @hybrid_property
-    def tenant_id(self):
-        return self.domain.tenant_id
-
     def recalculate_hash(self):
         """
         Calculates the hash of the record, used to ensure record uniqueness.
@@ -142,9 +138,6 @@ class Record(Base):
                                        self.data, self.priority))
 
         self.hash = md5.hexdigest()
-
-    def _extra_keys(self):
-        return ['tenant_id']
 
 
 @event.listens_for(Record, "before_insert")

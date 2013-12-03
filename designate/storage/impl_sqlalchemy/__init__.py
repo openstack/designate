@@ -351,12 +351,17 @@ class SQLAlchemyStorage(base.Storage):
             raise exceptions.RecordNotFound()
 
     def create_record(self, context, domain_id, values):
-        record = models.Record()
+        # Fetch the domain as we need the tenant_id
+        domain = self._find_domains(context, {'id': domain_id}, one=True)
 
+        # Create and populate the new Record model
+        record = models.Record()
         record.update(values)
+        record.tenant_id = domain['tenant_id']
         record.domain_id = domain_id
 
         try:
+            # Save the new Record model
             record.save(self.session)
         except exceptions.Duplicate:
             raise exceptions.DuplicateRecord()

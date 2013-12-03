@@ -25,6 +25,7 @@ from designate.openstack.common.fixture import config
 from designate.openstack.common import importutils
 from designate.openstack.common import policy
 from designate.openstack.common import test
+from designate.openstack.common import uuidutils
 from designate.context import DesignateContext
 from designate.tests import resources
 from designate import storage
@@ -220,7 +221,9 @@ class TestCase(test.BaseTestCase):
         return DesignateContext(**kwargs)
 
     def get_admin_context(self):
-        return DesignateContext.get_admin_context()
+        return DesignateContext.get_admin_context(
+            tenant=uuidutils.generate_uuid(),
+            user=uuidutils.generate_uuid())
 
     # Fixture methods
     def get_quota_fixture(self, fixture=0, values={}):
@@ -264,28 +267,28 @@ class TestCase(test.BaseTestCase):
             return zonefile.read()
 
     def create_quota(self, **kwargs):
-        context = kwargs.pop('context', self.get_admin_context())
+        context = kwargs.pop('context', self.admin_context)
         fixture = kwargs.pop('fixture', 0)
 
         values = self.get_quota_fixture(fixture=fixture, values=kwargs)
         return self.central_service.create_quota(context, values=values)
 
     def create_server(self, **kwargs):
-        context = kwargs.pop('context', self.get_admin_context())
+        context = kwargs.pop('context', self.admin_context)
         fixture = kwargs.pop('fixture', 0)
 
         values = self.get_server_fixture(fixture=fixture, values=kwargs)
         return self.central_service.create_server(context, values=values)
 
     def create_tsigkey(self, **kwargs):
-        context = kwargs.pop('context', self.get_admin_context())
+        context = kwargs.pop('context', self.admin_context)
         fixture = kwargs.pop('fixture', 0)
 
         values = self.get_tsigkey_fixture(fixture=fixture, values=kwargs)
         return self.central_service.create_tsigkey(context, values=values)
 
     def create_domain(self, **kwargs):
-        context = kwargs.pop('context', self.get_admin_context())
+        context = kwargs.pop('context', self.admin_context)
         fixture = kwargs.pop('fixture', 0)
 
         # We always need a server to create a domain..
@@ -295,10 +298,14 @@ class TestCase(test.BaseTestCase):
             pass
 
         values = self.get_domain_fixture(fixture=fixture, values=kwargs)
+
+        if 'tenant_id' not in values:
+            values['tenant_id'] = context.tenant_id
+
         return self.central_service.create_domain(context, values=values)
 
     def create_record(self, domain, **kwargs):
-        context = kwargs.pop('context', self.get_admin_context())
+        context = kwargs.pop('context', self.admin_context)
         fixture = kwargs.pop('fixture', 0)
 
         values = self.get_record_fixture(domain['name'], fixture=fixture,

@@ -37,6 +37,10 @@ class StorageTestCase(object):
 
     def create_domain(self, fixture=0, values={}):
         fixture = self.get_domain_fixture(fixture, values)
+
+        if 'tenant_id' not in values:
+            fixture['tenant_id'] = self.admin_context.tenant_id
+
         return fixture, self.storage.create_domain(self.admin_context,
                                                    fixture)
 
@@ -512,6 +516,7 @@ class StorageTestCase(object):
     # Domain Tests
     def test_create_domain(self):
         values = {
+            'tenant_id': self.admin_context.tenant_id,
             'name': 'example.net.',
             'email': 'example@example.net'
         }
@@ -522,6 +527,7 @@ class StorageTestCase(object):
         self.assertIsNotNone(result['created_at'])
         self.assertIsNone(result['updated_at'])
 
+        self.assertEqual(result['tenant_id'], self.admin_context.tenant_id)
         self.assertEqual(result['name'], values['name'])
         self.assertEqual(result['email'], values['email'])
         self.assertIn('status', result)
@@ -600,7 +606,7 @@ class StorageTestCase(object):
 
         _, domain = self.create_domain()
 
-        self.storage.delete_domain(self.admin_context, domain['id'])
+        self.storage.delete_domain(context, domain['id'])
         self.storage.get_domain(context, domain['id'])
 
     def test_find_domain_criterion(self):
@@ -707,6 +713,7 @@ class StorageTestCase(object):
         self.assertIsNotNone(result['hash'])
         self.assertIsNone(result['updated_at'])
 
+        self.assertEqual(result['tenant_id'], self.admin_context.tenant_id)
         self.assertEqual(result['name'], values['name'])
         self.assertEqual(result['type'], values['type'])
         self.assertEqual(result['data'], values['data'])
