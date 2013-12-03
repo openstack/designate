@@ -137,6 +137,7 @@ class TestCase(test.BaseTestCase):
     def setUp(self):
         super(TestCase, self).setUp()
 
+        self.useFixture(fixtures.FakeLogger('designate', level='DEBUG'))
         self.CONF = self.useFixture(config.Config(cfg.CONF)).conf
 
         self.config(
