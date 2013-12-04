@@ -178,7 +178,14 @@ root_helper = sudo
 # NSD4Slave Backend
 #-----------------------
 [backend:nsd4slave]
-#keyfile=/etc/nsd/nsd_control.key
-#certfile=/etc/nsd/nsd_control.pem
-#servers=127.0.0.1,127.0.1.1:4242
-#pattern=slave
+#keyfile =/etc/nsd/nsd_control.key
+#certfile = /etc/nsd/nsd_control.pem
+#servers = 127.0.0.1,127.0.1.1:4242
+#pattern = slave
+
+#-----------------------
+# Multi Backend
+#-----------------------
+[backend:multi]
+#master = fake
+#slave = fake
