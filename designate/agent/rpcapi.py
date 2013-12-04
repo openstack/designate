@@ -33,95 +33,86 @@ class AgentAPI(rpc_proxy.RpcProxy):
         super(AgentAPI, self).__init__(topic=topic, default_version='1.0')
 
     # Server Methods
-    def create_server(self, context, values):
-        msg = self.make_msg('create_server', values=values)
+    def create_server(self, context, server):
+        msg = self.make_msg('create_server', server=server)
 
         return self.call(context, msg)
 
-    def update_server(self, context, server_id, values):
-        msg = self.make_msg('update_server', server_id=server_id,
-                            values=values)
+    def update_server(self, context, server):
+        msg = self.make_msg('update_server', server=server)
 
         return self.call(context, msg)
 
-    def delete_server(self, context, server_id):
-        msg = self.make_msg('delete_server', server_id=server_id)
+    def delete_server(self, context, server):
+        msg = self.make_msg('delete_server', server=server)
 
         return self.call(context, msg)
 
     # TSIG Key Methods
-    def create_tsigkey(self, context, values):
-        msg = self.make_msg('create_tsigkey', values=values)
+    def create_tsigkey(self, context, tsigkey):
+        msg = self.make_msg('create_tsigkey', tsigkey=tsigkey)
 
         return self.call(context, msg)
 
-    def update_tsigkey(self, context, tsigkey_id, values):
-        msg = self.make_msg('update_tsigkey', tsigkey_id=tsigkey_id,
-                            values=values)
+    def update_tsigkey(self, context, tsigkey):
+        msg = self.make_msg('update_tsigkey', tsigkey=tsigkey)
 
         return self.call(context, msg)
 
-    def delete_tsigkey(self, context, tsigkey_id):
-        msg = self.make_msg('delete_tsigkey', tsigkey_id=tsigkey_id)
+    def delete_tsigkey(self, context, tsigkey):
+        msg = self.make_msg('delete_tsigkey', tsigkey=tsigkey)
 
         return self.call(context, msg)
 
     # Domain Methods
-    def create_domain(self, context, values):
-        msg = self.make_msg('create_domain', values=values)
+    def create_domain(self, context, domain):
+        msg = self.make_msg('create_domain', domain=domain)
 
         return self.call(context, msg)
 
-    def update_domain(self, context, domain_id, values, increment_serial=True):
-        msg = self.make_msg('update_domain',
-                            domain_id=domain_id,
-                            values=values,
-                            increment_serial=increment_serial)
+    def update_domain(self, context, domain):
+        msg = self.make_msg('update_domain', domain=domain)
 
         return self.call(context, msg)
 
-    def delete_domain(self, context, domain_id):
-        msg = self.make_msg('delete_domain', domain_id=domain_id)
+    def delete_domain(self, context, domain):
+        msg = self.make_msg('delete_domain', domain=domain)
 
         return self.call(context, msg)
 
     # Record Methods
-    def create_record(self, context, domain_id, values, increment_serial=True):
+    def create_record(self, context, domain, record):
         msg = self.make_msg('create_record',
-                            domain_id=domain_id,
-                            values=values,
-                            increment_serial=increment_serial)
+                            domain=domain,
+                            record=record)
 
         return self.call(context, msg)
 
-    def update_record(self, context, domain_id, record_id, values,
-                      increment_serial=True):
+    def update_record(self, context, domain, record):
         msg = self.make_msg('update_record',
-                            domain_id=domain_id,
-                            record_id=record_id,
-                            values=values,
-                            increment_serial=increment_serial)
+                            domain=domain,
+                            record=record)
 
         return self.call(context, msg)
 
-    def delete_record(self, context, domain_id, record_id,
-                      increment_serial=True):
+    def delete_record(self, context, domain, record):
         msg = self.make_msg('delete_record',
-                            domain_id=domain_id,
-                            record_id=record_id,
-                            increment_serial=increment_serial)
+                            domain=domain,
+                            record=record)
 
         return self.call(context, msg)
 
     # Sync Methods
-    def sync_domain(self, context, domain_id):
-        msg = self.make_msg('sync_domains', domain_id=domain_id)
+    def sync_domain(self, context, domain, records):
+        msg = self.make_msg('sync_domains',
+                            domain=domain,
+                            records=records)
 
         return self.call(context, msg)
 
-    def sync_record(self, context, domain_id, record_id):
+    def sync_record(self, context, domain, record):
         msg = self.make_msg('sync_domains',
-                            domain_id=domain_id,
-                            record_id=record_id)
+                            domain=domain,
+                            record=record)
 
         return self.call(context, msg)
