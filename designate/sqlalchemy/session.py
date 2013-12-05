@@ -37,6 +37,7 @@ _ENGINES = {}
 SQLOPTS = [
     cfg.StrOpt('database_connection',
                default='sqlite:///$state_path/designate.sqlite',
+               secret=True,
                help='The database driver to use'),
     cfg.IntOpt('connection_debug', default=0,
                help='Verbosity of SQL debugging information. 0=None,'
