@@ -15,6 +15,7 @@
 # under the License.
 
 import eventlet
+import os
 import socket
 import ssl
 from designate import exceptions
@@ -57,6 +58,14 @@ class NSD4SlaveBackend(base.Backend):
     def __init__(self, central_service):
         self._keyfile = cfg.CONF[CFG_GRP].keyfile
         self._certfile = cfg.CONF[CFG_GRP].certfile
+        # Make sure keyfile and certfile are readable to avoid cryptic SSL
+        # errors later
+        if not os.access(self._keyfile, os.R_OK):
+            raise exceptions.NSD4SlaveBackendError(
+                'Keyfile %s missing or permission denied', self._keyfile)
+        if not os.access(self._certfile, os.R_OK):
+            raise exceptions.NSD4SlaveBackendError(
+                'Certfile %s missing or permission denied', self._certfile)
         self._pattern = cfg.CONF[CFG_GRP].pattern
         try:
             self._servers = [self._parse_server(cfg_server)
