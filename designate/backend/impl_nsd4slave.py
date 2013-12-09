@@ -62,10 +62,10 @@ class NSD4SlaveBackend(base.Backend):
         # errors later
         if not os.access(self._keyfile, os.R_OK):
             raise exceptions.NSD4SlaveBackendError(
-                'Keyfile %s missing or permission denied', self._keyfile)
+                'Keyfile %s missing or permission denied' % self._keyfile)
         if not os.access(self._certfile, os.R_OK):
             raise exceptions.NSD4SlaveBackendError(
-                'Certfile %s missing or permission denied', self._certfile)
+                'Certfile %s missing or permission denied' % self._certfile)
         self._pattern = cfg.CONF[CFG_GRP].pattern
         try:
             self._servers = [self._parse_server(cfg_server)
