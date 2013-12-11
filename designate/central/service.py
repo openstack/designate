@@ -772,7 +772,6 @@ class Service(rpc_service.Service):
         results = {}
 
         for domain in domains:
-            servers = self.storage_api.find_servers(context)
             criterion = {'domain_id': domain['id']}
             records = self.storage_api.find_records(
                 context, criterion=criterion)
@@ -780,8 +779,7 @@ class Service(rpc_service.Service):
             with wrap_backend_call():
                 results[domain['id']] = self.backend.sync_domain(context,
                                                                  domain,
-                                                                 records,
-                                                                 servers)
+                                                                 records)
 
         return results
 
