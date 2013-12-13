@@ -17,6 +17,11 @@ import copy
 import fixtures
 import functools
 import os
+from migrate.versioning import repository
+import shutil
+import sqlalchemy
+import tempfile
+from migrate.versioning import api as versioning_api
 from testtools import testcase
 from oslo.config import cfg
 from designate.openstack.common import log as logging
@@ -28,7 +33,6 @@ from designate.openstack.common import test
 from designate.openstack.common import uuidutils
 from designate.context import DesignateContext
 from designate.tests import resources
-from designate import storage
 from designate import exceptions
 
 LOG = logging.getLogger(__name__)
@@ -45,14 +49,6 @@ cfg.CONF.import_opt('database_connection', 'designate.storage.impl_sqlalchemy',
 # if not here.
 cfg.CONF.import_opt(
     'notification_driver', 'designate.openstack.common.notifier.api')
-
-
-class StorageFixture(fixtures.Fixture):
-    def setUp(self):
-        super(StorageFixture, self).setUp()
-        self.storage = storage.get_storage()
-        self.storage.setup_schema()
-        self.addCleanup(self.storage.teardown_schema)
 
 
 class NotifierFixture(fixtures.Fixture):
@@ -89,6 +85,36 @@ class PolicyFixture(fixtures.Fixture):
     def setUp(self):
         super(PolicyFixture, self).setUp()
         self.addCleanup(policy.reset)
+
+
+class DatabaseFixture(fixtures.Fixture):
+
+    fixtures = {}
+
+    @staticmethod
+    def get_fixture(repo_path):
+        if repo_path not in DatabaseFixture.fixtures:
+            DatabaseFixture.fixtures[repo_path] = DatabaseFixture(repo_path)
+        return DatabaseFixture.fixtures[repo_path]
+
+    def _mktemp(self):
+        _, path = tempfile.mkstemp(prefix='designate-', suffix='.sqlite',
+                                   dir='/tmp')
+        return path
+
+    def __init__(self, repo_path):
+        super(DatabaseFixture, self).__init__()
+        self.golden_db = self._mktemp()
+        engine = sqlalchemy.create_engine('sqlite:///%s' % self.golden_db)
+        repo = repository.Repository(repo_path)
+        versioning_api.version_control(engine, repository=repo)
+        versioning_api.upgrade(engine, repository=repo)
+        self.working_copy = self._mktemp()
+        self.url = 'sqlite:///%s' % self.working_copy
+
+    def setUp(self):
+        super(DatabaseFixture, self).setUp()
+        shutil.copyfile(self.golden_db, self.working_copy)
 
 
 class TestCase(test.BaseTestCase):
@@ -187,8 +213,16 @@ class TestCase(test.BaseTestCase):
             group='service:api'
         )
 
+        # The database fixture needs to be set up here (as opposed to isolated
+        # in a storage test case) because many tests end up using storage.
+        REPOSITORY = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                                  '..', 'storage',
+                                                  'impl_sqlalchemy',
+                                                  'migrate_repo'))
+        self.db_fixture = self.useFixture(
+            DatabaseFixture.get_fixture(REPOSITORY))
         self.config(
-            database_connection='sqlite://',
+            database_connection=self.db_fixture.url,
             group='storage:sqlalchemy'
         )
 
@@ -196,9 +230,6 @@ class TestCase(test.BaseTestCase):
 
         self.notifications = NotifierFixture()
         self.useFixture(self.notifications)
-
-        storage_fixture = StorageFixture()
-        self.useFixture(storage_fixture)
 
         self.useFixture(PolicyFixture())
 
