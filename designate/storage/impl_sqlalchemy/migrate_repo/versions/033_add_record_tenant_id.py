@@ -37,7 +37,7 @@ def upgrade(migrate_engine):
         .as_scalar()
 
     records_table.update()\
-        .values(name=inner_select)\
+        .values(tenant_id=inner_select)\
         .execute()
 
 
