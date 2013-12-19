@@ -475,41 +475,42 @@ class PowerDNSBackend(base.Backend):
             old_ns_rec = self.session.query(models.Record)\
                 .filter_by(type='NS', designate_id=server['id'])\
                 .first()
-            old_server_name = old_ns_rec.content
+            if old_ns_rec is not None:
+                old_server_name = old_ns_rec.content
 
-            LOG.debug("old server name read from a backend NS record:"
-                      " %s" % old_server_name)
-            LOG.debug("new server name: %s" % server['name'])
+                LOG.debug("old server name read from a backend NS record:"
+                          " %s" % old_server_name)
+                LOG.debug("new server name: %s" % server['name'])
 
-            # Then update all NS records that need updating
-            # Only the name of a server has changed when we are here
-            self.session.query(models.Record)\
-                .filter_by(type='NS', designate_id=server['id'])\
-                .update({"content": ns_rec_content})
+                # Then update all NS records that need updating
+                # Only the name of a server has changed when we are here
+                self.session.query(models.Record)\
+                    .filter_by(type='NS', designate_id=server['id'])\
+                    .update({"content": ns_rec_content})
 
-            # Then update all SOA records as necessary
-            # Do the SOA last, ensuring we don't trigger a NOTIFY
-            # before the NS records are in place.
-            #
-            # Update the content field of every SOA record that has the
-            # old server name as part of its 'content' field to reflect
-            # the new server name.
-            # Need to strip the trailing period from the server['name']
-            # before using it to replace the old_server_name in the SOA
-            # record since the SOA record already has a trailing period
-            # and we want to keep it
-            self.session.execute(models.Record.__table__
-                .update()
-                .where(and_(models.Record.__table__.c.type == "SOA",
-                       models.Record.__table__.c.content.like
-                           ("%s%%" % old_server_name)))
-                .values(content=
-                        func.replace(
-                            models.Record.__table__.c.content,
-                            old_server_name,
-                            server['name'].rstrip('.'))
-                        )
-            )
+                # Then update all SOA records as necessary
+                # Do the SOA last, ensuring we don't trigger a NOTIFY
+                # before the NS records are in place.
+                #
+                # Update the content field of every SOA record that has the
+                # old server name as part of its 'content' field to reflect
+                # the new server name.
+                # Need to strip the trailing period from the server['name']
+                # before using it to replace the old_server_name in the SOA
+                # record since the SOA record already has a trailing period
+                # and we want to keep it
+                self.session.execute(models.Record.__table__
+                    .update()
+                    .where(and_(models.Record.__table__.c.type == "SOA",
+                           models.Record.__table__.c.content.like
+                               ("%s%%" % old_server_name)))
+                    .values(content=
+                            func.replace(
+                                models.Record.__table__.c.content,
+                                old_server_name,
+                                server['name'].rstrip('.'))
+                            )
+                )
 
         except Exception:
             with excutils.save_and_reraise_exception():
