@@ -66,8 +66,11 @@ class CentralServiceTest(CentralTestCase):
                 context, domain, 'a.example.COM.')
 
     def test_is_blacklisted_domain_name(self):
-        self.config(domain_name_blacklist=['^example.org.$', 'net.$'],
-                    group='service:central')
+        # Create blacklisted zones with specific names
+        self.create_blacklist(pattern='example.org.')
+        self.create_blacklist(pattern='example.net.')
+        self.create_blacklist(pattern='^blacklisted.org.$')
+        self.create_blacklist(pattern='com.$')
 
         # Set the policy to reject the authz
         self.policy({'use_blacklisted_domain': '!'})
@@ -78,16 +81,26 @@ class CentralServiceTest(CentralTestCase):
             context, 'org.')
         self.assertFalse(result)
 
+        # Subdomains should not be allowed from a blacklisted domain
         result = self.central_service._is_blacklisted_domain_name(
             context, 'www.example.org.')
-        self.assertFalse(result)
+        self.assertTrue(result)
 
         result = self.central_service._is_blacklisted_domain_name(
             context, 'example.org.')
         self.assertTrue(result)
 
+        # Check for blacklisted domains containing regexps
         result = self.central_service._is_blacklisted_domain_name(
             context, 'example.net.')
+        self.assertTrue(result)
+
+        result = self.central_service._is_blacklisted_domain_name(
+            context, 'example.com.')
+        self.assertTrue(result)
+
+        result = self.central_service._is_blacklisted_domain_name(
+            context, 'blacklisted.org.')
         self.assertTrue(result)
 
     def test_is_subdomain(self):
@@ -508,8 +521,8 @@ class CentralServiceTest(CentralTestCase):
             self.central_service.create_domain(context, values=values)
 
     def test_create_blacklisted_domain_success(self):
-        self.config(domain_name_blacklist=['^blacklisted.com.$'],
-                    group='service:central')
+        # Create blacklisted zone using default values
+        self.create_blacklist()
 
         # Set the policy to accept the authz
         self.policy({'use_blacklisted_domain': '@'})
@@ -522,7 +535,7 @@ class CentralServiceTest(CentralTestCase):
         # Create a server
         self.create_server()
 
-        # Create a domain
+        # Create a zone that is blacklisted
         domain = self.central_service.create_domain(
             self.admin_context, values=values)
 
@@ -532,8 +545,7 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(domain['email'], values['email'])
 
     def test_create_blacklisted_domain_fail(self):
-        self.config(domain_name_blacklist=['^blacklisted.com.$'],
-                    group='service:central')
+        self.create_blacklist()
 
         # Set the policy to reject the authz
         self.policy({'use_blacklisted_domain': '!'})
@@ -1705,3 +1717,101 @@ class CentralServiceTest(CentralTestCase):
 
         self.central_service.get_floatingip(
             context, fip['region'], fip['id'])
+
+    # Blacklist Tests
+    def test_create_blacklist(self):
+        values = self.get_blacklist_fixture(fixture=0)
+
+        blacklist = self.create_blacklist(fixture=0)
+
+        # Verify all values have been set correctly
+        self.assertIsNotNone(blacklist['id'])
+        self.assertEqual(blacklist['pattern'], values['pattern'])
+        self.assertEqual(blacklist['description'], values['description'])
+
+    def test_get_blacklist(self):
+        # Create a blacklisted zone
+        expected = self.create_blacklist(fixture=0)
+
+        # Retrieve it, and verify it is the same
+        blacklist = self.central_service.get_blacklist(
+            self.admin_context, expected['id'])
+
+        self.assertEqual(blacklist['id'], expected['id'])
+        self.assertEqual(blacklist['pattern'], expected['pattern'])
+        self.assertEqual(blacklist['description'], expected['description'])
+
+    def test_find_blacklists(self):
+        # Verify there are no blacklisted zones to start with
+        blacklists = self.central_service.find_blacklists(
+            self.admin_context)
+
+        self.assertEqual(len(blacklists), 0)
+
+        # Create a single blacklisted zone
+        self.create_blacklist()
+
+        # Verify we can retrieve the newly created blacklist
+        blacklists = self.central_service.find_blacklists(
+            self.admin_context)
+        values1 = self.get_blacklist_fixture(fixture=0)
+
+        self.assertEqual(len(blacklists), 1)
+        self.assertEqual(blacklists[0]['pattern'], values1['pattern'])
+
+        # Create a second blacklisted zone
+        self.create_blacklist(fixture=1)
+
+        # Verify we can retrieve both blacklisted zones
+        blacklists = self.central_service.find_blacklists(
+            self.admin_context)
+
+        values2 = self.get_blacklist_fixture(fixture=1)
+
+        self.assertEqual(len(blacklists), 2)
+        self.assertEqual(blacklists[0]['pattern'], values1['pattern'])
+        self.assertEqual(blacklists[1]['pattern'], values2['pattern'])
+
+    def test_find_blacklist(self):
+        #Create a blacklisted zone
+        expected = self.create_blacklist(fixture=0)
+
+        # Retrieve the newly created blacklist
+        blacklist = self.central_service.find_blacklist(
+            self.admin_context, {'id': expected['id']})
+
+        self.assertEqual(blacklist['pattern'], expected['pattern'])
+        self.assertEqual(blacklist['description'], expected['description'])
+
+    def test_update_blacklist(self):
+        # Create a blacklisted zone
+        expected = self.create_blacklist(fixture=0)
+        new_comment = "This is a different comment."
+
+        # Update the blacklist
+        updated_values = dict(
+            description=new_comment
+        )
+        self.central_service.update_blacklist(self.admin_context,
+                                              expected['id'],
+                                              updated_values)
+
+        # Fetch the blacklist
+        blacklist = self.central_service.get_blacklist(self.admin_context,
+                                                       expected['id'])
+
+        # Verify that the record was updated correctly
+        self.assertEqual(blacklist['description'], new_comment)
+
+    def test_delete_blacklist(self):
+        # Create a blacklisted zone
+        blacklist = self.create_blacklist()
+
+        # Delete the blacklist
+        self.central_service.delete_blacklist(self.admin_context,
+                                              blacklist['id'])
+
+        # Try to fetch the blacklist to verify an exception is raised
+        with testtools.ExpectedException(exceptions.BlacklistNotFound):
+            self.central_service.get_blacklist(self.admin_context,
+                                               blacklist['id'])

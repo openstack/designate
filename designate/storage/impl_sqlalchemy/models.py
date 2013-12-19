@@ -188,3 +188,10 @@ class TsigKey(Base):
     algorithm = Column(Enum(name='tsig_algorithms', *TSIG_ALGORITHMS),
                        nullable=False)
     secret = Column(String(255), nullable=False)
+
+
+class Blacklists(Base):
+    __tablename__ = 'blacklists'
+
+    pattern = Column(String(512), nullable=False, unique=True)
+    description = Column(Unicode(160), nullable=True)

@@ -1,0 +1,63 @@
+{
+    "$schema": "http://json-schema.org/draft-04/hyper-schema",
+
+    "id": "blacklist",
+
+    "title": "blacklist",
+    "description": "Blacklisted Zone",
+    "additionalProperties": false,
+
+    "required": ["blacklist"],
+
+    "properties": {
+        "blacklist": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["pattern"],
+
+            "properties":{
+                "id": {
+                    "type": "string",
+                    "description": "Blacklisted Zone Identifier",
+                    "pattern": "^([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}$",
+                    "readonly": true
+                },
+                "pattern": {
+                    "type": "string",
+                    "description": "Regex for blacklisted zone name",
+                    "format": "regex",
+                    "maxLength": 512,
+                    "required": true
+                },
+                "created_at": {
+                    "type": "string",
+                    "description": "Date and time of blacklisted zone creation",
+                    "format": "date-time",
+                    "readonly": true
+                },
+                "description": {
+                    "type": ["string", "null"],
+                    "description": "Description for the blacklisted zone",
+                    "maxLength": 160
+                },
+                "updated_at": {
+                    "type": ["string", "null"],
+                    "description": "Date and time of last blacklisted zone update",
+                    "format": "date-time",
+                    "readonly": true
+                },
+                "links": {
+                    "type": "object",
+                    "additionalProperties": false,
+
+                    "properties": {
+                        "self": {
+                            "type": "string",
+                            "format": "url"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

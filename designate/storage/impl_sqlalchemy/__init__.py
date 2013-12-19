@@ -546,6 +546,63 @@ class SQLAlchemyStorage(base.Storage):
         query = self._apply_criterion(models.Record, query, criterion)
         return query.count()
 
+    #
+    # Blacklist Methods
+    #
+    def _find_blacklist(self, context, criterion, one=False):
+        try:
+            return self._find(models.Blacklists, context, criterion, one)
+        except exceptions.NotFound:
+            raise exceptions.BlacklistNotFound()
+
+    def create_blacklist(self, context, values):
+        blacklist = models.Blacklists()
+
+        blacklist.update(values)
+
+        try:
+            blacklist.save(self.session)
+        except exceptions.Duplicate:
+            raise exceptions.DuplicateBlacklist()
+
+        return dict(blacklist)
+
+    def find_blacklists(self, context, criterion=None):
+        blacklists = self._find_blacklist(context, criterion)
+
+        return [dict(b) for b in blacklists]
+
+    def get_blacklist(self, context, blacklist_id):
+        blacklist = self._find_blacklist(context,
+                                         {'id': blacklist_id}, one=True)
+
+        return dict(blacklist)
+
+    def find_blacklist(self, context, criterion):
+        blacklist = self._find_blacklist(context, criterion, one=True)
+
+        return dict(blacklist)
+
+    def update_blacklist(self, context, blacklist_id, values):
+        blacklist = self._find_blacklist(context, {'id': blacklist_id},
+                                         one=True)
+
+        blacklist.update(values)
+
+        try:
+            blacklist.save(self.session)
+        except exceptions.Duplicate:
+            raise exceptions.DuplicateBlacklist()
+
+        return dict(blacklist)
+
+    def delete_blacklist(self, context, blacklist_id):
+
+        blacklist = self._find_blacklist(context, {'id': blacklist_id},
+                                         one=True)
+
+        blacklist.delete(self.session)
+
     # diagnostics
     def ping(self, context):
         start_time = time.time()

@@ -19,6 +19,7 @@ from designate.api.v2.controllers import reverse
 from designate.api.v2.controllers import schemas
 from designate.api.v2.controllers import tlds
 from designate.api.v2.controllers import zones
+from designate.api.v2.controllers import blacklists
 
 LOG = logging.getLogger(__name__)
 
@@ -33,3 +34,4 @@ class RootController(object):
     reverse = reverse.ReverseController()
     tlds = tlds.TldsController()
     zones = zones.ZonesController()
+    blacklists = blacklists.BlacklistsController()

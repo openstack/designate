@@ -53,6 +53,13 @@
     "count_records": "rule:admin_or_owner",
 
     "use_sudo": "rule:admin",
+
+    "create_blacklist": "rule:admin",
+    "find_blacklist": "rule:admin",
+    "find_blacklists": "rule:admin",
+    "get_blacklist": "rule:admin",
+    "update_blacklist": "rule:admin",
+    "delete_blacklist": "rule:admin",
     "use_blacklisted_domain": "rule:admin",
 
     "diagnostics_ping": "rule:admin",

@@ -35,7 +35,7 @@ class CentralAPI(rpc_proxy.RpcProxy):
         3.0 - RecordSet Changes
         3.1 - Add floating ip ptr methods
         3.2 - TLD Api changes
-
+        3.3 - Add methods for blacklisted domains
     """
     def __init__(self, topic=None):
         topic = topic if topic else cfg.CONF.central_topic
@@ -400,3 +400,41 @@ class CentralAPI(rpc_proxy.RpcProxy):
         msg = self.make_msg('update_floatingip', region=region,
                             floatingip_id=floatingip_id, values=values)
         return self.call(context, msg)
+
+    # Blacklisted Domain Methods
+    def create_blacklist(self, context, values):
+        LOG.info("create_blacklist: Calling central's create_blacklist")
+        msg = self.make_msg('create_blacklist', values=values)
+
+        return self.call(context, msg, version='3.3')
+
+    def get_blacklist(self, context, blacklist_id):
+        LOG.info("get_blacklist: Calling central's get_blacklist.")
+        msg = self.make_msg('get_blacklist', blacklist_id=blacklist_id)
+
+        return self.call(context, msg, version='3.3')
+
+    def find_blacklists(self, context, criterion=None):
+        LOG.info("find_blacklists: Calling central's find_blacklists.")
+        msg = self.make_msg('find_blacklists', criterion=criterion)
+
+        return self.call(context, msg, version='3.3')
+
+    def find_blacklist(self, context, criterion):
+        LOG.info("find_blacklist: Calling central's find_blacklist.")
+        msg = self.make_msg('find_blacklist', criterion=criterion)
+
+        return self.call(context, msg, version='3.3')
+
+    def update_blacklist(self, context, blacklist_id, values):
+        LOG.info("update_blacklist: Calling central's update_blacklist.")
+        msg = self.make_msg('update_blacklist', blacklist_id=blacklist_id,
+                            values=values)
+
+        return self.call(context, msg, version='3.3')
+
+    def delete_blacklist(self, context, blacklist_id):
+        LOG.info("delete_blacklist: Calling central's delete blacklist.")
+        msg = self.make_msg('delete_blacklist', blacklist_id=blacklist_id)
+
+        return self.call(context, msg, version='3.3')
