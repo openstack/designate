@@ -18,7 +18,6 @@
 import base64
 from sqlalchemy import func
 from sqlalchemy.sql import select
-from sqlalchemy.sql.expression import null
 from sqlalchemy.sql.expression import and_
 from sqlalchemy.orm import exc as sqlalchemy_exceptions
 from oslo.config import cfg
@@ -74,11 +73,20 @@ class PowerDNSBackend(base.Backend):
         # NOTE(kiall): Prepare and execute query to install this TSIG Key on
         #              every domain. We use a manual query here since anything
         #              else would be impossibly slow.
-        query_select = select([null(),
-                               models.Domain.__table__.c.id,
-                               "'TSIG-ALLOW-AXFR'",
-                               "'%s'" % tsigkey['name']])
-        query = InsertFromSelect(models.DomainMetadata.__table__, query_select)
+        query_select = select([
+            models.Domain.__table__.c.id,
+            "'TSIG-ALLOW-AXFR'",
+            "'%s'" % tsigkey['name']]
+        )
+
+        columns = [
+            models.DomainMetadata.__table__.c.domain_id,
+            models.DomainMetadata.__table__.c.kind,
+            models.DomainMetadata.__table__.c.content,
+        ]
+
+        query = InsertFromSelect(models.DomainMetadata.__table__, query_select,
+                                 columns)
 
         # NOTE(kiall): A TX is required for, at the least, SQLite.
         self.session.begin()
@@ -426,19 +434,28 @@ class PowerDNSBackend(base.Backend):
                   "existing domains upon server create is: %s"
                   % ns_rec_content)
 
-        query_select = select([null(),
-                               models.Domain.__table__.c.id,
-                               models.Domain.__table__.c.name,
-                               "'NS'",
-                               "'%s'" % ns_rec_content,
-                               null(),
-                               null(),
-                               null(),
-                               null(),
-                               1,
-                               "'%s'" % self._sanitize_uuid_str(server['id']),
-                               1])
-        query = InsertFromSelect(models.Record.__table__, query_select)
+        query_select = select([
+            models.Domain.__table__.c.id,
+            "'%s'" % self._sanitize_uuid_str(server['id']),
+            models.Domain.__table__.c.name,
+            "'NS'",
+            "'%s'" % ns_rec_content,
+            1,
+            1]
+        )
+
+        columns = [
+            models.Record.__table__.c.domain_id,
+            models.Record.__table__.c.designate_id,
+            models.Record.__table__.c.name,
+            models.Record.__table__.c.type,
+            models.Record.__table__.c.content,
+            models.Record.__table__.c.auth,
+            models.Record.__table__.c.inherit_ttl,
+        ]
+
+        query = InsertFromSelect(models.Record.__table__, query_select,
+                                 columns)
 
         # Execute the manually prepared query
         # A TX is required for, at the least, SQLite.

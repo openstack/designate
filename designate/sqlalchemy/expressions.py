@@ -21,17 +21,35 @@ class InsertFromSelect(Executable, ClauseElement):
     execution_options = \
         Executable._execution_options.union({'autocommit': True})
 
-    def __init__(self, table, select):
+    def __init__(self, table, select, columns=None):
         self.table = table
         self.select = select
+        self.columns = columns
 
 
 @compiles(InsertFromSelect)
 def visit_insert_from_select(element, compiler, **kw):
-    return "INSERT INTO %s %s" % (
-        compiler.process(element.table, asfrom=True),
-        compiler.process(element.select)
-    )
+    # NOTE(kiall): SQLA 0.8.3+ has an InsertFromSelect built in:
+    #              sqlalchemy.sql.expression.Insert.from_select
+    #              This code can be removed once we require 0.8.3+
+    table = compiler.process(element.table, asfrom=True)
+    select = compiler.process(element.select)
+
+    if element.columns is not None:
+
+        columns = [compiler.preparer.format_column(c) for c in element.columns]
+        columns = ", ".join(columns)
+
+        return "INSERT INTO %s (%s) %s" % (
+            table,
+            columns,
+            select
+        )
+    else:
+        return "INSERT INTO %s %s" % (
+            table,
+            select
+        )
 
 
 # # Dialect specific compilation example, should it be needed.
