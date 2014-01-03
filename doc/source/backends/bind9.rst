@@ -18,7 +18,7 @@ BIND9 Backend
 
 .. note::
    The BIND9 backend, while functional, is lacking a solid process for
-   distributing zonefiles among multiple DNS servers. The soon to be introduced
+   distributing zone files among multiple DNS servers. The soon to be introduced
    concept of "Pools" will provide a foundation to fix this.
 
 Designate Configuration
@@ -44,7 +44,7 @@ Include the Designate generated configuration in /etc/bind/named.conf.local::
     include "/var/lib/designate/bind9/zones.config";
 
 Ensure BIND9 can access the above config, one way to achieve this is by
-disabling AppArmour::
+disabling AppArmor::
 
     $ touch /etc/apparmor.d/disable/usr.sbin.named
     $ service apparmor reload

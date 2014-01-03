@@ -29,15 +29,15 @@ High Level Topology
 
 Designate API
 -----------------------
-designate-api provides the standard OpenStack style REST api service, accepting http requests, validating authentication tokens with Keystone & passing them to the :ref:`designate-central` service over AMQP. Multiple versions of the api can be hosted, as well as api-extensions, allowing for pluggable extensions to the core api.
+designate-api provides the standard OpenStack style REST API service, accepting HTTP requests, validating authentication tokens with Keystone & passing them to the :ref:`designate-central` service over AMQP. Multiple versions of the API can be hosted, as well as API extensions, allowing for pluggable extensions to the core API.
 
-Although designate-api is capable of handling https traffic, it's typical to terminate https elsewhere, e.g. by placing nginx infront of designate-api or by letting the the external facing load balancers terminate https.
+Although designate-api is capable of handling HTTPS traffic, it's typical to terminate HTTPS elsewhere, e.g. by placing nginx in front of designate-api or by letting the the external facing load balancers terminate HTTPS.
 
 .. _designate-central:
 
 Designate Central
 -----------------------
-designate-central is the service that handles RPC requests via the MQ, it coordinates the persistant storage of data & manipulating backend DNS servers via backends or agents.  storage is provided via plugins, typically SQLAlchemy, although MongoDB or other storage drivers should be possible.
+designate-central is the service that handles RPC requests via the MQ, it coordinates the persistent storage of data & manipulating backend DNS servers via backends or agents. Storage is provided via plugins, typically SQLAlchemy, although MongoDB or other storage drivers should be possible.
 
 .. _designate-sink:
 
@@ -51,7 +51,7 @@ The current sink implementations generate simple forward lookup A records, using
 
 DNS Backend
 -----------------------
-backends are drivers for a particular DNS server.
+Backends are drivers for a particular DNS server.
 Designate supports multiple backend implementations, PowerDNS, BIND, MySQL BIND and dnsmasq, you are also free to implement your own backend to fit your needs, as well as extensions to provide extra functionality to complement existing backends.
 
 .. _designate-agent:
@@ -70,4 +70,4 @@ Designate uses oslo.rpc for messaging between components, therefore it inherits 
 
 Database/Storage
 -----------------------
-storage drivers are drivers for a particular SQL/NoSQL server, designate needs a SQLAlchemy supported storage engine for the persistent storage of data, the recommended driver is MySQL.
+Storage drivers are drivers for a particular SQL/NoSQL server. Designate needs a SQLAlchemy-supported storage engine for the persistent storage of data. The recommended driver is MySQL.
