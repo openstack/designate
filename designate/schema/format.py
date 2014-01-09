@@ -15,6 +15,7 @@
 # under the License.
 import re
 import jsonschema
+from jsonschema import compat
 import netaddr
 from designate.openstack.common import log as logging
 
@@ -30,6 +31,9 @@ draft4_format_checker = jsonschema.draft4_format_checker
 @draft3_format_checker.checks("ip-address")
 @draft4_format_checker.checks("ipv4")
 def is_ipv4(instance):
+    if not isinstance(instance, compat.str_types):
+        return True
+
     try:
         address = netaddr.IPAddress(instance, version=4)
         # netaddr happly accepts, and expands "127.0" into "127.0.0.0"
@@ -47,6 +51,9 @@ def is_ipv4(instance):
 @draft3_format_checker.checks("ipv6")
 @draft4_format_checker.checks("ipv6")
 def is_ipv6(instance):
+    if not isinstance(instance, compat.str_types):
+        return True
+
     try:
         netaddr.IPAddress(instance, version=6)
     except Exception:
@@ -58,6 +65,9 @@ def is_ipv6(instance):
 @draft3_format_checker.checks("host-name")
 @draft4_format_checker.checks("hostname")
 def is_hostname(instance):
+    if not isinstance(instance, compat.str_types):
+        return True
+
     if not re.match(RE_HOSTNAME, instance):
         return False
 
@@ -67,6 +77,9 @@ def is_hostname(instance):
 @draft3_format_checker.checks("domain-name")
 @draft4_format_checker.checks("domainname")
 def is_domainname(instance):
+    if not isinstance(instance, compat.str_types):
+        return True
+
     if not re.match(RE_DOMAINNAME, instance):
         return False
 
@@ -76,6 +89,9 @@ def is_domainname(instance):
 @draft3_format_checker.checks("email")
 @draft4_format_checker.checks("email")
 def is_email(instance):
+    if not isinstance(instance, compat.str_types):
+        return True
+
     # A valid email address. We use the RFC1035 version of "valid".
     if instance.count('@') != 1:
         return False
