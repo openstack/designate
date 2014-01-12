@@ -20,9 +20,9 @@ from oslo.config import cfg
 from designate.central import effectivetld
 from designate.openstack.common import log as logging
 from designate.openstack.common.rpc import service as rpc_service
+from designate.openstack.common.notifier import proxy as notifier
 from designate import backend
 from designate import exceptions
-from designate import notifier
 from designate import policy
 from designate import quota
 from designate import utils

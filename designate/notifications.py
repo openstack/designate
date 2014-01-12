@@ -19,7 +19,7 @@
 from oslo.config import cfg
 
 from designate.openstack.common import log as logging
-from designate import notifier as notify
+from designate.openstack.common.notifier import proxy as notifier
 
 LOG = logging.getLogger(__name__)
 
@@ -44,4 +44,4 @@ def send_api_fault(url, status, exception):
 
     payload = {'url': url, 'exception': str(exception), 'status': status}
 
-    notify.get_notifier('api').error(None, 'dns.api.fault', payload)
+    notifier.get_notifier('api').error(None, 'dns.api.fault', payload)
