@@ -55,22 +55,16 @@ class CentralServiceTest(CentralTestCase):
 
         domain = self.create_domain(name='example.org.')
 
-        self.central_service._is_valid_recordset_name(context,
-                                                      domain,
-                                                      'valid.example.org.',
-                                                      'A')
+        self.central_service._is_valid_recordset_name(
+            context, domain, 'valid.example.org.')
 
         with testtools.ExpectedException(exceptions.InvalidRecordSetName):
             self.central_service._is_valid_recordset_name(
-                context, domain, 'toolong.example.org.', 'A')
+                context, domain, 'toolong.example.org.')
 
         with testtools.ExpectedException(exceptions.InvalidRecordSetLocation):
             self.central_service._is_valid_recordset_name(
-                context, domain, 'a.example.COM.', 'A')
-
-        with testtools.ExpectedException(exceptions.InvalidRecordSetLocation):
-            self.central_service._is_valid_recordset_name(
-                context, domain, 'example.org.', 'CNAME')
+                context, domain, 'a.example.COM.')
 
     def test_is_blacklisted_domain_name(self):
         self.config(domain_name_blacklist=['^example.org.$', 'net.$'],
@@ -824,7 +818,7 @@ class CentralServiceTest(CentralTestCase):
     #     with testtools.ExpectedException(exceptions.OverQuota):
     #         self.create_recordset(domain)
 
-    def test_create_invalid_recordset_location(self):
+    def test_create_invalid_recordset_location_cname_at_apex(self):
         domain = self.create_domain()
 
         values = dict(
@@ -833,6 +827,34 @@ class CentralServiceTest(CentralTestCase):
         )
 
         # Attempt to create a CNAME record at the apex
+        with testtools.ExpectedException(exceptions.InvalidRecordSetLocation):
+            self.central_service.create_recordset(
+                self.admin_context, domain['id'], values=values)
+
+    def test_create_invalid_recordset_location_cname_sharing(self):
+        domain = self.create_domain()
+        expected = self.create_recordset(domain)
+
+        values = dict(
+            name=expected['name'],
+            type='CNAME'
+        )
+
+        # Attempt to create a CNAME record alongside another record
+        with testtools.ExpectedException(exceptions.InvalidRecordSetLocation):
+            self.central_service.create_recordset(
+                self.admin_context, domain['id'], values=values)
+
+    def test_create_invalid_recordset_location_wrong_domain(self):
+        domain = self.create_domain()
+        other_domain = self.create_domain(fixture=1)
+
+        values = dict(
+            name=other_domain['name'],
+            type='A'
+        )
+
+        # Attempt to create a record in the incorrect domain
         with testtools.ExpectedException(exceptions.InvalidRecordSetLocation):
             self.central_service.create_recordset(
                 self.admin_context, domain['id'], values=values)

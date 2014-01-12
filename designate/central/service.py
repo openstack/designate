@@ -115,8 +115,7 @@ class Service(rpc_service.Service):
 
         return True
 
-    def _is_valid_recordset_name(self, context, domain, recordset_name,
-                                 recordset_type):
+    def _is_valid_recordset_name(self, context, domain, recordset_name):
         if not recordset_name.endswith('.'):
             raise ValueError('Please supply a FQDN')
 
@@ -130,34 +129,28 @@ class Service(rpc_service.Service):
             raise exceptions.InvalidRecordSetLocation(
                 'RecordSet is not contained within it\'s parent domain')
 
+    def _is_valid_recordset_placement(self, context, domain, recordset_name,
+                                      recordset_type, recordset_id=None):
         # CNAME's must not be created at the zone apex.
         if recordset_type == 'CNAME' and recordset_name == domain['name']:
             raise exceptions.InvalidRecordSetLocation(
                 'CNAME recordsets may not be created at the zone apex')
 
-    def _is_valid_recordset_placement(self, context, domain, recordset_name,
-                                      recordset_type, recordset_id=None):
-#       # CNAME's must not share a name with other recordsets
-#       criterion = {'name': recordset_name}
-#
-#       if recordset_type != 'CNAME':
-#           criterion['type'] = 'CNAME'
-#
-#       recordsets = self.storage_api.find_recordsets(context, domain['id'],
-#                                                    criterion=criterion)
-#       if ((len(recordsets) == 1 and recordsets[0]['id'] != recordset_id)
-#              or len(recordsets) > 1):
-#          raise exceptions.InvalidRecordSetLocation(
-#              'CNAME recordsets may not share a name with any other records')
-#
-#       # Duplicate PTR's with the same name are not allowed
-#       if recordset_type == 'PTR':
-#           criterion = {'name': recordset_name, 'type': 'PTR'}
-#           records = self.storage_api.find_recordsets(context, domain['id'],
-#                                                      criterion=criterion)
-#           if ((len(recordsets) == 1 and recordsets[0]['id'] != recordset_id)
-#                   or len(recordsets) > 1):
-#               raise exceptions.DuplicateRecordSet()
+        # CNAME's must not share a name with other recordsets
+        criterion = {
+            'domain_id': domain['id'],
+            'name': recordset_name,
+        }
+
+        if recordset_type != 'CNAME':
+            criterion['type'] = 'CNAME'
+
+        recordsets = self.storage_api.find_recordsets(context, criterion)
+
+        if ((len(recordsets) == 1 and recordsets[0]['id'] != recordset_id)
+                or len(recordsets) > 1):
+            raise exceptions.InvalidRecordSetLocation(
+                'CNAME recordsets may not share a name with any other records')
 
         return True
 
@@ -604,8 +597,7 @@ class Service(rpc_service.Service):
         self._enforce_recordset_quota(context, domain)
 
         # Ensure the recordset name and placement is valid
-        self._is_valid_recordset_name(context, domain, values['name'],
-                                      values['type'])
+        self._is_valid_recordset_name(context, domain, values['name'])
         self._is_valid_recordset_placement(context, domain, values['name'],
                                            values['type'])
 
@@ -674,8 +666,7 @@ class Service(rpc_service.Service):
         recordset_type = values['type'] if 'type' in values \
             else recordset['type']
 
-        self._is_valid_recordset_name(context, domain, recordset_name,
-                                      recordset_type)
+        self._is_valid_recordset_name(context, domain, recordset_name)
         self._is_valid_recordset_placement(context, domain, recordset_name,
                                            recordset_type, recordset_id)
 
