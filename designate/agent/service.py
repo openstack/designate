@@ -40,10 +40,6 @@ class Service(rpc_service.Service):
         self.manager.start()
         super(Service, self).start()
 
-    def wait(self):
-        super(Service, self).wait()
-        self.conn.consumer_thread.wait()
-
     def stop(self):
         super(Service, self).stop()
         self.manager.stop()

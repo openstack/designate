@@ -35,13 +35,13 @@ import webob.exc
 from xml.dom import minidom
 from xml.parsers import expat
 
-from designate.openstack.common import exception
 from designate.openstack.common.gettextutils import _
 from designate.openstack.common import jsonutils
 from designate.openstack.common import log as logging
 from designate.openstack.common import service
 from designate.openstack.common import sslutils
 from designate.openstack.common import xmlutils
+from designate.openstack.deprecated import exception
 
 socket_opts = [
     cfg.IntOpt('backlog',

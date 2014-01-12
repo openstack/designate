@@ -1,5 +1,3 @@
-# vim: tabstop=4 shiftwidth=4 softtabstop=4
-
 # Copyright 2012 OpenStack Foundation.
 # All Rights Reserved.
 #
@@ -19,14 +17,12 @@
 Network-related utilities and helper functions.
 """
 
-import logging
-
-LOG = logging.getLogger(__name__)
+from designate.openstack.common.py3kcompat import urlutils
 
 
 def parse_host_port(address, default_port=None):
-    """
-    Interpret a string as a host:port pair.
+    """Interpret a string as a host:port pair.
+
     An IPv6 address MUST be escaped if accompanied by a port,
     because otherwise ambiguity ensues: 2001:db8:85a3::8a2e:370:7334
     means both [2001:db8:85a3::8a2e:370:7334] and
@@ -66,3 +62,18 @@ def parse_host_port(address, default_port=None):
             port = default_port
 
     return (host, None if port is None else int(port))
+
+
+def urlsplit(url, scheme='', allow_fragments=True):
+    """Parse a URL using urlparse.urlsplit(), splitting query and fragments.
+    This function papers over Python issue9374 when needed.
+
+    The parameters are the same as urlparse.urlsplit.
+    """
+    scheme, netloc, path, query, fragment = urlutils.urlsplit(
+        url, scheme, allow_fragments)
+    if allow_fragments and '#' in path:
+        path, fragment = path.split('#', 1)
+    if '?' in path:
+        path, query = path.split('?', 1)
+    return urlutils.SplitResult(scheme, netloc, path, query, fragment)

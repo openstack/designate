@@ -1,5 +1,3 @@
-# vim: tabstop=4 shiftwidth=4 softtabstop=4
-
 #    Copyright 2011 OpenStack Foundation
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -26,6 +24,7 @@ import json
 import time
 
 import eventlet
+import six
 
 from designate.openstack.common.rpc import common as rpc_common
 
@@ -57,18 +56,19 @@ class Consumer(object):
         self.topic = topic
         self.proxy = proxy
 
-    def call(self, context, version, method, args, timeout):
+    def call(self, context, version, method, namespace, args, timeout):
         done = eventlet.event.Event()
 
         def _inner():
             ctxt = RpcContext.from_dict(context.to_dict())
             try:
-                rval = self.proxy.dispatch(context, version, method, **args)
+                rval = self.proxy.dispatch(context, version, method,
+                                           namespace, **args)
                 res = []
                 # Caller might have called ctxt.reply() manually
                 for (reply, failure) in ctxt._response:
                     if failure:
-                        raise failure[0], failure[1], failure[2]
+                        six.reraise(failure[0], failure[1], failure[2])
                     res.append(reply)
                 # if ending not 'sent'...we might have more data to
                 # return from the function itself
@@ -121,7 +121,7 @@ class Connection(object):
 
 
 def create_connection(conf, new=True):
-    """Create a connection"""
+    """Create a connection."""
     return Connection()
 
 
@@ -140,13 +140,15 @@ def multicall(conf, context, topic, msg, timeout=None):
         return
     args = msg.get('args', {})
     version = msg.get('version', None)
+    namespace = msg.get('namespace', None)
 
     try:
         consumer = CONSUMERS[topic][0]
     except (KeyError, IndexError):
-        return iter([None])
+        raise rpc_common.Timeout("No consumers available")
     else:
-        return consumer.call(context, version, method, args, timeout)
+        return consumer.call(context, version, method, namespace, args,
+                             timeout)
 
 
 def call(conf, context, topic, msg, timeout=None):
@@ -176,16 +178,17 @@ def cleanup():
 
 
 def fanout_cast(conf, context, topic, msg):
-    """Cast to all consumers of a topic"""
+    """Cast to all consumers of a topic."""
     check_serialize(msg)
     method = msg.get('method')
     if not method:
         return
     args = msg.get('args', {})
     version = msg.get('version', None)
+    namespace = msg.get('namespace', None)
 
     for consumer in CONSUMERS.get(topic, []):
         try:
-            consumer.call(context, version, method, args, None)
+            consumer.call(context, version, method, namespace, args, None)
         except Exception:
             pass

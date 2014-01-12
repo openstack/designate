@@ -61,10 +61,6 @@ class Service(service.Service):
         self._setup_subscriptions()
         self.rpc_conn.consume_in_thread()
 
-    def wait(self):
-        super(Service, self).wait()
-        self.rpc_conn.consumer_thread.wait()
-
     def stop(self):
         # Try to shut the connection down, but if we get any sort of
         # errors, go ahead and ignore them.. as we're shutting down anyway

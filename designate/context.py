@@ -21,17 +21,23 @@ LOG = logging.getLogger(__name__)
 
 
 class DesignateContext(context.RequestContext):
-    def __init__(self, auth_token=None, user=None, tenant=None, is_admin=False,
+    def __init__(self, auth_token=None, user=None, tenant=None, domain=None,
+                 user_domain=None, project_domain=None, is_admin=False,
                  read_only=False, show_deleted=False, request_id=None,
-                 roles=[], service_catalog=None, all_tenants=False):
+                 instance_uuid=None, roles=[], service_catalog=None,
+                 all_tenants=False):
         super(DesignateContext, self).__init__(
             auth_token=auth_token,
             user=user,
             tenant=tenant,
+            domain=domain,
+            user_domain=user_domain,
+            project_domain=project_domain,
             is_admin=is_admin,
             read_only=read_only,
             show_deleted=show_deleted,
-            request_id=request_id)
+            request_id=request_id,
+            instance_uuid=instance_uuid)
 
         self.roles = roles
         self.service_catalog = service_catalog
@@ -43,6 +49,7 @@ class DesignateContext(context.RequestContext):
         # Remove the user and tenant id fields, this map to user and tenant
         d.pop('user_id')
         d.pop('tenant_id')
+        d.pop('user_identity')
 
         return self.from_dict(d)
 
@@ -61,6 +68,9 @@ class DesignateContext(context.RequestContext):
 
     @classmethod
     def from_dict(cls, values):
+        if 'user_identity' in values:
+            values.pop('user_identity')
+
         return cls(**values)
 
     def elevated(self, show_deleted=None):

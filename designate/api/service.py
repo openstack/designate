@@ -15,7 +15,7 @@
 # under the License.
 from paste import deploy
 from designate.openstack.common import log as logging
-from designate.openstack.common import wsgi
+from designate.openstack.deprecated import wsgi
 from oslo.config import cfg
 from designate import exceptions
 from designate import utils
