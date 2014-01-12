@@ -26,8 +26,15 @@ class RecordSetsView(base_view.BaseView):
     _resource_name = 'recordset'
     _collection_name = 'recordsets'
 
-    def detail(self, context, request, recordset):
-        """ Detailed view of a recordset """
+    def _get_base_href(self, parents=None):
+        assert len(parents) == 1
+
+        href = "%s/v2/zones/%s/recordsets" % (self.base_uri, parents[0])
+
+        return href.rstrip('?')
+
+    def basic(self, context, request, recordset):
+        """ Basic view of a recordset """
         return {
             "recordset": {
                 "id": recordset['id'],
@@ -39,7 +46,8 @@ class RecordSetsView(base_view.BaseView):
                 "version": recordset['version'],
                 "created_at": recordset['created_at'],
                 "updated_at": recordset['updated_at'],
-                "links": self._get_resource_links(request, recordset)
+                "links": self._get_resource_links(request, recordset,
+                                                  [recordset['domain_id']])
             }
         }
 

@@ -63,7 +63,8 @@ class RecordsController(rest.RestController):
 
         records = central_api.find_records(context, criterion)
 
-        return self._view.list(context, request, records)
+        return self._view.list(context, request, records,
+                               [zone_id, recordset_id])
 
     @pecan.expose(template='json:', content_type='application/json')
     def post_all(self, zone_id, recordset_id):
@@ -91,7 +92,7 @@ class RecordsController(rest.RestController):
             response.status_int = 201
 
         response.headers['Location'] = self._view._get_resource_href(
-            request, record)
+            request, record, [zone_id, recordset_id])
 
         # Prepare and return the response body
         return self._view.detail(context, request, record)

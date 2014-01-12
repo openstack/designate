@@ -26,8 +26,8 @@ class ZonesView(base_view.BaseView):
     _resource_name = 'zone'
     _collection_name = 'zones'
 
-    def detail(self, context, request, zone):
-        """ Detailed view of a zone """
+    def basic(self, context, request, zone):
+        """ Basic view of a zone """
         # TODO(kiall): pool_id should not be hardcoded.. even temp :)
         return {
             "zone": {
