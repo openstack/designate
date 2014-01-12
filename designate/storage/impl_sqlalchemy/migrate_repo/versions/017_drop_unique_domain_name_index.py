@@ -28,10 +28,7 @@ def upgrade(migrate_engine):
 
     domains_table = Table('domains', meta, autoload=True)
 
-    if not dialect.startswith('sqlite'):
-        constraint = UniqueConstraint('name', name='name', table=domains_table)
-        constraint.drop()
-    else:
+    if dialect.startswith('sqlite'):
         # SQLite can't drop a constraint. Yay. This will be fun..
 
         # Create a new name column without the unique index
@@ -47,6 +44,13 @@ def upgrade(migrate_engine):
 
         # Rename the name_tmp column to name
         domains_table.c.name_tmp.alter(name='name')
+    elif dialect.startswith('postgresql'):
+        constraint = UniqueConstraint('name', name='domains_name_key',
+                                      table=domains_table)
+        constraint.drop()
+    else:
+        constraint = UniqueConstraint('name', name='name', table=domains_table)
+        constraint.drop()
 
 
 def downgrade(migrate_engine):

@@ -42,7 +42,8 @@ recordsets_table = Table(
     Column('tenant_id', String(36), default=None, nullable=True),
     Column('domain_id', UUID, ForeignKey('domains.id'), nullable=False),
     Column('name', String(255), nullable=False),
-    Column('type', Enum(name='record_types', *RECORD_TYPES), nullable=False),
+    Column('type', Enum(name='recordset_types', *RECORD_TYPES),
+           nullable=False),
     Column('ttl', Integer, default=None, nullable=True),
     Column('description', Unicode(160), nullable=True),
 
@@ -88,6 +89,7 @@ def upgrade(migrate_engine):
             func.max(records_table.c.updated_at).label('updated_at')
         ],
         group_by=[
+            records_table.c.tenant_id,
             records_table.c.domain_id,
             records_table.c.name,
             records_table.c.type

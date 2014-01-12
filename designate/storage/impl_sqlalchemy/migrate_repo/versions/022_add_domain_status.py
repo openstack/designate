@@ -28,13 +28,18 @@ def upgrade(migrate_engine):
     records_table = Table('records', meta, autoload=True)
 
     # Add a domain & record creation status for async backends
+    domain_statuses = Enum(name='domain_statuses', metadata=meta,
+                           *RESOURCE_STATUSES)
+    domain_statuses.create()
 
-    domain_status = Column('status', Enum(name='domain_statuses',
-                           *RESOURCE_STATUSES), nullable=False,
+    record_statuses = Enum(name='record_statuses', metadata=meta,
+                           *RESOURCE_STATUSES)
+    record_statuses.create()
+
+    domain_status = Column('status', domain_statuses, nullable=False,
                            server_default='ACTIVE', default='ACTIVE')
 
-    record_status = Column('status', Enum(name='record_statuses',
-                           *RESOURCE_STATUSES), nullable=False,
+    record_status = Column('status', record_statuses, nullable=False,
                            server_default='ACTIVE', default='ACTIVE')
 
     domain_status.create(domains_table, populate_default=True)

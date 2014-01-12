@@ -25,7 +25,7 @@ def upgrade(migrate_engine):
                     'PTR', 'SSHFP']
 
     records_table = Table('records', meta, autoload=True)
-    records_table.c.type.alter(name='type', type=Enum(*RECORD_TYPES))
+    records_table.c.type.alter(type=Enum(name='record_types', *RECORD_TYPES))
 
 
 def downgrade(migrate_engine):
@@ -40,4 +40,4 @@ def downgrade(migrate_engine):
     records_table.filter_by(type='SSHFP').delete()
 
     # Remove SSHFP from the ENUM
-    records_table.c.type.alter(name='type', type=Enum(*RECORD_TYPES))
+    records_table.c.type.alter(type=Enum(name='record_types', *RECORD_TYPES))
