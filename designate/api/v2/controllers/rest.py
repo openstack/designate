@@ -50,7 +50,7 @@ class RestController(pecan.rest.RestController):
             controller = self._find_controller('post_all', 'post')
             if controller:
                 return controller, []
-            pecan.abort(404)
+            pecan.abort(405)
 
         controller = getattr(self, remainder[0], None)
         if controller and not inspect.ismethod(controller):
@@ -61,7 +61,7 @@ class RestController(pecan.rest.RestController):
         if controller:
             return controller, remainder
 
-        pecan.abort(404)
+        pecan.abort(405)
 
     def _handle_patch(self, method, remainder):
         '''
@@ -72,7 +72,7 @@ class RestController(pecan.rest.RestController):
             controller = self._find_controller('patch_all', 'patch')
             if controller:
                 return controller, []
-            pecan.abort(404)
+            pecan.abort(405)
 
         controller = getattr(self, remainder[0], None)
         if controller and not inspect.ismethod(controller):
@@ -83,7 +83,7 @@ class RestController(pecan.rest.RestController):
         if controller:
             return controller, remainder
 
-        pecan.abort(404)
+        pecan.abort(405)
 
     def _handle_put(self, method, remainder):
         '''
@@ -94,7 +94,7 @@ class RestController(pecan.rest.RestController):
             controller = self._find_controller('put_all', 'put')
             if controller:
                 return controller, []
-            pecan.abort(404)
+            pecan.abort(405)
 
         controller = getattr(self, remainder[0], None)
         if controller and not inspect.ismethod(controller):
@@ -105,7 +105,7 @@ class RestController(pecan.rest.RestController):
         if controller:
             return controller, remainder
 
-        pecan.abort(404)
+        pecan.abort(405)
 
     def _handle_delete(self, method, remainder):
         '''
@@ -116,7 +116,7 @@ class RestController(pecan.rest.RestController):
             controller = self._find_controller('delete_all', 'delete')
             if controller:
                 return controller, []
-            pecan.abort(404)
+            pecan.abort(405)
 
         controller = getattr(self, remainder[0], None)
         if controller and not inspect.ismethod(controller):
@@ -127,4 +127,4 @@ class RestController(pecan.rest.RestController):
         if controller:
             return controller, remainder
 
-        pecan.abort(404)
+        pecan.abort(405)
