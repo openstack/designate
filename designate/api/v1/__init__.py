@@ -23,6 +23,7 @@ from werkzeug.routing import ValidationError
 from oslo.config import cfg
 from designate.openstack.common import log as logging
 from designate.openstack.common import uuidutils
+from designate.openstack.common import jsonutils
 from designate import exceptions
 
 LOG = logging.getLogger(__name__)
@@ -54,6 +55,12 @@ class DesignateRequest(flask.Request, wrappers.AcceptMixin,
             raise exceptions.UnsupportedAccept(msg)
 
 
+class JSONEncoder(flask.json.JSONEncoder):
+    @staticmethod
+    def default(o):
+        return jsonutils.to_primitive(o)
+
+
 def factory(global_config, **local_conf):
     if not cfg.CONF['service:api'].enable_api_v1:
         def disabled_app(environ, start_response):
@@ -65,6 +72,7 @@ def factory(global_config, **local_conf):
 
     app = flask.Flask('designate.api.v1')
     app.request_class = DesignateRequest
+    app.json_encoder = JSONEncoder
     app.config.update(
         PROPAGATE_EXCEPTIONS=True
     )
