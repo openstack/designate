@@ -70,6 +70,9 @@ root_helper = sudo
 # Enable Version 2 API (experimental)
 #enable_api_v2 = False
 
+# Show the pecan HTML based debug interface (v2 only)
+#pecan_debug = False
+
 # Enabled API Version 1 extensions
 #enabled_extensions_v1 = diagnostics, quotas, reports, sync, touch
 

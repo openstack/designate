@@ -20,12 +20,16 @@ from designate.openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)
 
+cfg.CONF.register_opts([
+    cfg.BoolOpt('pecan_debug', default=False,
+                help='Pecan HTML Debug Interface'),
+], group='service:api')
+
 
 def setup_app(pecan_config):
     config = dict(pecan_config)
 
-    if cfg.CONF.debug:
-        config['app']['debug'] = True
+    config['app']['debug'] = cfg.CONF['service:api'].pecan_debug
 
     pecan.configuration.set_config(config, overwrite=True)
 
