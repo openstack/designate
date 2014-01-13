@@ -13,9 +13,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import flask
 from oslo.config import cfg
-from designate.openstack.common import jsonutils as json
+
 
 cfg.CONF.register_group(cfg.OptGroup(
     name='service:api', title="Configuration for API Service"
@@ -37,7 +36,3 @@ cfg.CONF.register_opts([
     cfg.BoolOpt('enable-api-v1', default=True),
     cfg.BoolOpt('enable-api-v2', default=False),
 ], group='service:api')
-
-
-# Allows us to serialize datetime's etc
-flask.helpers.json = json
