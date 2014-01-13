@@ -165,8 +165,8 @@ class NoAuthContextMiddlewareTest(ApiTestCase):
 
         self.assertTrue(context.is_admin)
         self.assertIsNone(context.auth_token)
-        self.assertIsNone(context.user_id)
-        self.assertIsNone(context.tenant_id)
+        self.assertEqual('noauth-user', context.user_id)
+        self.assertEqual('noauth-project', context.tenant_id)
         self.assertEqual([], context.roles)
 
 
