@@ -34,6 +34,8 @@ from designate.openstack.common import uuidutils
 from designate.context import DesignateContext
 from designate.tests import resources
 from designate import exceptions
+from designate.network_api import fake as fake_network_api
+from designate import network_api
 
 LOG = logging.getLogger(__name__)
 
@@ -117,6 +119,14 @@ class DatabaseFixture(fixtures.Fixture):
         shutil.copyfile(self.golden_db, self.working_copy)
 
 
+class NetworkAPIFixture(fixtures.Fixture):
+    def setUp(self):
+        super(NetworkAPIFixture, self).setUp()
+        self.api = network_api.get_api(cfg.CONF.network_api)
+        self.fake = fake_network_api
+        self.addCleanup(self.fake.reset_floatingips)
+
+
 class TestCase(test.BaseTestCase):
     quota_fixtures = [{
         'resource': 'domains',
@@ -184,6 +194,11 @@ class TestCase(test.BaseTestCase):
         ]
     }
 
+    ptr_fixtures = [
+        {'ptrdname': 'srv1.example.com.'},
+        {'ptrdname': 'srv1.example.net.'}
+    ]
+
     def setUp(self):
         super(TestCase, self).setUp()
 
@@ -226,12 +241,20 @@ class TestCase(test.BaseTestCase):
             group='storage:sqlalchemy'
         )
 
+        self.config(network_api='fake')
+        self.config(
+            managed_resource_tenant_id='managing_tenant',
+            group='service:central')
+
         self.CONF([], project='designate')
 
         self.notifications = NotifierFixture()
         self.useFixture(self.notifications)
 
         self.useFixture(PolicyFixture())
+
+        self.network_api = NetworkAPIFixture()
+        self.useFixture(self.network_api)
 
         self.admin_context = self.get_admin_context()
 
@@ -313,6 +336,11 @@ class TestCase(test.BaseTestCase):
 
     def get_record_fixture(self, recordset_type, fixture=0, values={}):
         _values = copy.copy(self.record_fixtures[recordset_type][fixture])
+        _values.update(values)
+        return _values
+
+    def get_ptr_fixture(self, fixture=0, values={}):
+        _values = copy.copy(self.ptr_fixtures[fixture])
         _values.update(values)
         return _values
 

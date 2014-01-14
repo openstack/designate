@@ -1,6 +1,6 @@
 # Copyright 2013 Hewlett-Packard Development Company, L.P.
 #
-# Author: Kiall Mac Innes <kiall@hp.com>
+# Author: Endre Karlson <endre.karlson@hp.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -13,21 +13,24 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from designate.api.v2.views import base as base_view
 from designate.openstack.common import log as logging
-from designate.api.v2.controllers import limits
-from designate.api.v2.controllers import reverse
-from designate.api.v2.controllers import schemas
-from designate.api.v2.controllers import zones
+
 
 LOG = logging.getLogger(__name__)
 
 
-class RootController(object):
-    """
-    This is /v2/ Controller. Pecan will find all controllers via the object
-    properties attached to this.
-    """
-    limits = limits.LimitsController()
-    schemas = schemas.SchemasController()
-    reverse = reverse.ReverseController()
-    zones = zones.ZonesController()
+class FloatingIPView(base_view.BaseView):
+    """ Model a FloatingIP PTR record as a python dict """
+    _resource_name = 'floatingip'
+    _collection_name = 'floatingips'
+
+    def _get_base_href(self, parents=None):
+        return '%s/reverse/floatingips' % self.base_uri
+
+    def basic(self, context, request, data):
+        data['id'] = ":".join([data.pop('region'), data.pop('id')])
+        data['links'] = self._get_resource_links(
+            request, data, [data['id']])
+        return {
+            'floatingip': data}

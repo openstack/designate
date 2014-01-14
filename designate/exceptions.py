@@ -46,6 +46,18 @@ class ConfigurationError(Base):
     error_type = 'configuration_error'
 
 
+class CommunicationFailure(Base):
+    error_code = 504
+    error_type = 'communication_failure'
+
+
+class NeutronCommunicationFailure(CommunicationFailure):
+    """
+    Raised in case one of the alledged Neutron endpoints fails.
+    """
+    error_type = 'neutron_communication_failure'
+
+
 class NoServersConfigured(ConfigurationError):
     error_code = 500
     error_type = 'no_servers_configured'
@@ -68,6 +80,11 @@ class InvalidObject(Base):
 class BadRequest(Base):
     error_code = 400
     error_type = 'bad_request'
+
+
+class NetworkEndpointNotFound(BadRequest):
+    error_type = 'no_endpoint'
+    error_code = 403
 
 
 class InvalidOperation(BadRequest):

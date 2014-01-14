@@ -143,10 +143,13 @@ class Record(Base):
     hash = Column(String(32), nullable=False, unique=True)
 
     managed = Column(Boolean, default=False)
+    managed_extra = Column(Unicode(100), default=None, nullable=True)
     managed_plugin_type = Column(Unicode(50), default=None, nullable=True)
     managed_plugin_name = Column(Unicode(50), default=None, nullable=True)
     managed_resource_type = Column(Unicode(50), default=None, nullable=True)
+    managed_resource_region = Column(Unicode(100), default=None, nullable=True)
     managed_resource_id = Column(UUID, default=None, nullable=True)
+    managed_tenant_id = Column(Unicode(36), default=None, nullable=True)
     status = Column(Enum(name='resource_statuses', *RESOURCE_STATUSES),
                     nullable=False, server_default='ACTIVE',
                     default='ACTIVE')

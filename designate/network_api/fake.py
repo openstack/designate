@@ -1,0 +1,80 @@
+# Copyright 2013 Hewlett-Packard Development Company, L.P.
+#
+# Author: Endre Karlson <endre.karlson@hp.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+import uuid
+from designate.openstack.common import log
+from designate.network_api import BaseAPI
+
+
+LOG = log.getLogger(__name__)
+
+POOL = dict([(str(uuid.uuid4()), '192.168.2.%s' % i) for i in xrange(0, 254)])
+ALLOCATIONS = {}
+
+
+def _format_floatingip(id_, address):
+    return {
+        'region': 'RegionOne',
+        'address': address,
+        'id': id_
+    }
+
+
+def allocate_floatingip(tenant_id, floatingip_id=None):
+    """
+    Allocates a floating ip from the pool to the tenant.
+    """
+    ALLOCATIONS.setdefault(tenant_id, {})
+
+    id_ = floatingip_id or POOL.keys()[0]
+
+    ALLOCATIONS[tenant_id][id_] = POOL.pop(id_)
+    values = _format_floatingip(id_, ALLOCATIONS[tenant_id][id_])
+    LOG.debug("Allocated to id_ %s to %s - %s", id_, tenant_id, values)
+    return values
+
+
+def deallocate_floatingip(id_):
+    """
+    Deallocate a floatingip
+    """
+    LOG.debug('De-allocating %s' % id_)
+    for tenant_id, allocated in ALLOCATIONS.items():
+        if id_ in allocated:
+            POOL[id_] = allocated.pop(id_)
+            break
+    else:
+        raise KeyError('No such FloatingIP %s' % id_)
+
+
+def reset_floatingips():
+    LOG.debug('Resetting any allocations.')
+    for tenant_id, allocated in ALLOCATIONS.items():
+        for key, value in allocated.items():
+            POOL[key] = allocated.pop(key)
+
+
+class API(BaseAPI):
+    def list_floatingips(self, context, region=None):
+        if context.is_admin:
+            data = []
+            for tenant_id, allocated in ALLOCATIONS.items():
+                data.extend(allocated.items())
+        else:
+            data = ALLOCATIONS.get(context.tenant_id, {}).items()
+
+        formatted = [_format_floatingip(k, v) for k, v in data]
+        LOG.debug('Returning %i FloatingIPs: %s', len(formatted), formatted)
+        return formatted

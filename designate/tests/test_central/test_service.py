@@ -1398,3 +1398,268 @@ class CentralServiceTest(CentralTestCase):
 
         with testtools.ExpectedException(exceptions.Forbidden):
             self.central_service.count_records(self.get_context())
+
+    def test_get_floatingip_no_record(self):
+        self.create_server()
+
+        context = self.get_context(tenant='a')
+
+        fip = self.network_api.fake.allocate_floatingip(context.tenant_id)
+
+        fip_ptr = self.central_service.get_floatingip(
+            context, fip['region'], fip['id'])
+
+        self.assertEqual(fip['region'], fip_ptr['region'])
+        self.assertEqual(fip['id'], fip_ptr['id'])
+        self.assertEqual(fip['address'], fip_ptr['address'])
+        self.assertEqual(None, fip_ptr['ptrdname'])
+
+    def test_get_floatingip_with_record(self):
+        self.create_server()
+
+        context = self.get_context(tenant='a')
+
+        fixture = self.get_ptr_fixture()
+
+        fip = self.network_api.fake.allocate_floatingip(context.tenant_id)
+
+        expected = self.central_service.update_floatingip(
+            context, fip['region'], fip['id'], fixture)
+
+        actual = self.central_service.get_floatingip(
+            context, fip['region'], fip['id'])
+        self.assertEqual(expected, actual)
+
+        self.assertEqual(expected, actual)
+
+    def test_get_floatingip_not_allocated(self):
+        context = self.get_context(tenant='a')
+
+        fip = self.network_api.fake.allocate_floatingip(context.tenant_id)
+        self.network_api.fake.deallocate_floatingip(fip['id'])
+
+        with testtools.ExpectedException(exceptions.NotFound):
+            self.central_service.get_floatingip(
+                context, fip['region'], fip['id'])
+
+    def test_get_floatingip_deallocated_and_invalidate(self):
+        self.create_server()
+
+        context_a = self.get_context(tenant='a')
+        elevated_a = context_a.elevated()
+        elevated_a.all_tenants = True
+
+        context_b = self.get_context(tenant='b')
+
+        fixture = self.get_ptr_fixture()
+
+        # First allocate and create a FIP as tenant a
+        fip = self.network_api.fake.allocate_floatingip(context_a.tenant_id)
+
+        self.central_service.update_floatingip(
+            context_a, fip['region'], fip['id'], fixture)
+
+        self.network_api.fake.deallocate_floatingip(fip['id'])
+
+        with testtools.ExpectedException(exceptions.NotFound):
+            self.central_service.get_floatingip(
+                context_a, fip['region'], fip['id'])
+
+        # Ensure that the record is still in DB (No invalidation)
+        criterion = {
+            'managed_resource_id': fip['id'],
+            'managed_tenant_id': context_a.tenant_id}
+        self.central_service.find_record(elevated_a, criterion)
+
+        # Now give the fip id to tenant 'b' and see that it get's deleted
+        self.network_api.fake.allocate_floatingip(
+            context_b.tenant_id, fip['id'])
+
+        # There should be a fip returned with ptrdname of None
+        fip_ptr = self.central_service.get_floatingip(
+            context_b, fip['region'], fip['id'])
+        self.assertEqual(None, fip_ptr['ptrdname'])
+
+        # Ensure that the old record for tenant a for the fip now owned by
+        # tenant b is gone
+        with testtools.ExpectedException(exceptions.RecordNotFound):
+            self.central_service.find_record(elevated_a, criterion)
+
+    def test_list_floatingips_no_allocations(self):
+        context = self.get_context(tenant='a')
+
+        fips = self.central_service.list_floatingips(context)
+
+        self.assertEqual(0, len(fips))
+
+    def test_list_floatingips_no_record(self):
+        context = self.get_context(tenant='a')
+
+        fip = self.network_api.fake.allocate_floatingip(context.tenant_id)
+
+        fips = self.central_service.list_floatingips(context)
+
+        self.assertEqual(1, len(fips))
+        self.assertEqual(None, fips[0]['ptrdname'])
+        self.assertEqual(fip['id'], fips[0]['id'])
+        self.assertEqual(fip['region'], fips[0]['region'])
+        self.assertEqual(fip['address'], fips[0]['address'])
+        self.assertEqual(None, fips[0]['description'])
+
+    def test_list_floatingips_with_record(self):
+        self.create_server()
+
+        context = self.get_context(tenant='a')
+
+        fixture = self.get_ptr_fixture()
+
+        fip = self.network_api.fake.allocate_floatingip(context.tenant_id)
+
+        fip_ptr = self.central_service.update_floatingip(
+            context, fip['region'], fip['id'], fixture)
+
+        fips = self.central_service.list_floatingips(context)
+
+        self.assertEqual(1, len(fips))
+        self.assertEqual(fip_ptr['ptrdname'], fips[0]['ptrdname'])
+        self.assertEqual(fip_ptr['id'], fips[0]['id'])
+        self.assertEqual(fip_ptr['region'], fips[0]['region'])
+        self.assertEqual(fip_ptr['address'], fips[0]['address'])
+        self.assertEqual(fip_ptr['description'], fips[0]['description'])
+
+    def test_list_floatingips_deallocated_and_invalidate(self):
+        self.create_server()
+
+        context_a = self.get_context(tenant='a')
+        elevated_a = context_a.elevated()
+        elevated_a.all_tenants = True
+
+        context_b = self.get_context(tenant='b')
+
+        fixture = self.get_ptr_fixture()
+
+        # First allocate and create a FIP as tenant a
+        fip = self.network_api.fake.allocate_floatingip(context_a.tenant_id)
+
+        self.central_service.update_floatingip(
+            context_a, fip['region'], fip['id'], fixture)
+
+        self.network_api.fake.deallocate_floatingip(fip['id'])
+
+        fips = self.central_service.list_floatingips(context_a)
+        self.assertEqual([], fips)
+
+        # Ensure that the record is still in DB (No invalidation)
+        criterion = {
+            'managed_resource_id': fip['id'],
+            'managed_tenant_id': context_a.tenant_id}
+        self.central_service.find_record(elevated_a, criterion)
+
+        # Now give the fip id to tenant 'b' and see that it get's deleted
+        self.network_api.fake.allocate_floatingip(
+            context_b.tenant_id, fip['id'])
+
+        # There should be a fip returned with ptrdname of None
+        fips = self.central_service.list_floatingips(context_b)
+        self.assertEqual(1, len(fips))
+        self.assertEqual(None, fips[0]['ptrdname'])
+
+        # Ensure that the old record for tenant a for the fip now owned by
+        # tenant b is gone
+        with testtools.ExpectedException(exceptions.RecordNotFound):
+            self.central_service.find_record(elevated_a, criterion)
+
+    def test_set_floatingip(self):
+        self.create_server()
+
+        context = self.get_context(tenant='a')
+
+        fixture = self.get_ptr_fixture()
+
+        fip = self.network_api.fake.allocate_floatingip(context.tenant_id)
+
+        fip_ptr = self.central_service.update_floatingip(
+            context, fip['region'], fip['id'], fixture)
+
+        self.assertEqual(fixture['ptrdname'], fip_ptr['ptrdname'])
+        self.assertEqual(fip['address'], fip_ptr['address'])
+        self.assertEqual(None, fip_ptr['description'])
+        self.assertIsNotNone(fip_ptr['ttl'])
+
+    def test_set_floatingip_removes_old_rrset_and_record(self):
+        self.create_server()
+
+        context_a = self.get_context(tenant='a')
+        elevated_a = context_a.elevated()
+        elevated_a.all_tenants = True
+
+        context_b = self.get_context(tenant='b')
+
+        fixture = self.get_ptr_fixture()
+
+        # Test that re-setting as tenant a an already set floatingip leaves
+        # only 1 record
+        fip = self.network_api.fake.allocate_floatingip(context_a.tenant_id)
+
+        self.central_service.update_floatingip(
+            context_a, fip['region'], fip['id'], fixture)
+
+        fixture2 = self.get_ptr_fixture(fixture=1)
+        self.central_service.update_floatingip(
+            context_a, fip['region'], fip['id'], fixture2)
+
+        count = self.central_service.count_records(
+            elevated_a, {'managed_resource_id': fip['id']})
+
+        self.assertEqual(1, count)
+
+        self.network_api.fake.deallocate_floatingip(fip['id'])
+
+        # Now test that tenant b allocating the same fip and setting a ptr
+        # deletes any records
+        fip = self.network_api.fake.allocate_floatingip(
+            context_b.tenant_id, fip['id'])
+
+        self.central_service.update_floatingip(
+            context_b, fip['region'], fip['id'], fixture)
+
+        count = self.central_service.count_records(
+            elevated_a, {'managed_resource_id': fip['id']})
+
+        self.assertEqual(1, count)
+
+    def test_set_floatingip_not_allocated(self):
+        context = self.get_context(tenant='a')
+        fixture = self.get_ptr_fixture()
+
+        fip = self.network_api.fake.allocate_floatingip(context.tenant_id)
+        self.network_api.fake.deallocate_floatingip(fip['id'])
+
+        # If one attempts to assign a de-allocated FIP or not-owned it should
+        # fail with BadRequest
+        with testtools.ExpectedException(exceptions.NotFound):
+            fixture = self.central_service.update_floatingip(
+                context, fip['region'], fip['id'], fixture)
+
+    def test_unset_floatingip(self):
+        self.create_server()
+
+        context = self.get_context(tenant='a')
+
+        fixture = self.get_ptr_fixture()
+
+        fip = self.network_api.fake.allocate_floatingip(context.tenant_id)
+
+        fip_ptr = self.central_service.update_floatingip(
+            context, fip['region'], fip['id'], fixture)
+
+        self.assertEqual(fixture['ptrdname'], fip_ptr['ptrdname'])
+        self.assertEqual(fip['address'], fip_ptr['address'])
+        self.assertEqual(None, fip_ptr['description'])
+        self.assertIsNotNone(fip_ptr['ttl'])
+
+        self.central_service.update_floatingip(
+            context, fip['region'], fip['id'], {'ptrdname': None})
+
+        self.central_service.get_floatingip(
+            context, fip['region'], fip['id'])
