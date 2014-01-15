@@ -13,25 +13,27 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
-import pecan
-from designate.central import rpcapi as central_rpcapi
+from designate.api.v2.views import base as base_view
 from designate.openstack.common import log as logging
-from designate.api.v2.controllers import rest
-from designate.api.v2.views import limits as limits_view
+
 
 LOG = logging.getLogger(__name__)
-central_api = central_rpcapi.CentralAPI()
 
 
-class LimitsController(rest.RestController):
-    _view = limits_view.LimitsView()
+class LimitsView(base_view.BaseView):
+    """ Model a Limits API response as a python dictionary """
 
-    @pecan.expose(template='json:', content_type='application/json')
-    def get_all(self):
-        request = pecan.request
-        context = pecan.request.environ['context']
+    _resource_name = 'limit'
+    _collection_name = 'limits'
 
-        absolute_limits = central_api.get_absolute_limits(context)
+    def basic(self, context, request, absolute_limits):
+        """ Basic view of the limits """
 
-        return self._view.basic(context, request, absolute_limits)
+        return {
+            "limits": {
+                "absolute": {
+                    "maxZones": absolute_limits['domains'],
+                    "maxZoneRecords": absolute_limits['domain_records']
+                }
+            }
+        }
