@@ -26,25 +26,23 @@ class ZonesView(base_view.BaseView):
     _resource_name = 'zone'
     _collection_name = 'zones'
 
-    def basic(self, context, request, zone):
+    def show_basic(self, context, request, zone):
         """ Basic view of a zone """
         # TODO(kiall): pool_id should not be hardcoded.. even temp :)
         return {
-            "zone": {
-                "id": zone['id'],
-                "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2",
-                "project_id": zone['tenant_id'],
-                "name": zone['name'],
-                "email": zone['email'],
-                "description": zone['description'],
-                "ttl": zone['ttl'],
-                "serial": zone['serial'],
-                "status": zone['status'],
-                "version": zone['version'],
-                "created_at": zone['created_at'],
-                "updated_at": zone['updated_at'],
-                "links": self._get_resource_links(request, zone)
-            }
+            "id": zone['id'],
+            "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2",
+            "project_id": zone['tenant_id'],
+            "name": zone['name'],
+            "email": zone['email'],
+            "description": zone['description'],
+            "ttl": zone['ttl'],
+            "serial": zone['serial'],
+            "status": zone['status'],
+            "version": zone['version'],
+            "created_at": zone['created_at'],
+            "updated_at": zone['updated_at'],
+            "links": self._get_resource_links(request, zone)
         }
 
     def load(self, context, request, body):

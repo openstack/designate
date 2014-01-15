@@ -61,7 +61,7 @@ class ZonesController(rest.RestController):
         """ 'Normal' zone get """
         zone = central_api.get_domain(context, zone_id)
 
-        return self._view.detail(context, request, zone)
+        return self._view.show(context, request, zone)
 
     def _get_zonefile(self, request, context, zone_id):
         """ Export zonefile """
@@ -153,7 +153,7 @@ class ZonesController(rest.RestController):
                                                                      zone)
 
         # Prepare and return the response body
-        return self._view.detail(context, request, zone)
+        return self._view.show(context, request, zone)
 
     def _post_zonefile(self, request, response, context):
         """ Import Zone """
@@ -174,7 +174,7 @@ class ZonesController(rest.RestController):
 
         response.headers['Location'] = self._view._get_resource_href(request,
                                                                      zone)
-        return self._view.detail(context, request, zone)
+        return self._view.show(context, request, zone)
 
     @pecan.expose(template='json:', content_type='application/json')
     @pecan.expose(template='json:', content_type='application/json-patch+json')
@@ -192,7 +192,7 @@ class ZonesController(rest.RestController):
         zone = central_api.get_domain(context, zone_id)
 
         # Convert to APIv2 Format
-        zone = self._view.detail(context, request, zone)
+        zone = self._view.show(context, request, zone)
 
         if request.content_type == 'application/json-patch+json':
             # Possible pattern:
@@ -222,7 +222,7 @@ class ZonesController(rest.RestController):
         else:
             response.status_int = 200
 
-        return self._view.detail(context, request, zone)
+        return self._view.show(context, request, zone)
 
     @pecan.expose(template=None, content_type='application/json')
     def delete_one(self, zone_id):

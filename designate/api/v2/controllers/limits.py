@@ -34,4 +34,4 @@ class LimitsController(rest.RestController):
 
         absolute_limits = central_api.get_absolute_limits(context)
 
-        return self._view.basic(context, request, absolute_limits)
+        return self._view.show(context, request, absolute_limits)

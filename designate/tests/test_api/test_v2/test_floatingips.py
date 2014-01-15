@@ -108,8 +108,7 @@ class ApiV2ReverseFloatingIPTest(ApiV2TestCase):
         self.assertIn('links', response.json)
         self.assertEqual(1, len(response.json['floatingips']))
 
-        #TODO(ekarlso): Remove the floatingip key - bug in v2 api
-        fip_record = response.json['floatingips'][0]['floatingip']
+        fip_record = response.json['floatingips'][0]
         self.assertEqual(None, fip_record['ptrdname'])
         self.assertEqual(":".join([fip['region'], fip['id']]),
                          fip_record['id'])
@@ -136,8 +135,7 @@ class ApiV2ReverseFloatingIPTest(ApiV2TestCase):
         self.assertIn('links', response.json)
         self.assertEqual(1, len(response.json['floatingips']))
 
-        #TODO(ekarlso): Remove the floatingip key - bug in v2 api
-        fip_record = response.json['floatingips'][0]['floatingip']
+        fip_record = response.json['floatingips'][0]
         self.assertEqual(fixture['ptrdname'], fip_record['ptrdname'])
         self.assertEqual(":".join([fip['region'], fip['id']]),
                          fip_record['id'])

@@ -55,21 +55,34 @@ class BaseView(object):
 
         return result
 
-    def list_detail(self, context, request, items):
-        """ Detailed list of items """
-        return [self.detail(context, request, i) for i in items]
-
     def list_basic(self, context, request, items):
         """ Non-detailed list of items """
-        return [self.basic(context, request, i) for i in items]
+        return [self.show_basic(context, request, i) for i in items]
 
-    def basic(self, context, request, item):
+    def list_detail(self, context, request, items):
+        """ Detailed list of items """
+        return [self.show_detail(context, request, i) for i in items]
+
+    def show(self, context, request, item):
+        """ Show a single item """
+        result = {}
+
+        if 'detail' in request.GET and request.GET['detail'] == 'yes':
+            result[self._resource_name] = self.show_detail(context, request,
+                                                           item)
+        else:
+            result[self._resource_name] = self.show_basic(context, request,
+                                                          item)
+
+        return result
+
+    def show_basic(self, context, request, item):
         """ Non-detailed view of a item """
         raise NotImplementedError()
 
-    def detail(self, context, request, item):
+    def show_detail(self, context, request, item):
         """ Detailed view of a item """
-        return self.basic(context, request, item)
+        return self.show_basic(context, request, item)
 
     def _get_resource_links(self, request, item, parents=None):
         return {

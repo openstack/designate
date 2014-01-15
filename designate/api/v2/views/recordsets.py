@@ -33,22 +33,20 @@ class RecordSetsView(base_view.BaseView):
 
         return href.rstrip('?')
 
-    def basic(self, context, request, recordset):
+    def show_basic(self, context, request, recordset):
         """ Basic view of a recordset """
         return {
-            "recordset": {
-                "id": recordset['id'],
-                "zone_id": recordset['domain_id'],
-                "name": recordset['name'],
-                "type": recordset['type'],
-                "ttl": recordset['ttl'],
-                "description": recordset['description'],
-                "version": recordset['version'],
-                "created_at": recordset['created_at'],
-                "updated_at": recordset['updated_at'],
-                "links": self._get_resource_links(request, recordset,
-                                                  [recordset['domain_id']])
-            }
+            "id": recordset['id'],
+            "zone_id": recordset['domain_id'],
+            "name": recordset['name'],
+            "type": recordset['type'],
+            "ttl": recordset['ttl'],
+            "description": recordset['description'],
+            "version": recordset['version'],
+            "created_at": recordset['created_at'],
+            "updated_at": recordset['updated_at'],
+            "links": self._get_resource_links(request, recordset,
+                                              [recordset['domain_id']])
         }
 
     def load(self, context, request, body):

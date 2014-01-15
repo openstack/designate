@@ -35,21 +35,19 @@ class RecordsView(base_view.BaseView):
 
         return href.rstrip('?')
 
-    def basic(self, context, request, record):
+    def show_basic(self, context, request, record):
         """ Basic view of a record """
         return {
-            "record": {
-                "id": record['id'],
-                "recordset_id": record['recordset_id'],
-                "data": record['data'],
-                "description": record['description'],
-                "version": record['version'],
-                "created_at": record['created_at'],
-                "updated_at": record['updated_at'],
-                "links": self._get_resource_links(
-                    request, record,
-                    [record['domain_id'], record['recordset_id']])
-            }
+            "id": record['id'],
+            "recordset_id": record['recordset_id'],
+            "data": record['data'],
+            "description": record['description'],
+            "version": record['version'],
+            "created_at": record['created_at'],
+            "updated_at": record['updated_at'],
+            "links": self._get_resource_links(
+                request, record,
+                [record['domain_id'], record['recordset_id']])
         }
 
     def load(self, context, request, body):

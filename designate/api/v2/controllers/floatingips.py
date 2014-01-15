@@ -73,7 +73,7 @@ class FloatingIPController(rest.RestController):
             context, region, id_, body['floatingip'])
 
         if fip:
-            return self._view.basic(context, request, fip)
+            return self._view.show(context, request, fip)
 
     @pecan.expose(template='json:', content_type='application/json')
     def get_one(self, fip_key):
@@ -87,4 +87,4 @@ class FloatingIPController(rest.RestController):
 
         fip = central_api.get_floatingip(context, region, id_)
 
-        return self._view.basic(context, request, fip)
+        return self._view.show(context, request, fip)

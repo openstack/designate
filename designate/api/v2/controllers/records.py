@@ -41,7 +41,7 @@ class RecordsController(rest.RestController):
         record = central_api.get_record(context, zone_id, recordset_id,
                                         record_id)
 
-        return self._view.detail(context, request, record)
+        return self._view.show(context, request, record)
 
     @pecan.expose(template='json:', content_type='application/json')
     def get_all(self, zone_id, recordset_id, **params):
@@ -95,7 +95,7 @@ class RecordsController(rest.RestController):
             request, record, [zone_id, recordset_id])
 
         # Prepare and return the response body
-        return self._view.detail(context, request, record)
+        return self._view.show(context, request, record)
 
     @pecan.expose(template='json:', content_type='application/json')
     @pecan.expose(template='json:', content_type='application/json-patch+json')
@@ -114,7 +114,7 @@ class RecordsController(rest.RestController):
                                         record_id)
 
         # Convert to APIv2 Format
-        record = self._view.detail(context, request, record)
+        record = self._view.show(context, request, record)
 
         if request.content_type == 'application/json-patch+json':
             raise NotImplemented('json-patch not implemented')
@@ -133,7 +133,7 @@ class RecordsController(rest.RestController):
         else:
             response.status_int = 200
 
-        return self._view.detail(context, request, record)
+        return self._view.show(context, request, record)
 
     @pecan.expose(template=None, content_type='application/json')
     def delete_one(self, zone_id, recordset_id, record_id):
