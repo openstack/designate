@@ -13,6 +13,7 @@ PasteDeploy>=1.5.0
 pbr>=0.5.21,<1.0
 pecan>=0.2.0
 python-keystoneclient>=0.3.2
+python-neutronclient>=2.3.0,<3
 Routes>=1.12.3
 six>=1.4.1
 SQLAlchemy>=0.7.8,<=0.7.99

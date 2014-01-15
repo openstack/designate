@@ -22,6 +22,9 @@ debug = False
 # Change to "sudo" to skip the filtering and just run the comand directly
 root_helper = sudo
 
+# Which networking API to use, Defaults to neutron
+# network_api = neutron
+
 ########################
 ## Service Configuration
 ########################
@@ -50,6 +53,15 @@ root_helper = sudo
 
 # Maximum record name length
 #max_record_name_len = 255
+
+
+## Managed resources settings
+
+# Email to use for managed resources like domains created by the FloatingIP API
+# managed_resource_email = root@example.io.
+
+# Tenant ID to own all managed resources - like auto-created records etc.
+# managed_resource_tenant_id = 123456
 
 #-----------------------
 # API Service
@@ -101,6 +113,21 @@ root_helper = sudo
 # List of notification handlers to enable, configuration of these needs to
 # correspond to a [handler:my_driver] section below or else in the config
 #enabled_notification_handlers = nova_fixed
+
+##############
+## Network API
+##############
+[network_api:neutron]
+# endpoints = RegionOne|http://localhost:9696
+# endpoint_type = publicURL
+# timeout = 30
+# admin_username = designate
+# admin_password = designate
+# admin_tenant_name = designate
+# auth_url = http://localhost:35357/v2.0
+# insecure = False
+# auth_strategy = keystone
+# ca_certificates_file = /etc/path/to/ca.pem
 
 ########################
 ## Storage Configuration

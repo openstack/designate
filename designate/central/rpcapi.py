@@ -33,7 +33,7 @@ class CentralAPI(rpc_proxy.RpcProxy):
         2.0 - Renamed most get_resources to find_resources
         2.1 - Add quota methods
         3.0 - RecordSet Changes
-
+        3.1 - Add floating ip ptr methods
     """
     def __init__(self, topic=None):
         topic = topic if topic else cfg.CONF.central_topic
@@ -352,4 +352,18 @@ class CentralAPI(rpc_proxy.RpcProxy):
                             recordset_id=recordset_id,
                             record_id=record_id)
 
+        return self.call(context, msg)
+
+    def list_floatingips(self, context):
+        msg = self.make_msg('list_floatingips')
+        return self.call(context, msg, version="3.1")
+
+    def get_floatingip(self, context, region, floatingip_id):
+        msg = self.make_msg('get_floatingip', region=region,
+                            floatingip_id=floatingip_id)
+        return self.call(context, msg, version="3.1")
+
+    def update_floatingip(self, context, region, floatingip_id, values):
+        msg = self.make_msg('update_floatingip', region=region,
+                            floatingip_id=floatingip_id, values=values)
         return self.call(context, msg)

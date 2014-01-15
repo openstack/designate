@@ -32,6 +32,7 @@ also be found on the `OpenStack wiki`_.
    production-architecture
    glossary
    backends
+   integrations
 
 
 Indices and tables

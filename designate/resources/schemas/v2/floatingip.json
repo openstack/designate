@@ -1,0 +1,54 @@
+{
+    "$schema": "http://json-schema.org/draft-04/hyper-schema",
+
+    "id": "floatingip",
+
+    "title": "floatingip",
+    "description": "Floating IP PTR",
+    "additionalProperties": false,
+
+    "required": ["floatingip"],
+
+    "properties": {
+        "floatingip": {
+            "type": "object",
+            "additionalProperties": false,
+
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Floating IP PTR identifier",
+                    "pattern": "^[A-Za-z0-9\\.\\-_]{1,100}:([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}$",
+                    "readOnly": true
+                },
+                "ptrdname": {
+                    "type": ["string", "null"],
+                    "format": "hostname",
+                    "required:": true
+                },
+                "description": {
+                    "type": ["string", "null"],
+                    "description": "Description for the PTR",
+                    "maxLength": 160
+                },
+                "ttl": {
+                    "type": "integer",
+                    "description": "Default time to live",
+                    "min": 0,
+                    "max": 2147483647
+                },
+                    "links": {
+                    "type": "object",
+                    "additionalProperties": false,
+
+                    "properties": {
+                        "self": {
+                            "type": "string",
+                            "format": "url"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

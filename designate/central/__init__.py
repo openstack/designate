@@ -41,4 +41,8 @@ cfg.CONF.register_opts([
     cfg.IntOpt('max_recordset_name_len', default=255,
                help="Maximum recordset name length",
                deprecated_name='max_record_name_len'),
+    cfg.StrOpt('managed_resource_email', default='email@example.io',
+               help='E-Mail for Managed resources'),
+    cfg.StrOpt('managed_resource_tenant_id',
+               help="The Tenant ID that will own any managed resources.")
 ], group='service:central')
