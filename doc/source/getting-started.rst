@@ -25,7 +25,9 @@ This guide will walk you through setting up a development environment for Design
 backend, where possible the simplest options have been chosen for you.  For a more complete discussion on
 installation & configuration options, please see :doc:`architecture` and :doc:`production-architecture`.
 
-For this guide you will need access to an Ubuntu Server (12.04).
+For this guide you will need access to an Ubuntu Server (12.04).  Other platforms:
+
+- `Fedora 19 Notes`_
 
 .. _Development Environment:
 
@@ -194,3 +196,60 @@ A couple of notes on the API:
 - Before Domains are created, you must create a server.
 - On GET requests for domains, servers, records, etc be sure not to append a ‘/’ to the end of the request. For example …:9001/v1/servers/
 
+Fedora 19 Notes
+===============
+
+Most of the above instructions under `Installing Designate`_ should work.  There are a few differences when working with Fedora 19:
+
+The basic Fedora packages are **python-pip python-virtualenv python-pbr rabbitmq-server**
+
+::
+
+   $ yum install python-pip python-virtualenv python-pbr rabbitmq-server
+
+Use **/var/lib/designate** as the root path for databases and other variable state files, not /root/designate
+
+::
+
+   $ mkdir -p /var/lib/designate
+
+The PowerDNS Fedora packages are **pdns pdns-backend-sqlite**
+
+::
+
+   $ yum install pdns pdns-backend-sqlite
+
+Fedora 19 does not use /etc/powerdns/pdns.d.  Instead, edit **/etc/pdns/pdns.conf** - change the launch option, and add a gsqlite3-database option
+
+::
+
+   ...
+   setuid=pdns
+   setgid=pdns
+   launch=gsqlite3
+   gsqlite3-database=/var/lib/designate/pdns.sqlite
+   ...
+
+Fedora uses **systemctl**, not service
+
+::
+
+   $ systemctl [start|restart|stop|status] pdns.service
+   $ systemctl [start|restart|stop|status] rabbitmq-server.service
+
+The rabbitmq service must be running before doing
+
+::
+
+   $ rabbitmqctl change_password guest guest
+
+RabbitMQ may fail to start due to SELinux.  Use *journalctl -xn|cat* to find the error.  You will likely have to do something like this until it is added to the SELinux base policy
+
+::
+
+   $ yum install /usr/bin/checkpolicy
+   $ grep beam /var/log/audit/audit.log|audit2allow -M mypol
+   $ semodule -i mypol.pp
+   $ systemctl start rabbitmq-server.service
+
+The rabbitmq log files are in **/var/log/rabbitmq**
