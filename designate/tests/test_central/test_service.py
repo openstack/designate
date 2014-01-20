@@ -111,6 +111,30 @@ class CentralServiceTest(CentralTestCase):
                                                     'www.example.org.')
         self.assertTrue(result)
 
+    def test_is_valid_recordset_placement_subdomain(self):
+        context = self.get_context()
+
+        # Create a domain (using the specified domain name)
+        domain = self.create_domain(name='example.org.')
+        sub_domain = self.create_domain(name='sub.example.org.')
+
+        def _fail(domain_, name):
+            with testtools.ExpectedException(
+                    exceptions.InvalidRecordSetLocation):
+                self.central_service._is_valid_recordset_placement_subdomain(
+                    context, domain_, name)
+
+        def _ok(domain_, name):
+            self.central_service._is_valid_recordset_placement_subdomain(
+                context, domain_, name)
+
+        _fail(domain, 'record.sub.example.org.')
+        _fail(domain, 'sub.example.org.')
+        _ok(domain, 'example.org.')
+        _ok(domain, 'record.example.org.')
+
+        _ok(sub_domain, 'record.example.org.')
+
     # Server Tests
     def test_create_server(self):
         values = dict(

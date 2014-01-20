@@ -157,6 +157,37 @@ class Service(rpc_service.Service):
 
         return True
 
+    def _is_valid_recordset_placement_subdomain(self, context, domain,
+                                                recordset_name,
+                                                criterion=None):
+        """
+        Check that the placement of the requested rrset belongs to any of the
+        domains subdomains..
+        """
+        LOG.debug("Checking if %s belongs in any of %s subdomains",
+                  recordset_name, domain['name'])
+
+        criterion = criterion or {}
+
+        context = context.elevated()
+        context.all_tenants = True
+
+        if domain['name'] == recordset_name:
+            return
+
+        child_domains = self.storage_api.find_domains(
+            context, {"parent_domain_id": domain['id']})
+        for child_domain in child_domains:
+            try:
+                self._is_valid_recordset_name(
+                    context, child_domain, recordset_name)
+            except Exception:
+                continue
+            else:
+                msg = 'RecordSet belongs in a child zone: %s' % \
+                    child_domain['name']
+                raise exceptions.InvalidRecordSetLocation(msg)
+
     def _is_blacklisted_domain_name(self, context, domain_name):
         """
         Ensures the provided domain_name is not blacklisted.
@@ -188,29 +219,6 @@ class Service(rpc_service.Service):
                 i += 1
             else:
                 return domain
-
-        return False
-
-    def _is_subrecord(self, context, domain, record_name, criterion):
-        # # Break the names up into their component labels
-        # domain_labels = domain['name'].split(".")
-        # record_labels = record_name.split(".")
-
-        # i = 1
-        # j = len(record_labels) - len(domain_labels)
-
-#       criterion['domain_id'] = domain['id']
-#
-#       # Starting with label #2, search for matching records's in the database
-#       while (i <= j):
-#           criterion['name'] = '.'.join(record_labels[i:])
-#
-#           records = self.storage_api.find_records(context, criterion)
-
-        #     if len(records) == 0:
-        #         i += 1
-        #     else:
-        #         return records
 
         return False
 
@@ -603,6 +611,8 @@ class Service(rpc_service.Service):
         self._is_valid_recordset_name(context, domain, values['name'])
         self._is_valid_recordset_placement(context, domain, values['name'],
                                            values['type'])
+        self._is_valid_recordset_placement_subdomain(
+            context, domain, values['name'])
 
         with self.storage_api.create_recordset(
                 context, domain_id, values) as recordset:
@@ -672,6 +682,8 @@ class Service(rpc_service.Service):
         self._is_valid_recordset_name(context, domain, recordset_name)
         self._is_valid_recordset_placement(context, domain, recordset_name,
                                            recordset_type, recordset_id)
+        self._is_valid_recordset_placement_subdomain(
+            context, domain, recordset_name)
 
         # Update the recordset
         with self.storage_api.update_recordset(
