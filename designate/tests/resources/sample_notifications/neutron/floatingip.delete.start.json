@@ -1,0 +1,27 @@
+{
+  "_context_roles": [
+    "Member",
+    "anotherrole"
+  ],
+  "_context_request_id": "req-e905e3d8-7c3b-4d0b-a5aa-7c0f14b0b9df",
+  "_context_read_deleted": "no",
+  "event_type": "floatingip.delete.start",
+  "_context_user_name": "demo",
+  "_context_project_name": "demo",
+  "timestamp": "2014-01-17 11:30:41.456481",
+  "_context_tenant_name": "demo",
+  "_context_tenant": "c97027dd880d4c129ae7a4ba7edade05",
+  "message_id": "9d30a752-5121-4cf0-bce4-86c2260dbbbc",
+  "_unique_id": "8eca7bd4402c44449123f0b20eda2c2d",
+  "_context_is_admin": false,
+  "_context_timestamp": "2014-01-17 11:30:41.452922",
+  "_context_project_id": "c97027dd880d4c129ae7a4ba7edade05",
+  "_context_tenant_id": "c97027dd880d4c129ae7a4ba7edade05",
+  "_context_user": "5e0e5ccd874044ff9f5eb9017bf9be5e",
+  "_context_user_id": "5e0e5ccd874044ff9f5eb9017bf9be5e",
+  "publisher_id": "network.i-00000cac",
+  "payload": {
+    "floatingip_id": "f38ff2b6-cd4d-433e-8a9c-9e00dfc05b1e"
+  },
+  "priority": "INFO"
+}

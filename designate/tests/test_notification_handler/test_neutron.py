@@ -85,3 +85,31 @@ class NeutronFloatingHandlerTest(TestCase, NotificationHandlerMixin):
                                                     criterion)
 
         self.assertEqual(0, len(records))
+
+    def test_floatingip_delete(self):
+        start_event_type = 'floatingip.update.end'
+        start_fixture = self.get_notification_fixture(
+            'neutron', start_event_type + '_associate')
+        self.plugin.process_notification(start_event_type,
+                                         start_fixture['payload'])
+
+        event_type = 'floatingip.delete.start'
+        fixture = self.get_notification_fixture(
+            'neutron', event_type)
+
+        self.assertIn(event_type, self.plugin.get_event_types())
+
+        criterion = {'domain_id': self.domain_id}
+
+        # Ensure we start with at least 1 record
+        records = self.central_service.find_records(self.admin_context,
+                                                    criterion)
+        self.assertEqual(1, len(records))
+
+        self.plugin.process_notification(event_type, fixture['payload'])
+
+        # Ensure we now have exactly 0 records
+        records = self.central_service.find_records(self.admin_context,
+                                                    criterion)
+
+        self.assertEqual(0, len(records))

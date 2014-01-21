@@ -47,6 +47,7 @@ class NeutronFloatingHandler(BaseAddressHandler):
     def get_event_types(self):
         return [
             'floatingip.update.end',
+            'floatingip.delete.start'
         ]
 
     def process_notification(self, event_type, payload):
@@ -56,16 +57,21 @@ class NeutronFloatingHandler(BaseAddressHandler):
         # FIXME: Neutron doesn't send ipv in the payload, should maybe
         # determine this?
         if event_type not in self.get_event_types():
-            raise ValueError('NovaFixedHandler recieved an invalid event type')
+            msg = '%s recieved an invalid event type %s' % (
+                self, event_type)
+            raise ValueError(msg)
 
-        floating = payload['floatingip']
-
-        if floating['fixed_ip_address']:
-            address = {
-                'version': 4,
-                'address': floating['floating_ip_address']}
-            self._create([address], payload, resource_id=floating['id'],
+        if event_type.startswith('floatingip.delete'):
+            self._delete(resource_id=payload['floatingip_id'],
                          resource_type='floatingip')
-        elif not floating['fixed_ip_address']:
-            self._delete(resource_id=payload['floatingip']['id'],
-                         resource_type='floatingip')
+        elif event_type.startswith('floatingip.update'):
+            if payload['floatingip']['fixed_ip_address']:
+                address = {
+                    'version': 4,
+                    'address': payload['floatingip']['floating_ip_address']}
+                self._create([address], payload,
+                             resource_id=payload['floatingip']['id'],
+                             resource_type='floatingip')
+            elif not payload['floatingip']['fixed_ip_address']:
+                self._delete(resource_id=payload['floatingip']['id'],
+                             resource_type='floatingip')
