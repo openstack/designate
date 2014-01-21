@@ -17,7 +17,6 @@
 import re
 import contextlib
 from oslo.config import cfg
-from designate.central import effectivetld
 from designate.openstack.common import log as logging
 from designate.openstack.common.rpc import service as rpc_service
 from designate.openstack.common.notifier import proxy as notifier
@@ -46,7 +45,7 @@ def wrap_backend_call():
 
 
 class Service(rpc_service.Service):
-    RPC_API_VERSION = '3.1'
+    RPC_API_VERSION = '3.2'
 
     def __init__(self, *args, **kwargs):
         backend_driver = cfg.CONF['service:central'].backend_driver
@@ -68,11 +67,19 @@ class Service(rpc_service.Service):
 
         # Get a quota manager instance
         self.quota = quota.get_quota()
-        self.effective_tld = effectivetld.EffectiveTld()
 
         self.network_api = network_api.get_api(cfg.CONF.network_api)
 
     def start(self):
+        # Check to see if there are any TLDs in the database
+        tlds = self.storage_api.find_tlds({})
+        if tlds:
+            self.check_for_tlds = True
+            LOG.info("Checking for TLDs")
+        else:
+            self.check_for_tlds = False
+            LOG.info("NOT checking for TLDs")
+
         self.backend.start()
 
         super(Service, self).start()
@@ -94,21 +101,25 @@ class Service(rpc_service.Service):
         if len(domain_labels) <= 1:
             raise exceptions.InvalidDomainName('More than one label is '
                                                'required')
-        # Check the TLD for validity
-        # We cannot use the effective TLD list as the publicsuffix.org list is
-        # missing some top level entries.  At the time of coding, the following
-        # entries were missing
-        # arpa, au, bv, gb, gn, kp, lb, lr, sj, tp, tz, xn--80ao21a, xn--l1acc
-        # xn--mgbx4cd0ab
-        if self.effective_tld.accepted_tld_list:
-            domain_tld = domain_labels[-1].lower()
-            if domain_tld not in self.effective_tld.accepted_tld_list:
-                raise exceptions.InvalidTLD('Unknown or invalid TLD')
 
-        # Check if the domain_name is the same as an effective TLD.
-        if self.effective_tld.is_effective_tld(domain_name):
-            raise exceptions.DomainIsSameAsAnEffectiveTLD(
-                'Domain name cannot be the same as an effective TLD')
+        # Check the TLD for validity if there are entries in the database
+        if self.check_for_tlds:
+            try:
+                self.storage_api.find_tld(context, {'name': domain_labels[-1]})
+            except exceptions.TLDNotFound:
+                raise exceptions.InvalidDomainName('Invalid TLD')
+
+            # Now check that the domain name is not the same as a TLD
+            try:
+                stripped_domain_name = domain_name.strip('.').lower()
+                self.storage_api.find_tld(
+                    context,
+                    {'name': stripped_domain_name})
+            except exceptions.TLDNotFound:
+                pass
+            else:
+                raise exceptions.InvalidDomainName(
+                    'Domain name cannot be the same as a TLD')
 
         # Check domain name blacklist
         if self._is_blacklisted_domain_name(context, domain_name):
@@ -334,6 +345,52 @@ class Service(rpc_service.Service):
                 self.backend.delete_server(context, server)
 
         self.notifier.info(context, 'dns.server.delete', server)
+
+    # TLD Methods
+    def create_tld(self, context, values):
+        policy.check('create_tld', context)
+
+        # The TLD is only created on central's storage and not on the backend.
+        with self.storage_api.create_tld(context, values) as tld:
+            pass
+        self.notifier.info(context, 'dns.tld.create', tld)
+
+        # Set check for tlds to be true
+        self.check_for_tlds = True
+        return tld
+
+    def find_tlds(self, context, criterion=None):
+        policy.check('find_tlds', context)
+
+        return self.storage_api.find_tlds(context, criterion)
+
+    def get_tld(self, context, tld_id):
+        policy.check('get_tld', context, {'tld_id': tld_id})
+
+        return self.storage_api.get_tld(context, tld_id)
+
+    def update_tld(self, context, tld_id, values):
+        policy.check('update_tld', context, {'tld_id': tld_id})
+
+        with self.storage_api.update_tld(context, tld_id, values) as tld:
+            pass
+
+        self.notifier.info(context, 'dns.tld.update', tld)
+
+        return tld
+
+    def delete_tld(self, context, tld_id):
+        # Known issue - self.check_for_tld is not reset here.  So if the last
+        # TLD happens to be deleted, then we would incorrectly do the TLD
+        # validations.
+        # This decision was influenced by weighing the (ultra low) probability
+        # of hitting this issue vs doing the checks for every delete.
+        policy.check('delete_tld', context, {'tld_id': tld_id})
+
+        with self.storage_api.delete_tld(context, tld_id) as tld:
+            pass
+
+        self.notifier.info(context, 'dns.tld.delete', tld)
 
     # TSIG Key Methods
     def create_tsigkey(self, context, values):

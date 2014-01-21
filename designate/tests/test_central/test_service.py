@@ -34,7 +34,6 @@ class CentralServiceTest(CentralTestCase):
 
     def test_is_valid_domain_name(self):
         self.config(max_domain_name_len=10,
-                    accepted_tlds_file='tlds-alpha-by-domain.txt.sample',
                     group='service:central')
 
         context = self.get_context()
@@ -197,6 +196,86 @@ class CentralServiceTest(CentralTestCase):
             self.central_service.delete_server, self.admin_context,
             server2['id'])
 
+    # TLD Tests
+    def test_create_tld(self):
+        # Create a TLD with one label
+        tld = self.create_tld(fixture=0)
+
+        # Ensure all values have been set correctly
+        self.assertIsNotNone(tld['id'])
+        self.assertEqual(tld['name'], self.get_tld_fixture(fixture=0)['name'])
+
+        # Create a TLD with more than one label
+        tld = self.create_tld(fixture=1)
+
+        # Ensure all values have been set correctly
+        self.assertIsNotNone(tld['id'])
+        self.assertEqual(tld['name'], self.get_tld_fixture(fixture=1)['name'])
+
+    def test_find_tlds(self):
+        # Ensure we have no tlds to start with.
+        tlds = self.central_service.find_tlds(self.admin_context)
+        self.assertEqual(len(tlds), 0)
+
+        # Create a single tld
+        self.create_tld(fixture=0)
+        # Ensure we can retrieve the newly created tld
+        tlds = self.central_service.find_tlds(self.admin_context)
+        self.assertEqual(len(tlds), 1)
+        self.assertEqual(tlds[0]['name'],
+                         self.get_tld_fixture(fixture=0)['name'])
+
+        # Create a second tld
+        self.create_tld(fixture=1)
+
+        # Ensure we can retrieve both tlds
+        tlds = self.central_service.find_tlds(self.admin_context)
+        self.assertEqual(len(tlds), 2)
+        self.assertEqual(tlds[0]['name'],
+                         self.get_tld_fixture(fixture=0)['name'])
+        self.assertEqual(tlds[1]['name'],
+                         self.get_tld_fixture(fixture=1)['name'])
+
+    def test_get_tld(self):
+        # Create a tld
+        tld_name = 'ns%d.co.uk' % random.randint(10, 1000)
+        expected_tld = self.create_tld(name=tld_name)
+
+        # Retrieve it, and ensure it's the same
+        tld = self.central_service.get_tld(
+            self.admin_context, expected_tld['id'])
+
+        self.assertEqual(tld['id'], expected_tld['id'])
+        self.assertEqual(tld['name'], expected_tld['name'])
+
+    def test_update_tld(self):
+        # Create a tld
+        expected_tld = self.create_tld(fixture=0)
+
+        # Update the tld
+        values = dict(name='prefix.%s' % expected_tld['name'])
+        self.central_service.update_tld(
+            self.admin_context, expected_tld['id'], values=values)
+
+        # Fetch the tld again
+        tld = self.central_service.get_tld(
+            self.admin_context, expected_tld['id'])
+
+        # Ensure the tld was updated correctly
+        self.assertEqual(tld['name'], 'prefix.%s' % expected_tld['name'])
+
+    def test_delete_tld(self):
+        # Create a tld
+        tld = self.create_tld(fixture=0)
+        # Delete the tld
+        self.central_service.delete_tld(self.admin_context, tld['id'])
+
+        # Fetch the tld again, ensuring an exception is raised
+        self.assertRaises(
+            exceptions.TLDNotFound,
+            self.central_service.get_tld,
+            self.admin_context, tld['id'])
+
     # TsigKey Tests
     def test_create_tsigkey(self):
         values = self.get_tsigkey_fixture(fixture=0)
@@ -344,32 +423,17 @@ class CentralServiceTest(CentralTestCase):
         self._test_create_domain(values)
 
     def test_idn_create_domain_over_tld(self):
+        values = dict(
+            name='xn--3e0b707e'
+        )
+
+        # Create the appropriate TLD
+        self.central_service.create_tld(self.admin_context, values=values)
+
         # Test creation of a domain in 한국 (kr)
         values = dict(
             name='example.xn--3e0b707e.',
             email='info@example.xn--3e0b707e'
-        )
-        self._test_create_domain(values)
-
-    def test_create_domain_over_re_effective_tld(self):
-        values = dict(
-            name='example.co.uk.',
-            email='info@example.co.uk'
-        )
-        self._test_create_domain(values)
-
-    def test_create_domain_over_effective_tld(self):
-        values = dict(
-            name='example.com.ac.',
-            email='info@example.com.ac'
-        )
-        self._test_create_domain(values)
-
-    def test_idn_create_domain_over_effective_tld(self):
-        # Test creation of a domain in 公司.cn
-        values = dict(
-            name='example.xn--55qx5d.cn.',
-            email='info@example.xn--55qx5d.cn'
         )
         self._test_create_domain(values)
 
@@ -461,16 +525,6 @@ class CentralServiceTest(CentralTestCase):
                 self.admin_context, values=values)
 
     def _test_create_domain_fail(self, values, exception):
-        self.config(accepted_tlds_file='tlds-alpha-by-domain.txt.sample',
-                    effective_tlds_file='effective_tld_names.dat.sample',
-                    group='service:central')
-
-        # The above configuration values are not overriden at the time when
-        # the initializer is called to load the accepted and effective tld
-        # lists.  So I need to call them again explicitly to load the correct
-        # values
-        self.central_service.effective_tld._load_accepted_tld_list()
-        self.central_service.effective_tld._load_effective_tld_list()
 
         with testtools.ExpectedException(exception):
             # Create an invalid domain
@@ -478,66 +532,30 @@ class CentralServiceTest(CentralTestCase):
                 self.admin_context, values=values)
 
     def test_create_domain_invalid_tld_fail(self):
-        self.config(accepted_tlds_file='tlds-alpha-by-domain.txt.sample',
-                    effective_tlds_file='effective_tld_names.dat.sample',
-                    group='service:central')
-
-        # The above configuration values are not overriden at the time when
-        # the initializer is called to load the accepted and effective tld
-        # lists.  So I need to call them again explicitly to load the correct
-        # values
-        self.central_service.effective_tld._load_accepted_tld_list()
-        self.central_service.effective_tld._load_effective_tld_list()
-
         # Create a server
         self.create_server()
 
+        # add a tld for com
+        self.create_tld(fixture=0)
+
         values = dict(
-            name='invalid.cOM.',
-            email='info@invalid.com'
+            name='example.com.',
+            email='info@example.com'
         )
 
         # Create a valid domain
         self.central_service.create_domain(self.admin_context, values=values)
 
         values = dict(
-            name='invalid.NeT1.',
-            email='info@invalid.com'
+            name='example.net.',
+            email='info@example.net'
         )
 
-        with testtools.ExpectedException(exceptions.InvalidTLD):
+        # There is no TLD for net so it should fail
+        with testtools.ExpectedException(exceptions.InvalidDomainName):
             # Create an invalid domain
             self.central_service.create_domain(
                 self.admin_context, values=values)
-
-    def test_create_domain_effective_tld_fail(self):
-        values = dict(
-            name='co.ug',
-            email='info@invalid.com'
-        )
-
-        self._test_create_domain_fail(
-            values, exceptions.DomainIsSameAsAnEffectiveTLD)
-
-    def test_idn_create_domain_effective_tld_fail(self):
-        # Test creation of the effective TLD - brønnøysund.no
-        values = dict(
-            name='xn--brnnysund-m8ac.no',
-            email='info@invalid.com'
-        )
-
-        self._test_create_domain_fail(
-            values, exceptions.DomainIsSameAsAnEffectiveTLD)
-
-    def test_create_domain_re_effective_tld_fail(self):
-        # co.uk is in the regular expression list for effective_tlds
-        values = dict(
-            name='co.uk',
-            email='info@invalid.com'
-        )
-
-        self._test_create_domain_fail(
-            values, exceptions.DomainIsSameAsAnEffectiveTLD)
 
     def test_find_domains(self):
         # Ensure we have no domains to start with.

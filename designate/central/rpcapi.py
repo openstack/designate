@@ -34,6 +34,8 @@ class CentralAPI(rpc_proxy.RpcProxy):
         2.1 - Add quota methods
         3.0 - RecordSet Changes
         3.1 - Add floating ip ptr methods
+        3.2 - TLD Api changes
+
     """
     def __init__(self, topic=None):
         topic = topic if topic else cfg.CONF.central_topic
@@ -213,6 +215,37 @@ class CentralAPI(rpc_proxy.RpcProxy):
         msg = self.make_msg('touch_domain', domain_id=domain_id)
 
         return self.call(context, msg)
+
+    # TLD Methods
+    def create_tld(self, context, values):
+        LOG.info("create_tld: Calling central's create_tld.")
+        msg = self.make_msg('create_tld', values=values)
+
+        return self.call(context, msg, version='3.2')
+
+    def find_tlds(self, context, criterion=None):
+        LOG.info("find_tlds: Calling central's find_tlds.")
+        msg = self.make_msg('find_tlds', criterion=criterion)
+
+        return self.call(context, msg, version='3.2')
+
+    def get_tld(self, context, tld_id):
+        LOG.info("get_tld: Calling central's get_tld.")
+        msg = self.make_msg('get_tld', tld_id=tld_id)
+
+        return self.call(context, msg, version='3.2')
+
+    def update_tld(self, context, tld_id, values):
+        LOG.info("update_tld: Calling central's update_tld.")
+        msg = self.make_msg('update_tld', tld_id=tld_id, values=values)
+
+        return self.call(context, msg, version='3.2')
+
+    def delete_tld(self, context, tld_id):
+        LOG.info("delete_tld: Calling central's delete_tld.")
+        msg = self.make_msg('delete_tld', tld_id=tld_id)
+
+        return self.call(context, msg, version='3.2')
 
     # RecordSet Methods
     def create_recordset(self, context, domain_id, values):

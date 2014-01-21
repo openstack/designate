@@ -174,6 +174,79 @@ class StorageAPI(object):
         self.storage.delete_server(context, server_id)
 
     @contextlib.contextmanager
+    def create_tld(self, context, values):
+        """
+        Create a TLD.
+
+        :param context: RPC Context.
+        :param values: Values to create the new TLD from.
+        """
+        tld = self.storage.create_tld(context, values)
+
+        try:
+            yield tld
+        except Exception:
+            with excutils.save_and_reraise_exception():
+                self.storage.delete_tld(context, tld['id'])
+
+    def get_tld(self, context, tld_id):
+        """
+        Get a TLD via ID.
+
+        :param context: RPC Context.
+        :param tld_id: TLD ID to get.
+        """
+        return self.storage.get_tld(context, tld_id)
+
+    def find_tlds(self, context, criterion=None):
+        """
+        Find TLDs
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        """
+        return self.storage.find_tlds(context, criterion)
+
+    def find_tld(self, context, criterion):
+        """
+        Find a single TLD.
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        """
+        return self.storage.find_tld(context, criterion)
+
+    @contextlib.contextmanager
+    def update_tld(self, context, tld_id, values):
+        """
+        Update a TLD via ID
+
+        :param context: RPC Context.
+        :param tld_id: TLD ID to update.
+        :param values: Values to update the TLD from
+        """
+        backup = self.storage.get_tld(context, tld_id)
+        tld = self.storage.update_tld(context, tld_id, values)
+
+        try:
+            yield tld
+        except Exception:
+            with excutils.save_and_reraise_exception():
+                restore = self._extract_dict_subset(backup, values.keys())
+                self.storage.update_tld(context, tld_id, restore)
+
+    @contextlib.contextmanager
+    def delete_tld(self, context, tld_id):
+        """
+        Delete a TLD via ID.
+
+        :param context: RPC Context.
+        :param tld_id: Delete a TLD via ID
+        """
+        yield self.storage.get_tld(context, tld_id)
+        self.storage.delete_tld(context, tld_id)
+
+    @contextlib.contextmanager
     def create_tsigkey(self, context, values):
         """
         Create a TSIG Key.

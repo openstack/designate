@@ -125,6 +125,61 @@ class Storage(Plugin):
         """
 
     @abc.abstractmethod
+    def create_tld(self, context, values):
+        """
+        Create a TLD.
+
+        :param context: RPC Context.
+        :param values: Values to create the new TLD from.
+        """
+
+    @abc.abstractmethod
+    def get_tld(self, context, tld_id):
+        """
+        Get a TLD via ID.
+
+        :param context: RPC Context.
+        :param tld_id: TLD ID to get.
+        """
+
+    @abc.abstractmethod
+    def find_tlds(self, context, criterion=None):
+        """
+        Find TLDs
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        """
+
+    @abc.abstractmethod
+    def find_tld(self, context, criterion):
+        """
+        Find a single TLD.
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        """
+
+    @abc.abstractmethod
+    def update_tld(self, context, tld_id, values):
+        """
+        Update a TLD via ID
+
+        :param context: RPC Context.
+        :param tld_id: TLD ID to update.
+        :param values: Values to update the TLD from
+        """
+
+    @abc.abstractmethod
+    def delete_tld(self, context, tld_id):
+        """
+        Delete a TLD via ID.
+
+        :param context: RPC Context.
+        :param tld_id: Delete a TLD via ID
+        """
+
+    @abc.abstractmethod
     def create_tsigkey(self, context, values):
         """
         Create a TSIG Key.

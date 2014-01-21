@@ -1,0 +1,63 @@
+{
+    "$schema": "http://json-schema.org/draft-04/hyper-schema",
+
+    "id": "tld",
+
+    "title": "tld",
+    "description": "Tld",
+    "additionalProperties": false,
+
+    "required": ["tld"],
+
+    "properties": {
+        "tld": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name"],
+
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Tld identifier",
+                    "pattern": "^([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}$",
+                    "readOnly": true
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Tld name",
+                    "format": "tldname",
+                    "maxLength": 255,
+                    "immutable": true
+                },
+                "description": {
+                    "type": ["string", "null"],
+                    "description": "Description for the tld",
+                    "maxLength": 160
+                },
+                "created_at": {
+                    "type": "string",
+                    "description": "Date and time of tld creation",
+                    "format": "date-time",
+                    "readOnly": true
+                },
+                "updated_at": {
+                    "type": ["string", "null"],
+                    "description": "Date and time of last tld modification",
+                    "format": "date-time",
+                    "readOnly": true
+                },
+                "links": {
+                    "type": "object",
+                    "additionalProperties": false,
+
+                    "properties": {
+                        "self": {
+                            "type": "string",
+                            "format": "url"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

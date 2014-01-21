@@ -24,6 +24,10 @@ LOG = logging.getLogger(__name__)
 RE_DOMAINNAME = r'^(?!.{255,})((?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-)\.)+$'
 RE_HOSTNAME = r'^(?!.{255,})((^\*|(?!\-)[A-Za-z0-9_\-]{1,63})(?<!\-)\.)+$'
 
+# The TLD name will not end in a period.
+RE_TLDNAME = r'^(?!.{255,})((?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-))' \
+    r'(\.((?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-)))*$'
+
 draft3_format_checker = jsonschema.draft3_format_checker
 draft4_format_checker = jsonschema.draft4_format_checker
 
@@ -81,6 +85,18 @@ def is_domainname(instance):
         return True
 
     if not re.match(RE_DOMAINNAME, instance):
+        return False
+
+    return True
+
+
+@draft3_format_checker.checks("tld-name")
+@draft4_format_checker.checks("tldname")
+def is_tldname(instance):
+    if not isinstance(instance, compat.str_types):
+        return True
+
+    if not re.match(RE_TLDNAME, instance):
         return False
 
     return True

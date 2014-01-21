@@ -107,16 +107,6 @@ class InvalidDomainName(Base):
     error_type = 'invalid_domain_name'
 
 
-class DomainIsSameAsAnEffectiveTLD(Base):
-    error_code = 400
-    error_type = 'domain_is_same_as_an_effective_tld'
-
-
-class InvalidTLD(Base):
-    error_code = 400
-    error_type = 'invalid_tld'
-
-
 class InvalidRecordSetName(Base):
     error_code = 400
     error_type = 'invalid_recordset_name'
@@ -158,6 +148,10 @@ class DuplicateDomain(Duplicate):
     error_type = 'duplicate_domain'
 
 
+class DuplicateTLD(Duplicate):
+    error_type = 'duplicate_tld'
+
+
 class DuplicateRecordSet(Duplicate):
     error_type = 'duplicate_recordset'
 
@@ -185,6 +179,10 @@ class TsigKeyNotFound(NotFound):
 
 class DomainNotFound(NotFound):
     error_type = 'domain_not_found'
+
+
+class TLDNotFound(NotFound):
+    error_type = 'tld_not_found'
 
 
 class RecordSetNotFound(NotFound):
