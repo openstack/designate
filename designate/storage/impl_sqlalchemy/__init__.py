@@ -212,6 +212,51 @@ class SQLAlchemyStorage(base.Storage):
 
         server.delete(self.session)
 
+    # TLD Methods
+    def _find_tlds(self, context, criterion, one=False):
+        try:
+            return self._find(models.Tld, context, criterion, one)
+        except exceptions.NotFound:
+            raise exceptions.TLDNotFound()
+
+    def create_tld(self, context, values):
+        tld = models.Tld()
+        tld.update(values)
+
+        try:
+            tld.save(self.session)
+        except exceptions.Duplicate:
+            raise exceptions.DuplicateTLD()
+
+        return dict(tld)
+
+    def find_tlds(self, context, criterion=None):
+        tlds = self._find_tlds(context, criterion)
+        return [dict(s) for s in tlds]
+
+    def find_tld(self, context, criterion=None):
+        tld = self._find_tlds(context, criterion, one=True)
+        return dict(tld)
+
+    def get_tld(self, context, tld_id):
+        tld = self._find_tlds(context, {'id': tld_id}, one=True)
+        return dict(tld)
+
+    def update_tld(self, context, tld_id, values):
+        tld = self._find_tlds(context, {'id': tld_id}, one=True)
+        tld.update(values)
+
+        try:
+            tld.save(self.session)
+        except exceptions.Duplicate:
+            raise exceptions.DuplicateTLD()
+
+        return dict(tld)
+
+    def delete_tld(self, context, tld_id):
+        tld = self._find_tlds(context, {'id': tld_id}, one=True)
+        tld.delete(self.session)
+
     # TSIG Key Methods
     def _find_tsigkeys(self, context, criterion, one=False):
         try:

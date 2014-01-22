@@ -17,6 +17,7 @@ from designate.openstack.common import log as logging
 from designate.api.v2.controllers import limits
 from designate.api.v2.controllers import reverse
 from designate.api.v2.controllers import schemas
+from designate.api.v2.controllers import tlds
 from designate.api.v2.controllers import zones
 
 LOG = logging.getLogger(__name__)
@@ -30,4 +31,5 @@ class RootController(object):
     limits = limits.LimitsController()
     schemas = schemas.SchemasController()
     reverse = reverse.ReverseController()
+    tlds = tlds.TldsController()
     zones = zones.ZonesController()

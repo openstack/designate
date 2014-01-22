@@ -144,6 +144,23 @@ class TestCase(test.BaseTestCase):
         'name': 'ns2.example.org.',
     }]
 
+    # The last tld is invalid
+    tld_fixtures = [{
+        'name': 'com',
+    }, {
+        'name': 'co.uk',
+    }, {
+        'name': 'com.',
+    }]
+
+    default_tld_fixtures = [{
+        'name': 'com',
+    }, {
+        'name': 'org',
+    }, {
+        'name': 'net',
+    }]
+
     tsigkey_fixtures = [{
         'name': 'test-key-one',
         'algorithm': 'hmac-md5',
@@ -312,6 +329,16 @@ class TestCase(test.BaseTestCase):
         _values.update(values)
         return _values
 
+    def get_tld_fixture(self, fixture=0, values={}):
+        _values = copy.copy(self.tld_fixtures[fixture])
+        _values.update(values)
+        return _values
+
+    def get_default_tld_fixture(self, fixture=0, values={}):
+        _values = copy.copy(self.default_tld_fixtures[fixture])
+        _values.update(values)
+        return _values
+
     def get_tsigkey_fixture(self, fixture=0, values={}):
         _values = copy.copy(self.tsigkey_fixtures[fixture])
         _values.update(values)
@@ -366,6 +393,27 @@ class TestCase(test.BaseTestCase):
 
         values = self.get_server_fixture(fixture=fixture, values=kwargs)
         return self.central_service.create_server(context, values=values)
+
+    def create_tld(self, **kwargs):
+        context = kwargs.pop('context', self.admin_context)
+        fixture = kwargs.pop('fixture', 0)
+
+        values = self.get_tld_fixture(fixture=fixture, values=kwargs)
+        return self.central_service.create_tld(context, values=values)
+
+    def create_default_tld(self, **kwargs):
+        context = kwargs.pop('context', self.admin_context)
+        fixture = kwargs.pop('fixture', 0)
+
+        values = self.get_default_tld_fixture(fixture=fixture, values=kwargs)
+        return self.central_service.create_tld(context, values=values)
+
+    def create_default_tlds(self):
+        for index in range(len(self.default_tld_fixtures)):
+            try:
+                self.create_default_tld(fixture=index)
+            except exceptions.DuplicateTLD:
+                pass
 
     def create_tsigkey(self, **kwargs):
         context = kwargs.pop('context', self.admin_context)

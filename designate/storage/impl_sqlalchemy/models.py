@@ -72,6 +72,13 @@ class Server(Base):
     name = Column(String(255), nullable=False, unique=True)
 
 
+class Tld(Base):
+    __tablename__ = 'tlds'
+
+    name = Column(String(255), nullable=False, unique=True)
+    description = Column(Unicode(160), nullable=True)
+
+
 class Domain(SoftDeleteMixin, Base):
     __tablename__ = 'domains'
     __table_args__ = (

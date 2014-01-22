@@ -28,6 +28,9 @@ class ApiV2ZonesTest(ApiV2TestCase):
         # Create a server
         self.create_server()
 
+        # Create the default TLDs
+        self.create_default_tlds()
+
     def test_missing_accept(self):
         self.client.get('/zones/123', status=400)
 

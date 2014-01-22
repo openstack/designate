@@ -16,6 +16,12 @@
     "update_server": "rule:admin",
     "delete_server": "rule:admin",
 
+    "create_tld": "rule:admin",
+    "find_tlds": "rule:admin",
+    "get_tld": "rule:admin",
+    "update_tld": "rule:admin",
+    "delete_tld": "rule:admin",
+
     "create_tsigkey": "rule:admin",
     "find_tsigkeys": "rule:admin",
     "get_tsigkey": "rule:admin",
