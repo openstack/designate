@@ -37,7 +37,7 @@
                 "name": {
                     "type": "string",
                     "description": "Zone name",
-                    "format": "domain-name",
+                    "format": "domainname",
                     "maxLength": 255,
                     "immutable": true
                 },

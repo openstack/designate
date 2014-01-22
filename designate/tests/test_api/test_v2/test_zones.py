@@ -69,7 +69,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
             self.assertEqual(fixture[k], response.json['zone'][k])
 
     def test_create_zone_validation(self):
-        # NOTE: The schemas should be tested separatly to the API. So we
+        # NOTE: The schemas should be tested separately to the API. So we
         #       don't need to test every variation via the API itself.
         # Fetch a fixture
         fixture = self.get_domain_fixture(0)
@@ -87,6 +87,16 @@ class ApiV2ZonesTest(ApiV2TestCase):
         # Ensure it fails with a 400
         body = {'zone': fixture}
         self.client.post_json('/zones/', body, status=400)
+
+    def test_create_zone_invalid_name(self):
+        # Try to create a zone with an invalid name
+        fixture = self.get_domain_fixture(-1)
+        response = self.client.post_json('/zones/',
+                                         {'zone': fixture},
+                                         status=400)
+
+        # Ensure it fails with a 400
+        self.assertEqual(400, response.status_int)
 
     @patch.object(central_service.Service, 'create_domain',
                   side_effect=rpc_common.Timeout())

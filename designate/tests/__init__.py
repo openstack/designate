@@ -171,6 +171,7 @@ class TestCase(test.BaseTestCase):
         'secret': 'AnotherSecretKey',
     }]
 
+    # The last domain is invalid
     domain_fixtures = [{
         'name': 'example.com.',
         'email': 'example@example.com',
@@ -180,6 +181,9 @@ class TestCase(test.BaseTestCase):
     }, {
         'name': 'example.org.',
         'email': 'example@example.org',
+    }, {
+        'name': 'invalid.com.....',
+        'email': 'example@invalid.com',
     }]
 
     recordset_fixtures = {

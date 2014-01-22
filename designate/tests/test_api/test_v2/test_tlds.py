@@ -15,9 +15,9 @@
 from designate.tests.test_api.test_v2 import ApiV2TestCase
 
 
-class ApiV2ZTldsTest(ApiV2TestCase):
+class ApiV2TldsTest(ApiV2TestCase):
     def setUp(self):
-        super(ApiV2ZTldsTest, self).setUp()
+        super(ApiV2TldsTest, self).setUp()
 
     def test_create_tld(self):
         self.policy({'create_tld': '@'})
