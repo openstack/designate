@@ -159,7 +159,7 @@ class DnsmasqBackend(base.Backend):
     def _purge_zonefile(self, domain):
         filename = os.path.join(self.output_folder, '%s.zone' % domain['id'])
 
-        if os.exists(filename):
+        if os.path.exists(filename):
             os.unlink(filename)
 
     def _merge_zonefiles(self):
