@@ -81,23 +81,40 @@ class AgentAPI(rpc_proxy.RpcProxy):
         return self.call(context, msg)
 
     # Record Methods
-    def create_record(self, context, domain, record):
+    def update_recordset(self, context, domain, recordset):
+        msg = self.make_msg('update_recordset',
+                            domain=domain,
+                            recordset=recordset)
+
+        return self.call(context, msg)
+
+    def delete_recordset(self, context, domain, recordset):
+        msg = self.make_msg('delete_recordset',
+                            domain=domain,
+                            recordset=recordset)
+
+        return self.call(context, msg)
+
+    def create_record(self, context, domain, recordset, record):
         msg = self.make_msg('create_record',
                             domain=domain,
+                            recordset=recordset,
                             record=record)
 
         return self.call(context, msg)
 
-    def update_record(self, context, domain, record):
+    def update_record(self, context, domain, recordset, record):
         msg = self.make_msg('update_record',
                             domain=domain,
+                            recordset=recordset,
                             record=record)
 
         return self.call(context, msg)
 
-    def delete_record(self, context, domain, record):
+    def delete_record(self, context, domain, recordset, record):
         msg = self.make_msg('delete_record',
                             domain=domain,
+                            recordset=recordset,
                             record=record)
 
         return self.call(context, msg)

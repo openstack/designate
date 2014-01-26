@@ -47,14 +47,20 @@ class RPCBackend(base.Backend):
     def delete_domain(self, context, domain):
         return agent_api.delete_domain(context, domain)
 
-    def create_record(self, context, domain, record):
-        return agent_api.create_record(context, domain, record)
+    def update_recordset(self, context, domain, recordset):
+        return agent_api.update_recordset(context, domain, recordset)
 
-    def update_record(self, context, domain, record):
-        return agent_api.update_record(context, domain, record)
+    def delete_recordset(self, context, domain, recordset):
+        return agent_api.delete_recordset(context, domain, recordset)
 
-    def delete_record(self, context, domain, record):
-        return agent_api.delete_record(context, domain, record)
+    def create_record(self, context, domain, recordset, record):
+        return agent_api.create_record(context, domain, recordset, record)
+
+    def update_record(self, context, domain, recordset, record):
+        return agent_api.update_record(context, domain, recordset, record)
+
+    def delete_record(self, context, domain, recordset, record):
+        return agent_api.delete_record(context, domain, recordset, record)
 
     def sync_domain(self, context, domain, records):
         return agent_api.sync_domain(context, domain, records)
