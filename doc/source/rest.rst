@@ -1,13 +1,22 @@
 REST API Documenation
 =====================
 
-Contents:
+The API has 2 versions - V1 and V2.
 
-.. toctree::
-   :maxdepth: 2
-   :glob:
+V1 API
+-----------------------
+    .. toctree::
+       :maxdepth: 2
+       :glob:
 
-   rest/servers
-   rest/domains
-   rest/records
+       rest/v1/servers
+       rest/v1/domains
+       rest/v1/records
 
+V2 API
+-----------------------
+    .. toctree::
+       :maxdepth: 2
+       :glob:
+
+       rest/v2/tlds
