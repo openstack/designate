@@ -1,0 +1,211 @@
+# lib/designate
+# Install and start **Designate** service
+
+# To enable Designate services, add the following to localrc
+# enable_service designate,designate-api,designate-central,designate-agent,designate-sink
+
+# stack.sh
+# ---------
+# install_designate
+# configure_designate
+# init_designate
+# start_designate
+# stop_designate
+# cleanup_designate
+
+# Save trace setting
+XTRACE=$(set +o | grep xtrace)
+set +o xtrace
+
+
+# Defaults
+# --------
+
+# Set up default repos
+DESIGNATE_REPO=${DESIGNATE_REPO:-${GIT_BASE}/stackforge/designate.git}
+DESIGNATE_BRANCH=${DESIGNATE_BRANCH:-master}
+DESIGNATECLIENT_REPO=${DESIGNATECLIENT_REPO:-${GIT_BASE}/stackforge/python-designateclient.git}
+DESIGNATECLIENT_BRANCH=${DESIGNATECLIENT_BRANCH:-master}
+
+# Set up default paths
+DESIGNATE_DIR=$DEST/designate
+DESIGNATECLIENT_DIR=$DEST/python-designateclient
+DESIGNATE_CONF_DIR=/etc/designate
+DESIGNATE_STATE_PATH=${DESIGNATE_STATE_PATH:=$DATA_DIR/designate}
+DESIGNATE_CONF=$DESIGNATE_CONF_DIR/designate.conf
+DESIGNATE_LOG_DIR=/var/log/designate
+DESIGNATE_AUTH_CACHE_DIR=${DESIGNATE_AUTH_CACHE_DIR:-/var/cache/designate}
+
+# Set up default options
+DESIGNATE_BACKEND_DRIVER=${DESIGNATE_BACKEND_DRIVER:=fake}
+
+# Support potential entry-points console scripts
+DESIGNATE_BIN_DIR=$(get_python_exec_prefix)
+
+# Functions
+# ---------
+
+# cleanup_designate() - Remove residual data files, anything left over from previous
+# runs that a clean run would need to clean up
+function cleanup_designate() {
+    sudo rm -rf $DESIGNATE_STATE_PATH $DESIGNATE_AUTH_CACHE_DIR
+}
+
+# configure_designateclient() - Set config files, create data dirs, etc
+function configure_designateclient() {
+    setup_develop $DESIGNATECLIENT_DIR
+}
+
+# configure_designate() - Set config files, create data dirs, etc
+function configure_designate() {
+    setup_develop $DESIGNATE_DIR
+
+    [ ! -d $DESIGNATE_CONF_DIR ] && sudo mkdir -m 755 -p $DESIGNATE_CONF_DIR
+    sudo chown $USER $DESIGNATE_CONF_DIR
+
+    [ ! -d $DESIGNATE_LOG_DIR ] &&  sudo mkdir -m 755 -p $DESIGNATE_LOG_DIR
+    sudo chown $USER $DESIGNATE_LOG_DIR
+
+    # (Re)create ``designate.conf``
+    rm -f $DESIGNATE_CONF
+    iniset_rpc_backend designate $DESIGNATE_CONF DEFAULT
+    iniset $DESIGNATE_CONF DEFAULT verbose True
+    iniset $DESIGNATE_CONF storage:sqlalchemy database_connection `database_connection_url designate`
+
+    if [[ "$DESIGNATE_BACKEND_DRIVER" = 'powerdns' ]]; then
+        iniset $DESIGNATE_CONF backend:powerdns database_connection `database_connection_url designate_pdns`
+    fi
+
+    if is_service_enabled key; then
+        # Setup the Keystone Integration
+        iniset $DESIGNATE_CONF service:api auth_strategy keystone
+        iniset $DESIGNATE_CONF keystone_authtoken auth_protocol http
+        iniset $DESIGNATE_CONF keystone_authtoken admin_user designate
+        iniset $DESIGNATE_CONF keystone_authtoken admin_password $SERVICE_PASSWORD
+        iniset $DESIGNATE_CONF keystone_authtoken admin_tenant_name $SERVICE_TENANT_NAME
+        iniset $DESIGNATE_CONF keystone_authtoken signing_dir $DESIGNATE_AUTH_CACHE_DIR
+    fi
+
+    if is_service_enabled designate-agent; then
+        iniset $DESIGNATE_CONF service:central backend_driver rpc
+        iniset $DESIGNATE_CONF service:agent backend_driver $DESIGNATE_BACKEND_DRIVER
+    else
+        iniset $DESIGNATE_CONF service:central backend_driver $DESIGNATE_BACKEND_DRIVER
+    fi
+
+    # Install the policy file for the API server
+    cp $DESIGNATE_DIR/etc/designate/policy.json $DESIGNATE_CONF_DIR/policy.json
+    iniset $DESIGNATE_CONF DEFAULT policy_file $DESIGNATE_CONF_DIR/policy.json
+
+    cleanup_designate
+}
+
+# create_designate_accounts() - Set up common required designate accounts
+
+# Tenant               User       Roles
+# ------------------------------------------------------------------
+# service              designate  admin        # if enabled
+function create_designate_accounts() {
+
+    SERVICE_TENANT=$(keystone tenant-list | awk "/ $SERVICE_TENANT_NAME / { print \$2 }")
+    ADMIN_ROLE=$(keystone role-list | awk "/ admin / { print \$2 }")
+
+    if [[ "$ENABLED_SERVICES" =~ "designate-api" ]]; then
+        DESIGNATE_USER=$(keystone user-create \
+            --name=designate \
+            --pass="$SERVICE_PASSWORD" \
+            --tenant_id $SERVICE_TENANT \
+            --email=designate@example.com \
+            | grep " id " | get_field 2)
+        keystone user-role-add \
+            --tenant_id $SERVICE_TENANT \
+            --user_id $DESIGNATE_USER \
+            --role_id $ADMIN_ROLE
+        if [[ "$KEYSTONE_CATALOG_BACKEND" = 'sql' ]]; then
+            DESIGNATE_SERVICE=$(keystone service-create \
+                --name=designate \
+                --type=dns \
+                --description="Designate Service" \
+                | grep " id " | get_field 2)
+            keystone endpoint-create \
+                --region RegionOne \
+                --service_id $DESIGNATE_SERVICE \
+                --publicurl "http://$SERVICE_HOST:9001/v1" \
+                --adminurl "http://$SERVICE_HOST:9001/v1" \
+                --internalurl "http://$SERVICE_HOST:9001/v1"
+        fi
+    fi
+}
+
+function create_designate_initial_resources() {
+    #ADMIN_TENANT_ID=$(keystone tenant-list | grep " admin " | get_field 1)
+    designate server-create --name ns1.devstack.org.
+}
+
+
+
+# init_designate() - Initialize etc.
+function init_designate() {
+    # Create cache dir
+    sudo mkdir -p $DESIGNATE_AUTH_CACHE_DIR
+    sudo chown $STACK_USER $DESIGNATE_AUTH_CACHE_DIR
+    rm -f $DESIGNATE_AUTH_CACHE_DIR/*
+
+    # (Re)create designate database
+    recreate_database designate utf8
+
+    # Init and migrate designate database
+    designate-manage database-init
+    designate-manage database-sync
+
+    if [[ "$DESIGNATE_BACKEND_DRIVER" = 'powerdns' ]]; then
+        # (Re)create designate_pdns database
+        recreate_database designate_pdns utf8
+
+        # Init and migrate designate_pdns database
+        designate-manage powerdns database-init
+        designate-manage powerdns database-sync
+    fi
+}
+
+# install_designate() - Collect source and prepare
+function install_designate() {
+    git_clone $DESIGNATE_REPO $DESIGNATE_DIR $DESIGNATE_BRANCH
+    setup_develop $DESIGNATE_DIR
+
+    if [[ "$DESIGNATE_BACKEND_DRIVER" = 'powerdns' ]]; then
+        install_package pdns-server pdns-backend-mysql
+    fi
+
+
+}
+
+# install_designateclient() - Collect source and prepare
+function install_designateclient() {
+    git_clone $DESIGNATECLIENT_REPO $DESIGNATECLIENT_DIR $DESIGNATECLIENT_BRANCH
+    setup_develop $DESIGNATECLIENT_DIR
+}
+
+# start_designate() - Start running processes, including screen
+function start_designate() {
+    screen_it designate-api "designate-api --config-file $DESIGNATE_CONF"
+    screen_it designate-central "designate-central --config-file $DESIGNATE_CONF"
+    screen_it designate-agent "designate-agent --config-file $DESIGNATE_CONF"
+    screen_it designate-sink "designate-sink --config-file $DESIGNATE_CONF"
+}
+
+# stop_designate() - Stop running processes
+function stop_designate() {
+    # Kill the designate screen windows
+    for serv in designate-api designate-central designate-agent designate-sink; do
+        screen -S $SCREEN_NAME -p $serv -X kill
+    done
+}
+
+
+# Restore xtrace
+$XTRACE
+
+# Local variables:
+# mode: shell-script
+# End:
