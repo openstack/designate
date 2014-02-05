@@ -42,7 +42,7 @@ These are stricter than pep8, and are run by gerrit on every commit.
 
 You can use tox to check your code locally by running
 
-  .. code-block:: shell-session
+.. code-block:: shell-session
 
   # For just flake8 tests
   tox -e flake8

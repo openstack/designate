@@ -19,7 +19,7 @@
 DevStack
 ========================
 
-The Designate team maintain a fork of devstack with Designate integration.
+The Designate team maintains a fork of devstack with Designate integration.
 
 .. note::
    This is a WIP. Expect issues!

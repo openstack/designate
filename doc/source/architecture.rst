@@ -31,7 +31,7 @@ Designate API
 -----------------------
 designate-api provides the standard OpenStack style REST API service, accepting HTTP requests, validating authentication tokens with Keystone & passing them to the :ref:`designate-central` service over AMQP. Multiple versions of the API can be hosted, as well as API extensions, allowing for pluggable extensions to the core API.
 
-Although designate-api is capable of handling HTTPS traffic, it's typical to terminate HTTPS elsewhere, e.g. by placing nginx in front of designate-api or by letting the the external facing load balancers terminate HTTPS.
+Although designate-api is capable of handling HTTPS traffic, it's typical to terminate HTTPS elsewhere, for example by placing nginx in front of designate-api or by letting the external facing load balancers terminate HTTPS.
 
 .. _designate-central:
 
@@ -52,7 +52,7 @@ The current sink implementations generate simple forward lookup A records, using
 DNS Backend
 -----------------------
 Backends are drivers for a particular DNS server.
-Designate supports multiple backend implementations, PowerDNS, BIND, MySQL BIND and dnsmasq, you are also free to implement your own backend to fit your needs, as well as extensions to provide extra functionality to complement existing backends.
+Designate supports multiple backend implementations, PowerDNS, BIND and MySQL BIND, you are also free to implement your own backend to fit your needs, as well as extensions to provide extra functionality to complement existing backends.
 
 .. _designate-agent:
 
@@ -64,7 +64,7 @@ designate-agents are optional components that interact with DNS servers.  Agents
 
 Message Queue
 -----------------------
-Designate uses oslo.rpc for messaging between components, therefore it inherits a requirement for a supported messaging bus (RabbitMQ, Qpid, ZeroMQ etc).  Typically this means a RabbitMQ setup is dedicated to Designate, but as only a single virtualhost is required for a normal installation, you’re free to use other RabbitMQ instances as you see fit.
+Designate uses oslo.rpc for messaging between components, therefore it inherits a requirement for a supported messaging bus (such as RabbitMQ, Qpid or ZeroMQ).  Typically this means a RabbitMQ setup is dedicated to Designate, but as only a single virtualhost is required for a normal installation, you’re free to use other RabbitMQ instances as you see fit.
 
 .. _database:
 

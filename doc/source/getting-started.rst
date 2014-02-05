@@ -19,7 +19,7 @@
 Getting Started
 ========================
 
-Designate is comprised of three designate components :ref:`designate-api`, :ref:`designate-central` and :ref:`designate-sink`, supported by a few standard open source components. For more info see :doc:`architecture`.
+Designate is comprised of three designate components :ref:`designate-api`, :ref:`designate-central` and :ref:`designate-sink`, supported by a few standard open source components. For more information see :doc:`architecture`.
 
 This guide will walk you through setting up a development environment for Designate, using PowerDNS as the DNS
 backend, where possible the simplest options have been chosen for you.  For a more complete discussion on

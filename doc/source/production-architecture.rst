@@ -58,7 +58,7 @@ In a Multi-AZ environment, a MySQL Galera Cluster, built using Percona's MySQL p
 
 DNS Backend
 ~~~~~~~~~~~
-Designate supports multiple backend implementations, PowerDNS, BIND, MySQL BIND and dnsmasq, you are also free to implement your own backend to fit your needs, as well as extensions to provide extra functionality to complement existing backends.
+Designate supports multiple backend implementations, PowerDNS, BIND and MySQL BIND, you are also free to implement your own backend to fit your needs, as well as extensions to provide extra functionality to complement existing backends.
 
 There are various ways to provide a highly available authorative DNS service, here are some suggestions:
 

@@ -42,7 +42,7 @@ Glossary
      a SQL based server software.
 
    node
-     a server, physical or virtual, running some aspect of the designate system.
+     A server, physical or virtual, running some aspect of the designate system.
 
    sink
      Optional Software Service that is configured to listen to events from the Nova
