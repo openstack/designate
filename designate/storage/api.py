@@ -271,9 +271,16 @@ class StorageAPI(object):
         :param context: RPC Context.
         :param tld_id: Delete a TLD via ID
         """
+        self.storage.begin()
 
-        yield self.storage.get_tld(context, tld_id)
-        self.storage.delete_tld(context, tld_id)
+        try:
+            yield self.storage.get_tld(context, tld_id)
+            self.storage.delete_tld(context, tld_id)
+        except Exception:
+            with excutils.save_and_reraise_exception():
+                self.storage.rollback()
+        else:
+            self.storage.commit()
 
     @contextlib.contextmanager
     def create_tsigkey(self, context, values):
