@@ -45,6 +45,15 @@ class SQLAlchemyStorage(base.Storage):
         self.engine = get_engine(self.name)
         self.session = get_session(self.name)
 
+    def begin(self):
+        self.session.begin(subtransactions=True)
+
+    def commit(self):
+        self.session.commit()
+
+    def rollback(self):
+        self.session.rollback()
+
     def setup_schema(self):
         """ Semi-Private Method to create the database schema """
         models.Base.metadata.create_all(self.session.bind)

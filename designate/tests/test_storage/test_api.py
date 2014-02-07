@@ -72,8 +72,9 @@ class StorageAPITest(TestCase):
             with self.storage_api.create_quota(context, values):
                 raise SentinelException('Something Went Wrong')
 
+        self._assert_called_with('begin')
+        self._assert_called_with('rollback')
         self._assert_called_with('create_quota', context, values)
-        self._assert_called_with('delete_quota', context, 12345)
 
     def test_get_quota(self):
         context = mock.sentinel.context
@@ -127,10 +128,9 @@ class StorageAPITest(TestCase):
             with self.storage_api.update_quota(context, 123, values):
                 raise SentinelException('Something Went Wrong')
 
-        self._assert_has_calls('update_quota', [
-            mock.call(context, 123, values),
-            mock.call(context, 123, {'test': 1}),
-        ])
+        self._assert_called_with('begin')
+        self._assert_called_with('rollback')
+        self._assert_called_with('update_quota', context, 123, values)
 
     def test_delete_quota(self):
         context = mock.sentinel.context
@@ -153,6 +153,8 @@ class StorageAPITest(TestCase):
             with self.storage_api.delete_quota(context, 123):
                 raise SentinelException('Something Went Wrong')
 
+        self._assert_called_with('begin')
+        self._assert_called_with('rollback')
         self._assert_call_count('delete_quota', 0)
 
     # Server Tests
@@ -178,8 +180,9 @@ class StorageAPITest(TestCase):
             with self.storage_api.create_server(context, values):
                 raise SentinelException('Something Went Wrong')
 
+        self._assert_called_with('begin')
+        self._assert_called_with('rollback')
         self._assert_called_with('create_server', context, values)
-        self._assert_called_with('delete_server', context, 12345)
 
     def test_get_server(self):
         context = mock.sentinel.context
@@ -233,10 +236,9 @@ class StorageAPITest(TestCase):
             with self.storage_api.update_server(context, 123, values):
                 raise SentinelException('Something Went Wrong')
 
-        self._assert_has_calls('update_server', [
-            mock.call(context, 123, values),
-            mock.call(context, 123, {'test': 1}),
-        ])
+        self._assert_called_with('begin')
+        self._assert_called_with('rollback')
+        self._assert_called_with('update_server', context, 123, values)
 
     def test_delete_server(self):
         context = mock.sentinel.context
@@ -259,6 +261,8 @@ class StorageAPITest(TestCase):
             with self.storage_api.delete_server(context, 123):
                 raise SentinelException('Something Went Wrong')
 
+        self._assert_called_with('begin')
+        self._assert_called_with('rollback')
         self._assert_call_count('delete_server', 0)
 
     # Tsigkey Tests
@@ -284,8 +288,9 @@ class StorageAPITest(TestCase):
             with self.storage_api.create_tsigkey(context, values):
                 raise SentinelException('Something Went Wrong')
 
+        self._assert_called_with('begin')
+        self._assert_called_with('rollback')
         self._assert_called_with('create_tsigkey', context, values)
-        self._assert_called_with('delete_tsigkey', context, 12345)
 
     def test_get_tsigkey(self):
         context = mock.sentinel.context
@@ -339,10 +344,9 @@ class StorageAPITest(TestCase):
             with self.storage_api.update_tsigkey(context, 123, values):
                 raise SentinelException('Something Went Wrong')
 
-        self._assert_has_calls('update_tsigkey', [
-            mock.call(context, 123, values),
-            mock.call(context, 123, {'test': 1}),
-        ])
+        self._assert_called_with('begin')
+        self._assert_called_with('rollback')
+        self._assert_called_with('update_tsigkey', context, 123, values)
 
     def test_delete_tsigkey(self):
         context = mock.sentinel.context
@@ -365,6 +369,8 @@ class StorageAPITest(TestCase):
             with self.storage_api.delete_tsigkey(context, 123):
                 raise SentinelException('Something Went Wrong')
 
+        self._assert_called_with('begin')
+        self._assert_called_with('rollback')
         self._assert_call_count('delete_tsigkey', 0)
 
     # Tenant Tests
@@ -420,8 +426,9 @@ class StorageAPITest(TestCase):
             with self.storage_api.create_domain(context, values):
                 raise SentinelException('Something Went Wrong')
 
+        self._assert_called_with('begin')
+        self._assert_called_with('rollback')
         self._assert_called_with('create_domain', context, values)
-        self._assert_called_with('delete_domain', context, 12345)
 
     def test_get_domain(self):
         context = mock.sentinel.context
@@ -475,10 +482,9 @@ class StorageAPITest(TestCase):
             with self.storage_api.update_domain(context, 123, values):
                 raise SentinelException('Something Went Wrong')
 
-        self._assert_has_calls('update_domain', [
-            mock.call(context, 123, values),
-            mock.call(context, 123, {'test': 1}),
-        ])
+        self._assert_called_with('begin')
+        self._assert_called_with('rollback')
+        self._assert_called_with('update_domain', context, 123, values)
 
     def test_delete_domain(self):
         context = mock.sentinel.context
@@ -501,6 +507,8 @@ class StorageAPITest(TestCase):
             with self.storage_api.delete_domain(context, 123):
                 raise SentinelException('Something Went Wrong')
 
+        self._assert_called_with('begin')
+        self._assert_called_with('rollback')
         self._assert_call_count('delete_domain', 0)
 
     # RecordSet Tests
@@ -526,8 +534,9 @@ class StorageAPITest(TestCase):
             with self.storage_api.create_recordset(context, 123, values):
                 raise SentinelException('Something Went Wrong')
 
+        self._assert_called_with('begin')
+        self._assert_called_with('rollback')
         self._assert_called_with('create_recordset', context, 123, values)
-        self._assert_called_with('delete_recordset', context, 12345)
 
     def test_get_recordset(self):
         context = mock.sentinel.context
@@ -581,10 +590,9 @@ class StorageAPITest(TestCase):
             with self.storage_api.update_recordset(context, 123, values):
                 raise SentinelException('Something Went Wrong')
 
-        self._assert_has_calls('update_recordset', [
-            mock.call(context, 123, values),
-            mock.call(context, 123, {'test': 1}),
-        ])
+        self._assert_called_with('begin')
+        self._assert_called_with('rollback')
+        self._assert_called_with('update_recordset', context, 123, values)
 
     def test_delete_recordset(self):
         context = mock.sentinel.context
@@ -607,6 +615,8 @@ class StorageAPITest(TestCase):
             with self.storage_api.delete_recordset(context, 123):
                 raise SentinelException('Something Went Wrong')
 
+        self._assert_called_with('begin')
+        self._assert_called_with('rollback')
         self._assert_call_count('delete_recordset', 0)
 
     # Record Tests
@@ -632,8 +642,9 @@ class StorageAPITest(TestCase):
             with self.storage_api.create_record(context, 123, 321, values):
                 raise SentinelException('Something Went Wrong')
 
+        self._assert_called_with('begin')
+        self._assert_called_with('rollback')
         self._assert_called_with('create_record', context, 123, 321, values)
-        self._assert_called_with('delete_record', context, 12345)
 
     def test_get_record(self):
         context = mock.sentinel.context
@@ -691,10 +702,9 @@ class StorageAPITest(TestCase):
             with self.storage_api.update_record(context, record_id, values):
                 raise SentinelException('Something Went Wrong')
 
-        self._assert_has_calls('update_record', [
-            mock.call(context, record_id, values),
-            mock.call(context, record_id, {'test': 1}),
-        ])
+        self._assert_called_with('begin')
+        self._assert_called_with('rollback')
+        self._assert_called_with('update_record', context, record_id, values)
 
     def test_delete_record(self):
         context = mock.sentinel.context
@@ -717,4 +727,6 @@ class StorageAPITest(TestCase):
             with self.storage_api.delete_record(context, 123):
                 raise SentinelException('Something Went Wrong')
 
+        self._assert_called_with('begin')
+        self._assert_called_with('rollback')
         self._assert_call_count('delete_record', 0)
