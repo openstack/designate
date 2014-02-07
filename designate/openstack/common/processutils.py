@@ -17,6 +17,7 @@
 System-level utilities and helper functions.
 """
 
+import errno
 import logging as stdlib_logging
 import os
 import random
@@ -25,6 +26,7 @@ import signal
 
 from eventlet.green import subprocess
 from eventlet import greenthread
+import six
 
 from designate.openstack.common.gettextutils import _
 from designate.openstack.common import log as logging
@@ -167,10 +169,19 @@ def execute(*cmd, **kwargs):
                                    preexec_fn=preexec_fn,
                                    shell=shell)
             result = None
-            if process_input is not None:
-                result = obj.communicate(process_input)
-            else:
-                result = obj.communicate()
+            for _i in six.moves.range(20):
+                # NOTE(russellb) 20 is an arbitrary number of retries to
+                # prevent any chance of looping forever here.
+                try:
+                    if process_input is not None:
+                        result = obj.communicate(process_input)
+                    else:
+                        result = obj.communicate()
+                except OSError as e:
+                    if e.errno in (errno.EAGAIN, errno.EINTR):
+                        continue
+                    raise
+                break
             obj.stdin.close()  # pylint: disable=E1101
             _returncode = obj.returncode  # pylint: disable=E1101
             LOG.log(loglevel, _('Result was %s') % _returncode)

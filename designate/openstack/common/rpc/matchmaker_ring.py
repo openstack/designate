@@ -11,6 +11,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+
 """
 The MatchMaker classes should except a Topic or Fanout exchange key and
 return keys for direct exchanges, per (approximate) AMQP parlance.
@@ -52,9 +53,8 @@ class RingExchange(mm.Exchange):
         if ring:
             self.ring = ring
         else:
-            fh = open(CONF.matchmaker_ring.ringfile, 'r')
-            self.ring = json.load(fh)
-            fh.close()
+            with open(CONF.matchmaker_ring.ringfile, 'r') as fh:
+                self.ring = json.load(fh)
 
         self.ring0 = {}
         for k in self.ring.keys():

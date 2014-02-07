@@ -172,7 +172,7 @@ class KillFilter(CommandFilter):
             return False
 
         # NOTE(yufang521247): /proc/PID/exe may have '\0' on the
-        # end, because python doen't stop at '\0' when read the
+        # end, because python doesn't stop at '\0' when read the
         # target path.
         command = command.partition('\0')[0]
 

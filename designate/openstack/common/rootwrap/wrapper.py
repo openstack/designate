@@ -13,7 +13,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-
 import logging
 import logging.handlers
 import os
@@ -69,7 +68,7 @@ class RootwrapConfig(object):
             v = config.get("DEFAULT", "syslog_log_level")
             self.syslog_log_level = logging.getLevelName(v.upper())
             if (self.syslog_log_level == "Level %s" % v.upper()):
-                raise ValueError('Unexepected syslog_log_level: %s' % v)
+                raise ValueError('Unexpected syslog_log_level: %s' % v)
         else:
             self.syslog_log_level = logging.ERROR
 
@@ -78,6 +77,13 @@ class RootwrapConfig(object):
             self.use_syslog = config.getboolean("DEFAULT", "use_syslog")
         else:
             self.use_syslog = False
+
+        # use_syslog_rfc_format
+        if config.has_option("DEFAULT", "use_syslog_rfc_format"):
+            self.use_syslog_rfc_format = config.getboolean(
+                "DEFAULT", "use_syslog_rfc_format")
+        else:
+            self.use_syslog_rfc_format = False
 
 
 def setup_syslog(execname, facility, level):

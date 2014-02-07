@@ -269,6 +269,10 @@ def _safe_log(log_func, msg, msg_data):
                 d[k] = '<SANITIZED>'
             elif k.lower() in SANITIZE:
                 d[k] = '<SANITIZED>'
+            elif isinstance(d[k], list):
+                for e in d[k]:
+                    if isinstance(e, dict):
+                        _fix_passwords(e)
             elif isinstance(d[k], dict):
                 _fix_passwords(d[k])
         return d
