@@ -14,22 +14,17 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+
 import fixtures
 from oslo.config import cfg
 import six
 
 
 class Config(fixtures.Fixture):
-    """Override some configuration values.
+    """Allows overriding configuration settings for the test.
 
-    The keyword arguments are the names of configuration options to
-    override and their values.
+    `conf` will be reset on cleanup.
 
-    If a group argument is supplied, the overrides are applied to
-    the specified configuration option group.
-
-    All overrides are automatically cleared at the end of the current
-    test by the reset() method, which is registered by addCleanup().
     """
 
     def __init__(self, conf=cfg.CONF):
@@ -40,6 +35,17 @@ class Config(fixtures.Fixture):
         self.addCleanup(self.conf.reset)
 
     def config(self, **kw):
+        """Override configuration values.
+
+        The keyword arguments are the names of configuration options to
+        override and their values.
+
+        If a `group` argument is supplied, the overrides are applied to
+        the specified configuration option group, otherwise the overrides
+        are applied to the ``default`` group.
+
+        """
+
         group = kw.pop('group', None)
         for k, v in six.iteritems(kw):
             self.conf.set_override(k, v, group)

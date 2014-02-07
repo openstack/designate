@@ -58,12 +58,12 @@ def int_from_bool_as_string(subject):
     return bool_from_string(subject) and 1 or 0
 
 
-def bool_from_string(subject, strict=False):
+def bool_from_string(subject, strict=False, default=False):
     """Interpret a string as a boolean.
 
     A case-insensitive match is performed such that strings matching 't',
     'true', 'on', 'y', 'yes', or '1' are considered True and, when
-    `strict=False`, anything else is considered False.
+    `strict=False`, anything else returns the value specified by 'default'.
 
     Useful for JSON-decoded stuff and config file parsing.
 
@@ -88,7 +88,7 @@ def bool_from_string(subject, strict=False):
                                       'acceptable': acceptable}
         raise ValueError(msg)
     else:
-        return False
+        return default
 
 
 def safe_decode(text, incoming=None, errors='strict'):
