@@ -33,30 +33,6 @@ class Plugin(object):
         self.name = self.get_canonical_name()
         LOG.debug("Loaded plugin %s", self.name)
 
-    def is_enabled(self):
-        """
-        Is this Plugin enabled?
-
-        :retval: Boolean
-        """
-        return True
-
-    @classmethod
-    def get_plugin(cls, name, ns=None, invoke_on_load=False,
-                   invoke_args=(), invoke_kwds={}):
-        """
-        Load a plugin from namespace
-        """
-        ns = ns or cls.__plugin_ns__
-        if ns is None:
-            raise RuntimeError('No namespace provided or __plugin_ns__ unset')
-
-        LOG.debug('Looking for plugin %s in %s', name, ns)
-        mgr = driver.DriverManager(ns, name)
-
-        return mgr.driver(*invoke_args, **invoke_kwds) if invoke_on_load \
-            else mgr.driver
-
     @classmethod
     def get_canonical_name(cls):
         """
@@ -74,12 +50,14 @@ class Plugin(object):
     def get_plugin_type(cls):
         return cls.__plugin_type__
 
-    def start(self):
-        """
-        Start this plugin
-        """
 
-    def stop(self):
-        """
-        Stop this plugin from doing anything
-        """
+class DriverPlugin(Plugin):
+    @classmethod
+    def get_driver(cls, name):
+        """ Load a driver """
+
+        LOG.debug('Looking for driver %s in %s', name, cls.__plugin_ns__)
+
+        mgr = driver.DriverManager(cls.__plugin_ns__, name)
+
+        return mgr.driver

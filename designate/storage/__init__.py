@@ -23,4 +23,7 @@ LOG = logging.getLogger(__name__)
 def get_storage():
     """ Return the engine class from the provided engine name """
     storage_driver = cfg.CONF['service:central'].storage_driver
-    return Storage.get_plugin(storage_driver, invoke_on_load=True)
+
+    cls = Storage.get_driver(storage_driver)
+
+    return cls()

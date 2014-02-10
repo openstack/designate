@@ -16,10 +16,10 @@
 import abc
 from oslo.config import cfg
 from designate import exceptions
-from designate.plugin import Plugin
+from designate.plugin import DriverPlugin
 
 
-class Quota(Plugin):
+class Quota(DriverPlugin):
     """ Base class for quota plugins """
     __metaclass__ = abc.ABCMeta
     __plugin_ns__ = 'designate.quota'

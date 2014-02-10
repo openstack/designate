@@ -25,7 +25,7 @@ from designate import exceptions
 
 from designate.openstack.common import log as logging
 from designate.openstack.common import threadgroup
-from designate.network_api import BaseAPI
+from designate.network_api.base import NetworkAPI
 
 
 CONF = cfg.CONF
@@ -85,10 +85,12 @@ def get_client(context, endpoint):
     return clientv20.Client(**params)
 
 
-class API(BaseAPI):
+class NeutronNetworkAPI(NetworkAPI):
     """
     Interact with the Neutron API
     """
+    __plugin_name__ = 'neutron'
+
     def list_floatingips(self, context, region=None):
         """
         Get floating ips based on the current context from Neutron

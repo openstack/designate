@@ -14,10 +14,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import abc
-from designate.plugin import Plugin
+from designate.plugin import DriverPlugin
 
 
-class Storage(Plugin):
+class Storage(DriverPlugin):
     """ Base class for storage plugins """
     __metaclass__ = abc.ABCMeta
     __plugin_ns__ = 'designate.storage'

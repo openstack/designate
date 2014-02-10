@@ -68,7 +68,7 @@ class Service(rpc_service.Service):
         # Get a quota manager instance
         self.quota = quota.get_quota()
 
-        self.network_api = network_api.get_api(cfg.CONF.network_api)
+        self.network_api = network_api.get_network_api(cfg.CONF.network_api)
 
     def start(self):
         # Check to see if there are any TLDs in the database

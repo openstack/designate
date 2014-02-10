@@ -17,13 +17,13 @@ import abc
 from designate.openstack.common import log as logging
 from designate import exceptions
 from designate.context import DesignateContext
-from designate.plugin import Plugin
+from designate.plugin import DriverPlugin
 
 
 LOG = logging.getLogger(__name__)
 
 
-class Backend(Plugin):
+class Backend(DriverPlugin):
     """ Base class for backend implementations """
     __plugin_type__ = 'backend'
     __plugin_ns__ = 'designate.backend'
@@ -33,6 +33,12 @@ class Backend(Plugin):
         self.central_service = central_service
         self.admin_context = DesignateContext.get_admin_context()
         self.admin_context.all_tenants = True
+
+    def start(self):
+        pass
+
+    def stop(self):
+        pass
 
     def create_tsigkey(self, context, tsigkey):
         """ Create a TSIG Key """

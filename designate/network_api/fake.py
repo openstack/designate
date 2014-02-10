@@ -15,7 +15,7 @@
 # under the License.
 import uuid
 from designate.openstack.common import log
-from designate.network_api import BaseAPI
+from designate.network_api.base import NetworkAPI
 
 
 LOG = log.getLogger(__name__)
@@ -66,7 +66,9 @@ def reset_floatingips():
             POOL[key] = allocated.pop(key)
 
 
-class API(BaseAPI):
+class FakeNetworkAPI(NetworkAPI):
+    __plugin_name__ = 'fake'
+
     def list_floatingips(self, context, region=None):
         if context.is_admin:
             data = []

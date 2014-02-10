@@ -122,7 +122,7 @@ class DatabaseFixture(fixtures.Fixture):
 class NetworkAPIFixture(fixtures.Fixture):
     def setUp(self):
         super(NetworkAPIFixture, self).setUp()
-        self.api = network_api.get_api(cfg.CONF.network_api)
+        self.api = network_api.get_network_api(cfg.CONF.network_api)
         self.fake = fake_network_api
         self.addCleanup(self.fake.reset_floatingips)
 

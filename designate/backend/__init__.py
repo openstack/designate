@@ -14,7 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from designate.openstack.common import log as logging
-from designate.plugin import Plugin
+from designate.backend.base import Backend
 
 LOG = logging.getLogger(__name__)
 
@@ -22,9 +22,6 @@ LOG = logging.getLogger(__name__)
 def get_backend(backend_driver, central_service):
     LOG.debug("Loading backend driver: %s" % backend_driver)
 
-    invoke_kwds = {
-        'central_service': central_service
-    }
+    cls = Backend.get_driver(backend_driver)
 
-    return Plugin.get_plugin(backend_driver, ns=__name__, invoke_on_load=True,
-                             invoke_kwds=invoke_kwds)
+    return cls(central_service=central_service)

@@ -14,7 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from designate import exceptions
-from designate.network_api import get_api
+from designate.network_api import get_network_api
 from designate.tests import TestCase
 
 from neutronclient.v2_0 import client as clientv20
@@ -33,7 +33,7 @@ class NeutronAPITest(TestCase):
         super(NeutronAPITest, self).setUp()
         self.config(endpoints=['RegionOne|http://localhost:9696'],
                     group='network_api:neutron')
-        self.api = get_api('neutron')
+        self.api = get_network_api('neutron')
 
     @patch.object(clientv20.Client, 'list_floatingips',
                   side_effect=neutron_exceptions.Unauthorized)

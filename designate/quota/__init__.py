@@ -34,4 +34,10 @@ cfg.CONF.register_opts([
 
 
 def get_quota():
-    return Quota.get_plugin(cfg.CONF.quota_driver, invoke_on_load=True)
+    quota_driver = cfg.CONF.quota_driver
+
+    LOG.debug("Loading quota driver: %s" % quota_driver)
+
+    cls = Quota.get_driver(quota_driver)
+
+    return cls()
