@@ -1,4 +1,5 @@
 # Copyright 2012 Managed I.T.
+# Copyright 2014 Hewlett-Packard Development Company, L.P.
 #
 # Author: Kiall Mac Innes <kiall@managedit.ie>
 #
@@ -17,12 +18,10 @@ from oslo.config import cfg
 from designate.openstack.common import log as logging
 from designate.openstack.common import rpc
 from designate.openstack.common import service
-from stevedore.named import NamedExtensionManager
 from designate import exceptions
+from designate import notification_handler
 
 LOG = logging.getLogger(__name__)
-
-HANDLER_NAMESPACE = 'designate.notification.handler'
 
 
 class Service(service.Service):
@@ -37,22 +36,19 @@ class Service(service.Service):
 
     def _init_extensions(self):
         """ Loads and prepares all enabled extensions """
+
         enabled_notification_handlers = \
             cfg.CONF['service:sink'].enabled_notification_handlers
 
-        self.extensions_manager = NamedExtensionManager(
-            HANDLER_NAMESPACE, names=enabled_notification_handlers)
+        notification_handlers = notification_handler.get_notification_handlers(
+            enabled_notification_handlers)
 
-        def _load_extension(ext):
-            handler_cls = ext.plugin
-            return handler_cls()
-
-        try:
-            return self.extensions_manager.map(_load_extension)
-        except RuntimeError:
+        if len(notification_handlers) == 0:
             # No handlers enabled. Bail!
             raise exceptions.ConfigurationError('No designate-sink handlers '
-                                                'enabled')
+                                                'enabled or loaded')
+
+        return notification_handlers
 
     def start(self):
         super(Service, self).start()
