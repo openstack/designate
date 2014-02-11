@@ -36,12 +36,12 @@ class InitCommand(base.Command):
         url = cfg.CONF['storage:sqlalchemy'].database_connection
 
         if not os.path.exists(REPOSITORY):
-            raise Exception('Migration Respository Not Found')
+            raise Exception('Migration Repository Not Found')
 
         try:
             LOG.info('Attempting to initialize database')
             versioning_api.version_control(url=url, repository=REPOSITORY)
-            LOG.info('Database initialized sucessfully')
+            LOG.info('Database initialized successfully')
         except DatabaseAlreadyControlledError:
             raise Exception('Database already initialized')
 
@@ -61,7 +61,7 @@ class SyncCommand(base.Command):
         url = cfg.CONF['storage:sqlalchemy'].database_connection
 
         if not os.path.exists(REPOSITORY):
-            raise Exception('Migration Respository Not Found')
+            raise Exception('Migration Repository Not Found')
 
         try:
             target_version = int(parsed_args.to_version) \
@@ -84,4 +84,4 @@ class SyncCommand(base.Command):
             versioning_api.upgrade(url=url, repository=REPOSITORY,
                                    version=parsed_args.to_version)
 
-        LOG.info('Database synchronized sucessfully')
+        LOG.info('Database synchronized successfully')

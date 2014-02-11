@@ -36,12 +36,12 @@ class DatabaseInitCommand(base.Command):
         url = cfg.CONF['backend:powerdns'].database_connection
 
         if not os.path.exists(REPOSITORY):
-            raise Exception('Migration Respository Not Found')
+            raise Exception('Migration Repository Not Found')
 
         try:
             LOG.info('Attempting to initialize PowerDNS database')
             versioning_api.version_control(url=url, repository=REPOSITORY)
-            LOG.info('PowerDNS database initialized sucessfully')
+            LOG.info('PowerDNS database initialized successfully')
         except DatabaseAlreadyControlledError:
             raise Exception('PowerDNS Database already initialized')
 
@@ -61,7 +61,7 @@ class DatabaseSyncCommand(base.Command):
         url = cfg.CONF['backend:powerdns'].database_connection
 
         if not os.path.exists(REPOSITORY):
-            raise Exception('Migration Respository Not Found')
+            raise Exception('Migration Repository Not Found')
 
         try:
             target_version = int(parsed_args.to_version) \
@@ -84,4 +84,4 @@ class DatabaseSyncCommand(base.Command):
             versioning_api.upgrade(url=url, repository=REPOSITORY,
                                    version=parsed_args.to_version)
 
-        LOG.info('PowerDNS database synchronized sucessfully')
+        LOG.info('PowerDNS database synchronized successfully')
