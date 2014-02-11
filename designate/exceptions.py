@@ -160,6 +160,10 @@ class DuplicateRecord(Duplicate):
     error_type = 'duplicate_record'
 
 
+class DuplicateBlacklist(Duplicate):
+    error_type = 'duplicate_blacklist'
+
+
 class NotFound(Base):
     error_code = 404
     error_type = 'not_found'
@@ -175,6 +179,10 @@ class ServerNotFound(NotFound):
 
 class TsigKeyNotFound(NotFound):
     error_type = 'tsigkey_not_found'
+
+
+class BlacklistNotFound(NotFound):
+    error_type = 'blacklist_not_found'
 
 
 class DomainNotFound(NotFound):

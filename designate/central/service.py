@@ -45,7 +45,7 @@ def wrap_backend_call():
 
 
 class Service(rpc_service.Service):
-    RPC_API_VERSION = '3.2'
+    RPC_API_VERSION = '3.3'
 
     def __init__(self, *args, **kwargs):
         backend_driver = cfg.CONF['service:central'].backend_driver
@@ -203,11 +203,12 @@ class Service(rpc_service.Service):
         """
         Ensures the provided domain_name is not blacklisted.
         """
-        blacklists = cfg.CONF['service:central'].domain_name_blacklist
+
+        blacklists = self.storage_api.find_blacklists(context)
 
         for blacklist in blacklists:
-            if bool(re.search(blacklist, domain_name)):
-                return blacklist
+            if bool(re.search(blacklist["pattern"], domain_name)):
+                return True
 
         return False
 
@@ -1328,3 +1329,56 @@ class Service(rpc_service.Service):
         elif isinstance(values['ptrdname'], basestring):
             return self._set_floatingip_reverse(
                 context, region, floatingip_id, values)
+
+    # Blacklisted Domains
+    def create_blacklist(self, context, values):
+        policy.check('create_blacklist', context)
+
+        with self.storage_api.create_blacklist(context, values) as blacklist:
+            pass  # NOTE: No other systems need updating
+
+        self.notifier.info(context, 'dns.blacklist.create', blacklist)
+
+        return blacklist
+
+    def get_blacklist(self, context, blacklist_id):
+        policy.check('get_blacklist', context)
+
+        blacklist = self.storage_api.get_blacklist(context, blacklist_id)
+
+        return blacklist
+
+    def find_blacklists(self, context, criterion=None):
+        policy.check('find_blacklists', context)
+
+        blacklists = self.storage_api.find_blacklists(context, criterion)
+
+        return blacklists
+
+    def find_blacklist(self, context, criterion):
+        policy.check('find_blacklist', context)
+
+        blacklist = self.storage_api.find_blacklist(context, criterion)
+
+        return blacklist
+
+    def update_blacklist(self, context, blacklist_id, values):
+        policy.check('update_blacklist', context)
+
+        with self.storage_api.update_blacklist(context,
+                                               blacklist_id,
+                                               values) as blacklist:
+            pass  # NOTE: No other systems need updating
+
+        self.notifier.info(context, 'dns.blacklist.update', blacklist)
+
+        return blacklist
+
+    def delete_blacklist(self, context, blacklist_id):
+        policy.check('delete_blacklist', context)
+
+        with self.storage_api.delete_blacklist(context,
+                                               blacklist_id) as blacklist:
+            pass  # NOTE: No other systems need updating
+
+        self.notifier.info(context, 'dns.blacklist.delete', blacklist)

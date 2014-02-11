@@ -443,6 +443,61 @@ class Storage(DriverPlugin):
         :param criterion: Criteria to filter by.
         """
 
+    @abc.abstractmethod
+    def create_blacklist(self, context, values):
+        """
+        Create a Blacklist.
+
+        :param context: RPC Context.
+        :param values: Values to create the new Blacklist from.
+        """
+
+    @abc.abstractmethod
+    def get_blacklist(self, context, blacklist_id):
+        """
+        Get a Blacklist via ID.
+
+        :param context: RPC Context.
+        :param blacklist_id: Blacklist ID to get.
+        """
+
+    @abc.abstractmethod
+    def find_blacklists(self, context, criterion):
+        """
+        Find Blacklists
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        """
+
+    @abc.abstractmethod
+    def find_blacklist(self, context, criterion):
+        """
+        Find a single Blacklist.
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        """
+
+    @abc.abstractmethod
+    def update_blacklist(self, context, blacklist_id, values):
+        """
+        Update a Blacklist via ID
+
+        :param context: RPC Context.
+        :param blacklist_id: Blacklist ID to update.
+        :param values: Values to update the Blacklist from
+        """
+
+    @abc.abstractmethod
+    def delete_blacklist(self, context, blacklist_id):
+        """
+        Delete a Blacklist via ID.
+
+        :param context: RPC Context.
+        :param blacklist_id: Delete a Blacklist via ID
+        """
+
     def ping(self, context):
         """ Ping the Storage connection """
         return {

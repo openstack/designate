@@ -35,9 +35,6 @@ root_helper = sudo
 # Driver used for backend communication (e.g. fake, rpc, bind9, powerdns)
 #backend_driver = fake
 
-# List of blacklist domain name regexes
-#domain_name_blacklist = \.arpa\.$, \.novalocal\.$, \.localhost\.$, \.localdomain\.$, \.local\.$
-
 # Maximum domain name length
 #max_domain_name_len = 255
 

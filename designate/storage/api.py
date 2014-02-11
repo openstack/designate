@@ -677,6 +677,93 @@ class StorageAPI(object):
         """
         return self.storage.count_records(context, criterion)
 
+    @contextlib.contextmanager
+    def create_blacklist(self, context, values):
+        """
+        Create a new Blacklisted Domain.
+
+        :param context: RPC Context.
+        :param values: Values to create the new Blacklist from.
+        """
+        self.storage.begin()
+
+        try:
+            blacklist = self.storage.create_blacklist(context, values)
+            yield blacklist
+        except Exception:
+            with excutils.save_and_reraise_exception():
+                self.storage.rollback()
+        else:
+            self.storage.commit()
+
+    def get_blacklist(self, context, blacklist_id):
+        """
+        Get a Blacklist via its ID.
+
+        :param context: RPC Context.
+        :param blacklist_id: ID of the Blacklisted Domain.
+        """
+        return self.storage.get_blacklist(context, blacklist_id)
+
+    def find_blacklists(self, context, criterion=None):
+        """
+        Find all Blacklisted Domains
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        """
+        return self.storage.find_blacklists(context, criterion)
+
+    def find_blacklist(self, context, criterion):
+        """
+        Find a single Blacklisted Domain.
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        """
+        return self.storage.find_blacklist(context, criterion)
+
+    @contextlib.contextmanager
+    def update_blacklist(self, context, blacklist_id, values):
+        """
+        Update a Blacklisted Domain via ID.
+
+        :param context: RPC Context.
+        :param blacklist_id: Values to update the Blacklist with
+        :param values: Values to update the Blacklist from.
+        """
+        self.storage.begin()
+
+        try:
+            blacklist = self.storage.update_blacklist(context,
+                                                      blacklist_id,
+                                                      values)
+            yield blacklist
+        except Exception:
+            with excutils.save_and_reraise_exception():
+                self.storage.rollback()
+        else:
+            self.storage.commit()
+
+    @contextlib.contextmanager
+    def delete_blacklist(self, context, blacklist_id):
+        """
+        Delete a Blacklisted Domain
+
+        :param context: RPC Context.
+        :param blacklist_id: Blacklist ID to delete.
+        """
+        self.storage.begin()
+
+        try:
+            yield self.storage.get_blacklist(context, blacklist_id)
+            self.storage.delete_blacklist(context, blacklist_id)
+        except Exception:
+            with excutils.save_and_reraise_exception():
+                self.storage.rollback()
+        else:
+            self.storage.commit()
+
     def ping(self, context):
         """ Ping the Storage connection """
         return self.storage.ping(context)

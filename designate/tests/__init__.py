@@ -220,6 +220,15 @@ class TestCase(test.BaseTestCase):
         {'ptrdname': 'srv1.example.net.'}
     ]
 
+    blacklist_fixtures = [{
+        'pattern': 'blacklisted.com.',
+        'description': 'This is a comment',
+    }, {
+        'pattern': 'blacklisted.net.'
+    }, {
+        'pattern': 'blacklisted.org.'
+    }]
+
     def setUp(self):
         super(TestCase, self).setUp()
 
@@ -384,6 +393,11 @@ class TestCase(test.BaseTestCase):
         with open(path) as zonefile:
             return zonefile.read()
 
+    def get_blacklist_fixture(self, fixture=0, values={}):
+        _values = copy.copy(self.blacklist_fixtures[fixture])
+        _values.update(values)
+        return _values
+
     def create_quota(self, **kwargs):
         context = kwargs.pop('context', self.admin_context)
         fixture = kwargs.pop('fixture', 0)
@@ -464,6 +478,13 @@ class TestCase(test.BaseTestCase):
                                                   domain['id'],
                                                   recordset['id'],
                                                   values=values)
+
+    def create_blacklist(self, **kwargs):
+        context = kwargs.pop('context', self.admin_context)
+        fixture = kwargs.pop('fixture', 0)
+
+        values = self.get_blacklist_fixture(fixture=fixture, values=kwargs)
+        return self.central_service.create_blacklist(context, values=values)
 
 
 def _skip_decorator(func):
