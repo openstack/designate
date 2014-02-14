@@ -55,14 +55,16 @@ class StorageAPI(object):
         """
         return self.storage.get_quota(context, quota_id)
 
-    def find_quotas(self, context, criterion=None):
+    def find_quotas(self, context, criterion=None, marker=None, limit=None,
+                    sort_key=None, sort_dir=None):
         """
         Find Quotas
 
         :param context: RPC Context.
         :param criterion: Criteria to filter by.
         """
-        return self.storage.find_quotas(context, criterion)
+        return self.storage.find_quotas(
+            context, criterion, marker, limit, sort_key, sort_dir)
 
     def find_quota(self, context, criterion):
         """
@@ -140,14 +142,16 @@ class StorageAPI(object):
         """
         return self.storage.get_server(context, server_id)
 
-    def find_servers(self, context, criterion=None):
+    def find_servers(self, context, criterion=None, marker=None, limit=None,
+                     sort_key=None, sort_dir=None):
         """
         Find Servers
 
         :param context: RPC Context.
         :param criterion: Criteria to filter by.
         """
-        return self.storage.find_servers(context, criterion)
+        return self.storage.find_servers(
+            context, criterion, marker, limit, sort_key, sort_dir)
 
     def find_server(self, context, criterion):
         """
@@ -225,14 +229,16 @@ class StorageAPI(object):
         """
         return self.storage.get_tld(context, tld_id)
 
-    def find_tlds(self, context, criterion=None):
+    def find_tlds(self, context, criterion=None, marker=None, limit=None,
+                  sort_key=None, sort_dir=None):
         """
         Find TLDs
 
         :param context: RPC Context.
         :param criterion: Criteria to filter by.
         """
-        return self.storage.find_tlds(context, criterion)
+        return self.storage.find_tlds(
+            context, criterion, marker, limit, sort_key, sort_dir)
 
     def find_tld(self, context, criterion):
         """
@@ -309,14 +315,16 @@ class StorageAPI(object):
         """
         return self.storage.get_tsigkey(context, tsigkey_id)
 
-    def find_tsigkeys(self, context, criterion=None):
+    def find_tsigkeys(self, context, criterion=None, marker=None, limit=None,
+                      sort_key=None, sort_dir=None):
         """
         Find Tsigkey
 
         :param context: RPC Context.
         :param criterion: Criteria to filter by.
         """
-        return self.storage.find_tsigkeys(context, criterion)
+        return self.storage.find_tsigkeys(
+            context, criterion, marker, limit, sort_key, sort_dir)
 
     def find_tsigkey(self, context, criterion):
         """
@@ -419,14 +427,16 @@ class StorageAPI(object):
         """
         return self.storage.get_domain(context, domain_id)
 
-    def find_domains(self, context, criterion=None):
+    def find_domains(self, context, criterion=None, marker=None, limit=None,
+                     sort_key=None, sort_dir=None):
         """
         Find Domains
 
         :param context: RPC Context.
         :param criterion: Criteria to filter by.
         """
-        return self.storage.find_domains(context, criterion)
+        return self.storage.find_domains(
+            context, criterion, marker, limit, sort_key, sort_dir)
 
     def find_domain(self, context, criterion):
         """
@@ -515,14 +525,16 @@ class StorageAPI(object):
         """
         return self.storage.get_recordset(context, recordset_id)
 
-    def find_recordsets(self, context, criterion=None):
+    def find_recordsets(self, context, criterion=None, marker=None, limit=None,
+                        sort_key=None, sort_dir=None):
         """
         Find RecordSets.
 
         :param context: RPC Context.
         :param criterion: Criteria to filter by.
         """
-        return self.storage.find_recordsets(context, criterion)
+        return self.storage.find_recordsets(
+            context, criterion, marker, limit, sort_key, sort_dir)
 
     def find_recordset(self, context, criterion=None):
         """
@@ -612,14 +624,16 @@ class StorageAPI(object):
         """
         return self.storage.get_record(context, record_id)
 
-    def find_records(self, context, criterion=None):
+    def find_records(self, context, criterion=None, marker=None, limit=None,
+                     sort_key=None, sort_dir=None):
         """
         Find Records.
 
         :param context: RPC Context.
         :param criterion: Criteria to filter by.
         """
-        return self.storage.find_records(context, criterion)
+        return self.storage.find_records(
+            context, criterion, marker, limit, sort_key, sort_dir)
 
     def find_record(self, context, criterion=None):
         """
@@ -705,14 +719,16 @@ class StorageAPI(object):
         """
         return self.storage.get_blacklist(context, blacklist_id)
 
-    def find_blacklists(self, context, criterion=None):
+    def find_blacklists(self, context, criterion=None, marker=None, limit=None,
+                        sort_key=None, sort_dir=None):
         """
         Find all Blacklisted Domains
 
         :param context: RPC Context.
         :param criterion: Criteria to filter by.
         """
-        return self.storage.find_blacklists(context, criterion)
+        return self.storage.find_blacklists(
+            context, criterion, marker, limit, sort_key, sort_dir)
 
     def find_blacklist(self, context, criterion):
         """

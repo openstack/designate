@@ -968,8 +968,8 @@ class CentralServiceTest(CentralTestCase):
             self.admin_context, criterion)
 
         self.assertEqual(len(recordsets), 2)
-        self.assertEqual(recordsets[0]['name'], 'mail.%s' % domain['name'])
-        self.assertEqual(recordsets[1]['name'], 'www.%s' % domain['name'])
+        self.assertEqual(recordsets[0]['name'], 'www.%s' % domain['name'])
+        self.assertEqual(recordsets[1]['name'], 'mail.%s' % domain['name'])
 
     def test_find_recordset(self):
         domain = self.create_domain()

@@ -90,12 +90,20 @@ class StorageAPITest(TestCase):
     def test_find_quotas(self):
         context = mock.sentinel.context
         criterion = mock.sentinel.criterion
+        marker = mock.sentinel.marker
+        limit = mock.sentinel.limit
+        sort_key = mock.sentinel.sort_key
+        sort_dir = mock.sentinel.sort_dir
         quota = mock.sentinel.quota
 
         self._set_side_effect('find_quotas', [[quota]])
 
-        result = self.storage_api.find_quotas(context, criterion)
-        self._assert_called_with('find_quotas', context, criterion)
+        result = self.storage_api.find_quotas(
+            context, criterion,
+            marker, limit, sort_key, sort_dir)
+        self._assert_called_with(
+            'find_quotas', context, criterion,
+            marker, limit, sort_key, sort_dir)
         self.assertEqual([quota], result)
 
     def test_find_quota(self):
@@ -198,12 +206,21 @@ class StorageAPITest(TestCase):
     def test_find_servers(self):
         context = mock.sentinel.context
         criterion = mock.sentinel.criterion
+        marker = mock.sentinel.marker
+        limit = mock.sentinel.limit
+        sort_key = mock.sentinel.sort_key
+        sort_dir = mock.sentinel.sort_dir
+
         server = mock.sentinel.server
 
         self._set_side_effect('find_servers', [[server]])
 
-        result = self.storage_api.find_servers(context, criterion)
-        self._assert_called_with('find_servers', context, criterion)
+        result = self.storage_api.find_servers(
+            context, criterion,
+            marker, limit, sort_key, sort_dir)
+        self._assert_called_with(
+            'find_servers', context, criterion,
+            marker, limit, sort_key, sort_dir)
         self.assertEqual([server], result)
 
     def test_find_server(self):
@@ -306,12 +323,19 @@ class StorageAPITest(TestCase):
     def test_find_tsigkeys(self):
         context = mock.sentinel.context
         criterion = mock.sentinel.criterion
+        marker = mock.sentinel.marker
+        limit = mock.sentinel.limit
+        sort_key = mock.sentinel.sort_key
+        sort_dir = mock.sentinel.sort_dir
         tsigkey = mock.sentinel.tsigkey
 
         self._set_side_effect('find_tsigkeys', [[tsigkey]])
 
-        result = self.storage_api.find_tsigkeys(context, criterion)
-        self._assert_called_with('find_tsigkeys', context, criterion)
+        result = self.storage_api.find_tsigkeys(
+            context, criterion, marker, limit, sort_key, sort_dir)
+        self._assert_called_with(
+            'find_tsigkeys', context, criterion,
+            marker, limit, sort_key, sort_dir)
         self.assertEqual([tsigkey], result)
 
     def test_find_tsigkey(self):
@@ -444,12 +468,20 @@ class StorageAPITest(TestCase):
     def test_find_domains(self):
         context = mock.sentinel.context
         criterion = mock.sentinel.criterion
+        marker = mock.sentinel.marker
+        limit = mock.sentinel.limit
+        sort_key = mock.sentinel.sort_key
+        sort_dir = mock.sentinel.sort_dir
         domain = mock.sentinel.domain
 
         self._set_side_effect('find_domains', [[domain]])
 
-        result = self.storage_api.find_domains(context, criterion)
-        self._assert_called_with('find_domains', context, criterion)
+        result = self.storage_api.find_domains(
+            context, criterion,
+            marker, limit, sort_key, sort_dir)
+        self._assert_called_with(
+            'find_domains', context, criterion,
+            marker, limit, sort_key, sort_dir)
         self.assertEqual([domain], result)
 
     def test_find_domain(self):
@@ -552,12 +584,20 @@ class StorageAPITest(TestCase):
     def test_find_recordsets(self):
         context = mock.sentinel.context
         criterion = mock.sentinel.criterion
+        marker = mock.sentinel.marker
+        limit = mock.sentinel.limit
+        sort_key = mock.sentinel.sort_key
+        sort_dir = mock.sentinel.sort_dir
         recordset = mock.sentinel.recordset
 
         self._set_side_effect('find_recordsets', [[recordset]])
 
-        result = self.storage_api.find_recordsets(context, criterion)
-        self._assert_called_with('find_recordsets', context, criterion)
+        result = self.storage_api.find_recordsets(
+            context, criterion,
+            marker, limit, sort_key, sort_dir)
+        self._assert_called_with(
+            'find_recordsets', context, criterion,
+            marker, limit, sort_key, sort_dir)
         self.assertEqual([recordset], result)
 
     def test_find_recordset(self):
@@ -660,12 +700,20 @@ class StorageAPITest(TestCase):
     def test_find_records(self):
         context = mock.sentinel.context
         criterion = mock.sentinel.criterion
+        marker = mock.sentinel.marker
+        limit = mock.sentinel.limit
+        sort_key = mock.sentinel.sort_key
+        sort_dir = mock.sentinel.sort_dir
         record = mock.sentinel.record
 
         self._set_side_effect('find_records', [[record]])
 
-        result = self.storage_api.find_records(context, criterion)
-        self._assert_called_with('find_records', context, criterion)
+        result = self.storage_api.find_records(
+            context, criterion,
+            marker, limit, sort_key, sort_dir)
+        self._assert_called_with(
+            'find_records', context, criterion,
+            marker, limit, sort_key, sort_dir)
 
         self.assertEqual([record], result)
 

@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import testtools
+import uuid
 
 from designate.openstack.common import log as logging
 from designate import exceptions
@@ -76,6 +77,26 @@ class StorageTestCase(object):
         fixture = self.get_record_fixture(recordset['type'], fixture, values)
         return fixture, self.storage.create_record(
             context, domain['id'], recordset['id'], fixture)
+
+    def _ensure_paging(self, data, method):
+        """
+        Given an array of created items we iterate through them making sure
+        they match up to things returned by paged results.
+        """
+        found = method(self.admin_context, limit=5)
+        x = 0
+        for i in xrange(0, len(data)):
+            self.assertEqual(data[i]['id'], found[x]['id'])
+            x += 1
+            if x == len(found):
+                x = 0
+                found = method(
+                    self.admin_context, limit=5, marker=found[-1:][0]['id'])
+
+    def test_paging_marker_not_found(self):
+        with testtools.ExpectedException(exceptions.MarkerNotFound):
+            self.storage.find_servers(
+                self.admin_context, marker=str(uuid.uuid4()), limit=5)
 
     # Quota Tests
     def test_create_quota(self):
@@ -270,20 +291,20 @@ class StorageTestCase(object):
         self.assertEqual(actual, [])
 
         # Create a single server
-        _, server_one = self.create_server()
+        _, server = self.create_server()
 
         actual = self.storage.find_servers(self.admin_context)
         self.assertEqual(len(actual), 1)
+        self.assertEqual(str(actual[0]['name']), str(server['name']))
 
-        self.assertEqual(str(actual[0]['name']), str(server_one['name']))
+        # Order of found items later will be reverse of the order they are
+        # created
+        created = [self.create_server(
+            values={'name': 'ns%s.example.org.' % i})[1]
+            for i in xrange(10, 20)]
+        created.insert(0, server)
 
-        # Create a second server
-        _, server_two = self.create_server(fixture=1)
-
-        actual = self.storage.find_servers(self.admin_context)
-        self.assertEqual(len(actual), 2)
-
-        self.assertEqual(str(actual[1]['name']), str(server_two['name']))
+        self._ensure_paging(created, self.storage.find_servers)
 
     def test_find_servers_criterion(self):
         _, server_one = self.create_server(0)
@@ -388,24 +409,22 @@ class StorageTestCase(object):
         self.assertEqual(actual, [])
 
         # Create a single tsigkey
-        _, tsigkey_one = self.create_tsigkey()
+        _, tsig = self.create_tsigkey()
 
         actual = self.storage.find_tsigkeys(self.admin_context)
         self.assertEqual(len(actual), 1)
 
-        self.assertEqual(actual[0]['name'], tsigkey_one['name'])
-        self.assertEqual(actual[0]['algorithm'], tsigkey_one['algorithm'])
-        self.assertEqual(actual[0]['secret'], tsigkey_one['secret'])
+        self.assertEqual(actual[0]['name'], tsig['name'])
+        self.assertEqual(actual[0]['algorithm'], tsig['algorithm'])
+        self.assertEqual(actual[0]['secret'], tsig['secret'])
 
-        # Create a second tsigkey
-        _, tsigkey_two = self.create_tsigkey(fixture=1)
+        # Order of found items later will be reverse of the order they are
+        # created
+        created = [self.create_tsigkey(values={'name': 'tsig%s.' % i})[1]
+                   for i in xrange(10, 20)]
+        created.insert(0, tsig)
 
-        actual = self.storage.find_tsigkeys(self.admin_context)
-        self.assertEqual(len(actual), 2)
-
-        self.assertEqual(actual[1]['name'], tsigkey_two['name'])
-        self.assertEqual(actual[1]['algorithm'], tsigkey_two['algorithm'])
-        self.assertEqual(actual[1]['secret'], tsigkey_two['secret'])
+        self._ensure_paging(created, self.storage.find_tsigkeys)
 
     def test_find_tsigkeys_criterion(self):
         _, tsigkey_one = self.create_tsigkey(fixture=0)
@@ -582,19 +601,21 @@ class StorageTestCase(object):
         self.assertEqual(actual, [])
 
         # Create a single domain
-        fixture_one, domain_one = self.create_domain()
+        fixture_one, domain = self.create_domain()
 
         actual = self.storage.find_domains(self.admin_context)
         self.assertEqual(len(actual), 1)
 
-        self.assertEqual(actual[0]['name'], domain_one['name'])
-        self.assertEqual(actual[0]['email'], domain_one['email'])
+        self.assertEqual(actual[0]['name'], domain['name'])
+        self.assertEqual(actual[0]['email'], domain['email'])
 
-        # Create a second domain
-        self.create_domain(fixture=1)
+        # Order of found items later will be reverse of the order they are
+        # created
+        created = [self.create_domain(values={'name': 'x%s.org.' % i})[1]
+                   for i in xrange(10, 20)]
+        created.insert(0, domain)
 
-        actual = self.storage.find_domains(self.admin_context)
-        self.assertEqual(len(actual), 2)
+        self._ensure_paging(created, self.storage.find_domains)
 
     def test_find_domains_criterion(self):
         _, domain_one = self.create_domain(0)
@@ -812,14 +833,14 @@ class StorageTestCase(object):
         self.assertEqual(actual[0]['name'], recordset_one['name'])
         self.assertEqual(actual[0]['type'], recordset_one['type'])
 
-        # Create a second recordset
-        _, recordset_two = self.create_recordset(domain, fixture=1)
+        # Order of found items later will be reverse of the order they are
+        # created
+        created = [self.create_recordset(
+            domain, values={'name': 'test%s' % i + '.%s'})[1]
+            for i in xrange(10, 20)]
+        created.insert(0, recordset_one)
 
-        actual = self.storage.find_recordsets(self.admin_context, criterion)
-        self.assertEqual(len(actual), 2)
-
-        self.assertEqual(actual[1]['name'], recordset_two['name'])
-        self.assertEqual(actual[1]['type'], recordset_two['type'])
+        self._ensure_paging(created, self.storage.find_recordsets)
 
     def test_find_recordsets_criterion(self):
         _, domain = self.create_domain()
@@ -1016,22 +1037,23 @@ class StorageTestCase(object):
         self.assertEqual(actual, [])
 
         # Create a single record
-        _, record_one = self.create_record(domain, recordset, fixture=0)
+        _, record = self.create_record(domain, recordset, fixture=0)
 
         actual = self.storage.find_records(self.admin_context, criterion)
         self.assertEqual(len(actual), 1)
 
-        self.assertEqual(actual[0]['data'], record_one['data'])
-        self.assertIn('status', record_one)
+        self.assertEqual(actual[0]['data'], record['data'])
+        self.assertIn('status', record)
 
-        # Create a second record
-        _, record_two = self.create_record(domain, recordset, fixture=1)
+        # Order of found items later will be reverse of the order they are
+        # created
+        created = [self.create_record(
+            domain, recordset,
+            values={'data': '192.0.0.%s' % i})[1]
+            for i in xrange(10, 20)]
+        created.insert(0, record)
 
-        actual = self.storage.find_records(self.admin_context, criterion)
-        self.assertEqual(len(actual), 2)
-
-        self.assertEqual(actual[1]['data'], record_two['data'])
-        self.assertIn('status', record_two)
+        self._ensure_paging(created, self.storage.find_records)
 
     def test_find_records_criterion(self):
         _, domain = self.create_domain()

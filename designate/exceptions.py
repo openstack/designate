@@ -87,6 +87,10 @@ class NetworkEndpointNotFound(BadRequest):
     error_code = 403
 
 
+class MarkerNotFound(BadRequest):
+    error_type = 'marker_not_found'
+
+
 class InvalidOperation(BadRequest):
     error_code = 400
     error_type = 'invalid_operation'
