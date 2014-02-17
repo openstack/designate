@@ -44,9 +44,9 @@ def find_config(config_path):
     """
     possible_locations = [
         config_path,
-        os.path.join(cfg.CONF.state_path, "etc", "designate", config_path),
-        os.path.join(cfg.CONF.state_path, "etc", config_path),
-        os.path.join(cfg.CONF.state_path, config_path),
+        os.path.join(cfg.CONF.pybasedir, "etc", "designate", config_path),
+        os.path.join(cfg.CONF.pybasedir, "etc", config_path),
+        os.path.join(cfg.CONF.pybasedir, config_path),
         "/etc/designate/%s" % config_path,
     ]
 
