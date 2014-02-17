@@ -20,7 +20,7 @@ from designate import exceptions
 from designate.openstack.common import log as logging
 from designate.central import rpcapi as central_rpcapi
 from designate.context import DesignateContext
-from designate.plugin import Plugin
+from designate.plugin import ExtensionPlugin
 
 
 LOG = logging.getLogger(__name__)
@@ -44,7 +44,7 @@ def get_ip_data(addr_dict):
     return data
 
 
-class Handler(Plugin):
+class NotificationHandler(ExtensionPlugin):
     """ Base class for notification handlers """
     __plugin_ns__ = 'designate.notification.handler'
     __plugin_type__ = 'handler'
@@ -91,7 +91,7 @@ class Handler(Plugin):
         return recordset
 
 
-class BaseAddressHandler(Handler):
+class BaseAddressHandler(NotificationHandler):
     default_format = '%(octet0)s-%(octet1)s-%(octet2)s-%(octet3)s.%(domain)s'
 
     def _get_format(self):
