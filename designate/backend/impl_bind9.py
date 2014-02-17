@@ -33,6 +33,8 @@ cfg.CONF.register_opts([
     cfg.StrOpt('rndc-config-file', default=None,
                help='RNDC Config File'),
     cfg.StrOpt('rndc-key-file', default=None, help='RNDC Key File'),
+    cfg.StrOpt('nzf-path', default='/var/cache/bind',
+               help='Path where Bind9 stores the nzf files'),
 ], group='backend:bind9')
 
 
@@ -132,7 +134,7 @@ class Bind9Backend(base.Backend):
         #zones.config file we wish to maintain. The file name can change as it
         #is a hash of rndc view name, we're only interested in the first file
         #name this returns because there is only one .nzf file
-        nzf_name = glob.glob('/var/cache/bind/*.nzf')
+        nzf_name = glob.glob('%s/*.nzf' % cfg.CONF[self.name].nzf_path)
 
         output_file = os.path.join(output_folder, 'zones.config')
 
@@ -196,7 +198,7 @@ class Bind9Backend(base.Backend):
         LOG.debug('Calling RNDC with: %s' % " ".join(rndc_call))
         utils.execute(*rndc_call)
 
-        nzf_name = glob.glob('/var/cache/bind/*.nzf')
+        nzf_name = glob.glob('%s/*.nzf' % cfg.CONF[self.name].nzf_path)
 
         output_file = os.path.join(output_folder, 'zones.config')
 
