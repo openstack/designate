@@ -146,4 +146,4 @@ class BaseView(object):
             'marker': items[0]['id']
         }
 
-        return self._get_collection_href(request, items, parents, extra_params)
+        return self._get_collection_href(request, parents, extra_params)
