@@ -33,7 +33,7 @@ blacklists = Table(
            onupdate=timeutils.utcnow),
     Column('version', Integer(), default=1,
            nullable=False),
-    Column('pattern', String(512), nullable=False,
+    Column('pattern', String(255), nullable=False,
            unique=True),
     Column('description', String(160),
            nullable=True),

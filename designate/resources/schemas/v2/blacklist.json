@@ -26,7 +26,7 @@
                     "type": "string",
                     "description": "Regex for blacklisted zone name",
                     "format": "regex",
-                    "maxLength": 512,
+                    "maxLength": 255,
                     "required": true
                 },
                 "created_at": {

@@ -193,5 +193,5 @@ class TsigKey(Base):
 class Blacklists(Base):
     __tablename__ = 'blacklists'
 
-    pattern = Column(String(512), nullable=False, unique=True)
+    pattern = Column(String(255), nullable=False, unique=True)
     description = Column(Unicode(160), nullable=True)
