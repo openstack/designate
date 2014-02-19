@@ -100,9 +100,10 @@ class BaseView(object):
             "self": self._get_collection_href(request, parents),
         }
 
-        if 'marker' in params:
-            result['previous'] = self._get_previous_href(request, items,
-                                                         parents)
+        # See above
+        #if 'marker' in params:
+        #    result['previous'] = self._get_previous_href(request, items,
+        #                                                 parents)
 
         if 'limit' in params and int(params['limit']) == len(items):
             result['next'] = self._get_next_href(request, items, parents)

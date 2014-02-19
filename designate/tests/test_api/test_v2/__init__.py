@@ -52,3 +52,28 @@ class ApiV2TestCase(ApiTestCase):
         self.client = None
 
         super(ApiV2TestCase, self).tearDown()
+
+    def _assert_paging(self, data, url, key=None, limit=5):
+        def _page(marker=None):
+            params = {'limit': limit}
+
+            if marker is not None:
+                params['marker'] = marker
+
+            r = self.client.get(url, params)
+            return r.json[key] if key in r.json else r.json
+
+        page_items = _page()
+
+        x = 0
+        length = len(data)
+        for i in xrange(0, length):
+            assert data[i]['id'] == page_items[x]['id']
+
+            x += 1
+            # Don't bother getting a new page if we're at the last item
+            if x == len(page_items) and i != length - 1:
+                x = 0
+                page_items = _page(page_items[-1:][0]['id'])
+
+        _page(marker=page_items[-1:][0]['id'])

@@ -41,6 +41,16 @@ class RestController(pecan.rest.RestController):
     Ideally, we get these additions merged upstream.
     """
 
+    def _get_paging_params(self, params):
+        """
+        Extract any paging parameters
+        """
+        marker = params.pop('marker', None)
+        limit = int(params.pop('limit', 30))
+        sort_key = params.pop('sort_key', None)
+        sort_dir = params.pop('sort_dir', None)
+        return marker, limit, sort_key, sort_dir
+
     def _handle_post(self, method, remainder):
         '''
         Routes ``POST`` actions to the appropriate controller.

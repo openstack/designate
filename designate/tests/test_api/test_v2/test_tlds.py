@@ -64,21 +64,8 @@ class ApiV2TldsTest(ApiV2TestCase):
         # We should start with 0 tlds
         self.assertEqual(0, len(response.json['tlds']))
 
-        # Test with 1 tld
-        self.create_tld(fixture=0)
-
-        response = self.client.get('/tlds/')
-
-        self.assertIn('tlds', response.json)
-        self.assertEqual(1, len(response.json['tlds']))
-
-        # test with 2 tlds
-        self.create_tld(fixture=1)
-
-        response = self.client.get('/tlds/')
-
-        self.assertIn('tlds', response.json)
-        self.assertEqual(2, len(response.json['tlds']))
+        data = [self.create_tld(name='tld%s.' % i) for i in 'abcdefghijklmn']
+        self._assert_paging(data, '/tlds', key='tlds')
 
     def test_get_tld(self):
         tld = self.create_tld(fixture=0)

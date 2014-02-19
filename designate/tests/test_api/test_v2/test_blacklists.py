@@ -39,21 +39,10 @@ class ApiV2BlacklistsTest(ApiV2TestCase):
         # Test with 0 blacklists
         self.assertEqual(0, len(response.json['blacklists']))
 
-        # Test with 1 blacklist
-        self.create_blacklist(fixture=0)
+        data = [self.create_blacklist(
+            pattern='x-%s.org.' % i) for i in xrange(0, 10)]
 
-        response = self.client.get('/blacklists/')
-
-        self.assertIn('blacklists', response.json)
-        self.assertEqual(1, len(response.json['blacklists']))
-
-        # test with 2 blacklists
-        self.create_blacklist(fixture=1)
-
-        response = self.client.get('/blacklists/')
-
-        self.assertIn('blacklists', response.json)
-        self.assertEqual(2, len(response.json['blacklists']))
+        self._assert_paging(data, '/blacklists', key='blacklists')
 
     def test_get_blacklist(self):
         blacklist = self.create_blacklist(fixture=0)

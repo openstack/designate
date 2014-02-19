@@ -129,21 +129,12 @@ class ApiV2ZonesTest(ApiV2TestCase):
         # We should start with 0 zones
         self.assertEqual(0, len(response.json['zones']))
 
-        # Test with 1 zone
-        self.create_domain()
+        # We should start with 0 zones
+        self.assertEqual(0, len(response.json['zones']))
 
-        response = self.client.get('/zones/')
-
-        self.assertIn('zones', response.json)
-        self.assertEqual(1, len(response.json['zones']))
-
-        # test with 2 zones
-        self.create_domain(fixture=1)
-
-        response = self.client.get('/zones/')
-
-        self.assertIn('zones', response.json)
-        self.assertEqual(2, len(response.json['zones']))
+        data = [self.create_domain(name='x-%s.com.' % i)
+                for i in 'abcdefghij']
+        self._assert_paging(data, '/zones', key='zones')
 
     @patch.object(central_service.Service, 'find_domains',
                   side_effect=rpc_common.Timeout())

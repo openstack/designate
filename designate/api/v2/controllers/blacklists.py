@@ -49,15 +49,15 @@ class BlacklistsController(rest.RestController):
         context = request.environ['context']
 
         # Extract the pagination params
-        #marker = params.pop('marker', None)
-        #limit = int(params.pop('limit', 30))
+        marker, limit, sort_key, sort_dir = self._get_paging_params(params)
 
         # Extract any filter params
         accepted_filters = ('pattern')
         criterion = dict((k, params[k]) for k in accepted_filters
                          if k in params)
 
-        blacklist = central_api.find_blacklists(context, criterion)
+        blacklist = central_api.find_blacklists(
+            context, criterion, marker, limit, sort_key, sort_dir)
 
         return self._view.list(context, request, blacklist)
 

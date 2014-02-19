@@ -101,16 +101,15 @@ class ZonesController(rest.RestController):
         request = pecan.request
         context = request.environ['context']
 
-        # Extract the pagination params
-        #marker = params.pop('marker', None)
-        #limit = int(params.pop('limit', 30))
+        marker, limit, sort_key, sort_dir = self._get_paging_params(params)
 
         # Extract any filter params.
         accepted_filters = ('name', 'email', )
         criterion = dict((k, params[k]) for k in accepted_filters
                          if k in params)
 
-        zones = central_api.find_domains(context, criterion)
+        zones = central_api.find_domains(
+            context, criterion, marker, limit, sort_key, sort_dir)
 
         return self._view.list(context, request, zones)
 

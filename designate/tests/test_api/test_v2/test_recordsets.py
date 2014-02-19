@@ -114,21 +114,12 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         # We should start with 0 recordsets
         self.assertEqual(0, len(response.json['recordsets']))
 
-        # Test with 1 recordset
-        self.create_recordset(self.domain)
+        data = [self.create_recordset(self.domain,
+                name='x-%s.%s' % (i, self.domain['name']))
+                for i in xrange(0, 10)]
 
-        response = self.client.get('/zones/%s/recordsets' % self.domain['id'])
-
-        self.assertIn('recordsets', response.json)
-        self.assertEqual(1, len(response.json['recordsets']))
-
-        # test with 2 recordsets
-        self.create_recordset(self.domain, fixture=1)
-
-        response = self.client.get('/zones/%s/recordsets' % self.domain['id'])
-
-        self.assertIn('recordsets', response.json)
-        self.assertEqual(2, len(response.json['recordsets']))
+        url = '/zones/%s/recordsets' % self.domain['id']
+        self._assert_paging(data, url, key='recordsets')
 
     @patch.object(central_service.Service, 'find_recordsets',
                   side_effect=rpc_common.Timeout())

@@ -50,8 +50,7 @@ class RecordsController(rest.RestController):
         context = request.environ['context']
 
         # Extract the pagination params
-        #marker = params.pop('marker', None)
-        #limit = int(params.pop('limit', 30))
+        marker, limit, sort_key, sort_dir = self._get_paging_params(params)
 
         # Extract any filter params.
         accepted_filters = ('data', )
@@ -61,7 +60,8 @@ class RecordsController(rest.RestController):
         criterion['domain_id'] = zone_id
         criterion['recordset_id'] = recordset_id
 
-        records = central_api.find_records(context, criterion)
+        records = central_api.find_records(
+            context, criterion, marker, limit, sort_key, sort_dir)
 
         return self._view.list(context, request, records,
                                [zone_id, recordset_id])
