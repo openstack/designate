@@ -138,7 +138,7 @@ class BaseView(object):
             'marker': items[-1]['id']
         }
 
-        return self._get_collection_href(request, items, parents, extra_params)
+        return self._get_collection_href(request, parents, extra_params)
 
     def _get_previous_href(self, request, items, parents=None):
         # Prepare the extra params
