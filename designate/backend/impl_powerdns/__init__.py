@@ -43,6 +43,12 @@ cfg.CONF.register_opts([
                                                 'send NOTIFYs to'),
 ] + SQLOPTS, group='backend:powerdns')
 
+# Overide the default DB connection registered above, to avoid name conflicts
+# between the Designate and PowerDNS databases.
+cfg.CONF.set_default('database_connection',
+                     'sqlite:///$state_path/powerdns.sqlite',
+                     group='backend:powerdns')
+
 
 class PowerDNSBackend(base.Backend):
     __plugin_name__ = 'powerdns'
