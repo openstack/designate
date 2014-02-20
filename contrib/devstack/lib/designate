@@ -35,6 +35,8 @@ DESIGNATE_STATE_PATH=${DESIGNATE_STATE_PATH:=$DATA_DIR/designate}
 DESIGNATE_CONF=$DESIGNATE_CONF_DIR/designate.conf
 DESIGNATE_LOG_DIR=/var/log/designate
 DESIGNATE_AUTH_CACHE_DIR=${DESIGNATE_AUTH_CACHE_DIR:-/var/cache/designate}
+DESIGNATE_ROOTWRAP_CONF=$DESIGNATE_CONF_DIR/rootwrap.conf
+DESIGNATE_APIPASTE_CONF=$DESIGNATE_CONF_DIR/api-paste.ini
 
 # Set up default options
 DESIGNATE_BACKEND_DRIVER=${DESIGNATE_BACKEND_DRIVER:=fake}
@@ -65,9 +67,17 @@ function configure_designate() {
     iniset $DESIGNATE_CONF DEFAULT verbose True
     iniset $DESIGNATE_CONF DEFAULT state_path $DESIGNATE_STATE_PATH
     iniset $DESIGNATE_CONF storage:sqlalchemy database_connection `database_connection_url designate`
+    sudo cp $DESIGNATE_DIR/etc/designate/rootwrap.conf.sample $DESIGNATE_ROOTWRAP_CONF
+    iniset $DESIGNATE_ROOTWRAP_CONF DEFAULT filters_path $DESIGNATE_DIR/etc/designate/rootwrap.d root-helper
+    iniset $DESIGNATE_CONF DEFAULT root-helper sudo designate-rootwrap $DESIGNATE_ROOTWRAP_CONF
+    sudo cp $DESIGNATE_DIR/etc/designate/api-paste.ini $DESIGNATE_APIPASTE_CONF
 
     if [[ "$DESIGNATE_BACKEND_DRIVER" = 'powerdns' ]]; then
         iniset $DESIGNATE_CONF backend:powerdns database_connection `database_connection_url designate_pdns`
+    fi
+
+    if [[ "$DESIGNATE_BACKEND_DRIVER" = 'bind9' ]]; then
+        configure_bind
     fi
 
     if is_service_enabled key; then
@@ -171,7 +181,9 @@ function install_designate() {
         install_package pdns-server pdns-backend-mysql
     fi
 
-
+    if [[ "$DESIGNATE_BACKEND_DRIVER" = 'bind9' ]]; then
+        install_package bind9
+    fi
 }
 
 # install_designateclient() - Collect source and prepare
@@ -196,6 +208,43 @@ function stop_designate() {
     done
 }
 
+function configure_bind() {
+    iniset $DESIGNATE_CONF backend:bind9 rndc_port '953'
+    iniset $DESIGNATE_CONF backend:bind9 rndc_host '127.0.0.1'
+    iniset $DESIGNATE_CONF backend:bind9 rndc_config_file  '/etc/bind/rndc.conf'
+    iniset $DESIGNATE_CONF backend:bind9 rndc_key_file  '/etc/bind/rndc.key'
+    iniset $DESIGNATE_CONF service:central backend_driver 'bind9'
+
+    sudo chown $USER /etc/bind/
+
+    if is_ubuntu; then
+        sudo touch /etc/apparmor.d/disable/usr.sbin.named
+        sudo service apparmor reload
+        sudo cat << EOF > /etc/bind/named.conf.options
+        options {
+        directory "/var/cache/bind";
+        allow-new-zones yes;
+        dnssec-validation auto;
+        auth-nxdomain no;    # conform to RFC1035
+        listen-on-v6 { any; };
+        };
+EOF
+
+        sudo cat << EOF > /etc/bind/rndc.conf
+        include "/etc/bind/rndc.key";
+        options {
+            default-key "rndc-key";
+            default-server 127.0.0.1;
+            default-port 953;
+        };
+EOF
+    else
+        echo "Designate DevStack bind9 implementation is Ubuntu-only"
+        exit 1
+    fi
+
+    sudo service bind9 restart
+}
 
 # Restore xtrace
 $XTRACE
