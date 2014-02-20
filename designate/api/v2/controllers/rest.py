@@ -46,7 +46,7 @@ class RestController(pecan.rest.RestController):
         Extract any paging parameters
         """
         marker = params.pop('marker', None)
-        limit = int(params.pop('limit', 30))
+        limit = params.pop('limit', None)
         sort_key = params.pop('sort_key', None)
         sort_dir = params.pop('sort_dir', None)
         return marker, limit, sort_key, sort_dir
