@@ -316,10 +316,12 @@ class Service(rpc_service.Service):
 
         return server
 
-    def find_servers(self, context, criterion=None):
+    def find_servers(self, context, criterion=None, marker=None, limit=None,
+                     sort_key=None, sort_dir=None):
         policy.check('find_servers', context)
 
-        return self.storage_api.find_servers(context, criterion)
+        return self.storage_api.find_servers(context, criterion, marker, limit,
+                                             sort_key, sort_dir)
 
     def get_server(self, context, server_id):
         policy.check('get_server', context, {'server_id': server_id})
@@ -368,10 +370,12 @@ class Service(rpc_service.Service):
         self.check_for_tlds = True
         return tld
 
-    def find_tlds(self, context, criterion=None):
+    def find_tlds(self, context, criterion=None, marker=None, limit=None,
+                  sort_key=None, sort_dir=None):
         policy.check('find_tlds', context)
 
-        return self.storage_api.find_tlds(context, criterion)
+        return self.storage_api.find_tlds(context, criterion, marker, limit,
+                                          sort_key, sort_dir)
 
     def get_tld(self, context, tld_id):
         policy.check('get_tld', context, {'tld_id': tld_id})
@@ -413,10 +417,12 @@ class Service(rpc_service.Service):
 
         return tsigkey
 
-    def find_tsigkeys(self, context, criterion=None):
+    def find_tsigkeys(self, context, criterion=None, marker=None, limit=None,
+                      sort_key=None, sort_dir=None):
         policy.check('find_tsigkeys', context)
 
-        return self.storage_api.find_tsigkeys(context, criterion)
+        return self.storage_api.find_tsigkeys(context, criterion, marker,
+                                              limit, sort_key, sort_dir)
 
     def get_tsigkey(self, context, tsigkey_id):
         policy.check('get_tsigkey', context, {'tsigkey_id': tsigkey_id})
@@ -544,11 +550,13 @@ class Service(rpc_service.Service):
         #              pools, return the filtered list here.
         return self.storage_api.find_servers(context, criterion)
 
-    def find_domains(self, context, criterion=None):
+    def find_domains(self, context, criterion=None, marker=None, limit=None,
+                     sort_key=None, sort_dir=None):
         target = {'tenant_id': context.tenant_id}
         policy.check('find_domains', context, target)
 
-        return self.storage_api.find_domains(context, criterion)
+        return self.storage_api.find_domains(context, criterion, marker, limit,
+                                             sort_key, sort_dir)
 
     def find_domain(self, context, criterion=None):
         target = {'tenant_id': context.tenant_id}
@@ -701,11 +709,13 @@ class Service(rpc_service.Service):
 
         return recordset
 
-    def find_recordsets(self, context, criterion=None):
+    def find_recordsets(self, context, criterion=None, marker=None, limit=None,
+                        sort_key=None, sort_dir=None):
         target = {'tenant_id': context.tenant_id}
         policy.check('find_recordsets', context, target)
 
-        return self.storage_api.find_recordsets(context, criterion)
+        return self.storage_api.find_recordsets(context, criterion, marker,
+                                                limit, sort_key, sort_dir)
 
     def find_recordset(self, context, criterion=None):
         target = {'tenant_id': context.tenant_id}
@@ -858,11 +868,13 @@ class Service(rpc_service.Service):
 
         return record
 
-    def find_records(self, context, criterion=None):
+    def find_records(self, context, criterion=None, marker=None, limit=None,
+                     sort_key=None, sort_dir=None):
         target = {'tenant_id': context.tenant_id}
         policy.check('find_records', context, target)
 
-        return self.storage_api.find_records(context, criterion)
+        return self.storage_api.find_records(context, criterion, marker, limit,
+                                             sort_key, sort_dir)
 
     def find_record(self, context, criterion=None):
         target = {'tenant_id': context.tenant_id}
@@ -1348,10 +1360,13 @@ class Service(rpc_service.Service):
 
         return blacklist
 
-    def find_blacklists(self, context, criterion=None):
+    def find_blacklists(self, context, criterion=None, marker=None,
+                        limit=None, sort_key=None, sort_dir=None):
         policy.check('find_blacklists', context)
 
-        blacklists = self.storage_api.find_blacklists(context, criterion)
+        blacklists = self.storage_api.find_blacklists(context, criterion,
+                                                      marker, limit,
+                                                      sort_key, sort_dir)
 
         return blacklists
 

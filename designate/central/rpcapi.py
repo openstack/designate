@@ -82,9 +82,11 @@ class CentralAPI(rpc_proxy.RpcProxy):
 
         return self.call(context, msg)
 
-    def find_servers(self, context, criterion=None):
+    def find_servers(self, context, criterion=None, marker=None, limit=None,
+                     sort_key=None, sort_dir=None):
         LOG.info("find_servers: Calling central's find_servers.")
-        msg = self.make_msg('find_servers', criterion=criterion)
+        msg = self.make_msg('find_servers', criterion=criterion, marker=marker,
+                            limit=limit, sort_key=sort_key, sort_dir=sort_dir)
 
         return self.call(context, msg)
 
@@ -114,9 +116,12 @@ class CentralAPI(rpc_proxy.RpcProxy):
 
         return self.call(context, msg)
 
-    def find_tsigkeys(self, context, criterion=None):
+    def find_tsigkeys(self, context, criterion=None, marker=None, limit=None,
+                      sort_key=None, sort_dir=None):
         LOG.info("find_tsigkeys: Calling central's find_tsigkeys.")
-        msg = self.make_msg('find_tsigkeys', criterion=criterion)
+        msg = self.make_msg('find_tsigkeys', criterion=criterion,
+                            marker=marker, limit=limit, sort_key=sort_key,
+                            sort_dir=sort_dir)
 
         return self.call(context, msg)
 
@@ -177,9 +182,11 @@ class CentralAPI(rpc_proxy.RpcProxy):
 
         return self.call(context, msg)
 
-    def find_domains(self, context, criterion=None):
+    def find_domains(self, context, criterion=None, marker=None, limit=None,
+                     sort_key=None, sort_dir=None):
         LOG.info("find_domains: Calling central's find_domains.")
-        msg = self.make_msg('find_domains', criterion=criterion)
+        msg = self.make_msg('find_domains', criterion=criterion, marker=marker,
+                            limit=limit, sort_key=sort_key, sort_dir=sort_dir)
 
         return self.call(context, msg)
 
@@ -223,9 +230,11 @@ class CentralAPI(rpc_proxy.RpcProxy):
 
         return self.call(context, msg, version='3.2')
 
-    def find_tlds(self, context, criterion=None):
+    def find_tlds(self, context, criterion=None, marker=None, limit=None,
+                  sort_key=None, sort_dir=None):
         LOG.info("find_tlds: Calling central's find_tlds.")
-        msg = self.make_msg('find_tlds', criterion=criterion)
+        msg = self.make_msg('find_tlds', criterion=criterion, marker=marker,
+                            limit=limit, sort_key=sort_key, sort_dir=sort_dir)
 
         return self.call(context, msg, version='3.2')
 
@@ -264,9 +273,12 @@ class CentralAPI(rpc_proxy.RpcProxy):
 
         return self.call(context, msg)
 
-    def find_recordsets(self, context, criterion=None):
+    def find_recordsets(self, context, criterion=None, marker=None, limit=None,
+                        sort_key=None, sort_dir=None):
         LOG.info("find_recordsets: Calling central's find_recordsets.")
-        msg = self.make_msg('find_recordsets', criterion=criterion)
+        msg = self.make_msg('find_recordsets', criterion=criterion,
+                            marker=marker, limit=limit, sort_key=sort_key,
+                            sort_dir=sort_dir)
 
         return self.call(context, msg)
 
@@ -324,9 +336,11 @@ class CentralAPI(rpc_proxy.RpcProxy):
 
         return self.call(context, msg)
 
-    def find_records(self, context, criterion=None):
+    def find_records(self, context, criterion=None, marker=None, limit=None,
+                     sort_key=None, sort_dir=None):
         LOG.info("find_records: Calling central's find_records.")
-        msg = self.make_msg('find_records', criterion=criterion)
+        msg = self.make_msg('find_records', criterion=criterion, marker=marker,
+                            limit=limit, sort_key=sort_key, sort_dir=sort_dir)
 
         return self.call(context, msg)
 
@@ -414,9 +428,12 @@ class CentralAPI(rpc_proxy.RpcProxy):
 
         return self.call(context, msg, version='3.3')
 
-    def find_blacklists(self, context, criterion=None):
+    def find_blacklists(self, context, criterion=None, marker=None, limit=None,
+                        sort_key=None, sort_dir=None):
         LOG.info("find_blacklists: Calling central's find_blacklists.")
-        msg = self.make_msg('find_blacklists', criterion=criterion)
+        msg = self.make_msg('find_blacklists', criterion=criterion,
+                            marker=marker, limit=limit, sort_key=sort_key,
+                            sort_dir=sort_dir)
 
         return self.call(context, msg, version='3.3')
 
