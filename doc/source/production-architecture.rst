@@ -60,7 +60,7 @@ DNS Backend
 ~~~~~~~~~~~
 Designate supports multiple backend implementations, PowerDNS, BIND and MySQL BIND, you are also free to implement your own backend to fit your needs, as well as extensions to provide extra functionality to complement existing backends.
 
-There are various ways to provide a highly available authorative DNS service, here are some suggestions:
+There are various ways to provide a highly available authoritative DNS service, here are some suggestions:
 
 * Multiple PowerDNS instances using the same database being maintained by :ref:`designate-central`, optionally using MySQL Replication to propagate the data to multiple locations.
 * DNS AXFR (Zone Transfer) multiple slave DNS server get notified of zone updates from a DNS server being managed by :ref:`designate-central`.

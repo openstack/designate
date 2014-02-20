@@ -35,7 +35,7 @@ class StorageQuotaTest(tests.TestCase):
         self.assertEqual(quota, {'domains': 1500})
 
         # Drop into the storage layer directly to ensure the quota was created
-        # sucessfully.
+        # successfully
         criterion = {
             'tenant_id': 'tenant_id',
             'resource': 'domains'
@@ -58,7 +58,7 @@ class StorageQuotaTest(tests.TestCase):
         self.quota.set_quota(context, 'tenant_id', 'domains', 1234)
 
         # Drop into the storage layer directly to ensure the quota was updated
-        # sucessfully
+        # successfully
         criterion = {
             'tenant_id': 'tenant_id',
             'resource': 'domains'

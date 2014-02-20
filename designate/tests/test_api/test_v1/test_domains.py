@@ -101,10 +101,10 @@ class ApiV1DomainsTest(ApiV1Test):
         # Create a domain
         fixture = self.get_domain_fixture(0)
 
-        #Give it a UTF-8 filled description
+        # Give it a UTF-8 filled description
         fixture['description'] = "utf-8:2H₂+O₂⇌2H₂O,R=4.7kΩ,⌀200mm∮E⋅da=Q,n" \
                                  ",∑f(i)=∏g(i),∀x∈ℝ:⌈x⌉"
-        #Create the domain, ensuring it suceeds, thus UTF-8 is supported
+        # Create the domain, ensuring it succeeds, thus UTF-8 is supported
         self.post('domains', data=fixture)
 
     def test_create_domain_description_too_long(self):

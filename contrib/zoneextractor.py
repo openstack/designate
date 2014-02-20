@@ -69,7 +69,7 @@ class Extractor:
         "                 # Open quote
         (?P<file> [^"]+ ) # The included file (without quotes), as group 'file'
         "                 # Close quote
-        \s* ;             # Semicolon, possibly preceeded by whitespace
+        \s* ;             # Semicolon, possibly preceded by whitespace
         """, re.MULTILINE | re.VERBOSE)
 
     _zone_regex = re.compile(
@@ -84,14 +84,14 @@ class Extractor:
         (?P<content> [^{}]+ ) # The contents of the zone block (without
                               # brackets) as group 'content'
         }                     # Close bracket
-        \s* ;                 # Semicolon, possibly preceeded by whitespace
+        \s* ;                 # Semicolon, possibly preceded by whitespace
         """, re.MULTILINE | re.VERBOSE)
 
     _type_master_regex = re.compile(
         r"""
         type \s+ # The type keyword, followed by some whitespace
         master   # The master keyword
-        \s* ;    # Semicolon, possibly preceeded by whitespace
+        \s* ;    # Semicolon, possibly preceded by whitespace
         """, re.MULTILINE | re.VERBOSE)
 
     _zonefile_regex = re.compile(r"""
@@ -99,7 +99,7 @@ class Extractor:
         "                 # Open quote
         (?P<file> [^"]+ ) # The zonefile (without quotes), as group 'file'
         "                 # Close quote
-        \s* ;             # Semicolor, possible preceeded by whitespace
+        \s* ;             # Semicolor, possible preceded by whitespace
         """, re.MULTILINE | re.VERBOSE)
 
     def __init__(self, conf_file):

@@ -51,7 +51,7 @@ class NovaFixedHandler(BaseAddressHandler):
         ]
 
     def process_notification(self, event_type, payload):
-        LOG.debug('NovaFixedHandler recieved notification - %s' % event_type)
+        LOG.debug('NovaFixedHandler received notification - %s' % event_type)
 
         if event_type == 'compute.instance.create.end':
             self._create(payload['fixed_ips'], payload,
@@ -62,4 +62,4 @@ class NovaFixedHandler(BaseAddressHandler):
             self._delete(resource_id=payload['instance_id'],
                          resource_type='instance')
         else:
-            raise ValueError('NovaFixedHandler recieved an invalid event type')
+            raise ValueError('NovaFixedHandler received an invalid event type')

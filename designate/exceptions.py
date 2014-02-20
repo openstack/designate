@@ -53,7 +53,7 @@ class CommunicationFailure(Base):
 
 class NeutronCommunicationFailure(CommunicationFailure):
     """
-    Raised in case one of the alledged Neutron endpoints fails.
+    Raised in case one of the alleged Neutron endpoints fails.
     """
     error_type = 'neutron_communication_failure'
 
