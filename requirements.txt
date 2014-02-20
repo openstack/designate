@@ -8,6 +8,7 @@ jsonschema>=2.0.0,<3.0.0
 kombu>=2.4.8
 netaddr>=0.7.6
 oslo.config>=1.2.0
+oslo.rootwrap
 Paste
 PasteDeploy>=1.5.0
 pbr>=0.6,<1.0

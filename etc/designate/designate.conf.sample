@@ -20,7 +20,7 @@ debug = False
 # Use "sudo designate-rootwrap /etc/designate/rootwrap.conf" to use the real
 # root filter facility.
 # Change to "sudo" to skip the filtering and just run the comand directly
-root_helper = sudo
+# root_helper = sudo designate-rootwrap /etc/designate/rootwrap.conf
 
 # Which networking API to use, Defaults to neutron
 # network_api = neutron
