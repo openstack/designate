@@ -11,19 +11,32 @@ debug = False
 # Top-level directory for maintaining designate's state
 #state_path = /var/lib/designate
 
+# Log Configuration
+#log_config = None
+
 # Log directory
 #logdir = /var/log/designate
 
 # Driver used for issuing notifications
 #notification_driver = designate.openstack.common.notifier.rpc_notifier
 
+# Notification Topics
+#notification_topics = notifications
+
 # Use "sudo designate-rootwrap /etc/designate/rootwrap.conf" to use the real
 # root filter facility.
 # Change to "sudo" to skip the filtering and just run the comand directly
-# root_helper = sudo designate-rootwrap /etc/designate/rootwrap.conf
+#root_helper = sudo designate-rootwrap /etc/designate/rootwrap.conf
 
 # Which networking API to use, Defaults to neutron
-# network_api = neutron
+#network_api = neutron
+
+# RabbitMQ Config
+#rabbit_userid = guest
+#rabbit_password = guest
+#rabbit_virtual_host = /
+#rabbit_use_ssl = False
+#rabbit_hosts = 127.0.0.1:5672
 
 ########################
 ## Service Configuration
@@ -45,10 +58,10 @@ debug = False
 ## Managed resources settings
 
 # Email to use for managed resources like domains created by the FloatingIP API
-# managed_resource_email = root@example.io.
+#managed_resource_email = root@example.io.
 
 # Tenant ID to own all managed resources - like auto-created records etc.
-# managed_resource_tenant_id = 123456
+#managed_resource_tenant_id = 123456
 
 #-----------------------
 # API Service
@@ -105,16 +118,16 @@ debug = False
 ## Network API
 ##############
 [network_api:neutron]
-# endpoints = RegionOne|http://localhost:9696
-# endpoint_type = publicURL
-# timeout = 30
-# admin_username = designate
-# admin_password = designate
-# admin_tenant_name = designate
-# auth_url = http://localhost:35357/v2.0
-# insecure = False
-# auth_strategy = keystone
-# ca_certificates_file = /etc/path/to/ca.pem
+#endpoints = RegionOne|http://localhost:9696
+#endpoint_type = publicURL
+#timeout = 30
+#admin_username = designate
+#admin_password = designate
+#admin_tenant_name = designate
+#auth_url = http://localhost:35357/v2.0
+#insecure = False
+#auth_strategy = keystone
+#ca_certificates_file = /etc/path/to/ca.pem
 
 ########################
 ## Storage Configuration
