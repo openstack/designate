@@ -1,0 +1,11 @@
+include AUTHORS
+include ChangeLog
+include designate_ext_samplehandler/versioninfo
+include *.txt *.ini *.cfg *.rst *.md
+
+exclude .gitignore
+exclude .gitreview
+exclude *.sublime-project
+
+global-exclude *.pyc
+
