@@ -16,7 +16,7 @@
 # under the License.
 
 import fixtures
-import mox
+from six.moves import mox  # noqa
 
 
 class MoxStubout(fixtures.Fixture):
