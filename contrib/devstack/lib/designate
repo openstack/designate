@@ -51,15 +51,8 @@ function cleanup_designate() {
     sudo rm -rf $DESIGNATE_STATE_PATH $DESIGNATE_AUTH_CACHE_DIR
 }
 
-# configure_designateclient() - Set config files, create data dirs, etc
-function configure_designateclient() {
-    setup_develop $DESIGNATECLIENT_DIR
-}
-
 # configure_designate() - Set config files, create data dirs, etc
 function configure_designate() {
-    setup_develop $DESIGNATE_DIR
-
     [ ! -d $DESIGNATE_CONF_DIR ] && sudo mkdir -m 755 -p $DESIGNATE_CONF_DIR
     sudo chown $USER $DESIGNATE_CONF_DIR
 

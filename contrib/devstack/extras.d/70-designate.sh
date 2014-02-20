@@ -17,9 +17,6 @@ if is_service_enabled designate; then
         echo_summary "Configuring Designate"
         configure_designate
 
-        echo_summary "Configuring Designate Client"
-        configure_designateclient
-
         if is_service_enabled key; then
             echo_summary "Creating Designate Keystone Accounts"
             create_designate_accounts
