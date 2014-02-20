@@ -18,6 +18,7 @@ from designate.plugin import DriverPlugin
 
 
 class Storage(DriverPlugin):
+
     """ Base class for storage plugins """
     __metaclass__ = abc.ABCMeta
     __plugin_ns__ = 'designate.storage'
@@ -42,12 +43,19 @@ class Storage(DriverPlugin):
         """
 
     @abc.abstractmethod
-    def find_quotas(self, context, criterion):
+    def find_quotas(self, context, criterion=None, marker=None,
+                    limit=None, sort_key=None, sort_dir=None):
         """
         Find Quotas
 
         :param context: RPC Context.
         :param criterion: Criteria to filter by.
+        :param marker: Resource ID from which after the requested page will
+                       start after
+        :param limit: Integer limit of objects of the page size after the
+                      marker
+        :param sort_key: Key from which to sort after.
+        :param sort_dir: Direction to sort after using sort_key.
         """
 
     @abc.abstractmethod
@@ -88,12 +96,19 @@ class Storage(DriverPlugin):
         """
 
     @abc.abstractmethod
-    def find_servers(self, context, criterion=None):
+    def find_servers(self, context, criterion=None, marker=None,
+                     limit=None, sort_key=None, sort_dir=None):
         """
         Find Servers.
 
         :param context: RPC Context.
         :param criterion: Criteria to filter by.
+        :param marker: Resource ID from which after the requested page will
+                       start after
+        :param limit: Integer limit of objects of the page size after the
+                      marker
+        :param sort_key: Key from which to sort after.
+        :param sort_dir: Direction to sort after using sort_key.
         """
 
     @abc.abstractmethod
@@ -143,21 +158,34 @@ class Storage(DriverPlugin):
         """
 
     @abc.abstractmethod
-    def find_tlds(self, context, criterion=None):
+    def find_tlds(self, context, criterion=None, marker=None,
+                  limit=None, sort_key=None, sort_dir=None):
         """
         Find TLDs
 
         :param context: RPC Context.
         :param criterion: Criteria to filter by.
+        :param marker: Resource ID from which after the requested page will
+                       start after
+        :param limit: Integer limit of objects of the page size after the
+                      marker
+        :param sort_key: Key from which to sort after.
+        :param sort_dir: Direction to sort after using sort_key.
         """
 
     @abc.abstractmethod
-    def find_tld(self, context, criterion):
+    def find_tld(self, context, criterion=None):
         """
         Find a single TLD.
 
         :param context: RPC Context.
         :param criterion: Criteria to filter by.
+        :param marker: Resource ID from which after the requested page will
+                       start after
+        :param limit: Integer limit of objects of the page size after the
+                      marker
+        :param sort_key: Key from which to sort after.
+        :param sort_dir: Direction to sort after using sort_key.
         """
 
     @abc.abstractmethod
@@ -188,12 +216,19 @@ class Storage(DriverPlugin):
         """
 
     @abc.abstractmethod
-    def find_tsigkeys(self, context, criterion=None):
+    def find_tsigkeys(self, context, criterion=None,
+                      marker=None, limit=None, sort_key=None, sort_dir=None):
         """
         Find TSIG Keys.
 
         :param context: RPC Context.
         :param criterion: Criteria to filter by.
+        :param marker: Resource ID from which after the requested page will
+                       start after
+        :param limit: Integer limit of objects of the page size after the
+                      marker
+        :param sort_key: Key from which to sort after.
+        :param sort_dir: Direction to sort after using sort_key.
         """
 
     @abc.abstractmethod
@@ -268,12 +303,19 @@ class Storage(DriverPlugin):
         """
 
     @abc.abstractmethod
-    def find_domains(self, context, criterion=None):
+    def find_domains(self, context, criterion=None, marker=None,
+                     limit=None, sort_key=None, sort_dir=None):
         """
         Find Domains
 
         :param context: RPC Context.
         :param criterion: Criteria to filter by.
+        :param marker: Resource ID from which after the requested page will
+                       start after
+        :param limit: Integer limit of objects of the page size after the
+                      marker
+        :param sort_key: Key from which to sort after.
+        :param sort_dir: Direction to sort after using sort_key.
         """
 
     @abc.abstractmethod
@@ -333,13 +375,20 @@ class Storage(DriverPlugin):
         """
 
     @abc.abstractmethod
-    def find_recordsets(self, context, domain_id, criterion=None):
+    def find_recordsets(self, context, criterion=None,
+                        marker=None, limit=None, sort_key=None, sort_dir=None):
         """
         Find RecordSets.
 
         :param context: RPC Context.
         :param domain_id: Domain ID where the recordsets reside.
         :param criterion: Criteria to filter by.
+        :param marker: Resource ID from which after the requested page will
+                       start after
+        :param limit: Integer limit of objects of the page size after the
+                      marker
+        :param sort_key: Key from which to sort after.
+        :param sort_dir: Direction to sort after using sort_key.
         """
 
     @abc.abstractmethod
@@ -399,12 +448,19 @@ class Storage(DriverPlugin):
         """
 
     @abc.abstractmethod
-    def find_records(self, context, criterion=None):
+    def find_records(self, context, criterion=None, marker=None,
+                     limit=None, sort_key=None, sort_dir=None):
         """
         Find Records.
 
         :param context: RPC Context.
         :param criterion: Criteria to filter by.
+        :param marker: Resource ID from which after the requested page will
+                       start after
+        :param limit: Integer limit of objects of the page size after the
+                      marker
+        :param sort_key: Key from which to sort after.
+        :param sort_dir: Direction to sort after using sort_key.
         """
 
     @abc.abstractmethod
@@ -462,12 +518,19 @@ class Storage(DriverPlugin):
         """
 
     @abc.abstractmethod
-    def find_blacklists(self, context, criterion):
+    def find_blacklists(self, context, criterion=None, marker=None,
+                        limit=None, sort_key=None, sort_dir=None):
         """
         Find Blacklists
 
         :param context: RPC Context.
         :param criterion: Criteria to filter by.
+        :param marker: Resource ID from which after the requested page will
+                       start after
+        :param limit: Integer limit of objects of the page size after the
+                      marker
+        :param sort_key: Key from which to sort after.
+        :param sort_dir: Direction to sort after using sort_key.
         """
 
     @abc.abstractmethod

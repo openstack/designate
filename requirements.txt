@@ -6,6 +6,7 @@ Flask>=0.10,<1.0
 iso8601>=0.1.8
 jsonschema>=2.0.0,<3.0.0
 kombu>=2.4.8
+lockfile>=0.8
 netaddr>=0.7.6
 oslo.config>=1.2.0
 oslo.rootwrap
