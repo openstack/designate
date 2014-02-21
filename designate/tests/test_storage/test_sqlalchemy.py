@@ -24,4 +24,10 @@ LOG = logging.getLogger(__name__)
 class SqlalchemyStorageTest(StorageTestCase, TestCase):
     def setUp(self):
         super(SqlalchemyStorageTest, self).setUp()
+
+        self.config(
+            storage_driver='sqlalchemy',
+            group='service:central'
+        )
+
         self.storage = storage.get_storage()
