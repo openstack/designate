@@ -15,6 +15,8 @@
 # under the License.
 import copy
 import json
+import functools
+import inspect
 import os
 import pkg_resources
 import uuid
@@ -236,3 +238,38 @@ def deep_dict_merge(a, b):
 
 def generate_uuid():
     return str(uuid.uuid4())
+
+
+def is_uuid_like(val):
+    """Returns validation of a value as a UUID.
+
+    For our purposes, a UUID is a canonical form string:
+    aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+
+    """
+    try:
+        return str(uuid.UUID(val)) == val
+    except (TypeError, ValueError, AttributeError):
+        return False
+
+
+def validate_uuid(*check):
+    """
+    A wrapper to ensure that API controller methods arguments are valid UUID's.
+
+    Usage:
+    @validate_uuid('zone_id')
+    def get_all(self, zone_id):
+        return {}
+    """
+    def inner(f):
+        def wrapper(*args, **kwargs):
+            arg_spec = inspect.getargspec(f).args
+            for name in check:
+                pos = arg_spec.index(name)
+                if not is_uuid_like(args[pos]):
+                    msg = 'Invalid UUID %s: %s' % (name, args[pos])
+                    raise exceptions.InvalidUUID(msg)
+            return f(*args, **kwargs)
+        return functools.wraps(f)(wrapper)
+    return inner

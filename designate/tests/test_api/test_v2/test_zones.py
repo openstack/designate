@@ -186,6 +186,9 @@ class ApiV2ZonesTest(ApiV2TestCase):
         self.assertEqual(zone['name'], response.json['zone']['name'])
         self.assertEqual(zone['email'], response.json['zone']['email'])
 
+    def test_get_zone_invalid_id(self):
+        self._assert_invalid_uuid(self.client.get, '/zones/%s')
+
     @patch.object(central_service.Service, 'get_domain',
                   side_effect=rpc_common.Timeout())
     def test_get_zone_timeout(self, _):
@@ -197,24 +200,6 @@ class ApiV2ZonesTest(ApiV2TestCase):
                   side_effect=exceptions.DomainNotFound())
     def test_get_zone_missing(self, _):
         self.client.get('/zones/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980',
-                        headers={'Accept': 'application/json'},
-                        status=404)
-
-    def test_get_zone_invalid_id(self):
-        self.skip('We don\'t guard against this in APIv2 yet')
-
-        # The letter "G" is not valid in a UUID
-        self.client.get('/zones/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff9GG',
-                        headers={'Accept': 'application/json'},
-                        status=404)
-
-        # Badly formed UUID
-        self.client.get('/zones/2fdadfb1cf964259ac6bbb7b6d2ff9GG',
-                        headers={'Accept': 'application/json'},
-                        status=404)
-
-        # Integer
-        self.client.get('/zones/12345',
                         headers={'Accept': 'application/json'},
                         status=404)
 
@@ -243,6 +228,9 @@ class ApiV2ZonesTest(ApiV2TestCase):
         self.assertIsNotNone(response.json['zone']['updated_at'])
         self.assertEqual('prefix-%s' % zone['email'],
                          response.json['zone']['email'])
+
+    def test_update_zone_invalid_id(self):
+        self._assert_invalid_uuid(self.client.patch_json, '/zones/%s')
 
     def test_update_zone_validation(self):
         # NOTE: The schemas should be tested separatly to the API. So we
@@ -294,28 +282,13 @@ class ApiV2ZonesTest(ApiV2TestCase):
         self.client.patch_json('/zones/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980',
                                body, status=404)
 
-    def test_update_zone_invalid_id(self):
-        self.skip('We don\'t guard against this in APIv2 yet')
-
-        # Prepare an update body
-        body = {'zone': {'email': 'example@example.org'}}
-
-        # The letter "G" is not valid in a UUID
-        self.client.patch_json('/zones/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff9GG',
-                               body, status=404)
-
-        # Badly formed UUID
-        self.client.patch_json('/zones/2fdadfb1cf964259ac6bbb7b6d2ff980',
-                               body, status=404)
-
-        # Integer
-        self.client.patch_json('/zones/12345',
-                               body, status=404)
-
     def test_delete_zone(self):
         zone = self.create_domain()
 
         self.client.delete('/zones/%s' % zone['id'], status=204)
+
+    def test_delete_zone_invalid_id(self):
+        self._assert_invalid_uuid(self.client.delete, '/zones/%s')
 
     @patch.object(central_service.Service, 'delete_domain',
                   side_effect=rpc_common.Timeout())
@@ -328,20 +301,6 @@ class ApiV2ZonesTest(ApiV2TestCase):
     def test_delete_zone_missing(self, _):
         self.client.delete('/zones/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980',
                            status=404)
-
-    def test_delete_zone_invalid_id(self):
-        self.skip('We don\'t guard against this in APIv2 yet')
-
-        # The letter "G" is not valid in a UUID
-        self.client.delete('/zones/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff9GG',
-                           status=404)
-
-        # Badly formed UUID
-        self.client.delete('/zones/2fdadfb1cf964259ac6bbb7b6d2ff980',
-                           status=404)
-
-        # Integer
-        self.client.delete('/zones/12345', status=404)
 
     # Zone import/export
     def test_missing_origin(self):

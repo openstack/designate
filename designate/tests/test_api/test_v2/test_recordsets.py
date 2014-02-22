@@ -50,6 +50,9 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         for k in fixture:
             self.assertEqual(fixture[k], response.json['recordset'][k])
 
+    def test_create_recordset_invalid_id(self):
+        self._assert_invalid_uuid(self.client.post, '/zones/%s/recordsets')
+
     def test_create_recordset_validation(self):
         # NOTE: The schemas should be tested separatly to the API. So we
         #       don't need to test every variation via the API itself.
@@ -121,6 +124,9 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         url = '/zones/%s/recordsets' % self.domain['id']
         self._assert_paging(data, url, key='recordsets')
 
+    def test_get_recordsets_invalid_id(self):
+        self._assert_invalid_uuid(self.client.get, '/zones/%s/recordsets')
+
     @patch.object(central_service.Service, 'find_recordsets',
                   side_effect=rpc_common.Timeout())
     def test_get_recordsets_timeout(self, _):
@@ -151,6 +157,9 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         self.assertEqual(recordset['name'], response.json['recordset']['name'])
         self.assertEqual(recordset['type'], response.json['recordset']['type'])
 
+    def test_get_recordset_invalid_id(self):
+        self._assert_invalid_uuid(self.client.get, '/zones/%s/recordsets/%s')
+
     @patch.object(central_service.Service, 'get_recordset',
                   side_effect=rpc_common.Timeout())
     def test_get_recordset_timeout(self, _):
@@ -166,9 +175,6 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
                         '9a66' % self.domain['id'],
                         headers={'Accept': 'application/json'},
                         status=404)
-
-    def test_get_recordset_invalid_id(self):
-        self.skip('We don\'t guard against this in APIv2 yet')
 
     def test_update_recordset(self):
         # Create a recordset
@@ -194,6 +200,10 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         self.assertIn('id', response.json['recordset'])
         self.assertIsNotNone(response.json['recordset']['updated_at'])
         self.assertEqual('Tester', response.json['recordset']['description'])
+
+    def test_update_recordset_invalid_id(self):
+        self._assert_invalid_uuid(
+            self.client.patch_json, '/zones/%s/recordsets/%s')
 
     def test_update_recordset_validation(self):
         # NOTE: The schemas should be tested separatly to the API. So we
@@ -250,9 +260,6 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
                % (self.domain['id']))
         self.client.patch_json(url, body, status=404)
 
-    def test_update_recordset_invalid_id(self):
-        self.skip('We don\'t guard against this in APIv2 yet')
-
     def test_delete_recordset(self):
         recordset = self.create_recordset(self.domain)
 
@@ -276,4 +283,5 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         self.client.delete(url, status=404)
 
     def test_delete_recordset_invalid_id(self):
-        self.skip('We don\'t guard against this in APIv2 yet')
+        self._assert_invalid_uuid(
+            self.client.delete, '/zones/%s/recordsets/%s')

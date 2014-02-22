@@ -90,11 +90,17 @@ class ApiV2TldsTest(ApiV2TestCase):
         self.assertEqual(self.get_tld_fixture(0)['name'],
                          response.json['tld']['name'])
 
+    def test_get_tld_invalid_id(self):
+        self._assert_invalid_uuid(self.client.get, '/tlds/%s')
+
     def test_delete_tld(self):
         tld = self.create_tld(fixture=0)
         self.policy({'delete_tld': '@'})
 
         self.client.delete('/tlds/%s' % tld['id'], status=204)
+
+    def test_delete_tld_invalid_id(self):
+        self._assert_invalid_uuid(self.client.delete, '/tlds/%s')
 
     def test_update_tld(self):
         tld = self.create_tld(fixture=0)
@@ -120,3 +126,6 @@ class ApiV2TldsTest(ApiV2TestCase):
         self.assertIsNotNone(response.json['tld']['updated_at'])
         self.assertEqual('prefix-%s' % tld['description'],
                          response.json['tld']['description'])
+
+    def test_update_tld_invalid_id(self):
+        self._assert_invalid_uuid(self.client.patch_json, '/tlds/%s')

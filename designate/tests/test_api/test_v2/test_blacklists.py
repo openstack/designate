@@ -69,6 +69,9 @@ class ApiV2BlacklistsTest(ApiV2TestCase):
         self.assertEqual(self.get_blacklist_fixture(0)['pattern'],
                          response.json['blacklist']['pattern'])
 
+    def test_get_bkaclist_invalid_id(self):
+        self._assert_invalid_uuid(self.client.get, '/blacklists/%s')
+
     def test_create_blacklist(self):
         self.policy({'create_blacklist': '@'})
         fixture = self.get_blacklist_fixture(0)
@@ -97,6 +100,9 @@ class ApiV2BlacklistsTest(ApiV2TestCase):
 
         self.client.delete('/blacklists/%s' % blacklist['id'], status=204)
 
+    def test_delete_bkaclist_invalid_id(self):
+        self._assert_invalid_uuid(self.client.delete, '/blacklists/%s')
+
     def test_update_blacklist(self):
         blacklist = self.create_blacklist(fixture=0)
         self.policy({'update_blacklist': '@'})
@@ -123,3 +129,6 @@ class ApiV2BlacklistsTest(ApiV2TestCase):
         self.assertIsNotNone(response.json['blacklist']['updated_at'])
         self.assertEqual('prefix-%s' % blacklist['description'],
                          response.json['blacklist']['description'])
+
+    def test_update_bkaclist_invalid_id(self):
+        self._assert_invalid_uuid(self.client.patch_json, '/blacklists/%s')

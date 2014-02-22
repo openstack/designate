@@ -82,6 +82,10 @@ class BadRequest(Base):
     error_type = 'bad_request'
 
 
+class InvalidUUID(BadRequest):
+    error_type = 'invalid_uuid'
+
+
 class NetworkEndpointNotFound(BadRequest):
     error_type = 'no_endpoint'
     error_code = 403

@@ -41,6 +41,7 @@ class ZonesController(rest.RestController):
 
     @pecan.expose(template=None, content_type='text/dns')
     @pecan.expose(template='json:', content_type='application/json')
+    @utils.validate_uuid('zone_id')
     def get_one(self, zone_id):
         """ Get Zone """
         # TODO(kiall): Validate we have a sane UUID for zone_id
@@ -179,6 +180,7 @@ class ZonesController(rest.RestController):
 
     @pecan.expose(template='json:', content_type='application/json')
     @pecan.expose(template='json:', content_type='application/json-patch+json')
+    @utils.validate_uuid('zone_id')
     def patch_one(self, zone_id):
         """ Update Zone """
         # TODO(kiall): This needs cleanup to say the least..
@@ -226,6 +228,7 @@ class ZonesController(rest.RestController):
         return self._view.show(context, request, zone)
 
     @pecan.expose(template=None, content_type='application/json')
+    @utils.validate_uuid('zone_id')
     def delete_one(self, zone_id):
         """ Delete Zone """
         request = pecan.request

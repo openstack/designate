@@ -33,10 +33,9 @@ class RecordsController(rest.RestController):
                  'recordset_id', 'status']
 
     @pecan.expose(template='json:', content_type='application/json')
+    @utils.validate_uuid('zone_id', 'recordset_id', 'record_id')
     def get_one(self, zone_id, recordset_id, record_id):
         """ Get Record """
-        # TODO(kiall): Validate we have a sane UUID for zone_id, recordset_id
-        #              and record_id
         request = pecan.request
         context = request.environ['context']
 
@@ -46,6 +45,7 @@ class RecordsController(rest.RestController):
         return self._view.show(context, request, record)
 
     @pecan.expose(template='json:', content_type='application/json')
+    @utils.validate_uuid('zone_id', 'recordset_id')
     def get_all(self, zone_id, recordset_id, **params):
         """ List Records """
         request = pecan.request
@@ -69,6 +69,7 @@ class RecordsController(rest.RestController):
                                [zone_id, recordset_id])
 
     @pecan.expose(template='json:', content_type='application/json')
+    @utils.validate_uuid('zone_id', 'recordset_id')
     def post_all(self, zone_id, recordset_id):
         """ Create Record """
         request = pecan.request
@@ -101,15 +102,13 @@ class RecordsController(rest.RestController):
 
     @pecan.expose(template='json:', content_type='application/json')
     @pecan.expose(template='json:', content_type='application/json-patch+json')
+    @utils.validate_uuid('zone_id', 'recordset_id', 'record_id')
     def patch_one(self, zone_id, recordset_id, record_id):
         """ Update Record """
         request = pecan.request
         context = request.environ['context']
         body = request.body_dict
         response = pecan.response
-
-        # TODO(kiall): Validate we have a sane UUID for zone_id and
-        #              recordset_id
 
         # Fetch the existing record
         record = central_api.get_record(context, zone_id, recordset_id,
@@ -138,14 +137,12 @@ class RecordsController(rest.RestController):
         return self._view.show(context, request, record)
 
     @pecan.expose(template=None, content_type='application/json')
+    @utils.validate_uuid('zone_id', 'recordset_id', 'record_id')
     def delete_one(self, zone_id, recordset_id, record_id):
         """ Delete Record """
         request = pecan.request
         response = pecan.response
         context = request.environ['context']
-
-        # TODO(kiall): Validate we have a sane UUID for zone_id and
-        #              recordset_id
 
         record = central_api.delete_record(context, zone_id, recordset_id,
                                            record_id)

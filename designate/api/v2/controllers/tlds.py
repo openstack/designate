@@ -31,6 +31,7 @@ class TldsController(rest.RestController):
     SORT_KEYS = ['created_at', 'id', 'updated_at', 'name']
 
     @pecan.expose(template='json:', content_type='application/json')
+    @utils.validate_uuid('tld_id')
     def get_one(self, tld_id):
         """ Get Tld """
 
@@ -84,6 +85,7 @@ class TldsController(rest.RestController):
 
     @pecan.expose(template='json:', content_type='application/json')
     @pecan.expose(template='json:', content_type='application/json-patch+json')
+    @utils.validate_uuid('tld_id')
     def patch_one(self, tld_id):
         """ Update Tld """
         request = pecan.request
@@ -113,6 +115,7 @@ class TldsController(rest.RestController):
         return self._view.show(context, request, tld)
 
     @pecan.expose(template=None, content_type='application/json')
+    @utils.validate_uuid('tld_id')
     def delete_one(self, tld_id):
         """ Delete Tld """
         request = pecan.request

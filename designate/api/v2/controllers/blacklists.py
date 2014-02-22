@@ -33,6 +33,7 @@ class BlacklistsController(rest.RestController):
     SORT_KEYS = ['created_at', 'id', 'updated_at', 'pattern']
 
     @pecan.expose(template='json:', content_type='application/json')
+    @utils.validate_uuid('blacklist_id')
     def get_one(self, blacklist_id):
         """ Get Blacklist """
 
@@ -90,6 +91,7 @@ class BlacklistsController(rest.RestController):
 
     @pecan.expose(template='json:', content_type='application/json')
     @pecan.expose(template='json:', content_type='application/json-patch+json')
+    @utils.validate_uuid('blacklist_id')
     def patch_one(self, blacklist_id):
         """ Update Blacklisted Zone """
         request = pecan.request
@@ -121,6 +123,7 @@ class BlacklistsController(rest.RestController):
         return self._view.show(context, request, blacklist)
 
     @pecan.expose(template=None, content_type='application/json')
+    @utils.validate_uuid('blacklist_id')
     def delete_one(self, blacklist_id):
         """ Delete Blacklisted Zone """
         request = pecan.request

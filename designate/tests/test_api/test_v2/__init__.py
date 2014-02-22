@@ -13,6 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import itertools
 from webtest import TestApp
 from designate.openstack.common import log as logging
 from designate.api import v2 as api_v2
@@ -21,6 +22,13 @@ from designate.tests.test_api import ApiTestCase
 
 
 LOG = logging.getLogger(__name__)
+
+
+INVALID_ID = [
+    '2fdadfb1-cf96-4259-ac6b-bb7b6d2ff98g',
+    '2fdadfb1cf964259ac6bbb7b6d2ff9GG',
+    '12345'
+]
 
 
 class ApiV2TestCase(ApiTestCase):
@@ -52,6 +60,13 @@ class ApiV2TestCase(ApiTestCase):
         self.client = None
 
         super(ApiV2TestCase, self).tearDown()
+
+    def _assert_invalid_uuid(self, method, url_format, *args, **kw):
+        count = url_format.count('%s')
+        for i in itertools.product(INVALID_ID, repeat=count):
+            response = method(url_format % i, status=400)
+            self.assertEqual(400, response.json['code'])
+            self.assertEqual('invalid_uuid', response.json['type'])
 
     def _assert_paging(self, data, url, key=None, limit=5, sort_dir='asc',
                        sort_key='created_at', marker=None, status=200):
