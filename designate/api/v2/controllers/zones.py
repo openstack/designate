@@ -34,6 +34,8 @@ class ZonesController(rest.RestController):
     _view = zones_view.ZonesView()
     _resource_schema = schema.Schema('v2', 'zone')
     _collection_schema = schema.Schema('v2', 'zones')
+    SORT_KEYS = ['created_at', 'id', 'updated_at', 'name', 'tenant_id',
+                 'serial', 'ttl']
 
     recordsets = recordsets.RecordSetsController()
 

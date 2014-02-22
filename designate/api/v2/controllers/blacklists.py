@@ -30,6 +30,7 @@ class BlacklistsController(rest.RestController):
     _view = blacklists_view.BlacklistsView()
     _resource_schema = schema.Schema('v2', 'blacklist')
     _collection_schema = schema.Schema('v2', 'blacklists')
+    SORT_KEYS = ['created_at', 'id', 'updated_at', 'pattern']
 
     @pecan.expose(template='json:', content_type='application/json')
     def get_one(self, blacklist_id):

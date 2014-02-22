@@ -29,6 +29,8 @@ class RecordsController(rest.RestController):
     _view = records_view.RecordsView()
     _resource_schema = schema.Schema('v2', 'record')
     _collection_schema = schema.Schema('v2', 'records')
+    SORT_KEYS = ['created_at', 'id', 'updated_at', 'domain_id', 'tenant_id',
+                 'recordset_id', 'status']
 
     @pecan.expose(template='json:', content_type='application/json')
     def get_one(self, zone_id, recordset_id, record_id):

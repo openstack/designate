@@ -136,6 +136,27 @@ class ApiV2ZonesTest(ApiV2TestCase):
                 for i in 'abcdefghij']
         self._assert_paging(data, '/zones', key='zones')
 
+        # Check for invalid limits, sort_dir, sort_key, marker
+        response = self._assert_paging(data, '/zones', key='zones',
+                                       limit='invalid_limit', status=400)
+        self.assertEqual(400, response.status_int)
+        self.assertEqual('invalid_limit', response.json['type'])
+
+        response = self._assert_paging(data, '/zones', key='zones',
+                                       sort_dir='invalid_sort_dir', status=400)
+        self.assertEqual(400, response.status_int)
+        self.assertEqual('invalid_sort_dir', response.json['type'])
+
+        response = self._assert_paging(data, '/zones', key='zones',
+                                       sort_key='invalid_sort_key', status=400)
+        self.assertEqual(400, response.status_int)
+        self.assertEqual('invalid_sort_key', response.json['type'])
+
+        response = self._assert_paging(data, '/zones', key='zones',
+                                       marker='invalid_marker', status=400)
+        self.assertEqual(400, response.status_int)
+        self.assertEqual('invalid_marker', response.json['type'])
+
     @patch.object(central_service.Service, 'find_domains',
                   side_effect=rpc_common.Timeout())
     def test_get_zones_timeout(self, _):

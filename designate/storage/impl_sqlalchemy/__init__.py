@@ -15,10 +15,12 @@
 # under the License.
 import time
 from sqlalchemy.orm import exc
+from sqlalchemy import exc as sqlalchemy_exc
 from sqlalchemy import distinct, func
 from oslo.config import cfg
 from designate.openstack.common import log as logging
 from designate.openstack.common.db.sqlalchemy.utils import paginate_query
+from designate.openstack.common.db.sqlalchemy.utils import InvalidSortKey
 from designate import exceptions
 from designate.storage import base
 from designate.storage.impl_sqlalchemy import models
@@ -116,7 +118,7 @@ class SQLAlchemyStorage(base.Storage):
                 raise exceptions.NotFound()
         else:
             # If marker is not none and basestring we query it.
-            # Othwewise, return all matching records
+            # Otherwise, return all matching records
             if marker is not None:
                 try:
                     marker = self._find(model, context, {'id': marker},
@@ -124,15 +126,27 @@ class SQLAlchemyStorage(base.Storage):
                 except exceptions.NotFound:
                     raise exceptions.MarkerNotFound(
                         'Marker %s could not be found' % marker)
+                # Malformed UUIDs return StatementError
+                except sqlalchemy_exc.StatementError as statement_error:
+                    raise exceptions.InvalidMarker(statement_error.message)
             sort_key = sort_key or 'created_at'
             sort_dir = sort_dir or 'asc'
 
-            query = paginate_query(
-                query, model, limit,
-                [sort_key, 'id', 'created_at'], marker=marker,
-                sort_dir=sort_dir)
+            try:
+                query = paginate_query(
+                    query, model, limit,
+                    [sort_key, 'id', 'created_at'], marker=marker,
+                    sort_dir=sort_dir)
 
-            return query.all()
+                return query.all()
+            except InvalidSortKey as sort_key_error:
+                raise exceptions.InvalidSortKey(sort_key_error.message)
+            # Any ValueErrors are propagated back to the user as is.
+            # Limits, sort_dir and sort_key are checked at the API layer.
+            # If however central or storage is called directly, invalid values
+            # show up as ValueError
+            except ValueError as value_error:
+                raise exceptions.ValueError(value_error.message)
 
     ## CRUD for our resources (quota, server, tsigkey, tenant, domain & record)
     ## R - get_*, find_*s

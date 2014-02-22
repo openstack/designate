@@ -53,17 +53,25 @@ class ApiV2TestCase(ApiTestCase):
 
         super(ApiV2TestCase, self).tearDown()
 
-    def _assert_paging(self, data, url, key=None, limit=5):
+    def _assert_paging(self, data, url, key=None, limit=5, sort_dir='asc',
+                       sort_key='created_at', marker=None, status=200):
         def _page(marker=None):
-            params = {'limit': limit}
+            params = {'limit': limit,
+                      'sort_dir': sort_dir,
+                      'sort_key': sort_key}
 
             if marker is not None:
                 params['marker'] = marker
 
-            r = self.client.get(url, params)
-            return r.json[key] if key in r.json else r.json
+            r = self.client.get(url, params, status=status)
+            if status != 200:
+                return r
+            else:
+                return r.json[key] if key in r.json else r.json
 
-        page_items = _page()
+        page_items = _page(marker=marker)
+        if status != 200:
+            return page_items
 
         x = 0
         length = len(data)
