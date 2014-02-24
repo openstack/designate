@@ -28,6 +28,7 @@ class TldsController(rest.RestController):
     _view = tlds_view.TldsView()
     _resource_schema = schema.Schema('v2', 'tld')
     _collection_schema = schema.Schema('v2', 'tlds')
+    SORT_KEYS = ['created_at', 'id', 'updated_at', 'name']
 
     @pecan.expose(template='json:', content_type='application/json')
     def get_one(self, tld_id):

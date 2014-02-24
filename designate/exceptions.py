@@ -91,6 +91,26 @@ class MarkerNotFound(BadRequest):
     error_type = 'marker_not_found'
 
 
+class ValueError(BadRequest):
+    error_type = 'value_error'
+
+
+class InvalidMarker(BadRequest):
+    error_type = 'invalid_marker'
+
+
+class InvalidSortDir(BadRequest):
+    error_type = 'invalid_sort_dir'
+
+
+class InvalidLimit(BadRequest):
+    error_type = 'invalid_limit'
+
+
+class InvalidSortKey(BadRequest):
+    error_type = 'invalid_sort_key'
+
+
 class InvalidOperation(BadRequest):
     error_code = 400
     error_type = 'invalid_operation'

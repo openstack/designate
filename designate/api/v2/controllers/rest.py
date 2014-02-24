@@ -24,11 +24,14 @@
 # ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+import six
 import inspect
 import pecan
 import pecan.rest
 import pecan.routing
+from designate import exceptions
 from designate.openstack.common import log as logging
+from designate.openstack.common.gettextutils import _
 
 LOG = logging.getLogger(__name__)
 
@@ -41,6 +44,9 @@ class RestController(pecan.rest.RestController):
     Ideally, we get these additions merged upstream.
     """
 
+    # default sort_keys.  The Controllers can override this.
+    SORT_KEYS = ['created_at', 'id']
+
     def _get_paging_params(self, params):
         """
         Extract any paging parameters
@@ -49,6 +55,34 @@ class RestController(pecan.rest.RestController):
         limit = params.pop('limit', None)
         sort_key = params.pop('sort_key', None)
         sort_dir = params.pop('sort_dir', None)
+
+        # Negative and zero limits are not caught in storage.
+        # With a number bigger than MAXSIZE, rpc throws an 'OverflowError long
+        #  too big to convert'.
+        # So the parameter 'limit' is checked here.
+        if limit:
+            try:
+                invalid_limit_message = _(str.format(
+                    'limit should be an integer between 1 and {0}',
+                    six.MAXSIZE))
+                int_limit = int(limit)
+                if int_limit <= 0 or int_limit > six.MAXSIZE:
+                    raise exceptions.InvalidLimit(invalid_limit_message)
+            # This exception is raised for non ints when int(limit) is called
+            except ValueError:
+                raise exceptions.InvalidLimit(invalid_limit_message)
+
+        # sort_dir is checked in paginate_query.
+        # We duplicate the sort_dir check here to throw a more specific
+        # exception than ValueError.
+        if sort_dir and sort_dir not in ['asc', 'desc']:
+            raise exceptions.InvalidSortDir(_("Unknown sort direction, "
+                                              "must be 'desc' or 'asc'"))
+
+        if sort_key and sort_key not in self.SORT_KEYS:
+            raise exceptions.InvalidSortKey(_(str.format(
+                'sort key must be one of {0}', str(self.SORT_KEYS))))
+
         return marker, limit, sort_key, sort_dir
 
     def _handle_post(self, method, remainder):

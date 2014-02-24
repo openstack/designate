@@ -98,6 +98,26 @@ class StorageTestCase(object):
             self.storage.find_servers(
                 self.admin_context, marker=str(uuid.uuid4()), limit=5)
 
+    def test_paging_marker_invalid(self):
+        with testtools.ExpectedException(exceptions.InvalidMarker):
+            self.storage.find_servers(
+                self.admin_context, marker='4')
+
+    def test_paging_limit_invalid(self):
+        with testtools.ExpectedException(exceptions.ValueError):
+            self.storage.find_servers(
+                self.admin_context, limit='z')
+
+    def test_paging_sort_dir_invalid(self):
+        with testtools.ExpectedException(exceptions.ValueError):
+            self.storage.find_servers(
+                self.admin_context, sort_dir='invalid_sort_dir')
+
+    def test_paging_sort_key_invalid(self):
+        with testtools.ExpectedException(exceptions.InvalidSortKey):
+            self.storage.find_servers(
+                self.admin_context, sort_key='invalid_sort_key')
+
     # Quota Tests
     def test_create_quota(self):
         values = self.get_quota_fixture()
