@@ -134,9 +134,9 @@ function create_designate_accounts() {
             keystone endpoint-create \
                 --region RegionOne \
                 --service_id $DESIGNATE_SERVICE \
-                --publicurl "http://$SERVICE_HOST:9001/v1" \
-                --adminurl "http://$SERVICE_HOST:9001/v1" \
-                --internalurl "http://$SERVICE_HOST:9001/v1"
+                --publicurl "http://$SERVICE_HOST:9001/" \
+                --adminurl "http://$SERVICE_HOST:9001/" \
+                --internalurl "http://$SERVICE_HOST:9001/"
         fi
     fi
 }

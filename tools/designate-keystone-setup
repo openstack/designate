@@ -194,5 +194,5 @@ add_role $DESIGNATE_USERID $SERVICE_TENANT $ADMIN_ROLE $DESIGNATE_USERNAME
 
 DESIGNATE_SERVICE=$(get_service designate dns \
                    "Designate DNSaaS")
-API_URL=${API_URL:-http://localhost:9001/v1}
+API_URL=${API_URL:-http://localhost:9001/}
 add_endpoint $DESIGNATE_SERVICE $API_URL
