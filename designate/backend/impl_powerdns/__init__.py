@@ -247,14 +247,14 @@ class PowerDNSBackend(base.Backend):
         # Ensure records are updated
         values = {'ttl': recordset['ttl']}
 
-        query = self.session.query(models.Records)
+        query = self.session.query(models.Record)
         query.filter_by(designate_recordset_id=recordset['id']).update(values)
 
         self._update_soa(domain)
 
     def delete_recordset(self, context, domain, recordset):
         # Ensure records are deleted
-        query = self.session.query(models.Records)
+        query = self.session.query(models.Record)
         query.filter_by(designate_recordset_id=recordset['id']).delete()
 
         self._update_soa(domain)
