@@ -74,19 +74,13 @@ class ApiV2ReverseFloatingIPTest(ApiV2TestCase):
 
     def test_get_floatingip_not_allocated(self):
         url = '/reverse/floatingips/foo:04580c52-b253-4eb7-8791-fbb9de9f856f'
-        response = self.client.get(url, status=404)
 
-        self.assertIn('request_id', response.json)
-        self.assertEqual(404, response.json['code'])
-        self.assertEqual('not_found', response.json['type'])
+        self._assert_exception('not_found', 404, self.client.get, url)
 
     def test_get_floatingip_invalid_key(self):
-        response = self.client.get('/reverse/floatingips/foo:bar', status=400)
+        url = '/reverse/floatingips/foo:bar'
 
-        self.assertIn('message', response.json)
-        self.assertIn('request_id', response.json)
-        self.assertEqual(400, response.json['code'])
-        self.assertEqual('bad_request', response.json['type'])
+        self._assert_exception('bad_request', 400, self.client.get, url)
 
     def test_list_floatingip_no_allocations(self):
         response = self.client.get('/reverse/floatingips')
@@ -171,35 +165,23 @@ class ApiV2ReverseFloatingIPTest(ApiV2TestCase):
         fip = self.network_api.fake.allocate_floatingip('tenant')
         self.network_api.fake.deallocate_floatingip(fip['id'])
 
-        response = self.client.patch_json(
-            '/reverse/floatingips/%s' % ":".join([fip['region'], fip['id']]),
-            {"floatingip": fixture}, status=404)
+        url = '/reverse/floatingips/%s' % ":".join([fip['region'], fip['id']])
 
-        self.assertIn('message', response.json)
-        self.assertIn('request_id', response.json)
-        self.assertEqual(404, response.json['code'])
-        self.assertEqual('not_found', response.json['type'])
+        self._assert_exception('not_found', 404, self.client.patch_json, url,
+                               {'floatingip': fixture})
 
     def test_set_floatingip_invalid_ptrdname(self):
         fip = self.network_api.fake.allocate_floatingip('tenant')
 
-        response = self.client.patch_json(
-            '/reverse/floatingips/%s' % ":".join([fip['region'], fip['id']]),
-            {"floatingip": {'ptrxname': 'test'}}, status=400)
+        url = '/reverse/floatingips/%s' % ":".join([fip['region'], fip['id']])
 
-        self.assertIn('message', response.json)
-        self.assertIn('request_id', response.json)
-        self.assertEqual(400, response.json['code'])
-        self.assertEqual('invalid_object', response.json['type'])
+        self._assert_exception('invalid_object', 400, self.client.patch_json,
+                               url, {'floatingip': {'ptrdname': 'test|'}})
 
     def test_set_floatingip_invalid_key(self):
-        response = self.client.patch_json(
-            '/reverse/floatingips/%s' % 'foo:random', {}, status=400)
-
-        self.assertIn('message', response.json)
-        self.assertIn('request_id', response.json)
-        self.assertEqual(400, response.json['code'])
-        self.assertEqual('bad_request', response.json['type'])
+        url = '/reverse/floatingips/%s' % 'foo:random'
+        self._assert_exception('bad_request', 400, self.client.patch_json,
+                               url, {})
 
     def test_unset_floatingip(self):
         self.create_server()
@@ -238,11 +220,7 @@ class ApiV2ReverseFloatingIPTest(ApiV2TestCase):
 
         self.network_api.fake.deallocate_floatingip(fip['id'])
 
-        response = self.client.patch_json(
-            '/reverse/floatingips/%s' % ":".join([fip['region'], fip['id']]),
-            {"floatingip": {'ptrdname': None}}, status=404)
+        url = '/reverse/floatingips/%s' % ":".join([fip['region'], fip['id']])
 
-        self.assertIn('message', response.json)
-        self.assertIn('request_id', response.json)
-        self.assertEqual(404, response.json['code'])
-        self.assertEqual('not_found', response.json['type'])
+        self._assert_exception('not_found', 404, self.client.patch_json, url,
+                               {"floatingip": {'ptrdname': None}})

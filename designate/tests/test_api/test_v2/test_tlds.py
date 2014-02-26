@@ -44,9 +44,8 @@ class ApiV2TldsTest(ApiV2TestCase):
         invalid_fixture = self.get_tld_fixture(-1)
 
         # Ensure it fails with a 400
-        response = self.client.post_json('/tlds/', {'tld': invalid_fixture},
-                                         status=400)
-        self.assertEqual(400, response.status_int)
+        self._assert_exception('invalid_object', 400, self.client.post_json,
+                               '/tlds', {'tld': invalid_fixture})
 
     def test_get_tlds(self):
         self.policy({'find_tlds': '@'})

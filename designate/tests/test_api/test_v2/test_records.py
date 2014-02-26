@@ -60,19 +60,16 @@ class ApiV2RecordsTest(ApiV2TestCase):
             self.domain['id'], self.rrset['id'])
 
         # Ensure it fails with a 400
-        response = self.client.post_json(url, body, status=400)
-
-        self.assertEqual(400, response.status_int)
+        self._assert_exception('invalid_object', 400, self.client.post_json,
+                               url, body)
 
         # Add a junk field to the body
         fixture['junk'] = 'Junk Field'
         body = {'record': fixture}
 
-        url = '/zones/%s/recordsets/%s/records' % (
-            self.domain['id'], self.rrset['id'])
-
         # Ensure it fails with a 400
-        response = self.client.post_json(url, body, status=400)
+        self._assert_exception('invalid_object', 400, self.client.post_json,
+                               url, body)
 
     @patch.object(central_service.Service, 'create_record',
                   side_effect=rpc_common.Timeout())
@@ -84,14 +81,12 @@ class ApiV2RecordsTest(ApiV2TestCase):
         url = '/zones/%s/recordsets/%s/records' % (
             self.domain['id'], self.rrset['id'])
 
-        response = self.client.post_json(url, body, status=504)
-        self.assertEqual(504, response.json['code'])
-        self.assertEqual('timeout', response.json['type'])
+        self._assert_exception('timeout', 504, self.client.post_json, url,
+                               body)
 
     @patch.object(central_service.Service, 'create_record',
                   side_effect=exceptions.DuplicateRecord())
     def test_create_record_duplicate(self, _):
-
         fixture = self.get_record_fixture(self.rrset['type'], fixture=0)
 
         body = {'record': fixture}
@@ -99,9 +94,8 @@ class ApiV2RecordsTest(ApiV2TestCase):
         url = '/zones/%s/recordsets/%s/records' % (
             self.domain['id'], self.rrset['id'])
 
-        response = self.client.post_json(url, body, status=409)
-        self.assertEqual(409, response.json['code'])
-        self.assertEqual('duplicate_record', response.json['type'])
+        self._assert_exception('duplicate_record', 409, self.client.post_json,
+                               url, body)
 
     def test_create_record_invalid_domain(self):
         fixture = self.get_record_fixture(self.rrset['type'], fixture=0)
@@ -110,9 +104,9 @@ class ApiV2RecordsTest(ApiV2TestCase):
 
         url = '/zones/ba751950-6193-11e3-949a-0800200c9a66/recordsets/' \
             'ba751950-6193-11e3-949a-0800200c9a66/records'
-        response = self.client.post_json(url, body, status=404)
-        self.assertEqual(404, response.json['code'])
-        self.assertEqual('domain_not_found', response.json['type'])
+
+        self._assert_exception('domain_not_found', 404, self.client.post_json,
+                               url, body)
 
     def test_create_record_invalid_rrset(self):
         fixture = self.get_record_fixture(self.rrset['type'], fixture=0)
@@ -121,9 +115,9 @@ class ApiV2RecordsTest(ApiV2TestCase):
 
         url = '/zones/%s/recordsets/' \
             'ba751950-6193-11e3-949a-0800200c9a66/records' % self.domain['id']
-        response = self.client.post_json(url, body, status=404)
-        self.assertEqual(404, response.json['code'])
-        self.assertEqual('recordset_not_found', response.json['type'])
+
+        self._assert_exception('recordset_not_found', 404,
+                               self.client.post_json, url, body)
 
     def test_get_records(self):
         url = '/zones/%s/recordsets/%s/records' % (
@@ -147,15 +141,15 @@ class ApiV2RecordsTest(ApiV2TestCase):
 
         self._assert_paging(data, url, key='records')
 
+        self._assert_invalid_paging(data, url, key='records')
+
     @patch.object(central_service.Service, 'find_records',
                   side_effect=rpc_common.Timeout())
     def test_get_records_timeout(self, _):
         url = '/zones/ba751950-6193-11e3-949a-0800200c9a66/recordsets/' \
             'ba751950-6193-11e3-949a-0800200c9a66/records'
 
-        response = self.client.get(url, status=504)
-        self.assertEqual(504, response.json['code'])
-        self.assertEqual('timeout', response.json['type'])
+        self._assert_exception('timeout', 504, self.client.get, url)
 
     def test_get_record(self):
         # Create a record
@@ -187,10 +181,9 @@ class ApiV2RecordsTest(ApiV2TestCase):
         url = '/zones/%s/recordsets/%s/records/' \
             'ba751950-6193-11e3-949a-0800200c9a66' % (
                 self.domain['id'], self.rrset['id'])
-        response = self.client.get(url, headers={'Accept': 'application/json'},
-                                   status=504)
-        self.assertEqual(504, response.json['code'])
-        self.assertEqual('timeout', response.json['type'])
+
+        self._assert_exception('timeout', 504, self.client.get, url,
+                               headers={'Accept': 'application/json'})
 
     @patch.object(central_service.Service, 'get_record',
                   side_effect=exceptions.RecordNotFound())
@@ -198,13 +191,13 @@ class ApiV2RecordsTest(ApiV2TestCase):
         url = '/zones/%s/recordsets/%s/records/' \
             'ba751950-6193-11e3-949a-0800200c9a66' % (
                 self.domain['id'], self.rrset['id'])
-        response = self.client.get(url, headers={'Accept': 'application/json'},
-                                   status=404)
-        self.assertEqual(404, response.json['code'])
-        self.assertEqual('record_not_found', response.json['type'])
+
+        self._assert_exception('record_not_found', 404, self.client.get, url,
+                               headers={'Accept': 'application/json'})
 
     def test_get_record_invalid_id(self):
         url = '/zones/%s/recordsets/%s/records/%s'
+
         self._assert_invalid_uuid(self.client.get, url)
 
     def test_update_record(self):
@@ -245,13 +238,15 @@ class ApiV2RecordsTest(ApiV2TestCase):
         body = {'record': {'description': 'Tester'}, 'junk': 'Junk Field'}
 
         # Ensure it fails with a 400
-        self.client.patch_json(url, body, status=400)
+        self._assert_exception('invalid_object', 400, self.client.patch_json,
+                               url, body)
 
         # Prepare an update body with junk in the body
         body = {'record': {'description': 'Tester', 'junk': 'Junk Field'}}
 
         # Ensure it fails with a 400
-        self.client.patch_json(url, body, status=400)
+        self._assert_exception('invalid_object', 400, self.client.patch_json,
+                               url, body)
 
     @patch.object(central_service.Service, 'get_record',
                   side_effect=exceptions.DuplicateRecord())
@@ -264,9 +259,9 @@ class ApiV2RecordsTest(ApiV2TestCase):
         body = {'record': {'description': 'Tester'}}
 
         # Ensure it fails with a 409
-        response = self.client.patch_json(url, body, status=409)
-        self.assertEqual(409, response.json['code'])
-        self.assertEqual('duplicate_record', response.json['type'])
+        self._assert_exception('duplicate_record', 409, self.client.patch_json,
+                               url, body,
+                               headers={'Accept': 'application/json'})
 
     @patch.object(central_service.Service, 'get_record',
                   side_effect=rpc_common.Timeout())
@@ -279,9 +274,8 @@ class ApiV2RecordsTest(ApiV2TestCase):
         body = {'record': {'description': 'Tester'}}
 
         # Ensure it fails with a 504
-        response = self.client.patch_json(url, body, status=504)
-        self.assertEqual(504, response.json['code'])
-        self.assertEqual('timeout', response.json['type'])
+        self._assert_exception('timeout', 504, self.client.patch_json,
+                               url, body)
 
     @patch.object(central_service.Service, 'get_record',
                   side_effect=exceptions.RecordNotFound())
@@ -294,9 +288,8 @@ class ApiV2RecordsTest(ApiV2TestCase):
         body = {'record': {'description': 'Tester'}}
 
         # Ensure it fails with a 404
-        response = self.client.patch_json(url, body, status=404)
-        self.assertEqual(404, response.json['code'])
-        self.assertEqual('record_not_found', response.json['type'])
+        self._assert_exception('record_not_found', 404, self.client.patch_json,
+                               url, body)
 
     def test_update_record_invalid_id(self):
         url = '/zones/%s/recordsets/%s/records/%s'
@@ -317,7 +310,7 @@ class ApiV2RecordsTest(ApiV2TestCase):
             'ba751950-6193-11e3-949a-0800200c9a66' % (
                 self.domain['id'], self.rrset['id'])
 
-        self.client.delete(url, status=504)
+        self._assert_exception('timeout', 504, self.client.delete, url)
 
     @patch.object(central_service.Service, 'delete_record',
                   side_effect=exceptions.RecordNotFound())
@@ -325,8 +318,11 @@ class ApiV2RecordsTest(ApiV2TestCase):
         url = '/zones/%s/recordsets/%s/records/' \
             'ba751950-6193-11e3-949a-0800200c9a66' % (
                 self.domain['id'], self.rrset['id'])
-        self.client.delete(url, status=404)
+
+        self._assert_exception('record_not_found', 404, self.client.delete,
+                               url)
 
     def test_delete_record_invalid_id(self):
         url = '/zones/%s/recordsets/%s/records/%s'
+
         self._assert_invalid_uuid(self.client.delete, url)

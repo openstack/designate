@@ -62,19 +62,19 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         # Add a junk field to the wrapper
         body = {'recordset': fixture, 'junk': 'Junk Field'}
 
-        # Ensure it fails with a 400
-        response = self.client.post_json(
-            '/zones/%s/recordsets' % self.domain['id'], body, status=400)
+        url = '/zones/%s/recordsets' % self.domain['id']
 
-        self.assertEqual(400, response.status_int)
+        # Ensure it fails with a 400
+        self._assert_exception(
+            'invalid_object', 400, self.client.post_json, url, body)
 
         # Add a junk field to the body
         fixture['junk'] = 'Junk Field'
         body = {'recordset': fixture}
 
         # Ensure it fails with a 400
-        response = self.client.post_json(
-            '/zones/%s/recordsets' % self.domain['id'], body, status=400)
+        self._assert_exception(
+            'invalid_object', 400, self.client.post_json, url, body)
 
     @patch.object(central_service.Service, 'create_recordset',
                   side_effect=rpc_common.Timeout())
@@ -82,28 +82,38 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         fixture = self.get_recordset_fixture(self.domain['name'], fixture=0)
 
         body = {'recordset': fixture}
-        self.client.post_json('/zones/%s/recordsets' % self.domain['id'], body,
-                              status=504)
+
+        url = '/zones/%s/recordsets' % self.domain['id']
+
+        self._assert_exception('timeout', 504, self.client.post_json, url,
+                               body)
 
     @patch.object(central_service.Service, 'create_recordset',
-                  side_effect=exceptions.DuplicateDomain())
+                  side_effect=exceptions.DuplicateRecordSet())
     def test_create_recordset_duplicate(self, _):
         fixture = self.get_recordset_fixture(self.domain['name'], fixture=0)
 
         body = {'recordset': fixture}
-        self.client.post_json('/zones/%s/recordsets' % self.domain['id'], body,
-                              status=409)
+
+        url = '/zones/%s/recordsets' % self.domain['id']
+
+        self._assert_exception('duplicate_recordset', 409,
+                               self.client.post_json, url, body)
 
     def test_create_recordset_invalid_domain(self):
         fixture = self.get_recordset_fixture(self.domain['name'], fixture=0)
 
         body = {'recordset': fixture}
-        self.client.post_json(
-            '/zones/ba751950-6193-11e3-949a-0800200c9a66/recordsets', body,
-            status=404)
+
+        url = '/zones/ba751950-6193-11e3-949a-0800200c9a66/recordsets'
+
+        self._assert_exception('domain_not_found', 404, self.client.post_json,
+                               url, body)
 
     def test_get_recordsets(self):
-        response = self.client.get('/zones/%s/recordsets' % self.domain['id'])
+        url = '/zones/%s/recordsets' % self.domain['id']
+
+        response = self.client.get(url)
 
         # Check the headers are what we expect
         self.assertEqual(200, response.status_int)
@@ -121,8 +131,9 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
                 name='x-%s.%s' % (i, self.domain['name']))
                 for i in xrange(0, 10)]
 
-        url = '/zones/%s/recordsets' % self.domain['id']
         self._assert_paging(data, url, key='recordsets')
+
+        self._assert_invalid_paging(data, url, key='recordsets')
 
     def test_get_recordsets_invalid_id(self):
         self._assert_invalid_uuid(self.client.get, '/zones/%s/recordsets')
@@ -130,9 +141,9 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
     @patch.object(central_service.Service, 'find_recordsets',
                   side_effect=rpc_common.Timeout())
     def test_get_recordsets_timeout(self, _):
-        self.client.get(
-            '/zones/ba751950-6193-11e3-949a-0800200c9a66/recordsets',
-            status=504)
+        url = '/zones/ba751950-6193-11e3-949a-0800200c9a66/recordsets'
+
+        self._assert_exception('timeout', 504, self.client.get, url)
 
     def test_get_recordset(self):
         # Create a recordset
@@ -163,18 +174,21 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
     @patch.object(central_service.Service, 'get_recordset',
                   side_effect=rpc_common.Timeout())
     def test_get_recordset_timeout(self, _):
-        self.client.get('/zones/%s/recordsets/ba751950-6193-11e3-949a-0800200c'
-                        '9a66' % self.domain['id'],
-                        headers={'Accept': 'application/json'},
-                        status=504)
+        url = '/zones/%s/recordsets/ba751950-6193-11e3-949a-0800200c9a66' % (
+            self.domain['id'])
+
+        self._assert_exception('timeout', 504, self.client.get, url,
+                               headers={'Accept': 'application/json'})
 
     @patch.object(central_service.Service, 'get_recordset',
                   side_effect=exceptions.RecordSetNotFound())
     def test_get_recordset_missing(self, _):
-        self.client.get('/zones/%s/recordsets/ba751950-6193-11e3-949a-0800200c'
-                        '9a66' % self.domain['id'],
-                        headers={'Accept': 'application/json'},
-                        status=404)
+        url = '/zones/%s/recordsets/ba751950-6193-11e3-949a-0800200c9a66' % (
+            self.domain['id'])
+
+        self._assert_exception('recordset_not_found', 404,
+                               self.client.get, url,
+                               headers={'Accept': 'application/json'})
 
     def test_update_recordset(self):
         # Create a recordset
@@ -217,15 +231,16 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         # Ensure it fails with a 400
         url = '/zones/%s/recordsets/%s' % (recordset['domain_id'],
                                            recordset['id'])
-        self.client.patch_json(url, body, status=400)
+
+        self._assert_exception('invalid_object', 400, self.client.patch_json,
+                               url, body)
 
         # Prepare an update body with junk in the body
         body = {'recordset': {'description': 'Tester', 'junk': 'Junk Field'}}
 
         # Ensure it fails with a 400
-        url = '/zones/%s/recordsets/%s' % (recordset['domain_id'],
-                                           recordset['id'])
-        self.client.patch_json(url, body, status=400)
+        self._assert_exception('invalid_object', 400, self.client.patch_json,
+                               url, body)
 
     @patch.object(central_service.Service, 'get_recordset',
                   side_effect=exceptions.DuplicateRecordSet())
@@ -236,7 +251,9 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         # Ensure it fails with a 409
         url = ('/zones/%s/recordsets/ba751950-6193-11e3-949a-0800200c9a66'
                % (self.domain['id']))
-        self.client.patch_json(url, body, status=409)
+
+        self._assert_exception('duplicate_recordset', 409,
+                               self.client.patch_json, url, body)
 
     @patch.object(central_service.Service, 'get_recordset',
                   side_effect=rpc_common.Timeout())
@@ -247,7 +264,9 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         # Ensure it fails with a 504
         url = ('/zones/%s/recordsets/ba751950-6193-11e3-949a-0800200c9a66'
                % (self.domain['id']))
-        self.client.patch_json(url, body, status=504)
+
+        self._assert_exception('timeout', 504, self.client.patch_json, url,
+                               body)
 
     @patch.object(central_service.Service, 'get_recordset',
                   side_effect=exceptions.RecordSetNotFound())
@@ -258,7 +277,9 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         # Ensure it fails with a 404
         url = ('/zones/%s/recordsets/ba751950-6193-11e3-949a-0800200c9a66'
                % (self.domain['id']))
-        self.client.patch_json(url, body, status=404)
+
+        self._assert_exception('recordset_not_found', 404,
+                               self.client.patch_json, url, body)
 
     def test_delete_recordset(self):
         recordset = self.create_recordset(self.domain)
@@ -273,14 +294,16 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         url = ('/zones/%s/recordsets/ba751950-6193-11e3-949a-0800200c9a66'
                % (self.domain['id']))
 
-        self.client.delete(url, status=504)
+        self._assert_exception('timeout', 504, self.client.delete, url)
 
     @patch.object(central_service.Service, 'delete_recordset',
                   side_effect=exceptions.RecordSetNotFound())
     def test_delete_recordset_missing(self, _):
         url = ('/zones/%s/recordsets/ba751950-6193-11e3-949a-0800200c9a66'
                % (self.domain['id']))
-        self.client.delete(url, status=404)
+
+        self._assert_exception('recordset_not_found', 404,
+                               self.client.delete, url)
 
     def test_delete_recordset_invalid_id(self):
         self._assert_invalid_uuid(
