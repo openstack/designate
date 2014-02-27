@@ -19,7 +19,7 @@
 from sqlalchemy import ForeignKey, Enum, Integer, String, DateTime, Text
 from sqlalchemy.schema import Column, MetaData
 from designate.openstack.common import timeutils
-from designate.openstack.common.uuidutils import generate_uuid
+from designate import utils
 from designate.storage.impl_sqlalchemy.migrate_repo.utils import Table
 from designate.storage.impl_sqlalchemy.migrate_repo.utils import create_tables
 from designate.storage.impl_sqlalchemy.migrate_repo.utils import drop_tables
@@ -31,7 +31,8 @@ meta = MetaData()
 RECORD_TYPES = ['A', 'AAAA', 'CNAME', 'MX', 'SRV', 'TXT', 'NS']
 
 servers = Table('servers', meta,
-                Column('id', UUID(), default=generate_uuid, primary_key=True),
+                Column('id', UUID(), default=utils.generate_uuid,
+                       primary_key=True),
                 Column('created_at', DateTime(), default=timeutils.utcnow),
                 Column('updated_at', DateTime(), onupdate=timeutils.utcnow),
                 Column('version', Integer(), default=1, nullable=False),
@@ -40,7 +41,8 @@ servers = Table('servers', meta,
                 Column('ipv6', Inet(), default=None, unique=True))
 
 domains = Table('domains', meta,
-                Column('id', UUID(), default=generate_uuid, primary_key=True),
+                Column('id', UUID(), default=utils.generate_uuid,
+                       primary_key=True),
                 Column('created_at', DateTime(), default=timeutils.utcnow),
                 Column('updated_at', DateTime(), onupdate=timeutils.utcnow),
                 Column('version', Integer(), default=1, nullable=False),
@@ -54,7 +56,8 @@ domains = Table('domains', meta,
                 Column('minimum', Integer(), default=3600, nullable=False))
 
 records = Table('records', meta,
-                Column('id', UUID(), default=generate_uuid, primary_key=True),
+                Column('id', UUID(), default=utils.generate_uuid,
+                       primary_key=True),
                 Column('created_at', DateTime(), default=timeutils.utcnow),
                 Column('updated_at', DateTime(), onupdate=timeutils.utcnow),
                 Column('version', Integer(), default=1, nullable=False),

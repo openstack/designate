@@ -14,15 +14,18 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import copy
+import json
 import os
 import pkg_resources
-import json
+import uuid
+
 from jinja2 import Template
-from designate.openstack.common import log as logging
 from oslo.config import cfg
+
+from designate import exceptions
+from designate.openstack.common import log as logging
 from designate.openstack.common import processutils
 from designate.openstack.common import timeutils
-from designate import exceptions
 
 LOG = logging.getLogger(__name__)
 
@@ -229,3 +232,7 @@ def deep_dict_merge(a, b):
             result[k] = copy.deepcopy(v)
 
     return result
+
+
+def generate_uuid():
+    return str(uuid.uuid4())

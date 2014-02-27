@@ -22,10 +22,10 @@ from sqlalchemy import (Column, DateTime, String, Text, Integer, ForeignKey,
 from sqlalchemy.orm import relationship, backref
 from designate.openstack.common import log as logging
 from designate.openstack.common import timeutils
-from designate.openstack.common.uuidutils import generate_uuid
 from designate.sqlalchemy.types import UUID
 from designate.sqlalchemy.models import Base as CommonBase
 from designate.sqlalchemy.models import SoftDeleteMixin
+from designate import utils
 from sqlalchemy.ext.declarative import declarative_base
 
 LOG = logging.getLogger(__name__)
@@ -39,7 +39,7 @@ TSIG_ALGORITHMS = ['hmac-md5', 'hmac-sha1', 'hmac-sha224', 'hmac-sha256',
 
 
 class Base(CommonBase):
-    id = Column(UUID, default=generate_uuid, primary_key=True)
+    id = Column(UUID, default=utils.generate_uuid, primary_key=True)
     version = Column(Integer, default=1, nullable=False)
     created_at = Column(DateTime, default=timeutils.utcnow)
     updated_at = Column(DateTime, onupdate=timeutils.utcnow)

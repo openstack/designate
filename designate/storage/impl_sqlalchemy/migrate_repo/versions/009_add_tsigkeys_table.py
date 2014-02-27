@@ -16,7 +16,7 @@
 from sqlalchemy import Enum, Integer, String, DateTime
 from sqlalchemy.schema import Table, Column, MetaData
 from designate.openstack.common import timeutils
-from designate.openstack.common.uuidutils import generate_uuid
+from designate import utils
 from designate.sqlalchemy.types import UUID
 
 
@@ -26,7 +26,8 @@ TSIG_ALGORITHMS = ['hmac-md5', 'hmac-sha1', 'hmac-sha224', 'hmac-sha256',
                    'hmac-sha384', 'hmac-sha512']
 
 tsigkeys = Table('tsigkeys', meta,
-                 Column('id', UUID(), default=generate_uuid, primary_key=True),
+                 Column('id', UUID(), default=utils.generate_uuid,
+                        primary_key=True),
                  Column('created_at', DateTime(), default=timeutils.utcnow),
                  Column('updated_at', DateTime(), onupdate=timeutils.utcnow),
                  Column('version', Integer(), default=1, nullable=False),

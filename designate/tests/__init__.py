@@ -30,7 +30,7 @@ from designate.openstack.common.fixture import config
 from designate.openstack.common import importutils
 from designate.openstack.common import policy
 from designate.openstack.common import test
-from designate.openstack.common import uuidutils
+from designate import utils
 from designate.context import DesignateContext
 from designate.tests import resources
 from designate import exceptions
@@ -328,8 +328,8 @@ class TestCase(test.BaseTestCase):
 
     def get_admin_context(self):
         return DesignateContext.get_admin_context(
-            tenant=uuidutils.generate_uuid(),
-            user=uuidutils.generate_uuid())
+            tenant=utils.generate_uuid(),
+            user=utils.generate_uuid())
 
     # Fixture methods
     def get_quota_fixture(self, fixture=0, values={}):

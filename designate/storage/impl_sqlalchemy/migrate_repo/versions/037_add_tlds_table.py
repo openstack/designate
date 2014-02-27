@@ -15,7 +15,7 @@
 from sqlalchemy import Integer, String, DateTime, Unicode
 from sqlalchemy.schema import Table, Column, MetaData
 from designate.openstack.common import timeutils
-from designate.openstack.common.uuidutils import generate_uuid
+from designate import utils
 from designate.sqlalchemy.types import UUID
 from designate.openstack.common import log as logging
 
@@ -26,7 +26,7 @@ tlds_table = Table(
     'tlds',
     meta,
 
-    Column('id', UUID(), default=generate_uuid, primary_key=True),
+    Column('id', UUID(), default=utils.generate_uuid, primary_key=True),
     Column('created_at', DateTime(), default=timeutils.utcnow),
     Column('updated_at', DateTime(), onupdate=timeutils.utcnow),
     Column('version', Integer(), default=1, nullable=False),

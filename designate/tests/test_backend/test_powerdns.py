@@ -20,7 +20,7 @@ from mock import MagicMock
 from designate import tests
 from designate.tests import DatabaseFixture
 from designate.tests.test_backend import BackendTestMixin
-from designate.openstack.common import uuidutils
+from designate import utils
 
 # impl_powerdns needs to register its options before being instanciated.
 # Import it and pretend to use it to avoid flake8 unused import errors.
@@ -38,21 +38,21 @@ class PowerDNSBackendTestCase(tests.TestCase, BackendTestMixin):
     def get_tsigkey_fixture(self):
         return super(PowerDNSBackendTestCase, self).get_tsigkey_fixture(
             values={
-                'id': uuidutils.generate_uuid()
+                'id': utils.generate_uuid()
             }
         )
 
     def get_server_fixture(self):
         return super(PowerDNSBackendTestCase, self).get_server_fixture(
             values={
-                'id': uuidutils.generate_uuid()
+                'id': utils.generate_uuid()
             }
         )
 
     def get_domain_fixture(self):
         return super(PowerDNSBackendTestCase, self).get_domain_fixture(
             values={
-                'id': uuidutils.generate_uuid(),
+                'id': utils.generate_uuid(),
                 'ttl': 42,
                 'serial': 42,
                 'refresh': 42,
