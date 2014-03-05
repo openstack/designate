@@ -17,6 +17,7 @@ import copy
 import fixtures
 import functools
 import os
+import inspect
 from migrate.versioning import repository
 import shutil
 import sqlalchemy
@@ -485,6 +486,15 @@ class TestCase(test.BaseTestCase):
 
         values = self.get_blacklist_fixture(fixture=fixture, values=kwargs)
         return self.central_service.create_blacklist(context, values=values)
+
+    def _ensure_interface(self, interface, implementation):
+        for name in interface.__abstractmethods__:
+            in_arginfo = inspect.getargspec(getattr(interface, name))
+            im_arginfo = inspect.getargspec(getattr(implementation, name))
+
+            self.assertEqual(
+                in_arginfo, im_arginfo,
+                "Method Signature for '%s' mismatched" % name)
 
 
 def _skip_decorator(func):

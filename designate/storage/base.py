@@ -174,7 +174,7 @@ class Storage(DriverPlugin):
         """
 
     @abc.abstractmethod
-    def find_tld(self, context, criterion=None):
+    def find_tld(self, context, criterion):
         """
         Find a single TLD.
 
@@ -277,7 +277,7 @@ class Storage(DriverPlugin):
         """
 
     @abc.abstractmethod
-    def count_tenants(self, context, values):
+    def count_tenants(self, context):
         """
         Count tenants
 
@@ -392,12 +392,11 @@ class Storage(DriverPlugin):
         """
 
     @abc.abstractmethod
-    def find_recordset(self, context, domain_id, criterion):
+    def find_recordset(self, context, criterion):
         """
         Find a single RecordSet.
 
         :param context: RPC Context.
-        :param domain_id: Domain ID where the recordsets reside.
         :param criterion: Criteria to filter by.
         """
 
@@ -429,12 +428,13 @@ class Storage(DriverPlugin):
         """
 
     @abc.abstractmethod
-    def create_record(self, context, domain_id, values):
+    def create_record(self, context, domain_id, recordset_id, values):
         """
         Create a record on a given Domain ID
 
         :param context: RPC Context.
         :param domain_id: Domain ID to create the record in.
+        :param recordset_id: RecordSet ID to create the record in.
         :param values: Values to create the new Record from.
         """
 

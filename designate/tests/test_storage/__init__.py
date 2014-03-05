@@ -15,9 +15,9 @@
 # under the License.
 import testtools
 import uuid
-
 from designate.openstack.common import log as logging
 from designate import exceptions
+from designate.storage.base import Storage as StorageBase
 
 LOG = logging.getLogger(__name__)
 
@@ -78,6 +78,7 @@ class StorageTestCase(object):
         return fixture, self.storage.create_record(
             context, domain['id'], recordset['id'], fixture)
 
+    # Paging Tests
     def _ensure_paging(self, data, method):
         """
         Given an array of created items we iterate through them making sure
@@ -117,6 +118,10 @@ class StorageTestCase(object):
         with testtools.ExpectedException(exceptions.InvalidSortKey):
             self.storage.find_servers(
                 self.admin_context, sort_key='invalid_sort_key')
+
+    # Interface Tests
+    def test_interface(self):
+        self._ensure_interface(StorageBase, self.storage.__class__)
 
     # Quota Tests
     def test_create_quota(self):

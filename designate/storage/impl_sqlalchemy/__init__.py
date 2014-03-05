@@ -292,7 +292,7 @@ class SQLAlchemyStorage(base.Storage):
                                sort_key=sort_key, sort_dir=sort_dir)
         return [dict(s) for s in tlds]
 
-    def find_tld(self, context, criterion=None):
+    def find_tld(self, context, criterion):
         tld = self._find_tlds(context, criterion, one=True)
         return dict(tld)
 
@@ -590,7 +590,7 @@ class SQLAlchemyStorage(base.Storage):
 
         return dict(record)
 
-    def find_record(self, context, criterion=None):
+    def find_record(self, context, criterion):
         record = self._find_records(context, criterion, one=True)
 
         return dict(record)
