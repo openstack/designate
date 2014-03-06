@@ -113,6 +113,17 @@ class ApiV2ZonesTest(ApiV2TestCase):
             'unsupported_content_type', 415, self.client.post, '/zones',
             headers={'Content-type': 'test/goat'})
 
+    def test_zone_invalid_url(self):
+        url = '/zones/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980/invalid'
+        self._assert_exception('not_found', 404, self.client.get, url,
+                               headers={'Accept': 'application/json'})
+        self._assert_exception('not_found', 404, self.client.patch_json, url)
+        self._assert_exception('not_found', 404, self.client.delete, url)
+
+        # Pecan returns a 405 for post
+        response = self.client.post(url, status=405)
+        self.assertEqual(405, response.status_int)
+
     def test_get_zones(self):
         response = self.client.get('/zones/')
 

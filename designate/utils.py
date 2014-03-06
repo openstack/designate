@@ -265,6 +265,15 @@ def validate_uuid(*check):
     def inner(f):
         def wrapper(*args, **kwargs):
             arg_spec = inspect.getargspec(f).args
+
+            # Ensure that we have the exact number of parameters that the
+            # function expects.  This handles URLs like
+            # /v2/zones/<UUID - valid or invalid>/invalid
+            # get, patch and delete return a 404, but Pecan returns a 405
+            # for a POST at the same URL
+            if (len(arg_spec) != len(args)):
+                raise exceptions.NotFound()
+
             for name in check:
                 pos = arg_spec.index(name)
                 if not is_uuid_like(args[pos]):
