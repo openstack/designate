@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import pecan.core
+from designate import exceptions
 from designate.openstack.common import jsonutils
 
 JSON_TYPES = ('application/json', 'application/json-patch+json')
@@ -30,7 +31,10 @@ class Request(pecan.core.Request):
         is not hardcoded to call pecans "request.json()" method.
         """
         if self.content_type in JSON_TYPES:
-            return jsonutils.load(self.body_file)
+            try:
+                return jsonutils.load(self.body_file)
+            except ValueError as valueError:
+                raise exceptions.InvalidJson(valueError.message)
         else:
             raise Exception('TODO: Unsupported Content Type')
 

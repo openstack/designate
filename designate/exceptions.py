@@ -115,6 +115,10 @@ class InvalidSortKey(BadRequest):
     error_type = 'invalid_sort_key'
 
 
+class InvalidJson(BadRequest):
+    error_type = 'invalid_json'
+
+
 class InvalidOperation(BadRequest):
     error_code = 400
     error_type = 'invalid_operation'
