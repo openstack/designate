@@ -21,6 +21,7 @@ from designate import exceptions
 from designate import utils
 from designate import schema
 from designate.api.v2.controllers import rest
+from designate.api.v2.controllers import nameservers
 from designate.api.v2.controllers import recordsets
 from designate.api.v2.views import zones as zones_view
 from designate.central import rpcapi as central_rpcapi
@@ -37,6 +38,7 @@ class ZonesController(rest.RestController):
     SORT_KEYS = ['created_at', 'id', 'updated_at', 'name', 'tenant_id',
                  'serial', 'ttl']
 
+    nameservers = nameservers.NameServersController()
     recordsets = recordsets.RecordSetsController()
 
     @pecan.expose(template=None, content_type='text/dns')
