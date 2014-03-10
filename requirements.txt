@@ -13,13 +13,13 @@ oslo.rootwrap
 Paste
 PasteDeploy>=1.5.0
 pbr>=0.6,<1.0
-pecan>=0.2.0
+pecan>=0.4.5
 python-keystoneclient>=0.6.0
 python-neutronclient>=2.3.4,<3
 Routes>=1.12.3
-six>=1.4.1
+six>=1.5.2
 SQLAlchemy>=0.7.8,<=0.8.99
-sqlalchemy-migrate>=0.8.2
+sqlalchemy-migrate>=0.8.2,!=0.8.4
 stevedore>=0.14
 WebOb>=1.2.3
 dnspython>=1.9.4
