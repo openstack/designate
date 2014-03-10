@@ -159,16 +159,16 @@ function init_designate() {
     recreate_database designate utf8
 
     # Init and migrate designate database
-    designate-manage database-init
-    designate-manage database-sync
+    designate-manage database init
+    designate-manage database sync
 
     if [[ "$DESIGNATE_BACKEND_DRIVER" = 'powerdns' ]]; then
         # (Re)create designate_pdns database
         recreate_database designate_pdns utf8
 
         # Init and migrate designate_pdns database
-        designate-manage powerdns database-init
-        designate-manage powerdns database-sync
+        designate-manage powerdns init
+        designate-manage powerdns sync
     fi
 }
 

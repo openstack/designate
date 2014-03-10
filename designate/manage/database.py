@@ -21,6 +21,7 @@ from designate.openstack.common import log as logging
 from oslo.config import cfg
 from designate.manage import base
 
+
 LOG = logging.getLogger(__name__)
 REPOSITORY = os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
                                           'storage', 'impl_sqlalchemy',
@@ -29,14 +30,9 @@ cfg.CONF.import_opt('database_connection', 'designate.storage.impl_sqlalchemy',
                     group='storage:sqlalchemy')
 
 
-class InitCommand(base.Command):
-    "Init database"
-
-    def execute(self, parsed_args):
+class DatabaseCommands(base.Commands):
+    def init(self):
         url = cfg.CONF['storage:sqlalchemy'].database_connection
-
-        if not os.path.exists(REPOSITORY):
-            raise Exception('Migration Repository Not Found')
 
         try:
             LOG.info('Attempting to initialize database')
@@ -45,27 +41,15 @@ class InitCommand(base.Command):
         except DatabaseAlreadyControlledError:
             raise Exception('Database already initialized')
 
-
-class SyncCommand(base.Command):
-    "Sync database"
-
-    def get_parser(self, prog_name):
-        parser = super(SyncCommand, self).get_parser(prog_name)
-
-        parser.add_argument('--to-version', help="Migrate to version",
-                            default=None, type=int)
-
-        return parser
-
-    def execute(self, parsed_args):
+    @base.args('--version', metavar='<version>', help="Database version")
+    def sync(self, version=None):
         url = cfg.CONF['storage:sqlalchemy'].database_connection
 
         if not os.path.exists(REPOSITORY):
             raise Exception('Migration Repository Not Found')
 
         try:
-            target_version = int(parsed_args.to_version) \
-                if parsed_args.to_version else None
+            target_version = int(version) if version else None
 
             current_version = versioning_api.db_version(url=url,
                                                         repository=REPOSITORY)
@@ -79,9 +63,14 @@ class SyncCommand(base.Command):
 
         if target_version and target_version < current_version:
             versioning_api.downgrade(url=url, repository=REPOSITORY,
-                                     version=parsed_args.to_version)
+                                     version=version)
         else:
             versioning_api.upgrade(url=url, repository=REPOSITORY,
-                                   version=parsed_args.to_version)
+                                   version=version)
 
         LOG.info('Database synchronized successfully')
+
+    def version(self):
+        url = cfg.CONF['storage:sqlalchemy'].database_connection
+
+        print(versioning_api.db_version(url=url, repository=REPOSITORY))

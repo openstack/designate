@@ -1,4 +1,4 @@
-..
+p..
     Copyright 2013 Rackspace Hosting
 
     Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -134,11 +134,11 @@ Initialize & Start the Central Service
 ::
 
    #Initialize and sync the Designate database:
-   $ designate-manage database-init
-   $ designate-manage database-sync
+   $ designate-manage database init
+   $ designate-manage database sync
    #Initialize and sync the PowerDNS database:
-   $ designate-manage powerdns database-init
-   $ designate-manage powerdns database-sync
+   $ designate-manage powerdns init
+   $ designate-manage powerdns sync
    #Restart PowerDNS
    $ service pdns restart
    #Start the central service:

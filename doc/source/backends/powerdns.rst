@@ -68,8 +68,8 @@ You need to configure PowerDNS to use the MySQL backend.
 
 ::
 
-    $ designate-manage powerdns database-init
-    $ designate-manage powerdns database-sync
+    $ designate-manage powerdns init
+    $ designate-manage powerdns sync
 
 5. Restart PowerDNS and it should be ready to serve queries using the MySQL database as the backing store.
 

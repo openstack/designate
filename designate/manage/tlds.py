@@ -16,14 +16,14 @@ import csv
 import os
 from designate import exceptions
 from designate.central import rpcapi as central_rpcapi
-from designate.manage import base
 from designate.openstack.common import log as logging
+from designate.manage import base
 from designate.schema import format
 
 LOG = logging.getLogger(__name__)
 
 
-class ImportTLDs(base.Command):
+class TLDCommands(base.Commands):
     """
     Import TLDs to Designate.  The format of the command is:
     designate-manage import-tlds --input-file="<complete path to input file>"
@@ -49,27 +49,15 @@ class ImportTLDs(base.Command):
     InvalidLine - This occurs if the line contains more than 2 fields.
     """
 
-    def __init__(self, app, app_args):
-        super(ImportTLDs, self).__init__(app, app_args)
+    def __init__(self,):
+        super(TLDCommands, self).__init__()
         self.central_api = central_rpcapi.CentralAPI()
-
-    def get_parser(self, prog_name):
-        parser = super(ImportTLDs, self).get_parser(prog_name)
-        parser.add_argument('--input-file',
-                            help="Input file path containing TLDs",
-                            default=None,
-                            type=str)
-        parser.add_argument('--delimiter',
-                            help="delimiter between fields in the input file",
-                            default=',',
-                            type=str)
-        return parser
 
     # The dictionary function __str__() does not list the fields in any
     # particular order.
     # It makes it easier to read if the tld_name is printed first, so we have
     # a separate function to do the necessary conversions
-    def convert_tld_dict_to_str(self, line):
+    def _convert_tld_dict_to_str(self, line):
         keys = ['name', 'description', 'extra_fields']
         values = [line['name'],
                   line['description'],
@@ -82,16 +70,16 @@ class ImportTLDs(base.Command):
     # validates and returns the number of tlds added - either 0 in case of
     # any errors or 1 if everything is successful
     # In case of errors, the error message is appended to the list error_lines
-    def validate_and_create_tld(self, line, error_lines):
+    def _validate_and_create_tld(self, line, error_lines):
         # validate the tld name
         if not format.is_tldname(line['name']):
             error_lines.append("InvalidTLD --> " +
-                               self.convert_tld_dict_to_str(line))
+                               self._convert_tld_dict_to_str(line))
             return 0
         # validate the description if there is one
         elif (line['description']) and (len(line['description']) > 160):
             error_lines.append("InvalidDescription --> " +
-                               self.convert_tld_dict_to_str(line))
+                               self._convert_tld_dict_to_str(line))
 
             return 0
         else:
@@ -100,12 +88,17 @@ class ImportTLDs(base.Command):
                 return 1
             except exceptions.DuplicateTLD:
                 error_lines.append("DuplicateTLD --> " +
-                                   self.convert_tld_dict_to_str(line))
+                                   self._convert_tld_dict_to_str(line))
                 return 0
 
-    def execute(self, parsed_args):
-        input_file = str(parsed_args.input_file) \
-            if parsed_args.input_file else None
+    @base.name('import')
+    @base.args('--input_file', help="Input file path containing TLDs",
+               default=None, required=True, type=str)
+    @base.args('--delimiter',
+               help="delimiter between fields in the input file",
+               default=',', type=str)
+    def from_file(self, input_file=None, delimiter=None):
+        input_file = str(input_file) if input_file is not None else None
 
         if not os.path.exists(input_file):
             raise Exception('TLD Input file Not Found')
@@ -116,8 +109,7 @@ class ImportTLDs(base.Command):
         tlds_added = 0
 
         with open(input_file) as inf:
-            csv.register_dialect('import-tlds',
-                                 delimiter=str(parsed_args.delimiter))
+            csv.register_dialect('import-tlds', delimiter=str(delimiter))
             reader = csv.DictReader(inf,
                                     fieldnames=['name', 'description'],
                                     restkey='extra_fields',
@@ -126,10 +118,10 @@ class ImportTLDs(base.Command):
                 # check if there are more than 2 fields
                 if 'extra_fields' in line:
                     error_lines.append("InvalidLine --> " +
-                                       self.convert_tld_dict_to_str(line))
+                                       self._convert_tld_dict_to_str(line))
                 else:
-                    tlds_added += self.validate_and_create_tld(line,
-                                                               error_lines)
+                    tlds_added += self._validate_and_create_tld(line,
+                                                                error_lines)
 
         LOG.info("Number of tlds added: %d", tlds_added)
 
