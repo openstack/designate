@@ -274,6 +274,14 @@ def validate_uuid(*check):
             if (len(arg_spec) != len(args)):
                 raise exceptions.NotFound()
 
+            # Ensure that we have non-empty parameters in the cases where we
+            # have sub controllers - i.e. controllers at the 2nd level
+            # This is for URLs like /v2/zones/nameservers
+            # Ideally Pecan should be handling these cases, but until then
+            # we handle those cases here.
+            if (len(args) <= len(check)):
+                raise exceptions.NotFound()
+
             for name in check:
                 pos = arg_spec.index(name)
                 if not is_uuid_like(args[pos]):

@@ -110,6 +110,18 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         self._assert_exception('domain_not_found', 404, self.client.post_json,
                                url, body)
 
+    def test_recordsets_invalid_url(self):
+        url = '/zones/recordsets'
+        self._assert_exception('not_found', 404, self.client.get, url)
+        self._assert_exception('not_found', 404, self.client.post_json, url)
+
+        # Pecan returns a 405 for Patch and delete operations
+        response = self.client.patch_json(url, status=405)
+        self.assertEqual(405, response.status_int)
+
+        response = self.client.delete(url, status=405)
+        self.assertEqual(405, response.status_int)
+
     def test_get_recordsets(self):
         url = '/zones/%s/recordsets' % self.domain['id']
 
