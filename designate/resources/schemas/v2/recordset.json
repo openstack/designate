@@ -38,7 +38,7 @@
                 "type": {
                     "type": "string",
                     "description": "RecordSet type (TODO: Make types extensible)",
-                    "enum": ["A", "MX"]
+                    "enum": ["A", "AAAA", "CNAME", "MX", "SRV", "TXT", "SPF", "NS", "PTR", "SSHFP"]
                 },
                 "description": {
                     "type": ["string", "null"],
