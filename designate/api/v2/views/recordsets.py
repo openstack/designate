@@ -51,12 +51,5 @@ class RecordSetsView(base_view.BaseView):
 
     def load(self, context, request, body):
         """ Extract a "central" compatible dict from an API call """
-        result = {}
-        item = body[self._resource_name]
-
-        # Copy keys which need no alterations
-        for k in ('id', 'name', 'type', 'ttl', 'description',):
-            if k in item:
-                result[k] = item[k]
-
-        return result
+        valid_keys = ('name', 'type', 'ttl', 'description')
+        return self._load(context, request, body, valid_keys)
