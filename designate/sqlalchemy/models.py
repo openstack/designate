@@ -34,7 +34,8 @@ class Base(object):
         except IntegrityError as e:
             non_unique_strings = (
                 'duplicate entry',
-                'not unique'
+                'not unique',
+                'unique constraint failed'
             )
 
             for non_unique_string in non_unique_strings:
