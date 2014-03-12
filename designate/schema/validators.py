@@ -13,56 +13,21 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import jsonschema
+from jsonschema import validators
 from designate.openstack.common import log as logging
 from designate.schema import _validators
 
-
 LOG = logging.getLogger(__name__)
 
+Draft3Validator = validators.extend(
+    validators.Draft3Validator,
+    validators={
+        "type": _validators.type_draft3,
+        "oneOf": _validators.oneOf_draft3,
+    })
 
-# JSONSchema 1.3 to 2.0 compatibility
-try:
-    # JSONSchema 2+
-    from jsonschema import _utils  # flake8: noqa
-    from jsonschema import validators
-    JS2 = True
-    Draft3ValidatorBase = validators.Draft3Validator
-    Draft4ValidatorBase = validators.Draft4Validator
-except ImportError:
-    # JSONSchema 1.3
-    JS2 = False
-    Draft3ValidatorBase = jsonschema.Draft3Validator
-    Draft4ValidatorBase = jsonschema.Draft4Validator
-
-
-if JS2:
-    Draft3Validator = validators.extend(
-        Draft3ValidatorBase,
-        validators={
-            "type": _validators.type_draft3,
-            "oneOf": _validators.oneOf_draft3,
-        })
-
-    Draft4Validator = validators.extend(
-        Draft4ValidatorBase,
-        validators={
-            "type": _validators.type_draft4,
-        })
-
-else:
-    class Draft3Validator(Draft3ValidatorBase):
-        def validate_type(self, types, instance, schema):
-            for i in _validators.type_draft3(self, types, instance,
-                                             schema):
-                yield i
-
-        def validate_oneOf(self, oneOf, instance, schema):
-            for i in _validators.oneOf_draft3(self, oneOf, instance, schema):
-                yield i
-
-    class Draft4Validator(Draft4ValidatorBase):
-        def validate_type(self, types, instance, schema):
-            for i in _validators.type_draft4(self, types, instance,
-                                             schema):
-                yield i
+Draft4Validator = validators.extend(
+    validators.Draft4Validator,
+    validators={
+        "type": _validators.type_draft4,
+    })

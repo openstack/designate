@@ -15,20 +15,11 @@
 # under the License.
 import datetime
 import jsonschema
-
-try:
-    # JSONSchema 2+
-    from jsonschema import _utils
-    ensure_list = _utils.ensure_list
-    types_msg = _utils.types_msg
-except ImportError:
-    # JSONSchema 1.3
-    ensure_list = jsonschema._list
-    types_msg = jsonschema._types_msg
+from jsonschema import _utils
 
 
 def type_draft3(validator, types, instance, schema):
-    types = ensure_list(types)
+    types = _utils.ensure_list(types)
 
     # NOTE(kiall): A datetime object is not a string, but is still valid.
     if ('format' in schema and schema['format'] == 'date-time'
@@ -49,7 +40,7 @@ def type_draft3(validator, types, instance, schema):
                 return
     else:
         yield jsonschema.ValidationError(
-            types_msg(instance, types), context=all_errors,
+            _utils.types_msg(instance, types), context=all_errors,
         )
 
 
@@ -76,7 +67,7 @@ def oneOf_draft3(validator, oneOf, instance, schema):
 
 
 def type_draft4(validator, types, instance, schema):
-    types = ensure_list(types)
+    types = _utils.ensure_list(types)
 
     # NOTE(kiall): A datetime object is not a string, but is still valid.
     if ('format' in schema and schema['format'] == 'date-time'
@@ -84,4 +75,4 @@ def type_draft4(validator, types, instance, schema):
         return
 
     if not any(validator.is_type(instance, type) for type in types):
-        yield jsonschema.ValidationError(types_msg(instance, types))
+        yield jsonschema.ValidationError(_utils.types_msg(instance, types))
