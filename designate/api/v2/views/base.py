@@ -15,6 +15,7 @@
 # under the License.
 import urllib
 from oslo.config import cfg
+from designate import exceptions
 from designate.openstack.common import log as logging
 
 
@@ -83,6 +84,29 @@ class BaseView(object):
     def show_detail(self, context, request, item):
         """ Detailed view of a item """
         return self.show_basic(context, request, item)
+
+    def _load(self, context, request, body, valid_keys):
+        """ Extract a "central" compatible dict from an API call """
+        result = {}
+        item = body[self._resource_name]
+        error_keys = []
+
+        # Copy keys which need no alterations
+        for k in item:
+            if k in valid_keys:
+                result[k] = item[k]
+            else:
+                error_keys.append(k)
+
+        if error_keys:
+            error_message = str.format(
+                'Provided object does not match schema.  Keys {0} are not '
+                'valid in the request body',
+                error_keys)
+
+            raise exceptions.InvalidObject(error_message)
+
+        return result
 
     def _get_resource_links(self, request, item, parents=None):
         return {

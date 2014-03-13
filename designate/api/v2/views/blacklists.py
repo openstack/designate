@@ -40,12 +40,5 @@ class BlacklistsView(base_view.BaseView):
 
     def load(self, context, request, body):
         """ Extract a "central" compatible dict from an API call """
-        result = {}
-        item = body[self._resource_name]
-
-        # Copy keys which need no alterations
-        for k in ('id', 'pattern', 'description',):
-            if k in item:
-                result[k] = item[k]
-
-        return result
+        valid_keys = ('pattern', 'description')
+        return self._load(context, request, body, valid_keys)

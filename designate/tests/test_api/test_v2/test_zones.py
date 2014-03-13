@@ -76,6 +76,23 @@ class ApiV2ZonesTest(ApiV2TestCase):
         self._assert_exception('invalid_object', 400, self.client.post_json,
                                '/zones', body)
 
+    def test_create_zone_body_validation(self):
+        fixture = self.get_domain_fixture(0)
+        # Add id to the body
+        fixture['id'] = '2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980'
+        # Ensure it fails with a 400
+        body = {'zone': fixture}
+        self._assert_exception('invalid_object', 400, self.client.post_json,
+                               '/zones', body)
+
+        fixture = self.get_domain_fixture(0)
+        # Add created_at to the body
+        fixture['created_at'] = '2014-03-12T19:07:53.000000'
+        # Ensure it fails with a 400
+        body = {'zone': fixture}
+        self._assert_exception('invalid_object', 400, self.client.post_json,
+                               '/zones', body)
+
     def test_create_zone_invalid_name(self):
         # Try to create a zone with an invalid name
         fixture = self.get_domain_fixture(-1)
