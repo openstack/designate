@@ -1,5 +1,5 @@
-REST API Documenation
-=====================
+REST API Documentation
+======================
 
 The API has 2 versions - V1 and V2.
 
@@ -21,3 +21,4 @@ V2 API
 
        rest/v2/zones
        rest/v2/tlds
+       rest/v2/blacklists

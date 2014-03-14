@@ -57,7 +57,7 @@ Create Tld
       {
         "tld" : {
           "name" : "com",
-          "description" : "Tld entry obtained from http://data.iana.org/TLD/tlds-alpha-by-domain.txt"
+          "description" : "Tld source http://data.iana.org/TLD/tlds-alpha-by-domain.txt"
         }
       }
 
@@ -71,7 +71,7 @@ Create Tld
 
       {
         "tld":{
-          "description":"Tld entry obtained from http://data.iana.org/TLD/tlds-alpha-by-domain.txt",
+          "description":"Tld source http://data.iana.org/TLD/tlds-alpha-by-domain.txt",
           "links":{
             "self":"http://127.0.0.1:9001/v2/tlds/5abe514c-9fb5-41e8-ab73-5ed25f8a73e9"
           },
@@ -118,7 +118,7 @@ Get a Tld
 
       {
         "tld":{
-          "description":"Tld entry obtained from http://data.iana.org/TLD/tlds-alpha-by-domain.txt",
+          "description":"Tld source http://data.iana.org/TLD/tlds-alpha-by-domain.txt",
           "links":{
             "self":"http://127.0.0.1:9001/v2/tlds/5abe514c-9fb5-41e8-ab73-5ed25f8a73e9"
           },
@@ -164,7 +164,7 @@ List Tlds
       {
         "tlds":[
           {
-            "description":"Tld entry obtained from http://data.iana.org/TLD/tlds-alpha-by-domain.txt",
+            "description":"Tld source http://data.iana.org/TLD/tlds-alpha-by-domain.txt",
             "links":{
               "self":"http://127.0.0.1:9001/v2/tlds/5abe514c-9fb5-41e8-ab73-5ed25f8a73e9"
             },
@@ -174,7 +174,7 @@ List Tlds
             "name":"com"
           },
           {
-            "description":"Tld entry obtained from http://data.iana.org/TLD/tlds-alpha-by-domain.txt",
+            "description":"Tld source http://data.iana.org/TLD/tlds-alpha-by-domain.txt",
             "links":{
               "self":"http://127.0.0.1:9001/v2/tlds/46e50ebc-1b51-41ee-bc1f-8e75a470c5be"
             },
@@ -201,7 +201,7 @@ List Tlds
 Update a Tld
 ---------------
 
-.. http:put:: /tlds/(uuid:id)
+.. http:patch:: /tlds/(uuid:id)
 
    updates a tld
 
