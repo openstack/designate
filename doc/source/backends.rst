@@ -23,3 +23,4 @@ Contents:
    :glob:
 
    backends/bind9
+   backends/powerdns
