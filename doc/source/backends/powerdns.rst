@@ -13,6 +13,7 @@
     License for the specific language governing permissions and limitations
     under the License.
 
+.. _backend-powerdns:
 
 PowerDNS Backend
 ================
@@ -38,7 +39,7 @@ sqlite_synchronous               True                                   If passe
 
 
 PowerDNS Configuration
--------------------
+----------------------
 
 You need to configure PowerDNS to use the MySQL backend.
 

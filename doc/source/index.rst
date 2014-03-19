@@ -33,6 +33,7 @@ also be found on the `OpenStack wiki`_.
    glossary
    backends
    integrations
+   install
 
 
 Indices and tables
