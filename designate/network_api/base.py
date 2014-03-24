@@ -34,7 +34,7 @@ class NetworkAPI(DriverPlugin):
     def _endpoints(self, service_catalog=None, service_type=None,
                    endpoint_type='publicURL', config_section=None,
                    region=None):
-        if service_catalog is not None:
+        if service_catalog is not None and len(service_catalog):
             endpoints = self._endpoints_from_catalog(
                 service_catalog, service_type, endpoint_type,
                 region=region)

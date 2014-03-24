@@ -16,6 +16,7 @@
 import json
 import os
 import testtools
+from designate.context import DesignateContext
 from designate.tests import resources
 
 FIXTURES_PATH = os.path.join(resources.path, 'sample_notifications')
@@ -32,6 +33,7 @@ class NotificationHandlerMixin(object):
             return json.load(fh)
 
     def test_invalid_event_type(self):
+        context = DesignateContext.get_admin_context(all_tenants=True)
         if not hasattr(self, 'plugin'):
             raise NotImplementedError
         event_type = 'invalid'
@@ -39,4 +41,4 @@ class NotificationHandlerMixin(object):
         self.assertNotIn(event_type, self.plugin.get_event_types())
 
         with testtools.ExpectedException(ValueError):
-            self.plugin.process_notification(event_type, 'payload')
+            self.plugin.process_notification(context, event_type, 'payload')

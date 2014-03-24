@@ -48,7 +48,8 @@ class NovaFixedHandlerTest(TestCase, NotificationHandlerMixin):
 
         self.assertEqual(0, len(records))
 
-        self.plugin.process_notification(event_type, fixture['payload'])
+        self.plugin.process_notification(
+            self.admin_context, event_type, fixture['payload'])
 
         # Ensure we now have exactly 1 record
         records = self.central_service.find_records(self.admin_context,
@@ -61,7 +62,8 @@ class NovaFixedHandlerTest(TestCase, NotificationHandlerMixin):
         start_event_type = 'compute.instance.create.end'
         start_fixture = self.get_notification_fixture('nova', start_event_type)
 
-        self.plugin.process_notification(start_event_type,
+        self.plugin.process_notification(self.admin_context,
+                                         start_event_type,
                                          start_fixture['payload'])
 
         # Now - Onto the real test
@@ -78,7 +80,8 @@ class NovaFixedHandlerTest(TestCase, NotificationHandlerMixin):
 
         self.assertEqual(1, len(records))
 
-        self.plugin.process_notification(event_type, fixture['payload'])
+        self.plugin.process_notification(
+            self.admin_context, event_type, fixture['payload'])
 
         # Ensure we now have exactly 0 records
         records = self.central_service.find_records(self.admin_context,

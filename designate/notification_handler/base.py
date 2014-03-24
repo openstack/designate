@@ -63,7 +63,7 @@ class NotificationHandler(ExtensionPlugin):
         """
 
     @abc.abstractmethod
-    def process_notification(self, event_type, payload):
+    def process_notification(self, context, event_type, payload):
         """ Processes a given notification """
 
     def get_domain(self, domain_id):
