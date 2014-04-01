@@ -13,17 +13,3 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from cliff.app import App
-from cliff.commandmanager import CommandManager
-from designate.version import version_info as version
-
-
-class DesignateShell(App):
-    CONSOLE_MESSAGE_FORMAT = '%(levelname)s: %(message)s'
-
-    def __init__(self):
-        super(DesignateShell, self).__init__(
-            description='Designate Server Side Management CLI',
-            version=version.version_string(),
-            command_manager=CommandManager('designate.manage')
-        )

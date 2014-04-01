@@ -13,40 +13,28 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import abc
-from cliff.command import Command as CliffCommand
 from designate.context import DesignateContext
 
 
-class Command(CliffCommand):
-    __metaclass__ = abc.ABCMeta
+# Decorators for actions
+def args(*args, **kwargs):
+    def _decorator(func):
+        func.__dict__.setdefault('args', []).insert(0, (args, kwargs))
+        return func
+    return _decorator
 
-    def run(self, parsed_args):
+
+def name(name):
+    """
+    Give a command a alternate name
+    """
+    def _decorator(func):
+        func.__dict__['_cmd_name'] = name
+        return func
+    return _decorator
+
+
+class Commands(object):
+    def __init__(self):
         self.context = DesignateContext.get_admin_context(
-            request_id="designate-manage")
-
-        return super(Command, self).run(parsed_args)
-
-    @abc.abstractmethod
-    def execute(self, parsed_args):
-        """
-        Execute something, this is since we overload self.take_action()
-        in order to format the data
-
-        This method __NEEDS__ to be overloaded!
-
-        :param parsed_args: The parsed args that are given by take_action()
-        """
-
-    def post_execute(self, data):
-        """
-        Format the results locally if needed, by default we just return data
-
-        :param data: Whatever is returned by self.execute()
-        """
-        return data
-
-    def take_action(self, parsed_args):
-        # TODO(kiall): Common Exception Handling Here
-        results = self.execute(parsed_args)
-        return self.post_execute(results)
+            request_id='designate-manage')
