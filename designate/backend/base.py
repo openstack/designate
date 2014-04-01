@@ -102,7 +102,7 @@ class Backend(DriverPlugin):
     def delete_server(self, context, server):
         """ Delete a DNS server """
 
-    def sync_domain(self, context, domain, records):
+    def sync_domain(self, context, domain, rdata):
         """
         Re-Sync a DNS domain
 
@@ -121,11 +121,13 @@ class Backend(DriverPlugin):
         self.create_domain(context, domain)
 
         # Finally, re-create the records for the domain.
-        for record in records:
+        for recordset, records in rdata:
             # Re-create the record in the backend.
-            self.create_record(context, domain, record)
+            self.create_recordset(context, domain, recordset)
+            for record in records:
+                self.create_record(context, domain, recordset, record)
 
-    def sync_record(self, context, domain, record):
+    def sync_record(self, context, domain, recordset, record):
         """
         Re-Sync a DNS record.
 
@@ -133,7 +135,7 @@ class Backend(DriverPlugin):
         """
         # First up, delete the record from the backend.
         try:
-            self.delete_record(context, domain, record)
+            self.delete_record(context, domain, recordset, record)
         except exceptions.RecordNotFound as e:
             # NOTE(Kiall): This means a record was missing from the backend.
             #              Good thing we're doing a sync!
@@ -141,7 +143,7 @@ class Backend(DriverPlugin):
                      " Message: %s", record['id'], domain['id'], str(e))
 
         # Finally, re-create the record in the backend.
-        self.create_record(context, domain, record)
+        self.create_record(context, domain, recordset, record)
 
     def ping(self, context):
         """ Ping the Backend service """

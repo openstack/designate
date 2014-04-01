@@ -970,21 +970,28 @@ class Service(rpc_service.Service):
         return self.storage_api.count_records(context, criterion)
 
     # Diagnostics Methods
+    def _sync_domain(self, context, domain):
+        recordsets = self.storage_api.find_recordsets(
+            context, criterion={'domain_id': domain['id']})
+
+        # Since we now have records as well as recordsets we need to get the
+        # records for it as well and pass that down since the backend wants it.
+        rdata = []
+        for recordset in recordsets:
+            records = self.find_records(
+                context, {'recordset_id': recordset['id']})
+            rdata.append((recordset, records))
+        with wrap_backend_call():
+            return self.backend.sync_domain(context, domain, rdata)
+
     def sync_domains(self, context):
         policy.check('diagnostics_sync_domains', context)
 
         domains = self.storage_api.find_domains(context)
+
         results = {}
-
         for domain in domains:
-            criterion = {'domain_id': domain['id']}
-            records = self.storage_api.find_records(
-                context, criterion=criterion)
-
-            with wrap_backend_call():
-                results[domain['id']] = self.backend.sync_domain(context,
-                                                                 domain,
-                                                                 records)
+            results[domain['id']] = self._sync_domain(context, domain)
 
         return results
 
@@ -999,11 +1006,7 @@ class Service(rpc_service.Service):
 
         policy.check('diagnostics_sync_domain', context, target)
 
-        records = self.storage_api.find_records(
-            context, criterion={'domain_id': domain_id})
-
-        with wrap_backend_call():
-            return self.backend.sync_domain(context, domain, records)
+        return self._sync_domain(context, domain)
 
     def sync_record(self, context, domain_id, recordset_id, record_id):
         domain = self.storage_api.get_domain(context, domain_id)
