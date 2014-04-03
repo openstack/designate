@@ -42,7 +42,7 @@
         "priority": {
             "type": ["integer", "null"],
             "description": "DNS Record Priority",
-            "minimum": 1,
+            "minimum": 0,
             "maximum": 65535
         },
         "ttl": {
