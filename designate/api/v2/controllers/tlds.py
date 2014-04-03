@@ -18,10 +18,8 @@ from designate import schema
 from designate import utils
 from designate.api.v2.controllers import rest
 from designate.api.v2.views import tlds as tlds_view
-from designate.central import rpcapi as central_rpcapi
 
 LOG = logging.getLogger(__name__)
-central_api = central_rpcapi.CentralAPI()
 
 
 class TldsController(rest.RestController):
@@ -38,7 +36,7 @@ class TldsController(rest.RestController):
         request = pecan.request
         context = request.environ['context']
 
-        tld = central_api.get_tld(context, tld_id)
+        tld = self.central_api.get_tld(context, tld_id)
         return self._view.show(context, request, tld)
 
     @pecan.expose(template='json:', content_type='application/json')
@@ -55,7 +53,7 @@ class TldsController(rest.RestController):
         criterion = dict((k, params[k]) for k in accepted_filters
                          if k in params)
 
-        tlds = central_api.find_tlds(
+        tlds = self.central_api.find_tlds(
             context, criterion, marker, limit, sort_key, sort_dir)
 
         return self._view.list(context, request, tlds)
@@ -75,7 +73,7 @@ class TldsController(rest.RestController):
         values = self._view.load(context, request, body)
 
         # Create the tld
-        tld = central_api.create_tld(context, values)
+        tld = self.central_api.create_tld(context, values)
         response.status_int = 201
 
         response.headers['Location'] = self._view._get_resource_href(request,
@@ -94,7 +92,7 @@ class TldsController(rest.RestController):
         response = pecan.response
 
         # Fetch the existing tld
-        tld = central_api.get_tld(context, tld_id)
+        tld = self.central_api.get_tld(context, tld_id)
 
         # Convert to APIv2 Format
         tld = self._view.show(context, request, tld)
@@ -108,7 +106,7 @@ class TldsController(rest.RestController):
             self._resource_schema.validate(tld)
 
             values = self._view.load(context, request, body)
-            tld = central_api.update_tld(context, tld_id, values)
+            tld = self.central_api.update_tld(context, tld_id, values)
 
         response.status_int = 200
 
@@ -122,7 +120,7 @@ class TldsController(rest.RestController):
         response = pecan.response
         context = request.environ['context']
 
-        central_api.delete_tld(context, tld_id)
+        self.central_api.delete_tld(context, tld_id)
 
         response.status_int = 204
 

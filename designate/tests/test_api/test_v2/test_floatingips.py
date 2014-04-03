@@ -29,7 +29,7 @@ class ApiV2ReverseFloatingIPTest(ApiV2TestCase):
 
         response = self.client.get(
             '/reverse/floatingips/%s' % ":".join([fip['region'], fip['id']]),
-            headers={'X-Test-Tenant-Id': context.tenant_id})
+            headers={'X-Test-Tenant-Id': context.tenant})
 
         self.assertEqual(200, response.status_int)
         self.assertEqual('application/json', response.content_type)
@@ -58,7 +58,7 @@ class ApiV2ReverseFloatingIPTest(ApiV2TestCase):
 
         response = self.client.get(
             '/reverse/floatingips/%s' % ":".join([fip['region'], fip['id']]),
-            headers={'X-Test-Tenant-Id': context.tenant_id})
+            headers={'X-Test-Tenant-Id': context.tenant})
 
         self.assertEqual(200, response.status_int)
         self.assertEqual('application/json', response.content_type)
@@ -92,11 +92,11 @@ class ApiV2ReverseFloatingIPTest(ApiV2TestCase):
     def test_list_floatingip_no_record(self):
         context = self.get_context(tenant='a')
 
-        fip = self.network_api.fake.allocate_floatingip(context.tenant_id)
+        fip = self.network_api.fake.allocate_floatingip(context.tenant)
 
         response = self.client.get(
             '/reverse/floatingips',
-            headers={'X-Test-Tenant-Id': context.tenant_id})
+            headers={'X-Test-Tenant-Id': context.tenant})
 
         self.assertIn('floatingips', response.json)
         self.assertIn('links', response.json)
@@ -116,14 +116,14 @@ class ApiV2ReverseFloatingIPTest(ApiV2TestCase):
 
         context = self.get_context(tenant='a')
 
-        fip = self.network_api.fake.allocate_floatingip(context.tenant_id)
+        fip = self.network_api.fake.allocate_floatingip(context.tenant)
 
         self.central_service.update_floatingip(
             context, fip['region'], fip['id'], fixture)
 
         response = self.client.get(
             '/reverse/floatingips',
-            headers={'X-Test-Tenant-Id': context.tenant_id})
+            headers={'X-Test-Tenant-Id': context.tenant})
 
         self.assertIn('floatingips', response.json)
         self.assertIn('links', response.json)
@@ -189,7 +189,7 @@ class ApiV2ReverseFloatingIPTest(ApiV2TestCase):
         fixture = self.get_ptr_fixture()
         context = self.get_context(tenant='a')
 
-        fip = self.network_api.fake.allocate_floatingip(context.tenant_id)
+        fip = self.network_api.fake.allocate_floatingip(context.tenant)
 
         # Unsetting via "None"
         self.central_service.update_floatingip(

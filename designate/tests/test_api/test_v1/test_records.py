@@ -15,8 +15,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from mock import patch
+from oslo import messaging
 from designate.openstack.common import log as logging
-from designate.openstack.common.rpc import common as rpc_common
 from designate.central import service as central_service
 from designate.tests.test_api.test_v1 import ApiV1Test
 
@@ -136,7 +136,7 @@ class ApiV1RecordsTest(ApiV1Test):
                   status_code=400)
 
     @patch.object(central_service.Service, 'create_record',
-                  side_effect=rpc_common.Timeout())
+                  side_effect=messaging.MessagingTimeout())
     def test_create_record_timeout(self, _):
         fixture = self.get_record_fixture(self.recordset['type'])
         fixture.update({
@@ -289,7 +289,7 @@ class ApiV1RecordsTest(ApiV1Test):
         self.assertTrue(mock.called)
 
     @patch.object(central_service.Service, 'find_records',
-                  side_effect=rpc_common.Timeout())
+                  side_effect=messaging.MessagingTimeout())
     def test_get_records_timeout(self, _):
         self.get('domains/%s/records' % self.domain['id'],
                  status_code=504)
@@ -392,7 +392,7 @@ class ApiV1RecordsTest(ApiV1Test):
                  data=data, status_code=400)
 
     @patch.object(central_service.Service, 'get_domain',
-                  side_effect=rpc_common.Timeout())
+                  side_effect=messaging.MessagingTimeout())
     def test_update_record_timeout(self, _):
         # Create a record
         record = self.create_record(self.domain, self.recordset)
@@ -458,7 +458,7 @@ class ApiV1RecordsTest(ApiV1Test):
         self.assertTrue(mock.called)
 
     @patch.object(central_service.Service, 'get_domain',
-                  side_effect=rpc_common.Timeout())
+                  side_effect=messaging.MessagingTimeout())
     def test_delete_record_timeout(self, _):
         # Create a record
         record = self.create_record(self.domain, self.recordset)

@@ -440,14 +440,14 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(len(notifications), 1)
 
         # Ensure the notification wrapper contains the correct info
-        notification = notifications.pop()
-        self.assertEqual(notification['event_type'], 'dns.domain.create')
-        self.assertEqual(notification['priority'], 'INFO')
-        self.assertIsNotNone(notification['timestamp'])
-        self.assertIsNotNone(notification['message_id'])
+        ctxt, message, priority = notifications.pop()
+        self.assertEqual(message['event_type'], 'dns.domain.create')
+        self.assertEqual(message['priority'], 'INFO')
+        self.assertIsNotNone(message['timestamp'])
+        self.assertIsNotNone(message['message_id'])
 
         # Ensure the notification payload contains the correct info
-        payload = notification['payload']
+        payload = message['payload']
         self.assertEqual(payload['id'], domain['id'])
         self.assertEqual(payload['name'], domain['name'])
         self.assertEqual(payload['tenant_id'], domain['tenant_id'])
@@ -502,7 +502,7 @@ class CentralServiceTest(CentralTestCase):
         context = self.get_admin_context()
 
         # Explicitly set a tenant_id
-        context.tenant_id = '1'
+        context.tenant = '1'
 
         # Create the Parent Domain using fixture 0
         parent_domain = self.create_domain(fixture=0, context=context)
@@ -510,7 +510,7 @@ class CentralServiceTest(CentralTestCase):
         context = self.get_admin_context()
 
         # Explicitly use a different tenant_id
-        context.tenant_id = '2'
+        context.tenant = '2'
 
         # Prepare values for the subdomain using fixture 1 as a base
         values = self.get_domain_fixture(1)
@@ -723,14 +723,14 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(len(notifications), 1)
 
         # Ensure the notification wrapper contains the correct info
-        notification = notifications.pop()
-        self.assertEqual(notification['event_type'], 'dns.domain.update')
-        self.assertEqual(notification['priority'], 'INFO')
-        self.assertIsNotNone(notification['timestamp'])
-        self.assertIsNotNone(notification['message_id'])
+        ctxt, message, priority = notifications.pop()
+        self.assertEqual(message['event_type'], 'dns.domain.update')
+        self.assertEqual(message['priority'], 'INFO')
+        self.assertIsNotNone(message['timestamp'])
+        self.assertIsNotNone(message['message_id'])
 
         # Ensure the notification payload contains the correct info
-        payload = notification['payload']
+        payload = message['payload']
         self.assertEqual(payload['id'], domain['id'])
         self.assertEqual(payload['name'], domain['name'])
         self.assertEqual(payload['tenant_id'], domain['tenant_id'])
@@ -784,14 +784,14 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(len(notifications), 1)
 
         # Ensure the notification wrapper contains the correct info
-        notification = notifications.pop()
-        self.assertEqual(notification['event_type'], 'dns.domain.delete')
-        self.assertEqual(notification['priority'], 'INFO')
-        self.assertIsNotNone(notification['timestamp'])
-        self.assertIsNotNone(notification['message_id'])
+        ctxt, message, priority = notifications.pop()
+        self.assertEqual(message['event_type'], 'dns.domain.delete')
+        self.assertEqual(message['priority'], 'INFO')
+        self.assertIsNotNone(message['timestamp'])
+        self.assertIsNotNone(message['message_id'])
 
         # Ensure the notification payload contains the correct info
-        payload = notification['payload']
+        payload = message['payload']
         self.assertEqual(payload['id'], domain['id'])
         self.assertEqual(payload['name'], domain['name'])
         self.assertEqual(payload['tenant_id'], domain['tenant_id'])
@@ -1458,7 +1458,7 @@ class CentralServiceTest(CentralTestCase):
 
         context = self.get_context(tenant='a')
 
-        fip = self.network_api.fake.allocate_floatingip(context.tenant_id)
+        fip = self.network_api.fake.allocate_floatingip(context.tenant)
 
         fip_ptr = self.central_service.get_floatingip(
             context, fip['region'], fip['id'])
@@ -1475,7 +1475,7 @@ class CentralServiceTest(CentralTestCase):
 
         fixture = self.get_ptr_fixture()
 
-        fip = self.network_api.fake.allocate_floatingip(context.tenant_id)
+        fip = self.network_api.fake.allocate_floatingip(context.tenant)
 
         expected = self.central_service.update_floatingip(
             context, fip['region'], fip['id'], fixture)
@@ -1489,7 +1489,7 @@ class CentralServiceTest(CentralTestCase):
     def test_get_floatingip_not_allocated(self):
         context = self.get_context(tenant='a')
 
-        fip = self.network_api.fake.allocate_floatingip(context.tenant_id)
+        fip = self.network_api.fake.allocate_floatingip(context.tenant)
         self.network_api.fake.deallocate_floatingip(fip['id'])
 
         with testtools.ExpectedException(exceptions.NotFound):
@@ -1508,7 +1508,7 @@ class CentralServiceTest(CentralTestCase):
         fixture = self.get_ptr_fixture()
 
         # First allocate and create a FIP as tenant a
-        fip = self.network_api.fake.allocate_floatingip(context_a.tenant_id)
+        fip = self.network_api.fake.allocate_floatingip(context_a.tenant)
 
         self.central_service.update_floatingip(
             context_a, fip['region'], fip['id'], fixture)
@@ -1522,12 +1522,12 @@ class CentralServiceTest(CentralTestCase):
         # Ensure that the record is still in DB (No invalidation)
         criterion = {
             'managed_resource_id': fip['id'],
-            'managed_tenant_id': context_a.tenant_id}
+            'managed_tenant_id': context_a.tenant}
         self.central_service.find_record(elevated_a, criterion)
 
         # Now give the fip id to tenant 'b' and see that it get's deleted
         self.network_api.fake.allocate_floatingip(
-            context_b.tenant_id, fip['id'])
+            context_b.tenant, fip['id'])
 
         # There should be a fip returned with ptrdname of None
         fip_ptr = self.central_service.get_floatingip(
@@ -1549,7 +1549,7 @@ class CentralServiceTest(CentralTestCase):
     def test_list_floatingips_no_record(self):
         context = self.get_context(tenant='a')
 
-        fip = self.network_api.fake.allocate_floatingip(context.tenant_id)
+        fip = self.network_api.fake.allocate_floatingip(context.tenant)
 
         fips = self.central_service.list_floatingips(context)
 
@@ -1567,7 +1567,7 @@ class CentralServiceTest(CentralTestCase):
 
         fixture = self.get_ptr_fixture()
 
-        fip = self.network_api.fake.allocate_floatingip(context.tenant_id)
+        fip = self.network_api.fake.allocate_floatingip(context.tenant)
 
         fip_ptr = self.central_service.update_floatingip(
             context, fip['region'], fip['id'], fixture)
@@ -1593,7 +1593,7 @@ class CentralServiceTest(CentralTestCase):
         fixture = self.get_ptr_fixture()
 
         # First allocate and create a FIP as tenant a
-        fip = self.network_api.fake.allocate_floatingip(context_a.tenant_id)
+        fip = self.network_api.fake.allocate_floatingip(context_a.tenant)
 
         self.central_service.update_floatingip(
             context_a, fip['region'], fip['id'], fixture)
@@ -1606,12 +1606,12 @@ class CentralServiceTest(CentralTestCase):
         # Ensure that the record is still in DB (No invalidation)
         criterion = {
             'managed_resource_id': fip['id'],
-            'managed_tenant_id': context_a.tenant_id}
+            'managed_tenant_id': context_a.tenant}
         self.central_service.find_record(elevated_a, criterion)
 
         # Now give the fip id to tenant 'b' and see that it get's deleted
         self.network_api.fake.allocate_floatingip(
-            context_b.tenant_id, fip['id'])
+            context_b.tenant, fip['id'])
 
         # There should be a fip returned with ptrdname of None
         fips = self.central_service.list_floatingips(context_b)
@@ -1630,7 +1630,7 @@ class CentralServiceTest(CentralTestCase):
 
         fixture = self.get_ptr_fixture()
 
-        fip = self.network_api.fake.allocate_floatingip(context.tenant_id)
+        fip = self.network_api.fake.allocate_floatingip(context.tenant)
 
         fip_ptr = self.central_service.update_floatingip(
             context, fip['region'], fip['id'], fixture)
@@ -1653,7 +1653,7 @@ class CentralServiceTest(CentralTestCase):
 
         # Test that re-setting as tenant a an already set floatingip leaves
         # only 1 record
-        fip = self.network_api.fake.allocate_floatingip(context_a.tenant_id)
+        fip = self.network_api.fake.allocate_floatingip(context_a.tenant)
 
         self.central_service.update_floatingip(
             context_a, fip['region'], fip['id'], fixture)
@@ -1672,7 +1672,7 @@ class CentralServiceTest(CentralTestCase):
         # Now test that tenant b allocating the same fip and setting a ptr
         # deletes any records
         fip = self.network_api.fake.allocate_floatingip(
-            context_b.tenant_id, fip['id'])
+            context_b.tenant, fip['id'])
 
         self.central_service.update_floatingip(
             context_b, fip['region'], fip['id'], fixture)
@@ -1686,7 +1686,7 @@ class CentralServiceTest(CentralTestCase):
         context = self.get_context(tenant='a')
         fixture = self.get_ptr_fixture()
 
-        fip = self.network_api.fake.allocate_floatingip(context.tenant_id)
+        fip = self.network_api.fake.allocate_floatingip(context.tenant)
         self.network_api.fake.deallocate_floatingip(fip['id'])
 
         # If one attempts to assign a de-allocated FIP or not-owned it should
@@ -1702,7 +1702,7 @@ class CentralServiceTest(CentralTestCase):
 
         fixture = self.get_ptr_fixture()
 
-        fip = self.network_api.fake.allocate_floatingip(context.tenant_id)
+        fip = self.network_api.fake.allocate_floatingip(context.tenant)
 
         fip_ptr = self.central_service.update_floatingip(
             context, fip['region'], fip['id'], fixture)

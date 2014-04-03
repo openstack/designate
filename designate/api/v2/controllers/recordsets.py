@@ -14,7 +14,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import pecan
-from designate.central import rpcapi as central_rpcapi
 from designate.openstack.common import log as logging
 from designate import schema
 from designate import utils
@@ -23,7 +22,6 @@ from designate.api.v2.views import recordsets as recordsets_view
 from designate.api.v2.controllers import records
 
 LOG = logging.getLogger(__name__)
-central_api = central_rpcapi.CentralAPI()
 
 
 class RecordSetsController(rest.RestController):
@@ -42,7 +40,8 @@ class RecordSetsController(rest.RestController):
         request = pecan.request
         context = request.environ['context']
 
-        recordset = central_api.get_recordset(context, zone_id, recordset_id)
+        recordset = self.central_api.get_recordset(context, zone_id,
+                                                   recordset_id)
 
         return self._view.show(context, request, recordset)
 
@@ -63,7 +62,7 @@ class RecordSetsController(rest.RestController):
 
         criterion['domain_id'] = zone_id
 
-        recordsets = central_api.find_recordsets(
+        recordsets = self.central_api.find_recordsets(
             context, criterion, marker, limit, sort_key, sort_dir)
 
         return self._view.list(context, request, recordsets, [zone_id])
@@ -85,7 +84,7 @@ class RecordSetsController(rest.RestController):
         values = self._view.load(context, request, body)
 
         # Create the recordset
-        recordset = central_api.create_recordset(context, zone_id, values)
+        recordset = self.central_api.create_recordset(context, zone_id, values)
 
         # Prepare the response headers
         response.status_int = 201
@@ -106,7 +105,8 @@ class RecordSetsController(rest.RestController):
         response = pecan.response
 
         # Fetch the existing recordset
-        recordset = central_api.get_recordset(context, zone_id, recordset_id)
+        recordset = self.central_api.get_recordset(context, zone_id,
+                                                   recordset_id)
 
         # Convert to APIv2 Format
         recordset = self._view.show(context, request, recordset)
@@ -120,7 +120,7 @@ class RecordSetsController(rest.RestController):
             self._resource_schema.validate(recordset)
 
             values = self._view.load(context, request, body)
-            recordset = central_api.update_recordset(
+            recordset = self.central_api.update_recordset(
                 context, zone_id, recordset_id, values)
 
         response.status_int = 200
@@ -135,7 +135,7 @@ class RecordSetsController(rest.RestController):
         response = pecan.response
         context = request.environ['context']
 
-        central_api.delete_recordset(context, zone_id, recordset_id)
+        self.central_api.delete_recordset(context, zone_id, recordset_id)
 
         response.status_int = 204
 

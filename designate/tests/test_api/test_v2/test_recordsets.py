@@ -14,9 +14,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from mock import patch
+from oslo import messaging
 from designate import exceptions
 from designate.central import service as central_service
-from designate.openstack.common.rpc import common as rpc_common
 from designate.tests.test_api.test_v2 import ApiV2TestCase
 
 
@@ -77,7 +77,7 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
             'invalid_object', 400, self.client.post_json, url, body)
 
     @patch.object(central_service.Service, 'create_recordset',
-                  side_effect=rpc_common.Timeout())
+                  side_effect=messaging.MessagingTimeout())
     def test_create_recordset_timeout(self, _):
         fixture = self.get_recordset_fixture(self.domain['name'], fixture=0)
 
@@ -151,7 +151,7 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         self._assert_invalid_uuid(self.client.get, '/zones/%s/recordsets')
 
     @patch.object(central_service.Service, 'find_recordsets',
-                  side_effect=rpc_common.Timeout())
+                  side_effect=messaging.MessagingTimeout())
     def test_get_recordsets_timeout(self, _):
         url = '/zones/ba751950-6193-11e3-949a-0800200c9a66/recordsets'
 
@@ -184,7 +184,7 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         self._assert_invalid_uuid(self.client.get, '/zones/%s/recordsets/%s')
 
     @patch.object(central_service.Service, 'get_recordset',
-                  side_effect=rpc_common.Timeout())
+                  side_effect=messaging.MessagingTimeout())
     def test_get_recordset_timeout(self, _):
         url = '/zones/%s/recordsets/ba751950-6193-11e3-949a-0800200c9a66' % (
             self.domain['id'])
@@ -268,7 +268,7 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
                                self.client.patch_json, url, body)
 
     @patch.object(central_service.Service, 'get_recordset',
-                  side_effect=rpc_common.Timeout())
+                  side_effect=messaging.MessagingTimeout())
     def test_update_recordset_timeout(self, _):
         # Prepare an update body
         body = {'recordset': {'description': 'Tester'}}
@@ -301,7 +301,7 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         self.client.delete(url, status=204)
 
     @patch.object(central_service.Service, 'delete_recordset',
-                  side_effect=rpc_common.Timeout())
+                  side_effect=messaging.MessagingTimeout())
     def test_delete_recordset_timeout(self, _):
         url = ('/zones/%s/recordsets/ba751950-6193-11e3-949a-0800200c9a66'
                % (self.domain['id']))

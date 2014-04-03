@@ -15,9 +15,9 @@
 # under the License.
 from dns import zone as dnszone
 from mock import patch
+from oslo import messaging
 from designate import exceptions
 from designate.central import service as central_service
-from designate.openstack.common.rpc import common as rpc_common
 from designate.tests.test_api.test_v2 import ApiV2TestCase
 
 
@@ -102,7 +102,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
                                '/zones', {'zone': fixture})
 
     @patch.object(central_service.Service, 'create_domain',
-                  side_effect=rpc_common.Timeout())
+                  side_effect=messaging.MessagingTimeout())
     def test_create_zone_timeout(self, _):
         fixture = self.get_domain_fixture(0)
 
@@ -166,7 +166,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
         self._assert_invalid_paging(data, '/zones', key='zones')
 
     @patch.object(central_service.Service, 'find_domains',
-                  side_effect=rpc_common.Timeout())
+                  side_effect=messaging.MessagingTimeout())
     def test_get_zones_timeout(self, _):
         self._assert_exception('timeout', 504, self.client.get, '/zones/')
 
@@ -198,7 +198,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
         self._assert_invalid_uuid(self.client.get, '/zones/%s')
 
     @patch.object(central_service.Service, 'get_domain',
-                  side_effect=rpc_common.Timeout())
+                  side_effect=messaging.MessagingTimeout())
     def test_get_zone_timeout(self, _):
         url = '/zones/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980'
         self._assert_exception('timeout', 504, self.client.get, url,
@@ -287,7 +287,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
                                url, body)
 
     @patch.object(central_service.Service, 'get_domain',
-                  side_effect=rpc_common.Timeout())
+                  side_effect=messaging.MessagingTimeout())
     def test_update_zone_timeout(self, _):
         # Prepare an update body
         body = {'zone': {'email': 'example@example.org'}}
@@ -319,7 +319,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
         self._assert_invalid_uuid(self.client.delete, '/zones/%s')
 
     @patch.object(central_service.Service, 'delete_domain',
-                  side_effect=rpc_common.Timeout())
+                  side_effect=messaging.MessagingTimeout())
     def test_delete_zone_timeout(self, _):
         url = '/zones/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980'
 

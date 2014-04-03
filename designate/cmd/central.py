@@ -16,9 +16,9 @@
 import sys
 from oslo.config import cfg
 from designate.openstack.common import log as logging
-from designate.openstack.common import service
+from designate import service
 from designate import utils
-from designate.central import service as central_service
+from designate.central import service as central
 
 CONF = cfg.CONF
 CONF.import_opt('workers', 'designate.central', group='service:central')
@@ -27,6 +27,8 @@ CONF.import_opt('workers', 'designate.central', group='service:central')
 def main():
     utils.read_config('designate', sys.argv)
     logging.setup('designate')
-    launcher = service.launch(central_service.Service(),
-                              CONF['service:central'].workers)
-    launcher.wait()
+
+    server = central.Service.create(binary='designate-central',
+                                    service_name='central')
+    service.serve(server, workers=CONF['service:central'].workers)
+    service.wait()

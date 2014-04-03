@@ -19,7 +19,7 @@
 from oslo.config import cfg
 
 from designate.openstack.common import log as logging
-from designate.openstack.common.notifier import proxy as notifier
+from designate import rpc
 
 LOG = logging.getLogger(__name__)
 
@@ -30,13 +30,9 @@ notify_opts = [
 
 CONF = cfg.CONF
 CONF.register_opts(notify_opts)
-CONF.import_opt('default_notification_level',
-                'designate.openstack.common.notifier.api')
-CONF.import_opt('default_publisher_id',
-                'designate.openstack.common.notifier.api')
 
 
-def send_api_fault(url, status, exception):
+def send_api_fault(context, url, status, exception):
     """Send an api.fault notification."""
 
     if not CONF.notify_api_faults:
@@ -44,4 +40,4 @@ def send_api_fault(url, status, exception):
 
     payload = {'url': url, 'exception': str(exception), 'status': status}
 
-    notifier.get_notifier('api').error(None, 'dns.api.fault', payload)
+    rpc.get_notifier('api').error(context, 'dns.api.fault', payload)

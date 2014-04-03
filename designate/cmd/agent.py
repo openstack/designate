@@ -16,7 +16,7 @@
 import sys
 from oslo.config import cfg
 from designate.openstack.common import log as logging
-from designate.openstack.common import service
+from designate import service
 from designate import utils
 from designate.agent import service as agent_service
 
@@ -27,6 +27,8 @@ CONF.import_opt('workers', 'designate.agent', group='service:agent')
 def main():
     utils.read_config('designate', sys.argv)
     logging.setup('designate')
-    launcher = service.launch(agent_service.Service(),
-                              CONF['service:agent'].workers)
-    launcher.wait()
+
+    server = agent_service.Service.create(
+        binary='designate-agent')
+    service.serve(server, workers=CONF['service:agent'].workers)
+    service.wait()

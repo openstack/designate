@@ -30,7 +30,7 @@ class StorageTestCase(object):
         fixture = self.get_quota_fixture(fixture, values)
 
         if 'tenant_id' not in fixture:
-            fixture['tenant_id'] = context.tenant_id
+            fixture['tenant_id'] = context.tenant
 
         return fixture, self.storage.create_quota(context, fixture)
 
@@ -55,7 +55,7 @@ class StorageTestCase(object):
         fixture = self.get_domain_fixture(fixture, values)
 
         if 'tenant_id' not in fixture:
-            fixture['tenant_id'] = context.tenant_id
+            fixture['tenant_id'] = context.tenant
 
         return fixture, self.storage.create_domain(context, fixture)
 
@@ -126,7 +126,7 @@ class StorageTestCase(object):
     # Quota Tests
     def test_create_quota(self):
         values = self.get_quota_fixture()
-        values['tenant_id'] = self.admin_context.tenant_id
+        values['tenant_id'] = self.admin_context.tenant
 
         result = self.storage.create_quota(self.admin_context, values=values)
 
@@ -134,7 +134,7 @@ class StorageTestCase(object):
         self.assertIsNotNone(result['created_at'])
         self.assertIsNone(result['updated_at'])
 
-        self.assertEqual(result['tenant_id'], self.admin_context.tenant_id)
+        self.assertEqual(result['tenant_id'], self.admin_context.tenant)
         self.assertEqual(result['resource'], values['resource'])
         self.assertEqual(result['hard_limit'], values['hard_limit'])
 
@@ -598,7 +598,7 @@ class StorageTestCase(object):
     # Domain Tests
     def test_create_domain(self):
         values = {
-            'tenant_id': self.admin_context.tenant_id,
+            'tenant_id': self.admin_context.tenant,
             'name': 'example.net.',
             'email': 'example@example.net'
         }
@@ -609,7 +609,7 @@ class StorageTestCase(object):
         self.assertIsNotNone(result['created_at'])
         self.assertIsNone(result['updated_at'])
 
-        self.assertEqual(result['tenant_id'], self.admin_context.tenant_id)
+        self.assertEqual(result['tenant_id'], self.admin_context.tenant)
         self.assertEqual(result['name'], values['name'])
         self.assertEqual(result['email'], values['email'])
         self.assertIn('status', result)
@@ -1034,7 +1034,7 @@ class StorageTestCase(object):
         self.assertIsNotNone(result['hash'])
         self.assertIsNone(result['updated_at'])
 
-        self.assertEqual(result['tenant_id'], self.admin_context.tenant_id)
+        self.assertEqual(result['tenant_id'], self.admin_context.tenant)
         self.assertEqual(result['data'], values['data'])
         self.assertIn('status', result)
 

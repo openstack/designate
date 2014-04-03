@@ -139,7 +139,7 @@ class NeutronNetworkAPI(NetworkAPI):
 
         for endpoint, region in endpoints:
             tg.add_thread(_call, endpoint, region,
-                          tenant_id=context.tenant_id)
+                          tenant_id=context.tenant)
         tg.wait()
 
         # NOTE: Sadly tg code doesn't give us a good way to handle failures.

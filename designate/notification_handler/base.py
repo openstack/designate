@@ -24,7 +24,6 @@ from designate.plugin import ExtensionPlugin
 
 
 LOG = logging.getLogger(__name__)
-central_api = central_rpcapi.CentralAPI()
 
 
 def get_ip_data(addr_dict):
@@ -49,6 +48,10 @@ class NotificationHandler(ExtensionPlugin):
     __plugin_ns__ = 'designate.notification.handler'
     __plugin_type__ = 'handler'
 
+    def __init__(self, *args, **kw):
+        super(NotificationHandler, self).__init__(*args, **kw)
+        self.central_api = central_rpcapi.CentralAPI()
+
     @abc.abstractmethod
     def get_exchange_topics(self):
         """
@@ -71,18 +74,18 @@ class NotificationHandler(ExtensionPlugin):
         Return the domain for this context
         """
         context = DesignateContext.get_admin_context(all_tenants=True)
-        return central_api.get_domain(context, domain_id)
+        return self.central_api.get_domain(context, domain_id)
 
     def _find_or_create_recordset(self, context, domain_id, name, type,
                                   ttl=None):
         try:
-            recordset = central_api.find_recordset(context, {
+            recordset = self.central_api.find_recordset(context, {
                 'domain_id': domain_id,
                 'name': name,
                 'type': type,
             })
         except exceptions.RecordSetNotFound:
-            recordset = central_api.create_recordset(context, domain_id, {
+            recordset = self.central_api.create_recordset(context, domain_id, {
                 'name': name,
                 'type': type,
                 'ttl': ttl,
@@ -144,8 +147,9 @@ class BaseAddressHandler(NotificationHandler):
 
             LOG.debug('Creating record in %s / %s with values %r',
                       domain['id'], recordset['id'], record_values)
-            central_api.create_record(context, domain['id'], recordset['id'],
-                                      record_values)
+            self.central_api.create_record(context, domain['id'],
+                                           recordset['id'],
+                                           record_values)
 
     def _delete(self, managed=True, resource_id=None, resource_type='instance',
                 criterion={}):
@@ -167,10 +171,12 @@ class BaseAddressHandler(NotificationHandler):
                 'managed_resource_type': resource_type
             })
 
-        records = central_api.find_records(context, criterion)
+        records = self.central_api.find_records(context, criterion)
 
         for record in records:
             LOG.debug('Deleting record %s' % record['id'])
 
-            central_api.delete_record(context, cfg.CONF[self.name].domain_id,
-                                      record['recordset_id'], record['id'])
+            self.central_api.delete_record(context,
+                                           cfg.CONF[self.name].domain_id,
+                                           record['recordset_id'],
+                                           record['id'])

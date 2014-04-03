@@ -83,7 +83,7 @@ class SQLAlchemyStorage(base.Storage):
             if context.all_tenants:
                 LOG.debug('Including all tenants items in query results')
             else:
-                query = query.filter(model.tenant_id == context.tenant_id)
+                query = query.filter(model.tenant_id == context.tenant)
 
         return query
 

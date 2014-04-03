@@ -14,8 +14,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import flask
+from oslo import messaging
+
 from designate.openstack.common import log as logging
-from designate.openstack.common import rpc
+from designate import rpc
 
 LOG = logging.getLogger(__name__)
 blueprint = flask.Blueprint('diagnostics', __name__)
@@ -24,13 +26,10 @@ blueprint = flask.Blueprint('diagnostics', __name__)
 @blueprint.route('/diagnostics/ping/<topic>/<host>', methods=['GET'])
 def ping_host(topic, host):
     context = flask.request.environ.get('context')
-    queue = rpc.queue_get_for(context, topic, host)
 
-    msg = {
-        'method': 'ping',
-        'args': {},
-    }
+    client = rpc.get_client(messaging.Target(topic=topic))
+    cctxt = client.prepare(server=host, timeout=10)
 
-    pong = rpc.call(context, queue, msg, timeout=10)
+    pong = cctxt.call(context, 'ping')
 
     return flask.jsonify(pong)

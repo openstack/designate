@@ -15,8 +15,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from mock import patch
+from oslo import messaging
 from designate.openstack.common import log as logging
-from designate.openstack.common.rpc import common as rpc_common
 from designate import exceptions
 from designate.central import service as central_service
 from designate.tests.test_api.test_v1 import ApiV1Test
@@ -68,7 +68,7 @@ class ApiV1DomainsTest(ApiV1Test):
         self.post('domains', data=fixture, status_code=500)
 
     @patch.object(central_service.Service, 'create_domain',
-                  side_effect=rpc_common.Timeout())
+                  side_effect=messaging.MessagingTimeout())
     def test_create_domain_timeout(self, _):
         # Create a domain
         fixture = self.get_domain_fixture(0)
@@ -188,7 +188,7 @@ class ApiV1DomainsTest(ApiV1Test):
         self.assertTrue(mock.called)
 
     @patch.object(central_service.Service, 'find_domains',
-                  side_effect=rpc_common.Timeout())
+                  side_effect=messaging.MessagingTimeout())
     def test_get_domains_timeout(self, _):
         self.get('domains', status_code=504)
 
@@ -212,7 +212,7 @@ class ApiV1DomainsTest(ApiV1Test):
         self.assertTrue(mock.called)
 
     @patch.object(central_service.Service, 'get_domain',
-                  side_effect=rpc_common.Timeout())
+                  side_effect=messaging.MessagingTimeout())
     def test_get_domain_timeout(self, _):
         # Create a domain
         domain = self.create_domain()
@@ -281,7 +281,7 @@ class ApiV1DomainsTest(ApiV1Test):
         self.put('domains/%s' % domain['id'], data=data, status_code=400)
 
     @patch.object(central_service.Service, 'update_domain',
-                  side_effect=rpc_common.Timeout())
+                  side_effect=messaging.MessagingTimeout())
     def test_update_domain_timeout(self, _):
         # Create a domain
         domain = self.create_domain()
@@ -336,7 +336,7 @@ class ApiV1DomainsTest(ApiV1Test):
         self.assertTrue(mock.called)
 
     @patch.object(central_service.Service, 'delete_domain',
-                  side_effect=rpc_common.Timeout())
+                  side_effect=messaging.MessagingTimeout())
     def test_delete_domain_timeout(self, _):
         # Create a domain
         domain = self.create_domain()

@@ -30,6 +30,8 @@ class ApiV1Test(ApiTestCase):
         # Ensure the v1 API is enabled
         self.config(enable_api_v1=True, group='service:api')
 
+        self.central_service = self.start_service('central')
+
         # Create the application
         self.app = api_v1.factory({})
 
@@ -39,13 +41,11 @@ class ApiV1Test(ApiTestCase):
 
         # Inject the TestAuth middleware
         self.app.wsgi_app = middleware.TestContextMiddleware(
-            self.app.wsgi_app, self.admin_context.tenant_id,
-            self.admin_context.user_id)
+            self.app.wsgi_app, self.admin_context.tenant,
+            self.admin_context.user)
 
         # Obtain a test client
         self.client = self.app.test_client()
-
-        self.central_service = self.start_service('central')
 
     def get(self, path, **kw):
         expected_status_code = kw.pop('status_code', 200)

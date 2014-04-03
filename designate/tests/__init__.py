@@ -24,9 +24,12 @@ import sqlalchemy
 import tempfile
 from migrate.versioning import api as versioning_api
 from testtools import testcase
+
 from oslo.config import cfg
+from oslo.messaging import conffixture as messaging_fixture
+from oslo.messaging.notify import _impl_test as test_notifier
+
 from designate.openstack.common import log as logging
-from designate.openstack.common.notifier import test_notifier
 from designate.openstack.common.fixture import config
 from designate.openstack.common import importutils
 from designate.openstack.common import policy
@@ -38,6 +41,10 @@ from designate import exceptions
 from designate.network_api import fake as fake_network_api
 from designate import network_api
 
+# NOTE: If eventlet isn't patched and there's a exc tests block
+import eventlet
+eventlet.monkey_patch(os=False)
+
 LOG = logging.getLogger(__name__)
 
 cfg.CONF.import_opt('storage_driver', 'designate.central',
@@ -48,29 +55,25 @@ cfg.CONF.import_opt('auth_strategy', 'designate.api',
                     group='service:api')
 cfg.CONF.import_opt('database_connection', 'designate.storage.impl_sqlalchemy',
                     group='storage:sqlalchemy')
-# NOTE: Since we're importing service classes in start_service this breaks
-# if not here.
-cfg.CONF.import_opt(
-    'notification_driver', 'designate.openstack.common.notifier.api')
 
 
 class NotifierFixture(fixtures.Fixture):
     def setUp(self):
         super(NotifierFixture, self).setUp()
-        self.addCleanup(self.clear)
+        self.addCleanup(test_notifier.reset)
 
     def get(self):
         return test_notifier.NOTIFICATIONS
 
     def clear(self):
-        test_notifier.NOTIFICATIONS = []
+        return test_notifier.reset()
 
 
 class ServiceFixture(fixtures.Fixture):
     def __init__(self, svc_name, *args, **kw):
         cls = importutils.import_class(
             'designate.%s.service.Service' % svc_name)
-        self.svc = cls(*args, **kw)
+        self.svc = cls.create(binary='desgignate-' + svc_name, *args, **kw)
 
     def setUp(self):
         super(ServiceFixture, self).setUp()
@@ -236,12 +239,13 @@ class TestCase(test.BaseTestCase):
         self.useFixture(fixtures.FakeLogger('designate', level='DEBUG'))
         self.CONF = self.useFixture(config.Config(cfg.CONF)).conf
 
-        self.config(
-            notification_driver=[
-                'designate.openstack.common.notifier.test_notifier',
-            ],
-            rpc_backend='designate.openstack.common.rpc.impl_fake',
-        )
+        self.messaging_conf = self.useFixture(
+            messaging_fixture.ConfFixture(cfg.CONF))
+        self.messaging_conf.transport_driver = 'fake'
+
+        self.config(notification_driver='test')
+
+        self.notifications = self.useFixture(NotifierFixture())
 
         self.config(
             storage_driver='sqlalchemy',
@@ -278,9 +282,6 @@ class TestCase(test.BaseTestCase):
             group='service:central')
 
         self.CONF([], project='designate')
-
-        self.notifications = NotifierFixture()
-        self.useFixture(self.notifications)
 
         self.useFixture(PolicyFixture())
 
@@ -454,7 +455,7 @@ class TestCase(test.BaseTestCase):
         values = self.get_domain_fixture(fixture=fixture, values=kwargs)
 
         if 'tenant_id' not in values:
-            values['tenant_id'] = context.tenant_id
+            values['tenant_id'] = context.tenant
 
         return self.central_service.create_domain(context, values=values)
 

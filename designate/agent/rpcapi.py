@@ -14,13 +14,16 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from oslo.config import cfg
+from oslo import messaging
+
 from designate.openstack.common import log as logging
-from designate.openstack.common.rpc import proxy as rpc_proxy
+from designate import rpc
+
 
 LOG = logging.getLogger(__name__)
 
 
-class AgentAPI(rpc_proxy.RpcProxy):
+class AgentAPI(object):
     """
     Client side of the agent Rpc API.
 
@@ -28,108 +31,80 @@ class AgentAPI(rpc_proxy.RpcProxy):
 
         1.0 - Initial version
     """
+    RPC_API_VERSION = '1.0'
+
     def __init__(self, topic=None):
         topic = topic if topic else cfg.CONF.agent_topic
-        super(AgentAPI, self).__init__(topic=topic, default_version='1.0')
+
+        target = messaging.Target(topic=topic, version=self.RPC_API_VERSION)
+        self.client = rpc.get_client(target, version_cap='1.0')
 
     # Server Methods
     def create_server(self, context, server):
-        msg = self.make_msg('create_server', server=server)
-
-        return self.call(context, msg)
+        return self.client.call(context, 'create_server', server=server)
 
     def update_server(self, context, server):
-        msg = self.make_msg('update_server', server=server)
-
-        return self.call(context, msg)
+        return self.client.call(context, 'update_server', server=server)
 
     def delete_server(self, context, server):
-        msg = self.make_msg('delete_server', server=server)
-
-        return self.call(context, msg)
+        return self.client.call(context, 'delete_server', server=server)
 
     # TSIG Key Methods
     def create_tsigkey(self, context, tsigkey):
-        msg = self.make_msg('create_tsigkey', tsigkey=tsigkey)
-
-        return self.call(context, msg)
+        return self.client.call(context, 'create_tsigkey', tsigkey=tsigkey)
 
     def update_tsigkey(self, context, tsigkey):
-        msg = self.make_msg('update_tsigkey', tsigkey=tsigkey)
-
-        return self.call(context, msg)
+        return self.client.call(context, 'update_tsigkey', tsigkey=tsigkey)
 
     def delete_tsigkey(self, context, tsigkey):
-        msg = self.make_msg('delete_tsigkey', tsigkey=tsigkey)
-
-        return self.call(context, msg)
+        return self.client.call(context, 'delete_tsigkey', tsigkey=tsigkey)
 
     # Domain Methods
     def create_domain(self, context, domain):
-        msg = self.make_msg('create_domain', domain=domain)
-
-        return self.call(context, msg)
+        return self.client.call(context, 'create_domain', domain=domain)
 
     def update_domain(self, context, domain):
-        msg = self.make_msg('update_domain', domain=domain)
-
-        return self.call(context, msg)
+        return self.client.call(context, 'update_domain', domain=domain)
 
     def delete_domain(self, context, domain):
-        msg = self.make_msg('delete_domain', domain=domain)
-
-        return self.call(context, msg)
+        return self.client.call(context, 'delete_domain', domain=domain)
 
     # Record Methods
     def update_recordset(self, context, domain, recordset):
-        msg = self.make_msg('update_recordset',
-                            domain=domain,
-                            recordset=recordset)
-
-        return self.call(context, msg)
+        return self.client.call(context, 'update_recordset',
+                                domain=domain,
+                                recordset=recordset)
 
     def delete_recordset(self, context, domain, recordset):
-        msg = self.make_msg('delete_recordset',
-                            domain=domain,
-                            recordset=recordset)
-
-        return self.call(context, msg)
+        return self.client.call(context, 'delete_recordset',
+                                domain=domain,
+                                recordset=recordset)
 
     def create_record(self, context, domain, recordset, record):
-        msg = self.make_msg('create_record',
-                            domain=domain,
-                            recordset=recordset,
-                            record=record)
-
-        return self.call(context, msg)
+        return self.client.call(context, 'create_record',
+                                domain=domain,
+                                recordset=recordset,
+                                record=record)
 
     def update_record(self, context, domain, recordset, record):
-        msg = self.make_msg('update_record',
-                            domain=domain,
-                            recordset=recordset,
-                            record=record)
-
-        return self.call(context, msg)
+        return self.client.call(context, 'update_record',
+                                domain=domain,
+                                recordset=recordset,
+                                record=record)
 
     def delete_record(self, context, domain, recordset, record):
-        msg = self.make_msg('delete_record',
-                            domain=domain,
-                            recordset=recordset,
-                            record=record)
-
-        return self.call(context, msg)
+        return self.client.call(context, 'delete_record',
+                                domain=domain,
+                                recordset=recordset,
+                                record=record)
 
     # Sync Methods
     def sync_domain(self, context, domain, records):
-        msg = self.make_msg('sync_domains',
-                            domain=domain,
-                            records=records)
-
-        return self.call(context, msg)
+        return self.client.call(context, 'sync_domains',
+                                domain=domain,
+                                records=records)
 
     def sync_record(self, context, domain, record):
-        msg = self.make_msg('sync_domains',
-                            domain=domain,
-                            record=record)
-
-        return self.call(context, msg)
+        return self.client.call(context, 'sync_domains',
+                                domain=domain,
+                                record=record)

@@ -16,10 +16,9 @@
 import flask
 from designate.openstack.common import log as logging
 from designate import schema
-from designate.central import rpcapi as central_rpcapi
+from designate.api import get_central_api
 
 LOG = logging.getLogger(__name__)
-central_api = central_rpcapi.CentralAPI()
 blueprint = flask.Blueprint('limits', __name__)
 limits_schema = schema.Schema('v1', 'limits')
 
@@ -33,7 +32,7 @@ def get_limits_schema():
 def get_limits():
     context = flask.request.environ.get('context')
 
-    absolute_limits = central_api.get_absolute_limits(context)
+    absolute_limits = get_central_api().get_absolute_limits(context)
 
     return flask.jsonify(limits_schema.filter({
         "limits": {

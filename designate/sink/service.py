@@ -15,12 +15,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from oslo.config import cfg
-from designate.context import DesignateContext
+from oslo import messaging
+
 from designate.openstack.common import log as logging
-from designate.openstack.common import rpc
 from designate.openstack.common import service
 from designate import exceptions
 from designate import notification_handler
+from designate import rpc
 
 LOG = logging.getLogger(__name__)
 
@@ -29,11 +30,11 @@ class Service(service.Service):
     def __init__(self, *args, **kwargs):
         super(Service, self).__init__(*args, **kwargs)
 
+        rpc.init(cfg.CONF)
+
         # Initialize extensions
         self.handlers = self._init_extensions()
-
-        # Get a rpc connection
-        self.rpc_conn = rpc.create_connection()
+        self.subscribers = self._get_subscribers()
 
     def _init_extensions(self):
         """ Loads and prepares all enabled extensions """
@@ -51,78 +52,57 @@ class Service(service.Service):
 
         return notification_handlers
 
+    def _get_subscribers(self):
+        subscriptions = {}
+        for handler in self.handlers:
+            for et in handler.get_event_types():
+                subscriptions.setdefault(et, [])
+                subscriptions[et].append(handler)
+        return subscriptions
+
     def start(self):
         super(Service, self).start()
 
         # Setup notification subscriptions and start consuming
-        self._setup_subscriptions()
-        self.rpc_conn.consume_in_thread()
+        targets = self._get_targets()
+
+        # TODO(ekarlso): Change this is to endpoint objects rather then
+        # ourselves?
+        self._server = rpc.get_listener(targets, [self])
+        self._server.start()
 
     def stop(self):
         # Try to shut the connection down, but if we get any sort of
         # errors, go ahead and ignore them.. as we're shutting down anyway
         try:
-            self.rpc_conn.close()
+            self._server.stop()
         except Exception:
             pass
 
         super(Service, self).stop()
 
-    def _setup_subscriptions(self):
+    def _get_targets(self):
         """
         Set's up subscriptions for the various exchange+topic combinations that
         we have a handler for.
         """
+        targets = []
         for handler in self.handlers:
             exchange, topics = handler.get_exchange_topics()
 
             for topic in topics:
-                queue_name = "designate.notifications.%s.%s.%s" % (
-                    handler.get_canonical_name(), exchange, topic)
+                target = messaging.Target(exchange=exchange, topic=topic)
+                targets.append(target)
+        return targets
 
-                self.rpc_conn.join_consumer_pool(
-                    self._process_notification,
-                    queue_name,
-                    topic,
-                    exchange_name=exchange)
-
-    def _get_handler_event_types(self):
-        event_types = set()
-        for handler in self.handlers:
-            for et in handler.get_event_types():
-                event_types.add(et)
-        return event_types
-
-    def _process_notification(self, notification):
+    def info(self, context, publisher_id, event_type, payload, metadata):
         """
         Processes an incoming notification, offering each extension the
         opportunity to handle it.
         """
-        event_type = notification.get('event_type')
-
         # NOTE(zykes): Only bother to actually do processing if there's any
         # matching events, skips logging of things like compute.exists etc.
         if event_type in self._get_handler_event_types():
             for handler in self.handlers:
-                self._process_notification_for_handler(handler, notification)
-
-    def _process_notification_for_handler(self, handler, notification):
-        """
-        Processes an incoming notification for a specific handler, checking
-        to see if the handler is interested in the notification before
-        handing it over.
-        """
-        context = DesignateContext(
-            auth_token=notification.get('_context_auth_token', None),
-            user=notification.get('_context_user', None),
-            tenant=notification.get('_context_tenant', None),
-            roles=notification.get('_context_roles', []),
-            service_catalog=notification.get('_context_service_catalog', []),
-            is_admin=notification.get('_context_is_admin', False)
-        )
-        event_type = notification['event_type']
-        payload = notification['payload']
-
-        if event_type in handler.get_event_types():
-            LOG.debug('Found handler for: %s' % event_type)
-            handler.process_notification(context, event_type, payload)
+                LOG.debug('Found handler for: %s' % event_type)
+                handler.process_notification(context, event_type, payload)

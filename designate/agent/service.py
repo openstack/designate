@@ -15,31 +15,33 @@
 # under the License.
 from oslo.config import cfg
 from designate.openstack.common import log as logging
-from designate.openstack.common.rpc import service as rpc_service
 from designate import backend
+from designate import rpc
+from designate import service
 from designate.central import rpcapi as central_rpcapi
 
 LOG = logging.getLogger(__name__)
-central_api = central_rpcapi.CentralAPI()
 
 
-class Service(rpc_service.Service):
-    def __init__(self, *args, **kwargs):
-        manager = backend.get_backend(cfg.CONF['service:agent'].backend_driver,
-                                      central_service=central_api)
+class Service(service.Service):
+    def __init__(self, host, binary, topic, service_name=None, endpoints=None,
+                 *args, **kwargs):
+        # Central api needs a transport if not it fails. This is normally done
+        # by the service init method.
+        rpc.init(cfg.CONF)
+        central_api = central_rpcapi.CentralAPI()
 
-        kwargs.update(
-            host=cfg.CONF.host,
-            topic=cfg.CONF.agent_topic,
-            manager=manager
-        )
+        manager = backend.get_backend(
+            cfg.CONF['service:agent'].backend_driver,
+            central_service=central_api)
 
-        super(Service, self).__init__(*args, **kwargs)
+        super(Service, self).__init__(host, binary, topic,
+                                      endpoints=[manager],
+                                      *args, **kwargs)
 
     def start(self):
-        self.manager.start()
-        super(Service, self).start()
+        self.endpoints[0].start()
 
     def stop(self):
         super(Service, self).stop()
-        self.manager.stop()
+        self.endpoints[0].stop()

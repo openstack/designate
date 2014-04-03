@@ -16,6 +16,7 @@
 import itertools
 from designate.openstack.common import context
 from designate.openstack.common import log as logging
+from designate.openstack.common.gettextutils import _
 
 LOG = logging.getLogger(__name__)
 
@@ -25,7 +26,10 @@ class DesignateContext(context.RequestContext):
                  user_domain=None, project_domain=None, is_admin=False,
                  read_only=False, show_deleted=False, request_id=None,
                  instance_uuid=None, roles=[], service_catalog=None,
-                 all_tenants=False):
+                 all_tenants=False, **kwargs):
+        if kwargs:
+                LOG.warn(_('Arguments dropped when creating context: %s') %
+                         str(kwargs))
         super(DesignateContext, self).__init__(
             auth_token=auth_token,
             user=user,
@@ -46,31 +50,28 @@ class DesignateContext(context.RequestContext):
     def deepcopy(self):
         d = self.to_dict()
 
-        # Remove the user and tenant id fields, this map to user and tenant
-        d.pop('user_id')
-        d.pop('tenant_id')
-        d.pop('user_identity')
-
         return self.from_dict(d)
 
     def to_dict(self):
         d = super(DesignateContext, self).to_dict()
 
+        user_idt = (
+            self.user_idt_format.format(user=self.user or '-',
+                                        tenant=self.tenant or '-',
+                                        domain=self.domain or '-',
+                                        user_domain=self.user_domain or '-',
+                                        p_domain=self.project_domain or '-'))
         d.update({
-            'user_id': self.user_id,
-            'tenant_id': self.tenant_id,
             'roles': self.roles,
             'service_catalog': self.service_catalog,
             'all_tenants': self.all_tenants,
+            'user_identity': user_idt
         })
 
         return d
 
     @classmethod
     def from_dict(cls, values):
-        if 'user_identity' in values:
-            values.pop('user_identity')
-
         return cls(**values)
 
     def elevated(self, show_deleted=None):
@@ -85,22 +86,6 @@ class DesignateContext(context.RequestContext):
             context.show_deleted = show_deleted
 
         return context
-
-    @property
-    def user_id(self):
-        return self.user
-
-    @user_id.setter
-    def user_id(self, value):
-        self.user = value
-
-    @property
-    def tenant_id(self):
-        return self.tenant
-
-    @tenant_id.setter
-    def tenant_id(self, value):
-        self.tenant = value
 
     @classmethod
     def get_admin_context(cls, **kwargs):

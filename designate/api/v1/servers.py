@@ -16,10 +16,9 @@
 import flask
 from designate.openstack.common import log as logging
 from designate import schema
-from designate.central import rpcapi as central_rpcapi
+from designate.api import get_central_api
 
 LOG = logging.getLogger(__name__)
-central_api = central_rpcapi.CentralAPI()
 blueprint = flask.Blueprint('servers', __name__)
 server_schema = schema.Schema('v1', 'server')
 servers_schema = schema.Schema('v1', 'servers')
@@ -41,7 +40,8 @@ def create_server():
     values = flask.request.json
 
     server_schema.validate(values)
-    server = central_api.create_server(context, values=flask.request.json)
+    server = get_central_api().create_server(context,
+                                             values=flask.request.json)
 
     response = flask.jsonify(server_schema.filter(server))
     response.status_int = 201
@@ -54,7 +54,7 @@ def create_server():
 def get_servers():
     context = flask.request.environ.get('context')
 
-    servers = central_api.find_servers(context)
+    servers = get_central_api().find_servers(context)
 
     return flask.jsonify(servers_schema.filter({'servers': servers}))
 
@@ -63,7 +63,7 @@ def get_servers():
 def get_server(server_id):
     context = flask.request.environ.get('context')
 
-    server = central_api.get_server(context, server_id)
+    server = get_central_api().get_server(context, server_id)
 
     return flask.jsonify(server_schema.filter(server))
 
@@ -73,12 +73,12 @@ def update_server(server_id):
     context = flask.request.environ.get('context')
     values = flask.request.json
 
-    server = central_api.get_server(context, server_id)
+    server = get_central_api().get_server(context, server_id)
     server = server_schema.filter(server)
     server.update(values)
 
     server_schema.validate(server)
-    server = central_api.update_server(context, server_id, values=values)
+    server = get_central_api().update_server(context, server_id, values=values)
 
     return flask.jsonify(server_schema.filter(server))
 
@@ -87,6 +87,6 @@ def update_server(server_id):
 def delete_server(server_id):
     context = flask.request.environ.get('context')
 
-    central_api.delete_server(context, server_id)
+    get_central_api().delete_server(context, server_id)
 
     return flask.Response(status=200)

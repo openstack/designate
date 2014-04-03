@@ -14,9 +14,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from mock import patch
+from oslo import messaging
 from designate import exceptions
 from designate.central import service as central_service
-from designate.openstack.common.rpc import common as rpc_common
 from designate.tests.test_api.test_v2 import ApiV2TestCase
 
 
@@ -72,7 +72,7 @@ class ApiV2RecordsTest(ApiV2TestCase):
                                url, body)
 
     @patch.object(central_service.Service, 'create_record',
-                  side_effect=rpc_common.Timeout())
+                  side_effect=messaging.MessagingTimeout())
     def test_create_recordset_timeout(self, _):
         fixture = self.get_record_fixture(self.rrset['type'], fixture=0)
 
@@ -144,7 +144,7 @@ class ApiV2RecordsTest(ApiV2TestCase):
         self._assert_invalid_paging(data, url, key='records')
 
     @patch.object(central_service.Service, 'find_records',
-                  side_effect=rpc_common.Timeout())
+                  side_effect=messaging.MessagingTimeout())
     def test_get_records_timeout(self, _):
         url = '/zones/ba751950-6193-11e3-949a-0800200c9a66/recordsets/' \
             'ba751950-6193-11e3-949a-0800200c9a66/records'
@@ -176,7 +176,7 @@ class ApiV2RecordsTest(ApiV2TestCase):
         self.assertEqual(record['data'], response.json['record']['data'])
 
     @patch.object(central_service.Service, 'get_record',
-                  side_effect=rpc_common.Timeout())
+                  side_effect=messaging.MessagingTimeout())
     def test_get_record_timeout(self, _):
         url = '/zones/%s/recordsets/%s/records/' \
             'ba751950-6193-11e3-949a-0800200c9a66' % (
@@ -264,7 +264,7 @@ class ApiV2RecordsTest(ApiV2TestCase):
                                headers={'Accept': 'application/json'})
 
     @patch.object(central_service.Service, 'get_record',
-                  side_effect=rpc_common.Timeout())
+                  side_effect=messaging.MessagingTimeout())
     def test_update_record_timeout(self, _):
         url = '/zones/%s/recordsets/%s/records/' \
             'ba751950-6193-11e3-949a-0800200c9a66' % (
@@ -304,7 +304,7 @@ class ApiV2RecordsTest(ApiV2TestCase):
         self.client.delete(url, status=204)
 
     @patch.object(central_service.Service, 'delete_record',
-                  side_effect=rpc_common.Timeout())
+                  side_effect=messaging.MessagingTimeout())
     def test_delete_record_timeout(self, _):
         url = '/zones/%s/recordsets/%s/records/' \
             'ba751950-6193-11e3-949a-0800200c9a66' % (

@@ -14,7 +14,11 @@
 #    under the License.
 import csv
 import os
+
+from oslo.config import cfg
+
 from designate import exceptions
+from designate import rpc
 from designate.central import rpcapi as central_rpcapi
 from designate.openstack.common import log as logging
 from designate.manage import base
@@ -49,8 +53,9 @@ class TLDCommands(base.Commands):
     InvalidLine - This occurs if the line contains more than 2 fields.
     """
 
-    def __init__(self,):
+    def __init__(self):
         super(TLDCommands, self).__init__()
+        rpc.init(cfg.CONF)
         self.central_api = central_rpcapi.CentralAPI()
 
     # The dictionary function __str__() does not list the fields in any

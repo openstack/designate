@@ -160,7 +160,7 @@ class PowerDNSBackend(base.Backend):
             'name': domain['name'].rstrip('.'),
             'master': servers[0]['name'].rstrip('.'),
             'type': cfg.CONF['backend:powerdns'].domain_type,
-            'account': context.tenant_id
+            'account': context.tenant
         })
         domain_m.save(self.session)
 

@@ -15,7 +15,6 @@
 # under the License.
 
 import pecan
-from designate.central import rpcapi as central_rpcapi
 from designate.openstack.common import log as logging
 from designate import schema
 from designate import utils
@@ -23,7 +22,6 @@ from designate.api.v2.controllers import rest
 from designate.api.v2.views import blacklists as blacklists_view
 
 LOG = logging.getLogger(__name__)
-central_api = central_rpcapi.CentralAPI()
 
 
 class BlacklistsController(rest.RestController):
@@ -40,7 +38,7 @@ class BlacklistsController(rest.RestController):
         request = pecan.request
         context = request.environ['context']
 
-        blacklist = central_api.get_blacklist(context, blacklist_id)
+        blacklist = self.central_api.get_blacklist(context, blacklist_id)
 
         return self._view.show(context, request, blacklist)
 
@@ -58,7 +56,7 @@ class BlacklistsController(rest.RestController):
         criterion = dict((k, params[k]) for k in accepted_filters
                          if k in params)
 
-        blacklist = central_api.find_blacklists(
+        blacklist = self.central_api.find_blacklists(
             context, criterion, marker, limit, sort_key, sort_dir)
 
         return self._view.list(context, request, blacklist)
@@ -79,7 +77,7 @@ class BlacklistsController(rest.RestController):
         values = self._view.load(context, request, body)
 
         # Create the blacklist
-        blacklist = central_api.create_blacklist(context, values)
+        blacklist = self.central_api.create_blacklist(context, values)
 
         response.status_int = 201
 
@@ -100,7 +98,7 @@ class BlacklistsController(rest.RestController):
         response = pecan.response
 
         # Fetch the existing blacklisted zone
-        blacklist = central_api.get_blacklist(context, blacklist_id)
+        blacklist = self.central_api.get_blacklist(context, blacklist_id)
 
         # Convert to APIv2 Format
         blacklist = self._view.show(context, request, blacklist)
@@ -115,8 +113,8 @@ class BlacklistsController(rest.RestController):
 
             values = self._view.load(context, request, body)
 
-            blacklist = central_api.update_blacklist(context,
-                                                     blacklist_id, values)
+            blacklist = self.central_api.update_blacklist(context,
+                                                          blacklist_id, values)
 
         response.status_int = 200
 
@@ -130,7 +128,7 @@ class BlacklistsController(rest.RestController):
         response = pecan.response
         context = request.environ['context']
 
-        central_api.delete_blacklist(context, blacklist_id)
+        self.central_api.delete_blacklist(context, blacklist_id)
 
         response.status_int = 204
 

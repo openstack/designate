@@ -16,17 +16,19 @@
 # under the License.
 import re
 import contextlib
+
 from oslo.config import cfg
+from oslo import messaging
+
 from designate.openstack.common import log as logging
-from designate.openstack.common.rpc import service as rpc_service
-from designate.openstack.common.notifier import proxy as notifier
 from designate import backend
 from designate import exceptions
+from designate import network_api
 from designate import policy
 from designate import quota
+from designate import service
 from designate import utils
 from designate.storage import api as storage_api
-from designate import network_api
 
 LOG = logging.getLogger(__name__)
 
@@ -44,19 +46,14 @@ def wrap_backend_call():
         raise exceptions.Backend('Unknown backend failure: %r' % exc)
 
 
-class Service(rpc_service.Service):
+class Service(service.Service):
     RPC_API_VERSION = '3.3'
+
+    target = messaging.Target(version=RPC_API_VERSION)
 
     def __init__(self, *args, **kwargs):
         backend_driver = cfg.CONF['service:central'].backend_driver
         self.backend = backend.get_backend(backend_driver, self)
-
-        kwargs.update(
-            host=cfg.CONF.host,
-            topic=cfg.CONF.central_topic,
-        )
-
-        self.notifier = notifier.get_notifier('central')
 
         policy.init_policy()
 
@@ -271,7 +268,7 @@ class Service(rpc_service.Service):
     # Misc Methods
     def get_absolute_limits(self, context):
         # NOTE(Kiall): Currently, we only have quota based limits..
-        return self.quota.get_quotas(context, context.tenant_id)
+        return self.quota.get_quotas(context, context.tenant)
 
     # Quota Methods
     def get_quotas(self, context, tenant_id):
@@ -474,7 +471,7 @@ class Service(rpc_service.Service):
 
         # Default to creating in the current users tenant
         if 'tenant_id' not in values:
-            values['tenant_id'] = context.tenant_id
+            values['tenant_id'] = context.tenant
 
         target = {
             'tenant_id': values['tenant_id'],
@@ -552,14 +549,14 @@ class Service(rpc_service.Service):
 
     def find_domains(self, context, criterion=None, marker=None, limit=None,
                      sort_key=None, sort_dir=None):
-        target = {'tenant_id': context.tenant_id}
+        target = {'tenant_id': context.tenant}
         policy.check('find_domains', context, target)
 
         return self.storage_api.find_domains(context, criterion, marker, limit,
                                              sort_key, sort_dir)
 
     def find_domain(self, context, criterion=None):
-        target = {'tenant_id': context.tenant_id}
+        target = {'tenant_id': context.tenant}
         policy.check('find_domain', context, target)
 
         return self.storage_api.find_domain(context, criterion)
@@ -711,14 +708,14 @@ class Service(rpc_service.Service):
 
     def find_recordsets(self, context, criterion=None, marker=None, limit=None,
                         sort_key=None, sort_dir=None):
-        target = {'tenant_id': context.tenant_id}
+        target = {'tenant_id': context.tenant}
         policy.check('find_recordsets', context, target)
 
         return self.storage_api.find_recordsets(context, criterion, marker,
                                                 limit, sort_key, sort_dir)
 
     def find_recordset(self, context, criterion=None):
-        target = {'tenant_id': context.tenant_id}
+        target = {'tenant_id': context.tenant}
         policy.check('find_recordset', context, target)
 
         return self.storage_api.find_recordset(context, criterion)
@@ -870,14 +867,14 @@ class Service(rpc_service.Service):
 
     def find_records(self, context, criterion=None, marker=None, limit=None,
                      sort_key=None, sort_dir=None):
-        target = {'tenant_id': context.tenant_id}
+        target = {'tenant_id': context.tenant}
         policy.check('find_records', context, target)
 
         return self.storage_api.find_records(context, criterion, marker, limit,
                                              sort_key, sort_dir)
 
     def find_record(self, context, criterion=None):
-        target = {'tenant_id': context.tenant_id}
+        target = {'tenant_id': context.tenant}
         policy.check('find_record', context, target)
 
         return self.storage_api.find_record(context, criterion)
@@ -1062,7 +1059,7 @@ class Service(rpc_service.Service):
 
         Returns a list of tuples with FloatingIPs and it's Record.
         """
-        tenant_id = tenant_id or context.tenant_id
+        tenant_id = tenant_id or context.tenant
 
         elevated_context = context.elevated()
         elevated_context.all_tenants = True
@@ -1174,7 +1171,7 @@ class Service(rpc_service.Service):
     def _get_floatingip(self, context, region, floatingip_id, fips):
         if (region, floatingip_id) not in fips:
             msg = 'FloatingIP %s in %s is not associated for tenant "%s"' % \
-                (floatingip_id, region, context.tenant_id)
+                (floatingip_id, region, context.tenant)
             raise exceptions.NotFound(msg)
         return fips[region, floatingip_id]
 
@@ -1292,7 +1289,7 @@ class Service(rpc_service.Service):
             'managed_resource_id': floatingip_id,
             'managed_resource_region': region,
             'managed_resource_type': 'ptr:floatingip',
-            'managed_tenant_id': context.tenant_id
+            'managed_tenant_id': context.tenant
         }
 
         record = self.create_record(
@@ -1318,7 +1315,7 @@ class Service(rpc_service.Service):
 
         criterion = {
             'managed_resource_id': floatingip_id,
-            'managed_tenant_id': context.tenant_id
+            'managed_tenant_id': context.tenant
         }
 
         try:

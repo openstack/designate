@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from designate.tests.test_api import ApiTestCase
+from designate.api import service
 
 
 class ApiServiceTest(ApiTestCase):
@@ -23,8 +24,13 @@ class ApiServiceTest(ApiTestCase):
         # Use a random port for the API
         self.config(api_port=0, group='service:api')
 
-        self.service = self.start_service('api')
+        # Bring up the Central service as if not the rpc will go into
+        # AssertError since TRANSPORT is None
+        self.start_service('central')
+
+        self.service = service.Service()
 
     def test_start_and_stop(self):
         # NOTE: Start is already done by the fixture in start_service()
+        self.service.start()
         self.service.stop()

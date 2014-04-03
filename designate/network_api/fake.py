@@ -75,7 +75,7 @@ class FakeNetworkAPI(NetworkAPI):
             for tenant_id, allocated in ALLOCATIONS.items():
                 data.extend(allocated.items())
         else:
-            data = ALLOCATIONS.get(context.tenant_id, {}).items()
+            data = ALLOCATIONS.get(context.tenant, {}).items()
 
         formatted = [_format_floatingip(k, v) for k, v in data]
         LOG.debug('Returning %i FloatingIPs: %s', len(formatted), formatted)

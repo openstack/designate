@@ -38,6 +38,9 @@ class ApiV2TestCase(ApiTestCase):
         # Ensure the v2 API is enabled
         self.config(enable_api_v2=True, group='service:api')
 
+        # Create and start an instance of the central service
+        self.central_service = self.start_service('central')
+
         # Create the application
         self.app = api_v2.factory({})
 
@@ -46,14 +49,11 @@ class ApiV2TestCase(ApiTestCase):
 
         # Inject the TestContext middleware
         self.app = middleware.TestContextMiddleware(
-            self.app, self.admin_context.tenant_id,
-            self.admin_context.tenant_id)
+            self.app, self.admin_context.tenant,
+            self.admin_context.tenant)
 
         # Obtain a test client
         self.client = TestApp(self.app)
-
-        # Create and start an instance of the central service
-        self.central_service = self.start_service('central')
 
     def tearDown(self):
         self.app = None

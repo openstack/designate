@@ -14,7 +14,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import pecan
-from designate.central import rpcapi as central_rpcapi
 from designate.openstack.common import log as logging
 from designate import schema
 from designate import utils
@@ -22,7 +21,6 @@ from designate.api.v2.controllers import rest
 from designate.api.v2.views import records as records_view
 
 LOG = logging.getLogger(__name__)
-central_api = central_rpcapi.CentralAPI()
 
 
 class RecordsController(rest.RestController):
@@ -39,8 +37,8 @@ class RecordsController(rest.RestController):
         request = pecan.request
         context = request.environ['context']
 
-        record = central_api.get_record(context, zone_id, recordset_id,
-                                        record_id)
+        record = self.central_api.get_record(context, zone_id, recordset_id,
+                                             record_id)
 
         return self._view.show(context, request, record)
 
@@ -62,7 +60,7 @@ class RecordsController(rest.RestController):
         criterion['domain_id'] = zone_id
         criterion['recordset_id'] = recordset_id
 
-        records = central_api.find_records(
+        records = self.central_api.find_records(
             context, criterion, marker, limit, sort_key, sort_dir)
 
         return self._view.list(context, request, records,
@@ -85,8 +83,8 @@ class RecordsController(rest.RestController):
         values = self._view.load(context, request, body)
 
         # Create the records
-        record = central_api.create_record(context, zone_id, recordset_id,
-                                           values)
+        record = self.central_api.create_record(context, zone_id, recordset_id,
+                                                values)
 
         # Prepare the response headers
         if record['status'] == 'PENDING':
@@ -111,8 +109,8 @@ class RecordsController(rest.RestController):
         response = pecan.response
 
         # Fetch the existing record
-        record = central_api.get_record(context, zone_id, recordset_id,
-                                        record_id)
+        record = self.central_api.get_record(context, zone_id, recordset_id,
+                                             record_id)
 
         # Convert to APIv2 Format
         record = self._view.show(context, request, record)
@@ -126,7 +124,7 @@ class RecordsController(rest.RestController):
             self._resource_schema.validate(record)
 
             values = self._view.load(context, request, body)
-            record = central_api.update_record(
+            record = self.central_api.update_record(
                 context, zone_id, recordset_id, record_id, values)
 
         if record['status'] == 'PENDING':
@@ -144,8 +142,8 @@ class RecordsController(rest.RestController):
         response = pecan.response
         context = request.environ['context']
 
-        record = central_api.delete_record(context, zone_id, recordset_id,
-                                           record_id)
+        record = self.central_api.delete_record(context, zone_id, recordset_id,
+                                                record_id)
 
         if record['status'] == 'DELETING':
             response.status_int = 202

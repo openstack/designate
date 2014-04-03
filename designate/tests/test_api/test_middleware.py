@@ -14,14 +14,12 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from oslo.config import cfg
 from designate.tests.test_api import ApiTestCase
+from designate import context
 from designate import exceptions
+from designate import rpc
 from designate.api import middleware
-
-
-class FakeContext(object):
-    def __init__(self, roles=[]):
-        self.roles = roles
 
 
 class FakeRequest(object):
@@ -51,7 +49,7 @@ class MaintenanceMiddlewareTest(ApiTestCase):
                     group='service:api')
 
         request = FakeRequest()
-        request.environ['context'] = FakeContext(roles=['user'])
+        request.environ['context'] = context.DesignateContext(roles=['user'])
 
         app = middleware.MaintenanceMiddleware({})
 
@@ -66,7 +64,7 @@ class MaintenanceMiddlewareTest(ApiTestCase):
                     group='service:api')
 
         request = FakeRequest()
-        request.environ['context'] = FakeContext(roles=[])
+        request.environ['context'] = context.DesignateContext(roles=[])
 
         app = middleware.MaintenanceMiddleware({})
 
@@ -94,7 +92,7 @@ class MaintenanceMiddlewareTest(ApiTestCase):
                     group='service:api')
 
         request = FakeRequest()
-        request.environ['context'] = FakeContext(roles=['admin'])
+        request.environ['context'] = context.DesignateContext(roles=['admin'])
 
         app = middleware.MaintenanceMiddleware({})
 
@@ -127,8 +125,8 @@ class KeystoneContextMiddlewareTest(ApiTestCase):
 
         self.assertFalse(context.is_admin)
         self.assertEqual('AuthToken', context.auth_token)
-        self.assertEqual('UserID', context.user_id)
-        self.assertEqual('TenantID', context.tenant_id)
+        self.assertEqual('UserID', context.user)
+        self.assertEqual('TenantID', context.tenant)
         self.assertEqual(['admin', 'Member'], context.roles)
 
     def test_process_request_invalid_keystone_token(self):
@@ -161,20 +159,19 @@ class NoAuthContextMiddlewareTest(ApiTestCase):
 
         self.assertIn('context', request.environ)
 
-        context = request.environ['context']
+        ctxt = request.environ['context']
 
-        self.assertTrue(context.is_admin)
-        self.assertIsNone(context.auth_token)
-        self.assertEqual('noauth-user', context.user_id)
-        self.assertEqual('noauth-project', context.tenant_id)
-        self.assertEqual([], context.roles)
+        self.assertTrue(ctxt.is_admin)
+        self.assertIsNone(ctxt.auth_token)
+        self.assertEqual('noauth-user', ctxt.user)
+        self.assertEqual('noauth-project', ctxt.tenant)
+        self.assertEqual([], ctxt.roles)
 
 
 class FaultMiddlewareTest(ApiTestCase):
-    __test__ = True
-
     def test_notify_of_fault(self):
         self.config(notify_api_faults=True)
+        rpc.init(cfg.CONF)
         app = middleware.FaultWrapperMiddleware({})
 
         class RaisingRequest(FakeRequest):
@@ -182,9 +179,9 @@ class FaultMiddlewareTest(ApiTestCase):
                 raise exceptions.DuplicateDomain()
 
         request = RaisingRequest()
-        context = FakeContext()
-        context.request_id = 'one'
-        request.environ['context'] = context
+        ctxt = context.DesignateContext()
+        ctxt.request_id = 'one'
+        request.environ['context'] = ctxt
 
         # Process the request
         app(request)
@@ -192,7 +189,9 @@ class FaultMiddlewareTest(ApiTestCase):
         notifications = self.get_notifications()
         self.assertEqual(1, len(notifications))
 
-        self.assertEqual('ERROR', notifications[0]['priority'])
-        self.assertEqual('dns.api.fault', notifications[0]['event_type'])
-        self.assertIn('timestamp', notifications[0])
-        self.assertIn('publisher_id', notifications[0])
+        ctxt, message, priority = notifications.pop()
+
+        self.assertEqual('ERROR', message['priority'])
+        self.assertEqual('dns.api.fault', message['event_type'])
+        self.assertIn('timestamp', message)
+        self.assertIn('publisher_id', message)

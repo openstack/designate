@@ -16,13 +16,11 @@
 
 import pecan
 from designate import utils
-from designate.central import rpcapi as central_rpcapi
 from designate.openstack.common import log as logging
 from designate.api.v2.controllers import rest
 from designate.api.v2.views import nameservers as nameservers_view
 
 LOG = logging.getLogger(__name__)
-central_api = central_rpcapi.CentralAPI()
 
 
 class NameServersController(rest.RestController):
@@ -34,6 +32,6 @@ class NameServersController(rest.RestController):
         request = pecan.request
         context = pecan.request.environ['context']
 
-        servers = central_api.get_domain_servers(context, zone_id)
+        servers = self.central_api.get_domain_servers(context, zone_id)
 
         return self._view.list(context, request, servers, [zone_id])

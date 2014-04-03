@@ -14,8 +14,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from mock import patch
+from oslo import messaging
 from designate.openstack.common import log as logging
-from designate.openstack.common.rpc import common as rpc_common
 from designate import exceptions
 from designate.central import service as central_service
 from designate.tests.test_api.test_v1 import ApiV1Test
@@ -61,7 +61,7 @@ class ApiV1ServersTest(ApiV1Test):
         self.post('servers', data=fixture, status_code=400)
 
     @patch.object(central_service.Service, 'create_server',
-                  side_effect=rpc_common.Timeout())
+                  side_effect=messaging.MessagingTimeout())
     def test_create_server_timeout(self, _):
         # Create a server
         fixture = self.get_server_fixture(0)
@@ -106,7 +106,7 @@ class ApiV1ServersTest(ApiV1Test):
         self.assertTrue(mock.called)
 
     @patch.object(central_service.Service, 'find_servers',
-                  side_effect=rpc_common.Timeout())
+                  side_effect=messaging.MessagingTimeout())
     def test_get_servers_timeout(self, _):
         self.get('servers', status_code=504)
 
@@ -130,7 +130,7 @@ class ApiV1ServersTest(ApiV1Test):
         self.assertTrue(mock.called)
 
     @patch.object(central_service.Service, 'get_server',
-                  side_effect=rpc_common.Timeout())
+                  side_effect=messaging.MessagingTimeout())
     def test_get_server_timeout(self, _):
         # Create a server
         server = self.create_server()
@@ -176,7 +176,7 @@ class ApiV1ServersTest(ApiV1Test):
         self.put('servers/%s' % server['id'], data=data, status_code=400)
 
     @patch.object(central_service.Service, 'update_server',
-                  side_effect=rpc_common.Timeout())
+                  side_effect=messaging.MessagingTimeout())
     def test_update_server_timeout(self, _):
         # Create a server
         server = self.create_server()
@@ -228,7 +228,7 @@ class ApiV1ServersTest(ApiV1Test):
         self.assertTrue(mock.called)
 
     @patch.object(central_service.Service, 'delete_server',
-                  side_effect=rpc_common.Timeout())
+                  side_effect=messaging.MessagingTimeout())
     def test_delete_server_timeout(self, _):
         # Create a server
         server = self.create_server()

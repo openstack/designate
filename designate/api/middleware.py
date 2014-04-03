@@ -15,7 +15,10 @@
 # under the License.
 import flask
 import webob.dec
+
 from oslo.config import cfg
+from oslo import messaging
+
 from designate import exceptions
 from designate import notifications
 from designate import wsgi
@@ -24,7 +27,6 @@ from designate.openstack.common import jsonutils as json
 from designate.openstack.common import local
 from designate.openstack.common import log as logging
 from designate.openstack.common import strutils
-from designate.openstack.common.rpc import common as rpc_common
 
 LOG = logging.getLogger(__name__)
 
@@ -210,7 +212,7 @@ class FaultWrapperMiddleware(wsgi.Middleware):
                 response['errors'] = e.errors
 
             return self._handle_exception(request, e, status, response)
-        except rpc_common.Timeout as e:
+        except messaging.MessagingTimeout as e:
             # Special case for RPC timeout's
             response = {
                 'code': 504,
@@ -242,7 +244,8 @@ class FaultWrapperMiddleware(wsgi.Middleware):
         if 'context' in request.environ:
             response['request_id'] = request.environ['context'].request_id
 
-            notifications.send_api_fault(url, response['code'], e)
+            notifications.send_api_fault(request.environ['context'], url,
+                                         response['code'], e)
         else:
             #TODO(ekarlso): Remove after verifying that there's actually a
             # context always set

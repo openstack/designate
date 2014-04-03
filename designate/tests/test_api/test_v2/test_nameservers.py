@@ -14,8 +14,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from mock import patch
+from oslo import messaging
 from designate.central import service as central_service
-from designate.openstack.common.rpc import common as rpc_common
 from designate.tests.test_api.test_v2 import ApiV2TestCase
 
 
@@ -61,7 +61,7 @@ class ApiV2NameServersTest(ApiV2TestCase):
         self._assert_invalid_uuid(self.client.get, '/zones/%s/nameservers')
 
     @patch.object(central_service.Service, 'get_domain_servers',
-                  side_effect=rpc_common.Timeout())
+                  side_effect=messaging.MessagingTimeout())
     def test_get_nameservers_timeout(self, _):
         url = '/zones/ba751950-6193-11e3-949a-0800200c9a66/nameservers'
 

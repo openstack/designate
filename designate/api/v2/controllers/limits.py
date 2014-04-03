@@ -15,13 +15,11 @@
 # under the License.
 
 import pecan
-from designate.central import rpcapi as central_rpcapi
 from designate.openstack.common import log as logging
 from designate.api.v2.controllers import rest
 from designate.api.v2.views import limits as limits_view
 
 LOG = logging.getLogger(__name__)
-central_api = central_rpcapi.CentralAPI()
 
 
 class LimitsController(rest.RestController):
@@ -32,6 +30,6 @@ class LimitsController(rest.RestController):
         request = pecan.request
         context = pecan.request.environ['context']
 
-        absolute_limits = central_api.get_absolute_limits(context)
+        absolute_limits = self.central_api.get_absolute_limits(context)
 
         return self._view.show(context, request, absolute_limits)

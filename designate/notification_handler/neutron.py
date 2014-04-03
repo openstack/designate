@@ -39,8 +39,7 @@ class NeutronFloatingHandler(BaseAddressHandler):
     def get_exchange_topics(self):
         exchange = cfg.CONF[self.name].control_exchange
 
-        topics = [topic + ".info"
-                  for topic in cfg.CONF[self.name].notification_topics]
+        topics = [topic for topic in cfg.CONF[self.name].notification_topics]
 
         return (exchange, topics)
 

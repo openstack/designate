@@ -30,6 +30,7 @@ import pecan
 import pecan.rest
 import pecan.routing
 from designate import exceptions
+from designate import api
 from designate.openstack.common import log as logging
 from designate.openstack.common.gettextutils import _
 
@@ -46,6 +47,10 @@ class RestController(pecan.rest.RestController):
 
     # default sort_keys.  The Controllers can override this.
     SORT_KEYS = ['created_at', 'id']
+
+    @property
+    def central_api(self):
+        return api.get_central_api()
 
     def _get_paging_params(self, params):
         """

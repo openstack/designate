@@ -24,11 +24,9 @@ from designate.api.v2.controllers import rest
 from designate.api.v2.controllers import nameservers
 from designate.api.v2.controllers import recordsets
 from designate.api.v2.views import zones as zones_view
-from designate.central import rpcapi as central_rpcapi
 from designate.openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)
-central_api = central_rpcapi.CentralAPI()
 
 
 class ZonesController(rest.RestController):
@@ -64,17 +62,17 @@ class ZonesController(rest.RestController):
 
     def _get_json(self, request, context, zone_id):
         """ 'Normal' zone get """
-        zone = central_api.get_domain(context, zone_id)
+        zone = self.central_api.get_domain(context, zone_id)
 
         return self._view.show(context, request, zone)
 
     def _get_zonefile(self, request, context, zone_id):
         """ Export zonefile """
-        servers = central_api.get_domain_servers(context, zone_id)
-        domain = central_api.get_domain(context, zone_id)
+        servers = self.central_api.get_domain_servers(context, zone_id)
+        domain = self.central_api.get_domain(context, zone_id)
 
         criterion = {'domain_id': zone_id}
-        recordsets = central_api.find_recordsets(context, criterion)
+        recordsets = self.central_api.find_recordsets(context, criterion)
 
         records = []
 
@@ -84,7 +82,7 @@ class ZonesController(rest.RestController):
                 'recordset_id': recordset['id']
             }
 
-            raw_records = central_api.find_records(context, criterion)
+            raw_records = self.central_api.find_records(context, criterion)
 
             for record in raw_records:
                 records.append({
@@ -113,7 +111,7 @@ class ZonesController(rest.RestController):
         criterion = dict((k, params[k]) for k in accepted_filters
                          if k in params)
 
-        zones = central_api.find_domains(
+        zones = self.central_api.find_domains(
             context, criterion, marker, limit, sort_key, sort_dir)
 
         return self._view.list(context, request, zones)
@@ -143,7 +141,7 @@ class ZonesController(rest.RestController):
         values = self._view.load(context, request, body)
 
         # Create the zone
-        zone = central_api.create_domain(context, values)
+        zone = self.central_api.create_domain(context, values)
 
         # Prepare the response headers
         # If the zone has been created asynchronously
@@ -168,7 +166,7 @@ class ZonesController(rest.RestController):
         try:
             self._create_records(context, zone['id'], dnspython_zone)
         except exceptions.Base as e:
-            central_api.delete_domain(context, zone['id'])
+            self.central_api.delete_domain(context, zone['id'])
             raise e
 
         if zone['status'] == 'PENDING':
@@ -194,7 +192,7 @@ class ZonesController(rest.RestController):
         # TODO(kiall): Validate we have a sane UUID for zone_id
 
         # Fetch the existing zone
-        zone = central_api.get_domain(context, zone_id)
+        zone = self.central_api.get_domain(context, zone_id)
 
         # Convert to APIv2 Format
         zone = self._view.show(context, request, zone)
@@ -220,7 +218,7 @@ class ZonesController(rest.RestController):
             self._resource_schema.validate(zone)
 
             values = self._view.load(context, request, body)
-            zone = central_api.update_domain(context, zone_id, values)
+            zone = self.central_api.update_domain(context, zone_id, values)
 
         if zone['status'] == 'PENDING':
             response.status_int = 202
@@ -239,7 +237,7 @@ class ZonesController(rest.RestController):
 
         # TODO(kiall): Validate we have a sane UUID for zone_id
 
-        zone = central_api.delete_domain(context, zone_id)
+        zone = self.central_api.delete_domain(context, zone_id)
 
         if zone['status'] == 'DELETING':
             response.status_int = 202
@@ -266,7 +264,7 @@ class ZonesController(rest.RestController):
             'email': email,
             'ttl': str(soa.ttl)
         }
-        return central_api.create_domain(context, values)
+        return self.central_api.create_domain(context, values)
 
     def _record2json(self, record_type, rdata):
         if record_type == 'MX':
@@ -301,7 +299,7 @@ class ZonesController(rest.RestController):
                     'type': record_type,
                 }
 
-                recordset = central_api.create_recordset(
+                recordset = self.central_api.create_recordset(
                     context, zone_id, values)
 
                 for rdata in rdataset:
@@ -315,7 +313,7 @@ class ZonesController(rest.RestController):
                         # created
                         values = self._record2json(record_type, rdata)
 
-                        central_api.create_record(
+                        self.central_api.create_record(
                             context, zone_id, recordset['id'], values)
 
     def _parse_zonefile(self, request):
