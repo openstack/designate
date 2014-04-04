@@ -50,7 +50,7 @@ class NeutronFloatingHandler(BaseAddressHandler):
             'floatingip.delete.start'
         ]
 
-    def process_notification(self, event_type, payload):
+    def process_notification(self, context, event_type, payload):
         LOG.debug('%s received notification - %s',
                   self.get_canonical_name(), event_type)
 

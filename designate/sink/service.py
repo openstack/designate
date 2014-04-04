@@ -15,6 +15,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from oslo.config import cfg
+from designate.context import DesignateContext
 from designate.openstack.common import log as logging
 from designate.openstack.common import rpc
 from designate.openstack.common import service
@@ -111,9 +112,17 @@ class Service(service.Service):
         to see if the handler is interested in the notification before
         handing it over.
         """
+        context = DesignateContext(
+            auth_token=notification.get('_context_auth_token', None),
+            user=notification.get('_context_user', None),
+            tenant=notification.get('_context_tenant', None),
+            roles=notification.get('_context_roles', []),
+            service_catalog=notification.get('_context_service_catalog', []),
+            is_admin=notification.get('_context_is_admin', False)
+        )
         event_type = notification['event_type']
         payload = notification['payload']
 
         if event_type in handler.get_event_types():
             LOG.debug('Found handler for: %s' % event_type)
-            handler.process_notification(event_type, payload)
+            handler.process_notification(context, event_type, payload)

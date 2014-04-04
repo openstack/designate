@@ -49,7 +49,8 @@ class NeutronFloatingHandlerTest(TestCase, NotificationHandlerMixin):
 
         self.assertEqual(0, len(records))
 
-        self.plugin.process_notification(event_type, fixture['payload'])
+        self.plugin.process_notification(
+            self.admin_context, event_type, fixture['payload'])
 
         # Ensure we now have exactly 1 record
         records = self.central_service.find_records(self.admin_context,
@@ -61,7 +62,8 @@ class NeutronFloatingHandlerTest(TestCase, NotificationHandlerMixin):
         start_event_type = 'floatingip.update.end'
         start_fixture = self.get_notification_fixture(
             'neutron', start_event_type + '_associate')
-        self.plugin.process_notification(start_event_type,
+        self.plugin.process_notification(self.admin_context,
+                                         start_event_type,
                                          start_fixture['payload'])
 
         event_type = 'floatingip.update.end'
@@ -78,7 +80,8 @@ class NeutronFloatingHandlerTest(TestCase, NotificationHandlerMixin):
 
         self.assertEqual(1, len(records))
 
-        self.plugin.process_notification(event_type, fixture['payload'])
+        self.plugin.process_notification(
+            self.admin_context, event_type, fixture['payload'])
 
         # Ensure we now have exactly 0 records
         records = self.central_service.find_records(self.admin_context,
@@ -90,7 +93,8 @@ class NeutronFloatingHandlerTest(TestCase, NotificationHandlerMixin):
         start_event_type = 'floatingip.update.end'
         start_fixture = self.get_notification_fixture(
             'neutron', start_event_type + '_associate')
-        self.plugin.process_notification(start_event_type,
+        self.plugin.process_notification(self.admin_context,
+                                         start_event_type,
                                          start_fixture['payload'])
 
         event_type = 'floatingip.delete.start'
@@ -106,7 +110,8 @@ class NeutronFloatingHandlerTest(TestCase, NotificationHandlerMixin):
                                                     criterion)
         self.assertEqual(1, len(records))
 
-        self.plugin.process_notification(event_type, fixture['payload'])
+        self.plugin.process_notification(
+            self.admin_context, event_type, fixture['payload'])
 
         # Ensure we now have exactly 0 records
         records = self.central_service.find_records(self.admin_context,

@@ -50,7 +50,7 @@ class NovaFixedHandler(BaseAddressHandler):
             'compute.instance.delete.start',
         ]
 
-    def process_notification(self, event_type, payload):
+    def process_notification(self, context, event_type, payload):
         LOG.debug('NovaFixedHandler received notification - %s' % event_type)
 
         if event_type == 'compute.instance.create.end':

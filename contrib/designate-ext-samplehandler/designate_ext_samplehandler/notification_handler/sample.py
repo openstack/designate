@@ -55,7 +55,7 @@ class SampleHandler(NotificationHandler):
             'compute.instance.create.end'
         ]
 
-    def process_notification(self, event_type, payload):
+    def process_notification(self, context, event_type, payload):
         # Do something with the notification.. e.g:
         domain_id = cfg.CONF['handler:sample'].domain_id
         domain_name = cfg.CONF['handler:sample'].domain_name
