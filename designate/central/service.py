@@ -231,6 +231,15 @@ class Service(service.Service):
 
         return False
 
+    def _is_valid_ttl(self, context, ttl):
+        min_ttl = cfg.CONF['service:central'].min_ttl
+        if min_ttl != "None" and ttl < int(min_ttl):
+            try:
+                policy.check('use_low_ttl', context)
+            except exceptions.Forbidden:
+                raise exceptions.InvalidTTL('TTL is below the minimum: %s'
+                                            % min_ttl)
+
     def _increment_domain_serial(self, context, domain_id):
         domain = self.storage_api.get_domain(context, domain_id)
 
@@ -486,6 +495,11 @@ class Service(service.Service):
         # Ensure the domain name is valid
         self._is_valid_domain_name(context, values['name'])
 
+        # Ensure TTL is above the minimum
+        ttl = values.get('ttl', None)
+        if ttl is not None:
+            self._is_valid_ttl(context, ttl)
+
         # Handle sub-domains appropriately
         parent_domain = self._is_subdomain(context, values['name'])
 
@@ -586,6 +600,11 @@ class Service(service.Service):
         if 'name' in values and values['name'] != domain['name']:
             raise exceptions.BadRequest('Renaming a domain is not allowed')
 
+        # Ensure TTL is above the minimum
+        ttl = values.get('ttl', None)
+        if ttl is not None:
+            self._is_valid_ttl(context, ttl)
+
         if increment_serial:
             # Increment the serial number
             values['serial'] = utils.increment_serial(domain['serial'])
@@ -670,6 +689,11 @@ class Service(service.Service):
         # Ensure the tenant has enough quota to continue
         self._enforce_recordset_quota(context, domain)
 
+        # Ensure TTL is above the minimum
+        ttl = values.get('ttl', None)
+        if ttl is not None:
+            self._is_valid_ttl(context, ttl)
+
         # Ensure the recordset name and placement is valid
         self._is_valid_recordset_name(context, domain, values['name'])
         self._is_valid_recordset_placement(context, domain, values['name'],
@@ -749,6 +773,11 @@ class Service(service.Service):
                                            recordset_type, recordset_id)
         self._is_valid_recordset_placement_subdomain(
             context, domain, recordset_name)
+
+        # Ensure TTL is above the minimum
+        ttl = values.get('ttl', None)
+        if ttl is not None:
+            self._is_valid_ttl(context, ttl)
 
         # Update the recordset
         with self.storage_api.update_recordset(

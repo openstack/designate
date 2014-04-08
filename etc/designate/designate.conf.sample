@@ -54,6 +54,8 @@ debug = False
 # Maximum record name length
 #max_record_name_len = 255
 
+# Minimum TTL
+#min_ttl = None
 
 ## Managed resources settings
 

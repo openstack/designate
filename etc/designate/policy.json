@@ -5,6 +5,8 @@
 
     "default": "rule:admin_or_owner",
 
+    "use_low_ttl": "rule:admin",
+
     "get_quotas": "rule:admin_or_owner",
     "get_quota": "rule:admin_or_owner",
     "set_quota": "rule:admin",

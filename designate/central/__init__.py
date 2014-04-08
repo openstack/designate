@@ -36,5 +36,6 @@ cfg.CONF.register_opts([
     cfg.StrOpt('managed_resource_email', default='email@example.io',
                help='E-Mail for Managed resources'),
     cfg.StrOpt('managed_resource_tenant_id',
-               help="The Tenant ID that will own any managed resources.")
+               help="The Tenant ID that will own any managed resources."),
+    cfg.StrOpt('min_ttl', default="None", help="Minimum TTL allowed")
 ], group='service:central')

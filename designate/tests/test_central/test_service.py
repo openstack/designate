@@ -147,6 +147,19 @@ class CentralServiceTest(CentralTestCase):
 
         _ok(sub_domain, 'record.example.org.')
 
+    def test_is_valid_ttl(self):
+        self.policy({'use_low_ttl': '!'})
+        self.config(min_ttl="100",
+                    group='service:central')
+        context = self.get_context()
+
+        values = self.get_domain_fixture(1)
+        values['ttl'] = 0
+
+        with testtools.ExpectedException(exceptions.InvalidTTL):
+                    self.central_service._is_valid_ttl(
+                        context, values['ttl'])
+
     # Server Tests
     def test_create_server(self):
         values = dict(
@@ -593,6 +606,38 @@ class CentralServiceTest(CentralTestCase):
             self.central_service.create_domain(
                 self.admin_context, values=values)
 
+    def test_create_domain_invalid_ttl_fail(self):
+        self.policy({'use_low_ttl': '!'})
+        self.config(min_ttl="100",
+                    group='service:central')
+        context = self.get_context()
+
+        values = self.get_domain_fixture(1)
+        values['ttl'] = 0
+
+        # Create a server
+        self.create_server()
+
+        with testtools.ExpectedException(exceptions.InvalidTTL):
+                    self.central_service.create_domain(context, values=values)
+
+    def test_create_domain_no_min_ttl(self):
+        self.policy({'use_low_ttl': '!'})
+        self.config(min_ttl="None",
+                    group='service:central')
+        values = self.get_domain_fixture(1)
+        values['ttl'] = -100
+
+        # Create a server
+        self.create_server()
+
+        #Create domain with random TTL
+        domain = self.central_service.create_domain(
+            self.admin_context, values=values)
+
+        # Ensure all values have been set correctly
+        self.assertEqual(domain['ttl'], values['ttl'])
+
     def test_find_domains(self):
         # Ensure we have no domains to start with.
         domains = self.central_service.find_domains(self.admin_context)
@@ -912,6 +957,39 @@ class CentralServiceTest(CentralTestCase):
         with testtools.ExpectedException(exceptions.InvalidRecordSetLocation):
             self.central_service.create_recordset(
                 self.admin_context, domain['id'], values=values)
+
+    def test_create_invalid_recordset_ttl(self):
+        self.policy({'use_low_ttl': '!'})
+        self.config(min_ttl="100",
+                    group='service:central')
+        domain = self.create_domain()
+
+        values = dict(
+            name='www.%s' % domain['name'],
+            type='A',
+            ttl=10
+        )
+
+        # Attempt to create a A record under the TTL
+        with testtools.ExpectedException(exceptions.InvalidTTL):
+            self.central_service.create_recordset(
+                self.admin_context, domain['id'], values=values)
+
+    def test_create_recordset_no_min_ttl(self):
+        self.policy({'use_low_ttl': '!'})
+        self.config(min_ttl="None",
+                    group='service:central')
+        domain = self.create_domain()
+
+        values = dict(
+            name='www.%s' % domain['name'],
+            type='A',
+            ttl=10
+        )
+
+        recordset = self.central_service.create_recordset(
+            self.admin_context, domain['id'], values=values)
+        self.assertEqual(recordset['ttl'], values['ttl'])
 
     def test_get_recordset(self):
         domain = self.create_domain()
