@@ -11,30 +11,25 @@
 #  under the License.
 
 import copy
-import os
 
 from oslo.config import cfg
 
 
-sqlite_db_opts = [
+database_opts = [
     cfg.StrOpt('sqlite_db',
+               deprecated_group='DEFAULT',
                default='designate.sqlite',
                help='The file name to use with SQLite'),
     cfg.BoolOpt('sqlite_synchronous',
+                deprecated_group='DEFAULT',
                 default=True,
                 help='If True, SQLite uses synchronous mode'),
-]
-
-database_opts = [
     cfg.StrOpt('backend',
                default='sqlalchemy',
                deprecated_name='db_backend',
                deprecated_group='DEFAULT',
                help='The backend to use for db'),
     cfg.StrOpt('connection',
-               default='sqlite:///' +
-                       os.path.abspath(os.path.join(os.path.dirname(__file__),
-                       '../', '$sqlite_db')),
                help='The SQLAlchemy connection string used to connect to the '
                     'database',
                secret=True,
@@ -44,6 +39,13 @@ database_opts = [
                                                   group='DATABASE'),
                                 cfg.DeprecatedOpt('connection',
                                                   group='sql'), ]),
+    cfg.StrOpt('mysql_sql_mode',
+               default='TRADITIONAL',
+               help='The SQL mode to be used for MySQL sessions. '
+                    'This option, including the default, overrides any '
+                    'server-set SQL mode. To use whatever SQL mode '
+                    'is set by the server configuration, '
+                    'set this to no value. Example: mysql_sql_mode='),
     cfg.IntOpt('idle_timeout',
                default=3600,
                deprecated_opts=[cfg.DeprecatedOpt('sql_idle_timeout',
@@ -129,7 +131,6 @@ database_opts = [
 ]
 
 CONF = cfg.CONF
-CONF.register_opts(sqlite_db_opts)
 CONF.register_opts(database_opts, 'database')
 
 
@@ -137,8 +138,7 @@ def set_defaults(sql_connection, sqlite_db, max_pool_size=None,
                  max_overflow=None, pool_timeout=None):
     """Set defaults for configuration variables."""
     cfg.set_defaults(database_opts,
-                     connection=sql_connection)
-    cfg.set_defaults(sqlite_db_opts,
+                     connection=sql_connection,
                      sqlite_db=sqlite_db)
     # Update the QueuePool defaults
     if max_pool_size is not None:
@@ -150,12 +150,6 @@ def set_defaults(sql_connection, sqlite_db, max_pool_size=None,
     if pool_timeout is not None:
         cfg.set_defaults(database_opts,
                          pool_timeout=pool_timeout)
-
-
-_opts = [
-    (None, sqlite_db_opts),
-    ('database', database_opts),
-]
 
 
 def list_opts():
@@ -174,4 +168,4 @@ def list_opts():
 
     :returns: a list of (group_name, opts) tuples
     """
-    return [(g, copy.deepcopy(o)) for g, o in _opts]
+    return [('database', copy.deepcopy(database_opts))]
