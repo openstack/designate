@@ -26,7 +26,7 @@ import sqlalchemy
 import sqlalchemy.exc
 
 from designate.openstack.common.db.sqlalchemy import utils
-from designate.openstack.common.gettextutils import _
+from designate.openstack.common.gettextutils import _LE
 from designate.openstack.common import test
 
 LOG = logging.getLogger(__name__)
@@ -60,10 +60,10 @@ def _set_db_lock(lock_path=None, lock_prefix=None):
                 path = lock_path or os.environ.get("DESIGNATE_LOCK_PATH")
                 lock = lockfile.FileLock(os.path.join(path, lock_prefix))
                 with lock:
-                    LOG.debug(_('Got lock "%s"') % f.__name__)
+                    LOG.debug('Got lock "%s"' % f.__name__)
                     return f(*args, **kwargs)
             finally:
-                LOG.debug(_('Lock released "%s"') % f.__name__)
+                LOG.debug('Lock released "%s"' % f.__name__)
         return wrapper
     return decorator
 
@@ -264,6 +264,6 @@ class WalkVersionsMixin(object):
                 if check:
                     check(engine, data)
         except Exception:
-            LOG.error("Failed to migrate to version %s on engine %s" %
+            LOG.error(_LE("Failed to migrate to version %s on engine %s") %
                       (version, engine))
             raise
