@@ -22,6 +22,7 @@ from designate.openstack.common import log as logging
 from designate.openstack.common.db.sqlalchemy.utils import paginate_query
 from designate.openstack.common.db.sqlalchemy.utils import InvalidSortKey
 from designate import exceptions
+from designate import objects
 from designate.storage import base
 from designate.storage.impl_sqlalchemy import models
 from designate.sqlalchemy.models import SoftDeleteMixin
@@ -178,12 +179,12 @@ class SQLAlchemyStorage(base.Storage):
         except exceptions.Duplicate:
             raise exceptions.DuplicateQuota()
 
-        return dict(quota)
+        return objects.Quota.from_sqla(quota)
 
     def get_quota(self, context, quota_id):
         quota = self._find_quotas(context, {'id': quota_id}, one=True)
 
-        return dict(quota)
+        return objects.Quota.from_sqla(quota)
 
     def find_quotas(self, context, criterion=None,
                     marker=None, limit=None, sort_key=None, sort_dir=None):
@@ -191,12 +192,12 @@ class SQLAlchemyStorage(base.Storage):
                                    limit=limit, sort_key=sort_key,
                                    sort_dir=sort_dir)
 
-        return [dict(q) for q in quotas]
+        return [objects.Quota.from_sqla(q) for q in quotas]
 
     def find_quota(self, context, criterion):
         quota = self._find_quotas(context, criterion, one=True)
 
-        return dict(quota)
+        return objects.Quota.from_sqla(quota)
 
     def update_quota(self, context, quota_id, values):
         quota = self._find_quotas(context, {'id': quota_id}, one=True)
@@ -208,7 +209,7 @@ class SQLAlchemyStorage(base.Storage):
         except exceptions.Duplicate:
             raise exceptions.DuplicateQuota()
 
-        return dict(quota)
+        return objects.Quota.from_sqla(quota)
 
     def delete_quota(self, context, quota_id):
         quota = self._find_quotas(context, {'id': quota_id}, one=True)
@@ -235,18 +236,18 @@ class SQLAlchemyStorage(base.Storage):
         except exceptions.Duplicate:
             raise exceptions.DuplicateServer()
 
-        return dict(server)
+        return objects.Server.from_sqla(server)
 
     def find_servers(self, context, criterion=None,
                      marker=None, limit=None, sort_key=None, sort_dir=None):
         servers = self._find_servers(context, criterion, marker=marker,
                                      limit=limit, sort_key=sort_key,
                                      sort_dir=sort_dir)
-        return [dict(s) for s in servers]
+        return [objects.Server.from_sqla(s) for s in servers]
 
     def get_server(self, context, server_id):
         server = self._find_servers(context, {'id': server_id}, one=True)
-        return dict(server)
+        return objects.Server.from_sqla(server)
 
     def update_server(self, context, server_id, values):
         server = self._find_servers(context, {'id': server_id}, one=True)
@@ -258,7 +259,7 @@ class SQLAlchemyStorage(base.Storage):
         except exceptions.Duplicate:
             raise exceptions.DuplicateServer()
 
-        return dict(server)
+        return objects.Server.from_sqla(server)
 
     def delete_server(self, context, server_id):
         server = self._find_servers(context, {'id': server_id}, one=True)
@@ -284,21 +285,21 @@ class SQLAlchemyStorage(base.Storage):
         except exceptions.Duplicate:
             raise exceptions.DuplicateTLD()
 
-        return dict(tld)
+        return objects.Tld.from_sqla(tld)
 
     def find_tlds(self, context, criterion=None,
                   marker=None, limit=None, sort_key=None, sort_dir=None):
         tlds = self._find_tlds(context, criterion, marker=marker, limit=limit,
                                sort_key=sort_key, sort_dir=sort_dir)
-        return [dict(s) for s in tlds]
+        return [objects.Tld.from_sqla(t) for t in tlds]
 
     def find_tld(self, context, criterion):
         tld = self._find_tlds(context, criterion, one=True)
-        return dict(tld)
+        return objects.Tld.from_sqla(tld)
 
     def get_tld(self, context, tld_id):
         tld = self._find_tlds(context, {'id': tld_id}, one=True)
-        return dict(tld)
+        return objects.Tld.from_sqla(tld)
 
     def update_tld(self, context, tld_id, values):
         tld = self._find_tlds(context, {'id': tld_id}, one=True)
@@ -309,7 +310,7 @@ class SQLAlchemyStorage(base.Storage):
         except exceptions.Duplicate:
             raise exceptions.DuplicateTLD()
 
-        return dict(tld)
+        return objects.Tld.from_sqla(tld)
 
     def delete_tld(self, context, tld_id):
         tld = self._find_tlds(context, {'id': tld_id}, one=True)
@@ -335,7 +336,7 @@ class SQLAlchemyStorage(base.Storage):
         except exceptions.Duplicate:
             raise exceptions.DuplicateTsigKey()
 
-        return dict(tsigkey)
+        return objects.TsigKey.from_sqla(tsigkey)
 
     def find_tsigkeys(self, context, criterion=None,
                       marker=None, limit=None, sort_key=None, sort_dir=None):
@@ -343,12 +344,12 @@ class SQLAlchemyStorage(base.Storage):
                                        limit=limit, sort_key=sort_key,
                                        sort_dir=sort_dir)
 
-        return [dict(t) for t in tsigkeys]
+        return [objects.TsigKey.from_sqla(t) for t in tsigkeys]
 
     def get_tsigkey(self, context, tsigkey_id):
         tsigkey = self._find_tsigkeys(context, {'id': tsigkey_id}, one=True)
 
-        return dict(tsigkey)
+        return objects.TsigKey.from_sqla(tsigkey)
 
     def update_tsigkey(self, context, tsigkey_id, values):
         tsigkey = self._find_tsigkeys(context, {'id': tsigkey_id}, one=True)
@@ -360,7 +361,7 @@ class SQLAlchemyStorage(base.Storage):
         except exceptions.Duplicate:
             raise exceptions.DuplicateTsigKey()
 
-        return dict(tsigkey)
+        return objects.TsigKey.from_sqla(tsigkey)
 
     def delete_tsigkey(self, context, tsigkey_id):
         tsigkey = self._find_tsigkeys(context, {'id': tsigkey_id}, one=True)
@@ -378,7 +379,8 @@ class SQLAlchemyStorage(base.Storage):
         query = self._apply_deleted_criteria(context, models.Domain, query)
         query = query.group_by(models.Domain.tenant_id)
 
-        return [{'id': t[0], 'domain_count': t[1]} for t in query.all()]
+        return [objects.Tenant(id=t[0], domain_count=t[1])
+                for t in query.all()]
 
     def get_tenant(self, context, tenant_id):
         # get list list & count of all domains owned by given tenant_id
@@ -389,11 +391,10 @@ class SQLAlchemyStorage(base.Storage):
 
         result = query.all()
 
-        return {
-            'id': tenant_id,
-            'domain_count': len(result),
-            'domains': [r[0] for r in result]
-        }
+        return objects.Tenant(
+            id=tenant_id,
+            domain_count=len(result),
+            domains=[r[0] for r in result])
 
     def count_tenants(self, context):
         # tenants are the owner of domains, count the number of unique tenants
@@ -426,12 +427,12 @@ class SQLAlchemyStorage(base.Storage):
         except exceptions.Duplicate:
             raise exceptions.DuplicateDomain()
 
-        return dict(domain)
+        return objects.Domain.from_sqla(domain)
 
     def get_domain(self, context, domain_id):
         domain = self._find_domains(context, {'id': domain_id}, one=True)
 
-        return dict(domain)
+        return objects.Domain.from_sqla(domain)
 
     def find_domains(self, context, criterion=None,
                      marker=None, limit=None, sort_key=None, sort_dir=None):
@@ -439,11 +440,11 @@ class SQLAlchemyStorage(base.Storage):
                                      limit=limit, sort_key=sort_key,
                                      sort_dir=sort_dir)
 
-        return [dict(d) for d in domains]
+        return [objects.Domain.from_sqla(d) for d in domains]
 
     def find_domain(self, context, criterion):
         domain = self._find_domains(context, criterion, one=True)
-        return dict(domain)
+        return objects.Domain.from_sqla(domain)
 
     def update_domain(self, context, domain_id, values):
         domain = self._find_domains(context, {'id': domain_id}, one=True)
@@ -455,14 +456,14 @@ class SQLAlchemyStorage(base.Storage):
         except exceptions.Duplicate:
             raise exceptions.DuplicateDomain()
 
-        return dict(domain)
+        return objects.Domain.from_sqla(domain)
 
     def delete_domain(self, context, domain_id):
         domain = self._find_domains(context, {'id': domain_id}, one=True)
 
         domain.soft_delete(self.session)
 
-        return dict(domain)
+        return objects.Domain.from_sqla(domain)
 
     def count_domains(self, context, criterion=None):
         query = self.session.query(models.Domain)
@@ -498,13 +499,13 @@ class SQLAlchemyStorage(base.Storage):
         except exceptions.Duplicate:
             raise exceptions.DuplicateRecordSet()
 
-        return dict(recordset)
+        return objects.RecordSet.from_sqla(recordset)
 
     def get_recordset(self, context, recordset_id):
         recordset = self._find_recordsets(context, {'id': recordset_id},
                                           one=True)
 
-        return dict(recordset)
+        return objects.RecordSet.from_sqla(recordset)
 
     def find_recordsets(self, context, criterion=None,
                         marker=None, limit=None, sort_key=None, sort_dir=None):
@@ -512,12 +513,12 @@ class SQLAlchemyStorage(base.Storage):
             context, criterion, marker=marker, limit=limit, sort_key=sort_key,
             sort_dir=sort_dir)
 
-        return [dict(r) for r in recordsets]
+        return [objects.RecordSet.from_sqla(r) for r in recordsets]
 
     def find_recordset(self, context, criterion):
         recordset = self._find_recordsets(context, criterion, one=True)
 
-        return dict(recordset)
+        return objects.RecordSet.from_sqla(recordset)
 
     def update_recordset(self, context, recordset_id, values):
         recordset = self._find_recordsets(context, {'id': recordset_id},
@@ -530,7 +531,7 @@ class SQLAlchemyStorage(base.Storage):
         except exceptions.Duplicate:
             raise exceptions.DuplicateRecordSet()
 
-        return dict(recordset)
+        return objects.RecordSet.from_sqla(recordset)
 
     def delete_recordset(self, context, recordset_id):
         recordset = self._find_recordsets(context, {'id': recordset_id},
@@ -538,7 +539,7 @@ class SQLAlchemyStorage(base.Storage):
 
         recordset.delete(self.session)
 
-        return dict(recordset)
+        return objects.RecordSet.from_sqla(recordset)
 
     def count_recordsets(self, context, criterion=None):
         query = self.session.query(models.RecordSet)
@@ -575,7 +576,7 @@ class SQLAlchemyStorage(base.Storage):
         except exceptions.Duplicate:
             raise exceptions.DuplicateRecord()
 
-        return dict(record)
+        return objects.Record.from_sqla(record)
 
     def find_records(self, context, criterion=None,
                      marker=None, limit=None, sort_key=None, sort_dir=None):
@@ -583,17 +584,17 @@ class SQLAlchemyStorage(base.Storage):
             context, criterion, marker=marker, limit=limit, sort_key=sort_key,
             sort_dir=sort_dir)
 
-        return [dict(r) for r in records]
+        return [objects.Record.from_sqla(r) for r in records]
 
     def get_record(self, context, record_id):
         record = self._find_records(context, {'id': record_id}, one=True)
 
-        return dict(record)
+        return objects.Record.from_sqla(record)
 
     def find_record(self, context, criterion):
         record = self._find_records(context, criterion, one=True)
 
-        return dict(record)
+        return objects.Record.from_sqla(record)
 
     def update_record(self, context, record_id, values):
         record = self._find_records(context, {'id': record_id}, one=True)
@@ -605,14 +606,14 @@ class SQLAlchemyStorage(base.Storage):
         except exceptions.Duplicate:
             raise exceptions.DuplicateRecord()
 
-        return dict(record)
+        return objects.Record.from_sqla(record)
 
     def delete_record(self, context, record_id):
         record = self._find_records(context, {'id': record_id}, one=True)
 
         record.delete(self.session)
 
-        return dict(record)
+        return objects.Record.from_sqla(record)
 
     def count_records(self, context, criterion=None):
         query = self.session.query(models.Record)
@@ -642,7 +643,7 @@ class SQLAlchemyStorage(base.Storage):
         except exceptions.Duplicate:
             raise exceptions.DuplicateBlacklist()
 
-        return dict(blacklist)
+        return objects.Blacklist.from_sqla(blacklist)
 
     def find_blacklists(self, context, criterion=None,
                         marker=None, limit=None, sort_key=None, sort_dir=None):
@@ -650,18 +651,18 @@ class SQLAlchemyStorage(base.Storage):
             context, criterion, marker=marker, limit=limit, sort_key=sort_key,
             sort_dir=sort_dir)
 
-        return [dict(b) for b in blacklists]
+        return [objects.Blacklist.from_sqla(b) for b in blacklists]
 
     def get_blacklist(self, context, blacklist_id):
         blacklist = self._find_blacklist(context,
                                          {'id': blacklist_id}, one=True)
 
-        return dict(blacklist)
+        return objects.Blacklist.from_sqla(blacklist)
 
     def find_blacklist(self, context, criterion):
         blacklist = self._find_blacklist(context, criterion, one=True)
 
-        return dict(blacklist)
+        return objects.Blacklist.from_sqla(blacklist)
 
     def update_blacklist(self, context, blacklist_id, values):
         blacklist = self._find_blacklist(context, {'id': blacklist_id},
@@ -674,7 +675,7 @@ class SQLAlchemyStorage(base.Storage):
         except exceptions.Duplicate:
             raise exceptions.DuplicateBlacklist()
 
-        return dict(blacklist)
+        return objects.Blacklist.from_sqla(blacklist)
 
     def delete_blacklist(self, context, blacklist_id):
 

@@ -546,6 +546,7 @@ class StorageTestCase(object):
 
         # Ensure we get accurate results
         result = self.storage.find_tenants(context)
+        result_dict = [dict(t) for t in result]
 
         expected = [{
             'id': 'One',
@@ -555,7 +556,7 @@ class StorageTestCase(object):
             'domain_count': 1
         }]
 
-        self.assertEqual(result, expected)
+        self.assertEqual(result_dict, expected)
 
     def test_get_tenant(self):
         context = self.get_admin_context()
