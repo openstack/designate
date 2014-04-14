@@ -39,72 +39,93 @@ class AgentAPI(object):
         target = messaging.Target(topic=topic, version=self.RPC_API_VERSION)
         self.client = rpc.get_client(target, version_cap='1.0')
 
-    # Server Methods
-    def create_server(self, context, server):
-        return self.client.call(context, 'create_server', server=server)
+       # Server Methods
+    def create_server(self, context, server, host=None):
+        cctxt = self.client.prepare(server=host)
 
-    def update_server(self, context, server):
-        return self.client.call(context, 'update_server', server=server)
+        return cctxt.call(context, 'create_server', server=server)
 
-    def delete_server(self, context, server):
-        return self.client.call(context, 'delete_server', server=server)
+    def update_server(self, context, server, host=None):
+        cctxt = self.client.prepare(server=host)
+
+        return cctxt.client.call(context, 'update_server', server=server)
+
+    def delete_server(self, context, server, host=None):
+        cctxt = self.client.prepare(server=host)
+
+        return cctxt.call(context, 'delete_server', server=server)
 
     # TSIG Key Methods
-    def create_tsigkey(self, context, tsigkey):
-        return self.client.call(context, 'create_tsigkey', tsigkey=tsigkey)
+    def create_tsigkey(self, context, tsigkey, host=None):
+        cctxt = self.client.prepare(server=host)
 
-    def update_tsigkey(self, context, tsigkey):
-        return self.client.call(context, 'update_tsigkey', tsigkey=tsigkey)
+        return cctxt.call(context, 'create_tsigkey', tsigkey=tsigkey)
 
-    def delete_tsigkey(self, context, tsigkey):
-        return self.client.call(context, 'delete_tsigkey', tsigkey=tsigkey)
+    def update_tsigkey(self, context, tsigkey, host=None):
+        cctxt = self.client.prepare(server=host)
+
+        return cctxt.call(context, 'update_tsigkey', tsigkey=tsigkey)
+
+    def delete_tsigkey(self, context, tsigkey, host=None):
+        cctxt = self.client.prepare(server=host)
+
+        return cctxt.call(context, 'delete_tsigkey', tsigkey=tsigkey)
 
     # Domain Methods
-    def create_domain(self, context, domain):
-        return self.client.call(context, 'create_domain', domain=domain)
+    def create_domain(self, context, domain, host=None):
+        cctxt = self.client.prepare(server=host)
 
-    def update_domain(self, context, domain):
-        return self.client.call(context, 'update_domain', domain=domain)
+        return cctxt.call(context, 'create_domain')
 
-    def delete_domain(self, context, domain):
-        return self.client.call(context, 'delete_domain', domain=domain)
+    def update_domain(self, context, domain, host=None):
+        cctxt = self.client.prepare(server=host)
+
+        return cctxt.call(context, 'update_domain', domain=domain)
+
+    def delete_domain(self, context, domain, host=None):
+        cctxt = self.client.prepare(server=host)
+
+        return cctxt.call(context, 'delete_domain', domain=domain)
 
     # Record Methods
-    def update_recordset(self, context, domain, recordset):
-        return self.client.call(context, 'update_recordset',
-                                domain=domain,
-                                recordset=recordset)
+    def update_recordset(self, context, domain, recordset, host=None):
+        cctxt = self.client.prepare(server=host)
 
-    def delete_recordset(self, context, domain, recordset):
-        return self.client.call(context, 'delete_recordset',
-                                domain=domain,
-                                recordset=recordset)
+        return cctxt.call(context, 'update_recordset', domain=domain,
+                          recordset=recordset)
 
-    def create_record(self, context, domain, recordset, record):
-        return self.client.call(context, 'create_record',
-                                domain=domain,
-                                recordset=recordset,
-                                record=record)
+    def delete_recordset(self, context, domain, recordset, host=None):
+        cctxt = self.client.prepare(server=host)
 
-    def update_record(self, context, domain, recordset, record):
-        return self.client.call(context, 'update_record',
-                                domain=domain,
-                                recordset=recordset,
-                                record=record)
+        return cctxt.call(context, 'delete_recordset', domain=domain,
+                          recordset=recordset)
 
-    def delete_record(self, context, domain, recordset, record):
-        return self.client.call(context, 'delete_record',
-                                domain=domain,
-                                recordset=recordset,
-                                record=record)
+    def create_record(self, context, domain, recordset, record, host=None):
+        cctxt = self.client.prepare(server=host)
+
+        return cctxt.call(context, 'create_record', domain=domain,
+                          recordset=recordset, record=record)
+
+    def update_record(self, context, domain, recordset, record, host=None):
+        cctxt = self.client.prepare(server=host)
+
+        return cctxt.call(context, 'update_record', domain=domain,
+                          recordset=recordset, record=record)
+
+    def delete_record(self, context, domain, recordset, record, host=None):
+        cctxt = self.client.prepare(server=host)
+
+        return cctxt.call(context, 'delete_record', domain=domain,
+                          recordset=recordset, record=record)
 
     # Sync Methods
-    def sync_domain(self, context, domain, records):
-        return self.client.call(context, 'sync_domains',
-                                domain=domain,
-                                records=records)
+    def sync_domain(self, context, domain, records, host=None):
+        cctxt = self.client.prepare(server=host)
 
-    def sync_record(self, context, domain, record):
-        return self.client.call(context, 'sync_domains',
-                                domain=domain,
-                                record=record)
+        return cctxt.call(context, 'sync_domain', domain=domain,
+                          record=records)
+
+    def sync_record(self, context, domain, record, host=None):
+        cctxt = self.client.prepare(server=host)
+
+        return cctxt.call(context, 'sync_record', domain=domain, record=record)
