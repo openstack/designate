@@ -149,6 +149,11 @@ class InvalidRecordSetLocation(Base):
     error_type = 'invalid_recordset_location'
 
 
+class InvalidTTL(Base):
+    error_code = 400
+    error_type = 'invalid_ttl'
+
+
 class DomainHasSubdomain(Base):
     error_code = 400
     error_type = 'domain_has_subdomain'
