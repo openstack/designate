@@ -38,8 +38,7 @@ class Service(service.Service):
     Partially inspired by the code at cinder.service but for now without
     support for loading so called "endpoints" or "managers".
     """
-    def __init__(self, host, binary, topic, service_name=None, endpoints=None,
-                 *args, **kwargs):
+    def __init__(self, host, binary, topic, service_name=None, manager=None):
         super(Service, self).__init__()
 
         if not rpc.initialized():
@@ -50,10 +49,9 @@ class Service(service.Service):
         self.topic = topic
         self.service_name = service_name
 
-        # TODO(ekarls): change this to be loadable via mod import or stevedore?
-        self.endpoints = endpoints or [self]
-
-        self.saved_args, self.saved_kwargs = args, kwargs
+        # TODO(ekarlso): change this to be loadable via mod import or
+        # stevedore?
+        self.manager = manager or self
 
     def start(self):
         version_string = version.version_info.version_string()
@@ -62,16 +60,20 @@ class Service(service.Service):
 
         LOG.debug(_("Creating RPC server on topic '%s'") % self.topic)
 
-        target = messaging.Target(topic=self.topic, server=self.host)
+        manager = self.manager or self
+        endpoints = [manager]
+        if hasattr(manager, 'additional_endpoints'):
+            endpoints.extend(self.manager.additional_endpoints)
 
-        self.rpcserver = rpc.get_server(target, self.endpoints)
+        target = messaging.Target(topic=self.topic, server=self.host)
+        self.rpcserver = rpc.get_server(target, endpoints)
         self.rpcserver.start()
 
         self.notifier = rpc.get_notifier(self.service_name)
 
     @classmethod
     def create(cls, host=None, binary=None, topic=None, service_name=None,
-               endpoints=None):
+               manager=None):
         """Instantiates class and passes back application object.
 
         :param host: defaults to CONF.host
@@ -86,7 +88,8 @@ class Service(service.Service):
             name = "_".join(binary.split('-')[1:]) + '_topic'
             topic = CONF.get(name)
 
-        service_obj = cls(host, binary, topic, service_name, endpoints)
+        service_obj = cls(host, binary, topic, service_name=service_name,
+                          manager=manager)
         return service_obj
 
     def stop(self):

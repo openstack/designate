@@ -75,7 +75,7 @@ class AgentAPI(object):
     def create_domain(self, context, domain, host=None):
         cctxt = self.client.prepare(server=host)
 
-        return cctxt.call(context, 'create_domain')
+        return cctxt.call(context, 'create_domain', domain=domain)
 
     def update_domain(self, context, domain, host=None):
         cctxt = self.client.prepare(server=host)

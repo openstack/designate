@@ -52,12 +52,12 @@ class Service(service.Service):
     target = messaging.Target(version=RPC_API_VERSION)
 
     def __init__(self, *args, **kwargs):
+        super(Service, self).__init__(*args, **kwargs)
+
         backend_driver = cfg.CONF['service:central'].backend_driver
         self.backend = backend.get_backend(backend_driver, self)
 
         policy.init_policy()
-
-        super(Service, self).__init__(*args, **kwargs)
 
         # Get a storage connection
         self.storage_api = storage_api.StorageAPI()

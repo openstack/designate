@@ -24,10 +24,9 @@ LOG = logging.getLogger(__name__)
 
 
 class Service(service.Service):
-    def __init__(self, host, binary, topic, service_name=None, endpoints=None,
-                 *args, **kwargs):
-        # Central api needs a transport if not it fails. This is normally done
-        # by the service init method.
+    def __init__(self, *args, **kwargs):
+        # NOTE: Central api needs a transport if not it fails. This is
+        # normally done by the service init method.
         rpc.init(cfg.CONF)
         central_api = central_rpcapi.CentralAPI()
 
@@ -35,13 +34,14 @@ class Service(service.Service):
             cfg.CONF['service:agent'].backend_driver,
             central_service=central_api)
 
-        super(Service, self).__init__(host, binary, topic,
-                                      endpoints=[manager],
-                                      *args, **kwargs)
+        kwargs['manager'] = manager
+
+        super(Service, self).__init__(*args, **kwargs)
 
     def start(self):
-        self.endpoints[0].start()
+        super(Service, self).start()
+        self.manager.start()
 
     def stop(self):
         super(Service, self).stop()
-        self.endpoints[0].stop()
+        self.manager.stop()
