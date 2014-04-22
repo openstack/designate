@@ -557,11 +557,37 @@ class SQLAlchemyStorage(base.Storage):
         except exceptions.NotFound:
             raise exceptions.RecordNotFound()
 
+    def _get_record_object(self, context, record):
+        recordset = self._find_recordsets(context, {'id': record.recordset_id},
+                                          one=True)
+        if recordset.type == 'A':
+            return objects.RRData_A.from_sqla(record)
+        elif recordset.type == 'AAAA':
+            return objects.RRData_AAAA.from_sqla(record)
+        elif recordset.type == 'CNAME':
+            return objects.RRData_CNAME.from_sqla(record)
+        elif recordset.type == 'MX':
+            return objects.RRData_MX.from_sqla(record)
+        elif recordset.type == 'NS':
+            return objects.RRData_NS.from_sqla(record)
+        elif recordset.type == 'PTR':
+            return objects.RRData_PTR.from_sqla(record)
+        elif recordset.type == 'SOA':
+            return objects.RRData_SOA.from_sqla(record)
+        elif recordset.type == 'SPF':
+            return objects.RRData_SPF.from_sqla(record)
+        elif recordset.type == 'SRV':
+            return objects.RRData_SRV.from_sqla(record)
+        elif recordset.type == 'SSHFP':
+            return objects.RRData_SSHFP.from_sqla(record)
+        elif recordset.type == 'TXT':
+            return objects.RRData_TXT.from_sqla(record)
+        else:
+            raise TypeError("Unknown recordset type - %s" % recordset.type)
+
     def create_record(self, context, domain_id, recordset_id, values):
         # Fetch the domain as we need the tenant_id
         domain = self._find_domains(context, {'id': domain_id}, one=True)
-
-        record = models.Record()
 
         # Create and populate the new Record model
         record = models.Record()
@@ -576,7 +602,7 @@ class SQLAlchemyStorage(base.Storage):
         except exceptions.Duplicate:
             raise exceptions.DuplicateRecord()
 
-        return objects.Record.from_sqla(record)
+        return self._get_record_object(context, record)
 
     def find_records(self, context, criterion=None,
                      marker=None, limit=None, sort_key=None, sort_dir=None):
@@ -584,17 +610,16 @@ class SQLAlchemyStorage(base.Storage):
             context, criterion, marker=marker, limit=limit, sort_key=sort_key,
             sort_dir=sort_dir)
 
-        return [objects.Record.from_sqla(r) for r in records]
+        return [self._get_record_object(context, r) for r in records]
 
     def get_record(self, context, record_id):
         record = self._find_records(context, {'id': record_id}, one=True)
-
-        return objects.Record.from_sqla(record)
+        return self._get_record_object(context, record)
 
     def find_record(self, context, criterion):
         record = self._find_records(context, criterion, one=True)
 
-        return objects.Record.from_sqla(record)
+        return self._get_record_object(context, record)
 
     def update_record(self, context, record_id, values):
         record = self._find_records(context, {'id': record_id}, one=True)
@@ -606,14 +631,14 @@ class SQLAlchemyStorage(base.Storage):
         except exceptions.Duplicate:
             raise exceptions.DuplicateRecord()
 
-        return objects.Record.from_sqla(record)
+        return self._get_record_object(context, record)
 
     def delete_record(self, context, record_id):
         record = self._find_records(context, {'id': record_id}, one=True)
 
         record.delete(self.session)
 
-        return objects.Record.from_sqla(record)
+        return self._get_record_object(context, record)
 
     def count_records(self, context, criterion=None):
         query = self.session.query(models.Record)

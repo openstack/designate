@@ -17,6 +17,17 @@
 from designate.objects.blacklist import Blacklist  # noqa
 from designate.objects.domain import Domain  # noqa
 from designate.objects.quota import Quota  # noqa
+from designate.objects.rrdata_a import RRData_A  # noqa
+from designate.objects.rrdata_aaaa import RRData_AAAA  # noqa
+from designate.objects.rrdata_cname import RRData_CNAME  # noqa
+from designate.objects.rrdata_mx import RRData_MX  # noqa
+from designate.objects.rrdata_ns import RRData_NS  # noqa
+from designate.objects.rrdata_ptr import RRData_PTR  # noqa
+from designate.objects.rrdata_soa import RRData_SOA  # noqa
+from designate.objects.rrdata_spf import RRData_SPF  # noqa
+from designate.objects.rrdata_srv import RRData_SRV  # noqa
+from designate.objects.rrdata_sshfp import RRData_SSHFP  # noqa
+from designate.objects.rrdata_txt import RRData_TXT  # noqa
 from designate.objects.record import Record  # noqa
 from designate.objects.recordset import RecordSet  # noqa
 from designate.objects.server import Server  # noqa
