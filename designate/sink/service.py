@@ -108,5 +108,6 @@ class Service(service.Service):
         # matching events, skips logging of things like compute.exists etc.
         if event_type in self._get_handler_event_types():
             for handler in self.handlers:
-                LOG.debug('Found handler for: %s' % event_type)
-                handler.process_notification(context, event_type, payload)
+                if event_type in handler.get_event_types():
+                    LOG.debug('Found handler for: %s' % event_type)
+                    handler.process_notification(context, event_type, payload)
