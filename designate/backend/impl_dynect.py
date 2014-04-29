@@ -40,9 +40,9 @@ OPTS = [
     cfg.StrOpt('tsig_key_name', help="TSIG key name."),
     cfg.IntOpt('job_timeout', default=30,
                help="Timeout in seconds for pulling a job in DynECT."),
-    cfg.StrOpt('timeout', help="Timeout in seconds for API Requests.",
+    cfg.IntOpt('timeout', help="Timeout in seconds for API Requests.",
                default=3),
-    cfg.StrOpt('timings', help="Measure requests timings.", default=False)
+    cfg.BootOpt('timings', help="Measure requests timings.", default=False)
 ]
 
 cfg.CONF.register_group(
