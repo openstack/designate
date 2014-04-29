@@ -26,7 +26,7 @@ class FloatingIPView(base_view.BaseView):
     _collection_name = 'floatingips'
 
     def _get_base_href(self, parents=None):
-        return '%s/reverse/floatingips' % self.base_uri
+        return '%s/v2/reverse/floatingips' % self.base_uri
 
     def show_basic(self, context, request, item):
         item['id'] = ":".join([item.pop('region'), item.pop('id')])
