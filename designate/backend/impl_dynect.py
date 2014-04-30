@@ -350,7 +350,15 @@ class DynECTBackend(base.Backend):
         LOG.info('Deleting domain %s / %s', domain['id'], domain['name'])
         url = '/Zone/%s' % domain['name'].rstrip('.')
         client = self.get_client()
-        client.delete(url)
+        try:
+            client.delete(url)
+        except DynClientError as e:
+            if e.http_status == 404:
+                msg = "Attempt to delete %s / %s caused 404, ignoring."
+                LOG.warn(msg, domain['id'], domain['name'])
+                pass
+            else:
+                raise
         client.logout()
 
     def update_recordset(self, context, domain, recordset):
