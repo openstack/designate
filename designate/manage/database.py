@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import os
+
 from migrate.exceptions import (DatabaseAlreadyControlledError,
                                 DatabaseNotControlledError)
 from migrate.versioning import api as versioning_api
@@ -73,4 +74,7 @@ class DatabaseCommands(base.Commands):
     def version(self):
         url = cfg.CONF['storage:sqlalchemy'].database_connection
 
-        print(versioning_api.db_version(url=url, repository=REPOSITORY))
+        current = versioning_api.db_version(url=url, repository=REPOSITORY)
+        latest = versioning_api.version(repository=REPOSITORY).value
+
+        print("Current: %s Latest: %s" % (current, latest))
