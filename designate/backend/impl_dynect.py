@@ -89,6 +89,8 @@ class DynClientError(exceptions.Backend):
         for msg in data.get('msgs', []):
             if msg['INFO'].startswith('login:'):
                 raise DynClientAuthError(**exc_kwargs)
+            elif 'Operation blocked' in msg['INFO']:
+                raise DynClientOperationBlocked(**exc_kwargs)
         return DynClientError(**exc_kwargs)
 
 
@@ -102,6 +104,10 @@ class DynTimeoutError(exceptions.Backend):
     """
     error_code = 408
     error_type = 'dyn_timeout'
+
+
+class DynClientOperationBlocked(exceptions.BadRequest, DynClientError):
+    error_type = 'operation_blocked'
 
 
 class DynClient(object):
