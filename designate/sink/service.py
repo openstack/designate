@@ -95,6 +95,10 @@ class Service(service.Service):
                 targets.append(target)
         return targets
 
+    def _get_handler_event_types(self):
+        """return a dict - keys are the event types we can handle"""
+        return self.subscribers
+
     def info(self, context, publisher_id, event_type, payload, metadata):
         """
         Processes an incoming notification, offering each extension the
