@@ -32,8 +32,8 @@ from oslo.messaging.notify import _impl_test as test_notifier
 from designate.openstack.common import log as logging
 from designate.openstack.common.fixture import config
 from designate.openstack.common import importutils
-from designate.openstack.common import policy
 from designate.openstack.common import test
+from designate import policy
 from designate import utils
 from designate.context import DesignateContext
 from designate.tests import resources
@@ -297,17 +297,13 @@ class TestCase(test.BaseTestCase):
         for k, v in kwargs.iteritems():
             cfg.CONF.set_override(k, v, group)
 
-    def policy(self, rules, default_rule='allow'):
+    def policy(self, rules, default_rule='allow', overwrite=True):
         # Inject an allow and deny rule
         rules['allow'] = '@'
         rules['deny'] = '!'
 
-        # Parse the rules
-        rules = dict((k, policy.parse_rule(v)) for k, v in rules.items())
-        rules = policy.Rules(rules, default_rule)
-
         # Set the rules
-        policy.set_rules(rules)
+        policy.set_rules(rules, default_rule, overwrite)
 
     # Other Utility Methods
     def get_notifications(self):

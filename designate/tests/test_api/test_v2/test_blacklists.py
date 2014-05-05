@@ -48,7 +48,7 @@ class ApiV2BlacklistsTest(ApiV2TestCase):
         blacklist = self.create_blacklist(fixture=0)
 
         # Set the policy file as this is an admin-only API
-        self.policy({'find_blacklist': '@'})
+        self.policy({'get_blacklist': '@'})
 
         response = self.client.get('/blacklists/%s' % blacklist['id'],
                                    headers=[('Accept', 'application/json')])
