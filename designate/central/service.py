@@ -57,7 +57,7 @@ class Service(service.Service):
         backend_driver = cfg.CONF['service:central'].backend_driver
         self.backend = backend.get_backend(backend_driver, self)
 
-        policy.init_policy()
+        policy.init()
 
         # Get a storage connection
         self.storage_api = storage_api.StorageAPI()
@@ -121,7 +121,8 @@ class Service(service.Service):
         # Check domain name blacklist
         if self._is_blacklisted_domain_name(context, domain_name):
             # Some users are allowed bypass the blacklist.. Is this one?
-            if not policy.check('use_blacklisted_domain', context, exc=None):
+            if not policy.check('use_blacklisted_domain', context,
+                                do_raise=False):
                 raise exceptions.InvalidDomainName('Blacklisted domain name')
 
         return True

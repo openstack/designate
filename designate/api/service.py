@@ -37,7 +37,7 @@ class Service(wsgi.Service):
 
         LOG.info('Using api-paste-config found at: %s' % config_paths[0])
 
-        policy.init_policy()
+        policy.init()
 
         application = deploy.loadapp("config:%s" % config_paths[0],
                                      name='osapi_dns')

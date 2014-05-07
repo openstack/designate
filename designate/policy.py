@@ -21,15 +21,39 @@ from designate import exceptions
 
 LOG = logging.getLogger(__name__)
 
-cfg.CONF.register_opts([
-    cfg.StrOpt('policy-file', default='policy.json'),
-    cfg.StrOpt('policy-default-rule', default='default'),
-])
+
+_ENFORCER = None
 
 
-def init_policy():
-    LOG.info('Initializing Policy')
+def reset():
+    global _ENFORCER
+    if _ENFORCER:
+        _ENFORCER.clear()
+    _ENFORCER = None
 
+
+def set_rules(data, default_rule=None, overwrite=True):
+    default_rule = default_rule or cfg.CONF.policy_default_rule
+    if not _ENFORCER:
+        LOG.debug("Enforcer not present, recreating at rules stage.")
+        init()
+
+    if default_rule:
+        _ENFORCER.default_rule = default_rule
+
+    msg = "Loading rules %s, default: %s, overwrite: %s"
+    LOG.debug(msg, data, default_rule, overwrite)
+
+    if isinstance(data, dict):
+        rules = dict((k, policy.parse_rule(v)) for k, v in data.items())
+        rules = policy.Rules(rules, default_rule)
+    else:
+        rules = policy.Rules.load_json(data, default_rule)
+
+    _ENFORCER.set_rules(rules, overwrite=overwrite)
+
+
+def init(default_rule=None):
     policy_files = utils.find_config(cfg.CONF.policy_file)
 
     if len(policy_files) == 0:
@@ -39,18 +63,22 @@ def init_policy():
     LOG.info('Using policy_file found at: %s' % policy_files[0])
 
     with open(policy_files[0]) as fh:
-        policy_json = fh.read()
+        policy_string = fh.read()
+    rules = policy.Rules.load_json(policy_string, default_rule=default_rule)
 
-    rules = policy.Rules.load_json(policy_json, cfg.CONF.policy_default_rule)
+    global _ENFORCER
+    if not _ENFORCER:
+        LOG.debug("Enforcer is not present, recreating.")
+        _ENFORCER = policy.Enforcer()
 
-    policy.set_rules(rules)
+    _ENFORCER.set_rules(rules)
 
 
-def check(rule, ctxt, target={}, exc=exceptions.Forbidden):
+def check(rule, ctxt, target={}, do_raise=True, exc=exceptions.Forbidden):
     creds = ctxt.to_dict()
 
     try:
-        result = policy.check(rule, target, creds, exc)
+        result = _ENFORCER.enforce(rule, target, creds, do_raise, exc)
     except Exception:
         result = False
         raise
