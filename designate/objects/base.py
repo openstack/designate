@@ -36,6 +36,18 @@ class BaseObject(object):
 
         return cls(**fields)
 
+    @classmethod
+    def from_primitive(cls, primitive):
+        """
+        Construct an object from primitive types.  This is used while
+        deserializing the object.
+        NOTE: Currently all the designate objects contain primitive types that
+        do not need special handling.  If this changes we need to modify this
+        function.
+        """
+        fields = primitive['designate_object.data']
+        return cls(**fields)
+
     def __init__(self, **kwargs):
         fieldnames = []
         fieldnames += self.FIELDS
@@ -92,3 +104,19 @@ class BaseObject(object):
 
     def get(self, key, default=None):
         return getattr(self, key, default)
+
+    def to_primitive(self):
+        """
+        Convert the object to primitive types so that the object can be
+        serialized.
+        NOTE: Currently all the designate objects contain primitive types that
+        do not need special handling.  If this changes we need to modify this
+        function.
+        """
+        primitive = {}
+        class_name = self.__class__.__name__
+        if self.__module__:
+            class_name = self.__module__ + '.' + self.__class__.__name__
+        primitive['designate_object.name'] = class_name
+        primitive['designate_object.data'] = dict(self)
+        return primitive

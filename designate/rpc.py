@@ -31,6 +31,7 @@ from oslo import messaging
 
 import designate.context
 import designate.exceptions
+from designate.openstack.common import importutils
 from designate.openstack.common import jsonutils
 
 CONF = cfg.CONF
@@ -110,6 +111,42 @@ class JsonPayloadSerializer(messaging.NoOpSerializer):
         return jsonutils.to_primitive(entity, convert_instances=True)
 
 
+class DesignateObjectSerializer(messaging.NoOpSerializer):
+    def _process_iterable(self, context, action_fn, values):
+        """Process an iterable, taking an action on each value.
+        :param:context: Request context
+        :param:action_fn: Action to take on each item in values
+        :param:values: Iterable container of things to take action on
+        :returns: A new container of the same type (except set) with
+        items from values having had action applied.
+        """
+        iterable = values.__class__
+        if iterable == set:
+            # NOTE: A set can't have an unhashable value inside, such as
+            # a dict. Convert sets to tuples, which is fine, since we can't
+            # send them over RPC anyway.
+            iterable = tuple
+        return iterable([action_fn(context, value) for value in values])
+
+    def serialize_entity(self, context, entity):
+        if isinstance(entity, (tuple, list, set)):
+            entity = self._process_iterable(context, self.serialize_entity,
+                                            entity)
+        elif hasattr(entity, 'to_primitive') and callable(entity.to_primitive):
+            entity = entity.to_primitive()
+        return entity
+
+    def deserialize_entity(self, context, entity):
+        if isinstance(entity, dict) and 'designate_object.name' in entity and\
+                'designate_object.data' in entity:
+            cls = importutils.import_class(entity['designate_object.name'])
+            entity = cls.from_primitive(entity)
+        elif isinstance(entity, (tuple, list, set)):
+            entity = self._process_iterable(context, self.deserialize_entity,
+                                            entity)
+        return entity
+
+
 class RequestContextSerializer(messaging.Serializer):
 
     def __init__(self, base):
@@ -138,6 +175,8 @@ def get_transport_url(url_str=None):
 
 def get_client(target, version_cap=None, serializer=None):
     assert TRANSPORT is not None
+    if serializer is None:
+        serializer = DesignateObjectSerializer()
     serializer = RequestContextSerializer(serializer)
     return messaging.RPCClient(TRANSPORT,
                                target,
@@ -147,6 +186,8 @@ def get_client(target, version_cap=None, serializer=None):
 
 def get_server(target, endpoints, serializer=None):
     assert TRANSPORT is not None
+    if serializer is None:
+        serializer = DesignateObjectSerializer()
     serializer = RequestContextSerializer(serializer)
     return messaging.get_rpc_server(TRANSPORT,
                                     target,
