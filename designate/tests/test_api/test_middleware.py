@@ -161,11 +161,10 @@ class NoAuthContextMiddlewareTest(ApiTestCase):
 
         ctxt = request.environ['context']
 
-        self.assertTrue(ctxt.is_admin)
         self.assertIsNone(ctxt.auth_token)
         self.assertEqual('noauth-user', ctxt.user)
         self.assertEqual('noauth-project', ctxt.tenant)
-        self.assertEqual([], ctxt.roles)
+        self.assertEqual(['admin'], ctxt.roles)
 
 
 class FaultMiddlewareTest(ApiTestCase):

@@ -137,15 +137,13 @@ class NoAuthContextMiddleware(ContextMiddleware):
         LOG.info('Starting designate noauthcontext middleware')
 
     def process_request(self, request):
-        # NOTE(kiall): This makes the assumption that disabling authentication
-        #              means you wish to allow full access to everyone.
         headers = request.headers
 
         context = DesignateContext(
             auth_token=headers.get('X-Auth-Token', None),
             user=headers.get('X-Auth-User-ID', 'noauth-user'),
             tenant=headers.get('X-Auth-Project-ID', 'noauth-project'),
-            is_admin=True,
+            roles=headers.get('X-Roles', 'admin').split(',')
         )
 
         # Store the context where oslo-log exepcts to find it.
