@@ -76,7 +76,7 @@ debug = False
 #api_port = 9001
 
 # Authentication strategy to use - can be either "noauth" or "keystone"
-#auth_strategy = noauth
+#auth_strategy = keystone
 
 # Enable Version 1 API
 #enable_api_v1 = True
