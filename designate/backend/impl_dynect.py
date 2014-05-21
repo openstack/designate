@@ -42,7 +42,7 @@ OPTS = [
                help="Timeout in seconds for pulling a job in DynECT."),
     cfg.IntOpt('timeout', help="Timeout in seconds for API Requests.",
                default=3),
-    cfg.BootOpt('timings', help="Measure requests timings.", default=False)
+    cfg.BoolOpt('timings', help="Measure requests timings.", default=False)
 ]
 
 cfg.CONF.register_group(
