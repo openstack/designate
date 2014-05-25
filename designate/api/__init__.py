@@ -30,7 +30,7 @@ cfg.CONF.register_opts([
                help='API Port Number'),
     cfg.StrOpt('api_paste_config', default='api-paste.ini',
                help='File name for the paste.deploy config for designate-api'),
-    cfg.StrOpt('auth_strategy', default='noauth',
+    cfg.StrOpt('auth_strategy', default='keystone',
                help='The strategy to use for auth. Supports noauth or '
                     'keystone'),
     cfg.BoolOpt('enable-api-v1', default=True),
