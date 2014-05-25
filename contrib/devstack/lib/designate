@@ -54,6 +54,11 @@ DESIGNATE_BACKEND_DRIVER=${DESIGNATE_BACKEND_DRIVER:=fake}
 # Support potential entry-points console scripts
 DESIGNATE_BIN_DIR=$(get_python_exec_prefix)
 
+# only if using IPA
+IPA_HOST=${IPA_HOST:-$(hostname)}
+IPA_CA_CERT=${IPA_CA_CERT:-/etc/ipa/ca.crt}
+IPA_CLIENT_KEYTAB=${IPA_CLIENT_KEYTAB:-$HOME/ipaadmin.keytab}
+
 # Functions
 # ---------
 
@@ -88,6 +93,10 @@ function configure_designate() {
 
     if [[ "$DESIGNATE_BACKEND_DRIVER" = 'bind9' ]]; then
         configure_bind
+    fi
+
+    if [[ "$DESIGNATE_BACKEND_DRIVER" = 'ipa' ]]; then
+        configure_ipa
     fi
 
     if is_service_enabled key; then
@@ -350,6 +359,27 @@ EOF
     fi
 
     sudo service bind9 restart
+}
+
+function configure_ipa() {
+    rc=0
+    if [[ ! -f $IPA_CA_CERT ]]; then
+        echo ERROR: IPA CA cert file $IPA_CA_CERT not found
+        rc=1
+    fi
+    if [[ ! -f $IPA_CLIENT_KEYTAB ]]; then
+        echo ERROR: IPA client keytab file $IPA_CLIENT_KEYTAB not found
+        rc=1
+    fi
+    if [[ $rc = 1 ]]; then
+        die $LINENO "Error with IPA configuration"
+    fi
+    iniset $DESIGNATE_CONF service:central backend_driver ipa
+    iniset $DESIGNATE_CONF backend:ipa ipa_host $IPA_HOST
+    iniset $DESIGNATE_CONF backend:ipa ipa_ca_cert $IPA_CA_CERT
+    iniset $DESIGNATE_CONF backend:ipa ipa_client_keytab $IPA_CLIENT_KEYTAB
+    # devstack tests use dummy NS records, so tell IPA to allow this
+    iniset $DESIGNATE_CONF backend:ipa ipa_force_ns_use True
 }
 
 # Restore xtrace
