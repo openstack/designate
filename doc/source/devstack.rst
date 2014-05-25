@@ -21,21 +21,22 @@ DevStack
 
 The Designate team maintains a fork of devstack with Designate integration.
 
-.. note::
-   This is a WIP. Expect issues!
-
-
 Instructions
 ++++++++++++
 
 1. Get a clean Ubuntu 12.04 VM. DevStack "takes over". Don't use your desktop!
 
-2. Clone the Designate DevStack fork inside the VM::
+2. Clone Designate and DevStack inside the VM::
 
-   $ git clone https://github.com/moniker-dns/devstack.git
+   $ git clone https://github.com/openstack-dev/devstack.git
+   $ git clone https://github.com/stackforge/designate.git
+
+3. Install the Designate extension for DevStack::
+
    $ cd devstack
+   $ ../designate/contrib/devstack/install.sh
 
-3. Create a `localrc` config file::
+4. Create a `localrc` config file::
 
        ADMIN_PASSWORD=password
        MYSQL_PASSWORD=password
@@ -67,12 +68,11 @@ Instructions
        # Enable Glance
        #ENABLED_SERVICES+=,g-api,g-reg
 
-4. Run DevStack::
+5. Run DevStack::
 
-   $ ./unstack.sh
    $ ./stack.sh
 
-4. Enter the screen sessions "shell" window::
+6. Enter the screen sessions "shell" window::
 
    $ ./rejoin-stack.sh
 
