@@ -50,8 +50,18 @@ class Bind9Backend(base.Backend):
             rndc_op = 'reload'
             rndc_call = self._rndc_base() + [rndc_op]
             rndc_call.extend([domain['name']])
-            LOG.debug('Calling RNDC with: %s' % " ".join(rndc_call))
-            utils.execute(*rndc_call)
+
+            try:
+                LOG.debug('Calling RNDC with: %s' % " ".join(rndc_call))
+                utils.execute(*rndc_call)
+            except utils.processutils.ProcessExecutionError as proc_exec_err:
+                stderr = proc_exec_err.stderr
+                if stderr.count("rndc: 'reload' failed: not found") is not 0:
+                    LOG.warn("Domain %s (%s) missing from backend, recreating",
+                             domain['name'], domain['id'])
+                    self._sync_domain(domain, new_domain_flag=True)
+                else:
+                    raise proc_exec_err
 
     def create_server(self, context, server):
         LOG.debug('Create Server')
