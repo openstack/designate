@@ -49,6 +49,7 @@ CONF.register_opts([
 ])
 ALLOWED_EXMODS = [
     designate.exceptions.__name__,
+    'designate.backend.impl_dynect'
 ]
 EXTRA_EXMODS = []
 
