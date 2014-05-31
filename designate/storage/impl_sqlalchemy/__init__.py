@@ -216,6 +216,8 @@ class SQLAlchemyStorage(base.Storage):
 
         quota.delete(self.session)
 
+        return objects.Quota.from_sqla(quota)
+
     # Server Methods
     def _find_servers(self, context, criterion, one=False,
                       marker=None, limit=None, sort_key=None, sort_dir=None):
@@ -266,6 +268,8 @@ class SQLAlchemyStorage(base.Storage):
 
         server.delete(self.session)
 
+        return objects.Server.from_sqla(server)
+
     # TLD Methods
     def _find_tlds(self, context, criterion, one=False,
                    marker=None, limit=None, sort_key=None, sort_dir=None):
@@ -315,6 +319,8 @@ class SQLAlchemyStorage(base.Storage):
     def delete_tld(self, context, tld_id):
         tld = self._find_tlds(context, {'id': tld_id}, one=True)
         tld.delete(self.session)
+
+        return objects.Tld.from_sqla(tld)
 
     # TSIG Key Methods
     def _find_tsigkeys(self, context, criterion, one=False,
@@ -367,6 +373,8 @@ class SQLAlchemyStorage(base.Storage):
         tsigkey = self._find_tsigkeys(context, {'id': tsigkey_id}, one=True)
 
         tsigkey.delete(self.session)
+
+        return objects.TsigKey.from_sqla(tsigkey)
 
     ##
     ## Tenant Methods
@@ -708,6 +716,8 @@ class SQLAlchemyStorage(base.Storage):
                                          one=True)
 
         blacklist.delete(self.session)
+
+        return objects.Blacklist.from_sqla(blacklist)
 
     # diagnostics
     def ping(self, context):
