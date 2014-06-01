@@ -13,14 +13,13 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
 import fixtures
-from mock import MagicMock
 from requests.auth import AuthBase
 from designate import tests
 from designate import utils
 from designate.tests.test_backend import BackendTestMixin
 from designate.openstack.common import jsonutils as json
+from designate.openstack.common.fixture import mockpatch
 from designate.backend import impl_ipa
 
 ipamethods = {"dnszone_add": {}, "dnszone_mod": {},
@@ -125,12 +124,20 @@ class IPABackendTestCase(tests.TestCase, BackendTestMixin):
             "designate.tests.test_backend.test_ipa.MockIPAAuth"
         self.backend.start()
         self.central_service = self.start_service('central')
+
         # Since some CRUD methods in impl_ipa call central's find_servers
         # and find_records method, mock it up to return our fixture.
-        self.backend.central_service.find_servers = MagicMock(
-            return_value=[self.get_server_fixture()])
-        self.backend.central_service.find_records = MagicMock(
-            return_value=[self.get_record_fixture('A')])
+        self.useFixture(mockpatch.PatchObject(
+            self.backend.central_service,
+            'find_servers',
+            return_value=[self.get_server_fixture()]
+        ))
+
+        self.useFixture(mockpatch.PatchObject(
+            self.backend.central_service,
+            'find_records',
+            return_value=[self.get_record_fixture('A')]
+        ))
 
     def test_create_server(self):
         context = self.get_context()
