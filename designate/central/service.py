@@ -60,7 +60,8 @@ class Service(service.Service):
         policy.init()
 
         # Get a storage connection
-        self.storage_api = storage_api.StorageAPI()
+        storage_driver = cfg.CONF['service:central'].storage_driver
+        self.storage_api = storage_api.StorageAPI(storage_driver)
 
         # Get a quota manager instance
         self.quota = quota.get_quota()

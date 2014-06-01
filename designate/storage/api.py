@@ -21,8 +21,8 @@ from designate.openstack.common import excutils
 class StorageAPI(object):
     """ Storage API """
 
-    def __init__(self):
-        self.storage = storage.get_storage()
+    def __init__(self, storage_driver):
+        self.storage = storage.get_storage(storage_driver)
 
     def _extract_dict_subset(self, d, keys):
         return dict([(k, d[k]) for k in keys if k in d])

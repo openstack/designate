@@ -13,6 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from oslo.config import cfg
 from designate import exceptions
 from designate.openstack.common import log as logging
 from designate.quota.base import Quota
@@ -28,7 +29,9 @@ class StorageQuota(Quota):
         super(StorageQuota, self).__init__()
 
         if storage_api is None:
-            storage_api = sapi.StorageAPI()
+            # TODO(kiall): Should this be tied to central's config?
+            storage_driver = cfg.CONF['service:central'].storage_driver
+            storage_api = sapi.StorageAPI(storage_driver)
 
         self.storage_api = storage_api
 

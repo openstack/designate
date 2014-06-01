@@ -33,6 +33,7 @@ cfg.CONF.register_opts([
 
     cfg.StrOpt('central-topic', default='central', help='Central Topic'),
     cfg.StrOpt('agent-topic', default='agent', help='Agent Topic'),
+    cfg.StrOpt('mdns-topic', default='mdns', help='mDNS Topic'),
 
     # Default TTL
     cfg.IntOpt('default-ttl', default=3600),

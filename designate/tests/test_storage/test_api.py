@@ -29,7 +29,7 @@ class SentinelException(Exception):
 class StorageAPITest(TestCase):
     def setUp(self):
         super(StorageAPITest, self).setUp()
-        self.storage_api = storage_api.StorageAPI()
+        self.storage_api = storage_api.StorageAPI('sqlalchemy')
         self.storage_mock = mock.Mock()
         self.storage_api.storage = self.storage_mock
 
