@@ -99,8 +99,10 @@ class MockRequest(object):
 
 class IPABackendTestCase(tests.TestCase, BackendTestMixin):
 
-    def get_record_fixture(self, recordset_type, fixture=0, values={}):
+    def get_record_fixture(self, recordset_type, fixture=0, values=None):
         """override to ensure all records have a recordset_id"""
+        values = values or {}
+
         return super(IPABackendTestCase, self).get_record_fixture(
             recordset_type, fixture,
             values={

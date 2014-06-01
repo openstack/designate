@@ -74,8 +74,9 @@ def init(default_rule=None):
     _ENFORCER.set_rules(rules)
 
 
-def check(rule, ctxt, target={}, do_raise=True, exc=exceptions.Forbidden):
+def check(rule, ctxt, target=None, do_raise=True, exc=exceptions.Forbidden):
     creds = ctxt.to_dict()
+    target = target or {}
 
     try:
         result = _ENFORCER.enforce(rule, target, creds, do_raise, exc)
