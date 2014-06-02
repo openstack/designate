@@ -23,9 +23,9 @@ LOG = logging.getLogger(__name__)
 
 
 class StorageTestCase(object):
-    def create_quota(self, fixture=0, values={}, context=None):
-        if not context:
-            context = self.admin_context
+    def create_quota(self, fixture=0, values=None, context=None):
+        values = values or {}
+        context = context or self.admin_context
 
         fixture = self.get_quota_fixture(fixture, values)
 
@@ -34,23 +34,23 @@ class StorageTestCase(object):
 
         return fixture, self.storage.create_quota(context, fixture)
 
-    def create_server(self, fixture=0, values={}, context=None):
-        if not context:
-            context = self.admin_context
+    def create_server(self, fixture=0, values=None, context=None):
+        values = values or {}
+        context = context or self.admin_context
 
         fixture = self.get_server_fixture(fixture, values)
         return fixture, self.storage.create_server(context, fixture)
 
-    def create_tsigkey(self, fixture=0, values={}, context=None):
-        if not context:
-            context = self.admin_context
+    def create_tsigkey(self, fixture=0, values=None, context=None):
+        values = values or {}
+        context = context or self.admin_context
 
         fixture = self.get_tsigkey_fixture(fixture, values)
         return fixture, self.storage.create_tsigkey(context, fixture)
 
-    def create_domain(self, fixture=0, values={}, context=None):
-        if not context:
-            context = self.admin_context
+    def create_domain(self, fixture=0, values=None, context=None):
+        values = values or {}
+        context = context or self.admin_context
 
         fixture = self.get_domain_fixture(fixture, values)
 
@@ -59,20 +59,20 @@ class StorageTestCase(object):
 
         return fixture, self.storage.create_domain(context, fixture)
 
-    def create_recordset(self, domain, type='A', fixture=0, values={},
+    def create_recordset(self, domain, type='A', fixture=0, values=None,
                          context=None):
-        if not context:
-            context = self.admin_context
+        values = values or {}
+        context = context or self.admin_context
 
         fixture = self.get_recordset_fixture(domain['name'], type, fixture,
                                              values)
         return fixture, self.storage.create_recordset(
             context, domain['id'], fixture)
 
-    def create_record(self, domain, recordset, fixture=0, values={},
+    def create_record(self, domain, recordset, fixture=0, values=None,
                       context=None):
-        if not context:
-            context = self.admin_context
+        values = values or {}
+        context = context or self.admin_context
 
         fixture = self.get_record_fixture(recordset['type'], fixture, values)
         return fixture, self.storage.create_record(

@@ -330,38 +330,52 @@ class TestCase(test.BaseTestCase):
             user=utils.generate_uuid())
 
     # Fixture methods
-    def get_quota_fixture(self, fixture=0, values={}):
+    def get_quota_fixture(self, fixture=0, values=None):
+        values = values or {}
+
         _values = copy.copy(self.quota_fixtures[fixture])
         _values.update(values)
         return _values
 
-    def get_server_fixture(self, fixture=0, values={}):
+    def get_server_fixture(self, fixture=0, values=None):
+        values = values or {}
+
         _values = copy.copy(self.server_fixtures[fixture])
         _values.update(values)
         return _values
 
-    def get_tld_fixture(self, fixture=0, values={}):
+    def get_tld_fixture(self, fixture=0, values=None):
+        values = values or {}
+
         _values = copy.copy(self.tld_fixtures[fixture])
         _values.update(values)
         return _values
 
-    def get_default_tld_fixture(self, fixture=0, values={}):
+    def get_default_tld_fixture(self, fixture=0, values=None):
+        values = values or {}
+
         _values = copy.copy(self.default_tld_fixtures[fixture])
         _values.update(values)
         return _values
 
-    def get_tsigkey_fixture(self, fixture=0, values={}):
+    def get_tsigkey_fixture(self, fixture=0, values=None):
+        values = values or {}
+
         _values = copy.copy(self.tsigkey_fixtures[fixture])
         _values.update(values)
         return _values
 
-    def get_domain_fixture(self, fixture=0, values={}):
+    def get_domain_fixture(self, fixture=0, values=None):
+        values = values or {}
+
         _values = copy.copy(self.domain_fixtures[fixture])
         _values.update(values)
         return _values
 
     def get_recordset_fixture(self, domain_name, type='A', fixture=0,
-                              values={}):
+                              values=None):
+        values = values or {}
+
         _values = copy.copy(self.recordset_fixtures[type][fixture])
         _values.update(values)
 
@@ -372,12 +386,16 @@ class TestCase(test.BaseTestCase):
 
         return _values
 
-    def get_record_fixture(self, recordset_type, fixture=0, values={}):
+    def get_record_fixture(self, recordset_type, fixture=0, values=None):
+        values = values or {}
+
         _values = copy.copy(self.record_fixtures[recordset_type][fixture])
         _values.update(values)
         return _values
 
-    def get_ptr_fixture(self, fixture=0, values={}):
+    def get_ptr_fixture(self, fixture=0, values=None):
+        values = values or {}
+
         _values = copy.copy(self.ptr_fixtures[fixture])
         _values.update(values)
         return _values
@@ -391,7 +409,9 @@ class TestCase(test.BaseTestCase):
         with open(path) as zonefile:
             return zonefile.read()
 
-    def get_blacklist_fixture(self, fixture=0, values={}):
+    def get_blacklist_fixture(self, fixture=0, values=None):
+        values = values or {}
+
         _values = copy.copy(self.blacklist_fixtures[fixture])
         _values.update(values)
         return _values

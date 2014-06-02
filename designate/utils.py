@@ -127,7 +127,7 @@ def execute(*cmd, **kw):
                                 root_helper=root_helper, **kw)
 
 
-def get_item_properties(item, fields, mixed_case_fields=[], formatters={}):
+def get_item_properties(item, fields, mixed_case_fields=None, formatters=None):
     """Return a tuple containing the item properties.
 
     :param item: a single item resource (e.g. Server, Tenant, etc)
@@ -137,6 +137,8 @@ def get_item_properties(item, fields, mixed_case_fields=[], formatters={}):
         to format the values
     """
     row = []
+    mixed_case_fields = mixed_case_fields or []
+    formatters = formatters or {}
 
     for field in fields:
         if field in formatters:
