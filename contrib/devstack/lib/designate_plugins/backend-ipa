@@ -47,9 +47,9 @@ function configure_designate_backend {
     if [[ $rc = 1 ]]; then
         die $LINENO "Error with IPA configuration"
     fi
-    iniset $DESIGNATE_CONF backend:ipa DESIGNATE_IPA_HOST $DESIGNATE_IPA_HOST
-    iniset $DESIGNATE_CONF backend:ipa DESIGNATE_IPA_CA_CERT $DESIGNATE_IPA_CA_CERT
-    iniset $DESIGNATE_CONF backend:ipa DESIGNATE_IPA_CLIENT_KEYTAB $DESIGNATE_IPA_CLIENT_KEYTAB
+    iniset $DESIGNATE_CONF backend:ipa ipa_host $DESIGNATE_IPA_HOST
+    iniset $DESIGNATE_CONF backend:ipa ipa_ca_cert $DESIGNATE_IPA_CA_CERT
+    iniset $DESIGNATE_CONF backend:ipa ipa_client_keytab $DESIGNATE_IPA_CLIENT_KEYTAB
     # devstack tests use dummy NS records, so tell IPA to allow this
     iniset $DESIGNATE_CONF backend:ipa ipa_force_ns_use True
 }

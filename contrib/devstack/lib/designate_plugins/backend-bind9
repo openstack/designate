@@ -75,7 +75,7 @@ EOF
 # configure_designate_backend - make configuration changes, including those to other services
 function configure_designate_backend {
     iniset $DESIGNATE_CONF backend:bind9 rndc_port 953
-    iniset $DESIGNATE_CONF backend:bind9 rndc_host $SERVICE_HOST
+    iniset $DESIGNATE_CONF backend:bind9 rndc_host $DESIGNATE_SERVICE_HOST
     iniset $DESIGNATE_CONF backend:bind9 rndc_config_file "$BIND_CFG_DIR/rndc.conf"
     iniset $DESIGNATE_CONF backend:bind9 rndc_key_file "$BIND_CFG_DIR/rndc.key"
     iniset $DESIGNATE_CONF backend:bind9 nzf_path "$BIND_VAR_DIR"
@@ -96,11 +96,11 @@ options {
     allow-new-zones yes;
     dnssec-validation auto;
     auth-nxdomain no;    # conform to RFC1035
-    listen-on { $SERVICE_HOST; };
+    listen-on port $DESIGNATE_SERVICE_PORT_DNS { $DESIGNATE_SERVICE_HOST; };
 };
 
 controls {
-    inet $SERVICE_HOST allow { $SERVICE_HOST; } keys { "rndc-key"; };
+    inet $DESIGNATE_SERVICE_HOST allow { $DESIGNATE_SERVICE_HOST; } keys { "rndc-key"; };
 };
 EOF
 
@@ -110,7 +110,7 @@ include "$BIND_CFG_DIR/rndc.key";
 
 options {
     default-key "rndc-key";
-    default-server $SERVICE_HOST;
+    default-server $DESIGNATE_SERVICE_HOST;
     default-port 953;
 };
 EOF

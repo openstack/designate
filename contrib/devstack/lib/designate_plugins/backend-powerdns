@@ -57,10 +57,12 @@ socket-dir=/var/run
 guardian=yes
 daemon=yes
 disable-axfr=no
-local-address=$SERVICE_HOST
-#local-ipv6=
-local-port=53
+local-address=$DESIGNATE_SERVICE_HOST
+local-port=$DESIGNATE_SERVICE_PORT_DNS
 master=yes
+cache-ttl=0
+query-cache-ttl=0
+negquery-cache-ttl=0
 EOF
 
     if is_service_enabled mysql; then
