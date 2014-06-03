@@ -17,6 +17,7 @@ import testtools
 import uuid
 from designate.openstack.common import log as logging
 from designate import exceptions
+from designate import objects
 from designate.storage.base import Storage as StorageBase
 
 LOG = logging.getLogger(__name__)
@@ -39,14 +40,16 @@ class StorageTestCase(object):
         context = context or self.admin_context
 
         fixture = self.get_server_fixture(fixture, values)
-        return fixture, self.storage.create_server(context, fixture)
+        return fixture, self.storage.create_server(
+            context, objects.Server(**fixture))
 
     def create_tsigkey(self, fixture=0, values=None, context=None):
         values = values or {}
         context = context or self.admin_context
 
         fixture = self.get_tsigkey_fixture(fixture, values)
-        return fixture, self.storage.create_tsigkey(context, fixture)
+        return fixture, self.storage.create_tsigkey(
+            context, objects.TsigKey(**fixture))
 
     def create_domain(self, fixture=0, values=None, context=None):
         values = values or {}
@@ -57,7 +60,8 @@ class StorageTestCase(object):
         if 'tenant_id' not in fixture:
             fixture['tenant_id'] = context.tenant
 
-        return fixture, self.storage.create_domain(context, fixture)
+        return fixture, self.storage.create_domain(
+            context, objects.Domain(**fixture))
 
     def create_recordset(self, domain, type='A', fixture=0, values=None,
                          context=None):
@@ -67,7 +71,7 @@ class StorageTestCase(object):
         fixture = self.get_recordset_fixture(domain['name'], type, fixture,
                                              values)
         return fixture, self.storage.create_recordset(
-            context, domain['id'], fixture)
+            context, domain['id'], objects.RecordSet(**fixture))
 
     def create_record(self, domain, recordset, fixture=0, values=None,
                       context=None):
@@ -76,7 +80,7 @@ class StorageTestCase(object):
 
         fixture = self.get_record_fixture(recordset['type'], fixture, values)
         return fixture, self.storage.create_record(
-            context, domain['id'], recordset['id'], fixture)
+            context, domain['id'], recordset['id'], objects.Record(**fixture))
 
     # Paging Tests
     def _ensure_paging(self, data, method):
@@ -296,7 +300,8 @@ class StorageTestCase(object):
             'name': 'ns1.example.org.'
         }
 
-        result = self.storage.create_server(self.admin_context, values=values)
+        result = self.storage.create_server(
+            self.admin_context, server=objects.Server(**values))
 
         self.assertIsNotNone(result['id'])
         self.assertIsNotNone(result['created_at'])
@@ -409,7 +414,8 @@ class StorageTestCase(object):
     def test_create_tsigkey(self):
         values = self.get_tsigkey_fixture()
 
-        result = self.storage.create_tsigkey(self.admin_context, values=values)
+        result = self.storage.create_tsigkey(
+            self.admin_context, tsigkey=objects.TsigKey(**values))
 
         self.assertIsNotNone(result['id'])
         self.assertIsNotNone(result['created_at'])
@@ -604,7 +610,8 @@ class StorageTestCase(object):
             'email': 'example@example.net'
         }
 
-        result = self.storage.create_domain(self.admin_context, values=values)
+        result = self.storage.create_domain(
+            self.admin_context, domain=objects.Domain(**values))
 
         self.assertIsNotNone(result['id'])
         self.assertIsNotNone(result['created_at'])
@@ -821,9 +828,10 @@ class StorageTestCase(object):
             'type': 'A'
         }
 
-        result = self.storage.create_recordset(self.admin_context,
-                                               domain['id'],
-                                               values=values)
+        result = self.storage.create_recordset(
+            self.admin_context,
+            domain['id'],
+            recordset=objects.RecordSet(**values))
 
         self.assertIsNotNone(result['id'])
         self.assertIsNotNone(result['created_at'])
@@ -1028,7 +1036,7 @@ class StorageTestCase(object):
         result = self.storage.create_record(self.admin_context,
                                             domain['id'],
                                             recordset['id'],
-                                            values=values)
+                                            record=objects.Record(**values))
 
         self.assertIsNotNone(result['id'])
         self.assertIsNotNone(result['created_at'])

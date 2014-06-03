@@ -17,6 +17,7 @@ import flask
 from designate.openstack.common import log as logging
 from designate import schema
 from designate.api import get_central_api
+from designate.objects import Server
 
 LOG = logging.getLogger(__name__)
 blueprint = flask.Blueprint('servers', __name__)
@@ -41,7 +42,7 @@ def create_server():
 
     server_schema.validate(values)
     server = get_central_api().create_server(context,
-                                             values=flask.request.json)
+                                             server=Server(**values))
 
     response = flask.jsonify(server_schema.filter(server))
     response.status_int = 201

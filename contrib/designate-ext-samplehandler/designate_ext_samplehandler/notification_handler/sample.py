@@ -15,6 +15,7 @@
 # under the License.
 from oslo.config import cfg
 from designate.openstack.common import log as logging
+from designate.objects import Record
 from designate.notification_handler.base import NotificationHandler
 
 LOG = logging.getLogger(__name__)
@@ -64,13 +65,17 @@ class SampleHandler(NotificationHandler):
 
         for fixed_ip in payload['fixed_ips']:
             if fixed_ip['version'] == 4:
-                self.central_api.create_record(domain_id,
-                                               type='A',
-                                               name=hostname,
-                                               data=fixed_ip['address'])
+                values = dict(
+                    type='A',
+                    name=hostname,
+                    data=fixed_ip['address']
+                )
+                self.central_api.create_record(domain_id, Record(**values))
 
             elif fixed_ip['version'] == 6:
-                self.central_api.create_record(domain_id,
-                                               type='AAAA',
-                                               name=hostname,
-                                               data=fixed_ip['address'])
+                values = dict(
+                    type='AAAA',
+                    name=hostname,
+                    data=fixed_ip['address']
+                )
+                self.central_api.create_record(domain_id, Record(**values))

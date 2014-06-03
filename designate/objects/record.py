@@ -38,8 +38,9 @@ class Record(BaseObject):
     def __init__(self, **kwargs):
         self.FIELDS = self.RECORD_FIELDS + self.RRDATA_FIELDS
         super(Record, self).__init__(**kwargs)
-        self.from_text()
-        self.to_text()
+        if len(self.RRDATA_FIELDS) > 0:
+            self.from_text()
+            self.to_text()
 
     def from_text(self):
         """

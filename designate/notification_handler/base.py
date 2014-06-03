@@ -20,6 +20,8 @@ from designate import exceptions
 from designate.openstack.common import log as logging
 from designate.central import rpcapi as central_rpcapi
 from designate.context import DesignateContext
+from designate.objects import Record
+from designate.objects import RecordSet
 from designate.plugin import ExtensionPlugin
 
 
@@ -85,11 +87,13 @@ class NotificationHandler(ExtensionPlugin):
                 'type': type,
             })
         except exceptions.RecordSetNotFound:
-            recordset = self.central_api.create_recordset(context, domain_id, {
+            values = {
                 'name': name,
                 'type': type,
                 'ttl': ttl,
-            })
+            }
+            recordset = self.central_api.create_recordset(
+                context, domain_id, RecordSet(**values))
 
         return recordset
 
@@ -147,9 +151,10 @@ class BaseAddressHandler(NotificationHandler):
 
             LOG.debug('Creating record in %s / %s with values %r',
                       domain['id'], recordset['id'], record_values)
-            self.central_api.create_record(context, domain['id'],
+            self.central_api.create_record(context,
+                                           domain['id'],
                                            recordset['id'],
-                                           record_values)
+                                           Record(**record_values))
 
     def _delete(self, managed=True, resource_id=None, resource_type='instance',
                 criterion={}):

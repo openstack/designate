@@ -115,18 +115,18 @@ class StorageAPI(object):
             self.storage.commit()
 
     @contextlib.contextmanager
-    def create_server(self, context, values):
+    def create_server(self, context, server):
         """
         Create a Server.
 
         :param context: RPC Context.
-        :param values: Values to create the new Domain from.
+        :param server: Server object with the values to be created.
         """
         self.storage.begin()
 
         try:
-            server = self.storage.create_server(context, values)
-            yield server
+            created_server = self.storage.create_server(context, server)
+            yield created_server
         except Exception:
             with excutils.save_and_reraise_exception():
                 self.storage.rollback()
@@ -202,18 +202,18 @@ class StorageAPI(object):
             self.storage.commit()
 
     @contextlib.contextmanager
-    def create_tld(self, context, values):
+    def create_tld(self, context, tld):
         """
         Create a TLD.
 
         :param context: RPC Context.
-        :param values: Values to create the new TLD from.
+        :param tld: Tld object with the values to be created.
         """
         self.storage.begin()
 
         try:
-            tld = self.storage.create_tld(context, values)
-            yield tld
+            created_tld = self.storage.create_tld(context, tld)
+            yield created_tld
         except Exception:
             with excutils.save_and_reraise_exception():
                 self.storage.rollback()
@@ -289,17 +289,18 @@ class StorageAPI(object):
             self.storage.commit()
 
     @contextlib.contextmanager
-    def create_tsigkey(self, context, values):
+    def create_tsigkey(self, context, tsigkey):
         """
         Create a TSIG Key.
 
         :param context: RPC Context.
+        :param tsigkey: TsigKey object with the values to be created.
         """
         self.storage.begin()
 
         try:
-            tsigkey = self.storage.create_tsigkey(context, values)
-            yield tsigkey
+            created_tsigkey = self.storage.create_tsigkey(context, tsigkey)
+            yield created_tsigkey
         except Exception:
             with excutils.save_and_reraise_exception():
                 self.storage.rollback()
@@ -400,18 +401,18 @@ class StorageAPI(object):
         return self.storage.count_tenants(context)
 
     @contextlib.contextmanager
-    def create_domain(self, context, values):
+    def create_domain(self, context, domain):
         """
         Create a new Domain.
 
         :param context: RPC Context.
-        :param values: Values to create the new Domain from.
+        :param domain: Domain object with the values to be created.
         """
         self.storage.begin()
 
         try:
-            domain = self.storage.create_domain(context, values)
-            yield domain
+            created_domain = self.storage.create_domain(context, domain)
+            yield created_domain
         except Exception:
             with excutils.save_and_reraise_exception():
                 self.storage.rollback()
@@ -496,20 +497,20 @@ class StorageAPI(object):
         return self.storage.count_domains(context, criterion)
 
     @contextlib.contextmanager
-    def create_recordset(self, context, domain_id, values):
+    def create_recordset(self, context, domain_id, recordset):
         """
         Create a recordset on a given Domain ID
 
         :param context: RPC Context.
         :param domain_id: Domain ID to create the recordset in.
-        :param values: Values to create the new RecordSet from.
+        :param recordset: RecordSet object with the values to be created.
         """
         self.storage.begin()
 
         try:
-            recordset = self.storage.create_recordset(
-                context, domain_id, values)
-            yield recordset
+            created_recordset = self.storage.create_recordset(
+                context, domain_id, recordset)
+            yield created_recordset
         except Exception:
             with excutils.save_and_reraise_exception():
                 self.storage.rollback()
@@ -594,7 +595,7 @@ class StorageAPI(object):
         return self.storage.count_recordsets(context, criterion)
 
     @contextlib.contextmanager
-    def create_record(self, context, domain_id, recordset_id, values):
+    def create_record(self, context, domain_id, recordset_id, record):
         """
         Create a record on a given Domain ID
 
@@ -602,13 +603,14 @@ class StorageAPI(object):
         :param domain_id: Domain ID to create the record in.
         :param recordset_id: RecordSet ID to create the record in.
         :param values: Values to create the new Record from.
+        :param record: Record object with the values to be created.
         """
         self.storage.begin()
 
         try:
-            record = self.storage.create_record(
-                context, domain_id, recordset_id, values)
-            yield record
+            created_record = self.storage.create_record(
+                context, domain_id, recordset_id, record)
+            yield created_record
         except Exception:
             with excutils.save_and_reraise_exception():
                 self.storage.rollback()
@@ -692,18 +694,19 @@ class StorageAPI(object):
         return self.storage.count_records(context, criterion)
 
     @contextlib.contextmanager
-    def create_blacklist(self, context, values):
+    def create_blacklist(self, context, blacklist):
         """
         Create a new Blacklisted Domain.
 
         :param context: RPC Context.
-        :param values: Values to create the new Blacklist from.
+        :param blacklist: Blacklist object with the values to be created.
         """
         self.storage.begin()
 
         try:
-            blacklist = self.storage.create_blacklist(context, values)
-            yield blacklist
+            created_blacklist = self.storage.create_blacklist(
+                context, blacklist)
+            yield created_blacklist
         except Exception:
             with excutils.save_and_reraise_exception():
                 self.storage.rollback()
