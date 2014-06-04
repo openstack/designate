@@ -30,18 +30,10 @@ class Service(service.Service):
         rpc.init(cfg.CONF)
         central_api = central_rpcapi.CentralAPI()
 
-        manager = backend.get_backend(
+        endpoint = backend.get_backend(
             cfg.CONF['service:agent'].backend_driver,
             central_service=central_api)
 
-        kwargs['manager'] = manager
+        kwargs['endpoints'] = [endpoint]
 
         super(Service, self).__init__(*args, **kwargs)
-
-    def start(self):
-        super(Service, self).start()
-        self.manager.start()
-
-    def stop(self):
-        super(Service, self).stop()
-        self.manager.stop()

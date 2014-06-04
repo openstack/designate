@@ -38,7 +38,7 @@ class Service(service.Service):
     Partially inspired by the code at cinder.service but for now without
     support for loading so called "endpoints" or "managers".
     """
-    def __init__(self, host, binary, topic, service_name=None, manager=None):
+    def __init__(self, host, binary, topic, service_name=None, endpoints=None):
         super(Service, self).__init__()
 
         if not rpc.initialized():
@@ -51,7 +51,7 @@ class Service(service.Service):
 
         # TODO(ekarlso): change this to be loadable via mod import or
         # stevedore?
-        self.manager = manager or self
+        self.endpoints = endpoints or [self]
 
     def start(self):
         version_string = version.version_info.version_string()
@@ -60,20 +60,19 @@ class Service(service.Service):
 
         LOG.debug(_("Creating RPC server on topic '%s'") % self.topic)
 
-        manager = self.manager or self
-        endpoints = [manager]
-        if hasattr(manager, 'additional_endpoints'):
-            endpoints.extend(self.manager.additional_endpoints)
-
         target = messaging.Target(topic=self.topic, server=self.host)
-        self.rpcserver = rpc.get_server(target, endpoints)
+        self.rpcserver = rpc.get_server(target, self.endpoints)
         self.rpcserver.start()
 
         self.notifier = rpc.get_notifier(self.service_name)
 
+        for e in self.endpoints:
+            if e != self and hasattr(e, 'start'):
+                e.start()
+
     @classmethod
     def create(cls, host=None, binary=None, topic=None, service_name=None,
-               manager=None):
+               endpoints=None):
         """Instantiates class and passes back application object.
 
         :param host: defaults to CONF.host
@@ -89,10 +88,13 @@ class Service(service.Service):
             topic = CONF.get(name)
 
         service_obj = cls(host, binary, topic, service_name=service_name,
-                          manager=manager)
+                          endpoints=endpoints)
         return service_obj
 
     def stop(self):
+        for e in self.endpoints:
+            if e != self and hasattr(e, 'stop'):
+                e.stop()
         # Try to shut the connection down, but if we get any sort of
         # errors, go ahead and ignore them.. as we're shutting down anyway
         try:
@@ -100,6 +102,12 @@ class Service(service.Service):
         except Exception:
             pass
         super(Service, self).stop()
+
+    def wait(self):
+        for e in self.endpoints:
+            if e != self and hasattr(e, 'wait'):
+                e.wait()
+        super(Service, self).wait()
 
 
 _launcher = None
