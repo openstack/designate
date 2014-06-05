@@ -34,9 +34,7 @@ if is_service_enabled designate; then
     fi
 
     if [[ "$1" == "unstack" ]]; then
-        # Shut down designate services
-        # no-op
-        :
+        stop_designate
     fi
 
     if [[ "$1" == "clean" ]]; then

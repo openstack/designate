@@ -258,8 +258,6 @@ function create_designate_initial_resources() {
     fi
 }
 
-
-
 # init_designate() - Initialize etc.
 function init_designate() {
     # Create cache dir
