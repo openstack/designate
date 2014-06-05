@@ -39,7 +39,7 @@ DESIGNATE_ROOTWRAP_CONF=$DESIGNATE_CONF_DIR/rootwrap.conf
 DESIGNATE_APIPASTE_CONF=$DESIGNATE_CONF_DIR/api-paste.ini
 # wait this many seconds after doing start_designate before trying
 # to do any client operations
-DESIGNATE_SERVERS_START_WAIT=${DESIGNATE_SERVERS_START_WAIT:-5}
+DESIGNATE_SERVERS_START_WAIT=${DESIGNATE_SERVERS_START_WAIT:-10}
 
 # can have separate domains for fixed and floating ip addresses
 DESIGNATE_TEST_DOMAIN_FIX=${DESIGNATE_TEST_DOMAIN_FIX:-fix.devstack.org.}
@@ -102,11 +102,13 @@ function configure_designate() {
     if is_service_enabled key; then
         # Setup the Keystone Integration
         iniset $DESIGNATE_CONF service:api auth_strategy keystone
-        iniset $DESIGNATE_CONF keystone_authtoken auth_protocol http
+        iniset $DESIGNATE_CONF keystone_authtoken auth_host $KEYSTONE_AUTH_HOST
+        iniset $DESIGNATE_CONF keystone_authtoken auth_port $KEYSTONE_AUTH_PORT
+        iniset $DESIGNATE_CONF keystone_authtoken auth_protocol $KEYSTONE_AUTH_PROTOCOL
+        iniset $DESIGNATE_CONF keystone_authtoken admin_tenant_name $SERVICE_TENANT_NAME
+        iniset $DESIGNATE_CONF keystone_authtoken cafile $KEYSTONE_SSL_CA
         iniset $DESIGNATE_CONF keystone_authtoken admin_user designate
         iniset $DESIGNATE_CONF keystone_authtoken admin_password $SERVICE_PASSWORD
-        iniset $DESIGNATE_CONF keystone_authtoken admin_tenant_name $SERVICE_TENANT_NAME
-        iniset $DESIGNATE_CONF keystone_authtoken signing_dir $DESIGNATE_AUTH_CACHE_DIR
     fi
 
     if is_service_enabled designate-agent; then
