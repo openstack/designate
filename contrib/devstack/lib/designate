@@ -318,9 +318,10 @@ function start_designate() {
 # stop_designate() - Stop running processes
 function stop_designate() {
     # Kill the designate screen windows
-    for serv in designate-api designate-central designate-agent designate-sink; do
-        screen -S $SCREEN_NAME -p $serv -X kill
-    done
+    screen_stop designate-api
+    screen_stop designate-central
+    screen_stop designate-agent
+    screen_stop designate-sink
 }
 
 function configure_bind() {
