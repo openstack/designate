@@ -19,7 +19,6 @@ from oslo import messaging
 
 from designate.openstack.common import log as logging
 from designate.openstack.common import service
-from designate import exceptions
 from designate import notification_handler
 from designate import rpc
 
@@ -46,9 +45,7 @@ class Service(service.Service):
             enabled_notification_handlers)
 
         if len(notification_handlers) == 0:
-            # No handlers enabled. Bail!
-            raise exceptions.ConfigurationError('No designate-sink handlers '
-                                                'enabled or loaded')
+            LOG.warning('No designate-sink handlers enabled or loaded')
 
         return notification_handlers
 
@@ -69,7 +66,9 @@ class Service(service.Service):
         # TODO(ekarlso): Change this is to endpoint objects rather then
         # ourselves?
         self._server = rpc.get_listener(targets, [self])
-        self._server.start()
+
+        if len(targets) > 0:
+            self._server.start()
 
     def stop(self):
         # Try to shut the connection down, but if we get any sort of
