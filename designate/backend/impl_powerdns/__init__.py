@@ -17,11 +17,12 @@
 # under the License.
 import base64
 
+from oslo.config import cfg
+from oslo.db import options
 from sqlalchemy import func
 from sqlalchemy.sql import select
 from sqlalchemy.sql.expression import and_
 from sqlalchemy.orm import exc as sqlalchemy_exceptions
-from oslo.config import cfg
 
 from designate.openstack.common import excutils
 from designate.openstack.common import log as logging
@@ -29,7 +30,6 @@ from designate import exceptions
 from designate.backend import base
 from designate.backend.impl_powerdns import models
 from designate.sqlalchemy.session import get_session
-from designate.sqlalchemy.session import SQLOPTS
 from designate.sqlalchemy.expressions import InsertFromSelect
 
 
@@ -44,11 +44,11 @@ cfg.CONF.register_opts([
     cfg.StrOpt('domain-type', default='NATIVE', help='PowerDNS Domain Type'),
     cfg.ListOpt('also-notify', default=[], help='List of additional IPs to '
                                                 'send NOTIFYs to'),
-] + SQLOPTS, group='backend:powerdns')
+] + options.database_opts, group='backend:powerdns')
 
 # Overide the default DB connection registered above, to avoid name conflicts
 # between the Designate and PowerDNS databases.
-cfg.CONF.set_default('database_connection',
+cfg.CONF.set_default('connection',
                      'sqlite:///$state_path/powerdns.sqlite',
                      group='backend:powerdns')
 

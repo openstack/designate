@@ -82,7 +82,7 @@ function configure_designate() {
     iniset $DESIGNATE_CONF DEFAULT verbose True
     iniset $DESIGNATE_CONF DEFAULT state_path $DESIGNATE_STATE_PATH
     iniset $DESIGNATE_CONF DEFAULT root-helper sudo designate-rootwrap $DESIGNATE_ROOTWRAP_CONF
-    iniset $DESIGNATE_CONF storage:sqlalchemy database_connection `database_connection_url designate`
+    iniset $DESIGNATE_CONF storage:sqlalchemy connection `database_connection_url designate`
 
     sudo cp $DESIGNATE_DIR/etc/designate/rootwrap.conf.sample $DESIGNATE_ROOTWRAP_CONF
     iniset $DESIGNATE_ROOTWRAP_CONF DEFAULT filters_path $DESIGNATE_DIR/etc/designate/rootwrap.d root-helper
@@ -187,7 +187,6 @@ function init_designate() {
     recreate_database designate utf8
 
     # Init and migrate designate database
-    designate-manage database init
     designate-manage database sync
 
     init_designate_backend

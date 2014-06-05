@@ -55,7 +55,7 @@ cfg.CONF.import_opt('backend_driver', 'designate.agent',
                     group='service:agent')
 cfg.CONF.import_opt('auth_strategy', 'designate.api',
                     group='service:api')
-cfg.CONF.import_opt('database_connection', 'designate.storage.impl_sqlalchemy',
+cfg.CONF.import_opt('connection', 'designate.storage.impl_sqlalchemy',
                     group='storage:sqlalchemy')
 
 
@@ -274,7 +274,7 @@ class TestCase(base.BaseTestCase):
         self.db_fixture = self.useFixture(
             DatabaseFixture.get_fixture(REPOSITORY))
         self.config(
-            database_connection=self.db_fixture.url,
+            connection=self.db_fixture.url,
             group='storage:sqlalchemy'
         )
 

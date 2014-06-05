@@ -46,7 +46,7 @@ function install_designate_backend {
 
 # configure_designate_backend - make configuration changes, including those to other services
 function configure_designate_backend {
-    iniset $DESIGNATE_CONF backend:powerdns database_connection `database_connection_url designate_pdns`
+    iniset $DESIGNATE_CONF backend:powerdns connection `database_connection_url designate_pdns`
 
     sudo tee $POWERDNS_CFG_DIR/pdns.conf > /dev/null <<EOF
 # General Config
@@ -88,7 +88,6 @@ function init_designate_backend {
     recreate_database designate_pdns utf8
 
     # Init and migrate designate_pdns database
-    designate-manage powerdns init
     designate-manage powerdns sync
 }
 

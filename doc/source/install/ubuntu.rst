@@ -186,11 +186,9 @@ Sync Database schemas
 
 Initialize and sync the database schemas for Designate and PowerDNS::
 
-    $ designate-manage database-init
-    $ designate-manage database-sync
+    $ designate-manage database sync
 
-    $ designate-manage powerdns database-init
-    $ designate-manage powerdns database-sync
+    $ designate-manage powerdns database sync
 
 Register Designate with Keystone
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

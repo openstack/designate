@@ -18,7 +18,8 @@
 import hashlib
 
 from oslo.config import cfg
-from sqlalchemy import (Column, DateTime, String, Text, Integer, ForeignKey,
+from oslo.db.sqlalchemy import models as oslo_models
+from sqlalchemy import (Column, String, Text, Integer, ForeignKey,
                         Enum, Boolean, Unicode, UniqueConstraint, event)
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
@@ -26,8 +27,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from designate.openstack.common import log as logging
 from designate.openstack.common import timeutils
 from designate.sqlalchemy.types import UUID
-from designate.sqlalchemy.models import Base as CommonBase
-from designate.sqlalchemy.models import SoftDeleteMixin
+from designate.sqlalchemy import models
 from designate import utils
 
 
@@ -41,11 +41,9 @@ TSIG_ALGORITHMS = ['hmac-md5', 'hmac-sha1', 'hmac-sha224', 'hmac-sha256',
                    'hmac-sha384', 'hmac-sha512']
 
 
-class Base(CommonBase):
+class Base(models.Base, oslo_models.TimestampMixin):
     id = Column(UUID, default=utils.generate_uuid, primary_key=True)
     version = Column(Integer, default=1, nullable=False)
-    created_at = Column(DateTime, default=timeutils.utcnow)
-    updated_at = Column(DateTime, onupdate=timeutils.utcnow)
 
     __mapper_args__ = {
         'version_id_col': version
@@ -82,7 +80,7 @@ class Tld(Base):
     description = Column(Unicode(160), nullable=True)
 
 
-class Domain(SoftDeleteMixin, Base):
+class Domain(models.SoftDeleteMixin, Base):
     __tablename__ = 'domains'
     __table_args__ = (
         UniqueConstraint('name', 'deleted', name='unique_domain_name'),

@@ -18,11 +18,11 @@
 from sqlalchemy import Column, String, Text, Integer, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 
-from designate.sqlalchemy.models import Base as CommonBase
+from designate.sqlalchemy import models
 from designate.sqlalchemy.types import UUID
 
 
-class Base(CommonBase):
+class Base(models.Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
 
 

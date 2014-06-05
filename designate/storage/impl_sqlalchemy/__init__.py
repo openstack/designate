@@ -15,22 +15,20 @@
 # under the License.
 import time
 
+from oslo.config import cfg
+from oslo.db.sqlalchemy import utils as oslo_utils
+from oslo.db import options
 from sqlalchemy.orm import exc
 from sqlalchemy import exc as sqlalchemy_exc
 from sqlalchemy import distinct, func
-from oslo.config import cfg
 
 from designate.openstack.common import log as logging
-from designate.openstack.common.db.sqlalchemy.utils import paginate_query
-from designate.openstack.common.db.sqlalchemy.utils import InvalidSortKey
 from designate import exceptions
 from designate import objects
+from designate.sqlalchemy import session
 from designate.storage import base
 from designate.storage.impl_sqlalchemy import models
 from designate.sqlalchemy.models import SoftDeleteMixin
-from designate.sqlalchemy.session import get_session
-from designate.sqlalchemy.session import get_engine
-from designate.sqlalchemy.session import SQLOPTS
 
 
 LOG = logging.getLogger(__name__)
@@ -39,7 +37,7 @@ cfg.CONF.register_group(cfg.OptGroup(
     name='storage:sqlalchemy', title="Configuration for SQLAlchemy Storage"
 ))
 
-cfg.CONF.register_opts(SQLOPTS, group='storage:sqlalchemy')
+cfg.CONF.register_opts(options.database_opts, group='storage:sqlalchemy')
 
 
 class SQLAlchemyStorage(base.Storage):
@@ -49,8 +47,8 @@ class SQLAlchemyStorage(base.Storage):
     def __init__(self):
         super(SQLAlchemyStorage, self).__init__()
 
-        self.engine = get_engine(self.name)
-        self.session = get_session(self.name)
+        self.engine = session.get_engine(self.name)
+        self.session = session.get_session(self.name)
 
     def begin(self):
         self.session.begin(subtransactions=True)
@@ -136,13 +134,13 @@ class SQLAlchemyStorage(base.Storage):
             sort_dir = sort_dir or 'asc'
 
             try:
-                query = paginate_query(
+                query = oslo_utils.paginate_query(
                     query, model, limit,
                     [sort_key, 'id', 'created_at'], marker=marker,
                     sort_dir=sort_dir)
 
                 return query.all()
-            except InvalidSortKey as sort_key_error:
+            except oslo_utils.InvalidSortKey as sort_key_error:
                 raise exceptions.InvalidSortKey(sort_key_error.message)
             # Any ValueErrors are propagated back to the user as is.
             # Limits, sort_dir and sort_key are checked at the API layer.

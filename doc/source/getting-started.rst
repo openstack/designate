@@ -133,11 +133,9 @@ Initialize & Start the Central Service
 
 ::
 
-   #Initialize and sync the Designate database:
-   $ designate-manage database init
+   #Sync the Designate database:
    $ designate-manage database sync
-   #Initialize and sync the PowerDNS database:
-   $ designate-manage powerdns init
+   #Sync the PowerDNS database:
    $ designate-manage powerdns sync
    #Restart PowerDNS
    $ service pdns restart

@@ -13,19 +13,30 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+#
+# Copied: designate
+import os
 import sys
 
+import eventlet
 from oslo.config import cfg
 from stevedore.extension import ExtensionManager
 
-from designate.openstack.common import log as logging
-from designate.openstack.common import strutils
 from designate import utils
+from designate.openstack.common import gettextutils
+from designate.openstack.common.gettextutils import _
+from designate.openstack.common import log as logging
+
+gettextutils.install('designate')
+
+eventlet.monkey_patch(os=False)
+
+
+CONF = cfg.CONF
 
 
 def methods_of(obj):
     """Get all callable methods of an object that don't start with underscore
-
     returns a list of tuples of the form (method_name, method)
     """
     result = []
@@ -40,56 +51,78 @@ def get_available_commands():
     return dict([(e.name, e.plugin) for e in em.extensions])
 
 
-def add_command_parser(subparsers):
-    # for name, category in get_available_commands()
-    # parser = subparsers.add_parser('db')
-    for name, cls in get_available_commands().items():
-        obj = cls()
+def add_command_parsers(subparsers):
+    for category, cls in get_available_commands().items():
+        command_object = cls()
 
-        # A Category like 'database' etc
-        parser = subparsers.add_parser(name)
-        parser.set_defaults(command_object=obj)
+        parser = subparsers.add_parser(category)
+        parser.set_defaults(command_object=command_object)
 
-        category_subparsers = parser.add_subparsers(dest=name)
+        category_subparsers = parser.add_subparsers(dest='action')
 
-        for (action, action_fn) in methods_of(obj):
-            action_name = getattr(action_fn, '_cmd_name', action)
-            cmd_parser = category_subparsers.add_parser(action_name)
+        for (action, action_fn) in methods_of(command_object):
+            action = getattr(action_fn, '_cmd_name', action)
+            parser = category_subparsers.add_parser(action)
 
             action_kwargs = []
             for args, kwargs in getattr(action_fn, 'args', []):
-                kwargs.setdefault('dest', args[0][2:])
-                if kwargs['dest'].startswith('action_kwarg_'):
-                    action_kwargs.append(
-                        kwargs['dest'][len('action_kwarg_'):])
-                else:
-                    action_kwargs.append(kwargs['dest'])
-                    kwargs['dest'] = 'action_kwarg_' + kwargs['dest']
-                cmd_parser.add_argument(*args, **kwargs)
+                parser.add_argument(*args, **kwargs)
 
-            cmd_parser.set_defaults(action_fn=action_fn)
-            cmd_parser.set_defaults(action_kwargs=action_kwargs)
-
-            cmd_parser.add_argument('action_args', nargs='*')
+            parser.set_defaults(action_fn=action_fn)
+            parser.set_defaults(action_kwargs=action_kwargs)
 
 
-command_opt = cfg.SubCommandOpt('command', title="Commands",
-                                help="Available Commands",
-                                handler=add_command_parser)
+category_opt = cfg.SubCommandOpt('category', title="Commands",
+                                 help="Available Commands",
+                                 handler=add_command_parsers)
+
+
+def get_arg_string(args):
+    arg = None
+    if args[0] == '-':
+        # (Note)zhiteng: args starts with FLAGS.oparser.prefix_chars
+        # is optional args. Notice that cfg module takes care of
+        # actual ArgParser so prefix_chars is always '-'.
+        if args[1] == '-':
+            # This is long optional arg
+            arg = args[2:]
+        else:
+            arg = args[3:]
+    else:
+        arg = args
+
+    return arg
+
+
+def fetch_func_args(func):
+    fn_args = []
+    for args, kwargs in getattr(func, 'args', []):
+        arg = kwargs.get('dest', get_arg_string(args[0]))
+        fn_args.append(getattr(CONF.category, arg))
+
+    return fn_args
 
 
 def main():
-    cfg.CONF.register_cli_opt(command_opt)
+    CONF.register_cli_opt(category_opt)
 
-    utils.read_config('designate', sys.argv)
-    logging.setup('designate')
+    try:
+        utils.read_config('designate', sys.argv)
+        logging.setup("designate")
+    except cfg.ConfigFilesNotFoundError:
+        cfgfile = CONF.config_file[-1] if CONF.config_file else None
+        if cfgfile and not os.access(cfgfile, os.R_OK):
+            st = os.stat(cfgfile)
+            print(_("Could not read %s. Re-running with sudo") % cfgfile)
+            try:
+                os.execvp('sudo', ['sudo', '-u', '#%s' % st.st_uid] + sys.argv)
+            except Exception:
+                print(_('sudo failed, continuing as if nothing happened'))
 
-    func_kwargs = {}
-    for k in cfg.CONF.command.action_kwargs:
-        v = getattr(cfg.CONF.command, 'action_kwarg_' + k)
-        if v is None:
-            continue
-        func_kwargs[k] = strutils.safe_decode(v)
-    func_args = [strutils.safe_decode(arg)
-                 for arg in cfg.CONF.command.action_args]
-    return cfg.CONF.command.action_fn(*func_args, **func_kwargs)
+        print(_('Please re-run designate-manage as root.'))
+        sys.exit(2)
+
+    fn = CONF.category.action_fn
+
+    fn_args = fetch_func_args(fn)
+    fn(*fn_args)

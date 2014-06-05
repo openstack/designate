@@ -69,7 +69,7 @@ class PowerDNSBackendTestCase(tests.TestCase, BackendTestMixin):
         self.db_fixture = DatabaseFixture.get_fixture(REPOSITORY)
         self.useFixture(self.db_fixture)
         self.config(backend_driver='powerdns', group='service:agent')
-        self.config(database_connection=self.db_fixture.url,
+        self.config(connection=self.db_fixture.url,
                     group='backend:powerdns')
         self.backend = self.get_backend_driver()
         self.backend.start()

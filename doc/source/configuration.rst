@@ -40,7 +40,7 @@ os-password                      admin                                 Password 
 os-tenant-id                                                           Tenant ID to use for openstack service access
 os-tenant-name                   admin                                 Tenant name to use for openstack service access
 os-auth-url                      http://localhost:5000/v2.0            Auth URL to use for openstack service access
-database_connection              sqlite:///$pystatepath/designate.db     Database connection string
+connection              sqlite:///$pystatepath/designate.db     Database connection string
 ===============================  ====================================  ==============================================================
 
 Storage - SQL Alchemy
