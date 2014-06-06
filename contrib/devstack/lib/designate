@@ -207,6 +207,8 @@ function start_designate() {
     screen_it designate-central "designate-central --config-file $DESIGNATE_CONF"
     screen_it designate-agent "designate-agent --config-file $DESIGNATE_CONF"
     screen_it designate-sink "designate-sink --config-file $DESIGNATE_CONF"
+
+    sleep 15
 }
 
 # stop_designate() - Stop running processes
