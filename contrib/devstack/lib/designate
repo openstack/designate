@@ -290,7 +290,15 @@ function install_designate() {
     setup_develop $DESIGNATE_DIR
 
     if [[ "$DESIGNATE_BACKEND_DRIVER" = 'powerdns' ]]; then
-        install_package pdns-server pdns-backend-mysql
+        if is_ubuntu; then
+            PDNS=pdns-server
+        elif is_fedora || is_suse; then
+            PDNS=pdns
+        else
+            PDNS=pdns-server
+        fi
+
+        install_package $PDNS pdns-backend-mysql
     fi
 
     if [[ "$DESIGNATE_BACKEND_DRIVER" = 'bind9' ]]; then
