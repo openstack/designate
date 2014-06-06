@@ -37,16 +37,6 @@ DESIGNATE_LOG_DIR=/var/log/designate
 DESIGNATE_AUTH_CACHE_DIR=${DESIGNATE_AUTH_CACHE_DIR:-/var/cache/designate}
 DESIGNATE_ROOTWRAP_CONF=$DESIGNATE_CONF_DIR/rootwrap.conf
 DESIGNATE_APIPASTE_CONF=$DESIGNATE_CONF_DIR/api-paste.ini
-# wait this many seconds after doing start_designate before trying
-# to do any client operations
-DESIGNATE_SERVERS_START_WAIT=${DESIGNATE_SERVERS_START_WAIT:-10}
-
-# can have separate domains for fixed and floating ip addresses
-DESIGNATE_TEST_DOMAIN_FIX=${DESIGNATE_TEST_DOMAIN_FIX:-fix.devstack.org.}
-DESIGNATE_TEST_EMAIL_FIX=${DESIGNATE_TEST_EMAIL_FIX:-$(echo $DESIGNATE_TEST_DOMAIN_FIX | sed 's/^\(.*\)\.$/admin@\1/')}
-DESIGNATE_TEST_DOMAIN_FLT=${DESIGNATE_TEST_DOMAIN_FLT:-flt.devstack.org.}
-DESIGNATE_TEST_EMAIL_FLT=${DESIGNATE_TEST_EMAIL_FLT:-$(echo $DESIGNATE_TEST_DOMAIN_FLT | sed 's/^\(.*\)\.$/admin@\1/')}
-DESIGNATE_TEST_NSREC=${DESIGNATE_TEST_NSREC:-ns1.devstack.org.}
 
 # Set up default options
 DESIGNATE_BACKEND_DRIVER=${DESIGNATE_BACKEND_DRIVER:=fake}
@@ -118,53 +108,6 @@ function configure_designate() {
         iniset $DESIGNATE_CONF service:central backend_driver $DESIGNATE_BACKEND_DRIVER
     fi
 
-    if is_service_enabled designate-sink; then
-        if is_service_enabled nova && test -n "$DESIGNATE_TEST_DOMAIN_FIX"; then
-            handlers=nova_fixed
-            # after everything is running, create a test domain, store the domain in the
-            # designate.conf, and restart sink
-            iniset $DESIGNATE_CONF handler:nova_fixed domain_id SETME
-            # make sure this corresponds with notification_topics in nova.conf
-            # nova uses notifications by default
-            iniset $DESIGNATE_CONF handler:nova_fixed notification_topics notifications
-            iniset $DESIGNATE_CONF handler:nova_fixed control_exchange nova
-            # octetN is from the IP address of the new machine
-            iniset $DESIGNATE_CONF handler:nova_fixed format '%(octet0)s-%(octet1)s-%(octet2)s-%(octet3)s.%(domain)s'
-            # devstack only configures nova notifications if ceilometer is used, so
-            # we need to do it here otherwise
-            if ! is_service_enabled ceilometer; then
-                # must set a notification_driver or nova will not issue events
-                iniset $NOVA_CONF DEFAULT notification_driver messaging
-                # by default it will use topic "notification"
-                # set notification_topics to change this
-            fi
-        fi
-        if is_service_enabled neutron && test -n "$DESIGNATE_TEST_DOMAIN_FLT"; then
-            if [[ -n "$handlers" ]]; then
-                handlers=${handlers}","
-            fi
-            handlers=${handlers}neutron_floatingip
-            # after everything is running, create a test domain, store the domain in the
-            # designate.conf, and restart sink
-            iniset $DESIGNATE_CONF handler:neutron_floatingip domain_id SETME
-            # make sure this corresponds with notification_topics in nova.conf
-            # nova uses notifications by default
-            iniset $DESIGNATE_CONF handler:neutron_floatingip notification_topics notifications
-            iniset $DESIGNATE_CONF handler:neutron_floatingip control_exchange neutron
-            # octetN is from the IP address of the new machine
-            iniset $DESIGNATE_CONF handler:neutron_floatingip format '%(octet0)s-%(octet1)s-%(octet2)s-%(octet3)s.%(domain)s'
-            # devstack only configures nova notifications if ceilometer is used, so
-            # we need to do it here otherwise
-            if ! is_service_enabled ceilometer; then
-                # must set a notification_driver or nova will not issue events
-                iniset $NEUTRON_CONF DEFAULT notification_driver messaging
-                # by default it will use topic "notification"
-                # set notification_topics to change this
-            fi
-        fi
-        iniset $DESIGNATE_CONF service:sink enabled_notification_handlers $handlers
-    fi
-
     # Install the policy file for the API server
     cp $DESIGNATE_DIR/etc/designate/policy.json $DESIGNATE_CONF_DIR/policy.json
     iniset $DESIGNATE_CONF DEFAULT policy_file $DESIGNATE_CONF_DIR/policy.json
@@ -209,55 +152,9 @@ function create_designate_accounts() {
     fi
 }
 
-# get the domain_id given the name
-function get_domain_id() {
-    designate domain-list | grep "$1" | get_field 1
-}
-
-# get the domain_name given the id
-function get_domain_name() {
-    designate domain-list | grep "$1" | get_field 2
-}
-
-# if the given domain does not exist, it will be created
-# the domain_id of the domain will be returned
-function get_or_create_domain_id() {
-    domainid=$(get_domain_id "$1")
-    if [[ -z "$domainid" ]]; then
-        # the 1>&2 will redirect stdout to stderr instead, which is useful
-        # if there are problems, but we don't want the stdout being returned
-        # by this function
-        if [[ "$1" = "$DESIGNATE_TEST_DOMAIN_FIX" ]]; then
-            designate domain-create --name $DESIGNATE_TEST_DOMAIN_FIX --email $DESIGNATE_TEST_EMAIL_FIX --ttl 86400 --description "fixed ip domain" 1>&2
-        elif [[ "$1" = "$DESIGNATE_TEST_DOMAIN_FLT" ]]; then
-            designate domain-create --name $DESIGNATE_TEST_DOMAIN_FLT --email $DESIGNATE_TEST_EMAIL_FLT --ttl 86400 --description "floating ip domain" 1>&2
-        else
-            designate domain-create --name $1 --email admin@devstack.org --ttl 86400 --description "domain for $1" 1>&2
-        fi
-        domainid=$(designate domain-list | grep "$1" | get_field 1)
-    fi
-    echo $domainid
-}
-
 function create_designate_initial_resources() {
     #ADMIN_TENANT_ID=$(keystone tenant-list | grep " admin " | get_field 1)
-    designate server-create --name $DESIGNATE_TEST_NSREC
-    # we can't start sink until we have all of the configuration, including
-    # a domain id of a domain
-    # we can't create the domain until we have a server
-    if is_service_enabled designate-sink; then
-        if is_service_enabled nova && test -n "$DESIGNATE_TEST_DOMAIN_FIX"; then
-            domainid=$(get_or_create_domain_id $DESIGNATE_TEST_DOMAIN_FIX)
-            iniset $DESIGNATE_CONF handler:nova_fixed domain_id $domainid
-        fi
-        if is_service_enabled neutron && test -n "$DESIGNATE_TEST_DOMAIN_FLT"; then
-            domainid=$(get_or_create_domain_id $DESIGNATE_TEST_DOMAIN_FLT)
-            iniset $DESIGNATE_CONF handler:neutron_floatingip domain_id $domainid
-        fi
-        # restart everything
-        stop_designate
-        start_designate
-    fi
+    designate server-create --name ns1.devstack.org.
 }
 
 # init_designate() - Initialize etc.
@@ -310,9 +207,6 @@ function start_designate() {
     screen_it designate-central "designate-central --config-file $DESIGNATE_CONF"
     screen_it designate-agent "designate-agent --config-file $DESIGNATE_CONF"
     screen_it designate-sink "designate-sink --config-file $DESIGNATE_CONF"
-    if [[ -n "$DESIGNATE_SERVERS_START_WAIT" ]]; then
-        sleep $DESIGNATE_SERVERS_START_WAIT # allow designate services to start
-    fi
 }
 
 # stop_designate() - Stop running processes
