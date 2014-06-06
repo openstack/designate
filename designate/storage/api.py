@@ -106,8 +106,8 @@ class StorageAPI(object):
         self.storage.begin()
 
         try:
-            yield self.storage.get_quota(context, quota_id)
-            self.storage.delete_quota(context, quota_id)
+            quota = self.storage.delete_quota(context, quota_id)
+            yield quota
         except Exception:
             with excutils.save_and_reraise_exception():
                 self.storage.rollback()
@@ -193,8 +193,8 @@ class StorageAPI(object):
         self.storage.begin()
 
         try:
-            yield self.storage.get_server(context, server_id)
-            self.storage.delete_server(context, server_id)
+            server = self.storage.delete_server(context, server_id)
+            yield server
         except Exception:
             with excutils.save_and_reraise_exception():
                 self.storage.rollback()
@@ -280,8 +280,8 @@ class StorageAPI(object):
         self.storage.begin()
 
         try:
-            yield self.storage.get_tld(context, tld_id)
-            self.storage.delete_tld(context, tld_id)
+            tld = self.storage.delete_tld(context, tld_id)
+            yield tld
         except Exception:
             with excutils.save_and_reraise_exception():
                 self.storage.rollback()
@@ -366,8 +366,8 @@ class StorageAPI(object):
         self.storage.begin()
 
         try:
-            yield self.storage.get_tsigkey(context, tsigkey_id)
-            self.storage.delete_tsigkey(context, tsigkey_id)
+            tsigkey = self.storage.delete_tsigkey(context, tsigkey_id)
+            yield tsigkey
         except Exception:
             with excutils.save_and_reraise_exception():
                 self.storage.rollback()
@@ -478,8 +478,8 @@ class StorageAPI(object):
         self.storage.begin()
 
         try:
-            yield self.storage.get_domain(context, domain_id)
-            self.storage.delete_domain(context, domain_id)
+            domain = self.storage.delete_domain(context, domain_id)
+            yield domain
         except Exception:
             with excutils.save_and_reraise_exception():
                 self.storage.rollback()
@@ -576,8 +576,8 @@ class StorageAPI(object):
         self.storage.begin()
 
         try:
-            yield self.storage.get_recordset(context, recordset_id)
-            self.storage.delete_recordset(context, recordset_id)
+            recordset = self.storage.delete_recordset(context, recordset_id)
+            yield recordset
         except Exception:
             with excutils.save_and_reraise_exception():
                 self.storage.rollback()
@@ -674,8 +674,8 @@ class StorageAPI(object):
         self.storage.begin()
 
         try:
-            yield self.storage.get_record(context, record_id)
-            self.storage.delete_record(context, record_id)
+            record = self.storage.delete_record(context, record_id)
+            yield record
         except Exception:
             with excutils.save_and_reraise_exception():
                 self.storage.rollback()
@@ -772,8 +772,8 @@ class StorageAPI(object):
         self.storage.begin()
 
         try:
-            yield self.storage.get_blacklist(context, blacklist_id)
-            self.storage.delete_blacklist(context, blacklist_id)
+            blacklist = self.storage.delete_blacklist(context, blacklist_id)
+            yield blacklist
         except Exception:
             with excutils.save_and_reraise_exception():
                 self.storage.rollback()

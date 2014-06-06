@@ -144,7 +144,7 @@ class StorageAPITest(TestCase):
         context = mock.sentinel.context
         quota = mock.sentinel.quota
 
-        self._set_side_effect('get_quota', [quota])
+        self._set_side_effect('delete_quota', [quota])
 
         with self.storage_api.delete_quota(context, 123) as q:
             self.assertEqual(quota, q)
@@ -155,7 +155,7 @@ class StorageAPITest(TestCase):
         context = mock.sentinel.context
         quota = mock.sentinel.quota
 
-        self._set_side_effect('get_quota', [quota])
+        self._set_side_effect('delete_quota', [quota])
 
         with testtools.ExpectedException(SentinelException):
             with self.storage_api.delete_quota(context, 123):
@@ -163,7 +163,6 @@ class StorageAPITest(TestCase):
 
         self._assert_called_with('begin')
         self._assert_called_with('rollback')
-        self._assert_call_count('delete_quota', 0)
 
     # Server Tests
     def test_create_server(self):
@@ -261,7 +260,7 @@ class StorageAPITest(TestCase):
         context = mock.sentinel.context
         server = mock.sentinel.server
 
-        self._set_side_effect('get_server', [server])
+        self._set_side_effect('delete_server', [server])
 
         with self.storage_api.delete_server(context, 123) as q:
             self.assertEqual(server, q)
@@ -272,7 +271,7 @@ class StorageAPITest(TestCase):
         context = mock.sentinel.context
         server = mock.sentinel.server
 
-        self._set_side_effect('get_server', [server])
+        self._set_side_effect('delete_server', [server])
 
         with testtools.ExpectedException(SentinelException):
             with self.storage_api.delete_server(context, 123):
@@ -280,7 +279,6 @@ class StorageAPITest(TestCase):
 
         self._assert_called_with('begin')
         self._assert_called_with('rollback')
-        self._assert_call_count('delete_server', 0)
 
     # Tsigkey Tests
     def test_create_tsigkey(self):
@@ -376,7 +374,7 @@ class StorageAPITest(TestCase):
         context = mock.sentinel.context
         tsigkey = mock.sentinel.tsigkey
 
-        self._set_side_effect('get_tsigkey', [tsigkey])
+        self._set_side_effect('delete_tsigkey', [tsigkey])
 
         with self.storage_api.delete_tsigkey(context, 123) as q:
             self.assertEqual(tsigkey, q)
@@ -387,7 +385,7 @@ class StorageAPITest(TestCase):
         context = mock.sentinel.context
         tsigkey = mock.sentinel.tsigkey
 
-        self._set_side_effect('get_tsigkey', [tsigkey])
+        self._set_side_effect('delete_tsigkey', [tsigkey])
 
         with testtools.ExpectedException(SentinelException):
             with self.storage_api.delete_tsigkey(context, 123):
@@ -395,7 +393,6 @@ class StorageAPITest(TestCase):
 
         self._assert_called_with('begin')
         self._assert_called_with('rollback')
-        self._assert_call_count('delete_tsigkey', 0)
 
     # Tenant Tests
     def test_find_tenants(self):
@@ -522,7 +519,7 @@ class StorageAPITest(TestCase):
         context = mock.sentinel.context
         domain = mock.sentinel.domain
 
-        self._set_side_effect('get_domain', [domain])
+        self._set_side_effect('delete_domain', [domain])
 
         with self.storage_api.delete_domain(context, 123) as q:
             self.assertEqual(domain, q)
@@ -533,7 +530,7 @@ class StorageAPITest(TestCase):
         context = mock.sentinel.context
         domain = mock.sentinel.domain
 
-        self._set_side_effect('get_domain', [domain])
+        self._set_side_effect('delete_domain', [domain])
 
         with testtools.ExpectedException(SentinelException):
             with self.storage_api.delete_domain(context, 123):
@@ -541,7 +538,6 @@ class StorageAPITest(TestCase):
 
         self._assert_called_with('begin')
         self._assert_called_with('rollback')
-        self._assert_call_count('delete_domain', 0)
 
     # RecordSet Tests
     def test_create_recordset(self):
@@ -638,7 +634,7 @@ class StorageAPITest(TestCase):
         context = mock.sentinel.context
         recordset = mock.sentinel.recordset
 
-        self._set_side_effect('get_recordset', [recordset])
+        self._set_side_effect('delete_recordset', [recordset])
 
         with self.storage_api.delete_recordset(context, 123) as q:
             self.assertEqual(recordset, q)
@@ -649,7 +645,7 @@ class StorageAPITest(TestCase):
         context = mock.sentinel.context
         recordset = mock.sentinel.recordset
 
-        self._set_side_effect('get_recordset', [recordset])
+        self._set_side_effect('delete_recordset', [recordset])
 
         with testtools.ExpectedException(SentinelException):
             with self.storage_api.delete_recordset(context, 123):
@@ -657,7 +653,6 @@ class StorageAPITest(TestCase):
 
         self._assert_called_with('begin')
         self._assert_called_with('rollback')
-        self._assert_call_count('delete_recordset', 0)
 
     # Record Tests
     def test_create_record(self):
@@ -758,7 +753,7 @@ class StorageAPITest(TestCase):
         context = mock.sentinel.context
         record = mock.sentinel.record
 
-        self._set_side_effect('get_record', [record])
+        self._set_side_effect('delete_record', [record])
 
         with self.storage_api.delete_record(context, 123) as q:
             self.assertEqual(record, q)
@@ -769,7 +764,7 @@ class StorageAPITest(TestCase):
         context = mock.sentinel.context
         record = mock.sentinel.record
 
-        self._set_side_effect('get_record', [record])
+        self._set_side_effect('delete_record', [record])
 
         with testtools.ExpectedException(SentinelException):
             with self.storage_api.delete_record(context, 123):
@@ -777,4 +772,3 @@ class StorageAPITest(TestCase):
 
         self._assert_called_with('begin')
         self._assert_called_with('rollback')
-        self._assert_call_count('delete_record', 0)
