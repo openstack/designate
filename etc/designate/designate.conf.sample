@@ -116,6 +116,15 @@ debug = False
 # correspond to a [handler:my_driver] section below or else in the config
 #enabled_notification_handlers = nova_fixed
 
+#-----------------------
+# mDNS Service
+#-----------------------
+[service:mdns]
+#workers = None
+#host = 0.0.0.0
+#port = 5354
+#tcp_backlog =1 00
+
 ##############
 ## Network API
 ##############

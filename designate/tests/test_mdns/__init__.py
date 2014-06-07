@@ -1,6 +1,6 @@
-# Copyright 2012 Managed I.T.
+# Copyright 2014 Hewlett-Packard Development Company, L.P.
 #
-# Author: Kiall Mac Innes <kiall@managedit.ie>
+# Author: Kiall Mac Innes <kiall@hp.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -13,16 +13,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from designate.openstack.common import log as logging
-from designate import storage
 from designate.tests import TestCase
-from designate.tests.test_storage import StorageTestCase
-
-LOG = logging.getLogger(__name__)
 
 
-class SqlalchemyStorageTest(StorageTestCase, TestCase):
-    def setUp(self):
-        super(SqlalchemyStorageTest, self).setUp()
-
-        self.storage = storage.get_storage('sqlalchemy')
+class MdnsTestCase(TestCase):
+    pass

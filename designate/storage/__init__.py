@@ -13,17 +13,14 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from oslo.config import cfg
 from designate.openstack.common import log as logging
 from designate.storage.base import Storage
 
 LOG = logging.getLogger(__name__)
 
 
-def get_storage():
+def get_storage(storage_driver):
     """ Return the engine class from the provided engine name """
-    storage_driver = cfg.CONF['service:central'].storage_driver
-
     cls = Storage.get_driver(storage_driver)
 
     return cls()
