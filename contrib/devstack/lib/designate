@@ -78,14 +78,12 @@ function configure_designate() {
     sudo cp $DESIGNATE_DIR/etc/designate/api-paste.ini $DESIGNATE_APIPASTE_CONF
 
     if [[ "$DESIGNATE_BACKEND_DRIVER" = 'powerdns' ]]; then
-        iniset $DESIGNATE_CONF backend:powerdns database_connection `database_connection_url designate_pdns`
-    fi
+        configure_powerdns
 
-    if [[ "$DESIGNATE_BACKEND_DRIVER" = 'bind9' ]]; then
+    elif [[ "$DESIGNATE_BACKEND_DRIVER" = 'bind9' ]]; then
         configure_bind
-    fi
 
-    if [[ "$DESIGNATE_BACKEND_DRIVER" = 'ipa' ]]; then
+    elif [[ "$DESIGNATE_BACKEND_DRIVER" = 'ipa' ]]; then
         configure_ipa
     fi
 
@@ -228,12 +226,32 @@ function stop_designate() {
     screen_stop designate-sink
 }
 
+
+function configure_powerdns() {
+    iniset $DESIGNATE_CONF backend:powerdns database_connection `database_connection_url designate_pdns`
+
+    sudo sed -i 's/^local-address=.*$/local-address=127.0.0.1/' /etc/powerdns/pdns.conf
+    sudo rm -f /etc/powerdns/pdns.d/pdns.simplebind.conf
+    sudo tee /etc/powerdns/pdns.d/pdns.local.gmysql.conf > /dev/null <<EOF
+# Launch gmysql backend
+launch=gmysql
+
+# gmysql parameters
+gmysql-host=$DATABASE_HOST
+gmysql-user=$DATABASE_USER
+gmysql-password=$DATABASE_PASSWORD
+gmysql-dbname=designate_pdns
+gmysql-dnssec=yes
+EOF
+
+    restart_service pdns
+}
+
 function configure_bind() {
     iniset $DESIGNATE_CONF backend:bind9 rndc_port '953'
     iniset $DESIGNATE_CONF backend:bind9 rndc_host '127.0.0.1'
     iniset $DESIGNATE_CONF backend:bind9 rndc_config_file  '/etc/bind/rndc.conf'
     iniset $DESIGNATE_CONF backend:bind9 rndc_key_file  '/etc/bind/rndc.key'
-    iniset $DESIGNATE_CONF service:central backend_driver 'bind9'
 
     sudo chown $USER /etc/bind/
 
@@ -279,7 +297,6 @@ function configure_ipa() {
     if [[ $rc = 1 ]]; then
         die $LINENO "Error with IPA configuration"
     fi
-    iniset $DESIGNATE_CONF service:central backend_driver ipa
     iniset $DESIGNATE_CONF backend:ipa ipa_host $IPA_HOST
     iniset $DESIGNATE_CONF backend:ipa ipa_ca_cert $IPA_CA_CERT
     iniset $DESIGNATE_CONF backend:ipa ipa_client_keytab $IPA_CLIENT_KEYTAB
