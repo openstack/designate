@@ -30,7 +30,12 @@ fi
 
 # Install Designate DevStack extension
 cd /vagrant
-for f in lib/* extras.d/* exercises/* localrc; do
+
+if [ ! -f "/home/vagrant/devstack/localrc" ]; then
+    cp localrc /home/vagrant/devstack/localrc
+fi
+
+for f in lib/* extras.d/* exercises/*; do
     if [ ! -f "/home/vagrant/devstack/$f" ]; then
         ln -fs /vagrant/$f -t /home/vagrant/devstack/$(dirname $f)
     fi

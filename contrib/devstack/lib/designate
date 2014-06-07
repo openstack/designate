@@ -20,6 +20,7 @@ set +o xtrace
 
 # Defaults
 # --------
+DESIGNATE_PLUGINS=$TOP_DIR/lib/designate_plugins
 
 # Set up default repos
 DESIGNATE_REPO=${DESIGNATE_REPO:-${GIT_BASE}/stackforge/designate.git}
@@ -41,13 +42,12 @@ DESIGNATE_APIPASTE_CONF=$DESIGNATE_CONF_DIR/api-paste.ini
 # Set up default options
 DESIGNATE_BACKEND_DRIVER=${DESIGNATE_BACKEND_DRIVER:=powerdns}
 
-# Support potential entry-points console scripts
-DESIGNATE_BIN_DIR=$(get_python_exec_prefix)
-
-# only if using IPA
-IPA_HOST=${IPA_HOST:-$(hostname)}
-IPA_CA_CERT=${IPA_CA_CERT:-/etc/ipa/ca.crt}
-IPA_CLIENT_KEYTAB=${IPA_CLIENT_KEYTAB:-$HOME/ipaadmin.keytab}
+# Get backend configuration
+# ----------------------------
+if is_service_enabled designate && [[ -r $DESIGNATE_PLUGINS/backend-$DESIGNATE_BACKEND_DRIVER ]]; then
+    # Load plugin
+    source $DESIGNATE_PLUGINS/backend-$DESIGNATE_BACKEND_DRIVER
+fi
 
 # Functions
 # ---------
@@ -56,6 +56,7 @@ IPA_CLIENT_KEYTAB=${IPA_CLIENT_KEYTAB:-$HOME/ipaadmin.keytab}
 # runs that a clean run would need to clean up
 function cleanup_designate() {
     sudo rm -rf $DESIGNATE_STATE_PATH $DESIGNATE_AUTH_CACHE_DIR
+    cleanup_designate_backend
 }
 
 # configure_designate() - Set config files, create data dirs, etc
@@ -77,16 +78,6 @@ function configure_designate() {
     iniset $DESIGNATE_CONF DEFAULT root-helper sudo designate-rootwrap $DESIGNATE_ROOTWRAP_CONF
     sudo cp $DESIGNATE_DIR/etc/designate/api-paste.ini $DESIGNATE_APIPASTE_CONF
 
-    if [[ "$DESIGNATE_BACKEND_DRIVER" = 'powerdns' ]]; then
-        configure_powerdns
-
-    elif [[ "$DESIGNATE_BACKEND_DRIVER" = 'bind9' ]]; then
-        configure_bind
-
-    elif [[ "$DESIGNATE_BACKEND_DRIVER" = 'ipa' ]]; then
-        configure_ipa
-    fi
-
     if is_service_enabled key; then
         # Setup the Keystone Integration
         iniset $DESIGNATE_CONF service:api auth_strategy keystone
@@ -97,6 +88,7 @@ function configure_designate() {
         iniset $DESIGNATE_CONF keystone_authtoken cafile $KEYSTONE_SSL_CA
         iniset $DESIGNATE_CONF keystone_authtoken admin_user designate
         iniset $DESIGNATE_CONF keystone_authtoken admin_password $SERVICE_PASSWORD
+        iniset $DESIGNATE_CONF keystone_authtoken signing_dir $DESIGNATE_AUTH_CACHE_DIR
     fi
 
     if is_service_enabled designate-agent; then
@@ -110,7 +102,7 @@ function configure_designate() {
     cp $DESIGNATE_DIR/etc/designate/policy.json $DESIGNATE_CONF_DIR/policy.json
     iniset $DESIGNATE_CONF DEFAULT policy_file $DESIGNATE_CONF_DIR/policy.json
 
-    cleanup_designate
+    configure_designate_backend
 }
 
 # create_designate_accounts() - Set up common required designate accounts
@@ -169,14 +161,7 @@ function init_designate() {
     designate-manage database init
     designate-manage database sync
 
-    if [[ "$DESIGNATE_BACKEND_DRIVER" = 'powerdns' ]]; then
-        # (Re)create designate_pdns database
-        recreate_database designate_pdns utf8
-
-        # Init and migrate designate_pdns database
-        designate-manage powerdns init
-        designate-manage powerdns sync
-    fi
+    init_designate_backend
 }
 
 # install_designate() - Collect source and prepare
@@ -184,21 +169,7 @@ function install_designate() {
     git_clone $DESIGNATE_REPO $DESIGNATE_DIR $DESIGNATE_BRANCH
     setup_develop $DESIGNATE_DIR
 
-    if [[ "$DESIGNATE_BACKEND_DRIVER" = 'powerdns' ]]; then
-        if is_ubuntu; then
-            PDNS=pdns-server
-        elif is_fedora || is_suse; then
-            PDNS=pdns
-        else
-            PDNS=pdns-server
-        fi
-
-        install_package $PDNS pdns-backend-mysql
-    fi
-
-    if [[ "$DESIGNATE_BACKEND_DRIVER" = 'bind9' ]]; then
-        install_package bind9
-    fi
+    install_designate_backend
 }
 
 # install_designateclient() - Collect source and prepare
@@ -209,6 +180,8 @@ function install_designateclient() {
 
 # start_designate() - Start running processes, including screen
 function start_designate() {
+    start_designate_backend
+
     screen_it designate-api "designate-api --config-file $DESIGNATE_CONF"
     screen_it designate-central "designate-central --config-file $DESIGNATE_CONF"
     screen_it designate-agent "designate-agent --config-file $DESIGNATE_CONF"
@@ -226,89 +199,9 @@ function stop_designate() {
     screen_stop designate-central
     screen_stop designate-agent
     screen_stop designate-sink
-}
 
-
-function configure_powerdns() {
-    iniset $DESIGNATE_CONF backend:powerdns database_connection `database_connection_url designate_pdns`
-
-    sudo sed -i 's/^local-address=.*$/local-address=127.0.0.1/' /etc/powerdns/pdns.conf
-    sudo rm -f /etc/powerdns/pdns.d/pdns.simplebind.conf
-    sudo tee /etc/powerdns/pdns.d/pdns.local.gmysql.conf > /dev/null <<EOF
-# Launch gmysql backend
-launch=gmysql
-
-# gmysql parameters
-gmysql-host=$DATABASE_HOST
-gmysql-user=$DATABASE_USER
-gmysql-password=$DATABASE_PASSWORD
-gmysql-dbname=designate_pdns
-gmysql-dnssec=yes
-EOF
-
-    restart_service pdns
-}
-
-function configure_bind() {
-    iniset $DESIGNATE_CONF backend:bind9 rndc_port '953'
-    iniset $DESIGNATE_CONF backend:bind9 rndc_host '127.0.0.1'
-    iniset $DESIGNATE_CONF backend:bind9 rndc_config_file  '/etc/bind/rndc.conf'
-    iniset $DESIGNATE_CONF backend:bind9 rndc_key_file  '/etc/bind/rndc.key'
-
-    sudo chown $USER /etc/bind/
-
-    if is_ubuntu; then
-        sudo touch /etc/apparmor.d/disable/usr.sbin.named
-        sudo service apparmor reload
-        sudo tee /etc/bind/named.conf.options > /dev/null <<EOF
-options {
-    directory "/var/cache/bind";
-    allow-new-zones yes;
-    dnssec-validation auto;
-    auth-nxdomain no;    # conform to RFC1035
-    listen-on-v6 { any; };
-};
-EOF
-
-        sudo tee /etc/bind/rndc.conf > /dev/null <<EOF
-include "/etc/bind/rndc.key";
-options {
-    default-key "rndc-key";
-    default-server 127.0.0.1;
-    default-port 953;
-};
-EOF
-    else
-        echo "Designate DevStack bind9 implementation is Ubuntu-only"
-        exit 1
-    fi
-
-    sudo service bind9 restart
-}
-
-function configure_ipa() {
-    rc=0
-    if [[ ! -f $IPA_CA_CERT ]]; then
-        echo ERROR: IPA CA cert file $IPA_CA_CERT not found
-        rc=1
-    fi
-    if [[ ! -f $IPA_CLIENT_KEYTAB ]]; then
-        echo ERROR: IPA client keytab file $IPA_CLIENT_KEYTAB not found
-        rc=1
-    fi
-    if [[ $rc = 1 ]]; then
-        die $LINENO "Error with IPA configuration"
-    fi
-    iniset $DESIGNATE_CONF backend:ipa ipa_host $IPA_HOST
-    iniset $DESIGNATE_CONF backend:ipa ipa_ca_cert $IPA_CA_CERT
-    iniset $DESIGNATE_CONF backend:ipa ipa_client_keytab $IPA_CLIENT_KEYTAB
-    # devstack tests use dummy NS records, so tell IPA to allow this
-    iniset $DESIGNATE_CONF backend:ipa ipa_force_ns_use True
+    stop_designate_backend
 }
 
 # Restore xtrace
 $XTRACE
-
-# Local variables:
-# mode: shell-script
-# End:

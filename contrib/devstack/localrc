@@ -28,3 +28,6 @@ ENABLED_SERVICES+=,designate,designate-api,designate-central
 # Optional Designate services
 #ENABLED_SERVICES+=,designate-sink
 #ENABLED_SERVICES+=,designate-agent
+
+# Designate Options
+#DESIGNATE_BACKEND_DRIVER=powerdns
