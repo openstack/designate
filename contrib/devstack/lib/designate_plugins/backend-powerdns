@@ -21,6 +21,11 @@ set +o xtrace
 
 # Defaults
 # --------
+if is_fedora; then
+    POWERDNS_CFG_DIR=/etc/pdns
+else
+    POWERDNS_CFG_DIR=/etc/powerdns
+fi
 
 # Entry Points
 # ------------
@@ -36,15 +41,30 @@ function install_designate_backend {
     fi
 
     install_package $PDNS pdns-backend-mysql
+    sudo rm -rf $POWERDNS_CFG_DIR/pdns.d
 }
 
 # configure_designate_backend - make configuration changes, including those to other services
 function configure_designate_backend {
     iniset $DESIGNATE_CONF backend:powerdns database_connection `database_connection_url designate_pdns`
 
-    sudo sed -i 's/^local-address=.*$/local-address=127.0.0.1/' /etc/powerdns/pdns.conf
-    sudo rm -f /etc/powerdns/pdns.d/pdns.simplebind.conf
-    sudo tee /etc/powerdns/pdns.d/pdns.local.gmysql.conf > /dev/null <<EOF
+    sudo tee $POWERDNS_CFG_DIR/pdns.conf > /dev/null <<EOF
+# General Config
+setgid=pdns
+setuid=pdns
+config-dir=$POWERDNS_CFG_DIR
+socket-dir=/var/run
+guardian=yes
+daemon=yes
+disable-axfr=no
+local-address=127.0.0.1
+#local-ipv6=
+local-port=53
+master=yes
+EOF
+
+    if is_service_enabled mysql; then
+        sudo tee -a $POWERDNS_CFG_DIR/pdns.conf > /dev/null <<EOF
 # Launch gmysql backend
 launch=gmysql
 
@@ -55,6 +75,9 @@ gmysql-password=$DATABASE_PASSWORD
 gmysql-dbname=designate_pdns
 gmysql-dnssec=yes
 EOF
+    else
+        die $LINENO "PowerDNS backend only supports MySQL"
+    fi
 
     restart_service pdns
 }

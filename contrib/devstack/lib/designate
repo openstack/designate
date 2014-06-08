@@ -166,6 +166,11 @@ function init_designate() {
 
 # install_designate() - Collect source and prepare
 function install_designate() {
+    if is_fedora; then
+        # This package provides `dig`
+        install_package bind-utils
+    fi
+
     git_clone $DESIGNATE_REPO $DESIGNATE_DIR $DESIGNATE_BRANCH
     setup_develop $DESIGNATE_DIR
 
