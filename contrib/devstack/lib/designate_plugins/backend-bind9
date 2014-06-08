@@ -21,51 +21,102 @@ set +o xtrace
 
 # Defaults
 # --------
+BIND_SERVICE_NAME=bind9
+BIND_CFG_DIR=/etc/bind
+BIND_VAR_DIR=/var/cache/bind
+BIND_CFG_FILE=$BIND_CFG_DIR/named.conf.options
+BIND_USER=bind
+BIND_GROUP=bind
+
+if is_fedora; then
+    BIND_SERVICE_NAME=named
+    BIND_CFG_DIR=/etc/named
+    BIND_CFG_FILE=/etc/named.conf
+    BIND_VAR_DIR=/var/named
+    BIND_USER=named
+    BIND_GROUP=named
+fi
 
 # Entry Points
 # ------------
 
 # install_designate_backend - install any external requirements
 function install_designate_backend {
-    install_package bind9
+    if is_ubuntu; then
+        install_package bind9
+    elif is_fedora; then
+        install_package named
+    fi
+
+    # The user that designate runs as needs to be member of **$BIND_GROUP** group.
+    # The designate bind9 backend needs read/write access to $BIND_VAR_DIR
+    if ! getent group $BIND_GROUP >/dev/null; then
+        sudo groupadd $BIND_GROUP
+    fi
+    add_user_to_group $STACK_USER $BIND_GROUP
+    if [[ ! -d $BIND_CFG_DIR ]]; then
+        sudo mkdir -p $BIND_CFG_DIR
+        sudo chown $BIND_USER:$BIND_GROUP $BIND_CFG_DIR
+    fi
+
+    sudo chown -R $BIND_USER:$BIND_GROUP $BIND_CFG_DIR $BIND_VAR_DIR
+    sudo chmod -R g+r $BIND_CFG_DIR
+    sudo chmod -R g+rw $BIND_VAR_DIR
+
+    # Disable apparmor if installed
+    if [[ -f /etc/apparmor.d/disable/usr.sbin.named ]]; then
+        sudo touch /etc/apparmor.d/disable/usr.sbin.named
+        sudo service apparmor reload
+    fi
 }
 
 # configure_designate_backend - make configuration changes, including those to other services
 function configure_designate_backend {
     iniset $DESIGNATE_CONF backend:bind9 rndc_port '953'
     iniset $DESIGNATE_CONF backend:bind9 rndc_host '127.0.0.1'
-    iniset $DESIGNATE_CONF backend:bind9 rndc_config_file  '/etc/bind/rndc.conf'
-    iniset $DESIGNATE_CONF backend:bind9 rndc_key_file  '/etc/bind/rndc.key'
+    iniset $DESIGNATE_CONF backend:bind9 rndc_config_file "$BIND_CFG_DIR/rndc.conf"
+    iniset $DESIGNATE_CONF backend:bind9 rndc_key_file "$BIND_CFG_DIR/rndc.key"
+    iniset $DESIGNATE_CONF backend:bind9 nzf_path "$BIND_VAR_DIR"
 
-    sudo chown $USER /etc/bind/
+    sudo chown $STACK_USER $BIND_CFG_DIR
 
-    if is_ubuntu; then
-        sudo touch /etc/apparmor.d/disable/usr.sbin.named
-        sudo service apparmor reload
-        sudo tee /etc/bind/named.conf.options > /dev/null <<EOF
+    # create rndc key and config
+    sudo rndc-confgen -a -c $BIND_CFG_DIR/rndc.key
+    sudo chown $BIND_USER:$BIND_GROUP $BIND_CFG_DIR/rndc.key
+    sudo chmod g+r $BIND_CFG_DIR/rndc.key
+
+    # Configure Bind
+    sudo tee $BIND_CFG_FILE > /dev/null <<EOF
+include "$BIND_CFG_DIR/rndc.key";
+
 options {
-    directory "/var/cache/bind";
+    directory "$BIND_VAR_DIR";
     allow-new-zones yes;
     dnssec-validation auto;
     auth-nxdomain no;    # conform to RFC1035
     listen-on-v6 { any; };
 };
+
+controls {
+    inet 127.0.0.1 allow { localhost; } keys { "rndc-key"; };
+};
 EOF
 
-        sudo tee /etc/bind/rndc.conf > /dev/null <<EOF
-include "/etc/bind/rndc.key";
+    # Configure RNDC
+    sudo tee $BIND_CFG_DIR/rndc.conf > /dev/null << EOF
+include "$BIND_CFG_DIR/rndc.key";
+
 options {
     default-key "rndc-key";
     default-server 127.0.0.1;
     default-port 953;
 };
 EOF
-    else
-        echo "Designate DevStack bind9 implementation is Ubuntu-only"
-        exit 1
-    fi
 
-    restart_service bind9
+    sudo chown $BIND_USER:$BIND_GROUP $BIND_CFG_FILE $BIND_CFG_DIR/rndc.conf
+    sudo chmod g+r $BIND_CFG_FILE $BIND_CFG_DIR/rndc.conf
+
+    restart_service $BIND_SERVICE_NAME
 }
 
 # init_designate_backend - initialize databases, etc.
@@ -85,7 +136,9 @@ function stop_designate_backend {
 
 # cleanup_designate_backend - remove transient data and cache
 function cleanup_designate_backend {
-    :
+    sudo sh -c "rm -rf $BIND_VAR_DIR/*.nzf"
+    sudo sh -c "rm -rf $DESIGNATE_STATE_PATH/*.zone"
+    sudo rm -f $BIND_CFG_DIR/rndc.key
 }
 
 # Restore xtrace

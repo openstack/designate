@@ -62,10 +62,10 @@ function cleanup_designate() {
 # configure_designate() - Set config files, create data dirs, etc
 function configure_designate() {
     [ ! -d $DESIGNATE_CONF_DIR ] && sudo mkdir -m 755 -p $DESIGNATE_CONF_DIR
-    sudo chown $USER $DESIGNATE_CONF_DIR
+    sudo chown $STACK_USER $DESIGNATE_CONF_DIR
 
     [ ! -d $DESIGNATE_LOG_DIR ] &&  sudo mkdir -m 755 -p $DESIGNATE_LOG_DIR
-    sudo chown $USER $DESIGNATE_LOG_DIR
+    sudo chown $STACK_USER $DESIGNATE_LOG_DIR
 
     # (Re)create ``designate.conf``
     rm -f $DESIGNATE_CONF
@@ -183,7 +183,15 @@ function start_designate() {
     start_designate_backend
 
     screen_it designate-api "designate-api --config-file $DESIGNATE_CONF"
-    screen_it designate-central "designate-central --config-file $DESIGNATE_CONF"
+    # If using bind9, central must have access to the bind zone/db files.
+    # The configure phase has already added the $STACK_USER to the bind
+    # system daemon group - we need to start central using that group using sg.
+    # nova does a similar "trick" with libvirtd and compute.
+    if [[ "$DESIGNATE_BACKEND_DRIVER" = 'bind9' ]]; then
+        screen_it designate-central "sg $BIND_GROUP designate-central --config-file $DESIGNATE_CONF"
+    else
+        screen_it designate-central "designate-central --config-file $DESIGNATE_CONF"
+    fi
     screen_it designate-agent "designate-agent --config-file $DESIGNATE_CONF"
     screen_it designate-sink "designate-sink --config-file $DESIGNATE_CONF"
 
