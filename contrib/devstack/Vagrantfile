@@ -12,6 +12,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.vm.provider "virtualbox" do |vb|
     vb.customize ["modifyvm", :id, "--memory", "2048"]
+    vb.customize ["modifyvm", :id, "--cpus", `grep "^core id" /proc/cpuinfo | sort | uniq | wc -l | tr -d '\n'`]
     vb.customize ["modifyvm", :id, "--nicpromisc3", "allow-all"]
   end
 
