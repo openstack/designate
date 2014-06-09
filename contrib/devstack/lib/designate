@@ -214,7 +214,9 @@ function start_designate() {
     screen_it designate-agent "designate-agent --config-file $DESIGNATE_CONF"
     screen_it designate-sink "designate-sink --config-file $DESIGNATE_CONF"
 
-    sleep 15
+    if ! timeout $SERVICE_TIMEOUT sh -c "while ! wget --no-proxy -q -O- http://127.0.0.1:9001; do sleep 1; done"; then
+        die $LINENO "Designate did not start"
+    fi
 }
 
 # stop_designate() - Stop running processes
