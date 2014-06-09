@@ -39,7 +39,7 @@ DESIGNATE_ROOTWRAP_CONF=$DESIGNATE_CONF_DIR/rootwrap.conf
 DESIGNATE_APIPASTE_CONF=$DESIGNATE_CONF_DIR/api-paste.ini
 
 # Set up default options
-DESIGNATE_BACKEND_DRIVER=${DESIGNATE_BACKEND_DRIVER:=fake}
+DESIGNATE_BACKEND_DRIVER=${DESIGNATE_BACKEND_DRIVER:=powerdns}
 
 # Support potential entry-points console scripts
 DESIGNATE_BIN_DIR=$(get_python_exec_prefix)
