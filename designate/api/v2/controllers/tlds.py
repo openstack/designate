@@ -18,6 +18,7 @@ from designate import schema
 from designate import utils
 from designate.api.v2.controllers import rest
 from designate.api.v2.views import tlds as tlds_view
+from designate.objects import Tld
 
 LOG = logging.getLogger(__name__)
 
@@ -73,7 +74,7 @@ class TldsController(rest.RestController):
         values = self._view.load(context, request, body)
 
         # Create the tld
-        tld = self.central_api.create_tld(context, values)
+        tld = self.central_api.create_tld(context, Tld(**values))
         response.status_int = 201
 
         response.headers['Location'] = self._view._get_resource_href(request,

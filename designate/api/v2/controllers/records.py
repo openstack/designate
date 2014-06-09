@@ -19,6 +19,7 @@ from designate import schema
 from designate import utils
 from designate.api.v2.controllers import rest
 from designate.api.v2.views import records as records_view
+from designate.objects import Record
 
 LOG = logging.getLogger(__name__)
 
@@ -83,8 +84,8 @@ class RecordsController(rest.RestController):
         values = self._view.load(context, request, body)
 
         # Create the records
-        record = self.central_api.create_record(context, zone_id, recordset_id,
-                                                values)
+        record = self.central_api.create_record(
+            context, zone_id, recordset_id, Record(**values))
 
         # Prepare the response headers
         if record['status'] == 'PENDING':

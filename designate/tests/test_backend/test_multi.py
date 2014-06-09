@@ -17,6 +17,7 @@ import mock
 from mock import call
 from mock import MagicMock
 from designate import exceptions
+from designate import objects
 from designate import tests
 from designate.tests.test_backend import BackendTestMixin
 
@@ -106,7 +107,8 @@ class MultiBackendTestCase(tests.TestCase, BackendTestMixin):
         # recreate it if something goes wrong, create the domain first
         self.backend.central_service.create_server(
             self.get_admin_context(), self.get_server_fixture())
-        self.backend.central_service.create_domain(context, domain)
+        self.backend.central_service.create_domain(
+            context, objects.Domain(**domain))
         self.backend.master.delete_domain = MagicMock(
             side_effect=exceptions.Backend)
         self.assertRaises(exceptions.Backend, self.backend.delete_domain,

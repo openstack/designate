@@ -39,14 +39,15 @@ class CentralAPI(object):
         3.1 - Add floating ip ptr methods
         3.2 - TLD Api changes
         3.3 - Add methods for blacklisted domains
+        4.0 - Create methods now accept designate objects
     """
-    RPC_API_VERSION = '3.0'
+    RPC_API_VERSION = '4.0'
 
     def __init__(self, topic=None):
         topic = topic if topic else cfg.CONF.central_topic
 
         target = messaging.Target(topic=topic, version=self.RPC_API_VERSION)
-        self.client = rpc.get_client(target, version_cap='3.3')
+        self.client = rpc.get_client(target, version_cap='4.0')
 
     # Misc Methods
     def get_absolute_limits(self, context):
@@ -78,10 +79,10 @@ class CentralAPI(object):
         return self.client.call(context, 'reset_quotas', tenant_id=tenant_id)
 
     # Server Methods
-    def create_server(self, context, values):
+    def create_server(self, context, server):
         LOG.info("create_server: Calling central's create_server.")
 
-        return self.client.call(context, 'create_server', values=values)
+        return self.client.call(context, 'create_server', server=server)
 
     def find_servers(self, context, criterion=None, marker=None, limit=None,
                      sort_key=None, sort_dir=None):
@@ -108,15 +109,13 @@ class CentralAPI(object):
         return self.client.call(context, 'delete_server', server_id=server_id)
 
     # TSIG Key Methods
-    def create_tsigkey(self, context, values):
+    def create_tsigkey(self, context, tsigkey):
         LOG.info("create_tsigkey: Calling central's create_tsigkey.")
-
-        return self.client.call(context, 'create_tsigkey', values=values)
+        return self.client.call(context, 'create_tsigkey', tsigkey=tsigkey)
 
     def find_tsigkeys(self, context, criterion=None, marker=None, limit=None,
                       sort_key=None, sort_dir=None):
         LOG.info("find_tsigkeys: Calling central's find_tsigkeys.")
-
         return self.client.call(context, 'find_tsigkeys', criterion=criterion,
                                 marker=marker, limit=limit, sort_key=sort_key,
                                 sort_dir=sort_dir)
@@ -150,9 +149,9 @@ class CentralAPI(object):
         return self.client.call(context, 'count_tenants')
 
     # Domain Methods
-    def create_domain(self, context, values):
+    def create_domain(self, context, domain):
         LOG.info("create_domain: Calling central's create_domain.")
-        return self.client.call(context, 'create_domain', values=values)
+        return self.client.call(context, 'create_domain', domain=domain)
 
     def get_domain(self, context, domain_id):
         LOG.info("get_domain: Calling central's get_domain.")
@@ -193,43 +192,35 @@ class CentralAPI(object):
         return self.client.call(context, 'touch_domain', domain_id=domain_id)
 
     # TLD Methods
-    def create_tld(self, context, values):
+    def create_tld(self, context, tld):
         LOG.info("create_tld: Calling central's create_tld.")
-        cctxt = self.client.prepare(version='3.2')
-        return cctxt.call(context, 'create_tld', values=values)
+        return self.client.call(context, 'create_tld', tld=tld)
 
     def find_tlds(self, context, criterion=None, marker=None, limit=None,
                   sort_key=None, sort_dir=None):
         LOG.info("find_tlds: Calling central's find_tlds.")
-
-        cctxt = self.client.prepare(version='3.2')
-        return cctxt.call(context, 'find_tlds', criterion=criterion,
-                          marker=marker, limit=limit, sort_key=sort_key,
-                          sort_dir=sort_dir)
+        return self.client.call(context, 'find_tlds', criterion=criterion,
+                                marker=marker, limit=limit, sort_key=sort_key,
+                                sort_dir=sort_dir)
 
     def get_tld(self, context, tld_id):
         LOG.info("get_tld: Calling central's get_tld.")
-
-        cctxt = self.client.prepare(version='3.2')
-        return cctxt.call(context, 'get_tld', tld_id=tld_id)
+        return self.client.call(context, 'get_tld', tld_id=tld_id)
 
     def update_tld(self, context, tld_id, values):
         LOG.info("update_tld: Calling central's update_tld.")
-
-        cctxt = self.client.prepare(version='3.2')
-        return cctxt.call(context, 'update_tld', tld_id=tld_id, values=values)
+        return self.client.call(context, 'update_tld', tld_id=tld_id,
+                                values=values)
 
     def delete_tld(self, context, tld_id):
         LOG.info("delete_tld: Calling central's delete_tld.")
-
-        cctxt = self.client.prepare(version='3.2')
-        return cctxt.call(context, 'delete_tld', tld_id=tld_id)
+        return self.client.call(context, 'delete_tld', tld_id=tld_id)
 
     # RecordSet Methods
-    def create_recordset(self, context, domain_id, values):
+    def create_recordset(self, context, domain_id, recordset):
         LOG.info("create_recordset: Calling central's create_recordset.")
         return self.client.call(context, 'create_recordset',
-                                domain_id=domain_id, values=values)
+                                domain_id=domain_id, recordset=recordset)
 
     def get_recordset(self, context, domain_id, recordset_id):
         LOG.info("get_recordset: Calling central's get_recordset.")
@@ -271,13 +262,13 @@ class CentralAPI(object):
                                 criterion=criterion)
 
     # Record Methods
-    def create_record(self, context, domain_id, recordset_id, values,
+    def create_record(self, context, domain_id, recordset_id, record,
                       increment_serial=True):
         LOG.info("create_record: Calling central's create_record.")
         return self.client.call(context, 'create_record',
                                 domain_id=domain_id,
                                 recordset_id=recordset_id,
-                                values=values,
+                                record=record,
                                 increment_serial=increment_serial)
 
     def get_record(self, context, domain_id, recordset_id, record_id):
@@ -339,62 +330,46 @@ class CentralAPI(object):
 
     def list_floatingips(self, context):
         LOG.info("list_floatingips: Calling central's list_floatingips.")
-
-        cctxt = self.client.prepare(version='3.1')
-        return cctxt.call(context, 'list_floatingips')
+        return self.client.call(context, 'list_floatingips')
 
     def get_floatingip(self, context, region, floatingip_id):
         LOG.info("get_floatingip: Calling central's get_floatingip.")
-
-        cctxt = self.client.prepare(version='3.1')
-        return cctxt.call(context, 'get_floatingip', region=region,
-                          floatingip_id=floatingip_id)
+        return self.client.call(context, 'get_floatingip', region=region,
+                                floatingip_id=floatingip_id)
 
     def update_floatingip(self, context, region, floatingip_id, values):
         LOG.info("update_floatingip: Calling central's update_floatingip.")
-
-        cctxt = self.client.prepare(version='3.1')
-        return cctxt.call(context, 'update_floatingip', region=region,
-                          floatingip_id=floatingip_id, values=values)
+        return self.client.call(context, 'update_floatingip', region=region,
+                                floatingip_id=floatingip_id, values=values)
 
     # Blacklisted Domain Methods
-    def create_blacklist(self, context, values):
+    def create_blacklist(self, context, blacklist):
         LOG.info("create_blacklist: Calling central's create_blacklist")
-
-        cctxt = self.client.prepare(version='3.3')
-        return cctxt.call(context, 'create_blacklist', values=values)
+        return self.client.call(context, 'create_blacklist',
+                                blacklist=blacklist)
 
     def get_blacklist(self, context, blacklist_id):
         LOG.info("get_blacklist: Calling central's get_blacklist.")
-
-        cctxt = self.client.prepare(version='3.3')
-        return cctxt.call(context, 'get_blacklist', blacklist_id=blacklist_id)
+        return self.client.call(context, 'get_blacklist',
+                                blacklist_id=blacklist_id)
 
     def find_blacklists(self, context, criterion=None, marker=None, limit=None,
                         sort_key=None, sort_dir=None):
         LOG.info("find_blacklists: Calling central's find_blacklists.")
-
-        cctxt = self.client.prepare(version='3.3')
-        return cctxt.call(context, 'find_blacklists', criterion=criterion,
-                          marker=marker, limit=limit, sort_key=sort_key,
-                          sort_dir=sort_dir)
+        return self.client.call(
+            context, 'find_blacklists', criterion=criterion, marker=marker,
+            limit=limit, sort_key=sort_key, sort_dir=sort_dir)
 
     def find_blacklist(self, context, criterion):
         LOG.info("find_blacklist: Calling central's find_blacklist.")
-
-        cctxt = self.client.prepare(version='3.3')
-        return cctxt.call(context, 'find_blacklist', criterion=criterion)
+        return self.client.call(context, 'find_blacklist', criterion=criterion)
 
     def update_blacklist(self, context, blacklist_id, values):
         LOG.info("update_blacklist: Calling central's update_blacklist.")
-
-        cctxt = self.client.prepare(version='3.3')
-        return cctxt.call(context, 'update_blacklist',
-                          blacklist_id=blacklist_id, values=values)
+        return self.client.call(context, 'update_blacklist',
+                                blacklist_id=blacklist_id, values=values)
 
     def delete_blacklist(self, context, blacklist_id):
         LOG.info("delete_blacklist: Calling central's delete blacklist.")
-
-        cctxt = self.client.prepare(version='3.3')
-        return cctxt.call(context, 'delete_blacklist',
-                          blacklist_id=blacklist_id)
+        return self.client.call(context, 'delete_blacklist',
+                                blacklist_id=blacklist_id)

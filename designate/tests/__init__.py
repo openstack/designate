@@ -40,6 +40,7 @@ from designate.tests import resources
 from designate import exceptions
 from designate.network_api import fake as fake_network_api
 from designate import network_api
+from designate import objects
 
 # NOTE: If eventlet isn't patched and there's a exc tests block
 import eventlet
@@ -428,21 +429,24 @@ class TestCase(test.BaseTestCase):
         fixture = kwargs.pop('fixture', 0)
 
         values = self.get_server_fixture(fixture=fixture, values=kwargs)
-        return self.central_service.create_server(context, values=values)
+        return self.central_service.create_server(
+            context, server=objects.Server(**values))
 
     def create_tld(self, **kwargs):
         context = kwargs.pop('context', self.admin_context)
         fixture = kwargs.pop('fixture', 0)
 
         values = self.get_tld_fixture(fixture=fixture, values=kwargs)
-        return self.central_service.create_tld(context, values=values)
+        tld = objects.Tld(**values)
+        return self.central_service.create_tld(context, tld=tld)
 
     def create_default_tld(self, **kwargs):
         context = kwargs.pop('context', self.admin_context)
         fixture = kwargs.pop('fixture', 0)
 
         values = self.get_default_tld_fixture(fixture=fixture, values=kwargs)
-        return self.central_service.create_tld(context, values=values)
+        tld = objects.Tld(**values)
+        return self.central_service.create_tld(context, tld=tld)
 
     def create_default_tlds(self):
         for index in range(len(self.default_tld_fixtures)):
@@ -456,7 +460,8 @@ class TestCase(test.BaseTestCase):
         fixture = kwargs.pop('fixture', 0)
 
         values = self.get_tsigkey_fixture(fixture=fixture, values=kwargs)
-        return self.central_service.create_tsigkey(context, values=values)
+        return self.central_service.create_tsigkey(
+            context, tsigkey=objects.TsigKey(**values))
 
     def create_domain(self, **kwargs):
         context = kwargs.pop('context', self.admin_context)
@@ -473,7 +478,8 @@ class TestCase(test.BaseTestCase):
         if 'tenant_id' not in values:
             values['tenant_id'] = context.tenant
 
-        return self.central_service.create_domain(context, values=values)
+        domain = objects.Domain(**values)
+        return self.central_service.create_domain(context, domain=domain)
 
     def create_recordset(self, domain, type='A', **kwargs):
         context = kwargs.pop('context', self.admin_context)
@@ -482,9 +488,8 @@ class TestCase(test.BaseTestCase):
         values = self.get_recordset_fixture(domain['name'], type=type,
                                             fixture=fixture,
                                             values=kwargs)
-        return self.central_service.create_recordset(context,
-                                                     domain['id'],
-                                                     values=values)
+        return self.central_service.create_recordset(
+            context, domain['id'], recordset=objects.RecordSet(**values))
 
     def create_record(self, domain, recordset, **kwargs):
         context = kwargs.pop('context', self.admin_context)
@@ -492,17 +497,20 @@ class TestCase(test.BaseTestCase):
 
         values = self.get_record_fixture(recordset['type'], fixture=fixture,
                                          values=kwargs)
-        return self.central_service.create_record(context,
-                                                  domain['id'],
-                                                  recordset['id'],
-                                                  values=values)
+        return self.central_service.create_record(
+            context,
+            domain['id'],
+            recordset['id'],
+            record=objects.Record(**values))
 
     def create_blacklist(self, **kwargs):
         context = kwargs.pop('context', self.admin_context)
         fixture = kwargs.pop('fixture', 0)
 
         values = self.get_blacklist_fixture(fixture=fixture, values=kwargs)
-        return self.central_service.create_blacklist(context, values=values)
+        blacklist = objects.Blacklist(**values)
+        return self.central_service.create_blacklist(
+            context, blacklist=blacklist)
 
     def _ensure_interface(self, interface, implementation):
         for name in interface.__abstractmethods__:

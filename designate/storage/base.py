@@ -87,12 +87,12 @@ class Storage(DriverPlugin):
         """
 
     @abc.abstractmethod
-    def create_server(self, context, values):
+    def create_server(self, context, server):
         """
         Create a Server.
 
         :param context: RPC Context.
-        :param values: Values to create the new Domain from.
+        :param server: Server object with the values to be created.
         """
 
     @abc.abstractmethod
@@ -140,12 +140,12 @@ class Storage(DriverPlugin):
         """
 
     @abc.abstractmethod
-    def create_tld(self, context, values):
+    def create_tld(self, context, tld):
         """
         Create a TLD.
 
         :param context: RPC Context.
-        :param values: Values to create the new TLD from.
+        :param tld: Tld object with the values to be created.
         """
 
     @abc.abstractmethod
@@ -208,11 +208,12 @@ class Storage(DriverPlugin):
         """
 
     @abc.abstractmethod
-    def create_tsigkey(self, context, values):
+    def create_tsigkey(self, context, tsigkey):
         """
         Create a TSIG Key.
 
         :param context: RPC Context.
+        :param tsigkey: TsigKey object with the values to be created.
         """
 
     @abc.abstractmethod
@@ -285,12 +286,12 @@ class Storage(DriverPlugin):
         """
 
     @abc.abstractmethod
-    def create_domain(self, context, values):
+    def create_domain(self, context, domain):
         """
         Create a new Domain.
 
         :param context: RPC Context.
-        :param values: Values to create the new Domain from.
+        :param domain: Domain object with the values to be created.
         """
 
     @abc.abstractmethod
@@ -356,13 +357,13 @@ class Storage(DriverPlugin):
         """
 
     @abc.abstractmethod
-    def create_recordset(self, context, domain_id, values):
+    def create_recordset(self, context, domain_id, recordset):
         """
         Create a recordset on a given Domain ID
 
         :param context: RPC Context.
         :param domain_id: Domain ID to create the recordset in.
-        :param values: Values to create the new RecordSet from.
+        :param recordset: RecordSet object with the values to be created.
         """
 
     @abc.abstractmethod
@@ -428,15 +429,15 @@ class Storage(DriverPlugin):
         """
 
     @abc.abstractmethod
-    def create_record(self, context, domain_id, recordset_id, values):
+    def create_record(self, context, domain_id, recordset_id, record):
         """
         Create a record on a given Domain ID
 
         :param context: RPC Context.
         :param domain_id: Domain ID to create the record in.
         :param recordset_id: RecordSet ID to create the record in.
-        :param values: Values to create the new Record from.
-        """
+        :param record: Record object with the values to be created.
+       """
 
     @abc.abstractmethod
     def get_record(self, context, record_id):
@@ -500,12 +501,12 @@ class Storage(DriverPlugin):
         """
 
     @abc.abstractmethod
-    def create_blacklist(self, context, values):
+    def create_blacklist(self, context, blacklist):
         """
         Create a Blacklist.
 
         :param context: RPC Context.
-        :param values: Values to create the new Blacklist from.
+        :param blacklist: Blacklist object with the values to be created.
         """
 
     @abc.abstractmethod

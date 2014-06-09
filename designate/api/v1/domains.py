@@ -17,6 +17,7 @@ import flask
 from designate.openstack.common import log as logging
 from designate import schema
 from designate.api import get_central_api
+from designate.objects import Domain
 
 LOG = logging.getLogger(__name__)
 blueprint = flask.Blueprint('domains', __name__)
@@ -41,7 +42,7 @@ def create_domain():
     values = flask.request.json
 
     domain_schema.validate(values)
-    domain = get_central_api().create_domain(context, values)
+    domain = get_central_api().create_domain(context, Domain(**values))
 
     response = flask.jsonify(domain_schema.filter(domain))
     response.status_int = 201

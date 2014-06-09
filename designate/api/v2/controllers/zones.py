@@ -24,6 +24,9 @@ from designate.api.v2.controllers import rest
 from designate.api.v2.controllers import nameservers
 from designate.api.v2.controllers import recordsets
 from designate.api.v2.views import zones as zones_view
+from designate.objects import Domain
+from designate.objects import Record
+from designate.objects import RecordSet
 from designate.openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)
@@ -141,7 +144,7 @@ class ZonesController(rest.RestController):
         values = self._view.load(context, request, body)
 
         # Create the zone
-        zone = self.central_api.create_domain(context, values)
+        zone = self.central_api.create_domain(context, Domain(**values))
 
         # Prepare the response headers
         # If the zone has been created asynchronously
@@ -264,7 +267,7 @@ class ZonesController(rest.RestController):
             'email': email,
             'ttl': str(soa.ttl)
         }
-        return self.central_api.create_domain(context, values)
+        return self.central_api.create_domain(context, Domain(**values))
 
     def _record2json(self, record_type, rdata):
         if record_type == 'MX':
@@ -300,7 +303,7 @@ class ZonesController(rest.RestController):
                 }
 
                 recordset = self.central_api.create_recordset(
-                    context, zone_id, values)
+                    context, zone_id, RecordSet(**values))
 
                 for rdata in rdataset:
                     if (record_type == 'NS'
@@ -314,7 +317,10 @@ class ZonesController(rest.RestController):
                         values = self._record2json(record_type, rdata)
 
                         self.central_api.create_record(
-                            context, zone_id, recordset['id'], values)
+                            context,
+                            zone_id,
+                            recordset['id'],
+                            Record(**values))
 
     def _parse_zonefile(self, request):
         """ Parses a POSTed zonefile into a dnspython zone object """

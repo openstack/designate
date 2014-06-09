@@ -18,6 +18,8 @@ from designate.openstack.common import log as logging
 from designate import exceptions
 from designate import schema
 from designate.api import get_central_api
+from designate.objects import Record
+from designate.objects import RecordSet
 
 LOG = logging.getLogger(__name__)
 blueprint = flask.Blueprint('records', __name__)
@@ -37,18 +39,20 @@ def _find_or_create_recordset(context, domain_id, name, type, ttl):
     try:
         recordset = _find_recordset(context, domain_id, name, type)
     except exceptions.RecordSetNotFound:
-        recordset = get_central_api().create_recordset(context, domain_id, {
+        values = {
             'name': name,
             'type': type,
             'ttl': ttl,
-        })
+        }
+        recordset = get_central_api().create_recordset(
+            context, domain_id, RecordSet(**values))
 
     return recordset
 
 
 def _extract_record_values(values):
     record_values = ('data', 'priority', 'comment',)
-    return dict((k, values[k]) for k in record_values if k in values)
+    return Record(**dict((k, values[k]) for k in record_values if k in values))
 
 
 def _extract_recordset_values(values):

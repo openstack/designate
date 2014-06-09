@@ -17,6 +17,7 @@ import flask
 from designate.openstack.common import log as logging
 from designate import schema
 from designate.api import get_central_api
+from designate.objects import TsigKey
 
 LOG = logging.getLogger(__name__)
 blueprint = flask.Blueprint('tsigkeys', __name__)
@@ -41,7 +42,7 @@ def create_tsigkey():
 
     tsigkey_schema.validate(values)
     tsigkey = get_central_api().create_tsigkey(
-        context, values=flask.request.json)
+        context, tsigkey=TsigKey(**values))
 
     response = flask.jsonify(tsigkey_schema.filter(tsigkey))
     response.status_int = 201

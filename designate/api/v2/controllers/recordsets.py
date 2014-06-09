@@ -20,6 +20,7 @@ from designate import utils
 from designate.api.v2.controllers import rest
 from designate.api.v2.views import recordsets as recordsets_view
 from designate.api.v2.controllers import records
+from designate.objects import RecordSet
 
 LOG = logging.getLogger(__name__)
 
@@ -84,7 +85,8 @@ class RecordSetsController(rest.RestController):
         values = self._view.load(context, request, body)
 
         # Create the recordset
-        recordset = self.central_api.create_recordset(context, zone_id, values)
+        recordset = self.central_api.create_recordset(
+            context, zone_id, RecordSet(**values))
 
         # Prepare the response headers
         response.status_int = 201

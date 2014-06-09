@@ -228,17 +228,17 @@ class SQLAlchemyStorage(base.Storage):
         except exceptions.NotFound:
             raise exceptions.ServerNotFound()
 
-    def create_server(self, context, values):
-        server = models.Server()
+    def create_server(self, context, server):
+        storage_server = models.Server()
 
-        server.update(values)
+        storage_server.update(server)
 
         try:
-            server.save(self.session)
+            storage_server.save(self.session)
         except exceptions.Duplicate:
             raise exceptions.DuplicateServer()
 
-        return objects.Server.from_sqla(server)
+        return objects.Server.from_sqla(storage_server)
 
     def find_servers(self, context, criterion=None,
                      marker=None, limit=None, sort_key=None, sort_dir=None):
@@ -280,16 +280,16 @@ class SQLAlchemyStorage(base.Storage):
         except exceptions.NotFound:
             raise exceptions.TLDNotFound()
 
-    def create_tld(self, context, values):
-        tld = models.Tld()
-        tld.update(values)
+    def create_tld(self, context, tld):
+        storage_tld = models.Tld()
+        storage_tld.update(tld)
 
         try:
-            tld.save(self.session)
+            storage_tld.save(self.session)
         except exceptions.Duplicate:
             raise exceptions.DuplicateTLD()
 
-        return objects.Tld.from_sqla(tld)
+        return objects.Tld.from_sqla(storage_tld)
 
     def find_tlds(self, context, criterion=None,
                   marker=None, limit=None, sort_key=None, sort_dir=None):
@@ -332,17 +332,17 @@ class SQLAlchemyStorage(base.Storage):
         except exceptions.NotFound:
             raise exceptions.TsigKeyNotFound()
 
-    def create_tsigkey(self, context, values):
-        tsigkey = models.TsigKey()
+    def create_tsigkey(self, context, tsigkey):
+        storage_tsigkey = models.TsigKey()
 
-        tsigkey.update(values)
+        storage_tsigkey.update(tsigkey)
 
         try:
-            tsigkey.save(self.session)
+            storage_tsigkey.save(self.session)
         except exceptions.Duplicate:
             raise exceptions.DuplicateTsigKey()
 
-        return objects.TsigKey.from_sqla(tsigkey)
+        return objects.TsigKey.from_sqla(storage_tsigkey)
 
     def find_tsigkeys(self, context, criterion=None,
                       marker=None, limit=None, sort_key=None, sort_dir=None):
@@ -425,17 +425,17 @@ class SQLAlchemyStorage(base.Storage):
         except exceptions.NotFound:
             raise exceptions.DomainNotFound()
 
-    def create_domain(self, context, values):
-        domain = models.Domain()
+    def create_domain(self, context, domain):
+        storage_domain = models.Domain()
 
-        domain.update(values)
+        storage_domain.update(domain)
 
         try:
-            domain.save(self.session)
+            storage_domain.save(self.session)
         except exceptions.Duplicate:
             raise exceptions.DuplicateDomain()
 
-        return objects.Domain.from_sqla(domain)
+        return objects.Domain.from_sqla(storage_domain)
 
     def get_domain(self, context, domain_id):
         domain = self._find_domains(context, {'id': domain_id}, one=True)
@@ -492,22 +492,22 @@ class SQLAlchemyStorage(base.Storage):
         except exceptions.NotFound:
             raise exceptions.RecordSetNotFound()
 
-    def create_recordset(self, context, domain_id, values):
+    def create_recordset(self, context, domain_id, recordset):
         # Fetch the domain as we need the tenant_id
         domain = self._find_domains(context, {'id': domain_id}, one=True)
 
-        recordset = models.RecordSet()
+        storage_recordset = models.RecordSet()
 
-        recordset.update(values)
-        recordset.tenant_id = domain['tenant_id']
-        recordset.domain_id = domain_id
+        storage_recordset.update(recordset)
+        storage_recordset.tenant_id = domain['tenant_id']
+        storage_recordset.domain_id = domain_id
 
         try:
-            recordset.save(self.session)
+            storage_recordset.save(self.session)
         except exceptions.Duplicate:
             raise exceptions.DuplicateRecordSet()
 
-        return objects.RecordSet.from_sqla(recordset)
+        return objects.RecordSet.from_sqla(storage_recordset)
 
     def get_recordset(self, context, recordset_id):
         recordset = self._find_recordsets(context, {'id': recordset_id},
@@ -593,24 +593,24 @@ class SQLAlchemyStorage(base.Storage):
         else:
             raise TypeError("Unknown recordset type - %s" % recordset.type)
 
-    def create_record(self, context, domain_id, recordset_id, values):
+    def create_record(self, context, domain_id, recordset_id, record):
         # Fetch the domain as we need the tenant_id
         domain = self._find_domains(context, {'id': domain_id}, one=True)
 
         # Create and populate the new Record model
-        record = models.Record()
-        record.update(values)
-        record.tenant_id = domain['tenant_id']
-        record.domain_id = domain_id
-        record.recordset_id = recordset_id
+        storage_record = models.Record()
+        storage_record.update(record)
+        storage_record.tenant_id = domain['tenant_id']
+        storage_record.domain_id = domain_id
+        storage_record.recordset_id = recordset_id
 
         try:
             # Save the new Record model
-            record.save(self.session)
+            storage_record.save(self.session)
         except exceptions.Duplicate:
             raise exceptions.DuplicateRecord()
 
-        return self._get_record_object(context, record)
+        return self._get_record_object(context, storage_record)
 
     def find_records(self, context, criterion=None,
                      marker=None, limit=None, sort_key=None, sort_dir=None):
@@ -666,17 +666,17 @@ class SQLAlchemyStorage(base.Storage):
         except exceptions.NotFound:
             raise exceptions.BlacklistNotFound()
 
-    def create_blacklist(self, context, values):
-        blacklist = models.Blacklists()
+    def create_blacklist(self, context, blacklist):
+        storage_blacklist = models.Blacklists()
 
-        blacklist.update(values)
+        storage_blacklist.update(blacklist)
 
         try:
-            blacklist.save(self.session)
+            storage_blacklist.save(self.session)
         except exceptions.Duplicate:
             raise exceptions.DuplicateBlacklist()
 
-        return objects.Blacklist.from_sqla(blacklist)
+        return objects.Blacklist.from_sqla(storage_blacklist)
 
     def find_blacklists(self, context, criterion=None,
                         marker=None, limit=None, sort_key=None, sort_dir=None):
