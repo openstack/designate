@@ -29,6 +29,7 @@ DESIGNATECLIENT_REPO=${DESIGNATECLIENT_REPO:-${GIT_BASE}/stackforge/python-desig
 DESIGNATECLIENT_BRANCH=${DESIGNATECLIENT_BRANCH:-master}
 
 # Set up default paths
+DESIGNATE_BIN_DIR=$(get_python_exec_prefix)
 DESIGNATE_DIR=$DEST/designate
 DESIGNATECLIENT_DIR=$DEST/python-designateclient
 DESIGNATE_CONF_DIR=/etc/designate
@@ -202,7 +203,6 @@ function install_designateclient() {
 function start_designate() {
     start_designate_backend
 
-    screen_it designate-api "designate-api --config-file $DESIGNATE_CONF"
     # If using bind9, central must have access to the bind zone/db files.
     # The configure phase has already added the $STACK_USER to the bind
     # system daemon group - we need to start central using that group using sg.
@@ -210,10 +210,11 @@ function start_designate() {
     if [[ "$DESIGNATE_BACKEND_DRIVER" = 'bind9' ]]; then
         screen_it designate-central "sg $BIND_GROUP designate-central --config-file $DESIGNATE_CONF"
     else
-        screen_it designate-central "designate-central --config-file $DESIGNATE_CONF"
+        screen_it designate-central "cd $DESIGNATE_DIR && $DESIGNATE_BIN_DIR/designate-central --config-file $DESIGNATE_CONF"
     fi
-    screen_it designate-agent "designate-agent --config-file $DESIGNATE_CONF"
-    screen_it designate-sink "designate-sink --config-file $DESIGNATE_CONF"
+    screen_it designate-api "cd $DESIGNATE_DIR && $DESIGNATE_BIN_DIR/designate-api --config-file $DESIGNATE_CONF"
+    screen_it designate-agent "cd $DESIGNATE_DIR && $DESIGNATE_BIN_DIR/designate-agent --config-file $DESIGNATE_CONF"
+    screen_it designate-sink "cd $DESIGNATE_DIR && $DESIGNATE_BIN_DIR/designate-sink --config-file $DESIGNATE_CONF"
 
     # Start proxies if enabled
     if is_service_enabled designate-api && is_service_enabled tls-proxy; then
