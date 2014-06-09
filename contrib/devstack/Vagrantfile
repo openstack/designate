@@ -1,6 +1,8 @@
 VAGRANTFILE_API_VERSION = "2"
 GITCONFIG = `cat $HOME/.gitconfig`
 
+Vagrant.require_version ">= 1.5"
+
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.ssh.forward_agent = true
 
