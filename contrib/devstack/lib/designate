@@ -112,29 +112,29 @@ function configure_designate() {
 # service              designate  admin        # if enabled
 function create_designate_accounts() {
 
-    SERVICE_TENANT=$(keystone tenant-list | awk "/ $SERVICE_TENANT_NAME / { print \$2 }")
-    ADMIN_ROLE=$(keystone role-list | awk "/ admin / { print \$2 }")
+    SERVICE_TENANT=$(openstack project list | awk "/ $SERVICE_TENANT_NAME / { print \$2 }")
+    ADMIN_ROLE=$(openstack role list | awk "/ admin / { print \$2 }")
 
     if [[ "$ENABLED_SERVICES" =~ "designate-api" ]]; then
-        DESIGNATE_USER=$(keystone user-create \
-            --name=designate \
-            --pass="$SERVICE_PASSWORD" \
-            --tenant_id $SERVICE_TENANT \
-            --email=designate@example.com \
+        DESIGNATE_USER=$(openstack user create \
+            designate \
+            --password "$SERVICE_PASSWORD" \
+            --project $SERVICE_TENANT \
+            --email designate@example.com \
             | grep " id " | get_field 2)
-        keystone user-role-add \
-            --tenant_id $SERVICE_TENANT \
-            --user_id $DESIGNATE_USER \
-            --role_id $ADMIN_ROLE
+        openstack role add \
+            $ADMIN_ROLE \
+            --project $SERVICE_TENANT \
+            --user $DESIGNATE_USER
         if [[ "$KEYSTONE_CATALOG_BACKEND" = 'sql' ]]; then
-            DESIGNATE_SERVICE=$(keystone service-create \
-                --name=designate \
+            DESIGNATE_SERVICE=$(openstack service create \
+                designate \
                 --type=dns \
-                --description="Designate Service" \
+                --description="Designate DNS Service" \
                 | grep " id " | get_field 2)
-            keystone endpoint-create \
+             openstack endpoint create \
+                $DESIGNATE_SERVICE \
                 --region RegionOne \
-                --service_id $DESIGNATE_SERVICE \
                 --publicurl "http://$SERVICE_HOST:9001/" \
                 --adminurl "http://$SERVICE_HOST:9001/" \
                 --internalurl "http://$SERVICE_HOST:9001/"
