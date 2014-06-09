@@ -258,23 +258,23 @@ function configure_bind() {
     if is_ubuntu; then
         sudo touch /etc/apparmor.d/disable/usr.sbin.named
         sudo service apparmor reload
-        sudo cat << EOF > /etc/bind/named.conf.options
-        options {
-        directory "/var/cache/bind";
-        allow-new-zones yes;
-        dnssec-validation auto;
-        auth-nxdomain no;    # conform to RFC1035
-        listen-on-v6 { any; };
-        };
+        sudo tee /etc/bind/named.conf.options > /dev/null <<EOF
+options {
+    directory "/var/cache/bind";
+    allow-new-zones yes;
+    dnssec-validation auto;
+    auth-nxdomain no;    # conform to RFC1035
+    listen-on-v6 { any; };
+};
 EOF
 
-        sudo cat << EOF > /etc/bind/rndc.conf
-        include "/etc/bind/rndc.key";
-        options {
-            default-key "rndc-key";
-            default-server 127.0.0.1;
-            default-port 953;
-        };
+        sudo tee /etc/bind/rndc.conf > /dev/null <<EOF
+include "/etc/bind/rndc.key";
+options {
+    default-key "rndc-key";
+    default-server 127.0.0.1;
+    default-port 953;
+};
 EOF
     else
         echo "Designate DevStack bind9 implementation is Ubuntu-only"
