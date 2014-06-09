@@ -1,0 +1,30 @@
+# Passwords
+ADMIN_PASSWORD=password
+MYSQL_PASSWORD=password
+RABBIT_PASSWORD=password
+SERVICE_PASSWORD=password
+SERVICE_TOKEN=password
+
+# Glance/Nova Images
+IMAGE_URLS=http://download.cirros-cloud.net/0.3.1/cirros-0.3.1-x86_64-uec.tar.gz
+
+# Logging
+LOGFILE=/opt/stack/logs/stack.sh.log
+SCREEN_LOGDIR=/opt/stack/logs
+VERBOSE=True
+LOG_COLOR=True
+
+# Neutron Configuration
+FLOATING_RANGE=172.24.4.225/27
+Q_FLOATING_ALLOCATION_POOL=start=172.24.4.227,end=172.24.4.253
+PUBLIC_NETWORK_GATEWAY=172.24.4.226
+
+# Enable the basic services we require
+ENABLED_SERVICES=rabbit,mysql,key
+
+# Enable core Designate services
+ENABLED_SERVICES+=,designate,designate-api,designate-central
+
+# Optional Designate services
+#ENABLED_SERVICES+=,designate-sink
+#ENABLED_SERVICES+=,designate-agent

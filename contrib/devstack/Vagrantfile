@@ -1,0 +1,64 @@
+VAGRANTFILE_API_VERSION = "2"
+GITCONFIG = `cat $HOME/.gitconfig`
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  config.ssh.forward_agent = true
+
+  config.vm.synced_folder "../..", "/opt/stack/designate"
+
+  if File.directory?("../../../python-designateclient")
+    config.vm.synced_folder "../../../python-designateclient", "/opt/stack/python-designateclient"
+  end
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.customize ["modifyvm", :id, "--memory", "2048"]
+    vb.customize ["modifyvm", :id, "--nicpromisc3", "allow-all"]
+  end
+
+  $script = <<SCRIPT
+set -e
+
+# Copy over git config
+cat << EOF > /home/vagrant/.gitconfig
+#{GITCONFIG}
+EOF
+
+# Clone DevStack
+if [ ! -d "/home/vagrant/devstack" ]; then
+    git clone https://git.openstack.org/openstack-dev/devstack.git /home/vagrant/devstack
+fi
+
+# Install Designate DevStack extension
+cd /vagrant
+for f in lib/* extras.d/* exercises/* localrc; do
+    if [ ! -f "/home/vagrant/devstack/$f" ]; then
+        ln -fs /vagrant/$f -t /home/vagrant/devstack/$(dirname $f)
+    fi
+done
+
+SCRIPT
+
+  config.vm.define "ubuntu" do |ubuntu|
+    ubuntu.vm.box = "rhefner/devstack-dependencies"
+
+    ubuntu.vm.network :private_network, ip: "192.168.27.100"
+    ubuntu.vm.network :private_network, ip: "172.24.4.225", :netmask => "255.255.255.224", :auto_config => false
+
+    ubuntu.vm.provision :shell, :privileged => true, :inline => "DEBIAN_FRONTEND=noninteractive apt-get update"
+    ubuntu.vm.provision :shell, :privileged => true, :inline => "DEBIAN_FRONTEND=noninteractive apt-get install --yes git"
+
+    ubuntu.vm.provision :shell, :privileged => false, :inline => $script
+  end
+
+  config.vm.define "fedora" do |fedora|
+    fedora.vm.box = "box-cutter/fedora20"
+
+    fedora.vm.network :private_network, ip: "192.168.27.101"
+    fedora.vm.network :private_network, ip: "172.24.4.226", :netmask => "255.255.255.224", :auto_config => false
+
+    fedora.vm.provision :shell, :privileged => true, :inline => "yum update -y vim-minimal" # RH Bug 1066983
+    fedora.vm.provision :shell, :privileged => true, :inline => "yum install -y git-core MySQL-python"
+
+    fedora.vm.provision :shell, :privileged => false, :inline => $script
+  end
+end
