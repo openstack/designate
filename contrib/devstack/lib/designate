@@ -42,6 +42,12 @@ DESIGNATE_APIPASTE_CONF=$DESIGNATE_CONF_DIR/api-paste.ini
 # Set up default options
 DESIGNATE_BACKEND_DRIVER=${DESIGNATE_BACKEND_DRIVER:=powerdns}
 
+# Public IP/Port Settings
+DESIGNATE_SERVICE_HOST=${DESIGNATE_SERVICE_HOST:-$SERVICE_HOST}
+DESIGNATE_SERVICE_PORT=${DESIGNATE_SERVICE_PORT:-9001}
+DESIGNATE_SERVICE_PORT_INT=${DESIGNATE_SERVICE_PORT_INT:-19001}
+DESIGNATE_SERVICE_PROTOCOL=${DESIGNATE_SERVICE_PROTOCOL:-$SERVICE_PROTOCOL}
+
 # Get backend configuration
 # ----------------------------
 if is_service_enabled designate && [[ -r $DESIGNATE_PLUGINS/backend-$DESIGNATE_BACKEND_DRIVER ]]; then
@@ -98,6 +104,15 @@ function configure_designate() {
         iniset $DESIGNATE_CONF service:central backend_driver $DESIGNATE_BACKEND_DRIVER
     fi
 
+    iniset $DESIGNATE_CONF service:api api_host $DESIGNATE_SERVICE_HOST
+    iniset $DESIGNATE_CONF service:api api_base_uri $DESIGNATE_SERVICE_PROTOCOL://$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT/
+    if is_service_enabled tls-proxy; then
+        # Set the service port for a proxy to take the original
+        iniset $DESIGNATE_CONF service:api api_port $DESIGNATE_SERVICE_PORT_INT
+    else
+        iniset $DESIGNATE_CONF service:api api_port $DESIGNATE_SERVICE_PORT
+    fi
+
     # Install the policy file for the API server
     cp $DESIGNATE_DIR/etc/designate/policy.json $DESIGNATE_CONF_DIR/policy.json
     iniset $DESIGNATE_CONF DEFAULT policy_file $DESIGNATE_CONF_DIR/policy.json
@@ -135,9 +150,9 @@ function create_designate_accounts() {
              openstack endpoint create \
                 $DESIGNATE_SERVICE \
                 --region RegionOne \
-                --publicurl "http://$SERVICE_HOST:9001/" \
-                --adminurl "http://$SERVICE_HOST:9001/" \
-                --internalurl "http://$SERVICE_HOST:9001/"
+                --publicurl "$DESIGNATE_SERVICE_PROTOCOL://$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT/" \
+                --adminurl "$DESIGNATE_SERVICE_PROTOCOL://$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT/" \
+                --internalurl "$DESIGNATE_SERVICE_PROTOCOL://$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT/"
         fi
     fi
 }
@@ -200,7 +215,12 @@ function start_designate() {
     screen_it designate-agent "designate-agent --config-file $DESIGNATE_CONF"
     screen_it designate-sink "designate-sink --config-file $DESIGNATE_CONF"
 
-    if ! timeout $SERVICE_TIMEOUT sh -c "while ! wget --no-proxy -q -O- http://127.0.0.1:9001; do sleep 1; done"; then
+    # Start proxies if enabled
+    if is_service_enabled designate-api && is_service_enabled tls-proxy; then
+        start_tls_proxy '*' $DESIGNATE_SERVICE_PORT $DESIGNATE_SERVICE_HOST $DESIGNATE_SERVICE_PORT_INT &
+    fi
+
+    if ! timeout $SERVICE_TIMEOUT sh -c "while ! wget --no-proxy -q -O- $DESIGNATE_SERVICE_PROTOCOL://$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT; do sleep 1; done"; then
         die $LINENO "Designate did not start"
     fi
 }
