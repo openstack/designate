@@ -15,6 +15,7 @@
 # under the License.
 from paste import deploy
 from designate.openstack.common import log as logging
+from designate.openstack.common.gettextutils import _LI
 from designate.openstack.deprecated import wsgi
 from oslo.config import cfg
 from designate import exceptions
@@ -35,7 +36,7 @@ class Service(wsgi.Service):
             msg = 'Unable to determine appropriate api-paste-config file'
             raise exceptions.ConfigurationError(msg)
 
-        LOG.info('Using api-paste-config found at: %s' % config_paths[0])
+        LOG.info(_LI('Using api-paste-config found at: %s') % config_paths[0])
 
         policy.init()
 

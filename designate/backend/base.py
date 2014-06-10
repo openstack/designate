@@ -15,6 +15,7 @@
 # under the License.
 import abc
 from designate.openstack.common import log as logging
+from designate.openstack.common.gettextutils import _LW
 from designate import exceptions
 from designate.context import DesignateContext
 from designate.plugin import DriverPlugin
@@ -114,8 +115,8 @@ class Backend(DriverPlugin):
         except exceptions.DomainNotFound as e:
             # NOTE(Kiall): This means a domain was missing from the backend.
             #              Good thing we're doing a sync!
-            LOG.warn("Failed to delete domain '%s' during sync. Message: %s",
-                     domain['id'], str(e))
+            LOG.warn(_LW("Failed to delete domain '%s' during sync. "
+                     "Message: %s"), domain['id'], str(e))
 
         # Next, re-create the domain in the backend.
         self.create_domain(context, domain)
@@ -139,8 +140,9 @@ class Backend(DriverPlugin):
         except exceptions.RecordNotFound as e:
             # NOTE(Kiall): This means a record was missing from the backend.
             #              Good thing we're doing a sync!
-            LOG.warn("Failed to delete record '%s' in domain '%s' during sync."
-                     " Message: %s", record['id'], domain['id'], str(e))
+            LOG.warn(_LW("Failed to delete record '%s' in domain '%s' "
+                     "during sync. Message: %s"), record['id'],
+                     domain['id'], str(e))
 
         # Finally, re-create the record in the backend.
         self.create_record(context, domain, recordset, record)

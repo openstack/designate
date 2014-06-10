@@ -23,6 +23,9 @@ import json
 import copy
 from oslo.config import cfg
 from designate.backend import impl_ipa
+from designate.openstack.common.gettextutils import _LI
+from designate.openstack.common.gettextutils import _LW
+from designate.openstack.common.gettextutils import _LE
 from designate import utils
 
 logging.basicConfig()
@@ -104,7 +107,7 @@ def rec2des(rec, zonename):
             if k in iparectype2designate:
                 rectypes.append(k)
             else:
-                LOG.info("Skipping unknown record type %s in %s" %
+                LOG.info(_LI("Skipping unknown record type %s in %s") %
                          k, name)
 
     desrecs = []
@@ -170,18 +173,19 @@ def syncipaservers2des(servers, designatereq, designateurl):
         for srec in resp.json()['servers']:
             dservers[srec['name']] = srec['id']
     else:
-        LOG.warn("No servers in designate")
+        LOG.warn(_LW("No servers in designate"))
 
     # first - add servers from ipa not already in designate
     for server in servers:
         if server in dservers:
-            LOG.info("Skipping ipa server %s already in designate" % server)
+            LOG.info(_LI("Skipping ipa server %s already in designate")
+                     % server)
         else:
             desreq = {"name": server}
             resp = designatereq.post(srvurl, data=json.dumps(desreq))
             LOG.debug("Response: %s" % pprint.pformat(resp.json()))
             if resp.status_code == 200:
-                LOG.info("Added server %s to designate" % server)
+                LOG.info(_LI("Added server %s to designate") % server)
             else:
                 raise AddServerError("Unable to add %s: %s" %
                                      (server, pprint.pformat(resp.json())))
@@ -191,7 +195,7 @@ def syncipaservers2des(servers, designatereq, designateurl):
         if server not in servers:
             delresp = designatereq.delete(srvurl + "/" + sid)
             if delresp.status_code == 200:
-                LOG.info("Deleted server %s" % server)
+                LOG.info(_LI("Deleted server %s") % server)
             else:
                 raise DeleteServerError("Unable to delete %s: %s" %
                                         (server,
@@ -285,11 +289,11 @@ def main():
     exc = None
     fakezoneid = None
     if resp.status_code == 200:
-        LOG.info("Added domain %s" % domname)
+        LOG.info(_LI("Added domain %s") % domname)
         fakezoneid = resp.json()['id']
         delresp = designatereq.delete(domainurl + "/" + fakezoneid)
         if delresp.status_code != 200:
-            LOG.error("Unable to delete %s: %s" %
+            LOG.error(_LE("Unable to delete %s: %s") %
                       (domname, pprint.pformat(delresp.json())))
     else:
         exc = CannotUseIPABackend(cuiberrorstr)
@@ -300,7 +304,7 @@ def main():
     iparesp = ipabackend._call_and_handle_error(ipareq)
     LOG.debug("Response: %s" % pprint.pformat(iparesp))
     if iparesp['error']:
-        LOG.error(pprint.pformat(iparesp))
+        LOG.error(_LE(pprint.pformat(iparesp)))
 
     if exc:
         raise exc
@@ -329,7 +333,7 @@ def main():
         desreq = zone2des(zonerec)
         resp = designatereq.post(domainurl, data=json.dumps(desreq))
         if resp.status_code == 200:
-            LOG.info("Added domain %s" % desreq['name'])
+            LOG.info(_LI("Added domain %s") % desreq['name'])
         else:
             raise AddDomainError("Unable to add domain %s: %s" %
                                  (desreq['name'], pprint.pformat(resp.json())))
@@ -344,7 +348,7 @@ def main():
             for desreq in desreqs:
                 resp = designatereq.post(recurl, data=json.dumps(desreq))
                 if resp.status_code == 200:
-                    LOG.info("Added record %s for domain %s" %
+                    LOG.info(_LI("Added record %s for domain %s") %
                              (desreq['name'], zonename))
                 else:
                     raise AddRecordError("Could not add record %s: %s" %

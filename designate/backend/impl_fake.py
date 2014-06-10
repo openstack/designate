@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from designate.openstack.common import log as logging
+from designate.openstack.common.gettextutils import _LI
 from designate.backend import base
 
 LOG = logging.getLogger(__name__)
@@ -26,55 +27,58 @@ class FakeBackend(base.Backend):
         super(FakeBackend, self).__init__(*args, **kwargs)
 
     def create_tsigkey(self, context, tsigkey):
-        LOG.info('Create TSIG Key %r' % tsigkey)
+        LOG.info(_LI('Create TSIG Key %r') % tsigkey)
 
     def update_tsigkey(self, context, tsigkey):
-        LOG.info('Update TSIG Key %r' % tsigkey)
+        LOG.info(_LI('Update TSIG Key %r') % tsigkey)
 
     def delete_tsigkey(self, context, tsigkey):
-        LOG.info('Delete TSIG Key %r' % tsigkey)
+        LOG.info(_LI('Delete TSIG Key %r') % tsigkey)
 
     def create_server(self, context, server):
-        LOG.info('Create Server %r' % server)
+        LOG.info(_LI('Create Server %r') % server)
 
     def update_server(self, context, server):
-        LOG.info('Update Server %r' % server)
+        LOG.info(_LI('Update Server %r') % server)
 
     def delete_server(self, context, server):
-        LOG.info('Delete Server %r' % server)
+        LOG.info(_LI('Delete Server %r') % server)
 
     def create_domain(self, context, domain):
-        LOG.info('Create Domain %r' % domain)
+        LOG.info(_LI('Create Domain %r') % domain)
 
     def update_domain(self, context, domain):
-        LOG.info('Update Domain %r' % domain)
+        LOG.info(_LI('Update Domain %r') % domain)
 
     def delete_domain(self, context, domain):
-        LOG.info('Delete Domain %r' % domain)
+        LOG.info(_LI('Delete Domain %r') % domain)
 
     def create_recordset(self, context, domain, recordset):
-        LOG.info('Create RecordSet %r / %r' % (domain, recordset))
+        LOG.info(_LI('Create RecordSet %r / %r') % (domain, recordset))
 
     def update_recordset(self, context, domain, recordset):
-        LOG.info('Update RecordSet %r / %r' % (domain, recordset))
+        LOG.info(_LI('Update RecordSet %r / %r') % (domain, recordset))
 
     def delete_recordset(self, context, domain, recordset):
-        LOG.info('Delete RecordSet %r / %r' % (domain, recordset))
+        LOG.info(_LI('Delete RecordSet %r / %r') % (domain, recordset))
 
     def create_record(self, context, domain, recordset, record):
-        LOG.info('Create Record %r / %r / %r' % (domain, recordset, record))
+        LOG.info(_LI('Create Record %r / %r / %r') %
+                 (domain, recordset, record))
 
     def update_record(self, context, domain, recordset, record):
-        LOG.info('Update Record %r / %r / %r' % (domain, recordset, record))
+        LOG.info(_LI('Update Record %r / %r / %r') %
+                 (domain, recordset, record))
 
     def delete_record(self, context, domain, recordset, record):
-        LOG.info('Delete Record %r / %r / %r' % (domain, recordset, record))
+        LOG.info(_LI('Delete Record %r / %r / %r') %
+                 (domain, recordset, record))
 
     def sync_domain(self, context, domain, records):
-        LOG.info('Sync Domain %r / %r' % (domain, records))
+        LOG.info(_LI('Sync Domain %r / %r') % (domain, records))
 
     def sync_record(self, context, domain, record):
-        LOG.info('Sync Record %r / %r' % (domain, record))
+        LOG.info(_LI('Sync Record %r / %r') % (domain, record))
 
     def ping(self, context):
-        LOG.info('Ping')
+        LOG.info(_LI('Ping'))

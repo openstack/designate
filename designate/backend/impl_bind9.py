@@ -16,6 +16,7 @@
 import os
 from oslo.config import cfg
 from designate.openstack.common import log as logging
+from designate.openstack.common.gettextutils import _LW
 from designate import utils
 from designate.backend import base
 import glob
@@ -57,8 +58,8 @@ class Bind9Backend(base.Backend):
             except utils.processutils.ProcessExecutionError as proc_exec_err:
                 stderr = proc_exec_err.stderr
                 if stderr.count("rndc: 'reload' failed: not found") is not 0:
-                    LOG.warn("Domain %s (%s) missing from backend, recreating",
-                             domain['name'], domain['id'])
+                    LOG.warn(_LW("Domain %s (%s) missing from backend, "
+                             "recreating"), domain['name'], domain['id'])
                     self._sync_domain(domain, new_domain_flag=True)
                 else:
                     raise proc_exec_err

@@ -24,6 +24,8 @@ from requests.adapters import HTTPAdapter
 from designate import exceptions
 from designate.backend import base
 from designate.openstack.common import log as logging
+from designate.openstack.common.gettextutils import _LI
+from designate.openstack.common.gettextutils import _LW
 
 LOG = logging.getLogger(__name__)
 
@@ -325,7 +327,7 @@ class DynECTBackend(base.Backend):
             timings=cfg.CONF[GROUP].timings)
 
     def create_domain(self, context, domain):
-        LOG.info('Creating domain %s / %s', domain['id'], domain['name'])
+        LOG.info(_LI('Creating domain %s / %s'), domain['id'], domain['name'])
 
         url = '/Secondary/%s' % domain['name'].rstrip('.')
         data = {
@@ -347,15 +349,15 @@ class DynECTBackend(base.Backend):
         LOG.debug('Discarding update_domain call, not-applicable')
 
     def delete_domain(self, context, domain):
-        LOG.info('Deleting domain %s / %s', domain['id'], domain['name'])
+        LOG.info(_LI('Deleting domain %s / %s'), domain['id'], domain['name'])
         url = '/Zone/%s' % domain['name'].rstrip('.')
         client = self.get_client()
         try:
             client.delete(url)
         except DynClientError as e:
             if e.http_status == 404:
-                msg = "Attempt to delete %s / %s caused 404, ignoring."
-                LOG.warn(msg, domain['id'], domain['name'])
+                LOG.warn(_LW("Attempt to delete %s / %s caused 404, "
+                         "ignoring."), domain['id'], domain['name'])
                 pass
             else:
                 raise

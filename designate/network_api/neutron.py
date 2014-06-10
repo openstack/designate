@@ -25,6 +25,8 @@ from designate import exceptions
 
 from designate.openstack.common import log as logging
 from designate.openstack.common import threadgroup
+from designate.openstack.common.gettextutils import _LW
+from designate.openstack.common.gettextutils import _LE
 from designate.network_api.base import NetworkAPI
 
 
@@ -117,12 +119,13 @@ class NeutronNetworkAPI(NetworkAPI):
                 # NOTE: 401 might be that the user doesn't have neutron
                 # activated in a particular region, we'll just log the failure
                 # and go on with our lives.
-                msg = "Calling Neutron resulted in a 401, please investigate."
-                LOG.warning(msg)
+                LOG.warning(_LW("Calling Neutron resulted in a 401, "
+                                "please investigate."))
                 LOG.exception(e)
                 return
             except Exception as e:
-                LOG.error('Failed calling Neutron %s - %s', region, endpoint)
+                LOG.error(_LE('Failed calling Neutron %s - %s'),
+                          region, endpoint)
                 LOG.exception(e)
                 failed.append((e, endpoint, region))
                 return

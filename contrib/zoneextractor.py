@@ -20,6 +20,8 @@ import os
 import dns.zone
 import argparse
 import logging
+from designate.openstack.common.gettextutils import _LI
+from designate.openstack.common.gettextutils import _LE
 
 
 logging.basicConfig()
@@ -166,13 +168,13 @@ class Extractor:
                     zone_object = dns.zone.from_file(zonefile,
                                                      allow_include=True)
                 except dns.zone.UnknownOrigin:
-                    LOG.info('%s is missing $ORIGIN, inserting %s' %
+                    LOG.info(_LI('%s is missing $ORIGIN, inserting %s') %
                              (zonefile, name))
                     zone_object = dns.zone.from_file(zonefile,
                                                      allow_include=True,
                                                      origin=name)
                 except dns.zone.NoSOA:
-                    LOG.error('%s has no SOA' % zonefile)
+                    LOG.error(_LE('%s has no SOA') % zonefile)
                 zones.append(Zone(zone_object))
         return zones
 

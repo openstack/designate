@@ -20,6 +20,7 @@ from designate.openstack.common import log as logging
 from designate.openstack.common import importutils
 from designate.backend import base
 from designate.openstack.common import jsonutils as json
+from designate.openstack.common.gettextutils import _LE
 import pprint
 import time
 
@@ -400,8 +401,8 @@ class IPABackend(base.Backend):
             if status_code == 401:
                 if self.ntries == 0:
                     # persistent inability to auth
-                    LOG.error("Error: could not authenticate to IPA - "
-                              "please check for correct keytab file")
+                    LOG.error(_LE("Error: could not authenticate to IPA - "
+                              "please check for correct keytab file"))
                     # reset for next time
                     self.ntries = cfg.CONF[self.name].ipa_connect_retries
                     raise IPACommunicationFailure()

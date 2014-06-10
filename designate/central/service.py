@@ -21,6 +21,7 @@ from oslo.config import cfg
 from oslo import messaging
 
 from designate.openstack.common import log as logging
+from designate.openstack.common.gettextutils import _LI
 from designate import backend
 from designate import exceptions
 from designate import network_api
@@ -74,10 +75,10 @@ class Service(service.Service):
         tlds = self.storage_api.find_tlds({})
         if tlds:
             self.check_for_tlds = True
-            LOG.info("Checking for TLDs")
+            LOG.info(_LI("Checking for TLDs"))
         else:
             self.check_for_tlds = False
-            LOG.info("NOT checking for TLDs")
+            LOG.info(_LI("NOT checking for TLDs"))
 
         self.backend.start()
 
@@ -1269,7 +1270,7 @@ class Service(service.Service):
             zone = self.storage_api.find_domain(
                 elevated_context, {'name': zone_name})
         except exceptions.DomainNotFound:
-            msg = 'Creating zone for %s:%s - %s zone %s' % \
+            msg = _LI('Creating zone for %s:%s - %s zone %s') % \
                 (floatingip_id, region, fip['address'], zone_name)
             LOG.info(msg)
 

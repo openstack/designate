@@ -27,6 +27,9 @@ from designate.openstack.common import jsonutils as json
 from designate.openstack.common import local
 from designate.openstack.common import log as logging
 from designate.openstack.common import strutils
+from designate.openstack.common.gettextutils import _LI
+from designate.openstack.common.gettextutils import _LE
+from designate.openstack.common.gettextutils import _LC
 
 LOG = logging.getLogger(__name__)
 
@@ -42,7 +45,7 @@ class MaintenanceMiddleware(wsgi.Middleware):
     def __init__(self, application):
         super(MaintenanceMiddleware, self).__init__(application)
 
-        LOG.info('Starting designate maintenance middleware')
+        LOG.info(_LI('Starting designate maintenance middleware'))
 
         self.enabled = cfg.CONF['service:api'].maintenance_mode
         self.role = cfg.CONF['service:api'].maintenance_mode_role
@@ -71,7 +74,7 @@ def auth_pipeline_factory(loader, global_conf, **local_conf):
     """
     pipeline = local_conf[cfg.CONF['service:api'].auth_strategy]
     pipeline = pipeline.split()
-    LOG.info('Getting auth pipeline: %s' % pipeline[:-1])
+    LOG.info(_LI('Getting auth pipeline: %s') % pipeline[:-1])
     filters = [loader.get_filter(n) for n in pipeline[:-1]]
     app = loader.get_app(pipeline[-1])
     filters.reverse()
@@ -97,7 +100,7 @@ class KeystoneContextMiddleware(ContextMiddleware):
     def __init__(self, application):
         super(KeystoneContextMiddleware, self).__init__(application)
 
-        LOG.info('Starting designate keystonecontext middleware')
+        LOG.info(_LI('Starting designate keystonecontext middleware'))
 
     def process_request(self, request):
         headers = request.headers
@@ -134,7 +137,7 @@ class NoAuthContextMiddleware(ContextMiddleware):
     def __init__(self, application):
         super(NoAuthContextMiddleware, self).__init__(application)
 
-        LOG.info('Starting designate noauthcontext middleware')
+        LOG.info(_LI('Starting designate noauthcontext middleware'))
 
     def process_request(self, request):
         headers = request.headers
@@ -157,8 +160,8 @@ class TestContextMiddleware(ContextMiddleware):
     def __init__(self, application, tenant_id=None, user_id=None):
         super(TestContextMiddleware, self).__init__(application)
 
-        LOG.critical('Starting designate testcontext middleware')
-        LOG.critical('**** DO NOT USE IN PRODUCTION ****')
+        LOG.critical(_LC('Starting designate testcontext middleware'))
+        LOG.critical(_LC('**** DO NOT USE IN PRODUCTION ****'))
 
         self.default_tenant_id = tenant_id
         self.default_user_id = user_id
@@ -185,7 +188,7 @@ class FaultWrapperMiddleware(wsgi.Middleware):
     def __init__(self, application):
         super(FaultWrapperMiddleware, self).__init__(application)
 
-        LOG.info('Starting designate faultwrapper middleware')
+        LOG.info(_LI('Starting designate faultwrapper middleware'))
 
     @webob.dec.wsgify
     def __call__(self, request):
@@ -239,6 +242,7 @@ class FaultWrapperMiddleware(wsgi.Middleware):
         if 'type' not in response:
             response['type'] = 'unknown'
 
+        # Return the new response
         if 'context' in request.environ:
             response['request_id'] = request.environ['context'].request_id
 
@@ -247,8 +251,7 @@ class FaultWrapperMiddleware(wsgi.Middleware):
         else:
             #TODO(ekarlso): Remove after verifying that there's actually a
             # context always set
-            LOG.error('Missing context in request, please check.')
+            LOG.error(_LE('Missing context in request, please check.'))
 
-        # Return the new response
         return flask.Response(status=status, headers=headers,
                               response=json.dumps(response))

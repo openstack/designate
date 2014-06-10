@@ -19,6 +19,7 @@ from migrate.exceptions import (DatabaseAlreadyControlledError,
                                 DatabaseNotControlledError)
 from migrate.versioning import api as versioning_api
 from designate.openstack.common import log as logging
+from designate.openstack.common.gettextutils import _LI
 from oslo.config import cfg
 from designate.manage import base
 
@@ -36,9 +37,9 @@ class DatabaseCommands(base.Commands):
         url = cfg.CONF['storage:sqlalchemy'].database_connection
 
         try:
-            LOG.info('Attempting to initialize database')
+            LOG.info(_LI('Attempting to initialize database'))
             versioning_api.version_control(url=url, repository=REPOSITORY)
-            LOG.info('Database initialized successfully')
+            LOG.info(_LI('Database initialized successfully'))
         except DatabaseAlreadyControlledError:
             raise Exception('Database already initialized')
 
@@ -57,8 +58,8 @@ class DatabaseCommands(base.Commands):
         except DatabaseNotControlledError:
             raise Exception('Database not yet initialized')
 
-        LOG.info("Attempting to synchronize database from version "
-                 "'%s' to '%s'",
+        LOG.info(_LI("Attempting to synchronize database from version "
+                 "'%s' to '%s'"),
                  current_version,
                  target_version if target_version is not None else "latest")
 
@@ -69,7 +70,7 @@ class DatabaseCommands(base.Commands):
             versioning_api.upgrade(url=url, repository=REPOSITORY,
                                    version=version)
 
-        LOG.info('Database synchronized successfully')
+        LOG.info(_LI('Database synchronized successfully'))
 
     def version(self):
         url = cfg.CONF['storage:sqlalchemy'].database_connection

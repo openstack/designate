@@ -15,6 +15,7 @@
 # under the License.
 from designate.openstack.common import timeutils
 from designate.openstack.common import log as logging
+from designate.openstack.common.gettextutils import _LW
 from sqlalchemy import MetaData, Table, Column, Integer
 
 LOG = logging.getLogger(__name__)
@@ -34,8 +35,8 @@ def upgrade(migrate_engine):
     domain_count = domains_table.count().execute().first()[0]
 
     if domain_count > 0:
-        LOG.warn('A sync-domains is now required in order for the API '
-                 'provided, and backend provided serial numbers to align')
+        LOG.warn(_LW('A sync-domains is now required in order for the API '
+                 'provided, and backend provided serial numbers to align'))
 
 
 def downgrade(migrate_engine):

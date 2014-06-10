@@ -26,7 +26,7 @@ from sqlalchemy.pool import NullPool, StaticPool
 
 from oslo.config import cfg
 from designate.openstack.common import log as logging
-from designate.openstack.common.gettextutils import _
+from designate.openstack.common.gettextutils import _LW
 
 LOG = logging.getLogger(__name__)
 
@@ -100,7 +100,7 @@ def ping_listener(dbapi_conn, connection_rec, connection_proxy):
         dbapi_conn.cursor().execute('select 1')
     except dbapi_conn.OperationalError as ex:
         if ex.args[0] in (2006, 2013, 2014, 2045, 2055):
-            LOG.warn('Got mysql server has gone away: %s', ex)
+            LOG.warn(_LW('Got mysql server has gone away: %s'), ex)
             raise DisconnectionError("Database server went away")
         else:
             raise
@@ -178,8 +178,8 @@ def get_engine(config_group):
             if remaining == -1:
                 remaining = 'infinite'
             while True:
-                msg = _('SQL connection failed. %s attempts left.')
-                LOG.warn(msg % remaining)
+                LOG.warn(_LW('SQL connection failed. %s attempts left.') %
+                         remaining)
                 if remaining != 'infinite':
                     remaining -= 1
                 time.sleep(cfg.CONF[config_group].retry_interval)

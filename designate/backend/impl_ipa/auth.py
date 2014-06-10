@@ -19,6 +19,8 @@ import uuid
 from requests import auth
 import kerberos
 from designate.backend.impl_ipa import IPAAuthError
+from designate.openstack.common.gettextutils import _LW
+from designate.openstack.common.gettextutils import _LE
 
 LOG = logging.getLogger(__name__)
 
@@ -33,7 +35,7 @@ class IPAAuth(auth.AuthBase):
         if self.keytab:
             os.environ['KRB5_CLIENT_KTNAME'] = self.keytab
         else:
-            LOG.warn('No IPA client kerberos keytab file given')
+            LOG.warn(_LW('No IPA client kerberos keytab file given'))
 
     def __call__(self, request):
         if not self.token:
@@ -47,11 +49,11 @@ class IPAAuth(auth.AuthBase):
         try:
             (_, vc) = kerberos.authGSSClientInit(service, flags)
         except kerberos.GSSError as e:
-            LOG.error("caught kerberos exception %r" % e)
+            LOG.error(_LE("caught kerberos exception %r") % e)
             raise IPAAuthError(str(e))
         try:
             kerberos.authGSSClientStep(vc, "")
         except kerberos.GSSError as e:
-            LOG.error("caught kerberos exception %r" % e)
+            LOG.error(_LE("caught kerberos exception %r") % e)
             raise IPAAuthError(str(e))
         self.token = kerberos.authGSSClientResponse(vc)

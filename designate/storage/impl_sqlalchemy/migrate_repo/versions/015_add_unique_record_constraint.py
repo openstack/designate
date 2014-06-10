@@ -18,6 +18,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.schema import Table, Column, MetaData
 from sqlalchemy.types import String
 from designate.openstack.common import log as logging
+from designate.openstack.common.gettextutils import _LW
 
 LOG = logging.getLogger(__name__)
 meta = MetaData()
@@ -54,7 +55,7 @@ def upgrade(migrate_engine):
         except IntegrityError:
             if record.domain_id not in sync_domains:
                 sync_domains.append(record.domain_id)
-                LOG.warn("Domain '%s' needs to be synchronised" %
+                LOG.warn(_LW("Domain '%s' needs to be synchronised") %
                          record.domain_id)
 
             records_table.delete()\

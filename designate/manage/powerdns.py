@@ -18,6 +18,7 @@ from migrate.exceptions import (DatabaseAlreadyControlledError,
                                 DatabaseNotControlledError)
 from migrate.versioning import api as versioning_api
 from designate.openstack.common import log as logging
+from designate.openstack.common.gettextutils import _LI
 from oslo.config import cfg
 from designate.manage import base
 
@@ -38,9 +39,9 @@ class DatabaseCommands(base.Commands):
             raise Exception('Migration Repository Not Found')
 
         try:
-            LOG.info('Attempting to initialize PowerDNS database')
+            LOG.info(_LI('Attempting to initialize PowerDNS database'))
             versioning_api.version_control(url=url, repository=REPOSITORY)
-            LOG.info('PowerDNS database initialized successfully')
+            LOG.info(_LI('PowerDNS database initialized successfully'))
         except DatabaseAlreadyControlledError:
             raise Exception('PowerDNS Database already initialized')
 
@@ -59,8 +60,8 @@ class DatabaseCommands(base.Commands):
         except DatabaseNotControlledError:
             raise Exception('PowerDNS database not yet initialized')
 
-        LOG.info("Attempting to synchronize PowerDNS database from version "
-                 "'%s' to '%s'",
+        LOG.info(_LI("Attempting to synchronize PowerDNS database "
+                     "from version '%s' to '%s'"),
                  current_version,
                  target_version if target_version is not None else "latest")
 
@@ -71,7 +72,7 @@ class DatabaseCommands(base.Commands):
             versioning_api.upgrade(url=url, repository=REPOSITORY,
                                    version=version)
 
-        LOG.info('PowerDNS database synchronized successfully')
+        LOG.info(_LI('PowerDNS database synchronized successfully'))
 
     def version(self):
         url = cfg.CONF['backend:powerdns'].database_connection

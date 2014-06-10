@@ -16,7 +16,7 @@
 import itertools
 from designate.openstack.common import context
 from designate.openstack.common import log as logging
-from designate.openstack.common.gettextutils import _
+from designate.openstack.common.gettextutils import _LW
 
 LOG = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ class DesignateContext(context.RequestContext):
                  instance_uuid=None, roles=[], service_catalog=None,
                  all_tenants=False, **kwargs):
         if kwargs:
-                LOG.warn(_('Arguments dropped when creating context: %s') %
+                LOG.warn(_LW('Arguments dropped when creating context: %s') %
                          str(kwargs))
         super(DesignateContext, self).__init__(
             auth_token=auth_token,
