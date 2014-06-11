@@ -22,11 +22,12 @@ from oslo import messaging
 from designate import exceptions
 from designate import notifications
 from designate import wsgi
-from designate.context import DesignateContext
+from designate import context
 from designate.openstack.common import jsonutils as json
 from designate.openstack.common import local
 from designate.openstack.common import log as logging
 from designate.openstack.common import strutils
+from designate.openstack.common.middleware import request_id
 from designate.openstack.common.gettextutils import _LI
 from designate.openstack.common.gettextutils import _LE
 from designate.openstack.common.gettextutils import _LC
@@ -84,16 +85,16 @@ def auth_pipeline_factory(loader, global_conf, **local_conf):
 
 
 class ContextMiddleware(wsgi.Middleware):
-    def process_response(self, response):
-        try:
-            context = local.store.context
-        except Exception:
-            pass
-        else:
-            # Add the Request ID as a response header
-            response.headers['X-DNS-Request-ID'] = context.request_id
+    def make_context(self, request, *args, **kwargs):
+        req_id = request.environ.get(request_id.ENV_REQUEST_ID)
+        kwargs.setdefault('request_id', req_id)
 
-        return response
+        ctxt = context.DesignateContext(*args, **kwargs)
+
+        local.store.context = ctxt
+        request.environ['context'] = ctxt
+
+        return ctxt
 
 
 class KeystoneContextMiddleware(ContextMiddleware):
@@ -120,17 +121,13 @@ class KeystoneContextMiddleware(ContextMiddleware):
 
         roles = headers.get('X-Roles').split(',')
 
-        context = DesignateContext(auth_token=headers.get('X-Auth-Token'),
-                                   user=headers.get('X-User-ID'),
-                                   tenant=headers.get('X-Tenant-ID'),
-                                   roles=roles,
-                                   service_catalog=catalog)
-
-        # Store the context where oslo-log exepcts to find it.
-        local.store.context = context
-
-        # Attach the context to the request environment
-        request.environ['context'] = context
+        self.make_context(
+            request,
+            auth_token=headers.get('X-Auth-Token'),
+            user=headers.get('X-User-ID'),
+            tenant=headers.get('X-Tenant-ID'),
+            roles=roles,
+            service_catalog=catalog)
 
 
 class NoAuthContextMiddleware(ContextMiddleware):
@@ -142,18 +139,13 @@ class NoAuthContextMiddleware(ContextMiddleware):
     def process_request(self, request):
         headers = request.headers
 
-        context = DesignateContext(
+        self.make_context(
+            request,
             auth_token=headers.get('X-Auth-Token', None),
             user=headers.get('X-Auth-User-ID', 'noauth-user'),
             tenant=headers.get('X-Auth-Project-ID', 'noauth-project'),
             roles=headers.get('X-Roles', 'admin').split(',')
         )
-
-        # Store the context where oslo-log exepcts to find it.
-        local.store.context = context
-
-        # Attach the context to the request environment
-        request.environ['context'] = context
 
 
 class TestContextMiddleware(ContextMiddleware):
@@ -172,16 +164,11 @@ class TestContextMiddleware(ContextMiddleware):
         all_tenants = strutils.bool_from_string(
             headers.get('X-Test-All-Tenants', 'False'))
 
-        context = DesignateContext(
+        self.make_context(
+            request,
             user=headers.get('X-Test-User-ID', self.default_user_id),
             tenant=headers.get('X-Test-Tenant-ID', self.default_tenant_id),
             all_tenants=all_tenants)
-
-        # Store the context where oslo-log exepcts to find it.
-        local.store.context = context
-
-        # Attach the context to the request environment
-        request.environ['context'] = context
 
 
 class FaultWrapperMiddleware(wsgi.Middleware):
