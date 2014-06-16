@@ -63,10 +63,12 @@ function install_designate_backend {
     sudo chmod -R g+r $BIND_CFG_DIR
     sudo chmod -R g+rw $BIND_VAR_DIR
 
-    # Disable apparmor if installed
-    if [[ -f /etc/apparmor.d/disable/usr.sbin.named ]]; then
-        sudo touch /etc/apparmor.d/disable/usr.sbin.named
-        sudo service apparmor reload
+    # Customize Bind9 apparmor profile if installed
+    if [[ -d /etc/apparmor.d ]]; then
+        sudo tee /etc/apparmor.d/local/usr.sbin.named > /dev/null << EOF
+$DESIGNATE_STATE_PATH/bind9/** rw,
+EOF
+        restart_service apparmor
     fi
 }
 
