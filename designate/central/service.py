@@ -290,6 +290,9 @@ class Service(service.Service):
         target = {'tenant_id': tenant_id}
         policy.check('get_quotas', context, target)
 
+        # This allows admins to get quota information correctly for all tenants
+        context.all_tenants = True
+
         return self.quota.get_quotas(context, tenant_id)
 
     def get_quota(self, context, tenant_id, resource):

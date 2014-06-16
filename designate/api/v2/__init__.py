@@ -22,6 +22,12 @@ from designate.openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)
 
+OPTS = [
+    cfg.ListOpt('enabled-extensions-v2', default=[],
+                help='Enabled API Extensions'),
+]
+
+cfg.CONF.register_opts(OPTS, group='service:api')
 
 def factory(global_config, **local_conf):
     if not cfg.CONF['service:api'].enable_api_v2:

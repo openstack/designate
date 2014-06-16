@@ -90,6 +90,9 @@ debug = False
 # Enabled API Version 1 extensions
 #enabled_extensions_v1 = diagnostics, quotas, reports, sync, touch
 
+# Enabled API Version 2 extensions
+#enabled_extensions_v2 = quotas
+
 #-----------------------
 # Keystone Middleware
 #-----------------------
