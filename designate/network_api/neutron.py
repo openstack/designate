@@ -124,8 +124,9 @@ class NeutronNetworkAPI(NetworkAPI):
                 LOG.exception(e)
                 return
             except Exception as e:
-                LOG.error(_LE('Failed calling Neutron %s - %s'),
-                          region, endpoint)
+                LOG.error(_LE('Failed calling Neutron '
+                              '%(region)s - %(endpoint)s'),
+                          {'region': region, 'endpoint': endpoint})
                 LOG.exception(e)
                 failed.append((e, endpoint, region))
                 return

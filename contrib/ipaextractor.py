@@ -107,8 +107,9 @@ def rec2des(rec, zonename):
             if k in iparectype2designate:
                 rectypes.append(k)
             else:
-                LOG.info(_LI("Skipping unknown record type %s in %s") %
-                         k, name)
+                LOG.info(_LI("Skipping unknown record type "
+                             "%(type)s in %(name)s") %
+                         {'type': k, 'name': name})
 
     desrecs = []
     for rectype in rectypes:
@@ -293,8 +294,9 @@ def main():
         fakezoneid = resp.json()['id']
         delresp = designatereq.delete(domainurl + "/" + fakezoneid)
         if delresp.status_code != 200:
-            LOG.error(_LE("Unable to delete %s: %s") %
-                      (domname, pprint.pformat(delresp.json())))
+            LOG.error(_LE("Unable to delete %(name)s: %(response)s") %
+                      {'name': domname, 'response': pprint.pformat(
+                          delresp.json())})
     else:
         exc = CannotUseIPABackend(cuiberrorstr)
 
@@ -304,7 +306,7 @@ def main():
     iparesp = ipabackend._call_and_handle_error(ipareq)
     LOG.debug("Response: %s" % pprint.pformat(iparesp))
     if iparesp['error']:
-        LOG.error(_LE(pprint.pformat(iparesp)))
+        LOG.error(_LE("%s") % pprint.pformat(iparesp))
 
     if exc:
         raise exc
@@ -348,8 +350,9 @@ def main():
             for desreq in desreqs:
                 resp = designatereq.post(recurl, data=json.dumps(desreq))
                 if resp.status_code == 200:
-                    LOG.info(_LI("Added record %s for domain %s") %
-                             (desreq['name'], zonename))
+                    LOG.info(_LI("Added record %(record)s "
+                                 "for domain %(domain)s") %
+                             {'record': desreq['name'], 'domain': zonename})
                 else:
                     raise AddRecordError("Could not add record %s: %s" %
                                          (desreq['name'],

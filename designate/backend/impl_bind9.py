@@ -58,8 +58,9 @@ class Bind9Backend(base.Backend):
             except utils.processutils.ProcessExecutionError as proc_exec_err:
                 stderr = proc_exec_err.stderr
                 if stderr.count("rndc: 'reload' failed: not found") is not 0:
-                    LOG.warn(_LW("Domain %s (%s) missing from backend, "
-                             "recreating"), domain['name'], domain['id'])
+                    LOG.warn(_LW("Domain %(d_name)s (%(d_id)s) "
+                                 "missing from backend, recreating"),
+                             {'d_name': domain['name'], 'd_id': domain['id']})
                     self._sync_domain(domain, new_domain_flag=True)
                 else:
                     raise proc_exec_err

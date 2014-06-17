@@ -115,8 +115,9 @@ class Backend(DriverPlugin):
         except exceptions.DomainNotFound as e:
             # NOTE(Kiall): This means a domain was missing from the backend.
             #              Good thing we're doing a sync!
-            LOG.warn(_LW("Failed to delete domain '%s' during sync. "
-                     "Message: %s"), domain['id'], str(e))
+            LOG.warn(_LW("Failed to delete domain '%(domain)s' during sync. "
+                         "Message: %(message)s"),
+                     {'domain': domain['id'], 'message': str(e)})
 
         # Next, re-create the domain in the backend.
         self.create_domain(context, domain)
@@ -140,9 +141,11 @@ class Backend(DriverPlugin):
         except exceptions.RecordNotFound as e:
             # NOTE(Kiall): This means a record was missing from the backend.
             #              Good thing we're doing a sync!
-            LOG.warn(_LW("Failed to delete record '%s' in domain '%s' "
-                     "during sync. Message: %s"), record['id'],
-                     domain['id'], str(e))
+            LOG.warn(_LW("Failed to delete record '%(record)s' "
+                         "in domain '%(domain)s' during sync. "
+                         "Message: %(message)s"),
+                     {'record': record['id'], 'domain': domain['id'],
+                      'message': str(e)})
 
         # Finally, re-create the record in the backend.
         self.create_record(context, domain, recordset, record)

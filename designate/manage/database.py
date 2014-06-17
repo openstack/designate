@@ -59,9 +59,10 @@ class DatabaseCommands(base.Commands):
             raise Exception('Database not yet initialized')
 
         LOG.info(_LI("Attempting to synchronize database from version "
-                 "'%s' to '%s'"),
-                 current_version,
-                 target_version if target_version is not None else "latest")
+                     "'%(curr_version)s' to '%(tgt_version)s'"),
+                 {'curr_version': current_version,
+                  'tgt_version': target_version if
+                  target_version is not None else "latest"})
 
         if target_version and target_version < current_version:
             versioning_api.downgrade(url=url, repository=REPOSITORY,
