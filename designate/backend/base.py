@@ -117,7 +117,7 @@ class Backend(DriverPlugin):
             # NOTE(Kiall): This means a domain was missing from the backend.
             #              Good thing we're doing a sync!
             LOG.warn(_LW("Failed to delete domain '%(domain)s' during sync. "
-                         "Message: %(message)s"),
+                         "Message: %(message)s") %
                      {'domain': domain['id'], 'message': str(e)})
 
         # Next, re-create the domain in the backend.
@@ -144,7 +144,7 @@ class Backend(DriverPlugin):
             #              Good thing we're doing a sync!
             LOG.warn(_LW("Failed to delete record '%(record)s' "
                          "in domain '%(domain)s' during sync. "
-                         "Message: %(message)s"),
+                         "Message: %(message)s") %
                      {'record': record['id'], 'domain': domain['id'],
                       'message': str(e)})
 

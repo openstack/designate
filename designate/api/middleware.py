@@ -28,6 +28,7 @@ from designate.openstack.common import log as logging
 from designate.openstack.common import strutils
 from designate.openstack.common.middleware import request_id
 from designate.openstack.common.gettextutils import _LI
+from designate.openstack.common.gettextutils import _LW
 from designate.openstack.common.gettextutils import _LE
 from designate.openstack.common.gettextutils import _LC
 
@@ -60,7 +61,7 @@ class MaintenanceMiddleware(wsgi.Middleware):
         # If the caller has the bypass role, let them through
         if ('context' in request.environ
                 and self.role in request.environ['context'].roles):
-            LOG.warning('Request authorized to bypass maintenance mode')
+            LOG.warn(_LW('Request authorized to bypass maintenance mode'))
             return None
 
         # Otherwise, reject the request with a 503 Service Unavailable

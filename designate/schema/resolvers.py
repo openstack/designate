@@ -35,5 +35,5 @@ class LocalResolver(jsonschema.RefResolver):
         return resolver
 
     def resolve_remote(self, uri):
-        LOG.debug('Loading remote schema: %s', uri)
+        LOG.debug('Loading remote schema: %s' % uri)
         return utils.load_schema(self.api_version, uri)

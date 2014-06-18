@@ -111,7 +111,7 @@ class TLDCommands(base.Commands):
         if not os.path.exists(input_file):
             raise Exception('TLD Input file Not Found')
 
-        LOG.info(_LI("Importing TLDs from %s"), input_file)
+        LOG.info(_LI("Importing TLDs from %s") % input_file)
 
         error_lines = []
         tlds_added = 0
@@ -131,11 +131,11 @@ class TLDCommands(base.Commands):
                     tlds_added += self._validate_and_create_tld(line,
                                                                 error_lines)
 
-        LOG.info(_LI("Number of tlds added: %d"), tlds_added)
+        LOG.info(_LI("Number of tlds added: %d") % tlds_added)
 
         errors = len(error_lines)
         if errors > 0:
-            LOG.error(_LE("Number of errors: %d"), errors)
+            LOG.error(_LE("Number of errors: %d") % errors)
             # Sorting the errors and printing them so that it is easier to
             # read the errors
-            LOG.error(_LE("Error Lines:\n%s"), '\n'.join(sorted(error_lines)))
+            LOG.error(_LE("Error Lines:\n%s") % '\n'.join(sorted(error_lines)))

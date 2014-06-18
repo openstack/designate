@@ -22,6 +22,7 @@ from oslo import messaging
 
 from designate.openstack.common import log as logging
 from designate.openstack.common.gettextutils import _LI
+from designate.openstack.common.gettextutils import _LC
 from designate import backend
 from designate import exceptions
 from designate import network_api
@@ -177,8 +178,8 @@ class Service(service.Service):
         Check that the placement of the requested rrset belongs to any of the
         domains subdomains..
         """
-        LOG.debug("Checking if %s belongs in any of %s subdomains",
-                  recordset_name, domain.name)
+        LOG.debug("Checking if %s belongs in any of %s subdomains" %
+                  (recordset_name, domain.name))
 
         criterion = criterion or {}
 
@@ -524,8 +525,8 @@ class Service(service.Service):
         servers = self.storage_api.find_servers(context)
 
         if len(servers) == 0:
-            LOG.critical('No servers configured. Please create at least one '
-                         'server')
+            LOG.critical(_LC('No servers configured. '
+                             'Please create at least one server'))
             raise exceptions.NoServersConfigured()
 
         # Set the serial number
@@ -1186,7 +1187,7 @@ class Service(service.Service):
 
                 fip_ptr['ptrdname'] = value[1]['data']
             else:
-                LOG.debug("No record information found for %s",
+                LOG.debug("No record information found for %s" %
                           value[0]['id'])
 
             # Store the "fip_record" with the region and it's id as key
