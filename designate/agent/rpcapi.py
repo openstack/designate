@@ -39,7 +39,7 @@ class AgentAPI(object):
         target = messaging.Target(topic=topic, version=self.RPC_API_VERSION)
         self.client = rpc.get_client(target, version_cap='1.0')
 
-       # Server Methods
+    # Server Methods
     def create_server(self, context, server, host=None):
         cctxt = self.client.prepare(server=host)
 
