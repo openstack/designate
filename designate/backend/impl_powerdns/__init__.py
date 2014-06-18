@@ -527,11 +527,10 @@ class PowerDNSBackend(base.Backend):
                     .where(and_(models.Record.__table__.c.type == "SOA",
                            models.Record.__table__.c.content.like
                                ("%s%%" % old_server_name)))
-                    .values(content=
-                            func.replace(
-                                models.Record.__table__.c.content,
-                                old_server_name,
-                                server['name'].rstrip('.'))
+                    .values(content=func.replace(
+                            models.Record.__table__.c.content,
+                            old_server_name,
+                            server['name'].rstrip('.'))
                             )
                 )
 
