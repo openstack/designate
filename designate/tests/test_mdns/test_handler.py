@@ -14,7 +14,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import binascii
+
 from mock import patch
+
 from designate.tests.test_mdns import MdnsTestCase
 from designate.mdns import handler
 

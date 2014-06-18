@@ -14,11 +14,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import sys
+
 from oslo.config import cfg
+
 from designate.openstack.common import log as logging
 from designate import service
 from designate import utils
 from designate.central import service as central
+
 
 CONF = cfg.CONF
 CONF.import_opt('workers', 'designate.central', group='service:central')

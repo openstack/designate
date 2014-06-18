@@ -13,16 +13,19 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import pprint
+import time
+
 import requests
 from oslo.config import cfg
+
 from designate import exceptions
 from designate.openstack.common import log as logging
 from designate.openstack.common import importutils
 from designate.backend import base
 from designate.openstack.common import jsonutils as json
 from designate.openstack.common.gettextutils import _LE
-import pprint
-import time
+
 
 LOG = logging.getLogger(__name__)
 

@@ -14,12 +14,15 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import logging
+
+from oslo.config import cfg
+
 from designate import backend
 from designate import exceptions
 from designate.backend import base
 from designate.openstack.common import excutils
-from oslo.config import cfg
-import logging
+
 
 LOG = logging.getLogger(__name__)
 

@@ -14,8 +14,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from jsonschema import validators
+
 from designate.openstack.common import log as logging
 from designate.schema import _validators
+
 
 LOG = logging.getLogger(__name__)
 

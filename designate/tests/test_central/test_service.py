@@ -15,11 +15,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import random
+
 import testtools
+
 from designate.openstack.common import log as logging
 from designate import exceptions
 from designate import objects
 from designate.tests.test_central import CentralTestCase
+
 
 LOG = logging.getLogger(__name__)
 

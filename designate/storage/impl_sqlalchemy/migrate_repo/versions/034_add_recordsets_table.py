@@ -14,12 +14,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import hashlib
+
 from sqlalchemy import ForeignKey, Enum, Integer, String, DateTime, Unicode
 from sqlalchemy import func
 from sqlalchemy.sql import select
 from sqlalchemy.schema import Table, Column, MetaData
 from migrate import ForeignKeyConstraint
 from migrate.changeset.constraint import UniqueConstraint
+
 from designate.openstack.common import timeutils
 from designate import utils
 from designate.sqlalchemy.types import UUID

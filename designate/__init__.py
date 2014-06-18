@@ -15,6 +15,7 @@
 # under the License.
 import os
 import socket
+
 from oslo.config import cfg
 from oslo import messaging
 

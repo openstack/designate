@@ -14,11 +14,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from oslo.config import cfg
+
 from designate.openstack.common import log as logging
 from designate import backend
 from designate import rpc
 from designate import service
 from designate.central import rpcapi as central_rpcapi
+
 
 LOG = logging.getLogger(__name__)
 

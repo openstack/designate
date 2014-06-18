@@ -14,9 +14,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from oslo.config import cfg
+
 from designate.openstack.common import log as logging
 from designate.objects import Record
 from designate.notification_handler.base import NotificationHandler
+
 
 LOG = logging.getLogger(__name__)
 

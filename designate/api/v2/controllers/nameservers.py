@@ -15,10 +15,12 @@
 # under the License.
 
 import pecan
+
 from designate import utils
 from designate.openstack.common import log as logging
 from designate.api.v2.controllers import rest
 from designate.api.v2.views import nameservers as nameservers_view
+
 
 LOG = logging.getLogger(__name__)
 

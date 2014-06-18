@@ -15,6 +15,7 @@
 # under the License.
 from sqlalchemy import Enum, Integer, String, DateTime
 from sqlalchemy.schema import Table, Column, MetaData
+
 from designate.openstack.common import timeutils
 from designate import utils
 from designate.sqlalchemy.types import UUID

@@ -18,6 +18,7 @@
 #    under the License.
 from sqlalchemy import ForeignKey, Enum, Integer, String, DateTime, Text
 from sqlalchemy.schema import Column, MetaData
+
 from designate.openstack.common import timeutils
 from designate import utils
 from designate.storage.impl_sqlalchemy.migrate_repo.utils import Table
@@ -25,6 +26,7 @@ from designate.storage.impl_sqlalchemy.migrate_repo.utils import create_tables
 from designate.storage.impl_sqlalchemy.migrate_repo.utils import drop_tables
 from designate.sqlalchemy.types import Inet
 from designate.sqlalchemy.types import UUID
+
 
 meta = MetaData()
 

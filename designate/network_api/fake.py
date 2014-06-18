@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import uuid
+
 from designate.openstack.common import log
 from designate.network_api.base import NetworkAPI
 

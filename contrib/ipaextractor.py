@@ -16,17 +16,20 @@
 
 import sys
 import logging
-import requests
 import uuid
 import pprint
 import json
 import copy
+
+import requests
 from oslo.config import cfg
+
 from designate.backend import impl_ipa
 from designate.openstack.common.gettextutils import _LI
 from designate.openstack.common.gettextutils import _LW
 from designate.openstack.common.gettextutils import _LE
 from designate import utils
+
 
 logging.basicConfig()
 LOG = logging.getLogger(__name__)

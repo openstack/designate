@@ -16,7 +16,9 @@
 import pecan
 import pecan.deploy
 from oslo.config import cfg
+
 from designate.openstack.common import log as logging
+
 
 LOG = logging.getLogger(__name__)
 

@@ -15,12 +15,14 @@
 # under the License.
 
 import os
+
 from mock import MagicMock
 
 from designate import tests
 from designate.tests import DatabaseFixture
 from designate.tests.test_backend import BackendTestMixin
 from designate import utils
+
 
 # impl_powerdns needs to register its options before being instanciated.
 # Import it and pretend to use it to avoid flake8 unused import errors.

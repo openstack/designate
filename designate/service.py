@@ -26,6 +26,7 @@ from designate.openstack.common.gettextutils import _
 from designate import rpc
 from designate import version
 
+
 CONF = cfg.CONF
 
 LOG = logging.getLogger(__name__)

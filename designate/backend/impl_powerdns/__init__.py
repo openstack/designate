@@ -16,11 +16,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import base64
+
 from sqlalchemy import func
 from sqlalchemy.sql import select
 from sqlalchemy.sql.expression import and_
 from sqlalchemy.orm import exc as sqlalchemy_exceptions
 from oslo.config import cfg
+
 from designate.openstack.common import excutils
 from designate.openstack.common import log as logging
 from designate import exceptions
@@ -29,6 +31,7 @@ from designate.backend.impl_powerdns import models
 from designate.sqlalchemy.session import get_session
 from designate.sqlalchemy.session import SQLOPTS
 from designate.sqlalchemy.expressions import InsertFromSelect
+
 
 LOG = logging.getLogger(__name__)
 TSIG_SUPPORTED_ALGORITHMS = ['hmac-md5']

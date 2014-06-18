@@ -18,6 +18,7 @@ import abc
 import six
 from stevedore import driver
 from stevedore import enabled
+
 from designate.openstack.common import log as logging
 
 

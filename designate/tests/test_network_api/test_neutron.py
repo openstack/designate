@@ -13,16 +13,15 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from designate import exceptions
-from designate.network_api import get_network_api
-from designate.tests import TestCase
-
 from neutronclient.v2_0 import client as clientv20
 from neutronclient.common import exceptions as neutron_exceptions
-
 from oslo.config import cfg
 from mock import patch
 import testtools
+
+from designate import exceptions
+from designate.network_api import get_network_api
+from designate.tests import TestCase
 
 
 cfg.CONF.import_group('network_api:neutron', 'designate.network_api.neutron')

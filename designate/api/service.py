@@ -14,10 +14,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from paste import deploy
+from oslo.config import cfg
+
 from designate.openstack.common import log as logging
 from designate.openstack.common.gettextutils import _LI
 from designate.openstack.deprecated import wsgi
-from oslo.config import cfg
 from designate import exceptions
 from designate import utils
 from designate import policy

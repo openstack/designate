@@ -14,14 +14,17 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import eventlet
 import os
 import socket
 import ssl
+
+import eventlet
+from oslo.config import cfg
+
 from designate import exceptions
 from designate.backend import base
 from designate.openstack.common import log as logging
-from oslo.config import cfg
+
 
 LOG = logging.getLogger(__name__)
 

@@ -22,6 +22,7 @@ from designate.openstack.common import service
 from designate import notification_handler
 from designate import rpc
 
+
 LOG = logging.getLogger(__name__)
 
 

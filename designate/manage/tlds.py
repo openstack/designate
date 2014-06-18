@@ -26,6 +26,7 @@ from designate.openstack.common.gettextutils import _LE
 from designate.manage import base
 from designate.schema import format
 
+
 LOG = logging.getLogger(__name__)
 
 

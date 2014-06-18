@@ -14,12 +14,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import os
+
 from migrate.exceptions import (DatabaseAlreadyControlledError,
                                 DatabaseNotControlledError)
 from migrate.versioning import api as versioning_api
+from oslo.config import cfg
+
 from designate.openstack.common import log as logging
 from designate.openstack.common.gettextutils import _LI
-from oslo.config import cfg
 from designate.manage import base
 
 

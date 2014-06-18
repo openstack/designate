@@ -16,13 +16,11 @@
 import sys
 
 from oslo.config import cfg
-
+from stevedore.extension import ExtensionManager
 
 from designate.openstack.common import log as logging
 from designate.openstack.common import strutils
 from designate import utils
-
-from stevedore.extension import ExtensionManager
 
 
 def methods_of(obj):

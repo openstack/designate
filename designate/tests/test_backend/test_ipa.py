@@ -15,12 +15,14 @@
 # under the License.
 import fixtures
 from requests.auth import AuthBase
+
 from designate import tests
 from designate import utils
 from designate.tests.test_backend import BackendTestMixin
 from designate.openstack.common import jsonutils as json
 from designate.openstack.common.fixture import mockpatch
 from designate.backend import impl_ipa
+
 
 ipamethods = {"dnszone_add": {}, "dnszone_mod": {},
               "dnszone_del": {}, "dnsrecord_add": {},

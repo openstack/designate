@@ -14,17 +14,17 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import copy
-import fixtures
 import functools
 import os
 import inspect
-from migrate.versioning import repository
 import shutil
-import sqlalchemy
 import tempfile
+
+import fixtures
+from migrate.versioning import repository
+import sqlalchemy
 from migrate.versioning import api as versioning_api
 from testtools import testcase
-
 from oslo.config import cfg
 from oslo.messaging import conffixture as messaging_fixture
 from oslo.messaging.notify import _impl_test as test_notifier
@@ -41,6 +41,7 @@ from designate import exceptions
 from designate.network_api import fake as fake_network_api
 from designate import network_api
 from designate import objects
+
 
 # NOTE: If eventlet isn't patched and there's a exc tests block
 import eventlet

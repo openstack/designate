@@ -17,6 +17,7 @@ import pecan
 from dns import zone as dnszone
 from dns import rdatatype
 from dns import exception as dnsexception
+
 from designate import exceptions
 from designate import utils
 from designate import schema
@@ -28,6 +29,7 @@ from designate.objects import Domain
 from designate.objects import Record
 from designate.objects import RecordSet
 from designate.openstack.common import log as logging
+
 
 LOG = logging.getLogger(__name__)
 

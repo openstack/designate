@@ -13,10 +13,12 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from sqlalchemy import MetaData, Table, Column, Integer
+
 from designate.openstack.common import timeutils
 from designate.openstack.common import log as logging
 from designate.openstack.common.gettextutils import _LW
-from sqlalchemy import MetaData, Table, Column, Integer
+
 
 LOG = logging.getLogger(__name__)
 meta = MetaData()

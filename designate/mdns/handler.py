@@ -15,6 +15,7 @@
 # under the License.
 import dns
 from oslo.config import cfg
+
 from designate.openstack.common import log as logging
 from designate.storage import api as storage_api
 

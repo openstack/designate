@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import pecan
+
 from designate.openstack.common import log as logging
 from designate import schema
 from designate import utils
@@ -21,6 +22,7 @@ from designate.api.v2.controllers import rest
 from designate.api.v2.views import recordsets as recordsets_view
 from designate.api.v2.controllers import records
 from designate.objects import RecordSet
+
 
 LOG = logging.getLogger(__name__)
 

@@ -17,6 +17,7 @@ from sqlalchemy import Column, DateTime
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import object_mapper
 from sqlalchemy.types import CHAR
+
 from designate.openstack.common import timeutils
 from designate import exceptions
 

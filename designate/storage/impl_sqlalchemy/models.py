@@ -16,17 +16,20 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import hashlib
+
 from oslo.config import cfg
 from sqlalchemy import (Column, DateTime, String, Text, Integer, ForeignKey,
                         Enum, Boolean, Unicode, UniqueConstraint, event)
 from sqlalchemy.orm import relationship, backref
+from sqlalchemy.ext.declarative import declarative_base
+
 from designate.openstack.common import log as logging
 from designate.openstack.common import timeutils
 from designate.sqlalchemy.types import UUID
 from designate.sqlalchemy.models import Base as CommonBase
 from designate.sqlalchemy.models import SoftDeleteMixin
 from designate import utils
-from sqlalchemy.ext.declarative import declarative_base
+
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF

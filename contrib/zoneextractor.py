@@ -17,9 +17,11 @@
 import sys
 import re
 import os
-import dns.zone
 import argparse
 import logging
+
+import dns.zone
+
 from designate.openstack.common.gettextutils import _LI
 from designate.openstack.common.gettextutils import _LE
 

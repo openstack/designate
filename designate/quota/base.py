@@ -16,8 +16,8 @@
 import abc
 
 import six
-
 from oslo.config import cfg
+
 from designate import exceptions
 from designate.plugin import DriverPlugin
 

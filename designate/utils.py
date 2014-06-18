@@ -18,9 +18,9 @@ import json
 import functools
 import inspect
 import os
-import pkg_resources
 import uuid
 
+import pkg_resources
 from jinja2 import Template
 from oslo.config import cfg
 
@@ -28,6 +28,7 @@ from designate import exceptions
 from designate.openstack.common import log as logging
 from designate.openstack.common import processutils
 from designate.openstack.common import timeutils
+
 
 LOG = logging.getLogger(__name__)
 

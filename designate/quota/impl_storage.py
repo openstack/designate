@@ -14,10 +14,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from oslo.config import cfg
+
 from designate import exceptions
 from designate.openstack.common import log as logging
 from designate.quota.base import Quota
 from designate.storage import api as sapi
+
 
 LOG = logging.getLogger(__name__)
 

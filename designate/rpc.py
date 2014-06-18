@@ -34,6 +34,7 @@ import designate.exceptions
 from designate.openstack.common import importutils
 from designate.openstack.common import jsonutils
 
+
 CONF = cfg.CONF
 TRANSPORT = None
 NOTIFIER = None

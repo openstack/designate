@@ -15,12 +15,14 @@
 # under the License.
 
 import pecan
+
 from designate.openstack.common import log as logging
 from designate import schema
 from designate import utils
 from designate.api.v2.controllers import rest
 from designate.api.v2.views import blacklists as blacklists_view
 from designate.objects import Blacklist
+
 
 LOG = logging.getLogger(__name__)
 

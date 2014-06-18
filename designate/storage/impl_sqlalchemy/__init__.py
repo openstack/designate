@@ -14,10 +14,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import time
+
 from sqlalchemy.orm import exc
 from sqlalchemy import exc as sqlalchemy_exc
 from sqlalchemy import distinct, func
 from oslo.config import cfg
+
 from designate.openstack.common import log as logging
 from designate.openstack.common.db.sqlalchemy.utils import paginate_query
 from designate.openstack.common.db.sqlalchemy.utils import InvalidSortKey

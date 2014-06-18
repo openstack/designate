@@ -16,11 +16,14 @@
 import os
 import logging
 import uuid
+
 from requests import auth
 import kerberos
+
 from designate.backend.impl_ipa import IPAAuthError
 from designate.openstack.common.gettextutils import _LW
 from designate.openstack.common.gettextutils import _LE
+
 
 LOG = logging.getLogger(__name__)
 

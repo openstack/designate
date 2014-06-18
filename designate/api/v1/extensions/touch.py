@@ -14,7 +14,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import flask
+
 from designate.central import rpcapi as central_rpcapi
+
 
 central_api = central_rpcapi.CentralAPI()
 blueprint = flask.Blueprint('touch', __name__)

@@ -14,12 +14,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import flask
+
 from designate.openstack.common import log as logging
 from designate import exceptions
 from designate import schema
 from designate.api import get_central_api
 from designate.objects import Record
 from designate.objects import RecordSet
+
 
 LOG = logging.getLogger(__name__)
 blueprint = flask.Blueprint('records', __name__)

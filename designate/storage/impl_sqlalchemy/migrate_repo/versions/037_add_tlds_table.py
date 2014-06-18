@@ -14,10 +14,12 @@
 #    under the License.
 from sqlalchemy import Integer, String, DateTime, Unicode
 from sqlalchemy.schema import Table, Column, MetaData
+
 from designate.openstack.common import timeutils
 from designate import utils
 from designate.sqlalchemy.types import UUID
 from designate.openstack.common import log as logging
+
 
 LOG = logging.getLogger(__name__)
 meta = MetaData()

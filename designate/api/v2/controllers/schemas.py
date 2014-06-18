@@ -14,7 +14,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import os
+
 import pecan
+
 from designate import exceptions
 from designate import utils
 from designate.openstack.common import log as logging

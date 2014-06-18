@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from testscenarios import load_tests_apply_scenarios as load_tests  # noqa
+
 from designate import tests
 from designate.tests.test_backend.test_nsd4slave import NSD4Fixture
 from designate.tests.test_backend import BackendTestMixin

@@ -14,12 +14,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import pecan
+
 from designate.openstack.common import log as logging
 from designate import schema
 from designate import utils
 from designate.api.v2.controllers import rest
 from designate.api.v2.views import records as records_view
 from designate.objects import Record
+
 
 LOG = logging.getLogger(__name__)
 

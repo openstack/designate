@@ -14,11 +14,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import sys
+
 from oslo.config import cfg
+
 from designate.openstack.common import log as logging
 from designate import service
 from designate import utils
 from designate.mdns import service as mdns_service
+
 
 CONF = cfg.CONF
 CONF.import_opt('workers', 'designate.mdns', group='service:mdns')

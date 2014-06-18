@@ -15,7 +15,6 @@
 # under the License.
 import flask
 import webob.dec
-
 from oslo.config import cfg
 from oslo import messaging
 
@@ -31,6 +30,7 @@ from designate.openstack.common.middleware import request_id
 from designate.openstack.common.gettextutils import _LI
 from designate.openstack.common.gettextutils import _LE
 from designate.openstack.common.gettextutils import _LC
+
 
 LOG = logging.getLogger(__name__)
 

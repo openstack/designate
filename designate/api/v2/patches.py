@@ -14,8 +14,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import pecan.core
+
 from designate import exceptions
 from designate.openstack.common import jsonutils
+
 
 JSON_TYPES = ('application/json', 'application/json-patch+json')
 

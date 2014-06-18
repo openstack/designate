@@ -17,6 +17,7 @@
 # under the License.
 from sqlalchemy import Column, String, Text, Integer, Boolean
 from sqlalchemy.ext.declarative import declarative_base
+
 from designate.sqlalchemy.models import Base as CommonBase
 from designate.sqlalchemy.types import UUID
 

@@ -15,8 +15,10 @@
 # under the License.
 import os
 import tempfile
+
 import testtools
 from jinja2 import Template
+
 from designate.tests import TestCase
 from designate import exceptions
 from designate import utils

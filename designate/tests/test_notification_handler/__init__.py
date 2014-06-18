@@ -15,9 +15,12 @@
 # under the License.
 import json
 import os
+
 import testtools
+
 from designate.context import DesignateContext
 from designate.tests import resources
+
 
 FIXTURES_PATH = os.path.join(resources.path, 'sample_notifications')
 

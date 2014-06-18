@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import contextlib
+
 from designate import storage
 from designate.openstack.common import excutils
 

@@ -14,7 +14,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from oslo.config import cfg
+
 from designate.central import rpcapi
+
 
 cfg.CONF.register_group(cfg.OptGroup(
     name='service:api', title="Configuration for API Service"

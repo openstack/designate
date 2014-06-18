@@ -22,7 +22,6 @@ from neutronclient.common import exceptions as neutron_exceptions
 from oslo.config import cfg
 
 from designate import exceptions
-
 from designate.openstack.common import log as logging
 from designate.openstack.common import threadgroup
 from designate.openstack.common.gettextutils import _LW

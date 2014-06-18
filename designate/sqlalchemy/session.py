@@ -23,10 +23,11 @@ import sqlalchemy
 from sqlalchemy.exc import DisconnectionError, OperationalError
 import sqlalchemy.orm
 from sqlalchemy.pool import NullPool, StaticPool
-
 from oslo.config import cfg
+
 from designate.openstack.common import log as logging
 from designate.openstack.common.gettextutils import _LW
+
 
 LOG = logging.getLogger(__name__)
 
@@ -203,8 +204,9 @@ def get_maker(engine, autocommit=True, expire_on_commit=False, autoflush=True):
 
 def debug_mysql_do_query():
     """Return a debug version of MySQLdb.cursors._do_query"""
-    import MySQLdb.cursors
     import traceback
+
+    import MySQLdb.cursors
 
     old_mysql_do_query = MySQLdb.cursors.BaseCursor._do_query
 

@@ -15,9 +15,11 @@
 # under the License.
 import mock
 import testtools
+
 from designate.openstack.common import log as logging
 from designate.tests import TestCase
 from designate.storage import api as storage_api
+
 
 LOG = logging.getLogger(__name__)
 

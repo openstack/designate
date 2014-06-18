@@ -14,11 +14,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import hashlib
+
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.schema import Table, Column, MetaData
 from sqlalchemy.types import String
+
 from designate.openstack.common import log as logging
 from designate.openstack.common.gettextutils import _LW
+
 
 LOG = logging.getLogger(__name__)
 meta = MetaData()

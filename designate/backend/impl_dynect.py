@@ -27,6 +27,7 @@ from designate.openstack.common import log as logging
 from designate.openstack.common.gettextutils import _LI
 from designate.openstack.common.gettextutils import _LW
 
+
 LOG = logging.getLogger(__name__)
 
 GROUP = 'backend:dynect'

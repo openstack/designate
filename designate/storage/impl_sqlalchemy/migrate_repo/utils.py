@@ -21,7 +21,9 @@
 Various conveniences used for migration scripts
 """
 from sqlalchemy.schema import Table as SqlaTable
+
 from designate.openstack.common import log as logging
+
 
 LOG = logging.getLogger(__name__)
 

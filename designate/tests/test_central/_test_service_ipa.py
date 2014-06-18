@@ -16,11 +16,12 @@
 # under the License.
 import unittest
 
+import testtools
+
 from designate.openstack.common import log as logging
 import designate.tests.test_central.test_service
 from designate import utils
 from designate import exceptions
-import testtools
 from designate.backend import impl_ipa
 
 LOG = logging.getLogger(__name__)

@@ -14,9 +14,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import logging
+
 from sqlalchemy import MetaData, Table, Column, String
 from sqlalchemy.sql import update
 from migrate.changeset.constraint import UniqueConstraint
+
 
 LOG = logging.getLogger(__name__)
 meta = MetaData()

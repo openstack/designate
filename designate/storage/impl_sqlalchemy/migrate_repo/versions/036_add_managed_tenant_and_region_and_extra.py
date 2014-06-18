@@ -20,8 +20,9 @@
 #
 # See https://blueprints.launchpad.net/nova/+spec/backportable-db-migrations
 # http://lists.openstack.org/pipermail/openstack-dev/2013-March/006827.html
-from designate.openstack.common import log as logging
 from sqlalchemy import MetaData, Table, Column, Unicode
+
+from designate.openstack.common import log as logging
 
 
 LOG = logging.getLogger(__name__)
