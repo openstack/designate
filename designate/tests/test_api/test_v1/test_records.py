@@ -100,7 +100,7 @@ class ApiV1RecordsTest(ApiV1Test):
             'type': self.recordset['type'],
         })
 
-        #Add a UTF-8 riddled description
+        # Add a UTF-8 riddled description
         fixture['description'] = "utf-8:2H₂+O₂⇌2H₂O,R=4.7kΩ,⌀200mm∮E⋅da=Q,n" \
                                  ",∑f(i)=∏g(i),∀x∈ℝ:⌈x⌉"
 

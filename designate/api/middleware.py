@@ -236,7 +236,7 @@ class FaultWrapperMiddleware(wsgi.Middleware):
             notifications.send_api_fault(request.environ['context'], url,
                                          response['code'], e)
         else:
-            #TODO(ekarlso): Remove after verifying that there's actually a
+            # TODO(ekarlso): Remove after verifying that there's actually a
             # context always set
             LOG.error(_LE('Missing context in request, please check.'))
 

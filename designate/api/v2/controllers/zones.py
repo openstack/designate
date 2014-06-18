@@ -250,7 +250,7 @@ class ZonesController(rest.RestController):
         # NOTE: This is a hack and a half.. But Pecan needs it.
         return ''
 
-    #TODO(artom) Methods below may be useful elsewhere, consider putting them
+    # TODO(artom) Methods below may be useful elsewhere, consider putting them
     # somewhere reusable.
 
     def _create_zone(self, context, dnspython_zone):

@@ -125,7 +125,7 @@ class BaseView(object):
         }
 
         # See above
-        #if 'marker' in params:
+        # if 'marker' in params:
         #    result['previous'] = self._get_previous_href(request, items,
         #                                                 parents)
 

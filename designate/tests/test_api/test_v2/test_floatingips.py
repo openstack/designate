@@ -35,7 +35,7 @@ class ApiV2ReverseFloatingIPTest(ApiV2TestCase):
         self.assertEqual('application/json', response.content_type)
         self.assertIn('floatingip', response.json)
 
-        #TODO(ekarlso): Remove the floatingip key - bug in v2 api
+        # TODO(ekarlso): Remove the floatingip key - bug in v2 api
         fip_record = response.json['floatingip']
         self.assertEqual(":".join([fip['region'],
                          fip['id']]), fip_record['id'])

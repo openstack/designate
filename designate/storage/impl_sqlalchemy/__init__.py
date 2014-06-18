@@ -149,15 +149,15 @@ class SQLAlchemyStorage(base.Storage):
             except ValueError as value_error:
                 raise exceptions.ValueError(value_error.message)
 
-    ## CRUD for our resources (quota, server, tsigkey, tenant, domain & record)
-    ## R - get_*, find_*s
-    ##
-    ## Standard Arguments
-    ## self      - python object for the class
-    ## context   - a dictionary of details about the request (http etc),
-    ##             provided by flask.
-    ## criterion - dictionary of filters to be applied
-    ##
+    # CRUD for our resources (quota, server, tsigkey, tenant, domain & record)
+    # R - get_*, find_*s
+    #
+    # Standard Arguments
+    # self      - python object for the class
+    # context   - a dictionary of details about the request (http etc),
+    #             provided by flask.
+    # criterion - dictionary of filters to be applied
+    #
 
     # Quota Methods
     def _find_quotas(self, context, criterion, one=False,
@@ -377,7 +377,7 @@ class SQLAlchemyStorage(base.Storage):
         return objects.TsigKey.from_sqla(tsigkey)
 
     ##
-    ## Tenant Methods
+    # Tenant Methods
     ##
     def find_tenants(self, context):
         # returns an array of tenant_id & count of their domains
@@ -414,7 +414,7 @@ class SQLAlchemyStorage(base.Storage):
         return query.count()
 
     ##
-    ## Domain Methods
+    # Domain Methods
     ##
     def _find_domains(self, context, criterion, one=False,
                       marker=None, limit=None, sort_key=None, sort_dir=None):

@@ -115,7 +115,7 @@ class ApiV1DomainsTest(ApiV1Test):
         fixture = self.get_domain_fixture(0)
         fixture['description'] = "x" * 161
 
-        #Create the domain, ensuring it fails with a 400
+        # Create the domain, ensuring it fails with a 400
         self.post('domains', data=fixture, status_code=400)
 
     def test_create_invalid_name(self):

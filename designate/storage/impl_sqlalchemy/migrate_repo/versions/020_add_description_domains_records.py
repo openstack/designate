@@ -26,7 +26,7 @@ def upgrade(migrate_engine):
     domains_table = Table('domains', meta, autoload=True)
     records_table = Table('records', meta, autoload=True)
 
-    #Add in description columns in domain/record databases
+    # Add in description columns in domain/record databases
     domain_description = Column('description', Unicode(160),
                                 nullable=True)
     domain_description.create(domains_table, populate_default=True)

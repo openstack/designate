@@ -43,8 +43,8 @@ def get_available_commands():
 
 
 def add_command_parser(subparsers):
-    #for name, category in get_available_commands()
-    #parser = subparsers.add_parser('db')
+    # for name, category in get_available_commands()
+    # parser = subparsers.add_parser('db')
     for name, cls in get_available_commands().items():
         obj = cls()
 

@@ -636,7 +636,7 @@ class CentralServiceTest(CentralTestCase):
         # Create a server
         self.create_server()
 
-        #Create domain with random TTL
+        # Create domain with random TTL
         domain = self.central_service.create_domain(
             self.admin_context, domain=objects.Domain(**values))
 
@@ -1874,7 +1874,7 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(blacklists[1]['pattern'], values2['pattern'])
 
     def test_find_blacklist(self):
-        #Create a blacklisted zone
+        # Create a blacklisted zone
         expected = self.create_blacklist(fixture=0)
 
         # Retrieve the newly created blacklist

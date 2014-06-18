@@ -142,10 +142,10 @@ class Bind9Backend(base.Backend):
 
         utils.execute(*rndc_call)
 
-        #This goes and gets the name of the .nzf file that is a mirror of the
-        #zones.config file we wish to maintain. The file name can change as it
-        #is a hash of rndc view name, we're only interested in the first file
-        #name this returns because there is only one .nzf file
+        # This goes and gets the name of the .nzf file that is a mirror of the
+        # zones.config file we wish to maintain. The file name can change as it
+        # is a hash of rndc view name, we're only interested in the first file
+        # name this returns because there is only one .nzf file
         nzf_name = glob.glob('%s/*.nzf' % cfg.CONF[self.name].nzf_path)
 
         output_file = os.path.join(output_folder, 'zones.config')
