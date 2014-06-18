@@ -14,14 +14,17 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import abc
+
+import six
+
 from oslo.config import cfg
 from designate import exceptions
 from designate.plugin import DriverPlugin
 
 
+@six.add_metaclass(abc.ABCMeta)
 class Quota(DriverPlugin):
     """ Base class for quota plugins """
-    __metaclass__ = abc.ABCMeta
     __plugin_ns__ = 'designate.quota'
     __plugin_type__ = 'quota'
 

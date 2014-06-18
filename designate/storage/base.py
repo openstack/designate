@@ -14,13 +14,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import abc
+import six
 from designate.plugin import DriverPlugin
 
 
+@six.add_metaclass(abc.ABCMeta)
 class Storage(DriverPlugin):
 
     """ Base class for storage plugins """
-    __metaclass__ = abc.ABCMeta
     __plugin_ns__ = 'designate.storage'
     __plugin_type__ = 'storage'
 

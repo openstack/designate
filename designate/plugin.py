@@ -14,6 +14,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import abc
+
+import six
 from stevedore import driver
 from stevedore import enabled
 from designate.openstack.common import log as logging
@@ -22,9 +24,8 @@ from designate.openstack.common import log as logging
 LOG = logging.getLogger(__name__)
 
 
+@six.add_metaclass(abc.ABCMeta)
 class Plugin(object):
-    __metaclass__ = abc.ABCMeta
-
     __plugin_ns__ = None
 
     __plugin_name__ = None
