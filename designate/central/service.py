@@ -1270,8 +1270,10 @@ class Service(service.Service):
             zone = self.storage_api.find_domain(
                 elevated_context, {'name': zone_name})
         except exceptions.DomainNotFound:
-            msg = _LI('Creating zone for %s:%s - %s zone %s') % \
-                (floatingip_id, region, fip['address'], zone_name)
+            msg = _LI('Creating zone for %(fip_id)s:%(region)s - '
+                      '%(fip_addr)s zone %(zonename)s') % \
+                  {'fip_id': floatingip_id, 'region': region,
+                   'fip_addr': fip['address'], 'zonename': zone_name}
             LOG.info(msg)
 
             email = cfg.CONF['service:central'].managed_resource_email

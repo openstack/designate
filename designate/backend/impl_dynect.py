@@ -327,7 +327,8 @@ class DynECTBackend(base.Backend):
             timings=cfg.CONF[GROUP].timings)
 
     def create_domain(self, context, domain):
-        LOG.info(_LI('Creating domain %s / %s'), domain['id'], domain['name'])
+        LOG.info(_LI('Creating domain %(d_id)s / %(d_name)s'),
+                 {'d_id': domain['id'], 'd_name': domain['name']})
 
         url = '/Secondary/%s' % domain['name'].rstrip('.')
         data = {
@@ -349,15 +350,17 @@ class DynECTBackend(base.Backend):
         LOG.debug('Discarding update_domain call, not-applicable')
 
     def delete_domain(self, context, domain):
-        LOG.info(_LI('Deleting domain %s / %s'), domain['id'], domain['name'])
+        LOG.info(_LI('Deleting domain %(d_id)s / %(d_name)s'),
+                 {'d_id': domain['id'], 'd_name': domain['name']})
         url = '/Zone/%s' % domain['name'].rstrip('.')
         client = self.get_client()
         try:
             client.delete(url)
         except DynClientError as e:
             if e.http_status == 404:
-                LOG.warn(_LW("Attempt to delete %s / %s caused 404, "
-                         "ignoring."), domain['id'], domain['name'])
+                LOG.warn(_LW("Attempt to delete %(d_id)s / %(d_name)s "
+                             "caused 404, ignoring."),
+                         {'d_id': domain['id'], 'd_name': domain['name']})
                 pass
             else:
                 raise

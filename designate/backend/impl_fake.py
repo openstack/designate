@@ -54,31 +54,36 @@ class FakeBackend(base.Backend):
         LOG.info(_LI('Delete Domain %r') % domain)
 
     def create_recordset(self, context, domain, recordset):
-        LOG.info(_LI('Create RecordSet %r / %r') % (domain, recordset))
+        LOG.info(_LI('Create RecordSet %(domain)r / %(recordset)r') %
+                 {'domain': domain, 'recordset': recordset})
 
     def update_recordset(self, context, domain, recordset):
-        LOG.info(_LI('Update RecordSet %r / %r') % (domain, recordset))
+        LOG.info(_LI('Update RecordSet %(domain)r / %(recordset)r') %
+                 {'domain': domain, 'recordset': recordset})
 
     def delete_recordset(self, context, domain, recordset):
-        LOG.info(_LI('Delete RecordSet %r / %r') % (domain, recordset))
+        LOG.info(_LI('Delete RecordSet %(domain)r / %(recordset)r') %
+                 {'domain': domain, 'recordset': recordset})
 
     def create_record(self, context, domain, recordset, record):
-        LOG.info(_LI('Create Record %r / %r / %r') %
-                 (domain, recordset, record))
+        LOG.info(_LI('Create Record %(domain)r / %(recordset)r / %(record)r') %
+                 {'domain': domain, 'recordset': recordset, 'record': record})
 
     def update_record(self, context, domain, recordset, record):
-        LOG.info(_LI('Update Record %r / %r / %r') %
-                 (domain, recordset, record))
+        LOG.info(_LI('Update Record %(domain)r / %(recordset)r / %(record)r') %
+                 {'domain': domain, 'recordset': recordset, 'record': record})
 
     def delete_record(self, context, domain, recordset, record):
-        LOG.info(_LI('Delete Record %r / %r / %r') %
-                 (domain, recordset, record))
+        LOG.info(_LI('Delete Record %(domain)r / %(recordset)r / %(record)r') %
+                 {'domain': domain, 'recordset': recordset, 'record': record})
 
     def sync_domain(self, context, domain, records):
-        LOG.info(_LI('Sync Domain %r / %r') % (domain, records))
+        LOG.info(_LI('Sync Domain %(domain)r / %(records)r') %
+                 {'domain': domain, 'records': records})
 
     def sync_record(self, context, domain, record):
-        LOG.info(_LI('Sync Record %r / %r') % (domain, record))
+        LOG.info(_LI('Sync Record %(domain)r / %(record)r') %
+                 {'domain': domain, 'record': record})
 
     def ping(self, context):
         LOG.info(_LI('Ping'))
