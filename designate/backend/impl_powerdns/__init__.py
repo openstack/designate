@@ -531,9 +531,9 @@ class PowerDNSBackend(base.Backend):
                            models.Record.__table__.c.content.like
                                ("%s%%" % old_server_name)))
                     .values(content=func.replace(
-                            models.Record.__table__.c.content,
-                            old_server_name,
-                            server['name'].rstrip('.'))
+                                models.Record.__table__.c.content,
+                                old_server_name,
+                                server['name'].rstrip('.'))
                             )
                 )
 
