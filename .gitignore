@@ -11,6 +11,7 @@ venv
 .venv
 *.sublime-workspace
 *.sqlite
+*.sqlite3
 var/*
 etc/designate/*.conf
 AUTHORS
