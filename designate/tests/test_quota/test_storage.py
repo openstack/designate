@@ -41,7 +41,7 @@ class StorageQuotaTest(tests.TestCase):
             'resource': 'domains'
         }
 
-        quota = self.quota.storage_api.find_quota(context, criterion)
+        quota = self.quota.storage.find_quota(context, criterion)
 
         self.assertEqual(quota['tenant_id'], 'tenant_id')
         self.assertEqual(quota['resource'], 'domains')
@@ -64,7 +64,7 @@ class StorageQuotaTest(tests.TestCase):
             'resource': 'domains'
         }
 
-        quota = self.quota.storage_api.find_quota(context, criterion)
+        quota = self.quota.storage.find_quota(context, criterion)
 
         self.assertEqual(quota['tenant_id'], 'tenant_id')
         self.assertEqual(quota['resource'], 'domains')
@@ -89,5 +89,5 @@ class StorageQuotaTest(tests.TestCase):
             'tenant_id': 'tenant_id'
         }
 
-        quotas = self.quota.storage_api.find_quotas(context, criterion)
+        quotas = self.quota.storage.find_quotas(context, criterion)
         self.assertEqual(0, len(quotas))

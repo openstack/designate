@@ -16,11 +16,13 @@
 # under the License.
 import re
 import contextlib
+import functools
 
 from oslo.config import cfg
 from oslo import messaging
 
 from designate.openstack.common import log as logging
+from designate.openstack.common import excutils
 from designate.openstack.common.gettextutils import _LI
 from designate import backend
 from designate import exceptions
@@ -30,7 +32,7 @@ from designate import policy
 from designate import quota
 from designate import service
 from designate import utils
-from designate.storage import api as storage_api
+from designate import storage
 
 
 LOG = logging.getLogger(__name__)
@@ -49,6 +51,22 @@ def wrap_backend_call():
         raise exceptions.Backend('Unknown backend failure: %r' % exc)
 
 
+def transaction(f):
+    # TODO(kiall): Get this a better home :)
+    @functools.wraps(f)
+    def wrapper(self, *args, **kwargs):
+        self.storage.begin()
+        try:
+            result = f(self, *args, **kwargs)
+        except Exception:
+            with excutils.save_and_reraise_exception():
+                self.storage.rollback()
+        else:
+            self.storage.commit()
+            return result
+    return wrapper
+
+
 class Service(service.Service):
     RPC_API_VERSION = '4.0'
 
@@ -64,7 +82,7 @@ class Service(service.Service):
 
         # Get a storage connection
         storage_driver = cfg.CONF['service:central'].storage_driver
-        self.storage_api = storage_api.StorageAPI(storage_driver)
+        self.storage = storage.get_storage(storage_driver)
 
         # Get a quota manager instance
         self.quota = quota.get_quota()
@@ -73,7 +91,7 @@ class Service(service.Service):
 
     def start(self):
         # Check to see if there are any TLDs in the database
-        tlds = self.storage_api.find_tlds({})
+        tlds = self.storage.find_tlds({})
         if tlds:
             self.check_for_tlds = True
             LOG.info(_LI("Checking for TLDs"))
@@ -106,14 +124,14 @@ class Service(service.Service):
         # Check the TLD for validity if there are entries in the database
         if self.check_for_tlds:
             try:
-                self.storage_api.find_tld(context, {'name': domain_labels[-1]})
+                self.storage.find_tld(context, {'name': domain_labels[-1]})
             except exceptions.TLDNotFound:
                 raise exceptions.InvalidDomainName('Invalid TLD')
 
             # Now check that the domain name is not the same as a TLD
             try:
                 stripped_domain_name = domain_name.strip('.').lower()
-                self.storage_api.find_tld(
+                self.storage.find_tld(
                     context,
                     {'name': stripped_domain_name})
             except exceptions.TLDNotFound:
@@ -161,7 +179,7 @@ class Service(service.Service):
         if recordset_type != 'CNAME':
             criterion['type'] = 'CNAME'
 
-        recordsets = self.storage_api.find_recordsets(context, criterion)
+        recordsets = self.storage.find_recordsets(context, criterion)
 
         if ((len(recordsets) == 1 and recordsets[0].id != recordset_id)
                 or len(recordsets) > 1):
@@ -188,7 +206,7 @@ class Service(service.Service):
         if domain.name == recordset_name:
             return
 
-        child_domains = self.storage_api.find_domains(
+        child_domains = self.storage.find_domains(
             context, {"parent_domain_id": domain.id})
         for child_domain in child_domains:
             try:
@@ -206,7 +224,7 @@ class Service(service.Service):
         Ensures the provided domain_name is not blacklisted.
         """
 
-        blacklists = self.storage_api.find_blacklists(context)
+        blacklists = self.storage.find_blacklists(context)
 
         for blacklist in blacklists:
             if bool(re.search(blacklist.pattern, domain_name)):
@@ -228,7 +246,7 @@ class Service(service.Service):
             name = '.'.join(labels[i:])
 
             try:
-                domain = self.storage_api.find_domain(context, {'name': name})
+                domain = self.storage.find_domain(context, {'name': name})
             except exceptions.DomainNotFound:
                 i += 1
             else:
@@ -246,22 +264,22 @@ class Service(service.Service):
                                             % min_ttl)
 
     def _increment_domain_serial(self, context, domain_id):
-        domain = self.storage_api.get_domain(context, domain_id)
+        domain = self.storage.get_domain(context, domain_id)
 
         # Increment the serial number
         values = {'serial': utils.increment_serial(domain['serial'])}
 
-        with self.storage_api.update_domain(
-                context, domain_id, values) as domain:
-            with wrap_backend_call():
-                self.backend.update_domain(context, domain)
+        domain = self.storage.update_domain(context, domain_id, values)
+
+        with wrap_backend_call():
+            self.backend.update_domain(context, domain)
 
         return domain
 
     # Quota Enforcement Methods
     def _enforce_domain_quota(self, context, tenant_id):
         criterion = {'tenant_id': tenant_id}
-        count = self.storage_api.count_domains(context, criterion)
+        count = self.storage.count_domains(context, criterion)
 
         self.quota.limit_check(context, tenant_id, domains=count)
 
@@ -272,7 +290,7 @@ class Service(service.Service):
     def _enforce_record_quota(self, context, domain, recordset):
         # Ensure the records per domain quota is OK
         criterion = {'domain_id': domain['id']}
-        count = self.storage_api.count_records(context, criterion)
+        count = self.storage.count_records(context, criterion)
 
         self.quota.limit_check(context, domain['tenant_id'],
                                domain_records=count)
@@ -297,6 +315,7 @@ class Service(service.Service):
 
         return self.quota.get_quota(context, tenant_id, resource)
 
+    @transaction
     def set_quota(self, context, tenant_id, resource, hard_limit):
         target = {
             'tenant_id': tenant_id,
@@ -308,6 +327,7 @@ class Service(service.Service):
 
         return self.quota.set_quota(context, tenant_id, resource, hard_limit)
 
+    @transaction
     def reset_quotas(self, context, tenant_id):
         target = {'tenant_id': tenant_id}
         policy.check('reset_quotas', context, target)
@@ -315,13 +335,15 @@ class Service(service.Service):
         self.quota.reset_quotas(context, tenant_id)
 
     # Server Methods
+    @transaction
     def create_server(self, context, server):
         policy.check('create_server', context)
 
-        with self.storage_api.create_server(context, server) as created_server:
-            # Update backend with the new server..
-            with wrap_backend_call():
-                self.backend.create_server(context, created_server)
+        created_server = self.storage.create_server(context, server)
+
+        # Update backend with the new server..
+        with wrap_backend_call():
+            self.backend.create_server(context, created_server)
 
         self.notifier.info(context, 'dns.server.create', created_server)
 
@@ -331,50 +353,54 @@ class Service(service.Service):
                      sort_key=None, sort_dir=None):
         policy.check('find_servers', context)
 
-        return self.storage_api.find_servers(context, criterion, marker, limit,
-                                             sort_key, sort_dir)
+        return self.storage.find_servers(context, criterion, marker, limit,
+                                         sort_key, sort_dir)
 
     def get_server(self, context, server_id):
         policy.check('get_server', context, {'server_id': server_id})
 
-        return self.storage_api.get_server(context, server_id)
+        return self.storage.get_server(context, server_id)
 
+    @transaction
     def update_server(self, context, server_id, values):
         policy.check('update_server', context, {'server_id': server_id})
 
-        with self.storage_api.update_server(
-                context, server_id, values) as server:
-            # Update backend with the new details..
-            with wrap_backend_call():
-                self.backend.update_server(context, server)
+        server = self.storage.update_server(context, server_id, values)
+
+        # Update backend with the new details..
+        with wrap_backend_call():
+            self.backend.update_server(context, server)
 
         self.notifier.info(context, 'dns.server.update', server)
 
         return server
 
+    @transaction
     def delete_server(self, context, server_id):
         policy.check('delete_server', context, {'server_id': server_id})
 
         # don't delete last of servers
-        servers = self.storage_api.find_servers(context)
+        servers = self.storage.find_servers(context)
         if len(servers) == 1 and server_id == servers[0].id:
             raise exceptions.LastServerDeleteNotAllowed(
                 "Not allowed to delete last of servers")
 
-        with self.storage_api.delete_server(context, server_id) as server:
-            # Update backend with the new server..
-            with wrap_backend_call():
-                self.backend.delete_server(context, server)
+        server = self.storage.delete_server(context, server_id)
+
+        # Update backend with the new server..
+        with wrap_backend_call():
+            self.backend.delete_server(context, server)
 
         self.notifier.info(context, 'dns.server.delete', server)
 
     # TLD Methods
+    @transaction
     def create_tld(self, context, tld):
         policy.check('create_tld', context)
 
         # The TLD is only created on central's storage and not on the backend.
-        with self.storage_api.create_tld(context, tld) as created_tld:
-            pass
+        created_tld = self.storage.create_tld(context, tld)
+
         self.notifier.info(context, 'dns.tld.create', created_tld)
 
         # Set check for tlds to be true
@@ -385,24 +411,25 @@ class Service(service.Service):
                   sort_key=None, sort_dir=None):
         policy.check('find_tlds', context)
 
-        return self.storage_api.find_tlds(context, criterion, marker, limit,
-                                          sort_key, sort_dir)
+        return self.storage.find_tlds(context, criterion, marker, limit,
+                                      sort_key, sort_dir)
 
     def get_tld(self, context, tld_id):
         policy.check('get_tld', context, {'tld_id': tld_id})
 
-        return self.storage_api.get_tld(context, tld_id)
+        return self.storage.get_tld(context, tld_id)
 
+    @transaction
     def update_tld(self, context, tld_id, values):
         policy.check('update_tld', context, {'tld_id': tld_id})
 
-        with self.storage_api.update_tld(context, tld_id, values) as tld:
-            pass
+        tld = self.storage.update_tld(context, tld_id, values)
 
         self.notifier.info(context, 'dns.tld.update', tld)
 
         return tld
 
+    @transaction
     def delete_tld(self, context, tld_id):
         # Known issue - self.check_for_tld is not reset here.  So if the last
         # TLD happens to be deleted, then we would incorrectly do the TLD
@@ -411,19 +438,19 @@ class Service(service.Service):
         # of hitting this issue vs doing the checks for every delete.
         policy.check('delete_tld', context, {'tld_id': tld_id})
 
-        with self.storage_api.delete_tld(context, tld_id) as tld:
-            pass
+        tld = self.storage.delete_tld(context, tld_id)
 
         self.notifier.info(context, 'dns.tld.delete', tld)
 
     # TSIG Key Methods
+    @transaction
     def create_tsigkey(self, context, tsigkey):
         policy.check('create_tsigkey', context)
 
-        with self.storage_api.create_tsigkey(context, tsigkey) \
-                as created_tsigkey:
-            with wrap_backend_call():
-                self.backend.create_tsigkey(context, created_tsigkey)
+        created_tsigkey = self.storage.create_tsigkey(context, tsigkey)
+
+        with wrap_backend_call():
+            self.backend.create_tsigkey(context, created_tsigkey)
 
         self.notifier.info(context, 'dns.tsigkey.create', created_tsigkey)
 
@@ -433,39 +460,42 @@ class Service(service.Service):
                       sort_key=None, sort_dir=None):
         policy.check('find_tsigkeys', context)
 
-        return self.storage_api.find_tsigkeys(context, criterion, marker,
-                                              limit, sort_key, sort_dir)
+        return self.storage.find_tsigkeys(context, criterion, marker,
+                                          limit, sort_key, sort_dir)
 
     def get_tsigkey(self, context, tsigkey_id):
         policy.check('get_tsigkey', context, {'tsigkey_id': tsigkey_id})
 
-        return self.storage_api.get_tsigkey(context, tsigkey_id)
+        return self.storage.get_tsigkey(context, tsigkey_id)
 
+    @transaction
     def update_tsigkey(self, context, tsigkey_id, values):
         policy.check('update_tsigkey', context, {'tsigkey_id': tsigkey_id})
 
-        with self.storage_api.update_tsigkey(
-                context, tsigkey_id, values) as tsigkey:
-            with wrap_backend_call():
-                self.backend.update_tsigkey(context, tsigkey)
+        tsigkey = self.storage.update_tsigkey(context, tsigkey_id, values)
+
+        with wrap_backend_call():
+            self.backend.update_tsigkey(context, tsigkey)
 
         self.notifier.info(context, 'dns.tsigkey.update', tsigkey)
 
         return tsigkey
 
+    @transaction
     def delete_tsigkey(self, context, tsigkey_id):
         policy.check('delete_tsigkey', context, {'tsigkey_id': tsigkey_id})
 
-        with self.storage_api.delete_tsigkey(context, tsigkey_id) as tsigkey:
-            with wrap_backend_call():
-                self.backend.delete_tsigkey(context, tsigkey)
+        tsigkey = self.storage.delete_tsigkey(context, tsigkey_id)
+
+        with wrap_backend_call():
+            self.backend.delete_tsigkey(context, tsigkey)
 
         self.notifier.info(context, 'dns.tsigkey.delete', tsigkey)
 
     # Tenant Methods
     def find_tenants(self, context):
         policy.check('find_tenants', context)
-        return self.storage_api.find_tenants(context)
+        return self.storage.find_tenants(context)
 
     def get_tenant(self, context, tenant_id):
         target = {
@@ -474,13 +504,14 @@ class Service(service.Service):
 
         policy.check('get_tenant', context, target)
 
-        return self.storage_api.get_tenant(context, tenant_id)
+        return self.storage.get_tenant(context, tenant_id)
 
     def count_tenants(self, context):
         policy.check('count_tenants', context)
-        return self.storage_api.count_tenants(context)
+        return self.storage.count_tenants(context)
 
     # Domain Methods
+    @transaction
     def create_domain(self, context, domain):
         # TODO(kiall): Refactor this method into *MUCH* smaller chunks.
 
@@ -521,7 +552,7 @@ class Service(service.Service):
         # NOTE(kiall): Fetch the servers before creating the domain, this way
         #              we can prevent domain creation if no servers are
         #              configured.
-        servers = self.storage_api.find_servers(context)
+        servers = self.storage.find_servers(context)
 
         if len(servers) == 0:
             LOG.critical('No servers configured. Please create at least one '
@@ -531,16 +562,17 @@ class Service(service.Service):
         # Set the serial number
         domain.serial = utils.increment_serial()
 
-        with self.storage_api.create_domain(context, domain) as created_domain:
-            with wrap_backend_call():
-                self.backend.create_domain(context, created_domain)
+        created_domain = self.storage.create_domain(context, domain)
+
+        with wrap_backend_call():
+            self.backend.create_domain(context, created_domain)
 
         self.notifier.info(context, 'dns.domain.create', created_domain)
 
         return created_domain
 
     def get_domain(self, context, domain_id):
-        domain = self.storage_api.get_domain(context, domain_id)
+        domain = self.storage.get_domain(context, domain_id)
 
         target = {
             'domain_id': domain_id,
@@ -552,7 +584,7 @@ class Service(service.Service):
         return domain
 
     def get_domain_servers(self, context, domain_id, criterion=None):
-        domain = self.storage_api.get_domain(context, domain_id)
+        domain = self.storage.get_domain(context, domain_id)
 
         target = {
             'domain_id': domain_id,
@@ -564,25 +596,26 @@ class Service(service.Service):
 
         # TODO(kiall): Once we allow domains to be allocated on 1 of N server
         #              pools, return the filtered list here.
-        return self.storage_api.find_servers(context, criterion)
+        return self.storage.find_servers(context, criterion)
 
     def find_domains(self, context, criterion=None, marker=None, limit=None,
                      sort_key=None, sort_dir=None):
         target = {'tenant_id': context.tenant}
         policy.check('find_domains', context, target)
 
-        return self.storage_api.find_domains(context, criterion, marker, limit,
-                                             sort_key, sort_dir)
+        return self.storage.find_domains(context, criterion, marker, limit,
+                                         sort_key, sort_dir)
 
     def find_domain(self, context, criterion=None):
         target = {'tenant_id': context.tenant}
         policy.check('find_domain', context, target)
 
-        return self.storage_api.find_domain(context, criterion)
+        return self.storage.find_domain(context, criterion)
 
+    @transaction
     def update_domain(self, context, domain_id, values, increment_serial=True):
         # TODO(kiall): Refactor this method into *MUCH* smaller chunks.
-        domain = self.storage_api.get_domain(context, domain_id)
+        domain = self.storage.get_domain(context, domain_id)
 
         target = {
             'domain_id': domain_id,
@@ -614,17 +647,18 @@ class Service(service.Service):
             # Increment the serial number
             values['serial'] = utils.increment_serial(domain.serial)
 
-        with self.storage_api.update_domain(
-                context, domain_id, values) as domain:
-            with wrap_backend_call():
-                self.backend.update_domain(context, domain)
+        domain = self.storage.update_domain(context, domain_id, values)
+
+        with wrap_backend_call():
+            self.backend.update_domain(context, domain)
 
         self.notifier.info(context, 'dns.domain.update', domain)
 
         return domain
 
+    @transaction
     def delete_domain(self, context, domain_id):
-        domain = self.storage_api.get_domain(context, domain_id)
+        domain = self.storage.get_domain(context, domain_id)
 
         target = {
             'domain_id': domain_id,
@@ -637,13 +671,14 @@ class Service(service.Service):
         # Prevent deletion of a zone which has child zones
         criterion = {'parent_domain_id': domain_id}
 
-        if self.storage_api.count_domains(context, criterion) > 0:
+        if self.storage.count_domains(context, criterion) > 0:
             raise exceptions.DomainHasSubdomain('Please delete any subdomains '
                                                 'before deleting this domain')
 
-        with self.storage_api.delete_domain(context, domain_id) as domain:
-            with wrap_backend_call():
-                self.backend.delete_domain(context, domain)
+        domain = self.storage.delete_domain(context, domain_id)
+
+        with wrap_backend_call():
+            self.backend.delete_domain(context, domain)
 
         self.notifier.info(context, 'dns.domain.delete', domain)
 
@@ -659,10 +694,11 @@ class Service(service.Service):
 
         policy.check('count_domains', context, target)
 
-        return self.storage_api.count_domains(context, criterion)
+        return self.storage.count_domains(context, criterion)
 
+    @transaction
     def touch_domain(self, context, domain_id):
-        domain = self.storage_api.get_domain(context, domain_id)
+        domain = self.storage.get_domain(context, domain_id)
 
         target = {
             'domain_id': domain_id,
@@ -679,8 +715,9 @@ class Service(service.Service):
         return domain
 
     # RecordSet Methods
+    @transaction
     def create_recordset(self, context, domain_id, recordset):
-        domain = self.storage_api.get_domain(context, domain_id)
+        domain = self.storage.get_domain(context, domain_id)
 
         target = {
             'domain_id': domain_id,
@@ -706,11 +743,11 @@ class Service(service.Service):
         self._is_valid_recordset_placement_subdomain(
             context, domain, recordset.name)
 
-        with self.storage_api.create_recordset(
-                context, domain_id, recordset) as created_recordset:
-            with wrap_backend_call():
-                self.backend.create_recordset(
-                    context, domain, created_recordset)
+        created_recordset = self.storage.create_recordset(context, domain_id,
+                                                          recordset)
+
+        with wrap_backend_call():
+            self.backend.create_recordset(context, domain, created_recordset)
 
         # Send RecordSet creation notification
         self.notifier.info(context, 'dns.recordset.create', created_recordset)
@@ -718,8 +755,8 @@ class Service(service.Service):
         return created_recordset
 
     def get_recordset(self, context, domain_id, recordset_id):
-        domain = self.storage_api.get_domain(context, domain_id)
-        recordset = self.storage_api.get_recordset(context, recordset_id)
+        domain = self.storage.get_domain(context, domain_id)
+        recordset = self.storage.get_recordset(context, recordset_id)
 
         # Ensure the domain_id matches the record's domain_id
         if domain.id != recordset.domain_id:
@@ -741,19 +778,20 @@ class Service(service.Service):
         target = {'tenant_id': context.tenant}
         policy.check('find_recordsets', context, target)
 
-        return self.storage_api.find_recordsets(context, criterion, marker,
-                                                limit, sort_key, sort_dir)
+        return self.storage.find_recordsets(context, criterion, marker,
+                                            limit, sort_key, sort_dir)
 
     def find_recordset(self, context, criterion=None):
         target = {'tenant_id': context.tenant}
         policy.check('find_recordset', context, target)
 
-        return self.storage_api.find_recordset(context, criterion)
+        return self.storage.find_recordset(context, criterion)
 
+    @transaction
     def update_recordset(self, context, domain_id, recordset_id, values,
                          increment_serial=True):
-        domain = self.storage_api.get_domain(context, domain_id)
-        recordset = self.storage_api.get_recordset(context, recordset_id)
+        domain = self.storage.get_domain(context, domain_id)
+        recordset = self.storage.get_recordset(context, recordset_id)
 
         # Ensure the domain_id matches the recordset's domain_id
         if domain.id != recordset.domain_id:
@@ -786,23 +824,25 @@ class Service(service.Service):
             self._is_valid_ttl(context, ttl)
 
         # Update the recordset
-        with self.storage_api.update_recordset(
-                context, recordset_id, values) as recordset:
-            with wrap_backend_call():
-                self.backend.update_recordset(context, domain, recordset)
+        recordset = self.storage.update_recordset(context, recordset_id,
+                                                  values)
 
-            if increment_serial:
-                self._increment_domain_serial(context, domain_id)
+        with wrap_backend_call():
+            self.backend.update_recordset(context, domain, recordset)
+
+        if increment_serial:
+            self._increment_domain_serial(context, domain_id)
 
         # Send RecordSet update notification
         self.notifier.info(context, 'dns.recordset.update', recordset)
 
         return recordset
 
+    @transaction
     def delete_recordset(self, context, domain_id, recordset_id,
                          increment_serial=True):
-        domain = self.storage_api.get_domain(context, domain_id)
-        recordset = self.storage_api.get_recordset(context, recordset_id)
+        domain = self.storage.get_domain(context, domain_id)
+        recordset = self.storage.get_recordset(context, recordset_id)
 
         # Ensure the domain_id matches the recordset's domain_id
         if domain.id != recordset.domain_id:
@@ -817,13 +857,13 @@ class Service(service.Service):
 
         policy.check('delete_recordset', context, target)
 
-        with self.storage_api.delete_recordset(context, recordset_id) \
-                as recordset:
-            with wrap_backend_call():
-                self.backend.delete_recordset(context, domain, recordset)
+        recordset = self.storage.delete_recordset(context, recordset_id)
 
-            if increment_serial:
-                self._increment_domain_serial(context, domain_id)
+        with wrap_backend_call():
+            self.backend.delete_recordset(context, domain, recordset)
+
+        if increment_serial:
+            self._increment_domain_serial(context, domain_id)
 
         # Send Record deletion notification
         self.notifier.info(context, 'dns.recordset.delete', recordset)
@@ -840,13 +880,14 @@ class Service(service.Service):
 
         policy.check('count_recordsets', context, target)
 
-        return self.storage_api.count_recordsets(context, criterion)
+        return self.storage.count_recordsets(context, criterion)
 
     # Record Methods
+    @transaction
     def create_record(self, context, domain_id, recordset_id, record,
                       increment_serial=True):
-        domain = self.storage_api.get_domain(context, domain_id)
-        recordset = self.storage_api.get_recordset(context, recordset_id)
+        domain = self.storage.get_domain(context, domain_id)
+        recordset = self.storage.get_recordset(context, recordset_id)
 
         target = {
             'domain_id': domain_id,
@@ -861,14 +902,15 @@ class Service(service.Service):
         # Ensure the tenant has enough quota to continue
         self._enforce_record_quota(context, domain, recordset)
 
-        with self.storage_api.create_record(
-                context, domain_id, recordset_id, record) as created_record:
-            with wrap_backend_call():
-                self.backend.create_record(
-                    context, domain, recordset, created_record)
+        created_record = self.storage.create_record(context, domain_id,
+                                                    recordset_id, record)
 
-            if increment_serial:
-                self._increment_domain_serial(context, domain_id)
+        with wrap_backend_call():
+            self.backend.create_record(
+                context, domain, recordset, created_record)
+
+        if increment_serial:
+            self._increment_domain_serial(context, domain_id)
 
         # Send Record creation notification
         self.notifier.info(context, 'dns.record.create', created_record)
@@ -876,9 +918,9 @@ class Service(service.Service):
         return created_record
 
     def get_record(self, context, domain_id, recordset_id, record_id):
-        domain = self.storage_api.get_domain(context, domain_id)
-        recordset = self.storage_api.get_recordset(context, recordset_id)
-        record = self.storage_api.get_record(context, record_id)
+        domain = self.storage.get_domain(context, domain_id)
+        recordset = self.storage.get_recordset(context, recordset_id)
+        record = self.storage.get_record(context, record_id)
 
         # Ensure the domain_id matches the record's domain_id
         if domain.id != record.domain_id:
@@ -906,20 +948,21 @@ class Service(service.Service):
         target = {'tenant_id': context.tenant}
         policy.check('find_records', context, target)
 
-        return self.storage_api.find_records(context, criterion, marker, limit,
-                                             sort_key, sort_dir)
+        return self.storage.find_records(context, criterion, marker, limit,
+                                         sort_key, sort_dir)
 
     def find_record(self, context, criterion=None):
         target = {'tenant_id': context.tenant}
         policy.check('find_record', context, target)
 
-        return self.storage_api.find_record(context, criterion)
+        return self.storage.find_record(context, criterion)
 
+    @transaction
     def update_record(self, context, domain_id, recordset_id, record_id,
                       values, increment_serial=True):
-        domain = self.storage_api.get_domain(context, domain_id)
-        recordset = self.storage_api.get_recordset(context, recordset_id)
-        record = self.storage_api.get_record(context, record_id)
+        domain = self.storage.get_domain(context, domain_id)
+        recordset = self.storage.get_recordset(context, recordset_id)
+        record = self.storage.get_record(context, record_id)
 
         # Ensure the domain_id matches the record's domain_id
         if domain.id != record.domain_id:
@@ -941,24 +984,25 @@ class Service(service.Service):
         policy.check('update_record', context, target)
 
         # Update the record
-        with self.storage_api.update_record(
-                context, record_id, values) as record:
-            with wrap_backend_call():
-                self.backend.update_record(context, domain, recordset, record)
+        record = self.storage.update_record(context, record_id, values)
 
-            if increment_serial:
-                self._increment_domain_serial(context, domain_id)
+        with wrap_backend_call():
+            self.backend.update_record(context, domain, recordset, record)
+
+        if increment_serial:
+            self._increment_domain_serial(context, domain_id)
 
         # Send Record update notification
         self.notifier.info(context, 'dns.record.update', record)
 
         return record
 
+    @transaction
     def delete_record(self, context, domain_id, recordset_id, record_id,
                       increment_serial=True):
-        domain = self.storage_api.get_domain(context, domain_id)
-        recordset = self.storage_api.get_recordset(context, recordset_id)
-        record = self.storage_api.get_record(context, record_id)
+        domain = self.storage.get_domain(context, domain_id)
+        recordset = self.storage.get_recordset(context, recordset_id)
+        record = self.storage.get_record(context, record_id)
 
         # Ensure the domain_id matches the record's domain_id
         if domain.id != record.domain_id:
@@ -979,12 +1023,13 @@ class Service(service.Service):
 
         policy.check('delete_record', context, target)
 
-        with self.storage_api.delete_record(context, record_id) as record:
-            with wrap_backend_call():
-                self.backend.delete_record(context, domain, recordset, record)
+        record = self.storage.delete_record(context, record_id)
 
-            if increment_serial:
-                self._increment_domain_serial(context, domain_id)
+        with wrap_backend_call():
+            self.backend.delete_record(context, domain, recordset, record)
+
+        if increment_serial:
+            self._increment_domain_serial(context, domain_id)
 
         # Send Record deletion notification
         self.notifier.info(context, 'dns.record.delete', record)
@@ -1000,11 +1045,11 @@ class Service(service.Service):
         }
 
         policy.check('count_records', context, target)
-        return self.storage_api.count_records(context, criterion)
+        return self.storage.count_records(context, criterion)
 
     # Diagnostics Methods
     def _sync_domain(self, context, domain):
-        recordsets = self.storage_api.find_recordsets(
+        recordsets = self.storage.find_recordsets(
             context, criterion={'domain_id': domain['id']})
 
         # Since we now have records as well as recordsets we need to get the
@@ -1017,10 +1062,11 @@ class Service(service.Service):
         with wrap_backend_call():
             return self.backend.sync_domain(context, domain, rdata)
 
+    @transaction
     def sync_domains(self, context):
         policy.check('diagnostics_sync_domains', context)
 
-        domains = self.storage_api.find_domains(context)
+        domains = self.storage.find_domains(context)
 
         results = {}
         for domain in domains:
@@ -1028,8 +1074,9 @@ class Service(service.Service):
 
         return results
 
+    @transaction
     def sync_domain(self, context, domain_id):
-        domain = self.storage_api.get_domain(context, domain_id)
+        domain = self.storage.get_domain(context, domain_id)
 
         target = {
             'domain_id': domain_id,
@@ -1041,9 +1088,10 @@ class Service(service.Service):
 
         return self._sync_domain(context, domain)
 
+    @transaction
     def sync_record(self, context, domain_id, recordset_id, record_id):
-        domain = self.storage_api.get_domain(context, domain_id)
-        recordset = self.storage_api.get_recordset(context, recordset_id)
+        domain = self.storage.get_domain(context, domain_id)
+        recordset = self.storage.get_recordset(context, recordset_id)
 
         target = {
             'domain_id': domain_id,
@@ -1056,7 +1104,7 @@ class Service(service.Service):
 
         policy.check('diagnostics_sync_record', context, target)
 
-        record = self.storage_api.get_record(context, record_id)
+        record = self.storage.get_record(context, record_id)
 
         with wrap_backend_call():
             return self.backend.sync_record(context, domain, recordset, record)
@@ -1070,7 +1118,7 @@ class Service(service.Service):
             backend_status = {'status': False, 'message': str(e)}
 
         try:
-            storage_status = self.storage_api.ping(context)
+            storage_status = self.storage.ping(context)
         except Exception as e:
             storage_status = {'status': False, 'message': str(e)}
 
@@ -1174,7 +1222,7 @@ class Service(service.Service):
                         value[1]['recordset_id'] in recordsets):
                     recordset = recordsets[value[1]['recordset_id']]
                 else:
-                    recordset = self.storage_api.get_recordset(
+                    recordset = self.storage.get_recordset(
                         elevated_context, value[1]['recordset_id'])
 
                 if recordset['ttl'] is not None:
@@ -1268,7 +1316,7 @@ class Service(service.Service):
 
         # NOTE: Find existing zone or create it..
         try:
-            zone = self.storage_api.find_domain(
+            zone = self.storage.find_domain(
                 elevated_context, {'name': zone_name})
         except exceptions.DomainNotFound:
             msg = _LI('Creating zone for %(fip_id)s:%(region)s - '
@@ -1362,7 +1410,7 @@ class Service(service.Service):
         }
 
         try:
-            record = self.storage_api.find_record(
+            record = self.storage.find_record(
                 elevated_context, criterion=criterion)
         except exceptions.RecordNotFound:
             msg = 'No such FloatingIP %s:%s' % (region, floatingip_id)
@@ -1374,6 +1422,7 @@ class Service(service.Service):
             record['recordset_id'],
             record['id'])
 
+    @transaction
     def update_floatingip(self, context, region, floatingip_id, values):
         """
         We strictly see if values['ptrdname'] is str or None and set / unset
@@ -1386,12 +1435,11 @@ class Service(service.Service):
                 context, region, floatingip_id, values)
 
     # Blacklisted Domains
+    @transaction
     def create_blacklist(self, context, blacklist):
         policy.check('create_blacklist', context)
 
-        with self.storage_api.create_blacklist(context, blacklist) as \
-                created_blacklist:
-            pass  # NOTE: No other systems need updating
+        created_blacklist = self.storage.create_blacklist(context, blacklist)
 
         self.notifier.info(context, 'dns.blacklist.create', created_blacklist)
 
@@ -1400,7 +1448,7 @@ class Service(service.Service):
     def get_blacklist(self, context, blacklist_id):
         policy.check('get_blacklist', context)
 
-        blacklist = self.storage_api.get_blacklist(context, blacklist_id)
+        blacklist = self.storage.get_blacklist(context, blacklist_id)
 
         return blacklist
 
@@ -1408,36 +1456,34 @@ class Service(service.Service):
                         limit=None, sort_key=None, sort_dir=None):
         policy.check('find_blacklists', context)
 
-        blacklists = self.storage_api.find_blacklists(context, criterion,
-                                                      marker, limit,
-                                                      sort_key, sort_dir)
+        blacklists = self.storage.find_blacklists(context, criterion,
+                                                  marker, limit,
+                                                  sort_key, sort_dir)
 
         return blacklists
 
     def find_blacklist(self, context, criterion):
         policy.check('find_blacklist', context)
 
-        blacklist = self.storage_api.find_blacklist(context, criterion)
+        blacklist = self.storage.find_blacklist(context, criterion)
 
         return blacklist
 
+    @transaction
     def update_blacklist(self, context, blacklist_id, values):
         policy.check('update_blacklist', context)
 
-        with self.storage_api.update_blacklist(context,
-                                               blacklist_id,
-                                               values) as blacklist:
-            pass  # NOTE: No other systems need updating
+        blacklist = self.storage.update_blacklist(context, blacklist_id,
+                                                  values)
 
         self.notifier.info(context, 'dns.blacklist.update', blacklist)
 
         return blacklist
 
+    @transaction
     def delete_blacklist(self, context, blacklist_id):
         policy.check('delete_blacklist', context)
 
-        with self.storage_api.delete_blacklist(context,
-                                               blacklist_id) as blacklist:
-            pass  # NOTE: No other systems need updating
+        blacklist = self.storage.delete_blacklist(context, blacklist_id)
 
         self.notifier.info(context, 'dns.blacklist.delete', blacklist)

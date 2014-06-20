@@ -16,9 +16,9 @@
 from oslo.config import cfg
 
 from designate import exceptions
+from designate import storage
 from designate.openstack.common import log as logging
 from designate.quota.base import Quota
-from designate.storage import api as sapi
 
 
 LOG = logging.getLogger(__name__)
@@ -27,18 +27,15 @@ LOG = logging.getLogger(__name__)
 class StorageQuota(Quota):
     __plugin_name__ = 'storage'
 
-    def __init__(self, storage_api=None):
+    def __init__(self):
         super(StorageQuota, self).__init__()
 
-        if storage_api is None:
-            # TODO(kiall): Should this be tied to central's config?
-            storage_driver = cfg.CONF['service:central'].storage_driver
-            storage_api = sapi.StorageAPI(storage_driver)
-
-        self.storage_api = storage_api
+        # TODO(kiall): Should this be tied to central's config?
+        storage_driver = cfg.CONF['service:central'].storage_driver
+        self.storage = storage.get_storage(storage_driver)
 
     def _get_quotas(self, context, tenant_id):
-        quotas = self.storage_api.find_quotas(context, {
+        quotas = self.storage.find_quotas(context, {
             'tenant_id': tenant_id,
         })
 
@@ -48,7 +45,7 @@ class StorageQuota(Quota):
         context = context.deepcopy()
         context.all_tenants = True
 
-        quota = self.storage_api.find_quota(context, {
+        quota = self.storage.find_quota(context, {
             'tenant_id': tenant_id,
             'resource': resource,
         })
@@ -66,21 +63,19 @@ class StorageQuota(Quota):
                 'hard_limit': hard_limit,
             }
 
-            with self.storage_api.create_quota(context, values):
-                pass  # NOTE(kiall): No other systems need updating.
+            self.storage.create_quota(context, values)
 
         def update_quota():
             values = {'hard_limit': hard_limit}
 
-            with self.storage_api.update_quota(context, quota['id'], values):
-                pass  # NOTE(kiall): No other systems need updating.
+            self.storage.update_quota(context, quota['id'], values)
 
         if resource not in self.get_default_quotas(context).keys():
             raise exceptions.QuotaResourceUnknown("%s is not a valid quota "
                                                   "resource", resource)
 
         try:
-            quota = self.storage_api.find_quota(context, {
+            quota = self.storage.find_quota(context, {
                 'tenant_id': tenant_id,
                 'resource': resource,
             })
@@ -95,10 +90,9 @@ class StorageQuota(Quota):
         context = context.deepcopy()
         context.all_tenants = True
 
-        quotas = self.storage_api.find_quotas(context, {
+        quotas = self.storage.find_quotas(context, {
             'tenant_id': tenant_id,
         })
 
         for quota in quotas:
-            with self.storage_api.delete_quota(context, quota['id']):
-                pass  # NOTE(kiall): No other systems need updating.
+            self.storage.delete_quota(context, quota['id'])

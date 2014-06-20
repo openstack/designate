@@ -17,7 +17,7 @@ import dns
 from oslo.config import cfg
 
 from designate.openstack.common import log as logging
-from designate.storage import api as storage_api
+from designate import storage
 
 
 LOG = logging.getLogger(__name__)
@@ -28,7 +28,7 @@ class RequestHandler(object):
     def __init__(self):
         # Get a storage connection
         storage_driver = cfg.CONF['service:mdns'].storage_driver
-        self.storage_api = storage_api.StorageAPI(storage_driver)
+        self.storage = storage.get_storage(storage_driver)
 
     def handle(self, payload):
         request = dns.message.from_wire(payload)
