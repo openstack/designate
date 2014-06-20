@@ -21,18 +21,18 @@ import shutil
 import tempfile
 
 import fixtures
-from migrate.versioning import repository
-import sqlalchemy
 from migrate.versioning import api as versioning_api
-from testtools import testcase
+from migrate.versioning import repository
+from oslotest import base
 from oslo.config import cfg
 from oslo.messaging import conffixture as messaging_fixture
 from oslo.messaging.notify import _impl_test as test_notifier
+import sqlalchemy
+from testtools import testcase
 
 from designate.openstack.common import log as logging
 from designate.openstack.common.fixture import config
 from designate.openstack.common import importutils
-from designate.openstack.common import test
 from designate import policy
 from designate import utils
 from designate.context import DesignateContext
@@ -133,7 +133,7 @@ class NetworkAPIFixture(fixtures.Fixture):
         self.addCleanup(self.fake.reset_floatingips)
 
 
-class TestCase(test.BaseTestCase):
+class TestCase(base.BaseTestCase):
     quota_fixtures = [{
         'resource': 'domains',
         'hard_limit': 5,

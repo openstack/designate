@@ -14,13 +14,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import fixtures
+from oslotest import mockpatch
 from requests.auth import AuthBase
 
 from designate import tests
 from designate import utils
 from designate.tests.test_backend import BackendTestMixin
 from designate.openstack.common import jsonutils as json
-from designate.openstack.common.fixture import mockpatch
 from designate.backend import impl_ipa
 
 
