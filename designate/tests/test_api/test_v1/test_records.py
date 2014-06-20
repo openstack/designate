@@ -65,8 +65,7 @@ class ApiV1RecordsTest(ApiV1Test):
         self.assertIn('name', response.json)
         self.assertEqual(response.json['name'], fixture['name'])
 
-    @patch.object(central_service.Service, 'create_record')
-    def test_create_record_trailing_slash(self, mock):
+    def test_create_record_trailing_slash(self):
         fixture = self.get_record_fixture(self.recordset['type'])
         fixture.update({
             'name': self.recordset['name'],
@@ -74,11 +73,12 @@ class ApiV1RecordsTest(ApiV1Test):
         })
 
         # Create a record with a trailing slash
-        self.post('domains/%s/records/' % self.domain['id'],
-                  data=fixture)
+        response = self.post('domains/%s/records/' % self.domain['id'],
+                             data=fixture)
 
-        # verify that the central service is called
-        self.assertTrue(mock.called)
+        self.assertIn('id', response.json)
+        self.assertIn('name', response.json)
+        self.assertEqual(response.json['name'], fixture['name'])
 
     def test_create_record_junk(self):
         fixture = self.get_record_fixture(self.recordset['type'])

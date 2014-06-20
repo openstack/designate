@@ -485,7 +485,7 @@ class Service(service.Service):
         # TODO(kiall): Refactor this method into *MUCH* smaller chunks.
 
         # Default to creating in the current users tenant
-        if not hasattr(domain, 'tenant_id'):
+        if domain.tenant_id is None:
             domain.tenant_id = context.tenant
 
         target = {
@@ -502,7 +502,7 @@ class Service(service.Service):
         self._is_valid_domain_name(context, domain.name)
 
         # Ensure TTL is above the minimum
-        if hasattr(domain, 'ttl') and domain.ttl is not None:
+        if domain.ttl is not None:
             self._is_valid_ttl(context, domain.ttl)
 
         # Handle sub-domains appropriately
