@@ -27,63 +27,21 @@ LOG = logging.getLogger(__name__)
 
 
 class StorageTestCase(object):
-    def create_quota(self, fixture=0, values=None, context=None):
-        values = values or {}
-        context = context or self.admin_context
+    def create_quota(self, **kwargs):
+        """
+        This create method has been kept in the StorageTestCase class as quotas
+        are treated differently to other resources in Central.
+        """
 
-        fixture = self.get_quota_fixture(fixture, values)
+        context = kwargs.pop('context', self.admin_context)
+        fixture = kwargs.pop('fixture', 0)
 
-        if 'tenant_id' not in fixture:
-            fixture['tenant_id'] = context.tenant
+        values = self.get_quota_fixture(fixture=fixture, values=kwargs)
 
-        return fixture, self.storage.create_quota(context, fixture)
+        if 'tenant_id' not in values:
+            values['tenant_id'] = context.tenant
 
-    def create_server(self, fixture=0, values=None, context=None):
-        values = values or {}
-        context = context or self.admin_context
-
-        fixture = self.get_server_fixture(fixture, values)
-        return fixture, self.storage.create_server(
-            context, objects.Server(**fixture))
-
-    def create_tsigkey(self, fixture=0, values=None, context=None):
-        values = values or {}
-        context = context or self.admin_context
-
-        fixture = self.get_tsigkey_fixture(fixture, values)
-        return fixture, self.storage.create_tsigkey(
-            context, objects.TsigKey(**fixture))
-
-    def create_domain(self, fixture=0, values=None, context=None):
-        values = values or {}
-        context = context or self.admin_context
-
-        fixture = self.get_domain_fixture(fixture, values)
-
-        if 'tenant_id' not in fixture:
-            fixture['tenant_id'] = context.tenant
-
-        return fixture, self.storage.create_domain(
-            context, objects.Domain(**fixture))
-
-    def create_recordset(self, domain, type='A', fixture=0, values=None,
-                         context=None):
-        values = values or {}
-        context = context or self.admin_context
-
-        fixture = self.get_recordset_fixture(domain['name'], type, fixture,
-                                             values)
-        return fixture, self.storage.create_recordset(
-            context, domain['id'], objects.RecordSet(**fixture))
-
-    def create_record(self, domain, recordset, fixture=0, values=None,
-                      context=None):
-        values = values or {}
-        context = context or self.admin_context
-
-        fixture = self.get_record_fixture(recordset['type'], fixture, values)
-        return fixture, self.storage.create_record(
-            context, domain['id'], recordset['id'], objects.Record(**fixture))
+        return self.storage.create_quota(context, values)
 
     # Paging Tests
     def _ensure_paging(self, data, method):
@@ -157,7 +115,7 @@ class StorageTestCase(object):
         self.assertEqual(actual, [])
 
         # Create a single quota
-        _, quota_one = self.create_quota()
+        quota_one = self.create_quota()
 
         actual = self.storage.find_quotas(self.admin_context)
         self.assertEqual(len(actual), 1)
@@ -167,7 +125,7 @@ class StorageTestCase(object):
         self.assertEqual(actual[0]['hard_limit'], quota_one['hard_limit'])
 
         # Create a second quota
-        _, quota_two = self.create_quota(fixture=1)
+        quota_two = self.create_quota(fixture=1)
 
         actual = self.storage.find_quotas(self.admin_context)
         self.assertEqual(len(actual), 2)
@@ -177,8 +135,8 @@ class StorageTestCase(object):
         self.assertEqual(actual[1]['hard_limit'], quota_two['hard_limit'])
 
     def test_find_quotas_criterion(self):
-        _, quota_one = self.create_quota(0)
-        _, quota_two = self.create_quota(1)
+        quota_one = self.create_quota()
+        quota_two = self.create_quota(fixture=1)
 
         criterion = dict(
             tenant_id=quota_one['tenant_id'],
@@ -208,7 +166,7 @@ class StorageTestCase(object):
 
     def test_get_quota(self):
         # Create a quota
-        _, expected = self.create_quota()
+        expected = self.create_quota()
         actual = self.storage.get_quota(self.admin_context, expected['id'])
 
         self.assertEqual(actual['tenant_id'], expected['tenant_id'])
@@ -221,8 +179,8 @@ class StorageTestCase(object):
             self.storage.get_quota(self.admin_context, uuid)
 
     def test_find_quota_criterion(self):
-        _, quota_one = self.create_quota(0)
-        _, quota_two = self.create_quota(1)
+        quota_one = self.create_quota()
+        quota_two = self.create_quota(fixture=1)
 
         criterion = dict(
             tenant_id=quota_one['tenant_id'],
@@ -247,7 +205,7 @@ class StorageTestCase(object):
         self.assertEqual(result['hard_limit'], quota_two['hard_limit'])
 
     def test_find_quota_criterion_missing(self):
-        _, expected = self.create_quota(0)
+        expected = self.create_quota()
 
         criterion = dict(
             tenant_id=expected['tenant_id'] + "NOT FOUND"
@@ -258,12 +216,12 @@ class StorageTestCase(object):
 
     def test_update_quota(self):
         # Create a quota
-        fixture, quota = self.create_quota()
+        fixture = self.get_quota_fixture()
+        quota = self.create_quota(fixture=1)
 
         updated = self.storage.update_quota(self.admin_context, quota['id'],
                                             fixture)
 
-        self.assertEqual(updated['tenant_id'], fixture['tenant_id'])
         self.assertEqual(updated['resource'], fixture['resource'])
         self.assertEqual(updated['hard_limit'], fixture['hard_limit'])
 
@@ -272,8 +230,8 @@ class StorageTestCase(object):
         context.all_tenants = True
 
         # Create two quotas
-        self.create_quota(fixture=0, values={'tenant_id': '1'})
-        _, quota = self.create_quota(fixture=0, values={'tenant_id': '2'})
+        self.create_quota(fixture=0, tenant_id='1')
+        quota = self.create_quota(fixture=0, tenant_id='2')
 
         with testtools.ExpectedException(exceptions.DuplicateQuota):
             self.storage.update_quota(context, quota['id'],
@@ -285,7 +243,7 @@ class StorageTestCase(object):
             self.storage.update_quota(self.admin_context, uuid, {})
 
     def test_delete_quota(self):
-        quota_fixture, quota = self.create_quota()
+        quota = self.create_quota()
 
         self.storage.delete_quota(self.admin_context, quota['id'])
 
@@ -324,7 +282,7 @@ class StorageTestCase(object):
         self.assertEqual(actual, [])
 
         # Create a single server
-        _, server = self.create_server()
+        server = self.create_server()
 
         actual = self.storage.find_servers(self.admin_context)
         self.assertEqual(len(actual), 1)
@@ -333,15 +291,14 @@ class StorageTestCase(object):
         # Order of found items later will be reverse of the order they are
         # created
         created = [self.create_server(
-            values={'name': 'ns%s.example.org.' % i})[1]
-            for i in xrange(10, 20)]
+            name='ns%s.example.org.' % i) for i in xrange(10, 20)]
         created.insert(0, server)
 
         self._ensure_paging(created, self.storage.find_servers)
 
     def test_find_servers_criterion(self):
-        _, server_one = self.create_server(0)
-        _, server_two = self.create_server(1)
+        server_one = self.create_server(fixture=0)
+        server_two = self.create_server(fixture=1)
 
         criterion = dict(
             name=server_one['name']
@@ -365,7 +322,7 @@ class StorageTestCase(object):
 
     def test_get_server(self):
         # Create a server
-        _, expected = self.create_server()
+        expected = self.create_server()
         actual = self.storage.get_server(self.admin_context, expected['id'])
 
         self.assertEqual(str(actual['name']), str(expected['name']))
@@ -377,7 +334,8 @@ class StorageTestCase(object):
 
     def test_update_server(self):
         # Create a server
-        fixture, server = self.create_server()
+        fixture = self.get_server_fixture()
+        server = self.create_server(**fixture)
 
         updated = self.storage.update_server(self.admin_context, server['id'],
                                              fixture)
@@ -387,7 +345,7 @@ class StorageTestCase(object):
     def test_update_server_duplicate(self):
         # Create two servers
         self.create_server(fixture=0)
-        _, server = self.create_server(fixture=1)
+        server = self.create_server(fixture=1)
 
         values = self.server_fixtures[0]
 
@@ -401,7 +359,7 @@ class StorageTestCase(object):
             self.storage.update_server(self.admin_context, uuid, {})
 
     def test_delete_server(self):
-        server_fixture, server = self.create_server()
+        server = self.create_server()
 
         self.storage.delete_server(self.admin_context, server['id'])
 
@@ -430,20 +388,20 @@ class StorageTestCase(object):
 
     def test_create_tsigkey_duplicate(self):
         # Create the Initial TsigKey
-        _, tsigkey_one = self.create_tsigkey()
+        tsigkey_one = self.create_tsigkey()
 
         values = self.get_tsigkey_fixture(1)
         values['name'] = tsigkey_one['name']
 
         with testtools.ExpectedException(exceptions.DuplicateTsigKey):
-            self.create_tsigkey(values=values)
+            self.create_tsigkey(**values)
 
     def test_find_tsigkeys(self):
         actual = self.storage.find_tsigkeys(self.admin_context)
         self.assertEqual(actual, [])
 
         # Create a single tsigkey
-        _, tsig = self.create_tsigkey()
+        tsig = self.create_tsigkey()
 
         actual = self.storage.find_tsigkeys(self.admin_context)
         self.assertEqual(len(actual), 1)
@@ -454,15 +412,15 @@ class StorageTestCase(object):
 
         # Order of found items later will be reverse of the order they are
         # created
-        created = [self.create_tsigkey(values={'name': 'tsig%s.' % i})[1]
+        created = [self.create_tsigkey(name='tsig%s.' % i)
                    for i in xrange(10, 20)]
         created.insert(0, tsig)
 
         self._ensure_paging(created, self.storage.find_tsigkeys)
 
     def test_find_tsigkeys_criterion(self):
-        _, tsigkey_one = self.create_tsigkey(fixture=0)
-        _, tsigkey_two = self.create_tsigkey(fixture=1)
+        tsigkey_one = self.create_tsigkey(fixture=0)
+        tsigkey_two = self.create_tsigkey(fixture=1)
 
         criterion = dict(
             name=tsigkey_one['name']
@@ -486,7 +444,7 @@ class StorageTestCase(object):
 
     def test_get_tsigkey(self):
         # Create a tsigkey
-        _, expected = self.create_tsigkey()
+        expected = self.create_tsigkey()
 
         actual = self.storage.get_tsigkey(self.admin_context, expected['id'])
 
@@ -501,7 +459,8 @@ class StorageTestCase(object):
 
     def test_update_tsigkey(self):
         # Create a tsigkey
-        fixture, tsigkey = self.create_tsigkey()
+        fixture = self.get_tsigkey_fixture()
+        tsigkey = self.create_tsigkey(**fixture)
 
         updated = self.storage.update_tsigkey(self.admin_context,
                                               tsigkey['id'],
@@ -514,7 +473,7 @@ class StorageTestCase(object):
     def test_update_tsigkey_duplicate(self):
         # Create two tsigkeys
         self.create_tsigkey(fixture=0)
-        _, tsigkey = self.create_tsigkey(fixture=1)
+        tsigkey = self.create_tsigkey(fixture=1)
 
         values = self.tsigkey_fixtures[0]
 
@@ -528,7 +487,7 @@ class StorageTestCase(object):
             self.storage.update_tsigkey(self.admin_context, uuid, {})
 
     def test_delete_tsigkey(self):
-        tsigkey_fixture, tsigkey = self.create_tsigkey()
+        tsigkey = self.create_tsigkey()
 
         self.storage.delete_tsigkey(self.admin_context, tsigkey['id'])
 
@@ -546,9 +505,9 @@ class StorageTestCase(object):
         context.all_tenants = True
 
         # create 3 domains in 2 tenants
-        self.create_domain(fixture=0, values={'tenant_id': 'One'})
-        _, domain = self.create_domain(fixture=1, values={'tenant_id': 'One'})
-        self.create_domain(fixture=2, values={'tenant_id': 'Two'})
+        self.create_domain(fixture=0, tenant_id='One')
+        domain = self.create_domain(fixture=1, tenant_id='One')
+        self.create_domain(fixture=2, tenant_id='Two')
 
         # Delete one of the domains.
         self.storage.delete_domain(context, domain['id'])
@@ -572,9 +531,9 @@ class StorageTestCase(object):
         context.all_tenants = True
 
         # create 2 domains in a tenant
-        _, domain_1 = self.create_domain(fixture=0, values={'tenant_id': 1})
-        _, domain_2 = self.create_domain(fixture=1, values={'tenant_id': 1})
-        _, domain_3 = self.create_domain(fixture=2, values={'tenant_id': 1})
+        domain_1 = self.create_domain(fixture=0, tenant_id=1)
+        domain_2 = self.create_domain(fixture=1, tenant_id=1)
+        domain_3 = self.create_domain(fixture=2, tenant_id=1)
 
         # Delete one of the domains.
         self.storage.delete_domain(context, domain_3['id'])
@@ -595,9 +554,9 @@ class StorageTestCase(object):
         self.assertEqual(tenants, 0)
 
         # create 2 domains with 2 tenants
-        self.create_domain(fixture=0, values={'tenant_id': 1})
-        self.create_domain(fixture=1, values={'tenant_id': 2})
-        _, domain = self.create_domain(fixture=2, values={'tenant_id': 2})
+        self.create_domain(fixture=0, tenant_id=1)
+        self.create_domain(fixture=1, tenant_id=2)
+        domain = self.create_domain(fixture=2, tenant_id=2)
 
         # Delete one of the domains.
         self.storage.delete_domain(context, domain['id'])
@@ -633,11 +592,13 @@ class StorageTestCase(object):
             self.create_domain()
 
     def test_find_domains(self):
+        self.config(quota_domains=20)
+
         actual = self.storage.find_domains(self.admin_context)
         self.assertEqual(actual, [])
 
         # Create a single domain
-        fixture_one, domain = self.create_domain()
+        domain = self.create_domain()
 
         actual = self.storage.find_domains(self.admin_context)
         self.assertEqual(len(actual), 1)
@@ -646,16 +607,16 @@ class StorageTestCase(object):
         self.assertEqual(actual[0]['email'], domain['email'])
 
         # Order of found items later will be reverse of the order they are
-        # created
-        created = [self.create_domain(values={'name': 'x%s.org.' % i})[1]
+        # created XXXX
+        created = [self.create_domain(name='x%s.org.' % i)
                    for i in xrange(10, 20)]
         created.insert(0, domain)
 
         self._ensure_paging(created, self.storage.find_domains)
 
     def test_find_domains_criterion(self):
-        _, domain_one = self.create_domain(0)
-        _, domain_two = self.create_domain(1)
+        domain_one = self.create_domain()
+        domain_two = self.create_domain(fixture=1)
 
         criterion = dict(
             name=domain_one['name']
@@ -715,7 +676,7 @@ class StorageTestCase(object):
 
     def test_get_domain(self):
         # Create a domain
-        fixture, expected = self.create_domain()
+        expected = self.create_domain()
         actual = self.storage.get_domain(self.admin_context, expected['id'])
 
         self.assertEqual(actual['name'], expected['name'])
@@ -731,14 +692,14 @@ class StorageTestCase(object):
         context = self.get_admin_context()
         context.show_deleted = True
 
-        _, domain = self.create_domain(context=context)
+        domain = self.create_domain(context=context)
 
         self.storage.delete_domain(context, domain['id'])
         self.storage.get_domain(context, domain['id'])
 
     def test_find_domain_criterion(self):
-        _, domain_one = self.create_domain(0)
-        _, domain_two = self.create_domain(1)
+        domain_one = self.create_domain()
+        domain_two = self.create_domain(fixture=1)
 
         criterion = dict(
             name=domain_one['name']
@@ -762,7 +723,7 @@ class StorageTestCase(object):
         self.assertIn('status', domain_two)
 
     def test_find_domain_criterion_missing(self):
-        _, expected = self.create_domain(0)
+        expected = self.create_domain()
 
         criterion = dict(
             name=expected['name'] + "NOT FOUND"
@@ -773,7 +734,8 @@ class StorageTestCase(object):
 
     def test_update_domain(self):
         # Create a domain
-        fixture, domain = self.create_domain()
+        fixture = self.get_domain_fixture()
+        domain = self.create_domain(**fixture)
 
         updated = self.storage.update_domain(self.admin_context, domain['id'],
                                              fixture)
@@ -784,12 +746,13 @@ class StorageTestCase(object):
 
     def test_update_domain_duplicate(self):
         # Create two domains
-        fixture_one, domain_one = self.create_domain(fixture=0)
-        _, domain_two = self.create_domain(fixture=1)
+        fixture = self.get_domain_fixture(fixture=0)
+        self.create_domain(**fixture)
+        domain_two = self.create_domain(fixture=1)
 
         with testtools.ExpectedException(exceptions.DuplicateDomain):
             self.storage.update_domain(self.admin_context, domain_two['id'],
-                                       fixture_one)
+                                       fixture)
 
     def test_update_domain_missing(self):
         with testtools.ExpectedException(exceptions.DomainNotFound):
@@ -797,7 +760,7 @@ class StorageTestCase(object):
             self.storage.update_domain(self.admin_context, uuid, {})
 
     def test_delete_domain(self):
-        domain_fixture, domain = self.create_domain()
+        domain = self.create_domain()
 
         self.storage.delete_domain(self.admin_context, domain['id'])
 
@@ -824,7 +787,7 @@ class StorageTestCase(object):
         self.assertEqual(domains, 1)
 
     def test_create_recordset(self):
-        domain_fixture, domain = self.create_domain()
+        domain = self.create_domain()
 
         values = {
             'name': 'www.%s' % domain['name'],
@@ -844,7 +807,7 @@ class StorageTestCase(object):
         self.assertEqual(result['type'], values['type'])
 
     def test_create_recordset_duplicate(self):
-        _, domain = self.create_domain()
+        domain = self.create_domain()
 
         # Create the First RecordSet
         self.create_recordset(domain)
@@ -854,7 +817,7 @@ class StorageTestCase(object):
             self.create_recordset(domain)
 
     def test_find_recordsets(self):
-        _, domain = self.create_domain()
+        domain = self.create_domain()
 
         criterion = {'domain_id': domain['id']}
 
@@ -862,7 +825,7 @@ class StorageTestCase(object):
         self.assertEqual(actual, [])
 
         # Create a single recordset
-        _, recordset_one = self.create_recordset(domain, fixture=0)
+        recordset_one = self.create_recordset(domain)
 
         actual = self.storage.find_recordsets(self.admin_context, criterion)
         self.assertEqual(len(actual), 1)
@@ -873,16 +836,15 @@ class StorageTestCase(object):
         # Order of found items later will be reverse of the order they are
         # created
         created = [self.create_recordset(
-            domain, values={'name': 'test%s' % i + '.%s'})[1]
-            for i in xrange(10, 20)]
+            domain, name='test%s' % i + '.%s') for i in xrange(10, 20)]
         created.insert(0, recordset_one)
 
         self._ensure_paging(created, self.storage.find_recordsets)
 
     def test_find_recordsets_criterion(self):
-        _, domain = self.create_domain()
+        domain = self.create_domain()
 
-        _, recordset_one = self.create_recordset(domain, type='A', fixture=0)
+        recordset_one = self.create_recordset(domain, type='A', fixture=0)
         self.create_recordset(domain, fixture=1)
 
         criterion = dict(
@@ -906,11 +868,11 @@ class StorageTestCase(object):
         self.assertEqual(len(results), 2)
 
     def test_find_recordsets_criterion_wildcard(self):
-        _, domain = self.create_domain()
+        domain = self.create_domain()
 
         values = {'name': 'one.%s' % domain['name']}
 
-        self.create_recordset(domain, fixture=0, values=values)
+        self.create_recordset(domain, **values)
 
         criterion = dict(
             domain_id=domain['id'],
@@ -922,8 +884,8 @@ class StorageTestCase(object):
         self.assertEqual(len(results), 1)
 
     def test_get_recordset(self):
-        _, domain = self.create_domain()
-        _, expected = self.create_recordset(domain)
+        domain = self.create_domain()
+        expected = self.create_recordset(domain)
 
         actual = self.storage.get_recordset(self.admin_context, expected['id'])
 
@@ -936,8 +898,8 @@ class StorageTestCase(object):
             self.storage.get_recordset(self.admin_context, uuid)
 
     def test_find_recordset_criterion(self):
-        _, domain = self.create_domain(0)
-        _, expected = self.create_recordset(domain)
+        domain = self.create_domain()
+        expected = self.create_recordset(domain)
 
         criterion = dict(
             domain_id=domain['id'],
@@ -950,8 +912,8 @@ class StorageTestCase(object):
         self.assertEqual(actual['type'], expected['type'])
 
     def test_find_recordset_criterion_missing(self):
-        _, domain = self.create_domain(0)
-        _, expected = self.create_recordset(domain)
+        domain = self.create_domain()
+        expected = self.create_recordset(domain)
 
         criterion = dict(
             name=expected['name'] + "NOT FOUND"
@@ -961,10 +923,10 @@ class StorageTestCase(object):
             self.storage.find_recordset(self.admin_context, criterion)
 
     def test_update_recordset(self):
-        domain_fixture, domain = self.create_domain()
+        domain = self.create_domain()
 
         # Create a recordset
-        _, recordset = self.create_recordset(domain)
+        recordset = self.create_recordset(domain)
 
         # Get some different values to test the update with
         recordset_fixture = self.get_recordset_fixture(domain['name'],
@@ -981,11 +943,12 @@ class StorageTestCase(object):
         self.assertEqual(updated['type'], recordset_fixture['type'])
 
     def test_update_recordset_duplicate(self):
-        _, domain = self.create_domain()
+        domain = self.create_domain()
 
         # Create the first two recordsets
-        recordset_one_fixture, _ = self.create_recordset(domain, fixture=0)
-        _, recordset_two = self.create_recordset(domain, fixture=1)
+        recordset_one_fixture = self.get_recordset_fixture(domain['name'])
+        self.create_recordset(domain, **recordset_one_fixture)
+        recordset_two = self.create_recordset(domain, fixture=1)
 
         with testtools.ExpectedException(exceptions.DuplicateRecordSet):
             # Attempt to update the second recordset, making it a duplicate
@@ -1000,10 +963,10 @@ class StorageTestCase(object):
             self.storage.update_recordset(self.admin_context, uuid, {})
 
     def test_delete_recordset(self):
-        _, domain = self.create_domain()
+        domain = self.create_domain()
 
         # Create a recordset
-        _, recordset = self.create_recordset(domain)
+        recordset = self.create_recordset(domain)
 
         self.storage.delete_recordset(self.admin_context, recordset['id'])
 
@@ -1021,7 +984,7 @@ class StorageTestCase(object):
         self.assertEqual(recordsets, 0)
 
         # Create a single domain & recordset
-        _, domain = self.create_domain()
+        domain = self.create_domain()
         self.create_recordset(domain)
 
         # we should have 1 recordsets now
@@ -1029,8 +992,8 @@ class StorageTestCase(object):
         self.assertEqual(recordsets, 1)
 
     def test_create_record(self):
-        _, domain = self.create_domain()
-        _, recordset = self.create_recordset(domain, type='A')
+        domain = self.create_domain()
+        recordset = self.create_recordset(domain, type='A')
 
         values = {
             'data': '192.0.2.1',
@@ -1051,8 +1014,8 @@ class StorageTestCase(object):
         self.assertIn('status', result)
 
     def test_create_record_duplicate(self):
-        _, domain = self.create_domain()
-        _, recordset = self.create_recordset(domain)
+        domain = self.create_domain()
+        recordset = self.create_recordset(domain)
 
         # Create the First Record
         self.create_record(domain, recordset)
@@ -1062,8 +1025,8 @@ class StorageTestCase(object):
             self.create_record(domain, recordset)
 
     def test_find_records(self):
-        _, domain = self.create_domain()
-        _, recordset = self.create_recordset(domain)
+        domain = self.create_domain()
+        recordset = self.create_recordset(domain)
 
         criterion = {
             'domain_id': domain['id'],
@@ -1074,7 +1037,7 @@ class StorageTestCase(object):
         self.assertEqual(actual, [])
 
         # Create a single record
-        _, record = self.create_record(domain, recordset, fixture=0)
+        record = self.create_record(domain, recordset)
 
         actual = self.storage.find_records(self.admin_context, criterion)
         self.assertEqual(len(actual), 1)
@@ -1085,18 +1048,17 @@ class StorageTestCase(object):
         # Order of found items later will be reverse of the order they are
         # created
         created = [self.create_record(
-            domain, recordset,
-            values={'data': '192.0.0.%s' % i})[1]
+            domain, recordset, data='192.0.0.%s' % i)
             for i in xrange(10, 20)]
         created.insert(0, record)
 
         self._ensure_paging(created, self.storage.find_records)
 
     def test_find_records_criterion(self):
-        _, domain = self.create_domain()
-        _, recordset = self.create_recordset(domain, type='A')
+        domain = self.create_domain()
+        recordset = self.create_recordset(domain, type='A')
 
-        _, record_one = self.create_record(domain, recordset, fixture=0)
+        record_one = self.create_record(domain, recordset)
         self.create_record(domain, recordset, fixture=1)
 
         criterion = dict(
@@ -1118,12 +1080,12 @@ class StorageTestCase(object):
         self.assertEqual(len(results), 2)
 
     def test_find_records_criterion_wildcard(self):
-        _, domain = self.create_domain()
-        _, recordset = self.create_recordset(domain, type='A')
+        domain = self.create_domain()
+        recordset = self.create_recordset(domain, type='A')
 
         values = {'data': '127.0.0.1'}
 
-        self.create_record(domain, recordset, fixture=0, values=values)
+        self.create_record(domain, recordset, **values)
 
         criterion = dict(
             domain_id=domain['id'],
@@ -1148,18 +1110,16 @@ class StorageTestCase(object):
         at_context.all_tenants = True
 
         # Create two domains in different tenants, and 1 record in each
-        _, domain_one = self.create_domain(fixture=0, context=one_context)
-        _, recordset_one = self.create_recordset(domain_one, fixture=0,
-                                                 context=one_context)
-        self.create_record(domain_one, recordset_one, fixture=0,
-                           context=one_context)
+        domain_one = self.create_domain(fixture=0, context=one_context)
+        recordset_one = self.create_recordset(domain_one, fixture=0,
+                                              context=one_context)
+        self.create_record(domain_one, recordset_one, context=one_context)
 
-        _, domain_two = self.create_domain(fixture=1, context=two_context)
-        _, recordset_one = self.create_recordset(domain_two, fixture=1,
-                                                 context=two_context)
+        domain_two = self.create_domain(fixture=1, context=two_context)
+        recordset_one = self.create_recordset(domain_two, fixture=1,
+                                              context=two_context)
 
-        self.create_record(domain_two, recordset_one, fixture=0,
-                           context=two_context)
+        self.create_record(domain_two, recordset_one, context=two_context)
 
         # Ensure the all_tenants context see's two records
         results = self.storage.find_records(at_context)
@@ -1178,10 +1138,10 @@ class StorageTestCase(object):
         self.assertEqual(len(results), 1)
 
     def test_get_record(self):
-        _, domain = self.create_domain()
-        _, recordset = self.create_recordset(domain)
+        domain = self.create_domain()
+        recordset = self.create_recordset(domain)
 
-        _, expected = self.create_record(domain, recordset)
+        expected = self.create_record(domain, recordset)
 
         actual = self.storage.get_record(self.admin_context, expected['id'])
 
@@ -1194,10 +1154,10 @@ class StorageTestCase(object):
             self.storage.get_record(self.admin_context, uuid)
 
     def test_find_record_criterion(self):
-        _, domain = self.create_domain(0)
-        _, recordset = self.create_recordset(domain)
+        domain = self.create_domain()
+        recordset = self.create_recordset(domain)
 
-        _, expected = self.create_record(domain, recordset)
+        expected = self.create_record(domain, recordset)
 
         criterion = dict(
             domain_id=domain['id'],
@@ -1211,10 +1171,10 @@ class StorageTestCase(object):
         self.assertIn('status', actual)
 
     def test_find_record_criterion_missing(self):
-        _, domain = self.create_domain(0)
-        _, recordset = self.create_recordset(domain)
+        domain = self.create_domain()
+        recordset = self.create_recordset(domain)
 
-        _, expected = self.create_record(domain, recordset)
+        expected = self.create_record(domain, recordset)
 
         criterion = dict(
             domain_id=domain['id'],
@@ -1225,11 +1185,11 @@ class StorageTestCase(object):
             self.storage.find_record(self.admin_context, criterion)
 
     def test_update_record(self):
-        _, domain = self.create_domain()
-        _, recordset = self.create_recordset(domain)
+        domain = self.create_domain()
+        recordset = self.create_recordset(domain)
 
         # Create a record
-        _, record = self.create_record(domain, recordset)
+        record = self.create_record(domain, recordset)
 
         # Get some different values to test the update with
         record_fixture = self.get_record_fixture(recordset['type'], fixture=1)
@@ -1245,13 +1205,13 @@ class StorageTestCase(object):
         self.assertIn('status', updated)
 
     def test_update_record_duplicate(self):
-        _, domain = self.create_domain()
-        _, recordset = self.create_recordset(domain)
+        domain = self.create_domain()
+        recordset = self.create_recordset(domain)
 
         # Create the first two records
-        record_one_fixture, _ = self.create_record(domain, recordset,
-                                                   fixture=0)
-        _, record_two = self.create_record(domain, recordset, fixture=1)
+        record_one_fixture = self.get_record_fixture(recordset['type'])
+        self.create_record(domain, recordset, **record_one_fixture)
+        record_two = self.create_record(domain, recordset, fixture=1)
 
         with testtools.ExpectedException(exceptions.DuplicateRecord):
             # Attempt to update the second record, making it a duplicate record
@@ -1264,11 +1224,11 @@ class StorageTestCase(object):
             self.storage.update_record(self.admin_context, uuid, {})
 
     def test_delete_record(self):
-        _, domain = self.create_domain()
-        _, recordset = self.create_recordset(domain)
+        domain = self.create_domain()
+        recordset = self.create_recordset(domain)
 
         # Create a record
-        _, record = self.create_record(domain, recordset)
+        record = self.create_record(domain, recordset)
 
         self.storage.delete_record(self.admin_context, record['id'])
 
@@ -1286,8 +1246,8 @@ class StorageTestCase(object):
         self.assertEqual(records, 0)
 
         # Create a single domain & record
-        _, domain = self.create_domain()
-        _, recordset = self.create_recordset(domain)
+        domain = self.create_domain()
+        recordset = self.create_recordset(domain)
         self.create_record(domain, recordset)
 
         # we should have 1 record now

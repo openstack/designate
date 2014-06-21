@@ -30,8 +30,6 @@ class ApiV1Test(ApiTestCase):
         # Ensure the v1 API is enabled
         self.config(enable_api_v1=True, group='service:api')
 
-        self.central_service = self.start_service('central')
-
         # Create the application
         self.app = api_v1.factory({})
 

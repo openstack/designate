@@ -24,10 +24,6 @@ class ApiServiceTest(ApiTestCase):
         # Use a random port for the API
         self.config(api_port=0, group='service:api')
 
-        # Bring up the Central service as if not the rpc will go into
-        # AssertError since TRANSPORT is None
-        self.start_service('central')
-
         self.service = service.Service()
 
     def test_start_and_stop(self):

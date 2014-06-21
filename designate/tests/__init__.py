@@ -283,12 +283,13 @@ class TestCase(base.BaseTestCase):
             managed_resource_tenant_id='managing_tenant',
             group='service:central')
 
+        # "Read" Configuration
         self.CONF([], project='designate')
 
         self.useFixture(PolicyFixture())
-
         self.network_api = NetworkAPIFixture()
         self.useFixture(self.network_api)
+        self.central_service = self.start_service('central')
 
         self.admin_context = self.get_admin_context()
 
@@ -418,20 +419,13 @@ class TestCase(base.BaseTestCase):
         _values.update(values)
         return _values
 
-    def create_quota(self, **kwargs):
-        context = kwargs.pop('context', self.admin_context)
-        fixture = kwargs.pop('fixture', 0)
-
-        values = self.get_quota_fixture(fixture=fixture, values=kwargs)
-        return self.central_service.create_quota(context, values=values)
-
     def create_server(self, **kwargs):
         context = kwargs.pop('context', self.admin_context)
         fixture = kwargs.pop('fixture', 0)
 
         values = self.get_server_fixture(fixture=fixture, values=kwargs)
         return self.central_service.create_server(
-            context, server=objects.Server(**values))
+            context, objects.Server(**values))
 
     def create_tld(self, **kwargs):
         context = kwargs.pop('context', self.admin_context)
@@ -462,14 +456,14 @@ class TestCase(base.BaseTestCase):
 
         values = self.get_tsigkey_fixture(fixture=fixture, values=kwargs)
         return self.central_service.create_tsigkey(
-            context, tsigkey=objects.TsigKey(**values))
+            context, objects.TsigKey(**values))
 
     def create_domain(self, **kwargs):
         context = kwargs.pop('context', self.admin_context)
         fixture = kwargs.pop('fixture', 0)
 
-        # We always need a server to create a domain..
         try:
+            # We always need a server to create a domain..
             self.create_server()
         except exceptions.DuplicateServer:
             pass
@@ -479,8 +473,8 @@ class TestCase(base.BaseTestCase):
         if 'tenant_id' not in values:
             values['tenant_id'] = context.tenant
 
-        domain = objects.Domain(**values)
-        return self.central_service.create_domain(context, domain=domain)
+        return self.central_service.create_domain(
+            context, objects.Domain(**values))
 
     def create_recordset(self, domain, type='A', **kwargs):
         context = kwargs.pop('context', self.admin_context)
