@@ -17,6 +17,8 @@ import flask
 from designate.openstack.common import log as logging
 from designate import schema
 from designate.central import rpcapi as central_rpcapi
+from designate.api.v1 import load_values
+
 
 LOG = logging.getLogger(__name__)
 central_api = central_rpcapi.CentralAPI()
@@ -38,8 +40,10 @@ def get_domains_schema():
 
 @blueprint.route('/domains', methods=['POST'])
 def create_domain():
+    valid_attributes = ['name', 'email', 'ttl', 'description']
     context = flask.request.environ.get('context')
-    values = flask.request.json
+
+    values = load_values(flask.request, valid_attributes)
 
     domain_schema.validate(values)
     domain = central_api.create_domain(context, values)
