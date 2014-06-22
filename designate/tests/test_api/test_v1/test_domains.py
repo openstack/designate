@@ -14,6 +14,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import datetime
+
 from mock import patch
 from oslo import messaging
 
@@ -117,6 +119,23 @@ class ApiV1DomainsTest(ApiV1Test):
         fixture['description'] = "x" * 161
 
         # Create the domain, ensuring it fails with a 400
+        self.post('domains', data=fixture, status_code=400)
+
+    def test_create_domain_with_unwanted_attributes(self):
+        # Create a server
+        domain_id = "2d1d1d1d-1324-4a80-aa32-1f69a91bf2c8"
+        created_at = datetime.datetime(2014, 6, 22, 21, 50, 0)
+        updated_at = datetime.datetime(2014, 6, 22, 21, 50, 0)
+        serial = 1234567
+        self.create_server()
+
+        # Create a domain
+        fixture = self.get_domain_fixture(0)
+        fixture['id'] = domain_id
+        fixture['created_at'] = created_at
+        fixture['updated_at'] = updated_at
+        fixture['serial'] = serial
+
         self.post('domains', data=fixture, status_code=400)
 
     def test_create_invalid_name(self):

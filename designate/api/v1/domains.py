@@ -18,6 +18,7 @@ import flask
 from designate.openstack.common import log as logging
 from designate import schema
 from designate.api import get_central_api
+from designate.api.v1 import load_values
 from designate.objects import Domain
 
 
@@ -40,10 +41,13 @@ def get_domains_schema():
 
 @blueprint.route('/domains', methods=['POST'])
 def create_domain():
+    valid_attributes = ['name', 'email', 'ttl', 'description']
     context = flask.request.environ.get('context')
-    values = flask.request.json
+
+    values = load_values(flask.request, valid_attributes)
 
     domain_schema.validate(values)
+
     domain = get_central_api().create_domain(context, Domain(**values))
 
     response = flask.jsonify(domain_schema.filter(domain))
