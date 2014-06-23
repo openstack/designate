@@ -44,8 +44,8 @@ class ZonesController(rest.RestController):
     nameservers = nameservers.NameServersController()
     recordsets = recordsets.RecordSetsController()
 
-    @pecan.expose(template=None, content_type='text/dns')
     @pecan.expose(template='json:', content_type='application/json')
+    @pecan.expose(template=None, content_type='text/dns')
     @utils.validate_uuid('zone_id')
     def get_one(self, zone_id):
         """ Get Zone """
@@ -55,8 +55,8 @@ class ZonesController(rest.RestController):
         context = request.environ['context']
         if 'Accept' not in request.headers:
             raise exceptions.BadRequest('Missing Accept header')
-        best_match = request.accept.best_match(['text/dns',
-                                                'application/json'])
+        best_match = request.accept.best_match(['application/json',
+                                                'text/dns'])
         if best_match == 'text/dns':
             return self._get_zonefile(request, context, zone_id)
         elif best_match == 'application/json':
