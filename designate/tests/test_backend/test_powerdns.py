@@ -73,7 +73,6 @@ class PowerDNSBackendTestCase(tests.TestCase, BackendTestMixin):
                     group='backend:powerdns')
         self.backend = self.get_backend_driver()
         self.backend.start()
-        self.central_service = self.start_service('central')
         # Since some CRUD methods in impl_powerdns call central's find_servers
         # method, mock it up to return our fixture.
         self.backend.central_service.find_servers = MagicMock(

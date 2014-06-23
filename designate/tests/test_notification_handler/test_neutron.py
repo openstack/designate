@@ -26,8 +26,6 @@ class NeutronFloatingHandlerTest(TestCase, NotificationHandlerMixin):
     def setUp(self):
         super(NeutronFloatingHandlerTest, self).setUp()
 
-        self.central_service = self.start_service('central')
-
         domain = self.create_domain()
         self.domain_id = domain['id']
         self.config(domain_id=domain['id'], group='handler:neutron_floatingip')

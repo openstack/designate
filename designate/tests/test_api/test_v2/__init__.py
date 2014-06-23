@@ -40,9 +40,6 @@ class ApiV2TestCase(ApiTestCase):
         # Ensure the v2 API is enabled
         self.config(enable_api_v2=True, group='service:api')
 
-        # Create and start an instance of the central service
-        self.central_service = self.start_service('central')
-
         # Create the application
         self.app = api_v2.factory({})
 

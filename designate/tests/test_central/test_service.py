@@ -28,10 +28,6 @@ LOG = logging.getLogger(__name__)
 
 
 class CentralServiceTest(CentralTestCase):
-    def setUp(self):
-        super(CentralServiceTest, self).setUp()
-        self.central_service = self.start_service('central')
-
     def test_stop(self):
         # Test stopping the service
         self.central_service.stop()

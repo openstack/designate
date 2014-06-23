@@ -127,7 +127,6 @@ class IPABackendTestCase(tests.TestCase, BackendTestMixin):
         self.CONF['backend:ipa'].ipa_auth_driver_class = \
             "designate.tests.test_backend.test_ipa.MockIPAAuth"
         self.backend.start()
-        self.central_service = self.start_service('central')
 
         # Since some CRUD methods in impl_ipa call central's find_servers
         # and find_records method, mock it up to return our fixture.
