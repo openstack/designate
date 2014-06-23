@@ -13,6 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from designate import exceptions
 from designate.openstack.common import log as logging
 from designate.api.v2.controllers import limits
 from designate.api.v2.controllers import reverse
@@ -20,6 +21,8 @@ from designate.api.v2.controllers import schemas
 from designate.api.v2.controllers import tlds
 from designate.api.v2.controllers import zones
 from designate.api.v2.controllers import blacklists
+
+from pecan import expose
 
 LOG = logging.getLogger(__name__)
 
@@ -35,3 +38,9 @@ class RootController(object):
     tlds = tlds.TldsController()
     zones = zones.ZonesController()
     blacklists = blacklists.BlacklistsController()
+
+    @expose(content_type='text/plain')
+    @expose(content_type='text/dns')
+    @expose(content_type='application/json')
+    def not_found(self):
+        raise exceptions.NotFound

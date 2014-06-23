@@ -33,7 +33,11 @@ def factory(global_config, **local_conf):
     conf = {
         'app': {
             'root': 'designate.api.v2.controllers.root.RootController',
-            'modules': ['designate.api.v2']
+            'modules': ['designate.api.v2'],
+            'errors': {
+                404: '/not_found',
+                '__force_dict__' : True
+            }
         }
     }
 
