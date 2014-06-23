@@ -202,6 +202,7 @@ class DuplicateBlacklist(Duplicate):
 
 
 class NotFound(Base):
+    expected = True
     error_code = 404
     error_type = 'not_found'
 

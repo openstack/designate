@@ -213,8 +213,9 @@ class FaultWrapperMiddleware(wsgi.Middleware):
             return self._handle_exception(request, e)
 
     def _handle_exception(self, request, e, status=500, response={}):
-        # Log the exception ASAP
-        LOG.exception(e)
+        # Log the exception ASAP unless it is a 404 Not Found
+        if not getattr(e, 'expected', False):
+            LOG.exception(e)
 
         headers = [
             ('Content-Type', 'application/json'),
