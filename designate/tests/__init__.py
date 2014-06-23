@@ -279,6 +279,13 @@ class TestCase(base.BaseTestCase):
         ['examplens1.org', 'examplens2.org']
     ]
 
+    zone_transfers_request_fixtures = [{
+        "description": "Test Transfer",
+    }, {
+        "description": "Test Transfer 2 - with target",
+        "target_tenant_id": "target_tenant_id"
+    }]
+
     def setUp(self):
         super(TestCase, self).setUp()
 
@@ -525,6 +532,20 @@ class TestCase(base.BaseTestCase):
             _values = copy.copy(self.name_server_fixtures[fixture])
         return _values
 
+    def get_zone_transfer_request_fixture(self, fixture=0, values=None):
+        values = values or {}
+
+        _values = copy.copy(self.zone_transfers_request_fixtures[fixture])
+        _values.update(values)
+        return _values
+
+    def get_zone_transfer_accept_fixture(self, fixture=0, values=None):
+        values = values or {}
+
+        _values = copy.copy(self.zone_transfers_accept_fixtures[fixture])
+        _values.update(values)
+        return _values
+
     def create_server(self, **kwargs):
         context = kwargs.pop('context', self.admin_context)
         fixture = kwargs.pop('fixture', 0)
@@ -624,6 +645,43 @@ class TestCase(base.BaseTestCase):
 
         return self.central_service.create_pool(
             context, objects.Pool(**values))
+
+    def create_zone_transfer_request(self, domain, **kwargs):
+        context = kwargs.pop('context', self.admin_context)
+        fixture = kwargs.pop('fixture', 0)
+
+        values = self.get_zone_transfer_request_fixture(
+            fixture=fixture, values=kwargs)
+
+        if 'domain_id' not in values:
+            values['domain_id'] = domain.id
+
+        zone_transfer_request = objects.ZoneTransferRequest(**values)
+
+        return self.central_service.create_zone_transfer_request(
+            context, zone_transfer_request=zone_transfer_request)
+
+    def create_zone_transfer_accept(self, zone_transfer_request, **kwargs):
+        context = kwargs.pop('context', self.admin_context)
+
+        values = {}
+
+        if 'tenant_id' not in values:
+            values['tenant_id'] = context.tenant
+
+        if 'zone_transfer_request_id' not in values:
+            values['zone_transfer_request_id'] = zone_transfer_request.id
+
+        if 'domain_id' not in values:
+            values['domain_id'] = zone_transfer_request.domain_id
+
+        if 'key' not in values:
+            values['key'] = zone_transfer_request.key
+
+        zone_transfer_accept = objects.ZoneTransferAccept(**values)
+
+        return self.central_service.create_zone_transfer_accept(
+            context, zone_transfer_accept)
 
     def _ensure_interface(self, interface, implementation):
         for name in interface.__abstractmethods__:

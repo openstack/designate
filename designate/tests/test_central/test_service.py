@@ -2473,3 +2473,246 @@ class CentralServiceTest(CentralTestCase):
         # Verify that the pool has been deleted
         with testtools.ExpectedException(exceptions.PoolNotFound):
             self.central_service.get_pool(self.admin_context, pool['id'])
+
+    def test_create_zone_transfer_request(self):
+        domain = self.create_domain()
+        zone_transfer_request = self.create_zone_transfer_request(domain)
+
+        # Verify all values have been set correctly
+        self.assertIsNotNone(zone_transfer_request.id)
+        self.assertIsNotNone(zone_transfer_request.tenant_id)
+        self.assertIsNotNone(zone_transfer_request.key)
+        self.assertEqual(zone_transfer_request.domain_id, domain.id)
+
+    def test_create_zone_transfer_request_duplicate(self):
+        domain = self.create_domain()
+        self.create_zone_transfer_request(domain)
+        with testtools.ExpectedException(
+                exceptions.DuplicateZoneTransferRequest):
+            self.create_zone_transfer_request(domain)
+
+    def test_create_scoped_zone_transfer_request(self):
+        domain = self.create_domain()
+        values = self.get_zone_transfer_request_fixture(fixture=1)
+        zone_transfer_request = self.create_zone_transfer_request(domain,
+                                                                  fixture=1)
+
+        # Verify all values have been set correctly
+        self.assertIsNotNone(zone_transfer_request.id)
+        self.assertIsNotNone(zone_transfer_request.tenant_id)
+        self.assertEqual(zone_transfer_request.domain_id, domain.id)
+        self.assertIsNotNone(zone_transfer_request.key)
+        self.assertEqual(
+            zone_transfer_request.target_tenant_id,
+            values['target_tenant_id'])
+
+    def test_get_zone_transfer_request(self):
+        domain = self.create_domain()
+        zt_request = self.create_zone_transfer_request(domain,
+                                                       fixture=1)
+        retrived_zt = self.central_service.get_zone_transfer_request(
+            self.admin_context,
+            zt_request.id)
+        self.assertEqual(zt_request.domain_id, retrived_zt.domain_id)
+        self.assertEqual(zt_request.key, retrived_zt.key)
+
+    def test_get_zone_transfer_request_scoped(self):
+        tenant_1_context = self.get_context(tenant=1)
+        tenant_2_context = self.get_context(tenant=2)
+        tenant_3_context = self.get_context(tenant=3)
+        domain = self.create_domain(context=tenant_1_context)
+        zt_request = self.create_zone_transfer_request(
+            domain,
+            context=tenant_1_context,
+            target_tenant_id=2)
+
+        self.central_service.get_zone_transfer_request(
+            tenant_2_context, zt_request.id)
+
+        self.central_service.get_zone_transfer_request(
+            tenant_1_context, zt_request.id)
+
+        with testtools.ExpectedException(exceptions.Forbidden):
+            self.central_service.get_zone_transfer_request(
+                tenant_3_context, zt_request.id)
+
+    def test_update_zone_transfer_request(self):
+        domain = self.create_domain()
+        zone_transfer_request = self.create_zone_transfer_request(domain)
+
+        zone_transfer_request.description = 'TEST'
+        self.central_service.update_zone_transfer_request(
+            self.admin_context, zone_transfer_request)
+
+        # Verify all values have been set correctly
+        self.assertIsNotNone(zone_transfer_request.id)
+        self.assertIsNotNone(zone_transfer_request.tenant_id)
+        self.assertIsNotNone(zone_transfer_request.key)
+        self.assertEqual(zone_transfer_request.description, 'TEST')
+
+    def test_delete_zone_transfer_request(self):
+        domain = self.create_domain()
+        zone_transfer_request = self.create_zone_transfer_request(domain)
+
+        self.central_service.delete_zone_transfer_request(
+            self.admin_context, zone_transfer_request.id)
+
+        with testtools.ExpectedException(
+                exceptions.ZoneTransferRequestNotFound):
+                self.central_service.get_zone_transfer_request(
+                    self.admin_context,
+                    zone_transfer_request.id)
+
+    def test_create_zone_transfer_accept(self):
+        tenant_1_context = self.get_context(tenant=1)
+        tenant_2_context = self.get_context(tenant=2)
+        admin_context = self.get_admin_context()
+        admin_context.all_tenants = True
+
+        domain = self.create_domain(context=tenant_1_context)
+        recordset = self.create_recordset(domain, context=tenant_1_context)
+        record = self.create_record(
+            domain, recordset, context=tenant_1_context)
+
+        zone_transfer_request = self.create_zone_transfer_request(
+            domain, context=tenant_1_context)
+
+        zone_transfer_accept = objects.ZoneTransferAccept()
+        zone_transfer_accept.zone_transfer_request_id =\
+            zone_transfer_request.id
+
+        zone_transfer_accept.key = zone_transfer_request.key
+        zone_transfer_accept.domain_id = domain.id
+
+        zone_transfer_accept = \
+            self.central_service.create_zone_transfer_accept(
+                tenant_2_context, zone_transfer_accept)
+
+        result = {}
+        result['domain'] = self.central_service.get_domain(
+            admin_context, domain.id)
+
+        result['recordset'] = self.central_service.get_recordset(
+            admin_context, domain.id, recordset.id)
+
+        result['record'] = self.central_service.get_record(
+            admin_context, domain.id, recordset.id, record.id)
+
+        result['zt_accept'] = self.central_service.get_zone_transfer_accept(
+            admin_context, zone_transfer_accept.id)
+        result['zt_request'] = self.central_service.get_zone_transfer_request(
+            admin_context, zone_transfer_request.id)
+
+        self.assertEqual(
+            result['domain'].tenant_id, str(tenant_2_context.tenant))
+        self.assertEqual(
+            result['recordset'].tenant_id, str(tenant_2_context.tenant))
+        self.assertEqual(
+            result['record'].tenant_id, str(tenant_2_context.tenant))
+        self.assertEqual(
+            result['zt_accept'].status, 'COMPLETE')
+        self.assertEqual(
+            result['zt_request'].status, 'COMPLETE')
+
+    def test_create_zone_transfer_accept_scoped(self):
+        tenant_1_context = self.get_context(tenant=1)
+        tenant_2_context = self.get_context(tenant=2)
+        admin_context = self.get_admin_context()
+        admin_context.all_tenants = True
+
+        domain = self.create_domain(context=tenant_1_context)
+        recordset = self.create_recordset(domain, context=tenant_1_context)
+        record = self.create_record(
+            domain, recordset, context=tenant_1_context)
+
+        zone_transfer_request = self.create_zone_transfer_request(
+            domain,
+            context=tenant_1_context,
+            target_tenant_id='2')
+
+        zone_transfer_accept = objects.ZoneTransferAccept()
+        zone_transfer_accept.zone_transfer_request_id =\
+            zone_transfer_request.id
+
+        zone_transfer_accept.key = zone_transfer_request.key
+        zone_transfer_accept.domain_id = domain.id
+
+        zone_transfer_accept = \
+            self.central_service.create_zone_transfer_accept(
+                tenant_2_context, zone_transfer_accept)
+
+        result = {}
+        result['domain'] = self.central_service.get_domain(
+            admin_context, domain.id)
+
+        result['recordset'] = self.central_service.get_recordset(
+            admin_context, domain.id, recordset.id)
+
+        result['record'] = self.central_service.get_record(
+            admin_context, domain.id, recordset.id, record.id)
+
+        result['zt_accept'] = self.central_service.get_zone_transfer_accept(
+            admin_context, zone_transfer_accept.id)
+        result['zt_request'] = self.central_service.get_zone_transfer_request(
+            admin_context, zone_transfer_request.id)
+
+        self.assertEqual(
+            result['domain'].tenant_id, str(tenant_2_context.tenant))
+        self.assertEqual(
+            result['recordset'].tenant_id, str(tenant_2_context.tenant))
+        self.assertEqual(
+            result['record'].tenant_id, str(tenant_2_context.tenant))
+        self.assertEqual(
+            result['zt_accept'].status, 'COMPLETE')
+        self.assertEqual(
+            result['zt_request'].status, 'COMPLETE')
+
+    def test_create_zone_transfer_accept_failed_key(self):
+        tenant_1_context = self.get_context(tenant=1)
+        tenant_2_context = self.get_context(tenant=2)
+        admin_context = self.get_admin_context()
+        admin_context.all_tenants = True
+
+        domain = self.create_domain(context=tenant_1_context)
+
+        zone_transfer_request = self.create_zone_transfer_request(
+            domain,
+            context=tenant_1_context,
+            target_tenant_id=2)
+
+        zone_transfer_accept = objects.ZoneTransferAccept()
+        zone_transfer_accept.zone_transfer_request_id =\
+            zone_transfer_request.id
+
+        zone_transfer_accept.key = 'WRONG KEY'
+        zone_transfer_accept.domain_id = domain.id
+
+        with testtools.ExpectedException(exceptions.IncorrectZoneTransferKey):
+            zone_transfer_accept = \
+                self.central_service.create_zone_transfer_accept(
+                    tenant_2_context, zone_transfer_accept)
+
+    def test_create_zone_tarnsfer_accept_out_of_tenant_scope(self):
+        tenant_1_context = self.get_context(tenant=1)
+        tenant_3_context = self.get_context(tenant=3)
+        admin_context = self.get_admin_context()
+        admin_context.all_tenants = True
+
+        domain = self.create_domain(context=tenant_1_context)
+
+        zone_transfer_request = self.create_zone_transfer_request(
+            domain,
+            context=tenant_1_context,
+            target_tenant_id=2)
+
+        zone_transfer_accept = objects.ZoneTransferAccept()
+        zone_transfer_accept.zone_transfer_request_id =\
+            zone_transfer_request.id
+
+        zone_transfer_accept.key = zone_transfer_request.key
+        zone_transfer_accept.domain_id = domain.id
+
+        with testtools.ExpectedException(exceptions.Forbidden):
+            zone_transfer_accept = \
+                self.central_service.create_zone_transfer_accept(
+                    tenant_3_context, zone_transfer_accept)

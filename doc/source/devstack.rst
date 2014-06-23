@@ -15,9 +15,9 @@
 
 .. _devstack:
 
-========================
+========
 DevStack
-========================
+========
 
 The Designate team maintains a fork of devstack with Designate integration.
 
@@ -135,3 +135,4 @@ Instructions
        | type       | A                                    |
        | domain_id  | 1fb5d17c-efaf-4e3c-aac0-482875d24b3e |
        +------------+--------------------------------------+
+

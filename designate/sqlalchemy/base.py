@@ -179,7 +179,7 @@ class SQLAlchemy(object):
 
     def _find(self, context, table, cls, list_cls, exc_notfound, criterion,
               one=False, marker=None, limit=None, sort_key=None,
-              sort_dir=None, query=None):
+              sort_dir=None, query=None, apply_tenant_criteria=True):
         sort_key = sort_key or 'created_at'
         sort_dir = sort_dir or 'asc'
 
@@ -187,7 +187,8 @@ class SQLAlchemy(object):
         if query is None:
             query = select([table])
         query = self._apply_criterion(table, query, criterion)
-        query = self._apply_tenant_criteria(context, table, query)
+        if apply_tenant_criteria:
+            query = self._apply_tenant_criteria(context, table, query)
         query = self._apply_deleted_criteria(context, table, query)
 
         # Execute the Query

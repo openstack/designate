@@ -1,5 +1,5 @@
 # Copyright 2012 Managed I.T.
-# Copyright 2013 Hewlett-Packard Development Company, L.P.
+# Copyright 2013 - 2014 Hewlett-Packard Development Company, L.P.
 #
 # Author: Kiall Mac Innes <kiall@managedit.ie>
 #
@@ -20,6 +20,8 @@ import collections
 import functools
 import threading
 import itertools
+import string
+import random
 
 from oslo.config import cfg
 from oslo import messaging
@@ -113,7 +115,9 @@ def synchronized_domain(domain_arg=1, new_domain=False):
                             break
 
                     elif (isinstance(arg, objects.RecordSet) or
-                          isinstance(arg, objects.Record)):
+                          isinstance(arg, objects.Record) or
+                          isinstance(arg, objects.ZoneTransferRequest) or
+                          isinstance(arg, objects.ZoneTransferAccept)):
 
                         domain_id = arg.domain_id
                         if domain_id is not None:
@@ -196,7 +200,7 @@ def notification(notification_type):
 
 
 class Service(service.RPCService):
-    RPC_API_VERSION = '4.2'
+    RPC_API_VERSION = '4.3'
 
     target = messaging.Target(version=RPC_API_VERSION)
 
@@ -1716,10 +1720,11 @@ class Service(service.RPCService):
             zone = self.storage.find_domain(
                 elevated_context, {'name': zone_name})
         except exceptions.DomainNotFound:
-            msg = _LI('Creating zone for %(fip_id)s:%(region)s - '
-                      '%(fip_addr)s zone %(zonename)s') % \
-                    {'fip_id': floatingip_id, 'region': region,
-                    'fip_addr': fip['address'], 'zonename': zone_name}
+            msg = _LI(
+                'Creating zone for %(fip_id)s:%(region)s - '
+                '%(fip_addr)s zone %(zonename)s') % \
+                {'fip_id': floatingip_id, 'region': region,
+                'fip_addr': fip['address'], 'zonename': zone_name}
             LOG.info(msg)
 
             email = cfg.CONF['service:central'].managed_resource_email
@@ -1737,7 +1742,7 @@ class Service(service.RPCService):
         record_name = self.network_api.address_name(fip['address'])
 
         try:
-            # NOTE: Delete the current recormdset if any (also purges records)
+            # NOTE: Delete the current recordset if any (also purges records)
             LOG.debug("Removing old RRset / Record")
             rset = self.find_recordset(
                 elevated_context, {'name': record_name, 'type': 'PTR'})
@@ -1987,3 +1992,207 @@ class Service(service.RPCService):
                 self.storage.update_record(context, record)
 
         self.storage.update_domain(context, domain)
+
+    # Zone Transfers
+    def _transfer_key_generator(self, size=8):
+        chars = string.ascii_uppercase + string.digits
+        return ''.join(random.choice(chars) for _ in range(size))
+
+    @notification('dns.zone_transfer_request.create')
+    @transaction
+    def create_zone_transfer_request(self, context, zone_transfer_request):
+
+        elevated_context = context.elevated()
+        elevated_context.all_tenants = True
+
+        # get zone
+        zone = self.get_domain(context, zone_transfer_request.domain_id)
+        target = {
+            'tenant_id': zone.tenant_id,
+        }
+        policy.check('create_zone_transfer_request', context, target)
+
+        zone_transfer_request.key = self._transfer_key_generator()
+
+        if zone_transfer_request.tenant_id is None:
+            zone_transfer_request.tenant_id = context.tenant
+
+        created_zone_transfer_request = \
+            self.storage.create_zone_transfer_request(
+                context, zone_transfer_request)
+
+        return created_zone_transfer_request
+
+    def get_zone_transfer_request(self, context, zone_transfer_request_id):
+
+        elevated_context = context.elevated()
+        elevated_context.all_tenants = True
+
+        # Get zone transfer request
+        zone_transfer_request = self.storage.get_zone_transfer_request(
+            elevated_context, zone_transfer_request_id)
+
+        LOG.info(_LI('Target Tenant ID found - using scoped policy'))
+        target = {
+            'target_tenant_id': zone_transfer_request.target_tenant_id,
+            'tenant_id': zone_transfer_request.tenant_id,
+        }
+        policy.check('get_zone_transfer_request', context, target)
+
+        return zone_transfer_request
+
+    def find_zone_transfer_requests(self, context, criterion=None, marker=None,
+                                    limit=None, sort_key=None, sort_dir=None):
+
+        policy.check('find_zone_transfer_requests', context)
+
+        requests = self.storage.find_zone_transfer_requests(
+            context, criterion,
+            marker, limit,
+            sort_key, sort_dir)
+
+        return requests
+
+    def find_zone_transfer_request(self, context, criterion):
+        target = {
+            'tenant_id': context.tenant,
+        }
+        policy.check('find_zone_transfer_request', context, target)
+        return self.storage.find_zone_transfer_requests(context, criterion)
+
+    @notification('dns.zone_transfer_request.update')
+    @transaction
+    def update_zone_transfer_request(self, context, zone_transfer_request):
+
+        if 'domain_id' in zone_transfer_request.obj_what_changed():
+            raise exceptions.InvalidOperation('Domain cannot be changed')
+
+        target = {
+            'tenant_id': zone_transfer_request.tenant_id,
+        }
+        policy.check('update_zone_transfer_request', context, target)
+        request = self.storage.update_zone_transfer_request(
+            context, zone_transfer_request)
+
+        return request
+
+    @notification('dns.zone_transfer_request.delete')
+    @transaction
+    def delete_zone_transfer_request(self, context, zone_transfer_request_id):
+        # Get zone transfer request
+        zone_transfer_request = self.storage.get_zone_transfer_request(
+            context, zone_transfer_request_id)
+        target = {
+            'tenant_id': zone_transfer_request.tenant_id,
+        }
+        policy.check('delete_zone_transfer_request', context, target)
+        return self.storage.delete_zone_transfer_request(
+            context,
+            zone_transfer_request_id)
+
+    @notification('dns.zone_transfer_accept.create')
+    @transaction
+    def create_zone_transfer_accept(self, context, zone_transfer_accept):
+        elevated_context = context.elevated()
+        elevated_context.all_tenants = True
+        zone_transfer_request = self.get_zone_transfer_request(
+            context, zone_transfer_accept.zone_transfer_request_id)
+
+        zone_transfer_accept.domain_id = zone_transfer_request.domain_id
+
+        if zone_transfer_request.status != 'ACTIVE':
+            if zone_transfer_request.status == 'COMPLETE':
+                raise exceptions.InvaildZoneTransfer(
+                    'Zone Transfer Request has been used')
+            raise exceptions.InvaildZoneTransfer(
+                'Zone Transfer Request Invalid')
+
+        if zone_transfer_request.key != zone_transfer_accept.key:
+            raise exceptions.IncorrectZoneTransferKey(
+                'Key does not match stored key for request')
+
+        target = {
+            'target_tenant_id': zone_transfer_request.target_tenant_id
+        }
+        policy.check('create_zone_transfer_accept', context, target)
+
+        if zone_transfer_accept.tenant_id is None:
+            zone_transfer_accept.tenant_id = context.tenant
+
+        created_zone_transfer_accept = \
+            self.storage.create_zone_transfer_accept(
+                context, zone_transfer_accept)
+
+        try:
+            domain = self.storage.get_domain(
+                elevated_context,
+                zone_transfer_request.domain_id)
+
+            domain.tenant_id = zone_transfer_accept.tenant_id
+            self.storage.update_domain(elevated_context, domain)
+
+        except Exception:
+            created_zone_transfer_accept.status = 'ERROR'
+            self.storage.update_zone_transfer_accept(
+                context, created_zone_transfer_accept)
+            raise
+        else:
+            created_zone_transfer_accept.status = 'COMPLETE'
+            zone_transfer_request.status = 'COMPLETE'
+            self.storage.update_zone_transfer_accept(
+                context, created_zone_transfer_accept)
+            self.storage.update_zone_transfer_request(
+                elevated_context, zone_transfer_request)
+
+        return created_zone_transfer_accept
+
+    def get_zone_transfer_accept(self, context, zone_transfer_accept_id):
+        # Get zone transfer accept
+
+        zone_transfer_accept = self.storage.get_zone_transfer_accept(
+            context, zone_transfer_accept_id)
+
+        target = {
+            'tenant_id': zone_transfer_accept.tenant_id
+        }
+        policy.check('get_zone_transfer_accept', context, target)
+
+        return zone_transfer_accept
+
+    def find_zone_transfer_accepts(self, context, criterion=None, marker=None,
+                                   limit=None, sort_key=None, sort_dir=None):
+        policy.check('find_zone_transfer_accepts', context)
+        return self.storage.find_zone_transfer_accepts(context, criterion,
+                                                       marker, limit,
+                                                       sort_key, sort_dir)
+
+    def find_zone_transfer_accept(self, context, criterion):
+        policy.check('find_zone_transfer_accept', context)
+        return self.storage.find_zone_transfer_accept(context, criterion)
+
+    @notification('dns.zone_transfer_accept.update')
+    @transaction
+    def update_zone_transfer_accept(self, context, zone_transfer_accept):
+        target = {
+            'tenant_id': zone_transfer_accept.tenant_id
+        }
+        policy.check('update_zone_transfer_accept', context, target)
+        accept = self.storage.update_zone_transfer_accept(
+            context, zone_transfer_accept)
+
+        return accept
+
+    @notification('dns.zone_transfer_accept.delete')
+    @transaction
+    def delete_zone_transfer_accept(self, context, zone_transfer_accept_id):
+        # Get zone transfer accept
+        zt_accept = self.storage.get_zone_transfer_accept(
+            context, zone_transfer_accept_id)
+
+        target = {
+            'tenant_id': zt_accept.tenant_id
+        }
+        policy.check('delete_zone_transfer_accept', context, target)
+        return self.storage.delete_zone_transfer_accept(
+            context,
+            zone_transfer_accept_id)

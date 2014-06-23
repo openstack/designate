@@ -21,10 +21,10 @@ from designate.api.v2.controllers import limits
 from designate.api.v2.controllers import reverse
 from designate.api.v2.controllers import schemas
 from designate.api.v2.controllers import tlds
-from designate.api.v2.controllers import zones
 from designate.api.v2.controllers import blacklists
 from designate.api.v2.controllers import errors
 from designate.api.v2.controllers import pools
+from designate.api.v2.controllers import zones
 
 LOG = logging.getLogger(__name__)
 

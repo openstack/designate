@@ -29,6 +29,7 @@ CONF = cfg.CONF
 RESOURCE_STATUSES = ['ACTIVE', 'PENDING', 'DELETED', 'ERROR']
 RECORD_TYPES = ['A', 'AAAA', 'CNAME', 'MX', 'SRV', 'TXT', 'SPF', 'NS', 'PTR',
                 'SSHFP']
+TASK_STATUSES = ['ACTIVE', 'PENDING', 'DELETED', 'ERROR', 'COMPLETE']
 TSIG_ALGORITHMS = ['hmac-md5', 'hmac-sha1', 'hmac-sha224', 'hmac-sha256',
                    'hmac-sha384', 'hmac-sha512']
 POOL_PROVISIONERS = ['UNMANAGED']
@@ -231,4 +232,48 @@ pool_attributes = Table('pool_attributes', metadata,
 
     mysql_engine='INNODB',
     mysql_charset='utf8'
+)
+
+zone_transfer_requests = Table('zone_transfer_requests', metadata,
+    Column('id', UUID, default=utils.generate_uuid, primary_key=True),
+    Column('version', Integer(), default=1, nullable=False),
+    Column('created_at', DateTime, default=lambda: timeutils.utcnow()),
+    Column('updated_at', DateTime, onupdate=lambda: timeutils.utcnow()),
+
+    Column('domain_id', UUID, nullable=False),
+    Column("key", String(255), nullable=False),
+    Column("description", String(255), nullable=False),
+    Column("tenant_id", String(36), default=None, nullable=False),
+    Column("target_tenant_id", String(36), default=None, nullable=True),
+    Column("status", Enum(name='resource_statuses', *TASK_STATUSES),
+           nullable=False, server_default='ACTIVE',
+           default='ACTIVE'),
+
+    ForeignKeyConstraint(['domain_id'], ['domains.id'], ondelete='CASCADE'),
+
+    mysql_engine='InnoDB',
+    mysql_charset='utf8',
+)
+
+zone_transfer_accepts = Table('zone_transfer_accepts', metadata,
+    Column('id', UUID, default=utils.generate_uuid, primary_key=True),
+    Column('version', Integer(), default=1, nullable=False),
+    Column('created_at', DateTime, default=lambda: timeutils.utcnow()),
+    Column('updated_at', DateTime, onupdate=lambda: timeutils.utcnow()),
+
+    Column('domain_id', UUID, nullable=False),
+    Column('zone_transfer_request_id', UUID, nullable=False),
+    Column("tenant_id", String(36), default=None, nullable=False),
+    Column("status", Enum(name='resource_statuses', *TASK_STATUSES),
+           nullable=False, server_default='ACTIVE',
+           default='ACTIVE'),
+
+    ForeignKeyConstraint(['domain_id'], ['domains.id'], ondelete='CASCADE'),
+    ForeignKeyConstraint(
+        ['zone_transfer_request_id'],
+        ['zone_transfer_requests.id'],
+        ondelete='CASCADE'),
+
+    mysql_engine='InnoDB',
+    mysql_charset='utf8',
 )

@@ -1986,3 +1986,164 @@ class StorageTestCase(object):
         with testtools.ExpectedException(exceptions.PoolNotFound):
             uuid = '203ca44f-c7e7-4337-9a02-0d735833e6aa'
             self.storage.delete_pool(self.admin_context, uuid)
+
+    def test_create_zone_transfer_request(self):
+        domain = self.create_domain()
+
+        values = {
+            'tenant_id': self.admin_context.tenant,
+            'domain_id': domain.id,
+            'key': 'qwertyuiop'
+        }
+
+        result = self.storage.create_zone_transfer_request(
+            self.admin_context, objects.ZoneTransferRequest(**values))
+
+        self.assertEqual(result['tenant_id'], self.admin_context.tenant)
+        self.assertIn('status', result)
+
+    def test_create_zone_transfer_request_scoped(self):
+        domain = self.create_domain()
+        tenant_2_context = self.get_context(tenant='2')
+        tenant_3_context = self.get_context(tenant='3')
+
+        values = {
+            'tenant_id': self.admin_context.tenant,
+            'domain_id': domain.id,
+            'key': 'qwertyuiop',
+            'target_tenant_id': tenant_2_context.tenant,
+        }
+
+        result = self.storage.create_zone_transfer_request(
+            self.admin_context, objects.ZoneTransferRequest(**values))
+
+        self.assertIsNotNone(result['id'])
+        self.assertIsNotNone(result['created_at'])
+        self.assertIsNone(result['updated_at'])
+
+        self.assertEqual(result['tenant_id'], self.admin_context.tenant)
+        self.assertEqual(result['target_tenant_id'], tenant_2_context.tenant)
+        self.assertIn('status', result)
+
+        stored_ztr = self.storage.get_zone_transfer_request(
+            tenant_2_context, result.id)
+
+        self.assertEqual(stored_ztr['tenant_id'], self.admin_context.tenant)
+        self.assertEqual(result['id'], stored_ztr['id'])
+
+        with testtools.ExpectedException(
+                exceptions.ZoneTransferRequestNotFound):
+            self.storage.get_zone_transfer_request(
+                tenant_3_context, result.id)
+
+    def test_delete_zone_transfer_request(self):
+        domain = self.create_domain()
+        zt_request = self.create_zone_transfer_request(domain)
+
+        self.storage.delete_zone_transfer_request(
+            self.admin_context, zt_request.id)
+
+        with testtools.ExpectedException(
+                exceptions.ZoneTransferRequestNotFound):
+            self.storage.get_zone_transfer_request(
+                self.admin_context, zt_request.id)
+
+    def test_update_zone_transfer_request(self):
+        domain = self.create_domain()
+        zt_request = self.create_zone_transfer_request(domain)
+
+        zt_request.description = 'New description'
+        result = self.storage.update_zone_transfer_request(
+            self.admin_context, zt_request)
+        self.assertEqual(result.description, 'New description')
+
+    def test_get_zone_transfer_request(self):
+        domain = self.create_domain()
+        zt_request = self.create_zone_transfer_request(domain)
+
+        result = self.storage.get_zone_transfer_request(
+            self.admin_context, zt_request.id)
+        self.assertEqual(result.id, zt_request.id)
+        self.assertEqual(result.domain_id, zt_request.domain_id)
+
+    def test_create_zone_transfer_accept(self):
+        domain = self.create_domain()
+        zt_request = self.create_zone_transfer_request(domain)
+        values = {
+            'tenant_id': self.admin_context.tenant,
+            'zone_transfer_request_id': zt_request.id,
+            'domain_id': domain.id,
+            'key': zt_request.key
+        }
+
+        result = self.storage.create_zone_transfer_accept(
+            self.admin_context, objects.ZoneTransferAccept(**values))
+
+        self.assertIsNotNone(result['id'])
+        self.assertIsNotNone(result['created_at'])
+        self.assertIsNone(result['updated_at'])
+
+        self.assertEqual(result['tenant_id'], self.admin_context.tenant)
+        self.assertIn('status', result)
+
+    def test_transfer_zone_ownership(self):
+        tenant_1_context = self.get_context(tenant='1')
+        tenant_2_context = self.get_context(tenant='2')
+        admin_context = self.get_admin_context()
+        admin_context.all_tenants = True
+
+        domain = self.create_domain(context=tenant_1_context)
+        recordset = self.create_recordset(domain, context=tenant_1_context)
+        record = self.create_record(
+            domain, recordset, context=tenant_1_context)
+
+        updated_domain = domain
+
+        updated_domain.tenant_id = tenant_2_context.tenant
+
+        self.storage.update_domain(
+            admin_context, updated_domain)
+
+        saved_domain = self.storage.get_domain(
+            admin_context, domain.id)
+        saved_recordset = self.storage.get_recordset(
+            admin_context, recordset.id)
+        saved_record = self.storage.get_record(
+            admin_context, record.id)
+
+        self.assertEqual(saved_domain.tenant_id, tenant_2_context.tenant)
+        self.assertEqual(saved_recordset.tenant_id, tenant_2_context.tenant)
+        self.assertEqual(saved_record.tenant_id, tenant_2_context.tenant)
+
+    def test_delete_zone_transfer_accept(self):
+        domain = self.create_domain()
+        zt_request = self.create_zone_transfer_request(domain)
+        zt_accept = self.create_zone_transfer_accept(zt_request)
+
+        self.storage.delete_zone_transfer_accept(
+            self.admin_context, zt_accept.id)
+
+        with testtools.ExpectedException(
+                exceptions.ZoneTransferAcceptNotFound):
+            self.storage.get_zone_transfer_accept(
+                self.admin_context, zt_accept.id)
+
+    def test_update_zone_transfer_accept(self):
+        domain = self.create_domain()
+        zt_request = self.create_zone_transfer_request(domain)
+        zt_accept = self.create_zone_transfer_accept(zt_request)
+
+        zt_accept.status = 'COMPLETE'
+        result = self.storage.update_zone_transfer_accept(
+            self.admin_context, zt_accept)
+        self.assertEqual(result.status, 'COMPLETE')
+
+    def test_get_zone_transfer_accept(self):
+        domain = self.create_domain()
+        zt_request = self.create_zone_transfer_request(domain)
+        zt_accept = self.create_zone_transfer_accept(zt_request)
+
+        result = self.storage.get_zone_transfer_accept(
+            self.admin_context, zt_accept.id)
+        self.assertEqual(result.id, zt_accept.id)
+        self.assertEqual(result.domain_id, zt_accept.domain_id)

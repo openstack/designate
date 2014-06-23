@@ -1,0 +1,38 @@
+{
+    "$schema": "http://json-schema.org/draft-04/hyper-schema",
+
+    "id": "zone_transfer_accept",
+
+    "title": "zone_transfer_accept",
+    "description": "Zone Transfer Accept",
+    "additionalProperties": false,
+
+    "required": ["transfer_accepts"],
+
+    "properties": {
+        "transfer_accepts": {
+            "type": "array",
+            "description": "Zone Transfer Requests",
+            "items": {"$ref": "transfer_accept#/properties/transfer_accept"}
+        },
+        "links": {
+            "type": "object",
+            "additionalProperties": false,
+
+            "properties": {
+                "self": {
+                    "type": "string",
+                    "format": "url"
+                },
+                "next": {
+                    "type": ["string", "null"],
+                    "format": "url"
+                },
+                "previous": {
+                    "type": ["string", "null"],
+                    "format": "url"
+                }
+            }
+        }
+    }
+}
