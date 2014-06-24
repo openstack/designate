@@ -14,6 +14,8 @@
 #    under the License.
 import six
 
+from designate.openstack.common import importutils
+
 
 class NotSpecifiedSentinel:
     pass
@@ -40,6 +42,7 @@ def make_class_properties(cls):
             return getattr(self, get_attrname(name), None)
 
         def setter(self, value, name=field):
+            self._obj_changes.add(name)
             return setattr(self, get_attrname(name), value)
 
         setattr(cls, field, property(getter, setter))
@@ -70,7 +73,7 @@ class DictObjectMixin(object):
             raise AttributeError("'%s' object has no attribute '%s'" % (
                                  self.__class__, key))
 
-        if default != NotSpecifiedSentinel and not self.attr_is_set(key):
+        if default != NotSpecifiedSentinel and not self.obj_attr_is_set(key):
             return default
         else:
             return self[key]
@@ -122,8 +125,8 @@ class DesignateObject(DictObjectMixin):
 
         return cls(**fields)
 
-    @classmethod
-    def from_primitive(cls, primitive):
+    @staticmethod
+    def from_primitive(primitive):
         """
         Construct an object from primitive types
 
@@ -133,22 +136,21 @@ class DesignateObject(DictObjectMixin):
         do not need special handling.  If this changes we need to modify this
         function.
         """
-        fields = primitive['designate_object.data']
-        return cls(**fields)
+        cls = importutils.import_class(primitive['designate_object.name'])
+
+        instance = cls(**primitive['designate_object.data'])
+        instance._obj_changes = set(primitive['designate_object.changes'])
+
+        return instance
 
     def __init__(self, **kwargs):
+        self._obj_changes = set()
+
         for name, value in kwargs.items():
             if name in self.FIELDS:
                 setattr(self, name, value)
             else:
                 raise TypeError("'%s' is an invalid keyword argument" % name)
-
-    def attr_is_set(self, name):
-        """
-        Return True or False depending of if a particular attribute has had
-        an attribute's value explicitly set.
-        """
-        return hasattr(self, get_attrname(name))
 
     def to_primitive(self):
         """
@@ -165,13 +167,41 @@ class DesignateObject(DictObjectMixin):
         data = {}
 
         for field in self.FIELDS:
-            if self.attr_is_set(field):
+            if self.obj_attr_is_set(field):
                 data[field] = self[field]
 
         return {
             'designate_object.name': class_name,
             'designate_object.data': data,
+            'designate_object.changes': list(self._obj_changes),
         }
+
+    def obj_attr_is_set(self, name):
+        """
+        Return True or False depending of if a particular attribute has had
+        an attribute's value explicitly set.
+        """
+        return hasattr(self, get_attrname(name))
+
+    def obj_what_changed(self):
+        """ Returns a set of fields that have been modified. """
+        return set(self._obj_changes)
+
+    def obj_get_changes(self):
+        """ Returns a dict of changed fields and their new values. """
+        changes = {}
+
+        for key in self.obj_what_changed():
+            changes[key] = self[key]
+
+        return changes
+
+    def obj_reset_changes(self, fields=None):
+        """ Reset the list of fields that have been changed. """
+        if fields:
+            self._obj_changes -= set(fields)
+        else:
+            self._obj_changes.clear()
 
     def __iter__(self):
         # Redundant?

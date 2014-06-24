@@ -14,6 +14,7 @@
 #    under the License.
 
 
+from designate.objects.base import DesignateObject  # noqa
 from designate.objects.blacklist import Blacklist  # noqa
 from designate.objects.domain import Domain  # noqa
 from designate.objects.quota import Quota  # noqa

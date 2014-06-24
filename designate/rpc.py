@@ -31,7 +31,7 @@ from oslo import messaging
 
 import designate.context
 import designate.exceptions
-from designate.openstack.common import importutils
+from designate import objects
 from designate.openstack.common import jsonutils
 
 
@@ -139,10 +139,8 @@ class DesignateObjectSerializer(messaging.NoOpSerializer):
         return entity
 
     def deserialize_entity(self, context, entity):
-        if isinstance(entity, dict) and 'designate_object.name' in entity and\
-                'designate_object.data' in entity:
-            cls = importutils.import_class(entity['designate_object.name'])
-            entity = cls.from_primitive(entity)
+        if isinstance(entity, dict) and 'designate_object.name' in entity:
+            entity = objects.DesignateObject.from_primitive(entity)
         elif isinstance(entity, (tuple, list, set)):
             entity = self._process_iterable(context, self.deserialize_entity,
                                             entity)
