@@ -19,7 +19,6 @@ from designate.openstack.common import log as logging
 from designate import exceptions
 from designate import schema
 from designate.api import get_central_api
-from designate.objects import Record
 from designate.objects import RecordSet
 
 
@@ -54,7 +53,7 @@ def _find_or_create_recordset(context, domain_id, name, type, ttl):
 
 def _extract_record_values(values):
     record_values = ('data', 'priority', 'comment',)
-    return Record(**dict((k, values[k]) for k in record_values if k in values))
+    return dict((k, values[k]) for k in record_values if k in values)
 
 
 def _extract_recordset_values(values):
@@ -63,6 +62,7 @@ def _extract_recordset_values(values):
 
 
 def _format_record_v1(record, recordset):
+    record = dict(record)
     record.update({
         'name': recordset['name'],
         'type': recordset['type'],
@@ -176,11 +176,11 @@ def update_record(domain_id, record_id):
     recordset = get_central_api().get_recordset(
         context, domain_id, record['recordset_id'])
 
-    # Filter out any extra fields from the fetched record
-    record = record_schema.filter(record)
-
     # Ensure all the API V1 fields are in place
     record = _format_record_v1(record, recordset)
+
+    # Filter out any extra fields from the fetched record
+    record = record_schema.filter(record)
 
     # Name and Type can't be updated on existing records
     if 'name' in values and record['name'] != values['name']:

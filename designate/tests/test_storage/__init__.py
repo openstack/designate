@@ -518,10 +518,12 @@ class StorageTestCase(object):
 
         expected = [{
             'id': 'One',
-            'domain_count': 1
+            'domain_count': 1,
+            'domains': None,
         }, {
             'id': 'Two',
-            'domain_count': 1
+            'domain_count': 1,
+            'domains': None,
         }]
 
         self.assertEqual(result_dict, expected)

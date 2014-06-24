@@ -21,7 +21,7 @@ class RRData_MX(Record):
     Defined in: RFC1035
     """
     # priority is maintained separately for MX records and not in 'data'
-    RRDATA_FIELDS = ['exchange']
+    FIELDS = ['exchange']
 
     # The record type is defined in the RFC. This will be used when the record
     # is sent by mini-dns.

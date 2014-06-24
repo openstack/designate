@@ -12,10 +12,10 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-from designate.objects.base import BaseObject
+from designate.objects import base
 
 
-class Domain(BaseObject):
+class Domain(base.DesignateObject, base.PersistentObjectMixin):
     FIELDS = ['tenant_id', 'name', 'email', 'ttl', 'refresh', 'retry',
               'expire', 'minimum', 'parent_domain_id', 'serial', 'description',
               'status']

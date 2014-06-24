@@ -20,7 +20,7 @@ class RRData_CNAME(Record):
     CNAME Resource Record Type
     Defined in: RFC1035
     """
-    RRDATA_FIELDS = ['cname']
+    FIELDS = ['cname']
 
     # The record type is defined in the RFC. This will be used when the record
     # is sent by mini-dns.
