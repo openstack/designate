@@ -31,7 +31,9 @@ class LimitsView(base_view.BaseView):
 
         return {
             "absolute": {
-                "maxZones": absolute_limits['domains'],
-                "maxZoneRecords": absolute_limits['domain_records']
+                "max_zones": absolute_limits['domains'],
+                "max_zone_recordsets": absolute_limits['domain_recordsets'],
+                "max_zone_records": absolute_limits['domain_records'],
+                "max_recordset_records": absolute_limits['recordset_records']
             }
         }
