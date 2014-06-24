@@ -56,7 +56,7 @@ class Service(service.Service):
 
     def start(self):
         version_string = version.version_info.version_string()
-        LOG.audit(_('Starting %(topic)s node (version %(version_string)s)'),
+        LOG.audit(_('Starting %(topic)s node (version %(version_string)s)') %
                   {'topic': self.topic, 'version_string': version_string})
 
         LOG.debug(_("Creating RPC server on topic '%s'") % self.topic)

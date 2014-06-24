@@ -19,6 +19,7 @@ from oslo import messaging
 
 from designate.openstack.common import log as logging
 from designate.openstack.common import service
+from designate.openstack.common.gettextutils import _LW
 from designate import notification_handler
 from designate import rpc
 
@@ -46,7 +47,7 @@ class Service(service.Service):
             enabled_notification_handlers)
 
         if len(notification_handlers) == 0:
-            LOG.warning('No designate-sink handlers enabled or loaded')
+            LOG.warn(_LW('No designate-sink handlers enabled or loaded'))
 
         return notification_handlers
 

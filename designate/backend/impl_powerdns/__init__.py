@@ -26,6 +26,7 @@ from sqlalchemy.orm import exc as sqlalchemy_exceptions
 
 from designate.openstack.common import excutils
 from designate.openstack.common import log as logging
+from designate.openstack.common.gettextutils import _LC
 from designate import exceptions
 from designate.backend import base
 from designate.backend.impl_powerdns import models
@@ -132,8 +133,9 @@ class PowerDNSBackend(base.Backend):
         except exceptions.TsigKeyNotFound:
             # If the TSIG Key is already gone, that's ok. We're deleting it
             # anyway, so just log and continue.
-            LOG.critical('Attempted to delete a TSIG key which is not present '
-                         'in the backend. ID: %s', tsigkey['id'])
+            LOG.critical(_LC('Attempted to delete a TSIG key which is '
+                             'not present in the backend. ID: %s') %
+                         tsigkey['id'])
             return
 
         # Delete this TSIG Key from every domain's metadata
@@ -231,8 +233,9 @@ class PowerDNSBackend(base.Backend):
         except exceptions.DomainNotFound:
             # If the Domain is already gone, that's ok. We're deleting it
             # anyway, so just log and continue.
-            LOG.critical('Attempted to delete a domain which is not present '
-                         'in the backend. ID: %s', domain['id'])
+            LOG.critical(_LC('Attempted to delete a domain which is '
+                             'not present in the backend. ID: %s') %
+                         domain['id'])
             return
 
         domain_m.delete(self.session)
@@ -311,8 +314,9 @@ class PowerDNSBackend(base.Backend):
         except exceptions.RecordNotFound:
             # If the Record is already gone, that's ok. We're deleting it
             # anyway, so just log and continue.
-            LOG.critical('Attempted to delete a record which is not present '
-                         'in the backend. ID: %s', record['id'])
+            LOG.critical(_LC('Attempted to delete a record which is '
+                             'not present in the backend. ID: %s') %
+                         record['id'])
         else:
             record_m.delete(self.session)
 
@@ -342,8 +346,8 @@ class PowerDNSBackend(base.Backend):
         for metadata in metadatas:
             if metadata.content not in values:
                 if delete:
-                    LOG.debug('Deleting stale domain metadata: %r',
-                              (domain_id, kind, metadata.value))
+                    LOG.debug('Deleting stale domain metadata: %r' %
+                              tuple([domain_id, kind, metadata.value]))
                     # Delete no longer necessary values
                     metadata.delete(self.session)
             else:
@@ -352,8 +356,8 @@ class PowerDNSBackend(base.Backend):
 
         # Insert new values
         for value in values:
-            LOG.debug('Inserting new domain metadata: %r',
-                      (domain_id, kind, value))
+            LOG.debug('Inserting new domain metadata: %r' %
+                      tuple([domain_id, kind, value]))
             m = models.DomainMetadata(domain_id=domain_id, kind=kind,
                                       content=value)
             m.save(self.session)

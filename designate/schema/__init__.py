@@ -68,7 +68,7 @@ class Schema(object):
             })
 
         if len(errors) > 0:
-            LOG.debug('Errors in validation: %r', errors)
+            LOG.debug('Errors in validation: %r' % errors)
             raise exceptions.InvalidObject("Provided object does not match "
                                            "schema", errors=errors)
 

@@ -52,8 +52,8 @@ class NeutronFloatingHandler(BaseAddressHandler):
         ]
 
     def process_notification(self, context, event_type, payload):
-        LOG.debug('%s received notification - %s',
-                  self.get_canonical_name(), event_type)
+        LOG.debug('%s received notification - %s' %
+                  (self.get_canonical_name(), event_type))
 
         # FIXME: Neutron doesn't send ipv in the payload, should maybe
         # determine this?

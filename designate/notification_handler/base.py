@@ -151,8 +151,8 @@ class BaseAddressHandler(NotificationHandler):
                     'managed_resource_type': resource_type,
                     'managed_resource_id': resource_id})
 
-            LOG.debug('Creating record in %s / %s with values %r',
-                      domain['id'], recordset['id'], record_values)
+            LOG.debug('Creating record in %s / %s with values %r' %
+                      (domain['id'], recordset['id'], record_values))
             self.central_api.create_record(context,
                                            domain['id'],
                                            recordset['id'],

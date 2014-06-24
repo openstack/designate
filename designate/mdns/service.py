@@ -18,6 +18,8 @@ import socket
 from oslo.config import cfg
 
 from designate.openstack.common import log as logging
+from designate.openstack.common.gettextutils import _LI
+from designate.openstack.common.gettextutils import _LW
 from designate import service
 from designate.mdns import handler
 
@@ -34,7 +36,7 @@ class Service(service.Service):
         self.handler = handler.RequestHandler()
 
         # Bind to the TCP port
-        LOG.info('Opening TCP Listening Socket')
+        LOG.info(_LI('Opening TCP Listening Socket'))
         self._sock_tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._sock_tcp.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self._sock_tcp.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
@@ -43,7 +45,7 @@ class Service(service.Service):
         self._sock_tcp.listen(CONF['service:mdns'].tcp_backlog)
 
         # Bind to the UDP port
-        LOG.info('Opening UDP Listening Socket')
+        LOG.info(_LI('Opening UDP Listening Socket'))
         self._sock_udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self._sock_udp.bind((CONF['service:mdns'].host,
                              CONF['service:mdns'].port))
@@ -57,7 +59,7 @@ class Service(service.Service):
     def _handle_tcp(self):
         while True:
             client, addr = self._sock_tcp.accept()
-            LOG.warn("Handling TCP Request from: %s", addr)
+            LOG.warn(_LW("Handling TCP Request from: %s") % addr)
 
             payload = client.recv(65535)
 
@@ -68,7 +70,7 @@ class Service(service.Service):
             # TODO(kiall): Determine the approperiate default value for
             #              UDP recvfrom.
             payload, addr = self._sock_udp.recvfrom(8192)
-            LOG.warn("Handling UDP Request from: %s", addr)
+            LOG.warn(_LW("Handling UDP Request from: %s") % addr)
 
             self.tg.add_thread(self._handle, addr, payload)
 
