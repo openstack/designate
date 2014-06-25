@@ -52,7 +52,7 @@ class CentralServiceTestIPA(designate.tests.test_central.
         # go directly through storage api to bypass tenant/policy checks
         save_all_tenants = self.admin_context.all_tenants
         self.admin_context.all_tenants = True
-        self.startdomains = self.central_service.storage_api.\
+        self.startdomains = self.central_service.storage.\
             find_domains(self.admin_context)
         LOG.debug("%s.setUp: startdomains %d" % (self.__class__,
                                                  len(self.startdomains)))
@@ -62,7 +62,7 @@ class CentralServiceTestIPA(designate.tests.test_central.
         # delete domains
         # go directly through storage api to bypass tenant/policy checks
         self.admin_context.all_tenants = True
-        domains = self.central_service.storage_api.\
+        domains = self.central_service.storage.\
             find_domains(self.admin_context)
         LOG.debug("%s.tearDown: domains %d" % (self.__class__,
                                                len(self.startdomains)))
