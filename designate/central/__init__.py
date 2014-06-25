@@ -13,6 +13,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from designate.mdns import rpcapi as mdns_rpcapi
+
 from oslo.config import cfg
 
 cfg.CONF.register_group(cfg.OptGroup(
@@ -39,3 +41,19 @@ cfg.CONF.register_opts([
                help="The Tenant ID that will own any managed resources."),
     cfg.StrOpt('min_ttl', default="None", help="Minimum TTL allowed")
 ], group='service:central')
+
+MDNS_API = None
+
+
+def get_mdns_api():
+    """
+    The rpc.get_client() which is called upon the API object initialization
+    will cause a assertion error if the designate.rpc.TRANSPORT isn't setup by
+    rpc.init() before.
+
+    This fixes that by creating the rpcapi when demanded.
+    """
+    global MDNS_API
+    if not MDNS_API:
+        MDNS_API = mdns_rpcapi.MdnsAPI()
+    return MDNS_API

@@ -17,12 +17,12 @@ import socket
 
 from oslo.config import cfg
 
+from designate import service
+from designate.mdns import handler
+from designate.mdns import notify
 from designate.openstack.common import log as logging
 from designate.openstack.common.gettextutils import _LI
 from designate.openstack.common.gettextutils import _LW
-from designate import service
-from designate.mdns import handler
-
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
@@ -30,6 +30,8 @@ CONF = cfg.CONF
 
 class Service(service.Service):
     def __init__(self, *args, **kwargs):
+        notify_endpoint = notify.NotifyEndpoint()
+        kwargs['endpoints'] = [notify_endpoint]
         super(Service, self).__init__(*args, **kwargs)
 
         # Create an instance of the RequestHandler class
@@ -55,8 +57,15 @@ class Service(service.Service):
 
         self.tg.add_thread(self._handle_tcp)
         self.tg.add_thread(self._handle_udp)
+        LOG.info(_LI("started mdns service"))
+
+    def stop(self):
+        # When the service is stopped, the threads for _handle_tcp and
+        # _handle_udp are stopped too.
+        super(Service, self).stop()
 
     def _handle_tcp(self):
+        LOG.info(_LI("_handle_tcp thread started"))
         while True:
             client, addr = self._sock_tcp.accept()
             LOG.warn(_LW("Handling TCP Request from: %s") % addr)
@@ -66,8 +75,9 @@ class Service(service.Service):
             self.tg.add_thread(self._handle, addr, payload, client)
 
     def _handle_udp(self):
+        LOG.info(_LI("_handle_udp thread started"))
         while True:
-            # TODO(kiall): Determine the approperiate default value for
+            # TODO(kiall): Determine the appropriate default value for
             #              UDP recvfrom.
             payload, addr = self._sock_udp.recvfrom(8192)
             LOG.warn(_LW("Handling UDP Request from: %s") % addr)

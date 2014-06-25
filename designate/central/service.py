@@ -24,6 +24,7 @@ from designate.openstack.common import log as logging
 from designate.openstack.common.gettextutils import _LI
 from designate.openstack.common.gettextutils import _LC
 from designate import backend
+from designate import central
 from designate import exceptions
 from designate import network_api
 from designate import objects
@@ -90,6 +91,10 @@ class Service(service.Service):
         super(Service, self).stop()
 
         self.backend.stop()
+
+    @property
+    def mdns_api(self):
+        return central.get_mdns_api()
 
     def _is_valid_domain_name(self, context, domain_name):
         # Validate domain name length
@@ -621,6 +626,7 @@ class Service(service.Service):
                 self.backend.update_domain(context, domain)
 
         self.notifier.info(context, 'dns.domain.update', domain)
+        self.mdns_api.notify_zone_changed(context, domain.name)
 
         return domain
 
@@ -797,6 +803,7 @@ class Service(service.Service):
 
         # Send RecordSet update notification
         self.notifier.info(context, 'dns.recordset.update', recordset)
+        self.mdns_api.notify_zone_changed(context, domain.name)
 
         return recordset
 
@@ -952,6 +959,7 @@ class Service(service.Service):
 
         # Send Record update notification
         self.notifier.info(context, 'dns.record.update', record)
+        self.mdns_api.notify_zone_changed(context, domain.name)
 
         return record
 
