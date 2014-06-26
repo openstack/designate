@@ -13,6 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from designate import objects
 from designate.api.v2.views import base as base_view
 from designate.openstack.common import log as logging
 
@@ -35,12 +36,15 @@ class RecordSetsView(base_view.BaseView):
 
     def show_basic(self, context, request, recordset):
         """Basic view of a recordset"""
+
         return {
             "id": recordset['id'],
             "zone_id": recordset['domain_id'],
             "name": recordset['name'],
             "type": recordset['type'],
             "ttl": recordset['ttl'],
+            "records": [r.data for r in recordset['records']],
+            "priority": [r.priority for r in recordset['records']],
             "description": recordset['description'],
             "version": recordset['version'],
             "created_at": recordset['created_at'],
@@ -51,5 +55,21 @@ class RecordSetsView(base_view.BaseView):
 
     def load(self, context, request, body):
         """Extract a "central" compatible dict from an API call"""
-        valid_keys = ('name', 'type', 'ttl', 'description')
-        return self._load(context, request, body, valid_keys)
+        valid_keys = ('name', 'type', 'ttl', 'description', 'records',
+                      'priority')
+
+        result = self._load(context, request, body, valid_keys)
+
+        if 'records' in result:
+            result['records'] = objects.RecordList(objects=[
+                objects.Record(data=r) for r in result['records']
+            ])
+
+            if 'type' in result and \
+                    (result['type'] == "MX" or result['type'] == 'SRV'):
+                cnt = 0
+                for r in result['records']:
+                    r.priority = result['priority'][cnt]
+                    cnt += 1
+
+        return result

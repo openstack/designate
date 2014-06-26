@@ -302,7 +302,7 @@ class ZonesController(rest.RestController):
                 values = {
                     'domain_id': zone_id,
                     'name': record_name.to_text(),
-                    'type': record_type,
+                    'type': record_type
                 }
 
                 recordset = self.central_api.create_recordset(

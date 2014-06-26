@@ -1411,7 +1411,7 @@ class Service(service.Service):
         recordset_values = {
             'name': record_name,
             'type': 'PTR',
-            'ttl': values.get('ttl', None)
+            'ttl': values.get('ttl', None),
         }
 
         recordset = self.create_recordset(

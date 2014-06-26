@@ -20,7 +20,6 @@ from designate import schema
 from designate import utils
 from designate.api.v2.controllers import rest
 from designate.api.v2.views import recordsets as recordsets_view
-from designate.api.v2.controllers import records
 from designate.objects import RecordSet
 
 
@@ -32,9 +31,7 @@ class RecordSetsController(rest.RestController):
     _resource_schema = schema.Schema('v2', 'recordset')
     _collection_schema = schema.Schema('v2', 'recordsets')
     SORT_KEYS = ['created_at', 'id', 'updated_at', 'domain_id', 'tenant_id',
-                 'name', 'type', 'ttl']
-
-    records = records.RecordsController()
+                 'name', 'type', 'ttl', 'records', 'priority']
 
     @pecan.expose(template='json:', content_type='application/json')
     @utils.validate_uuid('zone_id', 'recordset_id')
@@ -99,9 +96,8 @@ class RecordSetsController(rest.RestController):
         return self._view.show(context, request, recordset)
 
     @pecan.expose(template='json:', content_type='application/json')
-    @pecan.expose(template='json:', content_type='application/json-patch+json')
     @utils.validate_uuid('zone_id', 'recordset_id')
-    def patch_one(self, zone_id, recordset_id):
+    def put_one(self, zone_id, recordset_id):
         """Update RecordSet"""
         request = pecan.request
         context = request.environ['context']
@@ -114,18 +110,14 @@ class RecordSetsController(rest.RestController):
 
         # Convert to APIv2 Format
         recordset_data = self._view.show(context, request, recordset)
+        recordset_data = utils.deep_dict_merge(recordset_data, body)
 
-        if request.content_type == 'application/json-patch+json':
-            raise NotImplemented('json-patch not implemented')
-        else:
-            recordset_data = utils.deep_dict_merge(recordset_data, body)
+        # Validate the new set of data
+        self._resource_schema.validate(recordset_data)
 
-            # Validate the new set of data
-            self._resource_schema.validate(recordset_data)
-
-            # Update and persist the resource
-            recordset.update(self._view.load(context, request, body))
-            recordset = self.central_api.update_recordset(context, recordset)
+        # Update and persist the resource
+        recordset.update(self._view.load(context, request, body))
+        recordset = self.central_api.update_recordset(context, recordset)
 
         response.status_int = 200
 

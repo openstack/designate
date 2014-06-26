@@ -29,7 +29,7 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         self.domain = self.create_domain()
 
     def test_create_recordset(self):
-        # Create a zone
+        # Prepare a RecordSet fixture
         fixture = self.get_recordset_fixture(self.domain['name'], fixture=0)
         response = self.client.post_json(
             '/zones/%s/recordsets' % self.domain['id'], {'recordset': fixture})
@@ -47,9 +47,30 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         self.assertIn('id', response.json['recordset'])
         self.assertIn('created_at', response.json['recordset'])
         self.assertIsNone(response.json['recordset']['updated_at'])
+        self.assertIn('records', response.json['recordset'])
 
-        for k in fixture:
-            self.assertEqual(fixture[k], response.json['recordset'][k])
+    def test_create_recordset_with_records(self):
+        # Prepare a RecordSet fixture
+        fixture = self.get_recordset_fixture(
+            self.domain['name'], 'A', fixture=0, values={'records': [
+                '192.0.2.1',
+                '192.0.2.2',
+            ]}
+        )
+
+        response = self.client.post_json(
+            '/zones/%s/recordsets' % self.domain['id'], {'recordset': fixture})
+
+        # Check the headers are what we expect
+        self.assertEqual(201, response.status_int)
+        self.assertEqual('application/json', response.content_type)
+
+        # Check the body structure is what we expect
+        self.assertIn('recordset', response.json)
+
+        # Check the values returned are what we expect
+        self.assertIn('records', response.json['recordset'])
+        self.assertEqual(2, len(response.json['recordset']['records']))
 
     def test_create_recordset_invalid_id(self):
         self._assert_invalid_uuid(self.client.post, '/zones/%s/recordsets')
@@ -212,7 +233,7 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
 
         url = '/zones/%s/recordsets/%s' % (recordset['domain_id'],
                                            recordset['id'])
-        response = self.client.patch_json(url, body, status=200)
+        response = self.client.put_json(url, body, status=200)
 
         # Check the headers are what we expect
         self.assertEqual(200, response.status_int)
@@ -228,9 +249,83 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         self.assertIsNotNone(response.json['recordset']['updated_at'])
         self.assertEqual('Tester', response.json['recordset']['description'])
 
+    def test_update_recordset_with_record_create(self):
+        # Create a recordset
+        recordset = self.create_recordset(self.domain, 'A')
+
+        # Prepare an update body
+        body = {'recordset': {'description': 'Tester',
+                              'records': ['192.0.2.1', '192.0.2.2']}}
+
+        url = '/zones/%s/recordsets/%s' % (recordset['domain_id'],
+                                           recordset['id'])
+        response = self.client.put_json(url, body, status=200)
+
+        # Check the headers are what we expect
+        self.assertEqual(200, response.status_int)
+        self.assertEqual('application/json', response.content_type)
+
+        # Check the body structure is what we expect
+        self.assertIn('recordset', response.json)
+
+        # Check the values returned are what we expect
+        self.assertIn('records', response.json['recordset'])
+        self.assertEqual(2, len(response.json['recordset']['records']))
+        self.assertEqual(set(['192.0.2.1', '192.0.2.2']),
+                         set(response.json['recordset']['records']))
+
+    def test_update_recordset_with_record_replace(self):
+        # Create a recordset with one record
+        recordset = self.create_recordset(self.domain, 'A')
+        self.create_record(self.domain, recordset)
+
+        # Prepare an update body
+        body = {'recordset': {'description': 'Tester',
+                              'records': ['192.0.2.201', '192.0.2.202']}}
+
+        url = '/zones/%s/recordsets/%s' % (recordset['domain_id'],
+                                           recordset['id'])
+        response = self.client.put_json(url, body, status=200)
+
+        # Check the headers are what we expect
+        self.assertEqual(200, response.status_int)
+        self.assertEqual('application/json', response.content_type)
+
+        # Check the body structure is what we expect
+        self.assertIn('recordset', response.json)
+
+        # Check the values returned are what we expect
+        self.assertIn('records', response.json['recordset'])
+        self.assertEqual(2, len(response.json['recordset']['records']))
+        self.assertEqual(set(['192.0.2.201', '192.0.2.202']),
+                         set(response.json['recordset']['records']))
+
+    def test_update_recordset_with_record_clear(self):
+        # Create a recordset with one record
+        recordset = self.create_recordset(self.domain, 'A')
+        self.create_record(self.domain, recordset)
+
+        # Prepare an update body
+        body = {'recordset': {'description': 'Tester', 'records': []}}
+
+        url = '/zones/%s/recordsets/%s' % (recordset['domain_id'],
+                                           recordset['id'])
+        response = self.client.put_json(url, body, status=200)
+
+        # Check the headers are what we expect
+        self.assertEqual(200, response.status_int)
+        self.assertEqual('application/json', response.content_type)
+
+        # Check the body structure is what we expect
+        self.assertIn('recordset', response.json)
+
+        # Check the values returned are what we expect
+        self.assertIn('records', response.json['recordset'])
+        self.assertEqual(0, len(response.json['recordset']['records']))
+
     def test_update_recordset_invalid_id(self):
         self._assert_invalid_uuid(
-            self.client.patch_json, '/zones/%s/recordsets/%s')
+            self.client.put_json, '/zones/%s/recordsets/%s')
 
     def test_update_recordset_validation(self):
         # NOTE: The schemas should be tested separatly to the API. So we
@@ -239,20 +334,22 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         recordset = self.create_recordset(self.domain)
 
         # Prepare an update body with junk in the wrapper
-        body = {'recordset': {'description': 'Tester'}, 'junk': 'Junk Field'}
+        body = {'recordset': {'description': 'Tester',
+                              'records': ['192.3.3.17'],
+                              'junk': 'Junk Field'}}
 
         # Ensure it fails with a 400
         url = '/zones/%s/recordsets/%s' % (recordset['domain_id'],
                                            recordset['id'])
 
-        self._assert_exception('invalid_object', 400, self.client.patch_json,
+        self._assert_exception('invalid_object', 400, self.client.put_json,
                                url, body)
 
         # Prepare an update body with junk in the body
         body = {'recordset': {'description': 'Tester', 'junk': 'Junk Field'}}
 
         # Ensure it fails with a 400
-        self._assert_exception('invalid_object', 400, self.client.patch_json,
+        self._assert_exception('invalid_object', 400, self.client.put_json,
                                url, body)
 
     @patch.object(central_service.Service, 'get_recordset',
@@ -266,7 +363,7 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
                % (self.domain['id']))
 
         self._assert_exception('duplicate_recordset', 409,
-                               self.client.patch_json, url, body)
+                               self.client.put_json, url, body)
 
     @patch.object(central_service.Service, 'get_recordset',
                   side_effect=messaging.MessagingTimeout())
@@ -278,7 +375,7 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         url = ('/zones/%s/recordsets/ba751950-6193-11e3-949a-0800200c9a66'
                % (self.domain['id']))
 
-        self._assert_exception('timeout', 504, self.client.patch_json, url,
+        self._assert_exception('timeout', 504, self.client.put_json, url,
                                body)
 
     @patch.object(central_service.Service, 'get_recordset',
@@ -292,7 +389,7 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
                % (self.domain['id']))
 
         self._assert_exception('recordset_not_found', 404,
-                               self.client.patch_json, url, body)
+                               self.client.put_json, url, body)
 
     def test_delete_recordset(self):
         recordset = self.create_recordset(self.domain)

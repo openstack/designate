@@ -899,21 +899,42 @@ class CentralServiceTest(CentralTestCase):
     def test_create_recordset(self):
         domain = self.create_domain()
 
-        values = dict(
-            name='www.%s' % domain['name'],
-            type='A'
-        )
+        # Create the Object
+        recordset = objects.RecordSet(name='www.%s' % domain.name, type='A')
 
-        # Create a recordset
+        # Persist the Object
         recordset = self.central_service.create_recordset(
-            self.admin_context,
-            domain['id'],
-            recordset=objects.RecordSet(**values))
+            self.admin_context, domain.id, recordset=recordset)
 
         # Ensure all values have been set correctly
-        self.assertIsNotNone(recordset['id'])
-        self.assertEqual(recordset['name'], values['name'])
-        self.assertEqual(recordset['type'], values['type'])
+        self.assertIsNotNone(recordset.id)
+        self.assertEqual('www.%s' % domain.name, recordset.name)
+        self.assertEqual('A', recordset.type)
+
+        self.assertIsNotNone(recordset.records)
+
+    def test_create_recordset_with_records(self):
+        domain = self.create_domain()
+
+        # Create the Object
+        recordset = objects.RecordSet(
+            name='www.%s' % domain.name,
+            type='A',
+            records=objects.RecordList(objects=[
+                objects.Record(data='192.3.3.15'),
+                objects.Record(data='192.3.3.16'),
+            ])
+        )
+
+        # Persist the Object
+        recordset = self.central_service.create_recordset(
+            self.admin_context, domain.id, recordset=recordset)
+
+        # Ensure all values have been set correctly
+        self.assertIsNotNone(recordset.records)
+        self.assertEqual(2, len(recordset.records))
+        self.assertIsNotNone(recordset.records[0].id)
+        self.assertIsNotNone(recordset.records[1].id)
 
     # def test_create_recordset_over_quota(self):
     #     self.config(quota_domain_recordsets=1)
@@ -1023,6 +1044,22 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(recordset['name'], expected['name'])
         self.assertEqual(recordset['type'], expected['type'])
 
+    def test_get_recordset_with_records(self):
+        domain = self.create_domain()
+
+        # Create a recordset and two records
+        recordset = self.create_recordset(domain)
+        self.create_record(domain, recordset)
+        self.create_record(domain, recordset, fixture=1)
+
+        # Retrieve it, and ensure it's the same
+        recordset = self.central_service.get_recordset(
+            self.admin_context, domain.id, recordset.id)
+
+        self.assertEqual(2, len(recordset.records))
+        self.assertIsNotNone(recordset.records[0].id)
+        self.assertIsNotNone(recordset.records[1].id)
+
     def test_get_recordset_incorrect_domain_id(self):
         domain = self.create_domain()
         other_domain = self.create_domain(fixture=1)
@@ -1082,6 +1119,24 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(recordset['id'], expected['id'])
         self.assertEqual(recordset['name'], expected['name'])
 
+    def test_find_recordset_with_records(self):
+        domain = self.create_domain()
+
+        # Create a recordset
+        recordset = self.create_recordset(domain)
+        self.create_record(domain, recordset)
+        self.create_record(domain, recordset, fixture=1)
+
+        # Retrieve it, and ensure it's the same
+        criterion = {'domain_id': domain.id, 'name': recordset.name}
+
+        recordset = self.central_service.find_recordset(
+            self.admin_context, criterion)
+
+        self.assertEqual(2, len(recordset.records))
+        self.assertIsNotNone(recordset.records[0].id)
+        self.assertIsNotNone(recordset.records[1].id)
+
     def test_update_recordset(self):
         # Create a domain
         domain = self.create_domain()
@@ -1101,6 +1156,90 @@ class CentralServiceTest(CentralTestCase):
 
         # Ensure the new value took
         self.assertEqual(recordset.ttl, 1800)
+
+    def test_update_recordset_with_record_create(self):
+        # Create a domain
+        domain = self.create_domain()
+
+        # Create a recordset
+        recordset = self.create_recordset(domain)
+
+        # Append two new Records
+        recordset.records.append(objects.Record(data='192.0.2.1'))
+        recordset.records.append(objects.Record(data='192.0.2.2'))
+
+        # Perform the update
+        self.central_service.update_recordset(self.admin_context, recordset)
+
+        # Fetch the RecordSet again
+        recordset = self.central_service.get_recordset(
+            self.admin_context, domain.id, recordset.id)
+
+        # Ensure two Records are attached to the RecordSet correctly
+        self.assertEqual(2, len(recordset.records))
+        self.assertIsNotNone(recordset.records[0].id)
+        self.assertIsNotNone(recordset.records[1].id)
+
+    def test_update_recordset_with_record_delete(self):
+        # Create a domain
+        domain = self.create_domain()
+
+        # Create a recordset and two records
+        recordset = self.create_recordset(domain)
+        self.create_record(domain, recordset)
+        self.create_record(domain, recordset, fixture=1)
+
+        # Append two new Records
+        recordset.records.append(objects.Record(data='192.0.2.1'))
+        recordset.records.append(objects.Record(data='192.0.2.2'))
+
+        # Remove one of the Records
+        recordset.records.pop(0)
+
+        # Perform the update
+        self.central_service.update_recordset(self.admin_context, recordset)
+
+        # Fetch the RecordSet again
+        recordset = self.central_service.get_recordset(
+            self.admin_context, domain.id, recordset.id)
+
+        # Ensure two Records are attached to the RecordSet correctly
+        self.assertEqual(1, len(recordset.records))
+        self.assertIsNotNone(recordset.records[0].id)
+
+    def test_update_recordset_with_record_update(self):
+        # Create a domain
+        domain = self.create_domain()
+
+        # Create a recordset and two records
+        recordset = self.create_recordset(domain, 'A')
+        self.create_record(domain, recordset)
+        self.create_record(domain, recordset, fixture=1)
+
+        # Fetch the RecordSet again
+        recordset = self.central_service.get_recordset(
+            self.admin_context, domain.id, recordset.id)
+
+        # Update one of the Records
+        updated_record_id = recordset.records[0].id
+        recordset.records[0].data = '192.0.2.255'
+
+        # Perform the update
+        self.central_service.update_recordset(self.admin_context, recordset)
+
+        # Fetch the RecordSet again
+        recordset = self.central_service.get_recordset(
+            self.admin_context, domain.id, recordset.id)
+
+        # Ensure the Record has been updated
+        for record in recordset.records:
+            if record.id != updated_record_id:
+                continue
+
+            self.assertEqual('192.0.2.255', record.data)
+            return  # Exits this test early as we suceeded
+
+        raise Exception('Updated record not found')
 
     def test_update_recordset_without_incrementing_serial(self):
         domain = self.create_domain()

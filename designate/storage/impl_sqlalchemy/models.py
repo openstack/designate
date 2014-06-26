@@ -24,14 +24,12 @@ from sqlalchemy import (Column, String, Text, Integer, ForeignKey,
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
 
-from designate.openstack.common import log as logging
 from designate.openstack.common import timeutils
 from designate.sqlalchemy.types import UUID
 from designate.sqlalchemy import models
 from designate import utils
 
 
-LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
 
 RESOURCE_STATUSES = ['ACTIVE', 'PENDING', 'DELETED']
@@ -140,6 +138,7 @@ class Record(Base):
     tenant_id = Column(String(36), default=None, nullable=True)
     domain_id = Column(UUID, ForeignKey('domains.id', ondelete='CASCADE'),
                        nullable=False)
+
     recordset_id = Column(UUID,
                           ForeignKey('recordsets.id', ondelete='CASCADE'),
                           nullable=False)

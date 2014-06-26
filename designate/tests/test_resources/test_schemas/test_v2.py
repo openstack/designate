@@ -30,7 +30,8 @@ class SchemasV2Test(TestCase):
                 'id': 'b22d09e0-efa3-11e2-b778-0800200c9a66',
                 'zone_id': 'b22d09e0-efa3-11e2-b778-0800200c9a66',
                 'name': 'example.com.',
-                'type': 'A'
+                'type': 'A',
+                'records': ['192.1.2.3']
             }
         })
 
@@ -40,6 +41,7 @@ class SchemasV2Test(TestCase):
                 'id': 'b22d09e0-efa3-11e2-b778-0800200c9a66',
                 'zone_id': 'b22d09e0-efa3-11e2-b778-0800200c9a66',
                 'name': 'example.com.',
-                'type': 'MX'
+                'type': 'MX',
+                'records': ['mail.example.org.']
             }
         })

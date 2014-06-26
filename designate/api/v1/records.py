@@ -40,6 +40,7 @@ def _find_or_create_recordset(context, domain_id, name, type, ttl):
     try:
         recordset = _find_recordset(context, domain_id, name, type)
     except exceptions.RecordSetNotFound:
+        # Create an empty recordset
         values = {
             'name': name,
             'type': type,
@@ -52,7 +53,7 @@ def _find_or_create_recordset(context, domain_id, name, type, ttl):
 
 
 def _extract_record_values(values):
-    record_values = ('data', 'priority', 'comment',)
+    record_values = ('data', 'priority', 'description',)
     return dict((k, values[k]) for k in record_values if k in values)
 
 
@@ -167,7 +168,7 @@ def update_record(domain_id, record_id):
     values = flask.request.json
 
     # NOTE: We need to ensure the domain actually exists, otherwise we may
-    #       return an record not found instead of a domain not found
+    #       return a record not found instead of a domain not found
     get_central_api().get_domain(context, domain_id)
 
     # Fetch the existing resource

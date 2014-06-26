@@ -52,6 +52,16 @@
                     "maximum": 2147483647,
                     "default": null
                 },
+                "records": {
+                    "type": ["array", "null"],
+                    "description": "Records in the RecordSet",
+                    "default": null
+                },
+                "priority": {
+                    "type": ["array", "null"],
+                    "description": "Priority of MX and SRV records",
+                    "default": null
+                },
                 "version": {
                     "type": "integer",
                     "description": "RecordSet version number",
