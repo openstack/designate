@@ -33,8 +33,8 @@ class RequestHandler(object):
     def handle(self, payload):
         request = dns.message.from_wire(payload)
 
-        # As we move furthur with the implementation, we'll want to:
-        # 1) Decord the payload using DNSPython
+        # As we move further with the implementation, we'll want to:
+        # 1) Decode the payload using DNSPython
         # 2) Hand off to either _handle_query or _handle_unsupported
         #    based on the OpCode
         # 3) Gather the query results from storage
@@ -58,7 +58,7 @@ class RequestHandler(object):
         """
         Handle Unsupported DNS OpCode's
 
-        Unspoorted OpCode's include STATUS, IQUERY, NOTIFY, UPDATE
+        Unsupported OpCode's include STATUS, IQUERY, NOTIFY, UPDATE
         """
         response = dns.message.make_response(request)
         response.set_rcode(dns.rcode.REFUSED)
