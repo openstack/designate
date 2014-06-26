@@ -13,6 +13,9 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from inspect import ismethod
+from inspect import getargspec
+
 import pecan.core
 
 from designate import exceptions
@@ -40,5 +43,9 @@ class Request(pecan.core.Request):
         else:
             raise Exception('TODO: Unsupported Content Type')
 
-
-pecan.core.Request = Request
+__init__ = pecan.core.Pecan.__base__.__init__
+if not ismethod(__init__) or 'request_cls' not in getargspec(__init__).args:
+    # only attempt to monkey patch `pecan.Request` in older versions of pecan;
+    # newer versions support specifying a custom request implementation in the
+    # `pecan.core.Pecan` constructor via the `request_cls` argument
+    pecan.core.Request = Request
