@@ -16,6 +16,8 @@
 import pecan
 import pecan.deploy
 from oslo.config import cfg
+
+from designate.api.v2 import patches
 from designate.openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)
@@ -37,6 +39,7 @@ def setup_app(pecan_config):
         pecan_config.app.root,
         debug=getattr(pecan_config.app, 'debug', False),
         force_canonical=getattr(pecan_config.app, 'force_canonical', True),
+        request_cls=patches.Request
     )
 
     return app
