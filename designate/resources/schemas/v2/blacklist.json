@@ -20,7 +20,7 @@
                     "type": "string",
                     "description": "Blacklisted Zone Identifier",
                     "pattern": "^([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}$",
-                    "readonly": true
+                    "readOnly": true
                 },
                 "pattern": {
                     "type": "string",
@@ -33,7 +33,7 @@
                     "type": "string",
                     "description": "Date and time of blacklisted zone creation",
                     "format": "date-time",
-                    "readonly": true
+                    "readOnly": true
                 },
                 "description": {
                     "type": ["string", "null"],
@@ -44,7 +44,7 @@
                     "type": ["string", "null"],
                     "description": "Date and time of last blacklisted zone update",
                     "format": "date-time",
-                    "readonly": true
+                    "readOnly": true
                 },
                 "links": {
                     "type": "object",

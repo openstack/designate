@@ -275,6 +275,22 @@ class ApiV2ZonesTest(ApiV2TestCase):
         self._assert_exception('invalid_object', 400, self.client.patch_json,
                                url, body)
 
+        # Prepare an update body with negative ttl in the body
+        body = {'zone': {'email': 'prefix-%s' % zone['email'],
+                         'ttl': -20}}
+
+        # Ensure it fails with a 400
+        self._assert_exception('invalid_object', 400, self.client.patch_json,
+                               url, body)
+
+        # Prepare an update body with ttl > maximum (2147483647) in the body
+        body = {'zone': {'email': 'prefix-%s' % zone['email'],
+                         'ttl': 2147483648}}
+
+        # Ensure it fails with a 400
+        self._assert_exception('invalid_object', 400, self.client.patch_json,
+                               url, body)
+
     @patch.object(central_service.Service, 'get_domain',
                   side_effect=exceptions.DuplicateDomain())
     def test_update_zone_duplicate(self, _):

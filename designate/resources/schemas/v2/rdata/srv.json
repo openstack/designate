@@ -8,18 +8,18 @@
     "properties": {
         "priority": {
             "type": "integer",
-            "min": 0,
-            "max": 65535
+            "minimum": 0,
+            "maximum": 65535
         },
         "weight": {
             "type": "integer",
-            "min": 0,
-            "max": 65535
+            "minimum": 0,
+            "maximum": 65535
         },
         "port": {
             "type": "integer",
-            "min": 0,
-            "max": 65535
+            "minimum": 0,
+            "maximum": 65535
         },
         "target": {
             "type": "string",
