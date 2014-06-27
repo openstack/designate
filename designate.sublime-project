@@ -23,7 +23,7 @@
                 "*.class",
                 "*.psd",
                 "*.db",
-                ".vagrant",
+                ".vagrant"
             ],
             "folder_exclude_patterns":
             [
