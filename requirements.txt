@@ -26,3 +26,4 @@ dnspython>=1.9.4
 posix_ipc
 oslotest
 oslo.db>=0.2.0  # Apache-2.0
+oslosphinx
