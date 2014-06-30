@@ -76,12 +76,19 @@ def update_server(server_id):
     context = flask.request.environ.get('context')
     values = flask.request.json
 
+    # Fetch the existing resource
     server = get_central_api().get_server(context, server_id)
-    server = server_schema.filter(server)
-    server.update(values)
 
-    server_schema.validate(server)
-    server = get_central_api().update_server(context, server_id, values=values)
+    # Prepare a dict of fields for validation
+    server_data = server_schema.filter(server)
+    server_data.update(values)
+
+    # Validate the new set of data
+    server_schema.validate(server_data)
+
+    # Update and persist the resource
+    server.update(values)
+    server = get_central_api().update_server(context, server)
 
     return flask.jsonify(server_schema.filter(server))
 

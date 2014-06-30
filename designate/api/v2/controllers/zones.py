@@ -200,7 +200,7 @@ class ZonesController(rest.RestController):
         zone = self.central_api.get_domain(context, zone_id)
 
         # Convert to APIv2 Format
-        zone = self._view.show(context, request, zone)
+        zone_data = self._view.show(context, request, zone)
 
         if request.content_type == 'application/json-patch+json':
             # Possible pattern:
@@ -217,15 +217,16 @@ class ZonesController(rest.RestController):
             # 3) ...?
             raise NotImplemented('json-patch not implemented')
         else:
-            zone = utils.deep_dict_merge(zone, body)
+            zone_data = utils.deep_dict_merge(zone_data, body)
 
-            # Validate the request conforms to the schema
-            self._resource_schema.validate(zone)
+            # Validate the new set of data
+            self._resource_schema.validate(zone_data)
 
-            values = self._view.load(context, request, body)
-            zone = self.central_api.update_domain(context, zone_id, values)
+            # Update and persist the resource
+            zone.update(self._view.load(context, request, body))
+            zone = self.central_api.update_domain(context, zone)
 
-        if zone['status'] == 'PENDING':
+        if zone.status == 'PENDING':
             response.status_int = 202
         else:
             response.status_int = 200

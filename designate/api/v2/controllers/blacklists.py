@@ -101,24 +101,23 @@ class BlacklistsController(rest.RestController):
         body = request.body_dict
         response = pecan.response
 
-        # Fetch the existing blacklisted zone
+        # Fetch the existing blacklist entry
         blacklist = self.central_api.get_blacklist(context, blacklist_id)
 
         # Convert to APIv2 Format
-        blacklist = self._view.show(context, request, blacklist)
+        blacklist_data = self._view.show(context, request, blacklist)
 
         if request.content_type == 'application/json-patch+json':
             raise NotImplemented('json-patch not implemented')
         else:
-            blacklist = utils.deep_dict_merge(blacklist, body)
+            blacklist_data = utils.deep_dict_merge(blacklist_data, body)
 
-            # Validate the request conforms to the schema
-            self._resource_schema.validate(blacklist)
+            # Validate the new set of data
+            self._resource_schema.validate(blacklist_data)
 
-            values = self._view.load(context, request, body)
-
-            blacklist = self.central_api.update_blacklist(context,
-                                                          blacklist_id, values)
+            # Update and persist the resource
+            blacklist.update(self._view.load(context, request, body))
+            blacklist = self.central_api.update_blacklist(context, blacklist)
 
         response.status_int = 200
 

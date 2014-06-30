@@ -273,9 +273,8 @@ class Service(service.Service):
         domain = self.storage.get_domain(context, domain_id)
 
         # Increment the serial number
-        values = {'serial': utils.increment_serial(domain['serial'])}
-
-        domain = self.storage.update_domain(context, domain_id, values)
+        domain.serial = utils.increment_serial(domain.serial)
+        domain = self.storage.update_domain(context, domain)
 
         with wrap_backend_call():
             self.backend.update_domain(context, domain)
@@ -371,10 +370,13 @@ class Service(service.Service):
         return self.storage.get_server(context, server_id)
 
     @transaction
-    def update_server(self, context, server_id, values):
-        policy.check('update_server', context, {'server_id': server_id})
+    def update_server(self, context, server):
+        target = {
+            'server_id': server.obj_get_original_value('id'),
+        }
+        policy.check('update_server', context, target)
 
-        server = self.storage.update_server(context, server_id, values)
+        server = self.storage.update_server(context, server)
 
         # Update backend with the new details..
         with wrap_backend_call():
@@ -429,10 +431,13 @@ class Service(service.Service):
         return self.storage.get_tld(context, tld_id)
 
     @transaction
-    def update_tld(self, context, tld_id, values):
-        policy.check('update_tld', context, {'tld_id': tld_id})
+    def update_tld(self, context, tld):
+        target = {
+            'tld_id': tld.obj_get_original_value('id'),
+        }
+        policy.check('update_tld', context, target)
 
-        tld = self.storage.update_tld(context, tld_id, values)
+        tld = self.storage.update_tld(context, tld)
 
         self.notifier.info(context, 'dns.tld.update', tld)
 
@@ -478,10 +483,13 @@ class Service(service.Service):
         return self.storage.get_tsigkey(context, tsigkey_id)
 
     @transaction
-    def update_tsigkey(self, context, tsigkey_id, values):
-        policy.check('update_tsigkey', context, {'tsigkey_id': tsigkey_id})
+    def update_tsigkey(self, context, tsigkey):
+        target = {
+            'tsigkey_id': tsigkey.obj_get_original_value('id'),
+        }
+        policy.check('update_tsigkey', context, target)
 
-        tsigkey = self.storage.update_tsigkey(context, tsigkey_id, values)
+        tsigkey = self.storage.update_tsigkey(context, tsigkey)
 
         with wrap_backend_call():
             self.backend.update_tsigkey(context, tsigkey)
@@ -622,41 +630,39 @@ class Service(service.Service):
         return self.storage.find_domain(context, criterion)
 
     @transaction
-    def update_domain(self, context, domain_id, values, increment_serial=True):
+    def update_domain(self, context, domain, increment_serial=True):
         # TODO(kiall): Refactor this method into *MUCH* smaller chunks.
-        domain = self.storage.get_domain(context, domain_id)
-
         target = {
-            'domain_id': domain_id,
-            'domain_name': domain.name,
-            'tenant_id': domain.tenant_id
+            'domain_id': domain.obj_get_original_value('id'),
+            'domain_name': domain.obj_get_original_value('name'),
+            'tenant_id': domain.obj_get_original_value('tenant_id'),
         }
 
         policy.check('update_domain', context, target)
 
-        if 'tenant_id' in values:
-            # NOTE(kiall): Ensure the user is allowed to delete a domain from
-            #              the original tenant.
-            policy.check('delete_domain', context, target)
+        changes = domain.obj_get_changes()
 
-            # NOTE(kiall): Ensure the user is allowed to create a domain in
-            #              the new tenant.
-            target = {'domain_id': domain_id, 'tenant_id': values['tenant_id']}
-            policy.check('create_domain', context, target)
+        # Ensure immutable fields are not changed
+        if 'tenant_id' in changes:
+            # TODO(kiall): Moving between tenants should be allowed, but the
+            #              current code will not take into account that
+            #              RecordSets and Records must also be moved.
+            raise exceptions.BadRequest('Moving a domain between tenants is '
+                                        'not allowed')
 
-        if 'name' in values and values['name'] != domain.name:
+        if 'name' in changes:
             raise exceptions.BadRequest('Renaming a domain is not allowed')
 
         # Ensure TTL is above the minimum
-        ttl = values.get('ttl', None)
+        ttl = changes.get('ttl', None)
         if ttl is not None:
             self._is_valid_ttl(context, ttl)
 
         if increment_serial:
             # Increment the serial number
-            values['serial'] = utils.increment_serial(domain.serial)
+            domain.serial = utils.increment_serial(domain.serial)
 
-        domain = self.storage.update_domain(context, domain_id, values)
+        domain = self.storage.update_domain(context, domain)
 
         with wrap_backend_call():
             self.backend.update_domain(context, domain)
@@ -798,50 +804,54 @@ class Service(service.Service):
         return self.storage.find_recordset(context, criterion)
 
     @transaction
-    def update_recordset(self, context, domain_id, recordset_id, values,
-                         increment_serial=True):
+    def update_recordset(self, context, recordset, increment_serial=True):
+        domain_id = recordset.obj_get_original_value('domain_id')
         domain = self.storage.get_domain(context, domain_id)
-        recordset = self.storage.get_recordset(context, recordset_id)
 
-        # Ensure the domain_id matches the recordset's domain_id
-        if domain.id != recordset.domain_id:
-            raise exceptions.RecordSetNotFound()
+        changes = recordset.obj_get_changes()
+
+        # Ensure immutable fields are not changed
+        if 'tenant_id' in changes:
+            raise exceptions.BadRequest('Moving a recordset between tenants '
+                                        'is not allowed')
+
+        if 'domain_id' in changes:
+            raise exceptions.BadRequest('Moving a recordset between domains '
+                                        'is not allowed')
+
+        if 'type' in changes:
+            raise exceptions.BadRequest('Changing a recordsets type is not '
+                                        'allowed')
 
         target = {
-            'domain_id': domain_id,
+            'domain_id': recordset.obj_get_original_value('domain_id'),
+            'recordset_id': recordset.obj_get_original_value('id'),
             'domain_name': domain.name,
-            'recordset_id': recordset.id,
             'tenant_id': domain.tenant_id
         }
 
         policy.check('update_recordset', context, target)
 
         # Ensure the record name is valid
-        recordset_name = values['name'] if 'name' in values \
-            else recordset.name
-        recordset_type = values['type'] if 'type' in values \
-            else recordset.type
-
-        self._is_valid_recordset_name(context, domain, recordset_name)
-        self._is_valid_recordset_placement(context, domain, recordset_name,
-                                           recordset_type, recordset_id)
+        self._is_valid_recordset_name(context, domain, recordset.name)
+        self._is_valid_recordset_placement(context, domain, recordset.name,
+                                           recordset.type, recordset.id)
         self._is_valid_recordset_placement_subdomain(
-            context, domain, recordset_name)
+            context, domain, recordset.name)
 
         # Ensure TTL is above the minimum
-        ttl = values.get('ttl', None)
+        ttl = changes.get('ttl', None)
         if ttl is not None:
             self._is_valid_ttl(context, ttl)
 
         # Update the recordset
-        recordset = self.storage.update_recordset(context, recordset_id,
-                                                  values)
+        recordset = self.storage.update_recordset(context, recordset)
 
         with wrap_backend_call():
             self.backend.update_recordset(context, domain, recordset)
 
         if increment_serial:
-            self._increment_domain_serial(context, domain_id)
+            self._increment_domain_serial(context, domain.id)
 
         # Send RecordSet update notification
         self.notifier.info(context, 'dns.recordset.update', recordset)
@@ -969,39 +979,47 @@ class Service(service.Service):
         return self.storage.find_record(context, criterion)
 
     @transaction
-    def update_record(self, context, domain_id, recordset_id, record_id,
-                      values, increment_serial=True):
+    def update_record(self, context, record, increment_serial=True):
+        domain_id = record.obj_get_original_value('domain_id')
         domain = self.storage.get_domain(context, domain_id)
+
+        recordset_id = record.obj_get_original_value('recordset_id')
         recordset = self.storage.get_recordset(context, recordset_id)
-        record = self.storage.get_record(context, record_id)
 
-        # Ensure the domain_id matches the record's domain_id
-        if domain.id != record.domain_id:
-            raise exceptions.RecordNotFound()
+        changes = record.obj_get_changes()
 
-        # Ensure the recordset_id matches the record's recordset_id
-        if recordset.id != record.recordset_id:
-            raise exceptions.RecordNotFound()
+        # Ensure immutable fields are not changed
+        if 'tenant_id' in changes:
+            raise exceptions.BadRequest('Moving a recordset between tenants '
+                                        'is not allowed')
+
+        if 'domain_id' in changes:
+            raise exceptions.BadRequest('Moving a recordset between domains '
+                                        'is not allowed')
+
+        if 'recordset_id' in changes:
+            raise exceptions.BadRequest('Moving a recordset between '
+                                        'recordsets is not allowed')
 
         target = {
-            'domain_id': domain_id,
+            'domain_id': record.obj_get_original_value('domain_id'),
             'domain_name': domain.name,
-            'recordset_id': recordset_id,
+            'recordset_id': record.obj_get_original_value('recordset_id'),
             'recordset_name': recordset.name,
-            'record_id': record.id,
+            'record_id': record.obj_get_original_value('id'),
             'tenant_id': domain.tenant_id
         }
 
         policy.check('update_record', context, target)
 
         # Update the record
-        record = self.storage.update_record(context, record_id, values)
+        record = self.storage.update_record(context, record)
 
         with wrap_backend_call():
             self.backend.update_record(context, domain, recordset, record)
 
         if increment_serial:
-            self._increment_domain_serial(context, domain_id)
+            self._increment_domain_serial(context, domain.id)
 
         # Send Record update notification
         self.notifier.info(context, 'dns.record.update', record)
@@ -1482,11 +1500,13 @@ class Service(service.Service):
         return blacklist
 
     @transaction
-    def update_blacklist(self, context, blacklist_id, values):
-        policy.check('update_blacklist', context)
+    def update_blacklist(self, context, blacklist):
+        target = {
+            'blacklist_id': blacklist.id,
+        }
+        policy.check('update_blacklist', context, target)
 
-        blacklist = self.storage.update_blacklist(context, blacklist_id,
-                                                  values)
+        blacklist = self.storage.update_blacklist(context, blacklist)
 
         self.notifier.info(context, 'dns.blacklist.update', blacklist)
 

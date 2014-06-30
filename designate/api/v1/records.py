@@ -170,49 +170,31 @@ def update_record(domain_id, record_id):
     #       return an record not found instead of a domain not found
     get_central_api().get_domain(context, domain_id)
 
-    # Find the record
+    # Fetch the existing resource
+    # NOTE(kiall): We use "find_record" rather than "get_record" as we do not
+    #              have the recordset_id.
     criterion = {'domain_id': domain_id, 'id': record_id}
     record = get_central_api().find_record(context, criterion)
 
     # Find the associated recordset
     recordset = get_central_api().get_recordset(
-        context, domain_id, record['recordset_id'])
+        context, domain_id, record.recordset_id)
 
-    # Ensure all the API V1 fields are in place
-    record = _format_record_v1(record, recordset)
+    # Prepare a dict of fields for validation
+    record_data = record_schema.filter(_format_record_v1(record, recordset))
+    record_data.update(values)
 
-    # Filter out any extra fields from the fetched record
-    record = record_schema.filter(record)
+    # Validate the new set of data
+    record_schema.validate(record_data)
 
-    # Name and Type can't be updated on existing records
-    if 'name' in values and record['name'] != values['name']:
-        raise exceptions.InvalidOperation('The name field is immutable')
+    # Update and persist the resource
+    record.update(_extract_record_values(values))
+    record = get_central_api().update_record(context, record)
 
-    if 'type' in values and record['type'] != values['type']:
-        raise exceptions.InvalidOperation('The type field is immutable')
-
-    # TTL Updates should be applied to the RecordSet
-    update_recordset = False
-
-    if 'ttl' in values and record['ttl'] != values['ttl']:
-        update_recordset = True
-
-    # Apply the updated fields to the record
-    record.update(values)
-
-    # Validate the record
-    record_schema.validate(record)
-
-    # Update the record
-    record = get_central_api().update_record(
-        context, domain_id, recordset['id'], record_id,
-        _extract_record_values(values))
-
-    # Update the recordset (if necessary)
-    if update_recordset:
-        recordset = get_central_api().update_recordset(
-            context, domain_id, recordset['id'],
-            _extract_recordset_values(values))
+    # Update the recordset resource (if necessary)
+    recordset.update(_extract_recordset_values(values))
+    if len(recordset.obj_what_changed()) > 0:
+        recordset = get_central_api().update_recordset(context, recordset)
 
     # Format and return the response
     record = _format_record_v1(record, recordset)

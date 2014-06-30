@@ -98,18 +98,19 @@ class TldsController(rest.RestController):
         tld = self.central_api.get_tld(context, tld_id)
 
         # Convert to APIv2 Format
-        tld = self._view.show(context, request, tld)
+        tld_data = self._view.show(context, request, tld)
 
         if request.content_type == 'application/json-patch+json':
             raise NotImplemented('json-patch not implemented')
         else:
-            tld = utils.deep_dict_merge(tld, body)
+            tld_data = utils.deep_dict_merge(tld_data, body)
 
-            # Validate the request conforms to the schema
-            self._resource_schema.validate(tld)
+            # Validate the new set of data
+            self._resource_schema.validate(tld_data)
 
-            values = self._view.load(context, request, body)
-            tld = self.central_api.update_tld(context, tld_id, values)
+            # Update and persist the resource
+            tld.update(self._view.load(context, request, body))
+            tld = self.central_api.update_tld(context, tld)
 
         response.status_int = 200
 

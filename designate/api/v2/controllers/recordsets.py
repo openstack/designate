@@ -113,19 +113,19 @@ class RecordSetsController(rest.RestController):
                                                    recordset_id)
 
         # Convert to APIv2 Format
-        recordset = self._view.show(context, request, recordset)
+        recordset_data = self._view.show(context, request, recordset)
 
         if request.content_type == 'application/json-patch+json':
             raise NotImplemented('json-patch not implemented')
         else:
-            recordset = utils.deep_dict_merge(recordset, body)
+            recordset_data = utils.deep_dict_merge(recordset_data, body)
 
-            # Validate the request conforms to the schema
-            self._resource_schema.validate(recordset)
+            # Validate the new set of data
+            self._resource_schema.validate(recordset_data)
 
-            values = self._view.load(context, request, body)
-            recordset = self.central_api.update_recordset(
-                context, zone_id, recordset_id, values)
+            # Update and persist the resource
+            recordset.update(self._view.load(context, request, body))
+            recordset = self.central_api.update_recordset(context, recordset)
 
         response.status_int = 200
 

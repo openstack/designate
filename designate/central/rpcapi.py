@@ -99,11 +99,10 @@ class CentralAPI(object):
 
         return self.client.call(context, 'get_server', server_id=server_id)
 
-    def update_server(self, context, server_id, values):
+    def update_server(self, context, server):
         LOG.info(_LI("update_server: Calling central's update_server."))
 
-        return self.client.call(context, 'update_server', server_id=server_id,
-                                values=values)
+        return self.client.call(context, 'update_server', server=server)
 
     def delete_server(self, context, server_id):
         LOG.info(_LI("delete_server: Calling central's delete_server."))
@@ -126,11 +125,9 @@ class CentralAPI(object):
         LOG.info(_LI("get_tsigkey: Calling central's get_tsigkey."))
         return self.client.call(context, 'get_tsigkey', tsigkey_id=tsigkey_id)
 
-    def update_tsigkey(self, context, tsigkey_id, values):
+    def update_tsigkey(self, context, tsigkey):
         LOG.info(_LI("update_tsigkey: Calling central's update_tsigkey."))
-        return self.client.call(context, 'update_tsigkey',
-                                tsigkey_id=tsigkey_id,
-                                values=values)
+        return self.client.call(context, 'update_tsigkey', tsigkey=tsigkey)
 
     def delete_tsigkey(self, context, tsigkey_id):
         LOG.info(_LI("delete_tsigkey: Calling central's delete_tsigkey."))
@@ -176,11 +173,10 @@ class CentralAPI(object):
         LOG.info(_LI("find_domain: Calling central's find_domain."))
         return self.client.call(context, 'find_domain', criterion=criterion)
 
-    def update_domain(self, context, domain_id, values, increment_serial=True):
+    def update_domain(self, context, domain, increment_serial=True):
         LOG.info(_LI("update_domain: Calling central's update_domain."))
-        return self.client.call(
-            context, 'update_domain', domain_id=domain_id,
-            values=values, increment_serial=increment_serial)
+        return self.client.call(context, 'update_domain', domain=domain,
+                                increment_serial=increment_serial)
 
     def delete_domain(self, context, domain_id):
         LOG.info(_LI("delete_domain: Calling central's delete_domain."))
@@ -210,10 +206,9 @@ class CentralAPI(object):
         LOG.info(_LI("get_tld: Calling central's get_tld."))
         return self.client.call(context, 'get_tld', tld_id=tld_id)
 
-    def update_tld(self, context, tld_id, values):
+    def update_tld(self, context, tld):
         LOG.info(_LI("update_tld: Calling central's update_tld."))
-        return self.client.call(context, 'update_tld', tld_id=tld_id,
-                                values=values)
+        return self.client.call(context, 'update_tld', tld=tld)
 
     def delete_tld(self, context, tld_id):
         LOG.info(_LI("delete_tld: Calling central's delete_tld."))
@@ -242,13 +237,10 @@ class CentralAPI(object):
         LOG.info(_LI("find_recordset: Calling central's find_recordset."))
         return self.client.call(context, 'find_recordset', criterion=criterion)
 
-    def update_recordset(self, context, domain_id, recordset_id, values,
-                         increment_serial=True):
+    def update_recordset(self, context, recordset, increment_serial=True):
         LOG.info(_LI("update_recordset: Calling central's update_recordset."))
         return self.client.call(context, 'update_recordset',
-                                domain_id=domain_id,
-                                recordset_id=recordset_id,
-                                values=values,
+                                recordset=recordset,
                                 increment_serial=increment_serial)
 
     def delete_recordset(self, context, domain_id, recordset_id,
@@ -292,14 +284,10 @@ class CentralAPI(object):
         LOG.info(_LI("find_record: Calling central's find_record."))
         return self.client.call(context, 'find_record', criterion=criterion)
 
-    def update_record(self, context, domain_id, recordset_id, record_id,
-                      values, increment_serial=True):
+    def update_record(self, context, record, increment_serial=True):
         LOG.info(_LI("update_record: Calling central's update_record."))
         return self.client.call(context, 'update_record',
-                                domain_id=domain_id,
-                                recordset_id=recordset_id,
-                                record_id=record_id,
-                                values=values,
+                                record=record,
                                 increment_serial=increment_serial)
 
     def delete_record(self, context, domain_id, recordset_id, record_id,
@@ -368,10 +356,10 @@ class CentralAPI(object):
         LOG.info(_LI("find_blacklist: Calling central's find_blacklist."))
         return self.client.call(context, 'find_blacklist', criterion=criterion)
 
-    def update_blacklist(self, context, blacklist_id, values):
+    def update_blacklist(self, context, blacklist):
         LOG.info(_LI("update_blacklist: Calling central's update_blacklist."))
         return self.client.call(context, 'update_blacklist',
-                                blacklist_id=blacklist_id, values=values)
+                                blacklist=blacklist)
 
     def delete_blacklist(self, context, blacklist_id):
         LOG.info(_LI("delete_blacklist: Calling central's delete blacklist."))
