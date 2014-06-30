@@ -29,7 +29,7 @@ Instructions
 2. Clone Designate and DevStack inside the VM::
 
    $ git clone https://github.com/openstack-dev/devstack.git
-   $ git clone https://github.com/stackforge/designate.git
+   $ git clone https://github.com/openstack/designate.git
 
 3. Install the Designate extension for DevStack::
 

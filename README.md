@@ -16,7 +16,7 @@ Designate follows the [OpenStack Gerrit Workflow](https://wiki.openstack.org/wik
 Setup a working environment:
 
 ````
-git clone git@github.com:stackforge/designate.git
+git clone git@github.com:openstack/designate.git
 cd designate
 virtualenv .venv
 . .venv/bin/activate

@@ -46,4 +46,4 @@ Indices and tables
 
 
 .. _OpenStack Wiki: https://wiki.openstack.org/wiki/Designate
-.. _source tree: https://github.com/stackforge/designate
+.. _source tree: https://github.com/openstack/designate

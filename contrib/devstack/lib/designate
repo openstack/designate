@@ -23,9 +23,9 @@ set +o xtrace
 DESIGNATE_PLUGINS=$TOP_DIR/lib/designate_plugins
 
 # Set up default repos
-DESIGNATE_REPO=${DESIGNATE_REPO:-${GIT_BASE}/stackforge/designate.git}
+DESIGNATE_REPO=${DESIGNATE_REPO:-${GIT_BASE}/openstack/designate.git}
 DESIGNATE_BRANCH=${DESIGNATE_BRANCH:-master}
-DESIGNATECLIENT_REPO=${DESIGNATECLIENT_REPO:-${GIT_BASE}/stackforge/python-designateclient.git}
+DESIGNATECLIENT_REPO=${DESIGNATECLIENT_REPO:-${GIT_BASE}/openstack/python-designateclient.git}
 DESIGNATECLIENT_BRANCH=${DESIGNATECLIENT_BRANCH:-master}
 
 # Set up default paths

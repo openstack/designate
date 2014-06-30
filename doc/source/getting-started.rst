@@ -48,11 +48,11 @@ Installing Designate
    $ apt-get install rabbitmq-server
    $ apt-get build-dep python-lxml
 
-2. Clone the Designate repo off of Stackforge
+2. Clone the Designate repo from GitHub
 
 ::
 
-   $ git clone https://github.com/stackforge/designate.git
+   $ git clone https://github.com/openstack/designate.git
    $ cd designate
 
 
