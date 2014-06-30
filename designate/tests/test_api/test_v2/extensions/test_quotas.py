@@ -79,6 +79,27 @@ class ApiV2QuotasTest(ApiV2TestCase):
 
         self.assertNotEqual(current_count, new_count)
 
+    def test_patch_quotas_validation(self):
+        self.policy({'set_quotas': '@'})
+        context = self.get_context(tenant='a', is_admin=True)
+        url = '/quotas/%s' % 'a'
+
+        # Test a negative number for zones
+        body = {'quota': {"zones": -1337}}
+
+        # Ensure it fails with a 400
+        self._assert_exception('invalid_object', 400, self.client.patch_json,
+                               url, body,
+                               headers={'X-Test-Tenant-Id': context.tenant})
+
+        # Test a number > maximum (2147483647) for zones
+        body = {'quota': {"zones": 2147483648}}
+
+        # Ensure it fails with a 400
+        self._assert_exception('invalid_object', 400, self.client.patch_json,
+                               url, body,
+                               headers={'X-Test-Tenant-Id': context.tenant})
+
     def test_reset_quotas(self):
         self.policy({'reset_quotas': '@'})
         context = self.get_context(tenant='a', is_admin=True)

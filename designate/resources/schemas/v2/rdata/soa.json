@@ -3,7 +3,7 @@
 
     "additionalProperties": false,
 
-    "required": ["mname", "rname", "serial", "refresh", "retry", "expire", "minimun"],
+    "required": ["mname", "rname", "serial", "refresh", "retry", "expire", "minimum"],
 
     "properties": {
         "mname": {
@@ -16,28 +16,28 @@
         },
         "serial": {
             "type": "integer",
-            "min": 0,
-            "max": 214748364
+            "minimum": 0,
+            "maximum": 214748364
         },
         "refresh": {
             "type": "integer",
-            "min": 0,
-            "max": 214748364
+            "minimum": 0,
+            "maximum": 214748364
         },
         "retry": {
             "type": "integer",
-            "min": 0,
-            "max": 214748364
+            "minimum": 0,
+            "maximum": 214748364
         },
         "expire": {
             "type": "integer",
-            "min": 0,
-            "max": 214748364
+            "minimum": 0,
+            "maximum": 214748364
         },
-        "minimun": {
+        "minimum": {
             "type": "integer",
-            "min": 0,
-            "max": 214748364
+            "minimum": 0,
+            "maximum": 214748364
         }
     }
 }

@@ -16,29 +16,29 @@
                 "zones": {
                     "type": "integer",
                     "description": "Number of zones allowed",
-                    "min": 0,
-                    "max": 2147483647,
+                    "minimum": 0,
+                    "maximum": 2147483647,
                     "default": 10
                 },
                 "zone_recordsets": {
                     "type": "integer",
                     "description": "Number of zone recordsets allowed",
-                    "min": 0,
-                    "max": 2147483647,
+                    "minimum": 0,
+                    "maximum": 2147483647,
                     "default": 500
                 },
                 "zone_records": {
                     "type": "integer",
                     "description": "Number of zone records allowed",
-                    "min": 0,
-                    "max": 2147483647,
+                    "minimum": 0,
+                    "maximum": 2147483647,
                     "default": 500
                 },
                 "recordset_records": {
                     "type": "integer",
                     "description": "Number of recordset records allowed",
-                    "min": 0,
-                    "max": 2147483647,
+                    "minimum": 0,
+                    "maximum": 2147483647,
                     "default": 20
                 }
             }
