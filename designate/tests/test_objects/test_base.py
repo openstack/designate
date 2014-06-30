@@ -24,7 +24,7 @@ LOG = logging.getLogger(__name__)
 
 
 class TestObject(objects.DesignateObject):
-        FIELDS = ['id', 'name']
+        FIELDS = ['id', 'name', 'nested']
 
 
 TEST_OBJECT_PATH = 'designate.tests.test_objects.test_base.TestObject'
@@ -53,6 +53,28 @@ class DesignateObjectTest(tests.TestCase):
 
         # Ensure the changes list is empty
         self.assertEqual(0, len(obj.obj_what_changed()))
+
+    def test_from_primitive_recursive(self):
+        primitive = {
+            'designate_object.name': TEST_OBJECT_PATH,
+            'designate_object.data': {
+                'id': 'MyID',
+                'nested': {
+                    'designate_object.name': TEST_OBJECT_PATH,
+                    'designate_object.data': {
+                        'id': 'MyID-Nested',
+                    },
+                    'designate_object.changes': [],
+                }
+            },
+            'designate_object.changes': [],
+        }
+
+        obj = objects.DesignateObject.from_primitive(primitive)
+
+        # Validate it has been thawed correctly
+        self.assertEqual('MyID', obj.id)
+        self.assertEqual('MyID-Nested', obj.nested.id)
 
     def test_init_invalid(self):
         with testtools.ExpectedException(TypeError):
@@ -110,6 +132,27 @@ class DesignateObjectTest(tests.TestCase):
                 'name': None,
             },
             'designate_object.changes': ['id', 'name'],
+        }
+        self.assertEqual(expected, primitive)
+
+    def test_to_primitive_recursive(self):
+        obj = TestObject(id='MyID', nested=TestObject(id='MyID-Nested'))
+
+        # Ensure only the id attribute is returned
+        primitive = obj.to_primitive()
+        expected = {
+            'designate_object.name': TEST_OBJECT_PATH,
+            'designate_object.data': {
+                'id': 'MyID',
+                'nested': {
+                    'designate_object.name': TEST_OBJECT_PATH,
+                    'designate_object.data': {
+                        'id': 'MyID-Nested',
+                    },
+                    'designate_object.changes': ['id'],
+                }
+            },
+            'designate_object.changes': ['id', 'nested'],
         }
         self.assertEqual(expected, primitive)
 
