@@ -117,13 +117,15 @@ class DesignateObject(DictObjectMixin):
         Eventually, when we move from SQLA ORM to SQLA Core, this can be
         removed.
         """
-        fields = {}
+        instance = cls()
 
         for fieldname in cls.FIELDS:
             if hasattr(obj, fieldname):
-                fields[fieldname] = getattr(obj, fieldname)
+                instance[fieldname] = getattr(obj, fieldname)
 
-        return cls(**fields)
+        instance.obj_reset_changes()
+
+        return instance
 
     @staticmethod
     def from_primitive(primitive):
