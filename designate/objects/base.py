@@ -138,7 +138,14 @@ class DesignateObject(DictObjectMixin):
         """
         cls = importutils.import_class(primitive['designate_object.name'])
 
-        instance = cls(**primitive['designate_object.data'])
+        instance = cls()
+
+        for field, value in primitive['designate_object.data'].items():
+            if isinstance(value, dict) and 'designate_object.name' in value:
+                instance[field] = DesignateObject.from_primitive(value)
+            else:
+                instance[field] = value
+
         instance._obj_changes = set(primitive['designate_object.changes'])
 
         return instance
@@ -168,7 +175,10 @@ class DesignateObject(DictObjectMixin):
 
         for field in self.FIELDS:
             if self.obj_attr_is_set(field):
-                data[field] = self[field]
+                if isinstance(self[field], DesignateObject):
+                    data[field] = self[field].to_primitive()
+                else:
+                    data[field] = self[field]
 
         return {
             'designate_object.name': class_name,
