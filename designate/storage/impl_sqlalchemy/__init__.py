@@ -72,8 +72,10 @@ class SQLAlchemyStorage(base.Storage):
             for name, value in criterion.items():
                 column = getattr(model, name)
 
-                if isinstance(value, basestring) and '%' in value:
-                    query = query.filter(column.like(value))
+                # Wildcard value: '*'
+                if isinstance(value, basestring) and '*' in value:
+                    queryval = value.replace('*', '%')
+                    query = query.filter(column.like(queryval))
                 else:
                     query = query.filter(column == value)
 
