@@ -43,14 +43,6 @@ class ApiV1ServersTest(ApiV1Test):
         self.assertIn('name', response.json)
         self.assertEqual(response.json['name'], fixture['name'])
 
-    @patch.object(central_service.Service, 'create_server')
-    def test_create_server_trailing_slash(self, mock):
-        # Create a server with a trailing slash
-        self.post('servers/', data=self.get_server_fixture(0))
-
-        # verify that the central service is called
-        self.assertTrue(mock.called)
-
     def test_create_server_junk(self):
         # Create a server
         fixture = self.get_server_fixture(0)
@@ -99,13 +91,6 @@ class ApiV1ServersTest(ApiV1Test):
         self.assertIn('servers', response.json)
         self.assertEqual(2, len(response.json['servers']))
 
-    @patch.object(central_service.Service, 'find_servers')
-    def test_get_servers_trailing_slash(self, mock):
-        self.get('servers/')
-
-        # verify that the central service is called
-        self.assertTrue(mock.called)
-
     @patch.object(central_service.Service, 'find_servers',
                   side_effect=messaging.MessagingTimeout())
     def test_get_servers_timeout(self, _):
@@ -119,16 +104,6 @@ class ApiV1ServersTest(ApiV1Test):
 
         self.assertIn('id', response.json)
         self.assertEqual(response.json['id'], server['id'])
-
-    @patch.object(central_service.Service, 'get_server')
-    def test_get_server_trailing_slash(self, mock):
-        # Create a server
-        server = self.create_server()
-
-        self.get('servers/%s/' % server['id'])
-
-        # verify that the central service is called
-        self.assertTrue(mock.called)
 
     @patch.object(central_service.Service, 'get_server',
                   side_effect=messaging.MessagingTimeout())
@@ -155,18 +130,6 @@ class ApiV1ServersTest(ApiV1Test):
 
         self.assertIn('name', response.json)
         self.assertEqual(response.json['name'], 'test.example.org.')
-
-    @patch.object(central_service.Service, 'update_server')
-    def test_update_server_trailing_slash(self, mock):
-        # Create a server
-        server = self.create_server()
-
-        data = {'name': 'test.example.org.'}
-
-        self.put('servers/%s/' % server['id'], data=data)
-
-        # verify that the central service is called
-        self.assertTrue(mock.called)
 
     def test_update_server_junk(self):
         # Create a server
@@ -217,16 +180,6 @@ class ApiV1ServersTest(ApiV1Test):
 
         # Also, verify we cannot delete last remaining server
         self.delete('servers/%s' % server2['id'], status_code=400)
-
-    @patch.object(central_service.Service, 'delete_server')
-    def test_delete_server_trailing_slash(self, mock):
-        # Create a server
-        server = self.create_server()
-
-        self.delete('servers/%s/' % server['id'])
-
-        # verify that the central service is called
-        self.assertTrue(mock.called)
 
     @patch.object(central_service.Service, 'delete_server',
                   side_effect=messaging.MessagingTimeout())

@@ -43,31 +43,6 @@ cfg.CONF.register_opts([
 ], group='service:api')
 
 
-class MaintenanceMiddleware(wsgi.Middleware):
-    def __init__(self, application):
-        super(MaintenanceMiddleware, self).__init__(application)
-
-        LOG.info(_LI('Starting designate maintenance middleware'))
-
-        self.enabled = cfg.CONF['service:api'].maintenance_mode
-        self.role = cfg.CONF['service:api'].maintenance_mode_role
-
-    def process_request(self, request):
-        # If maintaince mode is not enabled, pass the request on as soon as
-        # possible
-        if not self.enabled:
-            return None
-
-        # If the caller has the bypass role, let them through
-        if ('context' in request.environ
-                and self.role in request.environ['context'].roles):
-            LOG.warn(_LW('Request authorized to bypass maintenance mode'))
-            return None
-
-        # Otherwise, reject the request with a 503 Service Unavailable
-        return flask.Response(status=503, headers={'Retry-After': 60})
-
-
 def auth_pipeline_factory(loader, global_conf, **local_conf):
     """
     A paste pipeline replica that keys off of auth_strategy.
@@ -170,6 +145,40 @@ class TestContextMiddleware(ContextMiddleware):
             user=headers.get('X-Test-User-ID', self.default_user_id),
             tenant=headers.get('X-Test-Tenant-ID', self.default_tenant_id),
             all_tenants=all_tenants)
+
+
+class MaintenanceMiddleware(wsgi.Middleware):
+    def __init__(self, application):
+        super(MaintenanceMiddleware, self).__init__(application)
+
+        LOG.info(_LI('Starting designate maintenance middleware'))
+
+        self.enabled = cfg.CONF['service:api'].maintenance_mode
+        self.role = cfg.CONF['service:api'].maintenance_mode_role
+
+    def process_request(self, request):
+        # If maintaince mode is not enabled, pass the request on as soon as
+        # possible
+        if not self.enabled:
+            return None
+
+        # If the caller has the bypass role, let them through
+        if ('context' in request.environ
+                and self.role in request.environ['context'].roles):
+            LOG.warn(_LW('Request authorized to bypass maintenance mode'))
+            return None
+
+        # Otherwise, reject the request with a 503 Service Unavailable
+        return flask.Response(status=503, headers={'Retry-After': 60})
+
+
+class NormalizeURIMiddleware(wsgi.Middleware):
+    @webob.dec.wsgify
+    def __call__(self, request):
+        # Remove any trailing /'s.
+        request.environ['PATH_INFO'] = request.environ['PATH_INFO'].rstrip('/')
+
+        return request.get_response(self.application)
 
 
 class FaultWrapperMiddleware(wsgi.Middleware):

@@ -40,15 +40,6 @@ class ApiV1DomainsTest(ApiV1Test):
         self.assertIn('name', response.json)
         self.assertEqual(response.json['name'], fixture['name'])
 
-    @patch.object(central_service.Service, 'create_domain')
-    def test_create_domain_trailing_slash(self, mock):
-        # Create a server
-        self.create_server()
-        self.post('domains/', data=self.get_domain_fixture(0))
-
-        # verify that the central service is called
-        self.assertTrue(mock.called)
-
     def test_create_domain_junk(self):
         # Create a server
         self.create_server()
@@ -181,13 +172,6 @@ class ApiV1DomainsTest(ApiV1Test):
         self.assertIn('domains', response.json)
         self.assertEqual(2, len(response.json['domains']))
 
-    @patch.object(central_service.Service, 'find_domains')
-    def test_get_domains_trailing_slash(self, mock):
-        self.get('domains/')
-
-        # verify that the central service is called
-        self.assertTrue(mock.called)
-
     @patch.object(central_service.Service, 'find_domains',
                   side_effect=messaging.MessagingTimeout())
     def test_get_domains_timeout(self, _):
@@ -201,16 +185,6 @@ class ApiV1DomainsTest(ApiV1Test):
 
         self.assertIn('id', response.json)
         self.assertEqual(response.json['id'], domain['id'])
-
-    @patch.object(central_service.Service, 'get_domain')
-    def test_get_domain_trailing_slash(self, mock):
-        # Create a domain
-        domain = self.create_domain()
-
-        self.get('domains/%s/' % domain['id'])
-
-        # verify that the central service is called
-        self.assertTrue(mock.called)
 
     @patch.object(central_service.Service, 'get_domain',
                   side_effect=messaging.MessagingTimeout())
@@ -244,18 +218,6 @@ class ApiV1DomainsTest(ApiV1Test):
 
         self.assertIn('email', response.json)
         self.assertEqual(response.json['email'], 'prefix-%s' % domain['email'])
-
-    @patch.object(central_service.Service, 'update_domain')
-    def test_update_domain_trailing_slash(self, mock):
-        # Create a domain
-        domain = self.create_domain()
-
-        data = {'email': 'prefix-%s' % domain['email']}
-
-        self.put('domains/%s/' % domain['id'], data=data)
-
-        # verify that the central service is called
-        self.assertTrue(mock.called)
 
     def test_update_domain_junk(self):
         # Create a domain
@@ -325,16 +287,6 @@ class ApiV1DomainsTest(ApiV1Test):
 
         # Esnure we can no longer fetch the domain
         self.get('domains/%s' % domain['id'], status_code=404)
-
-    @patch.object(central_service.Service, 'delete_domain')
-    def test_delete_domain_trailing_slash(self, mock):
-        # Create a domain
-        domain = self.create_domain()
-
-        self.delete('domains/%s/' % domain['id'])
-
-        # verify that the central service is called
-        self.assertTrue(mock.called)
 
     @patch.object(central_service.Service, 'delete_domain',
                   side_effect=messaging.MessagingTimeout())

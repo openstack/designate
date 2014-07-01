@@ -43,6 +43,9 @@ class ApiV2TestCase(ApiTestCase):
         # Create the application
         self.app = api_v2.factory({})
 
+        # Inject the NormalizeURIMiddleware middleware
+        self.app = middleware.NormalizeURIMiddleware(self.app)
+
         # Inject the FaultWrapper middleware
         self.app = middleware.FaultWrapperMiddleware(self.app)
 
