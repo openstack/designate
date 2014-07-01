@@ -93,10 +93,10 @@ def check(rule, ctxt, target=None, do_raise=True, exc=exceptions.Forbidden):
         extra = {'policy': {'rule': rule, 'target': target}}
 
         if result:
-            LOG.audit(_("Policy check succeeded for rule '%(rule)s' "
-                        "on target %(target)s") %
-                      {'rule': rule, 'target': repr(target)}, extra=extra)
+            LOG.info(_("Policy check succeeded for rule '%(rule)s' "
+                       "on target %(target)s") %
+                     {'rule': rule, 'target': repr(target)}, extra=extra)
         else:
-            LOG.audit(_("Policy check failed for rule '%(rule)s' "
-                        "on target %(target)s") %
-                      {'rule': rule, 'target': repr(target)}, extra=extra)
+            LOG.info(_("Policy check failed for rule '%(rule)s' "
+                       "on target %(target)s") %
+                     {'rule': rule, 'target': repr(target)}, extra=extra)
