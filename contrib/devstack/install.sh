@@ -1,9 +1,14 @@
 #!/bin/bash
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+DIR=$(readlink -e $(dirname $(readlink -f $0)))
+
+pushd $DIR
 
 for f in lib/* extras.d/* exercises/*; do
-    echo "Installing symlink for $f"
-    rm ../../../devstack/$f || true
-    ln -s $DIR/$f ../../../devstack/$f
+    if [ ! -e "$DIR/../../../devstack/$f" ]; then
+        echo "Installing symlink for $f"
+        ln -fs $DIR/$f $DIR/../../../devstack/$f
+    fi
 done
+
+popd
