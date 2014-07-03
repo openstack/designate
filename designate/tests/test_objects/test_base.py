@@ -13,6 +13,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import copy
+
 import testtools
 
 from designate.openstack.common import log as logging
@@ -204,3 +206,23 @@ class DesignateObjectTest(tests.TestCase):
 
         self.assertEqual(1, len(obj.obj_what_changed()))
         self.assertEqual({'name': "My Name"}, obj.obj_get_changes())
+
+    def test_deepcopy(self):
+        # Create the Original object
+        o_obj = TestObject()
+        o_obj.id = "My ID"
+        o_obj.name = "My Name"
+
+        # Clear the "changed" flag for one of the two fields we set
+        o_obj.obj_reset_changes(['name'])
+
+        # Deepcopy the object
+        c_obj = copy.deepcopy(o_obj)
+
+        # Ensure the copy was sucessful
+        self.assertEqual(o_obj.id, c_obj.id)
+        self.assertEqual(o_obj.name, c_obj.name)
+        self.assertEqual(o_obj.nested, c_obj.nested)
+
+        self.assertEqual(o_obj.obj_get_changes(), c_obj.obj_get_changes())
+        self.assertEqual(o_obj.to_primitive(), c_obj.to_primitive())
