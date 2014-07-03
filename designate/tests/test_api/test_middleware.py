@@ -32,6 +32,70 @@ class FakeRequest(object):
         return "FakeResponse"
 
 
+class KeystoneContextMiddlewareTest(ApiTestCase):
+    def test_process_request(self):
+        app = middleware.KeystoneContextMiddleware({})
+
+        request = FakeRequest()
+
+        request.headers = {
+            'X-Auth-Token': 'AuthToken',
+            'X-User-ID': 'UserID',
+            'X-Tenant-ID': 'TenantID',
+            'X-Roles': 'admin,Member',
+        }
+
+        # Process the request
+        app.process_request(request)
+
+        self.assertIn('context', request.environ)
+
+        context = request.environ['context']
+
+        self.assertFalse(context.is_admin)
+        self.assertEqual('AuthToken', context.auth_token)
+        self.assertEqual('UserID', context.user)
+        self.assertEqual('TenantID', context.tenant)
+        self.assertEqual(['admin', 'Member'], context.roles)
+
+    def test_process_request_invalid_keystone_token(self):
+        app = middleware.KeystoneContextMiddleware({})
+
+        request = FakeRequest()
+
+        request.headers = {
+            'X-Auth-Token': 'AuthToken',
+            'X-User-ID': 'UserID',
+            'X-Tenant-ID': 'TenantID',
+            'X-Roles': 'admin,Member',
+            'X-Identity-Status': 'Invalid'
+        }
+
+        # Process the request
+        response = app(request)
+
+        self.assertEqual(response.status_code, 401)
+
+
+class NoAuthContextMiddlewareTest(ApiTestCase):
+    def test_process_request(self):
+        app = middleware.NoAuthContextMiddleware({})
+
+        request = FakeRequest()
+
+        # Process the request
+        app.process_request(request)
+
+        self.assertIn('context', request.environ)
+
+        ctxt = request.environ['context']
+
+        self.assertIsNone(ctxt.auth_token)
+        self.assertEqual('noauth-user', ctxt.user)
+        self.assertEqual('noauth-project', ctxt.tenant)
+        self.assertEqual(['admin'], ctxt.roles)
+
+
 class MaintenanceMiddlewareTest(ApiTestCase):
     def test_process_request_disabled(self):
         self.config(maintenance_mode=False, group='service:api')
@@ -104,68 +168,30 @@ class MaintenanceMiddlewareTest(ApiTestCase):
         self.assertEqual(response, 'FakeResponse')
 
 
-class KeystoneContextMiddlewareTest(ApiTestCase):
-    def test_process_request(self):
-        app = middleware.KeystoneContextMiddleware({})
-
+class NormalizeURIMiddlewareTest(ApiTestCase):
+    def test_strip_trailing_slases(self):
         request = FakeRequest()
+        request.environ['PATH_INFO'] = 'resource/'
 
-        request.headers = {
-            'X-Auth-Token': 'AuthToken',
-            'X-User-ID': 'UserID',
-            'X-Tenant-ID': 'TenantID',
-            'X-Roles': 'admin,Member',
-        }
+        app = middleware.NormalizeURIMiddleware({})
 
         # Process the request
-        app.process_request(request)
+        app(request)
 
-        self.assertIn('context', request.environ)
+        # Ensure request's PATH_INFO had the trailing slash removed.
+        self.assertEqual(request.environ['PATH_INFO'], 'resource')
 
-        context = request.environ['context']
-
-        self.assertFalse(context.is_admin)
-        self.assertEqual('AuthToken', context.auth_token)
-        self.assertEqual('UserID', context.user)
-        self.assertEqual('TenantID', context.tenant)
-        self.assertEqual(['admin', 'Member'], context.roles)
-
-    def test_process_request_invalid_keystone_token(self):
-        app = middleware.KeystoneContextMiddleware({})
-
+    def test_strip_trailing_slases_multiple(self):
         request = FakeRequest()
+        request.environ['PATH_INFO'] = 'resource///'
 
-        request.headers = {
-            'X-Auth-Token': 'AuthToken',
-            'X-User-ID': 'UserID',
-            'X-Tenant-ID': 'TenantID',
-            'X-Roles': 'admin,Member',
-            'X-Identity-Status': 'Invalid'
-        }
+        app = middleware.NormalizeURIMiddleware({})
 
         # Process the request
-        response = app(request)
+        app(request)
 
-        self.assertEqual(response.status_code, 401)
-
-
-class NoAuthContextMiddlewareTest(ApiTestCase):
-    def test_process_request(self):
-        app = middleware.NoAuthContextMiddleware({})
-
-        request = FakeRequest()
-
-        # Process the request
-        app.process_request(request)
-
-        self.assertIn('context', request.environ)
-
-        ctxt = request.environ['context']
-
-        self.assertIsNone(ctxt.auth_token)
-        self.assertEqual('noauth-user', ctxt.user)
-        self.assertEqual('noauth-project', ctxt.tenant)
-        self.assertEqual(['admin'], ctxt.roles)
+        # Ensure request's PATH_INFO had the trailing slash removed.
+        self.assertEqual(request.environ['PATH_INFO'], 'resource')
 
 
 class FaultMiddlewareTest(ApiTestCase):

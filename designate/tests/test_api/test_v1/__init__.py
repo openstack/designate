@@ -33,6 +33,10 @@ class ApiV1Test(ApiTestCase):
         # Create the application
         self.app = api_v1.factory({})
 
+        # Inject the NormalizeURIMiddleware middleware
+        self.app.wsgi_app = middleware.NormalizeURIMiddleware(
+            self.app.wsgi_app)
+
         # Inject the FaultWrapper middleware
         self.app.wsgi_app = middleware.FaultWrapperMiddleware(
             self.app.wsgi_app)
