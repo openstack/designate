@@ -12,6 +12,8 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import copy
+
 import six
 
 from designate.openstack.common import importutils
@@ -214,6 +216,24 @@ class DesignateObject(DictObjectMixin):
             self._obj_changes -= set(fields)
         else:
             self._obj_changes.clear()
+
+    def __deepcopy__(self, memodict={}):
+        """
+        Efficiently make a deep copy of this object.
+
+        "Efficiently" is used here a relative term, this will be faster
+        than allowing python to naively deepcopy the object.
+        """
+        c_obj = self.__class__()
+
+        for field in self.FIELDS:
+            if self.obj_attr_is_set(field):
+                c_field = copy.deepcopy(getattr(self, field), memodict)
+                setattr(c_obj, field, c_field)
+
+        c_obj._obj_changes = set(self._obj_changes)
+
+        return c_obj
 
     def __iter__(self):
         # Redundant?
