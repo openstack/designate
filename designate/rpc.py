@@ -136,7 +136,8 @@ class DesignateObjectSerializer(messaging.NoOpSerializer):
                                             entity)
         elif hasattr(entity, 'to_primitive') and callable(entity.to_primitive):
             entity = entity.to_primitive()
-        return entity
+
+        return jsonutils.to_primitive(entity, convert_instances=True)
 
     def deserialize_entity(self, context, entity):
         if isinstance(entity, dict) and 'designate_object.name' in entity:
