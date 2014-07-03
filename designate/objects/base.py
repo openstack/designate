@@ -44,7 +44,10 @@ def make_class_properties(cls):
             return getattr(self, get_attrname(name), None)
 
         def setter(self, value, name=field):
-            self._obj_changes.add(name)
+            if (self.obj_attr_is_set(name) and value != self[name]
+                    or not self.obj_attr_is_set(name)):
+                self._obj_changes.add(name)
+
             return setattr(self, get_attrname(name), value)
 
         setattr(cls, field, property(getter, setter))
