@@ -40,6 +40,7 @@ class DesignateObjectTest(tests.TestCase):
                 'id': 'MyID',
             },
             'designate_object.changes': [],
+            'designate_object.original_values': {},
         }
 
         obj = objects.DesignateObject.from_primitive(primitive)
@@ -67,9 +68,11 @@ class DesignateObjectTest(tests.TestCase):
                         'id': 'MyID-Nested',
                     },
                     'designate_object.changes': [],
+                    'designate_object.original_values': {},
                 }
             },
             'designate_object.changes': [],
+            'designate_object.original_values': {},
         }
 
         obj = objects.DesignateObject.from_primitive(primitive)
@@ -119,6 +122,7 @@ class DesignateObjectTest(tests.TestCase):
                 'id': 'MyID',
             },
             'designate_object.changes': ['id'],
+            'designate_object.original_values': {},
         }
         self.assertEqual(expected, primitive)
 
@@ -134,6 +138,7 @@ class DesignateObjectTest(tests.TestCase):
                 'name': None,
             },
             'designate_object.changes': ['id', 'name'],
+            'designate_object.original_values': {},
         }
         self.assertEqual(expected, primitive)
 
@@ -152,9 +157,11 @@ class DesignateObjectTest(tests.TestCase):
                         'id': 'MyID-Nested',
                     },
                     'designate_object.changes': ['id'],
+                    'designate_object.original_values': {},
                 }
             },
             'designate_object.changes': ['id', 'nested'],
+            'designate_object.original_values': {},
         }
         self.assertEqual(expected, primitive)
 
@@ -206,6 +213,39 @@ class DesignateObjectTest(tests.TestCase):
 
         self.assertEqual(1, len(obj.obj_what_changed()))
         self.assertEqual({'name': "My Name"}, obj.obj_get_changes())
+
+    def test_obj_get_original_value(self):
+        # Create an object
+        obj = TestObject()
+        obj.id = "My ID"
+        obj.name = "My Name"
+
+        # Rset one of the changes
+        obj.obj_reset_changes(['id'])
+
+        # Update the reset field
+        obj.id = "My New ID"
+
+        # Ensure the "current" value is correct
+        self.assertEqual("My New ID", obj.id)
+
+        # Ensure the "original" value is correct
+        self.assertEqual("My ID", obj.obj_get_original_value('id'))
+        self.assertEqual("My Name", obj.obj_get_original_value('name'))
+
+        # Update the reset field again
+        obj.id = "My New New ID"
+
+        # Ensure the "current" value is correct
+        self.assertEqual("My New New ID", obj.id)
+
+        # Ensure the "original" value is still correct
+        self.assertEqual("My ID", obj.obj_get_original_value('id'))
+        self.assertEqual("My Name", obj.obj_get_original_value('name'))
+
+        # Ensure a KeyError is raised when value exists
+        with testtools.ExpectedException(KeyError):
+            obj.obj_get_original_value('nested')
 
     def test_deepcopy(self):
         # Create the Original object
