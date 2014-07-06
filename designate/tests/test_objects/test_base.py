@@ -267,6 +267,36 @@ class DesignateObjectTest(tests.TestCase):
         self.assertEqual(o_obj.obj_get_changes(), c_obj.obj_get_changes())
         self.assertEqual(o_obj.to_primitive(), c_obj.to_primitive())
 
+    def test_eq(self):
+        # Create two equal objects
+        obj_one = TestObject(id="My ID", name="My Name")
+        obj_two = TestObject(id="My ID", name="My Name")
+
+        # Ensure they evaluate to equal
+        self.assertEqual(obj_one, obj_two)
+
+        # Change a value on one object
+        obj_two.name = 'Other Name'
+
+        # Ensure they do not evaluate to equal
+        self.assertNotEqual(obj_one, obj_two)
+
+    def test_ne(self):
+        # Create two equal objects
+        obj_one = TestObject(id="My ID", name="My Name")
+        obj_two = TestObject(id="My ID", name="My Name")
+
+        # Ensure they evaluate to equal
+        self.assertEqual(obj_one, obj_two)
+
+        # Change a value on one object
+        obj_two.name = 'Other Name'
+
+        # Ensure they do not evaluate to equal
+        self.assertTrue(obj_one != obj_two)
+
+
+class DictObjectMixinTest(tests.TestCase):
     def test_cast_to_dict(self):
         # Create an object
         obj = TestObject()
