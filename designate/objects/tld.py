@@ -15,5 +15,10 @@
 from designate.objects import base
 
 
-class Tld(base.DesignateObject, base.PersistentObjectMixin):
+class Tld(base.DictObjectMixin, base.PersistentObjectMixin,
+          base.DesignateObject):
     FIELDS = ['name', 'description']
+
+
+class TldList(base.ListObjectMixin, base.DesignateObject):
+    LIST_ITEM_TYPE = Tld

@@ -15,5 +15,9 @@
 from designate.objects import base
 
 
-class Tenant(base.DesignateObject):
+class Tenant(base.DictObjectMixin, base.DesignateObject):
     FIELDS = ['id', 'domain_count', 'domains']
+
+
+class TenantList(base.ListObjectMixin, base.DesignateObject):
+    LIST_ITEM_TYPE = Tenant

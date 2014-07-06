@@ -15,7 +15,12 @@
 from designate.objects import base
 
 
-class Domain(base.DesignateObject, base.PersistentObjectMixin):
+class Domain(base.DictObjectMixin, base.PersistentObjectMixin,
+             base.DesignateObject):
     FIELDS = ['tenant_id', 'name', 'email', 'ttl', 'refresh', 'retry',
               'expire', 'minimum', 'parent_domain_id', 'serial', 'description',
               'status']
+
+
+class DomainList(base.ListObjectMixin, base.DesignateObject):
+    LIST_ITEM_TYPE = Domain

@@ -15,5 +15,10 @@
 from designate.objects import base
 
 
-class RecordSet(base.DesignateObject, base.PersistentObjectMixin):
+class RecordSet(base.DictObjectMixin, base.PersistentObjectMixin,
+                base.DesignateObject):
     FIELDS = ['tenant_id', 'domain_id', 'name', 'type', 'ttl', 'description']
+
+
+class RecordSetList(base.ListObjectMixin, base.DesignateObject):
+    LIST_ITEM_TYPE = RecordSet

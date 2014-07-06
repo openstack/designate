@@ -15,5 +15,10 @@
 from designate.objects import base
 
 
-class TsigKey(base.DesignateObject, base.PersistentObjectMixin):
+class TsigKey(base.DictObjectMixin, base.PersistentObjectMixin,
+              base.DesignateObject):
     FIELDS = ['name', 'algorithm', 'secret']
+
+
+class TsigKeyList(base.ListObjectMixin, base.DesignateObject):
+    LIST_ITEM_TYPE = TsigKey
