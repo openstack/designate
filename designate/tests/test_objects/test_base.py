@@ -266,3 +266,16 @@ class DesignateObjectTest(tests.TestCase):
 
         self.assertEqual(o_obj.obj_get_changes(), c_obj.obj_get_changes())
         self.assertEqual(o_obj.to_primitive(), c_obj.to_primitive())
+
+    def test_cast_to_dict(self):
+        # Create an object
+        obj = TestObject()
+        obj.id = "My ID"
+        obj.name = "My Name"
+
+        expected = {
+            'id': 'My ID',
+            'name': 'My Name',
+        }
+
+        self.assertEqual(expected, dict(obj))
