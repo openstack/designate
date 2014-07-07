@@ -48,6 +48,10 @@ def make_class_properties(cls):
                     or not self.obj_attr_is_set(name)):
                 self._obj_changes.add(name)
 
+            if (self.obj_attr_is_set(name) and value != self[name]
+                    and name not in self._obj_original_values.keys()):
+                self._obj_original_values[name] = self[name]
+
             return setattr(self, get_attrname(name), value)
 
         setattr(cls, field, property(getter, setter))
@@ -154,11 +158,14 @@ class DesignateObject(DictObjectMixin):
                 instance[field] = value
 
         instance._obj_changes = set(primitive['designate_object.changes'])
+        instance._obj_original_values = \
+            primitive['designate_object.original_values']
 
         return instance
 
     def __init__(self, **kwargs):
         self._obj_changes = set()
+        self._obj_original_values = dict()
 
         for name, value in kwargs.items():
             if name in self.FIELDS:
@@ -191,6 +198,7 @@ class DesignateObject(DictObjectMixin):
             'designate_object.name': class_name,
             'designate_object.data': data,
             'designate_object.changes': list(self._obj_changes),
+            'designate_object.original_values': dict(self._obj_original_values)
         }
 
     def obj_attr_is_set(self, name):
@@ -217,8 +225,21 @@ class DesignateObject(DictObjectMixin):
         """ Reset the list of fields that have been changed. """
         if fields:
             self._obj_changes -= set(fields)
+            for field in fields:
+                self._obj_original_values.pop(field, None)
+
         else:
             self._obj_changes.clear()
+            self._obj_original_values = dict()
+
+    def obj_get_original_value(self, field):
+        """ Returns the original value of a field. """
+        if field in self._obj_original_values.keys():
+            return self._obj_original_values[field]
+        elif self.obj_attr_is_set(field):
+            return getattr(self, field)
+        else:
+            raise KeyError(field)
 
     def __deepcopy__(self, memodict={}):
         """
