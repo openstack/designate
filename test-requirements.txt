@@ -12,3 +12,5 @@ testtools>=0.9.34
 testrepository>=0.0.18
 testscenarios>=0.4
 WebTest>=2.0
+# Needed for the incubation theme on oslosphinx
+http://tarballs.openstack.org/oslosphinx/oslosphinx-2.2.0.0a3.tar.gz#egg=oslosphinx-2.2.0.0a3
