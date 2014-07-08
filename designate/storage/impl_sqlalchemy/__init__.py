@@ -40,6 +40,18 @@ cfg.CONF.register_group(cfg.OptGroup(
 cfg.CONF.register_opts(options.database_opts, group='storage:sqlalchemy')
 
 
+def _set_object_from_model(obj, model):
+    """ Update a DesignateObject with the values from a SQLA Model """
+
+    for fieldname in obj.FIELDS:
+        if hasattr(model, fieldname):
+            obj[fieldname] = getattr(model, fieldname)
+
+    obj.obj_reset_changes()
+
+    return obj
+
+
 class SQLAlchemyStorage(base.Storage):
     """ SQLAlchemy connection """
     __plugin_name__ = 'sqlalchemy'
@@ -240,7 +252,7 @@ class SQLAlchemyStorage(base.Storage):
         except exceptions.Duplicate:
             raise exceptions.DuplicateServer()
 
-        return objects.Server.from_sqla(storage_server)
+        return _set_object_from_model(server, storage_server)
 
     def find_servers(self, context, criterion=None,
                      marker=None, limit=None, sort_key=None, sort_dir=None):
@@ -291,7 +303,7 @@ class SQLAlchemyStorage(base.Storage):
         except exceptions.Duplicate:
             raise exceptions.DuplicateTLD()
 
-        return objects.Tld.from_sqla(storage_tld)
+        return _set_object_from_model(tld, storage_tld)
 
     def find_tlds(self, context, criterion=None,
                   marker=None, limit=None, sort_key=None, sort_dir=None):
@@ -344,7 +356,7 @@ class SQLAlchemyStorage(base.Storage):
         except exceptions.Duplicate:
             raise exceptions.DuplicateTsigKey()
 
-        return objects.TsigKey.from_sqla(storage_tsigkey)
+        return _set_object_from_model(tsigkey, storage_tsigkey)
 
     def find_tsigkeys(self, context, criterion=None,
                       marker=None, limit=None, sort_key=None, sort_dir=None):
@@ -437,7 +449,7 @@ class SQLAlchemyStorage(base.Storage):
         except exceptions.Duplicate:
             raise exceptions.DuplicateDomain()
 
-        return objects.Domain.from_sqla(storage_domain)
+        return _set_object_from_model(domain, storage_domain)
 
     def get_domain(self, context, domain_id):
         domain = self._find_domains(context, {'id': domain_id}, one=True)
@@ -509,7 +521,7 @@ class SQLAlchemyStorage(base.Storage):
         except exceptions.Duplicate:
             raise exceptions.DuplicateRecordSet()
 
-        return objects.RecordSet.from_sqla(storage_recordset)
+        return _set_object_from_model(recordset, storage_recordset)
 
     def get_recordset(self, context, recordset_id):
         recordset = self._find_recordsets(context, {'id': recordset_id},
@@ -567,34 +579,6 @@ class SQLAlchemyStorage(base.Storage):
         except exceptions.NotFound:
             raise exceptions.RecordNotFound()
 
-    def _get_record_object(self, context, record):
-        recordset = self._find_recordsets(context, {'id': record.recordset_id},
-                                          one=True)
-        if recordset.type == 'A':
-            return objects.RRData_A.from_sqla(record)
-        elif recordset.type == 'AAAA':
-            return objects.RRData_AAAA.from_sqla(record)
-        elif recordset.type == 'CNAME':
-            return objects.RRData_CNAME.from_sqla(record)
-        elif recordset.type == 'MX':
-            return objects.RRData_MX.from_sqla(record)
-        elif recordset.type == 'NS':
-            return objects.RRData_NS.from_sqla(record)
-        elif recordset.type == 'PTR':
-            return objects.RRData_PTR.from_sqla(record)
-        elif recordset.type == 'SOA':
-            return objects.RRData_SOA.from_sqla(record)
-        elif recordset.type == 'SPF':
-            return objects.RRData_SPF.from_sqla(record)
-        elif recordset.type == 'SRV':
-            return objects.RRData_SRV.from_sqla(record)
-        elif recordset.type == 'SSHFP':
-            return objects.RRData_SSHFP.from_sqla(record)
-        elif recordset.type == 'TXT':
-            return objects.RRData_TXT.from_sqla(record)
-        else:
-            raise TypeError("Unknown recordset type - %s" % recordset.type)
-
     def create_record(self, context, domain_id, recordset_id, record):
         # Fetch the domain as we need the tenant_id
         domain = self._find_domains(context, {'id': domain_id}, one=True)
@@ -612,7 +596,7 @@ class SQLAlchemyStorage(base.Storage):
         except exceptions.Duplicate:
             raise exceptions.DuplicateRecord()
 
-        return self._get_record_object(context, storage_record)
+        return _set_object_from_model(record, storage_record)
 
     def find_records(self, context, criterion=None,
                      marker=None, limit=None, sort_key=None, sort_dir=None):
@@ -620,16 +604,17 @@ class SQLAlchemyStorage(base.Storage):
             context, criterion, marker=marker, limit=limit, sort_key=sort_key,
             sort_dir=sort_dir)
 
-        return [self._get_record_object(context, r) for r in records]
+        return [objects.Record.from_sqla(r) for r in records]
 
     def get_record(self, context, record_id):
         record = self._find_records(context, {'id': record_id}, one=True)
-        return self._get_record_object(context, record)
+
+        return objects.Record.from_sqla(record)
 
     def find_record(self, context, criterion):
         record = self._find_records(context, criterion, one=True)
 
-        return self._get_record_object(context, record)
+        return objects.Record.from_sqla(record)
 
     def update_record(self, context, record_id, values):
         record = self._find_records(context, {'id': record_id}, one=True)
@@ -641,14 +626,14 @@ class SQLAlchemyStorage(base.Storage):
         except exceptions.Duplicate:
             raise exceptions.DuplicateRecord()
 
-        return self._get_record_object(context, record)
+        return objects.Record.from_sqla(record)
 
     def delete_record(self, context, record_id):
         record = self._find_records(context, {'id': record_id}, one=True)
 
         record.delete(self.session)
 
-        return self._get_record_object(context, record)
+        return objects.Record.from_sqla(record)
 
     def count_records(self, context, criterion=None):
         query = self.session.query(models.Record)
@@ -678,7 +663,7 @@ class SQLAlchemyStorage(base.Storage):
         except exceptions.Duplicate:
             raise exceptions.DuplicateBlacklist()
 
-        return objects.Blacklist.from_sqla(storage_blacklist)
+        return _set_object_from_model(blacklist, storage_blacklist)
 
     def find_blacklists(self, context, criterion=None,
                         marker=None, limit=None, sort_key=None, sort_dir=None):

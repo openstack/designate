@@ -17,9 +17,9 @@ import flask
 
 from designate.openstack.common import log as logging
 from designate import exceptions
+from designate import objects
 from designate import schema
 from designate.api import get_central_api
-from designate.objects import RecordSet
 
 
 LOG = logging.getLogger(__name__)
@@ -46,7 +46,7 @@ def _find_or_create_recordset(context, domain_id, name, type, ttl):
             'ttl': ttl,
         }
         recordset = get_central_api().create_recordset(
-            context, domain_id, RecordSet(**values))
+            context, domain_id, objects.RecordSet(**values))
 
     return recordset
 
@@ -103,9 +103,11 @@ def create_record(domain_id):
                                           values['type'],
                                           values.get('ttl', None))
 
+    record = objects.Record(**_extract_record_values(values))
+
     record = get_central_api().create_record(context, domain_id,
                                              recordset['id'],
-                                             _extract_record_values(values))
+                                             record)
 
     record = _format_record_v1(record, recordset)
 

@@ -107,7 +107,8 @@ class MultiBackendTestCase(tests.TestCase, BackendTestMixin):
         # Since multi's delete fetches the domain from central to be able to
         # recreate it if something goes wrong, create the domain first
         self.backend.central_service.create_server(
-            self.get_admin_context(), self.get_server_fixture())
+            self.get_admin_context(),
+            objects.Server(**self.get_server_fixture()))
         self.backend.central_service.create_domain(
             context, objects.Domain(**domain))
         self.backend.master.delete_domain = MagicMock(
