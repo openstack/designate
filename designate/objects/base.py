@@ -118,24 +118,6 @@ class PersistentObjectMixin(object):
 class DesignateObject(DictObjectMixin):
     FIELDS = []
 
-    @classmethod
-    def from_sqla(cls, obj):
-        """
-        Convert from a SQLA Model to a Designate Object
-
-        Eventually, when we move from SQLA ORM to SQLA Core, this can be
-        removed.
-        """
-        instance = cls()
-
-        for fieldname in cls.FIELDS:
-            if hasattr(obj, fieldname):
-                instance[fieldname] = getattr(obj, fieldname)
-
-        instance.obj_reset_changes()
-
-        return instance
-
     @staticmethod
     def from_primitive(primitive):
         """
