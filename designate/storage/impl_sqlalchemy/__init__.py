@@ -40,22 +40,30 @@ cfg.CONF.register_group(cfg.OptGroup(
 cfg.CONF.register_opts(options.database_opts, group='storage:sqlalchemy')
 
 
-def _set_object_from_model(obj, model):
+def _set_object_from_model(obj, model, **extra):
     """Update a DesignateObject with the values from a SQLA Model"""
 
     for fieldname in obj.FIELDS:
         if hasattr(model, fieldname):
-            obj[fieldname] = getattr(model, fieldname)
+            if fieldname in extra.keys():
+                obj[fieldname] = extra[fieldname]
+            else:
+                obj[fieldname] = getattr(model, fieldname)
 
     obj.obj_reset_changes()
 
     return obj
 
 
-def _set_listobject_from_models(obj, models):
+def _set_listobject_from_models(obj, models, map_=None):
         for model in models:
+            extra = {}
+
+            if map_ is not None:
+                extra = map_(model)
+
             obj.objects.append(
-                _set_object_from_model(obj.LIST_ITEM_TYPE(), model))
+                _set_object_from_model(obj.LIST_ITEM_TYPE(), model, **extra))
 
         obj.obj_reset_changes()
 
@@ -534,7 +542,11 @@ class SQLAlchemyStorage(base.Storage):
 
         storage_recordset = models.RecordSet()
 
-        storage_recordset.update(recordset)
+        # We'll need to handle records separately
+        values = dict(recordset)
+        values.pop('records', None)
+
+        storage_recordset.update(values)
         storage_recordset.tenant_id = domain['tenant_id']
         storage_recordset.domain_id = domain_id
 
@@ -543,13 +555,28 @@ class SQLAlchemyStorage(base.Storage):
         except exceptions.Duplicate:
             raise exceptions.DuplicateRecordSet()
 
-        return _set_object_from_model(recordset, storage_recordset)
+        if recordset.obj_attr_is_set('records'):
+            for record in recordset.records:
+                # NOTE: Since we're dealing with a mutable object, the return
+                #       value is not needed. The original item will be mutated
+                #       in place on the input "recordset.records" list.
+                self.create_record(context, domain_id, storage_recordset.id,
+                                   record)
+        else:
+            recordset.records = objects.RecordList()
+
+        return _set_object_from_model(recordset, storage_recordset,
+                                      records=recordset.records)
 
     def get_recordset(self, context, recordset_id):
         recordset = self._find_recordsets(context, {'id': recordset_id},
                                           one=True)
 
-        return _set_object_from_model(objects.RecordSet(), recordset)
+        records = _set_listobject_from_models(
+            objects.RecordList(), recordset.records)
+
+        return _set_object_from_model(objects.RecordSet(), recordset,
+                                      records=records)
 
     def find_recordsets(self, context, criterion=None,
                         marker=None, limit=None, sort_key=None, sort_dir=None):
@@ -557,25 +584,83 @@ class SQLAlchemyStorage(base.Storage):
             context, criterion, marker=marker, limit=limit, sort_key=sort_key,
             sort_dir=sort_dir)
 
-        return _set_listobject_from_models(objects.RecordSetList(), recordsets)
+        def map_(recordset):
+            return {
+                'records': _set_listobject_from_models(
+                    objects.RecordList(), recordset.records)
+            }
+
+        return _set_listobject_from_models(
+            objects.RecordSetList(), recordsets, map_=map_)
 
     def find_recordset(self, context, criterion):
         recordset = self._find_recordsets(context, criterion, one=True)
 
-        return _set_object_from_model(objects.RecordSet(), recordset)
+        records = _set_listobject_from_models(
+            objects.RecordList(), recordset.records)
+
+        return _set_object_from_model(objects.RecordSet(), recordset,
+                                      records=records)
 
     def update_recordset(self, context, recordset):
         storage_recordset = self._find_recordsets(
             context, {'id': recordset.id}, one=True)
 
-        storage_recordset.update(recordset.obj_get_changes())
+        # We'll need to handle records separately
+        values = dict(recordset.obj_get_changes())
+        values.pop('records', None)
+
+        storage_recordset.update(values)
 
         try:
             storage_recordset.save(self.session)
         except exceptions.Duplicate:
             raise exceptions.DuplicateRecordSet()
 
-        return _set_object_from_model(recordset, storage_recordset)
+        if recordset.obj_attr_is_set('records'):
+            # Gather the Record ID's we have
+            have_records = set([r.id for r in storage_recordset.records])
+
+            # Prep some lists of changes
+            keep_records = set([])
+            create_records = []
+            update_records = []
+
+            # Determine what to change
+            for record in recordset.records:
+                keep_records.add(record.id)
+                try:
+                    record.obj_get_original_value('id')
+                except KeyError:
+                    create_records.append(record)
+                else:
+                    update_records.append(record)
+
+            # NOTE: Since we're dealing with mutable objects, the return value
+            #       of create/update/delete record is not needed. The original
+            #       item will be mutated in place on the input
+            #       "recordset.records" list.
+
+            # Delete Records
+            for record_id in have_records - keep_records:
+                self.delete_record(context, record_id)
+
+            # Update Records
+            for record in update_records:
+                self.update_record(context, record)
+
+            # Create Records
+            for record in create_records:
+                self.create_record(
+                    context, recordset.domain_id, recordset.id, record)
+
+            # Honestly, I have no idea why this is necessary. Without this
+            # call, then fetching the RecordSet's records again in the same
+            # session will return the deleted records.
+            self.session.refresh(storage_recordset)
+
+        return _set_object_from_model(recordset, storage_recordset,
+                                      records=recordset.records)
 
     def delete_recordset(self, context, recordset_id):
         recordset = self._find_recordsets(context, {'id': recordset_id},
