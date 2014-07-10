@@ -122,7 +122,7 @@ def factory(global_config, **local_conf):
 
 
 class UUIDConverter(BaseConverter):
-    """ Validates UUID URL paramaters """
+    """Validates UUID URL paramaters"""
 
     def to_python(self, value):
         if not utils.is_uuid_like(value):

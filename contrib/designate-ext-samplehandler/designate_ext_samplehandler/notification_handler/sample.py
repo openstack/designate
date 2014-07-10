@@ -38,7 +38,7 @@ cfg.CONF.register_opts([
 
 
 class SampleHandler(NotificationHandler):
-    """ Sample Handler """
+    """Sample Handler"""
     __plugin_name__ = 'sample'
 
     def get_exchange_topics(self):

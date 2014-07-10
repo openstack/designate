@@ -22,13 +22,13 @@ LOG = logging.getLogger(__name__)
 
 
 class BlacklistsView(base_view.BaseView):
-    """ Model a Blacklist API response as a python dictionary """
+    """Model a Blacklist API response as a python dictionary"""
 
     _resource_name = 'blacklist'
     _collection_name = 'blacklists'
 
     def show_basic(self, context, request, blacklist):
-        """ Detailed view of a blacklisted zone """
+        """Detailed view of a blacklisted zone"""
         return {
             "id": blacklist['id'],
             "pattern": blacklist['pattern'],
@@ -39,6 +39,6 @@ class BlacklistsView(base_view.BaseView):
         }
 
     def load(self, context, request, body):
-        """ Extract a "central" compatible dict from an API call """
+        """Extract a "central" compatible dict from an API call"""
         valid_keys = ('pattern', 'description')
         return self._load(context, request, body, valid_keys)

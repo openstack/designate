@@ -23,7 +23,7 @@ from designate.plugin import DriverPlugin
 @six.add_metaclass(abc.ABCMeta)
 class Storage(DriverPlugin):
 
-    """ Base class for storage plugins """
+    """Base class for storage plugins"""
     __plugin_ns__ = 'designate.storage'
     __plugin_type__ = 'storage'
 
@@ -566,7 +566,7 @@ class Storage(DriverPlugin):
         """
 
     def ping(self, context):
-        """ Ping the Storage connection """
+        """Ping the Storage connection"""
         return {
             'status': None
         }

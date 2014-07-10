@@ -46,7 +46,7 @@ class FloatingIPController(rest.RestController):
 
     @pecan.expose(template='json:', content_type='application/json')
     def get_all(self, **params):
-        """ List Floating IP PTRs for a Tenant """
+        """List Floating IP PTRs for a Tenant"""
         request = pecan.request
         context = request.environ['context']
 

@@ -39,7 +39,7 @@ class RecordSetsController(rest.RestController):
     @pecan.expose(template='json:', content_type='application/json')
     @utils.validate_uuid('zone_id', 'recordset_id')
     def get_one(self, zone_id, recordset_id):
-        """ Get RecordSet """
+        """Get RecordSet"""
         request = pecan.request
         context = request.environ['context']
 
@@ -51,7 +51,7 @@ class RecordSetsController(rest.RestController):
     @pecan.expose(template='json:', content_type='application/json')
     @utils.validate_uuid('zone_id')
     def get_all(self, zone_id, **params):
-        """ List RecordSets """
+        """List RecordSets"""
         request = pecan.request
         context = request.environ['context']
 
@@ -73,7 +73,7 @@ class RecordSetsController(rest.RestController):
     @pecan.expose(template='json:', content_type='application/json')
     @utils.validate_uuid('zone_id')
     def post_all(self, zone_id):
-        """ Create RecordSet """
+        """Create RecordSet"""
         request = pecan.request
         response = pecan.response
         context = request.environ['context']
@@ -102,7 +102,7 @@ class RecordSetsController(rest.RestController):
     @pecan.expose(template='json:', content_type='application/json-patch+json')
     @utils.validate_uuid('zone_id', 'recordset_id')
     def patch_one(self, zone_id, recordset_id):
-        """ Update RecordSet """
+        """Update RecordSet"""
         request = pecan.request
         context = request.environ['context']
         body = request.body_dict
@@ -134,7 +134,7 @@ class RecordSetsController(rest.RestController):
     @pecan.expose(template=None, content_type='application/json')
     @utils.validate_uuid('zone_id', 'recordset_id')
     def delete_one(self, zone_id, recordset_id):
-        """ Delete RecordSet """
+        """Delete RecordSet"""
         request = pecan.request
         response = pecan.response
         context = request.environ['context']

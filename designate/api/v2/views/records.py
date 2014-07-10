@@ -21,7 +21,7 @@ LOG = logging.getLogger(__name__)
 
 
 class RecordsView(base_view.BaseView):
-    """ Model a Record API response as a python dictionary """
+    """Model a Record API response as a python dictionary"""
 
     _resource_name = 'record'
     _collection_name = 'records'
@@ -36,7 +36,7 @@ class RecordsView(base_view.BaseView):
         return href.rstrip('?')
 
     def show_basic(self, context, request, record):
-        """ Basic view of a record """
+        """Basic view of a record"""
         return {
             "id": record['id'],
             "recordset_id": record['recordset_id'],
@@ -51,6 +51,6 @@ class RecordsView(base_view.BaseView):
         }
 
     def load(self, context, request, body):
-        """ Extract a "central" compatible dict from an API call """
+        """Extract a "central" compatible dict from an API call"""
         valid_keys = ('data', 'description')
         return self._load(context, request, body, valid_keys)

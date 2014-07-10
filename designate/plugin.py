@@ -64,7 +64,7 @@ class DriverPlugin(Plugin):
 
     @classmethod
     def get_driver(cls, name):
-        """ Load a single driver """
+        """Load a single driver"""
 
         LOG.debug('Looking for driver %s in %s' % (name, cls.__plugin_ns__))
 
@@ -83,7 +83,7 @@ class ExtensionPlugin(Plugin):
 
     @classmethod
     def get_extensions(cls, enabled_extensions=None):
-        """ Load a series of extensions """
+        """Load a series of extensions"""
 
         LOG.debug('Looking for extensions in %s' % cls.__plugin_ns__)
 

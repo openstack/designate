@@ -22,7 +22,7 @@ LOG = logging.getLogger(__name__)
 
 
 class NameServerView(base_view.BaseView):
-    """ Model a NameServer API response as a python dictionary """
+    """Model a NameServer API response as a python dictionary"""
 
     _resource_name = 'nameserver'
     _collection_name = 'nameservers'
@@ -35,7 +35,7 @@ class NameServerView(base_view.BaseView):
         return href.rstrip('?')
 
     def show_basic(self, context, request, nameserver):
-        """ Basic view of a nameserver """
+        """Basic view of a nameserver"""
         return {
             "id": nameserver["id"],
             "name": nameserver["name"]

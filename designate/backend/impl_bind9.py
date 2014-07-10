@@ -128,7 +128,7 @@ class Bind9Backend(base.Backend):
         return rndc_call
 
     def _sync_delete_domain(self, domain, new_domain_flag=False):
-        """ Remove domain zone files and reload bind config """
+        """Remove domain zone files and reload bind config"""
         LOG.debug('Delete Domain: %s' % domain['id'])
 
         output_folder = os.path.join(os.path.abspath(cfg.CONF.state_path),
@@ -156,7 +156,7 @@ class Bind9Backend(base.Backend):
         shutil.copyfile(nzf_name[0], output_file)
 
     def _sync_domain(self, domain, new_domain_flag=False):
-        """ Sync a single domain's zone file and reload bind config """
+        """Sync a single domain's zone file and reload bind config"""
         LOG.debug('Synchronising Domain: %s' % domain['id'])
 
         servers = self.central_service.find_servers(self.admin_context)

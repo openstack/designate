@@ -24,12 +24,12 @@ class NotSpecifiedSentinel:
 
 
 def get_attrname(name):
-    """ Return the mangled name of the attribute's underlying storage. """
+    """Return the mangled name of the attribute's underlying storage."""
     return '_%s' % name
 
 
 def make_class_properties(cls):
-    """ Build getter and setter methods for all the objects attributes """
+    """Build getter and setter methods for all the objects attributes"""
     cls.FIELDS = list(cls.FIELDS)
 
     for supercls in cls.mro()[1:-1]:
@@ -88,7 +88,7 @@ class DictObjectMixin(object):
             return self[key]
 
     def update(self, values):
-        """ Make the model object behave like a dict """
+        """Make the model object behave like a dict"""
         for k, v in values.iteritems():
             self[k] = v
 
@@ -209,11 +209,11 @@ class DesignateObject(DictObjectMixin):
         return hasattr(self, get_attrname(name))
 
     def obj_what_changed(self):
-        """ Returns a set of fields that have been modified. """
+        """Returns a set of fields that have been modified."""
         return set(self._obj_changes)
 
     def obj_get_changes(self):
-        """ Returns a dict of changed fields and their new values. """
+        """Returns a dict of changed fields and their new values."""
         changes = {}
 
         for key in self.obj_what_changed():
@@ -222,7 +222,7 @@ class DesignateObject(DictObjectMixin):
         return changes
 
     def obj_reset_changes(self, fields=None):
-        """ Reset the list of fields that have been changed. """
+        """Reset the list of fields that have been changed."""
         if fields:
             self._obj_changes -= set(fields)
             for field in fields:
@@ -233,7 +233,7 @@ class DesignateObject(DictObjectMixin):
             self._obj_original_values = dict()
 
     def obj_get_original_value(self, field):
-        """ Returns the original value of a field. """
+        """Returns the original value of a field."""
         if field in self._obj_original_values.keys():
             return self._obj_original_values[field]
         elif self.obj_attr_is_set(field):

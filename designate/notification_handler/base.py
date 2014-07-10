@@ -48,7 +48,7 @@ def get_ip_data(addr_dict):
 
 
 class NotificationHandler(ExtensionPlugin):
-    """ Base class for notification handlers """
+    """Base class for notification handlers"""
     __plugin_ns__ = 'designate.notification.handler'
     __plugin_type__ = 'handler'
 
@@ -71,7 +71,7 @@ class NotificationHandler(ExtensionPlugin):
 
     @abc.abstractmethod
     def process_notification(self, context, event_type, payload):
-        """ Processes a given notification """
+        """Processes a given notification"""
 
     def get_domain(self, domain_id):
         """

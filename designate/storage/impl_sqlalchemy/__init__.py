@@ -41,7 +41,7 @@ cfg.CONF.register_opts(options.database_opts, group='storage:sqlalchemy')
 
 
 def _set_object_from_model(obj, model):
-    """ Update a DesignateObject with the values from a SQLA Model """
+    """Update a DesignateObject with the values from a SQLA Model"""
 
     for fieldname in obj.FIELDS:
         if hasattr(model, fieldname):
@@ -53,7 +53,7 @@ def _set_object_from_model(obj, model):
 
 
 class SQLAlchemyStorage(base.Storage):
-    """ SQLAlchemy connection """
+    """SQLAlchemy connection"""
     __plugin_name__ = 'sqlalchemy'
 
     def __init__(self):
@@ -72,11 +72,11 @@ class SQLAlchemyStorage(base.Storage):
         self.session.rollback()
 
     def setup_schema(self):
-        """ Semi-Private Method to create the database schema """
+        """Semi-Private Method to create the database schema"""
         models.Base.metadata.create_all(self.session.bind)
 
     def teardown_schema(self):
-        """ Semi-Private Method to reset the database schema """
+        """Semi-Private Method to reset the database schema"""
         models.Base.metadata.drop_all(self.session.bind)
 
     def _apply_criterion(self, model, query, criterion):

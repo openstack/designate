@@ -36,7 +36,7 @@ class RecordsController(rest.RestController):
     @pecan.expose(template='json:', content_type='application/json')
     @utils.validate_uuid('zone_id', 'recordset_id', 'record_id')
     def get_one(self, zone_id, recordset_id, record_id):
-        """ Get Record """
+        """Get Record"""
         request = pecan.request
         context = request.environ['context']
 
@@ -48,7 +48,7 @@ class RecordsController(rest.RestController):
     @pecan.expose(template='json:', content_type='application/json')
     @utils.validate_uuid('zone_id', 'recordset_id')
     def get_all(self, zone_id, recordset_id, **params):
-        """ List Records """
+        """List Records"""
         request = pecan.request
         context = request.environ['context']
 
@@ -72,7 +72,7 @@ class RecordsController(rest.RestController):
     @pecan.expose(template='json:', content_type='application/json')
     @utils.validate_uuid('zone_id', 'recordset_id')
     def post_all(self, zone_id, recordset_id):
-        """ Create Record """
+        """Create Record"""
         request = pecan.request
         response = pecan.response
         context = request.environ['context']
@@ -105,7 +105,7 @@ class RecordsController(rest.RestController):
     @pecan.expose(template='json:', content_type='application/json-patch+json')
     @utils.validate_uuid('zone_id', 'recordset_id', 'record_id')
     def patch_one(self, zone_id, recordset_id, record_id):
-        """ Update Record """
+        """Update Record"""
         request = pecan.request
         context = request.environ['context']
         body = request.body_dict
@@ -140,7 +140,7 @@ class RecordsController(rest.RestController):
     @pecan.expose(template=None, content_type='application/json')
     @utils.validate_uuid('zone_id', 'recordset_id', 'record_id')
     def delete_one(self, zone_id, recordset_id, record_id):
-        """ Delete Record """
+        """Delete Record"""
         request = pecan.request
         response = pecan.response
         context = request.environ['context']

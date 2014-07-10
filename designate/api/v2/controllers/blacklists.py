@@ -36,7 +36,7 @@ class BlacklistsController(rest.RestController):
     @pecan.expose(template='json:', content_type='application/json')
     @utils.validate_uuid('blacklist_id')
     def get_one(self, blacklist_id):
-        """ Get Blacklist """
+        """Get Blacklist"""
 
         request = pecan.request
         context = request.environ['context']
@@ -47,7 +47,7 @@ class BlacklistsController(rest.RestController):
 
     @pecan.expose(template='json:', content_type='application/json')
     def get_all(self, **params):
-        """ List all Blacklisted Zones """
+        """List all Blacklisted Zones"""
         request = pecan.request
         context = request.environ['context']
 
@@ -66,7 +66,7 @@ class BlacklistsController(rest.RestController):
 
     @pecan.expose(template='json:', content_type='application/json')
     def post_all(self):
-        """ Create Blacklisted Zone """
+        """Create Blacklisted Zone"""
         request = pecan.request
         response = pecan.response
         context = request.environ['context']
@@ -95,7 +95,7 @@ class BlacklistsController(rest.RestController):
     @pecan.expose(template='json:', content_type='application/json-patch+json')
     @utils.validate_uuid('blacklist_id')
     def patch_one(self, blacklist_id):
-        """ Update Blacklisted Zone """
+        """Update Blacklisted Zone"""
         request = pecan.request
         context = request.environ['context']
         body = request.body_dict
@@ -127,7 +127,7 @@ class BlacklistsController(rest.RestController):
     @pecan.expose(template=None, content_type='application/json')
     @utils.validate_uuid('blacklist_id')
     def delete_one(self, blacklist_id):
-        """ Delete Blacklisted Zone """
+        """Delete Blacklisted Zone"""
         request = pecan.request
         response = pecan.response
         context = request.environ['context']
