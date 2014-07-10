@@ -245,6 +245,10 @@ class RecordNotFound(NotFound):
     error_type = 'record_not_found'
 
 
+class ReportNotFound(NotFound):
+    error_type = 'report_not_found'
+
+
 class LastServerDeleteNotAllowed(BadRequest):
     error_type = 'last_server_delete_not_allowed'
 

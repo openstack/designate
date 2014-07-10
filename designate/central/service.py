@@ -712,6 +712,26 @@ class Service(service.Service):
 
         return self.storage.count_domains(context, criterion)
 
+    # Report combining all the count reports based on criterion
+    def count_report(self, context, criterion=None):
+        reports = []
+
+        if criterion is None:
+            # Get all the reports
+            reports.append({'zones': self.count_domains(context),
+                            'records': self.count_records(context),
+                            'tenants': self.count_tenants(context)})
+        elif criterion == 'zones':
+            reports.append({'zones': self.count_domains(context)})
+        elif criterion == 'records':
+            reports.append({'records': self.count_records(context)})
+        elif criterion == 'tenants':
+            reports.append({'tenants': self.count_tenants(context)})
+        else:
+            raise exceptions.ReportNotFound()
+
+        return reports
+
     @transaction
     def touch_domain(self, context, domain_id):
         domain = self.storage.get_domain(context, domain_id)

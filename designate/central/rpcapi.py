@@ -303,6 +303,11 @@ class CentralAPI(object):
         LOG.info(_LI("count_records: Calling central's count_records."))
         return self.client.call(context, 'count_records', criterion=criterion)
 
+    # Misc. Report combining counts for tenants, domains and records
+    def count_report(self, context, criterion=None):
+        LOG.info(_LI("count_report: Calling central's count_report."))
+        return self.client.call(context, 'count_report', criterion=criterion)
+
     # Sync Methods
     def sync_domains(self, context):
         LOG.info(_LI("sync_domains: Calling central's sync_domains."))
