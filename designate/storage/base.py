@@ -71,13 +71,12 @@ class Storage(DriverPlugin):
         """
 
     @abc.abstractmethod
-    def update_quota(self, context, quota_id, values):
+    def update_quota(self, context, quota):
         """
-        Update a Quota via ID
+        Update a Quota
 
         :param context: RPC Context.
-        :param quota_id: Quota ID to update.
-        :param values: Values to update the Quota from
+        :param quota: Quota to update.
         """
 
     @abc.abstractmethod
@@ -124,13 +123,12 @@ class Storage(DriverPlugin):
         """
 
     @abc.abstractmethod
-    def update_server(self, context, server_id, values):
+    def update_server(self, context, server):
         """
-        Update a Server via ID
+        Update a Server
 
         :param context: RPC Context.
-        :param server_id: Server ID to update.
-        :param values: Values to update the Server from
+        :param server: Server object
         """
 
     @abc.abstractmethod
@@ -192,13 +190,12 @@ class Storage(DriverPlugin):
         """
 
     @abc.abstractmethod
-    def update_tld(self, context, tld_id, values):
+    def update_tld(self, context, tld):
         """
-        Update a TLD via ID
+        Update a TLD
 
         :param context: RPC Context.
-        :param tld_id: TLD ID to update.
-        :param values: Values to update the TLD from
+        :param tld: TLD to update.
         """
 
     @abc.abstractmethod
@@ -245,13 +242,12 @@ class Storage(DriverPlugin):
         """
 
     @abc.abstractmethod
-    def update_tsigkey(self, context, tsigkey_id, values):
+    def update_tsigkey(self, context, tsigkey):
         """
-        Update a TSIG Key via ID
+        Update a TSIG Key
 
         :param context: RPC Context.
-        :param tsigkey_id: TSIG Key ID to update.
-        :param values: Values to update the TSIG Key from
+        :param tsigkey: TSIG Keyto update.
         """
 
     @abc.abstractmethod
@@ -332,13 +328,12 @@ class Storage(DriverPlugin):
         """
 
     @abc.abstractmethod
-    def update_domain(self, context, domain_id, values):
+    def update_domain(self, context, domain):
         """
-        Update a Domain via ID.
+        Update a Domain
 
         :param context: RPC Context.
-        :param domain_id: Values to update the Domain with
-        :param values: Values to update the Domain from.
+        :param domain: Domain object.
         """
 
     @abc.abstractmethod
@@ -405,12 +400,12 @@ class Storage(DriverPlugin):
         """
 
     @abc.abstractmethod
-    def update_recordset(self, context, recordset_id, values):
+    def update_recordset(self, context, recordset):
         """
-        Update a recordset via ID
+        Update a recordset
 
         :param context: RPC Context
-        :param recordset_id: RecordSet ID to update
+        :param recordset: RecordSet to update
         """
 
     @abc.abstractmethod
@@ -477,12 +472,12 @@ class Storage(DriverPlugin):
         """
 
     @abc.abstractmethod
-    def update_record(self, context, record_id, values):
+    def update_record(self, context, record):
         """
-        Update a record via ID
+        Update a record
 
         :param context: RPC Context
-        :param record_id: Record ID to update
+        :param record: Record to update
         """
 
     @abc.abstractmethod
@@ -547,13 +542,12 @@ class Storage(DriverPlugin):
         """
 
     @abc.abstractmethod
-    def update_blacklist(self, context, blacklist_id, values):
+    def update_blacklist(self, context, blacklist):
         """
-        Update a Blacklist via ID
+        Update a Blacklist
 
         :param context: RPC Context.
-        :param blacklist_id: Blacklist ID to update.
-        :param values: Values to update the Blacklist from
+        :param blacklist: Blacklist to update.
         """
 
     @abc.abstractmethod

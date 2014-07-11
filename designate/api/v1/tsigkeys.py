@@ -76,13 +76,19 @@ def update_tsigkey(tsigkey_id):
     context = flask.request.environ.get('context')
     values = flask.request.json
 
+    # Fetch the existing resource
     tsigkey = get_central_api().get_tsigkey(context, tsigkey_id)
-    tsigkey = tsigkey_schema.filter(tsigkey)
-    tsigkey.update(values)
 
-    tsigkey_schema.validate(tsigkey)
-    tsigkey = get_central_api().update_tsigkey(context, tsigkey_id,
-                                               values=values)
+    # Prepare a dict of fields for validation
+    tsigkey_data = tsigkey_schema.filter(tsigkey)
+    tsigkey_data.update(values)
+
+    # Validate the new set of data
+    tsigkey_schema.validate(tsigkey_data)
+
+    # Update and persist the resource
+    tsigkey.update(values)
+    tsigkey = get_central_api().update_tsigkey(context, tsigkey)
 
     return flask.jsonify(tsigkey_schema.filter(tsigkey))
 

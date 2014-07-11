@@ -116,19 +116,19 @@ class RecordsController(rest.RestController):
                                              record_id)
 
         # Convert to APIv2 Format
-        record = self._view.show(context, request, record)
+        record_data = self._view.show(context, request, record)
 
         if request.content_type == 'application/json-patch+json':
             raise NotImplemented('json-patch not implemented')
         else:
-            record = utils.deep_dict_merge(record, body)
+            record_data = utils.deep_dict_merge(record_data, body)
 
-            # Validate the request conforms to the schema
-            self._resource_schema.validate(record)
+            # Validate the new set of data
+            self._resource_schema.validate(record_data)
 
-            values = self._view.load(context, request, body)
-            record = self.central_api.update_record(
-                context, zone_id, recordset_id, record_id, values)
+            # Update and persist the resource
+            record.update(self._view.load(context, request, body))
+            record = self.central_api.update_record(context, record)
 
         if record['status'] == 'PENDING':
             response.status_int = 202

@@ -76,12 +76,19 @@ def update_domain(domain_id):
     context = flask.request.environ.get('context')
     values = flask.request.json
 
+    # Fetch the existing resource
     domain = get_central_api().get_domain(context, domain_id)
-    domain = domain_schema.filter(domain)
-    domain.update(values)
 
-    domain_schema.validate(domain)
-    domain = get_central_api().update_domain(context, domain_id, values)
+    # Prepare a dict of fields for validation
+    domain_data = domain_schema.filter(domain)
+    domain_data.update(values)
+
+    # Validate the new set of data
+    domain_schema.validate(domain_data)
+
+    # Update and persist the resource
+    domain.update(values)
+    domain = get_central_api().update_domain(context, domain)
 
     return flask.jsonify(domain_schema.filter(domain))
 

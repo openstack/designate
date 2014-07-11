@@ -213,17 +213,17 @@ class SQLAlchemyStorage(base.Storage):
 
         return _set_object_from_model(objects.Quota(), quota)
 
-    def update_quota(self, context, quota_id, values):
-        quota = self._find_quotas(context, {'id': quota_id}, one=True)
+    def update_quota(self, context, quota):
+        storage_quota = self._find_quotas(context, {'id': quota.id}, one=True)
 
-        quota.update(values)
+        storage_quota.update(quota.obj_get_changes())
 
         try:
-            quota.save(self.session)
+            storage_quota.save(self.session)
         except exceptions.Duplicate:
             raise exceptions.DuplicateQuota()
 
-        return _set_object_from_model(objects.Quota(), quota)
+        return _set_object_from_model(quota, storage_quota)
 
     def delete_quota(self, context, quota_id):
         quota = self._find_quotas(context, {'id': quota_id}, one=True)
@@ -265,17 +265,18 @@ class SQLAlchemyStorage(base.Storage):
         server = self._find_servers(context, {'id': server_id}, one=True)
         return _set_object_from_model(objects.Server(), server)
 
-    def update_server(self, context, server_id, values):
-        server = self._find_servers(context, {'id': server_id}, one=True)
+    def update_server(self, context, server):
+        storage_server = self._find_servers(context, {'id': server.id},
+                                            one=True)
 
-        server.update(values)
+        storage_server.update(server.obj_get_changes())
 
         try:
-            server.save(self.session)
+            storage_server.save(self.session)
         except exceptions.Duplicate:
             raise exceptions.DuplicateServer()
 
-        return _set_object_from_model(objects.Server(), server)
+        return _set_object_from_model(server, storage_server)
 
     def delete_server(self, context, server_id):
         server = self._find_servers(context, {'id': server_id}, one=True)
@@ -319,16 +320,16 @@ class SQLAlchemyStorage(base.Storage):
         tld = self._find_tlds(context, {'id': tld_id}, one=True)
         return _set_object_from_model(objects.Tld(), tld)
 
-    def update_tld(self, context, tld_id, values):
-        tld = self._find_tlds(context, {'id': tld_id}, one=True)
-        tld.update(values)
+    def update_tld(self, context, tld):
+        storage_tld = self._find_tlds(context, {'id': tld.id}, one=True)
+        storage_tld.update(tld.obj_get_changes())
 
         try:
-            tld.save(self.session)
+            storage_tld.save(self.session)
         except exceptions.Duplicate:
             raise exceptions.DuplicateTLD()
 
-        return _set_object_from_model(objects.Tld(), tld)
+        return _set_object_from_model(tld, storage_tld)
 
     def delete_tld(self, context, tld_id):
         tld = self._find_tlds(context, {'id': tld_id}, one=True)
@@ -371,17 +372,18 @@ class SQLAlchemyStorage(base.Storage):
 
         return _set_object_from_model(objects.TsigKey(), tsigkey)
 
-    def update_tsigkey(self, context, tsigkey_id, values):
-        tsigkey = self._find_tsigkeys(context, {'id': tsigkey_id}, one=True)
+    def update_tsigkey(self, context, tsigkey):
+        storage_tsigkey = self._find_tsigkeys(context, {'id': tsigkey.id},
+                                              one=True)
 
-        tsigkey.update(values)
+        storage_tsigkey.update(tsigkey.obj_get_changes())
 
         try:
-            tsigkey.save(self.session)
+            storage_tsigkey.save(self.session)
         except exceptions.Duplicate:
             raise exceptions.DuplicateTsigKey()
 
-        return _set_object_from_model(objects.TsigKey(), tsigkey)
+        return _set_object_from_model(tsigkey, storage_tsigkey)
 
     def delete_tsigkey(self, context, tsigkey_id):
         tsigkey = self._find_tsigkeys(context, {'id': tsigkey_id}, one=True)
@@ -468,17 +470,18 @@ class SQLAlchemyStorage(base.Storage):
         domain = self._find_domains(context, criterion, one=True)
         return _set_object_from_model(objects.Domain(), domain)
 
-    def update_domain(self, context, domain_id, values):
-        domain = self._find_domains(context, {'id': domain_id}, one=True)
+    def update_domain(self, context, domain):
+        storage_domain = self._find_domains(context, {'id': domain.id},
+                                            one=True)
 
-        domain.update(values)
+        storage_domain.update(domain.obj_get_changes())
 
         try:
-            domain.save(self.session)
+            storage_domain.save(self.session)
         except exceptions.Duplicate:
             raise exceptions.DuplicateDomain()
 
-        return _set_object_from_model(objects.Domain(), domain)
+        return _set_object_from_model(domain, storage_domain)
 
     def delete_domain(self, context, domain_id):
         domain = self._find_domains(context, {'id': domain_id}, one=True)
@@ -543,18 +546,18 @@ class SQLAlchemyStorage(base.Storage):
 
         return _set_object_from_model(objects.RecordSet(), recordset)
 
-    def update_recordset(self, context, recordset_id, values):
-        recordset = self._find_recordsets(context, {'id': recordset_id},
-                                          one=True)
+    def update_recordset(self, context, recordset):
+        storage_recordset = self._find_recordsets(
+            context, {'id': recordset.id}, one=True)
 
-        recordset.update(values)
+        storage_recordset.update(recordset.obj_get_changes())
 
         try:
-            recordset.save(self.session)
+            storage_recordset.save(self.session)
         except exceptions.Duplicate:
             raise exceptions.DuplicateRecordSet()
 
-        return _set_object_from_model(objects.RecordSet(), recordset)
+        return _set_object_from_model(recordset, storage_recordset)
 
     def delete_recordset(self, context, recordset_id):
         recordset = self._find_recordsets(context, {'id': recordset_id},
@@ -617,17 +620,18 @@ class SQLAlchemyStorage(base.Storage):
 
         return _set_object_from_model(objects.Record(), record)
 
-    def update_record(self, context, record_id, values):
-        record = self._find_records(context, {'id': record_id}, one=True)
+    def update_record(self, context, record):
+        storage_record = self._find_records(context, {'id': record.id},
+                                            one=True)
 
-        record.update(values)
+        storage_record.update(record.obj_get_changes())
 
         try:
-            record.save(self.session)
+            storage_record.save(self.session)
         except exceptions.Duplicate:
             raise exceptions.DuplicateRecord()
 
-        return _set_object_from_model(objects.Record(), record)
+        return _set_object_from_model(record, storage_record)
 
     def delete_record(self, context, record_id):
         record = self._find_records(context, {'id': record_id}, one=True)
@@ -686,18 +690,18 @@ class SQLAlchemyStorage(base.Storage):
 
         return _set_object_from_model(objects.Blacklist(), blacklist)
 
-    def update_blacklist(self, context, blacklist_id, values):
-        blacklist = self._find_blacklist(context, {'id': blacklist_id},
-                                         one=True)
+    def update_blacklist(self, context, blacklist):
+        storage_blacklist = self._find_blacklist(context, {'id': blacklist.id},
+                                                 one=True)
 
-        blacklist.update(values)
+        storage_blacklist.update(blacklist.obj_get_changes())
 
         try:
-            blacklist.save(self.session)
+            storage_blacklist.save(self.session)
         except exceptions.Duplicate:
             raise exceptions.DuplicateBlacklist()
 
-        return _set_object_from_model(objects.Blacklist(), blacklist)
+        return _set_object_from_model(blacklist, storage_blacklist)
 
     def delete_blacklist(self, context, blacklist_id):
 

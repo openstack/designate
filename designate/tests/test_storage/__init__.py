@@ -216,31 +216,33 @@ class StorageTestCase(object):
 
     def test_update_quota(self):
         # Create a quota
-        fixture = self.get_quota_fixture()
         quota = self.create_quota(fixture=1)
 
-        updated = self.storage.update_quota(self.admin_context, quota['id'],
-                                            fixture)
+        # Update the Object
+        quota.hard_limit = 5000
 
-        self.assertEqual(updated['resource'], fixture['resource'])
-        self.assertEqual(updated['hard_limit'], fixture['hard_limit'])
+        # Perform the update
+        quota = self.storage.update_quota(self.admin_context, quota)
+
+        # Ensure the new value took
+        self.assertEqual(5000, quota.hard_limit)
 
     def test_update_quota_duplicate(self):
-        context = self.get_admin_context()
-        context.all_tenants = True
-
         # Create two quotas
-        self.create_quota(fixture=0, tenant_id='1')
-        quota = self.create_quota(fixture=0, tenant_id='2')
+        quota_one = self.create_quota(fixture=0)
+        quota_two = self.create_quota(fixture=1)
+
+        # Update the Q2 object to be a duplicate of Q1
+        quota_two.resource = quota_one.resource
 
         with testtools.ExpectedException(exceptions.DuplicateQuota):
-            self.storage.update_quota(context, quota['id'],
-                                      values={'tenant_id': '1'})
+            self.storage.update_quota(self.admin_context, quota_two)
 
     def test_update_quota_missing(self):
+        quota = objects.Quota(id='caf771fc-6b05-4891-bee1-c2a48621f57b')
+
         with testtools.ExpectedException(exceptions.QuotaNotFound):
-            uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
-            self.storage.update_quota(self.admin_context, uuid, {})
+            self.storage.update_quota(self.admin_context, quota)
 
     def test_delete_quota(self):
         quota = self.create_quota()
@@ -334,29 +336,32 @@ class StorageTestCase(object):
 
     def test_update_server(self):
         # Create a server
-        fixture = self.get_server_fixture()
-        server = self.create_server(**fixture)
+        server = self.create_server(name='ns1.example.org.')
 
-        updated = self.storage.update_server(self.admin_context, server['id'],
-                                             fixture)
+        # Update the Object
+        server.name = 'ns2.example.org.'
 
-        self.assertEqual(str(updated['name']), str(fixture['name']))
+        # Perform the update
+        server = self.storage.update_server(self.admin_context, server)
+
+        # Ensure the new value took
+        self.assertEqual('ns2.example.org.', server.name)
 
     def test_update_server_duplicate(self):
         # Create two servers
-        self.create_server(fixture=0)
-        server = self.create_server(fixture=1)
+        server_one = self.create_server(fixture=0)
+        server_two = self.create_server(fixture=1)
 
-        values = self.server_fixtures[0]
+        # Update the S2 object to be a duplicate of S1
+        server_two.name = server_one.name
 
         with testtools.ExpectedException(exceptions.DuplicateServer):
-            self.storage.update_server(self.admin_context, server['id'],
-                                       values)
+            self.storage.update_server(self.admin_context, server_two)
 
     def test_update_server_missing(self):
+        server = objects.Server(id='caf771fc-6b05-4891-bee1-c2a48621f57b')
         with testtools.ExpectedException(exceptions.ServerNotFound):
-            uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
-            self.storage.update_server(self.admin_context, uuid, {})
+            self.storage.update_server(self.admin_context, server)
 
     def test_delete_server(self):
         server = self.create_server()
@@ -459,32 +464,33 @@ class StorageTestCase(object):
 
     def test_update_tsigkey(self):
         # Create a tsigkey
-        fixture = self.get_tsigkey_fixture()
-        tsigkey = self.create_tsigkey(**fixture)
+        tsigkey = self.create_tsigkey(name='test-key')
 
-        updated = self.storage.update_tsigkey(self.admin_context,
-                                              tsigkey['id'],
-                                              fixture)
+        # Update the Object
+        tsigkey.name = 'test-key-updated'
 
-        self.assertEqual(updated['name'], fixture['name'])
-        self.assertEqual(updated['algorithm'], fixture['algorithm'])
-        self.assertEqual(updated['secret'], fixture['secret'])
+        # Perform the update
+        tsigkey = self.storage.update_tsigkey(self.admin_context, tsigkey)
+
+        # Ensure the new value took
+        self.assertEqual('test-key-updated', tsigkey.name)
 
     def test_update_tsigkey_duplicate(self):
         # Create two tsigkeys
-        self.create_tsigkey(fixture=0)
-        tsigkey = self.create_tsigkey(fixture=1)
+        tsigkey_one = self.create_tsigkey(fixture=0)
+        tsigkey_two = self.create_tsigkey(fixture=1)
 
-        values = self.tsigkey_fixtures[0]
+        # Update the T2 object to be a duplicate of T1
+        tsigkey_two.name = tsigkey_one.name
 
         with testtools.ExpectedException(exceptions.DuplicateTsigKey):
-            self.storage.update_tsigkey(self.admin_context, tsigkey['id'],
-                                        values)
+            self.storage.update_tsigkey(self.admin_context, tsigkey_two)
 
     def test_update_tsigkey_missing(self):
+        tsigkey = objects.TsigKey(id='caf771fc-6b05-4891-bee1-c2a48621f57b')
+
         with testtools.ExpectedException(exceptions.TsigKeyNotFound):
-            uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
-            self.storage.update_tsigkey(self.admin_context, uuid, {})
+            self.storage.update_tsigkey(self.admin_context, tsigkey)
 
     def test_delete_tsigkey(self):
         tsigkey = self.create_tsigkey()
@@ -736,30 +742,32 @@ class StorageTestCase(object):
 
     def test_update_domain(self):
         # Create a domain
-        fixture = self.get_domain_fixture()
-        domain = self.create_domain(**fixture)
+        domain = self.create_domain(name='example.org.')
 
-        updated = self.storage.update_domain(self.admin_context, domain['id'],
-                                             fixture)
+        # Update the Object
+        domain.name = 'example.net.'
 
-        self.assertEqual(updated['name'], fixture['name'])
-        self.assertEqual(updated['email'], fixture['email'])
-        self.assertIn('status', updated)
+        # Perform the update
+        domain = self.storage.update_domain(self.admin_context, domain)
+
+        # Ensure the new valie took
+        self.assertEqual('example.net.', domain.name)
 
     def test_update_domain_duplicate(self):
         # Create two domains
-        fixture = self.get_domain_fixture(fixture=0)
-        self.create_domain(**fixture)
+        domain_one = self.create_domain(fixture=0)
         domain_two = self.create_domain(fixture=1)
 
+        # Update the D2 object to be a duplicate of D1
+        domain_two.name = domain_one.name
+
         with testtools.ExpectedException(exceptions.DuplicateDomain):
-            self.storage.update_domain(self.admin_context, domain_two['id'],
-                                       fixture)
+            self.storage.update_domain(self.admin_context, domain_two)
 
     def test_update_domain_missing(self):
+        domain = objects.Domain(id='caf771fc-6b05-4891-bee1-c2a48621f57b')
         with testtools.ExpectedException(exceptions.DomainNotFound):
-            uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
-            self.storage.update_domain(self.admin_context, uuid, {})
+            self.storage.update_domain(self.admin_context, domain)
 
     def test_delete_domain(self):
         domain = self.create_domain()
@@ -930,39 +938,35 @@ class StorageTestCase(object):
         # Create a recordset
         recordset = self.create_recordset(domain)
 
-        # Get some different values to test the update with
-        recordset_fixture = self.get_recordset_fixture(domain['name'],
-                                                       fixture=1)
+        # Update the Object
+        recordset.ttl = 1800
 
-        # Update the recordset with the new values...
-        updated = self.storage.update_recordset(self.admin_context,
-                                                recordset['id'],
-                                                recordset_fixture)
+        # Perform the update
+        recordset = self.storage.update_recordset(self.admin_context,
+                                                  recordset)
 
-        # Ensure the update succeeded
-        self.assertEqual(updated['id'], recordset['id'])
-        self.assertEqual(updated['name'], recordset_fixture['name'])
-        self.assertEqual(updated['type'], recordset_fixture['type'])
+        # Ensure the new value took
+        self.assertEqual(1800, recordset.ttl)
 
     def test_update_recordset_duplicate(self):
         domain = self.create_domain()
 
-        # Create the first two recordsets
-        recordset_one_fixture = self.get_recordset_fixture(domain['name'])
-        self.create_recordset(domain, **recordset_one_fixture)
-        recordset_two = self.create_recordset(domain, fixture=1)
+        # Create two recordsets
+        recordset_one = self.create_recordset(domain, type='A')
+        recordset_two = self.create_recordset(domain, type='A', fixture=1)
+
+        # Update the R2 object to be a duplicate of R1
+        recordset_two.name = recordset_one.name
 
         with testtools.ExpectedException(exceptions.DuplicateRecordSet):
-            # Attempt to update the second recordset, making it a duplicate
-            # recordset
-            self.storage.update_recordset(self.admin_context,
-                                          recordset_two['id'],
-                                          recordset_one_fixture)
+            self.storage.update_recordset(self.admin_context, recordset_two)
 
     def test_update_recordset_missing(self):
+        recordset = objects.RecordSet(
+            id='caf771fc-6b05-4891-bee1-c2a48621f57b')
+
         with testtools.ExpectedException(exceptions.RecordSetNotFound):
-            uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
-            self.storage.update_recordset(self.admin_context, uuid, {})
+            self.storage.update_recordset(self.admin_context, recordset)
 
     def test_delete_recordset(self):
         domain = self.create_domain()
@@ -1188,42 +1192,39 @@ class StorageTestCase(object):
 
     def test_update_record(self):
         domain = self.create_domain()
-        recordset = self.create_recordset(domain)
+        recordset = self.create_recordset(domain, type='A')
 
         # Create a record
         record = self.create_record(domain, recordset)
 
-        # Get some different values to test the update with
-        record_fixture = self.get_record_fixture(recordset['type'], fixture=1)
+        # Update the Object
+        record.data = '192.0.2.255'
 
-        # Update the record with the new values...
-        updated = self.storage.update_record(self.admin_context, record['id'],
-                                             record_fixture)
+        # Perform the update
+        record = self.storage.update_record(self.admin_context, record)
 
-        # Ensure the update succeeded
-        self.assertEqual(updated['id'], record['id'])
-        self.assertEqual(updated['data'], record_fixture['data'])
-        self.assertNotEqual(updated['hash'], record['hash'])
-        self.assertIn('status', updated)
+        # Ensure the new value took
+        self.assertEqual('192.0.2.255', record.data)
 
     def test_update_record_duplicate(self):
         domain = self.create_domain()
         recordset = self.create_recordset(domain)
 
-        # Create the first two records
-        record_one_fixture = self.get_record_fixture(recordset['type'])
-        self.create_record(domain, recordset, **record_one_fixture)
+        # Create two records
+        record_one = self.create_record(domain, recordset)
         record_two = self.create_record(domain, recordset, fixture=1)
 
+        # Update the R2 object to be a duplicate of R1
+        record_two.data = record_one.data
+
         with testtools.ExpectedException(exceptions.DuplicateRecord):
-            # Attempt to update the second record, making it a duplicate record
-            self.storage.update_record(self.admin_context, record_two['id'],
-                                       record_one_fixture)
+            self.storage.update_record(self.admin_context, record_two)
 
     def test_update_record_missing(self):
+        record = objects.Record(id='caf771fc-6b05-4891-bee1-c2a48621f57b')
+
         with testtools.ExpectedException(exceptions.RecordNotFound):
-            uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
-            self.storage.update_record(self.admin_context, uuid, {})
+            self.storage.update_record(self.admin_context, record)
 
     def test_delete_record(self):
         domain = self.create_domain()

@@ -17,6 +17,7 @@ from oslo.config import cfg
 
 from designate import exceptions
 from designate import storage
+from designate import objects
 from designate.openstack.common import log as logging
 from designate.quota.base import Quota
 
@@ -57,18 +58,15 @@ class StorageQuota(Quota):
         context.all_tenants = True
 
         def create_quota():
-            values = {
-                'tenant_id': tenant_id,
-                'resource': resource,
-                'hard_limit': hard_limit,
-            }
+            quota = objects.Quota(
+                tenant_id=tenant_id, resource=resource, hard_limit=hard_limit)
 
-            self.storage.create_quota(context, values)
+            self.storage.create_quota(context, quota)
 
-        def update_quota():
-            values = {'hard_limit': hard_limit}
+        def update_quota(quota):
+            quota.hard_limit = hard_limit
 
-            self.storage.update_quota(context, quota['id'], values)
+            self.storage.update_quota(context, quota)
 
         if resource not in self.get_default_quotas(context).keys():
             raise exceptions.QuotaResourceUnknown("%s is not a valid quota "
@@ -82,7 +80,7 @@ class StorageQuota(Quota):
         except exceptions.NotFound:
             create_quota()
         else:
-            update_quota()
+            update_quota(quota)
 
         return {resource: hard_limit}
 
