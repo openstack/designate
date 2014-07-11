@@ -26,7 +26,7 @@ from designate import exceptions
 class Base(models.ModelBase):
     # TODO(ekarlso): Remove me when o.db patch lands for this.
     def save(self, session):
-        """ Save this object """
+        """Save this object"""
         session.add(self)
 
         try:
@@ -47,7 +47,7 @@ class SoftDeleteMixin(object):
     deleted_at = Column(DateTime, nullable=True, default=None)
 
     def soft_delete(self, session):
-        """ Mark this object as deleted. """
+        """Mark this object as deleted."""
         self.deleted = self.id.replace('-', '')
         self.deleted_at = timeutils.utcnow()
 

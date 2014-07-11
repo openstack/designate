@@ -20,13 +20,13 @@ LOG = logging.getLogger(__name__)
 
 
 class TldsView(base_view.BaseView):
-    """ Model a TLD API response as a python dictionary """
+    """Model a TLD API response as a python dictionary"""
 
     _resource_name = 'tld'
     _collection_name = 'tlds'
 
     def show_basic(self, context, request, tld):
-        """ Basic view of a tld """
+        """Basic view of a tld"""
         return {
             "id": tld['id'],
             "name": tld['name'],
@@ -37,6 +37,6 @@ class TldsView(base_view.BaseView):
         }
 
     def load(self, context, request, body):
-        """ Extract a "central" compatible dict from an API call """
+        """Extract a "central" compatible dict from an API call"""
         valid_keys = ('name', 'description')
         return self._load(context, request, body, valid_keys)

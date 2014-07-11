@@ -42,7 +42,7 @@ class QuotasController(rest.RestController):
 
     @pecan.expose(template='json:', content_type='application/json')
     def patch_one(self, tenant_id):
-        """ Modify a Quota """
+        """Modify a Quota"""
         request = pecan.request
         response = pecan.response
         context = request.environ['context']
@@ -65,7 +65,7 @@ class QuotasController(rest.RestController):
 
     @pecan.expose(template=None, content_type='application/json')
     def delete_one(self, tenant_id):
-        """ Reset to the Default Quotas """
+        """Reset to the Default Quotas"""
         request = pecan.request
         response = pecan.response
         context = request.environ['context']

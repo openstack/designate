@@ -44,7 +44,7 @@ class BaseView(object):
         self.base_uri = CONF['service:api']['api_base_uri'].rstrip('/')
 
     def list(self, context, request, items, parents=None):
-        """ View of a list of items """
+        """View of a list of items"""
         result = {
             "links": self._get_collection_links(request, items, parents)
         }
@@ -59,15 +59,15 @@ class BaseView(object):
         return result
 
     def list_basic(self, context, request, items):
-        """ Non-detailed list of items """
+        """Non-detailed list of items"""
         return [self.show_basic(context, request, i) for i in items]
 
     def list_detail(self, context, request, items):
-        """ Detailed list of items """
+        """Detailed list of items"""
         return [self.show_detail(context, request, i) for i in items]
 
     def show(self, context, request, item):
-        """ Show a single item """
+        """Show a single item"""
         result = {}
 
         if 'detail' in request.GET and request.GET['detail'] == 'yes':
@@ -80,15 +80,15 @@ class BaseView(object):
         return result
 
     def show_basic(self, context, request, item):
-        """ Non-detailed view of a item """
+        """Non-detailed view of a item"""
         raise NotImplementedError()
 
     def show_detail(self, context, request, item):
-        """ Detailed view of a item """
+        """Detailed view of a item"""
         return self.show_basic(context, request, item)
 
     def _load(self, context, request, body, valid_keys):
-        """ Extract a "central" compatible dict from an API call """
+        """Extract a "central" compatible dict from an API call"""
         result = {}
         item = body[self._resource_name]
         error_keys = []

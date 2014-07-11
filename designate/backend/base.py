@@ -26,7 +26,7 @@ LOG = logging.getLogger(__name__)
 
 
 class Backend(DriverPlugin):
-    """ Base class for backend implementations """
+    """Base class for backend implementations"""
     __plugin_type__ = 'backend'
     __plugin_ns__ = 'designate.backend'
 
@@ -43,66 +43,66 @@ class Backend(DriverPlugin):
         pass
 
     def create_tsigkey(self, context, tsigkey):
-        """ Create a TSIG Key """
+        """Create a TSIG Key"""
         raise exceptions.NotImplemented(
             'TSIG is not supported by this backend')
 
     def update_tsigkey(self, context, tsigkey):
-        """ Update a TSIG Key """
+        """Update a TSIG Key"""
         raise exceptions.NotImplemented(
             'TSIG is not supported by this backend')
 
     def delete_tsigkey(self, context, tsigkey):
-        """ Delete a TSIG Key """
+        """Delete a TSIG Key"""
         raise exceptions.NotImplemented(
             'TSIG is not supported by this backend')
 
     @abc.abstractmethod
     def create_domain(self, context, domain):
-        """ Create a DNS domain """
+        """Create a DNS domain"""
 
     @abc.abstractmethod
     def update_domain(self, context, domain):
-        """ Update a DNS domain """
+        """Update a DNS domain"""
 
     @abc.abstractmethod
     def delete_domain(self, context, domain):
-        """ Delete a DNS domain """
+        """Delete a DNS domain"""
 
     def create_recordset(self, context, domain, recordset):
-        """ Create a DNS recordset """
+        """Create a DNS recordset"""
 
     @abc.abstractmethod
     def update_recordset(self, context, domain, recordset):
-        """ Update a DNS recordset """
+        """Update a DNS recordset"""
 
     @abc.abstractmethod
     def delete_recordset(self, context, domain, recordset):
-        """ Delete a DNS recordset """
+        """Delete a DNS recordset"""
 
     @abc.abstractmethod
     def create_record(self, context, domain, recordset, record):
-        """ Create a DNS record """
+        """Create a DNS record"""
 
     @abc.abstractmethod
     def update_record(self, context, domain, recordset, record):
-        """ Update a DNS record """
+        """Update a DNS record"""
 
     @abc.abstractmethod
     def delete_record(self, context, domain, recordset, record):
-        """ Delete a DNS record """
+        """Delete a DNS record"""
 
     @abc.abstractmethod
     def create_server(self, context, server):
-        """ Create a DNS server """
+        """Create a DNS server"""
 
     @abc.abstractmethod
     def update_server(self, context, server):
-        """ Update a DNS server """
+        """Update a DNS server"""
 
     @abc.abstractmethod
     def delete_server(self, context, server):
-        """ Delete a DNS server """
+        """Delete a DNS server"""
 
     def sync_domain(self, context, domain, rdata):
         """
@@ -152,7 +152,7 @@ class Backend(DriverPlugin):
         self.create_record(context, domain, recordset, record)
 
     def ping(self, context):
-        """ Ping the Backend service """
+        """Ping the Backend service"""
 
         return {
             'status': None

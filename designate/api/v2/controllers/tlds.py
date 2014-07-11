@@ -34,7 +34,7 @@ class TldsController(rest.RestController):
     @pecan.expose(template='json:', content_type='application/json')
     @utils.validate_uuid('tld_id')
     def get_one(self, tld_id):
-        """ Get Tld """
+        """Get Tld"""
 
         request = pecan.request
         context = request.environ['context']
@@ -44,7 +44,7 @@ class TldsController(rest.RestController):
 
     @pecan.expose(template='json:', content_type='application/json')
     def get_all(self, **params):
-        """ List Tlds """
+        """List Tlds"""
         request = pecan.request
         context = request.environ['context']
 
@@ -63,7 +63,7 @@ class TldsController(rest.RestController):
 
     @pecan.expose(template='json:', content_type='application/json')
     def post_all(self):
-        """ Create Tld """
+        """Create Tld"""
         request = pecan.request
         response = pecan.response
         context = request.environ['context']
@@ -88,7 +88,7 @@ class TldsController(rest.RestController):
     @pecan.expose(template='json:', content_type='application/json-patch+json')
     @utils.validate_uuid('tld_id')
     def patch_one(self, tld_id):
-        """ Update Tld """
+        """Update Tld"""
         request = pecan.request
         context = request.environ['context']
         body = request.body_dict
@@ -118,7 +118,7 @@ class TldsController(rest.RestController):
     @pecan.expose(template=None, content_type='application/json')
     @utils.validate_uuid('tld_id')
     def delete_one(self, tld_id):
-        """ Delete Tld """
+        """Delete Tld"""
         request = pecan.request
         response = pecan.response
         context = request.environ['context']

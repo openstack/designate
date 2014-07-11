@@ -24,7 +24,7 @@ from designate.plugin import DriverPlugin
 
 @six.add_metaclass(abc.ABCMeta)
 class Quota(DriverPlugin):
-    """ Base class for quota plugins """
+    """Base class for quota plugins"""
     __plugin_ns__ = 'designate.quota'
     __plugin_type__ = 'quota'
 

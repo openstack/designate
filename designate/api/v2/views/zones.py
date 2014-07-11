@@ -21,13 +21,13 @@ LOG = logging.getLogger(__name__)
 
 
 class ZonesView(base_view.BaseView):
-    """ Model a Zone API response as a python dictionary """
+    """Model a Zone API response as a python dictionary"""
 
     _resource_name = 'zone'
     _collection_name = 'zones'
 
     def show_basic(self, context, request, zone):
-        """ Basic view of a zone """
+        """Basic view of a zone"""
         # TODO(kiall): pool_id should not be hardcoded.. even temp :)
         return {
             "id": zone['id'],
@@ -46,6 +46,6 @@ class ZonesView(base_view.BaseView):
         }
 
     def load(self, context, request, body):
-        """ Extract a "central" compatible dict from an API call """
+        """Extract a "central" compatible dict from an API call"""
         valid_keys = ('name', 'email', 'description', 'ttl')
         return self._load(context, request, body, valid_keys)

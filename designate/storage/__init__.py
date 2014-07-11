@@ -20,7 +20,7 @@ LOG = logging.getLogger(__name__)
 
 
 def get_storage(storage_driver):
-    """ Return the engine class from the provided engine name """
+    """Return the engine class from the provided engine name"""
     cls = Storage.get_driver(storage_driver)
 
     return cls()

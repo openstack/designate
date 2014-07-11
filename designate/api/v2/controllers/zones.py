@@ -48,7 +48,7 @@ class ZonesController(rest.RestController):
     @pecan.expose(template=None, content_type='text/dns')
     @utils.validate_uuid('zone_id')
     def get_one(self, zone_id):
-        """ Get Zone """
+        """Get Zone"""
         # TODO(kiall): Validate we have a sane UUID for zone_id
 
         request = pecan.request
@@ -66,13 +66,13 @@ class ZonesController(rest.RestController):
                 'Accept must be text/dns or application/json')
 
     def _get_json(self, request, context, zone_id):
-        """ 'Normal' zone get """
+        """'Normal' zone get"""
         zone = self.central_api.get_domain(context, zone_id)
 
         return self._view.show(context, request, zone)
 
     def _get_zonefile(self, request, context, zone_id):
-        """ Export zonefile """
+        """Export zonefile"""
         servers = self.central_api.get_domain_servers(context, zone_id)
         domain = self.central_api.get_domain(context, zone_id)
 
@@ -105,7 +105,7 @@ class ZonesController(rest.RestController):
 
     @pecan.expose(template='json:', content_type='application/json')
     def get_all(self, **params):
-        """ List Zones """
+        """List Zones"""
         request = pecan.request
         context = request.environ['context']
 
@@ -123,7 +123,7 @@ class ZonesController(rest.RestController):
 
     @pecan.expose(template='json:', content_type='application/json')
     def post_all(self):
-        """ Create Zone """
+        """Create Zone"""
         request = pecan.request
         response = pecan.response
         context = request.environ['context']
@@ -136,7 +136,7 @@ class ZonesController(rest.RestController):
                 'Content-type must be text/dns or application/json')
 
     def _post_json(self, request, response, context):
-        """ 'Normal' zone creation """
+        """'Normal' zone creation"""
         body = request.body_dict
 
         # Validate the request conforms to the schema
@@ -163,7 +163,7 @@ class ZonesController(rest.RestController):
         return self._view.show(context, request, zone)
 
     def _post_zonefile(self, request, response, context):
-        """ Import Zone """
+        """Import Zone"""
         dnspython_zone = self._parse_zonefile(request)
         # TODO(artom) This should probably be handled with transactions
         zone = self._create_zone(context, dnspython_zone)
@@ -187,7 +187,7 @@ class ZonesController(rest.RestController):
     @pecan.expose(template='json:', content_type='application/json-patch+json')
     @utils.validate_uuid('zone_id')
     def patch_one(self, zone_id):
-        """ Update Zone """
+        """Update Zone"""
         # TODO(kiall): This needs cleanup to say the least..
         request = pecan.request
         context = request.environ['context']
@@ -235,7 +235,7 @@ class ZonesController(rest.RestController):
     @pecan.expose(template=None, content_type='application/json')
     @utils.validate_uuid('zone_id')
     def delete_one(self, zone_id):
-        """ Delete Zone """
+        """Delete Zone"""
         request = pecan.request
         response = pecan.response
         context = request.environ['context']
@@ -256,7 +256,7 @@ class ZonesController(rest.RestController):
     # somewhere reusable.
 
     def _create_zone(self, context, dnspython_zone):
-        """ Creates the initial zone """
+        """Creates the initial zone"""
         # dnspython never builds a zone with more than one SOA, even if we give
         # it a zonefile that contains more than one
         soa = dnspython_zone.get_rdataset(dnspython_zone.origin, 'SOA')
@@ -289,7 +289,7 @@ class ZonesController(rest.RestController):
             }
 
     def _create_records(self, context, zone_id, dnspython_zone):
-        """ Creates the records """
+        """Creates the records"""
         for record_name in dnspython_zone.nodes.keys():
             for rdataset in dnspython_zone.nodes[record_name]:
                 record_type = rdatatype.to_text(rdataset.rdtype)
@@ -325,7 +325,7 @@ class ZonesController(rest.RestController):
                             Record(**values))
 
     def _parse_zonefile(self, request):
-        """ Parses a POSTed zonefile into a dnspython zone object """
+        """Parses a POSTed zonefile into a dnspython zone object"""
         try:
             dnspython_zone = dnszone.from_text(
                 request.body,

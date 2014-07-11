@@ -21,13 +21,13 @@ LOG = logging.getLogger(__name__)
 
 
 class QuotasView(base_view.BaseView):
-    """ Model a Quota API response as a python dictionary """
+    """Model a Quota API response as a python dictionary"""
 
     _resource_name = 'quota'
     _collection_name = 'quotas'
 
     def show_basic(self, context, request, quota):
-        """ Basic view of a quota """
+        """Basic view of a quota"""
         return {
             "zones": quota['domains'],
             "zone_records": quota['domain_records'],
@@ -36,7 +36,7 @@ class QuotasView(base_view.BaseView):
         }
 
     def load(self, context, request, body):
-        """ Extract a "central" compatible dict from an API call """
+        """Extract a "central" compatible dict from an API call"""
         valid_keys = ('domain_records', 'domain_recordsets', 'domains',
                       'recordset_records')
 

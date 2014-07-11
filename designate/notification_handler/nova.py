@@ -35,7 +35,7 @@ cfg.CONF.register_opts([
 
 
 class NovaFixedHandler(BaseAddressHandler):
-    """ Handler for Nova's notifications """
+    """Handler for Nova's notifications"""
     __plugin_name__ = 'nova_fixed'
 
     def get_exchange_topics(self):

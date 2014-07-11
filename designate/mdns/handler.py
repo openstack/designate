@@ -48,7 +48,7 @@ class RequestHandler(object):
         return response.to_wire()
 
     def _handle_query(self, request):
-        """ Handle a DNS QUERY request """
+        """Handle a DNS QUERY request"""
         response = dns.message.make_response(request)
         response.set_rcode(dns.rcode.SERVFAIL)
 

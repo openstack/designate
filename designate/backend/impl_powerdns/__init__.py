@@ -64,7 +64,7 @@ class PowerDNSBackend(base.Backend):
 
     # TSIG Key Methods
     def create_tsigkey(self, context, tsigkey):
-        """ Create a TSIG Key """
+        """Create a TSIG Key"""
 
         if tsigkey['algorithm'] not in TSIG_SUPPORTED_ALGORITHMS:
             raise exceptions.NotImplemented('Unsupported algorithm')
@@ -104,7 +104,7 @@ class PowerDNSBackend(base.Backend):
         self.session.commit()
 
     def update_tsigkey(self, context, tsigkey):
-        """ Update a TSIG Key """
+        """Update a TSIG Key"""
         tsigkey_m = self._get_tsigkey(tsigkey['id'])
 
         # Store a copy of the original name..
@@ -125,7 +125,7 @@ class PowerDNSBackend(base.Backend):
                 .update(content=tsigkey['name'])
 
     def delete_tsigkey(self, context, tsigkey):
-        """ Delete a TSIG Key """
+        """Delete a TSIG Key"""
         try:
             # Delete this TSIG Key itself
             tsigkey_m = self._get_tsigkey(tsigkey['id'])
@@ -336,7 +336,7 @@ class PowerDNSBackend(base.Backend):
         record_m.save(self.session)
 
     def _update_domainmetadata(self, domain_id, kind, values=[], delete=True):
-        """ Updates a domain's metadata with new values """
+        """Updates a domain's metadata with new values"""
         # Fetch all current metadata of the specified kind
         query = self.session.query(models.DomainMetadata)
         query = query.filter_by(domain_id=domain_id, kind=kind)

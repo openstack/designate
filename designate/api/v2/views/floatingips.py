@@ -21,7 +21,7 @@ LOG = logging.getLogger(__name__)
 
 
 class FloatingIPView(base_view.BaseView):
-    """ Model a FloatingIP PTR record as a python dict """
+    """Model a FloatingIP PTR record as a python dict"""
     _resource_name = 'floatingip'
     _collection_name = 'floatingips'
 

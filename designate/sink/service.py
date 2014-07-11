@@ -38,7 +38,7 @@ class Service(service.Service):
         self.subscribers = self._get_subscribers()
 
     def _init_extensions(self):
-        """ Loads and prepares all enabled extensions """
+        """Loads and prepares all enabled extensions"""
 
         enabled_notification_handlers = \
             cfg.CONF['service:sink'].enabled_notification_handlers

@@ -35,7 +35,7 @@ cfg.CONF.register_opts([
 
 
 class NeutronFloatingHandler(BaseAddressHandler):
-    """ Handler for Neutron's notifications """
+    """Handler for Neutron's notifications"""
     __plugin_name__ = 'neutron_floatingip'
 
     def get_exchange_topics(self):
