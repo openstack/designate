@@ -525,14 +525,12 @@ class StorageTestCase(object):
         expected = [{
             'id': 'One',
             'domain_count': 1,
-            'domains': None,
         }, {
             'id': 'Two',
             'domain_count': 1,
-            'domains': None,
         }]
 
-        self.assertEqual(result_dict, expected)
+        self.assertEqual(expected, result_dict)
 
     def test_get_tenant(self):
         context = self.get_admin_context()

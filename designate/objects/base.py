@@ -85,24 +85,23 @@ class DictObjectMixin(object):
         if default != NotSpecifiedSentinel and not self.obj_attr_is_set(key):
             return default
         else:
-            return self[key]
+            return getattr(self, key)
 
     def update(self, values):
-        """Make the model object behave like a dict"""
         for k, v in values.iteritems():
-            self[k] = v
+            setattr(self, k, v)
 
     def iteritems(self):
-        """
-        Make the model object behave like a dict.
+        for field in self.FIELDS:
+            if self.obj_attr_is_set(field):
+                yield field, getattr(self, field)
 
-        Includes attributes from joins.
-        """
-        local = dict(self)
-        joined = dict([(k, v) for k, v in self.__dict__.iteritems()
-                      if not k[0] == '_'])
-        local.update(joined)
-        return local.iteritems()
+    def __iter__(self):
+        for field in self.FIELDS:
+            if self.obj_attr_is_set(field):
+                yield field, getattr(self, field)
+
+    items = lambda self: list(self.iteritems())
 
 
 class PersistentObjectMixin(object):
@@ -240,13 +239,3 @@ class DesignateObject(DictObjectMixin):
         c_obj._obj_changes = set(self._obj_changes)
 
         return c_obj
-
-    def __iter__(self):
-        # Redundant?
-        self._i = iter(self.FIELDS)
-        return self
-
-    def next(self):
-        # Redundant?
-        n = self._i.next()
-        return n, getattr(self, n)
