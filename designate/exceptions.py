@@ -201,6 +201,12 @@ class DuplicateBlacklist(Duplicate):
     error_type = 'duplicate_blacklist'
 
 
+class MethodNotAllowed(Base):
+    expected = True
+    error_code = 405
+    error_type = 'method_not_allowed'
+
+
 class NotFound(Base):
     expected = True
     error_code = 404

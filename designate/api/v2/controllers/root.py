@@ -63,3 +63,9 @@ class RootController(object):
     @expose(content_type='application/json')
     def not_found(self):
         raise exceptions.NotFound
+
+    @expose(content_type='text/plain')
+    @expose(content_type='text/dns')
+    @expose(content_type='application/json')
+    def method_not_allowed(self):
+        raise exceptions.MethodNotAllowed
