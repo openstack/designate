@@ -239,3 +239,12 @@ class DesignateObject(DictObjectMixin):
         c_obj._obj_changes = set(self._obj_changes)
 
         return c_obj
+
+    def __eq__(self, other):
+        if self.__class__ != other.__class__:
+            return False
+
+        return self.to_primitive() == other.to_primitive()
+
+    def __ne__(self, other):
+        return not(self.__eq__(other))
