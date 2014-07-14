@@ -222,7 +222,9 @@ class FaultWrapperMiddleware(wsgi.Middleware):
             # Handle all other exception types
             return self._handle_exception(request, e)
 
-    def _handle_exception(self, request, e, status=500, response={}):
+    def _handle_exception(self, request, e, status=500, response=None):
+
+        response = response or {}
         # Log the exception ASAP unless it is a 404 Not Found
         if not getattr(e, 'expected', False):
             LOG.exception(e)

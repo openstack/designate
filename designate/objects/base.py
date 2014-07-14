@@ -222,13 +222,16 @@ class DesignateObject(DictObjectMixin):
         else:
             raise KeyError(field)
 
-    def __deepcopy__(self, memodict={}):
+    def __deepcopy__(self, memodict=None):
         """
         Efficiently make a deep copy of this object.
 
         "Efficiently" is used here a relative term, this will be faster
         than allowing python to naively deepcopy the object.
         """
+
+        memodict = memodict or {}
+
         c_obj = self.__class__()
 
         for field in self.FIELDS:

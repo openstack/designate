@@ -27,11 +27,12 @@ class DesignateContext(context.RequestContext):
     def __init__(self, auth_token=None, user=None, tenant=None, domain=None,
                  user_domain=None, project_domain=None, is_admin=False,
                  read_only=False, show_deleted=False, request_id=None,
-                 instance_uuid=None, roles=[], service_catalog=None,
+                 instance_uuid=None, roles=None, service_catalog=None,
                  all_tenants=False, **kwargs):
         if kwargs:
                 LOG.warn(_LW('Arguments dropped when creating context: %s') %
                          str(kwargs))
+        roles = roles or []
         super(DesignateContext, self).__init__(
             auth_token=auth_token,
             user=user,

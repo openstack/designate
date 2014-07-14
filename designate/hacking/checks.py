@@ -17,7 +17,7 @@ import re
 
 
 mutable_default_argument_check = re.compile(
-    r"def [a-zA-Z0-9].*\(.*(\{|\[|\().*\)\:")
+    r"^\s*def .+\((.+=\{\}|.+=\[\])")
 
 
 def mutable_default_arguments(logical_line, filename):
