@@ -15,8 +15,6 @@
 # under the License.
 import binascii
 
-from mock import patch
-
 from designate.tests.test_mdns import MdnsTestCase
 from designate.mdns import handler
 
@@ -25,44 +23,230 @@ class MdnsRequestHandlerTest(MdnsTestCase):
     def setUp(self):
         super(MdnsRequestHandlerTest, self).setUp()
         self.handler = handler.RequestHandler()
+        self.addr = ["0.0.0.0", 5556]
 
-    @patch.object(handler.RequestHandler, '_handle_query')
-    def test_dispatch_opcode_query(self, mock):
+    def test_dispatch_opcode_iquery(self):
+        # DNS packet with IQUERY opcode
+        payload = "271109000001000000000000076578616d706c6503636f6d0000010001"
+
+        # expected response is an error code REFUSED.  The other fields are
+        # id 10001
+        # opcode IQUERY
+        # rcode REFUSED
+        # flags QR RD
+        # ;QUESTION
+        # example.com. IN A
+        # ;ANSWER
+        # ;AUTHORITY
+        # ;ADDITIONAL
+        expected_response = ("271189050001000000000000076578616d706c6503636f6d"
+                             "0000010001")
+
+        response = self.handler.handle(binascii.a2b_hex(payload), self.addr)
+        self.assertEqual(expected_response, binascii.b2a_hex(response))
+
+    def test_dispatch_opcode_status(self):
+        # DNS packet with STATUS opcode
+        payload = "271211000001000000000000076578616d706c6503636f6d0000010001"
+
+        # expected response is an error code REFUSED.  The other fields are
+        # id 10002
+        # opcode STATUS
+        # rcode REFUSED
+        # flags QR RD
+        # ;QUESTION
+        # example.com. IN A
+        # ;ANSWER
+        # ;AUTHORITY
+        # ;ADDITIONAL
+        expected_response = ("271291050001000000000000076578616d706c6503636f6d"
+                             "0000010001")
+
+        response = self.handler.handle(binascii.a2b_hex(payload), self.addr)
+        self.assertEqual(expected_response, binascii.b2a_hex(response))
+
+    def test_dispatch_opcode_notify(self):
+        # DNS packet with NOTIFY opcode
+        payload = "271321000001000000000000076578616d706c6503636f6d0000010001"
+
+        # expected response is an error code REFUSED.  The other fields are
+        # id 10003
+        # opcode NOTIFY
+        # rcode REFUSED
+        # flags QR RD
+        # ;QUESTION
+        # example.com. IN A
+        # ;ANSWER
+        # ;AUTHORITY
+        # ;ADDITIONAL
+        expected_response = ("2713a1050001000000000000076578616d706c6503636f6d"
+                             "0000010001")
+
+        response = self.handler.handle(binascii.a2b_hex(payload), self.addr)
+        self.assertEqual(expected_response, binascii.b2a_hex(response))
+
+    def test_dispatch_opcode_update(self):
+        # DNS packet with UPDATE opcode
+        payload = "271429000001000000000000076578616d706c6503636f6d0000010001"
+
+        # expected response is an error code REFUSED.  The other fields are
+        # id 10004
+        # opcode UPDATE
+        # rcode REFUSED
+        # flags QR RD
+        # ;ZONE
+        # example.com. IN A
+        # ;PREREQ
+        # ;UPDATE
+        # ;ADDITIONAL
+        expected_response = ("2714a9050001000000000000076578616d706c6503636f6d"
+                             "0000010001")
+
+        response = self.handler.handle(binascii.a2b_hex(payload), self.addr)
+        self.assertEqual(expected_response, binascii.b2a_hex(response))
+
+    def test_dispatch_opcode_query_invalid(self):
+        # invalid query
+        payload = "1234"
+
+        # expected_response is FORMERR.  The other fields are
+        # id <varies>
+        # opcode QUERY
+        # rcode FORMERR
+        # flags QR RD
+        # ;QUESTION
+        # ;ANSWER
+        # ;AUTHORITY
+        # ;ADDITIONAL
+        expected_response = "1010000000000000000"
+
+        response = self.handler.handle(binascii.a2b_hex(payload), self.addr)
+
+        # strip the id from the response and compare
+        self.assertEqual(expected_response, binascii.b2a_hex(response)[5:])
+
+    def test_dispatch_opcode_query_non_existent_domain(self):
         # DNS packet with QUERY opcode
-        payload = ("abbe01200001000000000001076578616d706c6503636f6d0000010001"
+        # query is for example.com. IN A
+        payload = ("271501200001000000000001076578616d706c6503636f6d0000010001"
                    "0000291000000000000000")
 
-        self.handler.handle(binascii.a2b_hex(payload))
-        self.assertTrue(mock.called)
+        # expected_response is an error code REFUSED.  The other fields are
+        # id 10005
+        # opcode QUERY
+        # rcode REFUSED
+        # flags QR RD
+        # edns 0
+        # payload 8192
+        # ;QUESTION
+        # example.com. IN A
+        # ;ANSWER
+        # ;AUTHORITY
+        # ;ADDITIONAL
+        expected_response = ("271581050001000000000001076578616d706c6503636f6d"
+                             "00000100010000292000000000000000")
+        response = self.handler.handle(binascii.a2b_hex(payload), self.addr)
+        self.assertEqual(expected_response, binascii.b2a_hex(response))
 
-    @patch.object(handler.RequestHandler, '_handle_unsupported')
-    def test_dispatch_opcode_iquery(self, mock):
-        # DNS packet with IQUERY opcode
-        payload = "60e509000001000000000000076578616d706c6503636f6d0000010001"
+    def test_dispatch_opcode_query_A(self):
+        # query is for mail.example.com. IN A
+        payload = ("271601000001000000000000046d61696c076578616d706c6503636f6d"
+                   "0000010001")
 
-        self.handler.handle(binascii.a2b_hex(payload))
-        self.assertTrue(mock.called)
+        # expected_response is NOERROR.  The other fields are
+        # id 10006
+        # opcode QUERY
+        # rcode NOERROR
+        # flags QR AA RD
+        # ;QUESTION
+        # mail.example.com. IN A
+        # ;ANSWER
+        # mail.example.com. 3600 IN A 192.0.2.1
+        # ;AUTHORITY
+        # ;ADDITIONAL
+        expected_response = ("271685000001000100000000046d61696c076578616d706c"
+                             "6503636f6d0000010001c00c0001000100000e100004c000"
+                             "0201")
 
-    @patch.object(handler.RequestHandler, '_handle_unsupported')
-    def test_dispatch_opcode_status(self, mock):
-        # DNS packet with STATUS opcode
-        payload = "5e0811000001000000000000076578616d706c6503636f6d0000010001"
+        # This creates an A record for mail.example.com
+        domain = self.create_domain()
+        recordset = self.create_recordset(domain, 'A')
+        self.create_record(domain, recordset)
 
-        self.handler.handle(binascii.a2b_hex(payload))
-        self.assertTrue(mock.called)
+        response = self.handler.handle(binascii.a2b_hex(payload), self.addr)
+        self.assertEqual(expected_response, binascii.b2a_hex(response))
 
-    @patch.object(handler.RequestHandler, '_handle_unsupported')
-    def test_dispatch_opcode_notify(self, mock):
-        # DNS packet with NOTIFY opcode`
-        payload = "93e121000001000000000000076578616d706c6503636f6d0000010001"
+    def test_dispatch_opcode_query_MX(self):
+        # query is for mail.example.com. IN MX
+        payload = ("271701000001000000000000046d61696c076578616d706c6503636f6d"
+                   "00000f0001")
 
-        self.handler.handle(binascii.a2b_hex(payload))
-        self.assertTrue(mock.called)
+        # expected_response is NOERROR.  The other fields are
+        # id 10007
+        # opcode QUERY
+        # rcode NOERROR
+        # flags QR AA RD
+        # ;QUESTION
+        # mail.example.com. IN MX
+        # ;ANSWER
+        # mail.example.com. 3600 IN MX 5 mail.example.org.
+        # ;AUTHORITY
+        # ;ADDITIONAL
+        expected_response = ("271785000001000100000000046d61696c076578616d706c"
+                             "6503636f6d00000f0001c00c000f000100000e1000140005"
+                             "046d61696c076578616d706c65036f726700")
 
-    @patch.object(handler.RequestHandler, '_handle_unsupported')
-    def test_dispatch_opcode_update(self, mock):
-        # DNS packet with UPDATE opcode`
-        payload = "5a7029000001000000000000076578616d706c6503636f6d0000010001"
+        # This creates an MX record for mail.example.com
+        domain = self.create_domain()
+        recordset = self.create_recordset(domain, 'MX')
+        self.create_record(domain, recordset)
 
-        self.handler.handle(binascii.a2b_hex(payload))
-        self.assertTrue(mock.called)
+        response = self.handler.handle(binascii.a2b_hex(payload), self.addr)
+        self.assertEqual(expected_response, binascii.b2a_hex(response))
+
+    def test_dispatch_opcode_query_nonexistent_recordtype(self):
+        # query is for mail.example.com. IN CNAME
+        payload = ("271801000001000000000000046d61696c076578616d706c6503636f6d"
+                   "0000050001")
+
+        # expected_response is REFUSED.  The other fields are
+        # id 10008
+        # opcode QUERY
+        # rcode REFUSED
+        # flags QR RD
+        # ;QUESTION
+        # mail.example.com. IN CNAME
+        # ;ANSWER
+        # ;AUTHORITY
+        # ;ADDITIONAL
+        expected_response = ("271881050001000000000000046d61696c076578616d706c"
+                             "6503636f6d0000050001")
+
+        # This creates an MX record for mail.example.com
+        # But we query for a CNAME record
+        domain = self.create_domain()
+        recordset = self.create_recordset(domain, 'MX')
+        self.create_record(domain, recordset)
+
+        response = self.handler.handle(binascii.a2b_hex(payload), self.addr)
+        self.assertEqual(expected_response, binascii.b2a_hex(response))
+
+    def test_dispatch_opcode_query_unsupported_recordtype(self):
+        # query is for example.com. IN DNAME
+        payload = "271901000001000000000000076578616d706c6503636f6d0000270001"
+
+        # expected_response is REFUSED.  The other fields are
+        # id 10009
+        # opcode QUERY
+        # rcode REFUSED
+        # flags QR RD
+        # ;QUESTION
+        # example.com. IN DNAME
+        # ;ANSWER
+        # ;AUTHORITY
+        # ;ADDITIONAL
+        expected_response = ("271981050001000000000000076578616d706c6503636f6d"
+                             "0000270001")
+
+        response = self.handler.handle(binascii.a2b_hex(payload), self.addr)
+        self.assertEqual(expected_response, binascii.b2a_hex(response))

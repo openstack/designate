@@ -21,6 +21,7 @@ from designate import service
 from designate.mdns import handler
 from designate.mdns import notify
 from designate.openstack.common import log as logging
+from designate.openstack.common.gettextutils import _LE
 from designate.openstack.common.gettextutils import _LI
 from designate.openstack.common.gettextutils import _LW
 
@@ -38,7 +39,9 @@ class Service(service.Service):
         self.handler = handler.RequestHandler()
 
         # Bind to the TCP port
-        LOG.info(_LI('Opening TCP Listening Socket'))
+        LOG.info(_LI('Opening TCP Listening Socket on %(host)s:%(port)d') %
+                 {'host': CONF['service:mdns'].host,
+                  'port': CONF['service:mdns'].port})
         self._sock_tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._sock_tcp.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self._sock_tcp.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
@@ -47,7 +50,9 @@ class Service(service.Service):
         self._sock_tcp.listen(CONF['service:mdns'].tcp_backlog)
 
         # Bind to the UDP port
-        LOG.info(_LI('Opening UDP Listening Socket'))
+        LOG.info(_LI('Opening UDP Listening Socket on %(host)s:%(port)d') %
+                 {'host': CONF['service:mdns'].host,
+                  'port': CONF['service:mdns'].port})
         self._sock_udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self._sock_udp.bind((CONF['service:mdns'].host,
                              CONF['service:mdns'].port))
@@ -68,7 +73,8 @@ class Service(service.Service):
         LOG.info(_LI("_handle_tcp thread started"))
         while True:
             client, addr = self._sock_tcp.accept()
-            LOG.warn(_LW("Handling TCP Request from: %s") % addr)
+            LOG.warn(_LW("Handling TCP Request from: %(host)s:%(port)d") %
+                     {'host': addr[0], 'port': addr[1]})
 
             payload = client.recv(65535)
 
@@ -80,7 +86,8 @@ class Service(service.Service):
             # TODO(kiall): Determine the appropriate default value for
             #              UDP recvfrom.
             payload, addr = self._sock_udp.recvfrom(8192)
-            LOG.warn(_LW("Handling UDP Request from: %s") % addr)
+            LOG.warn(_LW("Handling UDP Request from: %(host)s:%(port)d") %
+                     {'host': addr[0], 'port': addr[1]})
 
             self.tg.add_thread(self._handle, addr, payload)
 
@@ -92,12 +99,19 @@ class Service(service.Service):
         :param payload: Raw DNS query payload
         :param client: Client socket (for TCP only)
         """
-        response = self.handler.handle(payload)
+        try:
+            response = self.handler.handle(payload, addr)
 
-        if client is not None:
-            # Handle TCP Responses
-            client.send(response)
-            client.close()
-        else:
-            # Handle UDP Responses
-            self._sock_udp.sendto(response, addr)
+            # send back a response only if present
+            if response:
+                if client is not None:
+                    # Handle TCP Responses
+                    client.send(response)
+                    client.close()
+                else:
+                    # Handle UDP Responses
+                    self._sock_udp.sendto(response, addr)
+        except Exception:
+            LOG.exception(_LE("Unhandled exception while processing request "
+                              "from %(host)s:%(port)d") %
+                          {'host': addr[0], 'port': addr[1]})

@@ -16,8 +16,11 @@
 import dns
 from oslo.config import cfg
 
-from designate.openstack.common import log as logging
+from designate import exceptions
 from designate import storage
+from designate.context import DesignateContext
+from designate.openstack.common import log as logging
+from designate.openstack.common.gettextutils import _LE
 
 
 LOG = logging.getLogger(__name__)
@@ -29,38 +32,134 @@ class RequestHandler(object):
         # Get a storage connection
         storage_driver = cfg.CONF['service:mdns'].storage_driver
         self.storage = storage.get_storage(storage_driver)
+        self.admin_context = DesignateContext.get_admin_context(
+            all_tenants=True)
 
-    def handle(self, payload):
-        request = dns.message.from_wire(payload)
+        # Fake request is used to send a response when we cannot decipher the
+        # request.
+        self._fake_request = dns.message.make_query('unknown', dns.rdatatype.A)
 
-        # As we move further with the implementation, we'll want to:
-        # 1) Decode the payload using DNSPython
-        # 2) Hand off to either _handle_query or _handle_unsupported
-        #    based on the OpCode
-        # 3) Gather the query results from storage
-        # 4) Build and return response using DNSPython.
-
-        if request.opcode() == dns.opcode.QUERY:
-            response = self._handle_query(request)
+    def handle(self, payload, addr):
+        """
+        :param payload: Raw DNS query payload
+        :param addr: Tuple of the client's (IP, Port)
+        :return: response to the query or None if there is an issue decoding
+         the query.
+        """
+        try:
+            request = dns.message.from_wire(payload)
+        except dns.exception.DNSException:
+            LOG.exception(_LE("got exception while decoding packet from "
+                              "%(host)s:%(port)d") %
+                          {'host': addr[0], 'port': addr[1]})
+            # We might not have the correct request id to send a response back
+            # So make up a response with a blank question section
+            response = self._handle_query_error(
+                self._fake_request, dns.rcode.FORMERR)
+            response.question = []
         else:
-            response = self._handle_unsupported(request)
+            if request.opcode() == dns.opcode.QUERY:
+                response = self._handle_query(request)
+            else:
+                # Unhandled OpCode's include STATUS, IQUERY, NOTIFY, UPDATE
+                response = self._handle_query_error(request, dns.rcode.REFUSED)
 
         return response.to_wire()
 
-    def _handle_query(self, request):
-        """Handle a DNS QUERY request"""
+    def _handle_query_error(self, request, rcode):
+        """
+        Construct an error response with the rcode passed in.
+        :param request: The decoded request from the wire.
+        :param rcode: The response code to send back
+        :return: A dns response message with the response code set to rcode
+        """
         response = dns.message.make_response(request)
-        response.set_rcode(dns.rcode.SERVFAIL)
+        response.set_rcode(rcode)
 
         return response
 
-    def _handle_unsupported(self, request):
-        """
-        Handle Unsupported DNS OpCode's
+    def _handle_query(self, request):
+        """Handle a DNS QUERY request"""
+        # Currently we expect exactly 1 question in the section
+        # TSIG places the pseudo records into the additional section.
+        if (len(request.question) != 1 or
+                request.question[0].rdclass != dns.rdataclass.IN):
+            return self._handle_query_error(request, dns.rcode.REFUSED)
 
-        Unsupported OpCode's include STATUS, IQUERY, NOTIFY, UPDATE
-        """
         response = dns.message.make_response(request)
-        response.set_rcode(dns.rcode.REFUSED)
+        q_rrset = request.question[0]
+        try:
+            # TODO(vinod) once validation is separated from the api,
+            # validate the parameters
+            criterion = {
+                'name': q_rrset.name.to_text(),
+                'type': dns.rdatatype.to_text(q_rrset.rdtype)
+            }
+            # first get the recordset based on the name and type and then
+            # get the records in the recordset
+            recordset = self.storage.find_recordset(
+                self.admin_context, criterion)
+            criterion = {'recordset_id': recordset.id}
+            records = self.storage.find_records(
+                self.admin_context, criterion=criterion)
+
+            # Fetch the domain or the config ttl if the recordset ttl is
+            # null
+            if recordset.ttl:
+                ttl = recordset.ttl
+            else:
+                domain = self.storage.get_domain(
+                    self.admin_context, recordset.domain_id)
+                if domain.ttl:
+                    ttl = domain.ttl
+                else:
+                    ttl = CONF.default_ttl
+
+            # construct rdata from all the records
+            rdata = []
+            for record in records:
+                # dnspython expects data to be a string. convert record
+                # data from unicode to string
+                # For MX and SRV records add a priority field.
+                # TODO(vinod) add an additional section for MX records
+                if (q_rrset.rdtype == dns.rdatatype.MX or
+                        q_rrset.rdtype == dns.rdatatype.SRV):
+                    rdata.append(str.format(
+                        "%d %s" % (record.priority, str(record.data))))
+                else:
+                    rdata.append(str(record.data))
+
+            # Now put the records into dnspython's RRsets
+            # answer section has 1 RR set.  If the RR set has multiple
+            # records, DNSpython puts each record in a separate answer
+            # section.
+            # RRSet has name, ttl, class, type  and rdata
+            # The rdata has one or more records
+            r_rrset = dns.rrset.from_text_list(
+                recordset.name, ttl, dns.rdataclass.IN, recordset.type,
+                rdata)
+
+            response.set_rcode(dns.rcode.NOERROR)
+            response.answer = [r_rrset]
+            # For all the data stored in designate mdns is Authoritative
+            response.flags |= dns.flags.AA
+        except exceptions.NotFound:
+            # If an FQDN exists, like www.rackspace.com, but the specific
+            # record type doesn't exist, like type SPF, then the return code
+            # would be NOERROR and the SOA record is returned.  This tells
+            # caching nameservers that the FQDN does exist, so don't negatively
+            # cache it, but the specific record doesn't exist.
+            #
+            # If an FQDN doesn't exist with any record type, that is NXDOMAIN.
+            # However, an authoritative nameserver shouldn't return NXDOMAIN
+            # for a zone it isn't authoritative for.  It would be more
+            # appropriate for it to return REFUSED.  It should still return
+            # NXDOMAIN if it is authoritative for a domain but the FQDN doesn't
+            # exist, like abcdef.rackspace.com.  Of course, a wildcard within a
+            # domain would mean that NXDOMAIN isn't ever returned for a domain.
+            #
+            # To simply things currently this returns a REFUSED in all cases.
+            # If zone transfers needs different errors, we could revisit this.
+            response.set_rcode(dns.rcode.REFUSED)
 
         return response
