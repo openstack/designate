@@ -44,6 +44,7 @@ def factory(global_config, **local_conf):
             'modules': ['designate.api.v2'],
             'errors': {
                 404: '/not_found',
+                405: '/method_not_allowed',
                 '__force_dict__' : True
             }
         }
