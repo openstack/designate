@@ -159,12 +159,15 @@ class BaseAddressHandler(NotificationHandler):
                                            Record(**record_values))
 
     def _delete(self, managed=True, resource_id=None, resource_type='instance',
-                criterion={}):
+                criterion=None):
         """
         Handle a generic delete of a fixed ip within a domain
 
         :param criterion: Criterion to search and destroy records
         """
+
+        criterion = criterion or {}
+
         context = DesignateContext.get_admin_context(all_tenants=True)
 
         criterion.update({'domain_id': cfg.CONF[self.name].domain_id})

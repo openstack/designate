@@ -335,9 +335,12 @@ class PowerDNSBackend(base.Backend):
 
         record_m.save(self.session)
 
-    def _update_domainmetadata(self, domain_id, kind, values=[], delete=True):
+    def _update_domainmetadata(self, domain_id, kind, values=None,
+                               delete=True):
         """Updates a domain's metadata with new values"""
         # Fetch all current metadata of the specified kind
+        values = values or []
+
         query = self.session.query(models.DomainMetadata)
         query = query.filter_by(domain_id=domain_id, kind=kind)
 

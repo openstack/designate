@@ -121,7 +121,7 @@ class DynClient(object):
     """
     def __init__(self, customer_name, user_name, password,
                  endpoint="https://api.dynect.net:443",
-                 api_version='3.5.6', headers={}, verify=True, retries=1,
+                 api_version='3.5.6', headers=None, verify=True, retries=1,
                  timeout=3, timings=False, pool_maxsize=10,
                  pool_connections=10):
         self.customer_name = customer_name
@@ -145,7 +145,9 @@ class DynClient(object):
             'Accept': 'application/json',
             'API-Version': api_version,
             'User-Agent': 'DynECTClient'}
-        session.headers.update(headers)
+
+        if headers is not None:
+            session.headers.update(headers)
 
         adapter = HTTPAdapter(max_retries=int(retries),
                               pool_maxsize=int(pool_maxsize),
