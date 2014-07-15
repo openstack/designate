@@ -165,6 +165,7 @@ class Forbidden(Base):
 
 
 class Duplicate(Base):
+    expected = True
     error_code = 409
     error_type = 'duplicate'
 
