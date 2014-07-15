@@ -15,9 +15,11 @@
 
 
 from designate.objects.base import DesignateObject  # noqa
-from designate.objects.blacklist import Blacklist  # noqa
-from designate.objects.domain import Domain  # noqa
-from designate.objects.quota import Quota  # noqa
+from designate.objects.base import DictObjectMixin  # noqa
+from designate.objects.base import ListObjectMixin  # noqa
+from designate.objects.blacklist import Blacklist, BlacklistList  # noqa
+from designate.objects.domain import Domain, DomainList  # noqa
+from designate.objects.quota import Quota, QuotaList  # noqa
 from designate.objects.rrdata_a import RRData_A  # noqa
 from designate.objects.rrdata_aaaa import RRData_AAAA  # noqa
 from designate.objects.rrdata_cname import RRData_CNAME  # noqa
@@ -29,9 +31,9 @@ from designate.objects.rrdata_spf import RRData_SPF  # noqa
 from designate.objects.rrdata_srv import RRData_SRV  # noqa
 from designate.objects.rrdata_sshfp import RRData_SSHFP  # noqa
 from designate.objects.rrdata_txt import RRData_TXT  # noqa
-from designate.objects.record import Record  # noqa
-from designate.objects.recordset import RecordSet  # noqa
-from designate.objects.server import Server  # noqa
-from designate.objects.tenant import Tenant  # noqa
-from designate.objects.tld import Tld  # noqa
-from designate.objects.tsigkey import TsigKey  # noqa
+from designate.objects.record import Record, RecordList  # noqa
+from designate.objects.recordset import RecordSet, RecordSetList  # noqa
+from designate.objects.server import Server, ServerList  # noqa
+from designate.objects.tenant import Tenant, TenantList  # noqa
+from designate.objects.tld import Tld, TldList  # noqa
+from designate.objects.tsigkey import TsigKey, TsigKeyList  # noqa

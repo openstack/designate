@@ -44,13 +44,13 @@ def make_class_properties(cls):
             return getattr(self, get_attrname(name), None)
 
         def setter(self, value, name=field):
-            if (self.obj_attr_is_set(name) and value != self[name]
+            if (self.obj_attr_is_set(name) and value != getattr(self, name)
                     or not self.obj_attr_is_set(name)):
                 self._obj_changes.add(name)
 
-            if (self.obj_attr_is_set(name) and value != self[name]
+            if (self.obj_attr_is_set(name) and value != getattr(self, name)
                     and name not in self._obj_original_values.keys()):
-                self._obj_original_values[name] = self[name]
+                self._obj_original_values[name] = getattr(self, name)
 
             return setattr(self, get_attrname(name), value)
 
@@ -62,59 +62,8 @@ class DesignateObjectMetaclass(type):
         make_class_properties(cls)
 
 
-class DictObjectMixin(object):
-    """
-    Mixin to allow DesignateObjects to behave like dictionaries
-
-    Eventually, this should be removed.
-    """
-    def __getitem__(self, key):
-        return getattr(self, key)
-
-    def __setitem__(self, key, value):
-        setattr(self, key, value)
-
-    def __contains__(self, item):
-        return item in self.FIELDS
-
-    def get(self, key, default=NotSpecifiedSentinel):
-        if key not in self.FIELDS:
-            raise AttributeError("'%s' object has no attribute '%s'" % (
-                                 self.__class__, key))
-
-        if default != NotSpecifiedSentinel and not self.obj_attr_is_set(key):
-            return default
-        else:
-            return getattr(self, key)
-
-    def update(self, values):
-        for k, v in values.iteritems():
-            setattr(self, k, v)
-
-    def iteritems(self):
-        for field in self.FIELDS:
-            if self.obj_attr_is_set(field):
-                yield field, getattr(self, field)
-
-    def __iter__(self):
-        for field in self.FIELDS:
-            if self.obj_attr_is_set(field):
-                yield field, getattr(self, field)
-
-    items = lambda self: list(self.iteritems())
-
-
-class PersistentObjectMixin(object):
-    """
-    Mixin class for Persistent objects.
-
-    This adds the fields that we use in common for all persisent objects.
-    """
-    FIELDS = ['id', 'created_at', 'updated_at', 'version']
-
-
 @six.add_metaclass(DesignateObjectMetaclass)
-class DesignateObject(DictObjectMixin):
+class DesignateObject(object):
     FIELDS = []
 
     @staticmethod
@@ -123,20 +72,19 @@ class DesignateObject(DictObjectMixin):
         Construct an object from primitive types
 
         This is used while deserializing the object.
-
-        NOTE: Currently all the designate objects contain primitive types that
-        do not need special handling.  If this changes we need to modify this
-        function.
         """
         cls = importutils.import_class(primitive['designate_object.name'])
+        return cls._obj_from_primitive(primitive)
 
+    @classmethod
+    def _obj_from_primitive(cls, primitive):
         instance = cls()
 
         for field, value in primitive['designate_object.data'].items():
             if isinstance(value, dict) and 'designate_object.name' in value:
-                instance[field] = DesignateObject.from_primitive(value)
+                setattr(instance, field, DesignateObject.from_primitive(value))
             else:
-                instance[field] = value
+                setattr(instance, field, value)
 
         instance._obj_changes = set(primitive['designate_object.changes'])
         instance._obj_original_values = \
@@ -170,10 +118,10 @@ class DesignateObject(DictObjectMixin):
 
         for field in self.FIELDS:
             if self.obj_attr_is_set(field):
-                if isinstance(self[field], DesignateObject):
-                    data[field] = self[field].to_primitive()
+                if isinstance(getattr(self, field), DesignateObject):
+                    data[field] = getattr(self, field).to_primitive()
                 else:
-                    data[field] = self[field]
+                    data[field] = getattr(self, field)
 
         return {
             'designate_object.name': class_name,
@@ -198,7 +146,7 @@ class DesignateObject(DictObjectMixin):
         changes = {}
 
         for key in self.obj_what_changed():
-            changes[key] = self[key]
+            changes[key] = getattr(self, key)
 
         return changes
 
@@ -251,3 +199,171 @@ class DesignateObject(DictObjectMixin):
 
     def __ne__(self, other):
         return not(self.__eq__(other))
+
+
+class DictObjectMixin(object):
+    """
+    Mixin to allow DesignateObjects to behave like dictionaries
+
+    Eventually, this should be removed.
+    """
+    def __getitem__(self, key):
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        setattr(self, key, value)
+
+    def __contains__(self, item):
+        return item in self.FIELDS
+
+    def get(self, key, default=NotSpecifiedSentinel):
+        if key not in self.FIELDS:
+            raise AttributeError("'%s' object has no attribute '%s'" % (
+                                 self.__class__, key))
+
+        if default != NotSpecifiedSentinel and not self.obj_attr_is_set(key):
+            return default
+        else:
+            return getattr(self, key)
+
+    def update(self, values):
+        for k, v in values.iteritems():
+            setattr(self, k, v)
+
+    def iteritems(self):
+        for field in self.FIELDS:
+            if self.obj_attr_is_set(field):
+                yield field, getattr(self, field)
+
+    def __iter__(self):
+        for field in self.FIELDS:
+            if self.obj_attr_is_set(field):
+                yield field, getattr(self, field)
+
+    items = lambda self: list(self.iteritems())
+
+
+class ListObjectMixin(object):
+    """Mixin class for lists of objects"""
+    FIELDS = ['objects']
+    LIST_ITEM_TYPE = DesignateObject
+
+    @classmethod
+    def _obj_from_primitive(cls, primitive):
+        instance = cls()
+
+        for field, value in primitive['designate_object.data'].items():
+            if field == 'objects':
+                instance.objects = [DesignateObject.from_primitive(v) for v in
+                                    value]
+            elif isinstance(value, dict) and 'designate_object.name' in value:
+                setattr(instance, field, DesignateObject.from_primitive(value))
+            else:
+                setattr(instance, field, value)
+
+        instance._obj_changes = set(primitive['designate_object.changes'])
+        instance._obj_original_values = \
+            primitive['designate_object.original_values']
+
+        return instance
+
+    def __init__(self, *args, **kwargs):
+        super(ListObjectMixin, self).__init__(*args, **kwargs)
+        if 'objects' not in kwargs:
+            self.objects = []
+            self.obj_reset_changes(['objects'])
+
+    def to_primitive(self):
+        class_name = self.__class__.__name__
+        if self.__module__:
+            class_name = self.__module__ + '.' + self.__class__.__name__
+
+        data = {}
+
+        for field in self.FIELDS:
+            if self.obj_attr_is_set(field):
+                if field == 'objects':
+                    data[field] = [o.to_primitive() for o in self.objects]
+                elif isinstance(getattr(self, field), DesignateObject):
+                    data[field] = getattr(self, field).to_primitive()
+                else:
+                    data[field] = getattr(self, field)
+
+        return {
+            'designate_object.name': class_name,
+            'designate_object.data': data,
+            'designate_object.changes': list(self._obj_changes),
+            'designate_object.original_values': dict(self._obj_original_values)
+        }
+
+    def __iter__(self):
+        """List iterator interface"""
+        return iter(self.objects)
+
+    def __len__(self):
+        """List length"""
+        return len(self.objects)
+
+    def __getitem__(self, index):
+        """List index access"""
+        if isinstance(index, slice):
+            new_obj = self.__class__()
+            new_obj.objects = self.objects[index]
+            new_obj.obj_reset_changes()
+            return new_obj
+        return self.objects[index]
+
+    def __setitem__(self, index, value):
+        """Set list index value"""
+        self.objects[index] = value
+
+    def __contains__(self, value):
+        """List membership test"""
+        return value in self.objects
+
+    def append(self, value):
+        """Append a value to the list"""
+        return self.objects.append(value)
+
+    def extend(self, values):
+        """Extend the list by appending all the items in the given list"""
+        return self.objects.extend(values)
+
+    def pop(self, index):
+        """Pop a value from the list"""
+        return self.objects.pop(index)
+
+    def insert(self, index, value):
+        """Insert a value into the list at the given index"""
+        return self.objects.insert(index)
+
+    def remove(self, value):
+        """Remove a value from the list"""
+        return self.objects.remove(value)
+
+    def index(self, value):
+        """List index of value"""
+        return self.objects.index(value)
+
+    def count(self, value):
+        """List count of value occurrences"""
+        return self.objects.count(value)
+
+    def sort(self, cmp=None, key=None, reverse=False):
+        self.objects.sort(cmp=cmp, key=key, reverse=reverse)
+
+    def obj_what_changed(self):
+        changes = set(self._obj_changes)
+        for item in self.objects:
+            if item.obj_what_changed():
+                changes.add('objects')
+        return changes
+
+
+class PersistentObjectMixin(object):
+    """
+    Mixin class for Persistent objects.
+
+    This adds the fields that we use in common for all persisent objects.
+    """
+    FIELDS = ['id', 'created_at', 'updated_at', 'version']

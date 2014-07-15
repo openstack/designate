@@ -15,5 +15,10 @@
 from designate.objects import base
 
 
-class Server(base.DesignateObject, base.PersistentObjectMixin):
+class Server(base.DictObjectMixin, base.PersistentObjectMixin,
+             base.DesignateObject):
     FIELDS = ['name']
+
+
+class ServerList(base.ListObjectMixin, base.DesignateObject):
+    LIST_ITEM_TYPE = Server

@@ -112,27 +112,27 @@ class StorageTestCase(object):
 
     def test_find_quotas(self):
         actual = self.storage.find_quotas(self.admin_context)
-        self.assertEqual(actual, [])
+        self.assertEqual(0, len(actual))
 
         # Create a single quota
         quota_one = self.create_quota()
 
         actual = self.storage.find_quotas(self.admin_context)
-        self.assertEqual(len(actual), 1)
+        self.assertEqual(1, len(actual))
 
-        self.assertEqual(actual[0]['tenant_id'], quota_one['tenant_id'])
-        self.assertEqual(actual[0]['resource'], quota_one['resource'])
-        self.assertEqual(actual[0]['hard_limit'], quota_one['hard_limit'])
+        self.assertEqual(quota_one['tenant_id'], actual[0]['tenant_id'])
+        self.assertEqual(quota_one['resource'], actual[0]['resource'])
+        self.assertEqual(quota_one['hard_limit'], actual[0]['hard_limit'])
 
         # Create a second quota
         quota_two = self.create_quota(fixture=1)
 
         actual = self.storage.find_quotas(self.admin_context)
-        self.assertEqual(len(actual), 2)
+        self.assertEqual(2, len(actual))
 
-        self.assertEqual(actual[1]['tenant_id'], quota_two['tenant_id'])
-        self.assertEqual(actual[1]['resource'], quota_two['resource'])
-        self.assertEqual(actual[1]['hard_limit'], quota_two['hard_limit'])
+        self.assertEqual(quota_two['tenant_id'], actual[1]['tenant_id'])
+        self.assertEqual(quota_two['resource'], actual[1]['resource'])
+        self.assertEqual(quota_two['hard_limit'], actual[1]['hard_limit'])
 
     def test_find_quotas_criterion(self):
         quota_one = self.create_quota()
@@ -281,14 +281,14 @@ class StorageTestCase(object):
 
     def test_find_servers(self):
         actual = self.storage.find_servers(self.admin_context)
-        self.assertEqual(actual, [])
+        self.assertEqual(0, len(actual))
 
         # Create a single server
         server = self.create_server()
 
         actual = self.storage.find_servers(self.admin_context)
-        self.assertEqual(len(actual), 1)
-        self.assertEqual(str(actual[0]['name']), str(server['name']))
+        self.assertEqual(1, len(actual))
+        self.assertEqual(server['name'], actual[0]['name'])
 
         # Order of found items later will be reverse of the order they are
         # created
@@ -403,17 +403,17 @@ class StorageTestCase(object):
 
     def test_find_tsigkeys(self):
         actual = self.storage.find_tsigkeys(self.admin_context)
-        self.assertEqual(actual, [])
+        self.assertEqual(0, len(actual))
 
         # Create a single tsigkey
         tsig = self.create_tsigkey()
 
         actual = self.storage.find_tsigkeys(self.admin_context)
-        self.assertEqual(len(actual), 1)
+        self.assertEqual(1, len(actual))
 
-        self.assertEqual(actual[0]['name'], tsig['name'])
-        self.assertEqual(actual[0]['algorithm'], tsig['algorithm'])
-        self.assertEqual(actual[0]['secret'], tsig['secret'])
+        self.assertEqual(tsig['name'], actual[0]['name'])
+        self.assertEqual(tsig['algorithm'], actual[0]['algorithm'])
+        self.assertEqual(tsig['secret'], actual[0]['secret'])
 
         # Order of found items later will be reverse of the order they are
         # created
@@ -601,16 +601,16 @@ class StorageTestCase(object):
         self.config(quota_domains=20)
 
         actual = self.storage.find_domains(self.admin_context)
-        self.assertEqual(actual, [])
+        self.assertEqual(0, len(actual))
 
         # Create a single domain
         domain = self.create_domain()
 
         actual = self.storage.find_domains(self.admin_context)
-        self.assertEqual(len(actual), 1)
+        self.assertEqual(1, len(actual))
 
-        self.assertEqual(actual[0]['name'], domain['name'])
-        self.assertEqual(actual[0]['email'], domain['email'])
+        self.assertEqual(domain['name'], actual[0]['name'])
+        self.assertEqual(domain['email'], actual[0]['email'])
 
         # Order of found items later will be reverse of the order they are
         # created XXXX
@@ -666,19 +666,19 @@ class StorageTestCase(object):
 
         # Ensure the all_tenants context see's two domains
         results = self.storage.find_domains(at_context)
-        self.assertEqual(len(results), 2)
+        self.assertEqual(2, len(results))
 
         # Ensure the normal context see's no domains
         results = self.storage.find_domains(nm_context)
-        self.assertEqual(len(results), 0)
+        self.assertEqual(0, len(results))
 
         # Ensure the tenant 1 context see's 1 domain
         results = self.storage.find_domains(one_context)
-        self.assertEqual(len(results), 1)
+        self.assertEqual(1, len(results))
 
         # Ensure the tenant 2 context see's 1 domain
         results = self.storage.find_domains(two_context)
-        self.assertEqual(len(results), 1)
+        self.assertEqual(1, len(results))
 
     def test_get_domain(self):
         # Create a domain
@@ -830,16 +830,16 @@ class StorageTestCase(object):
         criterion = {'domain_id': domain['id']}
 
         actual = self.storage.find_recordsets(self.admin_context, criterion)
-        self.assertEqual(actual, [])
+        self.assertEqual(0, len(actual))
 
         # Create a single recordset
         recordset_one = self.create_recordset(domain)
 
         actual = self.storage.find_recordsets(self.admin_context, criterion)
-        self.assertEqual(len(actual), 1)
+        self.assertEqual(1, len(actual))
 
-        self.assertEqual(actual[0]['name'], recordset_one['name'])
-        self.assertEqual(actual[0]['type'], recordset_one['type'])
+        self.assertEqual(recordset_one['name'], actual[0]['name'])
+        self.assertEqual(recordset_one['type'], actual[0]['type'])
 
         # Order of found items later will be reverse of the order they are
         # created
@@ -1038,15 +1038,15 @@ class StorageTestCase(object):
         }
 
         actual = self.storage.find_records(self.admin_context, criterion)
-        self.assertEqual(actual, [])
+        self.assertEqual(0, len(actual))
 
         # Create a single record
         record = self.create_record(domain, recordset)
 
         actual = self.storage.find_records(self.admin_context, criterion)
-        self.assertEqual(len(actual), 1)
+        self.assertEqual(1, len(actual))
 
-        self.assertEqual(actual[0]['data'], record['data'])
+        self.assertEqual(record['data'], actual[0]['data'])
         self.assertIn('status', record)
 
         # Order of found items later will be reverse of the order they are
@@ -1127,19 +1127,19 @@ class StorageTestCase(object):
 
         # Ensure the all_tenants context see's two records
         results = self.storage.find_records(at_context)
-        self.assertEqual(len(results), 2)
+        self.assertEqual(2, len(results))
 
         # Ensure the normal context see's no records
         results = self.storage.find_records(nm_context)
-        self.assertEqual(len(results), 0)
+        self.assertEqual(0, len(results))
 
         # Ensure the tenant 1 context see's 1 record
         results = self.storage.find_records(one_context)
-        self.assertEqual(len(results), 1)
+        self.assertEqual(1, len(results))
 
         # Ensure the tenant 2 context see's 1 record
         results = self.storage.find_records(two_context)
-        self.assertEqual(len(results), 1)
+        self.assertEqual(1, len(results))
 
     def test_get_record(self):
         domain = self.create_domain()

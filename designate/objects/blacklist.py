@@ -15,5 +15,10 @@
 from designate.objects import base
 
 
-class Blacklist(base.DesignateObject, base.PersistentObjectMixin):
+class Blacklist(base.DictObjectMixin, base.PersistentObjectMixin,
+                base.DesignateObject):
     FIELDS = ['pattern', 'description']
+
+
+class BlacklistList(base.ListObjectMixin, base.DesignateObject):
+    LIST_ITEM_TYPE = Blacklist

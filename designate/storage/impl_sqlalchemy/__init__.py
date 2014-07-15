@@ -52,6 +52,16 @@ def _set_object_from_model(obj, model):
     return obj
 
 
+def _set_listobject_from_models(obj, models):
+        for model in models:
+            obj.objects.append(
+                _set_object_from_model(obj.LIST_ITEM_TYPE(), model))
+
+        obj.obj_reset_changes()
+
+        return obj
+
+
 class SQLAlchemyStorage(base.Storage):
     """SQLAlchemy connection"""
     __plugin_name__ = 'sqlalchemy'
@@ -206,7 +216,7 @@ class SQLAlchemyStorage(base.Storage):
                                    limit=limit, sort_key=sort_key,
                                    sort_dir=sort_dir)
 
-        return [_set_object_from_model(objects.Quota(), q) for q in quotas]
+        return _set_listobject_from_models(objects.QuotaList(), quotas)
 
     def find_quota(self, context, criterion):
         quota = self._find_quotas(context, criterion, one=True)
@@ -259,7 +269,8 @@ class SQLAlchemyStorage(base.Storage):
         servers = self._find_servers(context, criterion, marker=marker,
                                      limit=limit, sort_key=sort_key,
                                      sort_dir=sort_dir)
-        return [_set_object_from_model(objects.Server(), s) for s in servers]
+
+        return _set_listobject_from_models(objects.ServerList(), servers)
 
     def get_server(self, context, server_id):
         server = self._find_servers(context, {'id': server_id}, one=True)
@@ -310,7 +321,8 @@ class SQLAlchemyStorage(base.Storage):
                   marker=None, limit=None, sort_key=None, sort_dir=None):
         tlds = self._find_tlds(context, criterion, marker=marker, limit=limit,
                                sort_key=sort_key, sort_dir=sort_dir)
-        return [_set_object_from_model(objects.Tld(), t) for t in tlds]
+
+        return _set_listobject_from_models(objects.TldList(), tlds)
 
     def find_tld(self, context, criterion):
         tld = self._find_tlds(context, criterion, one=True)
@@ -365,7 +377,7 @@ class SQLAlchemyStorage(base.Storage):
                                        limit=limit, sort_key=sort_key,
                                        sort_dir=sort_dir)
 
-        return [_set_object_from_model(objects.TsigKey(), t) for t in tsigkeys]
+        return _set_listobject_from_models(objects.TsigKeyList(), tsigkeys)
 
     def get_tsigkey(self, context, tsigkey_id):
         tsigkey = self._find_tsigkeys(context, {'id': tsigkey_id}, one=True)
@@ -403,8 +415,15 @@ class SQLAlchemyStorage(base.Storage):
         query = self._apply_deleted_criteria(context, models.Domain, query)
         query = query.group_by(models.Domain.tenant_id)
 
-        return [objects.Tenant(id=t[0], domain_count=t[1])
-                for t in query.all()]
+        tenants = query.all()
+
+        tenant_list = objects.TenantList(
+            objects=[objects.Tenant(id=t[0], domain_count=t[1]) for t in
+                     tenants])
+
+        tenant_list.obj_reset_changes()
+
+        return tenant_list
 
     def get_tenant(self, context, tenant_id):
         # get list list & count of all domains owned by given tenant_id
@@ -464,7 +483,7 @@ class SQLAlchemyStorage(base.Storage):
                                      limit=limit, sort_key=sort_key,
                                      sort_dir=sort_dir)
 
-        return [_set_object_from_model(objects.Domain(), d) for d in domains]
+        return _set_listobject_from_models(objects.DomainList(), domains)
 
     def find_domain(self, context, criterion):
         domain = self._find_domains(context, criterion, one=True)
@@ -538,8 +557,7 @@ class SQLAlchemyStorage(base.Storage):
             context, criterion, marker=marker, limit=limit, sort_key=sort_key,
             sort_dir=sort_dir)
 
-        return [_set_object_from_model(objects.RecordSet(), r) for r in
-                recordsets]
+        return _set_listobject_from_models(objects.RecordSetList(), recordsets)
 
     def find_recordset(self, context, criterion):
         recordset = self._find_recordsets(context, criterion, one=True)
@@ -608,7 +626,7 @@ class SQLAlchemyStorage(base.Storage):
             context, criterion, marker=marker, limit=limit, sort_key=sort_key,
             sort_dir=sort_dir)
 
-        return [_set_object_from_model(objects.Record(), r) for r in records]
+        return _set_listobject_from_models(objects.RecordList(), records)
 
     def get_record(self, context, record_id):
         record = self._find_records(context, {'id': record_id}, one=True)
@@ -676,8 +694,7 @@ class SQLAlchemyStorage(base.Storage):
             context, criterion, marker=marker, limit=limit, sort_key=sort_key,
             sort_dir=sort_dir)
 
-        return [_set_object_from_model(objects.Blacklist(), b) for b in
-                blacklists]
+        return _set_listobject_from_models(objects.BlacklistList(), blacklists)
 
     def get_blacklist(self, context, blacklist_id):
         blacklist = self._find_blacklist(context,

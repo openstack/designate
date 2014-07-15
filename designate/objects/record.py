@@ -15,10 +15,15 @@
 from designate.objects import base
 
 
-class Record(base.DesignateObject, base.PersistentObjectMixin):
+class Record(base.DictObjectMixin, base.PersistentObjectMixin,
+             base.DesignateObject):
     FIELDS = ['data', 'priority', 'domain_id', 'managed',
               'managed_resource_type', 'managed_resource_id',
               'managed_plugin_name', 'managed_plugin_type', 'hash',
               'description', 'status', 'tenant_id', 'recordset_id',
               'managed_tenant_id', 'managed_resource_region',
               'managed_extra']
+
+
+class RecordList(base.ListObjectMixin, base.DesignateObject):
+    LIST_ITEM_TYPE = Record
