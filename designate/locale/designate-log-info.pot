@@ -1,0 +1,510 @@
+# Translations template for designate.
+# Copyright (C) 2014 ORGANIZATION
+# This file is distributed under the same license as the designate project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2014.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: designate 2014.2.dev216.g331ee19\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2014-07-15 06:07+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 1.3\n"
+
+#: designate/policy.py:67
+#, python-format
+msgid "Using policy_file found at: %s"
+msgstr ""
+
+#: designate/api/middleware.py:54
+#, python-format
+msgid "Getting auth pipeline: %s"
+msgstr ""
+
+#: designate/api/middleware.py:80
+msgid "Starting designate keystonecontext middleware"
+msgstr ""
+
+#: designate/api/middleware.py:113
+msgid "Starting designate noauthcontext middleware"
+msgstr ""
+
+#: designate/api/middleware.py:154
+msgid "Starting designate maintenance middleware"
+msgstr ""
+
+#: designate/api/middleware.py:188
+msgid "Starting designate faultwrapper middleware"
+msgstr ""
+
+#: designate/api/service.py:40
+#, python-format
+msgid "Using api-paste-config found at: %s"
+msgstr ""
+
+#: designate/backend/impl_dynect.py:333
+#, python-format
+msgid "Creating domain %(d_id)s / %(d_name)s"
+msgstr ""
+
+#: designate/backend/impl_dynect.py:356
+#, python-format
+msgid "Deleting domain %(d_id)s / %(d_name)s"
+msgstr ""
+
+#: designate/backend/impl_fake.py:30
+#, python-format
+msgid "Create TSIG Key %r"
+msgstr ""
+
+#: designate/backend/impl_fake.py:33
+#, python-format
+msgid "Update TSIG Key %r"
+msgstr ""
+
+#: designate/backend/impl_fake.py:36
+#, python-format
+msgid "Delete TSIG Key %r"
+msgstr ""
+
+#: designate/backend/impl_fake.py:39
+#, python-format
+msgid "Create Server %r"
+msgstr ""
+
+#: designate/backend/impl_fake.py:42
+#, python-format
+msgid "Update Server %r"
+msgstr ""
+
+#: designate/backend/impl_fake.py:45
+#, python-format
+msgid "Delete Server %r"
+msgstr ""
+
+#: designate/backend/impl_fake.py:48
+#, python-format
+msgid "Create Domain %r"
+msgstr ""
+
+#: designate/backend/impl_fake.py:51
+#, python-format
+msgid "Update Domain %r"
+msgstr ""
+
+#: designate/backend/impl_fake.py:54
+#, python-format
+msgid "Delete Domain %r"
+msgstr ""
+
+#: designate/backend/impl_fake.py:57
+#, python-format
+msgid "Create RecordSet %(domain)r / %(recordset)r"
+msgstr ""
+
+#: designate/backend/impl_fake.py:61
+#, python-format
+msgid "Update RecordSet %(domain)r / %(recordset)r"
+msgstr ""
+
+#: designate/backend/impl_fake.py:65
+#, python-format
+msgid "Delete RecordSet %(domain)r / %(recordset)r"
+msgstr ""
+
+#: designate/backend/impl_fake.py:69
+#, python-format
+msgid "Create Record %(domain)r / %(recordset)r / %(record)r"
+msgstr ""
+
+#: designate/backend/impl_fake.py:73
+#, python-format
+msgid "Update Record %(domain)r / %(recordset)r / %(record)r"
+msgstr ""
+
+#: designate/backend/impl_fake.py:77
+#, python-format
+msgid "Delete Record %(domain)r / %(recordset)r / %(record)r"
+msgstr ""
+
+#: designate/backend/impl_fake.py:81
+#, python-format
+msgid "Sync Domain %(domain)r / %(records)r"
+msgstr ""
+
+#: designate/backend/impl_fake.py:85
+#, python-format
+msgid "Sync Record %(domain)r / %(record)r"
+msgstr ""
+
+#: designate/backend/impl_fake.py:89
+msgid "Ping"
+msgstr ""
+
+#: designate/central/rpcapi.py:55
+msgid "get_absolute_limits: Calling central's get_absolute_limits."
+msgstr ""
+
+#: designate/central/rpcapi.py:62
+msgid "get_quotas: Calling central's get_quotas."
+msgstr ""
+
+#: designate/central/rpcapi.py:67
+msgid "get_quota: Calling central's get_quota."
+msgstr ""
+
+#: designate/central/rpcapi.py:73
+msgid "set_quota: Calling central's set_quota."
+msgstr ""
+
+#: designate/central/rpcapi.py:79
+msgid "reset_quotas: Calling central's reset_quotas."
+msgstr ""
+
+#: designate/central/rpcapi.py:85
+msgid "create_server: Calling central's create_server."
+msgstr ""
+
+#: designate/central/rpcapi.py:91
+msgid "find_servers: Calling central's find_servers."
+msgstr ""
+
+#: designate/central/rpcapi.py:98
+msgid "get_server: Calling central's get_server."
+msgstr ""
+
+#: designate/central/rpcapi.py:103
+msgid "update_server: Calling central's update_server."
+msgstr ""
+
+#: designate/central/rpcapi.py:108
+msgid "delete_server: Calling central's delete_server."
+msgstr ""
+
+#: designate/central/rpcapi.py:114
+msgid "create_tsigkey: Calling central's create_tsigkey."
+msgstr ""
+
+#: designate/central/rpcapi.py:119
+msgid "find_tsigkeys: Calling central's find_tsigkeys."
+msgstr ""
+
+#: designate/central/rpcapi.py:125
+msgid "get_tsigkey: Calling central's get_tsigkey."
+msgstr ""
+
+#: designate/central/rpcapi.py:129
+msgid "update_tsigkey: Calling central's update_tsigkey."
+msgstr ""
+
+#: designate/central/rpcapi.py:133
+msgid "delete_tsigkey: Calling central's delete_tsigkey."
+msgstr ""
+
+#: designate/central/rpcapi.py:139
+msgid "find_tenants: Calling central's find_tenants."
+msgstr ""
+
+#: designate/central/rpcapi.py:143
+msgid "get_tenant: Calling central's get_tenant."
+msgstr ""
+
+#: designate/central/rpcapi.py:147
+msgid "count_tenants: Calling central's count_tenants."
+msgstr ""
+
+#: designate/central/rpcapi.py:152
+msgid "create_domain: Calling central's create_domain."
+msgstr ""
+
+#: designate/central/rpcapi.py:156
+msgid "get_domain: Calling central's get_domain."
+msgstr ""
+
+#: designate/central/rpcapi.py:160
+msgid "get_domain_servers: Calling central's get_domain_servers."
+msgstr ""
+
+#: designate/central/rpcapi.py:167
+msgid "find_domains: Calling central's find_domains."
+msgstr ""
+
+#: designate/central/rpcapi.py:173
+msgid "find_domain: Calling central's find_domain."
+msgstr ""
+
+#: designate/central/rpcapi.py:177
+msgid "update_domain: Calling central's update_domain."
+msgstr ""
+
+#: designate/central/rpcapi.py:182
+msgid "delete_domain: Calling central's delete_domain."
+msgstr ""
+
+#: designate/central/rpcapi.py:186
+msgid "count_domains: Calling central's count_domains."
+msgstr ""
+
+#: designate/central/rpcapi.py:190
+msgid "touch_domain: Calling central's touch_domain."
+msgstr ""
+
+#: designate/central/rpcapi.py:195
+msgid "create_tld: Calling central's create_tld."
+msgstr ""
+
+#: designate/central/rpcapi.py:200
+msgid "find_tlds: Calling central's find_tlds."
+msgstr ""
+
+#: designate/central/rpcapi.py:206
+msgid "get_tld: Calling central's get_tld."
+msgstr ""
+
+#: designate/central/rpcapi.py:210
+msgid "update_tld: Calling central's update_tld."
+msgstr ""
+
+#: designate/central/rpcapi.py:214
+msgid "delete_tld: Calling central's delete_tld."
+msgstr ""
+
+#: designate/central/rpcapi.py:219
+msgid "create_recordset: Calling central's create_recordset."
+msgstr ""
+
+#: designate/central/rpcapi.py:224
+msgid "get_recordset: Calling central's get_recordset."
+msgstr ""
+
+#: designate/central/rpcapi.py:230
+msgid "find_recordsets: Calling central's find_recordsets."
+msgstr ""
+
+#: designate/central/rpcapi.py:237
+msgid "find_recordset: Calling central's find_recordset."
+msgstr ""
+
+#: designate/central/rpcapi.py:241
+msgid "update_recordset: Calling central's update_recordset."
+msgstr ""
+
+#: designate/central/rpcapi.py:248
+msgid "delete_recordset: Calling central's delete_recordset."
+msgstr ""
+
+#: designate/central/rpcapi.py:255
+msgid "count_recordsets: Calling central's count_recordsets."
+msgstr ""
+
+#: designate/central/rpcapi.py:262
+msgid "create_record: Calling central's create_record."
+msgstr ""
+
+#: designate/central/rpcapi.py:270
+msgid "get_record: Calling central's get_record."
+msgstr ""
+
+#: designate/central/rpcapi.py:278
+msgid "find_records: Calling central's find_records."
+msgstr ""
+
+#: designate/central/rpcapi.py:284
+msgid "find_record: Calling central's find_record."
+msgstr ""
+
+#: designate/central/rpcapi.py:288
+msgid "update_record: Calling central's update_record."
+msgstr ""
+
+#: designate/central/rpcapi.py:295
+msgid "delete_record: Calling central's delete_record."
+msgstr ""
+
+#: designate/central/rpcapi.py:303
+msgid "count_records: Calling central's count_records."
+msgstr ""
+
+#: designate/central/rpcapi.py:308
+msgid "sync_domains: Calling central's sync_domains."
+msgstr ""
+
+#: designate/central/rpcapi.py:312
+msgid "sync_domain: Calling central's sync_domains."
+msgstr ""
+
+#: designate/central/rpcapi.py:316
+msgid "sync_record: Calling central's sync_record."
+msgstr ""
+
+#: designate/central/rpcapi.py:323
+msgid "list_floatingips: Calling central's list_floatingips."
+msgstr ""
+
+#: designate/central/rpcapi.py:327
+msgid "get_floatingip: Calling central's get_floatingip."
+msgstr ""
+
+#: designate/central/rpcapi.py:332
+msgid "update_floatingip: Calling central's update_floatingip."
+msgstr ""
+
+#: designate/central/rpcapi.py:339
+msgid "create_blacklist: Calling central's create_blacklist"
+msgstr ""
+
+#: designate/central/rpcapi.py:344
+msgid "get_blacklist: Calling central's get_blacklist."
+msgstr ""
+
+#: designate/central/rpcapi.py:350
+msgid "find_blacklists: Calling central's find_blacklists."
+msgstr ""
+
+#: designate/central/rpcapi.py:356
+msgid "find_blacklist: Calling central's find_blacklist."
+msgstr ""
+
+#: designate/central/rpcapi.py:360
+msgid "update_blacklist: Calling central's update_blacklist."
+msgstr ""
+
+#: designate/central/rpcapi.py:365
+msgid "delete_blacklist: Calling central's delete blacklist."
+msgstr ""
+
+#: designate/central/service.py:99
+msgid "Checking for TLDs"
+msgstr ""
+
+#: designate/central/service.py:102
+msgid "NOT checking for TLDs"
+msgstr ""
+
+#: designate/central/service.py:1352
+#, python-format
+msgid "Creating zone for %(fip_id)s:%(region)s - %(fip_addr)s zone %(zonename)s"
+msgstr ""
+
+#: designate/manage/tlds.py:114
+#, python-format
+msgid "Importing TLDs from %s"
+msgstr ""
+
+#: designate/manage/tlds.py:134
+#, python-format
+msgid "Number of tlds added: %d"
+msgstr ""
+
+#: designate/mdns/notify.py:53
+#, python-format
+msgid "slave nameserver ips = %(slave_server_ips)s"
+msgstr ""
+
+#: designate/mdns/notify.py:55
+#, python-format
+msgid "slave nameserver ports = %(slave_server_ports)s"
+msgstr ""
+
+#: designate/mdns/notify.py:57
+msgid "started mdns notify endpoint"
+msgstr ""
+
+#: designate/mdns/rpcapi.py:46
+#, python-format
+msgid ""
+"notify_zone_changed: Calling mdns's notify_zone_changed for zone "
+"'%(zone_name)s'"
+msgstr ""
+
+#: designate/mdns/service.py:42
+#, python-format
+msgid "Opening TCP Listening Socket on %(host)s:%(port)d"
+msgstr ""
+
+#: designate/mdns/service.py:53
+#, python-format
+msgid "Opening UDP Listening Socket on %(host)s:%(port)d"
+msgstr ""
+
+#: designate/mdns/service.py:65
+msgid "started mdns service"
+msgstr ""
+
+#: designate/mdns/service.py:73
+msgid "_handle_tcp thread started"
+msgstr ""
+
+#: designate/mdns/service.py:84
+msgid "_handle_udp thread started"
+msgstr ""
+
+#: designate/openstack/common/eventlet_backdoor.py:141
+#, python-format
+msgid "Eventlet backdoor listening on %(port)s for process %(pid)d"
+msgstr ""
+
+#: designate/openstack/common/lockutils.py:83
+#, python-format
+msgid "Created lock path: %s"
+msgstr ""
+
+#: designate/openstack/common/lockutils.py:250
+#, python-format
+msgid "Failed to remove file %(file)s"
+msgstr ""
+
+#: designate/openstack/common/service.py:176
+#: designate/openstack/common/service.py:270
+#, python-format
+msgid "Caught %s, exiting"
+msgstr ""
+
+#: designate/openstack/common/service.py:239
+msgid "Parent process has died unexpectedly, exiting"
+msgstr ""
+
+#: designate/openstack/common/service.py:309
+msgid "Forking too fast, sleeping"
+msgstr ""
+
+#: designate/openstack/common/service.py:328
+#, python-format
+msgid "Started child %d"
+msgstr ""
+
+#: designate/openstack/common/service.py:338
+#, python-format
+msgid "Starting %d workers"
+msgstr ""
+
+#: designate/openstack/common/service.py:355
+#, python-format
+msgid "Child %(pid)d killed by signal %(sig)d"
+msgstr ""
+
+#: designate/openstack/common/service.py:359
+#, python-format
+msgid "Child %(pid)s exited with status %(code)d"
+msgstr ""
+
+#: designate/openstack/common/service.py:394
+#, python-format
+msgid "Caught %s, stopping children"
+msgstr ""
+
+#: designate/openstack/common/service.py:403
+msgid "Wait called after thread killed.  Cleaning up."
+msgstr ""
+
+#: designate/openstack/common/service.py:414
+#, python-format
+msgid "Waiting on %d children to exit"
+msgstr ""
+
