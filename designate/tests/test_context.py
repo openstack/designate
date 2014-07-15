@@ -15,6 +15,9 @@
 # under the License.
 from designate.tests import TestCase
 from designate import context
+from designate.openstack.common import log as logging
+
+LOG = logging.getLogger(__name__)
 
 
 class TestDesignateContext(TestCase):
@@ -30,3 +33,4 @@ class TestDesignateContext(TestCase):
 
         self.assertFalse(ctxt.is_admin)
         self.assertTrue(admin_ctxt.is_admin)
+        self.assertEqual(0, len(ctxt.roles))
