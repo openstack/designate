@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import itertools
+import copy
 
 from designate.openstack.common import context
 from designate.openstack.common import log as logging
@@ -71,7 +72,7 @@ class DesignateContext(context.RequestContext):
             'user_identity': user_idt
         })
 
-        return d
+        return copy.deepcopy(d)
 
     @classmethod
     def from_dict(cls, values):
