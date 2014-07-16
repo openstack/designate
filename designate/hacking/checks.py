@@ -15,15 +15,35 @@
 # under the License.
 import re
 
+import pep8
+
 
 mutable_default_argument_check = re.compile(
     r"^\s*def .+\((.+=\{\}|.+=\[\])")
 
+log_translation = re.compile(
+    r"(.)*LOG\.(audit|error|info|warn|warning|critical|exception)\(\s*('|\")")
 
-def mutable_default_arguments(logical_line, filename):
+
+def mutable_default_arguments(logical_line, physical_line, filename):
+    if pep8.noqa(physical_line):
+        return
+
     if mutable_default_argument_check.match(logical_line):
         yield (0, "D701: Default paramater value is a mutable type")
 
 
+def validate_log_translations(logical_line, physical_line, filename):
+    # Translations are not required in the test directory
+    if "designate/tests" in filename:
+        return
+    if pep8.noqa(physical_line):
+        return
+    msg = "D702: Log messages require translation"
+    if log_translation.match(logical_line):
+        yield (0, msg)
+
+
 def factory(register):
     register(mutable_default_arguments)
+    register(validate_log_translations)
