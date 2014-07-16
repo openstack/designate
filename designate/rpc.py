@@ -28,6 +28,8 @@ __all__ = [
 
 from oslo.config import cfg
 from oslo import messaging
+from oslo.messaging import server as msg_server
+from oslo.messaging.rpc import dispatcher as rpc_dispatcher
 
 import designate.context
 import designate.exceptions
@@ -170,6 +172,17 @@ class RequestContextSerializer(messaging.Serializer):
         return designate.context.DesignateContext.from_dict(context)
 
 
+class RPCDispatcher(rpc_dispatcher.RPCDispatcher):
+    def _dispatch(self, ctxt, message):
+        try:
+            return super(RPCDispatcher, self)._dispatch(ctxt, message)
+        except Exception as e:
+            if getattr(e, 'expected', False):
+                raise rpc_dispatcher.ExpectedException()
+            else:
+                raise
+
+
 def get_transport_url(url_str=None):
     return messaging.TransportURL.parse(CONF, url_str, TRANSPORT_ALIASES)
 
@@ -190,11 +203,9 @@ def get_server(target, endpoints, serializer=None):
     if serializer is None:
         serializer = DesignateObjectSerializer()
     serializer = RequestContextSerializer(serializer)
-    return messaging.get_rpc_server(TRANSPORT,
-                                    target,
-                                    endpoints,
-                                    executor='eventlet',
-                                    serializer=serializer)
+
+    dispatcher = RPCDispatcher(target, endpoints, serializer)
+    return msg_server.MessageHandlingServer(TRANSPORT, dispatcher, 'eventlet')
 
 
 def get_listener(targets, endpoints, serializer=None):
