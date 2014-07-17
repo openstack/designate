@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import time
+import threading
 from sqlalchemy.orm import exc
 from sqlalchemy import exc as sqlalchemy_exc
 from sqlalchemy import distinct, func
@@ -31,6 +32,7 @@ from designate.sqlalchemy.session import SQLOPTS
 
 
 LOG = logging.getLogger(__name__)
+LOCAL_STORE = threading.local()
 
 cfg.CONF.register_group(cfg.OptGroup(
     name='storage:sqlalchemy', title="Configuration for SQLAlchemy Storage"
@@ -47,7 +49,19 @@ class SQLAlchemyStorage(base.Storage):
         super(SQLAlchemyStorage, self).__init__()
 
         self.engine = get_engine(self.name)
-        self.session = get_session(self.name)
+
+    @property
+    def session(self):
+        # NOTE: This uses a thread local store, allowing each greenthread to
+        #       have it's own session stored correctly. Without this, each
+        #       greenthread may end up using a single global session, which
+        #       leads to bad things happening.
+        global LOCAL_STORE
+
+        if not hasattr(LOCAL_STORE, 'session'):
+            LOCAL_STORE.session = get_session(self.name)
+
+        return LOCAL_STORE.session
 
     def begin(self):
         self.session.begin(subtransactions=True)
