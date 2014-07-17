@@ -16,6 +16,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import base64
+import threading
 from sqlalchemy import func
 from sqlalchemy.sql import select
 from sqlalchemy.sql.expression import and_
@@ -26,11 +27,11 @@ from designate.openstack.common import log as logging
 from designate import exceptions
 from designate.backend import base
 from designate.backend.impl_powerdns import models
-from designate.sqlalchemy.session import get_session
-from designate.sqlalchemy.session import SQLOPTS
+from designate.sqlalchemy import session
 from designate.sqlalchemy.expressions import InsertFromSelect
 
 LOG = logging.getLogger(__name__)
+LOCAL_STORE = threading.local()
 TSIG_SUPPORTED_ALGORITHMS = ['hmac-md5']
 
 cfg.CONF.register_group(cfg.OptGroup(
@@ -41,7 +42,7 @@ cfg.CONF.register_opts([
     cfg.StrOpt('domain-type', default='NATIVE', help='PowerDNS Domain Type'),
     cfg.ListOpt('also-notify', default=[], help='List of additional IPs to '
                                                 'send NOTIFYs to'),
-] + SQLOPTS, group='backend:powerdns')
+] + session.SQLOPTS, group='backend:powerdns')
 
 # Overide the default DB connection registered above, to avoid name conflicts
 # between the Designate and PowerDNS databases.
@@ -56,7 +57,18 @@ class PowerDNSBackend(base.Backend):
     def start(self):
         super(PowerDNSBackend, self).start()
 
-        self.session = get_session(self.name)
+    @property
+    def session(self):
+        # NOTE: This uses a thread local store, allowing each greenthread to
+        #       have it's own session stored correctly. Without this, each
+        #       greenthread may end up using a single global session, which
+        #       leads to bad things happening.
+        global LOCAL_STORE
+
+        if not hasattr(LOCAL_STORE, 'session'):
+            LOCAL_STORE.session = session.get_session(self.name)
+
+        return LOCAL_STORE.session
 
     # TSIG Key Methods
     def create_tsigkey(self, context, tsigkey):
