@@ -275,6 +275,7 @@ class TestCase(base.BaseTestCase):
             DatabaseFixture.get_fixture(REPOSITORY))
         self.config(
             connection=self.db_fixture.url,
+            connection_debug=100,
             group='storage:sqlalchemy'
         )
 

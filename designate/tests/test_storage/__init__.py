@@ -824,6 +824,33 @@ class StorageTestCase(object):
             # Attempt to create the second/duplicate recordset
             self.create_recordset(domain)
 
+    def test_create_recordset_with_records(self):
+        domain = self.create_domain()
+
+        recordset = objects.RecordSet(
+            name='www.%s' % domain['name'],
+            type='A',
+            records=objects.RecordList(objects=[
+                objects.Record(data='192.0.2.1'),
+                objects.Record(data='192.0.2.2'),
+            ])
+        )
+
+        recordset = self.storage.create_recordset(
+            self.admin_context, domain['id'], recordset)
+
+        # Ensure recordset.records is a RecordList instance
+        self.assertIsInstance(recordset.records, objects.RecordList)
+
+        # Ensure two Records are attached to the RecordSet correctly
+        self.assertEqual(2, len(recordset.records))
+        self.assertIsInstance(recordset.records[0], objects.Record)
+        self.assertIsInstance(recordset.records[1], objects.Record)
+
+        # Ensure the Records have been saved by checking they have an ID
+        self.assertIsNotNone(recordset.records[0].id)
+        self.assertIsNotNone(recordset.records[1].id)
+
     def test_find_recordsets(self):
         domain = self.create_domain()
 
@@ -891,6 +918,34 @@ class StorageTestCase(object):
 
         self.assertEqual(len(results), 1)
 
+    def test_find_recordsets_with_records(self):
+        domain = self.create_domain()
+        recordset = self.create_recordset(domain)
+
+        # Create two Records in the RecordSet
+        self.create_record(domain, recordset)
+        self.create_record(domain, recordset, fixture=1)
+
+        criterion = dict(
+            id=recordset.id,
+        )
+
+        # Find the RecordSet
+        results = self.storage.find_recordsets(self.admin_context, criterion)
+
+        # Ensure we only have one result
+        self.assertEqual(1, len(results))
+
+        recordset = results[0]
+
+        # Ensure recordset.records is a RecordList instance
+        self.assertIsInstance(recordset.records, objects.RecordList)
+
+        # Ensure two Records are attached to the RecordSet correctly
+        self.assertEqual(2, len(recordset.records))
+        self.assertIsInstance(recordset.records[0], objects.Record)
+        self.assertIsInstance(recordset.records[1], objects.Record)
+
     def test_get_recordset(self):
         domain = self.create_domain()
         expected = self.create_recordset(domain)
@@ -899,6 +954,26 @@ class StorageTestCase(object):
 
         self.assertEqual(actual['name'], expected['name'])
         self.assertEqual(actual['type'], expected['type'])
+
+    def test_get_recordset_with_records(self):
+        domain = self.create_domain()
+        recordset = self.create_recordset(domain)
+
+        # Create two Records in the RecordSet
+        self.create_record(domain, recordset)
+        self.create_record(domain, recordset, fixture=1)
+
+        # Fetch the RecordSet again
+        recordset = self.storage.get_recordset(
+            self.admin_context, recordset.id)
+
+        # Ensure recordset.records is a RecordList instance
+        self.assertIsInstance(recordset.records, objects.RecordList)
+
+        # Ensure two Records are attached to the RecordSet correctly
+        self.assertEqual(2, len(recordset.records))
+        self.assertIsInstance(recordset.records[0], objects.Record)
+        self.assertIsInstance(recordset.records[1], objects.Record)
 
     def test_get_recordset_missing(self):
         with testtools.ExpectedException(exceptions.RecordSetNotFound):
@@ -929,6 +1004,29 @@ class StorageTestCase(object):
 
         with testtools.ExpectedException(exceptions.RecordSetNotFound):
             self.storage.find_recordset(self.admin_context, criterion)
+
+    def test_find_recordset_criterion_with_records(self):
+        domain = self.create_domain()
+        recordset = self.create_recordset(domain)
+
+        # Create two Records in the RecordSet
+        self.create_record(domain, recordset)
+        self.create_record(domain, recordset, fixture=1)
+
+        criterion = dict(
+            id=recordset.id,
+        )
+
+        # Fetch the RecordSet again
+        recordset = self.storage.find_recordset(self.admin_context, criterion)
+
+        # Ensure recordset.records is a RecordList instance
+        self.assertIsInstance(recordset.records, objects.RecordList)
+
+        # Ensure two Records are attached to the RecordSet correctly
+        self.assertEqual(2, len(recordset.records))
+        self.assertIsInstance(recordset.records[0], objects.Record)
+        self.assertIsInstance(recordset.records[1], objects.Record)
 
     def test_update_recordset(self):
         domain = self.create_domain()
@@ -965,6 +1063,94 @@ class StorageTestCase(object):
 
         with testtools.ExpectedException(exceptions.RecordSetNotFound):
             self.storage.update_recordset(self.admin_context, recordset)
+
+    def test_update_recordset_with_record_create(self):
+        domain = self.create_domain()
+
+        # Create a RecordSet
+        recordset = self.create_recordset(domain, 'A')
+
+        # Append two new Records
+        recordset.records.append(objects.Record(data='192.0.2.1'))
+        recordset.records.append(objects.Record(data='192.0.2.2'))
+
+        # Perform the update
+        self.storage.update_recordset(self.admin_context, recordset)
+
+        # Fetch the RecordSet again
+        recordset = self.storage.get_recordset(
+            self.admin_context, recordset.id)
+
+        # Ensure two Records are attached to the RecordSet correctly
+        self.assertEqual(2, len(recordset.records))
+        self.assertIsInstance(recordset.records[0], objects.Record)
+        self.assertIsInstance(recordset.records[1], objects.Record)
+
+        # Ensure the Records have been saved by checking they have an ID
+        self.assertIsNotNone(recordset.records[0].id)
+        self.assertIsNotNone(recordset.records[1].id)
+
+    def test_update_recordset_with_record_delete(self):
+        domain = self.create_domain()
+
+        # Create a RecordSet and two Records
+        recordset = self.create_recordset(domain, 'A')
+        self.create_record(domain, recordset)
+        self.create_record(domain, recordset, fixture=1)
+
+        # Fetch the RecordSet again
+        recordset = self.storage.get_recordset(
+            self.admin_context, recordset.id)
+
+        # Remove one of the Records
+        recordset.records.pop(0)
+
+        # Ensure only one Record is attached to the RecordSet
+        self.assertEqual(1, len(recordset.records))
+
+        # Perform the update
+        self.storage.update_recordset(self.admin_context, recordset)
+
+        # Fetch the RecordSet again
+        recordset = self.storage.get_recordset(
+            self.admin_context, recordset.id)
+
+        # Ensure only one Record is attached to the RecordSet
+        self.assertEqual(1, len(recordset.records))
+        self.assertIsInstance(recordset.records[0], objects.Record)
+
+    def test_update_recordset_with_record_update(self):
+        domain = self.create_domain()
+
+        # Create a RecordSet and two Records
+        recordset = self.create_recordset(domain, 'A')
+        self.create_record(domain, recordset)
+        self.create_record(domain, recordset, fixture=1)
+
+        # Fetch the RecordSet again
+        recordset = self.storage.get_recordset(
+            self.admin_context, recordset.id)
+
+        # Update one of the Records
+        updated_record_id = recordset.records[0].id
+        recordset.records[0].data = '192.0.2.255'
+
+        # Perform the update
+        self.storage.update_recordset(self.admin_context, recordset)
+
+        # Fetch the RecordSet again
+        recordset = self.storage.get_recordset(
+            self.admin_context, recordset.id)
+
+        # Ensure the Record has been updated
+        for record in recordset.records:
+            if record.id != updated_record_id:
+                continue
+
+            self.assertEqual('192.0.2.255', record.data)
+            return  # Exits this test early as we suceeded
+
+        raise Exception('Updated record not found')
 
     def test_delete_recordset(self):
         domain = self.create_domain()

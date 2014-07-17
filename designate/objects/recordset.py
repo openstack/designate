@@ -17,7 +17,8 @@ from designate.objects import base
 
 class RecordSet(base.DictObjectMixin, base.PersistentObjectMixin,
                 base.DesignateObject):
-    FIELDS = ['tenant_id', 'domain_id', 'name', 'type', 'ttl', 'description']
+    FIELDS = ['tenant_id', 'domain_id', 'name', 'type', 'ttl', 'description',
+              'records']
 
 
 class RecordSetList(base.ListObjectMixin, base.DesignateObject):
