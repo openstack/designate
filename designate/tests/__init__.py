@@ -31,7 +31,7 @@ import sqlalchemy
 from testtools import testcase
 
 from designate.openstack.common import log as logging
-from designate.openstack.common.fixture import config
+from designate.openstack.common.fixture import config as cfg_fixture
 from designate.openstack.common import importutils
 from designate import policy
 from designate import utils
@@ -239,7 +239,7 @@ class TestCase(base.BaseTestCase):
         super(TestCase, self).setUp()
 
         self.useFixture(fixtures.FakeLogger('designate', level='DEBUG'))
-        self.CONF = self.useFixture(config.Config(cfg.CONF)).conf
+        self.CONF = self.useFixture(cfg_fixture.Config(cfg.CONF)).conf
 
         self.messaging_conf = self.useFixture(
             messaging_fixture.ConfFixture(cfg.CONF))
