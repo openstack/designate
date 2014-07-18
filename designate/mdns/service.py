@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import socket
+import struct
 
 from oslo.config import cfg
 
@@ -77,8 +78,20 @@ class Service(service.Service):
                      {'host': addr[0], 'port': addr[1]})
 
             payload = client.recv(65535)
+            (expected_length,) = struct.unpack('!H', payload[0:2])
+            actual_length = len(payload[2:])
 
-            self.tg.add_thread(self._handle, addr, payload, client)
+            # For now we assume all requests are one packet
+            # TODO(vinod): Handle multipacket requests
+            if (expected_length != actual_length):
+                LOG.warn(_LW("got a packet with unexpected length from "
+                             "%(host)s:%(port)d. Expected length=%(elen)d. "
+                             "Actual length=%(alen)d.") %
+                         {'host': addr[0], 'port': addr[1],
+                          'elen': expected_length, 'alen': actual_length})
+                client.close()
+            else:
+                self.tg.add_thread(self._handle, addr, payload[2:], client)
 
     def _handle_udp(self):
         LOG.info(_LI("_handle_udp thread started"))
@@ -106,7 +119,9 @@ class Service(service.Service):
             if response:
                 if client is not None:
                     # Handle TCP Responses
-                    client.send(response)
+                    msg_length = len(response)
+                    tcp_response = struct.pack("!H", msg_length) + response
+                    client.send(tcp_response)
                     client.close()
                 else:
                     # Handle UDP Responses
