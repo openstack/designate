@@ -50,7 +50,6 @@ SCRIPT
     ubuntu.vm.box = "rhefner/devstack-dependencies"
 
     ubuntu.vm.network :private_network, ip: "192.168.27.100"
-    ubuntu.vm.network :private_network, ip: "172.24.4.225", :netmask => "255.255.255.224", :auto_config => false
 
     ubuntu.vm.provision :shell, :privileged => true, :inline => "DEBIAN_FRONTEND=noninteractive apt-get update"
     ubuntu.vm.provision :shell, :privileged => true, :inline => "DEBIAN_FRONTEND=noninteractive apt-get install --yes git"
@@ -62,7 +61,6 @@ SCRIPT
     fedora.vm.box = "box-cutter/fedora20"
 
     fedora.vm.network :private_network, ip: "192.168.27.101"
-    fedora.vm.network :private_network, ip: "172.24.4.226", :netmask => "255.255.255.224", :auto_config => false
 
     fedora.vm.provision :shell, :privileged => true, :inline => "yum update -y vim-minimal" # RH Bug 1066983
     fedora.vm.provision :shell, :privileged => true, :inline => "yum install -y git-core MySQL-python"
