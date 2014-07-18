@@ -45,41 +45,41 @@ Links
 
         {
           "zones": [{
-            "status": "ACTIVE"
-            "description": null
+            "status": "ACTIVE",
+            "description": null,
+            "updated_at": "2014-07-08T20:28:31.000000",
+            "ttl": 86400,
+            "serial": 1404851315,
+            "id": "a4e29ed3-d7a4-4e4d-945d-ce64678d3b94",
+            "name": "example.com.",
+            "created_at": "2014-07-08T20:28:19.000000",
+            "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2",
+            "version": 1,
+            "project_id": "noauth-project",
+            "email": "hostmaster@example.com",
             "links": {
-            "self": http://dns.provider.com/v2/zones/a4e29ed3-d7a4-4e4d-945d-ce64678d3b94
+              "self": "http://dns.provider.com/v2/zones/a4e29ed3-d7a4-4e4d-945d-ce64678d3b94"
             }
-            "updated_at": "2014-07-08T20:28:31.000000"
-            "ttl": 86400
-            "serial": 1404851315
-            "id": "a4e29ed3-d7a4-4e4d-945d-ce64678d3b94"
-            "name": "example.com."
-            "created_at": "2014-07-08T20:28:19.000000"
-            "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2"
-            "version": 1
-            "project_id": "noauth-project"
-            "email": "hostmaster@example.com"
           },
           {
-            "status": "ACTIVE"
-            "description": null
+            "status": "ACTIVE",
+            "description": null,
+            "updated_at": null,
+            "ttl": 3600,
+            "serial": 1405435099,
+            "id": "13db810b-917d-4898-bc28-4d4ee370d20d",
+            "name": "abc.example.com.",
+            "created_at": "2014-07-15T14:38:19.000000",
+            "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2",
+            "version": 1,
+            "project_id": "noauth-project",
+            "email": "hostmaster@example.com",
             "links": {
-              "self": http://dns.provider.com/v2/zones/13db810b-917d-4898-bc28-4d4ee370d20d
+              "self": "http://dns.provider.com/v2/zones/13db810b-917d-4898-bc28-4d4ee370d20d"
             }
-            "updated_at": null
-            "ttl": 3600
-            "serial": 1405435099
-            "id": "13db810b-917d-4898-bc28-4d4ee370d20d"
-            "name": "abc.example.com."
-            "created_at": "2014-07-15T14:38:19.000000"
-            "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2"
-            "version": 1
-            "project_id": "noauth-project"
-            "email": "hostmaster@example.com"
           }],
           "links": {
-            "self": "https://dns.provider.com/v2/zones?limit=2"
+            "self": "https://dns.provider.com/v2/zones?limit=2",
             "next": "https://dns.provider.com/v2/zones?limit=2&marker=13db810b-917d-4898-bc28-4d4ee370d20d"
           }
         }
@@ -130,75 +130,75 @@ Pagination and Sorting
 
         {
           "zones": [{
-            "status": "ACTIVE"
-            "description": null
+            "status": "ACTIVE",
+            "description": null,
+            "updated_at": null,
+            "ttl": 3600,
+            "serial": 1405435156,
+            "id": "c316def0-8599-4030-9dcd-2ce566348115",
+            "name": "abc.example.net.",
+            "created_at": "2014-07-15T14:39:16.000000",
+            "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2",
+            "version": 1,
+            "project_id": "noauth-project",
+            "email": "hostmaster@example.net",
             "links": {
-              "self": http://dns.provider.com/v2/zones/c316def0-8599-4030-9dcd-2ce566348115
+              "self": "http://dns.provider.com/v2/zones/c316def0-8599-4030-9dcd-2ce566348115"
             }
-            "updated_at": null
-            "ttl": 3600
-            "serial": 1405435156
-            "id": "c316def0-8599-4030-9dcd-2ce566348115"
-            "name": "abc.example.net."
-            "created_at": "2014-07-15T14:39:16.000000"
-            "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2"
-            "version": 1
-            "project_id": "noauth-project"
-            "email": "hostmaster@example.net"
           },
           {
-            "status": "ACTIVE"
-            "description": null
+            "status": "ACTIVE",
+            "description": null,
+            "updated_at": "2014-07-08T20:28:31.000000",
+            "ttl": 86400,
+            "serial": 1404851315,
+            "id": "a4e29ed3-d7a4-4e4d-945d-ce64678d3b94",
+            "name": "example.com.",
+            "created_at": "2014-07-08T20:28:19.000000",
+            "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2",
+            "version": 1,
+            "project_id": "noauth-project",
+            "email": "hostmaster@example.com",
             "links": {
-            "self": http://dns.provider.com/v2/zones/a4e29ed3-d7a4-4e4d-945d-ce64678d3b94
+              "self": "http://dns.provider.com/v2/zones/a4e29ed3-d7a4-4e4d-945d-ce64678d3b94"
             }
-            "updated_at": "2014-07-08T20:28:31.000000"
-            "ttl": 86400
-            "serial": 1404851315
-            "id": "a4e29ed3-d7a4-4e4d-945d-ce64678d3b94"
-            "name": "example.com."
-            "created_at": "2014-07-08T20:28:19.000000"
-            "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2"
-            "version": 1
-            "project_id": "noauth-project"
-            "email": "hostmaster@example.com"
           },
           {
-            "status": "ACTIVE"
-            "description": null
+            "status": "ACTIVE",
+            "description": null,
+            "updated_at": null,
+            "ttl": 3600,
+            "serial": 1405435142,
+            "id": "38dbf635-45cb-4873-8300-6c273f0283c7",
+            "name": "example.org.",
+            "created_at": "2014-07-15T14:39:02.000000",
+            "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2",
+            "version": 1,
+            "project_id": "noauth-project",
+            "email": "hostmaster@example.org",
             "links": {
-              "self": http://dns.provider.com/v2/zones/38dbf635-45cb-4873-8300-6c273f0283c7
+              "self": "http://dns.provider.com/v2/zones/38dbf635-45cb-4873-8300-6c273f0283c7"
             }
-            "updated_at": null
-            "ttl": 3600
-            "serial": 1405435142
-            "id": "38dbf635-45cb-4873-8300-6c273f0283c7"
-            "name": "example.org."
-            "created_at": "2014-07-15T14:39:02.000000"
-            "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2"
-            "version": 1
-            "project_id": "noauth-project"
-            "email": "hostmaster@example.org"
           },
           {
-            "status": "ACTIVE"
-            "description": null
+            "status": "ACTIVE",
+            "description": null,
+            "updated_at": null,
+            "ttl": 3600,
+            "serial": 1405435099,
+            "id": "13db810b-917d-4898-bc28-4d4ee370d20d",
+            "name": "abc.example.com.",
+            "created_at": "2014-07-15T14:38:19.000000",
+            "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2",
+            "version": 1,
+            "project_id": "noauth-project",
+            "email": "hostmaster@example.com",
             "links": {
-              "self": http://dns.provider.com/v2/zones/13db810b-917d-4898-bc28-4d4ee370d20d
+              "self": "http://dns.provider.com/v2/zones/13db810b-917d-4898-bc28-4d4ee370d20d"
             }
-            "updated_at": null
-            "ttl": 3600
-            "serial": 1405435099
-            "id": "13db810b-917d-4898-bc28-4d4ee370d20d"
-            "name": "abc.example.com."
-            "created_at": "2014-07-15T14:38:19.000000"
-            "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2"
-            "version": 1
-            "project_id": "noauth-project"
-            "email": "hostmaster@example.com"
           }],
           "links": {
-          "self": "https://dns.provider.com/v2/zones?sort_key=id&sort_dir=desc"
+            "self": "https://dns.provider.com/v2/zones?sort_key=id&sort_dir=desc"
           }
         }
 
@@ -220,42 +220,42 @@ Pagination and Sorting
 
         {
           "zones": [{
-            "status": "ACTIVE"
-            "description": null
+            "status": "ACTIVE",
+            "description": null,
+            "updated_at": "2014-07-08T20:28:31.000000",
+            "ttl": 86400,
+            "serial": 1404851315,
+            "id": "a4e29ed3-d7a4-4e4d-945d-ce64678d3b94",
+            "name": "example.com.",
+            "created_at": "2014-07-08T20:28:19.000000",
+            "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2",
+            "version": 1,
+            "project_id": "noauth-project",
+            "email": "hostmaster@example.com",
             "links": {
-            "self": http://dns.provider.com/v2/zones/a4e29ed3-d7a4-4e4d-945d-ce64678d3b94
+              "self": "http://dns.provider.com/v2/zones/a4e29ed3-d7a4-4e4d-945d-ce64678d3b94"
             }
-            "updated_at": "2014-07-08T20:28:31.000000"
-            "ttl": 86400
-            "serial": 1404851315
-            "id": "a4e29ed3-d7a4-4e4d-945d-ce64678d3b94"
-            "name": "example.com."
-            "created_at": "2014-07-08T20:28:19.000000"
-            "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2"
-            "version": 1
-            "project_id": "noauth-project"
-            "email": "hostmaster@example.com"
           },
           {
-            "status": "ACTIVE"
-            "description": null
+            "status": "ACTIVE",
+            "description": null,
+            "updated_at": null,
+            "ttl": 3600,
+            "serial": 1405435142,
+            "id": "38dbf635-45cb-4873-8300-6c273f0283c7",
+            "name": "example.org.",
+            "created_at": "2014-07-15T14:39:02.000000",
+            "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2",
+            "version": 1,
+            "project_id": "noauth-project",
+            "email": "hostmaster@example.org",
             "links": {
-              "self": http://dns.provider.com/v2/zones/38dbf635-45cb-4873-8300-6c273f0283c7
+              "self": "http://dns.provider.com/v2/zones/38dbf635-45cb-4873-8300-6c273f0283c7"
             }
-            "updated_at": null
-            "ttl": 3600
-            "serial": 1405435142
-            "id": "38dbf635-45cb-4873-8300-6c273f0283c7"
-            "name": "example.org."
-            "created_at": "2014-07-15T14:39:02.000000"
-            "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2"
-            "version": 1
-            "project_id": "noauth-project"
-            "email": "hostmaster@example.org"
           }],
           "links": {
             "self": "https://dns.provider.com/v2/zones?sort_key=id&sort_dir=desc&marker=c316def0-8599-4030-9dcd-2ce566348115&limit=2",
-            "next": "https://dns.provider.com/v2/zones?sort_key=id&sort_dir=desc&limit=2&marker=38dbf635-45cb-4873-8300-6c273f0283c7
+            "next": "https://dns.provider.com/v2/zones?sort_key=id&sort_dir=desc&limit=2&marker=38dbf635-45cb-4873-8300-6c273f0283c7"
           }
         }
 
@@ -299,21 +299,21 @@ Filtering
 
         {
           "zones": [{
-            "status": "ACTIVE"
-            "description": null
+            "status": "ACTIVE",
+            "description": null,
+            "updated_at": "2014-07-08T20:28:31.000000",
+            "ttl": 86400,
+            "serial": 1404851315,
+            "id": "a4e29ed3-d7a4-4e4d-945d-ce64678d3b94",
+            "name": "example.com.",
+            "created_at": "2014-07-08T20:28:19.000000",
+            "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2",
+            "version": 1,
+            "project_id": "noauth-project",
+            "email": "hostmaster@example.com",
             "links": {
-            "self": http://dns.provider.com/v2/zones/a4e29ed3-d7a4-4e4d-945d-ce64678d3b94
+              "self": "http://dns.provider.com/v2/zones/a4e29ed3-d7a4-4e4d-945d-ce64678d3b94"
             }
-            "updated_at": "2014-07-08T20:28:31.000000"
-            "ttl": 86400
-            "serial": 1404851315
-            "id": "a4e29ed3-d7a4-4e4d-945d-ce64678d3b94"
-            "name": "example.com."
-            "created_at": "2014-07-08T20:28:19.000000"
-            "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2"
-            "version": 1
-            "project_id": "noauth-project"
-            "email": "hostmaster@example.com"
           }],
           "links": {
             "self": "https://dns.provider.com/v2/zones?name=example.com."
@@ -342,38 +342,38 @@ Filtering
 
         {
           "zones": [{
-            "status": "ACTIVE"
-            "description": null
+            "status": "ACTIVE",
+            "description": null,
+            "updated_at": "2014-07-08T20:28:31.000000",
+            "ttl": 86400,
+            "serial": 1404851315,
+            "id": "a4e29ed3-d7a4-4e4d-945d-ce64678d3b94",
+            "name": "example.com.",
+            "created_at": "2014-07-08T20:28:19.000000",
+            "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2",
+            "version": 1,
+            "project_id": "noauth-project",
+            "email": "hostmaster@example.com",
             "links": {
-            "self": http://dns.provider.com/v2/zones/a4e29ed3-d7a4-4e4d-945d-ce64678d3b94
+              "self": "http://dns.provider.com/v2/zones/a4e29ed3-d7a4-4e4d-945d-ce64678d3b94"
             }
-            "updated_at": "2014-07-08T20:28:31.000000"
-            "ttl": 86400
-            "serial": 1404851315
-            "id": "a4e29ed3-d7a4-4e4d-945d-ce64678d3b94"
-            "name": "example.com."
-            "created_at": "2014-07-08T20:28:19.000000"
-            "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2"
-            "version": 1
-            "project_id": "noauth-project"
-            "email": "hostmaster@example.com"
           },
           {
-            "status": "ACTIVE"
-            "description": null
+            "status": "ACTIVE",
+            "description": null,
+            "updated_at": null,
+            "ttl": 3600,
+            "serial": 1405435142,
+            "id": "38dbf635-45cb-4873-8300-6c273f0283c7",
+            "name": "example.org.",
+            "created_at": "2014-07-15T14:39:02.000000",
+            "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2",
+            "version": 1,
+            "project_id": "noauth-project",
+            "email": "hostmaster@example.org",
             "links": {
-              "self": http://dns.provider.com/v2/zones/38dbf635-45cb-4873-8300-6c273f0283c7
+              "self": "http://dns.provider.com/v2/zones/38dbf635-45cb-4873-8300-6c273f0283c7"
             }
-            "updated_at": null
-            "ttl": 3600
-            "serial": 1405435142
-            "id": "38dbf635-45cb-4873-8300-6c273f0283c7"
-            "name": "example.org."
-            "created_at": "2014-07-15T14:39:02.000000"
-            "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2"
-            "version": 1
-            "project_id": "noauth-project"
-            "email": "hostmaster@example.org"
           }],
           "links": {
             "self": "https://dns.provider.com/v2/zones?name=example*"
@@ -400,78 +400,77 @@ Filtering
 
         {
           "zones": [{
-            "status": "ACTIVE"
-            "description": null
+            "status": "ACTIVE",
+            "description": null,
+            "updated_at": "2014-07-08T20:28:31.000000",
+            "ttl": 86400,
+            "serial": 1404851315,
+            "id": "a4e29ed3-d7a4-4e4d-945d-ce64678d3b94",
+            "name": "example.com.",
+            "created_at": "2014-07-08T20:28:19.000000",
+            "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2",
+            "version": 1,
+            "project_id": "noauth-project",
+            "email": "hostmaster@example.com",
             "links": {
-            "self": http://dns.provider.com/v2/zones/a4e29ed3-d7a4-4e4d-945d-ce64678d3b94
+              "self": "http://dns.provider.com/v2/zones/a4e29ed3-d7a4-4e4d-945d-ce64678d3b94"
             }
-            "updated_at": "2014-07-08T20:28:31.000000"
-            "ttl": 86400
-            "serial": 1404851315
-            "id": "a4e29ed3-d7a4-4e4d-945d-ce64678d3b94"
-            "name": "example.com."
-            "created_at": "2014-07-08T20:28:19.000000"
-            "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2"
-            "version": 1
-            "project_id": "noauth-project"
-            "email": "hostmaster@example.com"
           },
           {
-            "status": "ACTIVE"
-            "description": null
+            "status": "ACTIVE",
+            "description": null,
+            "updated_at": null,
+            "ttl": 3600,
+            "serial": 1405435099,
+            "id": "13db810b-917d-4898-bc28-4d4ee370d20d",
+            "name": "abc.example.com.",
+            "created_at": "2014-07-15T14:38:19.000000",
+            "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2",
+            "version": 1,
+            "project_id": "noauth-project",
+            "email": "hostmaster@example.com",
             "links": {
-              "self": http://dns.provider.com/v2/zones/13db810b-917d-4898-bc28-4d4ee370d20d
+              "self": "http://dns.provider.com/v2/zones/13db810b-917d-4898-bc28-4d4ee370d20d"
             }
-            "updated_at": null
-            "ttl": 3600
-            "serial": 1405435099
-            "id": "13db810b-917d-4898-bc28-4d4ee370d20d"
-            "name": "abc.example.com."
-            "created_at": "2014-07-15T14:38:19.000000"
-            "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2"
-            "version": 1
-            "project_id": "noauth-project"
-            "email": "hostmaster@example.com"
           },
           {
-            "status": "ACTIVE"
-            "description": null
+            "status": "ACTIVE",
+            "description": null,
+            "updated_at": null,
+            "ttl": 3600,
+            "serial": 1405435142,
+            "id": "38dbf635-45cb-4873-8300-6c273f0283c7",
+            "name": "example.org.",
+            "created_at": "2014-07-15T14:39:02.000000",
+            "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2",
+            "version": 1,
+            "project_id": "noauth-project",
+            "email": "hostmaster@example.org",
             "links": {
-              "self": http://dns.provider.com/v2/zones/38dbf635-45cb-4873-8300-6c273f0283c7
+              "self": "http://dns.provider.com/v2/zones/38dbf635-45cb-4873-8300-6c273f0283c7"
             }
-            "updated_at": null
-            "ttl": 3600
-            "serial": 1405435142
-            "id": "38dbf635-45cb-4873-8300-6c273f0283c7"
-            "name": "example.org."
-            "created_at": "2014-07-15T14:39:02.000000"
-            "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2"
-            "version": 1
-            "project_id": "noauth-project"
-            "email": "hostmaster@example.org"
           },
           {
-            "status": "ACTIVE"
-            "description": null
+            "status": "ACTIVE",
+            "description": null,
+            "updated_at": null,
+            "ttl": 3600,
+            "serial": 1405435156,
+            "id": "c316def0-8599-4030-9dcd-2ce566348115",
+            "name": "abc.example.net.",
+            "created_at": "2014-07-15T14:39:16.000000",
+            "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2",
+            "version": 1,
+            "project_id": "noauth-project",
+            "email": "hostmaster@example.net",
             "links": {
-              "self": http://dns.provider.com/v2/zones/c316def0-8599-4030-9dcd-2ce566348115
+              "self": "http://dns.provider.com/v2/zones/c316def0-8599-4030-9dcd-2ce566348115"
             }
-            "updated_at": null
-            "ttl": 3600
-            "serial": 1405435156
-            "id": "c316def0-8599-4030-9dcd-2ce566348115"
-            "name": "abc.example.net."
-            "created_at": "2014-07-15T14:39:16.000000"
-            "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2"
-            "version": 1
-            "project_id": "noauth-project"
-            "email": "hostmaster@example.net"
           }],
           "links": {
             "self": "https://dns.provider.com/v2/zones?name=*example*"
           }
         }
-
 
 
 Nested Collections
