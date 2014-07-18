@@ -19,6 +19,7 @@ V2 API
        :maxdepth: 2
        :glob:
 
+       rest/v2/collections
        rest/v2/zones
        rest/v2/tlds
        rest/v2/blacklists
