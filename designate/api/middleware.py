@@ -23,7 +23,6 @@ from designate import notifications
 from designate import wsgi
 from designate import context
 from designate.openstack.common import jsonutils as json
-from designate.openstack.common import local
 from designate.openstack.common import log as logging
 from designate.openstack.common import strutils
 from designate.openstack.common.middleware import request_id
@@ -66,8 +65,6 @@ class ContextMiddleware(wsgi.Middleware):
         kwargs.setdefault('request_id', req_id)
 
         ctxt = context.DesignateContext(*args, **kwargs)
-
-        local.store.context = ctxt
         request.environ['context'] = ctxt
 
         return ctxt

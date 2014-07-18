@@ -17,8 +17,8 @@ import itertools
 import copy
 
 from designate.openstack.common import context
+from designate.openstack.common import local
 from designate.openstack.common import log as logging
-from designate.openstack.common.gettextutils import _LW
 
 
 LOG = logging.getLogger(__name__)
@@ -29,10 +29,10 @@ class DesignateContext(context.RequestContext):
                  user_domain=None, project_domain=None, is_admin=False,
                  read_only=False, show_deleted=False, request_id=None,
                  instance_uuid=None, roles=None, service_catalog=None,
-                 all_tenants=False, **kwargs):
-        if kwargs:
-                LOG.warn(_LW('Arguments dropped when creating context: %s') %
-                         str(kwargs))
+                 all_tenants=False, user_identity=None):
+        # NOTE: user_identity may be passed in, but will be silently dropped as
+        #       it is a generated field based on several others.
+
         roles = roles or []
         super(DesignateContext, self).__init__(
             auth_token=auth_token,
@@ -51,6 +51,12 @@ class DesignateContext(context.RequestContext):
         self.service_catalog = service_catalog
         self.all_tenants = all_tenants
 
+        if not hasattr(local.store, 'context'):
+            self.update_store()
+
+    def update_store(self):
+        local.store.context = self
+
     def deepcopy(self):
         d = self.to_dict()
 
@@ -59,17 +65,10 @@ class DesignateContext(context.RequestContext):
     def to_dict(self):
         d = super(DesignateContext, self).to_dict()
 
-        user_idt = (
-            self.user_idt_format.format(user=self.user or '-',
-                                        tenant=self.tenant or '-',
-                                        domain=self.domain or '-',
-                                        user_domain=self.user_domain or '-',
-                                        p_domain=self.project_domain or '-'))
         d.update({
             'roles': self.roles,
             'service_catalog': self.service_catalog,
             'all_tenants': self.all_tenants,
-            'user_identity': user_idt
         })
 
         return copy.deepcopy(d)
