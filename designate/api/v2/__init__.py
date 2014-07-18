@@ -43,8 +43,8 @@ def factory(global_config, **local_conf):
             'root': 'designate.api.v2.controllers.root.RootController',
             'modules': ['designate.api.v2'],
             'errors': {
-                404: '/not_found',
-                405: '/method_not_allowed',
+                404: '/errors/not_found',
+                405: '/errors/method_not_allowed',
                 '__force_dict__' : True
             }
         }
