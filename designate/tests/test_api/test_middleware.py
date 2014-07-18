@@ -27,6 +27,7 @@ class FakeRequest(object):
     def __init__(self):
         self.headers = {}
         self.environ = {}
+        self.params = {}
 
     def get_response(self, app):
         return "FakeResponse"

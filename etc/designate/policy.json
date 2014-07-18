@@ -5,6 +5,8 @@
 
     "default": "rule:admin_or_owner",
 
+    "all_tenants": "rule:admin",
+
     "use_low_ttl": "rule:admin",
 
     "get_quotas": "rule:admin_or_owner",
