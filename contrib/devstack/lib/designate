@@ -120,6 +120,8 @@ function configure_designate() {
 
     iniset $DESIGNATE_CONF service:api api_host $DESIGNATE_SERVICE_HOST
     iniset $DESIGNATE_CONF service:api api_base_uri $DESIGNATE_SERVICE_PROTOCOL://$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT/
+    iniset $DESIGNATE_CONF service:api enable_api_v1 True
+    iniset $DESIGNATE_CONF service:api enable_api_v2 True
     if is_service_enabled tls-proxy; then
         # Set the service port for a proxy to take the original
         iniset $DESIGNATE_CONF service:api api_port $DESIGNATE_SERVICE_PORT_INT
