@@ -19,7 +19,7 @@ from oslo import messaging
 
 from designate.openstack.common import log as logging
 from designate.openstack.common import service
-from designate.openstack.common.gettextutils import _LW
+from designate.i18n import _LW
 from designate import notification_handler
 from designate import rpc
 

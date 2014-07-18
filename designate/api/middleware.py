@@ -27,10 +27,10 @@ from designate.openstack.common import jsonutils as json
 from designate.openstack.common import log as logging
 from designate.openstack.common import strutils
 from designate.openstack.common.middleware import request_id
-from designate.openstack.common.gettextutils import _LI
-from designate.openstack.common.gettextutils import _LW
-from designate.openstack.common.gettextutils import _LE
-from designate.openstack.common.gettextutils import _LC
+from designate.i18n import _LI
+from designate.i18n import _LW
+from designate.i18n import _LE
+from designate.i18n import _LC
 
 
 LOG = logging.getLogger(__name__)

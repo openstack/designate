@@ -24,7 +24,7 @@ from designate.openstack.common import log as logging
 from designate.openstack.common import importutils
 from designate.backend import base
 from designate.openstack.common import jsonutils as json
-from designate.openstack.common.gettextutils import _LE
+from designate.i18n import _LE
 
 
 LOG = logging.getLogger(__name__)

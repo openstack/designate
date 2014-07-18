@@ -22,7 +22,7 @@ from oslo.config import cfg
 
 from designate.openstack.common import service
 from designate.openstack.common import log as logging
-from designate.openstack.common.gettextutils import _
+from designate.i18n import _
 from designate import rpc
 from designate import version
 

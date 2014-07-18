@@ -35,7 +35,7 @@ import webob.exc
 from xml.dom import minidom
 from xml.parsers import expat
 
-from designate.openstack.common.gettextutils import _
+from designate.i18n import _
 from designate.openstack.common import jsonutils
 from designate.openstack.common import log as logging
 from designate.openstack.common import service

@@ -21,8 +21,8 @@ from designate import exceptions
 from designate import rpc
 from designate.central import rpcapi as central_rpcapi
 from designate.openstack.common import log as logging
-from designate.openstack.common.gettextutils import _LI
-from designate.openstack.common.gettextutils import _LE
+from designate.i18n import _LI
+from designate.i18n import _LE
 from designate.manage import base
 from designate.schema import format
 

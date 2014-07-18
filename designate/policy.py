@@ -17,8 +17,8 @@ from oslo.config import cfg
 
 from designate.openstack.common import log as logging
 from designate.openstack.common import policy
-from designate.openstack.common.gettextutils import _
-from designate.openstack.common.gettextutils import _LI
+from designate.i18n import _
+from designate.i18n import _LI
 from designate import utils
 from designate import exceptions
 

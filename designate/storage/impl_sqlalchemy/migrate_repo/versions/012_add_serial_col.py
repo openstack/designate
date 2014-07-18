@@ -17,7 +17,7 @@ from sqlalchemy import MetaData, Table, Column, Integer
 
 from designate.openstack.common import timeutils
 from designate.openstack.common import log as logging
-from designate.openstack.common.gettextutils import _LW
+from designate.i18n import _LW
 
 
 LOG = logging.getLogger(__name__)

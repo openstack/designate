@@ -22,8 +22,8 @@ import logging
 
 import dns.zone
 
-from designate.openstack.common.gettextutils import _LI
-from designate.openstack.common.gettextutils import _LE
+from designate.i18n import _LI
+from designate.i18n import _LE
 
 
 logging.basicConfig()

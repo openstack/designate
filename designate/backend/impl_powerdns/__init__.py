@@ -27,7 +27,7 @@ from sqlalchemy.orm import exc as sqlalchemy_exceptions
 
 from designate.openstack.common import excutils
 from designate.openstack.common import log as logging
-from designate.openstack.common.gettextutils import _LC
+from designate.i18n import _LC
 from designate import exceptions
 from designate.backend import base
 from designate.backend.impl_powerdns import models

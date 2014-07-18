@@ -18,8 +18,8 @@ from oslo.config import cfg
 
 from designate import exceptions
 from designate.openstack.common import log as logging
-from designate.openstack.common.gettextutils import _LI
-from designate.openstack.common.gettextutils import _LW
+from designate.i18n import _LI
+from designate.i18n import _LW
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF

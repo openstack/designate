@@ -16,7 +16,7 @@ from oslo.config import cfg
 from oslo import messaging
 
 from designate.openstack.common import log as logging
-from designate.openstack.common.gettextutils import _LI
+from designate.i18n import _LI
 from designate import rpc
 
 

@@ -24,8 +24,8 @@ from oslo.config import cfg
 from designate import exceptions
 from designate.openstack.common import log as logging
 from designate.openstack.common import threadgroup
-from designate.openstack.common.gettextutils import _LW
-from designate.openstack.common.gettextutils import _LE
+from designate.i18n import _LW
+from designate.i18n import _LE
 from designate.network_api.base import NetworkAPI
 
 

@@ -34,7 +34,7 @@ import pecan.routing
 from designate import exceptions
 from designate import api
 from designate.openstack.common import log as logging
-from designate.openstack.common.gettextutils import _
+from designate.i18n import _
 
 
 LOG = logging.getLogger(__name__)

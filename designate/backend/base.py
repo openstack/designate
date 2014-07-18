@@ -16,7 +16,7 @@
 import abc
 
 from designate.openstack.common import log as logging
-from designate.openstack.common.gettextutils import _LW
+from designate.i18n import _LW
 from designate import exceptions
 from designate.context import DesignateContext
 from designate.plugin import DriverPlugin

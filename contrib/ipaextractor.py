@@ -25,9 +25,9 @@ import requests
 from oslo.config import cfg
 
 from designate.backend import impl_ipa
-from designate.openstack.common.gettextutils import _LI
-from designate.openstack.common.gettextutils import _LW
-from designate.openstack.common.gettextutils import _LE
+from designate.i18n import _LI
+from designate.i18n import _LW
+from designate.i18n import _LE
 from designate import utils
 
 

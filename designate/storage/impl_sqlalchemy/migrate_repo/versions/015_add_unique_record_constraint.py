@@ -20,7 +20,7 @@ from sqlalchemy.schema import Table, Column, MetaData
 from sqlalchemy.types import String
 
 from designate.openstack.common import log as logging
-from designate.openstack.common.gettextutils import _LW
+from designate.i18n import _LW
 
 
 LOG = logging.getLogger(__name__)

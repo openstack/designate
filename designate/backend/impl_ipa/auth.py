@@ -21,8 +21,8 @@ from requests import auth
 import kerberos
 
 from designate.backend.impl_ipa import IPAAuthError
-from designate.openstack.common.gettextutils import _LW
-from designate.openstack.common.gettextutils import _LE
+from designate.i18n import _LW
+from designate.i18n import _LE
 
 
 LOG = logging.getLogger(__name__)

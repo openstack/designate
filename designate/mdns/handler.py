@@ -20,7 +20,7 @@ from designate import exceptions
 from designate import storage
 from designate.context import DesignateContext
 from designate.openstack.common import log as logging
-from designate.openstack.common.gettextutils import _LE
+from designate.i18n import _LE
 
 
 LOG = logging.getLogger(__name__)

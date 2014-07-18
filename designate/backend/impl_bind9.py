@@ -20,7 +20,7 @@ import shutil
 from oslo.config import cfg
 
 from designate.openstack.common import log as logging
-from designate.openstack.common.gettextutils import _LW
+from designate.i18n import _LW
 from designate import utils
 from designate.backend import base
 

@@ -23,8 +23,8 @@ from oslo import messaging
 
 from designate.openstack.common import log as logging
 from designate.openstack.common import excutils
-from designate.openstack.common.gettextutils import _LI
-from designate.openstack.common.gettextutils import _LC
+from designate.i18n import _LI
+from designate.i18n import _LC
 from designate import backend
 from designate import central
 from designate import exceptions

@@ -23,11 +23,8 @@ from oslo.config import cfg
 from stevedore.extension import ExtensionManager
 
 from designate import utils
-from designate.openstack.common import gettextutils
-from designate.openstack.common.gettextutils import _
+from designate.i18n import _
 from designate.openstack.common import log as logging
-
-gettextutils.install('designate')
 
 eventlet.monkey_patch(os=False)
 

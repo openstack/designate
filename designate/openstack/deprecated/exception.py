@@ -21,7 +21,7 @@ Exceptions common to OpenStack projects
 
 import logging
 
-from designate.openstack.common.gettextutils import _
+from designate.i18n import _
 
 _FATAL_EXCEPTION_FORMAT_ERRORS = False
 

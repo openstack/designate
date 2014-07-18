@@ -14,7 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from designate.openstack.common import log as logging
-from designate.openstack.common.gettextutils import _LI
+from designate.i18n import _LI
 from designate.backend import base
 
 LOG = logging.getLogger(__name__)
