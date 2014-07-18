@@ -5,19 +5,14 @@ RABBIT_PASSWORD=password
 SERVICE_PASSWORD=password
 SERVICE_TOKEN=password
 
-# Glance/Nova Images
-IMAGE_URLS=http://download.cirros-cloud.net/0.3.1/cirros-0.3.1-x86_64-uec.tar.gz
+# IP Address for services to bind to (Should match IP from Vagrantfile)
+SERVICE_HOST=192.168.27.100
 
 # Logging
 #LOGFILE=/opt/stack/logs/stack.sh.log
 SCREEN_LOGDIR=/opt/stack/logs
 VERBOSE=True
 LOG_COLOR=True
-
-# Neutron Configuration
-FLOATING_RANGE=172.24.4.225/27
-Q_FLOATING_ALLOCATION_POOL=start=172.24.4.227,end=172.24.4.253
-PUBLIC_NETWORK_GATEWAY=172.24.4.226
 
 # Enable the basic services we require
 ENABLED_SERVICES=rabbit,mysql,key
