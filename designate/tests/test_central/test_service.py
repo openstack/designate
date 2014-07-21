@@ -452,7 +452,7 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(len(notifications), 1)
 
         # Ensure the notification wrapper contains the correct info
-        ctxt, message, priority, retry = notifications.pop()
+        ctxt, message, priority = notifications.pop()
         self.assertEqual(message['event_type'], 'dns.domain.create')
         self.assertEqual(message['priority'], 'INFO')
         self.assertIsNotNone(message['timestamp'])
@@ -771,7 +771,7 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(len(notifications), 1)
 
         # Ensure the notification wrapper contains the correct info
-        ctxt, message, priority, retry = notifications.pop()
+        ctxt, message, priority = notifications.pop()
         self.assertEqual(message['event_type'], 'dns.domain.update')
         self.assertEqual(message['priority'], 'INFO')
         self.assertIsNotNone(message['timestamp'])
@@ -835,7 +835,7 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(len(notifications), 1)
 
         # Ensure the notification wrapper contains the correct info
-        ctxt, message, priority, retry = notifications.pop()
+        ctxt, message, priority = notifications.pop()
         self.assertEqual(message['event_type'], 'dns.domain.delete')
         self.assertEqual(message['priority'], 'INFO')
         self.assertIsNotNone(message['timestamp'])
