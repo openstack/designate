@@ -162,6 +162,7 @@ class DomainHasSubdomain(Base):
 class Forbidden(Base):
     error_code = 403
     error_type = 'forbidden'
+    expected = True
 
 
 class Duplicate(Base):

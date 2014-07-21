@@ -16,7 +16,6 @@
 from oslo.config import cfg
 from stevedore import named
 
-from designate import exceptions
 from designate.openstack.common import log as logging
 from designate.api.v2.controllers import limits
 from designate.api.v2.controllers import reverse
@@ -24,8 +23,7 @@ from designate.api.v2.controllers import schemas
 from designate.api.v2.controllers import tlds
 from designate.api.v2.controllers import zones
 from designate.api.v2.controllers import blacklists
-
-from pecan import expose
+from designate.api.v2.controllers import errors
 
 LOG = logging.getLogger(__name__)
 
@@ -57,15 +55,4 @@ class RootController(object):
     tlds = tlds.TldsController()
     zones = zones.ZonesController()
     blacklists = blacklists.BlacklistsController()
-
-    @expose(content_type='text/plain')
-    @expose(content_type='text/dns')
-    @expose(content_type='application/json')
-    def not_found(self):
-        raise exceptions.NotFound
-
-    @expose(content_type='text/plain')
-    @expose(content_type='text/dns')
-    @expose(content_type='application/json')
-    def method_not_allowed(self):
-        raise exceptions.MethodNotAllowed
+    errors = errors.ErrorsController()
