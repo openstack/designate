@@ -13,8 +13,11 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import testtools
+
 from designate.tests import TestCase
 from designate import context
+from designate import exceptions
 from designate.openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)
@@ -34,3 +37,17 @@ class TestDesignateContext(TestCase):
         self.assertFalse(ctxt.is_admin)
         self.assertTrue(admin_ctxt.is_admin)
         self.assertEqual(0, len(ctxt.roles))
+
+    def test_all_tenants(self):
+        ctxt = context.DesignateContext(user='12345', tenant='54321')
+        admin_ctxt = ctxt.elevated()
+
+        admin_ctxt.all_tenants = True
+        self.assertFalse(ctxt.is_admin)
+        self.assertTrue(admin_ctxt.is_admin)
+        self.assertTrue(admin_ctxt.all_tenants)
+
+    def test_all_tenants_policy_failure(self):
+        ctxt = context.DesignateContext(user='12345', tenant='54321')
+        with testtools.ExpectedException(exceptions.Forbidden):
+            ctxt.all_tenants = True

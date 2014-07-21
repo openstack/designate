@@ -80,8 +80,6 @@ class Service(service.Service):
         backend_driver = cfg.CONF['service:central'].backend_driver
         self.backend = backend.get_backend(backend_driver, self)
 
-        policy.init()
-
         # Get a storage connection
         storage_driver = cfg.CONF['service:central'].storage_driver
         self.storage = storage.get_storage(storage_driver)
@@ -1416,8 +1414,8 @@ class Service(service.Service):
         except exceptions.DomainNotFound:
             msg = _LI('Creating zone for %(fip_id)s:%(region)s - '
                       '%(fip_addr)s zone %(zonename)s') % \
-                  {'fip_id': floatingip_id, 'region': region,
-                   'fip_addr': fip['address'], 'zonename': zone_name}
+                    {'fip_id': floatingip_id, 'region': region,
+                    'fip_addr': fip['address'], 'zonename': zone_name}
             LOG.info(msg)
 
             email = cfg.CONF['service:central'].managed_resource_email

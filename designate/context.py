@@ -19,12 +19,16 @@ import copy
 from designate.openstack.common import context
 from designate.openstack.common import local
 from designate.openstack.common import log as logging
+from designate import policy
 
 
 LOG = logging.getLogger(__name__)
 
 
 class DesignateContext(context.RequestContext):
+
+    _all_tenants = False
+
     def __init__(self, auth_token=None, user=None, tenant=None, domain=None,
                  user_domain=None, project_domain=None, is_admin=False,
                  read_only=False, show_deleted=False, request_id=None,
@@ -49,6 +53,7 @@ class DesignateContext(context.RequestContext):
 
         self.roles = roles
         self.service_catalog = service_catalog
+
         self.all_tenants = all_tenants
 
         if not hasattr(local.store, 'context'):
@@ -112,3 +117,13 @@ class DesignateContext(context.RequestContext):
                 return arg
 
         return None
+
+    @property
+    def all_tenants(self):
+        return self._all_tenants
+
+    @all_tenants.setter
+    def all_tenants(self, value):
+        if value:
+            policy.check('all_tenants', self)
+        self._all_tenants = value
