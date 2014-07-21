@@ -216,7 +216,7 @@ class FaultMiddlewareTest(ApiTestCase):
         notifications = self.get_notifications()
         self.assertEqual(1, len(notifications))
 
-        ctxt, message, priority, retry = notifications.pop()
+        ctxt, message, priority = notifications.pop()
 
         self.assertEqual('ERROR', message['priority'])
         self.assertEqual('dns.api.fault', message['event_type'])
