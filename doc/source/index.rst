@@ -1,10 +1,5 @@
-.. designate documentation master file, created by
-   sphinx-quickstart on Wed Oct 31 18:58:17 2012.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 Designate, a DNSaaS component for OpenStack
-====================================================
+===========================================
 
 Designate provides DNSaaS services for OpenStack:
 
