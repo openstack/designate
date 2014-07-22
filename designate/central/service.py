@@ -239,6 +239,10 @@ class Service(service.Service):
         return False
 
     def _is_subdomain(self, context, domain_name):
+        """
+        Ensures the provided domain_name is the subdomain
+        of an existing domain (checks across all tenants)
+        """
         context = context.elevated()
         context.all_tenants = True
 
@@ -259,6 +263,25 @@ class Service(service.Service):
                 return domain
 
         return False
+
+    def _is_superdomain(self, context, domain_name):
+        """
+        Ensures the provided domain_name is the parent domain
+        of an existing subdomain (checks across all tenants)
+        """
+        context = context.elevated()
+        context.all_tenants = True
+
+        # Create wildcard term to catch all subdomains
+        search_term = "*%s" % domain_name
+
+        try:
+            criterion = {'name': search_term}
+            subdomains = self.storage.find_domains(context, criterion)
+        except exceptions.DomainNotFound:
+            return False
+
+        return subdomains
 
     def _is_valid_ttl(self, context, ttl):
         min_ttl = cfg.CONF['service:central'].min_ttl
@@ -555,7 +578,6 @@ class Service(service.Service):
 
         # Handle sub-domains appropriately
         parent_domain = self._is_subdomain(context, domain.name)
-
         if parent_domain:
             if parent_domain.tenant_id == domain.tenant_id:
                 # Record the Parent Domain ID
@@ -564,7 +586,18 @@ class Service(service.Service):
                 raise exceptions.Forbidden('Unable to create subdomain in '
                                            'another tenants domain')
 
-        # TODO(kiall): Handle super-domains properly
+        # Handle super-domains appropriately
+        subdomains = self._is_superdomain(context, domain.name)
+        if subdomains:
+            LOG.debug("Domain '{0}' is a superdomain.".format(domain.name))
+            for subdomain in subdomains:
+                if subdomain.tenant_id != domain.tenant_id:
+                    raise exceptions.Forbidden('Unable to create domain '
+                                               'because another tenant '
+                                               'owns a subdomain of '
+                                               'the domain')
+        # If this succeeds, subdomain parent IDs will be updated
+        # after domain is created
 
         # NOTE(kiall): Fetch the servers before creating the domain, this way
         #              we can prevent domain creation if no servers are
@@ -585,6 +618,15 @@ class Service(service.Service):
             self.backend.create_domain(context, created_domain)
 
         self.notifier.info(context, 'dns.domain.create', created_domain)
+
+        # If domain is a superdomain, update subdomains
+        # with new parent IDs
+        for subdomain in subdomains:
+            LOG.debug("Updating subdomain '{0}' parent ID "
+                      "using superdomain ID '{1}'"
+                      .format(subdomain.name, domain.id))
+            subdomain.parent_domain_id = domain.id
+            self.update_domain(context, subdomain)
 
         return created_domain
 

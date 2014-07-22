@@ -14,6 +14,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import copy
 import random
 
 import testtools
@@ -122,6 +123,30 @@ class CentralServiceTest(CentralTestCase):
         result = self.central_service._is_subdomain(context,
                                                     'www.example.org.')
         self.assertTrue(result)
+
+    def test_is_superdomain(self):
+        context = self.get_context()
+
+        # Create a domain (using the specified domain name)
+        self.create_domain(name='example.org.')
+
+        LOG.debug("Testing 'org.'")
+        result = self.central_service._is_superdomain(context, 'org.')
+        self.assertTrue(result)
+
+        LOG.debug("Testing 'www.example.net.'")
+        result = self.central_service._is_superdomain(context,
+                                                      'www.example.net.')
+        self.assertFalse(result)
+
+        LOG.debug("Testing 'example.org.'")
+        result = self.central_service._is_superdomain(context, 'example.org.')
+        self.assertTrue(result)
+
+        LOG.debug("Testing 'www.example.org.'")
+        result = self.central_service._is_superdomain(context,
+                                                      'www.example.org.')
+        self.assertFalse(result)
 
     def test_is_valid_recordset_placement_subdomain(self):
         context = self.get_context()
@@ -511,6 +536,34 @@ class CentralServiceTest(CentralTestCase):
         self.assertIsNotNone(domain['id'])
         self.assertEqual(domain['parent_domain_id'], parent_domain['id'])
 
+    def test_create_superdomain(self):
+        # Prepare values for the domain and subdomain
+        # using fixture 1 as a base
+        domain_values = self.get_domain_fixture(1)
+
+        subdomain_values = copy.deepcopy(domain_values)
+        subdomain_values['name'] = 'www.%s' % domain_values['name']
+        subdomain_values['context'] = self.admin_context
+
+        LOG.debug("domain_values: {0}".format(domain_values))
+        LOG.debug("subdomain_values: {0}".format(subdomain_values))
+
+        # Create the subdomain
+        subdomain = self.create_domain(**subdomain_values)
+
+        # Create the Parent Domain using fixture 1
+        parent_domain = self.central_service.create_domain(
+            self.admin_context, domain=objects.Domain(**domain_values)
+        )
+
+        # Get updated subdomain values
+        subdomain = self.central_service.get_domain(self.admin_context,
+                                                    subdomain.id)
+
+        # Ensure all values have been set correctly
+        self.assertIsNotNone(parent_domain['id'])
+        self.assertEqual(subdomain['parent_domain_id'], parent_domain['id'])
+
     def test_create_subdomain_failure(self):
         context = self.get_admin_context()
 
@@ -533,6 +586,33 @@ class CentralServiceTest(CentralTestCase):
         with testtools.ExpectedException(exceptions.Forbidden):
             self.central_service.create_domain(
                 context, domain=objects.Domain(**values))
+
+    def test_create_superdomain_failure(self):
+        context = self.get_admin_context()
+
+        # Explicitly set a tenant_id
+        context.tenant = '1'
+
+        # Set up domain and subdomain values
+        domain_values = self.get_domain_fixture(1)
+        domain_name = domain_values['name']
+
+        subdomain_values = copy.deepcopy(domain_values)
+        subdomain_values['name'] = 'www.%s' % domain_name
+        subdomain_values['context'] = context
+
+        # Create sub domain
+        self.create_domain(**subdomain_values)
+
+        context = self.get_admin_context()
+
+        # Explicitly use a different tenant_id
+        context.tenant = '2'
+
+        # Attempt to create the domain
+        with testtools.ExpectedException(exceptions.Forbidden):
+            self.central_service.create_domain(
+                context, domain=objects.Domain(**domain_values))
 
     def test_create_blacklisted_domain_success(self):
         # Create blacklisted zone using default values
