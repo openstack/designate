@@ -281,6 +281,30 @@ class Service(service.Service):
 
         return domain
 
+    # Methods to handle priority
+    def _get_priority(self, recordset):
+        if recordset.type != "MX" and recordset.type != "SRV":
+            return recordset
+        else:
+            if recordset.records is not None:
+                for r in recordset.records:
+                    r.data = str(r.priority) + " " + r.data
+
+        return recordset
+
+    def _set_priority(self, recordset):
+        if recordset.type != "MX" and recordset.type != "SRV":
+            return recordset
+        else:
+            if recordset.records is not None:
+                for r in recordset.records:
+                    head, sep, tail = r.data.partition(" ")
+                    if sep:
+                        r.priority = head
+                        r.data = tail
+
+        return recordset
+
     # Quota Enforcement Methods
     def _enforce_domain_quota(self, context, tenant_id):
         criterion = {'tenant_id': tenant_id}
@@ -779,6 +803,9 @@ class Service(service.Service):
         self._is_valid_recordset_placement_subdomain(
             context, domain, recordset.name)
 
+        # Extract the priority from the records
+        recordset = self._set_priority(recordset)
+
         created_recordset = self.storage.create_recordset(context, domain_id,
                                                           recordset)
 
@@ -788,7 +815,8 @@ class Service(service.Service):
         # Send RecordSet creation notification
         self.notifier.info(context, 'dns.recordset.create', created_recordset)
 
-        return created_recordset
+        # Get the correct format for priority
+        return self._get_priority(recordset)
 
     def get_recordset(self, context, domain_id, recordset_id):
         domain = self.storage.get_domain(context, domain_id)
@@ -807,6 +835,9 @@ class Service(service.Service):
 
         policy.check('get_recordset', context, target)
 
+        # Add the priority to the records
+        recordset = self._get_priority(recordset)
+
         return recordset
 
     def find_recordsets(self, context, criterion=None, marker=None, limit=None,
@@ -814,19 +845,33 @@ class Service(service.Service):
         target = {'tenant_id': context.tenant}
         policy.check('find_recordsets', context, target)
 
-        return self.storage.find_recordsets(context, criterion, marker,
+        recordsets = self.storage.find_recordsets(context, criterion, marker,
                                             limit, sort_key, sort_dir)
+
+        # Set the priority for each record
+        for rs in recordsets:
+            rs = self._get_priority(rs)
+
+        return recordsets
 
     def find_recordset(self, context, criterion=None):
         target = {'tenant_id': context.tenant}
         policy.check('find_recordset', context, target)
 
-        return self.storage.find_recordset(context, criterion)
+        recordset = self.storage.find_recordset(context, criterion)
+
+        # Add the priority to the records
+        recordset = self._get_priority(recordset)
+
+        return recordset
 
     @transaction
     def update_recordset(self, context, recordset, increment_serial=True):
         domain_id = recordset.obj_get_original_value('domain_id')
         domain = self.storage.get_domain(context, domain_id)
+
+        # Set the priority for the records
+        recordset = self._set_priority(recordset)
 
         changes = recordset.obj_get_changes()
 
@@ -877,7 +922,7 @@ class Service(service.Service):
         self.notifier.info(context, 'dns.recordset.update', recordset)
         self.mdns_api.notify_zone_changed(context, domain.name)
 
-        return recordset
+        return self._get_priority(recordset)
 
     @transaction
     def delete_recordset(self, context, domain_id, recordset_id,
