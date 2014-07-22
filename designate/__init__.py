@@ -60,7 +60,7 @@ cfg.CONF.set_default('default_log_levels',
                       'keystone=INFO',
                       'eventlet.wsgi.server=WARN',
                       'stevedore=WARN',
-                      'keystoneclient.middleware.auth_token=INFO'])
+                      'keystonemiddleware.auth_token=INFO'])
 
 # Set some Oslo RPC defaults
 messaging.set_transport_defaults('designate')
