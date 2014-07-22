@@ -28,5 +28,6 @@ class RecordSet(base.DictObjectMixin, base.PersistentObjectMixin,
     }
 
 
-class RecordSetList(base.ListObjectMixin, base.DesignateObject):
+class RecordSetList(base.ListObjectMixin, base.DesignateObject,
+                    base.PagedListObjectMixin):
     LIST_ITEM_TYPE = RecordSet

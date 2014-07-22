@@ -33,6 +33,14 @@
                     "format": "url"
                 }
             }
+        },
+        "metadata": {
+            "total_count": {
+                "type": "integer",
+                "description": "Total number of entries",
+                "minimum": 0,
+                "maximum": 2147483647
+            }
         }
     }
 }

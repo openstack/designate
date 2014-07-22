@@ -260,10 +260,15 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
         # Check to see if the criterion can use the reverse_name column
         criterion = self._rname_check(criterion)
 
-        return self._find(
+        domains = self._find(
             context, tables.domains, objects.Domain, objects.DomainList,
             exceptions.DomainNotFound, criterion, one, marker, limit,
             sort_key, sort_dir)
+
+        if not one:
+            domains.total_count = self.count_domains(context, criterion)
+
+        return domains
 
     def create_domain(self, context, domain):
         # Patch in the reverse_name column
@@ -351,10 +356,15 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             # remove 'domains_deleted' from the criterion, as _apply_criterion
             # assumes each key in criterion to be a column name.
             del criterion['domains_deleted']
-        return self._find(
+        recordsets = self._find(
             context, tables.recordsets, objects.RecordSet,
             objects.RecordSetList, exceptions.RecordSetNotFound, criterion,
             one, marker, limit, sort_key, sort_dir, query)
+
+        if not one:
+            recordsets.total_count = self.count_recordsets(context, criterion)
+
+        return recordsets
 
     def create_recordset(self, context, domain_id, recordset):
         # Fetch the domain as we need the tenant_id
