@@ -203,6 +203,15 @@ def update_record(domain_id, record_id):
     return flask.jsonify(record_schema.filter(record))
 
 
+def _delete_recordset_if_empty(context, domain_id, recordset_id):
+    recordset = get_central_api().find_recordset(context, {
+        'id': recordset_id
+    })
+    # Make sure it's the right recordset
+    if len(recordset.records) == 0:
+        get_central_api().delete_recordset(context, domain_id, recordset_id)
+
+
 @blueprint.route('/domains/<uuid:domain_id>/records/<uuid:record_id>',
                  methods=['DELETE'])
 def delete_record(domain_id, record_id):
@@ -219,4 +228,5 @@ def delete_record(domain_id, record_id):
     get_central_api().delete_record(
         context, domain_id, record['recordset_id'], record_id)
 
+    _delete_recordset_if_empty(context, domain_id, record['recordset_id'])
     return flask.Response(status=200)
