@@ -23,3 +23,4 @@ V2 API
        rest/v2/zones
        rest/v2/tlds
        rest/v2/blacklists
+       rest/v2/quotas
