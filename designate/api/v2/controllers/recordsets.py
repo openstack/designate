@@ -56,14 +56,28 @@ class RecordSetsController(rest.RestController):
         marker, limit, sort_key, sort_dir = self._get_paging_params(params)
 
         # Extract any filter params.
-        accepted_filters = ('name', 'type', 'ttl', )
+        accepted_filters = ('name', 'type', 'ttl', 'data', )
         criterion = dict((k, params[k]) for k in accepted_filters
                          if k in params)
 
         criterion['domain_id'] = zone_id
 
+        # Data must be filtered separately, through the Records table
+        recordsets_with_data = set()
+        data = criterion.pop('data', None)
+
+        # Retrieve recordsets
         recordsets = self.central_api.find_recordsets(
             context, criterion, marker, limit, sort_key, sort_dir)
+
+        # 'data' filter param: only return recordsets with matching data
+        if data:
+            records = self.central_api.find_records(
+                context, criterion={'data': data, 'domain_id': zone_id})
+            recordsets_with_data.update(
+                [record.recordset_id for record in records])
+            recordsets = [recordset for recordset in recordsets
+                          if recordset.id in recordsets_with_data]
 
         return self._view.list(context, request, recordsets, [zone_id])
 
