@@ -4,6 +4,7 @@ extras
 Flask>=0.10,<1.0
 iso8601>=0.1.9
 jsonschema>=2.0.0,<3.0.0
+keystonemiddleware>=1.0.0
 kombu>=2.4.8
 lockfile>=0.8
 netaddr>=0.7.6
@@ -14,7 +15,6 @@ Paste
 PasteDeploy>=1.5.0
 pbr>=0.6,!=0.7,<1.0
 pecan>=0.5.0
-python-keystoneclient>=0.9.0
 python-neutronclient>=2.3.5,<3
 Routes>=1.12.3,!=2.0
 six>=1.7.0
