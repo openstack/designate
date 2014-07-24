@@ -31,7 +31,6 @@ from designate.sqlalchemy import session
 from designate.sqlalchemy.expressions import InsertFromSelect
 
 LOG = logging.getLogger(__name__)
-LOCAL_STORE = threading.local()
 TSIG_SUPPORTED_ALGORITHMS = ['hmac-md5']
 
 cfg.CONF.register_group(cfg.OptGroup(
@@ -54,6 +53,11 @@ cfg.CONF.set_default('database_connection',
 class PowerDNSBackend(base.Backend):
     __plugin_name__ = 'powerdns'
 
+    def __init__(self, *args, **kwargs):
+        super(PowerDNSBackend, self).__init__(*args, **kwargs)
+
+        self.local_store = threading.local()
+
     def start(self):
         super(PowerDNSBackend, self).start()
 
@@ -65,10 +69,10 @@ class PowerDNSBackend(base.Backend):
         #       leads to bad things happening.
         global LOCAL_STORE
 
-        if not hasattr(LOCAL_STORE, 'session'):
-            LOCAL_STORE.session = session.get_session(self.name)
+        if not hasattr(self.local_store, 'session'):
+            self.local_store.session = session.get_session(self.name)
 
-        return LOCAL_STORE.session
+        return self.local_store.session
 
     # TSIG Key Methods
     def create_tsigkey(self, context, tsigkey):
