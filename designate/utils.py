@@ -39,6 +39,24 @@ cfg.CONF.register_opts([
 ])
 
 
+# Set some proxy options (Used for clients that need to communicate via a
+# proxy)
+cfg.CONF.register_group(cfg.OptGroup(
+    name='proxy', title="Configuration for Client Proxy"
+))
+
+proxy_opts = [
+    cfg.StrOpt('http_proxy', default=None,
+               help='Proxy HTTP requests via this proxy.'),
+    cfg.StrOpt('https_proxy', default=None,
+               help='Proxy HTTPS requests via this proxy'),
+    cfg.ListOpt('no_proxy', default=[],
+                help='These addresses should not be proxied')
+]
+
+cfg.CONF.register_opts(proxy_opts, group='proxy')
+
+
 def find_config(config_path):
     """
     Find a configuration file using the given hint.
@@ -293,3 +311,22 @@ def validate_uuid(*check):
             return f(*args, **kwargs)
         return functools.wraps(f)(wrapper)
     return inner
+
+
+def get_proxies():
+    """Return a requests compatible dict like seen here
+    http://docs.python-requests.org/en/latest/user/advanced/#proxies for
+    consumption in clients when we need to proxy requests.
+    """
+    proxies = {}
+    if cfg.CONF.proxy.no_proxy:
+        proxies['no_proxy'] = cfg.CONF.proxy.no_proxy
+    if cfg.CONF.proxy.http_proxy is not None:
+        proxies['http'] = cfg.CONF.proxy.http_proxy
+
+    if cfg.CONF.proxy.https_proxy is not None:
+        proxies['https'] = cfg.CONF.proxy.https_proxy
+    elif 'http' in proxies:
+        proxies['https'] = proxies['http']
+
+    return proxies
