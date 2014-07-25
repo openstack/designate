@@ -2,8 +2,9 @@
 
 set -ex
 
-DESIGNATE_BASE=/opt/stack/new/designate
-DEVSTACK_BASE=/opt/stack/new/devstack
-
 # Install designate devstack integration
-cp -R $DESIGNATE_BASE/contrib/devstack/* $DEVSTACK_BASE/
+cp -R $BASE/new/designate/contrib/devstack/* $BASE/new/devstack
+
+# Temp Hack to remove the localrc we copy over, will be fixed in
+# the next review
+rm $BASE/new/devstack/localrc

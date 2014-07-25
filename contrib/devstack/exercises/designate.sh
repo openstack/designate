@@ -28,7 +28,7 @@ TOP_DIR=$(cd $EXERCISE_DIR/..; pwd)
 source $TOP_DIR/functions
 
 # Import configuration
-source $TOP_DIR/openrc
+source $TOP_DIR/openrc admin admin
 
 # Import exercise configuration
 source $TOP_DIR/exerciserc
@@ -36,23 +36,12 @@ source $TOP_DIR/exerciserc
 # Skip if designate is not enabled
 is_service_enabled designate || exit 55
 
-# Various functions
-# -----------------
-function get_domain_id {
-    local DOMAIN_NAME=$1
-    local DOMAIN_ID=$(designate domain-list | egrep " $DOMAIN_NAME " | get_field 1)
-    die_if_not_set $LINENO DOMAIN_ID "Failure retrieving DOMAIN_ID"
-    echo "$DOMAIN_ID"
-}
+# Import designate library
+source $TOP_DIR/lib/designate
 
-function get_record_id {
-    local DOMAIN_ID=$1
-    local RECORD_NAME=$2
-    local RECORD_TYPE=$3
-    local RECORD_ID=$(designate record-list $DOMAIN_ID | egrep " $RECORD_NAME " | egrep " $RECORD_TYPE " | get_field 1)
-    die_if_not_set $LINENO RECORD_ID "Failure retrieving RECORD_ID"
-    echo "$RECORD_ID"
-}
+# Testing Servers
+# ===============
+designate server-list
 
 # Testing Domains
 # ===============
@@ -65,7 +54,11 @@ DOMAIN_NAME="exercise-$(openssl rand -hex 4).com."
 
 # Create the domain
 designate domain-create --name $DOMAIN_NAME --email devstack@example.org
-DOMAIN_ID=$(get_domain_id $DOMAIN_NAME)
+# should have SOA and NS records
+verify_name_type_dns $DOMAIN_NAME SOA $DESIGNATE_TEST_NSREC
+verify_name_type_dns $DOMAIN_NAME NS $DESIGNATE_TEST_NSREC
+
+DOMAIN_ID=$(get_domain_id $DOMAIN_NAME 1)
 
 # Fetch the domain
 designate domain-get $DOMAIN_ID
@@ -86,6 +79,9 @@ A_RECORD_ID=$(get_record_id $DOMAIN_ID $A_RECORD_NAME A)
 # Fetch the record
 designate record-get $DOMAIN_ID $A_RECORD_ID
 
+# Verify the record is published in DNS
+verify_name_type_dns $A_RECORD_NAME A 127.0.0.1
+
 # -----
 
 # Create random record name
@@ -98,6 +94,9 @@ AAAA_RECORD_ID=$(get_record_id $DOMAIN_ID $AAAA_RECORD_NAME AAAA)
 # Fetch the record
 designate record-get $DOMAIN_ID $AAAA_RECORD_ID
 
+# Verify the record is published in DNS
+verify_name_type_dns $AAAA_RECORD_NAME AAAA 2607:f0d0:1002:51::4
+
 # -----
 
 # Create a MX record
@@ -107,6 +106,9 @@ MX_RECORD_ID=$(get_record_id $DOMAIN_ID $DOMAIN_NAME MX)
 # Fetch the record
 designate record-get $DOMAIN_ID $MX_RECORD_ID
 
+# Verify the record is published in DNS
+verify_name_type_dns $DOMAIN_NAME MX "5 mail.example.com."
+
 # -----
 
 # Create a SRV record
@@ -115,6 +117,9 @@ SRV_RECORD_ID=$(get_record_id $DOMAIN_ID _sip._tcp.$DOMAIN_NAME SRV)
 
 # Fetch the record
 designate record-get $DOMAIN_ID $SRV_RECORD_ID
+
+# Verify the record is published in DNS
+verify_name_type_dns _sip._tcp.$DOMAIN_NAME SRV "10 5 5060 sip.example.com."
 
 # -----
 
@@ -127,6 +132,9 @@ CNAME_RECORD_ID=$(get_record_id $DOMAIN_ID $CNAME_RECORD_NAME CNAME)
 
 # Fetch the record
 designate record-get $DOMAIN_ID $CNAME_RECORD_ID
+
+# Verify the record is published in DNS
+verify_name_type_dns $CNAME_RECORD_NAME CNAME $DOMAIN_NAME
 
 # -----
 
@@ -141,7 +149,27 @@ designate record-delete $DOMAIN_ID $CNAME_RECORD_ID
 # List Records
 designate record-list $DOMAIN_ID
 
+# Fetch the record - should be gone
+designate record-get $DOMAIN_ID $CNAME_RECORD_ID || echo "good - record was removed"
+
+# verify not in DNS anymore
+verify_name_type_dns $CNAME_RECORD_NAME CNAME $DOMAIN_NAME 1
+
+# Testing Domains Delete
+# ======================
+
+# Delete the domain
+designate domain-delete $DOMAIN_ID
+
+# Fetch the domain - should be gone
+designate domain-get $DOMAIN_ID || echo "good - domain was removed"
+
+# should not have SOA and NS records
+verify_name_type_dns $DOMAIN_NAME SOA $DESIGNATE_TEST_NSREC 1
+verify_name_type_dns $DOMAIN_NAME NS $DESIGNATE_TEST_NSREC 1
+
 set +o xtrace
 echo "*********************************************************************"
 echo "SUCCESS: End DevStack Exercise: $0"
 echo "*********************************************************************"
+

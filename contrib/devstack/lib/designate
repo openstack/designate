@@ -47,7 +47,12 @@ DESIGNATE_BACKEND_DRIVER=${DESIGNATE_BACKEND_DRIVER:=powerdns}
 DESIGNATE_SERVICE_HOST=${DESIGNATE_SERVICE_HOST:-$SERVICE_HOST}
 DESIGNATE_SERVICE_PORT=${DESIGNATE_SERVICE_PORT:-9001}
 DESIGNATE_SERVICE_PORT_INT=${DESIGNATE_SERVICE_PORT_INT:-19001}
+DESIGNATE_SERVICE_PORT_DNS=${DESIGNATE_SERVICE_PORT_DNS:-53}
 DESIGNATE_SERVICE_PROTOCOL=${DESIGNATE_SERVICE_PROTOCOL:-$SERVICE_PROTOCOL}
+DESIGNATE_TEST_NSREC=${DESIGNATE_TEST_NSREC:-ns1.devstack.org.}
+
+# used with dig to look up in DNS
+DESIGNATE_DIG_FLAGS="-p $DESIGNATE_SERVICE_PORT_DNS @$DESIGNATE_SERVICE_HOST"
 
 # Get backend configuration
 # ----------------------------
@@ -58,6 +63,75 @@ fi
 
 # Functions
 # ---------
+
+# lookup the given name and type in DNS
+# if it does not match the expected value, give an error
+# if $4 is given, reverse the test - assert the value is not present
+function verify_name_type_dns {
+    if [ "$DESIGNATE_BACKEND_DRIVER" = "fake" ] ; then
+        # if the backend is fake, there will be no actual DNS records
+        return 0
+    fi
+
+    # give DNS changes time to show up
+    sleep 1
+
+    # Display for debugging
+    dig $DESIGNATE_DIG_FLAGS "$1" "$2"
+    if [ -n "$4" ] ; then
+        if dig +short $DESIGNATE_DIG_FLAGS "$1" "$2" | grep "$3"; then
+            die $LINENO "Error: record $3 found in DNS, should have been removed"
+        fi
+        return 0
+    else
+        if dig +short $DESIGNATE_DIG_FLAGS "$1" "$2" | grep "$3"; then
+            return 0
+        fi
+        die $LINENO "Error: record $3 not found in DNS"
+    fi
+}
+
+# get the domain id (uuid) given the domain name
+# if REQUIRED is set, die with an error if name not found
+function get_domain_id {
+    local DOMAIN_NAME=$1
+    local REQUIRED=$2
+    local DOMAIN_ID=$(designate domain-list | egrep " $DOMAIN_NAME " | get_field 1)
+    if [ "$REQUIRED" = "1" ] ; then
+        die_if_not_set $LINENO DOMAIN_ID "Failure retrieving DOMAIN_ID"
+    fi
+    echo "$DOMAIN_ID"
+}
+
+
+# get the domain_name given the id
+function get_domain_name() {
+    designate domain-list | grep "$1" | get_field 2
+}
+
+# if the given domain does not exist, it will be created
+# the domain_id of the domain will be returned
+function get_or_create_domain_id() {
+    domainid=$(get_domain_id "$1")
+    if [[ -z "$domainid" ]]; then
+        designate domain-create --name $1 --email admin@devstack.org --ttl 86400 --description "domain $1" 1>&2
+        domainid=$(designate domain-list | grep "$1" | get_field 1)
+    fi
+    echo $domainid
+}
+
+# get the record id (uuid) given the record name and domain id
+# if REQUIRED is set, die with an error if name not found
+function get_record_id {
+    local DOMAIN_ID=$1
+    local RECORD_NAME=$2
+    local REQUIRED=$3
+    local RECORD_ID=$(designate record-list $DOMAIN_ID | egrep " $RECORD_NAME " | get_field 1)
+    if [ "$REQUIRED" = "1" ] ; then
+        die_if_not_set $LINENO RECORD_ID "Failure retrieving RECORD_ID"
+    fi
+    echo "$RECORD_ID"
+}
 
 # cleanup_designate() - Remove residual data files, anything left over from previous
 # runs that a clean run would need to clean up
@@ -175,7 +249,7 @@ function create_designate_accounts() {
 
 function create_designate_initial_resources() {
     #ADMIN_TENANT_ID=$(keystone tenant-list | grep " admin " | get_field 1)
-    designate server-create --name ns1.devstack.org.
+    designate server-create --name $DESIGNATE_TEST_NSREC
 }
 
 # init_designate() - Initialize etc.
