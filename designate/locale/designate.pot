@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: designate 2014.2.dev188.g0c97ac1\n"
+"Project-Id-Version: designate 2014.2.dev271.g9552ccc\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-07-04 16:25+0200\n"
+"POT-Creation-Date: 2014-07-25 06:08+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -45,50 +45,45 @@ msgstr ""
 msgid "Unknown sort direction, must be 'desc' or 'asc'"
 msgstr ""
 
-#: designate/cmd/manage.py:116
+#: designate/cmd/manage.py:113
 #, python-format
 msgid "Could not read %s. Re-running with sudo"
 msgstr ""
 
-#: designate/cmd/manage.py:120
+#: designate/cmd/manage.py:117
 msgid "sudo failed, continuing as if nothing happened"
 msgstr ""
 
-#: designate/cmd/manage.py:122
+#: designate/cmd/manage.py:119
 msgid "Please re-run designate-manage as root."
 msgstr ""
 
-#: designate/openstack/common/gettextutils.py:271
+#: designate/openstack/common/gettextutils.py:301
 msgid "Message objects do not support addition."
 msgstr ""
 
-#: designate/openstack/common/gettextutils.py:281
+#: designate/openstack/common/gettextutils.py:311
 msgid ""
 "Message objects do not support str() because they may contain non-ascii "
 "characters. Please use unicode() or translate() instead."
 msgstr ""
 
-#: designate/openstack/common/lockutils.py:102
-#, python-format
-msgid "Unable to acquire lock on `%(filename)s` due to %(exception)s"
-msgstr ""
-
-#: designate/openstack/common/log.py:327
+#: designate/openstack/common/log.py:276
 #, python-format
 msgid "Deprecated: %s"
 msgstr ""
 
-#: designate/openstack/common/log.py:438
+#: designate/openstack/common/log.py:385
 #, python-format
 msgid "Error loading logging config %(log_config)s: %(err_msg)s"
 msgstr ""
 
-#: designate/openstack/common/log.py:489
+#: designate/openstack/common/log.py:446
 #, python-format
 msgid "syslog facility must be one of: %s"
 msgstr ""
 
-#: designate/openstack/common/log.py:710
+#: designate/openstack/common/log.py:689
 #, python-format
 msgid "Fatal call to deprecated config: %(msg)s"
 msgstr ""
@@ -111,11 +106,11 @@ msgstr ""
 msgid "Rules must be an instance of dict or Rules, got %s instead"
 msgstr ""
 
-#: designate/openstack/common/processutils.py:58
+#: designate/openstack/common/processutils.py:59
 msgid "Unexpected error while running command."
 msgstr ""
 
-#: designate/openstack/common/processutils.py:61
+#: designate/openstack/common/processutils.py:62
 #, python-format
 msgid ""
 "%(description)s\n"
@@ -125,76 +120,62 @@ msgid ""
 "Stderr: %(stderr)r"
 msgstr ""
 
-#: designate/openstack/common/processutils.py:139
+#: designate/openstack/common/processutils.py:143
 #, python-format
-msgid "Got unknown keyword args to utils.execute: %r"
+msgid "Got unknown keyword args: %r"
 msgstr ""
 
-#: designate/openstack/common/processutils.py:145
+#: designate/openstack/common/processutils.py:148
 msgid "Command requested root, but did not specify a root helper."
 msgstr ""
 
-#: designate/openstack/common/processutils.py:241
+#: designate/openstack/common/processutils.py:245
 msgid "Environment not supported over SSH"
 msgstr ""
 
-#: designate/openstack/common/processutils.py:245
+#: designate/openstack/common/processutils.py:249
 msgid "process_input not supported over SSH"
 msgstr ""
 
-#: designate/openstack/common/sslutils.py:50
+#: designate/openstack/common/sslutils.py:47
 #, python-format
 msgid "Unable to find cert_file : %s"
 msgstr ""
 
-#: designate/openstack/common/sslutils.py:53
+#: designate/openstack/common/sslutils.py:50
 #, python-format
 msgid "Unable to find ca_file : %s"
 msgstr ""
 
-#: designate/openstack/common/sslutils.py:56
+#: designate/openstack/common/sslutils.py:53
 #, python-format
 msgid "Unable to find key_file : %s"
 msgstr ""
 
-#: designate/openstack/common/sslutils.py:59
+#: designate/openstack/common/sslutils.py:56
 msgid ""
 "When running server in SSL mode, you must specify both a cert_file and "
 "key_file option value in your configuration file"
 msgstr ""
 
-#: designate/openstack/common/sslutils.py:98
+#: designate/openstack/common/sslutils.py:95
 #, python-format
 msgid "Invalid SSL version : %s"
 msgstr ""
 
-#: designate/openstack/common/strutils.py:92
+#: designate/openstack/common/strutils.py:114
 #, python-format
 msgid "Unrecognized value '%(val)s', acceptable values are: %(acceptable)s"
 msgstr ""
 
-#: designate/openstack/common/strutils.py:203
+#: designate/openstack/common/strutils.py:219
 #, python-format
 msgid "Invalid unit system: \"%s\""
 msgstr ""
 
-#: designate/openstack/common/strutils.py:212
+#: designate/openstack/common/strutils.py:228
 #, python-format
 msgid "Invalid string format: %s"
-msgstr ""
-
-#: designate/openstack/common/versionutils.py:69
-#, python-format
-msgid ""
-"%(what)s is deprecated as of %(as_of)s in favor of %(in_favor_of)s and "
-"may be removed in %(remove_in)s."
-msgstr ""
-
-#: designate/openstack/common/versionutils.py:73
-#, python-format
-msgid ""
-"%(what)s is deprecated as of %(as_of)s and may be removed in "
-"%(remove_in)s. It will not be superseded."
 msgstr ""
 
 #: designate/openstack/deprecated/exception.py:104
