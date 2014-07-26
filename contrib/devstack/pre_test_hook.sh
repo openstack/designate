@@ -3,8 +3,13 @@
 set -ex
 
 # Install designate devstack integration
-cp -R $BASE/new/designate/contrib/devstack/* $BASE/new/devstack
+pushd $BASE/new/designate/contrib/devstack
 
-# Temp Hack to remove the localrc we copy over, will be fixed in
-# the next review
-rm $BASE/new/devstack/localrc
+for f in lib/* extras.d/* exercises/*; do
+    if [ ! -e "$BASE/new/devstack/$f" ]; then
+        echo "Installing: $f"
+        cp -r $f $BASE/new/devstack/$f
+    fi
+done
+
+popd
