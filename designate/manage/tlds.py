@@ -49,8 +49,8 @@ class TLDCommands(base.Commands):
     <Error> --> <Line causing the error>
 
     <Error> can be one of the following:
-    DuplicateTLD - This occurs if the TLD is already present.
-    InvalidTLD - This occurs if the TLD does not conform to the TLD schema.
+    DuplicateTld - This occurs if the TLD is already present.
+    InvalidTld - This occurs if the TLD does not conform to the TLD schema.
     InvalidDescription - This occurs if the description does not conform to
         the description schema
     InvalidLine - This occurs if the line contains more than 2 fields.
@@ -81,7 +81,7 @@ class TLDCommands(base.Commands):
     def _validate_and_create_tld(self, line, error_lines):
         # validate the tld name
         if not format.is_tldname(line['name']):
-            error_lines.append("InvalidTLD --> " +
+            error_lines.append("InvalidTld --> " +
                                self._convert_tld_dict_to_str(line))
             return 0
         # validate the description if there is one
@@ -94,8 +94,8 @@ class TLDCommands(base.Commands):
             try:
                 self.central_api.create_tld(self.context, values=line)
                 return 1
-            except exceptions.DuplicateTLD:
-                error_lines.append("DuplicateTLD --> " +
+            except exceptions.DuplicateTld:
+                error_lines.append("DuplicateTld --> " +
                                    self._convert_tld_dict_to_str(line))
                 return 0
 

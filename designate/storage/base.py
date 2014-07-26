@@ -28,12 +28,12 @@ class Storage(DriverPlugin):
     __plugin_type__ = 'storage'
 
     @abc.abstractmethod
-    def create_quota(self, context, values):
+    def create_quota(self, context, quota):
         """
         Create a Quota.
 
         :param context: RPC Context.
-        :param values: Values to create the new Quota from.
+        :param quota: Quota object with the values to be created.
         """
 
     @abc.abstractmethod

@@ -322,7 +322,7 @@ class CentralServiceTest(CentralTestCase):
 
         # Fetch the tld again, ensuring an exception is raised
         self.assertRaises(
-            exceptions.TLDNotFound,
+            exceptions.TldNotFound,
             self.central_service.get_tld,
             self.admin_context, tld['id'])
 

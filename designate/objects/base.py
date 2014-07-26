@@ -367,3 +367,12 @@ class PersistentObjectMixin(object):
     This adds the fields that we use in common for all persisent objects.
     """
     FIELDS = ['id', 'created_at', 'updated_at', 'version']
+
+
+class SoftDeleteObjectMixin(object):
+    """
+    Mixin class for Soft-Deleted objects.
+
+    This adds the fields that we use in common for all soft-deleted objects.
+    """
+    FIELDS = ['deleted', 'deleted_at']

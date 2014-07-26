@@ -15,8 +15,8 @@
 from designate.objects import base
 
 
-class Domain(base.DictObjectMixin, base.PersistentObjectMixin,
-             base.DesignateObject):
+class Domain(base.DictObjectMixin, base.SoftDeleteObjectMixin,
+             base.PersistentObjectMixin, base.DesignateObject):
     FIELDS = ['tenant_id', 'name', 'email', 'ttl', 'refresh', 'retry',
               'expire', 'minimum', 'parent_domain_id', 'serial', 'description',
               'status']

@@ -17,6 +17,8 @@ from designate.objects import base
 
 class Record(base.DictObjectMixin, base.PersistentObjectMixin,
              base.DesignateObject):
+    # TODO(kiall): `hash` is an implementation detail of our SQLA driver,
+    #              so we should remove it.
     FIELDS = ['data', 'priority', 'domain_id', 'managed',
               'managed_resource_type', 'managed_resource_id',
               'managed_plugin_name', 'managed_plugin_type', 'hash',
