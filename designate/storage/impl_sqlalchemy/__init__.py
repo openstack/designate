@@ -103,14 +103,6 @@ class SQLAlchemyStorage(base.Storage):
     def rollback(self):
         self.session.rollback()
 
-    def setup_schema(self):
-        """Semi-Private Method to create the database schema"""
-        models.Base.metadata.create_all(self.session.bind)
-
-    def teardown_schema(self):
-        """Semi-Private Method to reset the database schema"""
-        models.Base.metadata.drop_all(self.session.bind)
-
     def _apply_criterion(self, model, query, criterion):
         if criterion is not None:
             for name, value in criterion.items():
