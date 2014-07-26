@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: designate 2014.2.dev223.g2593949\n"
+"Project-Id-Version: designate 2014.2.dev271.g9552ccc\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-07-16 06:08+0000\n"
+"POT-Creation-Date: 2014-07-25 06:08+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -27,19 +27,19 @@ msgstr ""
 msgid "Getting auth pipeline: %s"
 msgstr ""
 
-#: designate/api/middleware.py:80
+#: designate/api/middleware.py:97
 msgid "Starting designate keystonecontext middleware"
 msgstr ""
 
-#: designate/api/middleware.py:113
+#: designate/api/middleware.py:130
 msgid "Starting designate noauthcontext middleware"
 msgstr ""
 
-#: designate/api/middleware.py:154
+#: designate/api/middleware.py:171
 msgid "Starting designate maintenance middleware"
 msgstr ""
 
-#: designate/api/middleware.py:188
+#: designate/api/middleware.py:205
 msgid "Starting designate faultwrapper middleware"
 msgstr ""
 
@@ -427,87 +427,81 @@ msgid ""
 "'%(zone_name)s'"
 msgstr ""
 
-#: designate/mdns/service.py:42
+#: designate/mdns/service.py:43
 #, python-format
 msgid "Opening TCP Listening Socket on %(host)s:%(port)d"
 msgstr ""
 
-#: designate/mdns/service.py:53
+#: designate/mdns/service.py:54
 #, python-format
 msgid "Opening UDP Listening Socket on %(host)s:%(port)d"
 msgstr ""
 
-#: designate/mdns/service.py:65
+#: designate/mdns/service.py:66
 msgid "started mdns service"
 msgstr ""
 
-#: designate/mdns/service.py:73
+#: designate/mdns/service.py:74
 msgid "_handle_tcp thread started"
 msgstr ""
 
-#: designate/mdns/service.py:84
+#: designate/mdns/service.py:97
 msgid "_handle_udp thread started"
 msgstr ""
 
-#: designate/openstack/common/eventlet_backdoor.py:141
+#: designate/openstack/common/eventlet_backdoor.py:140
 #, python-format
 msgid "Eventlet backdoor listening on %(port)s for process %(pid)d"
 msgstr ""
 
-#: designate/openstack/common/lockutils.py:83
-#, python-format
-msgid "Created lock path: %s"
-msgstr ""
-
-#: designate/openstack/common/lockutils.py:250
-#, python-format
-msgid "Failed to remove file %(file)s"
-msgstr ""
-
 #: designate/openstack/common/service.py:176
-#: designate/openstack/common/service.py:270
 #, python-format
 msgid "Caught %s, exiting"
 msgstr ""
 
-#: designate/openstack/common/service.py:239
+#: designate/openstack/common/service.py:240
 msgid "Parent process has died unexpectedly, exiting"
 msgstr ""
 
-#: designate/openstack/common/service.py:309
+#: designate/openstack/common/service.py:271
+#, python-format
+msgid "Child caught %s, exiting"
+msgstr ""
+
+#: designate/openstack/common/service.py:310
 msgid "Forking too fast, sleeping"
 msgstr ""
 
-#: designate/openstack/common/service.py:328
+#: designate/openstack/common/service.py:329
 #, python-format
 msgid "Started child %d"
 msgstr ""
 
-#: designate/openstack/common/service.py:338
+#: designate/openstack/common/service.py:339
 #, python-format
 msgid "Starting %d workers"
 msgstr ""
 
-#: designate/openstack/common/service.py:355
+#: designate/openstack/common/service.py:356
 #, python-format
 msgid "Child %(pid)d killed by signal %(sig)d"
 msgstr ""
 
-#: designate/openstack/common/service.py:359
+#: designate/openstack/common/service.py:360
 #, python-format
 msgid "Child %(pid)s exited with status %(code)d"
 msgstr ""
 
-#: designate/openstack/common/service.py:394
+#: designate/openstack/common/service.py:399
 #, python-format
 msgid "Caught %s, stopping children"
 msgstr ""
 
-#: designate/openstack/common/service.py:403
+#: designate/openstack/common/service.py:408
 msgid "Wait called after thread killed.  Cleaning up."
 msgstr ""
 
-#: designate/openstack/common/service.py:414
+#: designate/openstack/common/service.py:424
 #, python-format
 msgid "Waiting on %d children to exit"
 msgstr ""
