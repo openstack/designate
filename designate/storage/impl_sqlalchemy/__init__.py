@@ -33,7 +33,6 @@ from designate.sqlalchemy.models import SoftDeleteMixin
 
 
 LOG = logging.getLogger(__name__)
-LOCAL_STORE = threading.local()
 
 cfg.CONF.register_group(cfg.OptGroup(
     name='storage:sqlalchemy', title="Configuration for SQLAlchemy Storage"
@@ -81,18 +80,19 @@ class SQLAlchemyStorage(base.Storage):
 
         self.engine = session.get_engine(self.name)
 
+        self.local_store = threading.local()
+
     @property
     def session(self):
         # NOTE: This uses a thread local store, allowing each greenthread to
         #       have it's own session stored correctly. Without this, each
         #       greenthread may end up using a single global session, which
         #       leads to bad things happening.
-        global LOCAL_STORE
 
-        if not hasattr(LOCAL_STORE, 'session'):
-            LOCAL_STORE.session = session.get_session(self.name)
+        if not hasattr(self.local_store, 'session'):
+            self.local_store.session = session.get_session(self.name)
 
-        return LOCAL_STORE.session
+        return self.local_store.session
 
     def begin(self):
         self.session.begin(subtransactions=True)
