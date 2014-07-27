@@ -204,6 +204,10 @@ class TestCase(base.BaseTestCase):
             {'name': '_sip._tcp.%s', 'type': 'SRV'},
             {'name': '_sip._udp.%s', 'type': 'SRV'},
         ],
+        'CNAME': [
+            {'name': 'www.%s', 'type': 'CNAME'},
+            {'name': 'sub1.%s', 'type': 'CNAME'},
+        ]
     }
 
     record_fixtures = {
@@ -218,6 +222,10 @@ class TestCase(base.BaseTestCase):
         'SRV': [
             {'data': '0 5060 server1.example.org.', 'priority': 5},
             {'data': '1 5060 server2.example.org.', 'priority': 10},
+        ],
+        'CNAME': [
+            {'data': 'www.somedomain.org.'},
+            {'data': 'www.someotherdomain.com.'},
         ]
     }
 

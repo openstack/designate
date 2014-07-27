@@ -65,6 +65,55 @@ class ApiV1RecordsTest(ApiV1Test):
         self.assertIn('name', response.json)
         self.assertEqual(response.json['name'], fixture['name'])
 
+    def test_create_record_name_reuse(self):
+        fixture_1 = self.get_record_fixture(self.recordset['type'])
+        fixture_1.update({
+            'name': self.recordset['name'],
+            'type': self.recordset['type'],
+        })
+
+        fixture_2 = self.get_record_fixture(self.recordset['type'], fixture=1)
+        fixture_2.update({
+            'name': self.recordset['name'],
+            'type': self.recordset['type'],
+        })
+
+        # Create 2 records
+        record_1 = self.post('domains/%s/records' % self.domain['id'],
+                             data=fixture_1)
+        record_2 = self.post('domains/%s/records' % self.domain['id'],
+                             data=fixture_2)
+
+        # Delete record 1, this should not have any side effects
+        self.delete('domains/%s/records/%s' % (self.domain['id'],
+                                               record_1.json['id']))
+
+        # Get the record 2 to ensure recordset did not get deleted
+        rec_2_get_response = self.get('domains/%s/records/%s' %
+                                     (self.domain['id'], record_2.json['id']))
+
+        self.assertIn('id', rec_2_get_response.json)
+        self.assertIn('name', rec_2_get_response.json)
+        self.assertEqual(rec_2_get_response.json['name'], fixture_1['name'])
+
+        # Delete record 2, this should delete the null recordset too
+        self.delete('domains/%s/records/%s' % (self.domain['id'],
+                                               record_2.json['id']))
+
+        # Re-create as a different type, but use the same name
+        fixture = self.get_record_fixture('CNAME')
+        fixture.update({
+            'name': self.recordset['name'],
+            'type': 'CNAME'
+        })
+
+        response = self.post('domains/%s/records' % self.domain['id'],
+                             data=fixture)
+
+        self.assertIn('id', response.json)
+        self.assertIn('name', response.json)
+        self.assertEqual(response.json['name'], fixture['name'])
+
     def test_create_record_junk(self):
         fixture = self.get_record_fixture(self.recordset['type'])
         fixture.update({
