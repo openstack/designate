@@ -75,7 +75,7 @@ class ServiceFixture(fixtures.Fixture):
     def __init__(self, svc_name, *args, **kw):
         cls = importutils.import_class(
             'designate.%s.service.Service' % svc_name)
-        self.svc = cls.create(binary='desgignate-' + svc_name, *args, **kw)
+        self.svc = cls.create(binary='designate-' + svc_name, *args, **kw)
 
     def setUp(self):
         super(ServiceFixture, self).setUp()
