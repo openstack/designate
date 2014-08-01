@@ -22,6 +22,7 @@ import requests
 from requests.adapters import HTTPAdapter
 
 from designate import exceptions
+from designate import utils
 from designate.backend import base
 from designate.openstack.common import log as logging
 from designate.i18n import _LI
@@ -201,6 +202,8 @@ class DynClient(object):
             url = self.endpoint + url
 
         kwargs.setdefault("headers", kwargs.get("headers", {}))
+        kwargs['proxies'] = utils.get_proxies()
+
         if self.token is not None:
             kwargs['headers']['Auth-Token'] = self.token
         if self.timeout is not None:
