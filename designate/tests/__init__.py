@@ -246,7 +246,6 @@ class TestCase(base.BaseTestCase):
     def setUp(self):
         super(TestCase, self).setUp()
 
-        self.useFixture(fixtures.FakeLogger('designate', level='DEBUG'))
         self.CONF = self.useFixture(cfg_fixture.Config(cfg.CONF)).conf
 
         self.messaging_conf = self.useFixture(
