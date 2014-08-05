@@ -126,7 +126,7 @@ class DesignateObject(object):
         return {
             'designate_object.name': class_name,
             'designate_object.data': data,
-            'designate_object.changes': list(self._obj_changes),
+            'designate_object.changes': sorted(self._obj_changes),
             'designate_object.original_values': dict(self._obj_original_values)
         }
 
