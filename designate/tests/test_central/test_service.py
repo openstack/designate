@@ -472,12 +472,15 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(domain['email'], values['email'])
         self.assertIn('status', domain)
 
-        # Ensure we sent exactly 1 notification
+        # Ensure we sent exactly 1 notification, plus 2 for SOA and NS
+        # recordsets
         notifications = self.get_notifications()
-        self.assertEqual(len(notifications), 1)
+        self.assertEqual(len(notifications), 3)
 
         # Ensure the notification wrapper contains the correct info
-        ctxt, message, priority, retry = notifications.pop()
+
+        ctxt, message, priority, retry = notifications[0]
+
         self.assertEqual(message['event_type'], 'dns.domain.create')
         self.assertEqual(message['priority'], 'INFO')
         self.assertIsNotNone(message['timestamp'])
@@ -491,7 +494,7 @@ class CentralServiceTest(CentralTestCase):
 
     def test_create_domain_over_tld(self):
         values = dict(
-            name='example.com',
+            name='example.com.',
             email='info@example.com'
         )
         self._test_create_domain(values)
@@ -846,12 +849,16 @@ class CentralServiceTest(CentralTestCase):
         self.assertTrue(domain.serial > original_serial)
         self.assertEqual('info@example.net', domain.email)
 
-        # Ensure we sent exactly 1 notification
+        # Ensure we sent exactly 2 notifications
+        # One for the domain update and one to
+        # update the SOA recordset
         notifications = self.get_notifications()
-        self.assertEqual(len(notifications), 1)
+        self.assertEqual(len(notifications), 2)
 
         # Ensure the notification wrapper contains the correct info
-        ctxt, message, priority, retry = notifications.pop()
+        # The SOA is the first notification, so test the second one
+        ctxt, message, priority, retry = notifications[1]
+
         self.assertEqual(message['event_type'], 'dns.domain.update')
         self.assertEqual(message['priority'], 'INFO')
         self.assertIsNotNone(message['timestamp'])
@@ -1157,11 +1164,12 @@ class CentralServiceTest(CentralTestCase):
 
         criterion = {'domain_id': domain['id']}
 
-        # Ensure we have no recordsets to start with.
+        # Ensure we have two recordsets to start with as SOA & NS
+        # recordsets are created automatically
         recordsets = self.central_service.find_recordsets(
             self.admin_context, criterion)
 
-        self.assertEqual(len(recordsets), 0)
+        self.assertEqual(len(recordsets), 2)
 
         # Create a single recordset (using default values)
         self.create_recordset(domain, name='www.%s' % domain['name'])
@@ -1170,8 +1178,8 @@ class CentralServiceTest(CentralTestCase):
         recordsets = self.central_service.find_recordsets(
             self.admin_context, criterion)
 
-        self.assertEqual(len(recordsets), 1)
-        self.assertEqual(recordsets[0]['name'], 'www.%s' % domain['name'])
+        self.assertEqual(len(recordsets), 3)
+        self.assertEqual(recordsets[2]['name'], 'www.%s' % domain['name'])
 
         # Create a second recordset
         self.create_recordset(domain, name='mail.%s' % domain['name'])
@@ -1180,9 +1188,9 @@ class CentralServiceTest(CentralTestCase):
         recordsets = self.central_service.find_recordsets(
             self.admin_context, criterion)
 
-        self.assertEqual(len(recordsets), 2)
-        self.assertEqual(recordsets[0]['name'], 'www.%s' % domain['name'])
-        self.assertEqual(recordsets[1]['name'], 'mail.%s' % domain['name'])
+        self.assertEqual(len(recordsets), 4)
+        self.assertEqual(recordsets[2]['name'], 'www.%s' % domain['name'])
+        self.assertEqual(recordsets[3]['name'], 'mail.%s' % domain['name'])
 
     def test_find_recordset(self):
         domain = self.create_domain()
@@ -1431,9 +1439,9 @@ class CentralServiceTest(CentralTestCase):
         # Create a recordset
         self.create_recordset(domain)
 
-        # We should have 1 recordset now
+        # We should have 1 recordset now, plus SOA & NS recordsets
         recordsets = self.central_service.count_recordsets(self.admin_context)
-        self.assertEqual(recordsets, 1)
+        self.assertEqual(recordsets, 3)
 
     def test_count_recordsets_policy_check(self):
         # Set the policy to reject the authz
@@ -1464,8 +1472,9 @@ class CentralServiceTest(CentralTestCase):
         self.assertIn('status', record)
 
     def test_create_record_over_quota(self):
-        self.config(quota_domain_records=1)
+        self.config(quota_domain_records=3)
 
+        # Creating the domain automatically creates SOA & NS records
         domain = self.create_domain()
         recordset = self.create_recordset(domain)
 
@@ -1764,9 +1773,9 @@ class CentralServiceTest(CentralTestCase):
         # Create a record
         self.create_record(domain, recordset)
 
-        # we should have 1 record now
+        # we should have 1 record now, plus SOA & NS records
         records = self.central_service.count_records(self.admin_context)
-        self.assertEqual(records, 1)
+        self.assertEqual(records, 3)
 
     def test_count_records_policy_check(self):
         # Set the policy to reject the authz
@@ -2134,3 +2143,124 @@ class CentralServiceTest(CentralTestCase):
         with testtools.ExpectedException(exceptions.BlacklistNotFound):
             self.central_service.get_blacklist(self.admin_context,
                                                blacklist['id'])
+
+    # SOA recordset tests
+    def test_create_SOA(self):
+        # A SOA record should automatically be created each time
+        # a zone is created
+        # Create a zone
+        zone = self.create_domain(name='example3.org.')
+
+        # Retrieve SOA
+        criterion = {'domain_id': zone['id'], 'type': 'SOA'}
+
+        soa = self.central_service.find_recordset(self.admin_context,
+                                                  criterion)
+
+        # Split out the various soa values
+        soa_record_values = soa.records[0].data.split()
+
+        zone_email = zone['email'].replace("@", ".")
+        zone_email += (".")
+
+        # Ensure all values have been set correctly
+        self.assertIsNotNone(soa.id)
+        self.assertEqual('SOA', soa.type)
+        self.assertIsNotNone(soa.records)
+        self.assertEqual(int(soa_record_values[2]), zone['serial'])
+        self.assertEqual(soa_record_values[1], zone_email)
+        self.assertEqual(int(soa_record_values[3]), zone['refresh'])
+        self.assertEqual(int(soa_record_values[4]), zone['retry'])
+        self.assertEqual(int(soa_record_values[5]), zone['expire'])
+        self.assertEqual(int(soa_record_values[6]), zone['minimum'])
+
+    def test_update_soa(self):
+        # Anytime the zone's serial number is incremented
+        # the SOA recordset should automatically be updated
+        zone = self.create_domain(email='info@example.org')
+
+        # Update the object
+        zone.email = 'info@example.net'
+
+        # Perform the update
+        self.central_service.update_domain(self.admin_context, zone)
+
+        # Fetch the domain again
+        updated_zone = self.central_service.get_domain(self.admin_context,
+                                                       zone.id)
+
+        # Retrieve SOA
+        criterion = {'domain_id': zone['id'], 'type': 'SOA'}
+
+        soa = self.central_service.find_recordset(self.admin_context,
+                                                  criterion)
+
+        # Split out the various soa values
+        soa_record_values = soa.records[0].data.split()
+
+        self.assertEqual(int(soa_record_values[2]), updated_zone['serial'])
+
+    # NS Recordset tests
+    def test_create_ns(self):
+        # Anytime a zone is created, an NS recordset should be
+        # automatically be created, with a record for each server
+
+        # Create a server
+        server = self.create_server(name='ns1.example.org.')
+
+        # Create a zone
+        zone = self.create_domain(name='example3.org.')
+
+        # Make sure an NS recordset was created
+        ns = self.central_service.find_recordset(self.admin_context,
+                                 criterion={'domain_id': zone['id'],
+                                            'type': "NS"})
+
+        # Ensure all values have been set correctly
+        self.assertIsNotNone(ns.id)
+        self.assertEqual('NS', ns.type)
+        self.assertIsNotNone(ns.records)
+        self.assertEqual(ns.records[0].data, server.name)
+
+    def test_update_ns(self):
+        # Anytime a server is created, the NS recordset for each zone
+        # should be automatically updated to contain the new server
+
+        # Create a server
+        server1 = self.create_server(name='ns1.example.net.')
+
+        servers = self.central_service.find_servers(self.admin_context)
+        if len(servers) == 0:
+            LOG.debug("There are no servers")
+        for s in servers:
+            LOG.debug("Server name is %s" % s.name)
+
+        # Create a zone
+        zone = self.create_domain(name='example3.net.')
+
+        # Make sure an NS recordset was created
+        ns_rs = self.central_service.find_recordset(
+            self.admin_context,
+            criterion={'domain_id': zone['id'], 'type': "NS"})
+
+        records = ns_rs.records
+        for r in records:
+            LOG.debug("Record data is %s" % r.data)
+
+        # Ensure all values have been set correctly
+        self.assertIsNotNone(ns_rs.id)
+        self.assertEqual('NS', ns_rs.type)
+        self.assertIsNotNone(ns_rs.records)
+        self.assertEqual(ns_rs.records[0].data, server1.name)
+
+        # Create another server
+        server2 = self.create_server(name='ns2.example.net.')
+
+        # Get the NS recordset again
+        ns_rs = self.central_service.find_recordset(
+            self.admin_context,
+            criterion={'domain_id': zone['id'], 'type': "NS"})
+
+        # Ensure another record was added to the recordset
+        self.assertEqual(ns_rs.records[0].data, server1.name)
+        self.assertEqual(ns_rs.records[2].data, server2.name)

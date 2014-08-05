@@ -28,10 +28,6 @@ from designate.api.v2.views import zones as zones_view
 from designate.objects import Domain
 from designate.objects import Record
 from designate.objects import RecordSet
-from designate.openstack.common import log as logging
-
-
-LOG = logging.getLogger(__name__)
 
 
 class ZonesController(rest.RestController):
@@ -295,35 +291,35 @@ class ZonesController(rest.RestController):
             for rdataset in dnspython_zone.nodes[record_name]:
                 record_type = rdatatype.to_text(rdataset.rdtype)
 
-                if record_type == 'SOA':
-                    continue
+                if (record_type == 'NS') or (record_type == 'SOA'):
+                    # Don't create SOA or NS recordsets, as they are
+                    # created automatically when a domain is
+                    # created
+                    pass
+                else:
+                    # Create the other recordsets
+                    values = {
+                        'domain_id': zone_id,
+                        'name': record_name.to_text(),
+                        'type': record_type
+                    }
 
-                # Create the recordset
-                values = {
-                    'domain_id': zone_id,
-                    'name': record_name.to_text(),
-                    'type': record_type
-                }
+                    recordset = self.central_api.create_recordset(
+                        context, zone_id, RecordSet(**values))
 
-                recordset = self.central_api.create_recordset(
-                    context, zone_id, RecordSet(**values))
+                    for rdata in rdataset:
+                        if (record_type == 'NS') or (record_type == 'SOA'):
+                            pass
+                        else:
+                            # Everything else, including delegation NS, gets
+                            # created
+                            values = self._record2json(record_type, rdata)
 
-                for rdata in rdataset:
-                    if (record_type == 'NS'
-                            and record_name == dnspython_zone.origin):
-                        # Don't create NS records for the domain, they've been
-                        # taken care of as servers
-                        pass
-                    else:
-                        # Everything else, including delegation NS, gets
-                        # created
-                        values = self._record2json(record_type, rdata)
-
-                        self.central_api.create_record(
-                            context,
-                            zone_id,
-                            recordset['id'],
-                            Record(**values))
+                            self.central_api.create_record(
+                                context,
+                                zone_id,
+                                recordset['id'],
+                                Record(**values))
 
     def _parse_zonefile(self, request):
         """Parses a POSTed zonefile into a dnspython zone object"""

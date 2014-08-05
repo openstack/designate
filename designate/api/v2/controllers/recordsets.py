@@ -16,6 +16,7 @@
 import pecan
 
 from designate.openstack.common import log as logging
+from designate import exceptions
 from designate import schema
 from designate import utils
 from designate.api.v2.controllers import rest
@@ -97,6 +98,11 @@ class RecordSetsController(rest.RestController):
         # Convert from APIv2 -> Central format
         values = self._view.load(context, request, body)
 
+        # SOA recordsets cannot be created manually
+        if values['type'] == 'SOA':
+            raise exceptions.BadRequest(
+                "Creating a SOA recordset is now allowed")
+
         # Create the recordset
         recordset = self.central_api.create_recordset(
             context, zone_id, RecordSet(**values))
@@ -122,6 +128,18 @@ class RecordSetsController(rest.RestController):
         recordset = self.central_api.get_recordset(context, zone_id,
                                                    recordset_id)
 
+        # SOA recordsets cannot be updated manually
+        if recordset['type'] == 'SOA':
+            raise exceptions.BadRequest(
+                'Updating SOA recordsets is now allowed')
+
+        # NS recordsets at the zone root cannot be manually updated
+        if recordset['type'] == 'NS':
+            zone = self.central_api.get_domain(context, zone_id)
+            if recordset['name'] == zone['name']:
+                raise exceptions.BadRequest(
+                    'Updating a root zone NS record is not allowed')
+
         # Convert to APIv2 Format
         recordset_data = self._view.show(context, request, recordset)
         recordset_data = utils.deep_dict_merge(recordset_data, body)
@@ -144,6 +162,13 @@ class RecordSetsController(rest.RestController):
         request = pecan.request
         response = pecan.response
         context = request.environ['context']
+
+        # Fetch the existing recordset
+        recordset = self.central_api.get_recordset(context, zone_id,
+                                                   recordset_id)
+        if recordset['type'] == 'SOA':
+            raise exceptions.BadRequest(
+                'Deleting a SOA recordset is now allowed')
 
         self.central_api.delete_recordset(context, zone_id, recordset_id)
 

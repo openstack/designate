@@ -16,9 +16,12 @@
 from mock import patch
 from oslo import messaging
 
+from designate.openstack.common import log as logging
 from designate import exceptions
 from designate.central import service as central_service
 from designate.tests.test_api.test_v2 import ApiV2TestCase
+
+LOG = logging.getLogger(__name__)
 
 
 class ApiV2RecordSetsTest(ApiV2TestCase):
@@ -158,12 +161,20 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         self.assertIn('links', response.json)
         self.assertIn('self', response.json['links'])
 
-        # We should start with 0 recordsets
-        self.assertEqual(0, len(response.json['recordsets']))
+        # We should start with 2 recordsets for SOA & NS
+        self.assertEqual(2, len(response.json['recordsets']))
 
+        soa = self.central_service.find_recordset(
+            self.admin_context, criterion={'domain_id': self.domain['id'],
+                                           'type': 'SOA'})
+        ns = self.central_service.find_recordset(
+            self.admin_context, criterion={'domain_id': self.domain['id'],
+                                           'type': 'NS'})
         data = [self.create_recordset(self.domain,
                 name='x-%s.%s' % (i, self.domain['name']))
                 for i in xrange(0, 10)]
+        data.insert(0, ns)
+        data.insert(0, soa)
 
         self._assert_paging(data, url, key='recordsets')
 
@@ -439,14 +450,6 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         url = '/zones/%s/recordsets/%s' % (recordset['domain_id'],
                                            recordset['id'])
         self.client.delete(url, status=204)
-
-    @patch.object(central_service.Service, 'delete_recordset',
-                  side_effect=messaging.MessagingTimeout())
-    def test_delete_recordset_timeout(self, _):
-        url = ('/zones/%s/recordsets/ba751950-6193-11e3-949a-0800200c9a66'
-               % (self.domain['id']))
-
-        self._assert_exception('timeout', 504, self.client.delete, url)
 
     @patch.object(central_service.Service, 'delete_recordset',
                   side_effect=exceptions.RecordSetNotFound())

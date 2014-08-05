@@ -30,7 +30,7 @@
         "type": {
             "type": "string",
             "description": "DNS Record Type",
-            "enum": ["A", "AAAA", "CNAME", "MX", "SRV", "TXT", "SPF", "NS", "PTR", "SSHFP"],
+            "enum": ["A", "AAAA", "CNAME", "MX", "SRV", "TXT", "SPF", "NS", "PTR", "SSHFP", "SOA"],
             "required": true
         },
         "data": {
@@ -216,6 +216,17 @@
             "data": {
                 "pattern": "^[1-2] 1 [0-9A-Fa-f]{40}$",
                 "required": true
+            },
+            "priority": {
+                "type": "null"
+            }
+        }
+    }, {
+        "description": "A SOA Record",
+        "properties": {
+            "type": {
+                "type": "string",
+                "enum": ["SOA"]
             },
             "priority": {
                 "type": "null"

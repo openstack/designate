@@ -521,12 +521,17 @@ class StorageTestCase(object):
     # Tenant Tests
     def test_find_tenants(self):
         context = self.get_admin_context()
+        one_context = context
+        one_context.tenant = 'One'
+        two_context = context
+        two_context.tenant = 'Two'
         context.all_tenants = True
 
         # create 3 domains in 2 tenants
-        self.create_domain(fixture=0, tenant_id='One')
-        domain = self.create_domain(fixture=1, tenant_id='One')
-        self.create_domain(fixture=2, tenant_id='Two')
+        self.create_domain(fixture=0, context=one_context, tenant_id='One')
+        domain = self.create_domain(fixture=1, context=one_context,
+                                    tenant_id='One')
+        self.create_domain(fixture=2, context=two_context, tenant_id='Two')
 
         # Delete one of the domains.
         self.storage.delete_domain(context, domain['id'])
@@ -547,12 +552,14 @@ class StorageTestCase(object):
 
     def test_get_tenant(self):
         context = self.get_admin_context()
+        one_context = context
+        one_context.tenant = 1
         context.all_tenants = True
 
         # create 2 domains in a tenant
-        domain_1 = self.create_domain(fixture=0, tenant_id=1)
-        domain_2 = self.create_domain(fixture=1, tenant_id=1)
-        domain_3 = self.create_domain(fixture=2, tenant_id=1)
+        domain_1 = self.create_domain(fixture=0, context=one_context)
+        domain_2 = self.create_domain(fixture=1, context=one_context)
+        domain_3 = self.create_domain(fixture=2, context=one_context)
 
         # Delete one of the domains.
         self.storage.delete_domain(context, domain_3['id'])
@@ -566,6 +573,10 @@ class StorageTestCase(object):
 
     def test_count_tenants(self):
         context = self.get_admin_context()
+        one_context = context
+        one_context.tenant = 1
+        two_context = context
+        two_context.tenant = 2
         context.all_tenants = True
 
         # in the beginning, there should be nothing
@@ -573,9 +584,10 @@ class StorageTestCase(object):
         self.assertEqual(tenants, 0)
 
         # create 2 domains with 2 tenants
-        self.create_domain(fixture=0, tenant_id=1)
-        self.create_domain(fixture=1, tenant_id=2)
-        domain = self.create_domain(fixture=2, tenant_id=2)
+        self.create_domain(fixture=0, context=one_context, tenant_id=1)
+        self.create_domain(fixture=1, context=two_context, tenant_id=2)
+        domain = self.create_domain(fixture=2,
+                                    context=two_context, tenant_id=2)
 
         # Delete one of the domains.
         self.storage.delete_domain(context, domain['id'])
@@ -870,16 +882,16 @@ class StorageTestCase(object):
         criterion = {'domain_id': domain['id']}
 
         actual = self.storage.find_recordsets(self.admin_context, criterion)
-        self.assertEqual(0, len(actual))
+        self.assertEqual(2, len(actual))
 
         # Create a single recordset
         recordset_one = self.create_recordset(domain)
 
         actual = self.storage.find_recordsets(self.admin_context, criterion)
-        self.assertEqual(1, len(actual))
+        self.assertEqual(3, len(actual))
 
-        self.assertEqual(recordset_one['name'], actual[0]['name'])
-        self.assertEqual(recordset_one['type'], actual[0]['type'])
+        self.assertEqual(recordset_one['name'], actual[2]['name'])
+        self.assertEqual(recordset_one['type'], actual[2]['type'])
 
     def test_find_recordsets_paging(self):
         domain = self.create_domain(name='example.org.')
@@ -887,6 +899,16 @@ class StorageTestCase(object):
         # Create 10 RecordSets
         created = [self.create_recordset(domain, name='r-%d.example.org.' % i)
                    for i in xrange(10)]
+
+        # Add in the SOA and NS recordsets that are automatically created
+        soa = self.storage.find_recordset(self.admin_context,
+                                          criterion={'domain_id': domain['id'],
+                                                     'type': "SOA"})
+        ns = self.storage.find_recordset(self.admin_context,
+                                         criterion={'domain_id': domain['id'],
+                                                    'type': "NS"})
+        created.insert(0, ns)
+        created.insert(0, soa)
 
         # Ensure we can page through the results.
         self._ensure_paging(created, self.storage.find_recordsets)
@@ -931,7 +953,8 @@ class StorageTestCase(object):
 
         results = self.storage.find_recordsets(self.admin_context, criterion)
 
-        self.assertEqual(len(results), 1)
+        # Should be 3, as SOA and NS recordsets are automiatcally created
+        self.assertEqual(len(results), 3)
 
     def test_find_recordsets_with_records(self):
         domain = self.create_domain()
@@ -1192,9 +1215,9 @@ class StorageTestCase(object):
         domain = self.create_domain()
         self.create_recordset(domain)
 
-        # we should have 1 recordsets now
+        # we should have 3 recordsets now, including SOA & NS
         recordsets = self.storage.count_recordsets(self.admin_context)
-        self.assertEqual(recordsets, 1)
+        self.assertEqual(recordsets, 3)
 
     def test_create_record(self):
         domain = self.create_domain()
@@ -1257,6 +1280,17 @@ class StorageTestCase(object):
         # Create 10 Records
         created = [self.create_record(domain, recordset, data='192.0.2.%d' % i)
                    for i in xrange(10)]
+
+        # Add in the SOA and NS records that are automatically created
+        soa = self.storage.find_recordset(self.admin_context,
+                                          criterion={'domain_id': domain['id'],
+                                                     'type': "SOA"})
+        ns = self.storage.find_recordset(self.admin_context,
+                                         criterion={'domain_id': domain['id'],
+                                                    'type': "NS"})
+        for r in ns['records']:
+            created.insert(0, r)
+        created.append(soa['records'][0])
 
         # Ensure we can page through the results.
         self._ensure_paging(created, self.storage.find_records)
@@ -1329,20 +1363,21 @@ class StorageTestCase(object):
         self.create_record(domain_two, recordset_one, context=two_context)
 
         # Ensure the all_tenants context see's two records
+        # Plus the SOA & NS in each of 2 domains = 6 records total
         results = self.storage.find_records(at_context)
-        self.assertEqual(2, len(results))
+        self.assertEqual(6, len(results))
 
         # Ensure the normal context see's no records
         results = self.storage.find_records(nm_context)
         self.assertEqual(0, len(results))
 
-        # Ensure the tenant 1 context see's 1 record
+        # Ensure the tenant 1 context see's 1 record + SOA & NS
         results = self.storage.find_records(one_context)
-        self.assertEqual(1, len(results))
+        self.assertEqual(3, len(results))
 
-        # Ensure the tenant 2 context see's 1 record
+        # Ensure the tenant 2 context see's 1 record + SOA & NS
         results = self.storage.find_records(two_context)
-        self.assertEqual(1, len(results))
+        self.assertEqual(3, len(results))
 
     def test_get_record(self):
         domain = self.create_domain()
@@ -1456,7 +1491,7 @@ class StorageTestCase(object):
 
         # we should have 1 record now
         records = self.storage.count_records(self.admin_context)
-        self.assertEqual(records, 1)
+        self.assertEqual(records, 3)
 
     def test_ping(self):
         pong = self.storage.ping(self.admin_context)
