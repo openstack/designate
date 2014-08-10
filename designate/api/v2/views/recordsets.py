@@ -44,7 +44,6 @@ class RecordSetsView(base_view.BaseView):
             "type": recordset['type'],
             "ttl": recordset['ttl'],
             "records": [r.data for r in recordset['records']],
-            "priority": [r.priority for r in recordset['records']],
             "description": recordset['description'],
             "version": recordset['version'],
             "created_at": recordset['created_at'],
@@ -55,8 +54,7 @@ class RecordSetsView(base_view.BaseView):
 
     def load(self, context, request, body):
         """Extract a "central" compatible dict from an API call"""
-        valid_keys = ('name', 'type', 'ttl', 'description', 'records',
-                      'priority')
+        valid_keys = ('name', 'type', 'ttl', 'description', 'records')
 
         result = self._load(context, request, body, valid_keys)
 
@@ -64,12 +62,5 @@ class RecordSetsView(base_view.BaseView):
             result['records'] = objects.RecordList(objects=[
                 objects.Record(data=r) for r in result['records']
             ])
-
-            if 'type' in result and \
-                    (result['type'] == "MX" or result['type'] == 'SRV'):
-                cnt = 0
-                for r in result['records']:
-                    r.priority = result['priority'][cnt]
-                    cnt += 1
 
         return result

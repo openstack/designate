@@ -57,11 +57,6 @@
                     "description": "Records in the RecordSet",
                     "default": null
                 },
-                "priority": {
-                    "type": ["array", "null"],
-                    "description": "Priority of MX and SRV records",
-                    "default": null
-                },
                 "version": {
                     "type": "integer",
                     "description": "RecordSet version number",
