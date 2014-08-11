@@ -50,7 +50,7 @@ class TenantsView(base_view.BaseView):
         """Basic view of the Tenants Report"""
 
         return {
-            "domain_count": tenants['domain_count'],
+            "zone_count": tenants['domain_count'],
             "id": tenants['id'],
             "links": self._get_resource_links(request, tenants)
         }
@@ -59,8 +59,8 @@ class TenantsView(base_view.BaseView):
         """Detail view of the Tenants Report"""
 
         return {
-            "domains_count": tenant['domain_count'],
-            "domains": tenant['domains'],
+            "zones_count": tenant['domain_count'],
+            "zones": tenant['domains'],
             "id": tenant['id'],
             "links": self._get_resource_links(request, tenant)
         }
