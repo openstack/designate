@@ -132,3 +132,22 @@ class UUIDConverter(BaseConverter):
 
     def to_url(self, value):
         return str(value)
+
+
+def load_values(request, valid_keys):
+    """Load valid atributes from request"""
+    result = {}
+    error_keys = []
+    values = request.json
+    for k in values:
+        if k in valid_keys:
+            result[k] = values[k]
+        else:
+            error_keys.append(k)
+
+    if error_keys:
+        error_msg = 'Provided object does not match schema. Keys {0} are not \
+                     valid in the request body', error_keys
+        raise exceptions.InvalidObject(error_msg)
+
+    return result
