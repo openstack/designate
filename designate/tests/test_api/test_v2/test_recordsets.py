@@ -169,6 +169,48 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
 
         self._assert_invalid_paging(data, url, key='recordsets')
 
+    def test_get_recordsets_filter(self):
+        # Add recordsets for testing
+        fixtures = [
+            self.get_recordset_fixture(
+                self.domain['name'], 'A', fixture=0, values={'records': [
+                    '192.0.2.1',
+                    '192.0.2.2',
+                ]}
+            ),
+            self.get_recordset_fixture(
+                self.domain['name'], 'A', fixture=1, values={'records': [
+                    '192.0.2.1',
+                    '192.0.2.3'
+                ]}
+            ),
+        ]
+
+        for fixture in fixtures:
+            response = self.client.post_json(
+                '/zones/%s/recordsets' % self.domain['id'],
+                {'recordset': fixture})
+
+        get_urls = [
+            '/zones/%s/recordsets?data=192.0.2.1' % self.domain['id'],
+            '/zones/%s/recordsets?data=192.0.2.2' % self.domain['id'],
+            '/zones/%s/recordsets?data=192.0.2.1&name=%s' % (
+                self.domain['id'], fixtures[0]['name'])
+        ]
+
+        correct_results = [2, 1, 1]
+
+        for get_url, correct_result in zip(get_urls, correct_results):
+
+            response = self.client.get(get_url)
+
+            # Check the headers are what we expect
+            self.assertEqual(200, response.status_int)
+            self.assertEqual('application/json', response.content_type)
+
+            # Check that the correct number of recordsets match
+            self.assertEqual(correct_result, len(response.json['recordsets']))
+
     def test_get_recordsets_invalid_id(self):
         self._assert_invalid_uuid(self.client.get, '/zones/%s/recordsets')
 
