@@ -38,7 +38,8 @@
                 ".venv",
                 ".testrepository",
                 "doc/build",
-                "doc/source/api"
+                "doc/source/api",
+                "build"
             ],
             "path": "."
         }

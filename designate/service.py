@@ -24,6 +24,7 @@ from designate.openstack.common import service
 from designate.openstack.common import log as logging
 from designate.i18n import _
 from designate import rpc
+from designate import policy
 from designate import version
 
 
@@ -49,6 +50,8 @@ class Service(service.Service):
         self.binary = binary
         self.topic = topic
         self.service_name = service_name
+
+        policy.init()
 
         # TODO(ekarlso): change this to be loadable via mod import or
         # stevedore?

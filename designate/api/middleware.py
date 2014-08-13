@@ -22,7 +22,6 @@ from designate import exceptions
 from designate import notifications
 from designate import wsgi
 from designate import context
-from designate import policy
 from designate.openstack.common import jsonutils as json
 from designate.openstack.common import log as logging
 from designate.openstack.common import strutils
@@ -71,15 +70,12 @@ class ContextMiddleware(wsgi.Middleware):
         params = request.params
 
         if headers.get('X-Auth-All-Projects'):
-            policy.check('all_tenants', ctxt)
             ctxt.all_tenants = \
                 strutils.bool_from_string(headers.get('X-Auth-All-Projects'))
         elif 'all_projects' in params:
-            policy.check('all_tenants', ctxt)
             ctxt.all_tenants = \
                 strutils.bool_from_string(params['all_projects'])
         elif 'all_tenants' in params:
-            policy.check('all_tenants', ctxt)
             ctxt.all_tenants = \
                 strutils.bool_from_string(params['all_tenants'])
         else:
