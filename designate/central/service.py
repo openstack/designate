@@ -129,7 +129,7 @@ class Service(service.Service):
         if self.check_for_tlds:
             try:
                 self.storage.find_tld(context, {'name': domain_labels[-1]})
-            except exceptions.TLDNotFound:
+            except exceptions.TldNotFound:
                 raise exceptions.InvalidDomainName('Invalid TLD')
 
             # Now check that the domain name is not the same as a TLD
@@ -138,7 +138,7 @@ class Service(service.Service):
                 self.storage.find_tld(
                     context,
                     {'name': stripped_domain_name})
-            except exceptions.TLDNotFound:
+            except exceptions.TldNotFound:
                 pass
             else:
                 raise exceptions.InvalidDomainName(

@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import uuid
+import math
 
 import testtools
 
@@ -49,15 +50,27 @@ class StorageTestCase(object):
         Given an array of created items we iterate through them making sure
         they match up to things returned by paged results.
         """
-        found = method(self.admin_context, limit=5)
-        x = 0
-        for i in xrange(0, len(data)):
-            self.assertEqual(data[i]['id'], found[x]['id'])
-            x += 1
-            if x == len(found):
-                x = 0
-                found = method(
-                    self.admin_context, limit=5, marker=found[-1:][0]['id'])
+        results = None
+        item_number = 0
+
+        for current_page in range(0, int(math.ceil(float(len(data)) / 2))):
+            LOG.debug('Validating results on page %d', current_page)
+
+            if results is not None:
+                results = method(
+                    self.admin_context, limit=2, marker=results[-1]['id'])
+            else:
+                results = method(self.admin_context, limit=2)
+
+            LOG.critical('Results: %d', len(results))
+
+            for result_number, result in enumerate(results):
+                LOG.debug('Validating result %d on page %d', result_number,
+                          current_page)
+                self.assertEqual(
+                    data[item_number]['id'], results[result_number]['id'])
+
+                item_number += 1
 
     def test_paging_marker_not_found(self):
         with testtools.ExpectedException(exceptions.MarkerNotFound):
@@ -93,7 +106,7 @@ class StorageTestCase(object):
         values = self.get_quota_fixture()
         values['tenant_id'] = self.admin_context.tenant
 
-        result = self.storage.create_quota(self.admin_context, values=values)
+        result = self.storage.create_quota(self.admin_context, values)
 
         self.assertIsNotNone(result['id'])
         self.assertIsNotNone(result['created_at'])
@@ -290,12 +303,12 @@ class StorageTestCase(object):
         self.assertEqual(1, len(actual))
         self.assertEqual(server['name'], actual[0]['name'])
 
-        # Order of found items later will be reverse of the order they are
-        # created
-        created = [self.create_server(
-            name='ns%s.example.org.' % i) for i in xrange(10, 20)]
-        created.insert(0, server)
+    def test_find_servers_paging(self):
+        # Create 10 Servers
+        created = [self.create_server(name='ns%d.example.org.' % i)
+                   for i in xrange(10)]
 
+        # Ensure we can page through the results.
         self._ensure_paging(created, self.storage.find_servers)
 
     def test_find_servers_criterion(self):
@@ -415,12 +428,12 @@ class StorageTestCase(object):
         self.assertEqual(tsig['algorithm'], actual[0]['algorithm'])
         self.assertEqual(tsig['secret'], actual[0]['secret'])
 
-        # Order of found items later will be reverse of the order they are
-        # created
-        created = [self.create_tsigkey(name='tsig%s.' % i)
-                   for i in xrange(10, 20)]
-        created.insert(0, tsig)
+    def test_find_tsigkeys_paging(self):
+        # Create 10 TSIG Keys
+        created = [self.create_tsigkey(name='tsig-%s' % i)
+                   for i in xrange(10)]
 
+        # Ensure we can page through the results.
         self._ensure_paging(created, self.storage.find_tsigkeys)
 
     def test_find_tsigkeys_criterion(self):
@@ -612,12 +625,12 @@ class StorageTestCase(object):
         self.assertEqual(domain['name'], actual[0]['name'])
         self.assertEqual(domain['email'], actual[0]['email'])
 
-        # Order of found items later will be reverse of the order they are
-        # created XXXX
-        created = [self.create_domain(name='x%s.org.' % i)
-                   for i in xrange(10, 20)]
-        created.insert(0, domain)
+    def test_find_domains_paging(self):
+        # Create 10 Domains
+        created = [self.create_domain(name='example-%d.org.' % i)
+                   for i in xrange(10)]
 
+        # Ensure we can page through the results.
         self._ensure_paging(created, self.storage.find_domains)
 
     def test_find_domains_criterion(self):
@@ -868,12 +881,14 @@ class StorageTestCase(object):
         self.assertEqual(recordset_one['name'], actual[0]['name'])
         self.assertEqual(recordset_one['type'], actual[0]['type'])
 
-        # Order of found items later will be reverse of the order they are
-        # created
-        created = [self.create_recordset(
-            domain, name='test%s' % i + '.%s') for i in xrange(10, 20)]
-        created.insert(0, recordset_one)
+    def test_find_recordsets_paging(self):
+        domain = self.create_domain(name='example.org.')
 
+        # Create 10 RecordSets
+        created = [self.create_recordset(domain, name='r-%d.example.org.' % i)
+                   for i in xrange(10)]
+
+        # Ensure we can page through the results.
         self._ensure_paging(created, self.storage.find_recordsets)
 
     def test_find_recordsets_criterion(self):
@@ -1235,13 +1250,15 @@ class StorageTestCase(object):
         self.assertEqual(record['data'], actual[0]['data'])
         self.assertIn('status', record)
 
-        # Order of found items later will be reverse of the order they are
-        # created
-        created = [self.create_record(
-            domain, recordset, data='192.0.0.%s' % i)
-            for i in xrange(10, 20)]
-        created.insert(0, record)
+    def test_find_records_paging(self):
+        domain = self.create_domain()
+        recordset = self.create_recordset(domain, type='A')
 
+        # Create 10 Records
+        created = [self.create_record(domain, recordset, data='192.0.2.%d' % i)
+                   for i in xrange(10)]
+
+        # Ensure we can page through the results.
         self._ensure_paging(created, self.storage.find_records)
 
     def test_find_records_criterion(self):

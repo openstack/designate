@@ -42,11 +42,6 @@ from designate.network_api import fake as fake_network_api
 from designate import network_api
 from designate import objects
 
-
-# NOTE: If eventlet isn't patched and there's a exc tests block
-import eventlet
-eventlet.monkey_patch(os=False)
-
 LOG = logging.getLogger(__name__)
 
 cfg.CONF.import_opt('storage_driver', 'designate.central',
@@ -455,7 +450,7 @@ class TestCase(base.BaseTestCase):
         for index in range(len(self.default_tld_fixtures)):
             try:
                 self.create_default_tld(fixture=index)
-            except exceptions.DuplicateTLD:
+            except exceptions.DuplicateTld:
                 pass
 
     def create_tsigkey(self, **kwargs):

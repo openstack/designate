@@ -187,7 +187,7 @@ class DuplicateDomain(Duplicate):
     error_type = 'duplicate_domain'
 
 
-class DuplicateTLD(Duplicate):
+class DuplicateTld(Duplicate):
     error_type = 'duplicate_tld'
 
 
@@ -235,7 +235,7 @@ class DomainNotFound(NotFound):
     error_type = 'domain_not_found'
 
 
-class TLDNotFound(NotFound):
+class TldNotFound(NotFound):
     error_type = 'tld_not_found'
 
 
