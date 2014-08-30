@@ -125,8 +125,9 @@ function get_or_create_domain_id() {
 function get_record_id {
     local DOMAIN_ID=$1
     local RECORD_NAME=$2
-    local REQUIRED=$3
-    local RECORD_ID=$(designate record-list $DOMAIN_ID | egrep " $RECORD_NAME " | get_field 1)
+    local RECORD_TYPE=$3
+    local REQUIRED=$4
+    local RECORD_ID=$(designate record-list $DOMAIN_ID | egrep " $RECORD_NAME " | egrep " $RECORD_TYPE " | get_field 1)
     if [ "$REQUIRED" = "1" ] ; then
         die_if_not_set $LINENO RECORD_ID "Failure retrieving RECORD_ID"
     fi
