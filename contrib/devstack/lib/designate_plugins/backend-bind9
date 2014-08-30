@@ -16,7 +16,7 @@
 # cleanup_designate_backend - remove transient data and cache
 
 # Save trace setting
-XTRACE=$(set +o | grep xtrace)
+DP_BIND9_XTRACE=$(set +o | grep xtrace)
 set +o xtrace
 
 # Defaults
@@ -144,4 +144,4 @@ function cleanup_designate_backend {
 }
 
 # Restore xtrace
-$XTRACE
+$DP_BIND9_XTRACE
