@@ -21,6 +21,7 @@ from oslo.config import cfg
 
 from designate import service
 from designate.mdns import handler
+from designate.mdns import middleware
 from designate.mdns import notify
 from designate.openstack.common import log as logging
 from designate.i18n import _LE
@@ -38,7 +39,13 @@ class Service(service.Service):
         super(Service, self).__init__(*args, **kwargs)
 
         # Create an instance of the RequestHandler class
-        self.handler = handler.RequestHandler()
+        self.application = handler.RequestHandler()
+
+        # Wrap the application in any middleware required
+        # TODO(kiall): In the future, we want to allow users to pick+choose
+        #              the middleware to be applied, similar to how we do this
+        #              in the API.
+        self.application = middleware.ContextMiddleware(self.application)
 
         # Bind to the TCP port
         LOG.info(_LI('Opening TCP Listening Socket on %(host)s:%(port)d') %
@@ -86,6 +93,9 @@ class Service(service.Service):
                       {'host': addr[0], 'port': addr[1]})
             return None
         else:
+            # Create + Attach the initial "environ" dict. This is similar to
+            # the environ dict used in typical WSGI middleware.
+            request.environ = {'addr': addr}
             return request
 
     def _serialize_response(self, response):
@@ -148,7 +158,7 @@ class Service(service.Service):
                     dns.message.make_query('unknown', dns.rdatatype.A))
                 response.set_rcode(dns.rcode.FORMERR)
             else:
-                response = self.handler.handle(request)
+                response = self.application(request)
 
             # send back a response only if present
             if response:
