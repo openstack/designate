@@ -16,6 +16,7 @@
 import socket
 import struct
 
+import dns
 from oslo.config import cfg
 
 from designate import service
@@ -70,6 +71,31 @@ class Service(service.Service):
         # _handle_udp are stopped too.
         super(Service, self).stop()
 
+    def _deserialize_request(self, payload, addr):
+        """
+        Deserialize a DNS Request Packet
+
+        :param payload: Raw DNS query payload
+        :param addr: Tuple of the client's (IP, Port)
+        """
+        try:
+            request = dns.message.from_wire(payload)
+        except dns.exception.DNSException:
+            LOG.error(_LE("Failed to deserialize packet from "
+                          "%(host)s:%(port)d") %
+                      {'host': addr[0], 'port': addr[1]})
+            return None
+        else:
+            return request
+
+    def _serialize_response(self, response):
+        """
+        Serialize a DNS Response Packet
+
+        :param response: DNS Response Message
+        """
+        return response.to_wire()
+
     def _handle_tcp(self):
         LOG.info(_LI("_handle_tcp thread started"))
         while True:
@@ -113,10 +139,21 @@ class Service(service.Service):
         :param client: Client socket (for TCP only)
         """
         try:
-            response = self.handler.handle(payload, addr)
+            request = self._deserialize_request(payload, addr)
+
+            if request is None:
+                # We failed to deserialize the request, generate a failure
+                # response using a made up request.
+                response = dns.message.make_response(
+                    dns.message.make_query('unknown', dns.rdatatype.A))
+                response.set_rcode(dns.rcode.FORMERR)
+            else:
+                response = self.handler.handle(request)
 
             # send back a response only if present
             if response:
+                response = self._serialize_response(response)
+
                 if client is not None:
                     # Handle TCP Responses
                     msg_length = len(response)

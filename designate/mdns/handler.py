@@ -35,46 +35,28 @@ class RequestHandler(object):
         self.admin_context = DesignateContext.get_admin_context(
             all_tenants=True)
 
-        # Fake request is used to send a response when we cannot decipher the
-        # request.
-        self._fake_request = dns.message.make_query('unknown', dns.rdatatype.A)
-
-    def handle(self, payload, addr):
+    def handle(self, request):
         """
-        :param payload: Raw DNS query payload
-        :param addr: Tuple of the client's (IP, Port)
-        :return: response to the query or None if there is an issue decoding
-         the query.
+        :param request: DNS Request Message
+        :return: DNS Response Message
         """
-        try:
-            request = dns.message.from_wire(payload)
-        except dns.exception.DNSException:
-            LOG.exception(_LE("got exception while decoding packet from "
-                              "%(host)s:%(port)d") %
-                          {'host': addr[0], 'port': addr[1]})
-            # We might not have the correct request id to send a response back
-            # So make up a response with a blank question section
-            response = self._handle_query_error(
-                self._fake_request, dns.rcode.FORMERR)
-            response.question = []
-        else:
-            if request.opcode() == dns.opcode.QUERY:
-                # Currently we expect exactly 1 question in the section
-                # TSIG places the pseudo records into the additional section.
-                if (len(request.question) != 1 or
-                        request.question[0].rdclass != dns.rdataclass.IN):
-                    return self._handle_query_error(request, dns.rcode.REFUSED)
+        if request.opcode() == dns.opcode.QUERY:
+            # Currently we expect exactly 1 question in the section
+            # TSIG places the pseudo records into the additional section.
+            if (len(request.question) != 1 or
+                    request.question[0].rdclass != dns.rdataclass.IN):
+                return self._handle_query_error(request, dns.rcode.REFUSED)
 
-                q_rrset = request.question[0]
-                if q_rrset.rdtype == dns.rdatatype.AXFR:
-                    response = self._handle_axfr(request, addr)
-                else:
-                    response = self._handle_record_query(request)
+            q_rrset = request.question[0]
+            if q_rrset.rdtype == dns.rdatatype.AXFR:
+                response = self._handle_axfr(request)
             else:
-                # Unhandled OpCode's include STATUS, IQUERY, NOTIFY, UPDATE
-                response = self._handle_query_error(request, dns.rcode.REFUSED)
+                response = self._handle_record_query(request)
+        else:
+            # Unhandled OpCode's include STATUS, IQUERY, NOTIFY, UPDATE
+            response = self._handle_query_error(request, dns.rcode.REFUSED)
 
-        return response.to_wire()
+        return response
 
     def _handle_query_error(self, request, rcode):
         """
@@ -125,7 +107,7 @@ class RequestHandler(object):
 
         return r_rrset
 
-    def _handle_axfr(self, request, addr):
+    def _handle_axfr(self, request):
         response = dns.message.make_response(request)
         q_rrset = request.question[0]
         # First check if there is an existing zone
@@ -135,9 +117,8 @@ class RequestHandler(object):
         try:
             domain = self.storage.find_domain(self.admin_context, criterion)
         except exceptions.DomainNotFound:
-            LOG.exception(_LE("got exception while handling axfr request from "
-                              "%(host)s:%(port)d. Question is %(qr)s") %
-                          {'host': addr[0], 'port': addr[1], 'qr': q_rrset})
+            LOG.exception(_LE("got exception while handling axfr request. "
+                              "Question is %(qr)s") % {'qr': q_rrset})
 
             return self._handle_query_error(request, dns.rcode.REFUSED)
 
