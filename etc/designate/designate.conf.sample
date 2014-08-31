@@ -168,7 +168,7 @@ debug = False
 #-----------------------
 [handler:nova_fixed]
 #domain_id = <random uuid>
-#notification_topics = monitor
+#notification_topics = notifications
 #control_exchange = 'nova'
 #format = '%(octet0)s-%(octet1)s-%(octet2)s-%(octet3)s.%(domain)s'
 
@@ -177,7 +177,7 @@ debug = False
 #------------------------
 [handler:neutron_floatingip]
 #domain_id = <random uuid>
-#notification_topics = monitor
+#notification_topics = notifications
 #control_exchange = 'neutron'
 #format = '%(octet0)s-%(octet1)s-%(octet2)s-%(octet3)s.%(domain)s'
 

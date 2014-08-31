@@ -27,7 +27,7 @@ cfg.CONF.register_group(cfg.OptGroup(
 ))
 
 cfg.CONF.register_opts([
-    cfg.ListOpt('notification-topics', default=['monitor']),
+    cfg.ListOpt('notification-topics', default=['notifications']),
     cfg.StrOpt('control-exchange', default='nova'),
     cfg.StrOpt('domain-id', default=None),
     cfg.StrOpt('format', default=None)
