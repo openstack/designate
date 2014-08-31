@@ -59,7 +59,17 @@ class RequestHandler(object):
             response.question = []
         else:
             if request.opcode() == dns.opcode.QUERY:
-                response = self._handle_query(request)
+                # Currently we expect exactly 1 question in the section
+                # TSIG places the pseudo records into the additional section.
+                if (len(request.question) != 1 or
+                        request.question[0].rdclass != dns.rdataclass.IN):
+                    return self._handle_query_error(request, dns.rcode.REFUSED)
+
+                q_rrset = request.question[0]
+                if q_rrset.rdtype == dns.rdatatype.AXFR:
+                    response = self._handle_axfr(request, addr)
+                else:
+                    response = self._handle_record_query(request)
             else:
                 # Unhandled OpCode's include STATUS, IQUERY, NOTIFY, UPDATE
                 response = self._handle_query_error(request, dns.rcode.REFUSED)
@@ -78,67 +88,102 @@ class RequestHandler(object):
 
         return response
 
-    def _handle_query(self, request):
-        """Handle a DNS QUERY request"""
-        # Currently we expect exactly 1 question in the section
-        # TSIG places the pseudo records into the additional section.
-        if (len(request.question) != 1 or
-                request.question[0].rdclass != dns.rdataclass.IN):
-            return self._handle_query_error(request, dns.rcode.REFUSED)
+    def _convert_to_rrset(self, recordset, domain=None):
+        # Fetch the domain or the config ttl if the recordset ttl is null
+        if recordset.ttl:
+            ttl = recordset.ttl
+        elif domain is not None:
+            ttl = domain.ttl
+        else:
+            domain = self.storage.get_domain(
+                self.admin_context, recordset.domain_id)
+            if domain.ttl:
+                ttl = domain.ttl
+            else:
+                ttl = CONF.default_ttl
 
+        # construct rdata from all the records
+        rdata = []
+        for record in recordset.records:
+            # dnspython expects data to be a string. convert record
+            # data from unicode to string
+            # For MX and SRV records add a priority field.
+            if recordset.type == "MX" or recordset.type == "SRV":
+                rdata.append(str.format(
+                    "%d %s" % (record.priority, str(record.data))))
+            else:
+                rdata.append(str(record.data))
+
+        # Now put the records into dnspython's RRsets
+        # answer section has 1 RR set.  If the RR set has multiple
+        # records, DNSpython puts each record in a separate answer
+        # section.
+        # RRSet has name, ttl, class, type  and rdata
+        # The rdata has one or more records
+        r_rrset = dns.rrset.from_text_list(
+            recordset.name, ttl, dns.rdataclass.IN, recordset.type, rdata)
+
+        return r_rrset
+
+    def _handle_axfr(self, request, addr):
         response = dns.message.make_response(request)
         q_rrset = request.question[0]
+        # First check if there is an existing zone
+        # TODO(vinod) once validation is separated from the api,
+        # validate the parameters
+        criterion = {'name': q_rrset.name.to_text()}
         try:
+            domain = self.storage.find_domain(self.admin_context, criterion)
+        except exceptions.DomainNotFound:
+            LOG.exception(_LE("got exception while handling axfr request from "
+                              "%(host)s:%(port)d. Question is %(qr)s") %
+                          {'host': addr[0], 'port': addr[1], 'qr': q_rrset})
+
+            return self._handle_query_error(request, dns.rcode.REFUSED)
+
+        r_rrsets = []
+
+        # The AXFR response needs to have a SOA at the beginning and end.
+        criterion = {'domain_id': domain.id, 'type': 'SOA'}
+        soa_recordsets = self.storage.find_recordsets(
+            self.admin_context, criterion)
+        for recordset in soa_recordsets:
+            r_rrsets.append(self._convert_to_rrset(recordset, domain))
+
+        # Get all the recordsets other than SOA
+        criterion = {'domain_id': domain.id, 'type': '!SOA'}
+        recordsets = self.storage.find_recordsets(
+            self.admin_context, criterion)
+        for recordset in recordsets:
+            r_rrsets.append(self._convert_to_rrset(recordset, domain))
+
+        # Append the SOA recordset at the end
+        for recordset in soa_recordsets:
+            r_rrsets.append(self._convert_to_rrset(recordset, domain))
+
+        response.set_rcode(dns.rcode.NOERROR)
+        # TODO(vinod) check if we dnspython has an upper limit on the number
+        # of rrsets.
+        response.answer = r_rrsets
+        # For all the data stored in designate mdns is Authoritative
+        response.flags |= dns.flags.AA
+
+        return response
+
+    def _handle_record_query(self, request):
+        """Handle a DNS QUERY request for a record"""
+        response = dns.message.make_response(request)
+        try:
+            q_rrset = request.question[0]
             # TODO(vinod) once validation is separated from the api,
             # validate the parameters
             criterion = {
                 'name': q_rrset.name.to_text(),
                 'type': dns.rdatatype.to_text(q_rrset.rdtype)
             }
-            # first get the recordset based on the name and type and then
-            # get the records in the recordset
             recordset = self.storage.find_recordset(
                 self.admin_context, criterion)
-            criterion = {'recordset_id': recordset.id}
-            records = self.storage.find_records(
-                self.admin_context, criterion=criterion)
-
-            # Fetch the domain or the config ttl if the recordset ttl is
-            # null
-            if recordset.ttl:
-                ttl = recordset.ttl
-            else:
-                domain = self.storage.get_domain(
-                    self.admin_context, recordset.domain_id)
-                if domain.ttl:
-                    ttl = domain.ttl
-                else:
-                    ttl = CONF.default_ttl
-
-            # construct rdata from all the records
-            rdata = []
-            for record in records:
-                # dnspython expects data to be a string. convert record
-                # data from unicode to string
-                # For MX and SRV records add a priority field.
-                # TODO(vinod) add an additional section for MX records
-                if (q_rrset.rdtype == dns.rdatatype.MX or
-                        q_rrset.rdtype == dns.rdatatype.SRV):
-                    rdata.append(str.format(
-                        "%d %s" % (record.priority, str(record.data))))
-                else:
-                    rdata.append(str(record.data))
-
-            # Now put the records into dnspython's RRsets
-            # answer section has 1 RR set.  If the RR set has multiple
-            # records, DNSpython puts each record in a separate answer
-            # section.
-            # RRSet has name, ttl, class, type  and rdata
-            # The rdata has one or more records
-            r_rrset = dns.rrset.from_text_list(
-                recordset.name, ttl, dns.rdataclass.IN, recordset.type,
-                rdata)
-
+            r_rrset = self._convert_to_rrset(recordset)
             response.set_rcode(dns.rcode.NOERROR)
             response.answer = [r_rrset]
             # For all the data stored in designate mdns is Authoritative

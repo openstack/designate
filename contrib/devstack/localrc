@@ -1,3 +1,6 @@
+# **** NOTE **** Changes to this file only affect the local vagrant environment
+# and not the gate jobs
+
 # Passwords
 ADMIN_PASSWORD=password
 MYSQL_PASSWORD=password
@@ -18,7 +21,7 @@ LOG_COLOR=True
 ENABLED_SERVICES=rabbit,mysql,key
 
 # Enable core Designate services
-ENABLED_SERVICES+=,designate,designate-api,designate-central
+ENABLED_SERVICES+=,designate,designate-api,designate-central,designate-mdns
 
 # Optional Designate services
 #ENABLED_SERVICES+=,designate-sink
