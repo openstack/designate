@@ -19,12 +19,22 @@ import logging
 
 import sqlalchemy
 from oslo.db.sqlalchemy import utils
+from oslo.db.sqlalchemy.migration_cli import manager
 
 from designate.i18n import _
 from designate.i18n import _LW
 
 
 LOG = logging.getLogger(__name__)
+
+
+def get_migration_manager(repo_path, url, init_version=None):
+    migration_config = {
+        'migration_repo_path': repo_path,
+        'db_url': url,
+        'init_version': init_version,
+    }
+    return manager.MigrationManager(migration_config)
 
 
 # copy from olso/db/sqlalchemy/utils.py

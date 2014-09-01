@@ -21,13 +21,10 @@ import shutil
 import tempfile
 
 import fixtures
-from migrate.versioning import api as versioning_api
-from migrate.versioning import repository
 from oslotest import base
 from oslo.config import cfg
 from oslo.messaging import conffixture as messaging_fixture
 from oslo.messaging.notify import _impl_test as test_notifier
-import sqlalchemy
 from testtools import testcase
 
 from designate.openstack.common import log as logging
@@ -41,6 +38,8 @@ from designate import exceptions
 from designate.network_api import fake as fake_network_api
 from designate import network_api
 from designate import objects
+from designate.manage import database as manage_database
+from designate.sqlalchemy import utils as sqlalchemy_utils
 
 LOG = logging.getLogger(__name__)
 
@@ -95,9 +94,10 @@ class DatabaseFixture(fixtures.Fixture):
     fixtures = {}
 
     @staticmethod
-    def get_fixture(repo_path):
+    def get_fixture(repo_path, init_version=None):
         if repo_path not in DatabaseFixture.fixtures:
-            DatabaseFixture.fixtures[repo_path] = DatabaseFixture(repo_path)
+            DatabaseFixture.fixtures[repo_path] = DatabaseFixture(
+                repo_path, init_version)
         return DatabaseFixture.fixtures[repo_path]
 
     def _mktemp(self):
@@ -105,13 +105,19 @@ class DatabaseFixture(fixtures.Fixture):
                                    dir='/tmp')
         return path
 
-    def __init__(self, repo_path):
+    def __init__(self, repo_path, init_version=None):
         super(DatabaseFixture, self).__init__()
+
+        # Create the Golden DB
         self.golden_db = self._mktemp()
-        engine = sqlalchemy.create_engine('sqlite:///%s' % self.golden_db)
-        repo = repository.Repository(repo_path)
-        versioning_api.version_control(engine, repository=repo)
-        versioning_api.upgrade(engine, repository=repo)
+        self.golden_url = 'sqlite:///%s' % self.golden_db
+
+        # Migrate the Golden DB
+        manager = sqlalchemy_utils.get_migration_manager(
+            repo_path, self.golden_url, init_version)
+        manager.upgrade(None)
+
+        # Prepare the Working Copy DB
         self.working_copy = self._mktemp()
         self.url = 'sqlite:///%s' % self.working_copy
 
@@ -274,7 +280,8 @@ class TestCase(base.BaseTestCase):
                                                   'impl_sqlalchemy',
                                                   'migrate_repo'))
         self.db_fixture = self.useFixture(
-            DatabaseFixture.get_fixture(REPOSITORY))
+            DatabaseFixture.get_fixture(
+                REPOSITORY, manage_database.INIT_VERSION))
         self.config(
             connection=self.db_fixture.url,
             connection_debug=100,
