@@ -297,24 +297,27 @@ class ApiV1RecordsTest(ApiV1Test):
     def test_get_records(self):
         response = self.get('domains/%s/records' % self.domain['id'])
 
+        # Verify that the SOA & NS records are already created
         self.assertIn('records', response.json)
-        self.assertEqual(0, len(response.json['records']))
+        self.assertEqual(2, len(response.json['records']))
 
         # Create a record
         self.create_record(self.domain, self.recordset)
 
         response = self.get('domains/%s/records' % self.domain['id'])
 
+        # Verify that one more record has been added
         self.assertIn('records', response.json)
-        self.assertEqual(1, len(response.json['records']))
+        self.assertEqual(3, len(response.json['records']))
 
         # Create a second record
         self.create_record(self.domain, self.recordset, fixture=1)
 
         response = self.get('domains/%s/records' % self.domain['id'])
 
+        # Verfiy that all 4 records are there
         self.assertIn('records', response.json)
-        self.assertEqual(2, len(response.json['records']))
+        self.assertEqual(4, len(response.json['records']))
 
     @patch.object(central_service.Service, 'find_records',
                   side_effect=messaging.MessagingTimeout())

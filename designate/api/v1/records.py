@@ -98,6 +98,9 @@ def create_record(domain_id):
 
     record_schema.validate(values)
 
+    if values['type'] == 'SOA':
+        raise exceptions.BadRequest('SOA records cannot be manually created.')
+
     recordset = _find_or_create_recordset(context,
                                           domain_id,
                                           values['name'],
@@ -181,6 +184,10 @@ def update_record(domain_id, record_id):
     recordset = get_central_api().get_recordset(
         context, domain_id, record.recordset_id)
 
+    # Cannot manually update a SOA record
+    if recordset['type'] == 'SOA':
+        raise exceptions.BadRequest('SOA records cannot be manually updated.')
+
     # Prepare a dict of fields for validation
     record_data = record_schema.filter(_format_record_v1(record, recordset))
     record_data.update(values)
@@ -224,6 +231,12 @@ def delete_record(domain_id, record_id):
     # Find the record
     criterion = {'domain_id': domain_id, 'id': record_id}
     record = get_central_api().find_record(context, criterion)
+
+    # SOA records cannot be deleted
+    recordset = get_central_api().get_recordset(context, domain_id,
+                                                record['recordset_id'])
+    if recordset['type'] == 'SOA':
+        raise exceptions.BadRequest('SOA records cannot be manually deleted.')
 
     get_central_api().delete_record(
         context, domain_id, record['recordset_id'], record_id)

@@ -300,6 +300,9 @@ class Service(service.Service):
         with wrap_backend_call():
             self.backend.update_domain(context, domain)
 
+        # Update SOA record
+        self._update_soa(context, domain)
+
         return domain
 
     # Methods to handle priority
@@ -325,6 +328,106 @@ class Service(service.Service):
                         r.data = tail
 
         return recordset
+
+    # SOA Recordset Methods
+    def _build_soa_record(self, zone, servers):
+        return "%s %s. %d %d %d %d %d" % (servers[0]['name'],
+                                          zone['email'].replace("@", "."),
+                                          zone['serial'],
+                                          zone['refresh'],
+                                          zone['retry'],
+                                          zone['expire'],
+                                          zone['minimum'])
+
+    def _create_soa(self, context, zone):
+        # Need elevated context to get the servers
+        elevated_context = context.elevated()
+        elevated_context.all_tenants = True
+        servers = self.find_servers(elevated_context)
+
+        soa_values = [self._build_soa_record(zone, servers)]
+        recordlist = objects.RecordList(objects=[
+            objects.Record(data=r) for r in soa_values])
+        values = {
+            'name': zone['name'],
+            'type': "SOA",
+            'records': recordlist
+        }
+        soa = self.create_recordset(context, zone['id'],
+                                    objects.RecordSet(**values))
+        return soa
+
+    def _update_soa(self, context, zone):
+
+        servers = self.get_domain_servers(context, zone['id'])
+
+        soa = self.find_recordset(context,
+                                  criterion={'domain_id': zone['id'],
+                                             'type': "SOA"})
+
+        new_values = [self._build_soa_record(zone, servers)]
+        recordlist = objects.RecordList(objects=[
+            objects.Record(data=r) for r in new_values])
+
+        soa.records = recordlist
+
+        self.update_recordset(context, soa, increment_serial=False)
+
+    # NS Recordset Methods
+    def _create_ns(self, context, zone, servers):
+        # Create an NS record for each server
+        ns_values = []
+        for s in servers:
+            ns_values.append(s.name)
+        recordlist = objects.RecordList(objects=[
+            objects.Record(data=r) for r in ns_values])
+        values = {
+            'name': zone['name'],
+            'type': "NS",
+            'records': recordlist
+        }
+        ns = self.create_recordset(context, zone['id'],
+                                   objects.RecordSet(**values))
+
+        return ns
+
+    def _update_ns(self, context, zone, orig_name, new_name):
+        # Get the zone's NS recordset
+        ns = self.find_recordset(context,
+                                 criterion={'domain_id': zone['id'],
+                                            'type': "NS"})
+        #
+        for r in ns.records:
+            if r.data == orig_name:
+                r.data = new_name
+                self.update_recordset(context, ns, increment_serial=False)
+
+    def _add_ns(self, context, zone, server):
+        # Get NS recordset
+        ns = self.find_recordset(context,
+                                 criterion={'domain_id': zone['id'],
+                                            'type': "NS"})
+        # Add new record to recordset
+        ns_record = objects.Record(data=server.name)
+        new_record = self.create_record(context, zone['id'],
+                                        ns['id'], ns_record,
+                                        increment_serial=False)
+
+        ns.records.append(new_record)
+
+        self.update_recordset(context, ns, increment_serial=False)
+
+    def _delete_ns(self, context, zone, server):
+        ns = self.find_recordset(context,
+                                 criterion={'domain_id': zone['id'],
+                                            'type': "NS"})
+        records = ns.records
+
+        for r in records:
+            if r.data == server.name:
+                ns.records.remove(r)
+
+        self.update_recordset(context, ns, increment_serial=False)
 
     # Quota Enforcement Methods
     def _enforce_domain_quota(self, context, tenant_id):
@@ -400,6 +503,14 @@ class Service(service.Service):
 
         self.notifier.info(context, 'dns.server.create', created_server)
 
+        # Update NS recordsets for all zones
+        elevated_context = context.elevated()
+        elevated_context.all_tenants = True
+        zones = self.find_domains(elevated_context)
+        # Create a new NS recordset for for every zone
+        for z in zones:
+            self._add_ns(elevated_context, z, server)
+
         return created_server
 
     def find_servers(self, context, criterion=None, marker=None, limit=None,
@@ -420,6 +531,8 @@ class Service(service.Service):
             'server_id': server.obj_get_original_value('id'),
         }
         policy.check('update_server', context, target)
+        orig_server_name = server.obj_get_original_value('name')
+        new_server_name = server.name
 
         server = self.storage.update_server(context, server)
 
@@ -428,6 +541,16 @@ class Service(service.Service):
             self.backend.update_server(context, server)
 
         self.notifier.info(context, 'dns.server.update', server)
+
+        # Update NS recordsets for all zones
+        elevated_context = context.elevated()
+        elevated_context.all_tenants = True
+        zones = self.find_domains(elevated_context)
+        for z in zones:
+            self._update_ns(elevated_context, z, orig_server_name,
+                            new_server_name)
+            # Also Update the SOA recordset
+            self._update_soa(context, z)
 
         return server
 
@@ -442,6 +565,15 @@ class Service(service.Service):
                 "Not allowed to delete last of servers")
 
         server = self.storage.delete_server(context, server_id)
+
+        # Update NS recordsets for all zones
+        elevated_context = context.elevated()
+        elevated_context.all_tenants = True
+        zones = self.find_domains(elevated_context)
+        for z in zones:
+            self._delete_ns(elevated_context, z, server)
+            # Also, update the SOA recordset
+            self._update_soa(context, z)
 
         # Update backend with the new server..
         with wrap_backend_call():
@@ -650,6 +782,10 @@ class Service(service.Service):
             subdomain.parent_domain_id = domain.id
             self.update_domain(context, subdomain)
 
+        # Create the SOA and NS recordsets for the new domain
+        self._create_soa(context, created_domain)
+        self._create_ns(context, created_domain, servers)
+
         return created_domain
 
     def get_domain(self, context, domain_id):
@@ -725,6 +861,7 @@ class Service(service.Service):
         if increment_serial:
             # Increment the serial number
             domain.serial = utils.increment_serial(domain.serial)
+            self._update_soa(context, domain)
 
         domain = self.storage.update_domain(context, domain)
 
@@ -886,7 +1023,7 @@ class Service(service.Service):
         policy.check('find_recordsets', context, target)
 
         recordsets = self.storage.find_recordsets(context, criterion, marker,
-                                            limit, sort_key, sort_dir)
+                                                  limit, sort_key, sort_dir)
 
         # Set the priority for each record
         for rs in recordsets:
