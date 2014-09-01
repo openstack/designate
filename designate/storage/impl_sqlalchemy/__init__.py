@@ -114,6 +114,9 @@ class SQLAlchemyStorage(base.Storage):
                 if isinstance(value, basestring) and '*' in value:
                     queryval = value.replace('*', '%')
                     query = query.where(column.like(queryval))
+                elif isinstance(value, basestring) and value.startswith('!'):
+                    queryval = value[1:]
+                    query = query.where(column != queryval)
                 else:
                     query = query.where(column == value)
 

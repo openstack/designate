@@ -39,6 +39,10 @@ is_service_enabled designate || exit 55
 # Import designate library
 source $TOP_DIR/lib/designate
 
+# NUMBER_OF_RECORDS keeps track of the records we need to get for AXFR
+# We start with 1 to account for the additional SOA at the end
+NUMBER_OF_RECORDS=1
+
 # Testing Servers
 # ===============
 designate server-list
@@ -54,6 +58,7 @@ DOMAIN_NAME="exercise-$(openssl rand -hex 4).com."
 
 # Create the domain
 designate domain-create --name $DOMAIN_NAME --email devstack@example.org
+((NUMBER_OF_RECORDS+=2))
 # should have SOA and NS records
 verify_name_type_dns $DOMAIN_NAME SOA $DESIGNATE_TEST_NSREC
 verify_name_type_dns $DOMAIN_NAME NS $DESIGNATE_TEST_NSREC
@@ -74,6 +79,7 @@ A_RECORD_NAME="$(openssl rand -hex 4).${DOMAIN_NAME}"
 
 # Create an A record
 designate record-create $DOMAIN_ID --name $A_RECORD_NAME --type A --data 127.0.0.1
+((NUMBER_OF_RECORDS++))
 A_RECORD_ID=$(get_record_id $DOMAIN_ID $A_RECORD_NAME A)
 
 # Fetch the record
@@ -89,6 +95,7 @@ AAAA_RECORD_NAME="$(openssl rand -hex 4).${DOMAIN_NAME}"
 
 # Create an AAAA record
 designate record-create $DOMAIN_ID --name $AAAA_RECORD_NAME --type AAAA --data "2607:f0d0:1002:51::4"
+((NUMBER_OF_RECORDS++))
 AAAA_RECORD_ID=$(get_record_id $DOMAIN_ID $AAAA_RECORD_NAME AAAA)
 
 # Fetch the record
@@ -101,6 +108,7 @@ verify_name_type_dns $AAAA_RECORD_NAME AAAA 2607:f0d0:1002:51::4
 
 # Create a MX record
 designate record-create $DOMAIN_ID --name $DOMAIN_NAME --type MX --priority 5 --data "mail.example.com."
+((NUMBER_OF_RECORDS++))
 MX_RECORD_ID=$(get_record_id $DOMAIN_ID $DOMAIN_NAME MX)
 
 # Fetch the record
@@ -113,6 +121,7 @@ verify_name_type_dns $DOMAIN_NAME MX "5 mail.example.com."
 
 # Create a SRV record
 designate record-create $DOMAIN_ID --name _sip._tcp.$DOMAIN_NAME --type SRV --priority 10 --data "5 5060 sip.example.com."
+((NUMBER_OF_RECORDS++))
 SRV_RECORD_ID=$(get_record_id $DOMAIN_ID _sip._tcp.$DOMAIN_NAME SRV)
 
 # Fetch the record
@@ -128,6 +137,7 @@ CNAME_RECORD_NAME="$(openssl rand -hex 4).${DOMAIN_NAME}"
 
 # Create a CNAME record
 designate record-create $DOMAIN_ID --name $CNAME_RECORD_NAME --type CNAME --data $DOMAIN_NAME
+((NUMBER_OF_RECORDS++))
 CNAME_RECORD_ID=$(get_record_id $DOMAIN_ID $CNAME_RECORD_NAME CNAME)
 
 # Fetch the record
@@ -140,6 +150,9 @@ verify_name_type_dns $CNAME_RECORD_NAME CNAME $DOMAIN_NAME
 
 # List Records
 designate record-list $DOMAIN_ID
+
+# Send an AXFR to MDNS and check for the records returned
+verify_axfr_in_mdns $DOMAIN_NAME $NUMBER_OF_RECORDS
 
 # -----
 

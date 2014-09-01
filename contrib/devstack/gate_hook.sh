@@ -3,6 +3,7 @@
 set -ex
 
 export KEEP_LOCALRC=1
+export ENABLED_SERVICES=designate,designate-api,designate-central,designate-sink,designate-mdns
 
 # Prepare some localrc values
 pushd $BASE/new/devstack
