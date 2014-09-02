@@ -210,7 +210,8 @@ def get_server(target, endpoints, serializer=None):
 
 def get_listener(targets, endpoints, serializer=None):
     assert TRANSPORT is not None
-    serializer = RequestContextSerializer(serializer)
+    if serializer is None:
+        serializer = JsonPayloadSerializer()
     return messaging.get_notification_listener(TRANSPORT,
                                                targets,
                                                endpoints,
