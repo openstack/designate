@@ -18,6 +18,7 @@ import copy
 import random
 
 import testtools
+from testtools.matchers import GreaterThan
 
 from designate.openstack.common import log as logging
 from designate import exceptions
@@ -985,6 +986,7 @@ class CentralServiceTest(CentralTestCase):
     # RecordSet Tests
     def test_create_recordset(self):
         domain = self.create_domain()
+        original_serial = domain.serial
 
         # Create the Object
         recordset = objects.RecordSet(name='www.%s' % domain.name, type='A')
@@ -993,15 +995,24 @@ class CentralServiceTest(CentralTestCase):
         recordset = self.central_service.create_recordset(
             self.admin_context, domain.id, recordset=recordset)
 
+        # Get the zone again to check if serial increased
+        updated_domain = self.central_service.get_domain(self.admin_context,
+                                                         domain.id)
+        new_serial = updated_domain.serial
+
         # Ensure all values have been set correctly
         self.assertIsNotNone(recordset.id)
         self.assertEqual('www.%s' % domain.name, recordset.name)
         self.assertEqual('A', recordset.type)
 
         self.assertIsNotNone(recordset.records)
+        # The serial number does not get updated is there are no records
+        # in the recordset
+        self.assertEqual(new_serial, original_serial)
 
     def test_create_recordset_with_records(self):
         domain = self.create_domain()
+        original_serial = domain.serial
 
         # Create the Object
         recordset = objects.RecordSet(
@@ -1017,11 +1028,17 @@ class CentralServiceTest(CentralTestCase):
         recordset = self.central_service.create_recordset(
             self.admin_context, domain.id, recordset=recordset)
 
+        # Get updated serial number
+        updated_zone = self.central_service.get_domain(self.admin_context,
+                                                       domain.id)
+        new_serial = updated_zone.serial
+
         # Ensure all values have been set correctly
         self.assertIsNotNone(recordset.records)
         self.assertEqual(2, len(recordset.records))
         self.assertIsNotNone(recordset.records[0].id)
         self.assertIsNotNone(recordset.records[1].id)
+        self.assertThat(new_serial, GreaterThan(original_serial))
 
     # def test_create_recordset_over_quota(self):
     #     self.config(quota_domain_recordsets=1)
@@ -1228,6 +1245,7 @@ class CentralServiceTest(CentralTestCase):
     def test_update_recordset(self):
         # Create a domain
         domain = self.create_domain()
+        original_serial = domain.serial
 
         # Create a recordset
         recordset = self.create_recordset(domain)
@@ -1238,12 +1256,18 @@ class CentralServiceTest(CentralTestCase):
         # Perform the update
         self.central_service.update_recordset(self.admin_context, recordset)
 
+        # Get domain again to verify that serial number was updated
+        updated_domain = self.central_service.get_domain(self.admin_context,
+                                                         domain.id)
+        new_serial = updated_domain.serial
+
         # Fetch the resource again
         recordset = self.central_service.get_recordset(
             self.admin_context, recordset.domain_id, recordset.id)
 
         # Ensure the new value took
         self.assertEqual(recordset.ttl, 1800)
+        self.assertThat(new_serial, GreaterThan(original_serial))
 
     def test_update_recordset_with_record_create(self):
         # Create a domain
@@ -1271,6 +1295,7 @@ class CentralServiceTest(CentralTestCase):
     def test_update_recordset_with_record_delete(self):
         # Create a domain
         domain = self.create_domain()
+        original_serial = domain.serial
 
         # Create a recordset and two records
         recordset = self.create_recordset(domain)
@@ -1291,9 +1316,15 @@ class CentralServiceTest(CentralTestCase):
         recordset = self.central_service.get_recordset(
             self.admin_context, domain.id, recordset.id)
 
+        # Fetch the Domain again
+        updated_domain = self.central_service.get_domain(self.admin_context,
+                                                         domain.id)
+        new_serial = updated_domain.serial
+
         # Ensure two Records are attached to the RecordSet correctly
         self.assertEqual(1, len(recordset.records))
         self.assertIsNotNone(recordset.records[0].id)
+        self.assertThat(new_serial, GreaterThan(original_serial))
 
     def test_update_recordset_with_record_update(self):
         # Create a domain
@@ -1377,6 +1408,7 @@ class CentralServiceTest(CentralTestCase):
 
     def test_delete_recordset(self):
         domain = self.create_domain()
+        original_serial = domain.serial
 
         # Create a recordset
         recordset = self.create_recordset(domain)
@@ -1389,6 +1421,12 @@ class CentralServiceTest(CentralTestCase):
         with testtools.ExpectedException(exceptions.RecordSetNotFound):
             self.central_service.get_recordset(
                 self.admin_context, domain['id'], recordset['id'])
+
+        # Fetch the domain again to verify serial number increased
+        updated_domain = self.central_service.get_domain(self.admin_context,
+                                                         domain.id)
+        new_serial = updated_domain.serial
+        self.assertThat(new_serial, GreaterThan(original_serial))
 
     def test_delete_recordset_without_incrementing_serial(self):
         domain = self.create_domain()
@@ -2237,6 +2275,7 @@ class CentralServiceTest(CentralTestCase):
 
         # Create a zone
         zone = self.create_domain(name='example3.net.')
+        original_serial = zone.serial
 
         # Make sure an NS recordset was created
         ns_rs = self.central_service.find_recordset(
@@ -2261,6 +2300,13 @@ class CentralServiceTest(CentralTestCase):
             self.admin_context,
             criterion={'domain_id': zone['id'], 'type': "NS"})
 
+        # Get zone again to check serial number
+        updated_zone = self.central_service.get_domain(self.admin_context,
+                                                       zone.id)
+
+        new_serial = updated_zone.serial
+
         # Ensure another record was added to the recordset
         self.assertEqual(ns_rs.records[0].data, server1.name)
         self.assertEqual(ns_rs.records[2].data, server2.name)
+        self.assertThat(new_serial, GreaterThan(original_serial))
