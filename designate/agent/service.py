@@ -17,7 +17,6 @@ from oslo.config import cfg
 
 from designate.openstack.common import log as logging
 from designate import backend
-from designate import rpc
 from designate import service
 from designate.central import rpcapi as central_rpcapi
 
@@ -27,9 +26,8 @@ LOG = logging.getLogger(__name__)
 
 class Service(service.Service):
     def __init__(self, *args, **kwargs):
-        # NOTE: Central api needs a transport if not it fails. This is
-        # normally done by the service init method.
-        rpc.init(cfg.CONF)
+        super(Service, self).__init__(*args, **kwargs)
+
         central_api = central_rpcapi.CentralAPI()
 
         endpoint = backend.get_backend(
@@ -37,5 +35,3 @@ class Service(service.Service):
             central_service=central_api)
 
         kwargs['endpoints'] = [endpoint]
-
-        super(Service, self).__init__(*args, **kwargs)
