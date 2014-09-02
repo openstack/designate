@@ -17,10 +17,10 @@ import os
 
 from migrate.versioning import api as versioning_api
 from oslo.config import cfg
-from oslo.db.sqlalchemy.migration_cli import manager as migration_manager
 
 from designate.openstack.common import log as logging
 from designate.manage import base
+from designate.sqlalchemy import utils
 
 
 LOG = logging.getLogger(__name__)
@@ -32,13 +32,12 @@ cfg.CONF.import_opt('connection', 'designate.storage.impl_sqlalchemy',
                     group='storage:sqlalchemy')
 
 CONF = cfg.CONF
+INIT_VERSION = 37
 
 
 def get_manager():
-    migration_config = {
-        'migration_repo_path': REPOSITORY,
-        'db_url': CONF['storage:sqlalchemy'].connection}
-    return migration_manager.MigrationManager(migration_config)
+    return utils.get_migration_manager(
+        REPOSITORY, CONF['storage:sqlalchemy'].connection, INIT_VERSION)
 
 
 class DatabaseCommands(base.Commands):

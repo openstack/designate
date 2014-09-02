@@ -1,4 +1,4 @@
-# Copyright 2013 Hewlett-Packard Development Company, L.P.
+# Copyright 2014 Hewlett-Packard Development Company, L.P.
 #
 # Author: Kiall Mac Innes <kiall@hp.com>
 #
@@ -13,20 +13,25 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from sqlalchemy import MetaData, Table, String
+from sqlalchemy import Text
+from sqlalchemy.schema import Table, MetaData
+
 
 meta = MetaData()
+
+
+# No downgrade possible - MySQL may have performed an implicit conversion from
+# text -> mediumtext depending on the particular deployments server-wide
+# default charset during migration 21's conversion to utf-8.
 
 
 def upgrade(migrate_engine):
     meta.bind = migrate_engine
 
-    domains_table = Table('domains', meta, autoload=True)
-    domains_table.c.email.alter(type=String(255))
+    if migrate_engine.name == "mysql":
+        records_table = Table('records', meta, autoload=True)
+        records_table.c.data.alter(type=Text())
 
 
 def downgrade(migrate_engine):
-    meta.bind = migrate_engine
-
-    domains_table = Table('domains', meta, autoload=True)
-    domains_table.c.email.alter(type=String(36))
+    pass

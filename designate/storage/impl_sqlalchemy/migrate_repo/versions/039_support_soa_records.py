@@ -54,7 +54,7 @@ def upgrade(migrate_engine):
                     'PTR', 'SSHFP', 'SOA']
 
     recordsets_table = Table('recordsets', meta, autoload=True)
-    recordsets_table.c.type.alter(type=Enum(name='record_types',
+    recordsets_table.c.type.alter(type=Enum(name='recordset_types',
                                             *RECORD_TYPES))
 
     # Re-add constraint for sqlite
