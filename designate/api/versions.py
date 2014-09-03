@@ -22,22 +22,31 @@ def factory(global_config, **local_conf):
 
     versions = []
 
-    if cfg.CONF['service:api'].enable_api_v1:
+    base = cfg.CONF['service:api'].api_base_uri.rstrip('/')
+
+    def _version(version, status):
         versions.append({
-            "id": "v1",
-            "status": "CURRENT"
+            'id': 'v%s' % version,
+            'status': status,
+            'links': [{
+                'href': base + '/v' + version,
+                'rel': 'self'
+            }]
         })
 
+    if cfg.CONF['service:api'].enable_api_v1:
+        _version('1', 'CURRENT')
+
     if cfg.CONF['service:api'].enable_api_v2:
-        versions.append({
-            "id": "v2",
-            "status": "EXPERIMENTAL"
-        })
+        _version('2', 'EXPERIMENTAL')
 
     @app.route('/', methods=['GET'])
     def version_list():
+
         return flask.jsonify({
-            "versions": versions
+            "versions": {
+                "values": versions
+            }
         })
 
     return app
