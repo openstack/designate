@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: designate 2014.2.dev56.g6ffbc75\n"
+"Project-Id-Version: designate 2014.2.dev78.g9392e91\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-08-19 06:21+0000\n"
+"POT-Creation-Date: 2014-09-03 06:07+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -77,19 +77,19 @@ msgid ""
 "%(server)s:%(port)d"
 msgstr ""
 
-#: designate/mdns/service.py:77
+#: designate/mdns/service.py:113
 #, python-format
 msgid "Handling TCP Request from: %(host)s:%(port)d"
 msgstr ""
 
-#: designate/mdns/service.py:87
+#: designate/mdns/service.py:123
 #, python-format
 msgid ""
 "got a packet with unexpected length from %(host)s:%(port)d. Expected "
 "length=%(elen)d. Actual length=%(alen)d."
 msgstr ""
 
-#: designate/mdns/service.py:102
+#: designate/mdns/service.py:138
 #, python-format
 msgid "Handling UDP Request from: %(host)s:%(port)d"
 msgstr ""
@@ -112,18 +112,7 @@ msgstr ""
 msgid "No designate-sink handlers enabled or loaded"
 msgstr ""
 
-#: designate/sqlalchemy/utils.py:36
+#: designate/sqlalchemy/utils.py:46
 msgid "Id not in sort_keys; is sort_keys unique?"
-msgstr ""
-
-#: designate/storage/impl_sqlalchemy/migrate_repo/versions/012_add_serial_col.py:40
-msgid ""
-"A sync-domains is now required in order for the API provided, and backend"
-" provided serial numbers to align"
-msgstr ""
-
-#: designate/storage/impl_sqlalchemy/migrate_repo/versions/015_add_unique_record_constraint.py:61
-#, python-format
-msgid "Domain '%s' needs to be synchronised"
 msgstr ""
 
