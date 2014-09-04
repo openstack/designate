@@ -2,12 +2,12 @@
 
 Designate is an OpenStack inspired DNSaaS.
 
-Docs: http://designate.readthedocs.org and some below for now.
-Bugs / Blueprints: http://launchpad.net/moniker
+Docs: http://docs.openstack.org/developer/designate and some below for now.
+Bugs / Blueprints: http://launchpad.net/designate
 
 IRC: #openstack-dns
 
-Installation: http://designate.readthedocs.org/en/latest/getting-started.html
+Installation: http://docs.openstack.org/developer/designate/getting-started.html
 
 # Development
 Designate follows the [OpenStack Gerrit Workflow](https://wiki.openstack.org/wiki/Gerrit_Workflow)
@@ -32,7 +32,7 @@ pip install -r requirements.txt
 sphinx-build  source/ html/
 ````
 now point your browser at html/index.html
-(the official documentation is published to [readthedocs](http://designate.readthedocs.org/en/latest/index.html) by the
+(the official documentation is published to [docs.openstack.org](http://docs.openstack.org/developer/designate) by the
 maintainers.
 
 
