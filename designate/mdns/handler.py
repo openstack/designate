@@ -53,16 +53,15 @@ class RequestHandler(object):
                 response = self._handle_record_query(context, request)
         else:
             # Unhandled OpCode's include STATUS, IQUERY, NOTIFY, UPDATE
-            response = self._handle_query_error(
-                context, request, dns.rcode.REFUSED)
+            response = self._handle_query_error(request, dns.rcode.REFUSED)
 
         return response
 
-    def _handle_query_error(self, context, request, rcode):
+    def _handle_query_error(self, request, rcode):
         """
         Construct an error response with the rcode passed in.
         :param request: The decoded request from the wire.
-        :param rcode: The response code to send back
+        :param rcode: The response code to send back.
         :return: A dns response message with the response code set to rcode
         """
         response = dns.message.make_response(request)
