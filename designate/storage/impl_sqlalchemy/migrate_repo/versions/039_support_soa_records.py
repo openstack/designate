@@ -164,10 +164,10 @@ def downgrade(migrate_engine):
     recordsets_table = Table('recordsets', meta, autoload=True)
 
     # Delete all SOA records
-    recordsets_table.filter_by(type='SOA').delete()
+    recordsets_table.delete().where(recordsets_table.c.type == 'SOA').execute()
 
     # Remove SOA from the ENUM
-    recordsets_table.c.type.alter(type=Enum(name='record_types',
+    recordsets_table.c.type.alter(type=Enum(name='recordset_types',
                                             *RECORD_TYPES))
 
     # Re-add the constraint for sqlite
