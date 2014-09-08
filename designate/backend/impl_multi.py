@@ -19,7 +19,6 @@ import logging
 from oslo.config import cfg
 
 from designate import backend
-from designate import exceptions
 from designate.backend import base
 from designate.openstack.common import excutils
 
@@ -80,7 +79,7 @@ class MultiBackend(base.Backend):
         self.master.create_tsigkey(context, tsigkey)
         try:
             self.slave.create_tsigkey(context, tsigkey)
-        except (exceptions.Base, exceptions.Backend):
+        except Exception:
             with excutils.save_and_reraise_exception():
                 self.master.delete_tsigkey(context, tsigkey)
 
@@ -91,7 +90,7 @@ class MultiBackend(base.Backend):
         self.slave.delete_tsigkey(context, tsigkey)
         try:
             self.master.delete_tsigkey(context, tsigkey)
-        except (exceptions.Base, exceptions.Backend):
+        except Exception:
             with excutils.save_and_reraise_exception():
                 self.slave.create_tsigkey(context, tsigkey)
 
@@ -99,7 +98,7 @@ class MultiBackend(base.Backend):
         self.master.create_domain(context, domain)
         try:
             self.slave.create_domain(context, domain)
-        except (exceptions.Base, exceptions.Backend):
+        except Exception:
             with excutils.save_and_reraise_exception():
                 self.master.delete_domain(context, domain)
 
@@ -115,7 +114,7 @@ class MultiBackend(base.Backend):
         self.slave.delete_domain(context, domain)
         try:
             self.master.delete_domain(context, domain)
-        except (exceptions.Base, exceptions.Backend):
+        except Exception:
             with excutils.save_and_reraise_exception():
                 self.slave.create_domain(context, domain)
 
@@ -127,7 +126,7 @@ class MultiBackend(base.Backend):
         self.master.create_server(context, server)
         try:
             self.slave.create_server(context, server)
-        except (exceptions.Base, exceptions.Backend):
+        except Exception:
             with excutils.save_and_reraise_exception():
                 self.master.delete_server(context, server)
 
@@ -138,7 +137,7 @@ class MultiBackend(base.Backend):
         self.slave.delete_server(context, server)
         try:
             self.master.delete_server(context, server)
-        except (exceptions.Base, exceptions.Backend):
+        except Exception:
             with excutils.save_and_reraise_exception():
                 self.slave.create_server(context, server)
 
