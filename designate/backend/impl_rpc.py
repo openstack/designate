@@ -49,6 +49,9 @@ class RPCBackend(base.Backend):
     def delete_domain(self, context, domain):
         return self.agent_api.delete_domain(context, domain)
 
+    def create_recordset(self, context, domain, recordset):
+        return self.agent_api.create_recordset(context, domain, recordset)
+
     def update_recordset(self, context, domain, recordset):
         return self.agent_api.update_recordset(context, domain, recordset)
 

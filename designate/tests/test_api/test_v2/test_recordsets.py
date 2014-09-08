@@ -173,8 +173,8 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         data = [self.create_recordset(self.domain,
                 name='x-%s.%s' % (i, self.domain['name']))
                 for i in xrange(0, 10)]
-        data.insert(0, ns)
         data.insert(0, soa)
+        data.insert(0, ns)
 
         self._assert_paging(data, url, key='recordsets')
 
