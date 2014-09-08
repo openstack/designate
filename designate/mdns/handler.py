@@ -158,7 +158,8 @@ class RequestHandler(object):
             # validate the parameters
             criterion = {
                 'name': q_rrset.name.to_text(),
-                'type': dns.rdatatype.to_text(q_rrset.rdtype)
+                'type': dns.rdatatype.to_text(q_rrset.rdtype),
+                'domains_deleted': False
             }
             recordset = self.storage.find_recordset(context, criterion)
             r_rrset = self._convert_to_rrset(context, recordset)

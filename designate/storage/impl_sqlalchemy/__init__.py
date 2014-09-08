@@ -163,12 +163,13 @@ class SQLAlchemyStorage(base.Storage):
 
     def _find(self, context, table, cls, list_cls, exc_notfound, criterion,
               one=False, marker=None, limit=None, sort_key=None,
-              sort_dir=None):
+              sort_dir=None, query=None):
         sort_key = sort_key or 'created_at'
         sort_dir = sort_dir or 'asc'
 
         # Build the query
-        query = select([table])
+        if query is None:
+            query = select([table])
         query = self._apply_criterion(table, query, criterion)
         query = self._apply_tenant_criteria(context, table, query)
         query = self._apply_deleted_criteria(context, table, query)
@@ -542,10 +543,23 @@ class SQLAlchemyStorage(base.Storage):
     # RecordSet Methods
     def _find_recordsets(self, context, criterion, one=False, marker=None,
                          limit=None, sort_key=None, sort_dir=None):
+        query = None
+        if criterion is not None \
+                and not criterion.get('domains_deleted', True):
+            # Ensure that we return only active recordsets
+            rjoin = tables.recordsets.join(
+                tables.domains,
+                tables.recordsets.c.domain_id == tables.domains.c.id)
+            query = select([tables.recordsets]).select_from(rjoin).\
+                where(tables.domains.c.deleted == '0')
+
+            # remove 'domains_deleted' from the criterion, as _apply_criterion
+            # assumes each key in criterion to be a column name.
+            del criterion['domains_deleted']
         return self._find(
             context, tables.recordsets, objects.RecordSet,
             objects.RecordSetList, exceptions.RecordSetNotFound, criterion,
-            one, marker, limit, sort_key, sort_dir)
+            one, marker, limit, sort_key, sort_dir, query)
 
     def create_recordset(self, context, domain_id, recordset):
         # Fetch the domain as we need the tenant_id
