@@ -24,7 +24,7 @@ from designate.central import rpcapi as central_rpcapi
 LOG = logging.getLogger(__name__)
 
 
-class Service(service.Service):
+class Service(service.RPCService):
     def __init__(self, *args, **kwargs):
         super(Service, self).__init__(*args, **kwargs)
 

@@ -32,10 +32,11 @@ LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
 
 
-class Service(service.Service):
+class Service(service.RPCService):
     def __init__(self, *args, **kwargs):
         notify_endpoint = notify.NotifyEndpoint()
         kwargs['endpoints'] = [notify_endpoint]
+
         super(Service, self).__init__(*args, **kwargs)
 
         # Create an instance of the RequestHandler class

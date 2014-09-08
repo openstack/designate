@@ -18,10 +18,10 @@ from oslo.config import cfg
 from oslo import messaging
 
 from designate.openstack.common import log as logging
-from designate.openstack.common import service
 from designate.i18n import _LW
 from designate import notification_handler
 from designate import rpc
+from designate import service
 
 
 LOG = logging.getLogger(__name__)
@@ -30,8 +30,6 @@ LOG = logging.getLogger(__name__)
 class Service(service.Service):
     def __init__(self, *args, **kwargs):
         super(Service, self).__init__(*args, **kwargs)
-
-        rpc.init(cfg.CONF)
 
         # Initialize extensions
         self.handlers = self._init_extensions()
