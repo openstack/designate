@@ -22,6 +22,7 @@ from oslo.config import cfg
 
 from designate.openstack.common import service
 from designate.openstack.common import log as logging
+from designate.openstack.deprecated import wsgi
 from designate.i18n import _
 from designate import rpc
 from designate import policy
@@ -125,6 +126,28 @@ class RPCService(Service):
                 e.wait()
 
         super(RPCService, self).wait()
+
+
+class WSGIService(wsgi.Service, Service):
+    """
+    Service class to be shared by all Designate WSGI Services
+    """
+    def __init__(self, application, port, host='0.0.0.0', backlog=4096,
+                 threads=1000):
+        # NOTE(kiall): We avoid calling super(cls, self) here, as our parent
+        #              classes have different argspecs. Additionally, if we
+        #              manually call both parent's __init__, the openstack
+        #              common Service class's __init__ method will be called
+        #              twice. As a result, we only call the designate base
+        #              Service's __init__ method, and duplicate the
+        #              wsgi.Service's constructor functionality here.
+        #
+        Service.__init__(self, threads)
+
+        self.application = application
+        self._port = port
+        self._host = host
+        self._backlog = backlog if backlog else CONF.backlog
 
 
 _launcher = None

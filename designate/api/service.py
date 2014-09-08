@@ -18,15 +18,15 @@ from oslo.config import cfg
 
 from designate.openstack.common import log as logging
 from designate.i18n import _LI
-from designate.openstack.deprecated import wsgi
 from designate import exceptions
 from designate import utils
+from designate import service
 
 
 LOG = logging.getLogger(__name__)
 
 
-class Service(wsgi.Service):
+class Service(service.WSGIService):
     def __init__(self, backlog=128, threads=1000):
 
         api_paste_config = cfg.CONF['service:api'].api_paste_config
