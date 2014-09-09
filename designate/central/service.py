@@ -69,7 +69,7 @@ def transaction(f):
     return wrapper
 
 
-class Service(service.Service):
+class Service(service.RPCService):
     RPC_API_VERSION = '4.0'
 
     target = messaging.Target(version=RPC_API_VERSION)
