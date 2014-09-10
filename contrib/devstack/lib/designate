@@ -241,33 +241,22 @@ function configure_designate() {
 # ------------------------------------------------------------------
 # service              designate  admin        # if enabled
 function create_designate_accounts() {
-
-    SERVICE_TENANT=$(openstack project list | awk "/ $SERVICE_TENANT_NAME / { print \$2 }")
-    ADMIN_ROLE=$(openstack role list | awk "/ admin / { print \$2 }")
+    local service_tenant=$(openstack project list | awk "/ $SERVICE_TENANT_NAME / { print \$2 }")
+    local admin_role=$(openstack role list | awk "/ admin / { print \$2 }")
 
     if [[ "$ENABLED_SERVICES" =~ "designate-api" ]]; then
-        DESIGNATE_USER=$(openstack user create \
-            designate \
-            --password "$SERVICE_PASSWORD" \
-            --project $SERVICE_TENANT \
-            --email designate@example.com \
-            | grep " id " | get_field 2)
-        openstack role add \
-            $ADMIN_ROLE \
-            --project $SERVICE_TENANT \
-            --user $DESIGNATE_USER
+        local designate_user=$(get_or_create_user "designate" \
+            "$SERVICE_PASSWORD" $service_tenant)
+        get_or_add_user_role $admin_role $designate_user $service_tenant
+
         if [[ "$KEYSTONE_CATALOG_BACKEND" = 'sql' ]]; then
-            DESIGNATE_SERVICE=$(openstack service create \
-                designate \
-                --type=dns \
-                --description="Designate DNS Service" \
-                | grep " id " | get_field 2)
-             openstack endpoint create \
-                $DESIGNATE_SERVICE \
-                --region RegionOne \
-                --publicurl "$DESIGNATE_SERVICE_PROTOCOL://$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT/" \
-                --adminurl "$DESIGNATE_SERVICE_PROTOCOL://$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT/" \
-                --internalurl "$DESIGNATE_SERVICE_PROTOCOL://$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT/"
+            local designate_service=$(get_or_create_service "designate" \
+                "dns" "Designate DNS Service")
+            get_or_create_endpoint $designate_service \
+                "$REGION_NAME" \
+                "$DESIGNATE_SERVICE_PROTOCOL://$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT/" \
+                "$DESIGNATE_SERVICE_PROTOCOL://$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT/" \
+                "$DESIGNATE_SERVICE_PROTOCOL://$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT/"
         fi
     fi
 }
