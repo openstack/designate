@@ -53,6 +53,10 @@ class RecordSetsController(rest.RestController):
         request = pecan.request
         context = request.environ['context']
 
+        # NOTE: We need to ensure the domain actually exists, otherwise we may
+        #       return deleted recordsets instead of a domain not found
+        self.central_api.get_domain(context, zone_id)
+
         # Extract the pagination params
         marker, limit, sort_key, sort_dir = self._get_paging_params(params)
 
