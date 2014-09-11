@@ -102,8 +102,8 @@ function verify_axfr_in_mdns {
     dig $DESIGNATE_DIG_AXFR_FLAGS "$1"
     if dig $DESIGNATE_DIG_AXFR_FLAGS "$1"; then
         if [ -n "$2" ] ; then
-            local AXFR_RECORDS=$(dig $DESIGNATE_DIG_AXFR_FLAGS "$1" | grep "$1" | wc -l)
-            if [ "$AXFR_RECORDS" = "$2" ] ; then
+            local axfr_records=$(dig $DESIGNATE_DIG_AXFR_FLAGS "$1" | grep "$1" | wc -l)
+            if [ "$axfr_records" = "$2" ] ; then
                 return 0
             else
                 die $LINENO "Error: AXFR to MDNS did not return the expected number of records"
@@ -118,25 +118,25 @@ function verify_axfr_in_mdns {
 # get the domain id (uuid) given the domain name
 # if REQUIRED is set, die with an error if name not found
 function get_domain_id {
-    local DOMAIN_NAME=$1
-    local REQUIRED=$2
-    local DOMAIN_ID=$(designate domain-list | egrep " $DOMAIN_NAME " | get_field 1)
-    if [ "$REQUIRED" = "1" ] ; then
-        die_if_not_set $LINENO DOMAIN_ID "Failure retrieving DOMAIN_ID"
+    local domain_name=$1
+    local required=$2
+    local domain_id=$(designate domain-list | egrep " $domain_name " | get_field 1)
+    if [ "$required" = "1" ] ; then
+        die_if_not_set $LINENO domain_id "Failure retrieving DOMAIN_ID"
     fi
-    echo "$DOMAIN_ID"
+    echo "$domain_id"
 }
 
 
 # get the domain_name given the id
-function get_domain_name() {
+function get_domain_name {
     designate domain-list | grep "$1" | get_field 2
 }
 
 # if the given domain does not exist, it will be created
 # the domain_id of the domain will be returned
-function get_or_create_domain_id() {
-    domainid=$(get_domain_id "$1")
+function get_or_create_domain_id {
+    local domainid=$(get_domain_id "$1")
     if [[ -z "$domainid" ]]; then
         designate domain-create --name $1 --email admin@devstack.org --ttl 86400 --description "domain $1" 1>&2
         domainid=$(designate domain-list | grep "$1" | get_field 1)
@@ -147,26 +147,26 @@ function get_or_create_domain_id() {
 # get the record id (uuid) given the record name and domain id
 # if REQUIRED is set, die with an error if name not found
 function get_record_id {
-    local DOMAIN_ID=$1
-    local RECORD_NAME=$2
-    local RECORD_TYPE=$3
-    local REQUIRED=$4
-    local RECORD_ID=$(designate record-list $DOMAIN_ID | egrep " $RECORD_NAME " | egrep " $RECORD_TYPE " | get_field 1)
-    if [ "$REQUIRED" = "1" ] ; then
-        die_if_not_set $LINENO RECORD_ID "Failure retrieving RECORD_ID"
+    local domain_id=$1
+    local record_name=$2
+    local record_type=$3
+    local required=$4
+    local record_id=$(designate record-list $domain_id | egrep " $record_name " | egrep " $record_type " | get_field 1)
+    if [ "$required" = "1" ] ; then
+        die_if_not_set $LINENO record_id "Failure retrieving RECORD_ID"
     fi
-    echo "$RECORD_ID"
+    echo "$record_id"
 }
 
-# cleanup_designate() - Remove residual data files, anything left over from previous
+# cleanup_designate - Remove residual data files, anything left over from previous
 # runs that a clean run would need to clean up
-function cleanup_designate() {
+function cleanup_designate {
     sudo rm -rf $DESIGNATE_STATE_PATH $DESIGNATE_AUTH_CACHE_DIR
     cleanup_designate_backend
 }
 
-# configure_designate() - Set config files, create data dirs, etc
-function configure_designate() {
+# configure_designate - Set config files, create data dirs, etc
+function configure_designate {
     [ ! -d $DESIGNATE_CONF_DIR ] && sudo mkdir -m 755 -p $DESIGNATE_CONF_DIR
     sudo chown $STACK_USER $DESIGNATE_CONF_DIR
 
@@ -235,12 +235,12 @@ function configure_designate() {
     configure_designate_backend
 }
 
-# create_designate_accounts() - Set up common required designate accounts
+# create_designate_accounts - Set up common required designate accounts
 
 # Tenant               User       Roles
 # ------------------------------------------------------------------
 # service              designate  admin        # if enabled
-function create_designate_accounts() {
+function create_designate_accounts {
     local service_tenant=$(openstack project list | awk "/ $SERVICE_TENANT_NAME / { print \$2 }")
     local admin_role=$(openstack role list | awk "/ admin / { print \$2 }")
 
@@ -261,13 +261,13 @@ function create_designate_accounts() {
     fi
 }
 
-function create_designate_initial_resources() {
+function create_designate_initial_resources {
     #ADMIN_TENANT_ID=$(keystone tenant-list | grep " admin " | get_field 1)
     designate server-create --name $DESIGNATE_TEST_NSREC
 }
 
-# init_designate() - Initialize etc.
-function init_designate() {
+# init_designate - Initialize etc.
+function init_designate {
     # Create cache dir
     sudo mkdir -p $DESIGNATE_AUTH_CACHE_DIR
     sudo chown $STACK_USER $DESIGNATE_AUTH_CACHE_DIR
@@ -282,8 +282,8 @@ function init_designate() {
     init_designate_backend
 }
 
-# install_designate() - Collect source and prepare
-function install_designate() {
+# install_designate - Collect source and prepare
+function install_designate {
     if is_fedora; then
         # This package provides `dig`
         install_package bind-utils
@@ -295,14 +295,14 @@ function install_designate() {
     install_designate_backend
 }
 
-# install_designateclient() - Collect source and prepare
-function install_designateclient() {
+# install_designateclient - Collect source and prepare
+function install_designateclient {
     git_clone $DESIGNATECLIENT_REPO $DESIGNATECLIENT_DIR $DESIGNATECLIENT_BRANCH
     setup_develop $DESIGNATECLIENT_DIR
 }
 
-# start_designate() - Start running processes, including screen
-function start_designate() {
+# start_designate - Start running processes, including screen
+function start_designate {
     start_designate_backend
 
     # If using bind9, central must have access to the bind zone/db files.
@@ -329,8 +329,8 @@ function start_designate() {
     fi
 }
 
-# stop_designate() - Stop running processes
-function stop_designate() {
+# stop_designate - Stop running processes
+function stop_designate {
     # Kill the designate screen windows
     screen_stop designate-api
     screen_stop designate-central
