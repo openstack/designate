@@ -1,6 +1,3 @@
-# **** NOTE **** Changes to this file only affect the local vagrant environment
-# and not the gate jobs
-
 # Passwords
 ADMIN_PASSWORD=password
 MYSQL_PASSWORD=password

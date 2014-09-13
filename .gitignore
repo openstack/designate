@@ -26,4 +26,4 @@ designate/versioninfo
 /bind9
 /dnsmasq
 .testrepository/*
-contrib/devstack/.vagrant/
+contrib/vagrant/.vagrant/
