@@ -18,7 +18,7 @@ debug = False
 #logdir = /var/log/designate
 
 # Driver used for issuing notifications
-#notification_driver = designate.openstack.common.notifier.rpc_notifier
+#notification_driver = messaging
 
 # Notification Topics
 #notification_topics = notifications
