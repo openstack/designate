@@ -103,6 +103,7 @@ class MultiBackendTestCase(tests.TestCase, BackendTestMixin):
     def test_delete_domain(self):
         context = self.get_context()
         domain = self.get_domain_fixture()
+        domain['id'] = 'a8aeb2ee-40da-476b-a9d8-26bf0c0065f6'
 
         # Since multi's delete fetches the domain from central to be able to
         # recreate it if something goes wrong, create the domain first

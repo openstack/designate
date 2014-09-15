@@ -106,10 +106,13 @@ class MultiBackend(base.Backend):
         self.master.update_domain(context, domain)
 
     def delete_domain(self, context, domain):
-        # Get the "full" domain (including id) from Central first, as we may
+        # Fetch the full domain from Central first, as we may
         # have to recreate it on slave if delete on master fails
+        deleted_context = context.deepcopy()
+        deleted_context.show_deleted = True
+
         full_domain = self.central.find_domain(
-            context, {'name': domain['name']})
+            deleted_context, {'id': domain['id']})
 
         self.slave.delete_domain(context, domain)
         try:
