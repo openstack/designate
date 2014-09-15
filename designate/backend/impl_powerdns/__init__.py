@@ -367,7 +367,7 @@ class PowerDNSBackend(base.Backend):
             if metadata.content not in values:
                 if delete:
                     LOG.debug('Deleting stale domain metadata: %r' %
-                              tuple([domain_id, kind, metadata.value]))
+                              ([domain_id, kind, metadata.value],))
                     # Delete no longer necessary values
                     metadata.delete(self.session)
             else:
@@ -377,7 +377,7 @@ class PowerDNSBackend(base.Backend):
         # Insert new values
         for value in values:
             LOG.debug('Inserting new domain metadata: %r' %
-                      tuple([domain_id, kind, value]))
+                      ([domain_id, kind, value],))
             m = models.DomainMetadata(domain_id=domain_id, kind=kind,
                                       content=value)
             m.save(self.session)
