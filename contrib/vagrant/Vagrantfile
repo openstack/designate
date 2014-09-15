@@ -43,7 +43,7 @@ cd /opt/stack/designate/contrib/devstack
 
 for f in lib/* extras.d/* exercises/*; do
     if [ ! -f "/home/vagrant/devstack/$f" ]; then
-        ln -fs /vagrant/$f -t /home/vagrant/devstack/$(dirname $f)
+        ln -fs /opt/stack/designate/contrib/devstack/$f -t /home/vagrant/devstack/$(dirname $f)
     fi
 done
 
