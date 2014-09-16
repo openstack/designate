@@ -114,7 +114,7 @@ def load_schema(version, name):
 def load_template(template_name):
     template_string = resource_string('templates', template_name)
 
-    return Template(template_string)
+    return Template(template_string, keep_trailing_newline=True)
 
 
 def render_template(template, **template_context):

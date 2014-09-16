@@ -54,6 +54,11 @@ class TestUtils(TestCase):
 
         self.assertIsInstance(template, Template)
 
+    def test_load_template_keep_trailing_newline(self):
+        name = 'bind9-config.jinja2'
+        template = utils.load_template(name)
+        self.assertTrue(template.environment.keep_trailing_newline)
+
     def test_load_template_missing(self):
         name = 'invalid.jinja2'
 
