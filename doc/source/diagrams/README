@@ -1,9 +1,6 @@
+Summary
+=======
+Dia is the prefered multi-platform tool for drawing images.
 
+Initial Dia files were built using dia (0.97.2-15ubuntu1) and dia-shapes (0.6.0-1)
 
-*.shapes files are from the OSX App Shapes (http://shapesapp.com/)
-
-It's hoped that this diagrams can be replaced by something from a multi-platform tool such as:
-
-* Dia
-* http://sphinx-doc.org/ext/graphviz.html (see http://graphviz.org/content/cluster as a possible example)
-* aafig (https://bitbucket.org/birkenfeld/sphinx-contrib)
