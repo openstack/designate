@@ -1498,3 +1498,154 @@ class StorageTestCase(object):
 
         self.assertEqual(pong['status'], True)
         self.assertIsNotNone(pong['rtt'])
+
+    # TLD Tests
+    def test_create_tld(self):
+        values = {
+            'name': 'com',
+            'description': 'This is a comment.'
+        }
+
+        result = self.storage.create_tld(self.admin_context,
+                                         objects.Tld(**values))
+        self.assertIsNotNone(result['id'])
+        self.assertIsNotNone(result['created_at'])
+        self.assertIsNone(result['updated_at'])
+        self.assertIsNotNone(result['version'])
+        self.assertEqual(result['name'], values['name'])
+        self.assertEqual(result['description'], values['description'])
+
+    def test_create_tld_with_duplicate(self):
+        # Create the First Tld
+        self.create_tld(fixture=0)
+
+        with testtools.ExpectedException(exceptions.DuplicateTld):
+            # Attempt to create the second/duplicate Tld
+            self.create_tld(fixture=0)
+
+    def test_find_tlds(self):
+
+        actual = self.storage.find_tlds(self.admin_context)
+        self.assertEqual(0, len(actual))
+
+        # Create a single Tld
+        tld = self.create_tld(fixture=0)
+
+        actual = self.storage.find_tlds(self.admin_context)
+        self.assertEqual(1, len(actual))
+
+        self.assertEqual(tld['name'], actual[0]['name'])
+        self.assertEqual(tld['description'], actual[0]['description'])
+
+    def test_find_tlds_paging(self):
+        # Create 10 Tlds
+        created = [self.create_tld(name='org%d' % i)
+                   for i in xrange(10)]
+
+        # Ensure we can page through the results.
+        self._ensure_paging(created, self.storage.find_tlds)
+
+    def test_find_tlds_with_criterion(self):
+        tld_one = self.create_tld(fixture=0)
+        tld_two = self.create_tld(fixture=1)
+
+        criterion_one = dict(name=tld_one['name'])
+
+        results = self.storage.find_tlds(self.admin_context,
+                                         criterion_one)
+        self.assertEqual(len(results), 1)
+
+        self.assertEqual(results[0]['name'], tld_one['name'])
+
+        criterion_two = dict(name=tld_two['name'])
+
+        results = self.storage.find_tlds(self.admin_context,
+                                         criterion_two)
+        self.assertEqual(len(results), 1)
+
+        self.assertEqual(results[0]['name'], tld_two['name'])
+
+    def test_get_tld(self):
+        # Create a tld
+        expected = self.create_tld()
+        actual = self.storage.get_tld(self.admin_context, expected['id'])
+
+        self.assertEqual(actual['name'], expected['name'])
+
+    def test_get_tld_missing(self):
+        with testtools.ExpectedException(exceptions.TldNotFound):
+            uuid = '4c8e7f82-3519-4bf7-8940-a66a4480f223'
+            self.storage.get_tld(self.admin_context, uuid)
+
+    def test_find_tld_criterion(self):
+        # Create two tlds
+        tld_one = self.create_tld(fixture=0)
+        tld_two = self.create_tld(fixture=1)
+
+        criterion = dict(name=tld_one['name'])
+
+        # Find tld_one using its name as criterion
+        result = self.storage.find_tld(self.admin_context, criterion)
+
+        # Assert names match
+        self.assertEqual(result['name'], tld_one['name'])
+
+        # Repeat with tld_two
+        criterion = dict(name=tld_two['name'])
+
+        result = self.storage.find_tld(self.admin_context, criterion)
+
+        self.assertEqual(result['name'], tld_two['name'])
+
+    def test_find_tld_criterion_missing(self):
+        expected = self.create_tld()
+
+        criterion = dict(name=expected['name'] + "NOT FOUND")
+
+        with testtools.ExpectedException(exceptions.TldNotFound):
+            self.storage.find_tld(self.admin_context, criterion)
+
+    def test_update_tld(self):
+        # Create a tld
+        tld = self.create_tld(name='net')
+
+        # Update the tld
+        tld.name = 'org'
+
+        # Update storage
+        tld = self.storage.update_tld(self.admin_context, tld)
+
+        # Verify the new value
+        self.assertEqual('org', tld.name)
+
+    def test_update_tld_duplicate(self):
+        # Create two tlds
+        tld_one = self.create_tld(fixture=0)
+        tld_two = self.create_tld(fixture=1)
+
+        # Update tld_two to be a duplicate of tld_ond
+        tld_two.name = tld_one.name
+
+        with testtools.ExpectedException(exceptions.DuplicateTld):
+            self.storage.update_tld(self.admin_context, tld_two)
+
+    def test_update_tld_missing(self):
+        tld = objects.Tld(id='486f9cbe-b8b6-4d8c-8275-1a6e47b13e00')
+        with testtools.ExpectedException(exceptions.TldNotFound):
+            self.storage.update_tld(self.admin_context, tld)
+
+    def test_delete_tld(self):
+        # Create a tld
+        tld = self.create_tld()
+
+        # Delete the tld
+        self.storage.delete_tld(self.admin_context, tld['id'])
+
+        # Verify that it's deleted
+        with testtools.ExpectedException(exceptions.TldNotFound):
+            self.storage.get_tld(self.admin_context, tld['id'])
+
+    def test_delete_tld_missing(self):
+        with testtools.ExpectedException(exceptions.TldNotFound):
+            uuid = 'cac1fc02-79b2-4e62-a1a4-427b6790bbe6'
+            self.storage.delete_tld(self.admin_context, uuid)
