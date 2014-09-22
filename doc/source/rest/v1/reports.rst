@@ -56,7 +56,10 @@ Get all tenants
       Content-Type: application/json
 
       {
-        "tenants": ["3d8391080d4a4ec4b3eadf18e6b1539a"]
+        "tenants": [{
+            "domain_count": 2,
+            "id": "71ee6d049a49435c8f7dd002cfe08d96"
+        }]
       }
 
    :form tenants: List of tenants
@@ -66,7 +69,7 @@ Get all tenants
 Report tenant resources
 -----------------------
 
-.. http:get:: /reports/(tenant_id)
+.. http:get:: /reports/tenants/(tenant_id)
 
    Report tenant resources
 
@@ -74,7 +77,7 @@ Report tenant resources
 
    .. sourcecode:: http
 
-      GET /reports/3d8391080d4a4ec4b3eadf18e6b1539a HTTP/1.1
+      GET /reports/tenants/3d8391080d4a4ec4b3eadf18e6b1539a HTTP/1.1
       Host: example.com
       Accept: application/json
 
