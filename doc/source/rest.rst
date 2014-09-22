@@ -12,6 +12,10 @@ V1 API
        rest/v1/servers
        rest/v1/domains
        rest/v1/records
+       rest/v1/diagnostics
+       rest/v1/quotas
+       rest/v1/reports
+       rest/v1/sync
 
 V2 API
 -----------------------
