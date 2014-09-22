@@ -1649,3 +1649,149 @@ class StorageTestCase(object):
         with testtools.ExpectedException(exceptions.TldNotFound):
             uuid = 'cac1fc02-79b2-4e62-a1a4-427b6790bbe6'
             self.storage.delete_tld(self.admin_context, uuid)
+
+    # Blacklist tests
+    def test_create_blacklist(self):
+        values = {
+            'pattern': "^([A-Za-z0-9_\\-]+\\.)*example\\.com\\.$",
+            'description': "This is a comment."
+        }
+
+        result = self.storage.create_blacklist(
+            self.admin_context, blacklist=objects.Blacklist(**values)
+        )
+
+        self.assertIsNotNone(result['id'])
+        self.assertIsNotNone(result['created_at'])
+        self.assertIsNotNone(result['version'])
+        self.assertIsNone(result['updated_at'])
+
+        self.assertEqual(result['pattern'], values['pattern'])
+        self.assertEqual(result['description'], values['description'])
+
+    def test_create_blacklist_duplicate(self):
+        # Create the initial Blacklist
+        self.create_blacklist(fixture=0)
+
+        with testtools.ExpectedException(exceptions.DuplicateBlacklist):
+            self.create_blacklist(fixture=0)
+
+    def test_find_blacklists(self):
+        # Verify that there are no blacklists created
+        actual = self.storage.find_blacklists(self.admin_context)
+        self.assertEqual(0, len(actual))
+
+        # Create a Blacklist
+        blacklist = self.create_blacklist(fixture=0)
+
+        actual = self.storage.find_blacklists(self.admin_context)
+        self.assertEqual(1, len(actual))
+
+        self.assertEqual(blacklist['pattern'], actual[0]['pattern'])
+
+    def test_find_blacklists_paging(self):
+        # Create 10 Blacklists
+        created = [self.create_blacklist(pattern='^example-%d.org.' % i)
+                   for i in xrange(10)]
+
+        # Ensure we can page through the results.
+        self._ensure_paging(created, self.storage.find_blacklists)
+
+    def test_find_blacklists_with_criterion(self):
+        # Create two blacklists
+        blacklist_one = self.create_blacklist(fixture=0)
+        blacklist_two = self.create_blacklist(fixture=1)
+
+        # Verify blacklist_one
+        criterion = dict(pattern=blacklist_one['pattern'])
+
+        results = self.storage.find_blacklists(self.admin_context,
+                                               criterion)
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]['pattern'], blacklist_one['pattern'])
+
+        # Verify blacklist_two
+        criterion = dict(pattern=blacklist_two['pattern'])
+
+        results = self.storage.find_blacklists(self.admin_context,
+                                               criterion)
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]['pattern'], blacklist_two['pattern'])
+
+    def test_get_blacklist(self):
+        expected = self.create_blacklist(fixture=0)
+        actual = self.storage.get_blacklist(self.admin_context, expected['id'])
+
+        self.assertEqual(actual['pattern'], expected['pattern'])
+
+    def test_get_blacklist_missing(self):
+        with testtools.ExpectedException(exceptions.BlacklistNotFound):
+            uuid = '2c102ffd-7146-4b4e-ad62-b530ee0873fb'
+            self.storage.get_blacklist(self.admin_context, uuid)
+
+    def test_find_blacklist_criterion(self):
+        blacklist_one = self.create_blacklist(fixture=0)
+        blacklist_two = self.create_blacklist(fixture=1)
+
+        criterion = dict(pattern=blacklist_one['pattern'])
+
+        result = self.storage.find_blacklist(self.admin_context, criterion)
+
+        self.assertEqual(result['pattern'], blacklist_one['pattern'])
+
+        criterion = dict(pattern=blacklist_two['pattern'])
+
+        result = self.storage.find_blacklist(self.admin_context, criterion)
+
+        self.assertEqual(result['pattern'], blacklist_two['pattern'])
+
+    def test_find_blacklist_criterion_missing(self):
+        expected = self.create_blacklist(fixture=0)
+
+        criterion = dict(pattern=expected['pattern'] + "NOT FOUND")
+
+        with testtools.ExpectedException(exceptions.BlacklistNotFound):
+            self.storage.find_blacklist(self.admin_context, criterion)
+
+    def test_update_blacklist(self):
+        blacklist = self.create_blacklist(pattern='^example.uk.')
+
+        # Update the blacklist
+        blacklist.pattern = '^example.uk.co.'
+
+        blacklist = self.storage.update_blacklist(self.admin_context,
+                                                  blacklist)
+        # Verify the new values
+        self.assertEqual('^example.uk.co.', blacklist.pattern)
+
+    def test_update_blacklist_duplicate(self):
+        # Create two blacklists
+        blacklist_one = self.create_blacklist(fixture=0)
+        blacklist_two = self.create_blacklist(fixture=1)
+
+        # Update the second one to be a duplicate of the first
+        blacklist_two.pattern = blacklist_one.pattern
+
+        with testtools.ExpectedException(exceptions.DuplicateBlacklist):
+            self.storage.update_blacklist(self.admin_context,
+                                          blacklist_two)
+
+    def test_update_blacklist_missing(self):
+        blacklist = objects.Blacklist(
+            id='e8cee063-3a26-42d6-b181-bdbdc2c99d08')
+
+        with testtools.ExpectedException(exceptions.BlacklistNotFound):
+            self.storage.update_blacklist(self.admin_context, blacklist)
+
+    def test_delete_blacklist(self):
+        blacklist = self.create_blacklist(fixture=0)
+
+        self.storage.delete_blacklist(self.admin_context, blacklist['id'])
+
+        with testtools.ExpectedException(exceptions.BlacklistNotFound):
+            self.storage.get_blacklist(self.admin_context, blacklist['id'])
+
+    def test_delete_blacklist_missing(self):
+        with testtools.ExpectedException(exceptions.BlacklistNotFound):
+            uuid = '97f57960-f41b-4e93-8e22-8fd6c7e2c183'
+            self.storage.delete_blacklist(self.admin_context, uuid)
