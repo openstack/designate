@@ -907,8 +907,8 @@ class StorageTestCase(object):
         ns = self.storage.find_recordset(self.admin_context,
                                          criterion={'domain_id': domain['id'],
                                                     'type': "NS"})
-        created.insert(0, ns)
         created.insert(0, soa)
+        created.insert(0, ns)
 
         # Ensure we can page through the results.
         self._ensure_paging(created, self.storage.find_recordsets)

@@ -778,9 +778,11 @@ class Service(service.RPCService):
             subdomain.parent_domain_id = domain.id
             self.update_domain(context, subdomain)
 
-        # Create the SOA and NS recordsets for the new domain
-        self._create_soa(context, created_domain)
+        # Create the NS and SOA recordsets for the new domain. SOA must be
+        # last, in order to ensure BIND etc do not read the zone file before
+        # all changes have been committed to the zone file.
         self._create_ns(context, created_domain, servers)
+        self._create_soa(context, created_domain)
 
         return created_domain
 
@@ -857,12 +859,15 @@ class Service(service.RPCService):
         if increment_serial:
             # Increment the serial number
             domain.serial = utils.increment_serial(domain.serial)
-            self._update_soa(context, domain)
 
         domain = self.storage.update_domain(context, domain)
 
         with wrap_backend_call():
             self.backend.update_domain(context, domain)
+
+        if increment_serial:
+            # Update the SOA Record
+            self._update_soa(context, domain)
 
         self.notifier.info(context, 'dns.domain.update', domain)
         self.mdns_api.notify_zone_changed(context, domain.name)

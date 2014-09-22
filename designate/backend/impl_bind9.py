@@ -16,10 +16,12 @@
 import os
 import glob
 import shutil
+import time
 
 from oslo.config import cfg
 
 from designate.openstack.common import log as logging
+from designate.openstack.common import lockutils
 from designate.i18n import _LW
 from designate import utils
 from designate.backend import base
@@ -68,18 +70,6 @@ class Bind9Backend(base.Backend):
                 else:
                     raise proc_exec_err
 
-    def create_server(self, context, server):
-        LOG.debug('Create Server')
-        self._sync_domains_on_server_change()
-
-    def update_server(self, context, server):
-        LOG.debug('Update Server')
-        self._sync_domains_on_server_change()
-
-    def delete_server(self, context, server):
-        LOG.debug('Delete Server')
-        self._sync_domains_on_server_change()
-
     def create_domain(self, context, domain):
         LOG.debug('Create Domain')
         self._sync_domain(domain, new_domain_flag=True)
@@ -91,6 +81,10 @@ class Bind9Backend(base.Backend):
     def delete_domain(self, context, domain):
         LOG.debug('Delete Domain')
         self._sync_delete_domain(domain)
+
+    def create_recordset(self, context, domain, recordset):
+        LOG.debug('Create RecordSet')
+        self._sync_domain(domain)
 
     def update_recordset(self, context, domain, recordset):
         LOG.debug('Update RecordSet')
@@ -157,74 +151,73 @@ class Bind9Backend(base.Backend):
 
     def _sync_domain(self, domain, new_domain_flag=False):
         """Sync a single domain's zone file and reload bind config"""
-        LOG.debug('Synchronising Domain: %s' % domain['id'])
 
-        servers = self.central_service.find_servers(self.admin_context)
+        # NOTE: Only one thread should be working with the Zonefile at a given
+        #       time. The sleep(1) below introduces a not insignificant risk
+        #       of more than 1 thread working with a zonefile at a given time.
+        with lockutils.lock('bind9-%s' % domain['id']):
+            LOG.debug('Synchronising Domain: %s' % domain['id'])
 
-        recordsets = self.central_service.find_recordsets(
-            self.admin_context, {'domain_id': domain['id']})
+            recordsets = self.central_service.find_recordsets(
+                self.admin_context, {'domain_id': domain['id']})
 
-        records = []
+            records = []
 
-        for recordset in recordsets:
-            criterion = {
-                'domain_id': domain['id'],
-                'recordset_id': recordset['id']
-            }
+            for recordset in recordsets:
+                criterion = {
+                    'domain_id': domain['id'],
+                    'recordset_id': recordset['id']
+                }
 
-            raw_records = self.central_service.find_records(
-                self.admin_context, criterion)
+                raw_records = self.central_service.find_records(
+                    self.admin_context, criterion)
 
-            for record in raw_records:
-                records.append({
-                    'name': recordset['name'],
-                    'type': recordset['type'],
-                    'ttl': recordset['ttl'],
-                    'priority': record['priority'],
-                    'data': record['data'],
-                })
+                for record in raw_records:
+                    records.append({
+                        'name': recordset['name'],
+                        'type': recordset['type'],
+                        'ttl': recordset['ttl'],
+                        'priority': record['priority'],
+                        'data': record['data'],
+                    })
 
-        output_folder = os.path.join(os.path.abspath(cfg.CONF.state_path),
-                                     'bind9')
+            output_folder = os.path.join(os.path.abspath(cfg.CONF.state_path),
+                                         'bind9')
 
-        output_path = os.path.join(output_folder, '%s.zone' %
-                                   "_".join([domain['name'], domain['id']]))
+            output_name = "_".join([domain['name'], domain['id']])
+            output_path = os.path.join(output_folder, '%s.zone' % output_name)
 
-        utils.render_template_to_file('bind9-zone.jinja2',
-                                      output_path,
-                                      servers=servers,
-                                      domain=domain,
-                                      records=records)
+            utils.render_template_to_file('bind9-zone.jinja2',
+                                          output_path,
+                                          domain=domain,
+                                          records=records)
 
-        rndc_call = self._rndc_base()
+            rndc_call = self._rndc_base()
 
-        if new_domain_flag:
-            rndc_op = [
-                'addzone',
-                '%s { type master; file "%s"; };' % (domain['name'],
-                                                     output_path),
-            ]
-            rndc_call.extend(rndc_op)
-        else:
-            rndc_op = 'reload'
-            rndc_call.extend([rndc_op])
-            rndc_call.extend([domain['name']])
+            if new_domain_flag:
+                rndc_op = [
+                    'addzone',
+                    '%s { type master; file "%s"; };' % (domain['name'],
+                                                         output_path),
+                ]
+                rndc_call.extend(rndc_op)
+            else:
+                rndc_op = 'reload'
+                rndc_call.extend([rndc_op])
+                rndc_call.extend([domain['name']])
 
-        LOG.debug('Calling RNDC with: %s' % " ".join(rndc_call))
-        utils.execute(*rndc_call)
+            if not new_domain_flag:
+                # NOTE: Bind9 will only ever attempt to re-read a zonefile if
+                #       the file's timestamp has changed since the previous
+                #       reload. A one second sleep ensures we cross over a
+                #       second boundary before allowing the next change.
+                time.sleep(1)
 
-        nzf_name = glob.glob('%s/*.nzf' % cfg.CONF[self.name].nzf_path)
+            LOG.debug('Calling RNDC with: %s' % " ".join(rndc_call))
+            utils.execute(*rndc_call)
 
-        output_file = os.path.join(output_folder, 'zones.config')
+            nzf_name = glob.glob('%s/*.nzf' % cfg.CONF[self.name].nzf_path)
 
-        shutil.copyfile(nzf_name[0], output_file)
+            output_file = os.path.join(output_folder, 'zones.config')
 
-    def _sync_domains_on_server_change(self):
-        # TODO(eankutse): Improve this so it scales. Need to design
-        # for it in the new Pool Manager/Agent for the backend that is
-        # being proposed
-        LOG.debug('Synchronising domains on server change')
-
-        domains = self.central_service.find_domains(self.admin_context)
-        for domain in domains:
-            self._sync_domain(domain)
+            shutil.copyfile(nzf_name[0], output_file)

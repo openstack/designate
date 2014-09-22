@@ -211,15 +211,6 @@ class IPABackend(base.Backend):
         self.ntries = cfg.CONF[self.name].ipa_connect_retries
         self.force = cfg.CONF[self.name].ipa_force_ns_use
 
-    def create_server(self, context, server):
-        LOG.debug('Discarding create_server call, not-applicable')
-
-    def update_server(self, context, server):
-        LOG.debug('Discarding update_server call, not-applicable')
-
-    def delete_server(self, context, server):
-        LOG.debug('Discarding delete_server call, not-applicable')
-
     def create_domain(self, context, domain):
         LOG.debug('Create Domain %r' % domain)
         ipareq = {'method': 'dnszone_add', 'id': 0}

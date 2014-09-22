@@ -382,6 +382,9 @@ class DynECTBackend(base.Backend):
                 raise
         client.logout()
 
+    def create_recordset(self, context, domain, recordset):
+        LOG.debug('Discarding create_recordset call, not-applicable')
+
     def update_recordset(self, context, domain, recordset):
         LOG.debug('Discarding update_recordset call, not-applicable')
 
@@ -396,12 +399,3 @@ class DynECTBackend(base.Backend):
 
     def delete_record(self, context, domain, recordset, record):
         LOG.debug('Discarding delete_record call, not-applicable')
-
-    def create_server(self, context, server):
-        LOG.debug('Discarding create_server call, not-applicable')
-
-    def update_server(self, context, server):
-        LOG.debug('Discarding update_server call, not-applicable')
-
-    def delete_server(self, context, server):
-        LOG.debug('Discarding delete_server call, not-applicable')

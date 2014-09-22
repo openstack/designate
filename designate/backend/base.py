@@ -57,6 +57,15 @@ class Backend(DriverPlugin):
         raise exceptions.NotImplemented(
             'TSIG is not supported by this backend')
 
+    def create_server(self, context, server):
+        """Create a Server"""
+
+    def update_server(self, context, server):
+        """Update a Server"""
+
+    def delete_server(self, context, server):
+        """Delete a Server"""
+
     @abc.abstractmethod
     def create_domain(self, context, domain):
         """Create a DNS domain"""
@@ -69,6 +78,7 @@ class Backend(DriverPlugin):
     def delete_domain(self, context, domain):
         """Delete a DNS domain"""
 
+    @abc.abstractmethod
     def create_recordset(self, context, domain, recordset):
         """Create a DNS recordset"""
 
@@ -91,18 +101,6 @@ class Backend(DriverPlugin):
     @abc.abstractmethod
     def delete_record(self, context, domain, recordset, record):
         """Delete a DNS record"""
-
-    @abc.abstractmethod
-    def create_server(self, context, server):
-        """Create a DNS server"""
-
-    @abc.abstractmethod
-    def update_server(self, context, server):
-        """Update a DNS server"""
-
-    @abc.abstractmethod
-    def delete_server(self, context, server):
-        """Delete a DNS server"""
 
     def sync_domain(self, context, domain, rdata):
         """

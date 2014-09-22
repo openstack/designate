@@ -1,19 +1,27 @@
 $ORIGIN {{ domain.name }}
 $TTL {{ domain.ttl }}
 
-{{ domain.name }} IN SOA {{ servers[0].name }} {{ domain.email | replace("@", ".") }}. (
-    {{ domain.serial }} ; serial
-    {{ domain.refresh }} ; refresh
-    {{ domain.retry }} ; retry
-    {{ domain.expire }} ; expire
-    {{ domain.minimum }} ; minimum
-)
-
-{% for server in servers %}
-{{domain.name}} IN NS {{server.name}}
-{%- endfor %}
-
-{% for record in records %}
+{% for record in records -%}
 {{record.name}} {{record.ttl or ''}} IN {{record.type}} {{record.priority or ''}} {{record.data}}
-{%- endfor %}
+{% else %}
+
+{# Since the zone is created before the NS/SOA records are, we need to "fool" bind
+  into accepting the `rndc addzone` call. By placing dummy data here, the call passes
+  and the NS/SOA records will be added moments later. The end result, from BINDs
+  point of view is:
+
+  Sep  8 14:58:45 named[1725]: received control channel command 'addzone new-zone-test.com. { type master; file "/opt/stack/data/designate/bind9/new-zone-test.com._f6afe0a3-aa12-4045-888d-70e776528653.zone"; };'
+  Sep  8 14:58:45 named[1725]: zone new-zone-test.com/IN: loaded serial 1
+  Sep  8 14:58:45 named[1725]: zone new-zone-test.com. added to view _default via addzone
+  Sep  8 14:58:45 named[1725]: zone new-zone-test.com/IN: sending notifies (serial 1)
+  Sep  8 14:58:45 named[1725]: received control channel command 'reload new-zone-test.com.'
+  Sep  8 14:58:45 named[1725]: zone new-zone-test.com/IN: has no NS records
+  Sep  8 14:58:45 named[1725]: zone new-zone-test.com/IN: not loaded due to errors.
+  Sep  8 14:58:45 named[1725]: received control channel command 'reload new-zone-test.com.'
+  Sep  8 14:58:45 named[1725]: zone new-zone-test.com/IN: loaded serial 1410188324
+#}
+
+{{domain.name}} 10 IN SOA provisioning.example.com. provisioning.example.com. 1 5 10 600 10
+{{domain.name}} 10 IN NS  provisioning.example.com.
+{% endfor %}
 

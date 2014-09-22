@@ -95,23 +95,6 @@ class PowerDNSBackendTestCase(tests.TestCase, BackendTestMixin):
         self.backend.create_tsigkey(context, tsigkey)
         self.backend.delete_tsigkey(context, tsigkey)
 
-    def test_create_server(self):
-        context = self.get_context()
-        server = self.get_server_fixture()
-        self.backend.create_server(context, server)
-
-    def test_update_server(self):
-        context = self.get_context()
-        server = self.get_server_fixture()
-        self.backend.create_server(context, server)
-        self.backend.update_server(context, server)
-
-    def test_delete_server(self):
-        context = self.get_context()
-        server = self.get_server_fixture()
-        self.backend.create_server(context, server)
-        self.backend.delete_server(context, server)
-
     def test_create_domain(self):
         context = self.get_context()
         server = self.get_server_fixture()
