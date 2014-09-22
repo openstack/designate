@@ -180,13 +180,13 @@ def update_record(domain_id, record_id):
     criterion = {'domain_id': domain_id, 'id': record_id}
     record = get_central_api().find_record(context, criterion)
 
+    # Cannot update a managed record via the API.
+    if record['managed'] is True:
+        raise exceptions.BadRequest('Managed records may not be updated')
+
     # Find the associated recordset
     recordset = get_central_api().get_recordset(
         context, domain_id, record.recordset_id)
-
-    # Cannot manually update a SOA record
-    if recordset['type'] == 'SOA':
-        raise exceptions.BadRequest('SOA records cannot be manually updated.')
 
     # Prepare a dict of fields for validation
     record_data = record_schema.filter(_format_record_v1(record, recordset))
@@ -232,11 +232,9 @@ def delete_record(domain_id, record_id):
     criterion = {'domain_id': domain_id, 'id': record_id}
     record = get_central_api().find_record(context, criterion)
 
-    # SOA records cannot be deleted
-    recordset = get_central_api().get_recordset(context, domain_id,
-                                                record['recordset_id'])
-    if recordset['type'] == 'SOA':
-        raise exceptions.BadRequest('SOA records cannot be manually deleted.')
+    # Cannot delete a managed record via the API.
+    if record['managed'] is True:
+        raise exceptions.BadRequest('Managed records may not be deleted')
 
     get_central_api().delete_record(
         context, domain_id, record['recordset_id'], record_id)
