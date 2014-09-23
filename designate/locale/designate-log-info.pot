@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: designate 2014.2.dev271.g9552ccc\n"
+"Project-Id-Version: designate 2014.2.dev64.g22436ff\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-07-25 06:08+0000\n"
+"POT-Creation-Date: 2014-09-23 06:04+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -22,38 +22,43 @@ msgstr ""
 msgid "Using policy_file found at: %s"
 msgstr ""
 
-#: designate/api/middleware.py:54
+#: designate/api/middleware.py:53
 #, python-format
 msgid "Getting auth pipeline: %s"
 msgstr ""
 
-#: designate/api/middleware.py:97
+#: designate/api/middleware.py:93
 msgid "Starting designate keystonecontext middleware"
 msgstr ""
 
-#: designate/api/middleware.py:130
+#: designate/api/middleware.py:126
 msgid "Starting designate noauthcontext middleware"
 msgstr ""
 
-#: designate/api/middleware.py:171
+#: designate/api/middleware.py:167
 msgid "Starting designate maintenance middleware"
 msgstr ""
 
-#: designate/api/middleware.py:205
+#: designate/api/middleware.py:201
 msgid "Starting designate faultwrapper middleware"
 msgstr ""
 
-#: designate/api/service.py:40
+#: designate/api/service.py:39
 #, python-format
 msgid "Using api-paste-config found at: %s"
 msgstr ""
 
-#: designate/backend/impl_dynect.py:333
+#: designate/backend/impl_dynect.py:336
 #, python-format
 msgid "Creating domain %(d_id)s / %(d_name)s"
 msgstr ""
 
-#: designate/backend/impl_dynect.py:356
+#: designate/backend/impl_dynect.py:355
+#, python-format
+msgid "Domain already exists, updating existing domain instead %s"
+msgstr ""
+
+#: designate/backend/impl_dynect.py:369
 #, python-format
 msgid "Deleting domain %(d_id)s / %(d_name)s"
 msgstr ""
@@ -383,15 +388,15 @@ msgstr ""
 msgid "delete_blacklist: Calling central's delete blacklist."
 msgstr ""
 
-#: designate/central/service.py:99
+#: designate/central/service.py:97
 msgid "Checking for TLDs"
 msgstr ""
 
-#: designate/central/service.py:102
+#: designate/central/service.py:100
 msgid "NOT checking for TLDs"
 msgstr ""
 
-#: designate/central/service.py:1372
+#: designate/central/service.py:1602
 #, python-format
 msgid "Creating zone for %(fip_id)s:%(region)s - %(fip_addr)s zone %(zonename)s"
 msgstr ""
@@ -427,31 +432,41 @@ msgid ""
 "'%(zone_name)s'"
 msgstr ""
 
-#: designate/mdns/service.py:43
+#: designate/mdns/service.py:52
 #, python-format
 msgid "Opening TCP Listening Socket on %(host)s:%(port)d"
 msgstr ""
 
-#: designate/mdns/service.py:54
+#: designate/mdns/service.py:63
 #, python-format
 msgid "Opening UDP Listening Socket on %(host)s:%(port)d"
 msgstr ""
 
-#: designate/mdns/service.py:66
+#: designate/mdns/service.py:75
 msgid "started mdns service"
 msgstr ""
 
-#: designate/mdns/service.py:74
+#: designate/mdns/service.py:111
 msgid "_handle_tcp thread started"
 msgstr ""
 
-#: designate/mdns/service.py:97
+#: designate/mdns/service.py:134
 msgid "_handle_udp thread started"
 msgstr ""
 
 #: designate/openstack/common/eventlet_backdoor.py:140
 #, python-format
 msgid "Eventlet backdoor listening on %(port)s for process %(pid)d"
+msgstr ""
+
+#: designate/openstack/common/lockutils.py:82
+#, python-format
+msgid "Created lock path: %s"
+msgstr ""
+
+#: designate/openstack/common/lockutils.py:194
+#, python-format
+msgid "Failed to remove file %(file)s"
 msgstr ""
 
 #: designate/openstack/common/service.py:176

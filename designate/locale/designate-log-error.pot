@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: designate 2014.2.dev73.g806846c\n"
+"Project-Id-Version: designate 2014.2.dev64.g22436ff\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-09-02 06:10+0000\n"
+"POT-Creation-Date: 2014-09-23 06:04+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,7 +21,7 @@ msgstr ""
 msgid "Missing context in request, please check."
 msgstr ""
 
-#: designate/backend/impl_ipa/__init__.py:407
+#: designate/backend/impl_ipa/__init__.py:398
 msgid ""
 "Error: could not authenticate to IPA - please check for correct keytab "
 "file"
@@ -44,17 +44,17 @@ msgid ""
 "%s"
 msgstr ""
 
-#: designate/mdns/handler.py:119
+#: designate/mdns/handler.py:118
 #, python-format
 msgid "got exception while handling axfr request. Question is %(qr)s"
 msgstr ""
 
-#: designate/mdns/service.py:91
+#: designate/mdns/service.py:92
 #, python-format
 msgid "Failed to deserialize packet from %(host)s:%(port)d"
 msgstr ""
 
-#: designate/mdns/service.py:177
+#: designate/mdns/service.py:178
 #, python-format
 msgid "Unhandled exception while processing request from %(host)s:%(port)d"
 msgstr ""
@@ -72,6 +72,11 @@ msgstr ""
 #: designate/openstack/common/excutils.py:105
 #, python-format
 msgid "Unexpected exception occurred %d time(s)... retrying."
+msgstr ""
+
+#: designate/openstack/common/lockutils.py:117
+#, python-format
+msgid "Could not release the acquired lock `%s`"
 msgstr ""
 
 #: designate/openstack/common/loopingcall.py:95
