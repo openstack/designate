@@ -62,5 +62,3 @@ class NovaFixedHandler(BaseAddressHandler):
         elif event_type == 'compute.instance.delete.start':
             self._delete(resource_id=payload['instance_id'],
                          resource_type='instance')
-        else:
-            raise ValueError('NovaFixedHandler received an invalid event type')
