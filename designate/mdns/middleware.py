@@ -48,7 +48,7 @@ class ContextMiddleware(Middleware):
     request
 
     This will be replaced with a piece of middleware which generates, from
-    a TSIG signed request, an approperiate Request Context.
+    a TSIG signed request, an appropriate Request Context.
     """
     def process_request(self, request):
         ctxt = context.DesignateContext.get_admin_context(all_tenants=True)

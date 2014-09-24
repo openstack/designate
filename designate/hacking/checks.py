@@ -82,8 +82,8 @@ def no_import_graduated_oslo_libraries(logical_line, filename):
     After a library graduates from oslo-incubator, as we make the switch, we
     should ensure we don't continue to use the oslo-incubator versions.
 
-    In many cases, it's not possible to immediatly remove the code from the
-    openstack/common folder due to dependancy issues.
+    In many cases, it's not possible to immediately remove the code from the
+    openstack/common folder due to dependency issues.
     """
     # We can't modify oslo-incubator code, so ignore it here.
     if "designate/openstack/common" in filename:

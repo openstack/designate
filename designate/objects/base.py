@@ -364,7 +364,7 @@ class PersistentObjectMixin(object):
     """
     Mixin class for Persistent objects.
 
-    This adds the fields that we use in common for all persisent objects.
+    This adds the fields that we use in common for all persistent objects.
     """
     FIELDS = ['id', 'created_at', 'updated_at', 'version']
 

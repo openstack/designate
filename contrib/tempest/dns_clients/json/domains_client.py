@@ -49,7 +49,7 @@ class DomainsClientJSON(rest_client.RestClient):
         return resp, body
 
     def create_domain(self, name, email, **kwargs):
-        """Createa a domain."""
+        """Creates a domain."""
         post_body = {
             "name": name,
             "email": email

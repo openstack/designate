@@ -51,7 +51,7 @@ class RecordsClientJSON(rest_client.RestClient):
         return resp, body
 
     def create_record(self, domain_id, name, type, data, **kwargs):
-        """Createa a record."""
+        """Creates a record."""
         post_body = {
             "name": name,
             "type": type,

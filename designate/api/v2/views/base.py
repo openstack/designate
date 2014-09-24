@@ -27,7 +27,7 @@ CONF = cfg.CONF
 
 class BaseView(object):
     """
-    The Views are responsible for coverting to/from the "intenal" and
+    The Views are responsible for coverting to/from the "internal" and
     "external" representations of collections and resources. This includes
     adding "links" and adding/removing any other wrappers returned/received
     as part of the API call.
