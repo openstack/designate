@@ -347,7 +347,7 @@ class Service(service.RPCService):
 
         soa_values = [self._build_soa_record(zone, servers)]
         recordlist = objects.RecordList(objects=[
-            objects.Record(data=r) for r in soa_values])
+            objects.Record(data=r, managed=True) for r in soa_values])
         values = {
             'name': zone['name'],
             'type': "SOA",
@@ -380,7 +380,7 @@ class Service(service.RPCService):
         for s in servers:
             ns_values.append(s.name)
         recordlist = objects.RecordList(objects=[
-            objects.Record(data=r) for r in ns_values])
+            objects.Record(data=r, managed=True) for r in ns_values])
         values = {
             'name': zone['name'],
             'type': "NS",
