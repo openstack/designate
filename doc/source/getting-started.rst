@@ -284,8 +284,8 @@ Fedora 19 Notes
 
 Most of the above instructions under `Installing Designate`_ should work.  There are a few differences when working with Fedora 19:
 
-Installing Designate
---------------------
+Installing Designate on Fedora
+------------------------------
 
 Installing the basic Fedora packages needed to install Designate:
 

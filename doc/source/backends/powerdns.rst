@@ -26,7 +26,7 @@ Parameter                        Default                                Note
 ===============================  ====================================== ==============================================================
 domain_type                      NATIVE                                 PowerDNS Domain Type
 also_notify                      []                                     List of additional IPs to send NOTIFYs to.
-connection              sqlite:///$pystatepath/powerdns.sqlite Database connection string
+connection                       sqlite:///$pystatepath/powerdns.sqlite Database connection string
 connection_debug                 0                                      Verbosity of SQL debugging information. 0=None, 100=Everything
 connection_trace                 False                                  Add python stack traces to SQL as comment strings
 idle_timeout                     3600                                   timeout before idle sql connections are reaped

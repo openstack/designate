@@ -32,7 +32,7 @@ Parameter                        Default                               Note
 ===============================  ====================================  ==============================================================
 api_host                         0.0.0.0                               API listen host
 api_port                         9001                                  API listen port
-control_exchange                 designate                               The MQ Control exchange
+control_exchange                 designate                             The MQ Control exchange
 agent_topic                      agent                                 The topic that the Agent(s) should use
 central_topic                    central                               The topic that the Central should use
 os-username                      glance                                Username to use for openstack service access
@@ -40,7 +40,7 @@ os-password                      admin                                 Password 
 os-tenant-id                                                           Tenant ID to use for openstack service access
 os-tenant-name                   admin                                 Tenant name to use for openstack service access
 os-auth-url                      http://localhost:5000/v2.0            Auth URL to use for openstack service access
-connection              sqlite:///$pystatepath/designate.db     Database connection string
+connection                       sqlite:///$pystatepath/designate.db   Database connection string
 ===============================  ====================================  ==============================================================
 
 Storage - SQL Alchemy
