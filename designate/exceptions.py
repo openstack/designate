@@ -46,6 +46,11 @@ class ConfigurationError(Base):
     error_type = 'configuration_error'
 
 
+class UnknownFailure(Base):
+    error_code = 500
+    error_type = 'unknown_failure'
+
+
 class CommunicationFailure(Base):
     error_code = 504
     error_type = 'communication_failure'
