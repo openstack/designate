@@ -200,13 +200,7 @@ function configure_designate {
     if is_service_enabled key; then
         # Setup the Keystone Integration
         iniset $DESIGNATE_CONF service:api auth_strategy keystone
-        iniset $DESIGNATE_CONF keystone_authtoken identity_uri $KEYSTONE_AUTH_URI
-        iniset $DESIGNATE_CONF keystone_authtoken admin_tenant_name $SERVICE_TENANT_NAME
-        iniset $DESIGNATE_CONF keystone_authtoken cafile $KEYSTONE_SSL_CA
-        configure_API_version $DESIGNATE_CONF $IDENTITY_API_VERSION
-        iniset $DESIGNATE_CONF keystone_authtoken admin_user designate
-        iniset $DESIGNATE_CONF keystone_authtoken admin_password $SERVICE_PASSWORD
-        iniset $DESIGNATE_CONF keystone_authtoken signing_dir $DESIGNATE_AUTH_CACHE_DIR
+        configure_auth_token_middleware $DESIGNATE_CONF designate $DESIGNATE_AUTH_CACHE_DIR
     fi
 
     if is_service_enabled designate-agent; then
@@ -308,15 +302,17 @@ function start_designate {
     # The configure phase has already added the $STACK_USER to the bind
     # system daemon group - we need to start central using that group using sg.
     # nova does a similar "trick" with libvirtd and compute.
+    # sg will be used in run_process to execute designate-central as a member
+    # of the **$BIND_GROUP** group.
     if [[ "$DESIGNATE_BACKEND_DRIVER" = 'bind9' ]]; then
-        screen_it designate-central "sg $BIND_GROUP designate-central --config-file $DESIGNATE_CONF"
+        run_process designate-central "designate-central --config-file $DESIGNATE_CONF" $BIND_GROUP
     else
-        screen_it designate-central "cd $DESIGNATE_DIR && $DESIGNATE_BIN_DIR/designate-central --config-file $DESIGNATE_CONF"
+        run_process designate-central "$DESIGNATE_BIN_DIR/designate-central --config-file $DESIGNATE_CONF"
     fi
-    screen_it designate-api "cd $DESIGNATE_DIR && $DESIGNATE_BIN_DIR/designate-api --config-file $DESIGNATE_CONF"
-    screen_it designate-mdns "cd $DESIGNATE_DIR && $DESIGNATE_BIN_DIR/designate-mdns --config-file $DESIGNATE_CONF"
-    screen_it designate-agent "cd $DESIGNATE_DIR && $DESIGNATE_BIN_DIR/designate-agent --config-file $DESIGNATE_CONF"
-    screen_it designate-sink "cd $DESIGNATE_DIR && $DESIGNATE_BIN_DIR/designate-sink --config-file $DESIGNATE_CONF"
+    run_process designate-api "$DESIGNATE_BIN_DIR/designate-api --config-file $DESIGNATE_CONF"
+    run_process designate-mdns "$DESIGNATE_BIN_DIR/designate-mdns --config-file $DESIGNATE_CONF"
+    run_process designate-agent "$DESIGNATE_BIN_DIR/designate-agent --config-file $DESIGNATE_CONF"
+    run_process designate-sink "$DESIGNATE_BIN_DIR/designate-sink --config-file $DESIGNATE_CONF"
 
     # Start proxies if enabled
     if is_service_enabled designate-api && is_service_enabled tls-proxy; then
@@ -331,11 +327,11 @@ function start_designate {
 # stop_designate - Stop running processes
 function stop_designate {
     # Kill the designate screen windows
-    screen_stop designate-api
-    screen_stop designate-central
-    screen_stop designate-mdns
-    screen_stop designate-agent
-    screen_stop designate-sink
+    stop_process designate-api
+    stop_process designate-central
+    stop_process designate-mdns
+    stop_process designate-agent
+    stop_process designate-sink
 
     stop_designate_backend
 }
