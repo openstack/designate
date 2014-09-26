@@ -55,13 +55,6 @@ class NeutronFloatingHandler(BaseAddressHandler):
         LOG.debug('%s received notification - %s' %
                   (self.get_canonical_name(), event_type))
 
-        # FIXME: Neutron doesn't send ipv in the payload, should maybe
-        # determine this?
-        if event_type not in self.get_event_types():
-            msg = '%s received an invalid event type %s' % (
-                self, event_type)
-            raise ValueError(msg)
-
         if event_type.startswith('floatingip.delete'):
             self._delete(resource_id=payload['floatingip_id'],
                          resource_type='floatingip')

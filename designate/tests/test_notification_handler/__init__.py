@@ -16,9 +16,6 @@
 import json
 import os
 
-import testtools
-
-from designate.context import DesignateContext
 from designate.tests import resources
 
 
@@ -34,14 +31,3 @@ class NotificationHandlerMixin(object):
 
         with open(filename, 'r') as fh:
             return json.load(fh)
-
-    def test_invalid_event_type(self):
-        context = DesignateContext.get_admin_context(all_tenants=True)
-        if not hasattr(self, 'plugin'):
-            raise NotImplementedError
-        event_type = 'invalid'
-
-        self.assertNotIn(event_type, self.plugin.get_event_types())
-
-        with testtools.ExpectedException(ValueError):
-            self.plugin.process_notification(context, event_type, 'payload')
