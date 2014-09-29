@@ -18,7 +18,8 @@ import errno
 import os
 import tempfile
 
-from designate.openstack.common import excutils
+from oslo.utils import excutils
+
 from designate.openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)

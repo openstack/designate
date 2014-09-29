@@ -29,7 +29,7 @@ import weakref
 from oslo.config import cfg
 
 from designate.openstack.common import fileutils
-from designate.openstack.common.gettextutils import _, _LE, _LI
+from designate.openstack.common._i18n import _, _LE, _LI
 
 
 LOG = logging.getLogger(__name__)
@@ -39,7 +39,7 @@ util_opts = [
     cfg.BoolOpt('disable_process_locking', default=False,
                 help='Enables or disables inter-process locks.'),
     cfg.StrOpt('lock_path',
-               default=os.environ.get("OSLO_LOCK_PATH"),
+               default=os.environ.get("DESIGNATE_LOCK_PATH"),
                help='Directory to use for lock files.')
 ]
 
@@ -314,7 +314,7 @@ def main(argv):
     """
 
     lock_dir = tempfile.mkdtemp()
-    os.environ["OSLO_LOCK_PATH"] = lock_dir
+    os.environ["DESIGNATE_LOCK_PATH"] = lock_dir
     try:
         ret_val = subprocess.call(argv[1:])
     finally:

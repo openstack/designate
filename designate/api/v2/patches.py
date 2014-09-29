@@ -16,10 +16,10 @@
 from inspect import ismethod
 from inspect import getargspec
 
+from oslo.serialization import jsonutils
 import pecan.core
 
 from designate import exceptions
-from designate.openstack.common import jsonutils
 
 
 JSON_TYPES = ('application/json', 'application/json-patch+json')

@@ -14,9 +14,8 @@
 #    under the License.
 import copy
 
+from oslo.utils import importutils
 import six
-
-from designate.openstack.common import importutils
 
 
 class NotSpecifiedSentinel:

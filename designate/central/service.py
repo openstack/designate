@@ -20,9 +20,9 @@ import functools
 
 from oslo.config import cfg
 from oslo import messaging
+from oslo.utils import excutils
 
 from designate.openstack.common import log as logging
-from designate.openstack.common import excutils
 from designate.i18n import _LI
 from designate.i18n import _LC
 from designate import backend

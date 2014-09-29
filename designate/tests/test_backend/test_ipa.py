@@ -15,12 +15,12 @@
 # under the License.
 import fixtures
 from oslotest import mockpatch
+from oslo.serialization import jsonutils as json
 from requests.auth import AuthBase
 
 from designate import tests
 from designate import utils
 from designate.tests.test_backend import BackendTestMixin
-from designate.openstack.common import jsonutils as json
 from designate.backend import impl_ipa
 
 

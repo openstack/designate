@@ -21,9 +21,9 @@ from werkzeug import wrappers
 from werkzeug.routing import BaseConverter
 from werkzeug.routing import ValidationError
 from oslo.config import cfg
+from oslo.serialization import jsonutils
 
 from designate.openstack.common import log as logging
-from designate.openstack.common import jsonutils
 from designate import exceptions
 from designate import utils
 

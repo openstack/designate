@@ -20,9 +20,9 @@ import threading
 
 from oslo.config import cfg
 from oslo.db import options
+from oslo.utils import excutils
 from sqlalchemy.sql import select
 
-from designate.openstack.common import excutils
 from designate.openstack.common import log as logging
 from designate.i18n import _LC
 from designate import exceptions

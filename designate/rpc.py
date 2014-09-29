@@ -30,11 +30,11 @@ from oslo.config import cfg
 from oslo import messaging
 from oslo.messaging import server as msg_server
 from oslo.messaging.rpc import dispatcher as rpc_dispatcher
+from oslo.serialization import jsonutils
 
 import designate.context
 import designate.exceptions
 from designate import objects
-from designate.openstack.common import jsonutils
 
 
 CONF = cfg.CONF

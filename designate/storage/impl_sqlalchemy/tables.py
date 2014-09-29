@@ -18,9 +18,9 @@ from sqlalchemy import (Table, MetaData, Column, String, Text, Integer, CHAR,
                         ForeignKeyConstraint)
 
 from oslo.config import cfg
+from oslo.utils import timeutils
 
 from designate import utils
-from designate.openstack.common import timeutils
 from designate.sqlalchemy.types import UUID
 
 

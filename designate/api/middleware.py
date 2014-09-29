@@ -17,14 +17,14 @@ import flask
 import webob.dec
 from oslo.config import cfg
 from oslo import messaging
+from oslo.serialization import jsonutils as json
+from oslo.utils import strutils
 
 from designate import exceptions
 from designate import notifications
 from designate import wsgi
 from designate import context
-from designate.openstack.common import jsonutils as json
 from designate.openstack.common import log as logging
-from designate.openstack.common import strutils
 from designate.openstack.common.middleware import request_id
 from designate.i18n import _LI
 from designate.i18n import _LW

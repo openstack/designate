@@ -21,11 +21,11 @@ from oslo.config import cfg
 from oslo.db.sqlalchemy import utils as oslo_utils
 from oslo.db import options
 from oslo.db import exception as oslo_db_exception
+from oslo.utils import timeutils
 from sqlalchemy import exc as sqlalchemy_exc
 from sqlalchemy import select, distinct, func
 
 from designate.openstack.common import log as logging
-from designate.openstack.common import timeutils
 from designate import exceptions
 from designate import objects
 from designate.sqlalchemy import session

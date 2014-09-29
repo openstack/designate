@@ -17,10 +17,10 @@
 import logging
 
 from oslo.config import cfg
+from oslo.utils import excutils
 
 from designate import backend
 from designate.backend import base
-from designate.openstack.common import excutils
 
 
 LOG = logging.getLogger(__name__)

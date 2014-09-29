@@ -29,7 +29,7 @@ import eventlet.backdoor
 import greenlet
 from oslo.config import cfg
 
-from designate.openstack.common.gettextutils import _LI
+from designate.openstack.common._i18n import _LI
 from designate.openstack.common import log as logging
 
 help_for_backdoor_port = (
