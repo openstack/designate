@@ -19,6 +19,10 @@ from designate.tests.test_mdns import MdnsTestCase
 class MdnsServiceTest(MdnsTestCase):
     def setUp(self):
         super(MdnsServiceTest, self).setUp()
+
+        # Use a random port for MDNS
+        self.config(port=0, group='service:mdns')
+
         self.service = self.start_service('mdns')
 
     def test_stop(self):
