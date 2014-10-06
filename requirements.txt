@@ -7,6 +7,7 @@ eventlet>=0.15.1
 extras
 Flask>=0.10,<1.0
 iso8601>=0.1.9
+Jinja2
 jsonschema>=2.0.0,<3.0.0
 keystonemiddleware>=1.0.0
 kombu>=2.5.0
