@@ -62,6 +62,8 @@ class NotifyEndpoint(object):
         :param zone_name: The zone name for which some data changed.
         :return: None
         """
+        LOG.info(_LI("Sending NOTIFYs for %(zone_name)s") %
+                 {'zone_name': zone_name})
         notify_message = self._get_notify_message(context, zone_name)
         for current in range(0, self._total_slave_nameservers):
             retry = -1
@@ -69,6 +71,11 @@ class NotifyEndpoint(object):
             # retry sending NOTIFY if specified by configuration file.
             while retry < CONF['service:mdns'].notify_retries:
                 retry = retry + 1
+                LOG.debug("Sending NOTIFY for %(zone_name)s to "
+                          "%(ip)s:%(port)s" %
+                          {'zone_name': zone_name,
+                           'ip': self._slave_server_ips[current],
+                           'port': self._slave_server_ports[current]})
                 response = self._send_notify_message(
                     context, zone_name, notify_message,
                     self._slave_server_ips[current],

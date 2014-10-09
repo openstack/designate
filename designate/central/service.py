@@ -302,6 +302,7 @@ class Service(service.RPCService):
 
         # Update SOA record
         self._update_soa(context, domain)
+        self.mdns_api.notify_zone_changed(context, domain.name)
 
         return domain
 
@@ -784,6 +785,8 @@ class Service(service.RPCService):
         self._create_ns(context, created_domain, servers)
         self._create_soa(context, created_domain)
 
+        self.mdns_api.notify_zone_changed(context, created_domain.name)
+
         return created_domain
 
     def get_domain(self, context, domain_id):
@@ -1105,7 +1108,6 @@ class Service(service.RPCService):
 
         # Send RecordSet update notification
         self.notifier.info(context, 'dns.recordset.update', recordset)
-        self.mdns_api.notify_zone_changed(context, domain.name)
 
         return self._get_priority(recordset)
 
@@ -1273,7 +1275,6 @@ class Service(service.RPCService):
 
         # Send Record update notification
         self.notifier.info(context, 'dns.record.update', record)
-        self.mdns_api.notify_zone_changed(context, domain.name)
 
         return record
 
