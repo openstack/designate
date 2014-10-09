@@ -17,15 +17,15 @@ import flask
 import webob.dec
 from oslo.config import cfg
 from oslo import messaging
+from oslo.middleware import base
+from oslo.middleware import request_id
 from oslo.serialization import jsonutils as json
 from oslo.utils import strutils
 
 from designate import exceptions
 from designate import notifications
-from designate import wsgi
 from designate import context
 from designate.openstack.common import log as logging
-from designate.openstack.common.middleware import request_id
 from designate.i18n import _LI
 from designate.i18n import _LW
 from designate.i18n import _LE
@@ -59,7 +59,7 @@ def auth_pipeline_factory(loader, global_conf, **local_conf):
     return app
 
 
-class ContextMiddleware(wsgi.Middleware):
+class ContextMiddleware(base.Middleware):
     def make_context(self, request, *args, **kwargs):
         req_id = request.environ.get(request_id.ENV_REQUEST_ID)
         kwargs.setdefault('request_id', req_id)
@@ -160,7 +160,7 @@ class TestContextMiddleware(ContextMiddleware):
             all_tenants=all_tenants)
 
 
-class MaintenanceMiddleware(wsgi.Middleware):
+class MaintenanceMiddleware(base.Middleware):
     def __init__(self, application):
         super(MaintenanceMiddleware, self).__init__(application)
 
@@ -185,7 +185,7 @@ class MaintenanceMiddleware(wsgi.Middleware):
         return flask.Response(status=503, headers={'Retry-After': 60})
 
 
-class NormalizeURIMiddleware(wsgi.Middleware):
+class NormalizeURIMiddleware(base.Middleware):
     @webob.dec.wsgify
     def __call__(self, request):
         # Remove any trailing /'s.
@@ -194,7 +194,7 @@ class NormalizeURIMiddleware(wsgi.Middleware):
         return request.get_response(self.application)
 
 
-class FaultWrapperMiddleware(wsgi.Middleware):
+class FaultWrapperMiddleware(base.Middleware):
     def __init__(self, application):
         super(FaultWrapperMiddleware, self).__init__(application)
 
