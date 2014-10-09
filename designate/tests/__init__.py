@@ -261,6 +261,13 @@ class TestCase(base.BaseTestCase):
         'action': 'DELETE'
     }]
 
+    pool_fixtures = [
+        {'name': 'test1',
+         'provisioner': 'UNMANAGED'},
+        {'name': 'test2',
+         'provisioner': 'UNMANAGED'}
+    ]
+
     def setUp(self):
         super(TestCase, self).setUp()
 
@@ -474,6 +481,13 @@ class TestCase(base.BaseTestCase):
         _values.update(values)
         return _values
 
+    def get_pool_fixture(self, fixture=0, values=None):
+        values = values or {}
+
+        _values = copy.copy(self.pool_fixtures[fixture])
+        _values.update(values)
+        return _values
+
     def create_server(self, **kwargs):
         context = kwargs.pop('context', self.admin_context)
         fixture = kwargs.pop('fixture', 0)
@@ -561,6 +575,18 @@ class TestCase(base.BaseTestCase):
         blacklist = objects.Blacklist(**values)
         return self.central_service.create_blacklist(
             context, blacklist=blacklist)
+
+    def create_pool(self, **kwargs):
+        context = kwargs.pop('context', self.admin_context)
+        fixture = kwargs.pop('fixture', 0)
+
+        values = self.get_pool_fixture(fixture=fixture, values=kwargs)
+
+        if 'tenant_id' not in values:
+            values['tenant_id'] = context.tenant
+
+        return self.central_service.create_pool(
+            context, objects.Pool(**values))
 
     def _ensure_interface(self, interface, implementation):
         for name in interface.__abstractmethods__:

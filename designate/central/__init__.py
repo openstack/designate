@@ -39,7 +39,11 @@ cfg.CONF.register_opts([
                help='E-Mail for Managed resources'),
     cfg.StrOpt('managed_resource_tenant_id',
                help="The Tenant ID that will own any managed resources."),
-    cfg.StrOpt('min_ttl', default="None", help="Minimum TTL allowed")
+    cfg.StrOpt('min_ttl', default="None", help="Minimum TTL allowed"),
+    # TODO(betsy): Move to Pool Service once that is written
+    cfg.StrOpt('default_pool_id',
+               default='794ccc2c-d751-44fe-b57f-8894c9f5c842',
+               help="The name of the default pool"),
 ], group='service:central')
 
 MDNS_API = None

@@ -557,6 +557,43 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
         return self._delete(context, tables.blacklists, blacklist,
                             exceptions.BlacklistNotFound)
 
+    # Pool methods
+    def _find_pools(self, context, criterion, one=False, marker=None,
+                    limit=None, sort_key=None, sort_dir=None):
+        return self._find(context, tables.pools, objects.Pool,
+                          objects.PoolList, exceptions.PoolNotFound,
+                          criterion, one, marker, limit, sort_key,
+                          sort_dir)
+
+    def create_pool(self, context, pool):
+        return self._create(
+            tables.pools, pool, exceptions.DuplicatePool)
+
+    def get_pool(self, context, pool_id):
+        return self._find_pools(context, {'id': pool_id}, one=True)
+
+    def find_pools(self, context, criterion=None, marker=None,
+                   limit=None, sort_key=None, sort_dir=None):
+        return self._find_pools(context, criterion, marker=marker,
+                                limit=limit, sort_key=sort_key,
+                                sort_dir=sort_dir)
+
+    def find_pool(self, context, criterion):
+        return self._find_pools(context, criterion, one=True)
+
+    def update_pool(self, context, pool):
+        return self._update(context, tables.pools, pool,
+                            exceptions.DuplicatePool,
+                            exceptions.PoolNotFound)
+
+    def delete_pool(self, context, pool_id):
+        pool = self._find_pools(context, {'id': pool_id}, one=True)
+
+        deleted_pool = self._delete(context, tables.pools, pool,
+                            exceptions.PoolNotFound)
+
+        return deleted_pool
+
     # diagnostics
     def ping(self, context):
         start_time = time.time()

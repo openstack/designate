@@ -32,6 +32,8 @@ RECORD_TYPES = ['A', 'AAAA', 'CNAME', 'MX', 'SRV', 'TXT', 'SPF', 'NS', 'PTR',
 TSIG_ALGORITHMS = ['hmac-md5', 'hmac-sha1', 'hmac-sha224', 'hmac-sha256',
                    'hmac-sha384', 'hmac-sha512']
 
+POOL_PROVISIONERS = ['UNMANAGED']
+
 metadata = MetaData()
 
 quotas = Table('quotas', metadata,
@@ -187,4 +189,38 @@ blacklists = Table('blacklists', metadata,
 
     mysql_engine='InnoDB',
     mysql_charset='utf8',
+)
+
+pools = Table('pools', metadata,
+    Column('id', UUID, default=utils.generate_uuid, primary_key=True),
+    Column('created_at', DateTime, default=lambda: timeutils.utcnow()),
+    Column('updated_at', DateTime, onupdate=lambda: timeutils.utcnow()),
+    Column('version', Integer(), default=1, nullable=False),
+
+    Column('name', String(50), nullable=False, unique=True),
+    Column('description', Unicode(160), nullable=True),
+    Column('tenant_id', String(36), nullable=True),
+    Column('provisioner', Enum(name='pool_provisioner', *POOL_PROVISIONERS),
+           nullable=False, server_default='UNMANAGED'),
+
+    UniqueConstraint('name', name='unique_pool_name'),
+
+    mysql_engine='INNODB',
+    mysql_charset='utf8'
+)
+
+pool_attributes = Table('pool_attributes', metadata,
+    Column('id', UUID(), default=utils.generate_uuid, primary_key=True),
+    Column('created_at', DateTime, default=lambda: timeutils.utcnow()),
+    Column('updated_at', DateTime, onupdate=lambda: timeutils.utcnow()),
+    Column('version', Integer(), default=1, nullable=False),
+
+    Column('key', String(255), nullable=False),
+    Column('value', String(255), nullable=False),
+    Column('pool_id', UUID(), nullable=False),
+
+    ForeignKeyConstraint(['pool_id'], ['pools.id'], ondelete='CASCADE'),
+
+    mysql_engine='INNODB',
+    mysql_charset='utf8'
 )

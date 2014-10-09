@@ -2310,3 +2310,95 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(ns_rs.records[0].data, server1.name)
         self.assertEqual(ns_rs.records[2].data, server2.name)
         self.assertThat(new_serial, GreaterThan(original_serial))
+
+    # Pool Tests
+    def test_create_pool(self):
+        # Get the values
+        values = self.get_pool_fixture(fixture=0)
+
+        # Create the pool using the values
+        pool = self.central_service.create_pool(
+            context=self.admin_context,
+            pool=objects.Pool(**values))
+
+        # Verify that all the values were set correctly
+        self.assertIsNotNone(pool['id'])
+        self.assertIsNotNone(pool['created_at'])
+        self.assertIsNotNone(pool['version'])
+        self.assertIsNotNone(pool['tenant_id'])
+        self.assertIsNone(pool['updated_at'])
+
+        self.assertEqual(pool['name'], values['name'])
+        self.assertEqual(pool['provisioner'], values['provisioner'])
+
+    def test_get_pool(self):
+        # Create a server pool
+        expected = self.create_pool(fixture=0)
+
+        # GET the pool and verify it is the same
+        pool = self.central_service.get_pool(self.admin_context,
+                                             expected['id'])
+
+        LOG.debug("The pool is %r" % pool)
+
+        self.assertEqual(pool['id'], expected['id'])
+        self.assertEqual(pool['created_at'], expected['created_at'])
+        self.assertEqual(pool['version'], expected['version'])
+        self.assertEqual(pool['tenant_id'], expected['tenant_id'])
+        self.assertEqual(pool['name'], expected['name'])
+        self.assertEqual(pool['provisioner'], expected['provisioner'])
+
+    def test_find_pools(self):
+        # Verify no pools exist
+        pools = self.central_service.find_pools(self.admin_context)
+
+        self.assertEqual(len(pools), 0)
+
+        # Create a pool
+        self.create_pool(fixture=0)
+
+        # Verify we can find the newly created pool
+        pools = self.central_service.find_pools(self.admin_context)
+        values = self.get_pool_fixture(fixture=0)
+
+        self.assertEqual(len(pools), 1)
+        self.assertEqual(pools[0]['name'], values['name'])
+        self.assertEqual(pools[0]['provisioner'], values['provisioner'])
+
+    def test_find_pool(self):
+        # Create a server pool
+        expected = self.create_pool(fixture=0)
+
+        # Find the created pool
+        pool = self.central_service.find_pool(self.admin_context,
+                                              {'id': expected['id']})
+
+        self.assertEqual(pool['name'], expected['name'])
+        self.assertEqual(pool['provisioner'], expected['provisioner'])
+
+    def test_update_pool(self):
+        # Create a server pool
+        pool = self.create_pool(fixture=0)
+
+        # Update the pool
+        pool.description = 'New Comment'
+
+        # Update pool
+        self.central_service.update_pool(self.admin_context, pool)
+
+        # GET the pool
+        pool = self.central_service.get_pool(self.admin_context, pool.id)
+
+        # Verify that the pool was updated correctly
+        self.assertEqual("New Comment", pool.description)
+
+    def test_delete_pool(self):
+        # Create a server pool
+        pool = self.create_pool()
+
+        # Delete the pool
+        self.central_service.delete_pool(self.admin_context, pool['id'])
+
+        # Verify that the pool has been deleted
+        with testtools.ExpectedException(exceptions.PoolNotFound):
+            self.central_service.get_pool(self.admin_context, pool['id'])

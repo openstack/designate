@@ -41,14 +41,15 @@ class CentralAPI(object):
         3.2 - TLD Api changes
         3.3 - Add methods for blacklisted domains
         4.0 - Create methods now accept designate objects
+        4.1 - Add methods for server pools
     """
-    RPC_API_VERSION = '4.0'
+    RPC_API_VERSION = '4.1'
 
     def __init__(self, topic=None):
         topic = topic if topic else cfg.CONF.central_topic
 
         target = messaging.Target(topic=topic, version=self.RPC_API_VERSION)
-        self.client = rpc.get_client(target, version_cap='4.0')
+        self.client = rpc.get_client(target, version_cap='4.1')
 
     # Misc Methods
     def get_absolute_limits(self, context):
@@ -370,3 +371,38 @@ class CentralAPI(object):
         LOG.info(_LI("delete_blacklist: Calling central's delete blacklist."))
         return self.client.call(context, 'delete_blacklist',
                                 blacklist_id=blacklist_id)
+
+    # Pool Server Methods
+    def create_pool(self, context, pool):
+        LOG.info(_LI("create_pool: Calling central's create_pool."))
+        cctxt = self.client.prepare(version='4.1')
+        return cctxt.call(context, 'create_pool',
+                          pool=pool)
+
+    def find_pools(self, context, criterion=None, marker=None, limit=None,
+                   sort_key=None, sort_dir=None):
+        LOG.info(_LI("find_pools: Calling central's find_pools."))
+        cctxt = self.client.prepare(version='4.1')
+        return cctxt.call(context, 'find_pools', criterion=criterion,
+                          marker=marker, limit=limit, sort_key=sort_key,
+                          sort_dir=sort_dir)
+
+    def find_pool(self, context, criterion=None):
+        LOG.info(_LI("find_pool: Calling central's find_pool."))
+        cctxt = self.client.prepare(version='4.1')
+        return cctxt.call(context, 'find_pool', criterion=criterion)
+
+    def get_pool(self, context, pool_id):
+        LOG.info(_LI("get_pool: Calling central's get_pool."))
+        cctxt = self.client.prepare(version='4.1')
+        return cctxt.call(context, 'get_pool', pool_id=pool_id)
+
+    def update_pool(self, context, pool):
+        LOG.info(_LI("update_pool: Calling central's update_pool."))
+        cctxt = self.client.prepare(version='4.1')
+        return cctxt.call(context, 'update_pool', pool=pool)
+
+    def delete_pool(self, context, pool_id):
+        LOG.info(_LI("delete_pool: Calling central's delete_pool."))
+        cctxt = self.client.prepare(version='4.1')
+        return cctxt.call(context, 'delete_pool', pool_id=pool_id)

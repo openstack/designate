@@ -212,6 +212,10 @@ class DuplicatePoolManagerStatus(Duplicate):
     error_type = 'duplication_pool_manager_status'
 
 
+class DuplicatePool(Duplicate):
+    error_type = 'duplicate_pool'
+
+
 class MethodNotAllowed(Base):
     expected = True
     error_code = 405
@@ -262,6 +266,10 @@ class ReportNotFound(NotFound):
 
 class PoolManagerStatusNotFound(NotFound):
     error_type = 'pool_manager_status_not_found'
+
+
+class PoolNotFound(NotFound):
+    error_type = 'pool_not_found'
 
 
 class LastServerDeleteNotAllowed(BadRequest):

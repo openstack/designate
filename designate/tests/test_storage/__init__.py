@@ -1819,3 +1819,166 @@ class StorageTestCase(object):
         with testtools.ExpectedException(exceptions.BlacklistNotFound):
             uuid = '97f57960-f41b-4e93-8e22-8fd6c7e2c183'
             self.storage.delete_blacklist(self.admin_context, uuid)
+
+    # Pool Tests
+    def test_create_pool(self):
+        values = {
+            'name': 'test1',
+            'tenant_id': self.admin_context.tenant,
+            'provisioner': 'UNMANAGED'
+        }
+
+        result = self.storage.create_pool(self.admin_context,
+                                          pool=objects.Pool(**values))
+
+        self.assertIsNotNone(result['id'])
+        self.assertIsNotNone(result['created_at'])
+        self.assertIsNone(result['updated_at'])
+
+        self.assertEqual(result['name'], values['name'])
+        self.assertEqual(result['tenant_id'], values['tenant_id'])
+        self.assertEqual(result['provisioner'], values['provisioner'])
+
+    def test_create_pool_duplicate(self):
+        # Create the first pool
+        self.create_pool(fixture=0)
+
+        # Create the second pool and should get exception
+        with testtools.ExpectedException(exceptions.DuplicatePool):
+            self.create_pool(fixture=0)
+
+    def test_find_pools(self):
+        # Verify that there are no pools
+        actual = self.storage.find_pools(self.admin_context)
+        self.assertEqual(0, len(actual))
+
+        # Create a Pool
+        pool = self.create_pool(fixture=0)
+
+        actual = self.storage.find_pools(self.admin_context)
+        self.assertEqual(1, len(actual))
+
+        # Test against the second pool, since the first is the default pool
+        self.assertEqual(pool['name'], actual[0]['name'])
+
+    def test_find_pools_paging(self):
+        # Get any pools that are already created, including default
+        pools = self.storage.find_pools(self.admin_context)
+
+        # Create 10 Pools
+        created = [self.create_pool(name='test%d' % i)
+            for i in xrange(10)]
+
+        # Add in the existing pools
+
+        for p in pools:
+            created.insert(0, p)
+
+        # Ensure we can page through the results
+        self._ensure_paging(created, self.storage.find_pools)
+
+    def test_find_pools_criterion(self):
+        # Create two pools
+        pool_one = self.create_pool(fixture=0)
+        pool_two = self.create_pool(fixture=1)
+
+        # Verify pool_one
+        criterion = dict(name=pool_one['name'])
+
+        results = self.storage.find_pools(self.admin_context, criterion)
+
+        self.assertEqual(len(results), 1)
+
+        self.assertEqual(results[0]['name'], pool_one['name'])
+        self.assertEqual(results[0]['provisioner'], pool_one['provisioner'])
+
+        criterion = dict(name=pool_two['name'])
+
+        results = self.storage.find_pools(self.admin_context, criterion)
+
+        self.assertEqual(len(results), 1)
+
+        self.assertEqual(results[0]['name'], pool_two['name'])
+        self.assertEqual(results[0]['provisioner'], pool_two['provisioner'])
+
+    def test_get_pool(self):
+        # Create a pool
+        expected = self.create_pool()
+        actual = self.storage.get_pool(self.admin_context, expected['id'])
+
+        self.assertEqual(actual['name'], expected['name'])
+        self.assertEqual(actual['provisioner'], expected['provisioner'])
+
+    def test_get_pool_missing(self):
+        with testtools.ExpectedException(exceptions.PoolNotFound):
+            uuid = 'c28893e3-eb87-4562-aa29-1f0e835d749b'
+            self.storage.get_pool(self.admin_context, uuid)
+
+    def test_find_pool_criterion(self):
+        pool_one = self.create_pool(fixture=0)
+        pool_two = self.create_pool(fixture=1)
+
+        criterion = dict(name=pool_one['name'])
+
+        result = self.storage.find_pool(self.admin_context, criterion)
+
+        self.assertEqual(result['name'], pool_one['name'])
+        self.assertEqual(result['provisioner'], pool_one['provisioner'])
+
+        criterion = dict(name=pool_two['name'])
+
+        result = self.storage.find_pool(self.admin_context, criterion)
+
+        self.assertEqual(result['name'], pool_two['name'])
+        self.assertEqual(result['provisioner'], pool_two['provisioner'])
+
+    def test_find_pool_criterion_missing(self):
+        expected = self.create_pool()
+
+        criterion = dict(name=expected['name'] + "NOT FOUND")
+
+        with testtools.ExpectedException(exceptions.PoolNotFound):
+            self.storage.find_pool(self.admin_context, criterion)
+
+    def test_update_pool(self):
+        # Create a pool
+        pool = self.create_pool(name='test1')
+
+        # Update the Pool
+        pool.name = 'test3'
+
+        # Perform the update
+        pool = self.storage.update_pool(self.admin_context, pool)
+
+        # Verify the new value is there
+        self.assertEqual('test3', pool.name)
+
+    def test_update_pool_duplicate(self):
+        # Create two pools
+        pool_one = self.create_pool(fixture=0)
+        pool_two = self.create_pool(fixture=1)
+
+        # Update pool_two to be a duplicate of pool_one
+        pool_two.name = pool_one.name
+
+        with testtools.ExpectedException(exceptions.DuplicatePool):
+            self.storage.update_pool(self.admin_context, pool_two)
+
+    def test_update_pool_missing(self):
+        pool = objects.Pool(id='8806f871-5140-43f4-badd-2bbc5715b013')
+
+        with testtools.ExpectedException(exceptions.PoolNotFound):
+            self.storage.update_pool(self.admin_context, pool)
+
+    def test_delete_pool(self):
+        pool = self.create_pool()
+
+        self.storage.delete_pool(self.admin_context, pool['id'])
+
+        with testtools.ExpectedException(exceptions.PoolNotFound):
+            self.storage.get_pool(self.admin_context, pool['id'])
+
+    def test_delete_pool_missing(self):
+        with testtools.ExpectedException(exceptions.PoolNotFound):
+            uuid = '203ca44f-c7e7-4337-9a02-0d735833e6aa'
+            self.storage.delete_pool(self.admin_context, uuid)

@@ -70,7 +70,7 @@ def transaction(f):
 
 
 class Service(service.RPCService):
-    RPC_API_VERSION = '4.0'
+    RPC_API_VERSION = '4.1'
 
     target = messaging.Target(version=RPC_API_VERSION)
 
@@ -1770,3 +1770,58 @@ class Service(service.RPCService):
         blacklist = self.storage.delete_blacklist(context, blacklist_id)
 
         self.notifier.info(context, 'dns.blacklist.delete', blacklist)
+
+    # Server Pools
+    @transaction
+    def create_pool(self, context, pool):
+        # Verify that there is a tenant_id
+        if pool.tenant_id is None:
+            pool.tenant_id = context.tenant
+
+        policy.check('create_pool', context)
+
+        created_pool = self.storage.create_pool(context, pool)
+
+        self.notifier.info(context, 'dns.pool.create', created_pool)
+
+        return created_pool
+
+    def find_pools(self, context, criterion=None, marker=None, limit=None,
+                   sort_key=None, sort_dir=None):
+
+        policy.check('find_pools', context)
+
+        return self.storage.find_pools(context, criterion, marker, limit,
+                                       sort_key, sort_dir)
+
+    def find_pool(self, context, criterion=None):
+
+        policy.check('find_pool', context)
+
+        return self.storage.find_pool(context, criterion)
+
+    def get_pool(self, context, pool_id):
+
+        policy.check('get_pool', context)
+
+        return self.storage.get_pool(context, pool_id)
+
+    @transaction
+    def update_pool(self, context, pool):
+
+        policy.check('update_pool', context)
+
+        updated_pool = self.storage.update_pool(context, pool)
+
+        self.notifier.info(context, 'dns.pool.update', updated_pool)
+
+        return updated_pool
+
+    @transaction
+    def delete_pool(self, context, pool_id):
+
+        policy.check('delete_pool', context)
+
+        pool = self.storage.delete_pool(context, pool_id)
+
+        self.notifier.info(context, 'dns.pool.delete', pool)

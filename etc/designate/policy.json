@@ -66,6 +66,13 @@
     "delete_blacklist": "rule:admin",
     "use_blacklisted_domain": "rule:admin",
 
+    "create_pool": "rule:admin",
+    "find_pools": "rule:admin",
+    "find_pool": "rule:admin",
+    "get_pool": "rule:admin",
+    "update_pool": "rule:admin",
+    "delete_pool": "rule:admin",
+
     "diagnostics_ping": "rule:admin",
     "diagnostics_sync_domains": "rule:admin",
     "diagnostics_sync_domain": "rule:admin",

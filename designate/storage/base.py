@@ -552,6 +552,68 @@ class Storage(DriverPlugin):
         :param blacklist_id: Delete a Blacklist via ID
         """
 
+    @abc.abstractmethod
+    def create_pool(self, context, pool):
+        """
+        Create a Pool.
+
+        :param context: RPC Context.
+        :param pool: Pool object with the values to be created.
+        """
+
+    @abc.abstractmethod
+    def find_pools(self, context, criterion=None, marker=None,
+                   limit=None, sort_key=None, sort_dir=None):
+        """
+        Find all Pools
+
+        :param context: RPC Context
+        :param criterion: Criteria by which to filter
+        :param marker: Resource ID used by paging. The next page will start
+                       at the next resource after the marker
+        :param limit: Integer limit of objects on the page
+        :param sort_key: Key used to sort the returned list
+        :param sort_dir: Directions to sort after using sort_key
+        """
+
+    @abc.abstractmethod
+    def find_pool(self, context, criterion):
+        """
+        Find a single Pool.
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        """
+
+    @abc.abstractmethod
+    def get_pool(self, context, pool_id):
+        """
+        Get a Pool via the id
+
+        :param context: RPC Context
+        :param pool_id: The ID of the pool to get
+        :return: The requested pool
+        """
+
+    @abc.abstractmethod
+    def update_pool(self, context, pool):
+        """
+        Update the specified pool
+
+        :param context: RPC Context
+        :param pool_id: The ID of the pool to be updated
+        :return: The updated pool
+        """
+
+    @abc.abstractmethod
+    def delete_pool(self, context, pool_id):
+        """
+        Delete the pool with the matching id
+
+        :param context: RPC Context
+        :param pool_id: The ID of the pool to be deleted
+        """
+
     def ping(self, context):
         """Ping the Storage connection"""
         return {
