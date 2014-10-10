@@ -17,7 +17,9 @@ from designate.objects import base
 
 class Server(base.DictObjectMixin, base.PersistentObjectMixin,
              base.DesignateObject):
-    FIELDS = ['name']
+    FIELDS = {
+        'name': {}
+    }
 
 
 class ServerList(base.ListObjectMixin, base.DesignateObject):

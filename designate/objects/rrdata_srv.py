@@ -21,7 +21,11 @@ class RRData_SRV(Record):
     Defined in: RFC2782
     """
     # priority is maintained separately for SRV records and not in 'data'
-    FIELDS = ['weight', 'port', 'target']
+    FIELDS = {
+        'weight': {},
+        'port': {},
+        'target': {}
+    }
 
     # The record type is defined in the RFC. This will be used when the record
     # is sent by mini-dns.

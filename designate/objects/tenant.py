@@ -16,7 +16,11 @@ from designate.objects import base
 
 
 class Tenant(base.DictObjectMixin, base.DesignateObject):
-    FIELDS = ['id', 'domain_count', 'domains']
+    FIELDS = {
+        'id': {},
+        'domain_count': {},
+        'domains': {}
+    }
 
 
 class TenantList(base.ListObjectMixin, base.DesignateObject):

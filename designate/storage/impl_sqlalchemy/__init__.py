@@ -46,7 +46,7 @@ cfg.CONF.register_opts(options.database_opts, group='storage:sqlalchemy')
 def _set_object_from_model(obj, model, **extra):
     """Update a DesignateObject with the values from a SQLA Model"""
 
-    for fieldname in obj.FIELDS:
+    for fieldname in obj.FIELDS.keys():
         if hasattr(model, fieldname):
             if fieldname in extra.keys():
                 obj[fieldname] = extra[fieldname]

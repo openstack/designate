@@ -20,7 +20,9 @@ class RRData_A(Record):
     A Resource Record Type
     Defined in: RFC1035
     """
-    FIELDS = ['address']
+    FIELDS = {
+        'address': {}
+    }
 
     # The record type is defined in the RFC. This will be used when the record
     # is sent by mini-dns.

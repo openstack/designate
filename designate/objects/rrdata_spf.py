@@ -20,7 +20,9 @@ class RRData_SPF(Record):
     SPF Resource Record Type
     Defined in: RFC4408
     """
-    FIELDS = ['txt-data']
+    FIELDS = {
+        'txt-data': {}
+    }
 
     # The record type is defined in the RFC. This will be used when the record
     # is sent by mini-dns.

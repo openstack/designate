@@ -29,16 +29,22 @@ def get_attrname(name):
 
 def make_class_properties(cls):
     """Build getter and setter methods for all the objects attributes"""
-    cls.FIELDS = list(cls.FIELDS)
+    # Prepare an empty dict to gather the merged/final set of fields
+    fields = {}
 
+    # Add each supercls's fields
     for supercls in cls.mro()[1:-1]:
         if not hasattr(supercls, 'FIELDS'):
             continue
-        for field in supercls.FIELDS:
-            if field not in cls.FIELDS:
-                cls.FIELDS.append(field)
+        fields.update(supercls.FIELDS)
 
-    for field in cls.FIELDS:
+    # Add our fields
+    fields.update(cls.FIELDS)
+
+    # Store the results
+    cls.FIELDS = fields
+
+    for field in cls.FIELDS.keys():
         def getter(self, name=field):
             return getattr(self, get_attrname(name), None)
 
@@ -63,7 +69,7 @@ class DesignateObjectMetaclass(type):
 
 @six.add_metaclass(DesignateObjectMetaclass)
 class DesignateObject(object):
-    FIELDS = []
+    FIELDS = {}
 
     @staticmethod
     def from_primitive(primitive):
@@ -96,7 +102,7 @@ class DesignateObject(object):
         self._obj_original_values = dict()
 
         for name, value in kwargs.items():
-            if name in self.FIELDS:
+            if name in self.FIELDS.keys():
                 setattr(self, name, value)
             else:
                 raise TypeError("'%s' is an invalid keyword argument" % name)
@@ -115,7 +121,7 @@ class DesignateObject(object):
 
         data = {}
 
-        for field in self.FIELDS:
+        for field in self.FIELDS.keys():
             if self.obj_attr_is_set(field):
                 if isinstance(getattr(self, field), DesignateObject):
                     data[field] = getattr(self, field).to_primitive()
@@ -181,7 +187,7 @@ class DesignateObject(object):
 
         c_obj = self.__class__()
 
-        for field in self.FIELDS:
+        for field in self.FIELDS.keys():
             if self.obj_attr_is_set(field):
                 c_field = copy.deepcopy(getattr(self, field), memodict)
                 setattr(c_obj, field, c_field)
@@ -213,10 +219,10 @@ class DictObjectMixin(object):
         setattr(self, key, value)
 
     def __contains__(self, item):
-        return item in self.FIELDS
+        return item in self.FIELDS.keys()
 
     def get(self, key, default=NotSpecifiedSentinel):
-        if key not in self.FIELDS:
+        if key not in self.FIELDS.keys():
             raise AttributeError("'%s' object has no attribute '%s'" % (
                                  self.__class__, key))
 
@@ -230,12 +236,12 @@ class DictObjectMixin(object):
             setattr(self, k, v)
 
     def iteritems(self):
-        for field in self.FIELDS:
+        for field in self.FIELDS.keys():
             if self.obj_attr_is_set(field):
                 yield field, getattr(self, field)
 
     def __iter__(self):
-        for field in self.FIELDS:
+        for field in self.FIELDS.keys():
             if self.obj_attr_is_set(field):
                 yield field, getattr(self, field)
 
@@ -244,7 +250,7 @@ class DictObjectMixin(object):
 
 class ListObjectMixin(object):
     """Mixin class for lists of objects"""
-    FIELDS = ['objects']
+    FIELDS = {'objects': {}}
     LIST_ITEM_TYPE = DesignateObject
 
     @classmethod
@@ -279,7 +285,7 @@ class ListObjectMixin(object):
 
         data = {}
 
-        for field in self.FIELDS:
+        for field in self.FIELDS.keys():
             if self.obj_attr_is_set(field):
                 if field == 'objects':
                     data[field] = [o.to_primitive() for o in self.objects]
@@ -365,7 +371,7 @@ class PersistentObjectMixin(object):
 
     This adds the fields that we use in common for all persistent objects.
     """
-    FIELDS = ['id', 'created_at', 'updated_at', 'version']
+    FIELDS = {'id': {}, 'created_at': {}, 'updated_at': {}, 'version': {}}
 
 
 class SoftDeleteObjectMixin(object):
@@ -374,4 +380,4 @@ class SoftDeleteObjectMixin(object):
 
     This adds the fields that we use in common for all soft-deleted objects.
     """
-    FIELDS = ['deleted', 'deleted_at']
+    FIELDS = {'deleted': {}, 'deleted_at': {}}

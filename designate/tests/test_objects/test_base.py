@@ -27,7 +27,11 @@ LOG = logging.getLogger(__name__)
 
 class TestObject(objects.DesignateObject):
     PATH = 'designate.tests.test_objects.test_base.TestObject'
-    FIELDS = ['id', 'name', 'nested']
+    FIELDS = {
+        'id': {},
+        'name': {},
+        'nested': {},
+    }
 
 
 class TestObjectDict(objects.DictObjectMixin, TestObject):

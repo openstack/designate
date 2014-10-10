@@ -20,7 +20,9 @@ class RRData_NS(Record):
     NS Resource Record Type
     Defined in: RFC1035
     """
-    FIELDS = ['nsdname']
+    FIELDS = {
+        'nsdname': {}
+    }
 
     # The record type is defined in the RFC. This will be used when the record
     # is sent by mini-dns.

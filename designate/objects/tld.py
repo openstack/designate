@@ -17,7 +17,10 @@ from designate.objects import base
 
 class Tld(base.DictObjectMixin, base.PersistentObjectMixin,
           base.DesignateObject):
-    FIELDS = ['name', 'description']
+    FIELDS = {
+        'name': {},
+        'description': {}
+    }
 
 
 class TldList(base.ListObjectMixin, base.DesignateObject):

@@ -20,7 +20,9 @@ class RRData_PTR(Record):
     PTR Resource Record Type
     Defined in: RFC1035
     """
-    FIELDS = ['ptrdname']
+    FIELDS = {
+        'ptrdname': {}
+    }
 
     # The record type is defined in the RFC. This will be used when the record
     # is sent by mini-dns.

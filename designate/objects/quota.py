@@ -17,7 +17,11 @@ from designate.objects import base
 
 class Quota(base.DictObjectMixin, base.PersistentObjectMixin,
             base.DesignateObject):
-    FIELDS = ['tenant_id', 'resource', 'hard_limit']
+    FIELDS = {
+        'tenant_id': {},
+        'resource': {},
+        'hard_limit': {}
+    }
 
 
 class QuotaList(base.ListObjectMixin, base.DesignateObject):

@@ -20,7 +20,11 @@ class RRData_SSHFP(Record):
     SSHFP Resource Record Type
     Defined in: RFC4255
     """
-    FIELDS = ['algorithm', 'fp_type', 'fingerprint']
+    FIELDS = {
+        'algorithm': {},
+        'fp_type': {},
+        'fingerprint': {}
+    }
 
     # The record type is defined in the RFC. This will be used when the record
     # is sent by mini-dns.

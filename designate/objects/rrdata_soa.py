@@ -20,8 +20,15 @@ class RRData_SOA(Record):
     SOA Resource Record Type
     Defined in: RFC1035
     """
-    FIELDS = ['mname', 'rname', 'serial', 'refresh', 'retry', 'expire',
-              'minimum']
+    FIELDS = {
+        'mname': {},
+        'rname': {},
+        'serial': {},
+        'refresh': {},
+        'retry': {},
+        'expire': {},
+        'minimum': {}
+    }
 
     # The record type is defined in the RFC. This will be used when the record
     # is sent by mini-dns.
