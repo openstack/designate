@@ -1,17 +1,19 @@
-# Translations template for designate.
+# French translations for designate.
 # Copyright (C) 2014 ORGANIZATION
 # This file is distributed under the same license as the designate project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2014.
 #
-#, fuzzy
+# Translators:
+# Corina Roe, 2014
 msgid ""
 msgstr ""
-"Project-Id-Version: designate 2015.1.dev20.g74817f9\n"
+"Project-Id-Version:  Designate\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2014-10-12 06:18+0000\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"PO-Revision-Date: 2014-10-10 02:14+0000\n"
+"Last-Translator: Corina Roe\n"
+"Language-Team: French "
+"(http://www.transifex.com/projects/p/designate/language/fr/)\n"
+"Plural-Forms: nplurals=2; plural=(n > 1)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -21,93 +23,101 @@ msgstr ""
 #, python-format
 msgid "Policy check succeeded for rule '%(rule)s' on target %(target)s"
 msgstr ""
+"Vérification de stratégie réussie pour la règle '%(rule)s' pour la cible "
+"%(target)s"
 
 #: designate/policy.py:100
 #, python-format
 msgid "Policy check failed for rule '%(rule)s' on target %(target)s"
 msgstr ""
+"Vérification de stratégie ayant échoué pour la règle '%(rule)s' pour la "
+"cible %(target)s"
 
 #: designate/service.py:73
 #, python-format
 msgid "Starting %(topic)s node (version %(version_string)s)"
-msgstr ""
+msgstr "Démarrage du noeud %(topic)s (version %(version_string)s)"
 
 #: designate/service.py:76
 #, python-format
 msgid "Creating RPC server on topic '%s'"
-msgstr ""
+msgstr "Créer un serveur RPC pour topic '%s'"
 
 #: designate/service.py:159
 msgid "serve() can only be called once"
-msgstr ""
+msgstr "serve() ne peut être appelé qu'une seule fois"
 
 #: designate/api/v2/controllers/rest.py:87 designate/sqlalchemy/utils.py:68
 msgid "Unknown sort direction, must be 'desc' or 'asc'"
-msgstr ""
+msgstr "Direction d'ordonnancement inconnue, choisir 'desc' ou 'asc'"
 
 #: designate/cmd/manage.py:113
 #, python-format
 msgid "Could not read %s. Re-running with sudo"
-msgstr ""
+msgstr "Impossible de lire %s. Nouvelle exécution avec sudo"
 
 #: designate/cmd/manage.py:117
 msgid "sudo failed, continuing as if nothing happened"
-msgstr ""
+msgstr "sudo a échoué, continue comme si de rien n'était"
 
 #: designate/cmd/manage.py:119
 msgid "Please re-run designate-manage as root."
-msgstr ""
+msgstr "Veuillez exécuter designate-manage à nouveau en tant que root"
 
 #: designate/openstack/common/lockutils.py:101
 #, python-format
 msgid "Unable to acquire lock on `%(filename)s` due to %(exception)s"
-msgstr ""
+msgstr "Impossible d'obtenir un verrou sur `%(filename)s` à cause de %(exception)s"
 
 #: designate/openstack/common/log.py:287
 #, python-format
 msgid "Deprecated: %s"
-msgstr ""
+msgstr "Déprécié : %s"
 
 #: designate/openstack/common/log.py:395
 #, python-format
 msgid "Error loading logging config %(log_config)s: %(err_msg)s"
 msgstr ""
+"Erreur de chargement de la config de journalisation %(log_config)s: "
+"%(err_msg)s"
 
 #: designate/openstack/common/log.py:456
 #, python-format
 msgid "syslog facility must be one of: %s"
-msgstr ""
+msgstr "La fonction syslog doit faire partie de  : %s"
 
 #: designate/openstack/common/log.py:707
 #, python-format
 msgid "Fatal call to deprecated config: %(msg)s"
-msgstr ""
+msgstr "Appel fatal à config dépréciée : %(msg)s"
 
 #: designate/openstack/common/policy.py:97
 msgid "The JSON file that defines policies."
-msgstr ""
+msgstr "Le fichier JSON qui définit les stratégies."
 
 #: designate/openstack/common/policy.py:100
 msgid "Default rule. Enforced when a requested rule is not found."
-msgstr ""
+msgstr "Règle par défaut. Respectée quand une règle demandée n'est pas trouvée."
 
 #: designate/openstack/common/policy.py:104
 msgid "The directories of policy configuration files is stored"
-msgstr ""
+msgstr "Les répertoires des fichiers de configuration sont stockés"
 
 #: designate/openstack/common/policy.py:119
 #, python-format
 msgid "Policy doesn't allow %s to be performed."
-msgstr ""
+msgstr "Stratégie ne permettant pas d'effectuer %s."
 
 #: designate/openstack/common/policy.py:213
 #, python-format
 msgid "Rules must be an instance of dict or Rules, got %s instead"
 msgstr ""
+"Les règles doivent représenter une instance de dict ou Règles, %s obtenu "
+"à la place"
 
 #: designate/openstack/common/processutils.py:59
 msgid "Unexpected error while running command."
-msgstr ""
+msgstr "Erreur inattendue lors de l'exécution de la commande."
 
 #: designate/openstack/common/processutils.py:62
 #, python-format
@@ -118,59 +128,67 @@ msgid ""
 "Stdout: %(stdout)r\n"
 "Stderr: %(stderr)r"
 msgstr ""
+"%(description)s\n"
+"Commande : %(cmd)s\n"
+"Code de sortie : %(exit_code)s\n"
+"Stdout : %(stdout)r\n"
+"Stderr : %(stderr)r"
 
 #: designate/openstack/common/processutils.py:143
 #, python-format
 msgid "Got unknown keyword args: %r"
-msgstr ""
+msgstr "Args de mot clé inconnu : %r"
 
 #: designate/openstack/common/processutils.py:148
 msgid "Command requested root, but did not specify a root helper."
-msgstr ""
+msgstr "La commande exigeait root, mais n'indiquait pas comment obtenir root."
 
 #: designate/openstack/common/processutils.py:158
 #, python-format
 msgid "Running cmd (subprocess): %s"
-msgstr ""
+msgstr "Exécute cmd (sousprocessus) : %s"
 
 #: designate/openstack/common/processutils.py:206
 #, python-format
 msgid "%r failed. Retrying."
-msgstr ""
+msgstr "%r a échoué. Nouvelle tentative."
 
 #: designate/openstack/common/processutils.py:248
 msgid "Environment not supported over SSH"
-msgstr ""
+msgstr "Environnement non pris en charge avec SSH"
 
 #: designate/openstack/common/processutils.py:252
 msgid "process_input not supported over SSH"
-msgstr ""
+msgstr "process_input not non pris en charge avec SSH"
 
 #: designate/openstack/common/sslutils.py:47
 #, python-format
 msgid "Unable to find cert_file : %s"
-msgstr ""
+msgstr "Impossible de trouver le cert_file : %s"
 
 #: designate/openstack/common/sslutils.py:50
 #, python-format
 msgid "Unable to find ca_file : %s"
-msgstr ""
+msgstr "Impossible de trouver le ca_file : %s"
 
 #: designate/openstack/common/sslutils.py:53
 #, python-format
 msgid "Unable to find key_file : %s"
-msgstr ""
+msgstr "Impossible de trouver le key_file : %s"
 
 #: designate/openstack/common/sslutils.py:56
 msgid ""
 "When running server in SSL mode, you must specify both a cert_file and "
 "key_file option value in your configuration file"
 msgstr ""
+"Quand vous exécutez un serveur en mode SSL,  vous devez spécifier la "
+"valeur des l'options cert_file et key_file dans votre fichier de "
+"configuration"
 
 #: designate/openstack/common/sslutils.py:95
 #, python-format
 msgid "Invalid SSL version : %s"
-msgstr ""
+msgstr "Version SSL non valide : %s"
 
 #: designate/openstack/common/versionutils.py:90
 #, python-format
@@ -178,6 +196,8 @@ msgid ""
 "%(what)s is deprecated as of %(as_of)s in favor of %(in_favor_of)s and "
 "may be removed in %(remove_in)s."
 msgstr ""
+"%(what)s déprécié depuis %(as_of)s au bénéfice de %(in_favor_of)s et sera"
+" sans doute retiré dans %(remove_in)s."
 
 #: designate/openstack/common/versionutils.py:94
 #, python-format
@@ -185,55 +205,61 @@ msgid ""
 "%(what)s is deprecated as of %(as_of)s and may be removed in "
 "%(remove_in)s. It will not be superseded."
 msgstr ""
+"%(what)s déprécié depuis %(as_of)s et sera sans doute retiré dans "
+"%(remove_in)s. Ne sera pas remplacé."
 
 #: designate/openstack/common/versionutils.py:98
 #, python-format
 msgid "%(what)s is deprecated as of %(as_of)s in favor of %(in_favor_of)s."
-msgstr ""
+msgstr "%(what)s déprécié depuis %(as_of)s au bénéfice de %(in_favor_of)s."
 
 #: designate/openstack/common/versionutils.py:101
 #, python-format
 msgid "%(what)s is deprecated as of %(as_of)s. It will not be superseded."
-msgstr ""
+msgstr "%(what)s déprécié depuis %(as_of)s. Ne sera pas remplacé."
 
 #: designate/openstack/deprecated/exception.py:104
 msgid "Uncaught exception"
-msgstr ""
+msgstr "Exception non interceptée"
 
 #: designate/openstack/deprecated/wsgi.py:110
 #, python-format
 msgid "Could not bind to %(host)s:%(port)s after trying for 30 seconds"
 msgstr ""
+"Impossible de se connecter au %(host)s:%(port)s après un effort d'une "
+"durée de 30 secondes"
 
 #: designate/openstack/deprecated/wsgi.py:372
 msgid "Unsupported Content-Type"
-msgstr ""
+msgstr "Type de contenu non pris en charge"
 
 #: designate/openstack/deprecated/wsgi.py:375
 msgid "Malformed request body"
-msgstr ""
+msgstr "Corps de texte de la requête malformé"
 
 #: designate/openstack/deprecated/wsgi.py:660
 msgid "Empty body provided in request"
-msgstr ""
+msgstr "Aucun contenu dans la requête"
 
 #: designate/openstack/deprecated/wsgi.py:666
 msgid "Unrecognized Content-Type provided in request"
-msgstr ""
+msgstr "Type de contenu fourni dans la requête non reconnu"
 
 #: designate/openstack/deprecated/wsgi.py:670
 msgid "No Content-Type provided in request"
-msgstr ""
+msgstr "Aucun Type de contenu fourni dans la requête"
 
 #: designate/openstack/deprecated/wsgi.py:676
 msgid "Unable to deserialize body as provided Content-Type"
 msgstr ""
+"Impossible de dé sérialiser le corps de contenu fourni par le Type de "
+"contenu"
 
 #: designate/openstack/deprecated/wsgi.py:726
 msgid "cannot understand JSON"
-msgstr ""
+msgstr "ne comprend pas JSON"
 
 #: designate/openstack/deprecated/wsgi.py:750
 msgid "cannot understand XML"
-msgstr ""
+msgstr "ne comprend pas XML"
 

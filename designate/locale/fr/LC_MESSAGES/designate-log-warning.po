@@ -1,30 +1,35 @@
 # Translations template for designate.
 # Copyright (C) 2014 ORGANIZATION
 # This file is distributed under the same license as the designate project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2014.
 #
-#, fuzzy
+# Translators:
+# Corina Roe, 2014
 msgid ""
 msgstr ""
-"Project-Id-Version: designate 2015.1.dev20.g74817f9\n"
+"Project-Id-Version: Designate\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2014-10-12 06:18+0000\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"PO-Revision-Date: 2014-10-10 02:15+0000\n"
+"Last-Translator: Corina Roe\n"
+"Language-Team: French (http://www.transifex.com/projects/p/designate/"
+"language/fr/)\n"
+"Language: fr\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 #: designate/api/middleware.py:181
 msgid "Request authorized to bypass maintenance mode"
-msgstr ""
+msgstr "Requête non assujettie au mode de maintenance"
 
 #: designate/backend/base.py:117
 #, python-format
 msgid "Failed to delete domain '%(domain)s' during sync. Message: %(message)s"
 msgstr ""
+"N'a pas pu supprimer le domaine '%(domain)s' pendant la sync. Message : "
+"%(message)s"
 
 #: designate/backend/base.py:143
 #, python-format
@@ -32,29 +37,35 @@ msgid ""
 "Failed to delete record '%(record)s' in domain '%(domain)s' during sync. "
 "Message: %(message)s"
 msgstr ""
+"N'a pas pu supprimer l'enregistrement '%(record)s' dans le domaine "
+"'%(domain)s' pendant la sync. Message : %(message)s"
 
 #: designate/backend/impl_bind9.py:66
 #, python-format
 msgid "Domain %(d_name)s (%(d_id)s) missing from backend, recreating"
 msgstr ""
+"Domaine %(d_name)s (%(d_id)s) manquant dans le serveur, création à nouveau "
+"en cours"
 
 #: designate/backend/impl_dynect.py:377
 #, python-format
 msgid "Attempt to delete %(d_id)s / %(d_name)s caused 404, ignoring."
 msgstr ""
+"Tentative de suppression des %(d_id)s / %(d_name)s entraînant l'erreur 404, "
+"ignore."
 
 #: designate/backend/impl_ipa/auth.py:41
 msgid "No IPA client kerberos keytab file given"
-msgstr ""
+msgstr "Aucun fichier keytab de kerberos de client IPA donné"
 
 #: designate/backend/impl_powerdns/migrate_repo/versions/006_add_inherit_ttl_col.py:56
 msgid "**** A manual post-migration step is required ****"
-msgstr ""
+msgstr "**** Étape manuelle de post-migration requise ****"
 
 #: designate/backend/impl_powerdns/migrate_repo/versions/006_add_inherit_ttl_col.py:57
 #, python-format
 msgid "Please issue this query: %s"
-msgstr ""
+msgstr "Veuillez lancer cette demande : %s"
 
 #: designate/mdns/notify.py:123
 #, python-format
@@ -62,62 +73,71 @@ msgid ""
 "Failed to get NOERROR while trying to notify change in %(zone)s to "
 "%(server)s:%(port)d. Response message = %(resp)s"
 msgstr ""
+"N'a pas pu obtenir NOERROR lors de la tentative de changement de %(zone)s à "
+"%(server)s:%(port)d. Message de réponse = %(resp)s"
 
 #: designate/mdns/notify.py:130
 #, python-format
 msgid ""
-"Got Timeout while trying to notify change in %(zone)s to "
-"%(server)s:%(port)d. "
+"Got Timeout while trying to notify change in %(zone)s to %(server)s:"
+"%(port)d. "
 msgstr ""
+"Expiration lors de la tentative de notification du changement de %(zone)s à "
+"%(server)s:%(port)d. "
 
 #: designate/mdns/notify.py:135
 #, python-format
 msgid ""
-"Got BadResponse while trying to notify change in %(zone)s to "
-"%(server)s:%(port)d"
+"Got BadResponse while trying to notify change in %(zone)s to %(server)s:"
+"%(port)d"
 msgstr ""
+"A reçu BadResponse lors de la tentative de modification de %(zone)s à "
+"%(server)s:%(port)d"
 
 #: designate/mdns/service.py:114
 #, python-format
 msgid "Handling TCP Request from: %(host)s:%(port)d"
-msgstr ""
+msgstr "Traitement de la requête TCP en provenance de : %(host)s:%(port)d"
 
 #: designate/mdns/service.py:124
 #, python-format
 msgid ""
-"got a packet with unexpected length from %(host)s:%(port)d. Expected "
-"length=%(elen)d. Actual length=%(alen)d."
+"got a packet with unexpected length from %(host)s:%(port)d. Expected length="
+"%(elen)d. Actual length=%(alen)d."
 msgstr ""
+"a reçu un paquet d'une longueur inattendue de la part de %(host)s:%(port)d. "
+"Longueur attendue=%(elen)d. Longueur réelle=%(alen)d."
 
 #: designate/mdns/service.py:139
 #, python-format
 msgid "Handling UDP Request from: %(host)s:%(port)d"
-msgstr ""
+msgstr "Traitement de la requête UDP de: %(host)s:%(port)d"
 
 #: designate/network_api/neutron.py:121
 msgid "Calling Neutron resulted in a 401, please investigate."
 msgstr ""
+"L'appel à Neutron s'est traduit par un 401, veuillez procéder à des "
+"investigations."
 
 #: designate/openstack/common/loopingcall.py:87
 #, python-format
 msgid "task %(func_name)s run outlasted interval by %(delay).2f sec"
-msgstr ""
+msgstr "la tâche %(func_name)s a dépassé l'intervalle de %(delay).2f sec"
 
 #: designate/openstack/common/policy.py:248
 #, python-format
 msgid "Can not find policy directories %s"
-msgstr ""
+msgstr "Impossible de trouver les répertoires de stratégies %s"
 
 #: designate/openstack/common/service.py:356
 #, python-format
 msgid "pid %d not in child list"
-msgstr ""
+msgstr "pid %d ne fait pas partie de la liste enfant"
 
 #: designate/sink/service.py:48
 msgid "No designate-sink handlers enabled or loaded"
-msgstr ""
+msgstr "Aucun gestionnaire designate-sink n'a été activé ou téléchargé"
 
 #: designate/sqlalchemy/utils.py:46
 msgid "Id not in sort_keys; is sort_keys unique?"
-msgstr ""
-
+msgstr "Id ne se trouve pas dans sort_keys; est-ce que sort_keys est unique ?"
