@@ -8,9 +8,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Designate\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-10-12 06:18+0000\n"
-"PO-Revision-Date: 2014-10-09 20:24+0000\n"
-"Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
+"POT-Creation-Date: 2014-10-13 06:06+0000\n"
+"PO-Revision-Date: 2014-10-12 22:03+0000\n"
+"Last-Translator: Corina Roe\n"
 "Language-Team: French (http://www.transifex.com/projects/p/designate/"
 "language/fr/)\n"
 "Language: fr\n"
@@ -435,7 +435,7 @@ msgstr "démarrage du point de terminaison de notification de mdns"
 #: designate/mdns/notify.py:65
 #, python-format
 msgid "Sending NOTIFYs for %(zone_name)s"
-msgstr ""
+msgstr "Envoi des NOTIFICATIONS pour les %(zone_name)s"
 
 #: designate/mdns/rpcapi.py:46
 #, python-format
