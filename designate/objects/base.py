@@ -24,7 +24,7 @@ class NotSpecifiedSentinel:
 
 def get_attrname(name):
     """Return the mangled name of the attribute's underlying storage."""
-    return '_%s' % name
+    return '_obj_field_%s' % name
 
 
 def make_class_properties(cls):
@@ -174,6 +174,18 @@ class DesignateObject(object):
             return getattr(self, field)
         else:
             raise KeyError(field)
+
+    def __setattr__(self, name, value):
+        """Enforces all object attributes are private or well defined"""
+        if name[0:5] == '_obj_' or name in self.FIELDS.keys():
+            super(DesignateObject, self).__setattr__(name, value)
+
+        else:
+            raise AttributeError(
+                "Designate object '%(type)s' has no attribute '%(name)s'" % {
+                    'type': self.__class__.__name__,
+                    'name': name,
+                })
 
     def __deepcopy__(self, memodict=None):
         """

@@ -114,11 +114,11 @@ class DesignateObjectTest(tests.TestCase):
         obj = TestObject()
 
         obj.id = 'MyID'
-        self.assertEqual('MyID', obj._id)
+        self.assertEqual('MyID', obj.id)
         self.assertEqual(1, len(obj.obj_what_changed()))
 
         obj.name = 'MyName'
-        self.assertEqual('MyName', obj._name)
+        self.assertEqual('MyName', obj.name)
         self.assertEqual(2, len(obj.obj_what_changed()))
 
     def test_to_primitive(self):
