@@ -31,6 +31,9 @@ RE_HOSTNAME = r'^(?!.{255,})(?:(^\*|(?!\-)[A-Za-z0-9_\-]{1,63})(?<!\-)\.)+$'
 RE_TLDNAME = r'^(?!.{255,})(?:(?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-))' \
     r'(\.(?:(?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-)))*$'
 
+RE_UUID = r'^([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-' \
+    r'([0-9a-fA-F]){4}-([0-9a-fA-F]){12}$'
+
 draft3_format_checker = jsonschema.draft3_format_checker
 draft4_format_checker = jsonschema.draft4_format_checker
 
@@ -118,6 +121,18 @@ def is_email(instance):
     rname = instance.replace('@', '.', 1)
 
     if not re.match(RE_DOMAINNAME, "%s." % rname):
+        return False
+
+    return True
+
+
+@draft3_format_checker.checks("uuid")
+@draft4_format_checker.checks("uuid")
+def is_uuid(instance):
+    if not isinstance(instance, compat.str_types):
+        return True
+
+    if not re.match(RE_UUID, instance):
         return False
 
     return True
