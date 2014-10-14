@@ -264,7 +264,7 @@ class ZonesController(rest.RestController):
         values = {
             'name': dnspython_zone.origin.to_text(),
             'email': email,
-            'ttl': str(soa.ttl)
+            'ttl': soa.ttl
         }
         return self.central_api.create_domain(context, Domain(**values))
 
@@ -272,13 +272,13 @@ class ZonesController(rest.RestController):
         if record_type == 'MX':
             return {
                 'data': rdata.exchange.to_text(),
-                'priority': str(rdata.preference)
+                'priority': rdata.preference
             }
         elif record_type == 'SRV':
             return {
-                'data': '%s %s %s' % (str(rdata.weight), str(rdata.port),
+                'data': '%d %d %s' % (rdata.weight, rdata.port,
                                       rdata.target.to_text()),
-                'priority': str(rdata.priority)
+                'priority': rdata.priority
             }
         else:
             return {
