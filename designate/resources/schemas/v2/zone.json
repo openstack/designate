@@ -19,13 +19,13 @@
                 "id": {
                     "type": "string",
                     "description": "Zone identifier",
-                    "pattern": "^([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}$",
+                    "format": "uuid",
                     "readOnly": true
                 },
                 "pool_id": {
                     "type": "string",
                     "description": "Pool identifier",
-                    "pattern": "^([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}$",
+                    "format": "uuid",
                     "immutable": true
                 },
                 "project_id": {

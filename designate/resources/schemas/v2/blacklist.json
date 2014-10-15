@@ -19,7 +19,7 @@
                 "id": {
                     "type": "string",
                     "description": "Blacklisted Zone Identifier",
-                    "pattern": "^([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}$",
+                    "format": "uuid",
                     "readOnly": true
                 },
                 "pattern": {
