@@ -146,6 +146,9 @@ class SQLAlchemy(object):
         return query
 
     def _create(self, table, obj, exc_dup, skip_values=None):
+        # Ensure the Object is valid
+        obj.validate()
+
         values = obj.obj_get_changes()
 
         if skip_values is not None:
@@ -234,6 +237,9 @@ class SQLAlchemy(object):
 
     def _update(self, context, table, obj, exc_dup, exc_notfound,
                 skip_values=None):
+        # Ensure the Object is valid
+        obj.validate()
+
         values = obj.obj_get_changes()
 
         if skip_values is not None:

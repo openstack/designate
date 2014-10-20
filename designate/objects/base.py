@@ -16,7 +16,13 @@ import copy
 
 import six
 
+from designate.openstack.common import log as logging
 from designate import exceptions
+from designate.schema import validators
+from designate.schema import format
+
+
+LOG = logging.getLogger(__name__)
 
 
 class NotSpecifiedSentinel:
@@ -64,6 +70,27 @@ def make_class_properties(cls):
         setattr(cls, field, property(getter, setter))
 
 
+def make_class_validator(cls):
+    schema = {
+        '$schema': 'http://json-schema.org/draft-04/hyper-schema',
+        'title': cls.obj_name(),
+        'description': 'Designate %s Object' % cls.obj_name(),
+        'type': 'object',
+        'additionalProperties': False,
+        'required': [],
+        'properties': {},
+    }
+
+    for name, properties in cls.FIELDS.items():
+        schema['properties'][name] = properties.get('schema', {})
+
+        if properties.get('required', False):
+            schema['required'].append(name)
+
+    cls._obj_validator = validators.Draft4Validator(
+        schema, format_checker=format.draft4_format_checker)
+
+
 class DesignateObjectMetaclass(type):
     def __init__(cls, names, bases, dict_):
         if not hasattr(cls, '_obj_classes'):
@@ -73,6 +100,7 @@ class DesignateObjectMetaclass(type):
             return
 
         make_class_properties(cls)
+        make_class_validator(cls)
 
         # Add a reference to the finished class into the _obj_classes
         # dictionary, allowing us to lookup classes by their name later - this
@@ -132,6 +160,11 @@ class DesignateObject(object):
         """
         return cls.__name__
 
+    @classmethod
+    def obj_get_schema(cls):
+        """Returns the JSON Schema for this Object."""
+        return cls._obj_validator.schema
+
     def __init__(self, **kwargs):
         self._obj_changes = set()
         self._obj_original_values = dict()
@@ -140,7 +173,8 @@ class DesignateObject(object):
             if name in self.FIELDS.keys():
                 setattr(self, name, value)
             else:
-                raise TypeError("'%s' is an invalid keyword argument" % name)
+                raise TypeError("__init__() got an unexpected keyword "
+                                "argument '%(name)s'" % {'name': name})
 
     def to_primitive(self):
         """
@@ -183,6 +217,32 @@ class DesignateObject(object):
         """Update a object's fields with the supplied key/value pairs"""
         for k, v in values.iteritems():
             setattr(self, k, v)
+
+    @property
+    def is_valid(self):
+        """Returns True if the Object is valid."""
+        return self._obj_validator.is_valid(self.to_dict())
+
+    def validate(self):
+        # NOTE(kiall): We make use of the Object registry here in order to
+        #              avoid an impossible circular import.
+        ValidationErrorList = self.obj_cls_from_name('ValidationErrorList')
+        ValidationError = self.obj_cls_from_name('ValidationError')
+
+        values = self.to_dict()
+        errors = ValidationErrorList()
+
+        LOG.debug("Validating '%(name)s' object with values: %(values)r", {
+            'name': self.obj_name(),
+            'values': values,
+        })
+
+        for error in self._obj_validator.iter_errors(values):
+            errors.append(ValidationError.from_js_error(error))
+
+        if len(errors) > 0:
+            raise exceptions.InvalidObject("Provided object does not match "
+                                           "schema", errors=errors)
 
     def obj_attr_is_set(self, name):
         """
@@ -425,7 +485,31 @@ class PersistentObjectMixin(object):
 
     This adds the fields that we use in common for all persistent objects.
     """
-    FIELDS = {'id': {}, 'created_at': {}, 'updated_at': {}, 'version': {}}
+    FIELDS = {
+        'id': {
+            'schema': {
+                'type': 'string',
+                'format': 'uuid',
+            }
+        },
+        'created_at': {
+            'schema': {
+                'type': 'string',
+                'format': 'date-time',
+            }
+        },
+        'updated_at': {
+            'schema': {
+                'type': ['string', 'null'],
+                'format': 'date-time',
+            }
+        },
+        'version': {
+            'schema': {
+                'type': 'integer',
+            }
+        }
+    }
 
 
 class SoftDeleteObjectMixin(object):
@@ -434,4 +518,16 @@ class SoftDeleteObjectMixin(object):
 
     This adds the fields that we use in common for all soft-deleted objects.
     """
-    FIELDS = {'deleted': {}, 'deleted_at': {}}
+    FIELDS = {
+        'deleted': {
+            'schema': {
+                'type': ['string', 'integer'],
+            }
+        },
+        'deleted_at': {
+            'schema': {
+                'type': ['string', 'null'],
+                'format': 'date-time',
+            }
+        }
+    }
