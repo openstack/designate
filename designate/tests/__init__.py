@@ -284,7 +284,7 @@ class TestCase(base.BaseTestCase):
                 REPOSITORY, manage_database.INIT_VERSION))
         self.config(
             connection=self.db_fixture.url,
-            connection_debug=100,
+            connection_debug=50,
             group='storage:sqlalchemy'
         )
 
