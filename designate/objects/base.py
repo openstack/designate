@@ -13,8 +13,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 import copy
+import urlparse
 
 import six
+import jsonschema
 
 from designate.openstack.common import log as logging
 from designate import exceptions
@@ -70,6 +72,18 @@ def make_class_properties(cls):
         setattr(cls, field, property(getter, setter))
 
 
+def _schema_ref_resolver(uri):
+    """
+    Fetches an DesignateObject's schema from a JSON Schema Reference URI
+
+    Sample URI: obj://ObjectName#/subpathA/subpathB
+    """
+    obj_name = urlparse.urlsplit(uri).netloc
+    obj = DesignateObject.obj_cls_from_name(obj_name)
+
+    return obj.obj_get_schema()
+
+
 def make_class_validator(cls):
     schema = {
         '$schema': 'http://json-schema.org/draft-04/hyper-schema',
@@ -87,8 +101,11 @@ def make_class_validator(cls):
         if properties.get('required', False):
             schema['required'].append(name)
 
+    resolver = jsonschema.RefResolver.from_schema(
+        schema, handlers={'obj': _schema_ref_resolver})
+
     cls._obj_validator = validators.Draft4Validator(
-        schema, format_checker=format.draft4_format_checker)
+        schema, resolver=resolver, format_checker=format.draft4_format_checker)
 
 
 class DesignateObjectMetaclass(type):
