@@ -240,6 +240,9 @@ class StorageTestCase(object):
         # Ensure the new value took
         self.assertEqual(5000, quota.hard_limit)
 
+        # Ensure the version column was incremented
+        self.assertEqual(2, quota.version)
+
     def test_update_quota_duplicate(self):
         # Create two quotas
         quota_one = self.create_quota(fixture=0)
@@ -359,6 +362,9 @@ class StorageTestCase(object):
 
         # Ensure the new value took
         self.assertEqual('ns2.example.org.', server.name)
+
+        # Ensure the version column was incremented
+        self.assertEqual(2, server.version)
 
     def test_update_server_duplicate(self):
         # Create two servers
@@ -487,6 +493,9 @@ class StorageTestCase(object):
 
         # Ensure the new value took
         self.assertEqual('test-key-updated', tsigkey.name)
+
+        # Ensure the version column was incremented
+        self.assertEqual(2, tsigkey.version)
 
     def test_update_tsigkey_duplicate(self):
         # Create two tsigkeys
@@ -775,6 +784,9 @@ class StorageTestCase(object):
 
         # Ensure the new valie took
         self.assertEqual('example.net.', domain.name)
+
+        # Ensure the version column was incremented
+        self.assertEqual(2, domain.version)
 
     def test_update_domain_duplicate(self):
         # Create two domains
@@ -1081,6 +1093,9 @@ class StorageTestCase(object):
 
         # Ensure the new value took
         self.assertEqual(1800, recordset.ttl)
+
+        # Ensure the version column was incremented
+        self.assertEqual(2, recordset.version)
 
     def test_update_recordset_duplicate(self):
         domain = self.create_domain()
@@ -1442,6 +1457,9 @@ class StorageTestCase(object):
         # Ensure the new value took
         self.assertEqual('192.0.2.255', record.data)
 
+        # Ensure the version column was incremented
+        self.assertEqual(2, record.version)
+
     def test_update_record_duplicate(self):
         domain = self.create_domain()
         recordset = self.create_recordset(domain)
@@ -1618,6 +1636,9 @@ class StorageTestCase(object):
         # Verify the new value
         self.assertEqual('org', tld.name)
 
+        # Ensure the version column was incremented
+        self.assertEqual(2, tld.version)
+
     def test_update_tld_duplicate(self):
         # Create two tlds
         tld_one = self.create_tld(fixture=0)
@@ -1763,6 +1784,9 @@ class StorageTestCase(object):
                                                   blacklist)
         # Verify the new values
         self.assertEqual('^example.uk.co.', blacklist.pattern)
+
+        # Ensure the version column was incremented
+        self.assertEqual(2, blacklist.version)
 
     def test_update_blacklist_duplicate(self):
         # Create two blacklists

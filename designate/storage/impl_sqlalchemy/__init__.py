@@ -140,6 +140,19 @@ class SQLAlchemyStorage(base.Storage):
 
         return query
 
+    def _apply_version_increment(self, context, table, query):
+        """
+        Apply Version Incrementing SQL fragment a Query
+
+        This should be called on all UPDATE queries, as it will ensure the
+        version column is correctly incremented.
+        """
+        if hasattr(table.c, 'version'):
+            # NOTE(kiall): This will translate into a true SQL increment.
+            query = query.values({'version': table.c.version + 1})
+
+        return query
+
     def _create(self, table, obj, exc_dup, skip_values=None):
         values = obj.obj_get_changes()
 
@@ -241,6 +254,7 @@ class SQLAlchemyStorage(base.Storage):
 
         query = self._apply_tenant_criteria(context, table, query)
         query = self._apply_deleted_criteria(context, table, query)
+        query = self._apply_version_increment(context, table, query)
 
         try:
             resultproxy = self.session.execute(query)
