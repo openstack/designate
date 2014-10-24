@@ -35,7 +35,7 @@ class ZonesController(rest.RestController):
     _resource_schema = schema.Schema('v2', 'zone')
     _collection_schema = schema.Schema('v2', 'zones')
     SORT_KEYS = ['created_at', 'id', 'updated_at', 'name', 'tenant_id',
-                 'serial', 'ttl']
+                 'serial', 'ttl', 'status']
 
     nameservers = nameservers.NameServersController()
     recordsets = recordsets.RecordSetsController()
@@ -108,7 +108,7 @@ class ZonesController(rest.RestController):
         marker, limit, sort_key, sort_dir = self._get_paging_params(params)
 
         # Extract any filter params.
-        accepted_filters = ('name', 'email', )
+        accepted_filters = ('name', 'email', 'status', )
         criterion = dict((k, params[k]) for k in accepted_filters
                          if k in params)
 
