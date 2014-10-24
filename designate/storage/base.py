@@ -181,12 +181,6 @@ class Storage(DriverPlugin):
 
         :param context: RPC Context.
         :param criterion: Criteria to filter by.
-        :param marker: Resource ID from which after the requested page will
-                       start after
-        :param limit: Integer limit of objects of the page size after the
-                      marker
-        :param sort_key: Key from which to sort after.
-        :param sort_dir: Direction to sort after using sort_key.
         """
 
     @abc.abstractmethod
@@ -380,7 +374,6 @@ class Storage(DriverPlugin):
         Find RecordSets.
 
         :param context: RPC Context.
-        :param domain_id: Domain ID where the recordsets reside.
         :param criterion: Criteria to filter by.
         :param marker: Resource ID from which after the requested page will
                        start after
