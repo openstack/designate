@@ -15,6 +15,7 @@
 # under the License.
 from designate.openstack.common import log as logging
 from designate.backend.base import Backend
+from designate.backend.base import PoolBackend
 
 LOG = logging.getLogger(__name__)
 
@@ -25,3 +26,18 @@ def get_backend(backend_driver, central_service):
     cls = Backend.get_driver(backend_driver)
 
     return cls(central_service=central_service)
+
+
+def get_server_object(backend_driver, server_id):
+    LOG.debug("Loading pool backend driver: %s" % backend_driver)
+
+    cls = PoolBackend.get_driver(backend_driver)
+    return cls.get_server_object(backend_driver, server_id)
+
+
+def get_pool_backend(backend_driver, backend_options):
+    LOG.debug("Loading pool backend driver: %s" % backend_driver)
+
+    cls = PoolBackend.get_driver(backend_driver)
+
+    return cls(backend_options)

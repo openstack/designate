@@ -51,6 +51,11 @@ cfg.CONF.import_opt('auth_strategy', 'designate.api',
                     group='service:api')
 cfg.CONF.import_opt('connection', 'designate.storage.impl_sqlalchemy',
                     group='storage:sqlalchemy')
+cfg.CONF.import_opt('cache_driver', 'designate.pool_manager',
+                    group='service:pool_manager')
+cfg.CONF.import_opt('connection',
+                    'designate.pool_manager.cache.impl_sqlalchemy',
+                    group='pool_manager_cache:sqlalchemy')
 
 
 class NotifierFixture(fixtures.Fixture):
@@ -244,6 +249,18 @@ class TestCase(base.BaseTestCase):
         'pattern': 'blacklisted.org.'
     }]
 
+    pool_manager_status_fixtures = [{
+        'server_id': '1d7a26e6-e604-4aa0-bbc5-d01081bf1f45',
+        'status': 'SUCCESS',
+        'serial_number': 1,
+        'action': 'CREATE',
+    }, {
+        'server_id': '1d7a26e6-e604-4aa0-bbc5-d01081bf1f45',
+        'status': 'ERROR',
+        'serial_number': 2,
+        'action': 'DELETE'
+    }]
+
     def setUp(self):
         super(TestCase, self).setUp()
 
@@ -288,6 +305,8 @@ class TestCase(base.BaseTestCase):
             group='storage:sqlalchemy'
         )
 
+        self._setup_pool_manager_cache()
+
         self.config(network_api='fake')
         self.config(
             managed_resource_tenant_id='managing_tenant',
@@ -302,6 +321,25 @@ class TestCase(base.BaseTestCase):
         self.central_service = self.start_service('central')
 
         self.admin_context = self.get_admin_context()
+
+    def _setup_pool_manager_cache(self):
+
+        self.config(
+            cache_driver='sqlalchemy',
+            group='service:pool_manager')
+
+        repository = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                                  '..',
+                                                  'pool_manager',
+                                                  'cache',
+                                                  'impl_sqlalchemy',
+                                                  'migrate_repo'))
+        db_fixture = self.useFixture(
+            DatabaseFixture.get_fixture(repository))
+        self.config(
+            connection=db_fixture.url,
+            connection_debug=50,
+            group='pool_manager_cache:sqlalchemy')
 
     # Config Methods
     def config(self, **kwargs):
@@ -426,6 +464,13 @@ class TestCase(base.BaseTestCase):
         values = values or {}
 
         _values = copy.copy(self.blacklist_fixtures[fixture])
+        _values.update(values)
+        return _values
+
+    def get_pool_manager_status_fixture(self, fixture=0, values=None):
+        values = values or {}
+
+        _values = copy.copy(self.pool_manager_status_fixtures[fixture])
         _values.update(values)
         return _values
 
