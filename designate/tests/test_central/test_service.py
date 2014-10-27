@@ -2315,7 +2315,6 @@ class CentralServiceTest(CentralTestCase):
     def test_create_pool(self):
         # Get the values
         values = self.get_pool_fixture(fixture=0)
-
         # Create the pool using the values
         pool = self.central_service.create_pool(
             context=self.admin_context,
@@ -2327,9 +2326,23 @@ class CentralServiceTest(CentralTestCase):
         self.assertIsNotNone(pool['version'])
         self.assertIsNotNone(pool['tenant_id'])
         self.assertIsNone(pool['updated_at'])
+        self.assertIsNotNone(pool['attributes'])
+        self.assertIsNotNone(pool['nameservers'])
 
         self.assertEqual(pool['name'], values['name'])
-        self.assertEqual(pool['provisioner'], values['provisioner'])
+
+        # Compare the actual values of attributes and nameservers
+        for k in range(0, len(values['attributes'])):
+            self.assertEqual(
+                pool['attributes'][k].to_primitive()['designate_object.data'],
+                values['attributes'][k].to_primitive()['designate_object.data']
+            )
+
+        for k in range(0, len(values['nameservers'])):
+            self.assertEqual(
+                pool['nameservers'][k].to_primitive()['designate_object.data'],
+                values['nameservers'][k].to_primitive()
+                ['designate_object.data'])
 
     def test_get_pool(self):
         # Create a server pool
@@ -2339,14 +2352,24 @@ class CentralServiceTest(CentralTestCase):
         pool = self.central_service.get_pool(self.admin_context,
                                              expected['id'])
 
-        LOG.debug("The pool is %r" % pool)
-
         self.assertEqual(pool['id'], expected['id'])
         self.assertEqual(pool['created_at'], expected['created_at'])
         self.assertEqual(pool['version'], expected['version'])
         self.assertEqual(pool['tenant_id'], expected['tenant_id'])
         self.assertEqual(pool['name'], expected['name'])
-        self.assertEqual(pool['provisioner'], expected['provisioner'])
+
+        # Compare the actual values of attributes and nameservers
+        for k in range(0, len(expected['attributes'])):
+            self.assertEqual(
+                pool['attributes'][k].to_primitive()['designate_object.data'],
+                expected['attributes'][k].to_primitive()
+                ['designate_object.data'])
+
+        for k in range(0, len(expected['nameservers'])):
+            self.assertEqual(
+                pool['nameservers'][k].to_primitive()['designate_object.data'],
+                expected['nameservers'][k].to_primitive()
+                ['designate_object.data'])
 
     def test_find_pools(self):
         # Verify no pools exist
@@ -2363,7 +2386,21 @@ class CentralServiceTest(CentralTestCase):
 
         self.assertEqual(len(pools), 1)
         self.assertEqual(pools[0]['name'], values['name'])
-        self.assertEqual(pools[0]['provisioner'], values['provisioner'])
+
+        # Compare the actual values of attributes and nameservers
+        expected_attributes = \
+            values['attributes'][0].to_primitive()['designate_object.data']
+        actual_attributes = \
+            pools[0]['attributes'][0].to_primitive()['designate_object.data']
+        for k in expected_attributes:
+            self.assertEqual(actual_attributes[k], expected_attributes[k])
+
+        expected_nameservers = \
+            values['nameservers'][0].to_primitive()['designate_object.data']
+        actual_nameservers = \
+            pools[0]['nameservers'][0].to_primitive()['designate_object.data']
+        for k in expected_nameservers:
+            self.assertEqual(actual_nameservers[k], expected_nameservers[k])
 
     def test_find_pool(self):
         # Create a server pool
@@ -2374,7 +2411,19 @@ class CentralServiceTest(CentralTestCase):
                                               {'id': expected['id']})
 
         self.assertEqual(pool['name'], expected['name'])
-        self.assertEqual(pool['provisioner'], expected['provisioner'])
+
+        # Compare the actual values of attributes and nameservers
+        for k in range(0, len(expected['attributes'])):
+            self.assertEqual(
+                pool['attributes'][k].to_primitive()['designate_object.data'],
+                expected['attributes'][k].to_primitive()
+                ['designate_object.data'])
+
+        for k in range(0, len(expected['nameservers'])):
+            self.assertEqual(
+                pool['nameservers'][k].to_primitive()['designate_object.data'],
+                expected['nameservers'][k].to_primitive()
+                ['designate_object.data'])
 
     def test_update_pool(self):
         # Create a server pool
@@ -2382,6 +2431,15 @@ class CentralServiceTest(CentralTestCase):
 
         # Update the pool
         pool.description = 'New Comment'
+        attribute_values = self.get_pool_attribute_fixture(fixture=1)
+        pool_attributes = pool.attributes = objects.PoolAttributeList(
+            objects=[objects.PoolAttribute(key=r, value=attribute_values[r])
+                     for r in attribute_values])
+
+        nameserver_values = self.get_nameserver_fixture(fixture=1)
+        pool_nameservers = pool.nameservers = objects.NameServerList(
+            objects=[objects.NameServer(key='nameserver', value=r)
+                     for r in nameserver_values])
 
         # Update pool
         self.central_service.update_pool(self.admin_context, pool)
@@ -2391,6 +2449,21 @@ class CentralServiceTest(CentralTestCase):
 
         # Verify that the pool was updated correctly
         self.assertEqual("New Comment", pool.description)
+
+        # Compare the actual values of attributes and nameservers
+        for k in range(0, len(pool_attributes)):
+            actual_attributes = \
+                pool['attributes'][0].to_primitive()['designate_object.data']
+            expected_attributes = \
+                pool_attributes[0].to_primitive()['designate_object.data']
+            self.assertEqual(actual_attributes, expected_attributes)
+
+        for k in range(0, len(pool_nameservers)):
+            actual_nameservers = \
+                pool['nameservers'][k].to_primitive()['designate_object.data']
+            expected_nameservers = \
+                pool_nameservers[k].to_primitive()['designate_object.data']
+            self.assertEqual(actual_nameservers, expected_nameservers)
 
     def test_delete_pool(self):
         # Create a server pool

@@ -23,7 +23,8 @@ class Pool(base.DictObjectMixin, base.PersistentObjectMixin,
         'description': {},
         'tenant_id': {},
         'provisioner': {},
-        'attributes': {}
+        'attributes': {},
+        'nameservers': {},
     }
 
 

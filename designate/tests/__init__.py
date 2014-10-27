@@ -263,9 +263,20 @@ class TestCase(base.BaseTestCase):
 
     pool_fixtures = [
         {'name': 'test1',
-         'provisioner': 'UNMANAGED'},
+         'description': 'default description1'},
         {'name': 'test2',
-         'provisioner': 'UNMANAGED'}
+         'description': 'default description2'}
+    ]
+
+    pool_attribute_fixtures = [
+        {'scope': 'public'},
+        {'scope': 'private'},
+        {'scope': 'unknown'}
+    ]
+
+    name_server_fixtures = [
+        ['examplens1.com', 'examplens2.com'],
+        ['examplens1.org', 'examplens2.org']
     ]
 
     def setUp(self):
@@ -486,6 +497,32 @@ class TestCase(base.BaseTestCase):
 
         _values = copy.copy(self.pool_fixtures[fixture])
         _values.update(values)
+        _attribute_values = self.get_pool_attribute_fixture(
+            fixture=fixture, values=None)
+        _values['attributes'] = objects.PoolAttributeList(
+            objects=[objects.PoolAttribute(key=r, value=_attribute_values[r])
+                     for r in _attribute_values])
+
+        _nameserver_values = self.get_nameserver_fixture(
+            fixture=fixture, values=None)
+        _values['nameservers'] = objects.NameServerList(
+            objects=[objects.NameServer(key='nameserver', value=r)
+                     for r in _nameserver_values])
+
+        return _values
+
+    def get_pool_attribute_fixture(self, fixture=0, values=None):
+        values = values or {}
+
+        _values = copy.copy(self.pool_attribute_fixtures[fixture])
+        _values.update(values)
+        return _values
+
+    def get_nameserver_fixture(self, fixture=0, values=None):
+        if values:
+            _values = copy.copy(values)
+        else:
+            _values = copy.copy(self.name_server_fixtures[fixture])
         return _values
 
     def create_server(self, **kwargs):

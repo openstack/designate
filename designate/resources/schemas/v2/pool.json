@@ -1,0 +1,96 @@
+{
+    "$schema": "http://json-schema.org/draft-04/hyper-schema",
+
+    "id": "pool",
+
+    "title": "pool",
+    "description": "Pool",
+    "additionalProperties": false,
+
+    "required": ["pool"],
+
+    "properties": {
+        "pool": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "attributes", "nameservers"],
+
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Pool identifier",
+                    "pattern": "^([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}$",
+                    "readOnly": true
+                },
+                "project_id": {
+                    "type": ["string", "null"],
+                    "description": "Project identifier",
+                    "maxLength": 36,
+                    "immutable": true
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Pool name",
+                    "maxLength": 50,
+                    "immutable": true
+                },
+                "description": {
+                    "type": ["string", "null"],
+                    "description": "Description for the pool",
+                    "maxLength": 160
+                },
+                "attributes": {
+                    "type": "object",
+                    "description": "Pool attributes as name value pairs",
+                    "additionalProperties": false,
+                    "required": ["scope"],
+                    "properties": {
+                        "scope": {
+                            "type": "string",
+                            "enum": ["public", "private"]
+                        }
+                    }
+                },
+                "nameservers": {
+                    "type": "array",
+                    "description": "Nameservers that would go in the NS record",
+                    "minItems": 1,
+                    "items": {
+                        "type": "string",
+                        "format": "host-name",
+                        "maxLength": 255
+                    }
+                },
+                "version": {
+                    "type": "integer",
+                    "description": "Pool version number",
+                    "readOnly": true
+                },
+                "created_at": {
+                    "type": "string",
+                    "description": "Date and time of pool creation",
+                    "format": "date-time",
+                    "readOnly": true
+                },
+                "updated_at": {
+                    "type": ["string", "null"],
+                    "description": "Date and time of last pool modification",
+                    "format": "date-time",
+                    "readOnly": true
+                },
+                "links": {
+                    "type": "object",
+                    "additionalProperties": false,
+
+                    "properties": {
+                        "self": {
+                            "type": "string",
+                            "format": "url"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+

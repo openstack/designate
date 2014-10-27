@@ -216,6 +216,10 @@ class DuplicatePool(Duplicate):
     error_type = 'duplicate_pool'
 
 
+class DuplicatePoolAttribute(Duplicate):
+    error_type = 'duplicate_pool_attribute'
+
+
 class MethodNotAllowed(Base):
     expected = True
     error_code = 405
@@ -270,6 +274,10 @@ class PoolManagerStatusNotFound(NotFound):
 
 class PoolNotFound(NotFound):
     error_type = 'pool_not_found'
+
+
+class PoolAttributeNotFound(NotFound):
+    error_type = 'pool_attribute_not_found'
 
 
 class LastServerDeleteNotAllowed(BadRequest):

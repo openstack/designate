@@ -566,33 +566,159 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
                           sort_dir)
 
     def create_pool(self, context, pool):
-        return self._create(
-            tables.pools, pool, exceptions.DuplicatePool)
+        pool = self._create(
+            tables.pools, pool, exceptions.DuplicatePool,
+            ['attributes', 'nameservers'])
+
+        if pool.obj_attr_is_set('attributes'):
+            for pool_attribute in pool.attributes:
+                self.create_pool_attribute(context, pool.id, pool_attribute)
+        else:
+            pool.attributes = objects.PoolAttributeList()
+        pool.obj_reset_changes('attributes')
+
+        if pool.obj_attr_is_set('nameservers'):
+            for nameserver in pool.nameservers:
+                self.create_pool_attribute(context, pool.id, nameserver)
+        else:
+            pool.nameservers = objects.NameServerList()
+        pool.obj_reset_changes('nameservers')
+
+        return pool
 
     def get_pool(self, context, pool_id):
-        return self._find_pools(context, {'id': pool_id}, one=True)
+        pool = self._find_pools(context, {'id': pool_id}, one=True)
+        pool.attributes = self._find_pool_attributes(
+            context, {'pool_id': pool_id, 'key': '!nameserver'})
+        pool.nameservers = self._find_pool_attributes(
+            context, {'pool_id': pool_id, 'key': 'nameserver'})
+        pool.obj_reset_changes('attributes')
+        pool.obj_reset_changes('nameservers')
+        return pool
 
     def find_pools(self, context, criterion=None, marker=None,
                    limit=None, sort_key=None, sort_dir=None):
-        return self._find_pools(context, criterion, marker=marker,
+        pools = self._find_pools(context, criterion, marker=marker,
                                 limit=limit, sort_key=sort_key,
                                 sort_dir=sort_dir)
+        for pool in pools:
+            pool.attributes = self._find_pool_attributes(
+                context, {'pool_id': pool.id, 'key': '!nameserver'})
+            pool.nameservers = self._find_pool_attributes(
+                context, {'pool_id': pool.id, 'key': 'nameserver'})
+            pool.obj_reset_changes('attributes')
+            pool.obj_reset_changes('nameservers')
+
+        return pools
 
     def find_pool(self, context, criterion):
-        return self._find_pools(context, criterion, one=True)
+        pool = self._find_pools(context, criterion, one=True)
+        pool.attributes = self._find_pool_attributes(
+            context, {'pool_id': pool.id, 'key': '!nameserver'})
+        pool.nameservers = self._find_pool_attributes(
+            context, {'pool_id': pool.id, 'key': 'nameserver'})
+        pool.obj_reset_changes('attributes')
+        pool.obj_reset_changes('nameservers')
+        return pool
 
     def update_pool(self, context, pool):
-        return self._update(context, tables.pools, pool,
-                            exceptions.DuplicatePool,
-                            exceptions.PoolNotFound)
+        pool = self._update(context, tables.pools, pool,
+                            exceptions.DuplicatePool, exceptions.PoolNotFound,
+                            ['attributes', 'nameservers'])
+        if pool.obj_attr_is_set('attributes') or \
+                pool.obj_attr_is_set('nameservers'):
+            # Gather the pool ID's we have
+            have_attributes = set([r.id for r in self._find_pool_attributes(
+                context, {'pool_id': pool.id})])
+
+            # Prep some lists of changes
+            keep_attributes = set([])
+            create_attributes = []
+            update_attributes = []
+
+            attributes = []
+            if pool.obj_attr_is_set('attributes'):
+                for r in pool.attributes.objects:
+                    attributes.append(r)
+            if pool.obj_attr_is_set('nameservers'):
+                for r in pool.nameservers.objects:
+                    attributes.append(r)
+
+            # Determine what to change
+            for attribute in attributes:
+                keep_attributes.add(attribute.id)
+                try:
+                    attribute.obj_get_original_value('id')
+                except KeyError:
+                    create_attributes.append(attribute)
+                else:
+                    update_attributes.append(attribute)
+
+            # NOTE: Since we're dealing with mutable objects, the return value
+            #       of create/update/delete attribute is not needed. The
+            #       original item will be mutated in place on the input
+            #       "pool.attributes" or "pool.nameservers" list.
+
+            # Delete attributes
+            for attribute_id in have_attributes - keep_attributes:
+                self.delete_pool_attribute(context, attribute_id)
+
+            # Update attributes
+            for attribute in update_attributes:
+                self.update_pool_attribute(context, attribute)
+
+            # Create attributes
+            for attribute in create_attributes:
+                self.create_pool_attribute(
+                    context, pool.id, attribute)
+
+        return pool
 
     def delete_pool(self, context, pool_id):
         pool = self._find_pools(context, {'id': pool_id}, one=True)
 
-        deleted_pool = self._delete(context, tables.pools, pool,
+        return self._delete(context, tables.pools, pool,
                             exceptions.PoolNotFound)
 
-        return deleted_pool
+    # Pool attribute methods
+    def _find_pool_attributes(self, context, criterion, one=False, marker=None,
+                    limit=None, sort_key=None, sort_dir=None):
+        return self._find(context, tables.pool_attributes,
+                          objects.PoolAttribute, objects.PoolAttributeList,
+                          exceptions.PoolAttributeNotFound, criterion, one,
+                          marker, limit, sort_key, sort_dir)
+
+    def create_pool_attribute(self, context, pool_id, pool_attribute):
+        pool_attribute.pool_id = pool_id
+        return self._create(tables.pool_attributes, pool_attribute,
+                            exceptions.DuplicatePoolAttribute)
+
+    def get_pool_attributes(self, context, pool_attribute_id):
+        return self._find_pool_attributes(
+            context, {'id': pool_attribute_id}, one=True)
+
+    def find_pool_attributes(self, context, criterion=None, marker=None,
+                   limit=None, sort_key=None, sort_dir=None):
+        return self._find_pool_attributes(context, criterion, marker=marker,
+                                          limit=limit, sort_key=sort_key,
+                                          sort_dir=sort_dir)
+
+    def find_pool_attribute(self, context, criterion):
+        return self._find_pool_attributes(context, criterion, one=True)
+
+    def update_pool_attribute(self, context, pool_attribute):
+        return self._update(context, tables.pool_attributes, pool_attribute,
+                            exceptions.DuplicatePoolAttribute,
+                            exceptions.PoolAttributeNotFound)
+
+    def delete_pool_attribute(self, context, pool_attribute_id):
+        pool_attribute = self._find_pool_attributes(
+            context, {'id': pool_attribute_id}, one=True)
+        deleted_pool_attribute = self._delete(
+            context, tables.pool_attributes, pool_attribute,
+            exceptions.PoolAttributeNotFound)
+
+        return deleted_pool_attribute
 
     # diagnostics
     def ping(self, context):
