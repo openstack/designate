@@ -8,9 +8,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Designate\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-10-13 06:06+0000\n"
-"PO-Revision-Date: 2014-10-12 22:03+0000\n"
-"Last-Translator: Corina Roe\n"
+"POT-Creation-Date: 2014-10-28 06:08+0000\n"
+"PO-Revision-Date: 2014-10-27 21:37+0000\n"
+"Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: French (http://www.transifex.com/projects/p/designate/"
 "language/fr/)\n"
 "Language: fr\n"
@@ -535,3 +535,19 @@ msgstr "Patientez une fois que la chaîne a été annihilée. Nettoyage en cours
 #, python-format
 msgid "Waiting on %d children to exit"
 msgstr "En attente de sortie des dépendants %d"
+
+#: designate/pool_manager/rpcapi.py:46
+msgid "create_domain: Calling pool manager's create_domain."
+msgstr ""
+
+#: designate/pool_manager/rpcapi.py:51
+msgid "delete_domain: Calling pool manager's delete_domain."
+msgstr ""
+
+#: designate/pool_manager/rpcapi.py:56
+msgid "update_domain: Calling pool manager's update_domain."
+msgstr ""
+
+#: designate/pool_manager/rpcapi.py:61
+msgid "update_status: Calling pool manager's update_status."
+msgstr ""
