@@ -26,6 +26,7 @@ from sqlalchemy.sql import select
 from designate.openstack.common import log as logging
 from designate.i18n import _LC
 from designate import exceptions
+from designate import utils
 from designate.backend import base
 from designate.backend.impl_powerdns import tables
 from designate.sqlalchemy import session
@@ -352,7 +353,11 @@ class PowerDNSBackend(base.Backend):
                                exceptions.DomainNotFound,
                                id_col=tables.domains.c.designate_id)
 
-        content = self._sanitize_content(recordset['type'], record['data'])
+        # Priority is stored in the data field for MX / SRV
+        priority, data = utils.extract_priority_from_data(
+            recordset['type'], record)
+
+        content = self._sanitize_content(recordset['type'], data)
         ttl = domain['ttl'] if recordset['ttl'] is None else recordset['ttl']
 
         record_values = {
@@ -364,7 +369,7 @@ class PowerDNSBackend(base.Backend):
             'content': content,
             'ttl': ttl,
             'inherit_ttl': True if recordset['ttl'] is None else False,
-            'prio': record['priority'],
+            'prio': priority,
             'auth': self._is_authoritative(domain, recordset, record)
         }
 

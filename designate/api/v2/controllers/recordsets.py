@@ -32,7 +32,7 @@ class RecordSetsController(rest.RestController):
     _resource_schema = schema.Schema('v2', 'recordset')
     _collection_schema = schema.Schema('v2', 'recordsets')
     SORT_KEYS = ['created_at', 'id', 'updated_at', 'domain_id', 'tenant_id',
-                 'name', 'type', 'ttl', 'records', 'priority']
+                 'name', 'type', 'ttl', 'records']
 
     @pecan.expose(template='json:', content_type='application/json')
     @utils.validate_uuid('zone_id', 'recordset_id')

@@ -177,7 +177,6 @@ class Bind9Backend(base.Backend):
                         'name': recordset['name'],
                         'type': recordset['type'],
                         'ttl': recordset['ttl'],
-                        'priority': record['priority'],
                         'data': record['data'],
                     })
 

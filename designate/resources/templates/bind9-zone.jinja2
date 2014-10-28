@@ -2,7 +2,7 @@ $ORIGIN {{ domain.name }}
 $TTL {{ domain.ttl }}
 
 {% for record in records -%}
-{{record.name}} {{record.ttl or ''}} IN {{record.type}} {{record.priority or ''}} {{record.data}}
+{{record.name}} {{record.ttl or ''}} IN {{record.type}} {{record.data}}
 {% else %}
 
 {# Since the zone is created before the NS/SOA records are, we need to "fool" bind

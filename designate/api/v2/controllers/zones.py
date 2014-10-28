@@ -90,7 +90,6 @@ class ZonesController(rest.RestController):
                     'name': recordset['name'],
                     'type': recordset['type'],
                     'ttl': recordset['ttl'],
-                    'priority': record['priority'],
                     'data': record['data'],
                 })
 
@@ -271,14 +270,12 @@ class ZonesController(rest.RestController):
     def _record2json(self, record_type, rdata):
         if record_type == 'MX':
             return {
-                'data': rdata.exchange.to_text(),
-                'priority': rdata.preference
+                'data': '%d %s' % (rdata.preference, rdata.exchange.to_text()),
             }
         elif record_type == 'SRV':
             return {
-                'data': '%d %d %s' % (rdata.weight, rdata.port,
-                                      rdata.target.to_text()),
-                'priority': rdata.priority
+                'data': '%d %d %d %s' % (rdata.priority, rdata.weight,
+                                         rdata.port, rdata.target.to_text()),
             }
         else:
             return {
