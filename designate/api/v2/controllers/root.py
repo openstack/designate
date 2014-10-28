@@ -24,6 +24,7 @@ from designate.api.v2.controllers import tlds
 from designate.api.v2.controllers import zones
 from designate.api.v2.controllers import blacklists
 from designate.api.v2.controllers import errors
+from designate.api.v2.controllers import pools
 
 LOG = logging.getLogger(__name__)
 
@@ -56,3 +57,4 @@ class RootController(object):
     zones = zones.ZonesController()
     blacklists = blacklists.BlacklistsController()
     errors = errors.ErrorsController()
+    pools = pools.PoolsController()

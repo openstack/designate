@@ -1,0 +1,39 @@
+{
+    "$schema": "http://json-schema.org/draft-04/hyper-schema",
+
+    "id": "pools",
+
+    "title": "pools",
+    "description": "Pools",
+    "additionalProperties": false,
+
+    "required": ["pools"],
+
+    "properties": {
+        "pools": {
+            "type": "array",
+            "description": "Pools",
+            "items": {"$ref": "pool#/properties/pool"}
+        },
+        "links": {
+            "type": "object",
+            "additionalProperties": false,
+
+            "properties": {
+                "self": {
+                    "type": "string",
+                    "format": "url"
+                },
+                "next": {
+                    "type": ["string", "null"],
+                    "format": "url"
+                },
+                "previous": {
+                    "type": ["string", "null"],
+                    "format": "url"
+                }
+            }
+        }
+    }
+}
+
