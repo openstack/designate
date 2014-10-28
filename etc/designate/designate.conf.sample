@@ -128,6 +128,19 @@ debug = False
 #port = 5354
 #tcp_backlog =1 00
 
+#-----------------------
+# Pool Manager Service
+#-----------------------
+[service:pool_manager]
+#workers = None
+#pool_name = default
+#threshold-percentage = 100
+#poll-timeout = 30
+#poll-retry-interval = 2
+#poll-max-retries = 3
+#periodic-sync-interval = 120
+#cache-driver = sqlalchemy
+
 ##############
 ## Network API
 ##############
@@ -181,6 +194,20 @@ debug = False
 #control_exchange = 'neutron'
 #format = '%(octet0)s-%(octet1)s-%(octet2)s-%(octet3)s.%(domain)s'
 
+###################################
+## Pool Manager Cache Configuration
+###################################
+#-----------------------
+# SQLAlchemy Pool Manager Cache
+#-----------------------
+[pool_manager_cache:sqlalchemy]
+#connection = sqlite:///$state_path/designate_pool_manager.sqlite
+#connection_debug = 100
+#connection_trace = False
+#sqlite_synchronous = True
+#idle_timeout = 3600
+#max_retries = 10
+#retry_interval = 10
 
 ########################
 ## Backend Configuration
@@ -233,3 +260,23 @@ debug = False
 [backend:multi]
 #master = fake
 #slave = fake
+
+#############################
+## Pool Backend Configuration
+#############################
+#-----------------------
+# Global Bind9 Pool Backend
+#-----------------------
+[backend:bind9_pool:*]
+#masters = 127.0.0.1:5354
+#rndc_host = 127.0.0.1
+#rndc_port = 953
+#rndc_config_file = /etc/rndc.conf
+#rndc_key_file = /etc/rndc.key
+
+#-----------------------
+# Server Specific Bind9 Pool Backend
+#-----------------------
+[backend:bind9_pool:6a5032b6-2d96-43ee-b25b-7d784e2bf3b2]
+# host = 127.0.0.1
+# port = 53

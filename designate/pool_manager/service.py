@@ -19,11 +19,11 @@ from oslo.config import cfg
 from oslo import messaging
 
 from designate import backend
+from designate import exceptions
 from designate import service
 from designate import storage
 from designate.pool_manager import cache
 from designate.openstack.common import log as logging
-from designate.openstack.common import processutils
 from designate.openstack.common import threadgroup
 
 
@@ -106,7 +106,7 @@ class Service(service.RPCService):
             try:
                 backend_instance.create_domain(context, domain)
                 LOG.debug("success")
-            except processutils.ProcessExecutionError:
+            except exceptions.Backend:
                 LOG.debug("failure")
 
     def delete_domain(self, context, domain):
@@ -121,7 +121,7 @@ class Service(service.RPCService):
             try:
                 backend_instance.delete_domain(context, domain)
                 LOG.debug("success")
-            except processutils.ProcessExecutionError:
+            except exceptions.Backend:
                 LOG.debug("failure")
 
     def update_domain(self, context, domain):

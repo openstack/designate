@@ -229,7 +229,8 @@ class PoolBackend(Backend):
 
         # Register the server specific backend options.
         server_opts = global_opts
-        server_opts.append(cfg.StrOpt('host', help='Server Host'))
+        server_opts.append(cfg.StrOpt('host', default='127.0.0.1',
+                                      help='Server Host'))
         server_opts.append(cfg.IntOpt('port', default=53, help='Server Port'))
         server_opts.append(cfg.StrOpt('tsig-key', help='Server TSIG Key'))
         cfg.CONF.register_group(cfg.OptGroup(name=server_section_name))
@@ -291,14 +292,24 @@ class PoolBackend(Backend):
 
     @abc.abstractmethod
     def create_domain(self, context, domain):
-        """Create a DNS domain"""
+        """
+        Create a DNS domain.
+
+        :param context: Security context information.
+        :param domain: the DNS domain.
+        """
 
     def update_domain(self, context, domain):
         pass
 
     @abc.abstractmethod
     def delete_domain(self, context, domain):
-        """Delete a DNS domain"""
+        """
+        Delete a DNS domain.
+
+        :param context: Security context information.
+        :param domain: the DNS domain.
+        """
 
     def create_recordset(self, context, domain, recordset):
         pass
