@@ -306,30 +306,6 @@ class Service(service.RPCService):
 
         return domain
 
-    # Methods to handle priority
-    def _get_priority(self, recordset):
-        if recordset.type != "MX" and recordset.type != "SRV":
-            return recordset
-        else:
-            if recordset.records is not None:
-                for r in recordset.records:
-                    r.data = str(r.priority) + " " + r.data
-
-        return recordset
-
-    def _set_priority(self, recordset):
-        if recordset.type != "MX" and recordset.type != "SRV":
-            return recordset
-        else:
-            if recordset.records is not None:
-                for r in recordset.records:
-                    head, sep, tail = r.data.partition(" ")
-                    if sep:
-                        r.priority = head
-                        r.data = tail
-
-        return recordset
-
     # SOA Recordset Methods
     def _build_soa_record(self, zone, servers):
         return "%s %s. %d %d %d %d %d" % (servers[0]['name'],
@@ -985,9 +961,6 @@ class Service(service.RPCService):
         self._is_valid_recordset_placement_subdomain(
             context, domain, recordset.name)
 
-        # Extract the priority from the records
-        recordset = self._set_priority(recordset)
-
         created_recordset = self.storage.create_recordset(context, domain_id,
                                                           recordset)
 
@@ -1003,8 +976,7 @@ class Service(service.RPCService):
             if len(recordset.records) > 0:
                 self._increment_domain_serial(context, domain.id)
 
-        # Get the correct format for priority
-        return self._get_priority(recordset)
+        return recordset
 
     def get_recordset(self, context, domain_id, recordset_id):
         domain = self.storage.get_domain(context, domain_id)
@@ -1023,8 +995,7 @@ class Service(service.RPCService):
 
         policy.check('get_recordset', context, target)
 
-        # Add the priority to the records
-        recordset = self._get_priority(recordset)
+        recordset = recordset
 
         return recordset
 
@@ -1036,10 +1007,6 @@ class Service(service.RPCService):
         recordsets = self.storage.find_recordsets(context, criterion, marker,
                                                   limit, sort_key, sort_dir)
 
-        # Set the priority for each record
-        for rs in recordsets:
-            rs = self._get_priority(rs)
-
         return recordsets
 
     def find_recordset(self, context, criterion=None):
@@ -1048,18 +1015,12 @@ class Service(service.RPCService):
 
         recordset = self.storage.find_recordset(context, criterion)
 
-        # Add the priority to the records
-        recordset = self._get_priority(recordset)
-
         return recordset
 
     @transaction
     def update_recordset(self, context, recordset, increment_serial=True):
         domain_id = recordset.obj_get_original_value('domain_id')
         domain = self.storage.get_domain(context, domain_id)
-
-        # Set the priority for the records
-        recordset = self._set_priority(recordset)
 
         changes = recordset.obj_get_changes()
 
@@ -1109,7 +1070,7 @@ class Service(service.RPCService):
         # Send RecordSet update notification
         self.notifier.info(context, 'dns.recordset.update', recordset)
 
-        return self._get_priority(recordset)
+        return recordset
 
     @transaction
     def delete_recordset(self, context, domain_id, recordset_id,

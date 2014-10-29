@@ -330,3 +330,11 @@ def get_proxies():
         proxies['https'] = proxies['http']
 
     return proxies
+
+
+def extract_priority_from_data(recordset_type, record):
+    priority, data = None, record['data']
+    if recordset_type in ('MX', 'SRV'):
+        priority, _, data = record['data'].partition(" ")
+        priority = int(priority)
+    return priority, data

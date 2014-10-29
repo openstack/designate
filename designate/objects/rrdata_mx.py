@@ -20,8 +20,8 @@ class RRData_MX(Record):
     MX Resource Record Type
     Defined in: RFC1035
     """
-    # priority is maintained separately for MX records and not in 'data'
     FIELDS = {
+        'priority': {},
         'exchange': {}
     }
 

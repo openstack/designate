@@ -19,6 +19,7 @@ from designate.openstack.common import log as logging
 from designate import exceptions
 from designate import objects
 from designate import schema
+from designate import utils
 from designate.api import get_central_api
 
 
@@ -53,8 +54,12 @@ def _find_or_create_recordset(context, domain_id, name, type, ttl):
 
 
 def _extract_record_values(values):
-    record_values = ('data', 'priority', 'description',)
-    return dict((k, values[k]) for k in record_values if k in values)
+    record_values = dict((k, values[k]) for k in ('data', 'description',)
+                         if k in values)
+    if 'priority' in values:
+        record_values['data'] = '%d %s' % (
+            values['priority'], record_values['data'])
+    return record_values
 
 
 def _extract_recordset_values(values):
@@ -64,6 +69,10 @@ def _extract_recordset_values(values):
 
 def _format_record_v1(record, recordset):
     record = dict(record)
+
+    record['priority'], record['data'] = utils.extract_priority_from_data(
+        recordset.type, record)
+
     record.update({
         'name': recordset['name'],
         'type': recordset['type'],

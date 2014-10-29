@@ -204,7 +204,11 @@ class ApiV1RecordsTest(ApiV1Test):
             self.domain['name'], 'SRV')
 
         fixture = self.get_record_fixture(recordset_fixture['type'])
+        priority, _, data = fixture['data'].partition(" ")
+
         fixture.update({
+            'data': data,
+            'priority': int(priority),
             'name': recordset_fixture['name'],
             'type': recordset_fixture['type'],
         })
@@ -216,6 +220,7 @@ class ApiV1RecordsTest(ApiV1Test):
         self.assertIn('id', response.json)
         self.assertEqual(response.json['type'], fixture['type'])
         self.assertEqual(response.json['name'], fixture['name'])
+
         self.assertEqual(response.json['priority'], fixture['priority'])
         self.assertEqual(response.json['data'], fixture['data'])
 

@@ -21,7 +21,6 @@ class Record(base.DictObjectMixin, base.PersistentObjectMixin,
     #              so we should remove it.
     FIELDS = {
         'data': {},
-        'priority': {},
         'domain_id': {},
         'managed': {},
         'managed_resource_type': {},

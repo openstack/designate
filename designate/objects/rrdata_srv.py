@@ -20,8 +20,8 @@ class RRData_SRV(Record):
     SRV Resource Record Type
     Defined in: RFC2782
     """
-    # priority is maintained separately for SRV records and not in 'data'
     FIELDS = {
+        'priority': {},
         'weight': {},
         'port': {},
         'target': {}

@@ -222,12 +222,12 @@ class TestCase(base.BaseTestCase):
             {'data': '192.0.2.2'}
         ],
         'MX': [
-            {'data': 'mail.example.org.', 'priority': 5},
-            {'data': 'mail.example.com.', 'priority': 10},
+            {'data': '5 mail.example.org.'},
+            {'data': '10 mail.example.com.'},
         ],
         'SRV': [
-            {'data': '0 5060 server1.example.org.', 'priority': 5},
-            {'data': '1 5060 server2.example.org.', 'priority': 10},
+            {'data': '5 0 5060 server1.example.org.'},
+            {'data': '10 1 5060 server2.example.org.'},
         ],
         'CNAME': [
             {'data': 'www.somedomain.org.'},

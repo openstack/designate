@@ -85,14 +85,7 @@ class RequestHandler(object):
         # construct rdata from all the records
         rdata = []
         for record in recordset.records:
-            # dnspython expects data to be a string. convert record
-            # data from unicode to string
-            # For MX and SRV records add a priority field.
-            if recordset.type == "MX" or recordset.type == "SRV":
-                rdata.append(str.format(
-                    "%d %s" % (record.priority, str(record.data))))
-            else:
-                rdata.append(str(record.data))
+            rdata.append(str(record.data))
 
         # Now put the records into dnspython's RRsets
         # answer section has 1 RR set.  If the RR set has multiple
