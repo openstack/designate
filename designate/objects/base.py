@@ -14,7 +14,6 @@
 #    under the License.
 import copy
 
-from oslo.utils import importutils
 import six
 
 
@@ -64,22 +63,43 @@ def make_class_properties(cls):
 
 class DesignateObjectMetaclass(type):
     def __init__(cls, names, bases, dict_):
+        if not hasattr(cls, '_obj_classes'):
+            # This means we're working on the base DesignateObject class,
+            # and can skip the remaining Metaclass functionality
+            cls._obj_classes = {}
+            return
+
         make_class_properties(cls)
+
+        # Add a reference to the finished class into the _obj_classes
+        # dictionary, allowing us to lookup classes by their name later - this
+        # is useful for e.g. referencing another DesignateObject in a
+        # validation schema.
+        if cls.obj_name() not in cls._obj_classes:
+            cls._obj_classes[cls.obj_name()] = cls
+        else:
+            raise Exception("Duplicate DesignateObject with name '%(name)s'" %
+                            {'name': cls.obj_name()})
 
 
 @six.add_metaclass(DesignateObjectMetaclass)
 class DesignateObject(object):
     FIELDS = {}
 
-    @staticmethod
-    def from_primitive(primitive):
+    @classmethod
+    def obj_cls_from_name(cls, name):
+        """Retrieves a object cls from the registry by name and returns it."""
+        return cls._obj_classes[name]
+
+    @classmethod
+    def from_primitive(cls, primitive):
         """
         Construct an object from primitive types
 
         This is used while deserializing the object.
         """
-        cls = importutils.import_class(primitive['designate_object.name'])
-        return cls._obj_from_primitive(primitive)
+        objcls = cls.obj_cls_from_name(primitive['designate_object.name'])
+        return objcls._obj_from_primitive(primitive)
 
     @classmethod
     def _obj_from_primitive(cls, primitive):
@@ -96,6 +116,13 @@ class DesignateObject(object):
             primitive['designate_object.original_values']
 
         return instance
+
+    @classmethod
+    def obj_name(cls):
+        """Return a canonical name for this object which will be used over
+        the wire and in validation schemas.
+        """
+        return cls.__name__
 
     def __init__(self, **kwargs):
         self._obj_changes = set()
@@ -115,10 +142,6 @@ class DesignateObject(object):
         do not need special handling.  If this changes we need to modify this
         function.
         """
-        class_name = self.__class__.__name__
-        if self.__module__:
-            class_name = self.__module__ + '.' + self.__class__.__name__
-
         data = {}
 
         for field in self.FIELDS.keys():
@@ -129,11 +152,29 @@ class DesignateObject(object):
                     data[field] = getattr(self, field)
 
         return {
-            'designate_object.name': class_name,
+            'designate_object.name': self.obj_name(),
             'designate_object.data': data,
             'designate_object.changes': sorted(self._obj_changes),
             'designate_object.original_values': dict(self._obj_original_values)
         }
+
+    def to_dict(self):
+        """Convert the object to a simple dictionary."""
+        data = {}
+
+        for field in self.FIELDS.keys():
+            if self.obj_attr_is_set(field):
+                if isinstance(getattr(self, field), DesignateObject):
+                    data[field] = getattr(self, field).to_dict()
+                else:
+                    data[field] = getattr(self, field)
+
+        return data
+
+    def update(self, values):
+        """Update a object's fields with the supplied key/value pairs"""
+        for k, v in values.iteritems():
+            setattr(self, k, v)
 
     def obj_attr_is_set(self, name):
         """
@@ -183,7 +224,7 @@ class DesignateObject(object):
         else:
             raise AttributeError(
                 "Designate object '%(type)s' has no attribute '%(name)s'" % {
-                    'type': self.__class__.__name__,
+                    'type': self.obj_name(),
                     'name': name,
                 })
 
@@ -222,7 +263,8 @@ class DictObjectMixin(object):
     """
     Mixin to allow DesignateObjects to behave like dictionaries
 
-    Eventually, this should be removed.
+    Eventually, this should be removed as other code is updated to use object
+    rather than dictionary accessors.
     """
     def __getitem__(self, key):
         return getattr(self, key)
@@ -243,10 +285,6 @@ class DictObjectMixin(object):
         else:
             return getattr(self, key)
 
-    def update(self, values):
-        for k, v in values.iteritems():
-            setattr(self, k, v)
-
     def iteritems(self):
         for field in self.FIELDS.keys():
             if self.obj_attr_is_set(field):
@@ -261,7 +299,7 @@ class DictObjectMixin(object):
 
 
 class ListObjectMixin(object):
-    """Mixin class for lists of objects"""
+    """Mixin to allow DesignateObjects to behave like python lists."""
     FIELDS = {'objects': {}}
     LIST_ITEM_TYPE = DesignateObject
 
@@ -291,10 +329,6 @@ class ListObjectMixin(object):
             self.obj_reset_changes(['objects'])
 
     def to_primitive(self):
-        class_name = self.__class__.__name__
-        if self.__module__:
-            class_name = self.__module__ + '.' + self.__class__.__name__
-
         data = {}
 
         for field in self.FIELDS.keys():
@@ -307,7 +341,7 @@ class ListObjectMixin(object):
                     data[field] = getattr(self, field)
 
         return {
-            'designate_object.name': class_name,
+            'designate_object.name': self.obj_name(),
             'designate_object.data': data,
             'designate_object.changes': list(self._obj_changes),
             'designate_object.original_values': dict(self._obj_original_values)

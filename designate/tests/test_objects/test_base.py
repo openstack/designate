@@ -26,7 +26,6 @@ LOG = logging.getLogger(__name__)
 
 
 class TestObject(objects.DesignateObject):
-    PATH = 'designate.tests.test_objects.test_base.TestObject'
     FIELDS = {
         'id': {},
         'name': {},
@@ -35,17 +34,27 @@ class TestObject(objects.DesignateObject):
 
 
 class TestObjectDict(objects.DictObjectMixin, TestObject):
-    PATH = 'designate.tests.test_objects.test_base.TestObjectDict'
+    pass
 
 
 class TestObjectList(objects.ListObjectMixin, objects.DesignateObject):
-    PATH = 'designate.tests.test_objects.test_base.TestObjectList'
+    pass
 
 
 class DesignateObjectTest(tests.TestCase):
+    def test_obj_cls_from_name(self):
+        cls = objects.DesignateObject.obj_cls_from_name('TestObject')
+        self.assertEqual(TestObject, cls)
+
+        cls = objects.DesignateObject.obj_cls_from_name('TestObjectDict')
+        self.assertEqual(TestObjectDict, cls)
+
+        cls = objects.DesignateObject.obj_cls_from_name('TestObjectList')
+        self.assertEqual(TestObjectList, cls)
+
     def test_from_primitive(self):
         primitive = {
-            'designate_object.name': TestObject.PATH,
+            'designate_object.name': 'TestObject',
             'designate_object.data': {
                 'id': 'MyID',
             },
@@ -69,11 +78,11 @@ class DesignateObjectTest(tests.TestCase):
 
     def test_from_primitive_recursive(self):
         primitive = {
-            'designate_object.name': TestObject.PATH,
+            'designate_object.name': 'TestObject',
             'designate_object.data': {
                 'id': 'MyID',
                 'nested': {
-                    'designate_object.name': TestObject.PATH,
+                    'designate_object.name': 'TestObject',
                     'designate_object.data': {
                         'id': 'MyID-Nested',
                     },
@@ -127,7 +136,7 @@ class DesignateObjectTest(tests.TestCase):
         # Ensure only the id attribute is returned
         primitive = obj.to_primitive()
         expected = {
-            'designate_object.name': TestObject.PATH,
+            'designate_object.name': 'TestObject',
             'designate_object.data': {
                 'id': 'MyID',
             },
@@ -142,7 +151,7 @@ class DesignateObjectTest(tests.TestCase):
         # Ensure both the id and name attributes are returned
         primitive = obj.to_primitive()
         expected = {
-            'designate_object.name': TestObject.PATH,
+            'designate_object.name': 'TestObject',
             'designate_object.data': {
                 'id': 'MyID',
                 'name': None,
@@ -158,11 +167,11 @@ class DesignateObjectTest(tests.TestCase):
         # Ensure only the id attribute is returned
         primitive = obj.to_primitive()
         expected = {
-            'designate_object.name': TestObject.PATH,
+            'designate_object.name': 'TestObject',
             'designate_object.data': {
                 'id': 'MyID',
                 'nested': {
-                    'designate_object.name': TestObject.PATH,
+                    'designate_object.name': 'TestObject',
                     'designate_object.data': {
                         'id': 'MyID-Nested',
                     },
@@ -324,16 +333,16 @@ class DictObjectMixinTest(tests.TestCase):
 class ListObjectMixinTest(tests.TestCase):
     def test_from_primitive(self):
         primitive = {
-            'designate_object.name': TestObjectList.PATH,
+            'designate_object.name': 'TestObjectList',
             'designate_object.data': {
                 'objects': [
                     {'designate_object.changes': ['id'],
                      'designate_object.data': {'id': 'One'},
-                     'designate_object.name': TestObject.PATH,
+                     'designate_object.name': 'TestObject',
                      'designate_object.original_values': {}},
                     {'designate_object.changes': ['id'],
                      'designate_object.data': {'id': 'Two'},
-                     'designate_object.name': TestObject.PATH,
+                     'designate_object.name': 'TestObject',
                      'designate_object.original_values': {}},
                 ],
             },
@@ -377,16 +386,16 @@ class ListObjectMixinTest(tests.TestCase):
 
         primitive = obj.to_primitive()
         expected = {
-            'designate_object.name': TestObjectList.PATH,
+            'designate_object.name': 'TestObjectList',
             'designate_object.data': {
                 'objects': [
                     {'designate_object.changes': ['id'],
                      'designate_object.data': {'id': 'One'},
-                     'designate_object.name': TestObject.PATH,
+                     'designate_object.name': 'TestObject',
                      'designate_object.original_values': {}},
                     {'designate_object.changes': ['id'],
                      'designate_object.data': {'id': 'Two'},
-                     'designate_object.name': TestObject.PATH,
+                     'designate_object.name': 'TestObject',
                      'designate_object.original_values': {}},
                 ],
             },
