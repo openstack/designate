@@ -46,6 +46,7 @@ cfg.CONF.register_opts([
                help="The name of the default pool"),
 ], group='service:central')
 
+# TODO(vinod): Remove the following code once pool manager calls mdns.
 MDNS_API = None
 
 

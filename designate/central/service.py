@@ -108,6 +108,7 @@ class Service(service.RPCService):
 
         self.backend.stop()
 
+    # TODO(vinod): Remove the following code once pool manager calls mdns.
     @property
     def mdns_api(self):
         return central.get_mdns_api()
@@ -302,7 +303,11 @@ class Service(service.RPCService):
 
         # Update SOA record
         self._update_soa(context, domain)
-        self.mdns_api.notify_zone_changed(context, domain.name)
+
+        # TODO(vinod): Remove the following call to mdns once pool manager
+        # calls mdns.
+        self.mdns_api.notify_zone_changed(context, domain, None, None, None,
+                                          None)
 
         return domain
 
@@ -761,7 +766,8 @@ class Service(service.RPCService):
         self._create_ns(context, created_domain, servers)
         self._create_soa(context, created_domain)
 
-        self.mdns_api.notify_zone_changed(context, created_domain.name)
+        self.mdns_api.notify_zone_changed(context, created_domain, None, None,
+                                          None, None)
 
         return created_domain
 
@@ -849,7 +855,11 @@ class Service(service.RPCService):
             self._update_soa(context, domain)
 
         self.notifier.info(context, 'dns.domain.update', domain)
-        self.mdns_api.notify_zone_changed(context, domain.name)
+
+        # TODO(vinod): Remove the following call to mdns once pool manager
+        # calls mdns.
+        self.mdns_api.notify_zone_changed(context, domain, None, None, None,
+                                          None)
 
         return domain
 

@@ -29,10 +29,9 @@ class MdnsAPI(object):
 
     Notify API version history:
 
-        0.1 - Initial version under development.  This will be bumped to 1.0
-        after a reasonably usable version is implemented.
+        1.0 - Added notify_zone_changed and poll_for_serial_number.
     """
-    RPC_NOTIFY_API_VERSION = '0.1'
+    RPC_NOTIFY_API_VERSION = '1.0'
 
     def __init__(self, topic=None):
         topic = topic if topic else cfg.CONF.mdns_topic
@@ -40,12 +39,31 @@ class MdnsAPI(object):
         notify_target = messaging.Target(topic=topic,
                                          namespace='notify',
                                          version=self.RPC_NOTIFY_API_VERSION)
-        self.notify_client = rpc.get_client(notify_target, version_cap='0.1')
+        self.notify_client = rpc.get_client(notify_target, version_cap='1.0')
 
-    def notify_zone_changed(self, context, zone_name):
-        LOG.info(_LI("notify_zone_changed: Calling mdns's notify_zone_changed "
-                     "for zone '%(zone_name)s'") % {'zone_name': zone_name})
+    def notify_zone_changed(self, context, domain, destination, timeout,
+                            retry_interval, max_retries):
+        LOG.info(_LI("notify_zone_changed: Calling mdns for zone '%(zone)s', "
+                     "serial '%(serial)s' to server '%(dst)s'") %
+                 {'zone': domain.name, 'serial': domain.serial,
+                  'dst': destination})
         # The notify_zone_changed method is a cast rather than a call since the
         # caller need not wait for the notify to complete.
         return self.notify_client.cast(
-            context, 'notify_zone_changed', zone_name=zone_name)
+            context, 'notify_zone_changed', domain=domain,
+            destination=destination, timeout=timeout,
+            retry_interval=retry_interval, max_retries=max_retries)
+
+    def poll_for_serial_number(self, context, domain, destination, timeout,
+                               retry_interval, max_retries):
+        LOG.info(_LI("poll_for_serial_number: Calling mdns for zone '%(zone)s'"
+                     ", serial '%(serial)s' to server '%(dst)s'") %
+                 {'zone': domain.name, 'serial': domain.serial,
+                  'dst': destination})
+        # The poll_for_serial_number method is a cast rather than a call since
+        # the caller need not wait for the poll to complete. Mdns informs pool
+        # manager of the return value using update_status
+        return self.notify_client.cast(
+            context, 'poll_for_serial_number', domain=domain,
+            destination=destination, timeout=timeout,
+            retry_interval=retry_interval, max_retries=max_retries)

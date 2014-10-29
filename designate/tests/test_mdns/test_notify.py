@@ -19,51 +19,166 @@ from mock import patch
 
 from designate.tests.test_mdns import MdnsTestCase
 from designate.mdns import notify
+from designate import objects
 
 
 class MdnsNotifyTest(MdnsTestCase):
+
+    test_domain = {
+        'name': 'example.com.',
+        'email': 'example@example.com',
+        'serial': 100,
+    }
+
     def setUp(self):
         super(MdnsNotifyTest, self).setUp()
-
-        # Ensure that notify options are set
-        self.config(slave_nameserver_ips_and_ports=['127.0.0.1:65255'],
-                    group='service:mdns')
         self.notify = notify.NotifyEndpoint()
 
-    @patch.object(notify.NotifyEndpoint, '_send_notify_message')
-    def test_notify_opcode(self, mock):
+    def test_send_notify_message(self):
+        # id 10001
+        # opcode NOTIFY
+        # rcode NOERROR
+        # flags QR AA
+        # ;QUESTION
+        # example.com. IN SOA
+        # ;ANSWER
+        # ;AUTHORITY
+        # ;ADDITIONAL
+        expected_notify_response = ("2711a4000001000000000000076578616d706c650"
+                                    "3636f6d0000060001")
         context = self.get_context()
-        self.notify.notify_zone_changed(context, 'example.com')
-        self.assertTrue(mock.called)
+        with patch.object(dns.query, 'udp', return_value=dns.message.from_wire(
+                binascii.a2b_hex(expected_notify_response))):
+            response, retry = self.notify.notify_zone_changed(
+                context, objects.Domain(**self.test_domain), '127.0.0.1:65255',
+                0, 0, 2)
+            self.assertEqual(response, dns.message.from_wire(
+                binascii.a2b_hex(expected_notify_response)))
+            self.assertEqual(retry, 1)
 
-    def test_get_notify_message(self):
+    def test_send_notify_message_non_auth(self):
+        # id 10001
+        # opcode NOTIFY
+        # rcode NOTAUTH
+        # flags QR
+        # ;QUESTION
+        # example.com. IN SOA
+        # ;ANSWER
+        # ;AUTHORITY
+        # ;ADDITIONAL
+        non_auth_notify_response = ("2711a4090001000000000000076578616d706c650"
+                                    "3636f6d0000060001")
         context = self.get_context()
-        # DNS message with NOTIFY opcode
-        ref_message = \
-            "4d2824000001000000000000076578616d706c6503636f6d0000060001"
-        msg = self.notify._get_notify_message(context, 'example.com')
-        # The first 11 characters of the on wire message change on every run.
-        msg_tail = binascii.b2a_hex(msg.to_wire())[11:]
-        self.assertEqual(ref_message[11:], msg_tail)
+        with patch.object(dns.query, 'udp', return_value=dns.message.from_wire(
+                binascii.a2b_hex(non_auth_notify_response))):
+            response, retry = self.notify.notify_zone_changed(
+                context, objects.Domain(**self.test_domain), '127.0.0.1:65255',
+                0, 0, 2)
+            self.assertEqual(response, None)
+            self.assertEqual(retry, 1)
 
-    @patch.object(dns.query, 'udp', side_effect=dns.exception.Timeout())
+    @patch.object(dns.query, 'udp', side_effect=dns.exception.Timeout)
     def test_send_notify_message_timeout(self, _):
         context = self.get_context()
-        # DNS message with NOTIFY opcode
-        notify_message = dns.message.from_wire(binascii.a2b_hex(
-            "4d2824000001000000000000076578616d706c6503636f6d0000060001"))
-
-        msg = self.notify._send_notify_message(
-            context, 'example.com', notify_message, '127.0.0.1', 65255, 1)
-        self.assertIsInstance(msg, dns.exception.Timeout)
+        response, retry = self.notify.notify_zone_changed(
+            context, objects.Domain(**self.test_domain), '127.0.0.1:65255', 0,
+            0, 2)
+        self.assertEqual(response, None)
+        self.assertEqual(retry, 2)
 
     @patch.object(dns.query, 'udp', side_effect=dns.query.BadResponse)
-    def test_send_notify_message_badresponse(self, _):
+    def test_send_notify_message_bad_response(self, _):
         context = self.get_context()
-        # DNS message with NOTIFY opcode
-        notify_message = dns.message.from_wire(binascii.a2b_hex(
-            "4d2824000001000000000000076578616d706c6503636f6d0000060001"))
+        response, retry = self.notify.notify_zone_changed(
+            context, objects.Domain(**self.test_domain), '127.0.0.1:65255', 0,
+            0, 2)
+        self.assertEqual(response, None)
+        self.assertEqual(retry, 1)
 
-        msg = self.notify._send_notify_message(
-            context, 'example.com', notify_message, '127.0.0.1', 65255, 1)
-        self.assertIsInstance(msg, dns.query.BadResponse)
+    def test_poll_for_serial_number(self):
+        # id 10001
+        # opcode QUERY
+        # rcode NOERROR
+        # flags QR AA
+        # ;QUESTION
+        # example.com. IN SOA
+        # ;ANSWER
+        # example.com. 3600 IN SOA example-ns.com. admin.example.com. 100 3600
+        #  600 86400 3600
+        # ;AUTHORITY
+        # ;ADDITIONAL
+        poll_response = ("271184000001000100000000076578616d706c6503636f6d0000"
+                         "060001c00c0006000100000e1000290a6578616d706c652d6e73"
+                         "c0140561646d696ec00c0000006400000e100000025800015180"
+                         "00000e10")
+        context = self.get_context()
+        with patch.object(dns.query, 'udp', return_value=dns.message.from_wire(
+                binascii.a2b_hex(poll_response))):
+            status, serial, retries = self.notify.poll_for_serial_number(
+                context, objects.Domain(**self.test_domain), '127.0.0.1:65255',
+                0, 0, 2)
+            self.assertEqual(status, 0)
+            self.assertEqual(serial, self.test_domain['serial'])
+            self.assertEqual(retries, 2)
+
+    def test_poll_for_serial_number_lower_serial(self):
+        # id 10001
+        # opcode QUERY
+        # rcode NOERROR
+        # flags QR AA
+        # ;QUESTION
+        # example.com. IN SOA
+        # ;ANSWER
+        # example.com. 3600 IN SOA example-ns.com. admin.example.com. 99 3600
+        #  600 86400 3600
+        # ;AUTHORITY
+        # ;ADDITIONAL
+        poll_response = ("271184000001000100000000076578616d706c6503636f6d0000"
+                         "060001c00c0006000100000e1000290a6578616d706c652d6e73"
+                         "c0140561646d696ec00c0000006300000e100000025800015180"
+                         "00000e10")
+        context = self.get_context()
+        with patch.object(dns.query, 'udp', return_value=dns.message.from_wire(
+                binascii.a2b_hex(poll_response))):
+            status, serial, retries = self.notify.poll_for_serial_number(
+                context, objects.Domain(**self.test_domain), '127.0.0.1:65255',
+                0, 0, 2)
+            self.assertEqual(status, 1)
+            self.assertEqual(serial, 99)
+            self.assertEqual(retries, 0)
+
+    def test_poll_for_serial_number_higher_serial(self):
+        # id 10001
+        # opcode QUERY
+        # rcode NOERROR
+        # flags QR AA
+        # ;QUESTION
+        # example.com. IN SOA
+        # ;ANSWER
+        # example.com. 3600 IN SOA example-ns.com. admin.example.com. 101 3600
+        #  600 86400 3600
+        # ;AUTHORITY
+        # ;ADDITIONAL
+        poll_response = ("271184000001000100000000076578616d706c6503636f6d0000"
+                         "060001c00c0006000100000e1000290a6578616d706c652d6e73"
+                         "c0140561646d696ec00c0000006500000e100000025800015180"
+                         "00000e10")
+        context = self.get_context()
+        with patch.object(dns.query, 'udp', return_value=dns.message.from_wire(
+                binascii.a2b_hex(poll_response))):
+            status, serial, retries = self.notify.poll_for_serial_number(
+                context, objects.Domain(**self.test_domain), '127.0.0.1:65255',
+                0, 0, 2)
+            self.assertEqual(status, 0)
+            self.assertEqual(serial, 101)
+            self.assertEqual(retries, 2)
+
+    @patch.object(dns.query, 'udp', side_effect=dns.exception.Timeout)
+    def test_poll_for_serial_number_timeout(self, _):
+        context = self.get_context()
+        status, serial, retries = self.notify.poll_for_serial_number(
+            context, objects.Domain(**self.test_domain), '127.0.0.1:65255',
+            0, 0, 2)
+        self.assertEqual(status, 1)
+        self.assertEqual(serial, None)
+        self.assertEqual(retries, 2)
