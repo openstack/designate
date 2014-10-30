@@ -34,7 +34,9 @@ class Record(base.DictObjectMixin, base.PersistentObjectMixin,
         'recordset_id': {},
         'managed_tenant_id': {},
         'managed_resource_region': {},
-        'managed_extra': {}
+        'managed_extra': {},
+        'action': {},
+        'serial': {}
     }
 
 

@@ -29,7 +29,8 @@ class Domain(base.DictObjectMixin, base.SoftDeleteObjectMixin,
         'parent_domain_id': {},
         'serial': {},
         'description': {},
-        'status': {}
+        'status': {},
+        'action': {}
     }
 
 

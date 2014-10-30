@@ -26,13 +26,13 @@ from designate.sqlalchemy.types import UUID
 
 CONF = cfg.CONF
 
-RESOURCE_STATUSES = ['ACTIVE', 'PENDING', 'DELETED']
+RESOURCE_STATUSES = ['ACTIVE', 'PENDING', 'DELETED', 'ERROR']
 RECORD_TYPES = ['A', 'AAAA', 'CNAME', 'MX', 'SRV', 'TXT', 'SPF', 'NS', 'PTR',
                 'SSHFP']
 TSIG_ALGORITHMS = ['hmac-md5', 'hmac-sha1', 'hmac-sha224', 'hmac-sha256',
                    'hmac-sha384', 'hmac-sha512']
-
 POOL_PROVISIONERS = ['UNMANAGED']
+ACTIONS = ['ADD', 'DELETE', 'UPDATE', 'NONE']
 
 metadata = MetaData()
 
@@ -98,8 +98,10 @@ domains = Table('domains', metadata,
     Column('minimum', Integer, default=CONF.default_soa_minimum,
            nullable=False),
     Column('status', Enum(name='resource_statuses', *RESOURCE_STATUSES),
-           nullable=False, server_default='ACTIVE', default='ACTIVE'),
+           nullable=False, server_default='PENDING', default='PENDING'),
     Column('parent_domain_id', UUID, default=None, nullable=True),
+    Column('action', Enum(name='actions', *ACTIONS),
+           default='CREATE', server_default='CREATE', nullable=False),
 
     UniqueConstraint('name', 'deleted', name='unique_domain_name'),
     ForeignKeyConstraint(['parent_domain_id'],
@@ -152,8 +154,12 @@ records = Table('records', metadata,
     Column('managed_resource_id', UUID, default=None, nullable=True),
     Column('managed_tenant_id', Unicode(36), default=None, nullable=True),
     Column('status', Enum(name='resource_statuses', *RESOURCE_STATUSES),
-           nullable=False, server_default='ACTIVE', default='ACTIVE'),
+           server_default='PENDING', default='PENDING', nullable=False),
+    Column('action', Enum(name='actions', *ACTIONS),
+           default='CREATE', server_default='CREATE', nullable=False),
+    Column('serial', Integer(), server_default='1', nullable=False),
 
+    UniqueConstraint('hash', name='unique_record'),
     ForeignKeyConstraint(['domain_id'], ['domains.id'], ondelete='CASCADE'),
     ForeignKeyConstraint(['recordset_id'], ['recordsets.id'],
                          ondelete='CASCADE'),
