@@ -8,9 +8,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Designate\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-10-12 06:18+0000\n"
-"PO-Revision-Date: 2014-10-10 02:15+0000\n"
-"Last-Translator: Corina Roe\n"
+"POT-Creation-Date: 2014-10-31 06:09+0000\n"
+"PO-Revision-Date: 2014-10-30 15:32+0000\n"
+"Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: French (http://www.transifex.com/projects/p/designate/"
 "language/fr/)\n"
 "Language: fr\n"
@@ -24,14 +24,14 @@ msgstr ""
 msgid "Request authorized to bypass maintenance mode"
 msgstr "Requête non assujettie au mode de maintenance"
 
-#: designate/backend/base.py:117
+#: designate/backend/base.py:121
 #, python-format
 msgid "Failed to delete domain '%(domain)s' during sync. Message: %(message)s"
 msgstr ""
 "N'a pas pu supprimer le domaine '%(domain)s' pendant la sync. Message : "
 "%(message)s"
 
-#: designate/backend/base.py:143
+#: designate/backend/base.py:147
 #, python-format
 msgid ""
 "Failed to delete record '%(record)s' in domain '%(domain)s' during sync. "
@@ -67,32 +67,35 @@ msgstr "**** Étape manuelle de post-migration requise ****"
 msgid "Please issue this query: %s"
 msgstr "Veuillez lancer cette demande : %s"
 
-#: designate/mdns/notify.py:123
+#: designate/mdns/notify.py:118
 #, python-format
 msgid ""
-"Failed to get NOERROR while trying to notify change in %(zone)s to "
-"%(server)s:%(port)d. Response message = %(resp)s"
+"Got lower serial for '%(zone)s' to '%(dst)s'. Expected:'%(es)d'. "
+"Got:'%(as)d'.Retries left='%(retries)d'"
 msgstr ""
-"N'a pas pu obtenir NOERROR lors de la tentative de changement de %(zone)s à "
-"%(server)s:%(port)d. Message de réponse = %(resp)s"
 
-#: designate/mdns/notify.py:130
+#: designate/mdns/notify.py:188
 #, python-format
 msgid ""
-"Got Timeout while trying to notify change in %(zone)s to %(server)s:"
-"%(port)d. "
+"Got Timeout while trying to send '%(msg)s' for '%(zone)s' to '%(server)s:"
+"%(port)d'. Timeout='%(timeout)d' seconds. Retry='%(retry)d'"
 msgstr ""
-"Expiration lors de la tentative de notification du changement de %(zone)s à "
-"%(server)s:%(port)d. "
 
-#: designate/mdns/notify.py:135
+#: designate/mdns/notify.py:200
 #, python-format
 msgid ""
-"Got BadResponse while trying to notify change in %(zone)s to %(server)s:"
-"%(port)d"
+"Got BadResponse while trying to send '%(msg)s' for '%(zone)s' to '%(server)s:"
+"%(port)d'. Timeout='%(timeout)d' seconds. Retry='%(retry)d'"
 msgstr ""
-"A reçu BadResponse lors de la tentative de modification de %(zone)s à "
-"%(server)s:%(port)d"
+
+#: designate/mdns/notify.py:213
+#, python-format
+msgid ""
+"Failed to get expected response while trying to send '%(msg)s' for "
+"'%(zone)s' to '%(server)s:%(port)d'.\n"
+"Response message:\n"
+"%(resp)s\n"
+msgstr ""
 
 #: designate/mdns/service.py:114
 #, python-format

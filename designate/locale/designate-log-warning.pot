@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: designate 2015.1.dev20.g74817f9\n"
+"Project-Id-Version: designate 2015.1.dev56.g9189190\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-10-12 06:18+0000\n"
+"POT-Creation-Date: 2014-10-31 06:09+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,12 +21,12 @@ msgstr ""
 msgid "Request authorized to bypass maintenance mode"
 msgstr ""
 
-#: designate/backend/base.py:117
+#: designate/backend/base.py:121
 #, python-format
 msgid "Failed to delete domain '%(domain)s' during sync. Message: %(message)s"
 msgstr ""
 
-#: designate/backend/base.py:143
+#: designate/backend/base.py:147
 #, python-format
 msgid ""
 "Failed to delete record '%(record)s' in domain '%(domain)s' during sync. "
@@ -56,25 +56,34 @@ msgstr ""
 msgid "Please issue this query: %s"
 msgstr ""
 
-#: designate/mdns/notify.py:123
+#: designate/mdns/notify.py:118
 #, python-format
 msgid ""
-"Failed to get NOERROR while trying to notify change in %(zone)s to "
-"%(server)s:%(port)d. Response message = %(resp)s"
+"Got lower serial for '%(zone)s' to '%(dst)s'. Expected:'%(es)d'. "
+"Got:'%(as)d'.Retries left='%(retries)d'"
 msgstr ""
 
-#: designate/mdns/notify.py:130
+#: designate/mdns/notify.py:188
 #, python-format
 msgid ""
-"Got Timeout while trying to notify change in %(zone)s to "
-"%(server)s:%(port)d. "
+"Got Timeout while trying to send '%(msg)s' for '%(zone)s' to "
+"'%(server)s:%(port)d'. Timeout='%(timeout)d' seconds. Retry='%(retry)d'"
 msgstr ""
 
-#: designate/mdns/notify.py:135
+#: designate/mdns/notify.py:200
 #, python-format
 msgid ""
-"Got BadResponse while trying to notify change in %(zone)s to "
-"%(server)s:%(port)d"
+"Got BadResponse while trying to send '%(msg)s' for '%(zone)s' to "
+"'%(server)s:%(port)d'. Timeout='%(timeout)d' seconds. Retry='%(retry)d'"
+msgstr ""
+
+#: designate/mdns/notify.py:213
+#, python-format
+msgid ""
+"Failed to get expected response while trying to send '%(msg)s' for "
+"'%(zone)s' to '%(server)s:%(port)d'.\n"
+"Response message:\n"
+"%(resp)s\n"
 msgstr ""
 
 #: designate/mdns/service.py:114
