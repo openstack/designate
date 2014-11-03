@@ -456,7 +456,7 @@ class ApiV1RecordsTest(ApiV1Test):
         self.put('domains/%s/records/%s' % (self.domain['id'], record['id']),
                  data=data, status_code=400)
 
-    @patch.object(central_service.Service, 'get_domain',
+    @patch.object(central_service.Service, 'find_domain',
                   side_effect=messaging.MessagingTimeout())
     def test_update_record_timeout(self, _):
         # Create a record
@@ -517,7 +517,7 @@ class ApiV1RecordsTest(ApiV1Test):
                                             record['id']),
                  status_code=404)
 
-    @patch.object(central_service.Service, 'get_domain',
+    @patch.object(central_service.Service, 'find_domain',
                   side_effect=messaging.MessagingTimeout())
     def test_delete_record_timeout(self, _):
         # Create a record
@@ -546,3 +546,51 @@ class ApiV1RecordsTest(ApiV1Test):
         self.delete('domains/%s/records/2fdadfb1-cf96-4259-ac6b-'
                     'bb7b6d2ff980GH' % self.domain['id'],
                     status_code=404)
+
+    def test_get_record_in_secondary(self):
+        fixture = self.get_domain_fixture('SECONDARY', 1)
+        fixture['email'] = "root@example.com"
+
+        domain = self.create_domain(**fixture)
+
+        record = self.create_record(domain, self.recordset)
+
+        url = 'domains/%s/records/%s' % (domain.id, record.id)
+        self.get(url, status_code=404)
+
+    def test_create_record_in_secondary(self):
+        fixture = self.get_domain_fixture('SECONDARY', 1)
+        fixture['email'] = "root@example.com"
+
+        domain = self.create_domain(**fixture)
+
+        record = {
+            "name": "foo.%s" % domain.name,
+            "type": "A",
+            "data": "10.0.0.1"
+        }
+
+        url = 'domains/%s/records' % domain.id
+        self.post(url, record, status_code=404)
+
+    def test_update_record_in_secondary(self):
+        fixture = self.get_domain_fixture('SECONDARY', 1)
+        fixture['email'] = "root@example.com"
+
+        domain = self.create_domain(**fixture)
+
+        record = self.create_record(domain, self.recordset)
+
+        url = 'domains/%s/records/%s' % (domain.id, record.id)
+        self.put(url, {"data": "10.0.0.1"}, status_code=404)
+
+    def test_delete_record_in_secondary(self):
+        fixture = self.get_domain_fixture('SECONDARY', 1)
+        fixture['email'] = "root@example.com"
+
+        domain = self.create_domain(**fixture)
+
+        record = self.create_record(domain, self.recordset)
+
+        url = 'domains/%s/records/%s' % (domain.id, record.id)
+        self.delete(url, status_code=404)

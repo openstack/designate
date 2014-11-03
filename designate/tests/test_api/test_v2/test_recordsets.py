@@ -645,3 +645,102 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
 
         # But there should be four in total (NS/SOA + the created)
         self.assertEqual(4, response.json['metadata']['total_count'])
+
+    # Secondary Zones specific tests
+    def test_get_secondary_zone_recordset(self):
+        fixture = self.get_domain_fixture('SECONDARY', 1)
+        fixture['email'] = 'root@example.com'
+        secondary = self.create_domain(**fixture)
+
+        # Create a recordset
+        recordset = self.create_recordset(secondary)
+
+        url = '/zones/%s/recordsets/%s' % (secondary['id'], recordset['id'])
+        response = self.client.get(url)
+
+        # Check the headers are what we expect
+        self.assertEqual(200, response.status_int)
+        self.assertEqual('application/json', response.content_type)
+
+        # Check the body structure is what we expect
+        self.assertIn('recordset', response.json)
+        self.assertIn('links', response.json['recordset'])
+        self.assertIn('self', response.json['recordset']['links'])
+
+        # Check the values returned are what we expect
+        self.assertIn('id', response.json['recordset'])
+        self.assertIn('created_at', response.json['recordset'])
+        self.assertIsNone(response.json['recordset']['updated_at'])
+        self.assertEqual(recordset['name'], response.json['recordset']['name'])
+        self.assertEqual(recordset['type'], response.json['recordset']['type'])
+
+    def test_get_secondary_zone_recordsets(self):
+        fixture = self.get_domain_fixture('SECONDARY', 1)
+        fixture['email'] = 'foo@bar.io'
+        secondary = self.create_domain(**fixture)
+
+        url = '/zones/%s/recordsets' % secondary['id']
+
+        response = self.client.get(url)
+
+        # Check the headers are what we expect
+        self.assertEqual(200, response.status_int)
+        self.assertEqual('application/json', response.content_type)
+
+        # Check the body structure is what we expect
+        self.assertIn('recordsets', response.json)
+        self.assertIn('links', response.json)
+        self.assertIn('self', response.json['links'])
+
+        # We should start with 2 recordsets for SOA & NS
+        self.assertEqual(1, len(response.json['recordsets']))
+
+        soa = self.central_service.find_recordset(
+            self.admin_context, criterion={'domain_id': secondary['id'],
+                                           'type': 'SOA'})
+        data = [self.create_recordset(secondary,
+                name='x-%s.%s' % (i, secondary['name']))
+                for i in xrange(0, 10)]
+        data.insert(0, soa)
+
+        self._assert_paging(data, url, key='recordsets')
+
+        self._assert_invalid_paging(data, url, key='recordsets')
+
+    def test_create_secondary_zone_recordset(self):
+        fixture = self.get_domain_fixture('SECONDARY', 1)
+        fixture['email'] = 'foo@bar.io'
+        secondary = self.create_domain(**fixture)
+
+        fixture = self.get_recordset_fixture(secondary['name'], fixture=0)
+
+        url = '/zones/%s/recordsets' % secondary['id']
+        self._assert_exception('forbidden', 403, self.client.post_json, url,
+                               {'recordset': fixture})
+
+    def test_update_secondary_zone_recordset(self):
+        fixture = self.get_domain_fixture('SECONDARY', 1)
+        fixture['email'] = 'foo@bar.io'
+        secondary = self.create_domain(**fixture)
+
+        # Set the context so that we can create a RRSet
+        recordset = self.create_recordset(secondary)
+
+        url = '/zones/%s/recordsets/%s' % (recordset['domain_id'],
+                                           recordset['id'])
+
+        self._assert_exception('forbidden', 403, self.client.put_json, url,
+                               {'recordset': {'ttl': 100}})
+
+    def test_delete_secondary_zone_recordset(self):
+        fixture = self.get_domain_fixture('SECONDARY', 1)
+        fixture['email'] = 'foo@bar.io'
+        secondary = self.create_domain(**fixture)
+
+        # Set the context so that we can create a RRSet
+        recordset = self.create_recordset(secondary)
+
+        url = '/zones/%s/recordsets/%s' % (recordset['domain_id'],
+                                           recordset['id'])
+
+        self._assert_exception('forbidden', 403, self.client.delete, url)

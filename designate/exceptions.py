@@ -244,6 +244,10 @@ class DuplicatePoolAttribute(Duplicate):
     error_type = 'duplicate_pool_attribute'
 
 
+class DuplicateDomainAttribute(Duplicate):
+    error_type = 'duplicate_domain_attribute'
+
+
 class MethodNotAllowed(Base):
     expected = True
     error_code = 405
@@ -282,6 +286,10 @@ class BlacklistNotFound(NotFound):
 
 class DomainNotFound(NotFound):
     error_type = 'domain_not_found'
+
+
+class DomainAttributeNotFound(NotFound):
+    error_type = 'domain_attribute_not_found'
 
 
 class TldNotFound(NotFound):

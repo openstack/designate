@@ -36,6 +36,11 @@ TSIG_SCOPES = ['POOL', 'ZONE']
 POOL_PROVISIONERS = ['UNMANAGED']
 ACTIONS = ['CREATE', 'DELETE', 'UPDATE', 'NONE']
 
+ZONE_ATTRIBUTE_KEYS = ('master',)
+
+ZONE_TYPES = ('PRIMARY', 'SECONDARY',)
+
+
 metadata = MetaData()
 
 quotas = Table('quotas', metadata,
@@ -79,6 +84,8 @@ domains = Table('domains', metadata,
     Column('name', String(255), nullable=False),
     Column('email', String(255), nullable=False),
     Column('description', Unicode(160), nullable=True),
+    Column("type", Enum(name='type', *ZONE_TYPES), nullable=False),
+    Column('transferred_at', DateTime, default=None),
     Column('ttl', Integer, default=CONF.default_ttl, nullable=False),
     Column('serial', Integer, default=timeutils.utcnow_ts, nullable=False),
     Column('refresh', Integer, default=CONF.default_soa_refresh,
@@ -102,6 +109,23 @@ domains = Table('domains', metadata,
 
     mysql_engine='InnoDB',
     mysql_charset='utf8',
+)
+
+domain_attributes = Table('domain_attributes', metadata,
+    Column('id', UUID(), default=utils.generate_uuid, primary_key=True),
+    Column('version', Integer(), default=1, nullable=False),
+    Column('created_at', DateTime, default=lambda: timeutils.utcnow()),
+    Column('updated_at', DateTime, onupdate=lambda: timeutils.utcnow()),
+
+    Column('key', Enum(name='key', *ZONE_ATTRIBUTE_KEYS)),
+    Column('value', String(255), nullable=False),
+    Column('domain_id', UUID(), nullable=False),
+
+    UniqueConstraint('key', 'value', 'domain_id', name='unique_attributes'),
+    ForeignKeyConstraint(['domain_id'], ['domains.id'], ondelete='CASCADE'),
+
+    mysql_engine='INNODB',
+    mysql_charset='utf8'
 )
 
 recordsets = Table('recordsets', metadata,

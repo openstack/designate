@@ -29,11 +29,12 @@ class ZonesView(base_view.BaseView):
 
     def show_basic(self, context, request, zone):
         """Basic view of a zone"""
-        return {
+        values = {
             "id": zone['id'],
             "pool_id": zone['pool_id'],
             "project_id": zone['tenant_id'],
             "name": zone['name'],
+            "type": zone['type'],
             "email": zone['email'],
             "description": zone['description'],
             "ttl": zone['ttl'],
@@ -43,10 +44,14 @@ class ZonesView(base_view.BaseView):
             "version": zone['version'],
             "created_at": zone['created_at'],
             "updated_at": zone['updated_at'],
+            "transferred_at": zone['transferred_at'],
+            "masters": zone.masters,
             "links": self._get_resource_links(request, zone)
         }
 
+        return values
+
     def load(self, context, request, body):
         """Extract a "central" compatible dict from an API call"""
-        valid_keys = ('name', 'email', 'description', 'ttl')
-        return self._load(context, request, body, valid_keys)
+        zone_keys = ('name', 'description', 'type', 'email', 'masters', 'ttl')
+        return self._load(context, request, body, zone_keys)

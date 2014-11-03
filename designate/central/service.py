@@ -482,6 +482,7 @@ class Service(service.RPCService, service.Service):
                                           zone['minimum'])
 
     def _create_soa(self, context, zone):
+        # Need elevated context to get the servers
         elevated_context = context.elevated()
         elevated_context.all_tenants = True
 
@@ -505,6 +506,9 @@ class Service(service.RPCService, service.Service):
         return soa
 
     def _update_soa(self, context, zone):
+        # NOTE: We should not be updating SOA records when a zone is SECONDARY.
+        if zone.type != 'PRIMARY':
+            return
 
         nameservers = self.get_domain_servers(context, zone['id'])
 
@@ -519,6 +523,10 @@ class Service(service.RPCService, service.Service):
 
     # NS Recordset Methods
     def _create_ns(self, context, zone, nameservers):
+        # NOTE: We should not be creating NS records when a zone is SECONDARY.
+        if zone.type != 'PRIMARY':
+            return
+
         # Create an NS record for each server
         ns_values = []
         for s in nameservers:
@@ -537,6 +545,10 @@ class Service(service.RPCService, service.Service):
         return ns
 
     def _update_ns(self, context, zone, orig_name, new_name):
+        # NOTE: We should not be updating NS records when a zone is SECONDARY.
+        if zone.type != 'PRIMARY':
+            return
+
         # Get the zone's NS recordset
         ns = self.find_recordset(context,
                                  criterion={'domain_id': zone['id'],
@@ -826,6 +838,9 @@ class Service(service.RPCService, service.Service):
                              'Please create at least one nameserver'))
             raise exceptions.NoServersConfigured()
 
+        if domain.type == 'SECONDARY' and domain.serial is None:
+            domain.serial = 1
+
         domain = self._create_domain_in_storage(context, domain)
 
         self.pool_manager_api.create_domain(context, domain)
@@ -846,9 +861,6 @@ class Service(service.RPCService, service.Service):
 
         domain.action = 'CREATE'
         domain.status = 'PENDING'
-
-        # Set the serial number
-        domain.serial = utils.increment_serial()
 
         domain = self.storage.create_domain(context, domain)
         nameservers = self.get_domain_servers(context, domain['id'])
@@ -1079,6 +1091,7 @@ class Service(service.RPCService, service.Service):
         target = {
             'domain_id': domain_id,
             'domain_name': domain.name,
+            'domain_type': domain.type,
             'recordset_name': recordset.name,
             'tenant_id': domain.tenant_id,
         }
@@ -1190,6 +1203,7 @@ class Service(service.RPCService, service.Service):
 
         target = {
             'domain_id': recordset.obj_get_original_value('domain_id'),
+            'domain_type': domain.type,
             'recordset_id': recordset.obj_get_original_value('id'),
             'domain_name': domain.name,
             'tenant_id': domain.tenant_id
@@ -1253,6 +1267,7 @@ class Service(service.RPCService, service.Service):
         target = {
             'domain_id': domain_id,
             'domain_name': domain.name,
+            'domain_type': domain.type,
             'recordset_id': recordset.id,
             'tenant_id': domain.tenant_id
         }
@@ -1305,11 +1320,13 @@ class Service(service.RPCService, service.Service):
     def create_record(self, context, domain_id, recordset_id, record,
                       increment_serial=True):
         domain = self.storage.get_domain(context, domain_id)
+
         recordset = self.storage.get_recordset(context, recordset_id)
 
         target = {
             'domain_id': domain_id,
             'domain_name': domain.name,
+            'domain_type': domain.type,
             'recordset_id': recordset_id,
             'recordset_name': recordset.name,
             'tenant_id': domain.tenant_id
@@ -1413,6 +1430,7 @@ class Service(service.RPCService, service.Service):
         target = {
             'domain_id': record.obj_get_original_value('domain_id'),
             'domain_name': domain.name,
+            'domain_type': domain.type,
             'recordset_id': record.obj_get_original_value('recordset_id'),
             'recordset_name': recordset.name,
             'record_id': record.obj_get_original_value('id'),
@@ -1451,6 +1469,7 @@ class Service(service.RPCService, service.Service):
     def delete_record(self, context, domain_id, recordset_id, record_id,
                       increment_serial=True):
         domain = self.storage.get_domain(context, domain_id)
+
         recordset = self.storage.get_recordset(context, recordset_id)
         record = self.storage.get_record(context, record_id)
 
@@ -1465,6 +1484,7 @@ class Service(service.RPCService, service.Service):
         target = {
             'domain_id': domain_id,
             'domain_name': domain.name,
+            'domain_type': domain.type,
             'recordset_id': recordset_id,
             'recordset_name': recordset.name,
             'record_id': record.id,
@@ -1778,6 +1798,7 @@ class Service(service.RPCService, service.Service):
             tenant_id = cfg.CONF['service:central'].managed_resource_tenant_id
 
             zone_values = {
+                'type': 'PRIMARY',
                 'name': zone_name,
                 'email': email,
                 'tenant_id': tenant_id

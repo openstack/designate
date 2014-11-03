@@ -62,6 +62,10 @@ def create_domain():
     domain_schema.validate(values)
 
     central_api = central_rpcapi.CentralAPI.get_instance()
+
+    # A V1 zone only supports being a primary (No notion of a type)
+    values['type'] = 'PRIMARY'
+
     domain = central_api.create_domain(context, objects.Domain(**values))
 
     response = flask.jsonify(domain_schema.filter(domain))
@@ -76,7 +80,8 @@ def get_domains():
     context = flask.request.environ.get('context')
 
     central_api = central_rpcapi.CentralAPI.get_instance()
-    domains = central_api.find_domains(context)
+
+    domains = central_api.find_domains(context, criterion={"type": "PRIMARY"})
 
     return flask.jsonify(domains_schema.filter({'domains': domains}))
 
@@ -86,7 +91,9 @@ def get_domain(domain_id):
     context = flask.request.environ.get('context')
 
     central_api = central_rpcapi.CentralAPI.get_instance()
-    domain = central_api.get_domain(context, domain_id)
+
+    criterion = {"id": domain_id, "type": "PRIMARY"}
+    domain = central_api.find_domain(context, criterion=criterion)
 
     return flask.jsonify(domain_schema.filter(domain))
 
@@ -99,7 +106,8 @@ def update_domain(domain_id):
     central_api = central_rpcapi.CentralAPI.get_instance()
 
     # Fetch the existing resource
-    domain = central_api.get_domain(context, domain_id)
+    criterion = {"id": domain_id, "type": "PRIMARY"}
+    domain = central_api.find_domain(context, criterion=criterion)
 
     # Prepare a dict of fields for validation
     domain_data = domain_schema.filter(domain)
@@ -120,6 +128,11 @@ def delete_domain(domain_id):
     context = flask.request.environ.get('context')
 
     central_api = central_rpcapi.CentralAPI.get_instance()
+
+    # TODO(ekarlso): Fix this to something better.
+    criterion = {"id": domain_id, "type": "PRIMARY"}
+    central_api.find_domain(context, criterion=criterion)
+
     central_api.delete_domain(context, domain_id)
 
     return flask.Response(status=200)
@@ -130,6 +143,10 @@ def get_domain_servers(domain_id):
     context = flask.request.environ.get('context')
 
     central_api = central_rpcapi.CentralAPI.get_instance()
+
+    # TODO(ekarlso): Fix this to something better.
+    criterion = {"id": domain_id, "type": "PRIMARY"}
+    central_api.find_domain(context, criterion=criterion)
 
     nameservers = central_api.get_domain_servers(context, domain_id)
 

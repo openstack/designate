@@ -63,6 +63,9 @@ Create Zone
             "serial": 1404757531,
             "status": "ACTIVE",
             "description": "This is an example zone.",
+            "masters": [],
+            "type": "PRIMARY",
+            "transferred_at": null,
             "version": 1,
             "created_at": "2014-07-07T18:25:31.275934",
             "updated_at": null,
@@ -72,10 +75,12 @@ Create Zone
           }
         }
 
-    :form description: UTF-8 text field
-    :form email: email address
-    :form name: zone name
-    :form ttl: time-to-live numeric value in seconds
+    :form description: UTF-8 text field.
+    :form name: Valid zone name (Immutable).
+    :form type: Enum PRIMARY/SECONDARY, default PRIMARY (Immutable).
+    :form email: email address, required for type PRIMARY, NULL for SECONDARY.
+    :form ttl: time-to-live numeric value in seconds, NULL for SECONDARY.
+    :form masters: Array of master nameservers. (NULL for type PRIMARY, required for SECONDARY otherwise zone will not be transferred before set).
 
     :statuscode 201: Created
     :statuscode 202: Accepted
@@ -117,6 +122,9 @@ Get Zone
             "serial": 1404757531,
             "status": "ACTIVE",
             "description": "This is an example zone.",
+            "masters": [],
+            "type": "PRIMARY",
+            "transferred_at": null,
             "version": 1,
             "created_at": "2014-07-07T18:25:31.275934",
             "updated_at": null,
@@ -165,6 +173,9 @@ List Zones
             "serial": 1404757531,
             "status": "ACTIVE",
             "description": "This is an example zone.",
+            "masters": [],
+            "type": "PRIMARY",
+            "transferred_at": null,
             "version": 1,
             "created_at": "2014-07-07T18:25:31.275934",
             "updated_at": null,
@@ -181,6 +192,9 @@ List Zones
             "serial": 1404756682,
             "status": "ACTIVE",
             "description": "This is another example zone.",
+            "masters": [],
+            "type": "PRIMARY",
+            "transferred_at": null,
             "version": 1,
             "created_at": "2014-07-07T18:22:08.287743",
             "updated_at": null,
@@ -238,6 +252,9 @@ Update Zone
             "serial": 1404760160,
             "status": "ACTIVE",
             "description": "This is an example zone.",
+            "masters": [],
+            "type": "PRIMARY",
+            "transferred_at": null,
             "version": 1,
             "created_at": "2014-07-07T18:25:31.275934",
             "updated_at": "2014-07-07T19:09:20.876366",
@@ -247,10 +264,12 @@ Update Zone
           }
         }
 
-    :form description: UTF-8 text field
-    :form email: email address
-    :form name: zone name
-    :form ttl: time-to-live numeric value in seconds
+    :form description: UTF-8 text field.
+    :form name: Valid zone name (Immutable).
+    :form type: Enum PRIMARY/SECONDARY, default PRIMARY (Immutable).
+    :form email: email address, required for type PRIMARY, NULL for SECONDARY.
+    :form ttl: time-to-live numeric value in seconds, NULL for SECONDARY
+    :form masters: Array of master nameservers. (NULL for type PRIMARY, required for SECONDARY otherwise zone will not be transferred before set.)
 
     :statuscode 200: Success
     :statuscode 202: Accepted
@@ -328,7 +347,10 @@ Import Zone
                 "ttl": "42",
                 "created_at": "2014-07-07T18:25:31.275934",
                 "updated_at": null,
-                "version": 1
+                "version": 1,
+                "masters": [],
+                "type": "PRIMARY",
+                "transferred_at": null
             }
         }
 
