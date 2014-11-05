@@ -30,7 +30,8 @@ class Domain(base.DictObjectMixin, base.SoftDeleteObjectMixin,
         'serial': {},
         'description': {},
         'status': {},
-        'action': {}
+        'action': {},
+        'pool_id': {}
     }
 
 

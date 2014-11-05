@@ -17,6 +17,7 @@ import uuid
 import math
 
 import testtools
+from oslo.config import cfg
 
 from designate.openstack.common import log as logging
 from designate import exceptions
@@ -606,10 +607,12 @@ class StorageTestCase(object):
 
     # Domain Tests
     def test_create_domain(self):
+        pool_id = cfg.CONF['service:central'].default_pool_id
         values = {
             'tenant_id': self.admin_context.tenant,
             'name': 'example.net.',
-            'email': 'example@example.net'
+            'email': 'example@example.net',
+            'pool_id': pool_id
         }
 
         result = self.storage.create_domain(
@@ -622,6 +625,7 @@ class StorageTestCase(object):
         self.assertEqual(result['tenant_id'], self.admin_context.tenant)
         self.assertEqual(result['name'], values['name'])
         self.assertEqual(result['email'], values['email'])
+        self.assertEqual(result['pool_id'], pool_id)
         self.assertIn('status', result)
 
     def test_create_domain_duplicate(self):

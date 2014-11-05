@@ -28,10 +28,9 @@ class ZonesView(base_view.BaseView):
 
     def show_basic(self, context, request, zone):
         """Basic view of a zone"""
-        # TODO(kiall): pool_id should not be hardcoded.. even temp :)
         return {
             "id": zone['id'],
-            "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2",
+            "pool_id": zone['pool_id'],
             "project_id": zone['tenant_id'],
             "name": zone['name'],
             "email": zone['email'],

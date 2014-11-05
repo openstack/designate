@@ -102,6 +102,7 @@ domains = Table('domains', metadata,
     Column('parent_domain_id', UUID, default=None, nullable=True),
     Column('action', Enum(name='actions', *ACTIONS),
            default='CREATE', server_default='CREATE', nullable=False),
+    Column('pool_id', UUID, default=None, nullable=True),
 
     UniqueConstraint('name', 'deleted', name='unique_domain_name'),
     ForeignKeyConstraint(['parent_domain_id'],

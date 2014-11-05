@@ -709,6 +709,11 @@ class Service(service.RPCService):
         if domain.ttl is not None:
             self._is_valid_ttl(context, domain.ttl)
 
+        # Get the default pool_id
+        default_pool_id = cfg.CONF['service:central'].default_pool_id
+        if domain.pool_id is None:
+            domain.pool_id = default_pool_id
+
         # Handle sub-domains appropriately
         parent_domain = self._is_subdomain(context, domain.name)
         if parent_domain:
