@@ -70,7 +70,7 @@ def transaction(f):
 
 
 class Service(service.RPCService):
-    RPC_API_VERSION = '4.1'
+    RPC_API_VERSION = '4.2'
 
     target = messaging.Target(version=RPC_API_VERSION)
 
@@ -391,6 +391,7 @@ class Service(service.RPCService):
                                             'type': "NS"})
         # Add new record to recordset
         ns_record = objects.Record(data=server.name)
+
         new_record = self.create_record(context, zone['id'],
                                         ns['id'], ns_record,
                                         increment_serial=False)
@@ -740,6 +741,12 @@ class Service(service.RPCService):
             LOG.critical(_LC('No servers configured. '
                              'Please create at least one server'))
             raise exceptions.NoServersConfigured()
+
+        # TODO(Ron): remove this when integrated with pool manager.
+        # The default status is 'PENDING' for pool manager.
+        # Setting status to 'ACTIVE' for backward compatibility.
+        if cfg.CONF['service:central'].backend_driver != 'pool_manager_proxy':
+            domain.status = 'ACTIVE'
 
         # Set the serial number
         domain.serial = utils.increment_serial()
@@ -1145,6 +1152,12 @@ class Service(service.RPCService):
 
         # Ensure the tenant has enough quota to continue
         self._enforce_record_quota(context, domain, recordset)
+
+        # TODO(Ron): remove this when integrated with pool_manager.
+        # The default status is 'PENDING' for pool manager.
+        # Setting status to 'ACTIVE' for backward compatibility.
+        if cfg.CONF['service:central'].backend_driver != 'pool_manager_proxy':
+            record.status = 'ACTIVE'
 
         created_record = self.storage.create_record(context, domain_id,
                                                     recordset_id, record)
@@ -1796,3 +1809,51 @@ class Service(service.RPCService):
         pool = self.storage.delete_pool(context, pool_id)
 
         self.notifier.info(context, 'dns.pool.delete', pool)
+
+    # Pool Manager Integration
+    def update_status(self, context, domain_id, status, serial):
+        """
+        :param context: Security context information.
+        :param domain_id: The ID of the designate domain.
+        :param status: The status, 'SUCCESS' or 'ERROR'.
+        :param serial: The consensus serial number for the domain.
+        :return: None
+        """
+        domain = self.storage.get_domain(context, domain_id)
+        criterion = {
+            'domain_id': domain_id
+        }
+        records = self.storage.find_records(context, criterion=criterion)
+
+        if status == 'SUCCESS':
+            if domain.action in ['CREATE', 'UPDATE'] \
+                    and domain.status in ['PENDING', 'ERROR']:
+                domain.action = 'NONE'
+                domain.status = 'ACTIVE'
+            elif domain.action == 'DELETE' \
+                    and domain.status in ['PENDING', 'ERROR']:
+                domain.action = 'NONE'
+                domain.status = 'DELETED'
+            for record in records:
+                if record.action in ['CREATE', 'UPDATE'] \
+                        and record.status in ['PENDING', 'ERROR'] \
+                        and serial >= record.serial:
+                    record.action = 'NONE'
+                    record.status = 'ACTIVE'
+                elif record.action == 'DELETE' \
+                        and record.status in ['PENDING', 'ERROR'] \
+                        and serial >= record.serial:
+                    record.action = 'NONE'
+                    record.status = 'DELETED'
+                self.storage.update_record(context, record)
+
+        elif status == 'ERROR':
+            if domain.status == 'PENDING':
+                domain.status = 'ERROR'
+            for record in records:
+                if record.status == 'PENDING' \
+                        and serial >= record.serial:
+                    record.status = 'ERROR'
+                self.storage.update_record(context, record)
+
+        self.storage.update_domain(context, domain)

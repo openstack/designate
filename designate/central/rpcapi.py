@@ -42,14 +42,15 @@ class CentralAPI(object):
         3.3 - Add methods for blacklisted domains
         4.0 - Create methods now accept designate objects
         4.1 - Add methods for server pools
+        4.2 - Add methods for pool manager integration
     """
-    RPC_API_VERSION = '4.1'
+    RPC_API_VERSION = '4.2'
 
     def __init__(self, topic=None):
         topic = topic if topic else cfg.CONF.central_topic
 
         target = messaging.Target(topic=topic, version=self.RPC_API_VERSION)
-        self.client = rpc.get_client(target, version_cap='4.1')
+        self.client = rpc.get_client(target, version_cap='4.2')
 
     # Misc Methods
     def get_absolute_limits(self, context):
@@ -376,8 +377,7 @@ class CentralAPI(object):
     def create_pool(self, context, pool):
         LOG.info(_LI("create_pool: Calling central's create_pool."))
         cctxt = self.client.prepare(version='4.1')
-        return cctxt.call(context, 'create_pool',
-                          pool=pool)
+        return cctxt.call(context, 'create_pool', pool=pool)
 
     def find_pools(self, context, criterion=None, marker=None, limit=None,
                    sort_key=None, sort_dir=None):
@@ -406,3 +406,10 @@ class CentralAPI(object):
         LOG.info(_LI("delete_pool: Calling central's delete_pool."))
         cctxt = self.client.prepare(version='4.1')
         return cctxt.call(context, 'delete_pool', pool_id=pool_id)
+
+    # Pool Manager Integration Methods
+    def update_status(self, context, domain_id, status, serial):
+        LOG.info(_LI("update_status: Calling central's update_status."))
+        cctxt = self.client.prepare(version='4.2')
+        return cctxt.call(context, 'update_status', domain_id=domain_id,
+                          status=status, serial=serial)
