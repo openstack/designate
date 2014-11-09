@@ -34,6 +34,8 @@ Related Projects
 * `Debian Packaging`_
 * `Launchpad PPA`_
 * `Sample Plugin`_
+* `Symantec Nova Plugin`_
+* `Symantec Neutron Plugin`_
 
 
 .. _Bug Tracker: https://bugs.launchpad.net/designate
@@ -43,3 +45,5 @@ Related Projects
 .. _Debian Packaging: https://github.com/moniker-dns/debian-designate
 .. _Launchpad PPA: https://launchpad.net/~designate-ppa/+archive/havana
 .. _Sample Plugin: https://github.com/kiall/designate-ext-samplehandler
+.. _Symantec Nova Plugin: https://github.com/Symantec/nova-designate-dns-plugin
+.. _Symantec Neutron Plugin: https://github.com/Symantec/neutron-designate-fip-plugin
