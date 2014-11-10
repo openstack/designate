@@ -56,7 +56,7 @@ def _find_or_create_recordset(context, domain_id, name, type, ttl):
 def _extract_record_values(values):
     record_values = dict((k, values[k]) for k in ('data', 'description',)
                          if k in values)
-    if 'priority' in values:
+    if values.get('priority', None) is not None:
         record_values['data'] = '%d %s' % (
             values['priority'], record_values['data'])
     return record_values
