@@ -732,10 +732,11 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
 
     def create_pool_attribute(self, context, pool_id, pool_attribute):
         pool_attribute.pool_id = pool_id
+
         return self._create(tables.pool_attributes, pool_attribute,
                             exceptions.DuplicatePoolAttribute)
 
-    def get_pool_attributes(self, context, pool_attribute_id):
+    def get_pool_attribute(self, context, pool_attribute_id):
         return self._find_pool_attributes(
             context, {'id': pool_attribute_id}, one=True)
 

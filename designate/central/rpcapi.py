@@ -46,7 +46,6 @@ class CentralAPI(object):
         4.1 - Add methods for server pools
         4.2 - Add methods for pool manager integration
         4.3 - Added Zone Transfer Methods
-
     """
     RPC_API_VERSION = '4.3'
 

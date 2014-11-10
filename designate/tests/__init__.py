@@ -41,6 +41,7 @@ from designate import objects
 from designate.manage import database as manage_database
 from designate.sqlalchemy import utils as sqlalchemy_utils
 
+
 LOG = logging.getLogger(__name__)
 
 cfg.CONF.import_opt('storage_driver', 'designate.central',
@@ -246,6 +247,15 @@ class TestCase(base.BaseTestCase):
     }, {
         'pattern': 'blacklisted.org.'
     }]
+
+    pool_attributes_fixtures = [
+        {'pool_id': 'bbaa1d0b-619f-41ed-8c26-2b61c42e7a4b',
+         'key': 'name_server',
+         'value': 'ns1.example.com.'},
+        {'pool_id': 'a7f5a834-dbfd-4ecc-83cd-550785b183c9',
+         'key': 'scope',
+         'value': 'public'}
+    ]
 
     pool_manager_status_fixtures = [{
         'server_id': '1d7a26e6-e604-4aa0-bbc5-d01081bf1f45',
@@ -485,6 +495,13 @@ class TestCase(base.BaseTestCase):
         _values.update(values)
         return _values
 
+    def get_pool_attributes_fixture(self, fixture=0, values=None):
+        values = values or {}
+
+        _values = copy.copy(self.pool_attributes_fixtures[fixture])
+        _values.update(values)
+        return _values
+
     def get_pool_manager_status_fixture(self, fixture=0, values=None):
         values = values or {}
 
@@ -675,6 +692,19 @@ class TestCase(base.BaseTestCase):
 
         return self.central_service.create_zone_transfer_accept(
             context, zone_transfer_accept)
+
+    def create_pool_attribute(self, **kwargs):
+        context = kwargs.pop('context', self.admin_context)
+        fixture = kwargs.pop('fixture', 0)
+
+        values = self.get_pool_attributes_fixture(fixture=fixture,
+                                                  values=kwargs)
+        pool_attribute = objects.PoolAttribute(**values)
+        return self.storage.create_pool_attribute(
+            context,
+            pool_attribute.pool_id,
+            pool_attribute
+        )
 
     def _ensure_interface(self, interface, implementation):
         for name in interface.__abstractmethods__:

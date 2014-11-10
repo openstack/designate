@@ -2147,3 +2147,177 @@ class StorageTestCase(object):
             self.admin_context, zt_accept.id)
         self.assertEqual(result.id, zt_accept.id)
         self.assertEqual(result.domain_id, zt_accept.domain_id)
+
+    # PoolAttribute tests
+    def test_create_pool_attribute(self):
+        values = {
+            'pool_id': "d5d10661-0312-4ae1-8664-31188a4310b7",
+            'key': "name_server",
+            'value': 'ns1.example.org.'
+        }
+
+        result = self.storage.create_pool_attribute(
+            self.admin_context,
+            pool_id=values['pool_id'],
+            pool_attribute=objects.PoolAttribute(**values)
+        )
+
+        self.assertIsNotNone(result['id'])
+        self.assertIsNotNone(result['created_at'])
+        self.assertIsNotNone(result['version'])
+        self.assertIsNone(result['updated_at'])
+
+        self.assertEqual(result['pool_id'], values['pool_id'])
+        self.assertEqual(result['key'], values['key'])
+        self.assertEqual(result['value'], values['value'])
+
+    def test_find_pool_attribute(self):
+        # Verify that there are no Pool Attributes created
+        actual = self.storage.find_pool_attributes(self.admin_context)
+        self.assertEqual(0, len(actual))
+
+        # Create a Pool Attribute
+        pool_attribute = self.create_pool_attribute(fixture=0)
+
+        actual = self.storage.find_pool_attributes(self.admin_context)
+        self.assertEqual(1, len(actual))
+
+        self.assertEqual(pool_attribute['pool_id'], actual[0]['pool_id'])
+        self.assertEqual(pool_attribute['key'], actual[0]['key'])
+        self.assertEqual(pool_attribute['value'], actual[0]['value'])
+
+    def test_find_pool_attributes_paging(self):
+        # Create 10 Pool Attributes
+        created = [self.create_pool_attribute(value='^ns%d.example.com.' % i)
+                   for i in xrange(10)]
+
+        # Ensure we can page through the results.
+        self._ensure_paging(created, self.storage.find_pool_attributes)
+
+    def test_find_pool_attributes_with_criterion(self):
+        # Create two pool attributes
+        pool_attribute_one = self.create_pool_attribute(fixture=0)
+        pool_attribute_two = self.create_pool_attribute(fixture=1)
+
+        # Verify pool_attribute_one
+        criterion = dict(key=pool_attribute_one['key'])
+
+        results = self.storage.find_pool_attributes(self.admin_context,
+                                                    criterion)
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]['pool_id'], pool_attribute_one['pool_id'])
+        self.assertEqual(results[0]['key'], pool_attribute_one['key'])
+        self.assertEqual(results[0]['value'], pool_attribute_one['value'])
+
+        # Verify pool_attribute_two
+        criterion = dict(key=pool_attribute_two['key'])
+        LOG.debug("Criterion is %r " % criterion)
+
+        results = self.storage.find_pool_attributes(self.admin_context,
+                                                    criterion)
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]['pool_id'], pool_attribute_two['pool_id'])
+        self.assertEqual(results[0]['key'], pool_attribute_two['key'])
+        self.assertEqual(results[0]['value'], pool_attribute_two['value'])
+
+    def test_get_pool_attribute(self):
+        expected = self.create_pool_attribute(fixture=0)
+        actual = self.storage.get_pool_attribute(self.admin_context,
+                                                 expected['id'])
+
+        self.assertEqual(actual['pool_id'], expected['pool_id'])
+        self.assertEqual(actual['key'], expected['key'])
+        self.assertEqual(actual['value'], expected['value'])
+
+    def test_get_pool_attribute_missing(self):
+        with testtools.ExpectedException(exceptions.PoolAttributeNotFound):
+            uuid = '2c102ffd-7146-4b4e-ad62-b530ee0873fb'
+            self.storage.get_pool_attribute(self.admin_context, uuid)
+
+    def test_find_pool_attribute_criterion(self):
+        pool_attribute_one = self.create_pool_attribute(fixture=0)
+        pool_attribute_two = self.create_pool_attribute(fixture=1)
+
+        criterion = dict(key=pool_attribute_one['key'])
+
+        result = self.storage.find_pool_attribute(self.admin_context,
+                                                  criterion)
+
+        self.assertEqual(result['pool_id'], pool_attribute_one['pool_id'])
+        self.assertEqual(result['key'], pool_attribute_one['key'])
+        self.assertEqual(result['value'], pool_attribute_one['value'])
+
+        criterion = dict(key=pool_attribute_two['key'])
+
+        result = self.storage.find_pool_attribute(self.admin_context,
+                                                  criterion)
+
+        self.assertEqual(result['pool_id'], pool_attribute_two['pool_id'])
+        self.assertEqual(result['key'], pool_attribute_two['key'])
+        self.assertEqual(result['value'], pool_attribute_two['value'])
+
+    def test_find_pool_attribute_criterion_missing(self):
+        expected = self.create_pool_attribute(fixture=0)
+
+        criterion = dict(key=expected['key'] + "NOT FOUND")
+
+        with testtools.ExpectedException(exceptions.PoolAttributeNotFound):
+            self.storage.find_pool_attribute(self.admin_context, criterion)
+
+    def test_update_pool_attribute(self):
+        pool_attribute = self.create_pool_attribute(value='ns1.example.org')
+
+        # Update the Pool Attribute
+        pool_attribute.value = 'ns5.example.org'
+
+        pool_attribute = self.storage.update_pool_attribute(self.admin_context,
+                                                            pool_attribute)
+        # Verify the new values
+        self.assertEqual('ns5.example.org', pool_attribute.value)
+
+        # Ensure the version column was incremented
+        self.assertEqual(2, pool_attribute.version)
+
+    def test_update_pool_attribute_missing(self):
+        pool_attribute = objects.PoolAttribute(
+            id='728a329a-83b1-4573-82dc-45dceab435d4')
+
+        with testtools.ExpectedException(exceptions.PoolAttributeNotFound):
+            self.storage.update_pool_attribute(self.admin_context,
+                                               pool_attribute)
+
+    def test_update_pool_attribute_duplicate(self):
+        # Create two PoolAttributes
+        pool_attribute_one = self.create_pool_attribute(fixture=0)
+        pool_attribute_two = self.create_pool_attribute(fixture=1)
+
+        # Update the second one to be a duplicate of the first
+        pool_attribute_two.pool_id = pool_attribute_one.pool_id
+        pool_attribute_two.key = pool_attribute_one.key
+        pool_attribute_two.value = pool_attribute_one.value
+
+        with testtools.ExpectedException(exceptions.DuplicatePoolAttribute):
+            self.storage.update_pool_attribute(self.admin_context,
+                                               pool_attribute_two)
+
+    def test_delete_pool_attribute(self):
+        pool_attribute = self.create_pool_attribute(fixture=0)
+
+        self.storage.delete_pool_attribute(self.admin_context,
+                                           pool_attribute['id'])
+
+        with testtools.ExpectedException(exceptions.PoolAttributeNotFound):
+            self.storage.get_pool_attribute(self.admin_context,
+                                            pool_attribute['id'])
+
+    def test_delete_oool_attribute_missing(self):
+        with testtools.ExpectedException(exceptions.PoolAttributeNotFound):
+            uuid = '464e9250-4fe0-4267-9993-da639390bb04'
+            self.storage.delete_pool_attribute(self.admin_context, uuid)
+
+    def test_create_pool_attribute_duplicate(self):
+        # Create the initial PoolAttribute
+        self.create_pool_attribute(fixture=0)
+
+        with testtools.ExpectedException(exceptions.DuplicatePoolAttribute):
+            self.create_pool_attribute(fixture=0)
