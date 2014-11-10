@@ -52,6 +52,10 @@ class NotImplemented(Base, NotImplementedError):
     pass
 
 
+class XFRFailure(Base):
+    pass
+
+
 class ConfigurationError(Base):
     error_type = 'configuration_error'
 

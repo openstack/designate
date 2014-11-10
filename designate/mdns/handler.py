@@ -24,6 +24,9 @@ from oslo.config import cfg
 from oslo_log import log as logging
 
 from designate import exceptions
+from designate.mdns import xfr
+from designate.central import rpcapi as central_api
+from designate.i18n import _LI
 from designate.i18n import _LW
 
 
@@ -34,12 +37,16 @@ CONF.import_opt('default_pool_id', 'designate.central',
                 group='service:central')
 
 
-class RequestHandler(object):
-    """MiniDNS Request Handler"""
-    # TODO(kiall): This class is getting a little unwieldy, we should rework
-    #              with a little more structure.
-    def __init__(self, storage):
+class RequestHandler(xfr.XFRMixin):
+
+    def __init__(self, storage, tg):
+        # Get a storage connection
         self.storage = storage
+        self.tg = tg
+
+    @property
+    def central_api(self):
+        return central_api.CentralAPI.get_instance()
 
     def __call__(self, request):
         """
@@ -62,9 +69,74 @@ class RequestHandler(object):
                 response = self._handle_axfr(request)
             else:
                 response = self._handle_record_query(request)
+        elif request.opcode() == dns.opcode.NOTIFY:
+            response = self._handle_notify(request)
         else:
             # Unhandled OpCode's include STATUS, IQUERY, NOTIFY, UPDATE
             response = self._handle_query_error(request, dns.rcode.REFUSED)
+        return response
+
+    def _handle_notify(self, request):
+        """
+        Constructs the response to a NOTIFY and acts accordingly on it.
+
+        * Checks if the master sending the NOTIFY is in the Zone's masters,
+          if not it is ignored.
+        * Checks if SOA query response serial != local serial.
+        """
+        context = request.environ['context']
+
+        response = dns.message.make_response(request)
+
+        if len(request.question) != 1:
+            response.set_rcode(dns.rcode.FORMERR)
+            return response
+        else:
+            question = request.question[0]
+
+        criterion = {
+            'name': question.name.to_text(),
+            'type': 'SECONDARY',
+            'deleted': False
+        }
+
+        try:
+            domain = self.storage.find_domain(context, criterion)
+        except exceptions.DomainNotFound:
+            response.set_rcode(dns.rcode.NOTAUTH)
+            return response
+
+        notify_addr = request.environ['addr'][0]
+
+        # We check if the src_master which is the assumed master for the zone
+        # that is sending this NOTIFY OP is actually the master. If it's not
+        # We'll reply but don't do anything with the NOTIFY.
+        master_addr = domain.get_master_by_ip(notify_addr)
+        if not master_addr:
+            msg = _LW("NOTIFY for %(name)s from non-master server "
+                      "%(addr)s, ignoring.")
+            LOG.warn(msg % {"name": domain.name, "addr": notify_addr})
+            response.set_rcode(dns.rcode.REFUSED)
+            return response
+
+        resolver = dns.resolver.Resolver()
+        # According to RFC we should query the server that sent the NOTIFY
+        resolver.nameservers = [notify_addr]
+
+        soa_answer = resolver.query(domain.name, 'SOA')
+        soa_serial = soa_answer[0].serial
+        if soa_serial == domain.serial:
+            msg = _LI("Serial %(serial)s is the same for master and us for "
+                      "%(domain_id)s")
+            LOG.info(msg % {"serial": soa_serial, "domain_id": domain.id})
+        else:
+            msg = _LI("Scheduling AXFR for %(domain_id)s from %(master_addr)s")
+            info = {"domain_id": domain.id, "master_addr": master_addr}
+            LOG.info(msg % info)
+            self.tg.add_thread(self.domain_sync, context, domain,
+                               [master_addr])
+
+        response.flags |= dns.flags.AA
 
         return response
 

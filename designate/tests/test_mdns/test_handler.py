@@ -16,20 +16,42 @@
 import binascii
 
 import dns
+import dns.rdataclass
+import dns.rdatatype
+import dns.resolver
+import dns.rrset
+import mock
 from oslo.config import cfg
 
 from designate import context
+from designate import objects
 from designate.tests.test_mdns import MdnsTestCase
 from designate.mdns import handler
 
 CONF = cfg.CONF
 default_pool_id = CONF['service:central'].default_pool_id
 
+ANSWER = [
+    "id 1234",
+    "opcode QUERY",
+    "rcode NOERROR",
+    "flags QR AA RD",
+    ";QUESTION",
+    "example.com. IN SOA",
+    ";ANSWER",
+    "example.com. 3600 IN SOA ns1.example.com. root.master.com. "
+    "%(serial)s 3600 1800 604800 3600",
+    ";AUTHORITY",
+    "example.com. 3600 IN NS ns1.master.com.",
+    ";ADDITIONAL"
+]
+
 
 class MdnsRequestHandlerTest(MdnsTestCase):
     def setUp(self):
         super(MdnsRequestHandlerTest, self).setUp()
-        self.handler = handler.RequestHandler(self.storage)
+        self.mock_tg = mock.Mock()
+        self.handler = handler.RequestHandler(self.storage, self.mock_tg)
         self.addr = ["0.0.0.0", 5556]
 
         self.context = context.DesignateContext.get_admin_context(
@@ -98,27 +120,194 @@ class MdnsRequestHandlerTest(MdnsTestCase):
 
         self.assertEqual(expected_response, binascii.b2a_hex(response))
 
-    def test_dispatch_opcode_notify(self):
-        # DNS packet with NOTIFY opcode
-        payload = "271321000001000000000000076578616d706c6503636f6d0000010001"
+    def _get_secondary_domain(self, values=None, attributes=None):
+        attributes = attributes or []
+        fixture = self.get_domain_fixture("SECONDARY", values=values)
+        fixture['email'] = cfg.CONF['service:central'].managed_resource_email
 
-        # expected response is an error code REFUSED.  The other fields are
-        # id 10003
+        domain = objects.Domain(**fixture)
+        domain.attributes = objects.DomainAttributeList()
+        return domain
+
+    def _get_soa_answer(self, serial):
+        text = "\n".join(ANSWER) % {"serial": str(serial)}
+        msg = dns.message.from_text(text)
+        name = dns.name.from_text('example.com.')
+        answer = dns.resolver.Answer(name, dns.rdatatype.SOA,
+                                     dns.rdataclass.IN, msg)
+        return answer
+
+    @mock.patch.object(dns.resolver.Resolver, 'query')
+    def test_dispatch_opcode_notify_different_serial(self, func):
+        # DNS packet with NOTIFY opcode
+        payload = "c38021000001000000000000076578616d706c6503636f6d0000060001"
+
+        master = "10.0.0.1"
+        domain = self._get_secondary_domain({"serial": 123})
+        domain.attributes.append(objects.DomainAttribute(
+            **{"key": "master", "value": master}))
+
+        # expected response is an error code NOERROR.  The other fields are
+        # id 50048
         # opcode NOTIFY
-        # rcode REFUSED
-        # flags QR RD
+        # rcode NOERROR
+        # flags QR AA RD
         # ;QUESTION
         # example.com. IN A
         # ;ANSWER
         # ;AUTHORITY
         # ;ADDITIONAL
-        expected_response = ("2713a1050001000000000000076578616d706c6503636f6d"
-                             "0000010001")
+        expected_response = ("c380a5000001000000000000076578616d706c6503636f6d"
+                             "0000060001")
+
+        # The SOA serial should be different from the one in thedomain and
+        # will trigger a AXFR
+        func.return_value = self._get_soa_answer(123123)
 
         request = dns.message.from_wire(binascii.a2b_hex(payload))
-        request.environ = {'addr': self.addr, 'context': self.context}
+        request.environ = {
+            'addr': (master, 53),
+            'context': self.context
+        }
+
+        with mock.patch.object(self.handler.storage, 'find_domain',
+                               return_value=domain):
+            response = self.handler(request).to_wire()
+
+        self.mock_tg.add_thread.assert_called_with(
+            self.handler.domain_sync, self.context, domain, [master])
+        self.assertEqual(expected_response, binascii.b2a_hex(response))
+
+    @mock.patch.object(dns.resolver.Resolver, 'query')
+    def test_dispatch_opcode_notify_same_serial(self, func):
+        # DNS packet with NOTIFY opcode
+        payload = "c38021000001000000000000076578616d706c6503636f6d0000060001"
+
+        master = "10.0.0.1"
+        domain = self._get_secondary_domain({"serial": 123})
+        domain.attributes.append(objects.DomainAttribute(
+            **{"key": "master", "value": master}))
+
+        # expected response is an error code NOERROR.  The other fields are
+        # id 50048
+        # opcode NOTIFY
+        # rcode NOERROR
+        # flags QR AA RD
+        # ;QUESTION
+        # example.com. IN SOA
+        # ;ANSWER
+        # ;AUTHORITY
+        # ;ADDITIONAL
+        expected_response = ("c380a5000001000000000000076578616d706c6503636f6d"
+                             "0000060001")
+
+        # The SOA serial should be different from the one in thedomain and
+        # will trigger a AXFR
+        func.return_value = self._get_soa_answer(domain.serial)
+
+        request = dns.message.from_wire(binascii.a2b_hex(payload))
+        request.environ = {
+            'addr': (master, 53),
+            'context': self.context
+        }
+
+        with mock.patch.object(self.handler.storage, 'find_domain',
+                               return_value=domain):
+            response = self.handler(request).to_wire()
+
+        assert not self.mock_tg.add_thread.called
+        self.assertEqual(expected_response, binascii.b2a_hex(response))
+
+    def test_dispatch_opcode_notify_invalid_master(self):
+        # DNS packet with NOTIFY opcode
+        payload = "c38021000001000000000000076578616d706c6503636f6d0000060001"
+
+        # Have a domain with different master then the one where the notify
+        # comes from causing it to be "ignored" as in not transferred and
+        # logged
+        master = "10.0.0.1"
+        domain = self._get_secondary_domain({"serial": 123})
+        domain.attributes.append(objects.DomainAttribute(
+            **{"key": "master", "value": master}))
+
+        # expected response is an error code REFUSED.  The other fields are
+        # id 50048
+        # opcode NOTIFY
+        # rcode REFUSED
+        # flags QR AA RD
+        # ;QUESTION
+        # example.com. IN SOA
+        # ;ANSWER
+        # ;AUTHORITY
+        # ;ADDITIONAL
+        expected_response = ("c380a1050001000000000000076578616d706c6503636f6d"
+                             "0000060001")
+
+        request = dns.message.from_wire(binascii.a2b_hex(payload))
+        request.environ = {
+            'addr': ("10.0.0.2", 53),
+            'context': self.context
+        }
+
+        with mock.patch.object(self.handler.storage, 'find_domain',
+                               return_value=domain):
+            response = self.handler(request).to_wire()
+
+        assert not self.mock_tg.add_thread.called
+        self.assertEqual(expected_response, binascii.b2a_hex(response))
+
+    def test_dispatch_opcode_notify_no_question_formerr(self):
+        # DNS packet with NOTIFY opcode and no question
+        payload = "f16320000000000000000000"
+
+        # expected response is an error code FORMERR.  The other fields are
+        # id 61795
+        # opcode NOTIFY
+        # rcode FORMERR
+        # flags QR RD
+        # ;QUESTION
+        # ;ANSWER
+        # ;AUTHORITY
+        # ;ADDITIONAL
+        expected_response = ("f163a0010000000000000000")
+
+        request = dns.message.from_wire(binascii.a2b_hex(payload))
+        request.environ = {
+            'addr': ("10.0.0.2", 53),
+            'context': self.context
+        }
+
         response = self.handler(request).to_wire()
 
+        assert not self.mock_tg.add_thread.called
+        self.assertEqual(expected_response, binascii.b2a_hex(response))
+
+    def test_dispatch_opcode_notify_invalid_domain(self):
+        # DNS packet with NOTIFY opcode
+        payload = "c38021000001000000000000076578616d706c6503636f6d0000060001"
+
+        # expected response is an error code NOTAUTH.  The other fields are
+        # id 50048
+        # opcode NOTIFY
+        # rcode NOTAUTH
+        # flags QR RD
+        # ;QUESTION
+        # example.com. IN SOA
+        # ;ANSWER
+        # ;AUTHORITY
+        # ;ADDITIONAL
+        expected_response = ("c380a1090001000000000000076578616d706c6503636f6"
+                             "d0000060001")
+
+        request = dns.message.from_wire(binascii.a2b_hex(payload))
+        request.environ = {
+            'addr': ("10.0.0.2", 53),
+            'context': self.context
+        }
+
+        response = self.handler(request).to_wire()
+
+        assert not self.mock_tg.add_thread.called
         self.assertEqual(expected_response, binascii.b2a_hex(response))
 
     def test_dispatch_opcode_update(self):

@@ -15,6 +15,9 @@
 # under the License.
 from oslo.config import cfg
 
+from designate import dnsutils
+
+
 cfg.CONF.register_group(cfg.OptGroup(
     name='service:mdns', title="Configuration for mDNS Service"
 ))
@@ -40,3 +43,4 @@ OPTS = [
 ]
 
 cfg.CONF.register_opts(OPTS, group='service:mdns')
+cfg.CONF.register_opts(dnsutils.util_opts, group='service:mdns')

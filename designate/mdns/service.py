@@ -22,6 +22,7 @@ from designate import storage
 from designate import dnsutils
 from designate.mdns import handler
 from designate.mdns import notify
+from designate.mdns import xfr
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
@@ -41,14 +42,14 @@ class Service(service.DNSService, service.RPCService, service.Service):
     @property
     @utils.cache_result
     def _rpc_endpoints(self):
-        return [notify.NotifyEndpoint()]
+        return [notify.NotifyEndpoint(self.tg), xfr.XfrEndpoint(self.tg)]
 
     @property
     @utils.cache_result
     def _dns_application(self):
         # Create an instance of the RequestHandler class and wrap with
         # necessary middleware.
-        application = handler.RequestHandler(self.storage)
+        application = handler.RequestHandler(self.storage, self.tg)
         application = dnsutils.TsigInfoMiddleware(application, self.storage)
         application = dnsutils.SerializationMiddleware(
             application, dnsutils.TsigKeyring(self.storage))

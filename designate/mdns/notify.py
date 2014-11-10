@@ -28,6 +28,8 @@ from oslo.config import cfg
 from oslo_log import log as logging
 
 from designate.pool_manager import rpcapi as pool_mngr_api
+from designate.central import rpcapi as central_api
+from designate.mdns import xfr
 from designate.i18n import _LI
 from designate.i18n import _LW
 
@@ -35,14 +37,19 @@ LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
 
 
-class NotifyEndpoint(object):
+class NotifyEndpoint(xfr.XFRMixin):
     RPC_NOTIFY_API_VERSION = '1.1'
 
     target = messaging.Target(
         namespace='notify', version=RPC_NOTIFY_API_VERSION)
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, tg, *args, **kwargs):
         LOG.info(_LI("started mdns notify endpoint"))
+        self.tg = tg
+
+    @property
+    def central_api(self):
+        return central_api.CentralAPI.get_instance()
 
     @property
     def pool_manager_api(self):

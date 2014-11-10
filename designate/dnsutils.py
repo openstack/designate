@@ -13,13 +13,17 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import random
 import socket
 import base64
 
 import dns
+import dns.exception
 import dns.zone
+import eventlet
 from dns import rdatatype
 from oslo_log import log as logging
+from oslo.config import cfg
 
 from designate import context
 from designate import exceptions
@@ -28,6 +32,11 @@ from designate.i18n import _LE
 from designate.i18n import _LI
 
 LOG = logging.getLogger(__name__)
+
+
+util_opts = [
+    cfg.IntOpt('xfr_timeout', help="Timeout in seconds for XFR's.", default=10)
+]
 
 
 class DNSMiddleware(object):
@@ -181,7 +190,10 @@ def from_dnspython_zone(dnspython_zone):
     values = {
         'name': dnspython_zone.origin.to_text(),
         'email': email,
-        'ttl': soa.ttl
+        'ttl': soa.ttl,
+        'serial': soa[0].serial,
+        'retry': soa[0].retry,
+        'expire': soa[0].expire
     }
 
     zone = objects.Domain(**values)
@@ -249,25 +261,66 @@ def bind_udp(host, port):
     return sock_udp
 
 
-def do_axfr(zone_name, masters, source=None):
+def expand_servers(servers):
+    """
+    Expands list of server:port into a list of dicts.
+
+    Example: [{"host": ..., "port": 53}]
+    """
+    data = []
+    for srv in servers:
+        if isinstance(srv, basestring):
+            parts = srv.split(":")
+            host = parts[0]
+            port = int(parts[1]) if len(parts) == 2 else 53
+        srv = {"ip": host, "port": port}
+        data.append(srv)
+
+    return data
+
+
+def do_axfr(zone_name, servers, timeout=None, source=None):
     """
     Performs an AXFR for a given zone name
     """
-    # TODO(Tim): Try the first master, try others if they exist
-    master = masters[0]
+    random.shuffle(servers)
+    timeout = timeout or 10
 
-    LOG.info(_LI("Doing AXFR for %(name)s from %(host)s") %
-             {'name': zone_name, 'host': master})
-
-    xfr = dns.query.xfr(master['ip'], zone_name, relativize=False,
-                        port=master['port'], source=source)
-
-    try:
-        # TODO(Tim): Add a timeout to this function
-        raw_zone = dns.zone.from_xfr(xfr, relativize=False)
-    except Exception:
-        LOG.exception(_LE("There was a problem with the AXFR"))
-        raise
+    xfr = None
+    for srv in servers:
+        timeout = eventlet.Timeout(timeout)
+        log_info = {'name': zone_name, 'host': srv}
+        try:
+            LOG.info(_LI("Doing AXFR for %(name)s from %(host)s") % log_info)
+            xfr = dns.query.xfr(srv['ip'], zone_name, relativize=False,
+                                timeout=1, port=srv['port'], source=source)
+            raw_zone = dns.zone.from_xfr(xfr, relativize=False)
+            break
+        except eventlet.Timeout as t:
+            if t == timeout:
+                msg = _LE("AXFR timed out for %(name)s from %(host)s")
+                LOG.error(msg % log_info)
+                continue
+        except dns.exception.FormError:
+            msg = _LE("Domain %(name)s is not present on %(host)s."
+                      "Trying next server.")
+            LOG.error(msg % log_info)
+        except socket.error:
+            msg = _LE("Connection error when doing AXFR for %(name)s from "
+                      "%(host)s")
+            LOG.error(msg % log_info)
+        except Exception:
+            msg = _LE("Problem doing AXFR %(name)s from %(host)s. "
+                      "Trying next server.")
+            LOG.exception(msg % log_info)
+        finally:
+            timeout.cancel()
+        continue
+    else:
+        msg = _LE("XFR failed for %(name)s. No servers in %(servers)s was "
+                  "reached.")
+        raise exceptions.XFRFailure(
+            msg % {"name": zone_name, "servers": servers})
 
     LOG.debug("AXFR Successful for %s" % raw_zone.origin.to_text())
 

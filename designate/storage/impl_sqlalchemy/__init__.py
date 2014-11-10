@@ -330,6 +330,31 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
                 attr.domain_id = domain.id
                 self.create_domain_attribute(context, domain.id, attr)
 
+        if domain.obj_attr_is_set('recordsets'):
+            existing = self.find_recordsets(context, {'domain_id': domain.id})
+
+            data = {}
+            for rrset in existing:
+                data[rrset.name, rrset.type] = rrset
+
+            keep = set()
+            for rrset in domain.recordsets:
+                current = data.get((rrset.name, rrset.type))
+
+                if current:
+                    current.update(rrset)
+                    current.records = rrset.records
+                    self.update_recordset(context, current)
+                    keep.add(current.id)
+                else:
+                    self.create_recordset(context, domain.id, rrset)
+                    keep.add(rrset.id)
+
+            if domain.type == 'SECONDARY':
+                # Purge anything that shouldn't be there :P
+                for i in set([i.id for i in data.values()]) - keep:
+                    self.delete_recordset(context, i)
+
         if tenant_id_changed:
             recordsets_query = tables.recordsets.update().\
                 where(tables.recordsets.c.domain_id == domain.id)\

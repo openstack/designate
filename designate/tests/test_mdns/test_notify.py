@@ -18,6 +18,7 @@ import dns
 import dns.message
 import dns.query
 import dns.exception
+import mock
 from mock import patch
 
 from designate.tests.test_mdns import MdnsTestCase
@@ -35,7 +36,6 @@ class MdnsNotifyTest(MdnsTestCase):
 
     def setUp(self):
         super(MdnsNotifyTest, self).setUp()
-        self.notify = notify.NotifyEndpoint()
         server_values = {
             'id': 'f278782a-07dc-4502-9177-b5d85c5f7c7e',
             'host': '127.0.0.1',
@@ -43,6 +43,8 @@ class MdnsNotifyTest(MdnsTestCase):
             'backend': 'fake'
         }
         self.server = objects.PoolServer.from_dict(server_values)
+        self.mock_tg = mock.Mock()
+        self.notify = notify.NotifyEndpoint(self.mock_tg)
 
     def test_send_notify_message(self):
         # id 10001
