@@ -262,8 +262,9 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             sort_key, sort_dir)
 
     def create_domain(self, context, domain):
+        # Don't handle recordsets for now
         return self._create(
-            tables.domains, domain, exceptions.DuplicateDomain)
+            tables.domains, domain, exceptions.DuplicateDomain, ['recordsets'])
 
     def get_domain(self, context, domain_id):
         return self._find_domains(context, {'id': domain_id}, one=True)
@@ -278,9 +279,10 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
         return self._find_domains(context, criterion, one=True)
 
     def update_domain(self, context, domain):
+        # Don't handle recordsets for now
         return self._update(
             context, tables.domains, domain, exceptions.DuplicateDomain,
-            exceptions.DomainNotFound)
+            exceptions.DomainNotFound, ['recordsets'])
 
     def delete_domain(self, context, domain_id):
         # Fetch the existing domain, we'll need to return it.

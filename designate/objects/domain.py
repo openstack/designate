@@ -31,7 +31,10 @@ class Domain(base.DictObjectMixin, base.SoftDeleteObjectMixin,
         'description': {},
         'status': {},
         'action': {},
-        'pool_id': {}
+        'pool_id': {},
+        'recordsets': {
+            'relation': True
+        }
     }
 
 

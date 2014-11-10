@@ -34,6 +34,11 @@ class Backend(Exception):
     pass
 
 
+class RelationNotLoaded(Base):
+    error_code = 500
+    error_type = 'relation_not_loaded'
+
+
 class NSD4SlaveBackendError(Backend):
     pass
 

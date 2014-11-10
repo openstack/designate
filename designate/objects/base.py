@@ -16,6 +16,8 @@ import copy
 
 import six
 
+from designate import exceptions
+
 
 class NotSpecifiedSentinel:
     pass
@@ -45,6 +47,7 @@ def make_class_properties(cls):
 
     for field in cls.FIELDS.keys():
         def getter(self, name=field):
+            self._obj_check_relation(name)
             return getattr(self, get_attrname(name), None)
 
         def setter(self, value, name=field):
@@ -85,6 +88,11 @@ class DesignateObjectMetaclass(type):
 @six.add_metaclass(DesignateObjectMetaclass)
 class DesignateObject(object):
     FIELDS = {}
+
+    def _obj_check_relation(self, name):
+        if name in self.FIELDS and self.FIELDS[name].get('relation', False):
+            if not self.obj_attr_is_set(name):
+                raise exceptions.RelationNotLoaded
 
     @classmethod
     def obj_cls_from_name(cls, name):
