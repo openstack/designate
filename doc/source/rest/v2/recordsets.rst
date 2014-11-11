@@ -27,8 +27,8 @@ The following illustrates a record set in the BIND file format:
                                 20 mail2.example.org.
                                 30 mail3.example.org.
 
-Create Record Set
------------------
+Create Record Set (A, AAAA, CNAME, NS, and TXT)
+-----------------------------------------------
 
 The following format can be used for common record set types including A, AAAA, CNAME, NS and TXT. Simply replace the type and records with the respective values. NS record sets can only be created and deleted. Examples for MX, SSHFP, SPF and SRV will follow.
 
@@ -242,7 +242,7 @@ Update Record Set
 
     .. sourcecode:: http
 
-        PATCH /v2/zones/2150b1bf-dee2-4221-9d85-11f7886fb15f/recordsets/f7b10e9b-0cae-4a91-b162-562bc6096648 HTTP/1.1
+        PUT /v2/zones/2150b1bf-dee2-4221-9d85-11f7886fb15f/recordsets/f7b10e9b-0cae-4a91-b162-562bc6096648 HTTP/1.1
         Host: 127.0.0.1:9001
         Accept: application/json
         Content-Type: application/json
@@ -317,3 +317,262 @@ Delete Record Set
 
     :statuscode 204: No content
 
+Create MX Record Set
+--------------------
+
+.. http:post:: /zones/(uuid:id)/recordsets
+
+    Creates a new MX record set.  MX record set data format is "<priority> <host>" (e.g. "10 10.1.0.1").
+
+    **Example request:**
+
+    .. sourcecode:: http
+
+        POST /v2/zones/2150b1bf-dee2-4221-9d85-11f7886fb15f/recordsets HTTP/1.1
+        Host: 127.0.0.1:9001
+        Accept: application/json
+        Content-Type: application/json
+
+        {
+          "recordset" : {
+          "name" : "mail.example.org.",
+          "description" : "An MX recordset.",
+          "type" : "MX",
+          "ttl" : 3600,
+          "records" : [
+                "10 10.1.0.1", "20 10.1.0.2", "30 10.1.0.3", "40 100.1.1.1"
+              ]
+          }
+        }
+
+    **Example response:**
+
+    .. sourcecode:: http
+
+        HTTP/1.1 201 Created
+        Content-Type: application/json
+
+        {
+            "recordset": {
+                "description": "An MX recordset.",
+                "links": {
+                    "self": "https://127.0.0.1:9001/v2/zones/2150b1bf-dee2-4221-9d85-11f7886fb15f/recordsets/f7b10e9b-0cae-4a91-b162-562bc6096649"
+                },
+                "updated_at": null,
+          "records" : [
+                "10 10.1.0.1", "20 10.1.0.2", "30 10.1.0.3", "40 100.1.1.1"
+                ],
+                "ttl": 3600,
+                "id": "f7b10e9b-0cae-4a91-b162-562bc6096649",
+                "name": "mail.example.org.",
+                "zone_id": "2150b1bf-dee2-4221-9d85-11f7886fb15f",
+                "created_at": "2014-10-25T19:59:44.000000",
+                "version": 1,
+                "type": "MX"
+            }
+        }
+
+
+    :form description: UTF-8 text field
+    :form name: domain name
+    :form ttl: time-to-live numeric value in seconds
+    :form type: type of record set
+    :form records: a list of record values
+
+    :statuscode 201: Created
+    :statuscode 401: Access Denied
+
+Create SSHFP Record Set
+-----------------------
+
+.. http:post:: /zones/(uuid:id)/recordsets
+
+    Creates a new SSHFP record set. SSHFP record set data format is "<algorithm> <fingerprint-type> <fingerprint-hex>" (e.g. "1 2 aa2df857dc65c5359f02ca75ec5c4308c0100594d931e8d243a42f586257b5e8").
+
+    **Example request:**
+
+    .. sourcecode:: http
+
+        POST /v2/zones/2150b1bf-dee2-4221-9d85-11f7886fb15f/recordsets HTTP/1.1
+        Host: 127.0.0.1:9001
+        Accept: application/json
+        Content-Type: application/json
+
+        {
+          "recordset" : {
+          "name" : "foo.example.org.",
+          "description" : "An SSHFP recordset.",
+          "type" : "SSHFP",
+          "ttl" : 3600,
+          "records" : [
+            "1 2 aa2df857dc65c5359f02ca75ec5c4308c0100594d931e8d243a42f586257b5e8"
+            ]
+          }
+        }
+
+    **Example response:**
+
+    .. sourcecode:: http
+
+        HTTP/1.1 201 Created
+        Content-Type: application/json
+
+        {
+            "recordset": {
+                "description": "An SSHFP recordset.",
+                "links": {
+                    "self": "https://127.0.0.1:9001/v2/zones/2150b1bf-dee2-4221-9d85-11f7886fb15f/recordsets/f7b10e9b-0cae-4a91-b162-562bc6096650"
+                },
+                "updated_at": null,
+                "records" : [
+                    "1 2 aa2df857dc65c5359f02ca75ec5c4308c0100594d931e8d243a42f586257b5e8"
+                  ],
+                "ttl": 3600,
+                "id": "f7b10e9b-0cae-4a91-b162-562bc6096650",
+                "name": "foo.example.org.",
+                "zone_id": "2150b1bf-dee2-4221-9d85-11f7886fb15f",
+                "created_at": "2014-11-10T19:59:44.000000",
+                "version": 1,
+                "type": "SSHFP"
+            }
+        }
+
+
+    :form description: UTF-8 text field
+    :form name: domain name
+    :form ttl: time-to-live numeric value in seconds
+    :form type: type of record set
+    :form records: a list of record values
+
+    :statuscode 201: Created
+    :statuscode 401: Access Denied
+
+Create SPF Record Set
+---------------------
+
+.. http:post:: /zones/(uuid:id)/recordsets
+
+    Creates a new SPF record set. SPF record set data formatting follows standard spf record syntax.
+
+    **Example request:**
+
+    .. sourcecode:: http
+
+        POST /v2/zones/2150b1bf-dee2-4221-9d85-11f7886fb15f/recordsets HTTP/1.1
+        Host: 127.0.0.1:9001
+        Accept: application/json
+        Content-Type: application/json
+
+        {
+          "recordset" : {
+          "name" : "foospf.example.org.",
+          "description" : "An SPF recordset.",
+          "type" : "SPF",
+          "ttl" : 3600,
+          "records" : [
+              "v=spf1 +all"
+            ]
+          }
+        }
+
+    **Example response:**
+
+    .. sourcecode:: http
+
+        HTTP/1.1 201 Created
+        Content-Type: application/json
+
+        {
+            "recordset": {
+                "description": "An SPF recordset.",
+                "links": {
+                    "self": "https://127.0.0.1:9001/v2/zones/2150b1bf-dee2-4221-9d85-11f7886fb15f/recordsets/f7b10e9b-0cae-4a91-b162-562bc6096651"
+                },
+                "updated_at": null,
+                "records" : [
+                    "v=spf1 +all"
+                  ],
+                "ttl": 3600,
+                "id": "f7b10e9b-0cae-4a91-b162-562bc6096651",
+                "name": "foospf.example.org.",
+                "zone_id": "2150b1bf-dee2-4221-9d85-11f7886fb15f",
+                "created_at": "2014-11-10T19:59:44.000000",
+                "version": 1,
+                "type": "SPF"
+            }
+        }
+
+
+    :form description: UTF-8 text field
+    :form name: domain name
+    :form ttl: time-to-live numeric value in seconds
+    :form type: type of record set
+    :form records: a list of record values
+
+    :statuscode 201: Created
+    :statuscode 401: Access Denied
+
+Create SRV Record Set
+---------------------
+
+.. http:post:: /zones/(uuid:id)/recordsets
+
+    Creates a new SRV record set. SRV record set data format is "<priority> <weight> <port> <target-hostname>" (e.g. "10 0 5060 server1.example.org."). The "name" attribute should contain the service name, protocol and domain name (e.g. "_sip.tcp.example.org.").
+
+    **Example request:**
+
+    .. sourcecode:: http
+
+        POST /v2/zones/2150b1bf-dee2-4221-9d85-11f7886fb15f/recordsets HTTP/1.1
+        Host: 127.0.0.1:9001
+        Accept: application/json
+        Content-Type: application/json
+
+        {
+          "recordset" : {
+          "name" : "_sip.tcp.example.org.",
+          "description" : "An SRV recordset.",
+          "type" : "SRV",
+          "ttl" : 3600,
+          "records" : [
+              "10 0 5060 server1.example.org."
+            ]
+          }
+        }
+
+    **Example response:**
+
+    .. sourcecode:: http
+
+        HTTP/1.1 201 Created
+        Content-Type: application/json
+
+        {
+            "recordset": {
+                "description": "An SRV recordset.",
+                "links": {
+                    "self": "https://127.0.0.1:9001/v2/zones/2150b1bf-dee2-4221-9d85-11f7886fb15f/recordsets/f7b10e9b-0cae-4a91-b162-562bc6096652"
+                },
+                "updated_at": null,
+                "records" : [
+                    "10 0 5060 server1.example.org."
+                  ],
+                "ttl": 3600,
+                "id": "f7b10e9b-0cae-4a91-b162-562bc6096652",
+                "name": "_sip.tcp.example.org.",
+                "zone_id": "2150b1bf-dee2-4221-9d85-11f7886fb15f",
+                "created_at": "2014-11-10T19:59:44.000000",
+                "version": 1,
+                "type": "SRV"
+            }
+        }
+
+
+    :form description: UTF-8 text field
+    :form name: domain name
+    :form ttl: time-to-live numeric value in seconds
+    :form type: type of record set
+    :form records: a list of record values
+
+    :statuscode 201: Created
+    :statuscode 401: Access Denied
