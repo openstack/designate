@@ -23,11 +23,11 @@ import uuid
 import pkg_resources
 from jinja2 import Template
 from oslo.config import cfg
+from oslo.concurrency import processutils
 from oslo.utils import timeutils
 
 from designate import exceptions
 from designate.openstack.common import log as logging
-from designate.openstack.common import processutils
 
 
 LOG = logging.getLogger(__name__)

@@ -19,9 +19,9 @@ import shutil
 import time
 
 from oslo.config import cfg
+from oslo.concurrency import lockutils
 
 from designate.openstack.common import log as logging
-from designate.openstack.common import lockutils
 from designate.i18n import _LW
 from designate import utils
 from designate.backend import base
