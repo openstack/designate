@@ -2,7 +2,7 @@
 # Install and start **Designate** service
 
 # To enable Designate services, add the following to localrc
-# enable_service designate,designate-api,designate-central,designate-mdns,designate-agent,designate-sink
+# enable_service designate,designate-api,designate-central,designate-mdns,designate-agent,designate-sink,designate-pool-manager
 
 # stack.sh
 # ---------
@@ -42,6 +42,8 @@ DESIGNATE_APIPASTE_CONF=$DESIGNATE_CONF_DIR/api-paste.ini
 
 # Set up default options
 DESIGNATE_BACKEND_DRIVER=${DESIGNATE_BACKEND_DRIVER:=powerdns}
+DESIGNATE_POOL_ID=${DESIGNATE_POOL_ID:-794ccc2c-d751-44fe-b57f-8894c9f5c842}
+DESIGNATE_SERVER_ID=${DESIGNATE_SERVER_ID:-f26e0b32-736f-4f0a-831b-039a415c481e}
 
 # Public IP/Port Settings
 DESIGNATE_SERVICE_HOST=${DESIGNATE_SERVICE_HOST:-$SERVICE_HOST}
@@ -211,6 +213,10 @@ function configure_designate {
     if is_service_enabled designate-agent; then
         iniset $DESIGNATE_CONF service:central backend_driver rpc
         iniset $DESIGNATE_CONF service:agent backend_driver $DESIGNATE_BACKEND_DRIVER
+    elif is_service_enabled designate-pool-manager; then
+        iniset $DESIGNATE_CONF service:central backend_driver pool_manager_proxy
+        iniset $DESIGNATE_CONF service:pool_manager pool_id $DESIGNATE_POOL_ID
+        iniset $DESIGNATE_CONF pool_manager_cache:sqlalchemy connection `database_connection_url designate_pool_manager`
     else
         iniset $DESIGNATE_CONF service:central backend_driver $DESIGNATE_BACKEND_DRIVER
     fi
@@ -277,6 +283,15 @@ function init_designate {
     # Init and migrate designate database
     designate-manage database sync
 
+    if is_service_enabled designate-pool-manager; then
+
+        # (Re)create designate_pool_manager cache
+        recreate_database designate_pool_manager utf8
+
+        # Init and migrate designate pool-manager-cache
+        designate-manage pool-manager-cache sync
+    fi
+
     init_designate_backend
 }
 
@@ -318,6 +333,7 @@ function start_designate {
     run_process designate-mdns "$DESIGNATE_BIN_DIR/designate-mdns --config-file $DESIGNATE_CONF"
     run_process designate-agent "$DESIGNATE_BIN_DIR/designate-agent --config-file $DESIGNATE_CONF"
     run_process designate-sink "$DESIGNATE_BIN_DIR/designate-sink --config-file $DESIGNATE_CONF"
+    run_process designate-pool-manager "$DESIGNATE_BIN_DIR/designate-pool-manager --config-file $DESIGNATE_CONF"
 
     # Start proxies if enabled
     if is_service_enabled designate-api && is_service_enabled tls-proxy; then
@@ -337,6 +353,7 @@ function stop_designate {
     stop_process designate-mdns
     stop_process designate-agent
     stop_process designate-sink
+    stop_process designate-pool-manager
 
     stop_designate_backend
 }

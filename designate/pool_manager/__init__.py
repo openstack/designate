@@ -22,8 +22,8 @@ cfg.CONF.register_group(cfg.OptGroup(
 OPTS = [
     cfg.IntOpt('workers', default=None,
                help='Number of Pool Manager worker processes to spawn'),
-    cfg.StrOpt('pool-name', default='default',
-               help='The name of the pool managed by this instance of the '
+    cfg.StrOpt('pool-id', default='default',
+               help='The ID of the pool managed by this instance of the '
                     'Pool Manager'),
     cfg.IntOpt('threshold-percentage', default=100,
                help='The percentage of servers requiring a successful update '
