@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Designate\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-10-12 06:18+0000\n"
-"PO-Revision-Date: 2014-10-09 12:55+0000\n"
+"POT-Creation-Date: 2014-11-12 06:10+0000\n"
+"PO-Revision-Date: 2014-11-11 17:54+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: Portuguese (Brazil) (http://www.transifex.com/projects/p/"
 "designate/language/pt_BR/)\n"
@@ -50,7 +50,7 @@ msgstr ""
 "Linhas de erros:\n"
 "%s"
 
-#: designate/mdns/handler.py:118
+#: designate/mdns/handler.py:111
 #, python-format
 msgid "got exception while handling axfr request. Question is %(qr)s"
 msgstr "obtida exceção enquanto processando requisição axfr. Questão é %(qr)s"
@@ -70,11 +70,6 @@ msgstr ""
 #, python-format
 msgid "Failed calling Neutron %(region)s - %(endpoint)s"
 msgstr "Falha ao chamar Neutron %(region)s - %(endpoint)s"
-
-#: designate/openstack/common/lockutils.py:117
-#, python-format
-msgid "Could not release the acquired lock `%s`"
-msgstr "Não foi possível liberar a trava adquirida `%s`"
 
 #: designate/openstack/common/loopingcall.py:95
 msgid "in fixed duration looping call"

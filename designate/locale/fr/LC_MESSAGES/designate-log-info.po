@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Designate\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-11-09 06:08+0000\n"
-"PO-Revision-Date: 2014-11-07 17:21+0000\n"
+"POT-Creation-Date: 2014-11-12 06:10+0000\n"
+"PO-Revision-Date: 2014-11-11 17:54+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: French (http://www.transifex.com/projects/p/designate/"
 "language/fr/)\n"
@@ -429,7 +429,7 @@ msgstr "Vérification des TLD"
 msgid "NOT checking for TLDs"
 msgstr "AUCUNE vérification des TLD"
 
-#: designate/central/service.py:1587
+#: designate/central/service.py:1592
 #, python-format
 msgid ""
 "Creating zone for %(fip_id)s:%(region)s - %(fip_addr)s zone %(zonename)s"
@@ -496,16 +496,6 @@ msgstr "démarrage du thread _handle_udp"
 msgid "Eventlet backdoor listening on %(port)s for process %(pid)d"
 msgstr ""
 "La porte dérobée d'Eventlet écoute sur %(port)s pour le processus %(pid)d"
-
-#: designate/openstack/common/lockutils.py:82
-#, python-format
-msgid "Created lock path: %s"
-msgstr "Chemin de verrou crée : %s"
-
-#: designate/openstack/common/lockutils.py:194
-#, python-format
-msgid "Failed to remove file %(file)s"
-msgstr "Échec de suppression des fichiers %(file)s"
 
 #: designate/openstack/common/service.py:174
 #, python-format

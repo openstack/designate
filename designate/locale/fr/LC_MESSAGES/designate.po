@@ -8,9 +8,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  Designate\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-10-12 06:18+0000\n"
-"PO-Revision-Date: 2014-10-10 02:14+0000\n"
-"Last-Translator: Corina Roe\n"
+"POT-Creation-Date: 2014-11-12 06:10+0000\n"
+"PO-Revision-Date: 2014-11-11 17:54+0000\n"
+"Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: French "
 "(http://www.transifex.com/projects/p/designate/language/fr/)\n"
 "Plural-Forms: nplurals=2; plural=(n > 1)\n"
@@ -64,11 +64,6 @@ msgstr "sudo a échoué, continue comme si de rien n'était"
 msgid "Please re-run designate-manage as root."
 msgstr "Veuillez exécuter designate-manage à nouveau en tant que root"
 
-#: designate/openstack/common/lockutils.py:101
-#, python-format
-msgid "Unable to acquire lock on `%(filename)s` due to %(exception)s"
-msgstr "Impossible d'obtenir un verrou sur `%(filename)s` à cause de %(exception)s"
-
 #: designate/openstack/common/log.py:287
 #, python-format
 msgid "Deprecated: %s"
@@ -114,52 +109,6 @@ msgid "Rules must be an instance of dict or Rules, got %s instead"
 msgstr ""
 "Les règles doivent représenter une instance de dict ou Règles, %s obtenu "
 "à la place"
-
-#: designate/openstack/common/processutils.py:59
-msgid "Unexpected error while running command."
-msgstr "Erreur inattendue lors de l'exécution de la commande."
-
-#: designate/openstack/common/processutils.py:62
-#, python-format
-msgid ""
-"%(description)s\n"
-"Command: %(cmd)s\n"
-"Exit code: %(exit_code)s\n"
-"Stdout: %(stdout)r\n"
-"Stderr: %(stderr)r"
-msgstr ""
-"%(description)s\n"
-"Commande : %(cmd)s\n"
-"Code de sortie : %(exit_code)s\n"
-"Stdout : %(stdout)r\n"
-"Stderr : %(stderr)r"
-
-#: designate/openstack/common/processutils.py:143
-#, python-format
-msgid "Got unknown keyword args: %r"
-msgstr "Args de mot clé inconnu : %r"
-
-#: designate/openstack/common/processutils.py:148
-msgid "Command requested root, but did not specify a root helper."
-msgstr "La commande exigeait root, mais n'indiquait pas comment obtenir root."
-
-#: designate/openstack/common/processutils.py:158
-#, python-format
-msgid "Running cmd (subprocess): %s"
-msgstr "Exécute cmd (sousprocessus) : %s"
-
-#: designate/openstack/common/processutils.py:206
-#, python-format
-msgid "%r failed. Retrying."
-msgstr "%r a échoué. Nouvelle tentative."
-
-#: designate/openstack/common/processutils.py:248
-msgid "Environment not supported over SSH"
-msgstr "Environnement non pris en charge avec SSH"
-
-#: designate/openstack/common/processutils.py:252
-msgid "process_input not supported over SSH"
-msgstr "process_input not non pris en charge avec SSH"
 
 #: designate/openstack/common/sslutils.py:47
 #, python-format
