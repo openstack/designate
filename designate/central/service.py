@@ -761,6 +761,11 @@ class Service(service.RPCService):
         with wrap_backend_call():
             self.backend.create_domain(context, created_domain)
 
+        if domain.obj_attr_is_set('recordsets'):
+            for rrset in domain.recordsets:
+                self.create_recordset(context, created_domain['id'], rrset,
+                                      increment_serial=False)
+
         self.notifier.info(context, 'dns.domain.create', created_domain)
 
         # If domain is a superdomain, update subdomains

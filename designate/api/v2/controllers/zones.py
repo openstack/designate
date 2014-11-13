@@ -15,19 +15,17 @@
 # under the License.
 import pecan
 from dns import zone as dnszone
-from dns import rdatatype
 from dns import exception as dnsexception
 
 from designate import exceptions
 from designate import utils
 from designate import schema
+from designate import dnsutils
 from designate.api.v2.controllers import rest
 from designate.api.v2.controllers import nameservers
 from designate.api.v2.controllers import recordsets
 from designate.api.v2.views import zones as zones_view
 from designate.objects import Domain
-from designate.objects import Record
-from designate.objects import RecordSet
 
 
 class ZonesController(rest.RestController):
@@ -159,15 +157,27 @@ class ZonesController(rest.RestController):
 
     def _post_zonefile(self, request, response, context):
         """Import Zone"""
-        dnspython_zone = self._parse_zonefile(request)
-        # TODO(artom) This should probably be handled with transactions
-        zone = self._create_zone(context, dnspython_zone)
-
         try:
-            self._create_records(context, zone['id'], dnspython_zone)
-        except exceptions.Base as e:
-            self.central_api.delete_domain(context, zone['id'])
-            raise e
+            dnspython_zone = dnszone.from_text(
+                request.body,
+                # Don't relativize, otherwise we end up with '@' record names.
+                relativize=False,
+                # Dont check origin, we allow missing NS records (missing SOA
+                # records are taken care of in _create_zone).
+                check_origin=False)
+            domain = dnsutils.from_dnspython_zone(dnspython_zone)
+            for rrset in domain.recordsets:
+                if rrset.type in ('NS', 'SOA'):
+                    domain.recordsets.remove(rrset)
+
+        except dnszone.UnknownOrigin:
+            raise exceptions.BadRequest('The $ORIGIN statement is required and'
+                                        ' must be the first statement in the'
+                                        ' zonefile.')
+        except dnsexception.SyntaxError:
+            raise exceptions.BadRequest('Malformed zonefile.')
+
+        zone = self.central_api.create_domain(context, domain)
 
         if zone['status'] == 'PENDING':
             response.status_int = 202
@@ -247,91 +257,3 @@ class ZonesController(rest.RestController):
 
         # NOTE: This is a hack and a half.. But Pecan needs it.
         return ''
-
-    # TODO(artom) Methods below may be useful elsewhere, consider putting them
-    # somewhere reusable.
-
-    def _create_zone(self, context, dnspython_zone):
-        """Creates the initial zone"""
-        # dnspython never builds a zone with more than one SOA, even if we give
-        # it a zonefile that contains more than one
-        soa = dnspython_zone.get_rdataset(dnspython_zone.origin, 'SOA')
-        if soa is None:
-            raise exceptions.BadRequest('An SOA record is required')
-        email = soa[0].rname.to_text().rstrip('.')
-        email = email.replace('.', '@', 1)
-        values = {
-            'name': dnspython_zone.origin.to_text(),
-            'email': email,
-            'ttl': soa.ttl
-        }
-        return self.central_api.create_domain(context, Domain(**values))
-
-    def _record2json(self, record_type, rdata):
-        if record_type == 'MX':
-            return {
-                'data': '%d %s' % (rdata.preference, rdata.exchange.to_text()),
-            }
-        elif record_type == 'SRV':
-            return {
-                'data': '%d %d %d %s' % (rdata.priority, rdata.weight,
-                                         rdata.port, rdata.target.to_text()),
-            }
-        else:
-            return {
-                'data': rdata.to_text()
-            }
-
-    def _create_records(self, context, zone_id, dnspython_zone):
-        """Creates the records"""
-        for record_name in dnspython_zone.nodes.keys():
-            for rdataset in dnspython_zone.nodes[record_name]:
-                record_type = rdatatype.to_text(rdataset.rdtype)
-
-                if (record_type == 'NS') or (record_type == 'SOA'):
-                    # Don't create SOA or NS recordsets, as they are
-                    # created automatically when a domain is
-                    # created
-                    pass
-                else:
-                    # Create the other recordsets
-                    values = {
-                        'domain_id': zone_id,
-                        'name': record_name.to_text(),
-                        'type': record_type
-                    }
-
-                    recordset = self.central_api.create_recordset(
-                        context, zone_id, RecordSet(**values))
-
-                    for rdata in rdataset:
-                        if (record_type == 'NS') or (record_type == 'SOA'):
-                            pass
-                        else:
-                            # Everything else, including delegation NS, gets
-                            # created
-                            values = self._record2json(record_type, rdata)
-
-                            self.central_api.create_record(
-                                context,
-                                zone_id,
-                                recordset['id'],
-                                Record(**values))
-
-    def _parse_zonefile(self, request):
-        """Parses a POSTed zonefile into a dnspython zone object"""
-        try:
-            dnspython_zone = dnszone.from_text(
-                request.body,
-                # Don't relativize, otherwise we end up with '@' record names.
-                relativize=False,
-                # Dont check origin, we allow missing NS records (missing SOA
-                # records are taken care of in _create_zone).
-                check_origin=False)
-        except dnszone.UnknownOrigin:
-            raise exceptions.BadRequest('The $ORIGIN statement is required and'
-                                        ' must be the first statement in the'
-                                        ' zonefile.')
-        except dnsexception.SyntaxError:
-            raise exceptions.BadRequest('Malformed zonefile.')
-        return dnspython_zone
