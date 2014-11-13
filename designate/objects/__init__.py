@@ -44,3 +44,5 @@ from designate.objects.server import Server, ServerList  # noqa
 from designate.objects.tenant import Tenant, TenantList  # noqa
 from designate.objects.tld import Tld, TldList  # noqa
 from designate.objects.tsigkey import TsigKey, TsigKeyList  # noqa
+from designate.objects.validation_error import ValidationError  # noqa
+from designate.objects.validation_error import ValidationErrorList  # noqa

@@ -20,6 +20,7 @@ import testtools
 from designate.openstack.common import log as logging
 from designate import tests
 from designate import objects
+from designate import exceptions
 
 
 LOG = logging.getLogger(__name__)
@@ -39,6 +40,18 @@ class TestObjectDict(objects.DictObjectMixin, TestObject):
 
 class TestObjectList(objects.ListObjectMixin, objects.DesignateObject):
     pass
+
+
+class TestValidatableObject(objects.DesignateObject):
+    FIELDS = {
+        'id': {
+            'schema': {
+                'type': 'string',
+                'format': 'uuid',
+            },
+            'required': True,
+        },
+    }
 
 
 class DesignateObjectTest(tests.TestCase):
@@ -183,6 +196,71 @@ class DesignateObjectTest(tests.TestCase):
             'designate_object.original_values': {},
         }
         self.assertEqual(expected, primitive)
+
+    def test_to_dict(self):
+        obj = TestObject(id='MyID')
+
+        # Ensure only the id attribute is returned
+        dict_ = obj.to_dict()
+        expected = {
+            'id': 'MyID',
+        }
+        self.assertEqual(expected, dict_)
+
+        # Set the name attribute to a None value
+        obj.name = None
+
+        # Ensure both the id and name attributes are returned
+        dict_ = obj.to_dict()
+        expected = {
+            'id': 'MyID',
+            'name': None,
+        }
+        self.assertEqual(expected, dict_)
+
+    def test_to_dict_recursive(self):
+        obj = TestObject(id='MyID', nested=TestObject(id='MyID-Nested'))
+
+        # Ensure only the id attribute is returned
+        dict_ = obj.to_dict()
+        expected = {
+            'id': 'MyID',
+            'nested': {
+                'id': 'MyID-Nested',
+            },
+        }
+
+        self.assertEqual(expected, dict_)
+
+    def test_is_valid(self):
+        obj = TestValidatableObject(id='MyID')
+
+        # ID should be a UUID, So - Not Valid.
+        self.assertFalse(obj.is_valid)
+
+        # Correct the ID field
+        obj.id = 'ffded5c4-e4f6-4e02-a175-48e13c5c12a0'
+
+        # ID is now a UUID, So - Valid.
+        self.assertTrue(obj.is_valid)
+
+    def test_validate(self):
+        obj = TestValidatableObject()
+
+        # ID is required, so the object is not valid
+        with testtools.ExpectedException(exceptions.InvalidObject):
+            obj.validate()
+
+        # Set the ID field to an invalid value
+        obj.id = 'MyID'
+
+        # ID is now set, but to an invalid value, still invalid
+        with testtools.ExpectedException(exceptions.InvalidObject):
+            obj.validate()
+
+        # Set the ID field to a valid value
+        obj.id = 'ffded5c4-e4f6-4e02-a175-48e13c5c12a0'
+        obj.validate()
 
     def test_obj_attr_is_set(self):
         obj = TestObject()
