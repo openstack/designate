@@ -145,7 +145,8 @@ class SQLAlchemy(object):
 
         return query
 
-    def _create(self, table, obj, exc_dup, skip_values=None):
+    def _create(self, table, obj, exc_dup, skip_values=None,
+                extra_values=None):
         # Ensure the Object is valid
         obj.validate()
 
@@ -154,6 +155,10 @@ class SQLAlchemy(object):
         if skip_values is not None:
             for skip_value in skip_values:
                 values.pop(skip_value, None)
+
+        if extra_values is not None:
+            for key in extra_values:
+                values[key] = extra_values[key]
 
         query = table.insert()
 
