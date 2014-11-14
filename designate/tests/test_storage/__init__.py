@@ -1852,18 +1852,18 @@ class StorageTestCase(object):
             self.create_pool(fixture=0)
 
     def test_find_pools(self):
-        # Verify that there are no pools
+        # Verify that there are no pools, except for default pool
         actual = self.storage.find_pools(self.admin_context)
-        self.assertEqual(0, len(actual))
+        self.assertEqual(1, len(actual))
 
         # Create a Pool
         pool = self.create_pool(fixture=0)
 
         actual = self.storage.find_pools(self.admin_context)
-        self.assertEqual(1, len(actual))
+        self.assertEqual(2, len(actual))
 
         # Test against the second pool, since the first is the default pool
-        self.assertEqual(pool['name'], actual[0]['name'])
+        self.assertEqual(pool['name'], actual[1]['name'])
 
     def test_find_pools_paging(self):
         # Get any pools that are already created, including default

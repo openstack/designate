@@ -21,7 +21,7 @@ from oslo.db.sqlalchemy import utils as oslo_utils
 from oslo.db import exception as oslo_db_exception
 from oslo.utils import timeutils
 from sqlalchemy import exc as sqlalchemy_exc
-from sqlalchemy import select
+from sqlalchemy import select, or_
 
 from designate.openstack.common import log as logging
 from designate import exceptions
@@ -119,7 +119,10 @@ class SQLAlchemy(object):
             if context.all_tenants:
                 LOG.debug('Including all tenants items in query results')
             else:
-                query = query.where(table.c.tenant_id == context.tenant)
+                # NOTE: The query doesn't work with table.c.tenant_id is None,
+                # so I had to force flake8 to skip the check
+                query = query.where(or_(table.c.tenant_id == context.tenant,
+                                        table.c.tenant_id == None))  # NOQA
 
         return query
 

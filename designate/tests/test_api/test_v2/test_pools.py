@@ -12,6 +12,8 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+from oslo.config import cfg
+
 from designate.openstack.common import log as logging
 from designate.tests.test_api.test_v2 import ApiV2TestCase
 
@@ -109,7 +111,19 @@ class ApiV2PoolsTest(ApiV2TestCase):
         self.assertIn('links', response.json)
         self.assertIn('self', response.json['links'])
 
+        # We should start with 1 default pool
+        self.assertEqual(1, len(response.json['pools']))
+
+        # GET the default pool
+        pool_id = cfg.CONF['service:central'].default_pool_id
+        default_pool = self.central_service.get_pool(self.admin_context,
+                                                     pool_id)
+
+        # Add the default pool into the list
         data = [self.create_pool(name='x-%s' % i) for i in xrange(0, 10)]
+        data.insert(0, default_pool)
+
+        # Test the paging of the list
         self._assert_paging(data, '/pools', key='pools')
         self._assert_invalid_paging(data, '/pools', key='pools')
 
