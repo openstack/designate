@@ -27,5 +27,8 @@ ENABLED_SERVICES+=,designate,designate-api,designate-central,designate-mdns
 # Optional TLS Proxy
 #ENABLED_SERVICES+=,tls-proxy
 
+# Optional Rally
+#ENABLED_SERVICES+=,rally
+
 # Designate Options
 #DESIGNATE_BACKEND_DRIVER=powerdns
