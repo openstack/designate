@@ -1003,7 +1003,7 @@ class Service(service.RPCService):
             if len(recordset.records) > 0:
                 self._increment_domain_serial(context, domain.id)
 
-        return recordset
+        return created_recordset
 
     def get_recordset(self, context, domain_id, recordset_id):
         domain = self.storage.get_domain(context, domain_id)
