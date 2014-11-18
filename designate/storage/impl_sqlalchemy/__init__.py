@@ -256,15 +256,22 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
     ##
     def _find_domains(self, context, criterion, one=False, marker=None,
                       limit=None, sort_key=None, sort_dir=None):
+        # Check to see if the criterion can use the reverse_name column
+        criterion = self._rname_check(criterion)
+
         return self._find(
             context, tables.domains, objects.Domain, objects.DomainList,
             exceptions.DomainNotFound, criterion, one, marker, limit,
             sort_key, sort_dir)
 
     def create_domain(self, context, domain):
+        # Patch in the reverse_name column
+        extra_values = {"reverse_name": domain.name[::-1]}
+
         # Don't handle recordsets for now
         return self._create(
-            tables.domains, domain, exceptions.DuplicateDomain, ['recordsets'])
+            tables.domains, domain, exceptions.DuplicateDomain, ['recordsets'],
+            extra_values=extra_values)
 
     def get_domain(self, context, domain_id):
         return self._find_domains(context, {'id': domain_id}, one=True)
@@ -308,6 +315,10 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
     def _find_recordsets(self, context, criterion, one=False, marker=None,
                          limit=None, sort_key=None, sort_dir=None):
         query = None
+
+        # Check to see if the criterion can use the reverse_name column
+        criterion = self._rname_check(criterion)
+
         if criterion is not None \
                 and not criterion.get('domains_deleted', True):
             # Ensure that we return only active recordsets
@@ -332,9 +343,12 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
         recordset.tenant_id = domain.tenant_id
         recordset.domain_id = domain_id
 
+        # Patch in the reverse_name column
+        extra_values = {"reverse_name": recordset.name[::-1]}
+
         recordset = self._create(
             tables.recordsets, recordset, exceptions.DuplicateRecordSet,
-            ['records'])
+            ['records'], extra_values=extra_values)
 
         if recordset.obj_attr_is_set('records'):
             for record in recordset.records:
@@ -736,3 +750,10 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             'status': status,
             'rtt': "%f" % (time.time() - start_time)
         }
+
+    # Reverse Name utils
+    def _rname_check(self, criterion):
+        # If the criterion has 'name' in it, switch it out for reverse_name
+        if criterion is not None and criterion.get('name', "").startswith('*'):
+                criterion['reverse_name'] = criterion.pop('name')[::-1]
+        return criterion
