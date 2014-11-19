@@ -479,7 +479,6 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(len(notifications), 3)
 
         # Ensure the notification wrapper contains the correct info
-
         ctxt, message, priority, retry = notifications[0]
 
         self.assertEqual(message['event_type'], 'dns.domain.create')
@@ -857,8 +856,7 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(len(notifications), 2)
 
         # Ensure the notification wrapper contains the correct info
-        # The SOA is the first notification, so test the second one
-        ctxt, message, priority, retry = notifications[1]
+        ctxt, message, priority, retry = notifications[0]
 
         self.assertEqual(message['event_type'], 'dns.domain.update')
         self.assertEqual(message['priority'], 'INFO')
