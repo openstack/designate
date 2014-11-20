@@ -1,0 +1,90 @@
+{
+    "$schema": "http://json-schema.org/draft-04/hyper-schema",
+
+    "id": "zone_transfer_request",
+
+    "title": "zone_transfer_request",
+    "description": "Zone Transfer Request",
+    "additionalProperties": false,
+
+    "required": ["transfer_request"],
+
+    "properties": {
+        "transfer_request": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["zone_id"],
+
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Zone Transfer Request identifier",
+                    "pattern": "^([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}$",
+                    "readOnly": true
+                },
+                "zone_id": {
+                    "type": "string",
+                    "description": "Zone identifier",
+                    "pattern": "^([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}$",
+                    "readOnly": true
+                },
+                "zone_name": {
+                    "type": ["string","null"],
+                    "description": "Zone Name for the Request",
+                    "maxLength": 255,
+                    "readOnly": true
+                },
+                "target_project_id": {
+                    "type": ["string", "null"],
+                    "description": "Tenant identifier",
+                    "maxLength": 160
+                },
+                "project_id": {
+                    "type": ["string", "null"],
+                    "description": "Project identifier",
+                    "maxLength": 36,
+                    "immutable": true
+                },
+                "description": {
+                    "type": ["string", "null"],
+                    "description": "Description for the Request",
+                    "maxLength": 160
+                },
+                "key": {
+                    "type": "string",
+                    "description": "Password used to complete the transfer",
+                    "maxLength": 160
+                },
+                "status": {
+                    "type": "string",
+                    "description": "Zone Status",
+                    "enum": ["ACTIVE", "PENDING", "DELETED", "ERROR", "COMPLETE"],
+                    "readOnly": true
+                },
+                "created_at": {
+                    "type": "string",
+                    "description": "Date and time of Request creation",
+                    "format": "date-time",
+                    "readOnly": true
+                },
+                "updated_at": {
+                    "type": ["string", "null"],
+                    "description": "Date and time of last Request modification",
+                    "format": "date-time",
+                    "readOnly": true
+                },
+                "links": {
+                    "type": "object",
+                    "additionalProperties": false,
+
+                    "properties": {
+                        "self": {
+                            "type": "string",
+                            "format": "url"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

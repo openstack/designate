@@ -81,7 +81,6 @@ def init(default_rule=None):
 def check(rule, ctxt, target=None, do_raise=True, exc=exceptions.Forbidden):
     creds = ctxt.to_dict()
     target = target or {}
-
     try:
         result = _ENFORCER.enforce(rule, target, creds, do_raise, exc)
     except Exception:

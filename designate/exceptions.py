@@ -159,6 +159,11 @@ class InvalidRecordSetLocation(Base):
     error_type = 'invalid_recordset_location'
 
 
+class InvaildZoneTransfer(Base):
+    error_code = 400
+    error_type = 'invalid_zone_transfer_request'
+
+
 class InvalidTTL(Base):
     error_code = 400
     error_type = 'invalid_ttl'
@@ -173,6 +178,10 @@ class Forbidden(Base):
     error_code = 403
     error_type = 'forbidden'
     expected = True
+
+
+class IncorrectZoneTransferKey(Forbidden):
+    error_type = 'invalid_key'
 
 
 class Duplicate(Base):
@@ -231,6 +240,14 @@ class MethodNotAllowed(Base):
     error_type = 'method_not_allowed'
 
 
+class DuplicateZoneTransferRequest(Duplicate):
+    error_type = 'duplicate_zone_transfer_request'
+
+
+class DuplicateZoneTransferAccept(Duplicate):
+    error_type = 'duplicate_zone_transfer_accept'
+
+
 class NotFound(Base):
     expected = True
     error_code = 404
@@ -283,6 +300,14 @@ class PoolNotFound(NotFound):
 
 class PoolAttributeNotFound(NotFound):
     error_type = 'pool_attribute_not_found'
+
+
+class ZoneTransferRequestNotFound(NotFound):
+    error_type = 'zone_transfer_request_not_found'
+
+
+class ZoneTransferAcceptNotFound(NotFound):
+    error_type = 'zone_transfer_accept_not_found'
 
 
 class LastServerDeleteNotAllowed(BadRequest):

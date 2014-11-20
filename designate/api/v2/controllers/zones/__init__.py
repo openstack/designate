@@ -24,6 +24,7 @@ from designate import dnsutils
 from designate.api.v2.controllers import rest
 from designate.api.v2.controllers import nameservers
 from designate.api.v2.controllers import recordsets
+from designate.api.v2.controllers.zones import tasks
 from designate.api.v2.views import zones as zones_view
 from designate.objects import Domain
 
@@ -37,6 +38,7 @@ class ZonesController(rest.RestController):
 
     nameservers = nameservers.NameServersController()
     recordsets = recordsets.RecordSetsController()
+    tasks = tasks.TasksController()
 
     @pecan.expose(template='json:', content_type='application/json')
     @pecan.expose(template=None, content_type='text/dns')

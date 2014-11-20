@@ -19,6 +19,7 @@ import hashlib
 from oslo.config import cfg
 from oslo.db import options
 from sqlalchemy import select, distinct, func
+from sqlalchemy.sql.expression import or_
 
 from designate.openstack.common import log as logging
 from designate import exceptions
@@ -287,9 +288,28 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
 
     def update_domain(self, context, domain):
         # Don't handle recordsets for now
-        return self._update(
+
+        tenant_id_changed = False
+        if 'tenant_id' in domain.obj_what_changed():
+            tenant_id_changed = True
+
+        updated_domain = self._update(
             context, tables.domains, domain, exceptions.DuplicateDomain,
             exceptions.DomainNotFound, ['recordsets'])
+
+        if tenant_id_changed:
+            recordsets_query = tables.recordsets.update().\
+                where(tables.recordsets.c.domain_id == domain.id)\
+                .values({'tenant_id': domain.tenant_id})
+
+            records_query = tables.records.update().\
+                where(tables.records.c.domain_id == domain.id).\
+                values({'tenant_id': domain.tenant_id})
+
+            self.session.execute(records_query)
+            self.session.execute(recordsets_query)
+
+        return updated_domain
 
     def delete_domain(self, context, domain_id):
         # Fetch the existing domain, we'll need to return it.
@@ -734,6 +754,169 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             exceptions.PoolAttributeNotFound)
 
         return deleted_pool_attribute
+
+    # Zone Transfer Methods
+    def _find_zone_transfer_requests(self, context, criterion, one=False,
+                                    marker=None, limit=None, sort_key=None,
+                                    sort_dir=None):
+
+        table = tables.zone_transfer_requests
+
+        ljoin = tables.zone_transfer_requests.join(
+            tables.domains,
+            tables.zone_transfer_requests.c.domain_id == tables.domains.c.id)
+
+        query = select(
+            [table, tables.domains.c.name.label("domain_name")]
+        ).select_from(ljoin)
+
+        if context.all_tenants:
+            LOG.debug('Including all tenants items in query results')
+        else:
+            query = query.where(or_(
+                table.c.tenant_id == context.tenant,
+                table.c.target_tenant_id == context.tenant))
+
+        return self._find(
+            context, table, objects.ZoneTransferRequest,
+            objects.ZoneTransferRequestList,
+            exceptions.ZoneTransferRequestNotFound,
+            criterion,
+            one=one, marker=marker, limit=limit, sort_dir=sort_dir,
+            sort_key=sort_key, query=query, apply_tenant_criteria=False
+        )
+
+    def create_zone_transfer_request(self, context, zone_transfer_request):
+
+        try:
+            criterion = {"domain_id": zone_transfer_request.domain_id,
+                         "status": "ACTIVE"}
+            self.find_zone_transfer_request(
+                context, criterion)
+        except exceptions.ZoneTransferRequestNotFound:
+            return self._create(
+                tables.zone_transfer_requests,
+                zone_transfer_request,
+                exceptions.DuplicateZoneTransferRequest)
+        else:
+            raise exceptions.DuplicateZoneTransferRequest()
+
+    def find_zone_transfer_requests(self, context, criterion=None,
+                                    marker=None, limit=None, sort_key=None,
+                                    sort_dir=None):
+
+        return self._find_zone_transfer_requests(
+            context, criterion, marker=marker,
+            limit=limit, sort_key=sort_key,
+            sort_dir=sort_dir)
+
+    def get_zone_transfer_request(self, context, zone_transfer_request_id):
+        request = self._find_zone_transfer_requests(
+            context,
+            {'id': zone_transfer_request_id},
+            one=True)
+
+        return request
+
+    def find_zone_transfer_request(self, context, criterion):
+
+        return self._find_zone_transfer_requests(context, criterion, one=True)
+
+    def update_zone_transfer_request(self, context, zone_transfer_request):
+
+        zone_transfer_request.obj_reset_changes(('domain_name'))
+
+        updated_zt_request = self._update(
+            context,
+            tables.zone_transfer_requests,
+            zone_transfer_request,
+            exceptions.DuplicateZoneTransferRequest,
+            exceptions.ZoneTransferRequestNotFound,
+            skip_values=['domain_name'])
+
+        return updated_zt_request
+
+    def delete_zone_transfer_request(self, context, zone_transfer_request_id):
+
+        zone_transfer_request = self._find_zone_transfer_requests(
+            context,
+            {'id': zone_transfer_request_id},
+            one=True)
+
+        return self._delete(
+            context,
+            tables.zone_transfer_requests,
+            zone_transfer_request,
+            exceptions.ZoneTransferRequestNotFound)
+
+    def _find_zone_transfer_accept(self, context, criterion, one=False,
+                                   marker=None, limit=None, sort_key=None,
+                                   sort_dir=None):
+
+            return self._find(
+                context, tables.zone_transfer_accepts,
+                objects.ZoneTransferAccept,
+                objects.ZoneTransferAcceptList,
+                exceptions.ZoneTransferAcceptNotFound, criterion,
+                one, marker, limit, sort_key, sort_dir)
+
+    def _get_domain_name(self, context, domain_id, all_tenants=False):
+
+        if all_tenants:
+            ctxt = context.elevated()
+            ctxt.all_tenants = True
+        else:
+            ctxt = context
+
+        return self.get_domain(ctxt, domain_id).name
+
+    def create_zone_transfer_accept(self, context, zone_transfer_accept):
+
+        return self._create(
+            tables.zone_transfer_accepts,
+            zone_transfer_accept,
+            exceptions.DuplicateZoneTransferAccept)
+
+    def find_zone_transfer_accepts(self, context, criterion=None,
+                                   marker=None, limit=None, sort_key=None,
+                                   sort_dir=None):
+        return self._find_zone_transfer_accept(
+            context, criterion, marker=marker, limit=limit, sort_key=sort_key,
+            sort_dir=sort_dir)
+
+    def get_zone_transfer_accept(self, context, zone_transfer_accept_id):
+        return self._find_zone_transfer_accept(
+            context,
+            {'id': zone_transfer_accept_id},
+            one=True)
+
+    def find_zone_transfer_accept(self, context, criterion):
+        return self._find_zone_transfer_accept(
+            context,
+            criterion,
+            one=True)
+
+    def update_zone_transfer_accept(self, context, zone_transfer_accept):
+
+        return self._update(
+            context,
+            tables.zone_transfer_accepts,
+            zone_transfer_accept,
+            exceptions.DuplicateZoneTransferAccept,
+            exceptions.ZoneTransferAcceptNotFound)
+
+    def delete_zone_transfer_accept(self, context, zone_transfer_accept_id):
+
+        zone_transfer_accept = self._find_zone_transfer_accept(
+            context,
+            {'id': zone_transfer_accept_id},
+            one=True)
+
+        return self._delete(
+            context,
+            tables.zone_transfer_accepts,
+            zone_transfer_accept,
+            exceptions.ZoneTransferAcceptNotFound)
 
     # diagnostics
     def ping(self, context):

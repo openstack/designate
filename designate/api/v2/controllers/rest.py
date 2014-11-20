@@ -93,6 +93,14 @@ class RestController(pecan.rest.RestController):
 
         return marker, limit, sort_key, sort_dir
 
+    def _apply_filter_params(self, params, accepted_filters, criterion):
+
+        for k in accepted_filters:
+            if k in params:
+                criterion[k] = params[k]
+
+        return criterion
+
     def _handle_post(self, method, remainder):
         '''
         Routes ``POST`` actions to the appropriate controller.

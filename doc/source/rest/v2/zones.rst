@@ -285,7 +285,7 @@ Import Zone
 
 .. http:post:: /zones
 
-    To import a zonefile, set the Content-type to **text/dns**. The
+    To import a zonefile, set the Content-type to **text/dns** . The
     **zoneextractor.py** tool in the **contrib** folder can generate zonefiles
     that are suitable for Designate (without any **$INCLUDE** statements for
     example).
@@ -379,3 +379,213 @@ Export Zone
     :statuscode 406: Not Acceptable
 
     Notice how the SOA and NS records are replaced with the Designate server(s).
+
+Transfer Zone
+-------------
+
+Create Zone Transfer Request
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. http:post:: /zones/(uuid:id)/tasks/transfer_requests
+
+    To initiate a transfer the original owner must create a transfer request.
+
+    This will return two items that are required to continue:
+        * key: a password that is used to validate the transfer
+        * id: ID of the request.
+
+    Both of these should be communicated out of band (email / IM / etc) to the intended recipient
+
+    There is an option of limiting the transfer to a single project. If that is required, the person initiating the transfer
+    will need the Project ID. This will also allow the targeted project to see the transfer in their list of requests.
+
+    A non-targeted request will not show in a list operation, apart from the owning projects request.
+    An targeted request will only show in the targets and owners lists.
+
+    An un-targeted request can be viewed by any authenticated user.
+
+    **Example Request**
+
+    .. sourcecode:: http
+
+        POST /v2/zones/6b78734a-aef1-45cd-9708-8eb3c2d26ff8/tasks/transfer_requests HTTP/1.1
+        Host: 127.0.0.1:9001
+        Accept: application/json
+        Content-Type: application/json
+
+        {
+            "transfer_request":{
+                "target_project_id": "123456",
+                "description": "Transfer qa.dev.example.com. to QA Team"
+            }
+        }
+
+    **Example Response**
+
+    .. sourcecode:: http
+
+        HTTP/1.1 201 Created
+        Content-Type: application/json
+
+        {
+            "transfer_request": {
+                "created_at": "2014-07-17T20:34:40.882579",
+                "description": null,
+                "id": "f2ad17b5-807a-423f-a991-e06236c247be",
+                "key": "9Z2R50Y0",
+                "project_id": "1",
+                "status": "ACTIVE",
+                "target_project_id": "123456",
+                "updated_at": null,
+                "zone_id": "6b78734a-aef1-45cd-9708-8eb3c2d26ff8",
+                "zone_name": "qa.dev.example.com.",
+                "links": {
+                    "self": "http://127.0.0.1:9001/v2/zones/tasks/transfer_requests/f2ad17b5-807a-423f-a991-e06236c247be"
+                }
+            }
+        }
+
+    :form description: UTF-8 text field
+    :form target_project_id: Optional field to only allow a single tenant to accept the transfer request
+
+
+List Zone Transfer Requests
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. http:get:: /zones/tasks/transfer_requests
+
+    List all transfer requests that the requesting project have created, or are targeted to that project
+
+    The detail shown will differ, based on who the requester is.
+
+    **Example Request**
+
+    .. sourcecode:: http
+
+        GET /zones/tasks/transfer_requests HTTP/1.1
+        Host: 127.0.0.1:9001
+        Accept: application/json
+
+    **Example Response**
+
+    .. sourcecode:: http
+
+        HTTP/1.1 200 OK
+        Content-Type: application/json
+
+        {
+            "transfer_requests": [
+                {
+                    "created_at": "2014-07-17T20:34:40.882579",
+                    "description": "This was created by the requesting project",
+                    "id": "f2ad17b5-807a-423f-a991-e06236c247be",
+                    "key": "9Z2R50Y0",
+                    "project_id": "1",
+                    "status": "ACTIVE",
+                    "target_project_id": "123456",
+                    "updated_at": null,
+                    "zone_id": "6b78734a-aef1-45cd-9708-8eb3c2d26ff8",
+                    "zone_name": "qa.dev.example.com.",
+                    "links": {
+                        "self": "http://127.0.0.1:9001/v2/zones/tasks/transfer_requests/f2ad17b5-807a-423f-a991-e06236c247be"
+                    }
+                },
+                {
+                    "description": "This is scoped to the requesting project",
+                    "id": "efd2d720-b0c4-43d4-99f7-d9b53e08860d",
+                    "zone_id": "2c4d5e37-f823-4bee-9859-031cb44f80e7",
+                    "zone_name": "subdomain.example.com.",
+                    "status": "ACTIVE",
+                    "links": {
+                        "self": "http://127.0.0.1:9001/v2/zones/tasks/transfer_requests/efd2d720-b0c4-43d4-99f7-d9b53e08860d"
+                    }
+                }
+            ],
+            "links": {
+                "self": "http://127.0.0.1:9001/v2/zones/tasks/transfer_requests"
+            }
+        }
+
+
+View a Transfer Request
+^^^^^^^^^^^^^^^^^^^^^^^
+
+.. http:get:: /zones/tasks/transfer_requests/(uuid:id)
+
+    Show details about a request.
+
+    This allows a user to view a transfer request before accepting it
+
+    **Example Request**
+
+    .. sourcecode:: http
+
+        GET /v2/zones/tasks/transfer_requests/f2ad17b5-807a-423f-a991-e06236c247be HTTP/1.1
+        Host: 127.0.0.1:9001
+        Accept: application/json
+
+    **Example Response**
+
+    .. sourcecode:: http
+
+        HTTP/1.1 200 OK
+        Content-Type: application/json
+
+        {
+            "transfer_request":{
+                "description": "This is scoped to the requesting project",
+                "id": "efd2d720-b0c4-43d4-99f7-d9b53e08860d",
+                "zone_id": "2c4d5e37-f823-4bee-9859-031cb44f80e7",
+                "zone_name": "subdomain.example.com.",
+                "status": "ACTIVE",
+                "links": {
+                    "self": "http://127.0.0.1:9001/v2/zones/tasks/transfer_requests/efd2d720-b0c4-43d4-99f7-d9b53e08860d"
+                }
+            }
+        }
+
+
+Accept a Transfer Request
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. http:post:: /zones/tasks/transfer_accepts
+
+    Accept a zone transfer request. This is called by the project that will own the zone
+    (i.e. the project that will maintain the zone)
+
+    Once the API returns "Complete" the zone has been transfered to the new project
+
+    **Example Request**
+
+    .. sourcecode:: http
+
+        POST /v2/zones/tasks/transfer_accept HTTP/1.1
+        Host: 127.0.0.1:9001
+        Accept: application/json
+        Content-Type: application/json
+
+        {
+            "transfer_accept":{
+                "key":"9Z2R50Y0",
+                "zone_transfer_request_id":"f2ad17b5-807a-423f-a991-e06236c247be"
+            }
+        }
+
+    **Example Response**
+
+    .. sourcecode:: http
+
+        HTTP/1.1 201 Created
+        Content-Type: application/json
+
+        {
+            "transfer_accept": {
+                "id": "581891d5-99f5-49e1-86c3-eec0f44d66fd",
+                "links": {
+                    "self": "http://127.0.0.1:9001/v2/zones/tasks/transfer_accepts/581891d5-99f5-49e1-86c3-eec0f44d66fd",
+                    "zone": "http://127.0.0.1:9001/v2/zones/6b78734a-aef1-45cd-9708-8eb3c2d26ff8"
+                },
+                "status": "COMPLETE"
+            }
+        }
+
