@@ -18,6 +18,7 @@ from oslo import messaging
 
 from designate.openstack.common import log as logging
 from designate import exceptions
+from designate import objects
 from designate.central import service as central_service
 from designate.tests.test_api.test_v1 import ApiV1Test
 
@@ -31,6 +32,7 @@ class ApiV1ServersTest(ApiV1Test):
 
         # All Server Checks should be performed as an admin, so..
         # Override to policy to make everyone an admin.
+
         self.policy({'admin': '@'})
 
     def test_create_server(self):
@@ -63,7 +65,7 @@ class ApiV1ServersTest(ApiV1Test):
         # Ensure it fails with a 400
         self.post('servers', data=fixture, status_code=400)
 
-    @patch.object(central_service.Service, 'create_server',
+    @patch.object(central_service.Service, 'update_pool',
                   side_effect=messaging.MessagingTimeout())
     def test_create_server_timeout(self, _):
         # Create a server
@@ -71,7 +73,7 @@ class ApiV1ServersTest(ApiV1Test):
 
         self.post('servers', data=fixture, status_code=504)
 
-    @patch.object(central_service.Service, 'create_server',
+    @patch.object(central_service.Service, 'update_pool',
                   side_effect=exceptions.DuplicateServer())
     def test_create_server_duplicate(self, _):
         # Create a server
@@ -85,8 +87,8 @@ class ApiV1ServersTest(ApiV1Test):
         self.assertIn('servers', response.json)
         self.assertEqual(0, len(response.json['servers']))
 
-        # Create a server
-        self.create_server()
+        # Create the nameserver
+        self.create_nameserver()
 
         response = self.get('servers')
 
@@ -94,34 +96,42 @@ class ApiV1ServersTest(ApiV1Test):
         self.assertEqual(1, len(response.json['servers']))
 
         # Create a second server
-        self.create_server(fixture=1)
+        self.create_nameserver(fixture=1)
 
         response = self.get('servers')
 
         self.assertIn('servers', response.json)
         self.assertEqual(2, len(response.json['servers']))
 
-    @patch.object(central_service.Service, 'find_servers',
+    @patch.object(central_service.Service, 'get_pool',
                   side_effect=messaging.MessagingTimeout())
     def test_get_servers_timeout(self, _):
         self.get('servers', status_code=504)
 
     def test_get_server(self):
         # Create a server
-        server = self.create_server()
+        nameserver = self.create_nameserver()
 
-        response = self.get('servers/%s' % server['id'])
+        response = self.get('servers/%s' % nameserver['id'])
 
         self.assertIn('id', response.json)
-        self.assertEqual(response.json['id'], server['id'])
+        self.assertEqual(response.json['id'], nameserver['id'])
 
-    @patch.object(central_service.Service, 'get_server',
+    @patch.object(central_service.Service, 'get_pool',
                   side_effect=messaging.MessagingTimeout())
     def test_get_server_timeout(self, _):
-        # Create a server
-        server = self.create_server()
+        # # Create a server
+        # nameserver = self.create_nameserver()
 
-        self.get('servers/%s' % server['id'], status_code=504)
+        fixture = self.get_server_fixture(0)
+        values = {
+            'key': 'name_server',
+            'value': fixture['name'],
+            'id': '2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980'
+        }
+        nameserver = objects.PoolAttribute(**values)
+
+        self.get('servers/%s' % nameserver['id'], status_code=504)
 
     def test_get_server_with_invalid_id(self):
         self.get('servers/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff98GH',
@@ -133,7 +143,7 @@ class ApiV1ServersTest(ApiV1Test):
 
     def test_update_server(self):
         # Create a server
-        server = self.create_server()
+        server = self.create_nameserver()
 
         data = {'name': 'test.example.org.'}
 
@@ -145,46 +155,26 @@ class ApiV1ServersTest(ApiV1Test):
         self.assertIn('name', response.json)
         self.assertEqual(response.json['name'], 'test.example.org.')
 
+    def test_update_server_missing(self):
+        data = {'name': 'test.example.org.'}
+        self.put('servers/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980', data=data,
+                 status_code=404)
+
     def test_update_server_junk(self):
         # Create a server
-        server = self.create_server()
+        server = self.create_nameserver()
 
         data = {'name': 'test.example.org.', 'junk': 'Junk Field'}
 
         self.put('servers/%s' % server['id'], data=data, status_code=400)
 
-    @patch.object(central_service.Service, 'update_server',
-                  side_effect=messaging.MessagingTimeout())
-    def test_update_server_timeout(self, _):
-        # Create a server
-        server = self.create_server()
-
-        data = {'name': 'test.example.org.'}
-
-        self.put('servers/%s' % server['id'], data=data, status_code=504)
-
-    @patch.object(central_service.Service, 'update_server',
-                  side_effect=exceptions.DuplicateServer())
-    def test_update_server_duplicate(self, _):
-        server = self.create_server()
-
-        data = {'name': 'test.example.org.'}
-
-        self.put('servers/%s' % server['id'], data=data, status_code=409)
-
-    def test_update_server_missing(self):
-        data = {'name': 'test.example.org.'}
-
-        self.get('servers/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980', data=data,
-                 status_code=404)
-
     def test_delete_server(self):
         # Create a server
-        server = self.create_server()
+        server = self.create_nameserver()
 
         # Create a second server so that we can delete the first
         # because the last remaining server is not allowed to be deleted
-        server2 = self.create_server(fixture=1)
+        server2 = self.create_nameserver(fixture=1)
 
         # Now delete the server
         self.delete('servers/%s' % server['id'])
@@ -195,18 +185,10 @@ class ApiV1ServersTest(ApiV1Test):
         # Also, verify we cannot delete last remaining server
         self.delete('servers/%s' % server2['id'], status_code=400)
 
-    @patch.object(central_service.Service, 'delete_server',
-                  side_effect=messaging.MessagingTimeout())
-    def test_delete_server_timeout(self, _):
-        # Create a server
-        server = self.create_server()
-
-        self.delete('servers/%s' % server['id'], status_code=504)
-
     def test_delete_server_with_invalid_id(self):
         self.delete('servers/9fdadfb1-cf96-4259-ac6b-bb7b6d2ff98GH',
                     status_code=404)
 
     def test_delete_server_missing(self):
-        self.delete('servers/9fdadfb1-cf96-4259-ac6b-bb7b6d2ff980',
+            self.delete('servers/9fdadfb1-cf96-4259-ac6b-bb7b6d2ff980',
                     status_code=404)

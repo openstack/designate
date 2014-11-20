@@ -634,10 +634,11 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
     def get_pool(self, context, pool_id):
         pool = self._find_pools(context, {'id': pool_id}, one=True)
         pool.attributes = self._find_pool_attributes(
-            context, {'pool_id': pool_id, 'key': '!nameserver'})
+            context, {'pool_id': pool_id, 'key': '!name_server'})
         pool.nameservers = self._find_pool_attributes(
-            context, {'pool_id': pool_id, 'key': 'nameserver'})
+            context, {'pool_id': pool_id, 'key': 'name_server'})
         pool.obj_reset_changes(['attributes', 'nameservers'])
+
         return pool
 
     def find_pools(self, context, criterion=None, marker=None,
@@ -647,9 +648,9 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
                                 sort_dir=sort_dir)
         for pool in pools:
             pool.attributes = self._find_pool_attributes(
-                context, {'pool_id': pool.id, 'key': '!nameserver'})
+                context, {'pool_id': pool.id, 'key': '!name_server'})
             pool.nameservers = self._find_pool_attributes(
-                context, {'pool_id': pool.id, 'key': 'nameserver'})
+                context, {'pool_id': pool.id, 'key': 'name_server'})
             pool.obj_reset_changes(['attributes', 'nameservers'])
 
         return pools
@@ -657,9 +658,9 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
     def find_pool(self, context, criterion):
         pool = self._find_pools(context, criterion, one=True)
         pool.attributes = self._find_pool_attributes(
-            context, {'pool_id': pool.id, 'key': '!nameserver'})
+            context, {'pool_id': pool.id, 'key': '!name_server'})
         pool.nameservers = self._find_pool_attributes(
-            context, {'pool_id': pool.id, 'key': 'nameserver'})
+            context, {'pool_id': pool.id, 'key': 'name_server'})
         pool.obj_reset_changes(['attributes', 'nameservers'])
         return pool
 
@@ -714,7 +715,11 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
                 self.create_pool_attribute(
                     context, pool.id, attribute)
 
-        return pool
+        # Call get_pool to get the ids of all the attributes/nameservers
+        # refreshed in the pool object
+        updated_pool = self.get_pool(context, pool.id)
+
+        return updated_pool
 
     def delete_pool(self, context, pool_id):
         pool = self._find_pools(context, {'id': pool_id}, one=True)

@@ -397,7 +397,7 @@ class Storage(DriverPlugin):
         """
         Update a recordset
 
-        :param context: RPC Context
+        :param context: RPC Context.
         :param recordset: RecordSet to update
         """
 
@@ -406,7 +406,7 @@ class Storage(DriverPlugin):
         """
         Delete a recordset
 
-        :param context: RPC Context
+        :param context: RPC Context.
         :param recordset_id: RecordSet ID to delete
         """
 
@@ -469,7 +469,7 @@ class Storage(DriverPlugin):
         """
         Update a record
 
-        :param context: RPC Context
+        :param context: RPC Context.
         :param record: Record to update
         """
 
@@ -478,7 +478,7 @@ class Storage(DriverPlugin):
         """
         Delete a record
 
-        :param context: RPC Context
+        :param context: RPC Context.
         :param record_id: Record ID to delete
         """
 
@@ -567,7 +567,7 @@ class Storage(DriverPlugin):
         """
         Find all Pools
 
-        :param context: RPC Context
+        :param context: RPC Context.
         :param criterion: Criteria by which to filter
         :param marker: Resource ID used by paging. The next page will start
                        at the next resource after the marker
@@ -590,9 +590,8 @@ class Storage(DriverPlugin):
         """
         Get a Pool via the id
 
-        :param context: RPC Context
+        :param context: RPC Context.
         :param pool_id: The ID of the pool to get
-        :return: The requested pool
         """
 
     @abc.abstractmethod
@@ -600,9 +599,8 @@ class Storage(DriverPlugin):
         """
         Update the specified pool
 
-        :param context: RPC Context
-        :param pool_id: The ID of the pool to be updated
-        :return: The updated pool
+        :param context: RPC Context.
+        :param pool: Pool to update.
         """
 
     @abc.abstractmethod
@@ -610,8 +608,69 @@ class Storage(DriverPlugin):
         """
         Delete the pool with the matching id
 
-        :param context: RPC Context
+        :param context: RPC Context.
         :param pool_id: The ID of the pool to be deleted
+        """
+
+    @abc.abstractmethod
+    def create_pool_attribute(self, context, pool_id, pool_attribute):
+        """
+        Create a PoolAttribute.
+
+        :param context: RPC Context.
+        :param pool_id: The ID of the pool to which the attribute belongs.
+        :param pool_attribute: PoolAttribute object with the values created.
+        """
+
+    @abc.abstractmethod
+    def find_pool_attributes(self, context, criterion=None, marker=None,
+                             limit=None, sort_key=None, sort_dir=None):
+        """
+        Find all PoolAttributes
+
+        :param context: RPC Context
+        :param criterion: Criteria by which to filer
+        :param marker: Resource ID used by paging. The next page will start
+                       at the next resource after the marker
+        :param limit: Integer limit of objects on the page
+        :param sort_key: Key used to sort the returned list
+        :param sort_dir: Directions to sort after using sort_key
+        """
+
+    @abc.abstractmethod
+    def find_pool_attribute(self, context, criterion):
+        """
+        Find a single PoolAttribute
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        """
+
+    @abc.abstractmethod
+    def get_pool_attribute(self, context, pool_attribute_id):
+        """
+        Get a PoolAttribute via the ID
+
+        :param context: RPC Context.
+        :param pool_attribute_id: The ID of the PoolAttribute to get
+        """
+
+    @abc.abstractmethod
+    def update_pool_attribute(self, context, pool_attribute):
+        """
+        Update the specified pool
+
+        :param context: RPC Context.
+        :param pool_attribute: PoolAttribute to update
+        """
+
+    @abc.abstractmethod
+    def delete_pool_attribute(self, context, pool_attribute_id):
+        """
+        Delete the pool with the matching id
+
+        :param context: RPC Context.
+        :param pool_attribute_id: The ID of the PoolAttribute to be deleted
         """
 
     def ping(self, context):

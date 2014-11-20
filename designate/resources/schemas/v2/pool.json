@@ -42,8 +42,6 @@
                 "attributes": {
                     "type": "object",
                     "description": "Pool attributes as name value pairs",
-                    "additionalProperties": false,
-                    "required": ["scope"],
                     "properties": {
                         "scope": {
                             "type": "string",
