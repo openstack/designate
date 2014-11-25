@@ -51,6 +51,11 @@ class TestValidatableObject(objects.DesignateObject):
             },
             'required': True,
         },
+        'nested': {
+            'schema': {
+                '$ref': 'obj://TestValidatableObject#/'
+            }
+        }
     }
 
 
@@ -244,6 +249,26 @@ class DesignateObjectTest(tests.TestCase):
         # ID is now a UUID, So - Valid.
         self.assertTrue(obj.is_valid)
 
+    def test_is_valid_recursive(self):
+        obj = TestValidatableObject(
+            id='MyID',
+            nested=TestValidatableObject(id='MyID'))
+
+        # ID should be a UUID, So - Not Valid.
+        self.assertFalse(obj.is_valid)
+
+        # Correct the outer objects ID field
+        obj.id = 'ffded5c4-e4f6-4e02-a175-48e13c5c12a0'
+
+        # Outer ID is now a UUID, Nested ID is Not. So - Invalid.
+        self.assertFalse(obj.is_valid)
+
+        # Correct the nested objects ID field
+        obj.nested.id = 'ffded5c4-e4f6-4e02-a175-48e13c5c12a0'
+
+        # Outer and Nested IDs are now UUIDs. So - Valid.
+        self.assertTrue(obj.is_valid)
+
     def test_validate(self):
         obj = TestValidatableObject()
 
@@ -260,6 +285,36 @@ class DesignateObjectTest(tests.TestCase):
 
         # Set the ID field to a valid value
         obj.id = 'ffded5c4-e4f6-4e02-a175-48e13c5c12a0'
+        obj.validate()
+
+    def test_validate_recursive(self):
+        obj = TestValidatableObject(
+            id='MyID',
+            nested=TestValidatableObject(id='MyID'))
+
+        # ID should be a UUID, So - Invalid.
+        with testtools.ExpectedException(exceptions.InvalidObject):
+            obj.validate()
+
+        # Correct the outer objects ID field
+        obj.id = 'ffded5c4-e4f6-4e02-a175-48e13c5c12a0'
+
+        # Outer ID is now set, Inner ID is not, still invalid.
+        e = self.assertRaises(exceptions.InvalidObject, obj.validate)
+
+        # Ensure we have exactly one error and fetch it
+        self.assertEqual(1, len(e.errors))
+        error = e.errors.pop(0)
+
+        # Ensure the format validator has triggered the failure.
+        self.assertEqual('format', error.validator)
+
+        # Ensure the nested ID field has triggered the failure.
+        self.assertEqual('nested.id', error.absolute_path)
+        self.assertEqual('nested.id', error.relative_path)
+
+        # Set the Nested ID field to a valid value
+        obj.nested.id = 'ffded5c4-e4f6-4e02-a175-48e13c5c12a0'
         obj.validate()
 
     def test_obj_attr_is_set(self):
