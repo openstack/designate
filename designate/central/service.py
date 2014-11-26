@@ -421,11 +421,15 @@ class Service(service.RPCService):
                 raise exceptions.InvalidTTL('TTL is below the minimum: %s'
                                             % min_ttl)
 
-    def _increment_domain_serial(self, context, domain_id):
+    def _increment_domain_serial(self, context, domain_id, serial=None):
         domain = self.storage.get_domain(context, domain_id)
 
+        # Use the supplied serial number
+        if serial:
+            domain.serial = serial
         # Increment the serial number
-        domain.serial = utils.increment_serial(domain.serial)
+        else:
+            domain.serial = utils.increment_serial(domain.serial)
         domain = self.storage.update_domain(context, domain)
 
         with wrap_backend_call():
@@ -437,7 +441,7 @@ class Service(service.RPCService):
         # TODO(vinod): Remove the following call to mdns once pool manager
         # calls mdns.
         self.mdns_api.notify_zone_changed(context, domain, None, None, None,
-                                          None)
+                                          None, 0)
 
         return domain
 
@@ -456,10 +460,12 @@ class Service(service.RPCService):
         elevated_context = context.elevated()
         elevated_context.all_tenants = True
         servers = self.find_servers(elevated_context)
-
+        action, status = self._get_action_and_status('CREATE')
         soa_values = [self._build_soa_record(zone, servers)]
         recordlist = objects.RecordList(objects=[
-            objects.Record(data=r, managed=True) for r in soa_values])
+            objects.Record(data=r, managed=True,
+                           serial=zone['serial'], action=action, status=status)
+            for r in soa_values])
         values = {
             'name': zone['name'],
             'type': "SOA",
@@ -479,9 +485,12 @@ class Service(service.RPCService):
                                   criterion={'domain_id': zone['id'],
                                              'type': "SOA"})
 
+        action, status = self._get_action_and_status('UPDATE')
         new_values = [self._build_soa_record(zone, servers)]
         recordlist = objects.RecordList(objects=[
-            objects.Record(data=r) for r in new_values])
+            objects.Record(data=r,
+                           serial=zone['serial'], action=action, status=status)
+            for r in new_values])
 
         soa.records = recordlist
 
@@ -490,11 +499,14 @@ class Service(service.RPCService):
     # NS Recordset Methods
     def _create_ns(self, context, zone, servers):
         # Create an NS record for each server
+        action, status = self._get_action_and_status('CREATE')
         ns_values = []
         for s in servers:
             ns_values.append(s.name)
         recordlist = objects.RecordList(objects=[
-            objects.Record(data=r, managed=True) for r in ns_values])
+            objects.Record(data=r, managed=True,
+                           serial=zone['serial'], action=action, status=status)
+            for r in ns_values])
         values = {
             'name': zone['name'],
             'type': "NS",
@@ -512,10 +524,11 @@ class Service(service.RPCService):
         ns = self.find_recordset(context,
                                  criterion={'domain_id': zone['id'],
                                             'type': "NS"})
-        #
+
         for r in ns.records:
             if r.data == orig_name:
                 r.data = new_name
+                r.action, r.status = self._get_action_and_status('UPDATE')
                 self.update_recordset(context, ns)
 
     def _add_ns(self, context, zone, server):
@@ -881,11 +894,7 @@ class Service(service.RPCService):
                              'Please create at least one server'))
             raise exceptions.NoServersConfigured()
 
-        # TODO(Ron): remove this when integrated with pool manager.
-        # The default status is 'PENDING' for pool manager.
-        # Setting status to 'ACTIVE' for backward compatibility.
-        if cfg.CONF['service:central'].backend_driver != 'pool_manager_proxy':
-            domain.status = 'ACTIVE'
+        domain.action, domain.status = self._get_action_and_status('CREATE')
 
         # Set the serial number
         domain.serial = utils.increment_serial()
@@ -916,7 +925,7 @@ class Service(service.RPCService):
         self._create_soa(context, created_domain)
 
         self.mdns_api.notify_zone_changed(context, created_domain, None, None,
-                                          None, None)
+                                          None, None, 0)
 
         return created_domain
 
@@ -992,6 +1001,8 @@ class Service(service.RPCService):
         if ttl is not None:
             self._is_valid_ttl(context, ttl)
 
+        domain.action, domain.status = self._get_action_and_status('UPDATE')
+
         if increment_serial:
             # Increment the serial number
             domain.serial = utils.increment_serial(domain.serial)
@@ -1008,7 +1019,7 @@ class Service(service.RPCService):
         # TODO(vinod): Remove the following call to mdns once pool manager
         # calls mdns.
         self.mdns_api.notify_zone_changed(context, domain, None, None, None,
-                                          None)
+                                          None, 0)
 
         return domain
 
@@ -1033,7 +1044,13 @@ class Service(service.RPCService):
             raise exceptions.DomainHasSubdomain('Please delete any subdomains '
                                                 'before deleting this domain')
 
-        domain = self.storage.delete_domain(context, domain_id)
+        domain.action, domain.status = self._get_action_and_status('DELETE')
+
+        # TODO(Ron): fix this when integrated with pool manager.
+        if cfg.CONF['service:central'].backend_driver == 'pool_manager_proxy':
+            domain = self.storage.update_domain(context, domain)
+        else:
+            domain = self.storage.delete_domain(context, domain_id)
 
         with wrap_backend_call():
             self.backend.delete_domain(context, domain)
@@ -1294,11 +1311,11 @@ class Service(service.RPCService):
         # Ensure the tenant has enough quota to continue
         self._enforce_record_quota(context, domain, recordset)
 
-        # TODO(Ron): remove this when integrated with pool_manager.
-        # The default status is 'PENDING' for pool manager.
-        # Setting status to 'ACTIVE' for backward compatibility.
-        if cfg.CONF['service:central'].backend_driver != 'pool_manager_proxy':
-            record.status = 'ACTIVE'
+        record.action, record.status = self._get_action_and_status('CREATE')
+
+        record.serial = domain.serial
+        if increment_serial:
+            record.serial = utils.increment_serial(domain.serial)
 
         created_record = self.storage.create_record(context, domain_id,
                                                     recordset_id, record)
@@ -1308,7 +1325,8 @@ class Service(service.RPCService):
                 context, domain, recordset, created_record)
 
         if increment_serial:
-            self._increment_domain_serial(context, domain_id)
+            self._increment_domain_serial(context, domain_id,
+                                          serial=record.serial)
 
         return created_record
 
@@ -1388,6 +1406,12 @@ class Service(service.RPCService):
 
         policy.check('update_record', context, target)
 
+        record.action, record.status = self._get_action_and_status('UPDATE')
+
+        record.serial = domain.serial
+        if increment_serial:
+            record.serial = utils.increment_serial(domain.serial)
+
         # Update the record
         record = self.storage.update_record(context, record)
 
@@ -1395,7 +1419,8 @@ class Service(service.RPCService):
             self.backend.update_record(context, domain, recordset, record)
 
         if increment_serial:
-            self._increment_domain_serial(context, domain.id)
+            self._increment_domain_serial(context, domain.id,
+                                          serial=record.serial)
 
         return record
 
@@ -1427,13 +1452,24 @@ class Service(service.RPCService):
 
         policy.check('delete_record', context, target)
 
-        record = self.storage.delete_record(context, record_id)
+        record.action, record.status = self._get_action_and_status('DELETE')
+
+        record.serial = domain.serial
+        if increment_serial:
+            record.serial = utils.increment_serial(domain.serial)
+
+        # TODO(Ron): fix this when integrated with pool manager.
+        if cfg.CONF['service:central'].backend_driver == 'pool_manager_proxy':
+            record = self.storage.update_record(context, record)
+        else:
+            record = self.storage.delete_record(context, record_id)
 
         with wrap_backend_call():
             self.backend.delete_record(context, domain, recordset, record)
 
         if increment_serial:
-            self._increment_domain_serial(context, domain_id)
+            self._increment_domain_serial(context, domain_id,
+                                          serial=record.serial)
 
         return record
 
@@ -1954,22 +1990,51 @@ class Service(service.RPCService):
         :param serial: The consensus serial number for the domain.
         :return: None
         """
+        self._update_domain_status(context, domain_id, status, serial)
+        self._update_record_status(context, domain_id, status, serial)
+
+    def _update_domain_status(self, context, domain_id, status, serial):
         domain = self.storage.get_domain(context, domain_id)
+
+        domain_deleted = False
+        if status == 'SUCCESS':
+            if domain.action in ['CREATE', 'UPDATE'] \
+                    and domain.status in ['PENDING', 'ERROR'] \
+                    and serial >= domain.serial:
+                domain.action = 'NONE'
+                domain.status = 'ACTIVE'
+            elif domain.action == 'DELETE' \
+                    and domain.status in ['PENDING', 'ERROR'] \
+                    and serial >= domain.serial:
+                domain.action = 'NONE'
+                domain.status = 'DELETED'
+                domain_deleted = True
+
+        elif status == 'ERROR':
+            if domain.status == 'PENDING' \
+                    and serial >= domain.serial:
+                domain.status = 'ERROR'
+
+        LOG.debug('Setting domain %s, serial %s: action %s, status %s'
+                  % (domain.id, domain.serial, domain.action, domain.status))
+        self.storage.update_domain(context, domain)
+
+        # TODO(Ron): Including this to retain the current logic.
+        # We should NOT be deleting domains.  The domain status should be
+        # used to indicate the domain has been deleted and not the deleted
+        # column.  The deleted column is needed for unique constraints.
+        if domain_deleted:
+            self.storage.delete_domain(context, domain.id)
+
+    def _update_record_status(self, context, domain_id, status, serial):
         criterion = {
             'domain_id': domain_id
         }
         records = self.storage.find_records(context, criterion=criterion)
 
         if status == 'SUCCESS':
-            if domain.action in ['CREATE', 'UPDATE'] \
-                    and domain.status in ['PENDING', 'ERROR']:
-                domain.action = 'NONE'
-                domain.status = 'ACTIVE'
-            elif domain.action == 'DELETE' \
-                    and domain.status in ['PENDING', 'ERROR']:
-                domain.action = 'NONE'
-                domain.status = 'DELETED'
             for record in records:
+                record_deleted = False
                 if record.action in ['CREATE', 'UPDATE'] \
                         and record.status in ['PENDING', 'ERROR'] \
                         and serial >= record.serial:
@@ -1980,18 +2045,37 @@ class Service(service.RPCService):
                         and serial >= record.serial:
                     record.action = 'NONE'
                     record.status = 'DELETED'
+                    record_deleted = True
+                LOG.debug('Setting record %s, serial %s: action %s, status %s'
+                          % (record.id, record.serial,
+                             record.action, record.status))
                 self.storage.update_record(context, record)
 
+                # TODO(Ron): Including this to retain the current logic.
+                # We should NOT be deleting records.  The record status should
+                # be used to indicate the record has been deleted.
+                if record_deleted:
+                    self.storage.delete_record(context, record.id)
+
         elif status == 'ERROR':
-            if domain.status == 'PENDING':
-                domain.status = 'ERROR'
             for record in records:
                 if record.status == 'PENDING' \
                         and serial >= record.serial:
                     record.status = 'ERROR'
+                LOG.debug('Setting record %s, serial %s: action %s, status %s'
+                          % (record.id, record.serial,
+                             record.action, record.status))
                 self.storage.update_record(context, record)
 
-        self.storage.update_domain(context, domain)
+    @staticmethod
+    def _get_action_and_status(passed_action):
+        # TODO(Ron): fix this when integrated with pool manager.
+        action = 'NONE'
+        status = 'ACTIVE'
+        if cfg.CONF['service:central'].backend_driver == 'pool_manager_proxy':
+            action = passed_action
+            status = 'PENDING'
+        return action, status
 
     # Zone Transfers
     def _transfer_key_generator(self, size=8):

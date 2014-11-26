@@ -195,6 +195,14 @@ function configure_designate {
 
     sudo cp $DESIGNATE_DIR/etc/designate/api-paste.ini $DESIGNATE_APIPASTE_CONF
 
+    # Set up the rootwrap sudoers for designate
+    local rootwrap_sudoer_cmd="$DESIGNATE_BIN_DIR/designate-rootwrap $DESIGNATE_ROOTWRAP_CONF *"
+    local tempfile=`mktemp`
+    echo "$STACK_USER ALL=(root) NOPASSWD: $rootwrap_sudoer_cmd" >$tempfile
+    chmod 0440 $tempfile
+    sudo chown root:root $tempfile
+    sudo mv $tempfile /etc/sudoers.d/designate-rootwrap
+
     if [ "$SYSLOG" != "False" ]; then
         iniset $DESIGNATE_CONF DEFAULT use_syslog True
     fi

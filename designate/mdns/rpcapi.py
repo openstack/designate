@@ -42,7 +42,7 @@ class MdnsAPI(object):
         self.notify_client = rpc.get_client(notify_target, version_cap='1.0')
 
     def notify_zone_changed(self, context, domain, destination, timeout,
-                            retry_interval, max_retries):
+                            retry_interval, max_retries, delay):
         LOG.info(_LI("notify_zone_changed: Calling mdns for zone '%(zone)s', "
                      "serial '%(serial)s' to server '%(dst)s'") %
                  {'zone': domain.name, 'serial': domain.serial,
@@ -52,10 +52,11 @@ class MdnsAPI(object):
         return self.notify_client.cast(
             context, 'notify_zone_changed', domain=domain,
             destination=destination, timeout=timeout,
-            retry_interval=retry_interval, max_retries=max_retries)
+            retry_interval=retry_interval, max_retries=max_retries,
+            delay=delay)
 
     def poll_for_serial_number(self, context, domain, destination, timeout,
-                               retry_interval, max_retries):
+                               retry_interval, max_retries, delay):
         LOG.info(_LI("poll_for_serial_number: Calling mdns for zone '%(zone)s'"
                      ", serial '%(serial)s' to server '%(dst)s'") %
                  {'zone': domain.name, 'serial': domain.serial,
@@ -66,4 +67,5 @@ class MdnsAPI(object):
         return self.notify_client.cast(
             context, 'poll_for_serial_number', domain=domain,
             destination=destination, timeout=timeout,
-            retry_interval=retry_interval, max_retries=max_retries)
+            retry_interval=retry_interval, max_retries=max_retries,
+            delay=delay)

@@ -42,7 +42,7 @@ class NotifyEndpoint(object):
         return mdns.get_pool_manager_api()
 
     def notify_zone_changed(self, context, domain, destination, timeout,
-                            retry_interval, max_retries):
+                            retry_interval, max_retries, delay):
         """
         :param context: The user context.
         :param domain: The designate domain object.  This contains the domain
@@ -54,11 +54,13 @@ class NotifyEndpoint(object):
         :param retry_interval: The time (in seconds) between retries.
         :param max_retries: The maximum number of retries mindns would do for
             sending a NOTIFY message. After this many retries, mindns gives up.
+        :param delay: The time to wait before sending the first NOTIFY request.
         :return: a tuple of (response, current_retry) where
             response is the response on success or None on failure.
             current_retry is the current retry number.
             The return value is just used for testing and not by pool manager.
         """
+        time.sleep(delay)
         # TODO(vinod): Remove the following code for
         # setting destination from config once pool manager calls mdns
         if (destination is None):
@@ -73,7 +75,7 @@ class NotifyEndpoint(object):
                 notify=True)
 
     def poll_for_serial_number(self, context, domain, destination, timeout,
-                               retry_interval, max_retries):
+                               retry_interval, max_retries, delay):
         """
         :param context: The user context.
         :param domain: The designate domain object.  This contains the domain
@@ -87,8 +89,9 @@ class NotifyEndpoint(object):
         :param max_retries: The maximum number of retries mindns would do for
             an expected serial number. After this many retries, mindns returns
             an ERROR.
+        :param delay: The time to wait before sending the first request.
         :return: a tuple of (status, actual_serial, retries)
-            status is either SUCCESS(0) or FAILURE(1).
+            status is either "SUCCESS" or "ERROR".
             actual_serial is either the serial number returned in the SOA
             message from the destination or None.
             retries is the number of retries left.
@@ -97,8 +100,9 @@ class NotifyEndpoint(object):
         """
         # Initialize actual_serial, status to FAILURE.
         actual_serial = None
-        status = 1
+        status = 'ERROR'
         retries = max_retries
+        time.sleep(delay)
         while (True):
             (response, retry) = self._make_and_send_dns_message(
                 domain, destination, timeout, retry_interval, retries)
@@ -123,12 +127,13 @@ class NotifyEndpoint(object):
                           'retries': retries})
                 if retries > 0:
                     # retry again
+                    time.sleep(retry_interval)
                     continue
                 else:
                     break
             else:
                 # Everything looks good at this point. Return SUCCESS.
-                status = 0
+                status = 'SUCCESS'
                 break
 
         self.pool_manager_api.update_status(

@@ -21,7 +21,6 @@ from designate.openstack.common import log as logging
 from designate import exceptions
 from designate import utils
 from designate.backend import base
-from designate.openstack.common import processutils
 
 
 LOG = logging.getLogger(__name__)
@@ -88,7 +87,8 @@ class Bind9PoolBackend(base.PoolBackend):
         rndc_op = [
             'addzone',
             '%s { type slave; masters { %s;}; file "slave.%s%s"; };' %
-            (domain['name'], '; '.join(masters), domain['name'], domain['id']),
+            (domain['name'].rstrip('.'), '; '.join(masters), domain['name'],
+             domain['id']),
         ]
         self._execute_rndc(rndc_op)
 
@@ -96,7 +96,7 @@ class Bind9PoolBackend(base.PoolBackend):
         LOG.debug('Delete Domain')
         rndc_op = [
             'delzone',
-            '%s' % domain['name'],
+            '%s' % domain['name'].rstrip('.'),
         ]
         self._execute_rndc(rndc_op)
 
@@ -123,5 +123,6 @@ class Bind9PoolBackend(base.PoolBackend):
             rndc_call.extend(rndc_op)
             LOG.debug('Executing RNDC call: %s' % " ".join(rndc_call))
             utils.execute(*rndc_call)
-        except processutils.ProcessExecutionError as e:
+        except utils.processutils.ProcessExecutionError as e:
+            LOG.debug('RNDC call failure: %s' % e)
             raise exceptions.Backend(e)

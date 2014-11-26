@@ -27,6 +27,7 @@ BIND_VAR_DIR=/var/cache/bind
 BIND_CFG_FILE=$BIND_CFG_DIR/named.conf.options
 BIND_USER=bind
 BIND_GROUP=bind
+DESIGNATE_SERVICE_PORT_RNDC=${DESIGNATE_SERVICE_PORT_RNDC:-953}
 
 if is_fedora; then
     BIND_SERVICE_NAME=named
@@ -74,7 +75,7 @@ EOF
 
 # configure_designate_backend - make configuration changes, including those to other services
 function configure_designate_backend {
-    iniset $DESIGNATE_CONF backend:bind9 rndc_port 953
+    iniset $DESIGNATE_CONF backend:bind9 rndc_port $DESIGNATE_SERVICE_PORT_RNDC
     iniset $DESIGNATE_CONF backend:bind9 rndc_host $DESIGNATE_SERVICE_HOST
     iniset $DESIGNATE_CONF backend:bind9 rndc_config_file "$BIND_CFG_DIR/rndc.conf"
     iniset $DESIGNATE_CONF backend:bind9 rndc_key_file "$BIND_CFG_DIR/rndc.key"
@@ -100,7 +101,7 @@ options {
 };
 
 controls {
-    inet $DESIGNATE_SERVICE_HOST allow { $DESIGNATE_SERVICE_HOST; } keys { "rndc-key"; };
+    inet $DESIGNATE_SERVICE_HOST port $DESIGNATE_SERVICE_PORT_RNDC allow { $DESIGNATE_SERVICE_HOST; } keys { "rndc-key"; };
 };
 EOF
 
@@ -111,7 +112,7 @@ include "$BIND_CFG_DIR/rndc.key";
 options {
     default-key "rndc-key";
     default-server $DESIGNATE_SERVICE_HOST;
-    default-port 953;
+    default-port $DESIGNATE_SERVICE_PORT_RNDC;
 };
 EOF
 

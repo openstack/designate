@@ -1,8 +1,8 @@
-# lib/designate_plugins/backend-bind9-pool
+# lib/designate_plugins/backend-bind9_pool
 # Configure the bind9 pool backend
 
 # Enable with:
-# DESIGNATE_BACKEND_DRIVER=bind9-pool
+# DESIGNATE_BACKEND_DRIVER=bind9_pool
 
 # Dependencies:
 # ``functions`` file
@@ -27,6 +27,7 @@ BIND_VAR_DIR=/var/cache/bind
 BIND_CFG_FILE=$BIND_CFG_DIR/named.conf.options
 BIND_USER=bind
 BIND_GROUP=bind
+DESIGNATE_SERVICE_PORT_RNDC=${DESIGNATE_SERVICE_PORT_RNDC:-953}
 
 if is_fedora; then
     BIND_SERVICE_NAME=named
@@ -109,13 +110,13 @@ EOF
 # configure_designate_backend - make configuration changes, including those to other services
 function configure_designate_backend {
     wildcard_iniset $DESIGNATE_CONF backend:bind9_pool:\\\* masters $DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT_MDNS
-    wildcard_iniset $DESIGNATE_CONF backend:bind9_pool:\\\* rndc_port 953
+    wildcard_iniset $DESIGNATE_CONF backend:bind9_pool:\\\* rndc_port $DESIGNATE_SERVICE_PORT_RNDC
     wildcard_iniset $DESIGNATE_CONF backend:bind9_pool:\\\* rndc_host $DESIGNATE_SERVICE_HOST
     wildcard_iniset $DESIGNATE_CONF backend:bind9_pool:\\\* rndc_config_file "$BIND_CFG_DIR/rndc.conf"
     wildcard_iniset $DESIGNATE_CONF backend:bind9_pool:\\\* rndc_key_file "$BIND_CFG_DIR/rndc.key"
 
     iniset $DESIGNATE_CONF backend:bind9_pool:$DESIGNATE_SERVER_ID host $DESIGNATE_SERVICE_HOST
-    iniset $DESIGNATE_CONF backend:bind9_pool:$DESIGNATE_SERVER_ID port 53
+    iniset $DESIGNATE_CONF backend:bind9_pool:$DESIGNATE_SERVER_ID port $DESIGNATE_SERVICE_PORT_DNS
 
     sudo chown $STACK_USER $BIND_CFG_DIR
 
@@ -137,7 +138,7 @@ options {
 };
 
 controls {
-    inet $DESIGNATE_SERVICE_HOST allow { $DESIGNATE_SERVICE_HOST; } keys { "rndc-key"; };
+    inet $DESIGNATE_SERVICE_HOST port $DESIGNATE_SERVICE_PORT_RNDC allow { $DESIGNATE_SERVICE_HOST; } keys { "rndc-key"; };
 };
 EOF
 
@@ -148,7 +149,7 @@ include "$BIND_CFG_DIR/rndc.key";
 options {
     default-key "rndc-key";
     default-server $DESIGNATE_SERVICE_HOST;
-    default-port 953;
+    default-port $DESIGNATE_SERVICE_PORT_RNDC;
 };
 EOF
 

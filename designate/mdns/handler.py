@@ -47,7 +47,11 @@ class RequestHandler(object):
                 return self._handle_query_error(request, dns.rcode.REFUSED)
 
             q_rrset = request.question[0]
-            if q_rrset.rdtype == dns.rdatatype.AXFR:
+            # Handle AXFR and IXFR requests with an AXFR responses for now.
+            # It is permissible for a server to send an AXFR response when
+            # receiving an IXFR request.
+            # TODO(Ron): send IXFR response when receiving IXFR request.
+            if q_rrset.rdtype in (dns.rdatatype.AXFR, dns.rdatatype.IXFR):
                 response = self._handle_axfr(context, request)
             else:
                 response = self._handle_record_query(context, request)
@@ -85,7 +89,10 @@ class RequestHandler(object):
         # construct rdata from all the records
         rdata = []
         for record in recordset.records:
-            rdata.append(str(record.data))
+            # TODO(Ron): this should be handled in the Storage query where we
+            # find the recordsets.
+            if record.action != 'DELETE':
+                rdata.append(str(record.data))
 
         # Now put the records into dnspython's RRsets
         # answer section has 1 RR set.  If the RR set has multiple
@@ -93,8 +100,10 @@ class RequestHandler(object):
         # section.
         # RRSet has name, ttl, class, type  and rdata
         # The rdata has one or more records
-        r_rrset = dns.rrset.from_text_list(
-            recordset.name, ttl, dns.rdataclass.IN, recordset.type, rdata)
+        r_rrset = None
+        if rdata:
+            r_rrset = dns.rrset.from_text_list(
+                recordset.name, ttl, dns.rdataclass.IN, recordset.type, rdata)
 
         return r_rrset
 
@@ -127,7 +136,9 @@ class RequestHandler(object):
         recordsets = self.storage.find_recordsets(context, criterion)
 
         for recordset in recordsets:
-            r_rrsets.append(self._convert_to_rrset(context, recordset, domain))
+            r_rrset = self._convert_to_rrset(context, recordset, domain)
+            if r_rrset:
+                r_rrsets.append(r_rrset)
 
         # Append the SOA recordset at the end
         for recordset in soa_recordsets:
