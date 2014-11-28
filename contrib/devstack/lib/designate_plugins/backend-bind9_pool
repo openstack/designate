@@ -108,7 +108,7 @@ EOF
 
 # configure_designate_backend - make configuration changes, including those to other services
 function configure_designate_backend {
-    wildcard_iniset $DESIGNATE_CONF backend:bind9_pool:\\\* masters $DESIGNATE_SERVICE_HOST:$DESIGNATE_MDNS_PORT
+    wildcard_iniset $DESIGNATE_CONF backend:bind9_pool:\\\* masters $DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT_MDNS
     wildcard_iniset $DESIGNATE_CONF backend:bind9_pool:\\\* rndc_port 953
     wildcard_iniset $DESIGNATE_CONF backend:bind9_pool:\\\* rndc_host $DESIGNATE_SERVICE_HOST
     wildcard_iniset $DESIGNATE_CONF backend:bind9_pool:\\\* rndc_config_file "$BIND_CFG_DIR/rndc.conf"

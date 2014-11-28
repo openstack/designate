@@ -47,7 +47,7 @@ function install_designate_backend {
 # configure_designate_backend - make configuration changes, including those to other services
 function configure_designate_backend {
     iniset $DESIGNATE_CONF backend:powerdns_mdns connection `database_connection_url designate_pdns_mdns`
-    iniset $DESIGNATE_CONF backend:powerdns_mdns masters "$DESIGNATE_SERVICE_HOST:$DESIGNATE_MDNS_PORT"
+    iniset $DESIGNATE_CONF backend:powerdns_mdns masters "$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT_MDNS"
     iniset $DESIGNATE_CONF service:mdns slave_nameserver_ips_and_ports "$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT_DNS"
 
     sudo tee $POWERDNS_CFG_DIR/pdns.conf > /dev/null <<EOF
