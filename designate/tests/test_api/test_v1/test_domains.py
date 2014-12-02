@@ -311,7 +311,13 @@ class ApiV1DomainsTest(ApiV1Test):
 
         self.delete('domains/%s' % domain['id'])
 
-        # Esnure we can no longer fetch the domain
+        # Simulate the domain having been deleted on the backend
+        domain_serial = self.central_service.get_domain(
+            self.admin_context, domain['id']).serial
+        self.central_service.update_status(
+            self.admin_context, domain['id'], "SUCCESS", domain_serial)
+
+        # Ensure we can no longer fetch the domain
         self.get('domains/%s' % domain['id'], status_code=404)
 
     @patch.object(central_service.Service, 'delete_domain',

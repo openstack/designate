@@ -473,10 +473,9 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(domain['email'], values['email'])
         self.assertIn('status', domain)
 
-        # Ensure we sent exactly 1 notification, plus 2 for SOA and NS
-        # recordsets
+        # Ensure we sent exactly 1 notification
         notifications = self.get_notifications()
-        self.assertEqual(len(notifications), 3)
+        self.assertEqual(len(notifications), 1)
 
         # Ensure the notification wrapper contains the correct info
         ctxt, message, priority, retry = notifications[0]
@@ -849,11 +848,9 @@ class CentralServiceTest(CentralTestCase):
         self.assertTrue(domain.serial > original_serial)
         self.assertEqual('info@example.net', domain.email)
 
-        # Ensure we sent exactly 2 notifications
-        # One for the domain update and one to
-        # update the SOA recordset
+        # Ensure we sent exactly 1 notification
         notifications = self.get_notifications()
-        self.assertEqual(len(notifications), 2)
+        self.assertEqual(len(notifications), 1)
 
         # Ensure the notification wrapper contains the correct info
         ctxt, message, priority, retry = notifications[0]
@@ -912,9 +909,21 @@ class CentralServiceTest(CentralTestCase):
         # Delete the domain
         self.central_service.delete_domain(self.admin_context, domain['id'])
 
-        # Fetch the domain again, ensuring an exception is raised
-        with testtools.ExpectedException(exceptions.DomainNotFound):
-            self.central_service.get_domain(self.admin_context, domain['id'])
+        # Fetch the domain
+        deleted_domain = self.central_service.get_domain(
+            self.admin_context, domain['id'])
+
+        # Ensure the domain is marked for deletion
+        self.assertEqual(deleted_domain.id, domain.id)
+        self.assertEqual(deleted_domain.name, domain.name)
+        self.assertEqual(deleted_domain.email, domain.email)
+        self.assertEqual(deleted_domain.status, 'PENDING')
+        self.assertEqual(deleted_domain.tenant_id, domain.tenant_id)
+        self.assertEqual(deleted_domain.parent_domain_id,
+                         domain.parent_domain_id)
+        self.assertEqual(deleted_domain.action, 'DELETE')
+        self.assertEqual(deleted_domain.serial, domain.serial)
+        self.assertEqual(deleted_domain.pool_id, domain.pool_id)
 
         # Ensure we sent exactly 1 notification
         notifications = self.get_notifications()
@@ -1731,15 +1740,33 @@ class CentralServiceTest(CentralTestCase):
         # Create a record
         record = self.create_record(domain, recordset)
 
+        # Fetch the domain serial number
+        domain_serial = self.central_service.get_domain(
+            self.admin_context, domain['id']).serial
+
         # Delete the record
         self.central_service.delete_record(
             self.admin_context, domain['id'], recordset['id'], record['id'])
 
-        # Fetch the record again, ensuring an exception is raised
-        with testtools.ExpectedException(exceptions.RecordNotFound):
-            self.central_service.get_record(
-                self.admin_context, domain['id'], recordset['id'],
-                record['id'])
+        # Ensure the domain serial number was updated
+        new_domain_serial = self.central_service.get_domain(
+            self.admin_context, domain['id']).serial
+        self.assertNotEqual(new_domain_serial, domain_serial)
+
+        # Fetch the record
+        deleted_record = self.central_service.get_record(
+            self.admin_context, domain['id'], recordset['id'],
+            record['id'])
+
+        # Ensure the record is marked for deletion
+        self.assertEqual(deleted_record.id, record.id)
+        self.assertEqual(deleted_record.data, record.data)
+        self.assertEqual(deleted_record.domain_id, record.domain_id)
+        self.assertEqual(deleted_record.status, 'PENDING')
+        self.assertEqual(deleted_record.tenant_id, record.tenant_id)
+        self.assertEqual(deleted_record.recordset_id, record.recordset_id)
+        self.assertEqual(deleted_record.action, 'DELETE')
+        self.assertEqual(deleted_record.serial, new_domain_serial)
 
     def test_delete_record_without_incrementing_serial(self):
         domain = self.create_domain()
@@ -1748,26 +1775,34 @@ class CentralServiceTest(CentralTestCase):
         # Create a record
         record = self.create_record(domain, recordset)
 
-        # Fetch the domain so we have the latest serial number
-        domain_before = self.central_service.get_domain(
-            self.admin_context, domain['id'])
+        # Fetch the domain serial number
+        domain_serial = self.central_service.get_domain(
+            self.admin_context, domain['id']).serial
 
         # Delete the record
         self.central_service.delete_record(
             self.admin_context, domain['id'], recordset['id'], record['id'],
             increment_serial=False)
 
-        # Fetch the record again, ensuring an exception is raised
-        with testtools.ExpectedException(exceptions.RecordNotFound):
-            self.central_service.get_record(
-                self.admin_context, domain['id'], recordset['id'],
-                record['id'])
-
         # Ensure the domains serial number was not updated
-        domain_after = self.central_service.get_domain(
-            self.admin_context, domain['id'])
+        new_domain_serial = self.central_service.get_domain(
+            self.admin_context, domain['id'])['serial']
+        self.assertEqual(new_domain_serial, domain_serial)
 
-        self.assertEqual(domain_before['serial'], domain_after['serial'])
+        # Fetch the record
+        deleted_record = self.central_service.get_record(
+            self.admin_context, domain['id'], recordset['id'],
+            record['id'])
+
+        # Ensure the record is marked for deletion
+        self.assertEqual(deleted_record.id, record.id)
+        self.assertEqual(deleted_record.data, record.data)
+        self.assertEqual(deleted_record.domain_id, record.domain_id)
+        self.assertEqual(deleted_record.status, 'PENDING')
+        self.assertEqual(deleted_record.tenant_id, record.tenant_id)
+        self.assertEqual(deleted_record.recordset_id, record.recordset_id)
+        self.assertEqual(deleted_record.action, 'DELETE')
+        self.assertEqual(deleted_record.serial, new_domain_serial)
 
     def test_delete_record_incorrect_domain_id(self):
         domain = self.create_domain()
@@ -1880,6 +1915,18 @@ class CentralServiceTest(CentralTestCase):
         self.central_service.update_floatingip(
             context_a, fip['region'], fip['id'], fixture)
 
+        criterion = {
+            'managed_resource_id': fip['id'],
+            'managed_tenant_id': context_a.tenant}
+        domain_id = self.central_service.find_record(
+            elevated_a, criterion).domain_id
+
+        # Simulate the update on the backend
+        domain_serial = self.central_service.get_domain(
+            elevated_a, domain_id).serial
+        self.central_service.update_status(
+            elevated_a, domain_id, "SUCCESS", domain_serial)
+
         self.network_api.fake.deallocate_floatingip(fip['id'])
 
         with testtools.ExpectedException(exceptions.NotFound):
@@ -1887,9 +1934,6 @@ class CentralServiceTest(CentralTestCase):
                 context_a, fip['region'], fip['id'])
 
         # Ensure that the record is still in DB (No invalidation)
-        criterion = {
-            'managed_resource_id': fip['id'],
-            'managed_tenant_id': context_a.tenant}
         self.central_service.find_record(elevated_a, criterion)
 
         # Now give the fip id to tenant 'b' and see that it get's deleted
@@ -1900,6 +1944,12 @@ class CentralServiceTest(CentralTestCase):
         fip_ptr = self.central_service.get_floatingip(
             context_b, fip['region'], fip['id'])
         self.assertEqual(None, fip_ptr['ptrdname'])
+
+        # Simulate the invalidation on the backend
+        domain_serial = self.central_service.get_domain(
+            elevated_a, domain_id).serial
+        self.central_service.update_status(
+            elevated_a, domain_id, "SUCCESS", domain_serial)
 
         # Ensure that the old record for tenant a for the fip now owned by
         # tenant b is gone
@@ -1965,15 +2015,24 @@ class CentralServiceTest(CentralTestCase):
         self.central_service.update_floatingip(
             context_a, fip['region'], fip['id'], fixture)
 
+        criterion = {
+            'managed_resource_id': fip['id'],
+            'managed_tenant_id': context_a.tenant}
+        domain_id = self.central_service.find_record(
+            elevated_a, criterion).domain_id
+
+        # Simulate the update on the backend
+        domain_serial = self.central_service.get_domain(
+            elevated_a, domain_id).serial
+        self.central_service.update_status(
+            elevated_a, domain_id, "SUCCESS", domain_serial)
+
         self.network_api.fake.deallocate_floatingip(fip['id'])
 
         fips = self.central_service.list_floatingips(context_a)
         self.assertEqual([], fips)
 
         # Ensure that the record is still in DB (No invalidation)
-        criterion = {
-            'managed_resource_id': fip['id'],
-            'managed_tenant_id': context_a.tenant}
         self.central_service.find_record(elevated_a, criterion)
 
         # Now give the fip id to tenant 'b' and see that it get's deleted
@@ -1984,6 +2043,12 @@ class CentralServiceTest(CentralTestCase):
         fips = self.central_service.list_floatingips(context_b)
         self.assertEqual(1, len(fips))
         self.assertEqual(None, fips[0]['ptrdname'])
+
+        # Simulate the invalidation on the backend
+        domain_serial = self.central_service.get_domain(
+            elevated_a, domain_id).serial
+        self.central_service.update_status(
+            elevated_a, domain_id, "SUCCESS", domain_serial)
 
         # Ensure that the old record for tenant a for the fip now owned by
         # tenant b is gone
@@ -2007,7 +2072,7 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(None, fip_ptr['description'])
         self.assertIsNotNone(fip_ptr['ttl'])
 
-    def test_set_floatingip_removes_old_rrset_and_record(self):
+    def test_set_floatingip_removes_old_record(self):
         self.create_server()
 
         context_a = self.get_context(tenant='a')
@@ -2025,9 +2090,21 @@ class CentralServiceTest(CentralTestCase):
         self.central_service.update_floatingip(
             context_a, fip['region'], fip['id'], fixture)
 
+        criterion = {
+            'managed_resource_id': fip['id'],
+            'managed_tenant_id': context_a.tenant}
+        domain_id = self.central_service.find_record(
+            elevated_a, criterion).domain_id
+
         fixture2 = self.get_ptr_fixture(fixture=1)
         self.central_service.update_floatingip(
             context_a, fip['region'], fip['id'], fixture2)
+
+        # Simulate the update on the backend
+        domain_serial = self.central_service.get_domain(
+            elevated_a, domain_id).serial
+        self.central_service.update_status(
+            elevated_a, domain_id, "SUCCESS", domain_serial)
 
         count = self.central_service.count_records(
             elevated_a, {'managed_resource_id': fip['id']})
@@ -2043,6 +2120,12 @@ class CentralServiceTest(CentralTestCase):
 
         self.central_service.update_floatingip(
             context_b, fip['region'], fip['id'], fixture)
+
+        # Simulate the update on the backend
+        domain_serial = self.central_service.get_domain(
+            elevated_a, domain_id).serial
+        self.central_service.update_status(
+            elevated_a, domain_id, "SUCCESS", domain_serial)
 
         count = self.central_service.count_records(
             elevated_a, {'managed_resource_id': fip['id']})
@@ -2473,6 +2556,84 @@ class CentralServiceTest(CentralTestCase):
         # Verify that the pool has been deleted
         with testtools.ExpectedException(exceptions.PoolNotFound):
             self.central_service.get_pool(self.admin_context, pool['id'])
+
+    def test_update_status_delete_domain(self):
+        # Create a domain
+        domain = self.create_domain()
+
+        # Reset the list of notifications
+        self.reset_notifications()
+
+        # Delete the domain
+        self.central_service.delete_domain(self.admin_context, domain['id'])
+
+        # Simulate the domain having been deleted on the backend
+        domain_serial = self.central_service.get_domain(
+            self.admin_context, domain['id']).serial
+        self.central_service.update_status(
+            self.admin_context, domain['id'], "SUCCESS", domain_serial)
+
+        # Fetch the domain again, ensuring an exception is raised
+        with testtools.ExpectedException(exceptions.DomainNotFound):
+            self.central_service.get_domain(self.admin_context, domain['id'])
+
+    def test_update_status_delete_last_record(self):
+        domain = self.create_domain()
+        recordset = self.create_recordset(domain)
+
+        # Create a record
+        record = self.create_record(domain, recordset)
+
+        # Delete the record
+        self.central_service.delete_record(
+            self.admin_context, domain['id'], recordset['id'], record['id'])
+
+        # Simulate the record having been deleted on the backend
+        domain_serial = self.central_service.get_domain(
+            self.admin_context, domain['id']).serial
+        self.central_service.update_status(
+            self.admin_context, domain['id'], "SUCCESS", domain_serial)
+
+        # Fetch the record again, ensuring an exception is raised
+        with testtools.ExpectedException(exceptions.RecordSetNotFound):
+            self.central_service.get_record(
+                self.admin_context, domain['id'], recordset['id'],
+                record['id'])
+
+    def test_update_status_delete_last_record_without_incrementing_serial(
+            self):
+        domain = self.create_domain()
+        recordset = self.create_recordset(domain)
+
+        # Create a record
+        record = self.create_record(domain, recordset)
+
+        # Fetch the domain serial number
+        domain_serial = self.central_service.get_domain(
+            self.admin_context, domain['id']).serial
+
+        # Delete the record
+        self.central_service.delete_record(
+            self.admin_context, domain['id'], recordset['id'], record['id'],
+            increment_serial=False)
+
+        # Simulate the record having been deleted on the backend
+        domain_serial = self.central_service.get_domain(
+            self.admin_context, domain['id']).serial
+        self.central_service.update_status(
+            self.admin_context, domain['id'], "SUCCESS", domain_serial)
+
+        # Fetch the record again, ensuring an exception is raised
+        with testtools.ExpectedException(exceptions.RecordSetNotFound):
+            self.central_service.get_record(
+                self.admin_context, domain['id'], recordset['id'],
+                record['id'])
+
+        # Ensure the domains serial number was not updated
+        new_domain_serial = self.central_service.get_domain(
+            self.admin_context, domain['id']).serial
+
+        self.assertEqual(new_domain_serial, domain_serial)
 
     def test_create_zone_transfer_request(self):
         domain = self.create_domain()
