@@ -38,5 +38,6 @@ class Domain(base.DictObjectMixin, base.SoftDeleteObjectMixin,
     }
 
 
-class DomainList(base.ListObjectMixin, base.DesignateObject):
+class DomainList(base.ListObjectMixin, base.DesignateObject,
+                 base.PagedListObjectMixin):
     LIST_ITEM_TYPE = Domain

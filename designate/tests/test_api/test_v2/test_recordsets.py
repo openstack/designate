@@ -479,3 +479,51 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
     def test_delete_recordset_invalid_id(self):
         self._assert_invalid_uuid(
             self.client.delete, '/zones/%s/recordsets/%s')
+
+    def test_metadata_exists(self):
+        url = '/zones/%s/recordsets' % self.domain['id']
+
+        response = self.client.get(url)
+
+        # Make sure the fields exist
+        self.assertIn('metadata', response.json)
+        self.assertIn('total_count', response.json['metadata'])
+
+    def test_total_count(self):
+        url = '/zones/%s/recordsets' % self.domain['id']
+
+        response = self.client.get(url)
+
+        # The NS and SOA records are there by default
+        self.assertEqual(2, response.json['metadata']['total_count'])
+
+        # Create a recordset
+        fixture = self.get_recordset_fixture(self.domain['name'], fixture=0)
+        response = self.client.post_json(
+            '/zones/%s/recordsets' % self.domain['id'], {'recordset': fixture})
+
+        response = self.client.get(url)
+
+        # Make sure total_count picked up the change
+        self.assertEqual(3, response.json['metadata']['total_count'])
+
+    def test_total_count_pagination(self):
+        # Create two recordsets
+        fixture = self.get_recordset_fixture(self.domain['name'], fixture=0)
+        response = self.client.post_json(
+            '/zones/%s/recordsets' % self.domain['id'], {'recordset': fixture})
+
+        fixture = self.get_recordset_fixture(self.domain['name'], fixture=1)
+        response = self.client.post_json(
+            '/zones/%s/recordsets' % self.domain['id'], {'recordset': fixture})
+
+        # Paginate the recordsets to two, there should be four now
+        url = '/zones/%s/recordsets?limit=2' % self.domain['id']
+
+        response = self.client.get(url)
+
+        # There are two recordsets returned
+        self.assertEqual(2, len(response.json['recordsets']))
+
+        # But there should be four in total (NS/SOA + the created)
+        self.assertEqual(4, response.json['metadata']['total_count'])

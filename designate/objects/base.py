@@ -548,3 +548,18 @@ class SoftDeleteObjectMixin(object):
             }
         }
     }
+
+
+class PagedListObjectMixin(object):
+    """
+    Mixin class for List objects.
+
+    This adds fields that would populate API metadata for collections.
+    """
+    FIELDS = {
+        'total_count': {
+            'schema': {
+                'type': ['integer'],
+            }
+        }
+    }

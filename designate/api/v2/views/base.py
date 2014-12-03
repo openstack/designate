@@ -18,6 +18,7 @@ import urllib
 from oslo.config import cfg
 
 from designate import exceptions
+from designate import objects
 from designate.openstack.common import log as logging
 
 
@@ -43,11 +44,18 @@ class BaseView(object):
 
         self.base_uri = CONF['service:api']['api_base_uri'].rstrip('/')
 
-    def list(self, context, request, items, parents=None):
+    def list(self, context, request, items, parents=None, metadata=None):
         """View of a list of items"""
         result = {
             "links": self._get_collection_links(request, items, parents)
         }
+
+        metadata = metadata or {}
+
+        if isinstance(items, objects.base.PagedListObjectMixin):
+            metadata['total_count'] = items.total_count
+
+        result['metadata'] = metadata
 
         if 'detail' in request.GET and request.GET['detail'] == 'yes':
             result[self._collection_name] = self.list_detail(context, request,
