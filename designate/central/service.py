@@ -1246,7 +1246,7 @@ class Service(service.RPCService):
 
         return recordset
 
-    @notification('dns.recordset.create')
+    @notification('dns.recordset.delete')
     @synchronized_domain()
     @transaction
     def delete_recordset(self, context, domain_id, recordset_id,
