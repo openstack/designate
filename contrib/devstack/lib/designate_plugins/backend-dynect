@@ -1,0 +1,91 @@
+# lib/designate_plugins/backend-dynect
+# Configure the dynect backend
+
+# Requirements:
+# An active DynECT account / contract will be requied to use this DevStack
+# plugin.
+
+# Enable with:
+# DESIGNATE_BACKEND_DRIVER=dynect
+
+# Dependencies:
+# ``functions`` file
+# ``designate`` configuration
+
+# install_designate_backend - install any external requirements
+# configure_designate_backend - make configuration changes, including those to other services
+# init_designate_backend - initialize databases, etc.
+# start_designate_backend - start any external services
+# stop_designate_backend - stop any external services
+# cleanup_designate_backend - remove transient data and cache
+
+# Save trace setting
+DP_DYNECT_XTRACE=$(set +o | grep xtrace)
+set +o xtrace
+
+# Defaults
+# --------
+
+DESIGNATE_DYNECT_CUSTOMER=${DESIGNATE_DYNECT_CUSTOMER:-customer}
+DESIGNATE_DYNECT_USERNAME=${DESIGNATE_DYNECT_USERNAME:-username}
+DESIGNATE_DYNECT_PASSWORD=${DESIGNATE_DYNECT_PASSWORD:-password}
+DESIGNATE_DYNECT_CONTACT_NICKNAME=${DESIGNATE_DYNECT_CONTACT_NICKNAME:-}
+DESIGNATE_DYNECT_JOB_TIMEOUT=${DESIGNATE_DYNECT_JOB_TIMEOUT:-}
+DESIGNATE_DYNECT_TIMEOUT=${DESIGNATE_DYNECT_TIMEOUT:-}
+DESIGNATE_DYNECT_MASTERS=${DESIGNATE_DYNECT_MASTERS:-$DESIGNATE_SERVICE_HOST}
+DESIGNATE_DYNECT_SLAVES=${DESIGNATE_DYNECT_SLAVES:-204.13.249.65:53, 208.78.68.65:53}
+
+# Entry Points
+# ------------
+
+# install_designate_backend - install any external requirements
+function install_designate_backend {
+    :
+}
+
+# configure_designate_backend - make configuration changes, including those to other services
+function configure_designate_backend {
+    # mDNS Service Settings
+    iniset $DESIGNATE_CONF service:mdns slave_nameserver_ips_and_ports "$DESIGNATE_DYNECT_SLAVES"
+
+    # DynECT Backend Settings
+    iniset $DESIGNATE_CONF backend:dynect masters "$DESIGNATE_DYNECT_MASTERS"
+    iniset $DESIGNATE_CONF backend:dynect customer_name "$DESIGNATE_DYNECT_CUSTOMER"
+    iniset $DESIGNATE_CONF backend:dynect username "$DESIGNATE_DYNECT_USERNAME"
+    iniset $DESIGNATE_CONF backend:dynect password "$DESIGNATE_DYNECT_PASSWORD"
+
+    if [ ! -z $DESIGNATE_DYNECT_CONTACT_NICKNAME ]; then
+        iniset $DESIGNATE_CONF backend:dynect contact_nickname "$DESIGNATE_DYNECT_CONTACT_NICKNAME"
+    fi
+
+    if [ ! -z $DESIGNATE_DYNECT_JOB_TIMEOUT ]; then
+        iniset $DESIGNATE_CONF backend:dynect job_timeout "$DESIGNATE_DYNECT_JOB_TIMEOUT"
+    fi
+
+    if [ ! -z $DESIGNATE_DYNECT_TIMEOUT ]; then
+        iniset $DESIGNATE_CONF backend:dynect timeout "$DESIGNATE_DYNECT_TIMEOUT"
+    fi
+}
+
+# init_designate_backend - initialize databases, etc.
+function init_designate_backend {
+    :
+}
+
+# start_designate_backend - start any external services
+function start_designate_backend {
+    :
+}
+
+# stop_designate_backend - stop any external services
+function stop_designate_backend {
+    :
+}
+
+# cleanup_designate_backend - remove transient data and cache
+function cleanup_designate_backend {
+    :
+}
+
+# Restore xtrace
+$DP_DYNECT_XTRACE

@@ -8,6 +8,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.vm.synced_folder "../..", "/opt/stack/designate"
 
+  config.vm.network "forwarded_port", guest: 5354, host: 5354, protocol: "tcp"
+  config.vm.network "forwarded_port", guest: 5354, host: 5354, protocol: "udp"
+
   if File.directory?("../../../python-designateclient")
     config.vm.synced_folder "../../../python-designateclient", "/opt/stack/python-designateclient"
   end
