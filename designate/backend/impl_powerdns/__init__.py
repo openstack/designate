@@ -378,14 +378,18 @@ class PowerDNSBackend(base.Backend):
     def update_record(self, context, domain, recordset, record):
         record_ref = self._get_record(record['id'])
 
-        content = self._sanitize_content(recordset['type'], record['data'])
+        # Priority is stored in the data field for MX / SRV
+        priority, data = utils.extract_priority_from_data(
+            recordset['type'], record)
+
+        content = self._sanitize_content(recordset['type'], data)
         ttl = domain['ttl'] if recordset['ttl'] is None else recordset['ttl']
 
         record_ref.update({
             'content': content,
             'ttl': ttl,
             'inherit_ttl': True if recordset['ttl'] is None else False,
-            'prio': record['priority'],
+            'prio': priority,
             'auth': self._is_authoritative(domain, recordset, record)
         })
 
