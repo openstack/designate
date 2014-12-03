@@ -101,6 +101,8 @@ def register_plugin_opts():
     # Register Backend Plugin Config Options
     plugin.Plugin.register_cfg_opts('designate.backend')
     plugin.Plugin.register_extra_cfg_opts('designate.backend')
+    plugin.Plugin.register_cfg_opts('designate.backend.agent_backend')
+    plugin.Plugin.register_extra_cfg_opts('designate.backend.agent_backend')
 
 
 def resource_string(*args):

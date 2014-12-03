@@ -119,6 +119,19 @@ debug = False
 #tcp_backlog =1 00
 
 #-----------------------
+# Agent Service
+#-----------------------
+[service:agent]
+#workers = None
+#host = 0.0.0.0
+#port = 5358
+#tcp_backlog = 100
+#allow_notify = 127.0.0.1
+#masters = 127.0.0.1:5354
+#backend_driver = fake
+
+
+#-----------------------
 # Pool Manager Service
 #-----------------------
 [service:pool_manager]
@@ -253,3 +266,13 @@ debug = False
 [backend:bind9:6a5032b6-2d96-43ee-b25b-7d784e2bf3b2]
 # host = 127.0.0.1
 # port = 53
+
+#############################
+## Agent Backend Configuration
+#############################
+[backend:agent:bind9]
+#rndc_host = 127.0.0.1
+#rndc_port = 953
+#rndc_config_file = /etc/rndc.conf
+#rndc_key_file = /etc/rndc.key
+#zone_file_path = $state_path/zones
