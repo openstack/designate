@@ -45,6 +45,8 @@ OPTS = [
                help='mDNS Port Number'),
     cfg.IntOpt('tcp-backlog', default=100,
                help='mDNS TCP Backlog'),
+    cfg.FloatOpt('tcp-recv-timeout', default=0.5,
+                 help='mDNS TCP Receive Timeout'),
     cfg.StrOpt('storage-driver', default='sqlalchemy',
                help='The storage driver to use'),
 ]

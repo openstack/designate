@@ -111,24 +111,33 @@ class Service(service.RPCService):
         LOG.info(_LI("_handle_tcp thread started"))
         while True:
             client, addr = self._sock_tcp.accept()
+            client.settimeout(CONF['service:mdns'].tcp_recv_timeout)
+
             LOG.warn(_LW("Handling TCP Request from: %(host)s:%(port)d") %
                      {'host': addr[0], 'port': addr[1]})
 
-            payload = client.recv(65535)
-            (expected_length,) = struct.unpack('!H', payload[0:2])
-            actual_length = len(payload[2:])
+            # Prepare a variable for the payload to be buffered
+            payload = ""
 
-            # For now we assume all requests are one packet
-            # TODO(vinod): Handle multipacket requests
-            if (expected_length != actual_length):
-                LOG.warn(_LW("got a packet with unexpected length from "
-                             "%(host)s:%(port)d. Expected length=%(elen)d. "
-                             "Actual length=%(alen)d.") %
-                         {'host': addr[0], 'port': addr[1],
-                          'elen': expected_length, 'alen': actual_length})
+            try:
+                # Receive the first 2 bytes containing the payload length
+                expected_length_raw = client.recv(2)
+                (expected_length, ) = struct.unpack('!H', expected_length_raw)
+
+                # Keep receiving data until we've got all the data we expect
+                while len(payload) < expected_length:
+                    data = client.recv(65535)
+                    if not data:
+                        break
+                    payload += data
+
+            except socket.timeout:
                 client.close()
-            else:
-                self.tg.add_thread(self._handle, addr, payload[2:], client)
+                LOG.warn(_LW("TCP Timeout from: %(host)s:%(port)d") %
+                         {'host': addr[0], 'port': addr[1]})
+
+            # Dispatch a thread to handle the query
+            self.tg.add_thread(self._handle, addr, payload, client)
 
     def _handle_udp(self):
         LOG.info(_LI("_handle_udp thread started"))
