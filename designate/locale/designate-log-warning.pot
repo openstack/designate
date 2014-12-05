@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: designate 2015.1.dev56.g9189190\n"
+"Project-Id-Version: designate 2015.1.dev129.g37559c8\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-10-31 06:09+0000\n"
+"POT-Creation-Date: 2014-12-05 06:08+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -56,28 +56,28 @@ msgstr ""
 msgid "Please issue this query: %s"
 msgstr ""
 
-#: designate/mdns/notify.py:118
+#: designate/mdns/notify.py:122
 #, python-format
 msgid ""
 "Got lower serial for '%(zone)s' to '%(dst)s'. Expected:'%(es)d'. "
 "Got:'%(as)d'.Retries left='%(retries)d'"
 msgstr ""
 
-#: designate/mdns/notify.py:188
+#: designate/mdns/notify.py:193
 #, python-format
 msgid ""
 "Got Timeout while trying to send '%(msg)s' for '%(zone)s' to "
 "'%(server)s:%(port)d'. Timeout='%(timeout)d' seconds. Retry='%(retry)d'"
 msgstr ""
 
-#: designate/mdns/notify.py:200
+#: designate/mdns/notify.py:205
 #, python-format
 msgid ""
 "Got BadResponse while trying to send '%(msg)s' for '%(zone)s' to "
 "'%(server)s:%(port)d'. Timeout='%(timeout)d' seconds. Retry='%(retry)d'"
 msgstr ""
 
-#: designate/mdns/notify.py:213
+#: designate/mdns/notify.py:218
 #, python-format
 msgid ""
 "Failed to get expected response while trying to send '%(msg)s' for "
@@ -86,19 +86,17 @@ msgid ""
 "%(resp)s\n"
 msgstr ""
 
-#: designate/mdns/service.py:114
+#: designate/mdns/service.py:116
 #, python-format
 msgid "Handling TCP Request from: %(host)s:%(port)d"
 msgstr ""
 
-#: designate/mdns/service.py:124
+#: designate/mdns/service.py:136
 #, python-format
-msgid ""
-"got a packet with unexpected length from %(host)s:%(port)d. Expected "
-"length=%(elen)d. Actual length=%(alen)d."
+msgid "TCP Timeout from: %(host)s:%(port)d"
 msgstr ""
 
-#: designate/mdns/service.py:139
+#: designate/mdns/service.py:148
 #, python-format
 msgid "Handling UDP Request from: %(host)s:%(port)d"
 msgstr ""
