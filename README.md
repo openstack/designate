@@ -10,7 +10,7 @@ IRC: #openstack-dns
 Installation: http://docs.openstack.org/developer/designate/getting-started.html
 
 # Development
-Designate follows the [OpenStack Gerrit Workflow](https://wiki.openstack.org/wiki/Gerrit_Workflow)
+Designate follows the [OpenStack Gerrit Workflow](http://docs.openstack.org/infra/manual/developers.html#development-workflow)
 
 ## Setup
 Setup a working environment:

@@ -49,6 +49,6 @@ You can use tox to check your code locally by running
   # For tests + flake8
   tox
   
-.. _Gerrit workflow: https://wiki.openstack.org/wiki/Gerrit_Workflow
+.. _Gerrit workflow: http://docs.openstack.org/infra/manual/developers.html#development-workflow
 .. _blueprint: https://blueprints.launchpad.net/designate
 .. _bug: https://bugs.launchpad.net/designate
