@@ -17,7 +17,7 @@ import flask
 
 from designate.openstack.common import log as logging
 from designate import schema
-from designate.api import get_central_api
+from designate.central import rpcapi as central_rpcapi
 from designate.objects import TsigKey
 
 
@@ -42,8 +42,10 @@ def create_tsigkey():
     context = flask.request.environ.get('context')
     values = flask.request.json
 
+    central_api = central_rpcapi.CentralAPI.get_instance()
+
     tsigkey_schema.validate(values)
-    tsigkey = get_central_api().create_tsigkey(
+    tsigkey = central_api.create_tsigkey(
         context, tsigkey=TsigKey(**values))
 
     response = flask.jsonify(tsigkey_schema.filter(tsigkey))
@@ -57,7 +59,8 @@ def create_tsigkey():
 def get_tsigkeys():
     context = flask.request.environ.get('context')
 
-    tsigkeys = get_central_api().find_tsigkeys(context)
+    central_api = central_rpcapi.CentralAPI.get_instance()
+    tsigkeys = central_api.find_tsigkeys(context)
 
     return flask.jsonify(tsigkeys_schema.filter({'tsigkeys': tsigkeys}))
 
@@ -66,7 +69,8 @@ def get_tsigkeys():
 def get_tsigkey(tsigkey_id):
     context = flask.request.environ.get('context')
 
-    tsigkey = get_central_api().get_tsigkey(context, tsigkey_id)
+    central_api = central_rpcapi.CentralAPI.get_instance()
+    tsigkey = central_api.get_tsigkey(context, tsigkey_id)
 
     return flask.jsonify(tsigkey_schema.filter(tsigkey))
 
@@ -76,8 +80,10 @@ def update_tsigkey(tsigkey_id):
     context = flask.request.environ.get('context')
     values = flask.request.json
 
+    central_api = central_rpcapi.CentralAPI.get_instance()
+
     # Fetch the existing resource
-    tsigkey = get_central_api().get_tsigkey(context, tsigkey_id)
+    tsigkey = central_api.get_tsigkey(context, tsigkey_id)
 
     # Prepare a dict of fields for validation
     tsigkey_data = tsigkey_schema.filter(tsigkey)
@@ -88,7 +94,7 @@ def update_tsigkey(tsigkey_id):
 
     # Update and persist the resource
     tsigkey.update(values)
-    tsigkey = get_central_api().update_tsigkey(context, tsigkey)
+    tsigkey = central_api.update_tsigkey(context, tsigkey)
 
     return flask.jsonify(tsigkey_schema.filter(tsigkey))
 
@@ -97,6 +103,7 @@ def update_tsigkey(tsigkey_id):
 def delete_tsigkey(tsigkey_id):
     context = flask.request.environ.get('context')
 
-    get_central_api().delete_tsigkey(context, tsigkey_id)
+    central_api = central_rpcapi.CentralAPI.get_instance()
+    central_api.delete_tsigkey(context, tsigkey_id)
 
     return flask.Response(status=200)

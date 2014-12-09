@@ -31,8 +31,8 @@ from oslo.concurrency import lockutils
 from designate.openstack.common import log as logging
 from designate.i18n import _LI
 from designate.i18n import _LC
+from designate.mdns import rpcapi as mdns_rpcapi
 from designate import backend
-from designate import central
 from designate import context as dcontext
 from designate import exceptions
 from designate import network_api
@@ -241,7 +241,7 @@ class Service(service.RPCService):
     # TODO(vinod): Remove the following code once pool manager calls mdns.
     @property
     def mdns_api(self):
-        return central.get_mdns_api()
+        return mdns_rpcapi.MdnsAPI.get_instance()
 
     def _is_valid_domain_name(self, context, domain_name):
         # Validate domain name length

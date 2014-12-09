@@ -23,6 +23,8 @@ from designate import rpc
 
 LOG = logging.getLogger(__name__)
 
+CENTRAL_API = None
+
 
 class CentralAPI(object):
     """
@@ -53,6 +55,20 @@ class CentralAPI(object):
 
         target = messaging.Target(topic=topic, version=self.RPC_API_VERSION)
         self.client = rpc.get_client(target, version_cap='4.3')
+
+    @classmethod
+    def get_instance(cls):
+        """
+        The rpc.get_client() which is called upon the API object initialization
+        will cause a assertion error if the designate.rpc.TRANSPORT isn't setup
+        by rpc.init() before.
+
+        This fixes that by creating the rpcapi when demanded.
+        """
+        global CENTRAL_API
+        if not CENTRAL_API:
+            CENTRAL_API = cls()
+        return CENTRAL_API
 
     # Misc Methods
     def get_absolute_limits(self, context):

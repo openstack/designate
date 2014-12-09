@@ -19,7 +19,7 @@ from oslo import messaging
 from oslo.config import cfg
 
 from designate import exceptions
-from designate import mdns
+from designate.pool_manager import rpcapi as pool_mngr_api
 from designate.openstack.common import log as logging
 from designate.i18n import _LI
 from designate.i18n import _LW
@@ -39,7 +39,7 @@ class NotifyEndpoint(object):
 
     @property
     def pool_manager_api(self):
-        return mdns.get_pool_manager_api()
+        return pool_mngr_api.PoolManagerAPI.get_instance()
 
     def notify_zone_changed(self, context, domain, destination, timeout,
                             retry_interval, max_retries, delay):

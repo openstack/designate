@@ -17,7 +17,7 @@ import flask
 
 from designate.openstack.common import log as logging
 from designate import schema
-from designate.api import get_central_api
+from designate.central import rpcapi as central_rpcapi
 from designate.objects import Server
 
 
@@ -43,8 +43,8 @@ def create_server():
     values = flask.request.json
 
     server_schema.validate(values)
-    server = get_central_api().create_server(context,
-                                             server=Server(**values))
+    central_api = central_rpcapi.CentralAPI.get_instance()
+    server = central_api.create_server(context, server=Server(**values))
 
     response = flask.jsonify(server_schema.filter(server))
     response.status_int = 201
@@ -57,7 +57,8 @@ def create_server():
 def get_servers():
     context = flask.request.environ.get('context')
 
-    servers = get_central_api().find_servers(context)
+    central_api = central_rpcapi.CentralAPI.get_instance()
+    servers = central_api.find_servers(context)
 
     return flask.jsonify(servers_schema.filter({'servers': servers}))
 
@@ -66,7 +67,8 @@ def get_servers():
 def get_server(server_id):
     context = flask.request.environ.get('context')
 
-    server = get_central_api().get_server(context, server_id)
+    central_api = central_rpcapi.CentralAPI.get_instance()
+    server = central_api.get_server(context, server_id)
 
     return flask.jsonify(server_schema.filter(server))
 
@@ -76,8 +78,10 @@ def update_server(server_id):
     context = flask.request.environ.get('context')
     values = flask.request.json
 
+    central_api = central_rpcapi.CentralAPI.get_instance()
+
     # Fetch the existing resource
-    server = get_central_api().get_server(context, server_id)
+    server = central_api.get_server(context, server_id)
 
     # Prepare a dict of fields for validation
     server_data = server_schema.filter(server)
@@ -88,7 +92,7 @@ def update_server(server_id):
 
     # Update and persist the resource
     server.update(values)
-    server = get_central_api().update_server(context, server)
+    server = central_api.update_server(context, server)
 
     return flask.jsonify(server_schema.filter(server))
 
@@ -97,6 +101,7 @@ def update_server(server_id):
 def delete_server(server_id):
     context = flask.request.environ.get('context')
 
-    get_central_api().delete_server(context, server_id)
+    central_api = central_rpcapi.CentralAPI.get_instance()
+    central_api.delete_server(context, server_id)
 
     return flask.Response(status=200)

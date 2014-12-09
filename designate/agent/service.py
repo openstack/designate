@@ -28,7 +28,7 @@ class Service(service.RPCService):
     def __init__(self, *args, **kwargs):
         super(Service, self).__init__(*args, **kwargs)
 
-        central_api = central_rpcapi.CentralAPI()
+        central_api = central_rpcapi.CentralAPI.get_instance()
 
         endpoint = backend.get_backend(
             cfg.CONF['service:agent'].backend_driver,

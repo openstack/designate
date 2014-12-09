@@ -22,6 +22,8 @@ from designate import rpc
 
 LOG = logging.getLogger(__name__)
 
+MDNS_API = None
+
 
 class MdnsAPI(object):
     """
@@ -40,6 +42,20 @@ class MdnsAPI(object):
                                          namespace='notify',
                                          version=self.RPC_NOTIFY_API_VERSION)
         self.notify_client = rpc.get_client(notify_target, version_cap='1.0')
+
+    @classmethod
+    def get_instance(cls):
+        """
+        The rpc.get_client() which is called upon the API object initialization
+        will cause a assertion error if the designate.rpc.TRANSPORT isn't setup
+        by rpc.init() before.
+
+        This fixes that by creating the rpcapi when demanded.
+        """
+        global MDNS_API
+        if not MDNS_API:
+            MDNS_API = cls()
+        return MDNS_API
 
     def notify_zone_changed(self, context, domain, destination, timeout,
                             retry_interval, max_retries, delay):

@@ -15,12 +15,12 @@
 # under the License.
 import flask
 
+from designate.central import rpcapi as central_rpcapi
 from designate.openstack.common import log as logging
 from designate import exceptions
 from designate import objects
 from designate import schema
 from designate import utils
-from designate.api import get_central_api
 
 
 LOG = logging.getLogger(__name__)
@@ -30,7 +30,9 @@ records_schema = schema.Schema('v1', 'records')
 
 
 def _find_recordset(context, domain_id, name, type):
-    return get_central_api().find_recordset(context, {
+    central_api = central_rpcapi.CentralAPI.get_instance()
+
+    return central_api.find_recordset(context, {
         'domain_id': domain_id,
         'name': name,
         'type': type,
@@ -47,7 +49,9 @@ def _find_or_create_recordset(context, domain_id, name, type, ttl):
             'type': type,
             'ttl': ttl,
         }
-        recordset = get_central_api().create_recordset(
+        central_api = central_rpcapi.CentralAPI.get_instance()
+
+        recordset = central_api.create_recordset(
             context, domain_id, objects.RecordSet(**values))
 
     return recordset
@@ -85,7 +89,8 @@ def _format_record_v1(record, recordset):
 def _fetch_domain_recordsets(context, domain_id):
     criterion = {'domain_id': domain_id}
 
-    recordsets = get_central_api().find_recordsets(context, criterion)
+    central_api = central_rpcapi.CentralAPI.get_instance()
+    recordsets = central_api.find_recordsets(context, criterion)
 
     return dict((r['id'], r) for r in recordsets)
 
@@ -118,9 +123,10 @@ def create_record(domain_id):
 
     record = objects.Record(**_extract_record_values(values))
 
-    record = get_central_api().create_record(context, domain_id,
-                                             recordset['id'],
-                                             record)
+    central_api = central_rpcapi.CentralAPI.get_instance()
+    record = central_api.create_record(context, domain_id,
+                                   recordset['id'],
+                                   record)
 
     record = _format_record_v1(record, recordset)
 
@@ -136,11 +142,13 @@ def create_record(domain_id):
 def get_records(domain_id):
     context = flask.request.environ.get('context')
 
+    central_api = central_rpcapi.CentralAPI.get_instance()
+
     # NOTE: We need to ensure the domain actually exists, otherwise we may
     #       return an empty records array instead of a domain not found
-    get_central_api().get_domain(context, domain_id)
+    central_api.get_domain(context, domain_id)
 
-    records = get_central_api().find_records(context, {'domain_id': domain_id})
+    records = central_api.find_records(context, {'domain_id': domain_id})
 
     recordsets = _fetch_domain_recordsets(context, domain_id)
 
@@ -158,14 +166,16 @@ def get_records(domain_id):
 def get_record(domain_id, record_id):
     context = flask.request.environ.get('context')
 
+    central_api = central_rpcapi.CentralAPI.get_instance()
+
     # NOTE: We need to ensure the domain actually exists, otherwise we may
     #       return an record not found instead of a domain not found
-    get_central_api().get_domain(context, domain_id)
+    central_api.get_domain(context, domain_id)
 
     criterion = {'domain_id': domain_id, 'id': record_id}
-    record = get_central_api().find_record(context, criterion)
+    record = central_api.find_record(context, criterion)
 
-    recordset = get_central_api().get_recordset(
+    recordset = central_api.get_recordset(
         context, domain_id, record['recordset_id'])
 
     record = _format_record_v1(record, recordset)
@@ -179,22 +189,24 @@ def update_record(domain_id, record_id):
     context = flask.request.environ.get('context')
     values = flask.request.json
 
+    central_api = central_rpcapi.CentralAPI.get_instance()
+
     # NOTE: We need to ensure the domain actually exists, otherwise we may
     #       return a record not found instead of a domain not found
-    get_central_api().get_domain(context, domain_id)
+    central_api.get_domain(context, domain_id)
 
     # Fetch the existing resource
     # NOTE(kiall): We use "find_record" rather than "get_record" as we do not
     #              have the recordset_id.
     criterion = {'domain_id': domain_id, 'id': record_id}
-    record = get_central_api().find_record(context, criterion)
+    record = central_api.find_record(context, criterion)
 
     # Cannot update a managed record via the API.
     if record['managed'] is True:
         raise exceptions.BadRequest('Managed records may not be updated')
 
     # Find the associated recordset
-    recordset = get_central_api().get_recordset(
+    recordset = central_api.get_recordset(
         context, domain_id, record.recordset_id)
 
     # Prepare a dict of fields for validation
@@ -206,12 +218,12 @@ def update_record(domain_id, record_id):
 
     # Update and persist the resource
     record.update(_extract_record_values(values))
-    record = get_central_api().update_record(context, record)
+    record = central_api.update_record(context, record)
 
     # Update the recordset resource (if necessary)
     recordset.update(_extract_recordset_values(values))
     if len(recordset.obj_what_changed()) > 0:
-        recordset = get_central_api().update_recordset(context, recordset)
+        recordset = central_api.update_recordset(context, recordset)
 
     # Format and return the response
     record = _format_record_v1(record, recordset)
@@ -220,12 +232,14 @@ def update_record(domain_id, record_id):
 
 
 def _delete_recordset_if_empty(context, domain_id, recordset_id):
-    recordset = get_central_api().find_recordset(context, {
+    central_api = central_rpcapi.CentralAPI.get_instance()
+
+    recordset = central_api.find_recordset(context, {
         'id': recordset_id
     })
     # Make sure it's the right recordset
     if len(recordset.records) == 0:
-        get_central_api().delete_recordset(context, domain_id, recordset_id)
+        central_api.delete_recordset(context, domain_id, recordset_id)
 
 
 @blueprint.route('/domains/<uuid:domain_id>/records/<uuid:record_id>',
@@ -233,19 +247,21 @@ def _delete_recordset_if_empty(context, domain_id, recordset_id):
 def delete_record(domain_id, record_id):
     context = flask.request.environ.get('context')
 
+    central_api = central_rpcapi.CentralAPI.get_instance()
+
     # NOTE: We need to ensure the domain actually exists, otherwise we may
     #       return a record not found instead of a domain not found
-    get_central_api().get_domain(context, domain_id)
+    central_api.get_domain(context, domain_id)
 
     # Find the record
     criterion = {'domain_id': domain_id, 'id': record_id}
-    record = get_central_api().find_record(context, criterion)
+    record = central_api.find_record(context, criterion)
 
     # Cannot delete a managed record via the API.
     if record['managed'] is True:
         raise exceptions.BadRequest('Managed records may not be deleted')
 
-    get_central_api().delete_record(
+    central_api.delete_record(
         context, domain_id, record['recordset_id'], record_id)
 
     _delete_recordset_if_empty(context, domain_id, record['recordset_id'])

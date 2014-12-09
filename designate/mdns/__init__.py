@@ -13,8 +13,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from designate.pool_manager import rpcapi as pool_rpcapi
-
 from oslo.config import cfg
 
 cfg.CONF.register_group(cfg.OptGroup(
@@ -52,20 +50,3 @@ OPTS = [
 ]
 
 cfg.CONF.register_opts(OPTS, group='service:mdns')
-
-
-POOL_MANAGER_API = None
-
-
-def get_pool_manager_api():
-    """
-    The rpc.get_client() which is called upon the API object initialization
-    will cause a assertion error if the designate.rpc.TRANSPORT isn't setup by
-    rpc.init() before.
-
-    This fixes that by creating the rpcapi when demanded.
-    """
-    global POOL_MANAGER_API
-    if not POOL_MANAGER_API:
-        POOL_MANAGER_API = pool_rpcapi.PoolManagerAPI()
-    return POOL_MANAGER_API

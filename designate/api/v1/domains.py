@@ -17,8 +17,8 @@ import flask
 
 from designate.openstack.common import log as logging
 from designate import schema
-from designate.api import get_central_api
 from designate.api.v1 import load_values
+from designate.central import rpcapi as central_rpcapi
 from designate.objects import Domain
 
 
@@ -48,7 +48,8 @@ def create_domain():
 
     domain_schema.validate(values)
 
-    domain = get_central_api().create_domain(context, Domain(**values))
+    central_api = central_rpcapi.CentralAPI.get_instance()
+    domain = central_api.create_domain(context, Domain(**values))
 
     response = flask.jsonify(domain_schema.filter(domain))
     response.status_int = 201
@@ -61,7 +62,8 @@ def create_domain():
 def get_domains():
     context = flask.request.environ.get('context')
 
-    domains = get_central_api().find_domains(context)
+    central_api = central_rpcapi.CentralAPI.get_instance()
+    domains = central_api.find_domains(context)
 
     return flask.jsonify(domains_schema.filter({'domains': domains}))
 
@@ -70,7 +72,8 @@ def get_domains():
 def get_domain(domain_id):
     context = flask.request.environ.get('context')
 
-    domain = get_central_api().get_domain(context, domain_id)
+    central_api = central_rpcapi.CentralAPI.get_instance()
+    domain = central_api.get_domain(context, domain_id)
 
     return flask.jsonify(domain_schema.filter(domain))
 
@@ -80,8 +83,10 @@ def update_domain(domain_id):
     context = flask.request.environ.get('context')
     values = flask.request.json
 
+    central_api = central_rpcapi.CentralAPI.get_instance()
+
     # Fetch the existing resource
-    domain = get_central_api().get_domain(context, domain_id)
+    domain = central_api.get_domain(context, domain_id)
 
     # Prepare a dict of fields for validation
     domain_data = domain_schema.filter(domain)
@@ -92,7 +97,7 @@ def update_domain(domain_id):
 
     # Update and persist the resource
     domain.update(values)
-    domain = get_central_api().update_domain(context, domain)
+    domain = central_api.update_domain(context, domain)
 
     return flask.jsonify(domain_schema.filter(domain))
 
@@ -101,7 +106,8 @@ def update_domain(domain_id):
 def delete_domain(domain_id):
     context = flask.request.environ.get('context')
 
-    get_central_api().delete_domain(context, domain_id)
+    central_api = central_rpcapi.CentralAPI.get_instance()
+    central_api.delete_domain(context, domain_id)
 
     return flask.Response(status=200)
 
@@ -110,6 +116,7 @@ def delete_domain(domain_id):
 def get_domain_servers(domain_id):
     context = flask.request.environ.get('context')
 
-    servers = get_central_api().get_domain_servers(context, domain_id)
+    central_api = central_rpcapi.CentralAPI.get_instance()
+    servers = central_api.get_domain_servers(context, domain_id)
 
     return flask.jsonify(servers_schema.filter({'servers': servers}))

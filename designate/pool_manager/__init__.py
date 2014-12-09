@@ -15,9 +15,6 @@
 # under the License.
 from oslo.config import cfg
 
-from designate.central import rpcapi as central_rpcapi
-from designate.mdns import rpcapi as mdns_rpcapi
-
 cfg.CONF.register_group(cfg.OptGroup(
     name='service:pool_manager', title="Configuration for Pool Manager Service"
 ))
@@ -49,34 +46,3 @@ OPTS = [
 ]
 
 cfg.CONF.register_opts(OPTS, group='service:pool_manager')
-
-CENTRAL_API = None
-MDNS_API = None
-
-
-def get_central_api():
-    """
-    The rpc.get_client() which is called upon the API object initialization
-    will cause a assertion error if the designate.rpc.TRANSPORT isn't setup by
-    rpc.init() before.
-
-    This fixes that by creating the rpcapi when demanded.
-    """
-    global CENTRAL_API
-    if not CENTRAL_API:
-        CENTRAL_API = central_rpcapi.CentralAPI()
-    return CENTRAL_API
-
-
-def get_mdns_api():
-    """
-    The rpc.get_client() which is called upon the API object initialization
-    will cause a assertion error if the designate.rpc.TRANSPORT isn't setup by
-    rpc.init() before.
-
-    This fixes that by creating the rpcapi when demanded.
-    """
-    global MDNS_API
-    if not MDNS_API:
-        MDNS_API = mdns_rpcapi.MdnsAPI()
-    return MDNS_API
