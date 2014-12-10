@@ -16,7 +16,8 @@
 import itertools
 import copy
 
-from designate.openstack.common import context
+from oslo_context import context
+
 from designate.openstack.common import local
 from designate.openstack.common import log as logging
 from designate import policy
@@ -32,7 +33,7 @@ class DesignateContext(context.RequestContext):
     def __init__(self, auth_token=None, user=None, tenant=None, domain=None,
                  user_domain=None, project_domain=None, is_admin=False,
                  read_only=False, show_deleted=False, request_id=None,
-                 instance_uuid=None, roles=None, service_catalog=None,
+                 resource_uuid=None, roles=None, service_catalog=None,
                  all_tenants=False, user_identity=None):
         # NOTE: user_identity may be passed in, but will be silently dropped as
         #       it is a generated field based on several others.
@@ -49,7 +50,7 @@ class DesignateContext(context.RequestContext):
             read_only=read_only,
             show_deleted=show_deleted,
             request_id=request_id,
-            instance_uuid=instance_uuid)
+            resource_uuid=resource_uuid)
 
         self.roles = roles
         self.service_catalog = service_catalog

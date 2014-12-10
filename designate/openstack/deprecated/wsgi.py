@@ -40,8 +40,8 @@ from designate.i18n import _
 from designate.openstack.common import log as logging
 from designate.openstack.common import service
 from designate.openstack.common import sslutils
-from designate.openstack.common import xmlutils
 from designate.openstack.deprecated import exception
+from designate.openstack.deprecated import xmlutils
 
 socket_opts = [
     cfg.IntOpt('backlog',
