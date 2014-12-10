@@ -26,7 +26,7 @@ import random
 from oslo.config import cfg
 from oslo import messaging
 from oslo.utils import excutils
-from oslo.concurrency import lockutils
+from oslo_concurrency import lockutils
 
 from designate.openstack.common import log as logging
 from designate.i18n import _LI
