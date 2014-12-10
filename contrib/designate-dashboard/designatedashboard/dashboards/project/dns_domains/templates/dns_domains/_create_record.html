@@ -1,0 +1,21 @@
+{% extends "horizon/common/_modal_form.html" %}
+{% load i18n horizon humanize %}
+
+{% block form_id %}{% endblock %}
+{% block form_action %}{% url 'horizon:project:dns_domains:create_record' domain.id %}{% endblock %}
+
+{% block modal_id %}create_record_modal{% endblock %}
+{% block modal-header %}{% trans "Create Record for" %} {{ domain.name }}{% endblock %}
+
+{% block modal-body %}
+  <div class="full">
+    <fieldset>
+      {% include "horizon/common/_form_fields.html" %}
+    </fieldset>
+  </div>
+{% endblock %}
+
+{% block modal-footer %}
+  <input class="btn btn-primary pull-right" type="submit" value="{% trans "Create Domain Record" %}" />
+  <a href="{% url 'horizon:project:dns_domains:records' domain.id %}" class="btn secondary cancel close">{% trans "Cancel" %}</a>
+{% endblock %}

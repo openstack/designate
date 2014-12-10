@@ -1,0 +1,14 @@
+hacking>=0.9.2,<0.10
+
+coverage>=3.6
+discover
+mock>=1.0
+mox
+oslo.config>=1.2.1
+pylint==0.25.2
+testrepository>=0.0.18
+testtools>=0.9.34
+unittest2
+django_nose
+
+-e git+https://github.com/openstack/horizon.git#egg=horizon

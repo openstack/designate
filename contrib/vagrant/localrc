@@ -30,5 +30,11 @@ ENABLED_SERVICES+=,designate,designate-api,designate-central,designate-mdns
 # Optional Rally
 #ENABLED_SERVICES+=,rally
 
+# Optional Horizon Panels
+#ENABLED_SERVICES+=,horizon
+
+# Optional core OpenStack services (needed by horizon) 
+#ENABLED_SERVICES+=,g-api,g-reg,n-api,n-crt,n-obj,n-cpu,n-net,n-cond,n-sch,n-novnc,n-xvnc,n-cauth
+
 # Designate Options
 #DESIGNATE_BACKEND_DRIVER=powerdns

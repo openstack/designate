@@ -215,6 +215,12 @@ function install_designate {
     setup_develop $DESIGNATE_DIR
 
     install_designate_backend
+
+    if is_service_enabled horizon; then
+        ln -fs $DESIGNATE_DIR/contrib/designate-dashboard/enabled/_70_dns_add_group.py $HORIZON_DIR/openstack_dashboard/local/enabled/70_dns_add_group.py
+        ln -fs $DESIGNATE_DIR/contrib/designate-dashboard/enabled/_71_dns_project.py $HORIZON_DIR/openstack_dashboard/local/enabled/71_dns_project.py
+        setup_develop $DESIGNATE_DIR/contrib/designate-dashboard
+    fi
 }
 
 # install_designateclient - Collect source and prepare
