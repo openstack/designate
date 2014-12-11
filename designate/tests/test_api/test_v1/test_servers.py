@@ -53,6 +53,16 @@ class ApiV1ServersTest(ApiV1Test):
         # Ensure it fails with a 400
         self.post('servers', data=fixture, status_code=400)
 
+    def test_create_server_with_invalid_name(self):
+        # Create a server
+        fixture = self.get_server_fixture(0)
+
+        # Add a invalid name
+        fixture['name'] = '$#$%^^'
+
+        # Ensure it fails with a 400
+        self.post('servers', data=fixture, status_code=400)
+
     @patch.object(central_service.Service, 'create_server',
                   side_effect=messaging.MessagingTimeout())
     def test_create_server_timeout(self, _):
@@ -112,6 +122,10 @@ class ApiV1ServersTest(ApiV1Test):
         server = self.create_server()
 
         self.get('servers/%s' % server['id'], status_code=504)
+
+    def test_get_server_with_invalid_id(self):
+        self.get('servers/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff98GH',
+                 status_code=404)
 
     def test_get_server_missing(self):
         self.get('servers/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980',
@@ -188,6 +202,10 @@ class ApiV1ServersTest(ApiV1Test):
         server = self.create_server()
 
         self.delete('servers/%s' % server['id'], status_code=504)
+
+    def test_delete_server_with_invalid_id(self):
+        self.delete('servers/9fdadfb1-cf96-4259-ac6b-bb7b6d2ff98GH',
+                    status_code=404)
 
     def test_delete_server_missing(self):
         self.delete('servers/9fdadfb1-cf96-4259-ac6b-bb7b6d2ff980',
