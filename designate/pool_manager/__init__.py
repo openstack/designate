@@ -20,6 +20,8 @@ cfg.CONF.register_group(cfg.OptGroup(
 ))
 
 OPTS = [
+    cfg.ListOpt('backends', default=[],
+                help='List of enabled backend drivers'),
     cfg.IntOpt('workers', default=None,
                help='Number of Pool Manager worker processes to spawn'),
     cfg.StrOpt('pool-id', default='794ccc2c-d751-44fe-b57f-8894c9f5c842',

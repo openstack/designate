@@ -28,7 +28,6 @@ from designate.context import DesignateContext
 from designate.openstack.common import log as logging
 from designate.openstack.common import threadgroup
 from designate.pool_manager import cache
-import designate.pool_manager.backend_section_name as backend_section_name
 
 
 LOG = logging.getLogger(__name__)
@@ -93,7 +92,15 @@ class Service(service.RPCService):
         self.delay = cfg.CONF['service:pool_manager'].poll_delay
 
         self.server_backends = []
-        sections = backend_section_name.find_server_sections()
+
+        sections = []
+        for backend_name in cfg.CONF['service:pool_manager'].backends:
+            server_ids = cfg.CONF['backend:%s' % backend_name].server_ids
+
+            for server_id in server_ids:
+                sections.append({"backend": backend_name,
+                                 "server_id": server_id})
+
         for section in sections:
             backend_driver = section['backend']
             server_id = section['server_id']

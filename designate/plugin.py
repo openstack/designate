@@ -18,11 +18,14 @@ import abc
 import six
 from stevedore import driver
 from stevedore import enabled
+from stevedore import extension
+from oslo.config import cfg
 
 from designate.openstack.common import log as logging
 
 
 LOG = logging.getLogger(__name__)
+CONF = cfg.CONF
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -52,6 +55,50 @@ class Plugin(object):
     @classmethod
     def get_plugin_type(cls):
         return cls.__plugin_type__
+
+    @classmethod
+    def get_cfg_opts(cls):
+        """Get any static configuration options
+
+        Returns an array of tuples in the form:
+
+        [(group1, [Option1, Option2]), (group2, [Option1, Option2])]
+        """
+        return []
+
+    @classmethod
+    def get_extra_cfg_opts(cls):
+        """Get any dynamically built configuration options
+
+        Returns an array of tuples in the form:
+
+        [(group1, [Option1, Option2]), (group2, [Option1, Option2])]
+        """
+        return []
+
+    @classmethod
+    def register_cfg_opts(cls, namespace):
+        mgr = extension.ExtensionManager(namespace)
+
+        for e in mgr:
+            for group, opts in e.plugin.get_cfg_opts():
+                if isinstance(group, six.string_types):
+                    group = cfg.OptGroup(name=group)
+
+                CONF.register_group(group)
+                CONF.register_opts(opts, group=group)
+
+    @classmethod
+    def register_extra_cfg_opts(cls, namespace):
+        mgr = extension.ExtensionManager(namespace)
+
+        for e in mgr:
+            for group, opts in e.plugin.get_extra_cfg_opts():
+                if isinstance(group, six.string_types):
+                    group = cfg.OptGroup(name=group)
+
+                CONF.register_group(group)
+                CONF.register_opts(opts, group=group)
 
 
 class DriverPlugin(Plugin):

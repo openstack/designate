@@ -28,29 +28,7 @@ from designate.openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)
 
-CFG_GRP = 'backend:nsd4slave'
-
-cfg.CONF.register_group(
-    cfg.OptGroup(name=CFG_GRP, title='Configuration for NSD4-slave backend')
-)
-
-cfg.CONF.register_opts([
-    cfg.StrOpt('keyfile', default='/etc/nsd/nsd_control.key',
-               help='Keyfile to use when connecting to the NSD4 servers over '
-                    'SSL'),
-    cfg.StrOpt('certfile', default='/etc/nsd/nsd_control.pem',
-               help='Certfile to use when connecting to the NSD4 servers over '
-                    'SSL'),
-    cfg.ListOpt('servers',
-                help='Comma-separated list of servers to control, in '
-                     ' <host>:<port> format. If <port> is omitted, '
-                     ' the default 8952 is used.'),
-    cfg.StrOpt('pattern', default='slave',
-               help='Pattern to use when creating zones on the NSD4 servers. '
-                    'This pattern must be identically configured on all NSD4 '
-                    'servers.'),
-], group=CFG_GRP)
-
+CFG_GROUP = 'backend:nsd4slave'
 DEFAULT_PORT = 8952
 
 
@@ -58,9 +36,34 @@ class NSD4SlaveBackend(base.Backend):
     __plugin__name__ = 'nsd4slave'
     NSDCT_VERSION = 'NSDCT1'
 
+    @classmethod
+    def get_cfg_opts(cls):
+        group = cfg.OptGroup(
+            name=CFG_GROUP, title="Configuration for NSD4-slave backend"
+        )
+
+        opts = [
+            cfg.StrOpt('keyfile', default='/etc/nsd/nsd_control.key',
+                       help='Keyfile to use when connecting to the NSD4 '
+                            'servers over SSL'),
+            cfg.StrOpt('certfile', default='/etc/nsd/nsd_control.pem',
+                       help='Certfile to use when connecting to the NSD4 '
+                            'servers over SSL'),
+            cfg.ListOpt('servers',
+                        help='Comma-separated list of servers to control, in '
+                             ' <host>:<port> format. If <port> is omitted, '
+                             ' the default 8952 is used.'),
+            cfg.StrOpt('pattern', default='slave',
+                       help='Pattern to use when creating zones on the NSD4 '
+                            'servers. This pattern must be identically '
+                            'configured on all NSD4 servers.'),
+        ]
+
+        return [(group, opts)]
+
     def __init__(self, central_service):
-        self._keyfile = cfg.CONF[CFG_GRP].keyfile
-        self._certfile = cfg.CONF[CFG_GRP].certfile
+        self._keyfile = cfg.CONF[CFG_GROUP].keyfile
+        self._certfile = cfg.CONF[CFG_GROUP].certfile
         # Make sure keyfile and certfile are readable to avoid cryptic SSL
         # errors later
         if not os.access(self._keyfile, os.R_OK):
@@ -69,10 +72,10 @@ class NSD4SlaveBackend(base.Backend):
         if not os.access(self._certfile, os.R_OK):
             raise exceptions.NSD4SlaveBackendError(
                 'Certfile %s missing or permission denied' % self._certfile)
-        self._pattern = cfg.CONF[CFG_GRP].pattern
+        self._pattern = cfg.CONF[CFG_GROUP].pattern
         try:
             self._servers = [self._parse_server(cfg_server)
-                             for cfg_server in cfg.CONF[CFG_GRP].servers]
+                             for cfg_server in cfg.CONF[CFG_GROUP].servers]
         except TypeError:
             raise exceptions.ConfigurationError('No NSD4 servers defined')
 

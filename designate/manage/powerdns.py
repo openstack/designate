@@ -21,17 +21,15 @@ from oslo.db.sqlalchemy.migration_cli import manager as migration_manager
 
 from designate.openstack.common import log as logging
 from designate.manage import base
-
+from designate import utils
 
 LOG = logging.getLogger(__name__)
 
 REPOSITORY = os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
                                           'backend', 'impl_powerdns',
                                           'migrate_repo'))
-cfg.CONF.import_opt('connection', 'designate.backend.impl_powerdns',
-                    group='backend:powerdns')
-
 CONF = cfg.CONF
+utils.register_plugin_opts()
 
 
 def get_manager():

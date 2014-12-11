@@ -24,22 +24,21 @@ from designate.backend import base
 
 
 LOG = logging.getLogger(__name__)
-
-cfg_opts = [
-    cfg.ListOpt('masters', default=['127.0.0.1:5354'],
-                help='Comma-separated list of master DNS servers, in '
-                     ' <ip-address>:<port> format. If <port> is omitted, '
-                     'the default 5354 is used.  These are mdns servers.'),
-    cfg.StrOpt('rndc-host', default='127.0.0.1', help='RNDC Host'),
-    cfg.IntOpt('rndc-port', default=953, help='RNDC Port'),
-    cfg.StrOpt('rndc-config-file', default=None, help='RNDC Config File'),
-    cfg.StrOpt('rndc-key-file', default=None, help='RNDC Key File'),
-]
 DEFAULT_PORT = 5354
 
 
 class Bind9PoolBackend(base.PoolBackend):
     __plugin_name__ = 'bind9_pool'
+
+    @classmethod
+    def _get_common_cfg_opts(cls):
+        return [
+            cfg.StrOpt('rndc-host', default='127.0.0.1', help='RNDC Host'),
+            cfg.IntOpt('rndc-port', default=953, help='RNDC Port'),
+            cfg.StrOpt('rndc-config-file', default=None,
+                       help='RNDC Config File'),
+            cfg.StrOpt('rndc-key-file', default=None, help='RNDC Key File'),
+        ]
 
     def __init__(self, backend_options):
         super(Bind9PoolBackend, self).__init__(backend_options)
@@ -72,10 +71,6 @@ class Bind9PoolBackend(base.PoolBackend):
             raise exceptions.ConfigurationError(
                 'Invalid IP address "%s" in masters option.' % ip_address)
         return {'ip-address': ip_address, 'port': port}
-
-    @classmethod
-    def get_cfg_opts(cls):
-        return cfg_opts
 
     def create_domain(self, context, domain):
         LOG.debug('Create Domain')

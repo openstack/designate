@@ -29,23 +29,27 @@ from designate.backend import base
 
 LOG = logging.getLogger(__name__)
 
-cfg.CONF.register_group(cfg.OptGroup(
-    name='backend:bind9', title="Configuration for BIND9 Backend"
-))
-
-cfg.CONF.register_opts([
-    cfg.StrOpt('rndc-host', default='127.0.0.1', help='RNDC Host'),
-    cfg.IntOpt('rndc-port', default=953, help='RNDC Port'),
-    cfg.StrOpt('rndc-config-file', default=None,
-               help='RNDC Config File'),
-    cfg.StrOpt('rndc-key-file', default=None, help='RNDC Key File'),
-    cfg.StrOpt('nzf-path', default='/var/cache/bind',
-               help='Path where Bind9 stores the nzf files'),
-], group='backend:bind9')
-
 
 class Bind9Backend(base.Backend):
     __plugin_name__ = 'bind9'
+
+    @classmethod
+    def get_cfg_opts(cls):
+        group = cfg.OptGroup(
+            name='backend:bind9', title="Configuration for BIND9 Backend"
+        )
+
+        opts = [
+            cfg.StrOpt('rndc-host', default='127.0.0.1', help='RNDC Host'),
+            cfg.IntOpt('rndc-port', default=953, help='RNDC Port'),
+            cfg.StrOpt('rndc-config-file', default=None,
+                       help='RNDC Config File'),
+            cfg.StrOpt('rndc-key-file', default=None, help='RNDC Key File'),
+            cfg.StrOpt('nzf-path', default='/var/cache/bind',
+                       help='Path where Bind9 stores the nzf files'),
+        ]
+
+        return [(group, opts)]
 
     def start(self):
         super(Bind9Backend, self).start()

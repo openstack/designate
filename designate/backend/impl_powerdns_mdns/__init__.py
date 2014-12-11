@@ -30,22 +30,6 @@ from designate.sqlalchemy import session
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
 
-OPTS = [
-    cfg.ListOpt('masters', help="Master servers from which to transfer from."),
-]
-
-CONF.register_group(cfg.OptGroup(
-    name='backend:powerdns_mdns',
-    title="Configuration for PowerDNS MDNS Backend"
-))
-
-CONF.register_opts(OPTS + options.database_opts, group='backend:powerdns_mdns')
-
-# Overide the default DB connection registered above, to avoid name conflicts
-# between the Designate and PowerDNS databases.
-CONF.set_default('connection', 'sqlite:///$state_path/powerdns_mdns.sqlite',
-                 group='backend:powerdns_mdns')
-
 
 def _map_col(keys, col):
     return dict([(keys[i], col[i]) for i in range(len(keys))])
@@ -53,6 +37,26 @@ def _map_col(keys, col):
 
 class PowerDNSMDNSBackend(base.Backend):
     __plugin_name__ = 'powerdns_mdns'
+
+    @classmethod
+    def get_cfg_opts(cls):
+        group = cfg.OptGroup(
+            name='backend:powerdns_mdns',
+            title="Configuration for PowerDNS MDNS Backend"
+        )
+
+        opts = [
+            cfg.ListOpt('masters',
+                        help="Master servers from which to transfer from."),
+        ] + options.database_opts
+
+        # TODO(kiall):
+        # Overide the default DB connection registered above, to avoid name
+        # conflicts between the Designate and PowerDNS databases.
+        # CONF.set_default('connection',
+        #                  'sqlite:///$state_path/powerdns.sqlite',
+        #                  group='backend:powerdns')
+        return [(group, opts)]
 
     def __init__(self, *args, **kwargs):
         super(PowerDNSMDNSBackend, self).__init__(*args, **kwargs)
