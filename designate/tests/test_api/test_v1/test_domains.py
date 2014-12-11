@@ -191,6 +191,13 @@ class ApiV1DomainsTest(ApiV1Test):
         self.assertIn('domains', response.json)
         self.assertEqual(2, len(response.json['domains']))
 
+    def test_get_domain_servers(self):
+        # Create a domain
+        domain = self.create_domain()
+        response = self.get('domains/%s/servers' % domain['id'])
+        # Verify length of domain servers
+        self.assertEqual(1, len(response.json['servers']))
+
     @patch.object(central_service.Service, 'find_domains',
                   side_effect=messaging.MessagingTimeout())
     def test_get_domains_timeout(self, _):
