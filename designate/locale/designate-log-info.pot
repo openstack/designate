@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: designate 2015.1.dev109.g0abf05b\n"
+"Project-Id-Version: designate 2015.1.dev147.ge7b06b2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-11-24 06:10+0000\n"
+"POT-Creation-Date: 2014-12-11 06:09+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -496,12 +496,12 @@ msgstr ""
 msgid "NOT checking for TLDs"
 msgstr ""
 
-#: designate/central/service.py:1723
+#: designate/central/service.py:1759
 #, python-format
 msgid "Creating zone for %(fip_id)s:%(region)s - %(fip_addr)s zone %(zonename)s"
 msgstr ""
 
-#: designate/central/service.py:2035
+#: designate/central/service.py:2119
 msgid "Target Tenant ID found - using scoped policy"
 msgstr ""
 
@@ -519,7 +519,7 @@ msgstr ""
 msgid "started mdns notify endpoint"
 msgstr ""
 
-#: designate/mdns/notify.py:179
+#: designate/mdns/notify.py:184
 #, python-format
 msgid "Sending '%(msg)s' for '%(zone)s' to '%(server)s:%(port)d'."
 msgstr ""
@@ -531,7 +531,7 @@ msgid ""
 "'%(serial)s' to server '%(dst)s'"
 msgstr ""
 
-#: designate/mdns/rpcapi.py:59
+#: designate/mdns/rpcapi.py:60
 #, python-format
 msgid ""
 "poll_for_serial_number: Calling mdns for zone '%(zone)s', serial "
@@ -556,13 +556,18 @@ msgstr ""
 msgid "_handle_tcp thread started"
 msgstr ""
 
-#: designate/mdns/service.py:134
+#: designate/mdns/service.py:143
 msgid "_handle_udp thread started"
 msgstr ""
 
-#: designate/openstack/common/eventlet_backdoor.py:140
+#: designate/openstack/common/eventlet_backdoor.py:147
 #, python-format
 msgid "Eventlet backdoor listening on %(port)s for process %(pid)d"
+msgstr ""
+
+#: designate/openstack/common/policy.py:275
+#, python-format
+msgid "Can not find policy directory: %s"
 msgstr ""
 
 #: designate/openstack/common/service.py:174
@@ -629,7 +634,7 @@ msgstr ""
 msgid "update_domain: Calling pool manager's update_domain."
 msgstr ""
 
-#: designate/pool_manager/rpcapi.py:61
+#: designate/pool_manager/rpcapi.py:62
 msgid "update_status: Calling pool manager's update_status."
 msgstr ""
 

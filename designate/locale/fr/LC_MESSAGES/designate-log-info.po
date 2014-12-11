@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Designate\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-11-24 06:10+0000\n"
-"PO-Revision-Date: 2014-11-20 20:54+0000\n"
+"POT-Creation-Date: 2014-12-11 06:09+0000\n"
+"PO-Revision-Date: 2014-12-10 13:59+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: French (http://www.transifex.com/projects/p/designate/"
 "language/fr/)\n"
@@ -501,14 +501,14 @@ msgstr "Vérification des TLD"
 msgid "NOT checking for TLDs"
 msgstr "AUCUNE vérification des TLD"
 
-#: designate/central/service.py:1723
+#: designate/central/service.py:1759
 #, python-format
 msgid ""
 "Creating zone for %(fip_id)s:%(region)s - %(fip_addr)s zone %(zonename)s"
 msgstr ""
 "Créer une zone pour %(fip_id)s:%(region)s - %(fip_addr)s zone %(zonename)s"
 
-#: designate/central/service.py:2035
+#: designate/central/service.py:2119
 msgid "Target Tenant ID found - using scoped policy"
 msgstr ""
 
@@ -526,7 +526,7 @@ msgstr "Nombre des tlds ajoutés : %d"
 msgid "started mdns notify endpoint"
 msgstr "démarrage du point de terminaison de notification de mdns"
 
-#: designate/mdns/notify.py:179
+#: designate/mdns/notify.py:184
 #, python-format
 msgid "Sending '%(msg)s' for '%(zone)s' to '%(server)s:%(port)d'."
 msgstr ""
@@ -538,7 +538,7 @@ msgid ""
 "to server '%(dst)s'"
 msgstr ""
 
-#: designate/mdns/rpcapi.py:59
+#: designate/mdns/rpcapi.py:60
 #, python-format
 msgid ""
 "poll_for_serial_number: Calling mdns for zone '%(zone)s', serial "
@@ -563,15 +563,20 @@ msgstr "démarrage du service mdns"
 msgid "_handle_tcp thread started"
 msgstr "démarrage du thread _handle_tcp"
 
-#: designate/mdns/service.py:134
+#: designate/mdns/service.py:143
 msgid "_handle_udp thread started"
 msgstr "démarrage du thread _handle_udp"
 
-#: designate/openstack/common/eventlet_backdoor.py:140
+#: designate/openstack/common/eventlet_backdoor.py:147
 #, python-format
 msgid "Eventlet backdoor listening on %(port)s for process %(pid)d"
 msgstr ""
 "La porte dérobée d'Eventlet écoute sur %(port)s pour le processus %(pid)d"
+
+#: designate/openstack/common/policy.py:275
+#, python-format
+msgid "Can not find policy directory: %s"
+msgstr ""
 
 #: designate/openstack/common/service.py:174
 #, python-format
@@ -637,6 +642,6 @@ msgstr ""
 msgid "update_domain: Calling pool manager's update_domain."
 msgstr ""
 
-#: designate/pool_manager/rpcapi.py:61
+#: designate/pool_manager/rpcapi.py:62
 msgid "update_status: Calling pool manager's update_status."
 msgstr ""
