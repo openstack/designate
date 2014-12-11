@@ -23,6 +23,8 @@ from designate import rpc
 
 LOG = logging.getLogger(__name__)
 
+MNGR_API = None
+
 
 class PoolManagerAPI(object):
     """
@@ -41,6 +43,20 @@ class PoolManagerAPI(object):
 
         target = messaging.Target(topic=topic, version=self.RPC_API_VERSION)
         self.client = rpc.get_client(target, version_cap='1.0')
+
+    @classmethod
+    def get_instance(cls):
+        """
+        The rpc.get_client() which is called upon the API object initialization
+        will cause a assertion error if the designate.rpc.TRANSPORT isn't setup
+        by rpc.init() before.
+
+        This fixes that by creating the rpcapi when demanded.
+        """
+        global MNGR_API
+        if not MNGR_API:
+            MNGR_API = cls()
+        return MNGR_API
 
     def create_domain(self, context, domain):
         LOG.info(_LI("create_domain: Calling pool manager's create_domain."))

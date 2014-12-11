@@ -21,7 +21,8 @@ from oslo import messaging
 from designate import backend
 from designate import exceptions
 from designate import objects
-from designate import pool_manager
+from designate.central import rpcapi as central_api
+from designate.mdns import rpcapi as mdns_api
 from designate import service
 from designate.context import DesignateContext
 from designate.openstack.common import log as logging
@@ -132,11 +133,11 @@ class Service(service.RPCService):
 
     @property
     def central_api(self):
-        return pool_manager.get_central_api()
+        return central_api.CentralAPI.get_instance()
 
     @property
     def mdns_api(self):
-        return pool_manager.get_mdns_api()
+        return mdns_api.MdnsAPI.get_instance()
 
     @execute_on_pool(cfg.CONF['service:pool_manager'].pool_id)
     def create_domain(self, context, domain):

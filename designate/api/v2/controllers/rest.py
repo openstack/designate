@@ -32,7 +32,7 @@ import pecan.rest
 import pecan.routing
 
 from designate import exceptions
-from designate import api
+from designate.central import rpcapi as central_rpcapi
 from designate.openstack.common import log as logging
 from designate.i18n import _
 
@@ -53,7 +53,7 @@ class RestController(pecan.rest.RestController):
 
     @property
     def central_api(self):
-        return api.get_central_api()
+        return central_rpcapi.CentralAPI.get_instance()
 
     def _get_paging_params(self, params):
         """

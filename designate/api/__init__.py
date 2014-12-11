@@ -15,8 +15,6 @@
 # under the License.
 from oslo.config import cfg
 
-from designate.central import rpcapi
-
 
 cfg.CONF.register_group(cfg.OptGroup(
     name='service:api', title="Configuration for API Service"
@@ -38,20 +36,3 @@ cfg.CONF.register_opts([
     cfg.BoolOpt('enable-api-v1', default=True),
     cfg.BoolOpt('enable-api-v2', default=False),
 ], group='service:api')
-
-
-CENTRAL_API = None
-
-
-def get_central_api():
-    """
-    The rpc.get_client() which is called upon the API object initialization
-    will cause a assertion error if the designate.rpc.TRANSPORT isn't setup by
-    rpc.init() before.
-
-    This fixes that by creating the rpcapi when demanded.
-    """
-    global CENTRAL_API
-    if not CENTRAL_API:
-        CENTRAL_API = rpcapi.CentralAPI()
-    return CENTRAL_API
