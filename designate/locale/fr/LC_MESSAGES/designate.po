@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  Designate\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-11-12 06:10+0000\n"
-"PO-Revision-Date: 2014-11-11 17:54+0000\n"
+"POT-Creation-Date: 2014-12-11 06:09+0000\n"
+"PO-Revision-Date: 2014-12-10 13:59+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: French "
 "(http://www.transifex.com/projects/p/designate/language/fr/)\n"
@@ -19,14 +19,14 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
 
-#: designate/policy.py:96
+#: designate/policy.py:95
 #, python-format
 msgid "Policy check succeeded for rule '%(rule)s' on target %(target)s"
 msgstr ""
 "Vérification de stratégie réussie pour la règle '%(rule)s' pour la cible "
 "%(target)s"
 
-#: designate/policy.py:100
+#: designate/policy.py:99
 #, python-format
 msgid "Policy check failed for rule '%(rule)s' on target %(target)s"
 msgstr ""
@@ -64,68 +64,72 @@ msgstr "sudo a échoué, continue comme si de rien n'était"
 msgid "Please re-run designate-manage as root."
 msgstr "Veuillez exécuter designate-manage à nouveau en tant que root"
 
-#: designate/openstack/common/log.py:287
+#: designate/openstack/common/log.py:298
 #, python-format
 msgid "Deprecated: %s"
 msgstr "Déprécié : %s"
 
-#: designate/openstack/common/log.py:395
+#: designate/openstack/common/log.py:406
 #, python-format
 msgid "Error loading logging config %(log_config)s: %(err_msg)s"
 msgstr ""
 "Erreur de chargement de la config de journalisation %(log_config)s: "
 "%(err_msg)s"
 
-#: designate/openstack/common/log.py:456
+#: designate/openstack/common/log.py:467
 #, python-format
 msgid "syslog facility must be one of: %s"
 msgstr "La fonction syslog doit faire partie de  : %s"
 
-#: designate/openstack/common/log.py:707
+#: designate/openstack/common/log.py:715
 #, python-format
 msgid "Fatal call to deprecated config: %(msg)s"
 msgstr "Appel fatal à config dépréciée : %(msg)s"
 
-#: designate/openstack/common/policy.py:97
+#: designate/openstack/common/policy.py:111
 msgid "The JSON file that defines policies."
 msgstr "Le fichier JSON qui définit les stratégies."
 
-#: designate/openstack/common/policy.py:100
+#: designate/openstack/common/policy.py:114
 msgid "Default rule. Enforced when a requested rule is not found."
 msgstr "Règle par défaut. Respectée quand une règle demandée n'est pas trouvée."
 
-#: designate/openstack/common/policy.py:104
-msgid "The directories of policy configuration files is stored"
-msgstr "Les répertoires des fichiers de configuration sont stockés"
+#: designate/openstack/common/policy.py:118
+msgid ""
+"Directories where policy configuration files are stored. They can be "
+"relative to any directory in the search path defined by the config_dir "
+"option, or absolute paths. The file defined by policy_file must exist for"
+" these directories to be searched."
+msgstr ""
 
-#: designate/openstack/common/policy.py:119
+#: designate/openstack/common/policy.py:142
 #, python-format
 msgid "Policy doesn't allow %s to be performed."
 msgstr "Stratégie ne permettant pas d'effectuer %s."
 
-#: designate/openstack/common/policy.py:213
+#: designate/openstack/common/policy.py:239
 #, python-format
 msgid "Rules must be an instance of dict or Rules, got %s instead"
 msgstr ""
 "Les règles doivent représenter une instance de dict ou Règles, %s obtenu "
 "à la place"
 
-#: designate/openstack/common/sslutils.py:47
+#: designate/openstack/common/sslutils.py:53
 #, python-format
 msgid "Unable to find cert_file : %s"
 msgstr "Impossible de trouver le cert_file : %s"
 
-#: designate/openstack/common/sslutils.py:50
+#: designate/openstack/common/sslutils.py:56
 #, python-format
 msgid "Unable to find ca_file : %s"
 msgstr "Impossible de trouver le ca_file : %s"
 
-#: designate/openstack/common/sslutils.py:53
+#: designate/openstack/common/sslutils.py:59
 #, python-format
 msgid "Unable to find key_file : %s"
 msgstr "Impossible de trouver le key_file : %s"
 
-#: designate/openstack/common/sslutils.py:56
+#: designate/openstack/common/sslutils.py:62
 msgid ""
 "When running server in SSL mode, you must specify both a cert_file and "
 "key_file option value in your configuration file"
@@ -134,7 +138,7 @@ msgstr ""
 "valeur des l'options cert_file et key_file dans votre fichier de "
 "configuration"
 
-#: designate/openstack/common/sslutils.py:95
+#: designate/openstack/common/sslutils.py:101
 #, python-format
 msgid "Invalid SSL version : %s"
 msgstr "Version SSL non valide : %s"
