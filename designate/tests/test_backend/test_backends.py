@@ -22,7 +22,6 @@ from designate.tests.test_backend import BackendTestMixin
 
 class BackendTestCase(tests.TestCase, BackendTestMixin):
     scenarios = [
-        ('bind9', dict(backend_driver='bind9', group='service:agent')),
         ('fake', dict(backend_driver='fake', group='service:agent')),
         ('nsd4slave', dict(backend_driver='nsd4slave', group='service:agent',
                            server_fixture=NSD4Fixture)),
