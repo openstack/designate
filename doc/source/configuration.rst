@@ -33,7 +33,6 @@ Parameter                        Default                               Note
 api_host                         0.0.0.0                               API listen host
 api_port                         9001                                  API listen port
 control_exchange                 designate                             The MQ Control exchange
-agent_topic                      agent                                 The topic that the Agent(s) should use
 central_topic                    central                               The topic that the Central should use
 os-username                      glance                                Username to use for openstack service access
 os-password                      admin                                 Password to use for openstack service access

@@ -45,7 +45,7 @@ debug = False
 # Central Service
 #-----------------------
 [service:central]
-# Driver used for backend communication (e.g. fake, rpc, bind9, powerdns)
+# Driver used for backend communication (e.g. fake, bind9, powerdns)
 #backend_driver = fake
 
 # Maximum domain name length
@@ -103,13 +103,6 @@ debug = False
 #admin_tenant_name = service
 #admin_user = designate
 #admin_password = designate
-
-#-----------------------
-# Agent Service
-#-----------------------
-[service:agent]
-# Driver used for backend communication (e.g. bind9, powerdns)
-#backend_driver = powerdns
 
 #-----------------------
 # Sink Service

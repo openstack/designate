@@ -36,7 +36,6 @@ Source Documentation
 .. toctree::
     :maxdepth: 3
 
-    agent
     api
     backend
     central
