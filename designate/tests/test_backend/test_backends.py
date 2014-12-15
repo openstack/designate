@@ -26,7 +26,6 @@ class BackendTestCase(tests.TestCase, BackendTestMixin):
         ('fake', dict(backend_driver='fake', group='service:agent')),
         ('nsd4slave', dict(backend_driver='nsd4slave', group='service:agent',
                            server_fixture=NSD4Fixture)),
-        ('powerdns', dict(backend_driver='powerdns', group='service:agent')),
         ('ipa', dict(backend_driver='ipa', group='service:agent'))
     ]
 

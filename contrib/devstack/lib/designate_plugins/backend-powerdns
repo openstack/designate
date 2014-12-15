@@ -46,7 +46,15 @@ function install_designate_backend {
 
 # configure_designate_backend - make configuration changes, including those to other services
 function configure_designate_backend {
+    iniset $DESIGNATE_CONF service:pool_manager backends powerdns
+    iniset $DESIGNATE_CONF service:mdns slave_nameserver_ips_and_ports "$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT_DNS"
+
+    iniset $DESIGNATE_CONF backend:powerdns server_ids $DESIGNATE_SERVER_ID
     iniset $DESIGNATE_CONF backend:powerdns connection `database_connection_url designate_pdns`
+    iniset $DESIGNATE_CONF backend:powerdns masters "$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT_MDNS"
+
+    iniset $DESIGNATE_CONF backend:powerdns:$DESIGNATE_SERVER_ID host $DESIGNATE_SERVICE_HOST
+    iniset $DESIGNATE_CONF backend:powerdns:$DESIGNATE_SERVER_ID port $DESIGNATE_SERVICE_PORT_DNS
 
     sudo tee $POWERDNS_CFG_DIR/pdns.conf > /dev/null <<EOF
 # General Config
@@ -59,7 +67,8 @@ daemon=yes
 disable-axfr=no
 local-address=$DESIGNATE_SERVICE_HOST
 local-port=$DESIGNATE_SERVICE_PORT_DNS
-master=yes
+master=no
+slave=yes
 cache-ttl=0
 query-cache-ttl=0
 negquery-cache-ttl=0

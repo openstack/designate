@@ -5,7 +5,7 @@ set -ex
 pushd $BASE/new/devstack
 
 export KEEP_LOCALRC=1
-export ENABLED_SERVICES=designate,designate-api,designate-central,designate-sink,designate-mdns
+export ENABLED_SERVICES=designate,designate-api,designate-central,designate-sink,designate-mdns,designate-pool-manager
 
 echo "DESIGNATE_SERVICE_PORT_DNS=5322" >> $BASE/new/devstack/localrc
 
@@ -15,7 +15,6 @@ if [ "$DEVSTACK_GATE_DESIGNATE_DRIVER" == "powerdns" ]; then
     echo "DESIGNATE_BACKEND_DRIVER=powerdns" >> $BASE/new/devstack/localrc
 
 elif [ "$DEVSTACK_GATE_DESIGNATE_DRIVER" == "bind9" ]; then
-    export ENABLED_SERVICES+=,designate-pool-manager
     echo "DESIGNATE_BACKEND_DRIVER=bind9_pool" >> $BASE/new/devstack/localrc
 
 fi
