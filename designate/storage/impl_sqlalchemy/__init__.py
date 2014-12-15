@@ -389,7 +389,7 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
         else:
             recordset.records = objects.RecordList()
 
-        recordset.obj_reset_changes('records')
+        recordset.obj_reset_changes(['records'])
 
         return recordset
 
@@ -400,7 +400,7 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
         recordset.records = self._find_records(
             context, {'recordset_id': recordset.id})
 
-        recordset.obj_reset_changes('records')
+        recordset.obj_reset_changes(['records'])
 
         return recordset
 
@@ -414,7 +414,7 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             recordset.records = self._find_records(
                 context, {'recordset_id': recordset.id})
 
-            recordset.obj_reset_changes('records')
+            recordset.obj_reset_changes(['records'])
 
         return recordsets
 
@@ -424,7 +424,7 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
         recordset.records = self._find_records(
             context, {'recordset_id': recordset.id})
 
-        recordset.obj_reset_changes('records')
+        recordset.obj_reset_changes(['records'])
 
         return recordset
 
@@ -620,14 +620,14 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
                 self.create_pool_attribute(context, pool.id, pool_attribute)
         else:
             pool.attributes = objects.PoolAttributeList()
-        pool.obj_reset_changes('attributes')
+        pool.obj_reset_changes(['attributes'])
 
         if pool.obj_attr_is_set('nameservers'):
             for nameserver in pool.nameservers:
                 self.create_pool_attribute(context, pool.id, nameserver)
         else:
             pool.nameservers = objects.NameServerList()
-        pool.obj_reset_changes('nameservers')
+        pool.obj_reset_changes(['nameservers'])
 
         return pool
 
@@ -637,8 +637,7 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             context, {'pool_id': pool_id, 'key': '!nameserver'})
         pool.nameservers = self._find_pool_attributes(
             context, {'pool_id': pool_id, 'key': 'nameserver'})
-        pool.obj_reset_changes('attributes')
-        pool.obj_reset_changes('nameservers')
+        pool.obj_reset_changes(['attributes', 'nameservers'])
         return pool
 
     def find_pools(self, context, criterion=None, marker=None,
@@ -651,8 +650,7 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
                 context, {'pool_id': pool.id, 'key': '!nameserver'})
             pool.nameservers = self._find_pool_attributes(
                 context, {'pool_id': pool.id, 'key': 'nameserver'})
-            pool.obj_reset_changes('attributes')
-            pool.obj_reset_changes('nameservers')
+            pool.obj_reset_changes(['attributes', 'nameservers'])
 
         return pools
 
@@ -662,8 +660,7 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             context, {'pool_id': pool.id, 'key': '!nameserver'})
         pool.nameservers = self._find_pool_attributes(
             context, {'pool_id': pool.id, 'key': 'nameserver'})
-        pool.obj_reset_changes('attributes')
-        pool.obj_reset_changes('nameservers')
+        pool.obj_reset_changes(['attributes', 'nameservers'])
         return pool
 
     def update_pool(self, context, pool):
