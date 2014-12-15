@@ -26,7 +26,7 @@ from designate import utils
 
 class TestUtils(TestCase):
     def test_resource_string(self):
-        name = ['templates', 'bind9-config.jinja2']
+        name = ['templates', 'bind9-zone.jinja2']
 
         resource_string = utils.resource_string(*name)
 
@@ -48,14 +48,14 @@ class TestUtils(TestCase):
             utils.load_schema('v1', 'missing')
 
     def test_load_template(self):
-        name = 'bind9-config.jinja2'
+        name = 'bind9-zone.jinja2'
 
         template = utils.load_template(name)
 
         self.assertIsInstance(template, Template)
 
     def test_load_template_keep_trailing_newline(self):
-        name = 'bind9-config.jinja2'
+        name = 'bind9-zone.jinja2'
         template = utils.load_template(name)
         self.assertTrue(template.environment.keep_trailing_newline)
 

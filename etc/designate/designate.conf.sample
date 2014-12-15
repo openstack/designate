@@ -109,7 +109,7 @@ debug = False
 #-----------------------
 [service:agent]
 # Driver used for backend communication (e.g. bind9, powerdns)
-#backend_driver = bind9
+#backend_driver = powerdns
 
 #-----------------------
 # Sink Service
@@ -132,7 +132,7 @@ debug = False
 # Pool Manager Service
 #-----------------------
 [service:pool_manager]
-#backends = bind9_pool
+#backends = bind9
 #workers = None
 #pool_name = default
 #threshold-percentage = 100
@@ -214,27 +214,6 @@ debug = False
 ## Backend Configuration
 ########################
 #-----------------------
-# Bind9 Backend
-#-----------------------
-[backend:bind9]
-#rndc_host = 127.0.0.1
-#rndc_port = 953
-#rndc_config_file = /etc/rndc.conf
-#rndc_key_file = /etc/rndc.key
-
-#-----------------------
-# Bind9+MySQL Backend
-#-----------------------
-[backend:mysqlbind9]
-#connection = mysql://user:password@host/schema
-#rndc_host = 127.0.0.1
-#rndc_port = 953
-#rndc_config_file = /etc/rndc.conf
-#rndc_key_file = /etc/rndc.key
-#write_database = True
-#dns_server_type = master
-
-#-----------------------
 # PowerDNS Backend
 #-----------------------
 [backend:powerdns]
@@ -268,7 +247,7 @@ debug = False
 #-----------------------
 # Global Bind9 Pool Backend
 #-----------------------
-[backend:bind9_pool]
+[backend:bind9]
 #server_ids = 6a5032b6-2d96-43ee-b25b-7d784e2bf3b2
 #masters = 127.0.0.1:5354
 #rndc_host = 127.0.0.1
@@ -279,6 +258,6 @@ debug = False
 #-----------------------
 # Server Specific Bind9 Pool Backend
 #-----------------------
-[backend:bind9_pool:6a5032b6-2d96-43ee-b25b-7d784e2bf3b2]
+[backend:bind9:6a5032b6-2d96-43ee-b25b-7d784e2bf3b2]
 # host = 127.0.0.1
 # port = 53

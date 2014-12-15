@@ -1,5 +1,5 @@
 # lib/designate_plugins/backend-bind9
-# Configure the bind9 backend
+# Configure the bind9 pool backend
 
 # Enable with:
 # DESIGNATE_BACKEND_DRIVER=bind9
@@ -75,11 +75,18 @@ EOF
 
 # configure_designate_backend - make configuration changes, including those to other services
 function configure_designate_backend {
+    iniset $DESIGNATE_CONF service:pool_manager backends bind9
+    iniset $DESIGNATE_CONF service:mdns slave_nameserver_ips_and_ports "$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT_DNS"
+
+    iniset $DESIGNATE_CONF backend:bind9 masters $DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT_MDNS
+    iniset $DESIGNATE_CONF backend:bind9 server_ids $DESIGNATE_SERVER_ID
     iniset $DESIGNATE_CONF backend:bind9 rndc_port $DESIGNATE_SERVICE_PORT_RNDC
     iniset $DESIGNATE_CONF backend:bind9 rndc_host $DESIGNATE_SERVICE_HOST
     iniset $DESIGNATE_CONF backend:bind9 rndc_config_file "$BIND_CFG_DIR/rndc.conf"
     iniset $DESIGNATE_CONF backend:bind9 rndc_key_file "$BIND_CFG_DIR/rndc.key"
-    iniset $DESIGNATE_CONF backend:bind9 nzf_path "$BIND_VAR_DIR"
+
+    iniset $DESIGNATE_CONF backend:bind9:$DESIGNATE_SERVER_ID host $DESIGNATE_SERVICE_HOST
+    iniset $DESIGNATE_CONF backend:bind9:$DESIGNATE_SERVER_ID port $DESIGNATE_SERVICE_PORT_DNS
 
     sudo chown $STACK_USER $BIND_CFG_DIR
 
@@ -140,7 +147,7 @@ function stop_designate_backend {
 # cleanup_designate_backend - remove transient data and cache
 function cleanup_designate_backend {
     sudo sh -c "rm -rf $BIND_VAR_DIR/*.nzf"
-    sudo sh -c "rm -rf $DESIGNATE_STATE_PATH/*.zone"
+    sudo sh -c "rm -rf $BIND_VAR_DIR/slave.*"
     sudo rm -f $BIND_CFG_DIR/rndc.key
 }
 
