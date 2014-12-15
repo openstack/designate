@@ -22,6 +22,7 @@ from designate import utils
 from designate.api.v2.controllers import rest
 from designate.api.v2.views import recordsets as recordsets_view
 from designate.objects import RecordSet
+from designate.objects import Record
 
 
 LOG = logging.getLogger(__name__)
@@ -147,12 +148,42 @@ class RecordSetsController(rest.RestController):
         # Convert to APIv2 Format
         recordset_data = self._view.show(context, request, recordset)
         recordset_data = utils.deep_dict_merge(recordset_data, body)
+        new_recordset = self._view.load(context, request, body)
 
         # Validate the new set of data
         self._resource_schema.validate(recordset_data)
 
-        # Update and persist the resource
-        recordset.update(self._view.load(context, request, body))
+        # Get original list of Records
+        original_records = set()
+        for record in recordset.records:
+            original_records.add(record.data)
+        # Get new list of Records
+        new_records = set()
+        if 'records' in new_recordset:
+            for record in new_recordset['records']:
+                new_records.add(record.data)
+        # Get differences of Records
+        records_to_add = new_records.difference(original_records)
+        records_to_rm = original_records.difference(new_records)
+
+        # Update all items except records
+        record_update = False
+        if 'records' in new_recordset:
+            record_update = True
+            del new_recordset['records']
+        recordset.update(new_recordset)
+
+        # Remove deleted records if we haver provided a records array
+        if record_update:
+            for record in recordset.records:
+                if record.data in records_to_rm:
+                    recordset.records.remove(record)
+
+        # Add new records
+        for record in records_to_add:
+            recordset.records.append(Record(data=record))
+
+        # Persist the resource
         recordset = self.central_api.update_recordset(context, recordset)
 
         response.status_int = 200
