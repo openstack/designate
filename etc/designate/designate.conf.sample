@@ -132,6 +132,7 @@ debug = False
 # Pool Manager Service
 #-----------------------
 [service:pool_manager]
+#backends = bind9_pool
 #workers = None
 #pool_name = default
 #threshold-percentage = 100
@@ -267,7 +268,8 @@ debug = False
 #-----------------------
 # Global Bind9 Pool Backend
 #-----------------------
-[backend:bind9_pool:*]
+[backend:bind9_pool]
+#server_ids = 6a5032b6-2d96-43ee-b25b-7d784e2bf3b2
 #masters = 127.0.0.1:5354
 #rndc_host = 127.0.0.1
 #rndc_port = 953

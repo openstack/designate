@@ -37,21 +37,6 @@ LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
 TSIG_SUPPORTED_ALGORITHMS = ['hmac-md5']
 
-CONF.register_group(cfg.OptGroup(
-    name='backend:powerdns', title="Configuration for Powerdns Backend"
-))
-
-CONF.register_opts([
-    cfg.StrOpt('domain-type', default='NATIVE', help='PowerDNS Domain Type'),
-    cfg.ListOpt('also-notify', default=[], help='List of additional IPs to '
-                                                'send NOTIFYs to'),
-] + options.database_opts, group='backend:powerdns')
-
-# Overide the default DB connection registered above, to avoid name conflicts
-# between the Designate and PowerDNS databases.
-CONF.set_default('connection', 'sqlite:///$state_path/powerdns.sqlite',
-                 group='backend:powerdns')
-
 
 def _map_col(keys, col):
     return dict([(keys[i], col[i]) for i in range(len(keys))])
@@ -59,6 +44,27 @@ def _map_col(keys, col):
 
 class PowerDNSBackend(base.Backend):
     __plugin_name__ = 'powerdns'
+
+    @classmethod
+    def get_cfg_opts(cls):
+        group = cfg.OptGroup(
+            name='backend:powerdns', title="Configuration for PowerDNS Backend"
+        )
+
+        opts = [
+            cfg.StrOpt('domain-type', default='NATIVE',
+                       help='PowerDNS Domain Type'),
+            cfg.ListOpt('also-notify', default=[],
+                        help='List of additional IPs to send NOTIFYs to'),
+        ] + options.database_opts
+
+        # TODO(kiall):
+        # Overide the default DB connection registered above, to avoid name
+        # conflicts between the Designate and PowerDNS databases.
+        # CONF.set_default('connection',
+        #                  'sqlite:///$state_path/powerdns.sqlite',
+        #                  group='backend:powerdns')
+        return [(group, opts)]
 
     def __init__(self, *args, **kwargs):
         super(PowerDNSBackend, self).__init__(*args, **kwargs)

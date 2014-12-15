@@ -91,6 +91,17 @@ def read_config(prog, argv):
     cfg.CONF(argv[1:], project='designate', prog=prog,
              default_config_files=config_files)
 
+    register_plugin_opts()
+
+
+def register_plugin_opts():
+    # Avoid circular dependency imports
+    from designate import plugin
+
+    # Register Backend Plugin Config Options
+    plugin.Plugin.register_cfg_opts('designate.backend')
+    plugin.Plugin.register_extra_cfg_opts('designate.backend')
+
 
 def resource_string(*args):
     if len(args) == 0:

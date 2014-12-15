@@ -30,29 +30,7 @@ from designate.i18n import _LW
 
 
 LOG = logging.getLogger(__name__)
-
-GROUP = 'backend:dynect'
-
-OPTS = [
-    cfg.StrOpt('customer_name', help="Customer name at DynECT."),
-    cfg.StrOpt('username', help="Username to auth with DynECT."),
-    cfg.StrOpt('password', help="Password to auth with DynECT.", secret=True),
-    cfg.ListOpt('masters',
-                help="Master servers from which to transfer from."),
-    cfg.StrOpt('contact_nickname',
-               help="Nickname that will receive notifications."),
-    cfg.StrOpt('tsig_key_name', help="TSIG key name."),
-    cfg.IntOpt('job_timeout', default=30,
-               help="Timeout in seconds for pulling a job in DynECT."),
-    cfg.IntOpt('timeout', help="Timeout in seconds for API Requests.",
-               default=10),
-    cfg.BoolOpt('timings', help="Measure requests timings.", default=False)
-]
-
-cfg.CONF.register_group(
-    cfg.OptGroup(name=GROUP, title='Backend options for DynECT'))
-
-cfg.CONF.register_opts(OPTS, group=GROUP)
+CFG_GROUP = 'backend:dynect'
 
 
 class DynClientError(exceptions.Backend):
@@ -247,7 +225,7 @@ class DynClient(object):
         """
         status = response.status
 
-        timeout = Timeout(cfg.CONF[GROUP].job_timeout)
+        timeout = Timeout(cfg.CONF[CFG_GROUP].job_timeout)
         try:
             while status == 307:
                 time.sleep(1)
@@ -324,13 +302,39 @@ class DynECTBackend(base.Backend):
     """
     __plugin_name__ = 'dynect'
 
+    @classmethod
+    def get_cfg_opts(cls):
+        group = cfg.OptGroup(
+            name=CFG_GROUP, title='Backend options for DynECT'
+        )
+
+        opts = [
+            cfg.StrOpt('customer_name', help="Customer name at DynECT."),
+            cfg.StrOpt('username', help="Username to auth with DynECT."),
+            cfg.StrOpt('password', help="Password to auth with DynECT.",
+                       secret=True),
+            cfg.ListOpt('masters',
+                        help="Master servers from which to transfer from."),
+            cfg.StrOpt('contact_nickname',
+                       help="Nickname that will receive notifications."),
+            cfg.StrOpt('tsig_key_name', help="TSIG key name."),
+            cfg.IntOpt('job_timeout', default=30,
+                       help="Timeout in seconds for pulling a job in DynECT."),
+            cfg.IntOpt('timeout', help="Timeout in seconds for API Requests.",
+                       default=10),
+            cfg.BoolOpt('timings', help="Measure requests timings.",
+                        default=False)
+        ]
+
+        return [(group, opts)]
+
     def get_client(self):
         return DynClient(
-            customer_name=cfg.CONF[GROUP].customer_name,
-            user_name=cfg.CONF[GROUP].username,
-            password=cfg.CONF[GROUP].password,
-            timeout=cfg.CONF[GROUP].timeout,
-            timings=cfg.CONF[GROUP].timings)
+            customer_name=cfg.CONF[CFG_GROUP].customer_name,
+            user_name=cfg.CONF[CFG_GROUP].username,
+            password=cfg.CONF[CFG_GROUP].password,
+            timeout=cfg.CONF[CFG_GROUP].timeout,
+            timings=cfg.CONF[CFG_GROUP].timings)
 
     def create_domain(self, context, domain):
         LOG.info(_LI('Creating domain %(d_id)s / %(d_name)s') %
@@ -338,14 +342,14 @@ class DynECTBackend(base.Backend):
 
         url = '/Secondary/%s' % domain['name'].rstrip('.')
         data = {
-            'masters': cfg.CONF[GROUP].masters
+            'masters': cfg.CONF[CFG_GROUP].masters
         }
 
-        if cfg.CONF[GROUP].contact_nickname is not None:
-            data['contact_nickname'] = cfg.CONF[GROUP].contact_nickname
+        if cfg.CONF[CFG_GROUP].contact_nickname is not None:
+            data['contact_nickname'] = cfg.CONF[CFG_GROUP].contact_nickname
 
-        if cfg.CONF[GROUP].tsig_key_name is not None:
-            data['tsig_key_name'] = cfg.CONF[GROUP].tsig_key_name
+        if cfg.CONF[CFG_GROUP].tsig_key_name is not None:
+            data['tsig_key_name'] = cfg.CONF[CFG_GROUP].tsig_key_name
 
         client = self.get_client()
 

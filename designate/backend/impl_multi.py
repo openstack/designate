@@ -24,17 +24,7 @@ from designate.backend import base
 
 
 LOG = logging.getLogger(__name__)
-
-CFG_GRP = 'backend:multi'
-
-cfg.CONF.register_group(cfg.OptGroup(
-    name=CFG_GRP, title="Configuration for multi-backend Backend"
-))
-
-cfg.CONF.register_opts([
-    cfg.StrOpt('master', default='fake', help='Master backend'),
-    cfg.StrOpt('slave', default='fake', help='Slave backend'),
-], group=CFG_GRP)
+CFG_GROUP = 'backend:multi'
 
 
 class MultiBackend(base.Backend):
@@ -59,12 +49,25 @@ class MultiBackend(base.Backend):
     """
     __plugin_name__ = 'multi'
 
+    @classmethod
+    def get_cfg_opts(cls):
+        group = cfg.OptGroup(
+            name=CFG_GROUP, title="Configuration for multi-backend Backend"
+        )
+
+        opts = [
+            cfg.StrOpt('master', default='fake', help='Master backend'),
+            cfg.StrOpt('slave', default='fake', help='Slave backend'),
+        ]
+
+        return [(group, opts)]
+
     def __init__(self, central_service):
         super(MultiBackend, self).__init__(central_service)
         self.central = central_service
-        self.master = backend.get_backend(cfg.CONF[CFG_GRP].master,
+        self.master = backend.get_backend(cfg.CONF[CFG_GROUP].master,
                                           central_service)
-        self.slave = backend.get_backend(cfg.CONF[CFG_GRP].slave,
+        self.slave = backend.get_backend(cfg.CONF[CFG_GROUP].slave,
                                          central_service)
 
     def start(self):

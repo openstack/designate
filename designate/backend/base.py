@@ -14,10 +14,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import abc
+import copy
 
 from oslo.config import cfg
 
-import designate.pool_manager.backend_section_name as backend_section_name
 from designate.openstack.common import log as logging
 from designate.i18n import _LW
 from designate import exceptions
@@ -162,6 +162,69 @@ class Backend(DriverPlugin):
 
 
 class PoolBackend(Backend):
+    @classmethod
+    def get_cfg_opts(cls):
+        group = cfg.OptGroup(
+            name=cls.get_canonical_name(),
+            title='Backend options for %s Backend' % cls.get_plugin_name()
+        )
+
+        opts = [
+            cfg.ListOpt('server_ids', default=[]),
+            cfg.ListOpt('masters', default=['127.0.0.1:5354'],
+                        help='Comma-separated list of master DNS servers, in '
+                             '<ip-address>:<port> format. If <port> is '
+                             'omitted, the default 5354 is used. These are '
+                             'mdns servers.'),
+        ]
+
+        opts.extend(cls._get_common_cfg_opts())
+        opts.extend(cls._get_global_cfg_opts())
+
+        return [(group, opts)]
+
+    @classmethod
+    def get_extra_cfg_opts(cls):
+        # Common options fot all backends
+        opts = [
+            cfg.ListOpt('masters'),
+            cfg.StrOpt('host', default='127.0.0.1', help='Server Host'),
+            cfg.IntOpt('port', default=53, help='Server Port'),
+            cfg.StrOpt('tsig-key', help='Server TSIG Key'),
+        ]
+
+        # Backend specific common options
+        common_cfg_opts = copy.deepcopy(cls._get_common_cfg_opts())
+
+        # Ensure the default value for all common options is reset to None
+        for opt in common_cfg_opts:
+            opt.default = None
+
+        opts.extend(common_cfg_opts)
+
+        # Add any server only config options
+        opts.extend(cls._get_server_cfg_opts())
+
+        result = []
+        global_group = cls.get_canonical_name()
+
+        for server_id in cfg.CONF[global_group].server_ids:
+            group = cfg.OptGroup(name='%s:%s' % (global_group, server_id))
+            result.append((group, opts))
+
+        return result
+
+    @classmethod
+    def _get_common_cfg_opts(cls):
+        return []
+
+    @classmethod
+    def _get_global_cfg_opts(cls):
+        return []
+
+    @classmethod
+    def _get_server_cfg_opts(cls):
+        return []
 
     def __init__(self, backend_options):
         super(PoolBackend, self).__init__(None)
@@ -203,9 +266,15 @@ class PoolBackend(Backend):
         Create the backend_option object.  If a server specific backend option
         value exists, use it.  Otherwise use the global backend option value.
         """
-        value = cfg.CONF[server_section_name].get(key)
+        value = None
+        try:
+            value = cfg.CONF[server_section_name].get(key)
+        except cfg.NoSuchOptError:
+            pass
+
         if value is None:
             value = cfg.CONF[global_section_name].get(key)
+
         backend_option_values = {
             'key': key,
             'value': value
@@ -213,50 +282,12 @@ class PoolBackend(Backend):
         return objects.BackendOption(**backend_option_values)
 
     @classmethod
-    def _register_opts(cls, backend, server_id):
-        """
-        Register the global and server specific backend options.
-        """
-        global_section_name = backend_section_name \
-            .generate_global_section_name(backend)
-        server_section_name = backend_section_name \
-            .generate_server_section_name(backend, server_id)
-
-        # Register the global backend options.
-        global_opts = cls.get_cfg_opts()
-        cfg.CONF.register_group(cfg.OptGroup(name=global_section_name))
-        cfg.CONF.register_opts(global_opts, group=global_section_name)
-
-        # Register the server specific backend options.
-        server_opts = global_opts
-        server_opts.append(cfg.StrOpt('host', default='127.0.0.1',
-                                      help='Server Host'))
-        server_opts.append(cfg.IntOpt('port', default=53, help='Server Port'))
-        server_opts.append(cfg.StrOpt('tsig-key', help='Server TSIG Key'))
-        cfg.CONF.register_group(cfg.OptGroup(name=server_section_name))
-        cfg.CONF.register_opts(server_opts, group=server_section_name)
-
-        # Ensure the server specific backend options do not have a default
-        # value.  This is necessary so the default value does not override
-        # a global backend option value set in the configuration file.
-        for key in cfg.CONF[global_section_name].keys():
-            cfg.CONF.set_default(key, None, group=server_section_name)
-
-        return global_section_name, server_section_name
-
-    @abc.abstractmethod
-    def get_cfg_opts(self):
-        """
-        Get the configuration options.
-        """
-
-    @classmethod
     def get_server_object(cls, backend, server_id):
         """
         Get the server object from the backend driver for the server_id.
         """
-        global_section_name, server_section_name = cls._register_opts(
-            backend, server_id)
+        global_section_name = 'backend:%s' % (backend,)
+        server_section_name = 'backend:%s:%s' % (backend, server_id)
 
         backend_options = cls._create_backend_option_objects(
             global_section_name, server_section_name)

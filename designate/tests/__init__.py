@@ -339,6 +339,7 @@ class TestCase(base.BaseTestCase):
 
         # "Read" Configuration
         self.CONF([], project='designate')
+        utils.register_plugin_opts()
 
         self.useFixture(PolicyFixture())
         self.network_api = NetworkAPIFixture()

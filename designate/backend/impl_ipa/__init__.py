@@ -29,43 +29,7 @@ from designate.i18n import _LE
 
 LOG = logging.getLogger(__name__)
 
-cfg.CONF.register_group(cfg.OptGroup(
-    name='backend:ipa', title="Configuration for IPA Backend"
-))
-
 IPA_DEFAULT_PORT = 443
-
-OPTS = [
-    cfg.StrOpt('ipa-host', default='localhost.localdomain',
-               help='IPA RPC listener host - must be FQDN'),
-    cfg.IntOpt('ipa-port', default=IPA_DEFAULT_PORT,
-               help='IPA RPC listener port'),
-    cfg.StrOpt('ipa-client-keytab', default=None,
-               help='Kerberos client keytab file'),
-    cfg.StrOpt('ipa-auth-driver-class',
-               default='designate.backend.impl_ipa.auth.IPAAuth',
-               help='Class that implements the authentication '
-               'driver for IPA'),
-    cfg.StrOpt('ipa-ca-cert', default=None,
-               help='CA certificate for use with https to IPA'),
-    cfg.StrOpt('ipa-base-url', default='/ipa',
-               help='Base URL for IPA RPC, relative to host[:port]'),
-    cfg.StrOpt('ipa-json-url',
-               default='/json',
-               help='URL for IPA JSON RPC, relative to IPA base URL'),
-    cfg.IntOpt('ipa-connect-retries', default=1,
-               help='How many times Designate will attempt to retry '
-               'the connection to IPA before giving up'),
-    cfg.BoolOpt('ipa-force-ns-use', default=False,
-                help='IPA requires that a specified '
-                'name server or SOA MNAME is resolvable - if this '
-                'option is set, Designate will force IPA to use a '
-                'given name server even if it is not resolvable'),
-    cfg.StrOpt('ipa-version', default='2.65',
-               help='IPA RPC JSON version')
-]
-
-cfg.CONF.register_opts(OPTS, group='backend:ipa')
 
 
 class IPABaseError(exceptions.Backend):
@@ -181,6 +145,44 @@ def abs2rel_name(domain, rsetname):
 
 class IPABackend(base.Backend):
     __plugin_name__ = 'ipa'
+
+    @classmethod
+    def get_cfg_opts(cls):
+        group = cfg.OptGroup(
+            name='backend:ipa', title="Configuration for IPA Backend"
+        )
+
+        opts = [
+            cfg.StrOpt('ipa-host', default='localhost.localdomain',
+                       help='IPA RPC listener host - must be FQDN'),
+            cfg.IntOpt('ipa-port', default=IPA_DEFAULT_PORT,
+                       help='IPA RPC listener port'),
+            cfg.StrOpt('ipa-client-keytab', default=None,
+                       help='Kerberos client keytab file'),
+            cfg.StrOpt('ipa-auth-driver-class',
+                       default='designate.backend.impl_ipa.auth.IPAAuth',
+                       help='Class that implements the authentication '
+                       'driver for IPA'),
+            cfg.StrOpt('ipa-ca-cert', default=None,
+                       help='CA certificate for use with https to IPA'),
+            cfg.StrOpt('ipa-base-url', default='/ipa',
+                       help='Base URL for IPA RPC, relative to host[:port]'),
+            cfg.StrOpt('ipa-json-url',
+                       default='/json',
+                       help='URL for IPA JSON RPC, relative to IPA base URL'),
+            cfg.IntOpt('ipa-connect-retries', default=1,
+                       help='How many times Designate will attempt to retry '
+                       'the connection to IPA before giving up'),
+            cfg.BoolOpt('ipa-force-ns-use', default=False,
+                        help='IPA requires that a specified '
+                        'name server or SOA MNAME is resolvable - if this '
+                        'option is set, Designate will force IPA to use a '
+                        'given name server even if it is not resolvable'),
+            cfg.StrOpt('ipa-version', default='2.65',
+                       help='IPA RPC JSON version')
+        ]
+
+        return [(group, opts)]
 
     def start(self):
         LOG.debug('IPABackend start')
