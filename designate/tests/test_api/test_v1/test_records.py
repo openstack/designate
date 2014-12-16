@@ -350,6 +350,16 @@ class ApiV1RecordsTest(ApiV1Test):
         self.get('domains/2fdadfb1cf964259ac6bbb7b6d2ff980/records',
                  status_code=404)
 
+    def test_get_record_missing(self):
+        self.get('domains/%s/records/2fdadfb1-cf96-4259-ac6b-'
+                 'bb7b6d2ff980' % self.domain['id'],
+                 status_code=404)
+
+    def test_get_record_with_invalid_id(self):
+        self.get('domains/%s/records/2fdadfb1-cf96-4259-ac6b-'
+                 'bb7b6d2ff980GH' % self.domain['id'],
+                 status_code=404)
+
     def test_get_record(self):
         # Create a record
         record = self.create_record(self.domain, self.recordset)
@@ -498,4 +508,9 @@ class ApiV1RecordsTest(ApiV1Test):
     def test_delete_record_invalid_domain_id(self):
         self.delete('domains/2fdadfb1cf964259ac6bbb7b6d2ff980/records/'
                     '2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980',
+                    status_code=404)
+
+    def test_delete_record_invalid_id(self):
+        self.delete('domains/%s/records/2fdadfb1-cf96-4259-ac6b-'
+                    'bb7b6d2ff980GH' % self.domain['id'],
                     status_code=404)
