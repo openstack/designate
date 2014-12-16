@@ -54,12 +54,6 @@ DNS Backend
 Backends are drivers for a particular DNS server.
 Designate supports multiple backend implementations, PowerDNS, BIND and MySQL BIND, you are also free to implement your own backend to fit your needs, as well as extensions to provide extra functionality to complement existing backends.
 
-.. _designate-agent:
-
-Designate Agent
------------------------
-designate-agents are optional components that interact with DNS servers.  Agents are alternatives to backend plugins in :ref:`designate-central`. Agents communicate with :ref:`designate-central` via the :ref:`message-queue`.
-
 .. _message-queue:
 
 Message Queue

@@ -22,10 +22,6 @@ Glossary
 
 .. glossary::
 
-   agent
-     Software service running on nodes that executes actions towards typically
-     nameservers like BIND or similar.
-
    central
      Software service running on a central management node that stores
      information persistently in a backend storage using a configurable driver

@@ -52,7 +52,6 @@ Instructions
 
        # Optional Designate services
        #ENABLED_SERVICES+=,designate-sink
-       #ENABLED_SERVICES+=,designate-agent
 
        # ** Everything below is optional ***
 
