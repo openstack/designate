@@ -45,9 +45,6 @@ function install_designate_backend {
 
 # configure_designate_backend - make configuration changes, including those to other services
 function configure_designate_backend {
-    # mDNS Service Settings
-    iniset $DESIGNATE_CONF service:mdns slave_nameserver_ips_and_ports "$DESIGNATE_DYNECT_SLAVES"
-
     # DynECT Backend Settings
     iniset $DESIGNATE_CONF backend:dynect masters "$DESIGNATE_DYNECT_MASTERS"
     iniset $DESIGNATE_CONF backend:dynect customer_name "$DESIGNATE_DYNECT_CUSTOMER"

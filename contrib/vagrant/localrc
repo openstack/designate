@@ -22,7 +22,6 @@ ENABLED_SERVICES+=,designate,designate-api,designate-central,designate-mdns,desi
 
 # Optional Designate services
 #ENABLED_SERVICES+=,designate-sink
-#ENABLED_SERVICES+=,designate-agent
 
 # Optional TLS Proxy
 #ENABLED_SERVICES+=,tls-proxy

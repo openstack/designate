@@ -47,7 +47,6 @@ function install_designate_backend {
 # configure_designate_backend - make configuration changes, including those to other services
 function configure_designate_backend {
     iniset $DESIGNATE_CONF service:pool_manager backends powerdns
-    iniset $DESIGNATE_CONF service:mdns slave_nameserver_ips_and_ports "$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT_DNS"
 
     iniset $DESIGNATE_CONF backend:powerdns server_ids $DESIGNATE_SERVER_ID
     iniset $DESIGNATE_CONF backend:powerdns connection `database_connection_url designate_pdns`

@@ -179,6 +179,7 @@ class Service(service.RPCService):
 
         for server_backend in self.server_backends:
             server = server_backend['server']
+            # PowerDNS needs a notify for the AXFR to happen reliably.
             self.mdns_api.notify_zone_changed(
                 context, domain, self._get_destination(server), self.timeout,
                 self.retry_interval, self.max_retries, 0)

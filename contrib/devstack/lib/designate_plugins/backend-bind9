@@ -76,7 +76,6 @@ EOF
 # configure_designate_backend - make configuration changes, including those to other services
 function configure_designate_backend {
     iniset $DESIGNATE_CONF service:pool_manager backends bind9
-    iniset $DESIGNATE_CONF service:mdns slave_nameserver_ips_and_ports "$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT_DNS"
 
     iniset $DESIGNATE_CONF backend:bind9 masters $DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT_MDNS
     iniset $DESIGNATE_CONF backend:bind9 server_ids $DESIGNATE_SERVER_ID

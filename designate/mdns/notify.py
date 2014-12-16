@@ -61,18 +61,9 @@ class NotifyEndpoint(object):
             The return value is just used for testing and not by pool manager.
         """
         time.sleep(delay)
-        # TODO(vinod): Remove the following code for
-        # setting destination from config once pool manager calls mdns
-        if (destination is None):
-            for slave in CONF['service:mdns'].slave_nameserver_ips_and_ports:
-                self._make_and_send_dns_message(
-                    domain, slave, CONF['service:mdns'].notify_timeout,
-                    CONF['service:mdns'].notify_retry_interval,
-                    CONF['service:mdns'].notify_retries, notify=True)
-        else:
-            return self._make_and_send_dns_message(
-                domain, destination, timeout, retry_interval, max_retries,
-                notify=True)
+        return self._make_and_send_dns_message(
+            domain, destination, timeout, retry_interval, max_retries,
+            notify=True)
 
     def poll_for_serial_number(self, context, domain, destination, timeout,
                                retry_interval, max_retries, delay):
