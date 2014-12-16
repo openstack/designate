@@ -8,9 +8,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Designate\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-07-28 06:06+0000\n"
-"PO-Revision-Date: 2014-07-25 23:07+0000\n"
-"Last-Translator: Andi Chandler <andi@gowling.com>\n"
+"POT-Creation-Date: 2014-12-16 06:16+0000\n"
+"PO-Revision-Date: 2014-12-15 22:08+0000\n"
+"Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: English (United Kingdom) (http://www.transifex.com/projects/p/"
 "designate/language/en_GB/)\n"
 "Language: en_GB\n"
@@ -20,35 +20,21 @@ msgstr ""
 "Generated-By: Babel 1.3\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: designate/api/middleware.py:148
+#: designate/api/middleware.py:144
 msgid "Starting designate testcontext middleware"
 msgstr "Starting designate testcontext middleware"
 
-#: designate/api/middleware.py:149
+#: designate/api/middleware.py:145
 msgid "**** DO NOT USE IN PRODUCTION ****"
 msgstr "**** DO NOT USE IN PRODUCTION ****"
 
-#: designate/backend/impl_powerdns/__init__.py:153
-#, python-format
-msgid ""
-"Attempted to delete a TSIG key which is not present in the backend. ID: %s"
-msgstr ""
-"Attempted to delete a TSIG key which is not present in the backend. ID: %s"
-
-#: designate/backend/impl_powerdns/__init__.py:253
+#: designate/backend/impl_powerdns/__init__.py:140
 #, python-format
 msgid ""
 "Attempted to delete a domain which is not present in the backend. ID: %s"
 msgstr ""
 "Attempted to delete a domain which is not present in the backend. ID: %s"
 
-#: designate/backend/impl_powerdns/__init__.py:334
-#, python-format
-msgid ""
-"Attempted to delete a record which is not present in the backend. ID: %s"
-msgstr ""
-"Attempted to delete a record which is not present in the backend. ID: %s"
-
-#: designate/central/service.py:575
+#: designate/central/service.py:862
 msgid "No servers configured. Please create at least one server"
 msgstr "No servers configured. Please create at least one server"

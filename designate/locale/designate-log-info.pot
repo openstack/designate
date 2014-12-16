@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: designate 2015.1.dev147.ge7b06b2\n"
+"Project-Id-Version: designate 2015.1.dev171.ga3fc0ec\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-12-11 06:09+0000\n"
+"POT-Creation-Date: 2014-12-16 06:16+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -48,460 +48,381 @@ msgstr ""
 msgid "Using api-paste-config found at: %s"
 msgstr ""
 
-#: designate/backend/impl_dynect.py:336
+#: designate/backend/impl_dynect.py:340
 #, python-format
 msgid "Creating domain %(d_id)s / %(d_name)s"
 msgstr ""
 
-#: designate/backend/impl_dynect.py:355
+#: designate/backend/impl_dynect.py:359
 #, python-format
 msgid "Domain already exists, updating existing domain instead %s"
 msgstr ""
 
-#: designate/backend/impl_dynect.py:369
+#: designate/backend/impl_dynect.py:373
 #, python-format
 msgid "Deleting domain %(d_id)s / %(d_name)s"
 msgstr ""
 
-#: designate/backend/impl_fake.py:30
-#, python-format
-msgid "Create TSIG Key %r"
-msgstr ""
-
-#: designate/backend/impl_fake.py:33
-#, python-format
-msgid "Update TSIG Key %r"
-msgstr ""
-
-#: designate/backend/impl_fake.py:36
-#, python-format
-msgid "Delete TSIG Key %r"
-msgstr ""
-
-#: designate/backend/impl_fake.py:39
-#, python-format
-msgid "Create Server %r"
-msgstr ""
-
-#: designate/backend/impl_fake.py:42
-#, python-format
-msgid "Update Server %r"
-msgstr ""
-
-#: designate/backend/impl_fake.py:45
-#, python-format
-msgid "Delete Server %r"
-msgstr ""
-
-#: designate/backend/impl_fake.py:48
+#: designate/backend/impl_fake.py:28
 #, python-format
 msgid "Create Domain %r"
 msgstr ""
 
-#: designate/backend/impl_fake.py:51
-#, python-format
-msgid "Update Domain %r"
-msgstr ""
-
-#: designate/backend/impl_fake.py:54
+#: designate/backend/impl_fake.py:31
 #, python-format
 msgid "Delete Domain %r"
 msgstr ""
 
-#: designate/backend/impl_fake.py:57
-#, python-format
-msgid "Create RecordSet %(domain)r / %(recordset)r"
-msgstr ""
-
-#: designate/backend/impl_fake.py:61
-#, python-format
-msgid "Update RecordSet %(domain)r / %(recordset)r"
-msgstr ""
-
-#: designate/backend/impl_fake.py:65
-#, python-format
-msgid "Delete RecordSet %(domain)r / %(recordset)r"
-msgstr ""
-
-#: designate/backend/impl_fake.py:69
-#, python-format
-msgid "Create Record %(domain)r / %(recordset)r / %(record)r"
-msgstr ""
-
-#: designate/backend/impl_fake.py:73
-#, python-format
-msgid "Update Record %(domain)r / %(recordset)r / %(record)r"
-msgstr ""
-
-#: designate/backend/impl_fake.py:77
-#, python-format
-msgid "Delete Record %(domain)r / %(recordset)r / %(record)r"
-msgstr ""
-
-#: designate/backend/impl_fake.py:81
-#, python-format
-msgid "Sync Domain %(domain)r / %(records)r"
-msgstr ""
-
-#: designate/backend/impl_fake.py:85
-#, python-format
-msgid "Sync Record %(domain)r / %(record)r"
-msgstr ""
-
-#: designate/backend/impl_fake.py:89
-msgid "Ping"
-msgstr ""
-
-#: designate/central/rpcapi.py:59
+#: designate/central/rpcapi.py:75
 msgid "get_absolute_limits: Calling central's get_absolute_limits."
 msgstr ""
 
-#: designate/central/rpcapi.py:66
+#: designate/central/rpcapi.py:82
 msgid "get_quotas: Calling central's get_quotas."
 msgstr ""
 
-#: designate/central/rpcapi.py:71
+#: designate/central/rpcapi.py:87
 msgid "get_quota: Calling central's get_quota."
 msgstr ""
 
-#: designate/central/rpcapi.py:77
+#: designate/central/rpcapi.py:93
 msgid "set_quota: Calling central's set_quota."
 msgstr ""
 
-#: designate/central/rpcapi.py:83
+#: designate/central/rpcapi.py:99
 msgid "reset_quotas: Calling central's reset_quotas."
 msgstr ""
 
-#: designate/central/rpcapi.py:89
+#: designate/central/rpcapi.py:105
 msgid "create_server: Calling central's create_server."
 msgstr ""
 
-#: designate/central/rpcapi.py:95
+#: designate/central/rpcapi.py:111
 msgid "find_servers: Calling central's find_servers."
 msgstr ""
 
-#: designate/central/rpcapi.py:102
+#: designate/central/rpcapi.py:118
 msgid "get_server: Calling central's get_server."
 msgstr ""
 
-#: designate/central/rpcapi.py:107
+#: designate/central/rpcapi.py:123
 msgid "update_server: Calling central's update_server."
 msgstr ""
 
-#: designate/central/rpcapi.py:112
+#: designate/central/rpcapi.py:128
 msgid "delete_server: Calling central's delete_server."
 msgstr ""
 
-#: designate/central/rpcapi.py:118
+#: designate/central/rpcapi.py:134
 msgid "create_tsigkey: Calling central's create_tsigkey."
 msgstr ""
 
-#: designate/central/rpcapi.py:123
+#: designate/central/rpcapi.py:139
 msgid "find_tsigkeys: Calling central's find_tsigkeys."
 msgstr ""
 
-#: designate/central/rpcapi.py:129
+#: designate/central/rpcapi.py:145
 msgid "get_tsigkey: Calling central's get_tsigkey."
 msgstr ""
 
-#: designate/central/rpcapi.py:133
+#: designate/central/rpcapi.py:149
 msgid "update_tsigkey: Calling central's update_tsigkey."
 msgstr ""
 
-#: designate/central/rpcapi.py:137
+#: designate/central/rpcapi.py:153
 msgid "delete_tsigkey: Calling central's delete_tsigkey."
 msgstr ""
 
-#: designate/central/rpcapi.py:143
+#: designate/central/rpcapi.py:159
 msgid "find_tenants: Calling central's find_tenants."
 msgstr ""
 
-#: designate/central/rpcapi.py:147
+#: designate/central/rpcapi.py:163
 msgid "get_tenant: Calling central's get_tenant."
 msgstr ""
 
-#: designate/central/rpcapi.py:151
+#: designate/central/rpcapi.py:167
 msgid "count_tenants: Calling central's count_tenants."
 msgstr ""
 
-#: designate/central/rpcapi.py:156
+#: designate/central/rpcapi.py:172
 msgid "create_domain: Calling central's create_domain."
 msgstr ""
 
-#: designate/central/rpcapi.py:160
+#: designate/central/rpcapi.py:176
 msgid "get_domain: Calling central's get_domain."
 msgstr ""
 
-#: designate/central/rpcapi.py:164
+#: designate/central/rpcapi.py:180
 msgid "get_domain_servers: Calling central's get_domain_servers."
 msgstr ""
 
-#: designate/central/rpcapi.py:171
+#: designate/central/rpcapi.py:187
 msgid "find_domains: Calling central's find_domains."
 msgstr ""
 
-#: designate/central/rpcapi.py:177
+#: designate/central/rpcapi.py:193
 msgid "find_domain: Calling central's find_domain."
 msgstr ""
 
-#: designate/central/rpcapi.py:181
+#: designate/central/rpcapi.py:197
 msgid "update_domain: Calling central's update_domain."
 msgstr ""
 
-#: designate/central/rpcapi.py:186
+#: designate/central/rpcapi.py:202
 msgid "delete_domain: Calling central's delete_domain."
 msgstr ""
 
-#: designate/central/rpcapi.py:190
+#: designate/central/rpcapi.py:206
 msgid "count_domains: Calling central's count_domains."
 msgstr ""
 
-#: designate/central/rpcapi.py:194
+#: designate/central/rpcapi.py:210
 msgid "touch_domain: Calling central's touch_domain."
 msgstr ""
 
-#: designate/central/rpcapi.py:199
+#: designate/central/rpcapi.py:215
 msgid "create_tld: Calling central's create_tld."
 msgstr ""
 
-#: designate/central/rpcapi.py:204
+#: designate/central/rpcapi.py:220
 msgid "find_tlds: Calling central's find_tlds."
 msgstr ""
 
-#: designate/central/rpcapi.py:210
+#: designate/central/rpcapi.py:226
 msgid "get_tld: Calling central's get_tld."
 msgstr ""
 
-#: designate/central/rpcapi.py:214
+#: designate/central/rpcapi.py:230
 msgid "update_tld: Calling central's update_tld."
 msgstr ""
 
-#: designate/central/rpcapi.py:218
+#: designate/central/rpcapi.py:234
 msgid "delete_tld: Calling central's delete_tld."
 msgstr ""
 
-#: designate/central/rpcapi.py:223
+#: designate/central/rpcapi.py:239
 msgid "create_recordset: Calling central's create_recordset."
 msgstr ""
 
-#: designate/central/rpcapi.py:228
+#: designate/central/rpcapi.py:244
 msgid "get_recordset: Calling central's get_recordset."
 msgstr ""
 
-#: designate/central/rpcapi.py:234
+#: designate/central/rpcapi.py:250
 msgid "find_recordsets: Calling central's find_recordsets."
 msgstr ""
 
-#: designate/central/rpcapi.py:241
+#: designate/central/rpcapi.py:257
 msgid "find_recordset: Calling central's find_recordset."
 msgstr ""
 
-#: designate/central/rpcapi.py:245
+#: designate/central/rpcapi.py:261
 msgid "update_recordset: Calling central's update_recordset."
 msgstr ""
 
-#: designate/central/rpcapi.py:252
+#: designate/central/rpcapi.py:268
 msgid "delete_recordset: Calling central's delete_recordset."
 msgstr ""
 
-#: designate/central/rpcapi.py:259
+#: designate/central/rpcapi.py:275
 msgid "count_recordsets: Calling central's count_recordsets."
 msgstr ""
 
-#: designate/central/rpcapi.py:266
+#: designate/central/rpcapi.py:282
 msgid "create_record: Calling central's create_record."
 msgstr ""
 
-#: designate/central/rpcapi.py:274
+#: designate/central/rpcapi.py:290
 msgid "get_record: Calling central's get_record."
 msgstr ""
 
-#: designate/central/rpcapi.py:282
+#: designate/central/rpcapi.py:298
 msgid "find_records: Calling central's find_records."
 msgstr ""
 
-#: designate/central/rpcapi.py:288
+#: designate/central/rpcapi.py:304
 msgid "find_record: Calling central's find_record."
 msgstr ""
 
-#: designate/central/rpcapi.py:292
+#: designate/central/rpcapi.py:308
 msgid "update_record: Calling central's update_record."
 msgstr ""
 
-#: designate/central/rpcapi.py:299
+#: designate/central/rpcapi.py:315
 msgid "delete_record: Calling central's delete_record."
 msgstr ""
 
-#: designate/central/rpcapi.py:307
+#: designate/central/rpcapi.py:323
 msgid "count_records: Calling central's count_records."
 msgstr ""
 
-#: designate/central/rpcapi.py:312
+#: designate/central/rpcapi.py:328
 msgid "count_report: Calling central's count_report."
 msgstr ""
 
-#: designate/central/rpcapi.py:317
+#: designate/central/rpcapi.py:333
 msgid "sync_domains: Calling central's sync_domains."
 msgstr ""
 
-#: designate/central/rpcapi.py:321
+#: designate/central/rpcapi.py:337
 msgid "sync_domain: Calling central's sync_domains."
 msgstr ""
 
-#: designate/central/rpcapi.py:325
+#: designate/central/rpcapi.py:341
 msgid "sync_record: Calling central's sync_record."
 msgstr ""
 
-#: designate/central/rpcapi.py:332
+#: designate/central/rpcapi.py:348
 msgid "list_floatingips: Calling central's list_floatingips."
 msgstr ""
 
-#: designate/central/rpcapi.py:336
+#: designate/central/rpcapi.py:352
 msgid "get_floatingip: Calling central's get_floatingip."
 msgstr ""
 
-#: designate/central/rpcapi.py:341
+#: designate/central/rpcapi.py:357
 msgid "update_floatingip: Calling central's update_floatingip."
 msgstr ""
 
-#: designate/central/rpcapi.py:348
+#: designate/central/rpcapi.py:364
 msgid "create_blacklist: Calling central's create_blacklist"
 msgstr ""
 
-#: designate/central/rpcapi.py:353
+#: designate/central/rpcapi.py:369
 msgid "get_blacklist: Calling central's get_blacklist."
 msgstr ""
 
-#: designate/central/rpcapi.py:359
+#: designate/central/rpcapi.py:375
 msgid "find_blacklists: Calling central's find_blacklists."
 msgstr ""
 
-#: designate/central/rpcapi.py:365
+#: designate/central/rpcapi.py:381
 msgid "find_blacklist: Calling central's find_blacklist."
 msgstr ""
 
-#: designate/central/rpcapi.py:369
+#: designate/central/rpcapi.py:385
 msgid "update_blacklist: Calling central's update_blacklist."
 msgstr ""
 
-#: designate/central/rpcapi.py:374
+#: designate/central/rpcapi.py:390
 msgid "delete_blacklist: Calling central's delete blacklist."
 msgstr ""
 
-#: designate/central/rpcapi.py:380
+#: designate/central/rpcapi.py:396
 msgid "create_pool: Calling central's create_pool."
 msgstr ""
 
-#: designate/central/rpcapi.py:386
+#: designate/central/rpcapi.py:402
 msgid "find_pools: Calling central's find_pools."
 msgstr ""
 
-#: designate/central/rpcapi.py:393
+#: designate/central/rpcapi.py:409
 msgid "find_pool: Calling central's find_pool."
 msgstr ""
 
-#: designate/central/rpcapi.py:398
+#: designate/central/rpcapi.py:414
 msgid "get_pool: Calling central's get_pool."
 msgstr ""
 
-#: designate/central/rpcapi.py:403
+#: designate/central/rpcapi.py:419
 msgid "update_pool: Calling central's update_pool."
 msgstr ""
 
-#: designate/central/rpcapi.py:408
+#: designate/central/rpcapi.py:424
 msgid "delete_pool: Calling central's delete_pool."
 msgstr ""
 
-#: designate/central/rpcapi.py:414
+#: designate/central/rpcapi.py:430
 msgid "update_status: Calling central's update_status."
 msgstr ""
 
-#: designate/central/rpcapi.py:421
+#: designate/central/rpcapi.py:437
 msgid ""
 "create_zone_transfer_request:                      Calling central's "
 "create_zone_transfer_request."
 msgstr ""
 
-#: designate/central/rpcapi.py:430
+#: designate/central/rpcapi.py:446
 msgid ""
 "get_zone_transfer_request:                      Calling central's "
 "get_zone_transfer_request."
 msgstr ""
 
-#: designate/central/rpcapi.py:440
+#: designate/central/rpcapi.py:456
 msgid ""
 "find_zone_transfer_requests:                      Calling central's "
 "find_zone_transfer_requests."
 msgstr ""
 
-#: designate/central/rpcapi.py:449
+#: designate/central/rpcapi.py:465
 msgid ""
 "find_zone_transfer_request:                      Calling central's "
 "find_zone_transfer_request."
 msgstr ""
 
-#: designate/central/rpcapi.py:457
+#: designate/central/rpcapi.py:473
 msgid ""
 "update_zone_transfer_request:                      Calling central's "
 "update_zone_transfer_request."
 msgstr ""
 
-#: designate/central/rpcapi.py:465
+#: designate/central/rpcapi.py:481
 msgid ""
 "delete_zone_transfer_request:                      Calling central's "
 "delete_zone_transfer_request."
 msgstr ""
 
-#: designate/central/rpcapi.py:474
+#: designate/central/rpcapi.py:490
 msgid ""
 "create_zone_transfer_accept:                      Calling central's "
 "create_zone_transfer_accept."
 msgstr ""
 
-#: designate/central/rpcapi.py:482
+#: designate/central/rpcapi.py:498
 msgid ""
 "get_zone_transfer_accept:                      Calling central's "
 "get_zone_transfer_accept."
 msgstr ""
 
-#: designate/central/rpcapi.py:492
+#: designate/central/rpcapi.py:508
 msgid ""
 "find_zone_transfer_accepts:                      Calling central's "
 "find_zone_transfer_accepts."
 msgstr ""
 
-#: designate/central/rpcapi.py:500
+#: designate/central/rpcapi.py:516
 msgid ""
 "find_zone_transfer_accept:                      Calling central's "
 "find_zone_transfer_accept."
 msgstr ""
 
-#: designate/central/rpcapi.py:508
+#: designate/central/rpcapi.py:524
 msgid ""
 "update_zone_transfer_accept:                      Calling central's "
 "update_zone_transfer_accept."
 msgstr ""
 
-#: designate/central/rpcapi.py:516
+#: designate/central/rpcapi.py:532
 msgid ""
 "delete_zone_transfer_accept:                      Calling central's "
 "delete_zone_transfer_accept."
 msgstr ""
 
-#: designate/central/service.py:227
+#: designate/central/service.py:209
 msgid "Checking for TLDs"
 msgstr ""
 
-#: designate/central/service.py:230
+#: designate/central/service.py:212
 msgid "NOT checking for TLDs"
 msgstr ""
 
-#: designate/central/service.py:1759
+#: designate/central/service.py:1775
 #, python-format
 msgid "Creating zone for %(fip_id)s:%(region)s - %(fip_addr)s zone %(zonename)s"
 msgstr ""
 
-#: designate/central/service.py:2119
+#: designate/central/service.py:2121
 msgid "Target Tenant ID found - using scoped policy"
 msgstr ""
 
@@ -524,14 +445,14 @@ msgstr ""
 msgid "Sending '%(msg)s' for '%(zone)s' to '%(server)s:%(port)d'."
 msgstr ""
 
-#: designate/mdns/rpcapi.py:46
+#: designate/mdns/rpcapi.py:62
 #, python-format
 msgid ""
 "notify_zone_changed: Calling mdns for zone '%(zone)s', serial "
 "'%(serial)s' to server '%(dst)s'"
 msgstr ""
 
-#: designate/mdns/rpcapi.py:60
+#: designate/mdns/rpcapi.py:76
 #, python-format
 msgid ""
 "poll_for_serial_number: Calling mdns for zone '%(zone)s', serial "
@@ -622,19 +543,19 @@ msgstr ""
 msgid "Waiting on %d children to exit"
 msgstr ""
 
-#: designate/pool_manager/rpcapi.py:46
+#: designate/pool_manager/rpcapi.py:62
 msgid "create_domain: Calling pool manager's create_domain."
 msgstr ""
 
-#: designate/pool_manager/rpcapi.py:51
+#: designate/pool_manager/rpcapi.py:67
 msgid "delete_domain: Calling pool manager's delete_domain."
 msgstr ""
 
-#: designate/pool_manager/rpcapi.py:56
+#: designate/pool_manager/rpcapi.py:72
 msgid "update_domain: Calling pool manager's update_domain."
 msgstr ""
 
-#: designate/pool_manager/rpcapi.py:62
+#: designate/pool_manager/rpcapi.py:78
 msgid "update_status: Calling pool manager's update_status."
 msgstr ""
 

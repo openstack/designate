@@ -8,9 +8,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Designate\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-10-06 06:06+0000\n"
-"PO-Revision-Date: 2014-10-04 04:48+0000\n"
-"Last-Translator: Rodrigo Felix de Almeida <rodrigofelixdealmeida@gmail.com>\n"
+"POT-Creation-Date: 2014-12-16 06:16+0000\n"
+"PO-Revision-Date: 2014-12-15 22:08+0000\n"
+"Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: Portuguese (Brazil) (http://www.transifex.com/projects/p/"
 "designate/language/pt_BR/)\n"
 "Language: pt_BR\n"
@@ -28,25 +28,12 @@ msgstr "Iniciando o middleware designate testcontext"
 msgid "**** DO NOT USE IN PRODUCTION ****"
 msgstr "**** NÃO USE EM PRODUÇÃO ****"
 
-#: designate/backend/impl_powerdns/__init__.py:224
-#, python-format
-msgid ""
-"Attempted to delete a TSIG key which is not present in the backend. ID: %s"
-msgstr ""
-"Tentado remover uma chave TSIG que não está presente no backend. ID: %s"
-
-#: designate/backend/impl_powerdns/__init__.py:295
+#: designate/backend/impl_powerdns/__init__.py:140
 #, python-format
 msgid ""
 "Attempted to delete a domain which is not present in the backend. ID: %s"
 msgstr "Tentado remover um domínio que não está presente no backend. ID: %s"
 
-#: designate/backend/impl_powerdns/__init__.py:398
-#, python-format
-msgid ""
-"Attempted to delete a record which is not present in the backend. ID: %s"
-msgstr "Tentado remover um registro que não está presente no backend. ID: %s"
-
-#: designate/central/service.py:758
+#: designate/central/service.py:862
 msgid "No servers configured. Please create at least one server"
 msgstr "Nenhum servidor configurado. Por favor, crie pelo menos um servidor"

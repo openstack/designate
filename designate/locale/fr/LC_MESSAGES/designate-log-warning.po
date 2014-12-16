@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Designate\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-12-11 06:09+0000\n"
-"PO-Revision-Date: 2014-12-10 13:59+0000\n"
+"POT-Creation-Date: 2014-12-16 06:16+0000\n"
+"PO-Revision-Date: 2014-12-15 23:33+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: French (http://www.transifex.com/projects/p/designate/"
 "language/fr/)\n"
@@ -40,14 +40,7 @@ msgstr ""
 "N'a pas pu supprimer l'enregistrement '%(record)s' dans le domaine "
 "'%(domain)s' pendant la sync. Message : %(message)s"
 
-#: designate/backend/impl_bind9.py:66
-#, python-format
-msgid "Domain %(d_name)s (%(d_id)s) missing from backend, recreating"
-msgstr ""
-"Domaine %(d_name)s (%(d_id)s) manquant dans le serveur, création à nouveau "
-"en cours"
-
-#: designate/backend/impl_dynect.py:377
+#: designate/backend/impl_dynect.py:381
 #, python-format
 msgid "Attempt to delete %(d_id)s / %(d_name)s caused 404, ignoring."
 msgstr ""
