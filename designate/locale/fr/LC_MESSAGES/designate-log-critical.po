@@ -8,9 +8,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Designate\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-10-12 06:18+0000\n"
-"PO-Revision-Date: 2014-10-09 03:13+0000\n"
-"Last-Translator: Corina Roe\n"
+"POT-Creation-Date: 2014-12-16 06:16+0000\n"
+"PO-Revision-Date: 2014-12-15 22:08+0000\n"
+"Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: French (http://www.transifex.com/projects/p/designate/"
 "language/fr/)\n"
 "Language: fr\n"
@@ -28,16 +28,7 @@ msgstr "Démarrage de Middleware Testcontext de Designate"
 msgid "**** DO NOT USE IN PRODUCTION ****"
 msgstr "**** NE PAS UTILISER EN PRODUCTION ****"
 
-#: designate/backend/impl_powerdns/__init__.py:224
-#, python-format
-msgid ""
-"Attempted to delete a TSIG key which is not present in the backend. ID: %s"
-msgstr ""
-"Tentative de suppression d'une clé TSIG non présente dans le serveur "
-"principal. ID : %s"
-
-#: designate/backend/impl_powerdns/__init__.py:295
-#: designate/backend/impl_powerdns_mdns/__init__.py:164
+#: designate/backend/impl_powerdns/__init__.py:140
 #, python-format
 msgid ""
 "Attempted to delete a domain which is not present in the backend. ID: %s"
@@ -45,14 +36,6 @@ msgstr ""
 "Tentative de suppression d'un domaine non présent dans le serveur principal. "
 "ID : %s"
 
-#: designate/backend/impl_powerdns/__init__.py:398
-#, python-format
-msgid ""
-"Attempted to delete a record which is not present in the backend. ID: %s"
-msgstr ""
-"Tentative de suppression d'un enregistrement non présent dans le serveur "
-"principal. ID : %s"
-
-#: designate/central/service.py:759
+#: designate/central/service.py:862
 msgid "No servers configured. Please create at least one server"
 msgstr "Aucun serveur n'est configuré. Veuillez en créer un au moins"

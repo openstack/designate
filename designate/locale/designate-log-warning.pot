@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: designate 2015.1.dev147.ge7b06b2\n"
+"Project-Id-Version: designate 2015.1.dev171.ga3fc0ec\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-12-11 06:09+0000\n"
+"POT-Creation-Date: 2014-12-16 06:16+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -33,12 +33,7 @@ msgid ""
 "Message: %(message)s"
 msgstr ""
 
-#: designate/backend/impl_bind9.py:66
-#, python-format
-msgid "Domain %(d_name)s (%(d_id)s) missing from backend, recreating"
-msgstr ""
-
-#: designate/backend/impl_dynect.py:377
+#: designate/backend/impl_dynect.py:381
 #, python-format
 msgid "Attempt to delete %(d_id)s / %(d_name)s caused 404, ignoring."
 msgstr ""
