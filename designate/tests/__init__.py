@@ -45,8 +45,6 @@ LOG = logging.getLogger(__name__)
 
 cfg.CONF.import_opt('storage_driver', 'designate.central',
                     group='service:central')
-cfg.CONF.import_opt('backend_driver', 'designate.central',
-                    group='service:central')
 cfg.CONF.import_opt('auth_strategy', 'designate.api',
                     group='service:api')
 cfg.CONF.import_opt('connection', 'designate.storage.impl_sqlalchemy',
@@ -301,7 +299,6 @@ class TestCase(base.BaseTestCase):
 
         self.config(
             storage_driver='sqlalchemy',
-            backend_driver='fake',
             group='service:central'
         )
 

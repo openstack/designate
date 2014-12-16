@@ -106,7 +106,7 @@ class Service(service.RPCService):
             server_id = section['server_id']
             server = backend.get_server_object(backend_driver, server_id)
 
-            backend_instance = backend.get_pool_backend(
+            backend_instance = backend.get_backend(
                 backend_driver, server.backend_options)
             server_backend = {
                 'server': server,
@@ -176,6 +176,12 @@ class Service(service.RPCService):
             status = SUCCESS_STATUS
         self.central_api.update_status(
             context, domain.id, status, domain.serial)
+
+        for server_backend in self.server_backends:
+            server = server_backend['server']
+            self.mdns_api.notify_zone_changed(
+                context, domain, self._get_destination(server), self.timeout,
+                self.retry_interval, self.max_retries, 0)
 
         for server_backend in self.server_backends:
             server = server_backend['server']

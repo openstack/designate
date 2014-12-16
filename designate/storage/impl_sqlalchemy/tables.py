@@ -33,7 +33,7 @@ TASK_STATUSES = ['ACTIVE', 'PENDING', 'DELETED', 'ERROR', 'COMPLETE']
 TSIG_ALGORITHMS = ['hmac-md5', 'hmac-sha1', 'hmac-sha224', 'hmac-sha256',
                    'hmac-sha384', 'hmac-sha512']
 POOL_PROVISIONERS = ['UNMANAGED']
-ACTIONS = ['ADD', 'DELETE', 'UPDATE', 'NONE']
+ACTIONS = ['CREATE', 'DELETE', 'UPDATE', 'NONE']
 
 metadata = MetaData()
 

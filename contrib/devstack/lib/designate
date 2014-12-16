@@ -88,6 +88,8 @@ function configure_designate {
     iniset $DESIGNATE_CONF DEFAULT state_path $DESIGNATE_STATE_PATH
     iniset $DESIGNATE_CONF DEFAULT root-helper sudo designate-rootwrap $DESIGNATE_ROOTWRAP_CONF
     iniset $DESIGNATE_CONF storage:sqlalchemy connection `database_connection_url designate`
+    iniset $DESIGNATE_CONF service:pool_manager pool_id $DESIGNATE_POOL_ID
+    iniset $DESIGNATE_CONF pool_manager_cache:sqlalchemy connection `database_connection_url designate_pool_manager`
     iniset $DESIGNATE_CONF service:api enabled_extensions_v1 $DESIGNATE_ENABLED_EXTENSIONS_V1
     iniset $DESIGNATE_CONF service:api enabled_extensions_v2 $DESIGNATE_ENABLED_EXTENSIONS_V2
 
@@ -117,17 +119,6 @@ function configure_designate {
         # Setup the Keystone Integration
         iniset $DESIGNATE_CONF service:api auth_strategy keystone
         configure_auth_token_middleware $DESIGNATE_CONF designate $DESIGNATE_AUTH_CACHE_DIR
-    fi
-
-    if is_service_enabled designate-agent; then
-        iniset $DESIGNATE_CONF service:central backend_driver rpc
-        iniset $DESIGNATE_CONF service:agent backend_driver $DESIGNATE_BACKEND_DRIVER
-    elif is_service_enabled designate-pool-manager; then
-        iniset $DESIGNATE_CONF service:central backend_driver pool_manager_proxy
-        iniset $DESIGNATE_CONF service:pool_manager pool_id $DESIGNATE_POOL_ID
-        iniset $DESIGNATE_CONF pool_manager_cache:sqlalchemy connection `database_connection_url designate_pool_manager`
-    else
-        iniset $DESIGNATE_CONF service:central backend_driver $DESIGNATE_BACKEND_DRIVER
     fi
 
     iniset $DESIGNATE_CONF service:api api_host $DESIGNATE_SERVICE_HOST
@@ -192,14 +183,11 @@ function init_designate {
     # Init and migrate designate database
     designate-manage database sync
 
-    if is_service_enabled designate-pool-manager; then
+    # (Re)create designate_pool_manager cache
+    recreate_database designate_pool_manager utf8
 
-        # (Re)create designate_pool_manager cache
-        recreate_database designate_pool_manager utf8
-
-        # Init and migrate designate pool-manager-cache
-        designate-manage pool-manager-cache sync
-    fi
+    # Init and migrate designate pool-manager-cache
+    designate-manage pool-manager-cache sync
 
     init_designate_backend
 }

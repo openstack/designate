@@ -81,7 +81,13 @@ class NeutronFloatingHandlerTest(TestCase, NotificationHandlerMixin):
         self.plugin.process_notification(
             self.admin_context, event_type, fixture['payload'])
 
-        # Ensure we now have exactly 0 records
+        # Simulate the record having been deleted on the backend
+        domain_serial = self.central_service.get_domain(
+            self.admin_context, self.domain_id).serial
+        self.central_service.update_status(
+            self.admin_context, self.domain_id, "SUCCESS", domain_serial)
+
+        # Ensure we now have exactly 0 records, plus NS and SOA
         records = self.central_service.find_records(self.admin_context,
                                                     criterion)
 
@@ -103,7 +109,7 @@ class NeutronFloatingHandlerTest(TestCase, NotificationHandlerMixin):
 
         criterion = {'domain_id': self.domain_id}
 
-        # Ensure we start with at least 1 record, plus SOA & NS
+        # Ensure we start with at least 1 record, plus NS and SOA
         records = self.central_service.find_records(self.admin_context,
                                                     criterion)
         self.assertEqual(3, len(records))
@@ -111,7 +117,13 @@ class NeutronFloatingHandlerTest(TestCase, NotificationHandlerMixin):
         self.plugin.process_notification(
             self.admin_context, event_type, fixture['payload'])
 
-        # Ensure we now have exactly 0 records
+        # Simulate the record having been deleted on the backend
+        domain_serial = self.central_service.get_domain(
+            self.admin_context, self.domain_id).serial
+        self.central_service.update_status(
+            self.admin_context, self.domain_id, "SUCCESS", domain_serial)
+
+        # Ensure we now have exactly 0 records, plus NS and SOA
         records = self.central_service.find_records(self.admin_context,
                                                     criterion)
 

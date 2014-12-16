@@ -38,7 +38,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
         response = self.client.post_json('/zones/', {'zone': fixture})
 
         # Check the headers are what we expect
-        self.assertEqual(201, response.status_int)
+        self.assertEqual(202, response.status_int)
         self.assertEqual('application/json', response.content_type)
 
         # Check the body structure is what we expect
@@ -49,7 +49,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
         # Check the values returned are what we expect
         self.assertIn('id', response.json['zone'])
         self.assertIn('created_at', response.json['zone'])
-        self.assertEqual('ACTIVE', response.json['zone']['status'])
+        self.assertEqual('PENDING', response.json['zone']['status'])
         self.assertIsNone(response.json['zone']['updated_at'])
 
         for k in fixture:
@@ -190,7 +190,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
         # Check the values returned are what we expect
         self.assertIn('id', response.json['zone'])
         self.assertIn('created_at', response.json['zone'])
-        self.assertEqual('ACTIVE', response.json['zone']['status'])
+        self.assertEqual('PENDING', response.json['zone']['status'])
         self.assertIsNone(response.json['zone']['updated_at'])
         self.assertEqual(zone['name'], response.json['zone']['name'])
         self.assertEqual(zone['email'], response.json['zone']['email'])
@@ -230,10 +230,10 @@ class ApiV2ZonesTest(ApiV2TestCase):
         body = {'zone': {'email': 'prefix-%s' % zone['email']}}
 
         response = self.client.patch_json('/zones/%s' % zone['id'], body,
-                                          status=200)
+                                          status=202)
 
         # Check the headers are what we expect
-        self.assertEqual(200, response.status_int)
+        self.assertEqual(202, response.status_int)
         self.assertEqual('application/json', response.content_type)
 
         # Check the body structure is what we expect

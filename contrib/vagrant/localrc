@@ -18,7 +18,7 @@ LOG_COLOR=True
 ENABLED_SERVICES=rabbit,mysql,key
 
 # Enable core Designate services
-ENABLED_SERVICES+=,designate,designate-api,designate-central,designate-mdns
+ENABLED_SERVICES+=,designate,designate-api,designate-central,designate-mdns,designate-pool-manager
 
 # Optional Designate services
 #ENABLED_SERVICES+=,designate-sink
@@ -33,7 +33,7 @@ ENABLED_SERVICES+=,designate,designate-api,designate-central,designate-mdns
 # Optional Horizon Panels
 #ENABLED_SERVICES+=,horizon
 
-# Optional core OpenStack services (needed by horizon) 
+# Optional core OpenStack services (needed by horizon)
 #ENABLED_SERVICES+=,g-api,g-reg,n-api,n-crt,n-obj,n-cpu,n-net,n-cond,n-sch,n-novnc,n-xvnc,n-cauth
 
 # Designate Options
