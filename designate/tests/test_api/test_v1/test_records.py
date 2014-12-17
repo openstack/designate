@@ -182,6 +182,20 @@ class ApiV1RecordsTest(ApiV1Test):
         self.post('domains/%s/records' % self.domain['id'], data=fixture,
                   status_code=400)
 
+    def test_create_record_invalid_ttl(self):
+        fixture = self.get_record_fixture(self.recordset['type'])
+        fixture.update({
+            'name': self.recordset['name'],
+            'type': self.recordset['type'],
+        })
+
+        # Set the TTL to a invalid value
+        fixture['ttl'] = "$?!."
+
+        # Create a record, Ensuring it Fails with a 400
+        self.post('domains/%s/records' % self.domain['id'], data=fixture,
+                  status_code=400)
+
     @patch.object(central_service.Service, 'create_record',
                   side_effect=messaging.MessagingTimeout())
     def test_create_record_timeout(self, _):
@@ -411,6 +425,15 @@ class ApiV1RecordsTest(ApiV1Test):
         record = self.create_record(self.domain, self.recordset)
 
         data = {'ttl': 100, 'junk': 'Junk Field'}
+
+        self.put('domains/%s/records/%s' % (self.domain['id'], record['id']),
+                 data=data, status_code=400)
+
+    def test_update_record_negative_ttl(self):
+        # Create a record
+        record = self.create_record(self.domain, self.recordset)
+
+        data = {'ttl': -1}
 
         self.put('domains/%s/records/%s' % (self.domain['id'], record['id']),
                  data=data, status_code=400)
