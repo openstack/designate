@@ -24,9 +24,7 @@ from designate.backend import base
 
 
 LOG = logging.getLogger(__name__)
-CONF = cfg.CONF
-CFG_GROUP = 'backend:bind9_pool'
-DEFAULT_PORT = 5354
+DEFAULT_MASTER_PORT = 5354
 
 
 class Bind9Backend(base.PoolBackend):
@@ -57,7 +55,7 @@ class Bind9Backend(base.PoolBackend):
             (ip_address, port) = master.split(':', 1)
         except ValueError:
             ip_address = str(master)
-            port = DEFAULT_PORT
+            port = DEFAULT_MASTER_PORT
         try:
             port = int(port)
         except ValueError:
