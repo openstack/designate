@@ -45,9 +45,6 @@ debug = False
 # Central Service
 #-----------------------
 [service:central]
-# Driver used for backend communication (e.g. fake, bind9, powerdns)
-#backend_driver = fake
-
 # Maximum domain name length
 #max_domain_name_len = 255
 
@@ -127,13 +124,14 @@ debug = False
 [service:pool_manager]
 #backends = bind9
 #workers = None
-#pool_name = default
-#threshold-percentage = 100
-#poll-timeout = 30
-#poll-retry-interval = 2
-#poll-max-retries = 3
-#periodic-sync-interval = 120
-#cache-driver = sqlalchemy
+#pool_id = 794ccc2c-d751-44fe-b57f-8894c9f5c842
+#threshold_percentage = 100
+#poll_timeout = 30
+#poll_retry_interval = 2
+#poll_max_retries = 3
+#poll_delay = 1
+#periodic_sync_interval = 120
+#cache_driver = sqlalchemy
 
 ##############
 ## Network API

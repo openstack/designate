@@ -185,7 +185,7 @@ class PoolBackend(Backend):
 
     @classmethod
     def get_extra_cfg_opts(cls):
-        # Common options fot all backends
+        # Common options for all backends
         opts = [
             cfg.ListOpt('masters'),
             cfg.StrOpt('host', default='127.0.0.1', help='Server Host'),
