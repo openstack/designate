@@ -16,8 +16,8 @@
 from designate.objects import base
 
 
-class ZoneTransferRequest(base.DictObjectMixin, base.DesignateObject,
-                          base.PersistentObjectMixin):
+class ZoneTransferRequest(base.DictObjectMixin, base.PersistentObjectMixin,
+                          base.DesignateObject,):
     FIELDS = {
         'domain_id': {},
         'key': {},
@@ -25,11 +25,7 @@ class ZoneTransferRequest(base.DictObjectMixin, base.DesignateObject,
         'tenant_id': {},
         'target_tenant_id': {},
         'status': {},
-        'id': {},
-        'created_at': {},
         'domain_name': {},
-        'updated_at': {},
-        'version': {},
     }
 
 
