@@ -888,18 +888,17 @@ class Service(service.RPCService):
         domain.serial = utils.increment_serial()
 
         domain = self.storage.create_domain(context, domain)
-
-        if domain.obj_attr_is_set('recordsets'):
-            for rrset in domain.recordsets:
-                self._create_recordset_in_storage(
-                    context, domain, rrset, increment_serial=False)
-
         servers = self.storage.find_servers(context)
 
         # Create the SOA and NS recordsets for the new domain.  The SOA
         # record will always be the first 'created_at' record for a domain.
         self._create_soa(context, domain)
         self._create_ns(context, domain, servers)
+
+        if domain.obj_attr_is_set('recordsets'):
+            for rrset in domain.recordsets:
+                self._create_recordset_in_storage(
+                    context, domain, rrset, increment_serial=False)
 
         return domain
 

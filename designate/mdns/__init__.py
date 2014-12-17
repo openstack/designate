@@ -24,21 +24,6 @@ OPTS = [
                help='Number of mdns worker processes to spawn'),
     cfg.StrOpt('host', default='0.0.0.0',
                help='mDNS Bind Host'),
-    cfg.ListOpt('slave-nameserver-ips-and-ports', default=[],
-                help='Ips and ports of slave nameservers that are notified of '
-                     'zone changes. The format of each item in the list is'
-                     '"ipaddress:port"'),
-    cfg.IntOpt('notify-timeout', default=60,
-               help='The number of seconds to wait before the notify query '
-                    'times out.'),
-    cfg.IntOpt('notify-retry-interval', default=2,
-               help='The number of seconds to wait before retrying the notify'
-                    'query.'),
-    cfg.IntOpt('notify-retries', default=1,
-               help='The number of retries of a notify to a slave '
-                    'nameserver.  A notify-retries of 1 implies that on an '
-                    'error after sending a NOTIFY, there would not be any '
-                    'retries.  A 0 implies that NOTIFYs are not sent at all'),
     cfg.IntOpt('port', default=5354,
                help='mDNS Port Number'),
     cfg.IntOpt('tcp-backlog', default=100,
