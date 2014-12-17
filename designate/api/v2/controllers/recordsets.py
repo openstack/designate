@@ -55,7 +55,8 @@ class RecordSetsController(rest.RestController):
         self.central_api.get_domain(context, zone_id)
 
         # Extract the pagination params
-        marker, limit, sort_key, sort_dir = self._get_paging_params(params)
+        marker, limit, sort_key, sort_dir = utils.get_paging_params(
+            params, self.SORT_KEYS)
 
         # Extract any filter params.
         accepted_filters = ('name', 'type', 'ttl', 'data', )

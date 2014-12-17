@@ -81,8 +81,21 @@ debug = False
 # Enable Version 1 API
 #enable_api_v1 = True
 
+# Enabled API Version 1 extensions
+# Can be one or more of : diagnostics, quotas, reports, sync, touch
+#enabled_extensions_v1 =
+
 # Enable Version 2 API (experimental)
 #enable_api_v2 = False
+
+# Enabled API Version 2 extensions
+#enabled_extensions_v2 =
+
+# Default page size in the V2 API
+#default_limit_v2 = 20
+
+# Max page size in the V2 API
+#max_limit_v2 = 1000
 
 # Enable Admin API (experimental)
 #enable_api_admin = False
@@ -95,14 +108,6 @@ debug = False
 # This is only useful for development, and WILL break python-designateclient
 # if an error occurs
 #pecan_debug = False
-
-# Enabled API Version 1 extensions
-# Can be one or more of : diagnostics, quotas, reports, sync, touch
-#enabled_extensions_v1 =
-
-# Enabled API Version 2 extensions
-# Can be one or more of :
-#enabled_extensions_v2 =
 
 #-----------------------
 # Keystone Middleware

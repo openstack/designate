@@ -91,7 +91,10 @@ Pagination and Sorting
     using a combination of four optional query paramaters:
 
     * `marker` - denotes the ID of the last item in the previous list.
-    * `limit` - use to set the maximum number of items per page.
+    * `limit` - use to set the maximum number of items per page, use
+                "max" to return the upper limit of results as defined
+                by the operator. If not suppied, the default per page
+                limit as defined by the operator will be used.
     * `sort_key` - sorts the results by the specified attribute
 
         * By default, elements will be sorted by their creation date.
@@ -105,6 +108,8 @@ Pagination and Sorting
     To navigate the collection, the parameters limit and marker can be
     set in the URI (e.g.?limit=100&marker=<UUID>). Items are sorted, as
     a default, by create time in ascending order.
+
+
 
     Collection responses will include a `links` object containing absolute
     URLs for the current and next page. These links may be omitted, or
