@@ -88,6 +88,12 @@ class ApiV1DomainsTest(ApiV1Test):
         fixture['ttl'] = -1
         self.post('domains', data=fixture, status_code=400)
 
+    def test_create_domain_invalid_ttl(self):
+        # Create a domain
+        fixture = self.get_domain_fixture(0)
+        fixture['ttl'] = "$?>&"
+        self.post('domains', data=fixture, status_code=400)
+
     def test_create_domain_utf_description(self):
         # Create a server
         self.create_server()
@@ -266,6 +272,14 @@ class ApiV1DomainsTest(ApiV1Test):
         domain = self.create_domain()
 
         data = {'ttl': None}
+
+        self.put('domains/%s' % domain['id'], data=data, status_code=400)
+
+    def test_update_domain_negative_ttl(self):
+        # Create a domain
+        domain = self.create_domain()
+
+        data = {'ttl': -1}
 
         self.put('domains/%s' % domain['id'], data=data, status_code=400)
 

@@ -438,6 +438,15 @@ class ApiV1RecordsTest(ApiV1Test):
         self.put('domains/%s/records/%s' % (self.domain['id'], record['id']),
                  data=data, status_code=400)
 
+    def test_update_record_invalid_ttl(self):
+        # Create a record
+        record = self.create_record(self.domain, self.recordset)
+
+        data = {'ttl': "$?>%"}
+
+        self.put('domains/%s/records/%s' % (self.domain['id'], record['id']),
+                 data=data, status_code=400)
+
     def test_update_record_outside_domain_fail(self):
         # Create a record
         record = self.create_record(self.domain, self.recordset)
