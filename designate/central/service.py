@@ -2073,7 +2073,7 @@ class Service(service.RPCService):
 
         elif status == 'ERROR':
             if domain_or_record.status == 'PENDING' \
-                    and serial >= domain_or_record.serial:
+                    and (serial >= domain_or_record.serial or serial == 0):
                 domain_or_record.status = 'ERROR'
 
         return domain_or_record, deleted
