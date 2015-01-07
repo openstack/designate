@@ -41,7 +41,9 @@ OPTS = [
     cfg.IntOpt('poll-delay', default=1,
                help='The time to wait before sending the first request '
                     'to a server'),
-    cfg.IntOpt('periodic-sync-interval', default=120,
+    cfg.IntOpt('periodic-recovery-interval', default=120,
+               help='The time between recovering from failures'),
+    cfg.IntOpt('periodic-sync-interval', default=300,
                help='The time between synchronizing the servers with Storage'),
     cfg.StrOpt('cache-driver', default='sqlalchemy',
                help='The cache driver to use'),
