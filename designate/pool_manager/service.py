@@ -124,6 +124,10 @@ class Service(service.RPCService):
             backend_instance.start()
 
         self.thread_group.add_timer(
+            cfg.CONF['service:pool_manager'].periodic_recovery_interval,
+            self.periodic_recovery)
+
+        self.thread_group.add_timer(
             cfg.CONF['service:pool_manager'].periodic_sync_interval,
             self.periodic_sync)
 
@@ -263,16 +267,25 @@ class Service(service.RPCService):
                 self.central_api.update_status(
                     context, domain.id, ERROR_STATUS, error_serial)
 
-    def periodic_sync(self):
+    def periodic_recovery(self):
         """
         :return:
         """
-        LOG.debug("Calling periodic_sync.")
+        LOG.debug("Calling periodic_recovery.")
 
         context = self.admin_context
 
         self._periodic_create_domains_that_failed(context)
         self._periodic_delete_domains_that_failed(context)
+        self._periodic_update_domains_that_failed(context)
+
+    def periodic_sync(self):
+        """
+        :return: None
+        """
+        LOG.debug("Calling periodic_sync.")
+
+        context = self.admin_context
 
         criterion = {
             'pool_id': cfg.CONF['service:pool_manager'].pool_id
@@ -330,6 +343,20 @@ class Service(service.RPCService):
                         context, domain.id, SUCCESS_STATUS, domain.serial)
             except exceptions.Backend:
                 pass
+
+    def _periodic_update_domains_that_failed(self, context):
+
+        update_statuses = self._find_pool_manager_statuses(
+            context, UPDATE_ACTION, status=ERROR_STATUS)
+
+        for update_status in update_statuses:
+            domain = self.central_api.get_domain(
+                context, update_status.domain_id)
+            server = self._get_server_backend(
+                update_status.server_id)['server']
+
+            self._notify_zone_changed(context, domain, server)
+            self._poll_for_serial_number(context, domain, server)
 
     def _notify_zone_changed(self, context, domain, server):
         self.mdns_api.notify_zone_changed(

@@ -130,7 +130,8 @@ debug = False
 #poll_retry_interval = 2
 #poll_max_retries = 3
 #poll_delay = 1
-#periodic_sync_interval = 120
+#periodic_recovery_interval = 120
+#periodic_sync_interval = 300
 #cache_driver = sqlalchemy
 
 ##############
