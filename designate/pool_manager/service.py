@@ -198,8 +198,8 @@ class Service(service.RPCService):
                 # PowerDNS needs to explicitly send a NOTIFY for the AXFR to
                 # happen whereas BIND9 does an AXFR implicitly after the domain
                 # is created.  Sending a NOTIFY for all cases.
-                self._notify_servers_zone_changed(context, domain)
-                self._poll_servers_for_serial_number(context, domain)
+                self._notify_zone_changed(context, domain, server)
+                self._poll_for_serial_number(context, domain, server)
 
     @execute_on_pool(cfg.CONF['service:pool_manager'].pool_id)
     def delete_domain(self, context, domain):
