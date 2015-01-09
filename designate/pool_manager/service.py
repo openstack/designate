@@ -169,26 +169,17 @@ class Service(service.RPCService):
                 self._store_in_cache(context, create_status)
                 update_status = self._create_update_status(server, domain)
                 update_status.serial_number = 0
+                # Setting the update status to ERROR ensures the periodic
+                # recovery is run if there is a problem.
+                update_status.status = ERROR_STATUS
                 self._store_in_cache(context, update_status)
 
-        status = ERROR_STATUS
-        if self._is_create_consensus(context, domain):
-            status = SUCCESS_STATUS
-        self.central_api.update_status(
-            context, domain.id, status, domain.serial)
-
-        for server_backend in self.server_backends:
-            server = server_backend['server']
-            # PowerDNS needs a notify for the AXFR to happen reliably.
-            self.mdns_api.notify_zone_changed(
-                context, domain, self._get_destination(server), self.timeout,
-                self.retry_interval, self.max_retries, 0)
-
-        for server_backend in self.server_backends:
-            server = server_backend['server']
-            self.mdns_api.poll_for_serial_number(
-                context, domain, self._get_destination(server), self.timeout,
-                self.retry_interval, self.max_retries, self.delay)
+            if create_status.status == SUCCESS_STATUS:
+                # PowerDNS needs to explicitly send a NOTIFY for the AXFR to
+                # happen whereas BIND9 does an AXFR implicitly after the domain
+                # is created.  Sending a NOTIFY for all cases.
+                self._notify_servers_zone_changed(context, domain)
+                self._poll_servers_for_serial_number(context, domain)
 
     @execute_on_pool(cfg.CONF['service:pool_manager'].pool_id)
     def delete_domain(self, context, domain):
@@ -228,17 +219,8 @@ class Service(service.RPCService):
         LOG.debug("Calling update_domain.")
 
         LOG.debug('Serial %s for domain %s' % (domain.serial, domain.id))
-        for server_backend in self.server_backends:
-            server = server_backend['server']
-            self.mdns_api.notify_zone_changed(
-                context, domain, self._get_destination(server), self.timeout,
-                self.retry_interval, self.max_retries, 0)
-
-        for server_backend in self.server_backends:
-            server = server_backend['server']
-            self.mdns_api.poll_for_serial_number(
-                context, domain, self._get_destination(server), self.timeout,
-                self.retry_interval, self.max_retries, self.delay)
+        self._notify_servers_zone_changed(context, domain)
+        self._poll_servers_for_serial_number(context, domain)
 
     def update_status(self, context, domain, destination,
                       status, actual_serial):
@@ -277,13 +259,13 @@ class Service(service.RPCService):
                 context, domain, consensus_serial)
             LOG.debug('Error serial %s for domain %s'
                       % (error_serial, domain.id))
-            if error_serial > consensus_serial:
+            if error_serial > consensus_serial or error_serial == 0:
                 self.central_api.update_status(
                     context, domain.id, ERROR_STATUS, error_serial)
 
     def periodic_sync(self):
         """
-        :return: None
+        :return:
         """
         LOG.debug("Calling periodic_sync.")
 
@@ -297,8 +279,8 @@ class Service(service.RPCService):
         }
         domains = self.central_api.find_domains(context, criterion)
 
-        self._periodic_notify_zone_changed(context, domains)
-        self._periodic_poll_for_serial_number(context, domains)
+        self._periodic_notify_servers_zone_changed(context, domains)
+        self._periodic_poll_servers_for_serial_number(context, domains)
 
     def _periodic_create_domains_that_failed(self, context):
 
@@ -306,22 +288,21 @@ class Service(service.RPCService):
             context, CREATE_ACTION, status=ERROR_STATUS)
 
         for create_status in create_statuses:
+
             domain = self.central_api.get_domain(
                 context, create_status.domain_id)
-            consensus_existed = self._is_create_consensus(context, domain)
+            server_backend = self._get_server_backend(create_status.server_id)
+            server = server_backend['server']
+            backend_instance = server_backend['backend_instance']
 
-            backend_instance = self._get_server_backend(
-                create_status.server_id)['backend_instance']
             try:
                 with wrap_backend_call():
                     backend_instance.create_domain(context, domain)
                 create_status.status = SUCCESS_STATUS
                 self._store_in_cache(context, create_status)
 
-                if not consensus_existed \
-                        and self._is_create_consensus(context, domain):
-                    self.central_api.update_status(
-                        context, domain.id, SUCCESS_STATUS, domain.serial)
+                self._notify_zone_changed(context, domain, server)
+                self._poll_for_serial_number(context, domain, server)
             except exceptions.Backend:
                 pass
 
@@ -350,28 +331,36 @@ class Service(service.RPCService):
             except exceptions.Backend:
                 pass
 
-    def _periodic_notify_zone_changed(self, context, domains):
+    def _notify_zone_changed(self, context, domain, server):
+        self.mdns_api.notify_zone_changed(
+            context, domain, self._get_destination(server),
+            self.timeout, self.retry_interval, self.max_retries, 0)
 
+    def _notify_servers_zone_changed(self, context, domain):
+        for server_backend in self.server_backends:
+            server = server_backend['server']
+            update_status = self._retrieve_from_cache(
+                context, server, domain, UPDATE_ACTION)
+            if update_status.serial_number < domain.serial:
+                self._notify_zone_changed(context, domain, server)
+
+    def _periodic_notify_servers_zone_changed(self, context, domains):
         for domain in domains:
-            for server_backend in self.server_backends:
-                server = server_backend['server']
-                pool_manager_status = self._retrieve_from_cache(
-                    context, server, domain, UPDATE_ACTION)
-                if pool_manager_status.serial_number < domain.serial:
-                    self.mdns_api.notify_zone_changed(
-                        context, domain, self._get_destination(server),
-                        self.timeout, self.retry_interval, self.max_retries,
-                        0)
+            self._notify_servers_zone_changed(context, domain)
 
-    def _periodic_poll_for_serial_number(self, context, domains):
+    def _poll_for_serial_number(self, context, domain, server):
+        self.mdns_api.poll_for_serial_number(
+            context, domain, self._get_destination(server), self.timeout,
+            self.retry_interval, self.max_retries, self.delay)
 
+    def _poll_servers_for_serial_number(self, context, domain):
+        for server_backend in self.server_backends:
+            server = server_backend['server']
+            self._poll_for_serial_number(context, domain, server)
+
+    def _periodic_poll_servers_for_serial_number(self, context, domains):
         for domain in domains:
-            for server_backend in self.server_backends:
-                server = server_backend['server']
-                self.mdns_api.poll_for_serial_number(
-                    context, domain, self._get_destination(server),
-                    self.timeout, self.retry_interval, self.max_retries,
-                    self.delay)
+            self._poll_servers_for_serial_number(context, domain)
 
     def _get_server_backend(self, server_id):
         for server_backend in self.server_backends:
@@ -435,21 +424,18 @@ class Service(service.RPCService):
                 success_count += 1
         return self._exceed_or_meet_threshold(success_count, total_count)
 
-    def _is_create_consensus(self, context, domain):
-        return self._is_success_consensus(context, domain, CREATE_ACTION)
-
     def _is_delete_consensus(self, context, domain):
         return self._is_success_consensus(context, domain, DELETE_ACTION)
 
     def _get_consensus_serial(self, context, domain):
         consensus_serial = 0
-        pool_manager_statuses = self._find_pool_manager_statuses(
+        update_statuses = self._find_pool_manager_statuses(
             context, UPDATE_ACTION, domain=domain)
-        total_count = len(pool_manager_statuses)
-        for serial in self._get_serials_descending(pool_manager_statuses):
+        total_count = len(update_statuses)
+        for serial in self._get_serials_descending(update_statuses):
             serial_count = 0
-            for pool_manager_status in pool_manager_statuses:
-                if pool_manager_status.serial_number >= serial:
+            for update_status in update_statuses:
+                if update_status.serial_number >= serial:
                     serial_count += 1
             if self._exceed_or_meet_threshold(serial_count, total_count):
                 consensus_serial = serial
@@ -459,9 +445,9 @@ class Service(service.RPCService):
     def _get_error_serial(self, context, domain, consensus_serial):
         error_serial = 0
         if not self._is_success_consensus(context, domain, UPDATE_ACTION):
-            pool_manager_statuses = self._find_pool_manager_statuses(
+            update_statuses = self._find_pool_manager_statuses(
                 context, UPDATE_ACTION, domain=domain)
-            for serial in self._get_serials_ascending(pool_manager_statuses):
+            for serial in self._get_serials_ascending(update_statuses):
                 if serial > consensus_serial:
                     error_serial = serial
                     break
