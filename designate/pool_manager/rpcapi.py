@@ -59,23 +59,27 @@ class PoolManagerAPI(object):
         return MNGR_API
 
     def create_domain(self, context, domain):
-        LOG.info(_LI("create_domain: Calling pool manager's create_domain."))
+        LOG.info(_LI("create_domain: Calling pool manager's create_domain "
+                     "for %(domain)s") % {'domain': domain.name})
         return self.client.cast(
             context, 'create_domain', domain=domain)
 
     def delete_domain(self, context, domain):
-        LOG.info(_LI("delete_domain: Calling pool manager's delete_domain."))
+        LOG.info(_LI("delete_domain: Calling pool manager's delete_domain "
+                     "for %(domain)s") % {'domain': domain.name})
         return self.client.cast(
             context, 'delete_domain', domain=domain)
 
     def update_domain(self, context, domain):
-        LOG.info(_LI("update_domain: Calling pool manager's update_domain."))
+        LOG.info(_LI("update_domain: Calling pool manager's update_domain "
+                     "for %(domain)s") % {'domain': domain.name})
         return self.client.cast(
             context, 'update_domain', domain=domain)
 
     def update_status(self, context, domain, destination,
                       status, actual_serial):
-        LOG.info(_LI("update_status: Calling pool manager's update_status."))
+        LOG.info(_LI("update_status: Calling pool manager's update_status "
+                     "for %(domain)s") % {'domain': domain.name})
         return self.client.cast(
             context, 'update_status', domain=domain, destination=destination,
             status=status, actual_serial=actual_serial)
