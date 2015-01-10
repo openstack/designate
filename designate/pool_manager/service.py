@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from contextlib import contextmanager
+from decimal import Decimal
 
 from oslo.config import cfg
 from oslo import messaging
@@ -25,6 +26,7 @@ from designate.central import rpcapi as central_api
 from designate.mdns import rpcapi as mdns_api
 from designate import service
 from designate.context import DesignateContext
+from designate.i18n import _LE
 from designate.i18n import _LI
 from designate.i18n import _LW
 from designate.openstack.common import log as logging
@@ -89,6 +91,7 @@ class Service(service.RPCService):
         cache_driver = cfg.CONF['service:pool_manager'].cache_driver
         self.cache = cache.get_pool_manager_cache(cache_driver)
 
+        self.threshold = cfg.CONF['service:pool_manager'].threshold_percentage
         self.timeout = cfg.CONF['service:pool_manager'].poll_timeout
         self.retry_interval = \
             cfg.CONF['service:pool_manager'].poll_retry_interval
@@ -119,8 +122,6 @@ class Service(service.RPCService):
             self.server_backends.append(server_backend)
 
         self.thread_group = threadgroup.ThreadGroup()
-        self.admin_context = DesignateContext.get_admin_context(
-            all_tenants=True)
 
     def start(self):
         for server_backend in self.server_backends:
@@ -169,37 +170,9 @@ class Service(service.RPCService):
 
         for server_backend in self.server_backends:
             server = server_backend['server']
-            backend_instance = server_backend['backend_instance']
             create_status = self._create_create_status(server, domain)
-            try:
-                with wrap_backend_call():
-                    backend_instance.create_domain(context, domain)
-                create_status.status = SUCCESS_STATUS
-                LOG.info(_LI('Created domain %(domain)s '
-                             'on server %(server)s.') %
-                         {'domain': domain.name,
-                          'server': self._get_destination(server)})
-            except exceptions.Backend:
-                create_status.status = ERROR_STATUS
-                LOG.warn(_LW('Failed to create domain %(domain)s '
-                             'on server %(server)s.') %
-                         {'domain': domain.name,
-                          'server': self._get_destination(server)})
-            finally:
-                self._store_in_cache(context, create_status)
-                update_status = self._create_update_status(server, domain)
-                update_status.serial_number = 0
-                # Setting the update status to ERROR ensures the periodic
-                # recovery is run if there is a problem.
-                update_status.status = ERROR_STATUS
-                self._store_in_cache(context, update_status)
-
-            if create_status.status == SUCCESS_STATUS:
-                # PowerDNS needs to explicitly send a NOTIFY for the AXFR to
-                # happen whereas BIND9 does an AXFR implicitly after the domain
-                # is created.  Sending a NOTIFY for all cases.
-                self._notify_zone_changed(context, domain, server)
-                self._poll_for_serial_number(context, domain, server)
+            self._create_domain_on_server(
+                context, create_status, domain, server_backend)
 
     @execute_on_pool(cfg.CONF['service:pool_manager'].pool_id)
     def delete_domain(self, context, domain):
@@ -212,32 +185,17 @@ class Service(service.RPCService):
 
         for server_backend in self.server_backends:
             server = server_backend['server']
-            backend_instance = server_backend['backend_instance']
             delete_status = self._create_delete_status(server, domain)
-            try:
-                with wrap_backend_call():
-                    backend_instance.delete_domain(context, domain)
-                delete_status.status = SUCCESS_STATUS
-                LOG.info(_LI('Deleted domain %(domain)s '
-                             'from server %(server)s.') %
-                         {'domain': domain.name,
-                          'server': self._get_destination(server)})
-            except exceptions.Backend:
-                delete_status.status = ERROR_STATUS
-                LOG.warn(_LW('Failed to delete domain %(domain)s '
-                             'from server %(server)s.') %
-                         {'domain': domain.name,
-                          'server': self._get_destination(server)})
-            finally:
-                self._store_in_cache(context, delete_status)
+            self._delete_domain_on_server(
+                context, delete_status, domain, server_backend)
 
-        status = ERROR_STATUS
-        if self._is_delete_consensus(context, domain):
-            status = SUCCESS_STATUS
-            LOG.info(_LI('Consensus reached for deleting domain %(domain)s') %
+        if not self._is_delete_consensus(context, domain):
+            status = ERROR_STATUS
+            LOG.warn(_LW('Consensus not reached '
+                         'for deleting domain %(domain)s') %
                      {'domain': domain.name})
-        self.central_api.update_status(
-            context, domain.id, status, domain.serial)
+            self.central_api.update_status(
+                context, domain.id, status, domain.serial)
 
     @execute_on_pool(cfg.CONF['service:pool_manager'].pool_id)
     def update_domain(self, context, domain):
@@ -248,8 +206,8 @@ class Service(service.RPCService):
         """
         LOG.debug("Calling update_domain for %s" % domain.name)
 
-        self._notify_servers_zone_changed(context, domain)
-        self._poll_servers_for_serial_number(context, domain)
+        for server_backend in self.server_backends:
+            self._update_domain_on_server(context, domain, server_backend)
 
     def update_status(self, context, domain, destination,
                       status, actual_serial):
@@ -279,10 +237,9 @@ class Service(service.RPCService):
             self._store_in_cache(context, update_status)
 
         consensus_serial = self._get_consensus_serial(context, domain)
-        LOG.info(_LI('For domain %(domain)s on server %(server)s '
+        LOG.info(_LI('For domain %(domain)s '
                      'the consensus serial is %(consensus_serial)s.') %
                  {'domain': domain.name,
-                  'server': self._get_destination(server),
                   'consensus_serial': consensus_serial})
         if cache_serial < consensus_serial:
             self.central_api.update_status(
@@ -291,10 +248,9 @@ class Service(service.RPCService):
         if status == ERROR_STATUS:
             error_serial = self._get_error_serial(
                 context, domain, consensus_serial)
-            LOG.warn(_LW('For domain %(domain)s on server %(server)s '
+            LOG.warn(_LW('For domain %(domain)s '
                          'the error serial is %(error_serial)s.') %
                      {'domain': domain.name,
-                      'server': self._get_destination(server),
                       'error_serial': error_serial})
             if error_serial > consensus_serial or error_serial == 0:
                 self.central_api.update_status(
@@ -306,11 +262,15 @@ class Service(service.RPCService):
         """
         LOG.debug("Calling periodic_recovery.")
 
-        context = self.admin_context
+        context = DesignateContext.get_admin_context(all_tenants=True)
 
-        self._periodic_create_domains_that_failed(context)
-        self._periodic_delete_domains_that_failed(context)
-        self._periodic_update_domains_that_failed(context)
+        try:
+            self._periodic_create_domains_that_failed(context)
+            self._periodic_delete_domains_that_failed(context)
+            self._periodic_update_domains_that_failed(context)
+        except Exception:
+            LOG.error(_LE('An unhandled exception in periodic recovery '
+                          'occurred.  This should never happen!'))
 
     def periodic_sync(self):
         """
@@ -318,15 +278,58 @@ class Service(service.RPCService):
         """
         LOG.debug("Calling periodic_sync.")
 
-        context = self.admin_context
+        context = DesignateContext.get_admin_context(all_tenants=True)
 
         criterion = {
             'pool_id': cfg.CONF['service:pool_manager'].pool_id
         }
         domains = self.central_api.find_domains(context, criterion)
 
-        self._periodic_notify_servers_zone_changed(context, domains)
-        self._periodic_poll_servers_for_serial_number(context, domains)
+        try:
+            for domain in domains:
+                for server_backend in self.server_backends:
+                    self._update_domain_on_server(
+                        context, domain, server_backend)
+
+        except Exception:
+            LOG.error(_LE('An unhandled exception in periodic sync '
+                          'occurred.  This should never happen!'))
+
+    def _create_domain_on_server(self, context, create_status, domain,
+                                 server_backend):
+
+        server = server_backend['server']
+        backend_instance = server_backend['backend_instance']
+
+        try:
+            with wrap_backend_call():
+                backend_instance.create_domain(context, domain)
+            create_status.status = SUCCESS_STATUS
+            self._store_in_cache(context, create_status)
+            LOG.info(_LI('Created domain %(domain)s '
+                         'on server %(server)s.') %
+                     {'domain': domain.name,
+                      'server': self._get_destination(server)})
+
+            update_status = self._create_update_status(server, domain)
+            update_status.serial_number = 0
+            # Setting the update status to ERROR ensures the periodic
+            # recovery is run if there is a problem.
+            update_status.status = ERROR_STATUS
+            self._store_in_cache(context, update_status)
+
+            # PowerDNS needs to explicitly send a NOTIFY for the AXFR to
+            # happen whereas BIND9 does an AXFR implicitly after the domain
+            # is created.  Sending a NOTIFY for all cases.
+            self._notify_zone_changed(context, domain, server)
+            self._poll_for_serial_number(context, domain, server)
+        except exceptions.Backend:
+            create_status.status = ERROR_STATUS
+            self._store_in_cache(context, create_status)
+            LOG.warn(_LW('Failed to create domain %(domain)s '
+                         'on server %(server)s.') %
+                     {'domain': domain.name,
+                      'server': self._get_destination(server)})
 
     def _periodic_create_domains_that_failed(self, context):
 
@@ -334,63 +337,81 @@ class Service(service.RPCService):
             context, CREATE_ACTION, status=ERROR_STATUS)
 
         for create_status in create_statuses:
-
             domain = self.central_api.get_domain(
                 context, create_status.domain_id)
             server_backend = self._get_server_backend(create_status.server_id)
-            server = server_backend['server']
-            backend_instance = server_backend['backend_instance']
+            self._create_domain_on_server(
+                context, create_status, domain, server_backend)
 
-            try:
-                with wrap_backend_call():
-                    backend_instance.create_domain(context, domain)
-                create_status.status = SUCCESS_STATUS
-                LOG.info(_LI('Created domain %(domain)s '
-                             'on server %(server)s.') %
-                         {'domain': domain.name,
-                          'server': self._get_destination(server)})
-                self._store_in_cache(context, create_status)
+    def _delete_domain_on_server(self, context, delete_status, domain,
+                                 server_backend):
 
-                self._notify_zone_changed(context, domain, server)
-                self._poll_for_serial_number(context, domain, server)
-            except exceptions.Backend:
-                LOG.warn(_LW('Failed to create domain %(domain)s '
-                             'on server %(server)s.') %
-                         {'domain': domain.name,
-                          'server': self._get_destination(server)})
+        server = server_backend['server']
+        backend_instance = server_backend['backend_instance']
+        consensus_existed = self._is_delete_consensus(context, domain)
+
+        try:
+            with wrap_backend_call():
+                backend_instance.delete_domain(context, domain)
+            delete_status.status = SUCCESS_STATUS
+            self._store_in_cache(context, delete_status)
+            LOG.info(_LI('Deleted domain %(domain)s '
+                         'from server %(server)s.') %
+                     {'domain': domain.name,
+                      'server': self._get_destination(server)})
+            if not consensus_existed \
+                    and self._is_delete_consensus(context, domain):
+                LOG.info(_LI('Consensus reached '
+                             'for deleting domain %(domain)s') %
+                         {'domain': domain.name})
+                self.central_api.update_status(
+                    context, domain.id, SUCCESS_STATUS, domain.serial)
+        except exceptions.Backend:
+            delete_status.status = ERROR_STATUS
+            self._store_in_cache(context, delete_status)
+            LOG.warn(_LW('Failed to delete domain %(domain)s '
+                         'from server %(server)s.') %
+                     {'domain': domain.name,
+                      'server': self._get_destination(server)})
 
     def _periodic_delete_domains_that_failed(self, context):
 
         delete_statuses = self._find_pool_manager_statuses(
             context, DELETE_ACTION, status=ERROR_STATUS)
 
+        # Used to retrieve a domain from Central that may have already been
+        # "deleted".
+        context.show_deleted = True
+
         for delete_status in delete_statuses:
             domain = self.central_api.get_domain(
                 context, delete_status.domain_id)
-            server_backend = self.get_server_backend(delete_status.server_id)
-            server = server_backend['server']
-            backend_instance = server_backend['backend_instance']
-            consensus_existed = self._is_delete_consensus(context, domain)
+            server_backend = self._get_server_backend(delete_status.server_id)
+            self._delete_domain_on_server(
+                context, delete_status, domain, server_backend)
 
-            try:
-                with wrap_backend_call():
-                    backend_instance.delete_domain(context, domain)
-                delete_status.status = SUCCESS_STATUS
-                LOG.info(_LI('Deleted domain %(domain)s '
-                             'from server %(server)s.') %
+    def _update_domain_on_server(self, context, domain, server_backend):
+
+        server = server_backend['server']
+
+        try:
+            update_status = self._retrieve_from_cache(
+                context, server, domain, UPDATE_ACTION)
+            if update_status.status == ERROR_STATUS \
+                    or update_status.serial_number < domain.serial:
+                self._notify_zone_changed(context, domain, server)
+                self._poll_for_serial_number(context, domain, server)
+                LOG.info(_LI('Updating domain %(domain)s '
+                         'on server %(server)s.') %
                          {'domain': domain.name,
                           'server': self._get_destination(server)})
-                self._store_in_cache(context, delete_status)
-
-                if not consensus_existed \
-                        and self._is_delete_consensus(context, domain):
-                    self.central_api.update_status(
-                        context, domain.id, SUCCESS_STATUS, domain.serial)
-            except exceptions.Backend:
-                LOG.warn(_LW('Failed to delete domain %(domain)s '
-                             'from server %(server)s.') %
+            else:
+                LOG.warn(_LW('No need to update domain %(domain)s '
+                         'on server %(server)s.') %
                          {'domain': domain.name,
                           'server': self._get_destination(server)})
+        except exceptions.PoolManagerStatusNotFound:
+            pass
 
     def _periodic_update_domains_that_failed(self, context):
 
@@ -400,42 +421,18 @@ class Service(service.RPCService):
         for update_status in update_statuses:
             domain = self.central_api.get_domain(
                 context, update_status.domain_id)
-            server = self._get_server_backend(
-                update_status.server_id)['server']
-
-            self._notify_zone_changed(context, domain, server)
-            self._poll_for_serial_number(context, domain, server)
+            server_backend = self._get_server_backend(update_status.server_id)
+            self._update_domain_on_server(context, domain, server_backend)
 
     def _notify_zone_changed(self, context, domain, server):
         self.mdns_api.notify_zone_changed(
             context, domain, self._get_destination(server),
             self.timeout, self.retry_interval, self.max_retries, 0)
 
-    def _notify_servers_zone_changed(self, context, domain):
-        for server_backend in self.server_backends:
-            server = server_backend['server']
-            update_status = self._retrieve_from_cache(
-                context, server, domain, UPDATE_ACTION)
-            if update_status.serial_number < domain.serial:
-                self._notify_zone_changed(context, domain, server)
-
-    def _periodic_notify_servers_zone_changed(self, context, domains):
-        for domain in domains:
-            self._notify_servers_zone_changed(context, domain)
-
     def _poll_for_serial_number(self, context, domain, server):
         self.mdns_api.poll_for_serial_number(
             context, domain, self._get_destination(server), self.timeout,
             self.retry_interval, self.max_retries, self.delay)
-
-    def _poll_servers_for_serial_number(self, context, domain):
-        for server_backend in self.server_backends:
-            server = server_backend['server']
-            self._poll_for_serial_number(context, domain, server)
-
-    def _periodic_poll_servers_for_serial_number(self, context, domains):
-        for domain in domains:
-            self._poll_servers_for_serial_number(context, domain)
 
     def _get_server_backend(self, server_id):
         for server_backend in self.server_backends:
@@ -456,11 +453,11 @@ class Service(service.RPCService):
 
     @staticmethod
     def _percentage(count, total_count):
-        return (float(count) / float(total_count)) * 100.0
+        return (Decimal(count) / Decimal(total_count)) * Decimal(100)
 
-    def _exceed_or_meet_threshold(self, count, total_count):
-        return self._percentage(count, total_count) >= \
-            cfg.CONF['service:pool_manager'].threshold_percentage
+    def _exceed_or_meet_threshold(self, count):
+        return self._percentage(
+            count, len(self.server_backends)) >= Decimal(self.threshold)
 
     def _find_pool_manager_statuses(self, context, action,
                                     domain=None, status=None):
@@ -490,14 +487,13 @@ class Service(service.RPCService):
         return self._get_sorted_serials(pool_manager_statuses, descending=True)
 
     def _is_success_consensus(self, context, domain, action):
+        success_count = 0
         pool_manager_statuses = self._find_pool_manager_statuses(
             context, action, domain=domain)
-        total_count = len(pool_manager_statuses)
-        success_count = 0
         for pool_manager_status in pool_manager_statuses:
             if pool_manager_status.status == SUCCESS_STATUS:
                 success_count += 1
-        return self._exceed_or_meet_threshold(success_count, total_count)
+        return self._exceed_or_meet_threshold(success_count)
 
     def _is_delete_consensus(self, context, domain):
         return self._is_success_consensus(context, domain, DELETE_ACTION)
@@ -506,13 +502,12 @@ class Service(service.RPCService):
         consensus_serial = 0
         update_statuses = self._find_pool_manager_statuses(
             context, UPDATE_ACTION, domain=domain)
-        total_count = len(update_statuses)
         for serial in self._get_serials_descending(update_statuses):
             serial_count = 0
             for update_status in update_statuses:
                 if update_status.serial_number >= serial:
                     serial_count += 1
-            if self._exceed_or_meet_threshold(serial_count, total_count):
+            if self._exceed_or_meet_threshold(serial_count):
                 consensus_serial = serial
                 break
         return consensus_serial
