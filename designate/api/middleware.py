@@ -17,8 +17,8 @@ import flask
 import webob.dec
 from oslo.config import cfg
 from oslo import messaging
-from oslo.middleware import base
-from oslo.middleware import request_id
+from oslo_middleware import base
+from oslo_middleware import request_id
 from oslo.serialization import jsonutils as json
 from oslo.utils import strutils
 
