@@ -1,5 +1,5 @@
 # Translations template for designate.
-# Copyright (C) 2014 ORGANIZATION
+# Copyright (C) 2015 ORGANIZATION
 # This file is distributed under the same license as the designate project.
 #
 # Translators:
@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Designate\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-12-16 06:16+0000\n"
-"PO-Revision-Date: 2014-12-15 23:33+0000\n"
+"POT-Creation-Date: 2015-01-13 06:09+0000\n"
+"PO-Revision-Date: 2015-01-09 19:02+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: French (http://www.transifex.com/projects/p/designate/"
 "language/fr/)\n"
@@ -60,28 +60,28 @@ msgstr "**** Étape manuelle de post-migration requise ****"
 msgid "Please issue this query: %s"
 msgstr "Veuillez lancer cette demande : %s"
 
-#: designate/mdns/notify.py:122
+#: designate/mdns/notify.py:113
 #, python-format
 msgid ""
 "Got lower serial for '%(zone)s' to '%(dst)s'. Expected:'%(es)d'. "
 "Got:'%(as)d'.Retries left='%(retries)d'"
 msgstr ""
 
-#: designate/mdns/notify.py:193
+#: designate/mdns/notify.py:184
 #, python-format
 msgid ""
 "Got Timeout while trying to send '%(msg)s' for '%(zone)s' to '%(server)s:"
 "%(port)d'. Timeout='%(timeout)d' seconds. Retry='%(retry)d'"
 msgstr ""
 
-#: designate/mdns/notify.py:205
+#: designate/mdns/notify.py:196
 #, python-format
 msgid ""
 "Got BadResponse while trying to send '%(msg)s' for '%(zone)s' to '%(server)s:"
 "%(port)d'. Timeout='%(timeout)d' seconds. Retry='%(retry)d'"
 msgstr ""
 
-#: designate/mdns/notify.py:218
+#: designate/mdns/notify.py:209
 #, python-format
 msgid ""
 "Failed to get expected response while trying to send '%(msg)s' for "
@@ -120,6 +120,23 @@ msgstr "la tâche %(func_name)s a dépassé l'intervalle de %(delay).2f sec"
 #, python-format
 msgid "pid %d not in child list"
 msgstr "pid %d ne fait pas partie de la liste enfant"
+
+#: designate/pool_manager/service.py:184 designate/pool_manager/service.py:357
+#, python-format
+msgid "Failed to create domain %(domain)s on server %(server)s."
+msgstr ""
+
+#: designate/pool_manager/service.py:227 designate/pool_manager/service.py:390
+#, python-format
+msgid "Failed to delete domain %(domain)s from server %(server)s."
+msgstr ""
+
+#: designate/pool_manager/service.py:294
+#, python-format
+msgid ""
+"For domain %(domain)s on server %(server)s the error serial is "
+"%(error_serial)s."
+msgstr ""
 
 #: designate/sink/service.py:48
 msgid "No designate-sink handlers enabled or loaded"

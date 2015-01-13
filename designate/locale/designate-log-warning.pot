@@ -1,14 +1,14 @@
 # Translations template for designate.
-# Copyright (C) 2014 ORGANIZATION
+# Copyright (C) 2015 ORGANIZATION
 # This file is distributed under the same license as the designate project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2014.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2015.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: designate 2015.1.dev171.ga3fc0ec\n"
+"Project-Id-Version: designate 2015.1.dev18\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-12-16 06:16+0000\n"
+"POT-Creation-Date: 2015-01-13 06:09+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -51,28 +51,28 @@ msgstr ""
 msgid "Please issue this query: %s"
 msgstr ""
 
-#: designate/mdns/notify.py:122
+#: designate/mdns/notify.py:113
 #, python-format
 msgid ""
 "Got lower serial for '%(zone)s' to '%(dst)s'. Expected:'%(es)d'. "
 "Got:'%(as)d'.Retries left='%(retries)d'"
 msgstr ""
 
-#: designate/mdns/notify.py:193
+#: designate/mdns/notify.py:184
 #, python-format
 msgid ""
 "Got Timeout while trying to send '%(msg)s' for '%(zone)s' to "
 "'%(server)s:%(port)d'. Timeout='%(timeout)d' seconds. Retry='%(retry)d'"
 msgstr ""
 
-#: designate/mdns/notify.py:205
+#: designate/mdns/notify.py:196
 #, python-format
 msgid ""
 "Got BadResponse while trying to send '%(msg)s' for '%(zone)s' to "
 "'%(server)s:%(port)d'. Timeout='%(timeout)d' seconds. Retry='%(retry)d'"
 msgstr ""
 
-#: designate/mdns/notify.py:218
+#: designate/mdns/notify.py:209
 #, python-format
 msgid ""
 "Failed to get expected response while trying to send '%(msg)s' for "
@@ -108,6 +108,23 @@ msgstr ""
 #: designate/openstack/common/service.py:356
 #, python-format
 msgid "pid %d not in child list"
+msgstr ""
+
+#: designate/pool_manager/service.py:184 designate/pool_manager/service.py:357
+#, python-format
+msgid "Failed to create domain %(domain)s on server %(server)s."
+msgstr ""
+
+#: designate/pool_manager/service.py:227 designate/pool_manager/service.py:390
+#, python-format
+msgid "Failed to delete domain %(domain)s from server %(server)s."
+msgstr ""
+
+#: designate/pool_manager/service.py:294
+#, python-format
+msgid ""
+"For domain %(domain)s on server %(server)s the error serial is "
+"%(error_serial)s."
 msgstr ""
 
 #: designate/sink/service.py:48
