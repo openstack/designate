@@ -44,7 +44,7 @@ class ApiV2ReverseFloatingIPTest(ApiV2TestCase):
         self.assertEqual(None, fip_record['ptrdname'])
 
     def test_get_floatingip_with_record(self):
-        self.create_server()
+        self.create_nameserver()
 
         fixture = self.get_ptr_fixture()
 
@@ -110,7 +110,7 @@ class ApiV2ReverseFloatingIPTest(ApiV2TestCase):
         self.assertEqual(None, fip_record['description'])
 
     def test_list_floatingip_with_record(self):
-        self.create_server()
+        self.create_nameserver()
 
         fixture = self.get_ptr_fixture()
 
@@ -138,7 +138,7 @@ class ApiV2ReverseFloatingIPTest(ApiV2TestCase):
         self.assertEqual(fixture['ptrdname'], fip_record['ptrdname'])
 
     def test_set_floatingip(self):
-        self.create_server()
+        self.create_nameserver()
         fixture = self.get_ptr_fixture()
 
         fip = self.network_api.fake.allocate_floatingip('tenant')
@@ -184,7 +184,7 @@ class ApiV2ReverseFloatingIPTest(ApiV2TestCase):
                                url, {})
 
     def test_unset_floatingip(self):
-        self.create_server()
+        self.create_nameserver()
 
         fixture = self.get_ptr_fixture()
         context = self.get_context(tenant='a')
@@ -229,7 +229,7 @@ class ApiV2ReverseFloatingIPTest(ApiV2TestCase):
         self.assertEqual(None, fip['ptrdname'])
 
     def test_unset_floatingip_not_allocated(self):
-        self.create_server()
+        self.create_nameserver()
 
         fixture = self.get_ptr_fixture()
         context = self.get_context(tenant='a')

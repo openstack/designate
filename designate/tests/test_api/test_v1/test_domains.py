@@ -31,7 +31,7 @@ LOG = logging.getLogger(__name__)
 class ApiV1DomainsTest(ApiV1Test):
     def test_create_domain(self):
         # Create a server
-        self.create_server()
+        self.create_nameserver()
 
         # Create a domain
         fixture = self.get_domain_fixture(0)
@@ -44,7 +44,7 @@ class ApiV1DomainsTest(ApiV1Test):
 
     def test_create_domain_junk(self):
         # Create a server
-        self.create_server()
+        self.create_nameserver()
 
         # Create a domain
         fixture = self.get_domain_fixture(0)
@@ -95,8 +95,8 @@ class ApiV1DomainsTest(ApiV1Test):
         self.post('domains', data=fixture, status_code=400)
 
     def test_create_domain_utf_description(self):
-        # Create a server
-        self.create_server()
+        # Create a nameserver
+        self.create_nameserver()
 
         # Create a domain
         fixture = self.get_domain_fixture(0)
@@ -109,7 +109,7 @@ class ApiV1DomainsTest(ApiV1Test):
 
     def test_create_domain_description_too_long(self):
         # Create a server
-        self.create_server()
+        self.create_nameserver()
 
         # Create a domain
         fixture = self.get_domain_fixture(0)
@@ -124,7 +124,7 @@ class ApiV1DomainsTest(ApiV1Test):
         created_at = datetime.datetime(2014, 6, 22, 21, 50, 0)
         updated_at = datetime.datetime(2014, 6, 22, 21, 50, 0)
         serial = 1234567
-        self.create_server()
+        self.create_nameserver()
 
         # Create a domain
         fixture = self.get_domain_fixture(0)

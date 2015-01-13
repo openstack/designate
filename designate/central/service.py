@@ -410,8 +410,8 @@ class Service(service.RPCService):
         return domain
 
     # SOA Recordset Methods
-    def _build_soa_record(self, zone, servers):
-        return "%s %s. %d %d %d %d %d" % (servers[0]['name'],
+    def _build_soa_record(self, zone, nameservers):
+        return "%s %s. %d %d %d %d %d" % (nameservers[0]['value'],
                                           zone['email'].replace("@", "."),
                                           zone['serial'],
                                           zone['refresh'],
@@ -420,11 +420,16 @@ class Service(service.RPCService):
                                           zone['minimum'])
 
     def _create_soa(self, context, zone):
-        # Need elevated context to get the servers
         elevated_context = context.elevated()
         elevated_context.all_tenants = True
-        servers = self.find_servers(elevated_context)
-        soa_values = [self._build_soa_record(zone, servers)]
+
+        # Get the nameservers
+        nameservers = self.storage.find_pool_attributes(
+            context=elevated_context,
+            criterion={'pool_id': zone.pool_id, 'key': 'name_server'}
+        )
+
+        soa_values = [self._build_soa_record(zone, nameservers)]
         recordlist = objects.RecordList(objects=[
             objects.Record(data=r, managed=True) for r in soa_values])
         values = {
@@ -439,23 +444,23 @@ class Service(service.RPCService):
 
     def _update_soa(self, context, zone):
 
-        servers = self.get_domain_servers(context, zone['id'])
+        nameservers = self.get_domain_servers(context, zone['id'])
 
         soa = self.find_recordset(context,
                                   criterion={'domain_id': zone['id'],
                                              'type': "SOA"})
 
-        soa.records[0].data = self._build_soa_record(zone, servers)
+        soa.records[0].data = self._build_soa_record(zone, nameservers)
 
         self._update_recordset_in_storage(context, zone, soa,
                                           increment_serial=False)
 
     # NS Recordset Methods
-    def _create_ns(self, context, zone, servers):
+    def _create_ns(self, context, zone, nameservers):
         # Create an NS record for each server
         ns_values = []
-        for s in servers:
-            ns_values.append(s.name)
+        for s in nameservers:
+            ns_values.append(s.value)
         recordlist = objects.RecordList(objects=[
             objects.Record(data=r, managed=True) for r in ns_values])
         values = {
@@ -480,25 +485,33 @@ class Service(service.RPCService):
                 r.data = new_name
                 self._update_recordset_in_storage(context, zone, ns)
 
-    def _add_ns(self, context, zone, server):
+    def _add_ns(self, context, zone, nameserver):
         # Get NS recordset
-        ns = self.find_recordset(context,
-                                 criterion={'domain_id': zone['id'],
-                                            'type': "NS"})
-        # Add new record to recordset
-        ns_record = objects.Record(data=server.name)
+        # If the zone doesn't have an NS recordset yet, create one
+        try:
+            ns = self.find_recordset(context,
+                                     criterion={'domain_id': zone['id'],
+                                                'type': "NS"})
+        except exceptions.RecordSetNotFound:
+            nameservers = objects.PoolAttributeList()
+            nameservers.append(nameserver)
+            self._create_ns(context, zone, nameservers)
+            return
+
+        # Add new record to recordset based on the new nameserver
+        ns_record = objects.Record(data=nameserver.value)
         ns.records.append(ns_record)
 
         self._update_recordset_in_storage(context, zone, ns)
 
-    def _delete_ns(self, context, zone, server):
+    def _delete_ns(self, context, zone, nameserver):
         ns = self.find_recordset(context,
                                  criterion={'domain_id': zone['id'],
                                             'type': "NS"})
         records = ns.records
 
         for r in records:
-            if r.data == server.name:
+            if r.data == nameserver.value:
                 ns.records.remove(r)
 
         self._update_recordset_in_storage(context, zone, ns)
@@ -563,122 +576,6 @@ class Service(service.RPCService):
         policy.check('reset_quotas', context, target)
 
         self.quota.reset_quotas(context, tenant_id)
-
-    # Server Methods
-    @notification('dns.server.create')
-    def create_server(self, context, server):
-        policy.check('create_server', context)
-
-        elevated_context = context.elevated()
-        elevated_context.all_tenants = True
-
-        zones = self.find_domains(elevated_context)
-
-        server = self._create_server_in_storage(context, server, zones)
-
-        for zone in zones:
-            self.pool_manager_api.update_domain(elevated_context, zone)
-
-        return server
-
-    @transaction
-    def _create_server_in_storage(self, context, server, zones):
-
-        server = self.storage.create_server(context, server)
-
-        elevated_context = context.elevated()
-        elevated_context.all_tenants = True
-
-        # Add NS recordsets for all zones.
-        for zone in zones:
-            self._add_ns(elevated_context, zone, server)
-
-        return server
-
-    def find_servers(self, context, criterion=None, marker=None, limit=None,
-                     sort_key=None, sort_dir=None):
-        policy.check('find_servers', context)
-
-        return self.storage.find_servers(context, criterion, marker, limit,
-                                         sort_key, sort_dir)
-
-    def get_server(self, context, server_id):
-        policy.check('get_server', context, {'server_id': server_id})
-
-        return self.storage.get_server(context, server_id)
-
-    @notification('dns.server.update')
-    def update_server(self, context, server):
-        target = {
-            'server_id': server.obj_get_original_value('id'),
-        }
-        policy.check('update_server', context, target)
-
-        elevated_context = context.elevated()
-        elevated_context.all_tenants = True
-
-        zones = self.find_domains(elevated_context)
-
-        server = self._update_server_in_storage(context, server, zones)
-
-        for zone in zones:
-            self.pool_manager_api.update_domain(elevated_context, zone)
-
-        return server
-
-    @transaction
-    def _update_server_in_storage(self, context, server, zones):
-
-        orig_server_name = server.obj_get_original_value('name')
-        new_server_name = server.name
-
-        server = self.storage.update_server(context, server)
-
-        elevated_context = context.elevated()
-        elevated_context.all_tenants = True
-
-        # Update NS recordsets for all zones.
-        for zone in zones:
-            self._update_ns(elevated_context, zone, orig_server_name,
-                            new_server_name)
-
-        return server
-
-    @notification('dns.server.delete')
-    def delete_server(self, context, server_id):
-        policy.check('delete_server', context, {'server_id': server_id})
-
-        elevated_context = context.elevated()
-        elevated_context.all_tenants = True
-
-        zones = self.find_domains(elevated_context)
-
-        server = self._delete_server_in_storage(context, server_id, zones)
-
-        for zone in zones:
-            self.pool_manager_api.update_domain(elevated_context, zone)
-
-        return server
-
-    @transaction
-    def _delete_server_in_storage(self, context, server_id, zones):
-
-        # don't delete last of servers
-        servers = self.storage.find_servers(context)
-        if len(servers) == 1 and server_id == servers[0].id:
-            raise exceptions.LastServerDeleteNotAllowed(
-                "Not allowed to delete last of servers")
-
-        server = self.storage.delete_server(context, server_id)
-
-        elevated_context = context.elevated()
-        elevated_context.all_tenants = True
-
-        # Delete NS recordsets for all zones.
-        for zone in zones:
-            self._delete_ns(elevated_context, zone, server)
-
-        return server
 
     # TLD Methods
     @notification('dns.tld.create')
@@ -803,7 +700,6 @@ class Service(service.RPCService):
     @synchronized_domain(new_domain=True)
     def create_domain(self, context, domain):
         # TODO(kiall): Refactor this method into *MUCH* smaller chunks.
-
         # Default to creating in the current users tenant
         if domain.tenant_id is None:
             domain.tenant_id = context.tenant
@@ -856,11 +752,16 @@ class Service(service.RPCService):
         # NOTE(kiall): Fetch the servers before creating the domain, this way
         #              we can prevent domain creation if no servers are
         #              configured.
-        servers = self.storage.find_servers(context)
+        elevated_context = context.elevated()
+        elevated_context.all_tenants = True
+        nameservers = self.storage.find_pool_attributes(
+            context=elevated_context,
+            criterion={'pool_id': domain.pool_id, 'key': 'name_server'}
+        )
 
-        if len(servers) == 0:
-            LOG.critical(_LC('No servers configured. '
-                             'Please create at least one server'))
+        if len(nameservers) == 0:
+            LOG.critical(_LC('No nameservers configured. '
+                             'Please create at least one nameserver'))
             raise exceptions.NoServersConfigured()
 
         domain = self._create_domain_in_storage(context, domain)
@@ -888,12 +789,12 @@ class Service(service.RPCService):
         domain.serial = utils.increment_serial()
 
         domain = self.storage.create_domain(context, domain)
-        servers = self.storage.find_servers(context)
+        nameservers = self.get_domain_servers(context, domain['id'])
 
         # Create the SOA and NS recordsets for the new domain.  The SOA
         # record will always be the first 'created_at' record for a domain.
         self._create_soa(context, domain)
-        self._create_ns(context, domain, servers)
+        self._create_ns(context, domain, nameservers)
 
         if domain.obj_attr_is_set('recordsets'):
             for rrset in domain.recordsets:
@@ -914,20 +815,31 @@ class Service(service.RPCService):
 
         return domain
 
-    def get_domain_servers(self, context, domain_id, criterion=None):
-        domain = self.storage.get_domain(context, domain_id)
+    def get_domain_servers(self, context, domain_id=None, criterion=None):
 
-        target = {
-            'domain_id': domain_id,
-            'domain_name': domain.name,
-            'tenant_id': domain.tenant_id
-        }
+        if domain_id is None:
+            policy.check('get_domain_servers', context)
+            pool_id = cfg.CONF['service:central'].default_pool_id
+        else:
+            domain = self.storage.get_domain(context, domain_id)
+            target = {
+                'domain_id': domain_id,
+                'domain_name': domain.name,
+                'tenant_id': domain.tenant_id
+            }
+            pool_id = domain.pool_id
 
-        policy.check('get_domain_servers', context, target)
+            policy.check('get_domain_servers', context, target)
 
-        # TODO(kiall): Once we allow domains to be allocated on 1 of N server
-        #              pools, return the filtered list here.
-        return self.storage.find_servers(context, criterion)
+        nameservers = self.storage.find_pool_attributes(
+            context=context,
+            criterion={
+                'pool_id': pool_id,
+                'key': 'name_server'
+            }
+        )
+
+        return nameservers
 
     def find_domains(self, context, criterion=None, marker=None, limit=None,
                      sort_key=None, sort_dir=None):
@@ -1986,7 +1898,56 @@ class Service(service.RPCService):
 
         policy.check('update_pool', context)
 
+        # If there is a nameserver, then additional steps need to be done
+        # Since these are treated as mutable objects, we're only going to
+        # be comparing the nameserver.value which is the FQDN
+        if pool.obj_attr_is_set('nameservers'):
+            elevated_context = context.elevated()
+            elevated_context.all_tenants = True
+            # Get all existing nameserver FQDNs and put them in a set
+            existing_ns = \
+                set([ns.value for ns in self.storage.find_pool_attributes(
+                    context=context,
+                    criterion={'pool_id': pool.id, 'key': 'name_server'}
+                )])
+
+            # Get all nameserver FQDNs from the request and put them in a set
+            request_ns = set([ns.value for ns in pool.nameservers.objects])
+            # Get the new ones to be created
+            create_ns = request_ns.difference(existing_ns)
+            # Get the ones to be deleted
+            delete_ns = existing_ns.difference(request_ns)
+            # Ignore the ones that are in both sets, as those haven't changed
+
         updated_pool = self.storage.update_pool(context, pool)
+
+        # After the update, handle new nameservers
+        for ns in create_ns:
+
+            # Create new NS recordsets for every zone
+            zones = self.find_domains(
+                context=elevated_context,
+                criterion={'pool_id': pool.id})
+            for z in zones:
+                self._add_ns(elevated_context, z,
+                             objects.PoolAttribute(value=ns))
+
+        # Then handle the nameservers to delete
+        for ns in delete_ns:
+            # Cannot delete the last nameserver, so verify that first.
+            nameservers = pool.nameservers
+            if len(nameservers) == 0:
+                raise exceptions.LastServerDeleteNotAllowed(
+                    "Not allowed to delete last of servers"
+                )
+
+            # Delete the NS recordsets for every zone
+            zones = self.find_domains(
+                context=elevated_context,
+                criterion={'pool_id': pool.id})
+            for z in zones:
+                self._delete_ns(elevated_context, z,
+                                objects.PoolAttribute(value=ns))
 
         return updated_pool
 
@@ -1996,7 +1957,19 @@ class Service(service.RPCService):
 
         policy.check('delete_pool', context)
 
-        pool = self.storage.delete_pool(context, pool_id)
+        # Make sure that there are no existing zones in the pool
+        elevated_context = context.elevated()
+        elevated_context.all_tenants = True
+        zones = self.find_domains(
+            context=elevated_context,
+            criterion={'pool_id': pool_id})
+
+        # If there are existing zones, do not delete the pool
+        LOG.debug("Zones is None? %r " % zones)
+        if len(zones) == 0:
+            pool = self.storage.delete_pool(context, pool_id)
+        else:
+            raise exceptions.InvalidOperation('pool must not contain zones')
 
         return pool
 

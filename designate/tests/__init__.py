@@ -38,6 +38,7 @@ from designate import exceptions
 from designate.network_api import fake as fake_network_api
 from designate import network_api
 from designate import objects
+from designate import storage
 from designate.manage import database as manage_database
 from designate.sqlalchemy import utils as sqlalchemy_utils
 
@@ -55,6 +56,7 @@ cfg.CONF.import_opt('cache_driver', 'designate.pool_manager',
 cfg.CONF.import_opt('connection',
                     'designate.pool_manager.cache.impl_sqlalchemy',
                     group='pool_manager_cache:sqlalchemy')
+pool_id = cfg.CONF['service:central'].default_pool_id
 
 
 class NotifierFixture(fixtures.Fixture):
@@ -249,12 +251,21 @@ class TestCase(base.BaseTestCase):
     }]
 
     pool_attributes_fixtures = [
-        {'pool_id': 'bbaa1d0b-619f-41ed-8c26-2b61c42e7a4b',
+        {'pool_id': pool_id,
          'key': 'name_server',
          'value': 'ns1.example.com.'},
-        {'pool_id': 'a7f5a834-dbfd-4ecc-83cd-550785b183c9',
+        {'pool_id': pool_id,
          'key': 'scope',
          'value': 'public'}
+    ]
+
+    pool_attribute_nameserver_fixtures = [
+        {'pool_id': pool_id,
+         'key': 'name_server',
+         'value': 'ns1.example.org'},
+        {'pool_id': pool_id,
+         'key': 'name_server',
+         'value': 'ns2.example.org'},
     ]
 
     pool_manager_status_fixtures = [{
@@ -349,6 +360,8 @@ class TestCase(base.BaseTestCase):
         self.central_service = self.start_service('central')
 
         self.admin_context = self.get_admin_context()
+        storage_driver = cfg.CONF['service:central'].storage_driver
+        self.storage = storage.get_storage(storage_driver)
 
     def _setup_pool_manager_cache(self):
 
@@ -502,6 +515,13 @@ class TestCase(base.BaseTestCase):
         _values.update(values)
         return _values
 
+    def get_pool_attribute_nameserver_fixtures(self, fixture=0, values=None):
+        values = values or {}
+
+        _values = copy.copy(self.pool_attribute_nameserver_fixtures[fixture])
+        _values.update(values)
+        return _values
+
     def get_pool_manager_status_fixture(self, fixture=0, values=None):
         values = values or {}
 
@@ -523,7 +543,7 @@ class TestCase(base.BaseTestCase):
         _nameserver_values = self.get_nameserver_fixture(
             fixture=fixture, values=None)
         _values['nameservers'] = objects.NameServerList(
-            objects=[objects.NameServer(key='nameserver', value=r)
+            objects=[objects.NameServer(key='name_server', value=r)
                      for r in _nameserver_values])
 
         return _values
@@ -556,13 +576,31 @@ class TestCase(base.BaseTestCase):
         _values.update(values)
         return _values
 
-    def create_server(self, **kwargs):
+    def create_nameserver(self, **kwargs):
         context = kwargs.pop('context', self.admin_context)
         fixture = kwargs.pop('fixture', 0)
 
-        values = self.get_server_fixture(fixture=fixture, values=kwargs)
-        return self.central_service.create_server(
-            context, objects.Server(**values))
+        values = self.get_pool_attribute_nameserver_fixtures(fixture=fixture,
+                                                             values=kwargs)
+
+        nameserver = objects.PoolAttribute(**values)
+
+        # Get the default pool
+        pool = self.central_service.get_pool(self.admin_context, pool_id)
+
+        # Add the new PoolAttribute to the pool as a nameserver
+        pool.nameservers.append(nameserver)
+
+        # Update the pool
+        self.central_service.update_pool(self.admin_context, pool)
+
+        # Get the new PoolAttribute from the db in order to return it
+        created_nameserver = self.storage.find_pool_attribute(
+            context=context,
+            criterion=values
+        )
+
+        return created_nameserver
 
     def create_tld(self, **kwargs):
         context = kwargs.pop('context', self.admin_context)
@@ -600,9 +638,15 @@ class TestCase(base.BaseTestCase):
         fixture = kwargs.pop('fixture', 0)
 
         try:
-            # We always need a server to create a domain..
-            self.create_server()
-        except exceptions.DuplicateServer:
+            # We always need a server to create a server
+            nameservers = self.storage.find_pool_attributes(
+                context=self.admin_context,
+                criterion={'pool_id': pool_id,
+                           'key': 'name_server'}
+            )
+            if len(nameservers) == 0:
+                self.create_nameserver()
+        except exceptions.DuplicatePoolAttribute:
             pass
 
         values = self.get_domain_fixture(fixture=fixture, values=kwargs)

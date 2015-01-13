@@ -186,92 +186,6 @@ class CentralServiceTest(CentralTestCase):
                     self.central_service._is_valid_ttl(
                         context, values['ttl'])
 
-    # Server Tests
-    def test_create_server(self):
-        values = dict(
-            name='ns1.example.org.'
-        )
-
-        # Create a server
-        server = self.central_service.create_server(
-            self.admin_context, server=objects.Server(**values))
-
-        # Ensure all values have been set correctly
-        self.assertIsNotNone(server['id'])
-        self.assertEqual(server['name'], values['name'])
-
-    def test_find_servers(self):
-        # Ensure we have no servers to start with.
-        servers = self.central_service.find_servers(self.admin_context)
-        self.assertEqual(len(servers), 0)
-
-        # Create a single server (using default values)
-        self.create_server()
-
-        # Ensure we can retrieve the newly created server
-        servers = self.central_service.find_servers(self.admin_context)
-        self.assertEqual(len(servers), 1)
-        self.assertEqual(servers[0]['name'], 'ns1.example.org.')
-
-        # Create a second server
-        self.create_server(name='ns2.example.org.')
-
-        # Ensure we can retrieve both servers
-        servers = self.central_service.find_servers(self.admin_context)
-        self.assertEqual(len(servers), 2)
-        self.assertEqual(servers[0]['name'], 'ns1.example.org.')
-        self.assertEqual(servers[1]['name'], 'ns2.example.org.')
-
-    def test_get_server(self):
-        # Create a server
-        server_name = 'ns%d.example.org.' % random.randint(10, 1000)
-        expected_server = self.create_server(name=server_name)
-
-        # Retrieve it, and ensure it's the same
-        server = self.central_service.get_server(
-            self.admin_context, expected_server['id'])
-
-        self.assertEqual(server['id'], expected_server['id'])
-        self.assertEqual(server['name'], expected_server['name'])
-
-    def test_update_server(self):
-        # Create a server
-        server = self.create_server(name='ns1.example.org.')
-
-        # Update the Object
-        server.name = 'ns2.example.org.'
-
-        # Perform the update
-        self.central_service.update_server(self.admin_context, server)
-
-        # Fetch the server again
-        server = self.central_service.get_server(self.admin_context, server.id)
-
-        # Ensure the new value took
-        self.assertEqual('ns2.example.org.', server.name)
-
-    def test_delete_server(self):
-        # Create a server
-        server = self.create_server()
-
-        # Create a second server
-        server2 = self.create_server(fixture=1)
-
-        # Delete one server
-        self.central_service.delete_server(self.admin_context, server['id'])
-
-        # Fetch the server again, ensuring an exception is raised
-        self.assertRaises(
-            exceptions.ServerNotFound,
-            self.central_service.get_server,
-            self.admin_context, server['id'])
-
-        # Try to delete last remaining server - expect exception
-        self.assertRaises(
-            exceptions.LastServerDeleteNotAllowed,
-            self.central_service.delete_server, self.admin_context,
-            server2['id'])
-
     # TLD Tests
     def test_create_tld(self):
         # Create a TLD with one label
@@ -458,7 +372,7 @@ class CentralServiceTest(CentralTestCase):
     # Domain Tests
     def _test_create_domain(self, values):
         # Create a server
-        self.create_server()
+        self.create_nameserver()
 
         # Reset the list of notifications
         self.reset_notifications()
@@ -629,7 +543,7 @@ class CentralServiceTest(CentralTestCase):
         )
 
         # Create a server
-        self.create_server()
+        self.create_nameserver()
 
         # Create a zone that is blacklisted
         domain = self.central_service.create_domain(
@@ -665,7 +579,7 @@ class CentralServiceTest(CentralTestCase):
 
     def test_create_domain_invalid_tld_fail(self):
         # Create a server
-        self.create_server()
+        self.create_nameserver()
 
         # add a tld for com
         self.create_tld(fixture=0)
@@ -700,7 +614,7 @@ class CentralServiceTest(CentralTestCase):
         values['ttl'] = 0
 
         # Create a server
-        self.create_server()
+        self.create_nameserver()
 
         with testtools.ExpectedException(exceptions.InvalidTTL):
                     self.central_service.create_domain(
@@ -714,7 +628,7 @@ class CentralServiceTest(CentralTestCase):
         values['ttl'] = -100
 
         # Create a server
-        self.create_server()
+        self.create_nameserver()
 
         # Create domain with random TTL
         domain = self.central_service.create_domain(
@@ -1856,7 +1770,7 @@ class CentralServiceTest(CentralTestCase):
             self.central_service.count_records(self.get_context())
 
     def test_get_floatingip_no_record(self):
-        self.create_server()
+        self.create_nameserver()
 
         context = self.get_context(tenant='a')
 
@@ -1871,7 +1785,7 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(None, fip_ptr['ptrdname'])
 
     def test_get_floatingip_with_record(self):
-        self.create_server()
+        self.create_nameserver()
 
         context = self.get_context(tenant='a')
 
@@ -1899,7 +1813,7 @@ class CentralServiceTest(CentralTestCase):
                 context, fip['region'], fip['id'])
 
     def test_get_floatingip_deallocated_and_invalidate(self):
-        self.create_server()
+        self.create_nameserver()
 
         context_a = self.get_context(tenant='a')
         elevated_a = context_a.elevated()
@@ -1978,7 +1892,7 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(None, fips[0]['description'])
 
     def test_list_floatingips_with_record(self):
-        self.create_server()
+        self.create_nameserver()
 
         context = self.get_context(tenant='a')
 
@@ -1999,7 +1913,7 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(fip_ptr['description'], fips[0]['description'])
 
     def test_list_floatingips_deallocated_and_invalidate(self):
-        self.create_server()
+        self.create_nameserver()
 
         context_a = self.get_context(tenant='a')
         elevated_a = context_a.elevated()
@@ -2056,7 +1970,7 @@ class CentralServiceTest(CentralTestCase):
             self.central_service.find_record(elevated_a, criterion)
 
     def test_set_floatingip(self):
-        self.create_server()
+        self.create_nameserver()
 
         context = self.get_context(tenant='a')
 
@@ -2073,7 +1987,7 @@ class CentralServiceTest(CentralTestCase):
         self.assertIsNotNone(fip_ptr['ttl'])
 
     def test_set_floatingip_removes_old_record(self):
-        self.create_server()
+        self.create_nameserver()
 
         context_a = self.get_context(tenant='a')
         elevated_a = context_a.elevated()
@@ -2146,7 +2060,7 @@ class CentralServiceTest(CentralTestCase):
                 context, fip['region'], fip['id'], fixture)
 
     def test_unset_floatingip(self):
-        self.create_server()
+        self.create_nameserver()
 
         context = self.get_context(tenant='a')
 
@@ -2324,8 +2238,8 @@ class CentralServiceTest(CentralTestCase):
         # Anytime a zone is created, an NS recordset should be
         # automatically be created, with a record for each server
 
-        # Create a server
-        server = self.create_server(name='ns1.example.org.')
+        # Create a nameserver
+        nameserver = self.create_nameserver(value='ns1.example.org.')
 
         # Create a zone
         zone = self.create_domain(name='example3.org.')
@@ -2339,20 +2253,14 @@ class CentralServiceTest(CentralTestCase):
         self.assertIsNotNone(ns.id)
         self.assertEqual('NS', ns.type)
         self.assertIsNotNone(ns.records)
-        self.assertEqual(ns.records[0].data, server.name)
+        self.assertEqual(ns.records[0].data, nameserver.value)
 
-    def test_update_ns(self):
+    def test_add_ns(self):
         # Anytime a server is created, the NS recordset for each zone
         # should be automatically updated to contain the new server
 
         # Create a server
-        server1 = self.create_server(name='ns1.example.net.')
-
-        servers = self.central_service.find_servers(self.admin_context)
-        if len(servers) == 0:
-            LOG.debug("There are no servers")
-        for s in servers:
-            LOG.debug("Server name is %s" % s.name)
+        nameserver1 = self.create_nameserver(value='ns1.example.net.')
 
         # Create a zone
         zone = self.create_domain(name='example3.net.')
@@ -2363,18 +2271,14 @@ class CentralServiceTest(CentralTestCase):
             self.admin_context,
             criterion={'domain_id': zone['id'], 'type': "NS"})
 
-        records = ns_rs.records
-        for r in records:
-            LOG.debug("Record data is %s" % r.data)
-
         # Ensure all values have been set correctly
         self.assertIsNotNone(ns_rs.id)
         self.assertEqual('NS', ns_rs.type)
         self.assertIsNotNone(ns_rs.records)
-        self.assertEqual(ns_rs.records[0].data, server1.name)
+        self.assertEqual(ns_rs.records[0].data, nameserver1.value)
 
         # Create another server
-        server2 = self.create_server(name='ns2.example.net.')
+        nameserver2 = self.create_nameserver(value='ns2.example.net.')
 
         # Get the NS recordset again
         ns_rs = self.central_service.find_recordset(
@@ -2384,12 +2288,11 @@ class CentralServiceTest(CentralTestCase):
         # Get zone again to check serial number
         updated_zone = self.central_service.get_domain(self.admin_context,
                                                        zone.id)
-
         new_serial = updated_zone.serial
 
         # Ensure another record was added to the recordset
-        self.assertEqual(ns_rs.records[0].data, server1.name)
-        self.assertEqual(ns_rs.records[2].data, server2.name)
+        self.assertEqual(ns_rs.records[0].data, nameserver1.value)
+        self.assertEqual(ns_rs.records[1].data, nameserver2.value)
         self.assertThat(new_serial, GreaterThan(original_serial))
 
     # Pool Tests
@@ -2519,7 +2422,7 @@ class CentralServiceTest(CentralTestCase):
 
         nameserver_values = self.get_nameserver_fixture(fixture=1)
         pool_nameservers = pool.nameservers = objects.NameServerList(
-            objects=[objects.NameServer(key='nameserver', value=r)
+            objects=[objects.NameServer(key='name_server', value=r)
                      for r in nameserver_values])
 
         # Update pool

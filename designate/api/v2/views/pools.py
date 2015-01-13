@@ -47,7 +47,7 @@ class PoolsView(base_view.BaseView):
 
         if 'nameservers' in result:
             result['nameservers'] = objects.NameServerList(
-                objects=[objects.NameServer(key='nameserver', value=r)
+                objects=[objects.NameServer(key='name_server', value=r)
                          for r in result['nameservers']])
 
         if 'attributes' in result:

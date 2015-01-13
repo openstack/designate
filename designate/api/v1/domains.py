@@ -19,7 +19,7 @@ from designate.openstack.common import log as logging
 from designate import schema
 from designate.api.v1 import load_values
 from designate.central import rpcapi as central_rpcapi
-from designate.objects import Domain
+from designate import objects
 
 
 LOG = logging.getLogger(__name__)
@@ -27,6 +27,19 @@ blueprint = flask.Blueprint('domains', __name__)
 domain_schema = schema.Schema('v1', 'domain')
 domains_schema = schema.Schema('v1', 'domains')
 servers_schema = schema.Schema('v1', 'servers')
+
+
+def _poolattribute_to_server(pool_attribute):
+    server_values = {
+        'id': pool_attribute.id,
+        'created_at': pool_attribute.created_at,
+        'updated_at': pool_attribute.updated_at,
+        'version': pool_attribute.version,
+        'name': pool_attribute.value
+    }
+
+    server = objects.Server(**server_values)
+    return server
 
 
 @blueprint.route('/schemas/domain', methods=['GET'])
@@ -49,7 +62,7 @@ def create_domain():
     domain_schema.validate(values)
 
     central_api = central_rpcapi.CentralAPI.get_instance()
-    domain = central_api.create_domain(context, Domain(**values))
+    domain = central_api.create_domain(context, objects.Domain(**values))
 
     response = flask.jsonify(domain_schema.filter(domain))
     response.status_int = 201
@@ -117,6 +130,12 @@ def get_domain_servers(domain_id):
     context = flask.request.environ.get('context')
 
     central_api = central_rpcapi.CentralAPI.get_instance()
-    servers = central_api.get_domain_servers(context, domain_id)
+
+    nameservers = central_api.get_domain_servers(context, domain_id)
+
+    servers = objects.ServerList()
+
+    for ns in nameservers:
+        servers.append(_poolattribute_to_server(ns))
 
     return flask.jsonify(servers_schema.filter({'servers': servers}))

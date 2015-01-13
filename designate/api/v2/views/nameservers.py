@@ -38,5 +38,5 @@ class NameServerView(base_view.BaseView):
         """Basic view of a nameserver"""
         return {
             "id": nameserver["id"],
-            "name": nameserver["name"]
+            "name": nameserver["value"]
         }
