@@ -16,7 +16,7 @@
 from sqlalchemy import (Table, MetaData, Column, Integer, DateTime, Enum,
                         UniqueConstraint, ForeignKeyConstraint)
 
-from oslo.utils import timeutils
+from oslo_utils import timeutils
 
 from designate import utils
 from designate.sqlalchemy.types import UUID

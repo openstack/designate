@@ -19,7 +19,7 @@ import time
 import requests
 from oslo.config import cfg
 from oslo.serialization import jsonutils as json
-from oslo.utils import importutils
+from oslo_utils import importutils
 
 from designate import exceptions
 from designate.openstack.common import log as logging

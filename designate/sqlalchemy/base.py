@@ -17,9 +17,9 @@ import abc
 import threading
 
 import six
-from oslo_db.sqlalchemy import utils as oslo_utils
+from oslo_db.sqlalchemy import utils as oslodb_utils
 from oslo_db import exception as oslo_db_exception
-from oslo.utils import timeutils
+from oslo_utils import timeutils
 from sqlalchemy import exc as sqlalchemy_exc
 from sqlalchemy import select, or_
 
@@ -235,7 +235,7 @@ class SQLAlchemy(object):
                 results = resultproxy.fetchall()
 
                 return _set_listobject_from_models(list_cls(), results)
-            except oslo_utils.InvalidSortKey as sort_key_error:
+            except oslodb_utils.InvalidSortKey as sort_key_error:
                 raise exceptions.InvalidSortKey(sort_key_error.message)
             # Any ValueErrors are propagated back to the user as is.
             # Limits, sort_dir and sort_key are checked at the API layer.

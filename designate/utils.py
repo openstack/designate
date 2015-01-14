@@ -24,7 +24,7 @@ import pkg_resources
 from jinja2 import Template
 from oslo.config import cfg
 from oslo_concurrency import processutils
-from oslo.utils import timeutils
+from oslo_utils import timeutils
 
 from designate import exceptions
 from designate.openstack.common import log as logging
