@@ -80,7 +80,7 @@ ln -s /opt/stack/designate/rally-scenarios/plugins /home/vagrant/.rally/plugins
 SCRIPT
 
   config.vm.define "ubuntu" do |ubuntu|
-    ubuntu.vm.box = "rhefner/devstack-dependencies"
+    ubuntu.vm.box = "ubuntu/trusty64"
 
     ubuntu.vm.network :private_network, ip: "192.168.27.100"
 
