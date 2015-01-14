@@ -5,6 +5,7 @@ TAGS
 *.egg
 build
 .coverage
+.coverage.*
 .tox
 cover
 venv

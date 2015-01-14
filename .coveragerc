@@ -1,0 +1,7 @@
+[run]
+branch = True
+source = designate
+omit = designate/tests/*,designate/openstack/*
+
+[report]
+ignore-errors = True
