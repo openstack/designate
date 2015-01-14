@@ -1,5 +1,5 @@
 # Translations template for designate.
-# Copyright (C) 2014 ORGANIZATION
+# Copyright (C) 2015 ORGANIZATION
 # This file is distributed under the same license as the designate project.
 #
 # Translators:
@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Designate\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-12-16 06:16+0000\n"
-"PO-Revision-Date: 2014-12-15 22:08+0000\n"
+"POT-Creation-Date: 2015-01-14 06:08+0000\n"
+"PO-Revision-Date: 2015-01-13 22:24+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: English (United Kingdom) (http://www.transifex.com/projects/p/"
 "designate/language/en_GB/)\n"
@@ -35,6 +35,6 @@ msgid ""
 msgstr ""
 "Attempted to delete a domain which is not present in the backend. ID: %s"
 
-#: designate/central/service.py:862
-msgid "No servers configured. Please create at least one server"
-msgstr "No servers configured. Please create at least one server"
+#: designate/central/service.py:763
+msgid "No nameservers configured. Please create at least one nameserver"
+msgstr ""

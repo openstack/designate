@@ -1,5 +1,5 @@
 # Translations template for designate.
-# Copyright (C) 2014 ORGANIZATION
+# Copyright (C) 2015 ORGANIZATION
 # This file is distributed under the same license as the designate project.
 #
 # Translators:
@@ -8,9 +8,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Designate\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-12-18 06:09+0000\n"
-"PO-Revision-Date: 2014-12-17 12:37+0000\n"
-"Last-Translator: Sungjin Kang <potopro@gmail.com>\n"
+"POT-Creation-Date: 2015-01-14 06:08+0000\n"
+"PO-Revision-Date: 2015-01-13 22:24+0000\n"
+"Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: Korean (Korea) (http://www.transifex.com/projects/p/designate/"
 "language/ko_KR/)\n"
 "Language: ko_KR\n"
@@ -34,6 +34,6 @@ msgid ""
 "Attempted to delete a domain which is not present in the backend. ID: %s"
 msgstr "백엔드에 존재하지 않는 도메인을 삭제하려고 했습니다. ID: %s"
 
-#: designate/central/service.py:862
-msgid "No servers configured. Please create at least one server"
-msgstr "서버가 구성되어있지 않습니다. 적어도 하나이상의 서버를 생성하십시오."
+#: designate/central/service.py:763
+msgid "No nameservers configured. Please create at least one nameserver"
+msgstr ""
