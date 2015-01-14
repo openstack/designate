@@ -18,8 +18,8 @@
 import logging
 
 import sqlalchemy
-from oslo.db.sqlalchemy import utils
-from oslo.db.sqlalchemy.migration_cli import manager
+from oslo_db.sqlalchemy import utils
+from oslo_db.sqlalchemy.migration_cli import manager
 
 from designate.i18n import _
 from designate.i18n import _LW
