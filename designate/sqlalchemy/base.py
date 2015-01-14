@@ -17,8 +17,8 @@ import abc
 import threading
 
 import six
-from oslo.db.sqlalchemy import utils as oslo_utils
-from oslo.db import exception as oslo_db_exception
+from oslo_db.sqlalchemy import utils as oslo_utils
+from oslo_db import exception as oslo_db_exception
 from oslo.utils import timeutils
 from sqlalchemy import exc as sqlalchemy_exc
 from sqlalchemy import select, or_

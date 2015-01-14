@@ -17,7 +17,7 @@ import copy
 import threading
 
 from oslo.config import cfg
-from oslo.db import options
+from oslo_db import options
 from oslo.utils import excutils
 from sqlalchemy.sql import select
 

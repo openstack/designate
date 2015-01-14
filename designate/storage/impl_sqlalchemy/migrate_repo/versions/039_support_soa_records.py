@@ -18,7 +18,7 @@ import hashlib
 from sqlalchemy import MetaData, Table, Enum
 from sqlalchemy.sql import select
 from migrate.changeset.constraint import UniqueConstraint
-from oslo.db import exception
+from oslo_db import exception
 
 from designate import utils
 

@@ -17,7 +17,7 @@ import time
 import hashlib
 
 from oslo.config import cfg
-from oslo.db import options
+from oslo_db import options
 from sqlalchemy import select, distinct, func
 from sqlalchemy.sql.expression import or_
 
