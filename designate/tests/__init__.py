@@ -38,6 +38,7 @@ from designate import exceptions
 from designate.network_api import fake as fake_network_api
 from designate import network_api
 from designate import objects
+from designate import rpc
 from designate import storage
 from designate.manage import database as manage_database
 from designate.sqlalchemy import utils as sqlalchemy_utils
@@ -69,6 +70,21 @@ class NotifierFixture(fixtures.Fixture):
 
     def clear(self):
         return test_notifier.reset()
+
+
+class RPCFixture(fixtures.Fixture):
+
+    def __init__(self, conf):
+        self.conf = conf
+
+    def setUp(self):
+        super(RPCFixture, self).setUp()
+        rpc.init(self.conf)
+        self.addCleanup(self.deinit)
+
+    def deinit(self):
+        if rpc.initialized():
+            rpc.cleanup()
 
 
 class ServiceFixture(fixtures.Fixture):
@@ -317,6 +333,8 @@ class TestCase(base.BaseTestCase):
         self.config(notification_driver='test')
 
         self.notifications = self.useFixture(NotifierFixture())
+
+        self.useFixture(RPCFixture(cfg.CONF))
 
         self.config(
             storage_driver='sqlalchemy',
