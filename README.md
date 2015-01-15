@@ -29,7 +29,7 @@ To build the documentation from the restructred text source, do the following:
 ````
 cd doc
 pip install -r requirements.txt
-sphinx-build  source/ html/
+sphinx-build  source/ build/html/
 ````
 now point your browser at html/index.html
 (the official documentation is published to [docs.openstack.org](http://docs.openstack.org/developer/designate) by the
