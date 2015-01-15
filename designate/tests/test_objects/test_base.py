@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import copy
+from operator import attrgetter
 
 import testtools
 
@@ -147,6 +148,12 @@ class DesignateObjectTest(tests.TestCase):
         obj.name = 'MyName'
         self.assertEqual('MyName', obj.name)
         self.assertEqual(2, len(obj.obj_what_changed()))
+
+    def test_setattr_neg(self):
+        obj = TestObject()
+
+        with testtools.ExpectedException(AttributeError):
+            obj.badthing = 'demons'
 
     def test_to_primitive(self):
         obj = TestObject(id='MyID')
@@ -536,3 +543,159 @@ class ListObjectMixinTest(tests.TestCase):
             'designate_object.original_values': {},
         }
         self.assertEqual(expected, primitive)
+
+    def test_to_primitive_nested_obj(self):
+        # Create a few objects
+        obj_one = TestObject()
+        obj_two = TestObject()
+        obj_two.id = "Two"
+        obj_one.id = obj_two
+
+        # Create a ListObject
+        obj = TestObjectList(objects=[obj_one, obj_two])
+
+        primitive = obj.to_primitive()
+        expected = {
+            'designate_object.name': 'TestObjectList',
+            'designate_object.changes': ['objects'],
+            'designate_object.data': {
+                'objects': [
+                    {'designate_object.changes': ['id'],
+                     'designate_object.data': {'id':
+                        {'designate_object.changes': ['id'],
+                         'designate_object.data': {'id': 'Two'},
+                         'designate_object.name': 'TestObject',
+                         'designate_object.original_values': {}}},
+                     'designate_object.name': 'TestObject',
+                    'designate_object.original_values': {}},
+                    {'designate_object.changes': ['id'],
+                     'designate_object.data': {'id': 'Two'},
+                     'designate_object.name': 'TestObject',
+                     'designate_object.original_values': {}}]},
+            'designate_object.original_values': {}}
+
+        self.assertEqual(expected, primitive)
+
+    def test_obj_what_changed(self):
+        # Create a few objects
+        obj_one = TestObject()
+        obj_two = TestObject()
+
+        # Create a ListObject
+        obj = TestObjectList(objects=[obj_one, obj_two])
+
+        # Make sure there are no changes
+        obj.obj_reset_changes()
+
+        changes = obj.obj_what_changed()
+        expected = set([])
+
+        self.assertEqual(expected, changes)
+
+        # Make some changes
+        obj_one.id = "One"
+        obj_two.id = "Two"
+
+        changes = obj.obj_what_changed()
+        expected = set(['objects'])
+
+        self.assertEqual(expected, changes)
+
+    def test_get_slice(self):
+        # Create a few objects
+        obj_one = TestObject(id="One")
+        obj_two = TestObject(id="Two")
+
+        # Create a ListObject
+        obj = TestObjectList(objects=[obj_one, obj_two])
+
+        theslice = obj[1:]
+        expected = TestObjectList(objects=[obj_two])
+
+        self.assertEqual(expected.objects, theslice.objects)
+        self.assertNotEqual(obj.objects, theslice.objects)
+
+    def test_setitem(self):
+        # Create a few objects
+        obj_one = TestObject(id="One")
+        obj_two = TestObject(id="Two")
+
+        # Create a ListObject
+        obj = TestObjectList(objects=[obj_one, obj_two])
+
+        obj[1] = obj_one
+
+        self.assertEqual(obj.objects, [obj_one, obj_one])
+
+    def test_contains(self):
+        # Create a few objects
+        obj_one = TestObject(id="One")
+        obj_two = TestObject(id="Two")
+        obj_three = TestObject(id="Three")
+
+        # Create a ListObject
+        obj = TestObjectList(objects=[obj_one, obj_two])
+
+        self.assertTrue(obj_one in obj)
+        self.assertTrue(obj_two in obj)
+        self.assertFalse(obj_three in obj)
+
+    def test_extend(self):
+        # Create a few objects
+        obj_one = TestObject(id="One")
+        obj_two = TestObject(id="Two")
+        obj_three = TestObject(id="Three")
+
+        # Create a ListObject
+        ext_obj = TestObjectList(objects=[obj_one])
+        obj = TestObjectList(objects=[obj_one, obj_two, obj_three])
+
+        ext_obj.extend([obj_two, obj_three])
+
+        self.assertEqual(obj.objects, ext_obj.objects)
+
+    def test_insert(self):
+        # Create a few objects
+        obj_one = TestObject(id="One")
+        obj_two = TestObject(id="Two")
+        obj_three = TestObject(id="Three")
+
+        # Create a ListObject
+        obj = TestObjectList(objects=[obj_one, obj_three])
+
+        obj.insert(1, obj_two)
+
+        self.assertEqual(obj.objects, [obj_one, obj_two, obj_three])
+
+    def test_index(self):
+        # Create a few objects
+        obj_one = TestObject(id="One")
+        obj_two = TestObject(id="Two")
+        obj_three = TestObject(id="Three")
+
+        # Create a ListObject
+        obj = TestObjectList(objects=[obj_one, obj_two, obj_three])
+
+        self.assertEqual(1, obj.index(obj_two))
+
+    def test_count(self):
+        # Create a few objects
+        obj_one = TestObject(id="One")
+        obj_two = TestObject(id="Two")
+
+        # Create a ListObject
+        obj = TestObjectList(objects=[obj_one, obj_two, obj_two])
+
+        self.assertEqual(2, obj.count(obj_two))
+
+    def test_sort(self):
+        # Create a few objects
+        obj_one = TestObject(id=1)
+        obj_two = TestObject(id=2)
+        obj_three = TestObject(id=3)
+
+        # Create a ListObject
+        obj = TestObjectList(objects=[obj_two, obj_three, obj_one])
+        obj.sort(key=attrgetter('id'))
+
+        self.assertEqual(obj.objects, [obj_one, obj_two, obj_three])

@@ -471,7 +471,7 @@ class ListObjectMixin(object):
 
     def insert(self, index, value):
         """Insert a value into the list at the given index"""
-        return self.objects.insert(index)
+        return self.objects.insert(index, value)
 
     def remove(self, value):
         """Remove a value from the list"""
