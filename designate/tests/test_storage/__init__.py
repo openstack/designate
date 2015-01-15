@@ -16,6 +16,7 @@
 import uuid
 import math
 
+import mock
 import testtools
 from oslo.config import cfg
 from oslo_log import log as logging
@@ -483,6 +484,14 @@ class StorageTestCase(object):
         tenants = self.storage.count_tenants(context)
         self.assertEqual(tenants, 2)
 
+    def test_count_tenants_none_result(self):
+        rp = mock.Mock()
+        rp.fetchone.return_value = None
+        with mock.patch.object(self.storage.session, 'execute',
+                               return_value=rp):
+            tenants = self.storage.count_tenants(self.admin_context)
+            self.assertEqual(tenants, 0)
+
     # Domain Tests
     def test_create_domain(self):
         pool_id = cfg.CONF['service:central'].default_pool_id
@@ -712,6 +721,14 @@ class StorageTestCase(object):
 
         # well, did we get 1?
         self.assertEqual(domains, 1)
+
+    def test_count_domains_none_result(self):
+        rp = mock.Mock()
+        rp.fetchone.return_value = None
+        with mock.patch.object(self.storage.session, 'execute',
+                               return_value=rp):
+            domains = self.storage.count_domains(self.admin_context)
+            self.assertEqual(domains, 0)
 
     def test_create_recordset(self):
         domain = self.create_domain()
@@ -969,6 +986,9 @@ class StorageTestCase(object):
         # Update the Object
         recordset.ttl = 1800
 
+        # Change records as well
+        recordset.records.append(objects.Record(data="10.0.0.1"))
+
         # Perform the update
         recordset = self.storage.update_recordset(self.admin_context,
                                                   recordset)
@@ -1115,6 +1135,14 @@ class StorageTestCase(object):
         # we should have 3 recordsets now, including SOA & NS
         recordsets = self.storage.count_recordsets(self.admin_context)
         self.assertEqual(recordsets, 3)
+
+    def test_count_recordsets_none_result(self):
+        rp = mock.Mock()
+        rp.fetchone.return_value = None
+        with mock.patch.object(self.storage.session, 'execute',
+                               return_value=rp):
+            recordsets = self.storage.count_recordsets(self.admin_context)
+            self.assertEqual(recordsets, 0)
 
     def test_create_record(self):
         domain = self.create_domain()
@@ -1393,11 +1421,26 @@ class StorageTestCase(object):
         records = self.storage.count_records(self.admin_context)
         self.assertEqual(records, 3)
 
+    def test_count_records_none_result(self):
+        rp = mock.Mock()
+        rp.fetchone.return_value = None
+        with mock.patch.object(self.storage.session, 'execute',
+                               return_value=rp):
+            records = self.storage.count_records(self.admin_context)
+            self.assertEqual(records, 0)
+
     def test_ping(self):
         pong = self.storage.ping(self.admin_context)
 
         self.assertEqual(pong['status'], True)
         self.assertIsNotNone(pong['rtt'])
+
+    def test_ping_fail(self):
+        with mock.patch.object(self.storage.engine, "execute",
+                               side_effect=Exception):
+            result = self.storage.ping(self.admin_context)
+            self.assertEqual(False, result['status'])
+            self.assertIsNotNone(result['rtt'])
 
     # TLD Tests
     def test_create_tld(self):
@@ -1914,6 +1957,22 @@ class StorageTestCase(object):
             self.storage.get_zone_transfer_request(
                 tenant_3_context, result.id)
 
+    def test_find_zone_transfer_requests(self):
+        domain = self.create_domain()
+
+        values = {
+            'tenant_id': self.admin_context.tenant,
+            'domain_id': domain.id,
+            'key': 'qwertyuiop'
+        }
+
+        self.storage.create_zone_transfer_request(
+            self.admin_context, objects.ZoneTransferRequest(**values))
+
+        requests = self.storage.find_zone_transfer_requests(
+            self.admin_context, {"tenant_id": self.admin_context.tenant})
+        self.assertEqual(len(requests), 1)
+
     def test_delete_zone_transfer_request(self):
         domain = self.create_domain()
         zt_request = self.create_zone_transfer_request(domain)
@@ -1963,6 +2022,40 @@ class StorageTestCase(object):
 
         self.assertEqual(result['tenant_id'], self.admin_context.tenant)
         self.assertIn('status', result)
+
+    def test_find_zone_transfer_accepts(self):
+        domain = self.create_domain()
+        zt_request = self.create_zone_transfer_request(domain)
+        values = {
+            'tenant_id': self.admin_context.tenant,
+            'zone_transfer_request_id': zt_request.id,
+            'domain_id': domain.id,
+            'key': zt_request.key
+        }
+
+        self.storage.create_zone_transfer_accept(
+            self.admin_context, objects.ZoneTransferAccept(**values))
+
+        accepts = self.storage.find_zone_transfer_accepts(
+            self.admin_context, {"tenant_id": self.admin_context.tenant})
+        self.assertEqual(len(accepts), 1)
+
+    def test_find_zone_transfer_accept(self):
+        domain = self.create_domain()
+        zt_request = self.create_zone_transfer_request(domain)
+        values = {
+            'tenant_id': self.admin_context.tenant,
+            'zone_transfer_request_id': zt_request.id,
+            'domain_id': domain.id,
+            'key': zt_request.key
+        }
+
+        result = self.storage.create_zone_transfer_accept(
+            self.admin_context, objects.ZoneTransferAccept(**values))
+
+        accept = self.storage.find_zone_transfer_accept(
+            self.admin_context, {"id": result.id})
+        self.assertEqual(accept.id, result.id)
 
     def test_transfer_zone_ownership(self):
         tenant_1_context = self.get_context(tenant='1')

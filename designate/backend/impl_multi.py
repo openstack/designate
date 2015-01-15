@@ -128,25 +128,6 @@ class MultiBackend(base.Backend):
                  for record in self.central.find_records(
                      context, {'domain_id': full_domain['id']})]
 
-    def create_server(self, context, server):
-        self.master.create_server(context, server)
-        try:
-            self.slave.create_server(context, server)
-        except Exception:
-            with excutils.save_and_reraise_exception():
-                self.master.delete_server(context, server)
-
-    def update_server(self, context, server):
-        self.master.update_server(context, server)
-
-    def delete_server(self, context, server):
-        self.slave.delete_server(context, server)
-        try:
-            self.master.delete_server(context, server)
-        except Exception:
-            with excutils.save_and_reraise_exception():
-                self.slave.create_server(context, server)
-
     def create_recordset(self, context, domain, recordset):
         self.master.create_recordset(context, domain, recordset)
 

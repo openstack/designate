@@ -838,16 +838,6 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
                 exceptions.ZoneTransferAcceptNotFound, criterion,
                 one, marker, limit, sort_key, sort_dir)
 
-    def _get_domain_name(self, context, domain_id, all_tenants=False):
-
-        if all_tenants:
-            ctxt = context.elevated()
-            ctxt.all_tenants = True
-        else:
-            ctxt = context
-
-        return self.get_domain(ctxt, domain_id).name
-
     def create_zone_transfer_accept(self, context, zone_transfer_accept):
 
         return self._create(

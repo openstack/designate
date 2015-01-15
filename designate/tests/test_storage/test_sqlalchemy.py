@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from oslo_log import log as logging
+import mock
 
 from designate import storage
 from designate.tests import TestCase
@@ -27,3 +28,11 @@ class SqlalchemyStorageTest(StorageTestCase, TestCase):
         super(SqlalchemyStorageTest, self).setUp()
 
         self.storage = storage.get_storage('sqlalchemy')
+
+    def test_ping_negative(self):
+        with mock.patch.object(self.storage.engine, 'execute',
+                               return_value=0):
+            pong = self.storage.ping(self.admin_context)
+
+            self.assertEqual(pong['status'], False)
+            self.assertIsNotNone(pong['rtt'])

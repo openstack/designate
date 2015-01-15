@@ -185,7 +185,7 @@ def notification(notification_type):
 
 
 class Service(service.RPCService):
-    RPC_API_VERSION = '4.3'
+    RPC_API_VERSION = '5.0'
 
     target = messaging.Target(version=RPC_API_VERSION)
 

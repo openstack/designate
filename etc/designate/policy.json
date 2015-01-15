@@ -18,12 +18,6 @@
     "set_quota": "rule:admin",
     "reset_quotas": "rule:admin",
 
-    "create_server": "rule:admin",
-    "find_servers": "rule:admin",
-    "get_server": "rule:admin",
-    "update_server": "rule:admin",
-    "delete_server": "rule:admin",
-
     "create_tld": "rule:admin",
     "find_tlds": "rule:admin",
     "get_tld": "rule:admin",

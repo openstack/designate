@@ -61,15 +61,6 @@ class Backend(DriverPlugin):
         raise exceptions.NotImplemented(
             'TSIG is not supported by this backend')
 
-    def create_server(self, context, server):
-        """Create a Server"""
-
-    def update_server(self, context, server):
-        """Update a Server"""
-
-    def delete_server(self, context, server):
-        """Delete a Server"""
-
     @abc.abstractmethod
     def create_domain(self, context, domain):
         """Create a DNS domain"""
@@ -310,15 +301,6 @@ class PoolBackend(Backend):
         pass
 
     def delete_tsigkey(self, context, tsigkey):
-        pass
-
-    def create_server(self, context, server):
-        pass
-
-    def update_server(self, context, server):
-        pass
-
-    def delete_server(self, context, server):
         pass
 
     @abc.abstractmethod
