@@ -16,7 +16,6 @@
 import copy
 import threading
 
-from oslo.config import cfg
 from oslo_db import options
 from oslo.utils import excutils
 from sqlalchemy.sql import select
@@ -29,7 +28,6 @@ from designate.backend.impl_powerdns import tables
 from designate.sqlalchemy import session
 
 LOG = logging.getLogger(__name__)
-CONF = cfg.CONF
 
 
 def _map_col(keys, col):
@@ -51,10 +49,11 @@ class PowerDNSBackend(base.PoolBackend):
 
         return opts
 
-    def __init__(self, *args, **kwargs):
-        super(PowerDNSBackend, self).__init__(*args, **kwargs)
+    def __init__(self, backend_options):
+        super(PowerDNSBackend, self).__init__(backend_options)
 
         self.local_store = threading.local()
+        self.masters = [m for m in self.get_backend_option('masters')]
 
     @property
     def session(self):
@@ -118,7 +117,7 @@ class PowerDNSBackend(base.PoolBackend):
             domain_values = {
                 'designate_id': domain['id'],
                 'name': domain['name'].rstrip('.'),
-                'master': ','.join(CONF['backend:powerdns'].masters),
+                'master': ','.join(self.masters),
                 'type': 'SLAVE',
                 'account': context.tenant
             }
@@ -131,6 +130,8 @@ class PowerDNSBackend(base.PoolBackend):
             self.session.commit()
 
     def delete_domain(self, context, domain):
+        # TODO(kiall): We should make this match create_domain with regard to
+        #              transactions.
         try:
             self._get(tables.domains, domain['id'], exceptions.DomainNotFound,
                       id_col=tables.domains.c.designate_id)
