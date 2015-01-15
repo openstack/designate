@@ -242,7 +242,7 @@ class Service(service.RPCService):
 
             # Now check that the domain name is not the same as a TLD
             try:
-                stripped_domain_name = domain_name.strip('.').lower()
+                stripped_domain_name = domain_name.rstrip('.').lower()
                 self.storage.find_tld(
                     context,
                     {'name': stripped_domain_name})
@@ -381,11 +381,8 @@ class Service(service.RPCService):
         # Create wildcard term to catch all subdomains
         search_term = "*%s" % domain_name
 
-        try:
-            criterion = {'name': search_term}
-            subdomains = self.storage.find_domains(context, criterion)
-        except exceptions.DomainNotFound:
-            return False
+        criterion = {'name': search_term}
+        subdomains = self.storage.find_domains(context, criterion)
 
         return subdomains
 

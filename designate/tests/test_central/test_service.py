@@ -17,6 +17,7 @@
 import copy
 import random
 
+from mock import patch
 import testtools
 from testtools.matchers import GreaterThan
 
@@ -25,7 +26,6 @@ from designate import exceptions
 from designate import objects
 from designate.tests.test_central import CentralTestCase
 
-
 LOG = logging.getLogger(__name__)
 
 
@@ -33,6 +33,18 @@ class CentralServiceTest(CentralTestCase):
     def test_stop(self):
         # Test stopping the service
         self.central_service.stop()
+
+    def test_start_with_tlds(self):
+        # Stop Service
+        self.central_service.stop()
+
+        list = objects.TldList()
+        list.append(objects.Tld(name='com.'))
+
+        with patch.object(self.central_service.storage, 'find_tlds',
+                return_value=list):
+            self.central_service.start()
+            self.assertTrue(self.central_service.check_for_tlds)
 
     def test_is_valid_domain_name(self):
         self.config(max_domain_name_len=10,
@@ -48,6 +60,27 @@ class CentralServiceTest(CentralTestCase):
         with testtools.ExpectedException(exceptions.InvalidDomainName):
             self.central_service._is_valid_domain_name(context, 'example.tld.')
 
+        with testtools.ExpectedException(exceptions.InvalidDomainName):
+            self.central_service._is_valid_domain_name(context, 'tld.')
+
+    def test_is_valid_domain_name_with_tlds(self):
+        # Stop Service
+        self.central_service.stop()
+        list = objects.TldList()
+        list.append(objects.Tld(name='com'))
+        list.append(objects.Tld(name='biz'))
+        list.append(objects.Tld(name='z'))
+
+        with patch.object(self.central_service.storage, 'find_tlds',
+                return_value=list):
+            self.central_service.start()
+
+        context = self.get_context()
+        with patch.object(self.central_service.storage, 'find_tld',
+                return_value=objects.Tld(name='biz')):
+            with testtools.ExpectedException(exceptions.InvalidDomainName):
+                self.central_service._is_valid_domain_name(context, 'biz.')
+
     def test_is_valid_recordset_name(self):
         self.config(max_recordset_name_len=18,
                     group='service:central')
@@ -62,6 +95,10 @@ class CentralServiceTest(CentralTestCase):
         with testtools.ExpectedException(exceptions.InvalidRecordSetName):
             self.central_service._is_valid_recordset_name(
                 context, domain, 'toolong.example.org.')
+
+        with testtools.ExpectedException(ValueError):
+            self.central_service._is_valid_recordset_name(
+                context, domain, 'invalidtld.example.org')
 
         with testtools.ExpectedException(exceptions.InvalidRecordSetLocation):
             self.central_service._is_valid_recordset_name(
@@ -103,6 +140,7 @@ class CentralServiceTest(CentralTestCase):
 
         result = self.central_service._is_blacklisted_domain_name(
             context, 'blacklisted.org.')
+
         self.assertTrue(result)
 
     def test_is_subdomain(self):
@@ -780,6 +818,20 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(domain.name, payload['name'])
         self.assertEqual(domain.tenant_id, payload['tenant_id'])
 
+    def test_update_domain_without_id(self):
+        # Create a domain
+        domain = self.create_domain(email='info@example.org')
+
+        # Reset the list of notifications
+        self.reset_notifications()
+
+        # Update the object
+        domain.email = 'info@example.net'
+        domain.id = None
+        # Perform the update
+        with testtools.ExpectedException(Exception):
+            self.central_service.update_domain(self.admin_context, domain)
+
     def test_update_domain_without_incrementing_serial(self):
         # Create a domain
         domain = self.create_domain(email='info@example.org')
@@ -1321,6 +1373,37 @@ class CentralServiceTest(CentralTestCase):
         # Update the recordset
         recordset.ttl = 1800
         recordset.domain_id = other_domain.id
+
+        # Ensure we get a BadRequest if we change the domain_id
+        with testtools.ExpectedException(exceptions.BadRequest):
+            self.central_service.update_recordset(
+                self.admin_context, recordset)
+
+    def test_update_recordset_immutable_tenant_id(self):
+        domain = self.create_domain()
+
+        # Create a recordset
+        recordset = self.create_recordset(domain)
+
+        # Update the recordset
+        recordset.ttl = 1800
+        recordset.tenant_id = 'other-tenant'
+
+        # Ensure we get a BadRequest if we change the domain_id
+        with testtools.ExpectedException(exceptions.BadRequest):
+            self.central_service.update_recordset(
+                self.admin_context, recordset)
+
+    def test_update_recordset_immutable_type(self):
+        domain = self.create_domain()
+
+        # Create a recordset
+        recordset = self.create_recordset(domain)
+        cname_recordset = self.create_recordset(domain, type='CNAME')
+
+        # Update the recordset
+        recordset.ttl = 1800
+        recordset.type = cname_recordset.type
 
         # Ensure we get a BadRequest if we change the domain_id
         with testtools.ExpectedException(exceptions.BadRequest):
