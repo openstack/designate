@@ -67,6 +67,16 @@ class PoolManagerServiceTest(PoolManagerTestCase):
         # NOTE: Start is already done by the fixture in start_service()
         self.service.stop()
 
+    def test_no_pool_servers_configured(self):
+        self.service.stop()
+        self.config(
+            server_ids=[],
+            group='backend:fake'
+        )
+
+        with testtools.ExpectedException(exceptions.NoPoolServersConfigured):
+            self.start_service('pool_manager')
+
     @patch.object(mdns_rpcapi.MdnsAPI, 'poll_for_serial_number')
     @patch.object(mdns_rpcapi.MdnsAPI, 'notify_zone_changed')
     def test_create_domain(self, mock_notify_zone_changed,
