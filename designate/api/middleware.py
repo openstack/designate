@@ -20,7 +20,7 @@ from oslo import messaging
 from oslo_middleware import base
 from oslo_middleware import request_id
 from oslo.serialization import jsonutils as json
-from oslo.utils import strutils
+from oslo_utils import strutils
 
 from designate import exceptions
 from designate import notifications

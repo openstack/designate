@@ -17,7 +17,7 @@ import copy
 import threading
 
 from oslo_db import options
-from oslo.utils import excutils
+from oslo_utils import excutils
 from sqlalchemy.sql import select
 
 from designate.openstack.common import log as logging

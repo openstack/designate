@@ -14,7 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from oslo.config import cfg
-from oslo.utils import timeutils
+from oslo_utils import timeutils
 
 from sqlalchemy import Integer, String, DateTime, Unicode, UniqueConstraint, \
                        Enum, ForeignKeyConstraint
