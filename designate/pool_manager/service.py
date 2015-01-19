@@ -121,31 +121,42 @@ class Service(service.RPCService):
             }
             self.server_backends.append(server_backend)
 
-        self.thread_group = threadgroup.ThreadGroup()
+        self.enable_recovery_timer = \
+            cfg.CONF['service:pool_manager'].enable_recovery_timer
+        self.enable_sync_timer = \
+            cfg.CONF['service:pool_manager'].enable_sync_timer
+
+        if self.enable_recovery_timer or self.enable_sync_timer:
+            self.thread_group = threadgroup.ThreadGroup()
 
     def start(self):
         for server_backend in self.server_backends:
             backend_instance = server_backend['backend_instance']
             backend_instance.start()
 
-        LOG.info(_LI('Starting periodic recovery timer.'))
-        self.thread_group.add_timer(
-            cfg.CONF['service:pool_manager'].periodic_recovery_interval,
-            self.periodic_recovery)
+        if self.enable_recovery_timer:
+            LOG.info(_LI('Starting periodic recovery timer.'))
+            self.thread_group.add_timer(
+                cfg.CONF['service:pool_manager'].periodic_recovery_interval,
+                self.periodic_recovery)
 
-        LOG.info(_LI('Starting periodic sync timer.'))
-        self.thread_group.add_timer(
-            cfg.CONF['service:pool_manager'].periodic_sync_interval,
-            self.periodic_sync)
+        if self.enable_sync_timer:
+            LOG.info(_LI('Starting periodic sync timer.'))
+            self.thread_group.add_timer(
+                cfg.CONF['service:pool_manager'].periodic_sync_interval,
+                self.periodic_sync)
 
         super(Service, self).start()
 
     def stop(self):
         super(Service, self).stop()
 
-        LOG.info(_LI('Stopping periodic sync timer.'))
-        LOG.info(_LI('Stopping periodic recovery timer.'))
-        self.thread_group.stop(True)
+        if self.enable_sync_timer or self.enable_recovery_timer:
+            if self.enable_sync_timer:
+                LOG.info(_LI('Stopping periodic sync timer.'))
+            if self.enable_recovery_timer:
+                LOG.info(_LI('Stopping periodic recovery timer.'))
+            self.thread_group.stop(True)
 
         for server_backend in self.server_backends:
             backend_instance = server_backend['backend_instance']
@@ -406,6 +417,7 @@ class Service(service.RPCService):
                          {'domain': domain.name,
                           'server': self._get_destination(server)})
             else:
+                # TODO(Ron): Do not log this warning on a periodic_sync.
                 LOG.warn(_LW('No need to update domain %(domain)s '
                          'on server %(server)s.') %
                          {'domain': domain.name,
