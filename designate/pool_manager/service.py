@@ -121,6 +121,9 @@ class Service(service.RPCService):
             }
             self.server_backends.append(server_backend)
 
+        if not self.server_backends:
+            raise exceptions.NoPoolServersConfigured()
+
         self.enable_recovery_timer = \
             cfg.CONF['service:pool_manager'].enable_recovery_timer
         self.enable_sync_timer = \
