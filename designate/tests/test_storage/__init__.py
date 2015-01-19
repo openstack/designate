@@ -654,6 +654,50 @@ class StorageTestCase(object):
         with testtools.ExpectedException(exceptions.DomainNotFound):
             self.storage.find_domain(self.admin_context, criterion)
 
+    def test_find_domain_criterion_lessthan(self):
+        domain = self.create_domain()
+
+        # Test Finding No Results (serial is not < serial)
+        criterion = dict(
+            name=domain['name'],
+            serial='<%s' % domain['serial'],
+        )
+
+        with testtools.ExpectedException(exceptions.DomainNotFound):
+            self.storage.find_domain(self.admin_context, criterion)
+
+        # Test Finding 1 Result (serial is < serial + 1)
+        criterion = dict(
+            name=domain['name'],
+            serial='<%s' % (domain['serial'] + 1),
+        )
+
+        result = self.storage.find_domain(self.admin_context, criterion)
+
+        self.assertEqual(result['name'], domain['name'])
+
+    def test_find_domain_criterion_greaterthan(self):
+        domain = self.create_domain()
+
+        # Test Finding No Results (serial is not > serial)
+        criterion = dict(
+            name=domain['name'],
+            serial='>%s' % domain['serial'],
+        )
+
+        with testtools.ExpectedException(exceptions.DomainNotFound):
+            self.storage.find_domain(self.admin_context, criterion)
+
+        # Test Finding 1 Result (serial is > serial - 1)
+        criterion = dict(
+            name=domain['name'],
+            serial='>%s' % (domain['serial'] - 1),
+        )
+
+        result = self.storage.find_domain(self.admin_context, criterion)
+
+        self.assertEqual(result['name'], domain['name'])
+
     def test_update_domain(self):
         # Create a domain
         domain = self.create_domain(name='example.org.')
