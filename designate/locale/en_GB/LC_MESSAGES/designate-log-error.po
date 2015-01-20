@@ -1,5 +1,5 @@
 # Translations template for designate.
-# Copyright (C) 2014 ORGANIZATION
+# Copyright (C) 2015 ORGANIZATION
 # This file is distributed under the same license as the designate project.
 #
 # Translators:
@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Designate\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-11-12 06:10+0000\n"
-"PO-Revision-Date: 2014-11-11 17:54+0000\n"
+"POT-Creation-Date: 2015-01-20 06:09+0000\n"
+"PO-Revision-Date: 2015-01-16 17:52+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: English (United Kingdom) (http://www.transifex.com/projects/p/"
 "designate/language/en_GB/)\n"
@@ -24,7 +24,7 @@ msgstr ""
 msgid "Missing context in request, please check."
 msgstr "Missing context in request, please check."
 
-#: designate/backend/impl_ipa/__init__.py:398
+#: designate/backend/impl_ipa/__init__.py:400
 msgid ""
 "Error: could not authenticate to IPA - please check for correct keytab file"
 msgstr ""
@@ -49,7 +49,7 @@ msgstr ""
 "Error Lines:\n"
 "%s"
 
-#: designate/mdns/handler.py:111
+#: designate/mdns/handler.py:120
 #, python-format
 msgid "got exception while handling axfr request. Question is %(qr)s"
 msgstr ""
@@ -59,7 +59,7 @@ msgstr ""
 msgid "Failed to deserialize packet from %(host)s:%(port)d"
 msgstr ""
 
-#: designate/mdns/service.py:178
+#: designate/mdns/service.py:187
 #, python-format
 msgid "Unhandled exception while processing request from %(host)s:%(port)d"
 msgstr "Unhandled exception while processing request from %(host)s:%(port)d"
@@ -77,13 +77,13 @@ msgstr "in fixed duration looping call"
 msgid "in dynamic looping call"
 msgstr "in dynamic looping call"
 
-#: designate/openstack/common/policy.py:535
-#: designate/openstack/common/policy.py:815
+#: designate/openstack/common/policy.py:563
+#: designate/openstack/common/policy.py:843
 #, python-format
 msgid "Failed to understand rule %s"
 msgstr "Failed to understand rule %s"
 
-#: designate/openstack/common/policy.py:545
+#: designate/openstack/common/policy.py:573
 #, python-format
 msgid "No handler for matches of kind %s"
 msgstr "No handler for matches of kind %s"
@@ -91,3 +91,14 @@ msgstr "No handler for matches of kind %s"
 #: designate/openstack/common/service.py:269
 msgid "Unhandled exception"
 msgstr "Unhandled exception"
+
+#: designate/pool_manager/service.py:286
+msgid ""
+"An unhandled exception in periodic recovery occurred.  This should never "
+"happen!"
+msgstr ""
+
+#: designate/pool_manager/service.py:309
+msgid ""
+"An unhandled exception in periodic sync occurred.  This should never happen!"
+msgstr ""
