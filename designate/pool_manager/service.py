@@ -283,8 +283,8 @@ class Service(service.RPCService):
             self._periodic_delete_domains_that_failed(context)
             self._periodic_update_domains_that_failed(context)
         except Exception:
-            LOG.error(_LE('An unhandled exception in periodic recovery '
-                          'occurred.  This should never happen!'))
+            LOG.exception(_LE('An unhandled exception in periodic recovery '
+                              'occurred.  This should never happen!'))
 
     def periodic_sync(self):
         """
@@ -306,8 +306,8 @@ class Service(service.RPCService):
                         context, domain, server_backend)
 
         except Exception:
-            LOG.error(_LE('An unhandled exception in periodic sync '
-                          'occurred.  This should never happen!'))
+            LOG.exception(_LE('An unhandled exception in periodic sync '
+                              'occurred.  This should never happen!'))
 
     def _create_domain_on_server(self, context, create_status, domain,
                                  server_backend):
