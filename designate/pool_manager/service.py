@@ -30,7 +30,6 @@ from designate.i18n import _LE
 from designate.i18n import _LI
 from designate.i18n import _LW
 from designate.openstack.common import log as logging
-from designate.openstack.common import threadgroup
 from designate.pool_manager import cache
 
 
@@ -129,37 +128,27 @@ class Service(service.RPCService):
         self.enable_sync_timer = \
             cfg.CONF['service:pool_manager'].enable_sync_timer
 
-        if self.enable_recovery_timer or self.enable_sync_timer:
-            self.thread_group = threadgroup.ThreadGroup()
-
     def start(self):
         for server_backend in self.server_backends:
             backend_instance = server_backend['backend_instance']
             backend_instance.start()
 
+        super(Service, self).start()
+
         if self.enable_recovery_timer:
             LOG.info(_LI('Starting periodic recovery timer.'))
-            self.thread_group.add_timer(
+            self.tg.add_timer(
                 cfg.CONF['service:pool_manager'].periodic_recovery_interval,
                 self.periodic_recovery)
 
         if self.enable_sync_timer:
             LOG.info(_LI('Starting periodic sync timer.'))
-            self.thread_group.add_timer(
+            self.tg.add_timer(
                 cfg.CONF['service:pool_manager'].periodic_sync_interval,
                 self.periodic_sync)
 
-        super(Service, self).start()
-
     def stop(self):
         super(Service, self).stop()
-
-        if self.enable_sync_timer or self.enable_recovery_timer:
-            if self.enable_sync_timer:
-                LOG.info(_LI('Stopping periodic sync timer.'))
-            if self.enable_recovery_timer:
-                LOG.info(_LI('Stopping periodic recovery timer.'))
-            self.thread_group.stop(True)
 
         for server_backend in self.server_backends:
             backend_instance = server_backend['backend_instance']
