@@ -67,6 +67,11 @@ class PoolManagerServiceTest(PoolManagerTestCase):
         # NOTE: Start is already done by the fixture in start_service()
         self.service.stop()
 
+    def test_pool_instance_topic(self):
+        self.assertEqual(
+            'pool_manager.%s' % cfg.CONF['service:pool_manager'].pool_id,
+            self.service.topic)
+
     def test_no_pool_servers_configured(self):
         self.service.stop()
         self.config(

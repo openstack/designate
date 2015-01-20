@@ -55,22 +55,6 @@ def wrap_backend_call():
         raise exceptions.Backend('Unknown backend failure: %r' % e)
 
 
-def execute_on_pool(pool_id):
-        def wrap(f):
-            def wrapped_f(self, context, domain, *args, **kwargs):
-                if domain.pool_id == pool_id:
-                    LOG.info(_LI('Domain %(domain)s is managed by this '
-                                 'pool.  Executing.') %
-                             {'domain': domain.name})
-                    return f(self, context, domain, *args, **kwargs)
-                else:
-                    LOG.info(_LI('Domain %(domain)s is not managed by this '
-                                 'pool.   Skipping.') %
-                             {'domain': domain.name})
-            return wrapped_f
-        return wrap
-
-
 class Service(service.RPCService):
     """
     Service side of the Pool Manager RPC API.
@@ -83,8 +67,13 @@ class Service(service.RPCService):
 
     target = messaging.Target(version=RPC_API_VERSION)
 
-    def __init__(self, *args, **kwargs):
-        super(Service, self).__init__(*args, **kwargs)
+    def __init__(self, host, binary, topic, **kwargs):
+
+        # Modifying the topic so it is pool manager instance specific.
+        topic = '%s.%s' % (topic, cfg.CONF['service:pool_manager'].pool_id)
+        LOG.info(_LI('Using topic %(topic)s for this pool manager instance.')
+                 % {'topic': topic})
+        super(Service, self).__init__(host, binary, topic, **kwargs)
 
         # Get a pool manager cache connection.
         cache_driver = cfg.CONF['service:pool_manager'].cache_driver
@@ -162,7 +151,6 @@ class Service(service.RPCService):
     def mdns_api(self):
         return mdns_api.MdnsAPI.get_instance()
 
-    @execute_on_pool(cfg.CONF['service:pool_manager'].pool_id)
     def create_domain(self, context, domain):
         """
         :param context: Security context information.
@@ -177,7 +165,6 @@ class Service(service.RPCService):
             self._create_domain_on_server(
                 context, create_status, domain, server_backend)
 
-    @execute_on_pool(cfg.CONF['service:pool_manager'].pool_id)
     def delete_domain(self, context, domain):
         """
         :param context: Security context information.
@@ -200,7 +187,6 @@ class Service(service.RPCService):
             self.central_api.update_status(
                 context, domain.id, status, domain.serial)
 
-    @execute_on_pool(cfg.CONF['service:pool_manager'].pool_id)
     def update_domain(self, context, domain):
         """
         :param context: Security context information.
