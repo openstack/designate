@@ -106,17 +106,19 @@ class PoolManagerServiceTest(PoolManagerTestCase):
         # Ensure notify_zone_changed and poll_for_serial_number
         # was called for each backend server.
         self.assertEqual(2, mock_notify_zone_changed.call_count)
-        self.assertEqual([call(self.admin_context, domain,
-                               '10.0.0.2:53', 30, 2, 3, 0),
-                          call(self.admin_context, domain,
-                               '10.0.0.3:53', 30, 2, 3, 0)],
-                         mock_notify_zone_changed.call_args_list)
+        self.assertEqual(
+            [call(self.admin_context, domain,
+                  self.service.server_backends[0]['server'], 30, 2, 3, 0),
+             call(self.admin_context, domain,
+                  self.service.server_backends[1]['server'], 30, 2, 3, 0)],
+            mock_notify_zone_changed.call_args_list)
         self.assertEqual(2, mock_poll_for_serial_number.call_count)
-        self.assertEqual([call(self.admin_context, domain,
-                               '10.0.0.2:53', 30, 2, 3, 1),
-                          call(self.admin_context, domain,
-                               '10.0.0.3:53', 30, 2, 3, 1)],
-                         mock_poll_for_serial_number.call_args_list)
+        self.assertEqual(
+            [call(self.admin_context, domain,
+                  self.service.server_backends[0]['server'], 30, 2, 3, 1),
+             call(self.admin_context, domain,
+                  self.service.server_backends[1]['server'], 30, 2, 3, 1)],
+            mock_poll_for_serial_number.call_args_list)
 
     @patch.object(impl_fake.FakeBackend, 'create_domain')
     @patch.object(mdns_rpcapi.MdnsAPI, 'poll_for_serial_number')
@@ -176,9 +178,11 @@ class PoolManagerServiceTest(PoolManagerTestCase):
         self.assertEqual(0, update_statuses[0].serial_number)
 
         mock_notify_zone_changed.assert_called_once_with(
-            self.admin_context, domain, '10.0.0.2:53', 30, 2, 3, 0)
+            self.admin_context, domain,
+            self.service.server_backends[0]['server'], 30, 2, 3, 0)
         mock_poll_for_serial_number.assert_called_once_with(
-            self.admin_context, domain, '10.0.0.2:53', 30, 2, 3, 1)
+            self.admin_context, domain,
+            self.service.server_backends[0]['server'], 30, 2, 3, 1)
 
     @patch.object(central_rpcapi.CentralAPI, 'update_status')
     def test_delete_domain(self, mock_update_status):
@@ -280,17 +284,19 @@ class PoolManagerServiceTest(PoolManagerTestCase):
         # Ensure notify_zone_changed and poll_for_serial_number
         # was called for each backend server.
         self.assertEqual(2, mock_notify_zone_changed.call_count)
-        self.assertEqual([call(self.admin_context, domain,
-                               '10.0.0.2:53', 30, 2, 3, 0),
-                          call(self.admin_context, domain,
-                               '10.0.0.3:53', 30, 2, 3, 0)],
-                         mock_notify_zone_changed.call_args_list)
+        self.assertEqual(
+            [call(self.admin_context, domain,
+                  self.service.server_backends[0]['server'], 30, 2, 3, 0),
+             call(self.admin_context, domain,
+                  self.service.server_backends[1]['server'], 30, 2, 3, 0)],
+            mock_notify_zone_changed.call_args_list)
         self.assertEqual(2, mock_poll_for_serial_number.call_count)
-        self.assertEqual([call(self.admin_context, domain,
-                               '10.0.0.2:53', 30, 2, 3, 1),
-                          call(self.admin_context, domain,
-                               '10.0.0.3:53', 30, 2, 3, 1)],
-                         mock_poll_for_serial_number.call_args_list)
+        self.assertEqual(
+            [call(self.admin_context, domain,
+                  self.service.server_backends[0]['server'], 30, 2, 3, 1),
+             call(self.admin_context, domain,
+                  self.service.server_backends[1]['server'], 30, 2, 3, 1)],
+            mock_poll_for_serial_number.call_args_list)
 
     @patch.object(central_rpcapi.CentralAPI, 'update_status')
     def test_update_status(self, mock_update_status):
@@ -313,7 +319,8 @@ class PoolManagerServiceTest(PoolManagerTestCase):
         self.assertEqual(0, update_statuses[1].serial_number)
 
         self.service.update_status(self.admin_context, domain,
-                                   '10.0.0.2:53', 'SUCCESS', domain.serial)
+                                   self.service.server_backends[0]['server'],
+                                   'SUCCESS', domain.serial)
 
         update_statuses = self._find_pool_manager_statuses(
             self.admin_context, 'UPDATE', domain)
@@ -327,7 +334,8 @@ class PoolManagerServiceTest(PoolManagerTestCase):
         self.assertEqual(False, mock_update_status.called)
 
         self.service.update_status(self.admin_context, domain,
-                                   '10.0.0.3:53', 'SUCCESS', domain.serial)
+                                   self.service.server_backends[1]['server'],
+                                   'SUCCESS', domain.serial)
 
         update_statuses = self._find_pool_manager_statuses(
             self.admin_context, 'UPDATE', domain)
@@ -344,8 +352,10 @@ class PoolManagerServiceTest(PoolManagerTestCase):
         domain = self.create_domain(name='example.org.')
 
         with testtools.ExpectedException(exceptions.PoolManagerStatusNotFound):
-            self.service.update_status(self.admin_context, domain,
-                                       '10.0.0.2:53', 'SUCCESS', domain.serial)
+            self.service.update_status(
+                self.admin_context, domain,
+                self.service.server_backends[0]['server'], 'SUCCESS',
+                domain.serial)
 
     def _find_pool_manager_statuses(self, context, action,
                                     domain=None, status=None):

@@ -223,12 +223,12 @@ class Service(service.RPCService):
         for server_backend in self.server_backends:
             self._update_domain_on_server(context, domain, server_backend)
 
-    def update_status(self, context, domain, destination,
+    def update_status(self, context, domain, server,
                       status, actual_serial):
         """
         :param context: Security context information.
         :param domain: The designate domain object.
-        :param destination: The server in the format "ip:port".
+        :param server: The server for which a status update is being sent.
         :param status: The status, 'SUCCESS' or 'ERROR'.
         :param actual_serial: The actual serial number received from the name
                               server for the domain.
@@ -236,7 +236,6 @@ class Service(service.RPCService):
         """
         LOG.debug("Calling update_status for %s" % domain.name)
 
-        server = self._get_server(destination)
         update_status = self._retrieve_from_cache(
             context, server, domain, UPDATE_ACTION)
         cache_serial = update_status.serial_number
@@ -441,13 +440,13 @@ class Service(service.RPCService):
 
     def _notify_zone_changed(self, context, domain, server):
         self.mdns_api.notify_zone_changed(
-            context, domain, self._get_destination(server),
-            self.timeout, self.retry_interval, self.max_retries, 0)
+            context, domain, server, self.timeout, self.retry_interval,
+            self.max_retries, 0)
 
     def _poll_for_serial_number(self, context, domain, server):
         self.mdns_api.poll_for_serial_number(
-            context, domain, self._get_destination(server), self.timeout,
-            self.retry_interval, self.max_retries, self.delay)
+            context, domain, server, self.timeout, self.retry_interval,
+            self.max_retries, self.delay)
 
     def _get_server_backend(self, server_id):
         for server_backend in self.server_backends:
@@ -458,13 +457,6 @@ class Service(service.RPCService):
     @staticmethod
     def _get_destination(server):
         return '%s:%s' % (server.host, server.port)
-
-    def _get_server(self, destination):
-        parts = destination.split(':')
-        for server_backend in self.server_backends:
-            server = server_backend['server']
-            if server.host == parts[0] and server.port == int(parts[1]):
-                return server
 
     @staticmethod
     def _percentage(count, total_count):

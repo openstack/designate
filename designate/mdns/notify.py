@@ -18,7 +18,6 @@ import dns
 from oslo import messaging
 from oslo.config import cfg
 
-from designate import exceptions
 from designate.pool_manager import rpcapi as pool_mngr_api
 from designate.openstack.common import log as logging
 from designate.i18n import _LI
@@ -41,16 +40,15 @@ class NotifyEndpoint(object):
     def pool_manager_api(self):
         return pool_mngr_api.PoolManagerAPI.get_instance()
 
-    def notify_zone_changed(self, context, domain, destination, timeout,
+    def notify_zone_changed(self, context, domain, server, timeout,
                             retry_interval, max_retries, delay):
         """
         :param context: The user context.
         :param domain: The designate domain object.  This contains the domain
             name.
-        :param destination: The destination of the NOTIFY message.  This is of
-            the format "ip:[port]".  If there is no port, port 53 is used.
+        :param server: A notify is sent to server.host:server.port.
         :param timeout: The time (in seconds) to wait for a NOTIFY response
-            from destination.
+            from server.
         :param retry_interval: The time (in seconds) between retries.
         :param max_retries: The maximum number of retries mindns would do for
             sending a NOTIFY message. After this many retries, mindns gives up.
@@ -62,20 +60,18 @@ class NotifyEndpoint(object):
         """
         time.sleep(delay)
         return self._make_and_send_dns_message(
-            domain, destination, timeout, retry_interval, max_retries,
-            notify=True)
+            domain, server, timeout, retry_interval, max_retries, notify=True)
 
-    def poll_for_serial_number(self, context, domain, destination, timeout,
+    def poll_for_serial_number(self, context, domain, server, timeout,
                                retry_interval, max_retries, delay):
         """
         :param context: The user context.
         :param domain: The designate domain object.  This contains the domain
             name. domain.serial = expected_serial
-        :param destination: The server to check for an updated serial number.
-            This is of the format "ip:[port]".  If there is no port, port 53 is
-            used.
+        :param server: server.host:server.port is checked for an updated serial
+            number.
         :param timeout: The time (in seconds) to wait for a SOA response from
-            destination.
+            server.
         :param retry_interval: The time (in seconds) between retries.
         :param max_retries: The maximum number of retries mindns would do for
             an expected serial number. After this many retries, mindns returns
@@ -84,7 +80,7 @@ class NotifyEndpoint(object):
         :return: a tuple of (status, actual_serial, retries)
             status is either "SUCCESS" or "ERROR".
             actual_serial is either the serial number returned in the SOA
-            message from the destination or None.
+            message from the server or None.
             retries is the number of retries left.
             The return value is just used for testing and not by pool manager.
             The pool manager is informed of the status with update_status.
@@ -96,7 +92,7 @@ class NotifyEndpoint(object):
         time.sleep(delay)
         while (True):
             (response, retry) = self._make_and_send_dns_message(
-                domain, destination, timeout, retry_interval, retries)
+                domain, server, timeout, retry_interval, retries)
             if response and len(response.answer) == 1 \
                     and str(response.answer[0].name) == str(domain.name) \
                     and response.answer[0].rdclass == dns.rdataclass.IN \
@@ -110,12 +106,12 @@ class NotifyEndpoint(object):
             # TODO(vinod): Account for serial number wrap around.
             elif actual_serial < domain.serial:
                 retries = retries - retry
-                LOG.warn(_LW("Got lower serial for '%(zone)s' to '%(dst)s'. "
-                             "Expected:'%(es)d'. Got:'%(as)d'."
+                LOG.warn(_LW("Got lower serial for '%(zone)s' to '%(host)s:"
+                             "%(port)s'. Expected:'%(es)d'. Got:'%(as)d'."
                              "Retries left='%(retries)d'") %
-                         {'zone': domain.name, 'dst': destination,
-                          'es': domain.serial, 'as': actual_serial,
-                          'retries': retries})
+                         {'zone': domain.name, 'host': server.host,
+                          'port': server.port, 'es': domain.serial,
+                          'as': actual_serial, 'retries': retries})
                 if retries > 0:
                     # retry again
                     time.sleep(retry_interval)
@@ -128,18 +124,18 @@ class NotifyEndpoint(object):
                 break
 
         self.pool_manager_api.update_status(
-            context, domain, destination, status, actual_serial)
+            context, domain, server, status, actual_serial)
 
         # Return some values for testing purposes.
         return (status, actual_serial, retries)
 
-    def _make_and_send_dns_message(self, domain, destination, timeout,
+    def _make_and_send_dns_message(self, domain, server, timeout,
                                    retry_interval, max_retries, notify=False):
         """
         :param domain: The designate domain object.  This contains the domain
             name.
-        :param destination: The destination for the dns message. This is of the
-            format "ip:[port]".  If there is no port, port 53 is used.
+        :param server: The destination for the dns message is
+            server.host:server.port.
         :param timeout: The time (in seconds) to wait for a response from
             destination.
         :param retry_interval: The time (in seconds) between retries.
@@ -151,19 +147,8 @@ class NotifyEndpoint(object):
             response is the response on success or None on failure.
             current_retry is the current retry number
         """
-        dest = destination.split(':')
-        if len(dest) > 2:
-            # Throw an exception
-            raise exceptions.ConfigurationError(
-                "'destination' not in the correct format. Expected format "
-                "'ipaddress:port'. Got %(dst)s" % {'dst': destination})
-        elif len(dest) == 1:
-            dest_ip = dest[0]
-            # No port - use default port of 53
-            dest_port = 53
-        else:
-            dest_ip = dest[0]
-            dest_port = int(dest[1])
+        dest_ip = server.host
+        dest_port = server.port
 
         dns_message = self._make_dns_message(domain.name, notify=notify)
 
