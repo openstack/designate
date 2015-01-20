@@ -33,6 +33,13 @@ class MdnsNotifyTest(MdnsTestCase):
     def setUp(self):
         super(MdnsNotifyTest, self).setUp()
         self.notify = notify.NotifyEndpoint()
+        server_values = {
+            'id': 'f278782a-07dc-4502-9177-b5d85c5f7c7e',
+            'host': '127.0.0.1',
+            'port': 65255,
+            'backend': 'fake'
+        }
+        self.server = objects.PoolServer(**server_values)
 
     def test_send_notify_message(self):
         # id 10001
@@ -50,7 +57,7 @@ class MdnsNotifyTest(MdnsTestCase):
         with patch.object(dns.query, 'udp', return_value=dns.message.from_wire(
                 binascii.a2b_hex(expected_notify_response))):
             response, retry = self.notify.notify_zone_changed(
-                context, objects.Domain(**self.test_domain), '127.0.0.1:65255',
+                context, objects.Domain(**self.test_domain), self.server,
                 0, 0, 2, 0)
             self.assertEqual(response, dns.message.from_wire(
                 binascii.a2b_hex(expected_notify_response)))
@@ -72,7 +79,7 @@ class MdnsNotifyTest(MdnsTestCase):
         with patch.object(dns.query, 'udp', return_value=dns.message.from_wire(
                 binascii.a2b_hex(non_auth_notify_response))):
             response, retry = self.notify.notify_zone_changed(
-                context, objects.Domain(**self.test_domain), '127.0.0.1:65255',
+                context, objects.Domain(**self.test_domain), self.server,
                 0, 0, 2, 0)
             self.assertEqual(response, None)
             self.assertEqual(retry, 1)
@@ -81,7 +88,7 @@ class MdnsNotifyTest(MdnsTestCase):
     def test_send_notify_message_timeout(self, _):
         context = self.get_context()
         response, retry = self.notify.notify_zone_changed(
-            context, objects.Domain(**self.test_domain), '127.0.0.1:65255', 0,
+            context, objects.Domain(**self.test_domain), self.server, 0,
             0, 2, 0)
         self.assertEqual(response, None)
         self.assertEqual(retry, 2)
@@ -90,7 +97,7 @@ class MdnsNotifyTest(MdnsTestCase):
     def test_send_notify_message_bad_response(self, _):
         context = self.get_context()
         response, retry = self.notify.notify_zone_changed(
-            context, objects.Domain(**self.test_domain), '127.0.0.1:65255', 0,
+            context, objects.Domain(**self.test_domain), self.server, 0,
             0, 2, 0)
         self.assertEqual(response, None)
         self.assertEqual(retry, 1)
@@ -115,7 +122,7 @@ class MdnsNotifyTest(MdnsTestCase):
         with patch.object(dns.query, 'udp', return_value=dns.message.from_wire(
                 binascii.a2b_hex(poll_response))):
             status, serial, retries = self.notify.poll_for_serial_number(
-                context, objects.Domain(**self.test_domain), '127.0.0.1:65255',
+                context, objects.Domain(**self.test_domain), self.server,
                 0, 0, 2, 0)
             self.assertEqual(status, 'SUCCESS')
             self.assertEqual(serial, self.test_domain['serial'])
@@ -141,7 +148,7 @@ class MdnsNotifyTest(MdnsTestCase):
         with patch.object(dns.query, 'udp', return_value=dns.message.from_wire(
                 binascii.a2b_hex(poll_response))):
             status, serial, retries = self.notify.poll_for_serial_number(
-                context, objects.Domain(**self.test_domain), '127.0.0.1:65255',
+                context, objects.Domain(**self.test_domain), self.server,
                 0, 0, 2, 0)
             self.assertEqual(status, 'ERROR')
             self.assertEqual(serial, 99)
@@ -167,7 +174,7 @@ class MdnsNotifyTest(MdnsTestCase):
         with patch.object(dns.query, 'udp', return_value=dns.message.from_wire(
                 binascii.a2b_hex(poll_response))):
             status, serial, retries = self.notify.poll_for_serial_number(
-                context, objects.Domain(**self.test_domain), '127.0.0.1:65255',
+                context, objects.Domain(**self.test_domain), self.server,
                 0, 0, 2, 0)
             self.assertEqual(status, 'SUCCESS')
             self.assertEqual(serial, 101)
@@ -177,7 +184,7 @@ class MdnsNotifyTest(MdnsTestCase):
     def test_poll_for_serial_number_timeout(self, _):
         context = self.get_context()
         status, serial, retries = self.notify.poll_for_serial_number(
-            context, objects.Domain(**self.test_domain), '127.0.0.1:65255',
+            context, objects.Domain(**self.test_domain), self.server,
             0, 0, 2, 0)
         self.assertEqual(status, 'ERROR')
         self.assertEqual(serial, None)

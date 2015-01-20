@@ -76,10 +76,10 @@ class PoolManagerAPI(object):
         return self.client.cast(
             context, 'update_domain', domain=domain)
 
-    def update_status(self, context, domain, destination,
+    def update_status(self, context, domain, server,
                       status, actual_serial):
         LOG.info(_LI("update_status: Calling pool manager's update_status "
                      "for %(domain)s") % {'domain': domain.name})
         return self.client.cast(
-            context, 'update_status', domain=domain, destination=destination,
+            context, 'update_status', domain=domain, server=server,
             status=status, actual_serial=actual_serial)
