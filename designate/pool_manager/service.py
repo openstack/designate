@@ -251,22 +251,24 @@ class Service(service.RPCService):
             self._store_in_cache(context, update_status)
 
         consensus_serial = self._get_consensus_serial(context, domain)
-        LOG.info(_LI('For domain %(domain)s '
-                     'the consensus serial is %(consensus_serial)s.') %
-                 {'domain': domain.name,
-                  'consensus_serial': consensus_serial})
+
         if cache_serial < consensus_serial:
+            LOG.info(_LI('For domain %(domain)s '
+                        'the consensus serial is %(consensus_serial)s.') %
+                     {'domain': domain.name,
+                      'consensus_serial': consensus_serial})
+
             self.central_api.update_status(
                 context, domain.id, SUCCESS_STATUS, consensus_serial)
 
         if status == ERROR_STATUS:
             error_serial = self._get_error_serial(
                 context, domain, consensus_serial)
-            LOG.warn(_LW('For domain %(domain)s '
-                         'the error serial is %(error_serial)s.') %
-                     {'domain': domain.name,
-                      'error_serial': error_serial})
             if error_serial > consensus_serial or error_serial == 0:
+                LOG.warn(_LW('For domain %(domain)s '
+                             'the error serial is %(error_serial)s.') %
+                         {'domain': domain.name,
+                          'error_serial': error_serial})
                 self.central_api.update_status(
                     context, domain.id, ERROR_STATUS, error_serial)
 
