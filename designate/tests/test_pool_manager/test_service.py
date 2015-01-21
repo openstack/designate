@@ -96,17 +96,7 @@ class PoolManagerServiceTest(PoolManagerTestCase):
 
         create_statuses = self._find_pool_manager_statuses(
             self.admin_context, 'CREATE', domain)
-        self.assertEqual(2, len(create_statuses))
-        self.assertEqual('SUCCESS', create_statuses[0].status)
-        self.assertEqual('SUCCESS', create_statuses[1].status)
-
-        update_statuses = self._find_pool_manager_statuses(
-            self.admin_context, 'UPDATE', domain)
-        self.assertEqual(2, len(update_statuses))
-        self.assertEqual('ERROR', update_statuses[0].status)
-        self.assertEqual(0, update_statuses[0].serial_number)
-        self.assertEqual('ERROR', update_statuses[1].status)
-        self.assertEqual(0, update_statuses[1].serial_number)
+        self.assertEqual(0, len(create_statuses))
 
         # Ensure notify_zone_changed and poll_for_serial_number
         # was called for each backend server.
@@ -176,12 +166,6 @@ class PoolManagerServiceTest(PoolManagerTestCase):
         self.assertEqual('SUCCESS', create_statuses[0].status)
         self.assertEqual('ERROR', create_statuses[1].status)
 
-        update_statuses = self._find_pool_manager_statuses(
-            self.admin_context, 'UPDATE', domain)
-        self.assertEqual(1, len(update_statuses))
-        self.assertEqual('ERROR', update_statuses[0].status)
-        self.assertEqual(0, update_statuses[0].serial_number)
-
         mock_notify_zone_changed.assert_called_once_with(
             self.admin_context, domain,
             self.service.server_backends[0]['server'], 30, 2, 3, 0)
@@ -197,17 +181,13 @@ class PoolManagerServiceTest(PoolManagerTestCase):
 
         create_statuses = self._find_pool_manager_statuses(
             self.admin_context, 'CREATE', domain)
-        self.assertEqual(2, len(create_statuses))
-        self.assertEqual('SUCCESS', create_statuses[0].status)
-        self.assertEqual('SUCCESS', create_statuses[1].status)
+        self.assertEqual(0, len(create_statuses))
 
         self.service.delete_domain(self.admin_context, domain)
 
         delete_statuses = self._find_pool_manager_statuses(
             self.admin_context, 'DELETE', domain)
-        self.assertEqual(2, len(delete_statuses))
-        self.assertEqual('SUCCESS', delete_statuses[0].status)
-        self.assertEqual('SUCCESS', delete_statuses[1].status)
+        self.assertEqual(0, len(delete_statuses))
 
         mock_update_status.assert_called_once_with(
             self.admin_context, domain.id, 'SUCCESS', domain.serial)
@@ -222,9 +202,7 @@ class PoolManagerServiceTest(PoolManagerTestCase):
 
         create_statuses = self._find_pool_manager_statuses(
             self.admin_context, 'CREATE', domain)
-        self.assertEqual(2, len(create_statuses))
-        self.assertEqual('SUCCESS', create_statuses[0].status)
-        self.assertEqual('SUCCESS', create_statuses[1].status)
+        self.assertEqual(0, len(create_statuses))
 
         mock_delete_domain.side_effect = exceptions.Backend
 
@@ -249,9 +227,7 @@ class PoolManagerServiceTest(PoolManagerTestCase):
 
         create_statuses = self._find_pool_manager_statuses(
             self.admin_context, 'CREATE', domain)
-        self.assertEqual(2, len(create_statuses))
-        self.assertEqual('SUCCESS', create_statuses[0].status)
-        self.assertEqual('SUCCESS', create_statuses[1].status)
+        self.assertEqual(0, len(create_statuses))
 
         mock_delete_domain.side_effect = [None, exceptions.Backend]
 
@@ -266,6 +242,38 @@ class PoolManagerServiceTest(PoolManagerTestCase):
         mock_update_status.assert_called_once_with(
             self.admin_context, domain.id, 'ERROR', domain.serial)
 
+    @patch.object(impl_fake.FakeBackend, 'delete_domain')
+    @patch.object(central_rpcapi.CentralAPI, 'update_status')
+    def test_delete_domain_backend_one_failure_success(
+            self, mock_update_status, mock_delete_domain):
+
+        self.service.stop()
+        self.config(
+            threshold_percentage=50,
+            group='service:pool_manager')
+        self.service = self.start_service('pool_manager')
+
+        domain = self.create_domain(name='example.org.')
+
+        self.service.create_domain(self.admin_context, domain)
+
+        create_statuses = self._find_pool_manager_statuses(
+            self.admin_context, 'CREATE', domain)
+        self.assertEqual(0, len(create_statuses))
+
+        mock_delete_domain.side_effect = [None, exceptions.Backend]
+
+        self.service.delete_domain(self.admin_context, domain)
+
+        delete_statuses = self._find_pool_manager_statuses(
+            self.admin_context, 'DELETE', domain)
+        self.assertEqual(2, len(delete_statuses))
+        self.assertEqual('SUCCESS', delete_statuses[0].status)
+        self.assertEqual('ERROR', delete_statuses[1].status)
+
+        mock_update_status.assert_called_once_with(
+            self.admin_context, domain.id, 'SUCCESS', domain.serial)
+
     @patch.object(mdns_rpcapi.MdnsAPI, 'poll_for_serial_number')
     @patch.object(mdns_rpcapi.MdnsAPI, 'notify_zone_changed')
     def test_update_domain(self, mock_notify_zone_changed,
@@ -276,9 +284,7 @@ class PoolManagerServiceTest(PoolManagerTestCase):
 
         create_statuses = self._find_pool_manager_statuses(
             self.admin_context, 'CREATE', domain)
-        self.assertEqual(2, len(create_statuses))
-        self.assertEqual('SUCCESS', create_statuses[0].status)
-        self.assertEqual('SUCCESS', create_statuses[1].status)
+        self.assertEqual(0, len(create_statuses))
 
         # Reset the mock call attributes.
         mock_notify_zone_changed.reset_mock()
@@ -311,17 +317,7 @@ class PoolManagerServiceTest(PoolManagerTestCase):
 
         create_statuses = self._find_pool_manager_statuses(
             self.admin_context, 'CREATE', domain)
-        self.assertEqual(2, len(create_statuses))
-        self.assertEqual('SUCCESS', create_statuses[0].status)
-        self.assertEqual('SUCCESS', create_statuses[1].status)
-
-        update_statuses = self._find_pool_manager_statuses(
-            self.admin_context, 'UPDATE', domain)
-        self.assertEqual(2, len(update_statuses))
-        self.assertEqual('ERROR', update_statuses[0].status)
-        self.assertEqual(0, update_statuses[0].serial_number)
-        self.assertEqual('ERROR', update_statuses[1].status)
-        self.assertEqual(0, update_statuses[1].serial_number)
+        self.assertEqual(0, len(create_statuses))
 
         self.service.update_status(self.admin_context, domain,
                                    self.service.server_backends[0]['server'],
@@ -329,11 +325,9 @@ class PoolManagerServiceTest(PoolManagerTestCase):
 
         update_statuses = self._find_pool_manager_statuses(
             self.admin_context, 'UPDATE', domain)
-        self.assertEqual(2, len(update_statuses))
+        self.assertEqual(1, len(update_statuses))
         self.assertEqual('SUCCESS', update_statuses[0].status)
         self.assertEqual(domain.serial, update_statuses[0].serial_number)
-        self.assertEqual('ERROR', update_statuses[1].status)
-        self.assertEqual(0, update_statuses[1].serial_number)
 
         # Ensure update_status was not called.
         self.assertEqual(False, mock_update_status.called)
@@ -344,23 +338,10 @@ class PoolManagerServiceTest(PoolManagerTestCase):
 
         update_statuses = self._find_pool_manager_statuses(
             self.admin_context, 'UPDATE', domain)
-        self.assertEqual(2, len(update_statuses))
-        self.assertEqual('SUCCESS', update_statuses[0].status)
-        self.assertEqual(domain.serial, update_statuses[0].serial_number)
-        self.assertEqual('SUCCESS', update_statuses[1].status)
-        self.assertEqual(domain.serial, update_statuses[1].serial_number)
+        self.assertEqual(0, len(update_statuses))
 
         mock_update_status.assert_called_once_with(
             self.admin_context, domain.id, 'SUCCESS', domain.serial)
-
-    def test_update_status_missing_status(self):
-        domain = self.create_domain(name='example.org.')
-
-        with testtools.ExpectedException(exceptions.PoolManagerStatusNotFound):
-            self.service.update_status(
-                self.admin_context, domain,
-                self.service.server_backends[0]['server'], 'SUCCESS',
-                domain.serial)
 
     def _find_pool_manager_statuses(self, context, action,
                                     domain=None, status=None):
