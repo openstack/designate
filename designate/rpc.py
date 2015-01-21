@@ -173,9 +173,9 @@ class RequestContextSerializer(messaging.Serializer):
 
 
 class RPCDispatcher(rpc_dispatcher.RPCDispatcher):
-    def _dispatch(self, ctxt, message):
+    def _dispatch(self, *args, **kwds):
         try:
-            return super(RPCDispatcher, self)._dispatch(ctxt, message)
+            return super(RPCDispatcher, self)._dispatch(*args, **kwds)
         except Exception as e:
             if getattr(e, 'expected', False):
                 raise rpc_dispatcher.ExpectedException()
