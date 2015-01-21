@@ -21,10 +21,9 @@ import os
 import socket
 
 from oslo.config import cfg
+from oslo_log import log
 from oslo import messaging
 
-
-cfg.CONF.import_opt('default_log_levels', 'designate.openstack.common.log')
 
 cfg.CONF.register_opts([
     cfg.StrOpt('host', default=socket.gethostname(),
@@ -52,17 +51,17 @@ cfg.CONF.register_opts([
 ])
 
 # Set some Oslo Log defaults
-cfg.CONF.set_default('default_log_levels',
-                     ['amqplib=WARN',
-                      'amqp=WARN',
-                      'sqlalchemy=WARN',
-                      'boto=WARN',
-                      'suds=INFO',
-                      'keystone=INFO',
-                      'eventlet.wsgi.server=WARN',
-                      'stevedore=WARN',
-                      'keystonemiddleware.auth_token=INFO',
-                      'oslo.messaging=WARN'])
+log.set_defaults(default_log_levels=[
+    'amqplib=WARN',
+    'amqp=WARN',
+    'sqlalchemy=WARN',
+    'boto=WARN',
+    'suds=INFO',
+    'keystone=INFO',
+    'eventlet.wsgi.server=WARN',
+    'stevedore=WARN',
+    'keystonemiddleware.auth_token=INFO',
+    'oslo.messaging=WARN'])
 
 # Set some Oslo RPC defaults
 messaging.set_transport_defaults('designate')

@@ -17,8 +17,8 @@
 # Copied: nova.notifications
 
 from oslo.config import cfg
+from oslo_log import log as logging
 
-from designate.openstack.common import log as logging
 from designate import rpc
 
 LOG = logging.getLogger(__name__)

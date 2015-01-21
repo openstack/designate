@@ -13,9 +13,9 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from oslo_log import log as logging
 from oslo.serialization import jsonutils as json
 
-from designate.openstack.common import log as logging
 from designate.api import v1 as api_v1
 from designate.api import middleware
 from designate.tests.test_api import ApiTestCase

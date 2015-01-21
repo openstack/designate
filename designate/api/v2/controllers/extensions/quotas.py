@@ -14,8 +14,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import pecan
+from oslo_log import log as logging
 
-from designate.openstack.common import log as logging
 from designate import schema
 from designate.api.v2.controllers import rest
 from designate.api.v2.views.extensions import quotas as quotas_view

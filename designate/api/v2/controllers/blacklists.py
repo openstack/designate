@@ -15,8 +15,8 @@
 # under the License.
 
 import pecan
+from oslo_log import log as logging
 
-from designate.openstack.common import log as logging
 from designate import schema
 from designate import utils
 from designate.api.v2.controllers import rest

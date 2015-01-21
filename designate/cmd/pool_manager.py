@@ -16,10 +16,10 @@
 import sys
 
 from oslo.config import cfg
+from oslo_log import log as logging
 
 from designate import service
 from designate import utils
-from designate.openstack.common import log as logging
 from designate.pool_manager import service as pool_manager_service
 
 
@@ -30,7 +30,7 @@ CONF.import_opt('workers', 'designate.pool_manager',
 
 def main():
     utils.read_config('designate', sys.argv)
-    logging.setup('designate')
+    logging.setup(CONF, 'designate')
 
     server = pool_manager_service.Service.create(
         binary='designate-pool-manager')

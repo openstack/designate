@@ -16,8 +16,8 @@
 import sys
 
 from oslo.config import cfg
+from oslo_log import log as logging
 
-from designate.openstack.common import log as logging
 from designate.openstack.common import service
 from designate import rpc
 from designate import utils
@@ -30,7 +30,7 @@ CONF.import_opt('workers', 'designate.api', group='service:api')
 
 def main():
     utils.read_config('designate', sys.argv)
-    logging.setup('designate')
+    logging.setup(CONF, 'designate')
 
     rpc.init(CONF)
 

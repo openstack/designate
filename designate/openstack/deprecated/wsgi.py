@@ -28,6 +28,8 @@ import time
 
 import eventlet.wsgi
 from oslo.config import cfg
+from oslo_log import log as logging
+from oslo_log import loggers
 from oslo.serialization import jsonutils
 import routes
 import routes.middleware
@@ -37,7 +39,6 @@ from xml.dom import minidom
 from xml.parsers import expat
 
 from designate.i18n import _
-from designate.openstack.common import log as logging
 from designate.openstack.common import service
 from designate.openstack.common import sslutils
 from designate.openstack.deprecated import exception
@@ -158,7 +159,7 @@ class Service(service.Service):
         eventlet.wsgi.server(socket,
                              application,
                              custom_pool=self.tg.pool,
-                             log=logging.WritableLogger(logger))
+                             log=loggers.WritableLogger(logger))
 
 
 class Middleware(object):

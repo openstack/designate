@@ -18,8 +18,8 @@ import os
 from migrate.versioning import api as versioning_api
 from oslo.config import cfg
 from oslo_db.sqlalchemy.migration_cli import manager as migration_manager
+from oslo_log import log as logging
 
-from designate.openstack.common import log as logging
 from designate.manage import base
 from designate import utils
 

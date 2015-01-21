@@ -16,8 +16,8 @@
 import sys
 
 from oslo.config import cfg
+from oslo_log import log as logging
 
-from designate.openstack.common import log as logging
 from designate import service
 from designate import utils
 from designate.mdns import service as mdns_service
@@ -29,7 +29,7 @@ CONF.import_opt('workers', 'designate.mdns', group='service:mdns')
 
 def main():
     utils.read_config('designate', sys.argv)
-    logging.setup('designate')
+    logging.setup(CONF, 'designate')
 
     server = mdns_service.Service.create(
         binary='designate-mdns')

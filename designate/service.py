@@ -19,9 +19,9 @@ import inspect
 
 from oslo import messaging
 from oslo.config import cfg
+from oslo_log import log as logging
 
 from designate.openstack.common import service
-from designate.openstack.common import log as logging
 from designate.openstack.deprecated import wsgi
 from designate.i18n import _
 from designate import rpc

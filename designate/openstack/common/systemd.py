@@ -20,7 +20,7 @@ import os
 import socket
 import sys
 
-from designate.openstack.common import log as logging
+from oslo_log import log as logging
 
 
 LOG = logging.getLogger(__name__)

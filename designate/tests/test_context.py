@@ -14,11 +14,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import testtools
+from oslo_log import log as logging
 
 from designate.tests import TestCase
 from designate import context
 from designate import exceptions
-from designate.openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)
 

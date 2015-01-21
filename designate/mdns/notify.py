@@ -17,9 +17,9 @@ import time
 import dns
 from oslo import messaging
 from oslo.config import cfg
+from oslo_log import log as logging
 
 from designate.pool_manager import rpcapi as pool_mngr_api
-from designate.openstack.common import log as logging
 from designate.i18n import _LI
 from designate.i18n import _LW
 

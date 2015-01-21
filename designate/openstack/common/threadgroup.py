@@ -15,8 +15,8 @@ import threading
 
 import eventlet
 from eventlet import greenpool
+from oslo_log import log as logging
 
-from designate.openstack.common import log as logging
 from designate.openstack.common import loopingcall
 
 

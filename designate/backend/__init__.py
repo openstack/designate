@@ -13,7 +13,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from designate.openstack.common import log as logging
+from oslo_log import log as logging
+
 from designate.backend.base import PoolBackend
 
 LOG = logging.getLogger(__name__)

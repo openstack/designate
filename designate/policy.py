@@ -14,8 +14,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from oslo.config import cfg
+from oslo_log import log as logging
 
-from designate.openstack.common import log as logging
 from designate.openstack.common import policy
 from designate.i18n import _
 from designate.i18n import _LI

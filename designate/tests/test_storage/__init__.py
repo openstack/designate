@@ -18,8 +18,8 @@ import math
 
 import testtools
 from oslo.config import cfg
+from oslo_log import log as logging
 
-from designate.openstack.common import log as logging
 from designate import exceptions
 from designate import objects
 from designate.storage.base import Storage as StorageBase

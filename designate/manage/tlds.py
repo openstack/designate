@@ -16,11 +16,11 @@ import csv
 import os
 
 from oslo.config import cfg
+from oslo_log import log as logging
 
 from designate import exceptions
 from designate import rpc
 from designate.central import rpcapi as central_rpcapi
-from designate.openstack.common import log as logging
 from designate.i18n import _LI
 from designate.i18n import _LE
 from designate.manage import base

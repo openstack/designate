@@ -18,10 +18,10 @@ import copy
 import random
 
 from mock import patch
+from oslo_log import log as logging
 import testtools
 from testtools.matchers import GreaterThan
 
-from designate.openstack.common import log as logging
 from designate import exceptions
 from designate import objects
 from designate.tests.test_central import CentralTestCase

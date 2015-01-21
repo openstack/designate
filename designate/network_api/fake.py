@@ -15,11 +15,12 @@
 # under the License.
 import uuid
 
-from designate.openstack.common import log
+from oslo_log import log as logging
+
 from designate.network_api.base import NetworkAPI
 
 
-LOG = log.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 POOL = dict([(str(uuid.uuid4()), '192.168.2.%s' % i) for i in xrange(0, 254)])
 ALLOCATIONS = {}

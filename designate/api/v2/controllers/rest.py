@@ -30,10 +30,10 @@ import six
 import pecan
 import pecan.rest
 import pecan.routing
+from oslo_log import log as logging
 
 from designate import exceptions
 from designate.central import rpcapi as central_rpcapi
-from designate.openstack.common import log as logging
 from designate.i18n import _
 
 

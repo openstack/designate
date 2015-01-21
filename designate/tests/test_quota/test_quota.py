@@ -16,8 +16,8 @@
 from testscenarios import load_tests_apply_scenarios as load_tests  # noqa
 import testtools
 from oslo.config import cfg
+from oslo_log import log as logging
 
-from designate.openstack.common import log as logging
 from designate import quota
 from designate import tests
 from designate import exceptions
