@@ -97,41 +97,6 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
         return self._delete(context, tables.quotas, quota,
                             exceptions.QuotaNotFound)
 
-    # Server Methods
-    def _find_servers(self, context, criterion, one=False, marker=None,
-                     limit=None, sort_key=None, sort_dir=None):
-        return self._find(
-            context, tables.servers, objects.Server, objects.ServerList,
-            exceptions.ServerNotFound, criterion, one, marker, limit,
-            sort_key, sort_dir)
-
-    def create_server(self, context, server):
-        return self._create(
-            tables.servers, server, exceptions.DuplicateServer)
-
-    def get_server(self, context, server_id):
-        return self._find_servers(context, {'id': server_id}, one=True)
-
-    def find_servers(self, context, criterion=None, marker=None, limit=None,
-                     sort_key=None, sort_dir=None):
-        return self._find_servers(context, criterion, marker=marker,
-                                  limit=limit, sort_key=sort_key,
-                                  sort_dir=sort_dir)
-
-    def find_server(self, context, criterion):
-        return self._find_servers(context, criterion, one=True)
-
-    def update_server(self, context, server):
-        return self._update(
-            context, tables.servers, server, exceptions.DuplicateServer,
-            exceptions.ServerNotFound)
-
-    def delete_server(self, context, server_id):
-        # Fetch the existing server, we'll need to return it.
-        server = self._find_servers(context, {'id': server_id}, one=True)
-        return self._delete(context, tables.servers, server,
-                            exceptions.ServerNotFound)
-
     # TLD Methods
     def _find_tlds(self, context, criterion, one=False, marker=None,
                    limit=None, sort_key=None, sort_dir=None):

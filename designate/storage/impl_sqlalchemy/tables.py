@@ -51,18 +51,6 @@ quotas = Table('quotas', metadata,
     mysql_charset='utf8',
 )
 
-servers = Table('servers', metadata,
-    Column('id', UUID, default=utils.generate_uuid, primary_key=True),
-    Column('version', Integer(), default=1, nullable=False),
-    Column('created_at', DateTime, default=lambda: timeutils.utcnow()),
-    Column('updated_at', DateTime, onupdate=lambda: timeutils.utcnow()),
-
-    Column('name', String(255), nullable=False, unique=True),
-
-    mysql_engine='InnoDB',
-    mysql_charset='utf8',
-)
-
 tlds = Table('tlds', metadata,
     Column('id', UUID, default=utils.generate_uuid, primary_key=True),
     Column('version', Integer(), default=1, nullable=False),

@@ -89,58 +89,6 @@ class Storage(DriverPlugin):
         """
 
     @abc.abstractmethod
-    def create_server(self, context, server):
-        """
-        Create a Server.
-
-        :param context: RPC Context.
-        :param server: Server object with the values to be created.
-        """
-
-    @abc.abstractmethod
-    def find_servers(self, context, criterion=None, marker=None,
-                     limit=None, sort_key=None, sort_dir=None):
-        """
-        Find Servers.
-
-        :param context: RPC Context.
-        :param criterion: Criteria to filter by.
-        :param marker: Resource ID from which after the requested page will
-                       start after
-        :param limit: Integer limit of objects of the page size after the
-                      marker
-        :param sort_key: Key from which to sort after.
-        :param sort_dir: Direction to sort after using sort_key.
-        """
-
-    @abc.abstractmethod
-    def get_server(self, context, server_id):
-        """
-        Get a Server via ID.
-
-        :param context: RPC Context.
-        :param server_id: Server ID to get.
-        """
-
-    @abc.abstractmethod
-    def update_server(self, context, server):
-        """
-        Update a Server
-
-        :param context: RPC Context.
-        :param server: Server object
-        """
-
-    @abc.abstractmethod
-    def delete_server(self, context, server_id):
-        """
-        Delete a Server via ID.
-
-        :param context: RPC Context.
-        :param server_id: Delete a Server via ID
-        """
-
-    @abc.abstractmethod
     def create_tld(self, context, tld):
         """
         Create a TLD.
