@@ -19,11 +19,11 @@ import threading
 import six
 from oslo_db.sqlalchemy import utils as oslodb_utils
 from oslo_db import exception as oslo_db_exception
+from oslo_log import log as logging
 from oslo_utils import timeutils
 from sqlalchemy import exc as sqlalchemy_exc
 from sqlalchemy import select, or_
 
-from designate.openstack.common import log as logging
 from designate import exceptions
 from designate.sqlalchemy import session
 from designate.sqlalchemy import utils

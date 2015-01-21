@@ -15,10 +15,10 @@
 # under the License.
 from dns import reversename
 from oslo.config import cfg
+from oslo_log import log as logging
 
 from designate import exceptions
 from designate.plugin import DriverPlugin
-from designate.openstack.common import log as logging
 
 
 LOG = logging.getLogger(__name__)

@@ -15,10 +15,10 @@
 # under the License.
 import dns
 from oslo.config import cfg
+from oslo_log import log as logging
 
 from designate import exceptions
 from designate import storage
-from designate.openstack.common import log as logging
 from designate.i18n import _LE
 
 

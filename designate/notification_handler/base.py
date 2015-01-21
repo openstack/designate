@@ -17,9 +17,9 @@
 import abc
 
 from oslo.config import cfg
+from oslo_log import log as logging
 
 from designate import exceptions
-from designate.openstack.common import log as logging
 from designate.central import rpcapi as central_rpcapi
 from designate.context import DesignateContext
 from designate.objects import Record

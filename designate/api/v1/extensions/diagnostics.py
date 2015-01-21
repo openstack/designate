@@ -15,8 +15,8 @@
 # under the License.
 import flask
 from oslo import messaging
+from oslo_log import log as logging
 
-from designate.openstack.common import log as logging
 from designate import rpc
 
 

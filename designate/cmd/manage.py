@@ -20,11 +20,11 @@ import sys
 
 import eventlet
 from oslo.config import cfg
+from oslo_log import log as logging
 from stevedore.extension import ExtensionManager
 
 from designate import utils
 from designate.i18n import _
-from designate.openstack.common import log as logging
 
 eventlet.monkey_patch(os=False)
 
@@ -105,7 +105,7 @@ def main():
 
     try:
         utils.read_config('designate', sys.argv)
-        logging.setup("designate")
+        logging.setup(CONF, 'designate')
     except cfg.ConfigFilesNotFoundError:
         cfgfile = CONF.config_file[-1] if CONF.config_file else None
         if cfgfile and not os.access(cfgfile, os.R_OK):

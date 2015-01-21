@@ -14,10 +14,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from designate import exceptions
-from designate.openstack.common import log as logging
-
 from pecan import expose
+from oslo_log import log as logging
+
+from designate import exceptions
 
 LOG = logging.getLogger(__name__)
 

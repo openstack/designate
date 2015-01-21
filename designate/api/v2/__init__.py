@@ -15,9 +15,9 @@
 # under the License.
 import pecan.deploy
 from oslo.config import cfg
+from oslo_log import log as logging
 
 from designate.api.v2 import patches  # flake8: noqa
-from designate.openstack.common import log as logging
 
 
 LOG = logging.getLogger(__name__)

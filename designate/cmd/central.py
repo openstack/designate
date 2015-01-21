@@ -16,8 +16,8 @@
 import sys
 
 from oslo.config import cfg
+from oslo_log import log as logging
 
-from designate.openstack.common import log as logging
 from designate import service
 from designate import utils
 from designate.central import service as central
@@ -29,7 +29,7 @@ CONF.import_opt('workers', 'designate.central', group='service:central')
 
 def main():
     utils.read_config('designate', sys.argv)
-    logging.setup('designate')
+    logging.setup(CONF, 'designate')
 
     server = central.Service.create(binary='designate-central',
                                     service_name='central')

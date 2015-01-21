@@ -18,11 +18,11 @@ import time
 
 import requests
 from oslo.config import cfg
+from oslo_log import log as logging
 from oslo.serialization import jsonutils as json
 from oslo_utils import importutils
 
 from designate import exceptions
-from designate.openstack.common import log as logging
 from designate.backend import base
 from designate.i18n import _LE
 

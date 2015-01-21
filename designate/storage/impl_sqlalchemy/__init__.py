@@ -17,11 +17,11 @@ import time
 import hashlib
 
 from oslo.config import cfg
+from oslo_log import log as logging
 from oslo_db import options
 from sqlalchemy import select, distinct, func
 from sqlalchemy.sql.expression import or_
 
-from designate.openstack.common import log as logging
 from designate import exceptions
 from designate import objects
 from designate.sqlalchemy import base as sqlalchemy_base

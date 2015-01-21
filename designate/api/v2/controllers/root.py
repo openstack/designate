@@ -14,9 +14,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from oslo.config import cfg
+from oslo_log import log as logging
 from stevedore import named
 
-from designate.openstack.common import log as logging
 from designate.api.v2.controllers import limits
 from designate.api.v2.controllers import reverse
 from designate.api.v2.controllers import schemas

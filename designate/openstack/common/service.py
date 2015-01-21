@@ -36,10 +36,11 @@ except ImportError:
 import eventlet
 from eventlet import event
 from oslo.config import cfg
+from oslo_log import log as logging
+
 
 from designate.openstack.common import eventlet_backdoor
 from designate.openstack.common._i18n import _LE, _LI, _LW
-from designate.openstack.common import log as logging
 from designate.openstack.common import systemd
 from designate.openstack.common import threadgroup
 

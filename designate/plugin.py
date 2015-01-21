@@ -20,8 +20,7 @@ from stevedore import driver
 from stevedore import enabled
 from stevedore import extension
 from oslo.config import cfg
-
-from designate.openstack.common import log as logging
+from oslo_log import log as logging
 
 
 LOG = logging.getLogger(__name__)

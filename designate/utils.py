@@ -24,10 +24,10 @@ import pkg_resources
 from jinja2 import Template
 from oslo.config import cfg
 from oslo_concurrency import processutils
+from oslo_log import log as logging
 from oslo_utils import timeutils
 
 from designate import exceptions
-from designate.openstack.common import log as logging
 
 
 LOG = logging.getLogger(__name__)
@@ -86,8 +86,8 @@ def find_config(config_path):
 
 
 def read_config(prog, argv):
+    logging.register_options(cfg.CONF)
     config_files = find_config('%s.conf' % prog)
-
     cfg.CONF(argv[1:], project='designate', prog=prog,
              default_config_files=config_files)
 

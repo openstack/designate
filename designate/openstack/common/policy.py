@@ -95,6 +95,7 @@ import os
 import re
 
 from oslo.config import cfg
+from oslo_log import log as logging
 from oslo.serialization import jsonutils
 import six
 import six.moves.urllib.parse as urlparse
@@ -102,7 +103,6 @@ import six.moves.urllib.request as urlrequest
 
 from designate.openstack.common import fileutils
 from designate.openstack.common._i18n import _, _LE, _LI
-from designate.openstack.common import log as logging
 
 
 policy_opts = [

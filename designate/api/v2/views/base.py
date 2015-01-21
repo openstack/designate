@@ -16,10 +16,10 @@
 import urllib
 
 from oslo.config import cfg
+from oslo_log import log as logging
 
 from designate import exceptions
 from designate import objects
-from designate.openstack.common import log as logging
 
 
 LOG = logging.getLogger(__name__)

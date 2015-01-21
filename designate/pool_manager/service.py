@@ -18,6 +18,7 @@ from decimal import Decimal
 
 from oslo.config import cfg
 from oslo import messaging
+from oslo_log import log as logging
 
 from designate import backend
 from designate import exceptions
@@ -29,7 +30,6 @@ from designate.context import DesignateContext
 from designate.i18n import _LE
 from designate.i18n import _LI
 from designate.i18n import _LW
-from designate.openstack.common import log as logging
 from designate.pool_manager import cache
 
 

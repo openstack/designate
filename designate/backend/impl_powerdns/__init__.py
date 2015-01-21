@@ -17,10 +17,10 @@ import copy
 import threading
 
 from oslo_db import options
+from oslo_log import log as logging
 from oslo_utils import excutils
 from sqlalchemy.sql import select
 
-from designate.openstack.common import log as logging
 from designate import exceptions
 from designate.i18n import _LC
 from designate.backend import base

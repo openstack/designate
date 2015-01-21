@@ -15,8 +15,8 @@
 # under the License.
 
 import pecan
+from oslo_log import log as logging
 
-from designate.openstack.common import log as logging
 from designate.api.v2.controllers import rest
 from designate.api.v2.views import limits as limits_view
 

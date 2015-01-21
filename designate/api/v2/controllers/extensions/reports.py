@@ -14,7 +14,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from designate.openstack.common import log as logging
+from oslo_log import log as logging
+
 from designate.api.v2.controllers import rest
 from designate.api.v2.controllers.extensions import counts
 from designate.api.v2.controllers.extensions import tenants

@@ -22,6 +22,7 @@ import tempfile
 
 import fixtures
 from oslotest import base
+from oslo_log import log as logging
 from oslo.config import cfg
 from oslo.config import fixture as cfg_fixture
 from oslo.messaging import conffixture as messaging_fixture
@@ -29,7 +30,6 @@ from oslo.messaging.notify import _impl_test as test_notifier
 from oslo_utils import importutils
 from testtools import testcase
 
-from designate.openstack.common import log as logging
 from designate import policy
 from designate import utils
 from designate.context import DesignateContext

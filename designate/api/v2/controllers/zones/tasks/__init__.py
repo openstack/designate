@@ -13,12 +13,13 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from oslo_log import log as logging
+
 from designate.api.v2.controllers import rest
 from designate.api.v2.controllers.zones.tasks.transfer_requests \
     import TransferRequestsController as TRC
 from designate.api.v2.controllers.zones.tasks.transfer_accepts \
     import TransferAcceptsController as TRA
-from designate.openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)
 

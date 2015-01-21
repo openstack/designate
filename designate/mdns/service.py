@@ -18,12 +18,12 @@ import struct
 
 import dns
 from oslo.config import cfg
+from oslo_log import log as logging
 
 from designate import service
 from designate.mdns import handler
 from designate.mdns import middleware
 from designate.mdns import notify
-from designate.openstack.common import log as logging
 from designate.i18n import _LE
 from designate.i18n import _LI
 from designate.i18n import _LW

@@ -18,8 +18,7 @@ import re
 import jsonschema
 from jsonschema import compat
 import netaddr
-
-from designate.openstack.common import log as logging
+from oslo_log import log as logging
 
 
 LOG = logging.getLogger(__name__)

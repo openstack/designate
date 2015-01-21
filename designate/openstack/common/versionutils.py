@@ -20,11 +20,11 @@ Helpers for comparing version strings.
 import functools
 import inspect
 
+from oslo_log import log as logging
 import pkg_resources
 import six
 
 from designate.openstack.common._i18n import _
-from designate.openstack.common import log as logging
 
 
 LOG = logging.getLogger(__name__)

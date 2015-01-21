@@ -17,8 +17,8 @@ import urlparse
 
 import six
 import jsonschema
+from oslo_log import log as logging
 
-from designate.openstack.common import log as logging
 from designate import exceptions
 from designate.schema import validators
 from designate.schema import format

@@ -13,8 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 from oslo.config import cfg
+from oslo_log import log as logging
 
-from designate.openstack.common import log as logging
 from designate.tests.test_api.test_v2 import ApiV2TestCase
 
 LOG = logging.getLogger(__name__)

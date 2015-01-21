@@ -16,10 +16,10 @@
 import os
 
 import pecan
+from oslo_log import log as logging
 
 from designate import exceptions
 from designate import utils
-from designate.openstack.common import log as logging
 
 
 LOG = logging.getLogger(__name__)

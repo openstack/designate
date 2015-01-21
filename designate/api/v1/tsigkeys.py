@@ -14,8 +14,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import flask
+from oslo_log import log as logging
 
-from designate.openstack.common import log as logging
 from designate import schema
 from designate.central import rpcapi as central_rpcapi
 from designate.objects import TsigKey

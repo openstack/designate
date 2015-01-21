@@ -18,13 +18,13 @@ import time
 
 from eventlet import Timeout
 from oslo.config import cfg
+from oslo_log import log as logging
 import requests
 from requests.adapters import HTTPAdapter
 
 from designate import exceptions
 from designate import utils
 from designate.backend import base
-from designate.openstack.common import log as logging
 from designate.i18n import _LI
 from designate.i18n import _LW
 

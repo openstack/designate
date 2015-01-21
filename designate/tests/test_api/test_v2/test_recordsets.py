@@ -15,8 +15,8 @@
 # under the License.
 from mock import patch
 from oslo import messaging
+from oslo_log import log as logging
 
-from designate.openstack.common import log as logging
 from designate import exceptions
 from designate.central import service as central_service
 from designate.tests.test_api.test_v2 import ApiV2TestCase

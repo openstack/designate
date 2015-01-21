@@ -16,9 +16,9 @@
 # under the License.
 import unittest
 
+from oslo_log import log as logging
 import testtools
 
-from designate.openstack.common import log as logging
 import designate.tests.test_central.test_service
 from designate import utils
 from designate import exceptions

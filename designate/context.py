@@ -17,9 +17,9 @@ import itertools
 import copy
 
 from oslo_context import context
+from oslo_log import log as logging
 
 from designate.openstack.common import local
-from designate.openstack.common import log as logging
 from designate import policy
 
 

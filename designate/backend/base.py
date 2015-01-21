@@ -17,8 +17,8 @@ import abc
 import copy
 
 from oslo.config import cfg
+from oslo_log import log as logging
 
-from designate.openstack.common import log as logging
 from designate.i18n import _LW
 from designate import exceptions
 from designate.context import DesignateContext

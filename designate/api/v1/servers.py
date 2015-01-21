@@ -15,8 +15,8 @@
 # under the License.
 import flask
 from oslo.config import cfg
+from oslo_log import log as logging
 
-from designate.openstack.common import log as logging
 from designate import exceptions
 from designate import schema
 from designate import objects
