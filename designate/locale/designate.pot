@@ -1,14 +1,14 @@
 # Translations template for designate.
-# Copyright (C) 2014 ORGANIZATION
+# Copyright (C) 2015 ORGANIZATION
 # This file is distributed under the same license as the designate project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2014.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2015.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: designate 2015.1.dev147.ge7b06b2\n"
+"Project-Id-Version: designate 2015.1.dev83\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-12-11 06:09+0000\n"
+"POT-Creation-Date: 2015-01-22 06:12+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -56,26 +56,6 @@ msgstr ""
 
 #: designate/cmd/manage.py:119
 msgid "Please re-run designate-manage as root."
-msgstr ""
-
-#: designate/openstack/common/log.py:298
-#, python-format
-msgid "Deprecated: %s"
-msgstr ""
-
-#: designate/openstack/common/log.py:406
-#, python-format
-msgid "Error loading logging config %(log_config)s: %(err_msg)s"
-msgstr ""
-
-#: designate/openstack/common/log.py:467
-#, python-format
-msgid "syslog facility must be one of: %s"
-msgstr ""
-
-#: designate/openstack/common/log.py:715
-#, python-format
-msgid "Fatal call to deprecated config: %(msg)s"
 msgstr ""
 
 #: designate/openstack/common/policy.py:111
@@ -158,40 +138,40 @@ msgstr ""
 msgid "Uncaught exception"
 msgstr ""
 
-#: designate/openstack/deprecated/wsgi.py:110
+#: designate/openstack/deprecated/wsgi.py:111
 #, python-format
 msgid "Could not bind to %(host)s:%(port)s after trying for 30 seconds"
 msgstr ""
 
-#: designate/openstack/deprecated/wsgi.py:372
+#: designate/openstack/deprecated/wsgi.py:373
 msgid "Unsupported Content-Type"
 msgstr ""
 
-#: designate/openstack/deprecated/wsgi.py:375
+#: designate/openstack/deprecated/wsgi.py:376
 msgid "Malformed request body"
 msgstr ""
 
-#: designate/openstack/deprecated/wsgi.py:660
+#: designate/openstack/deprecated/wsgi.py:661
 msgid "Empty body provided in request"
 msgstr ""
 
-#: designate/openstack/deprecated/wsgi.py:666
+#: designate/openstack/deprecated/wsgi.py:667
 msgid "Unrecognized Content-Type provided in request"
 msgstr ""
 
-#: designate/openstack/deprecated/wsgi.py:670
+#: designate/openstack/deprecated/wsgi.py:671
 msgid "No Content-Type provided in request"
 msgstr ""
 
-#: designate/openstack/deprecated/wsgi.py:676
+#: designate/openstack/deprecated/wsgi.py:677
 msgid "Unable to deserialize body as provided Content-Type"
 msgstr ""
 
-#: designate/openstack/deprecated/wsgi.py:726
+#: designate/openstack/deprecated/wsgi.py:727
 msgid "cannot understand JSON"
 msgstr ""
 
-#: designate/openstack/deprecated/wsgi.py:750
+#: designate/openstack/deprecated/wsgi.py:751
 msgid "cannot understand XML"
 msgstr ""
 
