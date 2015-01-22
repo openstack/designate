@@ -1,5 +1,5 @@
 # French translations for designate.
-# Copyright (C) 2014 ORGANIZATION
+# Copyright (C) 2015 ORGANIZATION
 # This file is distributed under the same license as the designate project.
 #
 # Translators:
@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  Designate\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-12-11 06:09+0000\n"
-"PO-Revision-Date: 2014-12-10 13:59+0000\n"
+"POT-Creation-Date: 2015-01-22 06:12+0000\n"
+"PO-Revision-Date: 2015-01-21 21:43+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: French "
 "(http://www.transifex.com/projects/p/designate/language/fr/)\n"
@@ -63,28 +63,6 @@ msgstr "sudo a échoué, continue comme si de rien n'était"
 #: designate/cmd/manage.py:119
 msgid "Please re-run designate-manage as root."
 msgstr "Veuillez exécuter designate-manage à nouveau en tant que root"
-
-#: designate/openstack/common/log.py:298
-#, python-format
-msgid "Deprecated: %s"
-msgstr "Déprécié : %s"
-
-#: designate/openstack/common/log.py:406
-#, python-format
-msgid "Error loading logging config %(log_config)s: %(err_msg)s"
-msgstr ""
-"Erreur de chargement de la config de journalisation %(log_config)s: "
-"%(err_msg)s"
-
-#: designate/openstack/common/log.py:467
-#, python-format
-msgid "syslog facility must be one of: %s"
-msgstr "La fonction syslog doit faire partie de  : %s"
-
-#: designate/openstack/common/log.py:715
-#, python-format
-msgid "Fatal call to deprecated config: %(msg)s"
-msgstr "Appel fatal à config dépréciée : %(msg)s"
 
 #: designate/openstack/common/policy.py:111
 msgid "The JSON file that defines policies."
@@ -175,44 +153,44 @@ msgstr "%(what)s déprécié depuis %(as_of)s. Ne sera pas remplacé."
 msgid "Uncaught exception"
 msgstr "Exception non interceptée"
 
-#: designate/openstack/deprecated/wsgi.py:110
+#: designate/openstack/deprecated/wsgi.py:111
 #, python-format
 msgid "Could not bind to %(host)s:%(port)s after trying for 30 seconds"
 msgstr ""
 "Impossible de se connecter au %(host)s:%(port)s après un effort d'une "
 "durée de 30 secondes"
 
-#: designate/openstack/deprecated/wsgi.py:372
+#: designate/openstack/deprecated/wsgi.py:373
 msgid "Unsupported Content-Type"
 msgstr "Type de contenu non pris en charge"
 
-#: designate/openstack/deprecated/wsgi.py:375
+#: designate/openstack/deprecated/wsgi.py:376
 msgid "Malformed request body"
 msgstr "Corps de texte de la requête malformé"
 
-#: designate/openstack/deprecated/wsgi.py:660
+#: designate/openstack/deprecated/wsgi.py:661
 msgid "Empty body provided in request"
 msgstr "Aucun contenu dans la requête"
 
-#: designate/openstack/deprecated/wsgi.py:666
+#: designate/openstack/deprecated/wsgi.py:667
 msgid "Unrecognized Content-Type provided in request"
 msgstr "Type de contenu fourni dans la requête non reconnu"
 
-#: designate/openstack/deprecated/wsgi.py:670
+#: designate/openstack/deprecated/wsgi.py:671
 msgid "No Content-Type provided in request"
 msgstr "Aucun Type de contenu fourni dans la requête"
 
-#: designate/openstack/deprecated/wsgi.py:676
+#: designate/openstack/deprecated/wsgi.py:677
 msgid "Unable to deserialize body as provided Content-Type"
 msgstr ""
 "Impossible de dé sérialiser le corps de contenu fourni par le Type de "
 "contenu"
 
-#: designate/openstack/deprecated/wsgi.py:726
+#: designate/openstack/deprecated/wsgi.py:727
 msgid "cannot understand JSON"
 msgstr "ne comprend pas JSON"
 
-#: designate/openstack/deprecated/wsgi.py:750
+#: designate/openstack/deprecated/wsgi.py:751
 msgid "cannot understand XML"
 msgstr "ne comprend pas XML"
 
