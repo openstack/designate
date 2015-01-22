@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: designate 2015.1.dev59\n"
+"Project-Id-Version: designate 2015.1.dev73\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-01-20 06:09+0000\n"
+"POT-Creation-Date: 2015-01-21 06:09+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -436,11 +436,11 @@ msgstr ""
 msgid "Number of tlds added: %d"
 msgstr ""
 
-#: designate/mdns/notify.py:38
+#: designate/mdns/notify.py:37
 msgid "started mdns notify endpoint"
 msgstr ""
 
-#: designate/mdns/notify.py:175
+#: designate/mdns/notify.py:160
 #, python-format
 msgid "Sending '%(msg)s' for '%(zone)s' to '%(server)s:%(port)d'."
 msgstr ""
@@ -449,14 +449,14 @@ msgstr ""
 #, python-format
 msgid ""
 "notify_zone_changed: Calling mdns for zone '%(zone)s', serial "
-"'%(serial)s' to server '%(dst)s'"
+"'%(serial)s' to server '%(host)s:%(port)s'"
 msgstr ""
 
-#: designate/mdns/rpcapi.py:76
+#: designate/mdns/rpcapi.py:75
 #, python-format
 msgid ""
 "poll_for_serial_number: Calling mdns for zone '%(zone)s', serial "
-"'%(serial)s' to server '%(dst)s'"
+"'%(serial)s' to server '%(host)s:%(port)s'"
 msgstr ""
 
 #: designate/mdns/service.py:52
@@ -543,73 +543,60 @@ msgstr ""
 msgid "Waiting on %d children to exit"
 msgstr ""
 
-#: designate/pool_manager/rpcapi.py:62
+#: designate/pool_manager/rpcapi.py:63
 #, python-format
 msgid "create_domain: Calling pool manager's create_domain for %(domain)s"
 msgstr ""
 
-#: designate/pool_manager/rpcapi.py:68
+#: designate/pool_manager/rpcapi.py:73
 #, python-format
 msgid "delete_domain: Calling pool manager's delete_domain for %(domain)s"
 msgstr ""
 
-#: designate/pool_manager/rpcapi.py:74
+#: designate/pool_manager/rpcapi.py:83
 #, python-format
 msgid "update_domain: Calling pool manager's update_domain for %(domain)s"
 msgstr ""
 
-#: designate/pool_manager/rpcapi.py:81
+#: designate/pool_manager/rpcapi.py:93
 #, python-format
 msgid "update_status: Calling pool manager's update_status for %(domain)s"
 msgstr ""
 
-#: designate/pool_manager/service.py:63
+#: designate/pool_manager/service.py:74
 #, python-format
-msgid "Domain %(domain)s is managed by this pool.  Executing."
+msgid "Using topic %(topic)s for this pool manager instance."
 msgstr ""
 
-#: designate/pool_manager/service.py:68
-#, python-format
-msgid "Domain %(domain)s is not managed by this pool.   Skipping."
-msgstr ""
-
-#: designate/pool_manager/service.py:141
+#: designate/pool_manager/service.py:128
 msgid "Starting periodic recovery timer."
 msgstr ""
 
-#: designate/pool_manager/service.py:147
+#: designate/pool_manager/service.py:134
 msgid "Starting periodic sync timer."
 msgstr ""
 
-#: designate/pool_manager/service.py:159
-msgid "Stopping periodic sync timer."
-msgstr ""
-
-#: designate/pool_manager/service.py:161
-msgid "Stopping periodic recovery timer."
-msgstr ""
-
-#: designate/pool_manager/service.py:254
+#: designate/pool_manager/service.py:230
 #, python-format
 msgid "For domain %(domain)s the consensus serial is %(consensus_serial)s."
 msgstr ""
 
-#: designate/pool_manager/service.py:323
+#: designate/pool_manager/service.py:299
 #, python-format
 msgid "Created domain %(domain)s on server %(server)s."
 msgstr ""
 
-#: designate/pool_manager/service.py:372
+#: designate/pool_manager/service.py:348
 #, python-format
 msgid "Deleted domain %(domain)s from server %(server)s."
 msgstr ""
 
-#: designate/pool_manager/service.py:378
+#: designate/pool_manager/service.py:354
 #, python-format
 msgid "Consensus reached for deleting domain %(domain)s"
 msgstr ""
 
-#: designate/pool_manager/service.py:418
+#: designate/pool_manager/service.py:394
 #, python-format
 msgid "Updating domain %(domain)s on server %(server)s."
 msgstr ""
