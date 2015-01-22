@@ -329,6 +329,19 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
         if not one:
             recordsets.total_count = self.count_recordsets(context, criterion)
 
+        # Load Relations
+        def _load_relations(recordset):
+            recordset.records = self._find_records(
+                context, {'recordset_id': recordset.id})
+
+            recordset.obj_reset_changes(['recordset'])
+
+        if one:
+            _load_relations(recordsets)
+        else:
+            for recordset in recordsets:
+                _load_relations(recordset)
+
         return recordsets
 
     def create_recordset(self, context, domain_id, recordset):
@@ -359,39 +372,16 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
         return recordset
 
     def get_recordset(self, context, recordset_id):
-        recordset = self._find_recordsets(
-            context, {'id': recordset_id}, one=True)
-
-        recordset.records = self._find_records(
-            context, {'recordset_id': recordset.id})
-
-        recordset.obj_reset_changes(['records'])
-
-        return recordset
+        return self._find_recordsets(context, {'id': recordset_id}, one=True)
 
     def find_recordsets(self, context, criterion=None, marker=None, limit=None,
                         sort_key=None, sort_dir=None):
-        recordsets = self._find_recordsets(context, criterion, marker=marker,
-                                           limit=limit, sort_key=sort_key,
-                                           sort_dir=sort_dir)
-
-        for recordset in recordsets:
-            recordset.records = self._find_records(
-                context, {'recordset_id': recordset.id})
-
-            recordset.obj_reset_changes(['records'])
-
-        return recordsets
+        return self._find_recordsets(context, criterion, marker=marker,
+                                     limit=limit, sort_key=sort_key,
+                                     sort_dir=sort_dir)
 
     def find_recordset(self, context, criterion):
-        recordset = self._find_recordsets(context, criterion, one=True)
-
-        recordset.records = self._find_records(
-            context, {'recordset_id': recordset.id})
-
-        recordset.obj_reset_changes(['records'])
-
-        return recordset
+        return self._find_recordsets(context, criterion, one=True)
 
     def update_recordset(self, context, recordset):
         recordset = self._update(
