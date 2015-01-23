@@ -27,6 +27,7 @@ from designate.i18n import _
 from designate import rpc
 from designate import policy
 from designate import version
+from designate import dnsutils
 
 
 CONF = cfg.CONF
@@ -128,19 +129,49 @@ class RPCService(Service):
         super(RPCService, self).wait()
 
 
-class TCPService(Service):
+class WSGIService(wsgi.Service, Service):
+    """
+    Service class to be shared by all Designate WSGI Services
+    """
+    def __init__(self, application, port, host='0.0.0.0', backlog=4096,
+                 threads=1000):
+        # NOTE(kiall): We avoid calling super(cls, self) here, as our parent
+        #              classes have different argspecs. Additionally, if we
+        #              manually call both parent's __init__, the openstack
+        #              common Service class's __init__ method will be called
+        #              twice. As a result, we only call the designate base
+        #              Service's __init__ method, and duplicate the
+        #              wsgi.Service's constructor functionality here.
+        #
+        Service.__init__(self, threads)
+
+        self.application = application
+        self._port = port
+        self._host = host
+        self._backlog = backlog if backlog else CONF.backlog
+
+
+class DNSService(Service):
     """
     Service class to be used for a service that only works in TCP
     """
-    def __init__(self, host=None, binary=None, service_name=None,
+    def __init__(self, config, host=None, binary=None, service_name=None,
                  endpoints=None, threads=1000):
-        super(TCPService, self).__init__(threads)
+        super(DNSService, self).__init__(threads)
 
         self.host = host
         self.binary = binary
         self.service_name = service_name
 
         self.endpoints = endpoints or [self]
+        self.config = config
+
+        self._sock_tcp = dnsutils.bind_tcp(
+            self.config.host, self.config.port,
+            self.config.tcp_backlog)
+
+        self._sock_udp = dnsutils.bind_udp(
+            self.config.host, self.config.port)
 
     @classmethod
     def create(cls, host=None, binary=None, service_name=None,
@@ -164,36 +195,23 @@ class TCPService(Service):
             if e != self and hasattr(e, 'start'):
                 e.start()
 
-        super(TCPService, self).start()
+        self.tg.add_thread(
+            dnsutils.handle_tcp, self._sock_tcp, self.tg, dnsutils.handle,
+            self.application, timeout=self.config.tcp_recv_timeout)
+        self.tg.add_thread(
+            dnsutils.handle_udp, self._sock_udp, self.tg, dnsutils.handle,
+            self.application)
+
+        super(DNSService, self).start()
 
     def stop(self):
         for e in self.endpoints:
             if e != self and hasattr(e, 'stop'):
                 e.stop()
 
-        super(TCPService, self).stop()
-
-
-class WSGIService(wsgi.Service, Service):
-    """
-    Service class to be shared by all Designate WSGI Services
-    """
-    def __init__(self, application, port, host='0.0.0.0', backlog=4096,
-                 threads=1000):
-        # NOTE(kiall): We avoid calling super(cls, self) here, as our parent
-        #              classes have different argspecs. Additionally, if we
-        #              manually call both parent's __init__, the openstack
-        #              common Service class's __init__ method will be called
-        #              twice. As a result, we only call the designate base
-        #              Service's __init__ method, and duplicate the
-        #              wsgi.Service's constructor functionality here.
-        #
-        Service.__init__(self, threads)
-
-        self.application = application
-        self._port = port
-        self._host = host
-        self._backlog = backlog if backlog else CONF.backlog
+        # When the service is stopped, the threads for _handle_tcp and
+        # _handle_udp are stopped too.
+        super(DNSService, self).stop()
 
 
 _launcher = None

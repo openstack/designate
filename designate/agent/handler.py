@@ -17,9 +17,11 @@ import dns
 from oslo.config import cfg
 from oslo_log import log as logging
 
-from designate.agent import axfr
+from designate import dnsutils
 from designate.backend import agent_backend
 from designate.i18n import _LW
+from designate.i18n import _LI
+
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
@@ -39,7 +41,15 @@ DELETE = 65283
 
 class RequestHandler(object):
     def __init__(self):
-        self.xfr = axfr.AXFR()
+        self.masters = []
+        for server in CONF['service:agent'].masters:
+            raw_server = server.split(':')
+            master = {'ip': raw_server[0], 'port': int(raw_server[1])}
+            self.masters.append(master)
+
+        LOG.info(_LI("Agent masters: %(masters)s") %
+                 {'masters': self.masters})
+
         self.allow_notify = CONF['service:agent'].allow_notify
         backend_driver = cfg.CONF['service:agent'].backend_driver
         self.backend = agent_backend.get_backend(backend_driver, self)
@@ -108,7 +118,7 @@ class RequestHandler(object):
                  {'verb': "CREATE", 'name': domain_name, 'host': requester})
 
         try:
-            zone = self.xfr.do_axfr(domain_name)
+            zone = dnsutils.do_axfr(domain_name, self.masters)
             self.backend.create_domain(zone)
         except Exception:
             response.set_rcode(dns.rcode.from_text("SERVFAIL"))
@@ -158,7 +168,7 @@ class RequestHandler(object):
         # Check that the serial is < serial above
 
         try:
-            zone = self.xfr.do_axfr(domain_name)
+            zone = dnsutils.do_axfr(domain_name, self.masters)
             self.backend.update_domain(zone)
         except Exception:
             response.set_rcode(dns.rcode.from_text("SERVFAIL"))
