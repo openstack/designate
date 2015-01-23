@@ -128,6 +128,52 @@ class RPCService(Service):
         super(RPCService, self).wait()
 
 
+class TCPService(Service):
+    """
+    Service class to be used for a service that only works in TCP
+    """
+    def __init__(self, host=None, binary=None, service_name=None,
+                 endpoints=None, threads=1000):
+        super(TCPService, self).__init__(threads)
+
+        self.host = host
+        self.binary = binary
+        self.service_name = service_name
+
+        self.endpoints = endpoints or [self]
+
+    @classmethod
+    def create(cls, host=None, binary=None, service_name=None,
+               endpoints=None):
+        """Instantiates class and passes back application object.
+
+        :param host: defaults to CONF.host
+        :param binary: defaults to basename of executable
+        """
+        if not host:
+            host = CONF.host
+        if not binary:
+            binary = os.path.basename(inspect.stack()[-1][1])
+
+        service_obj = cls(host, binary, service_name=service_name,
+                          endpoints=endpoints)
+        return service_obj
+
+    def start(self):
+        for e in self.endpoints:
+            if e != self and hasattr(e, 'start'):
+                e.start()
+
+        super(TCPService, self).start()
+
+    def stop(self):
+        for e in self.endpoints:
+            if e != self and hasattr(e, 'stop'):
+                e.stop()
+
+        super(TCPService, self).stop()
+
+
 class WSGIService(wsgi.Service, Service):
     """
     Service class to be shared by all Designate WSGI Services
