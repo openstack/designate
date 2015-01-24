@@ -14,36 +14,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from designate import context
+from designate import dnsutils
 
 
-class Middleware(object):
-    def __init__(self, application):
-        self.application = application
-
-    def process_request(self, request):
-        """Called on each request.
-
-        If this returns None, the next application down the stack will be
-        executed. If it returns a response then that response will be returned
-        and execution will stop here.
-        """
-        return None
-
-    def process_response(self, response):
-        """Do whatever you'd like to the response."""
-        return response
-
-    def __call__(self, request):
-        response = self.process_request(request)
-
-        if response:
-            return response
-
-        response = self.application(request)
-        return self.process_response(response)
-
-
-class ContextMiddleware(Middleware):
+class ContextMiddleware(dnsutils.DNSMiddleware):
     """Temporary ContextMiddleware which attaches an admin context to every
     request
 

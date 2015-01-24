@@ -33,7 +33,7 @@ class AgentRequestHandlerTest(AgentTestCase):
         self.addr = ["0.0.0.0", 5558]
 
     @mock.patch.object(dns.resolver.Resolver, 'query')
-    @mock.patch('designate.agent.axfr.AXFR.do_axfr')
+    @mock.patch('designate.dnsutils.do_axfr')
     def test_receive_notify(self, func, axfrfunc):
         """
         Get a NOTIFY and ensure the response is right,
@@ -81,7 +81,7 @@ class AgentRequestHandlerTest(AgentTestCase):
         self.assertEqual(expected_response, binascii.b2a_hex(response))
 
     @mock.patch.object(dns.resolver.Resolver, 'query')
-    @mock.patch('designate.agent.axfr.AXFR.do_axfr')
+    @mock.patch('designate.dnsutils.do_axfr')
     def test_receive_create(self, func, func2):
         """
         Get a CREATE and ensure the response is right,

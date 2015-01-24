@@ -17,6 +17,7 @@ import socket
 import struct
 
 import dns
+import dns.zone
 from dns import rdatatype
 from oslo_log import log as logging
 
@@ -27,6 +28,33 @@ from designate.i18n import _LI
 from designate.i18n import _LW
 
 LOG = logging.getLogger(__name__)
+
+
+class DNSMiddleware(object):
+    def __init__(self, application):
+        self.application = application
+
+    def process_request(self, request):
+        """Called on each request.
+
+        If this returns None, the next application down the stack will be
+        executed. If it returns a response then that response will be returned
+        and execution will stop here.
+        """
+        return None
+
+    def process_response(self, response):
+        """Do whatever you'd like to the response."""
+        return response
+
+    def __call__(self, request):
+        response = self.process_request(request)
+
+        if response:
+            return response
+
+        response = self.application(request)
+        return self.process_response(response)
 
 
 def from_dnspython_zone(dnspython_zone):
@@ -144,7 +172,7 @@ def handle_tcp(sock_tcp, tg, handle, application, timeout=None):
         if timeout:
             client.settimeout(timeout)
 
-        LOG.info(_LI("Handling TCP Request from: %(host)s:%(port)d") %
+        LOG.debug("Handling TCP Request from: %(host)s:%(port)d" %
                  {'host': addr[0], 'port': addr[1]})
 
         # Prepare a variable for the payload to be buffered
@@ -177,7 +205,7 @@ def handle_udp(sock_udp, tg, handle, application):
         # TODO(kiall): Determine the appropriate default value for
         #              UDP recvfrom.
         payload, addr = sock_udp.recvfrom(8192)
-        LOG.info(_LI("Handling UDP Request from: %(host)s:%(port)d") %
+        LOG.debug("Handling UDP Request from: %(host)s:%(port)d" %
                  {'host': addr[0], 'port': addr[1]})
 
         tg.add_thread(handle, addr, payload, application, sock_udp=sock_udp)
@@ -222,3 +250,28 @@ def handle(addr, payload, application, sock_udp=None, client=None):
         LOG.exception(_LE("Unhandled exception while processing request "
                           "from %(host)s:%(port)d") %
                       {'host': addr[0], 'port': addr[1]})
+
+
+def do_axfr(zone_name, masters):
+    """
+    Performs an AXFR for a given zone name
+    """
+    # TODO(Tim): Try the first master, try others if they exist
+    master = masters[0]
+
+    LOG.info(_LI("Doing AXFR for %(name)s from %(host)s") %
+             {'name': zone_name, 'host': master})
+
+    xfr = dns.query.xfr(master['ip'], zone_name, relativize=False,
+                        port=master['port'])
+
+    try:
+        # TODO(Tim): Add a timeout to this function
+        raw_zone = dns.zone.from_xfr(xfr, relativize=False)
+    except Exception:
+        LOG.exception(_LE("There was a problem with the AXFR"))
+        raise
+
+    LOG.debug("AXFR Successful for %s" % raw_zone.origin.to_text())
+
+    return raw_zone
