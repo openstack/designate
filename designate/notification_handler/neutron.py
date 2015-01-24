@@ -63,7 +63,7 @@ class NeutronFloatingHandler(BaseAddressHandler):
                 address = {
                     'version': 4,
                     'address': payload['floatingip']['floating_ip_address']}
-                self._create([address], payload,
+                self._create([address], payload['floatingip'],
                              resource_id=payload['floatingip']['id'],
                              resource_type='floatingip')
             elif not payload['floatingip']['fixed_ip_address']:
