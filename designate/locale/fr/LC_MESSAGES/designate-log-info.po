@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Designate\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-01-21 06:09+0000\n"
-"PO-Revision-Date: 2015-01-20 22:24+0000\n"
+"POT-Creation-Date: 2015-01-23 06:08+0000\n"
+"PO-Revision-Date: 2015-01-23 01:52+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: French (http://www.transifex.com/projects/p/designate/"
 "language/fr/)\n"
@@ -20,10 +20,56 @@ msgstr ""
 "Generated-By: Babel 1.3\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
+#: designate/dnsutils.py:119 designate/agent/service.py:53
+#, python-format
+msgid "Opening TCP Listening Socket on %(host)s:%(port)d"
+msgstr "Ouverture TCP Listening Socket sur %(host)s:%(port)d"
+
+#: designate/dnsutils.py:132 designate/agent/service.py:64
+#, python-format
+msgid "Opening UDP Listening Socket on %(host)s:%(port)d"
+msgstr "Ouverture UDP Listening Socket sur %(host)s:%(port)d"
+
+#: designate/dnsutils.py:141 designate/agent/service.py:111
+msgid "_handle_tcp thread started"
+msgstr "démarrage du thread _handle_tcp"
+
+#: designate/dnsutils.py:147
+#, python-format
+msgid "Handling TCP Request from: %(host)s:%(port)d"
+msgstr ""
+
+#: designate/dnsutils.py:175 designate/agent/service.py:134
+msgid "_handle_udp thread started"
+msgstr "démarrage du thread _handle_udp"
+
+#: designate/dnsutils.py:180
+#, python-format
+msgid "Handling UDP Request from: %(host)s:%(port)d"
+msgstr ""
+
 #: designate/policy.py:67
 #, python-format
 msgid "Using policy_file found at: %s"
 msgstr "Utiliser le policy_file trouvé à : %s"
+
+#: designate/agent/axfr.py:38
+#, python-format
+msgid "Agent masters: %(masters)s"
+msgstr ""
+
+#: designate/agent/axfr.py:48
+#, python-format
+msgid "Doing AXFR for %(name)s from %(host)s"
+msgstr ""
+
+#: designate/agent/service.py:76
+msgid "Started Agent Service"
+msgstr ""
+
+#: designate/agent/service.py:80
+msgid "Stopped Agent Service"
+msgstr ""
 
 #: designate/api/middleware.py:53
 #, python-format
@@ -66,15 +112,27 @@ msgstr "Le domaine existe déjà, mettez plutôt à jour le domaine existant %s"
 msgid "Deleting domain %(d_id)s / %(d_name)s"
 msgstr "Effacer les noms de domaine %(d_id)s / %(d_name)s"
 
-#: designate/backend/impl_fake.py:28
+#: designate/backend/impl_fake.py:29
 #, python-format
 msgid "Create Domain %r"
 msgstr "Créer domaine %r"
 
-#: designate/backend/impl_fake.py:31
+#: designate/backend/impl_fake.py:32
 #, python-format
 msgid "Delete Domain %r"
 msgstr "Suppression du domaine %r"
+
+#: designate/backend/agent_backend/impl_bind9.py:55
+msgid "Started bind9 backend"
+msgstr ""
+
+#: designate/backend/agent_backend/impl_fake.py:28
+msgid "Started fake backend, Pool Manager will not work!"
+msgstr ""
+
+#: designate/backend/agent_backend/impl_fake.py:31
+msgid "Stopped fake backend"
+msgstr ""
 
 #: designate/central/rpcapi.py:74
 msgid "get_absolute_limits: Calling central's get_absolute_limits."
@@ -464,27 +522,13 @@ msgid ""
 "'%(serial)s' to server '%(host)s:%(port)s'"
 msgstr ""
 
-#: designate/mdns/service.py:52
-#, python-format
-msgid "Opening TCP Listening Socket on %(host)s:%(port)d"
-msgstr "Ouverture TCP Listening Socket sur %(host)s:%(port)d"
-
-#: designate/mdns/service.py:63
-#, python-format
-msgid "Opening UDP Listening Socket on %(host)s:%(port)d"
-msgstr "Ouverture UDP Listening Socket sur %(host)s:%(port)d"
-
-#: designate/mdns/service.py:75
+#: designate/mdns/service.py:62
 msgid "started mdns service"
 msgstr "démarrage du service mdns"
 
-#: designate/mdns/service.py:111
-msgid "_handle_tcp thread started"
-msgstr "démarrage du thread _handle_tcp"
-
-#: designate/mdns/service.py:143
-msgid "_handle_udp thread started"
-msgstr "démarrage du thread _handle_udp"
+#: designate/mdns/service.py:68
+msgid "stopped mdns service"
+msgstr ""
 
 #: designate/openstack/common/eventlet_backdoor.py:147
 #, python-format
@@ -497,54 +541,54 @@ msgstr ""
 msgid "Can not find policy directory: %s"
 msgstr ""
 
-#: designate/openstack/common/service.py:174
+#: designate/openstack/common/service.py:175
 #, python-format
 msgid "Caught %s, exiting"
 msgstr "%s interceptée, sortie"
 
-#: designate/openstack/common/service.py:232
+#: designate/openstack/common/service.py:233
 msgid "Parent process has died unexpectedly, exiting"
 msgstr "Le processus parent s'est soudainement achevé sans raison, sortie"
 
-#: designate/openstack/common/service.py:263
+#: designate/openstack/common/service.py:264
 #, python-format
 msgid "Child caught %s, exiting"
 msgstr "Dépendance interceptée %s, sortie"
 
-#: designate/openstack/common/service.py:302
+#: designate/openstack/common/service.py:303
 msgid "Forking too fast, sleeping"
 msgstr "Bifurcation trop rapide, en veille"
 
-#: designate/openstack/common/service.py:321
+#: designate/openstack/common/service.py:322
 #, python-format
 msgid "Started child %d"
 msgstr "Démarrage du dépendant %d"
 
-#: designate/openstack/common/service.py:331
+#: designate/openstack/common/service.py:332
 #, python-format
 msgid "Starting %d workers"
 msgstr "Démarrage des workers %d"
 
-#: designate/openstack/common/service.py:348
+#: designate/openstack/common/service.py:349
 #, python-format
 msgid "Child %(pid)d killed by signal %(sig)d"
 msgstr "%(pid)d du dépendant annihilés par le signal %(sig)d"
 
-#: designate/openstack/common/service.py:352
+#: designate/openstack/common/service.py:353
 #, python-format
 msgid "Child %(pid)s exited with status %(code)d"
 msgstr "%(pid)s du dépendant sortis avec le statut %(code)d"
 
-#: designate/openstack/common/service.py:391
+#: designate/openstack/common/service.py:392
 #, python-format
 msgid "Caught %s, stopping children"
 msgstr "%s intercepté, arrêtant les dépendants"
 
-#: designate/openstack/common/service.py:400
+#: designate/openstack/common/service.py:401
 msgid "Wait called after thread killed.  Cleaning up."
 msgstr "Patientez une fois que la chaîne a été annihilée. Nettoyage en cours."
 
-#: designate/openstack/common/service.py:416
+#: designate/openstack/common/service.py:417
 #, python-format
 msgid "Waiting on %d children to exit"
 msgstr "En attente de sortie des dépendants %d"
@@ -569,40 +613,40 @@ msgstr ""
 msgid "update_status: Calling pool manager's update_status for %(domain)s"
 msgstr ""
 
-#: designate/pool_manager/service.py:74
+#: designate/pool_manager/service.py:76
 #, python-format
 msgid "Using topic %(topic)s for this pool manager instance."
 msgstr ""
 
-#: designate/pool_manager/service.py:128
+#: designate/pool_manager/service.py:130
 msgid "Starting periodic recovery timer."
 msgstr ""
 
-#: designate/pool_manager/service.py:134
+#: designate/pool_manager/service.py:136
 msgid "Starting periodic sync timer."
 msgstr ""
 
-#: designate/pool_manager/service.py:230
+#: designate/pool_manager/service.py:238
 #, python-format
 msgid "For domain %(domain)s the consensus serial is %(consensus_serial)s."
 msgstr ""
 
-#: designate/pool_manager/service.py:299
+#: designate/pool_manager/service.py:311
 #, python-format
 msgid "Created domain %(domain)s on server %(server)s."
 msgstr ""
 
-#: designate/pool_manager/service.py:348
+#: designate/pool_manager/service.py:355
 #, python-format
 msgid "Deleted domain %(domain)s from server %(server)s."
 msgstr ""
 
-#: designate/pool_manager/service.py:354
+#: designate/pool_manager/service.py:362
 #, python-format
 msgid "Consensus reached for deleting domain %(domain)s"
 msgstr ""
 
-#: designate/pool_manager/service.py:394
+#: designate/pool_manager/service.py:401
 #, python-format
 msgid "Updating domain %(domain)s on server %(server)s."
 msgstr ""

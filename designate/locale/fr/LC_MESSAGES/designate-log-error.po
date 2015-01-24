@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Designate\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-01-20 06:09+0000\n"
-"PO-Revision-Date: 2015-01-16 17:52+0000\n"
+"POT-Creation-Date: 2015-01-23 06:08+0000\n"
+"PO-Revision-Date: 2015-01-23 01:52+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: French (http://www.transifex.com/projects/p/designate/"
 "language/fr/)\n"
@@ -19,6 +19,22 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: designate/dnsutils.py:98 designate/agent/service.py:92
+#, python-format
+msgid "Failed to deserialize packet from %(host)s:%(port)d"
+msgstr "N'a pas pu dé-sérialiser le paquet de %(host)s:%(port)d"
+
+#: designate/dnsutils.py:222 designate/agent/service.py:178
+#, python-format
+msgid "Unhandled exception while processing request from %(host)s:%(port)d"
+msgstr ""
+"Exception non prise en charge lors du traitement d'une requête en provenance "
+"de  %(host)s:%(port)d"
+
+#: designate/agent/axfr.py:58
+msgid "There was a problem with the AXFR"
+msgstr ""
 
 #: designate/api/middleware.py:267
 msgid "Missing context in request, please check."
@@ -56,18 +72,6 @@ msgid "got exception while handling axfr request. Question is %(qr)s"
 msgstr ""
 "exception apparue lors du traitement des requêtes axfr La question est %(qr)s"
 
-#: designate/mdns/service.py:92
-#, python-format
-msgid "Failed to deserialize packet from %(host)s:%(port)d"
-msgstr "N'a pas pu dé-sérialiser le paquet de %(host)s:%(port)d"
-
-#: designate/mdns/service.py:187
-#, python-format
-msgid "Unhandled exception while processing request from %(host)s:%(port)d"
-msgstr ""
-"Exception non prise en charge lors du traitement d'une requête en provenance "
-"de  %(host)s:%(port)d"
-
 #: designate/network_api/neutron.py:126
 #, python-format
 msgid "Failed calling Neutron %(region)s - %(endpoint)s"
@@ -92,17 +96,17 @@ msgstr "N'a pas compris la règle %s"
 msgid "No handler for matches of kind %s"
 msgstr "Aucun gestionnaire pour ce type de correspondance %s"
 
-#: designate/openstack/common/service.py:269
+#: designate/openstack/common/service.py:270
 msgid "Unhandled exception"
 msgstr "Exception non prise en charge"
 
-#: designate/pool_manager/service.py:286
+#: designate/pool_manager/service.py:274
 msgid ""
 "An unhandled exception in periodic recovery occurred.  This should never "
 "happen!"
 msgstr ""
 
-#: designate/pool_manager/service.py:309
+#: designate/pool_manager/service.py:297
 msgid ""
 "An unhandled exception in periodic sync occurred.  This should never happen!"
 msgstr ""
