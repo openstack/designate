@@ -17,31 +17,23 @@ import copy
 import functools
 import os
 import inspect
-import shutil
-import tempfile
 
-import fixtures
+from testtools import testcase
 from oslotest import base
 from oslo_log import log as logging
 from oslo.config import cfg
 from oslo.config import fixture as cfg_fixture
 from oslo.messaging import conffixture as messaging_fixture
-from oslo.messaging.notify import _impl_test as test_notifier
-from oslo_utils import importutils
-from testtools import testcase
 
 from designate import policy
 from designate import utils
-from designate.context import DesignateContext
-from designate.tests import resources
 from designate import exceptions
-from designate.network_api import fake as fake_network_api
-from designate import network_api
 from designate import objects
-from designate import rpc
 from designate import storage
+from designate.context import DesignateContext
+from designate.tests import fixtures
+from designate.tests import resources
 from designate.manage import database as manage_database
-from designate.sqlalchemy import utils as sqlalchemy_utils
 
 
 LOG = logging.getLogger(__name__)
@@ -58,102 +50,6 @@ cfg.CONF.import_opt('connection',
                     'designate.pool_manager.cache.impl_sqlalchemy',
                     group='pool_manager_cache:sqlalchemy')
 pool_id = cfg.CONF['service:central'].default_pool_id
-
-
-class NotifierFixture(fixtures.Fixture):
-    def setUp(self):
-        super(NotifierFixture, self).setUp()
-        self.addCleanup(test_notifier.reset)
-
-    def get(self):
-        return test_notifier.NOTIFICATIONS
-
-    def clear(self):
-        return test_notifier.reset()
-
-
-class RPCFixture(fixtures.Fixture):
-
-    def __init__(self, conf):
-        self.conf = conf
-
-    def setUp(self):
-        super(RPCFixture, self).setUp()
-        rpc.init(self.conf)
-        self.addCleanup(self.deinit)
-
-    def deinit(self):
-        if rpc.initialized():
-            rpc.cleanup()
-
-
-class ServiceFixture(fixtures.Fixture):
-    def __init__(self, svc_name, *args, **kw):
-        cls = importutils.import_class(
-            'designate.%s.service.Service' % svc_name)
-        self.svc = cls.create(binary='designate-' + svc_name, *args, **kw)
-
-    def setUp(self):
-        super(ServiceFixture, self).setUp()
-        self.svc.start()
-        self.addCleanup(self.kill)
-
-    def kill(self):
-        try:
-            self.svc.kill()
-        except Exception:
-            pass
-
-
-class PolicyFixture(fixtures.Fixture):
-    def setUp(self):
-        super(PolicyFixture, self).setUp()
-        self.addCleanup(policy.reset)
-
-
-class DatabaseFixture(fixtures.Fixture):
-
-    fixtures = {}
-
-    @staticmethod
-    def get_fixture(repo_path, init_version=None):
-        if repo_path not in DatabaseFixture.fixtures:
-            DatabaseFixture.fixtures[repo_path] = DatabaseFixture(
-                repo_path, init_version)
-        return DatabaseFixture.fixtures[repo_path]
-
-    def _mktemp(self):
-        _, path = tempfile.mkstemp(prefix='designate-', suffix='.sqlite',
-                                   dir='/tmp')
-        return path
-
-    def __init__(self, repo_path, init_version=None):
-        super(DatabaseFixture, self).__init__()
-
-        # Create the Golden DB
-        self.golden_db = self._mktemp()
-        self.golden_url = 'sqlite:///%s' % self.golden_db
-
-        # Migrate the Golden DB
-        manager = sqlalchemy_utils.get_migration_manager(
-            repo_path, self.golden_url, init_version)
-        manager.upgrade(None)
-
-        # Prepare the Working Copy DB
-        self.working_copy = self._mktemp()
-        self.url = 'sqlite:///%s' % self.working_copy
-
-    def setUp(self):
-        super(DatabaseFixture, self).setUp()
-        shutil.copyfile(self.golden_db, self.working_copy)
-
-
-class NetworkAPIFixture(fixtures.Fixture):
-    def setUp(self):
-        super(NetworkAPIFixture, self).setUp()
-        self.api = network_api.get_network_api(cfg.CONF.network_api)
-        self.fake = fake_network_api
-        self.addCleanup(self.fake.reset_floatingips)
 
 
 class TestCase(base.BaseTestCase):
@@ -332,9 +228,9 @@ class TestCase(base.BaseTestCase):
 
         self.config(notification_driver='test')
 
-        self.notifications = self.useFixture(NotifierFixture())
+        self.notifications = self.useFixture(fixtures.NotifierFixture())
 
-        self.useFixture(RPCFixture(cfg.CONF))
+        self.useFixture(fixtures.RPCFixture(cfg.CONF))
 
         self.config(
             storage_driver='sqlalchemy',
@@ -353,7 +249,7 @@ class TestCase(base.BaseTestCase):
                                                   'impl_sqlalchemy',
                                                   'migrate_repo'))
         self.db_fixture = self.useFixture(
-            DatabaseFixture.get_fixture(
+            fixtures.DatabaseFixture.get_fixture(
                 REPOSITORY, manage_database.INIT_VERSION))
         self.config(
             connection=self.db_fixture.url,
@@ -372,8 +268,8 @@ class TestCase(base.BaseTestCase):
         self.CONF([], project='designate')
         utils.register_plugin_opts()
 
-        self.useFixture(PolicyFixture())
-        self.network_api = NetworkAPIFixture()
+        self.useFixture(fixtures.PolicyFixture())
+        self.network_api = fixtures.NetworkAPIFixture()
         self.useFixture(self.network_api)
         self.central_service = self.start_service('central')
 
@@ -394,7 +290,7 @@ class TestCase(base.BaseTestCase):
                                                   'impl_sqlalchemy',
                                                   'migrate_repo'))
         db_fixture = self.useFixture(
-            DatabaseFixture.get_fixture(repository))
+            fixtures.DatabaseFixture.get_fixture(repository))
         self.config(
             connection=db_fixture.url,
             connection_debug=50,
@@ -426,7 +322,7 @@ class TestCase(base.BaseTestCase):
         """
         Convenience method for starting a service!
         """
-        fixture = ServiceFixture(svc_name, *args, **kw)
+        fixture = fixtures.ServiceFixture(svc_name, *args, **kw)
         self.useFixture(fixture)
         return fixture.svc
 
