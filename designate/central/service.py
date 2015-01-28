@@ -30,6 +30,7 @@ from oslo_concurrency import lockutils
 
 from designate.i18n import _LI
 from designate.i18n import _LC
+from designate.i18n import _LW
 from designate import context as dcontext
 from designate import exceptions
 from designate import network_api
@@ -914,7 +915,10 @@ class Service(service.RPCService):
             'tenant_id': domain.tenant_id
         }
 
-        policy.check('delete_domain', context, target)
+        if hasattr(context, 'abandon') and context.abandon:
+            policy.check('abandon_domain', context, target)
+        else:
+            policy.check('delete_domain', context, target)
 
         # Prevent deletion of a zone which has child zones
         criterion = {'parent_domain_id': domain_id}
@@ -923,9 +927,12 @@ class Service(service.RPCService):
             raise exceptions.DomainHasSubdomain('Please delete any subdomains '
                                                 'before deleting this domain')
 
-        domain = self._delete_domain_in_storage(context, domain)
-
-        self.pool_manager_api.delete_domain(context, domain)
+        if hasattr(context, 'abandon') and context.abandon:
+            LOG.info(_LW("Abandoning zone '%(zone)s'") % {'zone': domain.name})
+            domain = self.storage.delete_domain(context, domain.id)
+        else:
+            domain = self._delete_domain_in_storage(context, domain)
+            self.pool_manager_api.delete_domain(context, domain)
 
         return domain
 
@@ -1997,6 +2004,8 @@ class Service(service.RPCService):
         # used to indicate the domain has been deleted and not the deleted
         # column.  The deleted column is needed for unique constraints.
         if deleted:
+            # TODO(vinod): Pass a domain to delete_domain rather than id so
+            # that the action, status and serial are updated correctly.
             self.storage.delete_domain(context, domain.id)
 
     def _update_record_status(self, context, domain_id, status, serial):

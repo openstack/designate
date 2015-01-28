@@ -261,7 +261,9 @@ Delete Zone
 
 .. http:delete:: zones/(uuid:id)
 
-    Deletes a zone with the specified zone ID.
+    Deletes a zone with the specified zone ID. Deleting a zone is asynchronous.
+    Once pool manager has deleted the zone from all the pool targets, the zone
+    is deleted from storage.
 
     **Example Request:**
 
@@ -276,9 +278,9 @@ Delete Zone
 
     .. sourcecode:: http
 
-        HTTP/1.1 204 No Content
+        HTTP/1.1 202 Accepted
 
-    :statuscode 204: No content
+    :statuscode 202: Accepted
 
 Import Zone
 -----------
@@ -379,6 +381,33 @@ Export Zone
     :statuscode 406: Not Acceptable
 
     Notice how the SOA and NS records are replaced with the Designate server(s).
+
+Abandon Zone
+------------
+
+.. http:post:: /zones/(uuid:id)/tasks/abandon
+
+    When a zone is abandoned it removes the zone from Designate's storage.
+    There is no operation done on the pool targets. This is intended to be used
+    in the cases where Designate's storage is incorrect for whatever reason. By
+    default this is restricted by policy (abandon_domain) to admins.
+
+    **Example Request:**
+
+    .. sourcecode:: http
+
+        POST /v2/zones/a86dba58-0043-4cc6-a1bb-69d5e86f3ca3/tasks/abandon HTTP/1.1
+        Host: 127.0.0.1:9001
+        Accept: application/json
+        Content-Type: application/json
+
+    **Example Response:**
+
+    .. sourcecode:: http
+
+        HTTP/1.1 204 No content
+
+    :statuscode 204: No content
 
 Transfer Zone
 -------------

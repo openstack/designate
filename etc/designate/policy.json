@@ -48,6 +48,7 @@
     "find_domain": "rule:admin_or_owner",
     "update_domain": "rule:admin_or_owner",
     "delete_domain": "rule:admin_or_owner",
+    "abandon_domain": "rule:admin",
     "count_domains": "rule:admin_or_owner",
     "touch_domain": "rule:admin_or_owner",
 

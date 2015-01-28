@@ -243,7 +243,7 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         self.assertEqual(200, response.status_int)
 
         # now delete the domain and get the recordsets
-        self.client.delete('/zones/%s' % zone['id'], status=204)
+        self.client.delete('/zones/%s' % zone['id'], status=202)
 
         # Simulate the domain having been deleted on the backend
         domain_serial = self.central_service.get_domain(

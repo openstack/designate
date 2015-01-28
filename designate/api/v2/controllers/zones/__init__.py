@@ -248,14 +248,8 @@ class ZonesController(rest.RestController):
         response = pecan.response
         context = request.environ['context']
 
-        # TODO(kiall): Validate we have a sane UUID for zone_id
-
-        zone = self.central_api.delete_domain(context, zone_id)
-
-        if zone['status'] == 'DELETING':
-            response.status_int = 202
-        else:
-            response.status_int = 204
+        self.central_api.delete_domain(context, zone_id)
+        response.status_int = 202
 
         # NOTE: This is a hack and a half.. But Pecan needs it.
         return ''

@@ -285,6 +285,11 @@ class SQLAlchemy(object):
             obj.deleted = obj.id.replace('-', '')
             obj.deleted_at = timeutils.utcnow()
 
+            # TODO(vinod): Change the action to be null
+            # update the action and status before deleting the object
+            obj.action = 'NONE'
+            obj.status = 'DELETED'
+
             # NOTE(kiall): It should be impossible for a duplicate exception to
             #              be raised in this call, therefore, it is OK to pass
             #              in "None" as the exc_dup param.
