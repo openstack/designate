@@ -163,7 +163,7 @@ class CentralServiceTestIPA(designate.tests.test_central.
         values['ttl'] = -100
 
         # Create a server
-        self.create_server()
+        self.create_nameserver()
 
         # Create domain with negative TTL
         with testtools.ExpectedException(impl_ipa.IPAInvalidData):

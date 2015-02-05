@@ -46,14 +46,15 @@ class CentralAPI(object):
         4.1 - Add methods for server pools
         4.2 - Add methods for pool manager integration
         4.3 - Added Zone Transfer Methods
+        5.0 - Remove dead server code
     """
-    RPC_API_VERSION = '4.3'
+    RPC_API_VERSION = '5.0'
 
     def __init__(self, topic=None):
         topic = topic if topic else cfg.CONF.central_topic
 
         target = messaging.Target(topic=topic, version=self.RPC_API_VERSION)
-        self.client = rpc.get_client(target, version_cap='4.3')
+        self.client = rpc.get_client(target, version_cap='5.0')
 
     @classmethod
     def get_instance(cls):
@@ -98,35 +99,6 @@ class CentralAPI(object):
         LOG.info(_LI("reset_quotas: Calling central's reset_quotas."))
 
         return self.client.call(context, 'reset_quotas', tenant_id=tenant_id)
-
-    # Server Methods
-    def create_server(self, context, server):
-        LOG.info(_LI("create_server: Calling central's create_server."))
-
-        return self.client.call(context, 'create_server', server=server)
-
-    def find_servers(self, context, criterion=None, marker=None, limit=None,
-                     sort_key=None, sort_dir=None):
-        LOG.info(_LI("find_servers: Calling central's find_servers."))
-
-        return self.client.call(context, 'find_servers', criterion=criterion,
-                                marker=marker, limit=limit, sort_key=sort_key,
-                                sort_dir=sort_dir)
-
-    def get_server(self, context, server_id):
-        LOG.info(_LI("get_server: Calling central's get_server."))
-
-        return self.client.call(context, 'get_server', server_id=server_id)
-
-    def update_server(self, context, server):
-        LOG.info(_LI("update_server: Calling central's update_server."))
-
-        return self.client.call(context, 'update_server', server=server)
-
-    def delete_server(self, context, server_id):
-        LOG.info(_LI("delete_server: Calling central's delete_server."))
-
-        return self.client.call(context, 'delete_server', server_id=server_id)
 
     # TSIG Key Methods
     def create_tsigkey(self, context, tsigkey):
@@ -393,59 +365,50 @@ class CentralAPI(object):
     # Pool Server Methods
     def create_pool(self, context, pool):
         LOG.info(_LI("create_pool: Calling central's create_pool."))
-        cctxt = self.client.prepare(version='4.1')
-        return cctxt.call(context, 'create_pool', pool=pool)
+        return self.client.call(context, 'create_pool', pool=pool)
 
     def find_pools(self, context, criterion=None, marker=None, limit=None,
                    sort_key=None, sort_dir=None):
         LOG.info(_LI("find_pools: Calling central's find_pools."))
-        cctxt = self.client.prepare(version='4.1')
-        return cctxt.call(context, 'find_pools', criterion=criterion,
-                          marker=marker, limit=limit, sort_key=sort_key,
-                          sort_dir=sort_dir)
+        return self.client.call(context, 'find_pools', criterion=criterion,
+                                marker=marker, limit=limit, sort_key=sort_key,
+                                sort_dir=sort_dir)
 
     def find_pool(self, context, criterion=None):
         LOG.info(_LI("find_pool: Calling central's find_pool."))
-        cctxt = self.client.prepare(version='4.1')
-        return cctxt.call(context, 'find_pool', criterion=criterion)
+        return self.client.call(context, 'find_pool', criterion=criterion)
 
     def get_pool(self, context, pool_id):
         LOG.info(_LI("get_pool: Calling central's get_pool."))
-        cctxt = self.client.prepare(version='4.1')
-        return cctxt.call(context, 'get_pool', pool_id=pool_id)
+        return self.client.call(context, 'get_pool', pool_id=pool_id)
 
     def update_pool(self, context, pool):
         LOG.info(_LI("update_pool: Calling central's update_pool."))
-        cctxt = self.client.prepare(version='4.1')
-        return cctxt.call(context, 'update_pool', pool=pool)
+        return self.client.call(context, 'update_pool', pool=pool)
 
     def delete_pool(self, context, pool_id):
         LOG.info(_LI("delete_pool: Calling central's delete_pool."))
-        cctxt = self.client.prepare(version='4.1')
-        return cctxt.call(context, 'delete_pool', pool_id=pool_id)
+        return self.client.call(context, 'delete_pool', pool_id=pool_id)
 
     # Pool Manager Integration Methods
     def update_status(self, context, domain_id, status, serial):
         LOG.info(_LI("update_status: Calling central's update_status."))
-        cctxt = self.client.prepare(version='4.2')
-        return cctxt.call(context, 'update_status', domain_id=domain_id,
-                          status=status, serial=serial)
+        return self.client.call(context, 'update_status', domain_id=domain_id,
+                                status=status, serial=serial)
 
     # Zone Ownership Transfers
     def create_zone_transfer_request(self, context, zone_transfer_request):
         LOG.info(_LI("create_zone_transfer_request: \
                      Calling central's create_zone_transfer_request."))
 
-        cctxt = self.client.prepare(version='4.3')
-        return cctxt.call(
+        return self.client.call(
             context, 'create_zone_transfer_request',
             zone_transfer_request=zone_transfer_request)
 
     def get_zone_transfer_request(self, context, zone_transfer_request_id):
         LOG.info(_LI("get_zone_transfer_request: \
                      Calling central's get_zone_transfer_request."))
-        cctxt = self.client.prepare(version='4.3')
-        return cctxt.call(
+        return self.client.call(
             context,
             'get_zone_transfer_request',
             zone_transfer_request_id=zone_transfer_request_id)
@@ -455,32 +418,28 @@ class CentralAPI(object):
         LOG.info(_LI("find_zone_transfer_requests: \
                      Calling central's find_zone_transfer_requests."))
 
-        cctxt = self.client.prepare(version='4.3')
-        return cctxt.call(
+        return self.client.call(
             context, 'find_zone_transfer_requests', criterion=criterion,
             marker=marker, limit=limit, sort_key=sort_key, sort_dir=sort_dir)
 
     def find_zone_transfer_request(self, context, zone_transfer_request):
         LOG.info(_LI("find_zone_transfer_request: \
                      Calling central's find_zone_transfer_request."))
-        cctxt = self.client.prepare(version='4.3')
-        return cctxt.call(
+        return self.client.call(
             context, 'find_zone_transfer_request',
             zone_transfer_request=zone_transfer_request)
 
     def update_zone_transfer_request(self, context, zone_transfer_request):
         LOG.info(_LI("update_zone_transfer_request: \
                      Calling central's update_zone_transfer_request."))
-        cctxt = self.client.prepare(version='4.3')
-        return cctxt.call(
+        return self.client.call(
             context, 'update_zone_transfer_request',
             zone_transfer_request=zone_transfer_request)
 
     def delete_zone_transfer_request(self, context, zone_transfer_request_id):
         LOG.info(_LI("delete_zone_transfer_request: \
                      Calling central's delete_zone_transfer_request."))
-        cctxt = self.client.prepare(version='4.3')
-        return cctxt.call(
+        return self.client.call(
             context,
             'delete_zone_transfer_request',
             zone_transfer_request_id=zone_transfer_request_id)
@@ -488,16 +447,14 @@ class CentralAPI(object):
     def create_zone_transfer_accept(self, context, zone_transfer_accept):
         LOG.info(_LI("create_zone_transfer_accept: \
                      Calling central's create_zone_transfer_accept."))
-        cctxt = self.client.prepare(version='4.3')
-        return cctxt.call(
+        return self.client.call(
             context, 'create_zone_transfer_accept',
             zone_transfer_accept=zone_transfer_accept)
 
     def get_zone_transfer_accept(self, context, zone_transfer_accept_id):
         LOG.info(_LI("get_zone_transfer_accept: \
                      Calling central's get_zone_transfer_accept."))
-        cctxt = self.client.prepare(version='4.3')
-        return cctxt.call(
+        return self.client.call(
             context,
             'get_zone_transfer_accept',
             zone_transfer_accept_id=zone_transfer_accept_id)
@@ -506,32 +463,28 @@ class CentralAPI(object):
                                    limit=None, sort_key=None, sort_dir=None):
         LOG.info(_LI("find_zone_transfer_accepts: \
                      Calling central's find_zone_transfer_accepts."))
-        cctxt = self.client.prepare(version='4.3')
-        return cctxt.call(
+        return self.client.call(
             context, 'find_zone_transfer_accepts', criterion=criterion,
             marker=marker, limit=limit, sort_key=sort_key, sort_dir=sort_dir)
 
     def find_zone_transfer_accept(self, context, zone_transfer_accept):
         LOG.info(_LI("find_zone_transfer_accept: \
                      Calling central's find_zone_transfer_accept."))
-        cctxt = self.client.prepare(version='4.3')
-        return cctxt.call(
+        return self.client.call(
             context, 'find_zone_transfer_accept',
             zone_transfer_accept=zone_transfer_accept)
 
     def update_zone_transfer_accept(self, context, zone_transfer_accept):
         LOG.info(_LI("update_zone_transfer_accept: \
                      Calling central's update_zone_transfer_accept."))
-        cctxt = self.client.prepare(version='4.3')
-        return cctxt.call(
+        return self.client.call(
             context, 'update_zone_transfer_accept',
             zone_transfer_accept=zone_transfer_accept)
 
     def delete_zone_transfer_accept(self, context, zone_transfer_accept_id):
         LOG.info(_LI("delete_zone_transfer_accept: \
                      Calling central's delete_zone_transfer_accept."))
-        cctxt = self.client.prepare(version='4.3')
-        return cctxt.call(
+        return self.client.call(
             context,
             'delete_zone_transfer_accept',
             zone_transfer_accept_id=zone_transfer_accept_id)
