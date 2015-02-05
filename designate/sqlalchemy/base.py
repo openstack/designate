@@ -109,6 +109,18 @@ class SQLAlchemy(object):
                 elif isinstance(value, basestring) and value.startswith('!'):
                     queryval = value[1:]
                     query = query.where(column != queryval)
+                elif isinstance(value, basestring) and value.startswith('<='):
+                    queryval = value[2:]
+                    query = query.where(column <= queryval)
+                elif isinstance(value, basestring) and value.startswith('<'):
+                    queryval = value[1:]
+                    query = query.where(column < queryval)
+                elif isinstance(value, basestring) and value.startswith('>='):
+                    queryval = value[2:]
+                    query = query.where(column >= queryval)
+                elif isinstance(value, basestring) and value.startswith('>'):
+                    queryval = value[1:]
+                    query = query.where(column > queryval)
                 else:
                     query = query.where(column == value)
 

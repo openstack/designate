@@ -24,6 +24,7 @@ from oslo_concurrency import lockutils
 from designate import backend
 from designate import exceptions
 from designate import objects
+from designate import utils
 from designate.central import rpcapi as central_api
 from designate.mdns import rpcapi as mdns_api
 from designate import service
@@ -283,8 +284,17 @@ class Service(service.RPCService):
         context = DesignateContext.get_admin_context(all_tenants=True)
 
         criterion = {
-            'pool_id': cfg.CONF['service:pool_manager'].pool_id
+            'pool_id': cfg.CONF['service:pool_manager'].pool_id,
         }
+
+        periodic_sync_seconds = \
+            cfg.CONF['service:pool_manager'].periodic_sync_seconds
+
+        if periodic_sync_seconds is not None:
+            # Generate the current serial, will provide a UTC Unix TS.
+            current = utils.increment_serial()
+            criterion['serial'] = ">%s" % (current - periodic_sync_seconds)
+
         domains = self.central_api.find_domains(context, criterion)
 
         try:

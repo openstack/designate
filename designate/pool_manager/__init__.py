@@ -49,6 +49,9 @@ OPTS = [
                 help='The flag for the sync timer'),
     cfg.IntOpt('periodic-sync-interval', default=300,
                help='The time between synchronizing the servers with Storage'),
+    cfg.IntOpt('periodic-sync-seconds', default=None,
+               help='Zones Updated within last N seconds will be syncd. Use '
+                    'None to sync all zones.'),
     cfg.StrOpt('cache-driver', default='sqlalchemy',
                help='The cache driver to use'),
 ]
