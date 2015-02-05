@@ -45,6 +45,8 @@ class RecordSetsView(base_view.BaseView):
             "type": recordset['type'],
             "ttl": recordset['ttl'],
             "records": [r.data for r in recordset['records']],
+            "action": recordset.action,
+            "status": recordset.status,
             "description": recordset['description'],
             "version": recordset['version'],
             "created_at": recordset['created_at'],
