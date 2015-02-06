@@ -55,7 +55,7 @@
                     "minItems": 1,
                     "items": {
                         "type": "string",
-                        "format": "host-name",
+                        "format": "hostname",
                         "maxLength": 255
                     }
                 },

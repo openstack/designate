@@ -206,8 +206,8 @@ class TestCase(base.BaseTestCase):
     ]
 
     name_server_fixtures = [
-        ['examplens1.com', 'examplens2.com'],
-        ['examplens1.org', 'examplens2.org']
+        ['examplens1.com.', 'examplens2.com.'],
+        ['examplens1.org.', 'examplens2.org.']
     ]
 
     zone_transfers_request_fixtures = [{

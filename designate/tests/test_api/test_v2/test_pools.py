@@ -206,7 +206,7 @@ class ApiV2PoolsTest(ApiV2TestCase):
         pool = self.create_pool()
 
         # Prepare an update body
-        body = {'pool': {'nameservers': ['newns1.com', 'newns2.com']}}
+        body = {'pool': {'nameservers': ['newns1.com.', 'newns2.com.']}}
 
         url = '/pools/%s' % pool['id']
         response = self.client.patch_json(url, body, status=200)
@@ -220,7 +220,7 @@ class ApiV2PoolsTest(ApiV2TestCase):
         self.assertIn('links', response.json['pool'])
         self.assertIn('self', response.json['pool']['links'])
         self.assertEqual(2, len(response.json['pool']['nameservers']))
-        self.assertEqual(['newns1.com', 'newns2.com'],
+        self.assertEqual(['newns1.com.', 'newns2.com.'],
                          response.json['pool']['nameservers'])
 
         # Check the values returned are what we expect
