@@ -7,7 +7,7 @@ Installing on Ubuntu
 Architecture
 ============
 
-Please see :ref:'architecture-production' for general production architecture notes.
+Please see :ref:`production-architecture` for general production architecture notes.
 
 * Ubuntu as the Operating System
 * Designate
