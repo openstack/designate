@@ -135,7 +135,7 @@ class UUIDConverter(BaseConverter):
 
 
 def load_values(request, valid_keys):
-    """Load valid atributes from request"""
+    """Load valid attributes from request"""
     result = {}
     error_keys = []
     values = request.json

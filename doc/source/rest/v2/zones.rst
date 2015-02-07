@@ -553,7 +553,7 @@ Accept a Transfer Request
     Accept a zone transfer request. This is called by the project that will own the zone
     (i.e. the project that will maintain the zone)
 
-    Once the API returns "Complete" the zone has been transfered to the new project
+    Once the API returns "Complete" the zone has been transferred to the new project
 
     **Example Request**
 

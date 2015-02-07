@@ -418,7 +418,7 @@ class DesignateObjectTest(tests.TestCase):
         # Deepcopy the object
         c_obj = copy.deepcopy(o_obj)
 
-        # Ensure the copy was sucessful
+        # Ensure the copy was successful
         self.assertEqual(o_obj.id, c_obj.id)
         self.assertEqual(o_obj.name, c_obj.name)
         self.assertEqual(o_obj.nested, c_obj.nested)
