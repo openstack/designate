@@ -1329,7 +1329,7 @@ class CentralServiceTest(CentralTestCase):
                 continue
 
             self.assertEqual('192.0.2.255', record.data)
-            return  # Exits this test early as we suceeded
+            return  # Exits this test early as we succeeded
 
         raise Exception('Updated record not found')
 
