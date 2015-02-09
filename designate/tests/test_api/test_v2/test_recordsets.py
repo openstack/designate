@@ -51,6 +51,9 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         self.assertIn('created_at', response.json['recordset'])
         self.assertIsNone(response.json['recordset']['updated_at'])
         self.assertIn('records', response.json['recordset'])
+        # The action and status are NONE and ACTIVE as there are no records
+        self.assertEqual('NONE', response.json['recordset']['action'])
+        self.assertEqual('ACTIVE', response.json['recordset']['status'])
 
     def test_create_recordset_with_records(self):
         # Prepare a RecordSet fixture
@@ -74,6 +77,8 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         # Check the values returned are what we expect
         self.assertIn('records', response.json['recordset'])
         self.assertEqual(2, len(response.json['recordset']['records']))
+        self.assertEqual('CREATE', response.json['recordset']['action'])
+        self.assertEqual('PENDING', response.json['recordset']['status'])
 
     def test_create_recordset_invalid_id(self):
         self._assert_invalid_uuid(self.client.post, '/zones/%s/recordsets')
@@ -161,8 +166,12 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         self.assertIn('links', response.json)
         self.assertIn('self', response.json['links'])
 
-        # We should start with 2 recordsets for SOA & NS
+        # We should start with 2 pending recordsets for SOA & NS
+        # pending because pool manager is not active
         self.assertEqual(2, len(response.json['recordsets']))
+        for recordset in response.json['recordsets']:
+            self.assertEqual('CREATE', recordset['action'])
+            self.assertEqual('PENDING', recordset['status'])
 
         soa = self.central_service.find_recordset(
             self.admin_context, criterion={'domain_id': self.domain['id'],
@@ -276,6 +285,9 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         self.assertIsNone(response.json['recordset']['updated_at'])
         self.assertEqual(recordset['name'], response.json['recordset']['name'])
         self.assertEqual(recordset['type'], response.json['recordset']['type'])
+        # The action and status are NONE and ACTIVE as there are no records
+        self.assertEqual('NONE', response.json['recordset']['action'])
+        self.assertEqual('ACTIVE', response.json['recordset']['status'])
 
     def test_get_recordset_invalid_id(self):
         self._assert_invalid_uuid(self.client.get, '/zones/%s/recordsets/%s')
@@ -323,10 +335,17 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         self.assertIn('id', response.json['recordset'])
         self.assertIsNotNone(response.json['recordset']['updated_at'])
         self.assertEqual('Tester', response.json['recordset']['description'])
+        # The action and status are NONE and ACTIVE as there are no records
+        self.assertEqual('NONE', response.json['recordset']['action'])
+        self.assertEqual('ACTIVE', response.json['recordset']['status'])
 
     def test_update_recordset_with_record_create(self):
         # Create a recordset
         recordset = self.create_recordset(self.domain, 'A')
+
+        # The action and status are NONE and ACTIVE as there are no records
+        self.assertEqual('NONE', recordset['action'])
+        self.assertEqual('ACTIVE', recordset['status'])
 
         # Prepare an update body
         body = {'recordset': {'description': 'Tester',
@@ -348,6 +367,8 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         self.assertEqual(2, len(response.json['recordset']['records']))
         self.assertEqual(set(['192.0.2.1', '192.0.2.2']),
                          set(response.json['recordset']['records']))
+        self.assertEqual('UPDATE', response.json['recordset']['action'])
+        self.assertEqual('PENDING', response.json['recordset']['status'])
 
     def test_update_recordset_with_record_replace(self):
         # Create a recordset with one record

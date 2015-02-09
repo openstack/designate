@@ -52,6 +52,18 @@
                     "maximum": 2147483647,
                     "default": null
                 },
+                "status": {
+                    "type": "string",
+                    "description": "Recordset Status",
+                    "enum": ["ACTIVE", "PENDING", "ERROR"],
+                    "readOnly": true
+                },
+                "action": {
+                    "type": "string",
+                    "description": "Recordset Action",
+                    "enum": ["CREATE", "DELETE", "UPDATE", "NONE"],
+                    "readOnly": true
+                },
                 "records": {
                     "type": ["array", "null"],
                     "description": "Records in the RecordSet",
