@@ -113,7 +113,10 @@ class RecordSetsController(rest.RestController):
             context, zone_id, RecordSet(**values))
 
         # Prepare the response headers
-        response.status_int = 201
+        if recordset['status'] == 'PENDING':
+            response.status_int = 202
+        else:
+            response.status_int = 201
         response.headers['Location'] = self._view._get_resource_href(
             request, recordset, [zone_id])
 
@@ -173,7 +176,7 @@ class RecordSetsController(rest.RestController):
             del new_recordset['records']
         recordset.update(new_recordset)
 
-        # Remove deleted records if we haver provided a records array
+        # Remove deleted records if we have provided a records array
         if record_update:
             recordset.records[:] = [record for record in recordset.records
                                     if record.data not in records_to_rm]
@@ -185,7 +188,10 @@ class RecordSetsController(rest.RestController):
         # Persist the resource
         recordset = self.central_api.update_recordset(context, recordset)
 
-        response.status_int = 200
+        if recordset['status'] == 'PENDING':
+            response.status_int = 202
+        else:
+            response.status_int = 200
 
         return self._view.show(context, request, recordset)
 
@@ -204,9 +210,13 @@ class RecordSetsController(rest.RestController):
             raise exceptions.BadRequest(
                 'Deleting a SOA recordset is now allowed')
 
-        self.central_api.delete_recordset(context, zone_id, recordset_id)
+        recordset = self.central_api.delete_recordset(
+            context, zone_id, recordset_id)
 
-        response.status_int = 204
+        if recordset['status'] == 'PENDING':
+            response.status_int = 202
+        else:
+            response.status_int = 204
 
         # NOTE: This is a hack and a half.. But Pecan needs it.
         return ''

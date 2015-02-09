@@ -68,7 +68,7 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
             '/zones/%s/recordsets' % self.domain['id'], {'recordset': fixture})
 
         # Check the headers are what we expect
-        self.assertEqual(201, response.status_int)
+        self.assertEqual(202, response.status_int)
         self.assertEqual('application/json', response.content_type)
 
         # Check the body structure is what we expect
@@ -353,10 +353,10 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
 
         url = '/zones/%s/recordsets/%s' % (recordset['domain_id'],
                                            recordset['id'])
-        response = self.client.put_json(url, body, status=200)
+        response = self.client.put_json(url, body, status=202)
 
         # Check the headers are what we expect
-        self.assertEqual(200, response.status_int)
+        self.assertEqual(202, response.status_int)
         self.assertEqual('application/json', response.content_type)
 
         # Check the body structure is what we expect
@@ -381,10 +381,10 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
 
         url = '/zones/%s/recordsets/%s' % (recordset['domain_id'],
                                            recordset['id'])
-        response = self.client.put_json(url, body, status=200)
+        response = self.client.put_json(url, body, status=202)
 
         # Check the headers are what we expect
-        self.assertEqual(200, response.status_int)
+        self.assertEqual(202, response.status_int)
         self.assertEqual('application/json', response.content_type)
 
         # Check the body structure is what we expect
