@@ -1,3 +1,5 @@
+.. _production-architecture:
+
 =============================
 Production Architecture
 =============================
