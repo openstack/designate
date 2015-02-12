@@ -20,6 +20,7 @@ from designate.api.v2.controllers.zones.tasks.transfer_requests \
     import TransferRequestsController as TRC
 from designate.api.v2.controllers.zones.tasks.transfer_accepts \
     import TransferAcceptsController as TRA
+from designate.api.v2.controllers.zones.tasks import abandon
 
 LOG = logging.getLogger(__name__)
 
@@ -28,3 +29,4 @@ class TasksController(rest.RestController):
 
     transfer_accepts = TRA()
     transfer_requests = TRC()
+    abandon = abandon.AbandonController()

@@ -334,7 +334,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
     def test_delete_zone(self):
         zone = self.create_domain()
 
-        self.client.delete('/zones/%s' % zone['id'], status=204)
+        self.client.delete('/zones/%s' % zone['id'], status=202)
 
     def test_delete_zone_invalid_id(self):
         self._assert_invalid_uuid(self.client.delete, '/zones/%s')
@@ -353,6 +353,18 @@ class ApiV2ZonesTest(ApiV2TestCase):
 
         self._assert_exception('domain_not_found', 404, self.client.delete,
                                url)
+
+    def test_abandon_zone(self):
+        zone = self.create_domain()
+        url = '/zones/%s/tasks/abandon' % zone.id
+
+        # Ensure that we get permission denied
+        self._assert_exception('forbidden', 403, self.client.post_json, url)
+
+        # Ensure that abandon zone succeeds with the right policy
+        self.policy({'abandon_domain': '@'})
+        response = self.client.post_json(url)
+        self.assertEqual(204, response.status_int)
 
     # Zone import/export
     def test_missing_origin(self):

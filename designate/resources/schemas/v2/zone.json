@@ -61,7 +61,13 @@
                 "status": {
                     "type": "string",
                     "description": "Zone Status",
-                    "enum": ["ACTIVE", "PENDING", "DELETING", "ERROR"],
+                    "enum": ["ACTIVE", "PENDING", "ERROR"],
+                    "readOnly": true
+                },
+                "action": {
+                    "type": "string",
+                    "description": "Zone Action",
+                    "enum": ["CREATE", "DELETE", "UPDATE", "NONE"],
                     "readOnly": true
                 },
                 "serial": {

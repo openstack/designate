@@ -39,6 +39,7 @@ class ZonesView(base_view.BaseView):
             "ttl": zone['ttl'],
             "serial": zone['serial'],
             "status": zone['status'],
+            "action": zone['action'],
             "version": zone['version'],
             "created_at": zone['created_at'],
             "updated_at": zone['updated_at'],
