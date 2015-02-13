@@ -7,6 +7,12 @@ Getting Involved
 There is an active IRC channel at irc://freenode.net/#openstack-dns, where many of the designate contributors can be found, as
 well as users from various organisations.
 
+Weekly meetings
+---------------
+There is a weekly irc meet. The agenda and other details are listed at
+`Designate meetings wiki page`_. Currently the meeting is
+held every Wednesday at 17:00 UTC on the IRC channel irc://freenode.net/#openstack-meeting-alt
+
 Contributing
 ------------
 We welcome fixes, extensions, documentation, pretty much anything that helps improve Designate, contributing is easy & follows
@@ -52,3 +58,4 @@ You can use tox to check your code locally by running
 .. _Gerrit workflow: http://docs.openstack.org/infra/manual/developers.html#development-workflow
 .. _blueprint: https://blueprints.launchpad.net/designate
 .. _bug: https://bugs.launchpad.net/designate
+.. _Designate meetings wiki page: https://wiki.openstack.org/wiki/Meetings/Designate
