@@ -13,11 +13,9 @@
     License for the specific language governing permissions and limitations
     under the License.
 
-.. _getting-started:
-
-===============
-Getting Started
-===============
+*********************************
+Development Environment on Ubuntu
+*********************************
 
 Designate is comprised of four main components :ref:`designate-api`, :ref:`designate-central`, :ref:`designate-mdns`, and :ref:`designate-pool-manager`, supported by a few standard open source components. For more information see :doc:`architecture`.
 
@@ -331,5 +329,5 @@ You can find the IP Address of your server by running
 
 A couple of notes on the API:
 
-- Before Domains are created, you must create a server (/v1/servers). 
+- Before Domains are created, you must create a server (/v1/servers).
 
