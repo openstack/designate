@@ -23,13 +23,13 @@ Architecture
 High Level Topology
 -----------------------
 
-.. image:: images/Designate-Simple.png
+.. image:: images/Designate-Simple.svg
 
 .. _designate-api:
 
 Designate API
 -----------------------
-designate-api provides the standard OpenStack style REST API service, accepting HTTP requests, validating authentication tokens with Keystone & passing them to the :ref:`designate-central` service over AMQP. Multiple versions of the API can be hosted, as well as API extensions, allowing for pluggable extensions to the core API.
+designate-api provides the standard OpenStack style REST API service, accepting HTTP requests, validating authentication tokens with Keystone and passing them to the :ref:`designate-central` service over AMQP. Multiple versions of the API can be hosted, as well as API extensions, allowing for pluggable extensions to the core API.
 
 Although designate-api is capable of handling HTTPS traffic, it's typical to terminate HTTPS elsewhere, for example by placing nginx in front of designate-api or by letting the external facing load balancers terminate HTTPS.
 
@@ -37,7 +37,19 @@ Although designate-api is capable of handling HTTPS traffic, it's typical to ter
 
 Designate Central
 -----------------------
-designate-central is the service that handles RPC requests via the MQ, it coordinates the persistent storage of data & manipulating backend DNS servers via backends or agents. Storage is provided via plugins, typically SQLAlchemy, although MongoDB or other storage drivers should be possible.
+designate-central is the service that handles RPC requests via the MQ, it coordinates the persistent storage of data and applies business logic to data from the API. Storage is provided via plugins, typically SQLAlchemy, although MongoDB or other storage drivers should be possible.
+
+.. _designate-mdns:
+
+Designate MiniDNS
+-----------------------
+designate-mdns is the service that sends DNS NOTIFY and answers zone transfer (AXFR) requests. This allows Designate to integrate with any DNS server that supports these very standard methods of communicating. designate-mdns also encapsulates all other forms of DNS protocol that Designate performs. For example, sending SOA queries to check that a change is live.
+
+.. _designate-pool-manager:
+
+Designate Pool Manager
+-----------------------
+designate-pool-manager is a service that manages the states of the DNS servers Designate manages. The Pool Manager is configured to know which DNS servers Designate manages, and their type of backend (PowerDNS, BIND9, etc). It can also divide those servers into 'Pools' so that zones within Designate can be split across different sets of backend servers. The Pool Manager is also responsible for making sure that backend DNS servers are in sync with the Designate database.
 
 .. _designate-sink:
 
@@ -52,7 +64,7 @@ The current sink implementations generate simple forward lookup A records, using
 DNS Backend
 -----------------------
 Backends are drivers for a particular DNS server.
-Designate supports multiple backend implementations, PowerDNS, BIND and MySQL BIND, you are also free to implement your own backend to fit your needs, as well as extensions to provide extra functionality to complement existing backends.
+Designate supports multiple backend implementations, PowerDNS, BIND, NSD, DynECT, you are also free to implement your own backend to fit your needs, as well as extensions to provide extra functionality to complement existing backends.
 
 .. _message-queue:
 
