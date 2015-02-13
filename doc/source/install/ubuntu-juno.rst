@@ -1,11 +1,12 @@
-=========================
+*************************
 Installing Juno on Ubuntu
-=========================
+*************************
 
 .. _install-ubuntu-architecture:
 
 Architecture
 ============
+
 
 Please see :ref:`production-architecture` for general production architecture notes.
 
@@ -100,8 +101,8 @@ Settings::
 
 Delete a couple unnecessary files::
 
-    $ rm  /etc/powerdns/bindbackend.conf 
-    $ rm /etc/powerdns/pdns.dpdns.simplebind.conf 
+    $ rm  /etc/powerdns/bindbackend.conf
+    $ rm /etc/powerdns/pdns.dpdns.simplebind.conf
 
 .. _install-ubuntu-source:
 
