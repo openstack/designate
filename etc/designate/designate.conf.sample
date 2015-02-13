@@ -1,4 +1,7 @@
 [DEFAULT]
+# Where an option is commented out, but filled in this shows the default
+# value of that option
+
 ########################
 ## General Configuration
 ########################
@@ -82,13 +85,17 @@ debug = False
 #enable_api_v2 = False
 
 # Show the pecan HTML based debug interface (v2 only)
+# This is only useful for development, and WILL break python-designateclient
+# if an error occurs
 #pecan_debug = False
 
 # Enabled API Version 1 extensions
-#enabled_extensions_v1 = diagnostics, quotas, reports, sync, touch
+# Can be one or more of : diagnostics, quotas, reports, sync, touch
+#enabled_extensions_v1 =
 
 # Enabled API Version 2 extensions
-#enabled_extensions_v2 = reports, quotas
+# Can be one or more of : reports, quotas
+#enabled_extensions_v2 =
 
 #-----------------------
 # Keystone Middleware
@@ -107,7 +114,8 @@ debug = False
 [service:sink]
 # List of notification handlers to enable, configuration of these needs to
 # correspond to a [handler:my_driver] section below or else in the config
-#enabled_notification_handlers = nova_fixed
+# Can be one or more of : nova_fixed, neutron_floatingip
+#enabled_notification_handlers =
 
 #-----------------------
 # mDNS Service
@@ -116,7 +124,7 @@ debug = False
 #workers = None
 #host = 0.0.0.0
 #port = 5354
-#tcp_backlog =1 00
+#tcp_backlog = 100
 
 #-----------------------
 # Agent Service
@@ -152,6 +160,7 @@ debug = False
 ## Network API
 ##############
 [network_api:neutron]
+# Comma separated list of values, formatted "<name>|<neutron_uri>"
 #endpoints = RegionOne|http://localhost:9696
 #endpoint_type = publicURL
 #timeout = 30
@@ -161,7 +170,7 @@ debug = False
 #auth_url = http://localhost:35357/v2.0
 #insecure = False
 #auth_strategy = keystone
-#ca_certificates_file = /etc/path/to/ca.pem
+#ca_certificates_file =
 
 ########################
 ## Storage Configuration
@@ -173,7 +182,7 @@ debug = False
 # Database connection string - to configure options for a given implementation
 # like sqlalchemy or other see below
 #connection = sqlite:///$state_path/designate.sqlite
-#connection_debug = 100
+#connection_debug = 0
 #connection_trace = False
 #sqlite_synchronous = True
 #idle_timeout = 3600
@@ -187,7 +196,8 @@ debug = False
 # Nova Fixed Handler
 #-----------------------
 [handler:nova_fixed]
-#domain_id = <random uuid>
+# Domain ID of domain to create records in. Should be pre-created
+#domain_id =
 #notification_topics = notifications
 #control_exchange = 'nova'
 #format = '%(octet0)s-%(octet1)s-%(octet2)s-%(octet3)s.%(domain)s'
@@ -196,7 +206,8 @@ debug = False
 # Neutron Floating Handler
 #------------------------
 [handler:neutron_floatingip]
-#domain_id = <random uuid>
+# Domain ID of domain to create records in. Should be pre-created
+#domain_id =
 #notification_topics = notifications
 #control_exchange = 'neutron'
 #format = '%(octet0)s-%(octet1)s-%(octet2)s-%(octet3)s.%(domain)s'
@@ -216,40 +227,13 @@ debug = False
 #max_retries = 10
 #retry_interval = 10
 
-########################
-## Backend Configuration
-########################
-#-----------------------
-# PowerDNS Backend
-#-----------------------
-[backend:powerdns]
-#connection = mysql://user:password@host/pdns
-#connection_debug = 100
-#connection_trace = False
-#sqlite_synchronous = True
-#idle_timeout = 3600
-#max_retries = 10
-#retry_interval = 10
-
-#-----------------------
-# NSD4Slave Backend
-#-----------------------
-[backend:nsd4slave]
-#keyfile =/etc/nsd/nsd_control.key
-#certfile = /etc/nsd/nsd_control.pem
-#servers = 127.0.0.1,127.0.1.1:4242
-#pattern = slave
-
-#-----------------------
-# Multi Backend
-#-----------------------
-[backend:multi]
-#master = fake
-#slave = fake
-
 #############################
 ## Pool Backend Configuration
 #############################
+
+# This section does not have the defaults filled in but demonstrates an
+# example pool / server set up. Different backends will have different options.
+
 #-----------------------
 # Global Bind9 Pool Backend
 #-----------------------
