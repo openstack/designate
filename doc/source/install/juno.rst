@@ -1,6 +1,6 @@
-====================
-Installing on Ubuntu
-====================
+=========================
+Installing Juno on Ubuntu
+=========================
 
 .. _install-ubuntu-architecture:
 
@@ -98,6 +98,10 @@ Settings::
     gmysql-user=powerdns
     gmysql-password=powerdns
 
+Delete a couple unnecessary files::
+
+    $ rm  /etc/powerdns/bindbackend.conf 
+    $ rm /etc/powerdns/pdns.dpdns.simplebind.conf 
 
 .. _install-ubuntu-source:
 
@@ -128,11 +132,11 @@ Installing using Source (Git)
 
 In some cases you might want to pin the repository version to a specific version of the repository like a stable one.
 
-Example for the Havana release:
+Example for the Juno release:
 
 ::
 
-    $ git checkout stable/havana
+    $ git checkout stable/juno
 
 3. Install all dependencies using pip
 
