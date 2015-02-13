@@ -19,21 +19,19 @@
 Getting Started
 ===============
 
-Designate is comprised of three designate components :ref:`designate-api`, :ref:`designate-central` and :ref:`designate-sink`, supported by a few standard open source components. For more information see :doc:`architecture`.
+Designate is comprised of four main components :ref:`designate-api`, :ref:`designate-central`, :ref:`designate-mdns`, and :ref:`designate-pool-manager`, supported by a few standard open source components. For more information see :doc:`architecture`.
 
 There are many different options for customizing Designate, and two of these options
 have a major impact on the installation process:
 
 * The storage backend used (SQLite or MySQL)
-* The DNS backend used (PowerDNS or BIND)
+* The DNS backend used (PowerDNS or BIND9)
 
 This guide will walk you through setting up a typical development environment for Designate,
-using PowerDNS as the DNS backend and MySQL as the storage backend. For a more complete discussion on
+using BIND9 as the DNS backend and MySQL as the storage backend. For a more complete discussion on
 installation & configuration options, please see :doc:`architecture` and :doc:`production-architecture`.
 
-For this guide you will need access to an Ubuntu Server (12.04).  Other platforms:
-
-- `Fedora 19 Notes`_
+For this guide you will need access to an Ubuntu Server (14.04).
 
 .. _Development Environment:
 
@@ -50,14 +48,14 @@ Installing Designate
 
 ::
 
-   $ apt-get install python-pip python-virtualenv
-   $ apt-get install rabbitmq-server
+   $ apt-get install python-pip python-virtualenv git
    $ apt-get build-dep python-lxml
 
 2. Clone the Designate repo from GitHub
 
 ::
 
+   $ cd /var/lib
    $ git clone https://github.com/openstack/designate.git
    $ cd designate
 
@@ -125,6 +123,33 @@ Copy or mirror the configuration from this sample file here:
 .. literalinclude:: examples/basic-config-sample.conf
     :language: ini
 
+
+Installing RabbitMQ
+===================
+
+.. note::
+
+    Do the following commands as "root" or via sudo <command>
+
+Install the RabbitMQ package
+
+::
+
+    $ apt-get install rabbitmq-server
+
+Create a user:
+
+::
+
+    $ rabbitmqctl add_user designate designate
+
+Give the user access to the / vhost:
+
+::
+
+    $ sudo rabbitmqctl set_permissions -p "/" designate ".*" ".*" ".*"
+
+
 Installing MySQL
 ================
 
@@ -150,7 +175,7 @@ You can change your MySQL password anytime with the following command::
     $ mysqladmin -u root -p password NEW_PASSWORD
     Enter password <enter your old password>
 
-Create the Designate and PowerDNS tables
+Create the Designate tables
 
 ::
 
@@ -158,7 +183,7 @@ Create the Designate and PowerDNS tables
     Enter password: <enter your password here>
 
     mysql> CREATE DATABASE `designate` CHARACTER SET utf8 COLLATE utf8_general_ci;
-    mysql> CREATE DATABASE `powerdns` CHARACTER SET utf8 COLLATE utf8_general_ci;
+    mysql> CREATE DATABASE `designate_pool_manager` CHARACTER SET utf8 COLLATE utf8_general_ci;
     mysql> exit;
 
 
@@ -170,29 +195,45 @@ Install additional packages
     $ pip install mysql-python
 
 
-Installing PowerDNS
-===================
+Installing BIND9
+================
 
 .. index::
-    double: install; powerdns
+    double: install; bind9
 
-Install the DNS server, PowerDNS
+Install the DNS server, BIND9
 
 ::
 
-      $ DEBIAN_FRONTEND=noninteractive apt-get install pdns-server pdns-backend-mysql
+      $ apt-get install bind9
 
-      #Update MySQL database info
-      $ editor /etc/powerdns/pdns.d/pdns.local.gmysql
+      # Update the BIND9 Configuration
+      $ editor /etc/bind/named.conf.options
 
-      #Change the corresponding lines in the config file:
-      gmysql-dbname=powerdns
-      gmysql-user=root
-      gmysql-password=password
-      #If you're using your own root password, use 'gmysql-password=YOUR_PASSWORD'
+      # Change the corresponding lines in the config file:
+      options {
+        directory "/var/cache/bind";
+        dnssec-validation auto;
+        auth-nxdomain no; # conform to RFC1035
+        listen-on-v6 { any; };
+        allow-new-zones yes;
+        request-ixfr no;
+        recursion no;
+      };
 
-      #Restart PowerDNS:
-      $ service pdns restart
+      # Disable AppArmor for BIND9
+      $ touch /etc/apparmor.d/disable/usr.sbin.named
+      $ service apparmor reload
+
+      # Restart BIND9:
+      $ service bind9 restart
+
+
+Initialize & Start the Central Service
+======================================
+
+.. index::
+   double: install; central
 
 
 If you intend to run Designate as a non-root user, then sudo permissions need to be granted
@@ -203,37 +244,14 @@ If you intend to run Designate as a non-root user, then sudo permissions need to
    $ sudo chmod 0440 /etc/sudoers.d/90-designate
 
 
-Initialize & Start the Central Service
-======================================
-
-.. index::
-   double: install; central
-
 ::
 
-   #Sync the Designate database:
+   # Sync the Designate database:
    $ designate-manage database sync
 
-   #Sync the PowerDNS database:
-   $ designate-manage powerdns sync
-
-   #Restart PowerDNS
-   $ service pdns restart
-
-   #Start the central service:
+   # Start the central service:
    $ designate-central
 
-.. note::
-   If you get an error of the form: ERROR [designate.openstack.common.rpc.common] AMQP server on localhost:5672 is unreachable: Socket closed
-
-   Run the following command:
-
-::
-
-   $ rabbitmqctl change_password guest guest
-
-   #Then try starting the service again
-   $ designate-central
 
 You'll now be seeing the log from the central service.
 
@@ -247,15 +265,52 @@ Open up a new ssh window and log in to your server (or however you’re communic
 
 ::
 
-   $ cd root/designate
-   #Make sure your virtualenv is sourced
-   $ . .venv/bin/activate
-   $ cd etc/designate
-   #Start the API Service
+   $ cd /var/lib/designate
+
+   # Make sure your virtualenv is sourced
+   $ source .venv/bin/activate
+
+   # Start the API Service
    $ designate-api
-   #You may have to run root/designate/bin/designate-api
 
 You’ll now be seeing the log from the API service.
+
+
+Initialize & Start the Pool Manager Service
+===========================================
+
+.. index::
+   double: install; pool-manager
+
+Open up a new ssh window and log in to your server (or however you’re communicating with your server).
+
+::
+
+   # Sync the Pool Manager's cache:
+   $ designate-manage pool-manager-cache sync
+
+   # Start the pool manager service:
+   $ designate-pool-manager
+
+
+You'll now be seeing the log from the Pool Manager service.
+
+
+Initialize & Start the MiniDNS Service
+===========================================
+
+.. index::
+   double: install; minidns
+
+Open up a new ssh window and log in to your server (or however you’re communicating with your server).
+
+::
+
+   # Start the minidns service:
+   $ designate-mdns
+
+
+You'll now be seeing the log from the MiniDNS service.
 
 Exercising the API
 ==================
@@ -266,105 +321,15 @@ Using a web browser, curl statement, or a REST client, calls can be made to the 
 
 .. _Designate REST Documentation:
 
-http://IP.Address:9001/v1/command
+http://IP.Address:9001/v2/command
 
 You can find the IP Address of your server by running
 
 ::
 
-   wget http://ipecho.net/plain -O - -q ; echo
+   curl -s checkip.dyndns.org | sed -e 's/.*Current IP Address: //' -e 's/<.*$//'
 
 A couple of notes on the API:
 
-- Before Domains are created, you must create a server.
-- On GET requests for domains, servers, records, etc be sure not to append a ‘/’ to the end of the request. For example …:9001/v1/servers/
+- Before Domains are created, you must create a server (/v1/servers). 
 
-Fedora 19 Notes
-===============
-
-Most of the above instructions under `Installing Designate`_ should work.  There are a few differences when working with Fedora 19:
-
-Installing Designate on Fedora
-------------------------------
-
-Installing the basic Fedora packages needed to install Designate:
-
-::
-
-   $ yum install gcc git yum-utils
-   $ yum install python-pip python-virtualenv python-pbr rabbitmq-server
-   $ yum-builddep python-lxml
-
-Use **/var/lib/designate** as the root path for databases and other variable state files, not /root/designate
-
-::
-
-   $ mkdir -p /var/lib/designate
-
-Installing MySQL
-----------------
-
-The MySQL Fedora packages are **mysql mysql-server mysql-devel**
-
-::
-
-    $ yum install mysql mysql-server mysql-devel
-    $ pip install mysql-python
-
-You will have to change the MySQL password manually.
-
-::
-
-    $ systemctl start mysqld.service
-    $ mysqladmin -u root password NEW_PASSWORD
-        # default password for Designate is 'password'
-
-Installing PowerDNS
--------------------
-
-The PowerDNS Fedora packages are **pdns pdns-backend-mysql**
-
-::
-
-   $ yum install pdns pdns-backend-mysql
-
-Fedora 19 does not use /etc/powerdns/pdns.d.  Instead, edit **/etc/pdns/pdns.conf** - change the launch option, and add a gmysql-database option
-
-::
-
-   ...
-   setuid=pdns
-   setgid=pdns
-   launch=gmysql
-   gmysql-host=127.0.0.1
-   gmysql-user=root
-   gmysql-password=password
-   gmysql-dbname=powerdns
-   ...
-
-Fedora uses **systemctl**, not service
-
-::
-
-   $ systemctl [start|restart|stop|status] pdns.service
-   $ systemctl [start|restart|stop|status] rabbitmq-server.service
-
-Configuring RabbitMQ
---------------------
-
-The rabbitmq service must be running before doing
-
-::
-
-   $ rabbitmqctl change_password guest guest
-
-RabbitMQ may fail to start due to SELinux.  Use *journalctl -xn|cat* to find the error.  You will likely have to do something like this until it is added to the SELinux base policy
-
-::
-
-   $ yum install /usr/bin/checkpolicy
-   $ grep beam /var/log/audit/audit.log|audit2allow -M mypol
-   $ semodule -i mypol.pp
-   $ systemctl start rabbitmq-server.service
-
-The rabbitmq log files are in **/var/log/rabbitmq**
