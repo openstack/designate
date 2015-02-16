@@ -898,9 +898,10 @@ class Service(service.RPCService):
         domain.status = 'PENDING'
 
         if increment_serial:
+            # _increment_domain_serial increments and updates the domain
             domain = self._increment_domain_serial(context, domain)
-
-        domain = self.storage.update_domain(context, domain)
+        else:
+            domain = self.storage.update_domain(context, domain)
 
         return domain
 
@@ -1048,7 +1049,9 @@ class Service(service.RPCService):
 
         if recordset.records and len(recordset.records) > 0:
             if increment_serial:
-                domain = self._increment_domain_serial(context, domain)
+                # update the zone's status and increment the serial
+                domain = self._update_domain_in_storage(
+                    context, domain, increment_serial)
 
             for record in recordset.records:
                 record.action = 'CREATE'
@@ -1155,7 +1158,9 @@ class Service(service.RPCService):
             self._is_valid_ttl(context, ttl)
 
         if increment_serial:
-            domain = self._increment_domain_serial(context, domain)
+            # update the zone's status and increment the serial
+            domain = self._update_domain_in_storage(
+                context, domain, increment_serial)
 
         if recordset.records:
             for record in recordset.records:
@@ -1201,7 +1206,9 @@ class Service(service.RPCService):
                                      increment_serial=True):
 
         if increment_serial:
-            domain = self._increment_domain_serial(context, domain)
+            # update the zone's status and increment the serial
+            domain = self._update_domain_in_storage(
+                context, domain, increment_serial)
 
         if recordset.records:
             for record in recordset.records:
@@ -1259,7 +1266,9 @@ class Service(service.RPCService):
         self._enforce_record_quota(context, domain, recordset)
 
         if increment_serial:
-            domain = self._increment_domain_serial(context, domain)
+            # update the zone's status and increment the serial
+            domain = self._update_domain_in_storage(
+                context, domain, increment_serial)
 
         record.action = 'CREATE'
         record.status = 'PENDING'
@@ -1357,7 +1366,9 @@ class Service(service.RPCService):
                                   increment_serial=True):
 
         if increment_serial:
-            domain = self._increment_domain_serial(context, domain)
+            # update the zone's status and increment the serial
+            domain = self._update_domain_in_storage(
+                context, domain, increment_serial)
 
         record.action = 'UPDATE'
         record.status = 'PENDING'
@@ -1407,7 +1418,9 @@ class Service(service.RPCService):
                                   increment_serial=True):
 
         if increment_serial:
-            domain = self._increment_domain_serial(context, domain)
+            # update the zone's status and increment the serial
+            domain = self._update_domain_in_storage(
+                context, domain, increment_serial)
 
         record.action = 'DELETE'
         record.status = 'PENDING'

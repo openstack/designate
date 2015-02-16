@@ -80,6 +80,16 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         self.assertEqual('CREATE', response.json['recordset']['action'])
         self.assertEqual('PENDING', response.json['recordset']['status'])
 
+        # Check the zone's status is as expected
+        response = self.client.get('/zones/%s' % self.domain['id'],
+                                   headers=[('Accept', 'application/json')])
+        # Check the headers are what we expect
+        self.assertEqual(200, response.status_int)
+        self.assertEqual('application/json', response.content_type)
+        self.assertIn('zone', response.json)
+        self.assertEqual('UPDATE', response.json['zone']['action'])
+        self.assertEqual('PENDING', response.json['zone']['status'])
+
     def test_create_recordset_invalid_id(self):
         self._assert_invalid_uuid(self.client.post, '/zones/%s/recordsets')
 
@@ -339,6 +349,16 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         self.assertEqual('NONE', response.json['recordset']['action'])
         self.assertEqual('ACTIVE', response.json['recordset']['status'])
 
+        # Check the zone's status is as expected
+        response = self.client.get('/zones/%s' % recordset['domain_id'],
+                                   headers=[('Accept', 'application/json')])
+        # Check the headers are what we expect
+        self.assertEqual(200, response.status_int)
+        self.assertEqual('application/json', response.content_type)
+        self.assertIn('zone', response.json)
+        self.assertEqual('UPDATE', response.json['zone']['action'])
+        self.assertEqual('PENDING', response.json['zone']['status'])
+
     def test_update_recordset_with_record_create(self):
         # Create a recordset
         recordset = self.create_recordset(self.domain, 'A')
@@ -370,6 +390,16 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         self.assertEqual('UPDATE', response.json['recordset']['action'])
         self.assertEqual('PENDING', response.json['recordset']['status'])
 
+        # Check the zone's status is as expected
+        response = self.client.get('/zones/%s' % recordset['domain_id'],
+                                   headers=[('Accept', 'application/json')])
+        # Check the headers are what we expect
+        self.assertEqual(200, response.status_int)
+        self.assertEqual('application/json', response.content_type)
+        self.assertIn('zone', response.json)
+        self.assertEqual('UPDATE', response.json['zone']['action'])
+        self.assertEqual('PENDING', response.json['zone']['status'])
+
     def test_update_recordset_with_record_replace(self):
         # Create a recordset with one record
         recordset = self.create_recordset(self.domain, 'A')
@@ -396,6 +426,16 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         self.assertEqual(set(['192.0.2.201', '192.0.2.202']),
                          set(response.json['recordset']['records']))
 
+        # Check the zone's status is as expected
+        response = self.client.get('/zones/%s' % recordset['domain_id'],
+                                   headers=[('Accept', 'application/json')])
+        # Check the headers are what we expect
+        self.assertEqual(200, response.status_int)
+        self.assertEqual('application/json', response.content_type)
+        self.assertIn('zone', response.json)
+        self.assertEqual('UPDATE', response.json['zone']['action'])
+        self.assertEqual('PENDING', response.json['zone']['status'])
+
     def test_update_recordset_with_record_clear(self):
         # Create a recordset with one record
         recordset = self.create_recordset(self.domain, 'A')
@@ -418,6 +458,16 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         # Check the values returned are what we expect
         self.assertIn('records', response.json['recordset'])
         self.assertEqual(0, len(response.json['recordset']['records']))
+
+        # Check the zone's status is as expected
+        response = self.client.get('/zones/%s' % recordset['domain_id'],
+                                   headers=[('Accept', 'application/json')])
+        # Check the headers are what we expect
+        self.assertEqual(200, response.status_int)
+        self.assertEqual('application/json', response.content_type)
+        self.assertIn('zone', response.json)
+        self.assertEqual('UPDATE', response.json['zone']['action'])
+        self.assertEqual('PENDING', response.json['zone']['status'])
 
     def test_update_recordset_invalid_id(self):
         self._assert_invalid_uuid(
