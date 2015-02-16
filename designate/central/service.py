@@ -1216,6 +1216,8 @@ class Service(service.RPCService):
                 record.status = 'PENDING'
                 record.serial = domain.serial
 
+        # Update the recordset's action/status and then delete it
+        self.storage.update_recordset(context, recordset)
         recordset = self.storage.delete_recordset(context, recordset.id)
 
         return recordset

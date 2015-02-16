@@ -195,7 +195,7 @@ class RecordSetsController(rest.RestController):
 
         return self._view.show(context, request, recordset)
 
-    @pecan.expose(template=None, content_type='application/json')
+    @pecan.expose(template='json:', content_type='application/json')
     @utils.validate_uuid('zone_id', 'recordset_id')
     def delete_one(self, zone_id, recordset_id):
         """Delete RecordSet"""
@@ -212,11 +212,6 @@ class RecordSetsController(rest.RestController):
 
         recordset = self.central_api.delete_recordset(
             context, zone_id, recordset_id)
+        response.status_int = 202
 
-        if recordset['status'] == 'PENDING':
-            response.status_int = 202
-        else:
-            response.status_int = 204
-
-        # NOTE: This is a hack and a half.. But Pecan needs it.
-        return ''
+        return self._view.show(context, request, recordset)

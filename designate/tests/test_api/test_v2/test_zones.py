@@ -334,7 +334,14 @@ class ApiV2ZonesTest(ApiV2TestCase):
     def test_delete_zone(self):
         zone = self.create_domain()
 
-        self.client.delete('/zones/%s' % zone['id'], status=202)
+        response = self.client.delete('/zones/%s' % zone['id'], status=202)
+
+        # Check the headers are what we expect
+        self.assertEqual(202, response.status_int)
+        self.assertEqual('application/json', response.content_type)
+        self.assertIn('zone', response.json)
+        self.assertEqual('DELETE', response.json['zone']['action'])
+        self.assertEqual('PENDING', response.json['zone']['status'])
 
     def test_delete_zone_invalid_id(self):
         self._assert_invalid_uuid(self.client.delete, '/zones/%s')

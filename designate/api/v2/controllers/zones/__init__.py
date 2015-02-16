@@ -240,7 +240,7 @@ class ZonesController(rest.RestController):
 
         return self._view.show(context, request, zone)
 
-    @pecan.expose(template=None, content_type='application/json')
+    @pecan.expose(template='json:', content_type='application/json')
     @utils.validate_uuid('zone_id')
     def delete_one(self, zone_id):
         """Delete Zone"""
@@ -248,8 +248,7 @@ class ZonesController(rest.RestController):
         response = pecan.response
         context = request.environ['context']
 
-        self.central_api.delete_domain(context, zone_id)
+        zone = self.central_api.delete_domain(context, zone_id)
         response.status_int = 202
 
-        # NOTE: This is a hack and a half.. But Pecan needs it.
-        return ''
+        return self._view.show(context, request, zone)

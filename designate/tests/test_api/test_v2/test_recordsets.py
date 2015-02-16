@@ -542,7 +542,48 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
 
         url = '/zones/%s/recordsets/%s' % (recordset['domain_id'],
                                            recordset['id'])
-        self.client.delete(url, status=204)
+        response = self.client.delete(url, status=202)
+
+        self.assertEqual('application/json', response.content_type)
+        self.assertIn('recordset', response.json)
+        # Currently recordset does not have a status field. As there are no
+        # records, the recordset action/status show up as 'NONE', 'ACTIVE'
+        self.assertEqual('NONE', response.json['recordset']['action'])
+        self.assertEqual('ACTIVE', response.json['recordset']['status'])
+
+        # Check the zone's status is as expected
+        response = self.client.get('/zones/%s' % recordset['domain_id'],
+                                   headers=[('Accept', 'application/json')])
+        # Check the headers are what we expect
+        self.assertEqual(200, response.status_int)
+        self.assertEqual('application/json', response.content_type)
+        self.assertIn('zone', response.json)
+        self.assertEqual('UPDATE', response.json['zone']['action'])
+        self.assertEqual('PENDING', response.json['zone']['status'])
+
+    def test_delete_recordset_with_records(self):
+        # Create a recordset with one record
+        recordset = self.create_recordset(self.domain, 'A')
+        self.create_record(self.domain, recordset)
+
+        url = '/zones/%s/recordsets/%s' % (recordset['domain_id'],
+                                           recordset['id'])
+        response = self.client.delete(url, status=202)
+
+        self.assertEqual('application/json', response.content_type)
+        self.assertIn('recordset', response.json)
+        self.assertEqual('DELETE', response.json['recordset']['action'])
+        self.assertEqual('PENDING', response.json['recordset']['status'])
+
+        # Check the zone's status is as expected
+        response = self.client.get('/zones/%s' % recordset['domain_id'],
+                                   headers=[('Accept', 'application/json')])
+        # Check the headers are what we expect
+        self.assertEqual(200, response.status_int)
+        self.assertEqual('application/json', response.content_type)
+        self.assertIn('zone', response.json)
+        self.assertEqual('UPDATE', response.json['zone']['action'])
+        self.assertEqual('PENDING', response.json['zone']['status'])
 
     @patch.object(central_service.Service, 'delete_recordset',
                   side_effect=exceptions.RecordSetNotFound())
