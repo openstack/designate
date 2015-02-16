@@ -17,7 +17,9 @@
 Development Environment on Ubuntu
 *********************************
 
-Designate is comprised of four main components :ref:`designate-api`, :ref:`designate-central`, :ref:`designate-mdns`, and :ref:`designate-pool-manager`, supported by a few standard open source components. For more information see :doc:`architecture`.
+Designate is comprised of four main components :ref:`designate-api`, :ref:`designate-central`,
+:ref:`designate-mdns`, and :ref:`designate-pool-manager`, supported by a few
+standard open source components. For more information see :ref:`architecture`.
 
 There are many different options for customizing Designate, and two of these options
 have a major impact on the installation process:
@@ -27,7 +29,7 @@ have a major impact on the installation process:
 
 This guide will walk you through setting up a typical development environment for Designate,
 using BIND9 as the DNS backend and MySQL as the storage backend. For a more complete discussion on
-installation & configuration options, please see :doc:`architecture` and :doc:`production-architecture`.
+installation & configuration options, please see :ref:`architecture` and :ref:`production-architecture`.
 
 For this guide you will need access to an Ubuntu Server (14.04).
 
@@ -118,7 +120,7 @@ Open the designate.conf file for editing
 
 Copy or mirror the configuration from this sample file here:
 
-.. literalinclude:: examples/basic-config-sample.conf
+.. literalinclude:: ../examples/basic-config-sample.conf
     :language: ini
 
 
@@ -315,11 +317,13 @@ Exercising the API
 
 .. note:: If you have a firewall enabled, make sure to open port 53, as well as Designate's default port (9001).
 
-Using a web browser, curl statement, or a REST client, calls can be made to the Designate API using the following format where “command” is any of the commands listed in the :doc:`rest`
+Using a web browser, curl statement, or a REST client, calls can be made to the
+Designate API using the following format where "api_version" is either v1 or v2
+and "command" is any of the commands listed under the corresponding version at :ref:`rest`
 
-.. _Designate REST Documentation:
+::
 
-http://IP.Address:9001/v2/command
+   http://IP.Address:9001/api_version/command
 
 You can find the IP Address of your server by running
 
