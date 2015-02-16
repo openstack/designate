@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: designate 2015.1.dev97\n"
+"Project-Id-Version: designate 2015.1.dev36\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-01-24 06:08+0000\n"
+"POT-Creation-Date: 2015-02-16 06:28+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -45,12 +45,12 @@ msgstr ""
 msgid "Request authorized to bypass maintenance mode"
 msgstr ""
 
-#: designate/backend/base.py:121
+#: designate/backend/base.py:112
 #, python-format
 msgid "Failed to delete domain '%(domain)s' during sync. Message: %(message)s"
 msgstr ""
 
-#: designate/backend/base.py:147
+#: designate/backend/base.py:138
 #, python-format
 msgid ""
 "Failed to delete record '%(record)s' in domain '%(domain)s' during sync. "
@@ -73,6 +73,11 @@ msgstr ""
 #: designate/backend/impl_powerdns/migrate_repo/versions/006_add_inherit_ttl_col.py:57
 #, python-format
 msgid "Please issue this query: %s"
+msgstr ""
+
+#: designate/central/service.py:931
+#, python-format
+msgid "Abandoning zone '%(zone)s'"
 msgstr ""
 
 #: designate/mdns/notify.py:109
@@ -119,22 +124,22 @@ msgstr ""
 msgid "pid %d not in child list"
 msgstr ""
 
-#: designate/pool_manager/service.py:187
+#: designate/pool_manager/service.py:188
 #, python-format
 msgid "Consensus not reached for deleting domain %(domain)s"
 msgstr ""
 
-#: designate/pool_manager/service.py:249
+#: designate/pool_manager/service.py:250
 #, python-format
 msgid "For domain %(domain)s the error serial is %(error_serial)s."
 msgstr ""
 
-#: designate/pool_manager/service.py:326
+#: designate/pool_manager/service.py:336
 #, python-format
 msgid "Failed to create domain %(domain)s on server %(server)s."
 msgstr ""
 
-#: designate/pool_manager/service.py:374
+#: designate/pool_manager/service.py:384
 #, python-format
 msgid "Failed to delete domain %(domain)s from server %(server)s."
 msgstr ""

@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Designate\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-01-24 06:08+0000\n"
-"PO-Revision-Date: 2015-01-24 02:38+0000\n"
+"POT-Creation-Date: 2015-02-16 06:28+0000\n"
+"PO-Revision-Date: 2015-02-12 20:10+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: French (http://www.transifex.com/projects/p/designate/"
 "language/fr/)\n"
@@ -48,14 +48,14 @@ msgstr ""
 msgid "Request authorized to bypass maintenance mode"
 msgstr "Requête non assujettie au mode de maintenance"
 
-#: designate/backend/base.py:121
+#: designate/backend/base.py:112
 #, python-format
 msgid "Failed to delete domain '%(domain)s' during sync. Message: %(message)s"
 msgstr ""
 "N'a pas pu supprimer le domaine '%(domain)s' pendant la sync. Message : "
 "%(message)s"
 
-#: designate/backend/base.py:147
+#: designate/backend/base.py:138
 #, python-format
 msgid ""
 "Failed to delete record '%(record)s' in domain '%(domain)s' during sync. "
@@ -83,6 +83,11 @@ msgstr "**** Étape manuelle de post-migration requise ****"
 #, python-format
 msgid "Please issue this query: %s"
 msgstr "Veuillez lancer cette demande : %s"
+
+#: designate/central/service.py:931
+#, python-format
+msgid "Abandoning zone '%(zone)s'"
+msgstr ""
 
 #: designate/mdns/notify.py:109
 #, python-format
@@ -130,22 +135,22 @@ msgstr "la tâche %(func_name)s a dépassé l'intervalle de %(delay).2f sec"
 msgid "pid %d not in child list"
 msgstr "pid %d ne fait pas partie de la liste enfant"
 
-#: designate/pool_manager/service.py:187
+#: designate/pool_manager/service.py:188
 #, python-format
 msgid "Consensus not reached for deleting domain %(domain)s"
 msgstr ""
 
-#: designate/pool_manager/service.py:249
+#: designate/pool_manager/service.py:250
 #, python-format
 msgid "For domain %(domain)s the error serial is %(error_serial)s."
 msgstr ""
 
-#: designate/pool_manager/service.py:326
+#: designate/pool_manager/service.py:336
 #, python-format
 msgid "Failed to create domain %(domain)s on server %(server)s."
 msgstr ""
 
-#: designate/pool_manager/service.py:374
+#: designate/pool_manager/service.py:384
 #, python-format
 msgid "Failed to delete domain %(domain)s from server %(server)s."
 msgstr ""
