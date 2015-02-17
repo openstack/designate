@@ -1180,6 +1180,11 @@ class StorageTestCase(object):
         recordsets = self.storage.count_recordsets(self.admin_context)
         self.assertEqual(recordsets, 3)
 
+        # Delete the domain, we should be back to 0 recordsets
+        self.storage.delete_domain(self.admin_context, domain.id)
+        recordsets = self.storage.count_recordsets(self.admin_context)
+        self.assertEqual(recordsets, 0)
+
     def test_count_recordsets_none_result(self):
         rp = mock.Mock()
         rp.fetchone.return_value = None
@@ -1461,9 +1466,14 @@ class StorageTestCase(object):
         recordset = self.create_recordset(domain)
         self.create_record(domain, recordset)
 
-        # we should have 1 record now
+        # we should have 3 records now, including NS and SOA
         records = self.storage.count_records(self.admin_context)
         self.assertEqual(records, 3)
+
+        # Delete the domain, we should be back to 0 records
+        self.storage.delete_domain(self.admin_context, domain.id)
+        records = self.storage.count_records(self.admin_context)
+        self.assertEqual(records, 0)
 
     def test_count_records_none_result(self):
         rp = mock.Mock()
