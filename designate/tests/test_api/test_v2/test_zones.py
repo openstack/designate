@@ -361,7 +361,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
         self._assert_exception('domain_not_found', 404, self.client.delete,
                                url)
 
-    def test_abandon_zone(self):
+    def test_post_abandon_zone(self):
         zone = self.create_domain()
         url = '/zones/%s/tasks/abandon' % zone.id
 
@@ -372,6 +372,22 @@ class ApiV2ZonesTest(ApiV2TestCase):
         self.policy({'abandon_domain': '@'})
         response = self.client.post_json(url)
         self.assertEqual(204, response.status_int)
+
+    def test_get_abandon_zone(self):
+        zone = self.create_domain()
+        url = '/zones/%s/tasks/abandon' % zone.id
+        self._assert_exception('method_not_allowed', 405, self.client.get, url)
+
+    def test_get_invalid_abandon(self):
+        # This is an invalid endpoint - should return 404
+        url = '/zones/tasks/abandon'
+        self._assert_exception('not_found', 404, self.client.get, url)
+
+    def test_get_zone_tasks(self):
+        # This is an invalid endpoint - should return 404
+        zone = self.create_domain()
+        url = '/zones/%s/tasks' % zone.id
+        self._assert_exception('not_found', 404, self.client.get, url)
 
     # Zone import/export
     def test_missing_origin(self):

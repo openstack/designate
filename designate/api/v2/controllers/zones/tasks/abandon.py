@@ -38,3 +38,8 @@ class AbandonController(rest.RestController):
 
         # NOTE: This is a hack and a half.. But Pecan needs it.
         return ''
+
+    @pecan.expose(template='json:', content_type='application/json')
+    @utils.validate_uuid('zone_id')
+    def get_all(self, zone_id, **params):
+        pecan.abort(405)
