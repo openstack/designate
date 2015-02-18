@@ -438,7 +438,15 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
                             exceptions.RecordSetNotFound)
 
     def count_recordsets(self, context, criterion=None):
-        query = select([func.count(tables.recordsets.c.id)])
+        # Ensure that we return only active recordsets
+        rjoin = tables.recordsets.join(
+            tables.domains,
+            tables.recordsets.c.domain_id == tables.domains.c.id)
+
+        query = select([func.count(tables.recordsets.c.id)]).\
+            select_from(rjoin).\
+            where(tables.domains.c.deleted == '0')
+
         query = self._apply_criterion(tables.recordsets, query, criterion)
         query = self._apply_tenant_criteria(context, tables.recordsets, query)
         query = self._apply_deleted_criteria(context, tables.recordsets, query)
@@ -507,7 +515,15 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
                             exceptions.RecordNotFound)
 
     def count_records(self, context, criterion=None):
-        query = select([func.count(tables.records.c.id)])
+        # Ensure that we return only active records
+        rjoin = tables.records.join(
+            tables.domains,
+            tables.records.c.domain_id == tables.domains.c.id)
+
+        query = select([func.count(tables.records.c.id)]).\
+            select_from(rjoin).\
+            where(tables.domains.c.deleted == '0')
+
         query = self._apply_criterion(tables.records, query, criterion)
         query = self._apply_tenant_criteria(context, tables.records, query)
         query = self._apply_deleted_criteria(context, tables.records, query)
