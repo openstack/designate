@@ -189,3 +189,21 @@ class MdnsNotifyTest(MdnsTestCase):
         self.assertEqual(status, 'ERROR')
         self.assertEqual(serial, None)
         self.assertEqual(retries, 2)
+
+    @patch('dns.query.udp', side_effect=dns.exception.Timeout)
+    @patch('dns.query.tcp', side_effect=dns.exception.Timeout)
+    def test_send_dns_message_all_tcp(self, tcp, udp):
+        self.config(
+            all_tcp=True,
+            group='service:mdns'
+        )
+        context = self.get_context()
+        test_domain = objects.Domain(**self.test_domain)
+        status, serial, retries = self.notify.poll_for_serial_number(
+            context, test_domain, self.server,
+            0, 0, 2, 0)
+        response, retry = self.notify.notify_zone_changed(
+            context, test_domain, self.server, 0,
+            0, 2, 0)
+        assert not udp.called
+        assert tcp.called
