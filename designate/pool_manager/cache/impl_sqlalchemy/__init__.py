@@ -37,7 +37,6 @@ cfg.CONF.register_opts(options.database_opts,
 
 class SQLAlchemyPoolManagerCache(sqlalchemy_base.SQLAlchemy,
                                  cache_base.PoolManagerCache):
-    """SQLAlchemy connection"""
     __plugin_name__ = 'sqlalchemy'
 
     def __init__(self):
@@ -46,43 +45,29 @@ class SQLAlchemyPoolManagerCache(sqlalchemy_base.SQLAlchemy,
     def get_name(self):
         return self.name
 
-    def _find_pool_manager_statuses(self, context, criterion, one=False,
-                                    marker=None, limit=None, sort_key=None,
-                                    sort_dir=None):
+    def clear(self, context, pool_manager_status):
+        self._delete(
+            context, tables.pool_manager_statuses, pool_manager_status,
+            exceptions.PoolManagerStatusNotFound)
+
+    def store(self, context, pool_manager_status):
+        if pool_manager_status.id:
+            self._update(
+                context, tables.pool_manager_statuses, pool_manager_status,
+                exceptions.DuplicatePoolManagerStatus,
+                exceptions.PoolManagerStatusNotFound)
+        else:
+            self._create(
+                tables.pool_manager_statuses, pool_manager_status,
+                exceptions.DuplicatePoolManagerStatus)
+
+    def retrieve(self, context, server_id, domain_id, action):
+        criterion = {
+            'server_id': server_id,
+            'domain_id': domain_id,
+            'action': action
+        }
         return self._find(
             context, tables.pool_manager_statuses, objects.PoolManagerStatus,
             objects.PoolManagerStatusList,
-            exceptions.PoolManagerStatusNotFound, criterion, one, marker,
-            limit, sort_key, sort_dir)
-
-    def create_pool_manager_status(self, context, pool_manager_status):
-        return self._create(
-            tables.pool_manager_statuses, pool_manager_status,
-            exceptions.DuplicatePoolManagerStatus)
-
-    def get_pool_manager_status(self, context, pool_manager_status_id):
-        return self._find_pool_manager_statuses(
-            context, {'id': pool_manager_status_id}, one=True)
-
-    def find_pool_manager_statuses(self, context, criterion=None, marker=None,
-                                   limit=None, sort_key=None, sort_dir=None):
-        return self._find_pool_manager_statuses(
-            context, criterion, marker=marker, limit=limit, sort_key=sort_key,
-            sort_dir=sort_dir)
-
-    def find_pool_manager_status(self, context, criterion):
-        return self._find_pool_manager_statuses(context, criterion, one=True)
-
-    def update_pool_manager_status(self, context, pool_manager_status):
-        return self._update(
-            context, tables.pool_manager_statuses, pool_manager_status,
-            exceptions.DuplicatePoolManagerStatus,
-            exceptions.PoolManagerStatusNotFound)
-
-    def delete_pool_manager_status(self, context, pool_manager_status_id):
-        pool_manager_status = self._find_pool_manager_statuses(
-            context, {'id': pool_manager_status_id}, one=True)
-
-        return self._delete(
-            context, tables.pool_manager_statuses, pool_manager_status,
-            exceptions.PoolManagerStatusNotFound)
+            exceptions.PoolManagerStatusNotFound, criterion, one=True)

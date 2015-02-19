@@ -227,6 +227,13 @@ debug = False
 #max_retries = 10
 #retry_interval = 10
 
+#-----------------------
+# Memcache Pool Manager Cache
+#-----------------------
+[pool_manager_cache:memcache]
+#memcached_servers = None
+#expiration = 3600
+
 #############################
 ## Pool Backend Configuration
 #############################
