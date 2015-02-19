@@ -55,12 +55,13 @@ Installing Designate
 
 ::
 
-   $ cd /var/lib
+   $ mkdir openstack
+   $ cd openstack
    $ git clone https://github.com/openstack/designate.git
    $ cd designate
 
 
-3. Setup virtualenv
+3. Setup a virtualenv
 
 .. note::
    This is an optional step, but will allow Designate's dependencies
@@ -102,7 +103,15 @@ Installing Designate
 
 ::
 
-   $ mkdir /var/log/designate
+   $ mkdir -p ../../log
+
+
+8. Make the directory for Designate’s state files
+
+::
+
+   $ mkdir -p ../../state
+
 
 
 Configuring Designate
@@ -236,20 +245,16 @@ Initialize & Start the Central Service
    double: install; central
 
 
-If you intend to run Designate as a non-root user, then sudo permissions need to be granted
+Sync the Designate database.
 
 ::
 
-   $ echo "designate ALL=(ALL) NOPASSWD:ALL" | sudo tee -a /etc/sudoers.d/90-designate
-   $ sudo chmod 0440 /etc/sudoers.d/90-designate
-
-
-::
-
-   # Sync the Designate database:
    $ designate-manage database sync
 
-   # Start the central service:
+Start the central service.
+
+::
+
    $ designate-central
 
 
@@ -265,7 +270,7 @@ Open up a new ssh window and log in to your server (or however you’re communic
 
 ::
 
-   $ cd /var/lib/designate
+   $ cd openstack/designate
 
    # Make sure your virtualenv is sourced
    $ source .venv/bin/activate
@@ -334,4 +339,3 @@ You can find the IP Address of your server by running
 A couple of notes on the API:
 
 - Before Domains are created, you must create a server (/v1/servers).
-
