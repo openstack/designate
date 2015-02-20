@@ -28,10 +28,12 @@ from oslo import messaging
 cfg.CONF.register_opts([
     cfg.StrOpt('host', default=socket.gethostname(),
                help='Name of this node'),
-    cfg.StrOpt('pybasedir',
-               default=os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                                    '../')),
-               help='Directory where the nova python module is installed'),
+    cfg.StrOpt(
+        'pybasedir',
+        default=os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                             '../')),
+        help='Directory where the designate python module is installed'
+    ),
     cfg.StrOpt('state-path', default='/var/lib/designate',
                help='Top-level directory for maintaining designate\'s state'),
 
