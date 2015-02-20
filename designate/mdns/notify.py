@@ -230,10 +230,13 @@ class NotifyEndpoint(object):
         :param timeout: The timeout in seconds to wait for a response.
         :return: response or dns.exception.Timeout or dns.query.BadResponse
         """
-
         try:
-            response = dns.query.udp(
-                dns_message, dest_ip, port=dest_port, timeout=timeout)
+            if not CONF['service:mdns'].all_tcp:
+                response = dns.query.udp(
+                    dns_message, dest_ip, port=dest_port, timeout=timeout)
+            else:
+                response = dns.query.tcp(
+                    dns_message, dest_ip, port=dest_port, timeout=timeout)
             return response
         except dns.exception.Timeout as timeout:
             return timeout
