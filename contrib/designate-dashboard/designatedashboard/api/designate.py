@@ -45,7 +45,8 @@ def designateclient(request):
                   token=request.user.token.id,
                   username=request.user.username,
                   tenant_id=request.user.project_id,
-                  insecure=insecure)
+                  insecure=insecure,
+                  cacert=cacert)
 
 
 def domain_get(request, domain_id):
