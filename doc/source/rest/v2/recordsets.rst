@@ -340,7 +340,10 @@ Create MX Record Set
           "type" : "MX",
           "ttl" : 3600,
           "records" : [
-                "10 10.1.0.1", "20 10.1.0.2", "30 10.1.0.3", "40 100.1.1.1"
+                "10 mail1.example.org.",
+		"20 mail2.example.org.",
+		"30 mail3.example.org.",
+		"40 mail4.example.org."
               ]
           }
         }
@@ -359,8 +362,11 @@ Create MX Record Set
                     "self": "https://127.0.0.1:9001/v2/zones/2150b1bf-dee2-4221-9d85-11f7886fb15f/recordsets/f7b10e9b-0cae-4a91-b162-562bc6096649"
                 },
                 "updated_at": null,
-          "records" : [
-                "10 10.1.0.1", "20 10.1.0.2", "30 10.1.0.3", "40 100.1.1.1"
+                "records" : [
+	            "10 mail1.example.org.",
+		    "20 mail2.example.org.",
+		    "30 mail3.example.org.",
+		    "40 mail4.example.org."
                 ],
                 "ttl": 3600,
                 "id": "f7b10e9b-0cae-4a91-b162-562bc6096649",
