@@ -28,62 +28,35 @@ class PoolManagerCache(DriverPlugin):
     __plugin_type__ = 'pool_manager_cache'
 
     @abc.abstractmethod
-    def create_pool_manager_status(self, context, pool_manager_status):
-        """
-        Create a pool manager status.
-
-        :param context: Security context information
-        :param pool_manager_status: Pool manager status object to create
+    def clear(self, context, pool_manager_status):
         """
 
-    @abc.abstractmethod
-    def get_pool_manager_status(self, context, pool_manager_status_id):
-        """
-        Get a pool manager status by ID.
+        Clear the pool manager status object from the cache.
 
-        :param context: Security context information
-        :param pool_manager_status_id: Pool manager status ID to get
+        :param context:  Security context information
+        :param pool_manager_status: Pool manager status object to clear
         """
 
     @abc.abstractmethod
-    def find_pool_manager_statuses(self, context, criterion=None, marker=None,
-                                   limit=None, sort_key=None, sort_dir=None):
+    def store(self, context, pool_manager_status):
         """
-        Find pool manager statuses.
+
+        Store the pool manager status object in the cache.
 
         :param context: Security context information
-        :param criterion: Criteria to filter by
-        :param marker: Resource ID from which after the requested page will
-                       start after
-        :param limit: Integer limit of objects of the page size after the
-                      marker
-        :param sort_key: Key from which to sort after
-        :param sort_dir: Direction to sort after using sort_key
+        :param pool_manager_status: Pool manager status object to store
+        :return:
         """
 
     @abc.abstractmethod
-    def find_pool_manager_status(self, context, criterion):
+    def retrieve(self, context, server_id, domain_id, action):
         """
-        Find a single pool manager status.
+
+        Retrieve the pool manager status object.
 
         :param context: Security context information
-        :param criterion: Criteria to filter by
-        """
-
-    @abc.abstractmethod
-    def update_pool_manager_status(self, context, pool_manager_status):
-        """
-        Update a pool manager status
-
-        :param context: Security context information
-        :param pool_manager_status: Pool manager status object to update
-        """
-
-    @abc.abstractmethod
-    def delete_pool_manager_status(self, context, pool_manager_status_id):
-        """
-        Delete a pool manager status
-
-        :param context: Security context information
-        :param pool_manager_status_id: Pool manager status ID to delete
+        :param server_id: the server ID of the pool manager status object
+        :param domain_id: the domain ID of the pool manger status object
+        :param action: the action of the pool manager status object
+        :return: the pool manager status object
         """

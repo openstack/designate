@@ -18,11 +18,11 @@ from designate.tests import TestCase
 from designate.tests.test_pool_manager.cache import PoolManagerCacheTestCase
 
 
-class SqlalchemyPoolManagerCacheTest(PoolManagerCacheTestCase, TestCase):
+class MemcachePoolManagerCacheTest(PoolManagerCacheTestCase, TestCase):
     def setUp(self):
-        super(SqlalchemyPoolManagerCacheTest, self).setUp()
+        super(MemcachePoolManagerCacheTest, self).setUp()
 
-        self.cache = cache.get_pool_manager_cache('sqlalchemy')
+        self.cache = cache.get_pool_manager_cache('memcache')
 
     def test_store_and_retrieve(self):
         expected = self.create_pool_manager_status()
