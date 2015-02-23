@@ -15,6 +15,7 @@
 from __future__ import absolute_import
 
 from horizon import exceptions
+from django.conf import settings
 import logging
 
 from designateclient.v1 import Client  # noqa
@@ -37,10 +38,14 @@ def designateclient(request):
     LOG.debug('designateclient connection created using token "%s"'
               'and url "%s"' % (request.user.token.id, designate_url))
 
+    insecure = getattr(settings, 'OPENSTACK_SSL_NO_VERIFY', False)
+    cacert = getattr(settings, 'OPENSTACK_SSL_CACERT', None)
+
     return Client(endpoint=designate_url,
                   token=request.user.token.id,
                   username=request.user.username,
-                  tenant_id=request.user.project_id)
+                  tenant_id=request.user.project_id,
+                  insecure=insecure)
 
 
 def domain_get(request, domain_id):
