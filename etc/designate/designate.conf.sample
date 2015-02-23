@@ -138,6 +138,7 @@ debug = False
 #allow_notify = 127.0.0.1
 #masters = 127.0.0.1:5354
 #backend_driver = fake
+#transfer_source = None
 
 
 #-----------------------
@@ -269,3 +270,4 @@ debug = False
 #rndc_config_file = /etc/rndc.conf
 #rndc_key_file = /etc/rndc.key
 #zone_file_path = $state_path/zones
+#query_destination = 127.0.0.1

@@ -13,10 +13,10 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import time
 import os
 
 import dns
+import dns.resolver
 from oslo.config import cfg
 from oslo.concurrency import lockutils
 from oslo_log import log as logging
@@ -46,7 +46,9 @@ class Bind9Backend(base.AgentBackend):
                        help='RNDC Config File'),
             cfg.StrOpt('rndc-key-file', default=None, help='RNDC Key File'),
             cfg.StrOpt('zone-file-path', default='$state_path/zones',
-                       help='Path where zone files are stored')
+                       help='Path where zone files are stored'),
+            cfg.StrOpt('query-destination', default='127.0.0.1',
+                       help='Host to query when finding domains')
         ]
 
         return [(group, opts)]
@@ -57,7 +59,7 @@ class Bind9Backend(base.AgentBackend):
     def find_domain_serial(self, domain_name):
         LOG.debug("Finding %s" % domain_name)
         resolver = dns.resolver.Resolver()
-        resolver.nameservers = ['127.0.0.1']
+        resolver.nameservers = [cfg.CONF[CFG_GROUP].query_destination]
         try:
             rdata = resolver.query(domain_name, 'SOA')[0]
         except Exception:
@@ -77,7 +79,7 @@ class Bind9Backend(base.AgentBackend):
 
         rndc_op = 'delzone'
         # RNDC doesn't like the trailing dot on the domain name
-        rndc_call = self._rndc_base() + [rndc_op, domain_name[:-1]]
+        rndc_call = self._rndc_base() + [rndc_op, domain_name.rstrip('.')]
 
         utils.execute(*rndc_call)
 
@@ -101,7 +103,9 @@ class Bind9Backend(base.AgentBackend):
     def _sync_domain(self, domain, new_domain_flag=False):
         """Sync a single domain's zone file and reload bind config"""
 
-        domain_name = domain.origin.to_text()
+        # NOTE: Different versions of BIND9 behave differently with a trailing
+        #       dot, so we're just going to take it off.
+        domain_name = domain.origin.to_text().rstrip('.')
 
         # NOTE: Only one thread should be working with the Zonefile at a given
         #       time. The sleep(1) below introduces a not insignificant risk
@@ -112,9 +116,9 @@ class Bind9Backend(base.AgentBackend):
             zone_path = cfg.CONF[CFG_GROUP].zone_file_path
 
             output_path = os.path.join(zone_path,
-                                       '%szone' % domain_name)
+                                       '%s.zone' % domain_name)
 
-            domain.to_file(output_path)
+            domain.to_file(output_path, relativize=False)
 
             rndc_call = self._rndc_base()
 
@@ -129,13 +133,6 @@ class Bind9Backend(base.AgentBackend):
                 rndc_op = 'reload'
                 rndc_call.extend([rndc_op])
                 rndc_call.extend([domain_name])
-
-            if not new_domain_flag:
-                # NOTE: Bind9 will only ever attempt to re-read a zonefile if
-                #       the file's timestamp has changed since the previous
-                #       reload. A one second sleep ensures we cross over a
-                #       second boundary before allowing the next change.
-                time.sleep(1)
 
             LOG.debug('Calling RNDC with: %s' % " ".join(rndc_call))
             self._execute_rndc(rndc_call)

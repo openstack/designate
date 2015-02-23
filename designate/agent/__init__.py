@@ -36,6 +36,8 @@ OPTS = [
                 help='List of masters for the Agent, format ip:port'),
     cfg.StrOpt('backend-driver', default='bind9',
                help='The backend driver to use'),
+    cfg.StrOpt('transfer-source', default=None,
+               help='An IP address to be used to fetch zones transferred in'),
 ]
 
 cfg.CONF.register_opts(OPTS, group='service:agent')

@@ -29,13 +29,14 @@ class AgentRequestHandlerTest(AgentTestCase):
         super(AgentRequestHandlerTest, self).setUp()
         self.config(allow_notify=["0.0.0.0"],
                     backend_driver="fake",
+                    transfer_source="1.2.3.4",
                     group='service:agent')
         self.handler = handler.RequestHandler()
         self.addr = ["0.0.0.0", 5558]
 
     @mock.patch.object(dns.resolver.Resolver, 'query')
     @mock.patch('designate.dnsutils.do_axfr')
-    def test_receive_notify(self, func, axfrfunc):
+    def test_receive_notify(self, doaxfr, query):
         """
         Get a NOTIFY and ensure the response is right,
         and an AXFR is triggered
@@ -83,7 +84,7 @@ class AgentRequestHandlerTest(AgentTestCase):
 
     @mock.patch.object(dns.resolver.Resolver, 'query')
     @mock.patch('designate.dnsutils.do_axfr')
-    def test_receive_create(self, func, func2):
+    def test_receive_create(self, doaxfr, query):
         """
         Get a CREATE and ensure the response is right,
         and an AXFR is triggered, and the proper backend
@@ -180,3 +181,31 @@ class AgentRequestHandlerTest(AgentTestCase):
         response = self.handler(request).to_wire()
 
         self.assertEqual(expected_response, binascii.b2a_hex(response))
+
+    @mock.patch.object(dns.resolver.Resolver, 'query')
+    @mock.patch.object(designate.dnsutils, 'do_axfr')
+    def test_transfer_source(self, doaxfr, query):
+        """
+        Get a CREATE and ensure the response is right,
+        and an AXFR is triggered with the right source IP
+        """
+        payload = "735d70000001000000000000076578616d706c6503636f6d00ff02ff00"
+        # Expected NOERROR other fields are
+        # opcode 14
+        # rcode NOERROR
+        # flags QR AA
+        # ;QUESTION
+        # example.com. CLASS65280 TYPE65282
+        # ;ANSWER
+        # ;AUTHORITY
+        # ;ADDITIONAL
+        expected_response = ("735df4000001000000000000076578616d706c6503636f6d"
+                             "00ff02ff00")
+        request = dns.message.from_wire(binascii.a2b_hex(payload))
+        request.environ = {'addr': ["0.0.0.0", 1234]}
+        with mock.patch.object(
+            designate.backend.agent_backend.impl_fake.FakeBackend,
+                'find_domain_serial', return_value=None):
+            response = self.handler(request).to_wire()
+            doaxfr.assert_called_with('example.com.', [], source="1.2.3.4")
+            self.assertEqual(expected_response, binascii.b2a_hex(response))

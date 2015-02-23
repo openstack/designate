@@ -184,7 +184,7 @@ def bind_udp(host, port):
     return sock_udp
 
 
-def do_axfr(zone_name, masters):
+def do_axfr(zone_name, masters, source=None):
     """
     Performs an AXFR for a given zone name
     """
@@ -195,7 +195,7 @@ def do_axfr(zone_name, masters):
              {'name': zone_name, 'host': master})
 
     xfr = dns.query.xfr(master['ip'], zone_name, relativize=False,
-                        port=master['port'])
+                        port=master['port'], source=source)
 
     try:
         # TODO(Tim): Add a timeout to this function

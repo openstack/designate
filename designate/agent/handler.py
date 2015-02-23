@@ -56,6 +56,7 @@ class RequestHandler(object):
                  {'masters': self.masters})
 
         self.allow_notify = CONF['service:agent'].allow_notify
+        self.transfer_source = CONF['service:agent'].transfer_source
         backend_driver = cfg.CONF['service:agent'].backend_driver
         self.backend = agent_backend.get_backend(backend_driver, self)
 
@@ -123,7 +124,8 @@ class RequestHandler(object):
                  {'verb': "CREATE", 'name': domain_name, 'host': requester})
 
         try:
-            zone = dnsutils.do_axfr(domain_name, self.masters)
+            zone = dnsutils.do_axfr(domain_name, self.masters,
+                source=self.transfer_source)
             self.backend.create_domain(zone)
         except Exception:
             response.set_rcode(dns.rcode.from_text("SERVFAIL"))
@@ -173,7 +175,8 @@ class RequestHandler(object):
         # Check that the serial is < serial above
 
         try:
-            zone = dnsutils.do_axfr(domain_name, self.masters)
+            zone = dnsutils.do_axfr(domain_name, self.masters,
+                source=self.transfer_source)
             self.backend.update_domain(zone)
         except Exception:
             response.set_rcode(dns.rcode.from_text("SERVFAIL"))
