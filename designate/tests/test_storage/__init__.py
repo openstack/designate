@@ -280,7 +280,7 @@ class StorageTestCase(object):
         values = self.get_tsigkey_fixture()
 
         result = self.storage.create_tsigkey(
-            self.admin_context, tsigkey=objects.TsigKey(**values))
+            self.admin_context, tsigkey=objects.TsigKey.from_dict(values))
 
         self.assertIsNotNone(result['id'])
         self.assertIsNotNone(result['created_at'])
@@ -503,7 +503,7 @@ class StorageTestCase(object):
         }
 
         result = self.storage.create_domain(
-            self.admin_context, domain=objects.Domain(**values))
+            self.admin_context, domain=objects.Domain.from_dict(values))
 
         self.assertIsNotNone(result['id'])
         self.assertIsNotNone(result['created_at'])
@@ -785,7 +785,7 @@ class StorageTestCase(object):
         result = self.storage.create_recordset(
             self.admin_context,
             domain['id'],
-            recordset=objects.RecordSet(**values))
+            recordset=objects.RecordSet.from_dict(values))
 
         self.assertIsNotNone(result['id'])
         self.assertIsNotNone(result['created_at'])
@@ -1201,10 +1201,9 @@ class StorageTestCase(object):
             'data': '192.0.2.1',
         }
 
-        result = self.storage.create_record(self.admin_context,
-                                            domain['id'],
-                                            recordset['id'],
-                                            record=objects.Record(**values))
+        result = self.storage.create_record(
+            self.admin_context, domain['id'], recordset['id'],
+            objects.Record.from_dict(values))
 
         self.assertIsNotNone(result['id'])
         self.assertIsNotNone(result['created_at'])
@@ -1503,8 +1502,9 @@ class StorageTestCase(object):
             'description': 'This is a comment.'
         }
 
-        result = self.storage.create_tld(self.admin_context,
-                                         objects.Tld(**values))
+        result = self.storage.create_tld(
+            self.admin_context, objects.Tld.from_dict(values))
+
         self.assertIsNotNone(result['id'])
         self.assertIsNotNone(result['created_at'])
         self.assertIsNone(result['updated_at'])
@@ -1658,8 +1658,7 @@ class StorageTestCase(object):
         }
 
         result = self.storage.create_blacklist(
-            self.admin_context, blacklist=objects.Blacklist(**values)
-        )
+            self.admin_context, objects.Blacklist.from_dict(values))
 
         self.assertIsNotNone(result['id'])
         self.assertIsNotNone(result['created_at'])
@@ -1807,8 +1806,8 @@ class StorageTestCase(object):
             'provisioner': 'UNMANAGED'
         }
 
-        result = self.storage.create_pool(self.admin_context,
-                                          pool=objects.Pool(**values))
+        result = self.storage.create_pool(
+            self.admin_context, objects.Pool.from_dict(values))
 
         self.assertIsNotNone(result['id'])
         self.assertIsNotNone(result['created_at'])
@@ -1972,7 +1971,7 @@ class StorageTestCase(object):
         }
 
         result = self.storage.create_zone_transfer_request(
-            self.admin_context, objects.ZoneTransferRequest(**values))
+            self.admin_context, objects.ZoneTransferRequest.from_dict(values))
 
         self.assertEqual(result['tenant_id'], self.admin_context.tenant)
         self.assertIn('status', result)
@@ -1990,7 +1989,7 @@ class StorageTestCase(object):
         }
 
         result = self.storage.create_zone_transfer_request(
-            self.admin_context, objects.ZoneTransferRequest(**values))
+            self.admin_context, objects.ZoneTransferRequest.from_dict(values))
 
         self.assertIsNotNone(result['id'])
         self.assertIsNotNone(result['created_at'])
@@ -2021,7 +2020,7 @@ class StorageTestCase(object):
         }
 
         self.storage.create_zone_transfer_request(
-            self.admin_context, objects.ZoneTransferRequest(**values))
+            self.admin_context, objects.ZoneTransferRequest.from_dict(values))
 
         requests = self.storage.find_zone_transfer_requests(
             self.admin_context, {"tenant_id": self.admin_context.tenant})
@@ -2068,7 +2067,7 @@ class StorageTestCase(object):
         }
 
         result = self.storage.create_zone_transfer_accept(
-            self.admin_context, objects.ZoneTransferAccept(**values))
+            self.admin_context, objects.ZoneTransferAccept.from_dict(values))
 
         self.assertIsNotNone(result['id'])
         self.assertIsNotNone(result['created_at'])
@@ -2088,7 +2087,7 @@ class StorageTestCase(object):
         }
 
         self.storage.create_zone_transfer_accept(
-            self.admin_context, objects.ZoneTransferAccept(**values))
+            self.admin_context, objects.ZoneTransferAccept.from_dict(values))
 
         accepts = self.storage.find_zone_transfer_accepts(
             self.admin_context, {"tenant_id": self.admin_context.tenant})
@@ -2105,7 +2104,7 @@ class StorageTestCase(object):
         }
 
         result = self.storage.create_zone_transfer_accept(
-            self.admin_context, objects.ZoneTransferAccept(**values))
+            self.admin_context, objects.ZoneTransferAccept.from_dict(values))
 
         accept = self.storage.find_zone_transfer_accept(
             self.admin_context, {"id": result.id})
@@ -2182,10 +2181,8 @@ class StorageTestCase(object):
         }
 
         result = self.storage.create_pool_attribute(
-            self.admin_context,
-            pool_id=values['pool_id'],
-            pool_attribute=objects.PoolAttribute(**values)
-        )
+            self.admin_context, values['pool_id'],
+            objects.PoolAttribute.from_dict(values))
 
         self.assertIsNotNone(result['id'])
         self.assertIsNotNone(result['created_at'])

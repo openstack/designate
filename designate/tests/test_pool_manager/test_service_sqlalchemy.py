@@ -75,7 +75,7 @@ class PoolManagerServiceTest(PoolManagerTestCase):
             'serial': 1422062497,
             'status': status
         }
-        return objects.Domain(**values)
+        return objects.Domain.from_dict(values)
 
     def test_stop(self):
         # NOTE: Start is already done by the fixture in start_service()

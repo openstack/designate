@@ -29,7 +29,7 @@ class PoolManagerCacheTestCase(object):
             'status': 'SUCCESS',
             'serial_number': 1
         }
-        return objects.PoolManagerStatus(**values)
+        return objects.PoolManagerStatus.from_dict(values)
 
     def test_interface(self):
         self._ensure_interface(PoolManagerCache, self.cache.__class__)

@@ -74,7 +74,7 @@ class PoolManagerServiceMemcacheTest(PoolManagerTestCase):
             'serial': 1422062497,
             'status': status
         }
-        return objects.Domain(**values)
+        return objects.Domain.from_dict(values)
 
     @patch.object(mdns_rpcapi.MdnsAPI, 'poll_for_serial_number')
     @patch.object(mdns_rpcapi.MdnsAPI, 'notify_zone_changed')

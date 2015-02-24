@@ -129,7 +129,7 @@ class ApiV1ServersTest(ApiV1Test):
             'value': fixture['name'],
             'id': '2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980'
         }
-        nameserver = objects.PoolAttribute(**values)
+        nameserver = objects.PoolAttribute.from_dict(values)
 
         self.get('servers/%s' % nameserver['id'], status_code=504)
 
