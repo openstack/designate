@@ -22,6 +22,7 @@ from oslo_log import log as logging
 from designate import exceptions
 from designate.central import rpcapi as central_rpcapi
 from designate.context import DesignateContext
+from designate.i18n import _LW
 from designate.objects import Record
 from designate.objects import RecordSet
 from designate.plugin import ExtensionPlugin
@@ -118,6 +119,11 @@ class BaseAddressHandler(NotificationHandler):
         :param resource_type: The managed resource type
         :param resource_id: The managed resource ID
         """
+        if not managed:
+            LOG.warning(_LW(
+                'Deprecation notice: Unmanaged designate-sink records are '
+                'being deprecated please update the call '
+                'to remove managed=False'))
         LOG.debug('Using DomainID: %s' % cfg.CONF[self.name].domain_id)
         domain = self.get_domain(cfg.CONF[self.name].domain_id)
         LOG.debug('Domain: %r' % domain)
@@ -165,7 +171,11 @@ class BaseAddressHandler(NotificationHandler):
 
         :param criterion: Criterion to search and destroy records
         """
-
+        if not managed:
+            LOG.warning(_LW(
+                'Deprecation notice: Unmanaged designate-sink records are '
+                'being deprecated please update the call '
+                'to remove managed=False'))
         criterion = criterion or {}
 
         context = DesignateContext.get_admin_context(all_tenants=True)
