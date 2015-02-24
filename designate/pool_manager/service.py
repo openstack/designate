@@ -39,6 +39,7 @@ LOG = logging.getLogger(__name__)
 
 SUCCESS_STATUS = 'SUCCESS'
 ERROR_STATUS = 'ERROR'
+NO_DOMAIN_STATUS = 'NO_DOMAIN'
 CREATE_ACTION = 'CREATE'
 DELETE_ACTION = 'DELETE'
 UPDATE_ACTION = 'UPDATE'
@@ -164,7 +165,8 @@ class Service(service.RPCService):
 
         for server_backend in self.server_backends:
             server = server_backend['server']
-            create_status = self._build_create_status(server, domain)
+            create_status = self._build_status_object(
+                server, domain, CREATE_ACTION)
             self._create_domain_on_server(
                 context, create_status, domain, server_backend)
 
@@ -178,7 +180,8 @@ class Service(service.RPCService):
 
         for server_backend in self.server_backends:
             server = server_backend['server']
-            delete_status = self._build_delete_status(server, domain)
+            delete_status = self._build_status_object(
+                server, domain, DELETE_ACTION)
             self._delete_domain_on_server(
                 context, delete_status, domain, server_backend)
 
@@ -220,7 +223,8 @@ class Service(service.RPCService):
                 update_status = self.cache.retrieve(
                     context, server.id, domain.id, UPDATE_ACTION)
             except exceptions.PoolManagerStatusNotFound:
-                update_status = self._build_update_status(server, domain)
+                update_status = self._build_status_object(
+                    server, domain, UPDATE_ACTION)
                 self.cache.store(context, update_status)
             cache_serial = update_status.serial_number
 
@@ -340,14 +344,16 @@ class Service(service.RPCService):
 
     def _periodic_create_domains_that_failed(self, context):
 
-        create_statuses = self._get_failed_domains(context, CREATE_ACTION)
+        domains = self._get_failed_domains(context, CREATE_ACTION)
 
-        for create_status in create_statuses:
-            domain = self.central_api.get_domain(
-                context, create_status.domain_id)
-            server_backend = self._get_server_backend(create_status.server_id)
-            self._create_domain_on_server(
-                context, create_status, domain, server_backend)
+        for domain in domains:
+            create_statuses = self._retrieve_from_cache(
+                context, domain, CREATE_ACTION, check_server=True)
+            for create_status in create_statuses:
+                server_backend = self._get_server_backend(
+                    create_status.server_id)
+                self._create_domain_on_server(
+                    context, create_status, domain, server_backend)
 
     def _delete_domain_on_server(self, context, delete_status, domain,
                                  server_backend):
@@ -390,25 +396,27 @@ class Service(service.RPCService):
 
     def _periodic_delete_domains_that_failed(self, context):
 
-        delete_statuses = self._get_failed_domains(context, DELETE_ACTION)
+        domains = self._get_failed_domains(context, DELETE_ACTION)
 
-        # Used to retrieve a domain from Central that may have already been
-        # "deleted".
-        context.show_deleted = True
-
-        for delete_status in delete_statuses:
-            domain = self.central_api.get_domain(
-                context, delete_status.domain_id)
-            server_backend = self._get_server_backend(delete_status.server_id)
-            self._delete_domain_on_server(
-                context, delete_status, domain, server_backend)
+        for domain in domains:
+            delete_statuses = self._retrieve_from_cache(
+                context, domain, DELETE_ACTION, check_server=True)
+            for delete_status in delete_statuses:
+                server_backend = self._get_server_backend(
+                    delete_status.server_id)
+                self._delete_domain_on_server(
+                    context, delete_status, domain, server_backend)
 
     def _update_domain_on_server(self, context, domain, server_backend):
 
         server = server_backend['server']
 
-        self._notify_zone_changed(context, domain, server)
-        self._poll_for_serial_number(context, domain, server)
+        self.mdns_api.notify_zone_changed(
+            context, domain, server, self.timeout, self.retry_interval,
+            self.max_retries, 0)
+        self.mdns_api.poll_for_serial_number(
+            context, domain, server, self.timeout, self.retry_interval,
+            self.max_retries, self.delay)
         LOG.info(_LI('Updating domain %(domain)s '
                  'on server %(server)s.') %
                  {'domain': domain.name,
@@ -416,13 +424,15 @@ class Service(service.RPCService):
 
     def _periodic_update_domains_that_failed(self, context):
 
-        update_statuses = self._get_failed_domains(context, UPDATE_ACTION)
+        domains = self._get_failed_domains(context, UPDATE_ACTION)
 
-        for update_status in update_statuses:
-            domain = self.central_api.get_domain(
-                context, update_status.domain_id)
-            server_backend = self._get_server_backend(update_status.server_id)
-            self._update_domain_on_server(context, domain, server_backend)
+        for domain in domains:
+            update_statuses = self._retrieve_from_cache(
+                context, domain, UPDATE_ACTION, check_server=True)
+            for update_status in update_statuses:
+                server_backend = self._get_server_backend(
+                    update_status.server_id)
+                self._update_domain_on_server(context, domain, server_backend)
 
     def _get_failed_domains(self, context, action):
         criterion = {
@@ -431,16 +441,6 @@ class Service(service.RPCService):
             'status': 'ERROR'
         }
         return self.central_api.find_domains(context, criterion)
-
-    def _notify_zone_changed(self, context, domain, server):
-        self.mdns_api.notify_zone_changed(
-            context, domain, server, self.timeout, self.retry_interval,
-            self.max_retries, 0)
-
-    def _poll_for_serial_number(self, context, domain, server):
-        self.mdns_api.poll_for_serial_number(
-            context, domain, server, self.timeout, self.retry_interval,
-            self.max_retries, self.delay)
 
     def _get_server_backend(self, server_id):
         for server_backend in self.server_backends:
@@ -523,30 +523,15 @@ class Service(service.RPCService):
         return error_serial
 
     @staticmethod
-    def _build_status_object(server, domain, action, serial_number,
-                             status=None):
+    def _build_status_object(server, domain, action):
         values = {
             'server_id': server.id,
             'domain_id': domain.id,
-            'status': status,
-            'serial_number': serial_number,
+            'status': 'ERROR',
+            'serial_number': domain.serial if action != UPDATE_ACTION else 0,
             'action': action
         }
         return objects.PoolManagerStatus(**values)
-
-    def _build_create_status(self, server, domain):
-        return self._build_status_object(
-            server, domain, CREATE_ACTION, domain.serial)
-
-    def _build_delete_status(self, server, domain):
-        return self._build_status_object(
-            server, domain, DELETE_ACTION, domain.serial)
-
-    def _build_update_status(self, server, domain):
-        # Setting the update status to ERROR ensures the periodic
-        # recovery is run if there is a problem.
-        return self._build_status_object(
-            server, domain, UPDATE_ACTION, 0, status='ERROR')
 
     # Methods for manipulating the cache.
     def _clear_cache(self, context, domain, action):
@@ -561,7 +546,35 @@ class Service(service.RPCService):
         return len(self._retrieve_from_cache(
             context, domain=domain, action=action)) > 0
 
-    def _retrieve_from_cache(self, context, domain, action):
+    def _retrieve_from_mdns(self, context, server, domain, action):
+        (status, actual_serial, retries) = \
+            self.mdns_api.get_serial_number(
+                context, domain, server, self.timeout, self.retry_interval,
+                self.max_retries, self.delay)
+        pool_manager_status = self._build_status_object(server, domain, action)
+        if status == NO_DOMAIN_STATUS:
+            if action == CREATE_ACTION:
+                pool_manager_status.status = 'ERROR'
+            elif action == DELETE_ACTION:
+                pool_manager_status.status = 'SUCCESS'
+            # TODO(Ron): Handle this case properly.
+            elif action == UPDATE_ACTION:
+                pool_manager_status.status = 'ERROR'
+        else:
+            pool_manager_status.status = status
+        pool_manager_status.serial_number = actual_serial \
+            if actual_serial is not None else 0
+        LOG.debug('Retrieved status %s and serial %s for domain %s '
+                  'on server %s with action %s from mdns.' %
+                  (pool_manager_status.status,
+                   pool_manager_status.serial_number,
+                   domain.name, self._get_destination(server), action))
+        self.cache.store(context, pool_manager_status)
+
+        return pool_manager_status
+
+    def _retrieve_from_cache(self, context, domain, action,
+                             check_server=False):
         pool_manager_statuses = []
         for server_backend in self.server_backends:
             server = server_backend['server']
@@ -579,7 +592,12 @@ class Service(service.RPCService):
                           'for domain %s on server %s with action %s from '
                           'the cache.' %
                           (domain.name, self._get_destination(server), action))
-                pool_manager_status = None
+                if check_server:
+                    pool_manager_status = self._retrieve_from_mdns(
+                        context, server, domain, action)
+                else:
+                    pool_manager_status = None
+
             if pool_manager_status is not None:
                 pool_manager_statuses.append(pool_manager_status)
 
