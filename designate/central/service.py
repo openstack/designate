@@ -1047,7 +1047,7 @@ class Service(service.RPCService):
         self._is_valid_recordset_placement_subdomain(
             context, domain, recordset.name)
 
-        if recordset.records and len(recordset.records) > 0:
+        if recordset.obj_attr_is_set('records') and len(recordset.records) > 0:
             if increment_serial:
                 # update the zone's status and increment the serial
                 domain = self._update_domain_in_storage(
