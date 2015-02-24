@@ -179,10 +179,6 @@ class CentralServiceTest(CentralTestCase):
                                                       'www.example.net.')
         self.assertFalse(result)
 
-        LOG.debug("Testing 'example.org.'")
-        result = self.central_service._is_superdomain(context, 'example.org.')
-        self.assertTrue(result)
-
         LOG.debug("Testing 'www.example.org.'")
         result = self.central_service._is_superdomain(context,
                                                       'www.example.org.')
