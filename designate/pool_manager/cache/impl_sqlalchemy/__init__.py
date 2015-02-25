@@ -46,6 +46,11 @@ class SQLAlchemyPoolManagerCache(sqlalchemy_base.SQLAlchemy,
         return self.name
 
     def clear(self, context, pool_manager_status):
+        # If there is no id retrieve the relevant pool manager status
+        if not pool_manager_status.id:
+            pool_manager_status = self.retrieve(
+                context, pool_manager_status.server_id,
+                pool_manager_status.domain_id, pool_manager_status.action)
         self._delete(
             context, tables.pool_manager_statuses, pool_manager_status,
             exceptions.PoolManagerStatusNotFound)

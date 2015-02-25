@@ -113,9 +113,10 @@ class PoolManagerServiceMemcacheTest(PoolManagerTestCase):
     @patch.object(impl_fake.FakeBackend, 'create_domain')
     @patch.object(mdns_rpcapi.MdnsAPI, 'poll_for_serial_number')
     @patch.object(mdns_rpcapi.MdnsAPI, 'notify_zone_changed')
+    @patch.object(central_rpcapi.CentralAPI, 'update_status')
     def test_create_domain_backend_both_failure(
-            self, mock_notify_zone_changed, mock_poll_for_serial_number,
-            mock_create_domain):
+            self, mock_update_status, mock_notify_zone_changed,
+            mock_poll_for_serial_number, mock_create_domain):
 
         domain = self._build_domain('example.org.', 'CREATE', 'PENDING')
 
@@ -134,12 +135,16 @@ class PoolManagerServiceMemcacheTest(PoolManagerTestCase):
         self.assertEqual(False, mock_notify_zone_changed.called)
         self.assertEqual(False, mock_poll_for_serial_number.called)
 
+        mock_update_status.assert_called_once_with(
+            self.admin_context, domain.id, 'ERROR', domain.serial)
+
     @patch.object(impl_fake.FakeBackend, 'create_domain')
     @patch.object(mdns_rpcapi.MdnsAPI, 'poll_for_serial_number')
     @patch.object(mdns_rpcapi.MdnsAPI, 'notify_zone_changed')
+    @patch.object(central_rpcapi.CentralAPI, 'update_status')
     def test_create_domain_backend_one_failure(
-            self, mock_notify_zone_changed, mock_poll_for_serial_number,
-            mock_create_domain):
+            self, mock_update_status, mock_notify_zone_changed,
+            mock_poll_for_serial_number, mock_create_domain):
 
         domain = self._build_domain('example.org.', 'CREATE', 'PENDING')
 
@@ -159,6 +164,9 @@ class PoolManagerServiceMemcacheTest(PoolManagerTestCase):
         mock_poll_for_serial_number.assert_called_once_with(
             self.admin_context, domain,
             self.service.server_backends[0]['server'], 30, 2, 3, 1)
+
+        mock_update_status.assert_called_once_with(
+            self.admin_context, domain.id, 'ERROR', domain.serial)
 
     @patch.object(impl_fake.FakeBackend, 'create_domain')
     @patch.object(mdns_rpcapi.MdnsAPI, 'poll_for_serial_number')
