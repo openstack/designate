@@ -171,6 +171,33 @@ class DesignateObject(object):
         return instance
 
     @classmethod
+    def from_dict(cls, _dict):
+        instance = cls()
+
+        for field, value in _dict.items():
+            if (field in instance.FIELDS and
+                    instance.FIELDS[field].get('relation', False)):
+
+                # We're dealing with a relation, we'll want to create the
+                # correct object type and recurse
+                relation_cls = cls.obj_cls_from_name(
+                    instance.FIELDS[field]['relation_cls'])
+
+                if isinstance(value, list):
+                    setattr(instance, field, relation_cls.from_list(value))
+                else:
+                    setattr(instance, field, relation_cls.from_dict(value))
+
+            else:
+                setattr(instance, field, value)
+
+        return instance
+
+    @classmethod
+    def from_list(cls, _list):
+        raise NotImplementedError()
+
+    @classmethod
     def obj_name(cls):
         """Return a canonical name for this object which will be used over
         the wire and in validation schemas.
@@ -385,7 +412,11 @@ class DictObjectMixin(object):
 
 class ListObjectMixin(object):
     """Mixin to allow DesignateObjects to behave like python lists."""
-    FIELDS = {'objects': {}}
+    FIELDS = {
+        'objects': {
+            'relation': True
+        }
+    }
     LIST_ITEM_TYPE = DesignateObject
 
     @classmethod
@@ -404,6 +435,15 @@ class ListObjectMixin(object):
         instance._obj_changes = set(primitive['designate_object.changes'])
         instance._obj_original_values = \
             primitive['designate_object.original_values']
+
+        return instance
+
+    @classmethod
+    def from_list(cls, _list):
+        instance = cls()
+
+        for item in _list:
+            instance.append(cls.LIST_ITEM_TYPE.from_dict(item))
 
         return instance
 

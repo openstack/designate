@@ -55,7 +55,10 @@ class RecordSet(base.DictObjectMixin, base.PersistentObjectMixin,
         'type': {},
         'ttl': {},
         'description': {},
-        'records': {}
+        'records': {
+            'relation': True,
+            'relation_cls': 'RecordList'
+        },
     }
 
 
