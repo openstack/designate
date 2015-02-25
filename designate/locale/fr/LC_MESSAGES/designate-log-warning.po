@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Designate\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-02-16 06:28+0000\n"
-"PO-Revision-Date: 2015-02-12 20:10+0000\n"
+"POT-Creation-Date: 2015-02-25 06:29+0000\n"
+"PO-Revision-Date: 2015-02-24 20:26+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: French (http://www.transifex.com/projects/p/designate/"
 "language/fr/)\n"
@@ -84,7 +84,11 @@ msgstr "**** Étape manuelle de post-migration requise ****"
 msgid "Please issue this query: %s"
 msgstr "Veuillez lancer cette demande : %s"
 
-#: designate/central/service.py:931
+#: designate/central/service.py:60
+msgid "Deadlock detected. Retrying..."
+msgstr ""
+
+#: designate/central/service.py:992
 #, python-format
 msgid "Abandoning zone '%(zone)s'"
 msgstr ""
@@ -125,6 +129,13 @@ msgstr ""
 "L'appel à Neutron s'est traduit par un 401, veuillez procéder à des "
 "investigations."
 
+#: designate/notification_handler/base.py:123
+#: designate/notification_handler/base.py:175
+msgid ""
+"Deprecation notice: Unmanaged designate-sink records are being deprecated "
+"please update the call to remove managed=False"
+msgstr ""
+
 #: designate/openstack/common/loopingcall.py:87
 #, python-format
 msgid "task %(func_name)s run outlasted interval by %(delay).2f sec"
@@ -150,7 +161,7 @@ msgstr ""
 msgid "Failed to create domain %(domain)s on server %(server)s."
 msgstr ""
 
-#: designate/pool_manager/service.py:384
+#: designate/pool_manager/service.py:386
 #, python-format
 msgid "Failed to delete domain %(domain)s from server %(server)s."
 msgstr ""
