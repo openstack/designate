@@ -17,6 +17,7 @@ import binascii
 import socket
 
 import dns
+import dns.message
 import mock
 
 from designate import dnsutils

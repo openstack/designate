@@ -16,6 +16,7 @@
 import binascii
 
 import dns
+import dns.resolver
 import mock
 
 import designate

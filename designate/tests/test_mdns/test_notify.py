@@ -15,6 +15,9 @@
 import binascii
 
 import dns
+import dns.message
+import dns.query
+import dns.exception
 from mock import patch
 
 from designate.tests.test_mdns import MdnsTestCase

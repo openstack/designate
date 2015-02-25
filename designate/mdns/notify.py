@@ -15,6 +15,14 @@
 import time
 
 import dns
+import dns.rdataclass
+import dns.rdatatype
+import dns.exception
+import dns.query
+import dns.flags
+import dns.rcode
+import dns.message
+import dns.opcode
 from oslo import messaging
 from oslo.config import cfg
 from oslo_log import log as logging

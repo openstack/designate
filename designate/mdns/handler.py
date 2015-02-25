@@ -14,6 +14,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import dns
+import dns.flags
+import dns.opcode
+import dns.rcode
+import dns.rdataclass
+import dns.rdatatype
+import dns.message
 from oslo.config import cfg
 from oslo_log import log as logging
 
