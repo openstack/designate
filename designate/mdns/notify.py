@@ -36,7 +36,7 @@ CONF = cfg.CONF
 
 
 class NotifyEndpoint(object):
-    RPC_NOTIFY_API_VERSION = '1.0'
+    RPC_NOTIFY_API_VERSION = '1.1'
 
     target = messaging.Target(
         namespace='notify', version=RPC_NOTIFY_API_VERSION)
@@ -85,6 +85,29 @@ class NotifyEndpoint(object):
             an expected serial number. After this many retries, mindns returns
             an ERROR.
         :param delay: The time to wait before sending the first request.
+        :return: The pool manager is informed of the status with update_status.
+        """
+        (status, actual_serial, retries) = self.get_serial_number(
+            context, domain, server, timeout, retry_interval, max_retries,
+            delay)
+        self.pool_manager_api.update_status(
+            context, domain, server, status, actual_serial)
+
+    def get_serial_number(self, context, domain, server, timeout,
+                          retry_interval, max_retries, delay):
+        """
+        :param context: The user context.
+        :param domain: The designate domain object.  This contains the domain
+            name. domain.serial = expected_serial
+        :param server: server.host:server.port is checked for an updated serial
+            number.
+        :param timeout: The time (in seconds) to wait for a SOA response from
+            server.
+        :param retry_interval: The time (in seconds) between retries.
+        :param max_retries: The maximum number of retries mindns would do for
+            an expected serial number. After this many retries, mindns returns
+            an ERROR.
+        :param delay: The time to wait before sending the first request.
         :return: a tuple of (status, actual_serial, retries)
             status is either "SUCCESS" or "ERROR".
             actual_serial is either the serial number returned in the SOA
@@ -93,7 +116,6 @@ class NotifyEndpoint(object):
             The return value is just used for testing and not by pool manager.
             The pool manager is informed of the status with update_status.
         """
-        # Initialize actual_serial, status to FAILURE.
         actual_serial = None
         status = 'ERROR'
         retries = max_retries
@@ -101,7 +123,10 @@ class NotifyEndpoint(object):
         while (True):
             (response, retry) = self._make_and_send_dns_message(
                 domain, server, timeout, retry_interval, retries)
-            if response and len(response.answer) == 1 \
+            if response and response.rcode() in (dns.rcode.NXDOMAIN,
+                                                 dns.rcode.REFUSED):
+                status = 'NO_DOMAIN'
+            elif response and len(response.answer) == 1 \
                     and str(response.answer[0].name) == str(domain.name) \
                     and response.answer[0].rdclass == dns.rdataclass.IN \
                     and response.answer[0].rdtype == dns.rdatatype.SOA:
@@ -131,10 +156,7 @@ class NotifyEndpoint(object):
                 status = 'SUCCESS'
                 break
 
-        self.pool_manager_api.update_status(
-            context, domain, server, status, actual_serial)
-
-        # Return some values for testing purposes.
+        # Return retries for testing purposes.
         return (status, actual_serial, retries)
 
     def _make_and_send_dns_message(self, domain, server, timeout,
@@ -197,6 +219,11 @@ class NotifyEndpoint(object):
                 break
             # Check that we actually got a NOERROR in the rcode and and an
             # authoritative answer
+            elif response.rcode() in (dns.rcode.NXDOMAIN, dns.rcode.REFUSED):
+                LOG.info(_LI("%(zone)s not found on %(server)s:%(port)d") %
+                         {'zone': domain.name, 'server': dest_ip,
+                         'port': dest_port})
+                break
             elif not (response.flags & dns.flags.AA) or dns.rcode.from_flags(
                     response.flags, response.ednsflags) != dns.rcode.NOERROR:
                 LOG.warn(_LW("Failed to get expected response while trying to "
@@ -226,6 +253,8 @@ class NotifyEndpoint(object):
         if notify:
             dns_message.set_opcode(dns.opcode.NOTIFY)
         else:
+            # Setting the flags to RD causes BIND9 to respond with a NXDOMAIN.
+            dns_message.flags = dns.flags.RD
             dns_message.set_opcode(dns.opcode.QUERY)
 
         return dns_message
