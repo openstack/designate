@@ -170,6 +170,17 @@ class Service(service.RPCService):
             self._create_domain_on_server(
                 context, create_status, domain, server_backend)
 
+        if not self._is_create_consensus(context, domain):
+            status = ERROR_STATUS
+            LOG.warn(_LW('Consensus not reached '
+                         'for creating domain %(domain)s') %
+                     {'domain': domain.name})
+            self.central_api.update_status(
+                context, domain.id, status, domain.serial)
+
+        if self._is_create_consensus(context, domain, MAXIMUM_THRESHOLD):
+            self._clear_cache(context, domain, CREATE_ACTION)
+
     def delete_domain(self, context, domain):
         """
         :param context: Security context information.
@@ -185,14 +196,17 @@ class Service(service.RPCService):
             self._delete_domain_on_server(
                 context, delete_status, domain, server_backend)
 
-        if self._is_in_cache(context, domain, DELETE_ACTION) \
-                and not self._is_delete_consensus(context, domain):
+        if not self._is_delete_consensus(context, domain):
             status = ERROR_STATUS
             LOG.warn(_LW('Consensus not reached '
                          'for deleting domain %(domain)s') %
                      {'domain': domain.name})
             self.central_api.update_status(
                 context, domain.id, status, domain.serial)
+
+        if self._is_delete_consensus(context, domain, MAXIMUM_THRESHOLD):
+            # Clear all the entries from cache
+            self._clear_cache(context, domain)
 
     def update_domain(self, context, domain):
         """
@@ -289,6 +303,7 @@ class Service(service.RPCService):
 
         criterion = {
             'pool_id': cfg.CONF['service:pool_manager'].pool_id,
+            'status': '%s%s' % ('!', ERROR_STATUS)
         }
 
         periodic_sync_seconds = \
@@ -327,9 +342,6 @@ class Service(service.RPCService):
                      {'domain': domain.name,
                       'server': self._get_destination(server)})
 
-            if self._is_create_consensus(context, domain, MAXIMUM_THRESHOLD):
-                self._clear_cache(context, domain, CREATE_ACTION)
-
             # PowerDNS needs to explicitly send a NOTIFY for the AXFR to
             # happen whereas BIND9 does an AXFR implicitly after the domain
             # is created.  Sending a NOTIFY for all cases.
@@ -354,6 +366,8 @@ class Service(service.RPCService):
                     create_status.server_id)
                 self._create_domain_on_server(
                     context, create_status, domain, server_backend)
+            if self._is_create_consensus(context, domain, MAXIMUM_THRESHOLD):
+                self._clear_cache(context, domain, CREATE_ACTION)
 
     def _delete_domain_on_server(self, context, delete_status, domain,
                                  server_backend):
@@ -380,12 +394,6 @@ class Service(service.RPCService):
                 self.central_api.update_status(
                     context, domain.id, SUCCESS_STATUS, domain.serial)
 
-                if self._is_delete_consensus(context, domain,
-                                             MAXIMUM_THRESHOLD):
-                    # Clear all the entries from cache
-                    self._clear_cache(context, domain, CREATE_ACTION)
-                    self._clear_cache(context, domain, UPDATE_ACTION)
-                    self._clear_cache(context, domain, DELETE_ACTION)
         except exceptions.Backend:
             delete_status.status = ERROR_STATUS
             self.cache.store(context, delete_status)
@@ -406,6 +414,9 @@ class Service(service.RPCService):
                     delete_status.server_id)
                 self._delete_domain_on_server(
                     context, delete_status, domain, server_backend)
+            if self._is_delete_consensus(context, domain, MAXIMUM_THRESHOLD):
+                # Clear all the entries from cache
+                self._clear_cache(context, domain)
 
     def _update_domain_on_server(self, context, domain, server_backend):
 
@@ -534,11 +545,26 @@ class Service(service.RPCService):
         return objects.PoolManagerStatus(**values)
 
     # Methods for manipulating the cache.
-    def _clear_cache(self, context, domain, action):
-        pool_manager_statuses = self._retrieve_from_cache(
-            context, domain, action)
+    def _clear_cache(self, context, domain, action=None):
+        pool_manager_statuses = []
+        if action:
+            actions = [action]
+        else:
+            actions = [CREATE_ACTION, UPDATE_ACTION, DELETE_ACTION]
+
+        for server_backend in self.server_backends:
+            server = server_backend['server']
+            for action in actions:
+                pool_manager_status = self._build_status_object(
+                    server, domain, action)
+                pool_manager_statuses.append(pool_manager_status)
+
         for pool_manager_status in pool_manager_statuses:
-            self.cache.clear(context, pool_manager_status)
+            # Ignore any not found errors while clearing the cache
+            try:
+                self.cache.clear(context, pool_manager_status)
+            except exceptions.PoolManagerStatusNotFound:
+                pass
         LOG.debug('Cleared cache for domain %s with action %s.' %
                   (domain.name, action))
 
