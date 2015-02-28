@@ -91,18 +91,18 @@ as it allows particular rules to be explicitly disabled.
 import abc
 import ast
 import copy
+import logging
 import os
 import re
 
-from oslo.config import cfg
-from oslo_log import log as logging
-from oslo.serialization import jsonutils
+from oslo_config import cfg
+from oslo_serialization import jsonutils
 import six
 import six.moves.urllib.parse as urlparse
 import six.moves.urllib.request as urlrequest
 
 from designate.openstack.common import fileutils
-from designate.openstack.common._i18n import _, _LE, _LI
+from designate.openstack.common._i18n import _, _LE
 
 
 policy_opts = [
@@ -120,7 +120,8 @@ policy_opts = [
                            'in the search path defined by the config_dir '
                            'option, or absolute paths. The file defined by '
                            'policy_file must exist for these directories to '
-                           'be searched.')),
+                           'be searched.  Missing or empty directories are '
+                           'ignored.')),
 ]
 
 CONF = cfg.CONF
@@ -132,7 +133,7 @@ _checks = {}
 
 
 def list_opts():
-    """Entry point for oslo.config-generator."""
+    """Entry point for oslo-config-generator."""
     return [(None, copy.deepcopy(policy_opts))]
 
 
@@ -272,7 +273,6 @@ class Enforcer(object):
                 try:
                     path = self._get_policy_path(path)
                 except cfg.ConfigFilesNotFoundError:
-                    LOG.info(_LI("Can not find policy directory: %s"), path)
                     continue
                 self._walk_through_policy_directory(path,
                                                     self._load_policy_file,
@@ -292,7 +292,8 @@ class Enforcer(object):
             if reloaded or not self.rules or not overwrite:
                 rules = Rules.load_json(data, self.default_rule)
                 self.set_rules(rules, overwrite=overwrite, use_conf=True)
-                LOG.debug("Rules successfully reloaded")
+                LOG.debug("Reloaded policy file: %(path)s",
+                          {'path': path})
 
     def _get_policy_path(self, path):
         """Locate the policy json data file/path.

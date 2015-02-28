@@ -18,8 +18,8 @@
 
 import copy
 
-from oslo.config import cfg
-from oslo.utils import timeutils
+from oslo_config import cfg
+from oslo_utils import timeutils
 
 memcache_opts = [
     cfg.ListOpt('memcached_servers',
@@ -31,7 +31,7 @@ CONF.register_opts(memcache_opts)
 
 
 def list_opts():
-    """Entry point for oslo.config-generator."""
+    """Entry point for oslo-config-generator."""
     return [(None, copy.deepcopy(memcache_opts))]
 
 

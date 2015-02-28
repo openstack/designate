@@ -19,17 +19,16 @@ from __future__ import print_function
 import copy
 import errno
 import gc
+import logging
 import os
 import pprint
 import socket
 import sys
 import traceback
 
-import eventlet
 import eventlet.backdoor
 import greenlet
-from oslo.config import cfg
-from oslo_log import log as logging
+from oslo_config import cfg
 
 from designate.openstack.common._i18n import _LI
 
@@ -51,7 +50,7 @@ LOG = logging.getLogger(__name__)
 
 
 def list_opts():
-    """Entry point for oslo.config-generator.
+    """Entry point for oslo-config-generator.
     """
     return [(None, copy.deepcopy(eventlet_backdoor_opts))]
 

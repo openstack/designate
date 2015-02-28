@@ -16,7 +16,7 @@ import copy
 import os
 import ssl
 
-from oslo.config import cfg
+from oslo_config import cfg
 
 from designate.openstack.common._i18n import _
 
@@ -39,7 +39,7 @@ CONF.register_opts(ssl_opts, config_section)
 
 
 def list_opts():
-    """Entry point for oslo.config-generator."""
+    """Entry point for oslo-config-generator."""
     return [(config_section, copy.deepcopy(ssl_opts))]
 
 
