@@ -13,6 +13,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from mock import Mock
+
 from designate.pool_manager import cache
 from designate.tests import TestCase
 from designate.tests.test_pool_manager.cache import PoolManagerCacheTestCase
@@ -23,6 +25,11 @@ class MemcachePoolManagerCacheTest(PoolManagerCacheTestCase, TestCase):
         super(MemcachePoolManagerCacheTest, self).setUp()
 
         self.cache = cache.get_pool_manager_cache('memcache')
+        self.mock_status = Mock(
+            server_id='server_id',
+            domain_id='domain_id',
+            action='CREATE',
+        )
 
     def test_store_and_retrieve(self):
         expected = self.create_pool_manager_status()
@@ -37,3 +44,23 @@ class MemcachePoolManagerCacheTest(PoolManagerCacheTestCase, TestCase):
         self.assertEqual(expected.status, actual.status)
         self.assertEqual(expected.serial_number, actual.serial_number)
         self.assertEqual(expected.action, actual.action)
+
+    def test_serial_number_key_is_a_string(self):
+        """Memcache requires keys be strings.
+
+        RabbitMQ messages are unicode by default, so any string
+        interpolation requires explicit encoding.
+        """
+        key = self.cache._build_serial_number_key(self.mock_status)
+        self.assertIsInstance(key, str)
+        self.assertEqual(key, 'server_id-domain_id-CREATE-serial_number')
+
+    def test_status_key_is_a_string(self):
+        """Memcache requires keys be strings.
+
+        RabbitMQ messages are unicode by default, so any string
+        interpolation requires explicit encoding.
+        """
+        key = self.cache._build_status_key(self.mock_status)
+        self.assertIsInstance(key, str)
+        self.assertEqual(key, 'server_id-domain_id-CREATE-status')

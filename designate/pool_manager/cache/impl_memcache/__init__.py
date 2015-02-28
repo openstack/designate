@@ -90,13 +90,17 @@ class MemcachePoolManagerCache(cache_base.PoolManagerCache):
         return pool_manager_status
 
     @staticmethod
-    def _build_serial_number_key(pool_manager_status):
-        return '%s-%s-%s-serial_number' % \
-               (pool_manager_status.server_id, pool_manager_status.domain_id,
-                pool_manager_status.action)
+    def _status_key(pool_manager_status, tail):
+        key = '{server}-{domain}-{action}-{tail}'.format(
+            server=pool_manager_status.server_id,
+            domain=pool_manager_status.domain_id,
+            action=pool_manager_status.action,
+            tail=tail
+        )
+        return key.encode('utf-8')
 
-    @staticmethod
-    def _build_status_key(pool_manager_status):
-        return '%s-%s-%s-status' % \
-               (pool_manager_status.server_id, pool_manager_status.domain_id,
-                pool_manager_status.action)
+    def _build_serial_number_key(self, pool_manager_status):
+        return self._status_key(pool_manager_status, 'serial_number')
+
+    def _build_status_key(self, pool_manager_status):
+        return self._status_key(pool_manager_status, 'status')
