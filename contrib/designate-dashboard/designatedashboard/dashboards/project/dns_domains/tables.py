@@ -16,6 +16,7 @@ import logging
 from django.core import urlresolvers
 from django.utils.translation import ugettext_lazy as _  # noqa
 
+from horizon import exceptions
 from horizon import tables
 
 from designatedashboard import api
@@ -108,7 +109,20 @@ class EditRecord(tables.LinkAction):
         return record.type in EDITABLE_RECORD_TYPES
 
 
-class DeleteRecord(tables.BatchAction):
+class DeleteRecord(tables.DeleteAction):
+
+    '''Link action for navigating to the UpdateRecord view.'''
+    data_type_singular = _("Record")
+
+    def delete(self, request, record_id):
+        domain_id = self.table.kwargs['domain_id']
+        return api.designate.record_delete(request, domain_id, record_id)
+
+    def allowed(self, request, record=None):
+        return record.type in EDITABLE_RECORD_TYPES
+
+
+class BatchDeleteRecord(tables.BatchAction):
 
     '''Batch action for deleting domain records.'''
 
@@ -116,15 +130,11 @@ class DeleteRecord(tables.BatchAction):
     action_present = _("Delete")
     action_past = _("Deleted")
     data_type_singular = _("Record")
-    data_type_plural = _("Records")
     classes = ('btn-danger', 'btn-delete')
 
     def action(self, request, record_id):
         domain_id = self.table.kwargs['domain_id']
         api.designate.record_delete(request, domain_id, record_id)
-
-    def allowed(self, request, record=None):
-        return record.type in EDITABLE_RECORD_TYPES
 
 
 class DomainsTable(tables.DataTable):
@@ -189,5 +199,6 @@ class RecordsTable(tables.DataTable):
     class Meta:
         name = "records"
         verbose_name = _("Records")
-        table_actions = (CreateRecord, DeleteRecord,)
+        table_actions = (CreateRecord,)
         row_actions = (EditRecord, DeleteRecord,)
+        multi_select = False

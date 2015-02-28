@@ -12,10 +12,17 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from designateclient import exceptions as designateclient
 from openstack_dashboard import exceptions
 
-NOT_FOUND = exceptions.NOT_FOUND
-RECOVERABLE = exceptions.RECOVERABLE
-# + (solumclient.ClientException,)
-UNAUTHORIZED = exceptions.UNAUTHORIZED
+NOT_FOUND = exceptions.NOT_FOUND + (
+    designateclient.ResourceNotFound,
+    designateclient.NotFound,
+    )
+RECOVERABLE = exceptions.RECOVERABLE + (
+    designateclient.BadRequest,
+    designateclient.Conflict,
+    )
+UNAUTHORIZED = exceptions.UNAUTHORIZED + (
+    designateclient.Forbidden,
+    )
