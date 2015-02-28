@@ -16,11 +16,11 @@
 from oslo.config import cfg
 from oslo_log import log as logging
 
+from designate import utils
 from designate import dnsutils
 from designate import service
 from designate.agent import handler
 from designate.backend import agent_backend
-from designate.i18n import _LI
 
 
 LOG = logging.getLogger(__name__)
@@ -28,23 +28,30 @@ CONF = cfg.CONF
 
 
 class Service(service.DNSService):
-    def __init__(self, *args, **kwargs):
-        super(Service, self).__init__(cfg.CONF['service:agent'], *args,
-                                      **kwargs)
+    def __init__(self, threads=None):
+        super(Service, self).__init__(threads=threads)
 
         backend_driver = cfg.CONF['service:agent'].backend_driver
         self.backend = agent_backend.get_backend(backend_driver, self)
 
-        # Create an instance of the RequestHandler class
-        self.application = handler.RequestHandler()
+    @property
+    def service_name(self):
+        return 'agent'
 
-        self.application = dnsutils.DNSMiddleware(self.application)
+    @property
+    @utils.cache_result
+    def _dns_application(self):
+        # Create an instance of the RequestHandler class
+        application = handler.RequestHandler()
+        application = dnsutils.DNSMiddleware(application)
+
+        return application
 
     def start(self):
         super(Service, self).start()
         self.backend.start()
-        LOG.info(_LI("Started Agent Service"))
 
     def stop(self):
         super(Service, self).stop()
-        LOG.info(_LI("Stopped Agent Service"))
+        # TODO(kiall): Shouldn't we be stppping the backend here too? To fix
+        #              in another review.

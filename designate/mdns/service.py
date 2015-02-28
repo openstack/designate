@@ -16,23 +16,20 @@
 from oslo.config import cfg
 from oslo_log import log as logging
 
+from designate import utils
 from designate import dnsutils
 from designate import service
 from designate.mdns import handler
 from designate.mdns import middleware
 from designate.mdns import notify
-from designate.i18n import _LI
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
 
 
 class Service(service.RPCService):
-    def __init__(self, *args, **kwargs):
-        notify_endpoint = notify.NotifyEndpoint()
-        kwargs['endpoints'] = [notify_endpoint]
-
-        super(Service, self).__init__(*args, **kwargs)
+    def __init__(self, threads=None):
+        super(Service, self).__init__(threads=threads)
 
         # Create an instance of the RequestHandler class
         self.application = handler.RequestHandler()
@@ -50,6 +47,15 @@ class Service(service.RPCService):
         self._sock_udp = dnsutils.bind_udp(
             CONF['service:mdns'].host, CONF['service:mdns'].port)
 
+    @property
+    def service_name(self):
+        return 'mdns'
+
+    @property
+    @utils.cache_result
+    def _rpc_endpoints(self):
+        return [notify.NotifyEndpoint()]
+
     def start(self):
         super(Service, self).start()
 
@@ -59,10 +65,8 @@ class Service(service.RPCService):
         self.tg.add_thread(
             dnsutils.handle_udp, self._sock_udp, self.tg, dnsutils.handle,
             self.application)
-        LOG.info(_LI("started mdns service"))
 
     def stop(self):
         # When the service is stopped, the threads for _handle_tcp and
         # _handle_udp are stopped too.
         super(Service, self).stop()
-        LOG.info(_LI("stopped mdns service"))
