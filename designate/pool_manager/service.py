@@ -59,7 +59,7 @@ def wrap_backend_call():
         raise exceptions.Backend('Unknown backend failure: %r' % e)
 
 
-class Service(service.RPCService):
+class Service(service.RPCService, service.Service):
     """
     Service side of the Pool Manager RPC API.
 

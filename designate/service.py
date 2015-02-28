@@ -93,12 +93,12 @@ class Service(service.Service):
         super(Service, self).stop()
 
 
-class RPCService(Service):
+class RPCService(object):
     """
-    Service class to be shared by all Designate RPC Services
+    RPC Service mixin used by all Designate RPC Services
     """
-    def __init__(self, threads=None):
-        super(RPCService, self).__init__(threads)
+    def __init__(self, *args, **kwargs):
+        super(RPCService, self).__init__(*args, **kwargs)
 
         LOG.debug(_("Creating RPC Server on topic '%s'") % self._rpc_topic)
         self._rpc_server = rpc.get_server(
@@ -150,12 +150,12 @@ class RPCService(Service):
 
 
 @six.add_metaclass(abc.ABCMeta)
-class WSGIService(Service):
+class WSGIService(object):
     """
-    Service class to be shared by all Designate WSGI Services
+    WSGI Service mixin used by all Designate WSGI Services
     """
-    def __init__(self, threads=None):
-        super(WSGIService, self).__init__(threads)
+    def __init__(self, *args, **kwargs):
+        super(WSGIService, self).__init__(*args, **kwargs)
 
     @abc.abstractproperty
     def _wsgi_application(self):
@@ -222,12 +222,12 @@ class WSGIService(Service):
 
 
 @six.add_metaclass(abc.ABCMeta)
-class DNSService(Service):
+class DNSService(object):
     """
-    Service class to be used for a service that only works in TCP
+    DNS Service mixin used by all Designate DNS Services
     """
-    def __init__(self, threads=None):
-        super(DNSService, self).__init__(threads)
+    def __init__(self, *args, **kwargs):
+        super(DNSService, self).__init__(*args, **kwargs)
 
         self._dns_sock_tcp = dnsutils.bind_tcp(
             self._service_config.host,
