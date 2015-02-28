@@ -17,35 +17,18 @@ from oslo.config import cfg
 from oslo_log import log as logging
 
 from designate import utils
-from designate import dnsutils
 from designate import service
+from designate import dnsutils
 from designate.mdns import handler
-from designate.mdns import middleware
 from designate.mdns import notify
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
 
 
-class Service(service.RPCService, service.Service):
+class Service(service.DNSService, service.RPCService, service.Service):
     def __init__(self, threads=None):
         super(Service, self).__init__(threads=threads)
-
-        # Create an instance of the RequestHandler class
-        self.application = handler.RequestHandler()
-
-        # Wrap the application in any middleware required
-        # TODO(kiall): In the future, we want to allow users to pick+choose
-        #              the middleware to be applied, similar to how we do this
-        #              in the API.
-        self.application = middleware.ContextMiddleware(self.application)
-
-        self._sock_tcp = dnsutils.bind_tcp(
-            CONF['service:mdns'].host, CONF['service:mdns'].port,
-            CONF['service:mdns'].tcp_backlog)
-
-        self._sock_udp = dnsutils.bind_udp(
-            CONF['service:mdns'].host, CONF['service:mdns'].port)
 
     @property
     def service_name(self):
@@ -56,17 +39,12 @@ class Service(service.RPCService, service.Service):
     def _rpc_endpoints(self):
         return [notify.NotifyEndpoint()]
 
-    def start(self):
-        super(Service, self).start()
+    @property
+    @utils.cache_result
+    def _dns_application(self):
+        # Create an instance of the RequestHandler class
+        application = handler.RequestHandler()
+        application = dnsutils.ContextMiddleware(application)
+        application = dnsutils.SerializationMiddleware(application)
 
-        self.tg.add_thread(
-            dnsutils.handle_tcp, self._sock_tcp, self.tg, dnsutils.handle,
-            self.application, timeout=CONF['service:mdns'].tcp_recv_timeout)
-        self.tg.add_thread(
-            dnsutils.handle_udp, self._sock_udp, self.tg, dnsutils.handle,
-            self.application)
-
-    def stop(self):
-        # When the service is stopped, the threads for _handle_tcp and
-        # _handle_udp are stopped too.
-        super(Service, self).stop()
+        return application

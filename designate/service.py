@@ -19,6 +19,7 @@
 #    under the License.
 import abc
 import socket
+import struct
 import errno
 import time
 
@@ -32,6 +33,9 @@ from oslo_log import loggers
 from designate.openstack.common import service
 from designate.openstack.common import sslutils
 from designate.i18n import _
+from designate.i18n import _LE
+from designate.i18n import _LI
+from designate.i18n import _LW
 from designate import rpc
 from designate import policy
 from designate import version
@@ -161,6 +165,14 @@ class WSGIService(object):
     def _wsgi_application(self):
         pass
 
+    def start(self):
+        super(WSGIService, self).start()
+
+        socket = self._wsgi_get_socket()
+        application = self._wsgi_application
+
+        self.tg.add_thread(self._wsgi_handle, application, socket)
+
     def _wsgi_get_socket(self):
         # TODO(dims): eventlet's green dns/socket module does not actually
         # support IPv6 in getaddrinfo(). We need to get around this in the
@@ -205,14 +217,6 @@ class WSGIService(object):
 
         return sock
 
-    def start(self):
-        super(WSGIService, self).start()
-
-        socket = self._wsgi_get_socket()
-        application = self._wsgi_application
-
-        self.tg.add_thread(self._wsgi_handle, application, socket)
-
     def _wsgi_handle(self, application, socket):
         logger = logging.getLogger('eventlet.wsgi')
         eventlet.wsgi.server(socket,
@@ -245,13 +249,8 @@ class DNSService(object):
     def start(self):
         super(DNSService, self).start()
 
-        self.tg.add_thread(
-            dnsutils.handle_tcp, self._dns_sock_tcp, self.tg, dnsutils.handle,
-            self._dns_application, self._service_config.tcp_recv_timeout)
-
-        self.tg.add_thread(
-            dnsutils.handle_udp, self._dns_sock_udp, self.tg, dnsutils.handle,
-            self._dns_application)
+        self.tg.add_thread(self._dns_handle_tcp)
+        self.tg.add_thread(self._dns_handle_udp)
 
     def wait(self):
         super(DNSService, self).wait()
@@ -261,6 +260,85 @@ class DNSService(object):
         # _handle_udp are stopped too.
         super(DNSService, self).stop()
 
+    def _dns_handle_tcp(self):
+        LOG.info(_LI("_handle_tcp thread started"))
+
+        while True:
+            client, addr = self._dns_sock_tcp.accept()
+
+            if self._service_config.tcp_recv_timeout:
+                client.settimeout(self._service_config.tcp_recv_timeout)
+
+            LOG.debug("Handling TCP Request from: %(host)s:%(port)d" %
+                      {'host': addr[0], 'port': addr[1]})
+
+            # Prepare a variable for the payload to be buffered
+            payload = ""
+
+            try:
+                # Receive the first 2 bytes containing the payload length
+                expected_length_raw = client.recv(2)
+                (expected_length, ) = struct.unpack('!H', expected_length_raw)
+
+                # Keep receiving data until we've got all the data we expect
+                while len(payload) < expected_length:
+                    data = client.recv(65535)
+                    if not data:
+                        break
+                    payload += data
+
+            except socket.timeout:
+                client.close()
+                LOG.warn(_LW("TCP Timeout from: %(host)s:%(port)d") %
+                         {'host': addr[0], 'port': addr[1]})
+
+            # Dispatch a thread to handle the query
+            self.tg.add_thread(self._dns_handle, addr, payload, client=client)
+
+    def _dns_handle_udp(self):
+        LOG.info(_LI("_handle_udp thread started"))
+
+        while True:
+            # TODO(kiall): Determine the appropriate default value for
+            #              UDP recvfrom.
+            payload, addr = self._dns_sock_udp.recvfrom(8192)
+
+            LOG.debug("Handling UDP Request from: %(host)s:%(port)d" %
+                     {'host': addr[0], 'port': addr[1]})
+
+            self.tg.add_thread(self._dns_handle, addr, payload)
+
+    def _dns_handle(self, addr, payload, client=None):
+        """
+        Handle a DNS Query
+
+        :param addr: Tuple of the client's (IP, Port)
+        :param payload: Raw DNS query payload
+        :param client: Client socket (for TCP only)
+        """
+        try:
+            # Call into the DNS Application itself with the payload and addr
+            response = self._dns_application({
+                'payload': payload,
+                'addr': addr
+            })
+
+            # Send back a response only if present
+            if response is not None:
+                if client:
+                    # Handle TCP Responses
+                    msg_length = len(response)
+                    tcp_response = struct.pack("!H", msg_length) + response
+                    client.send(tcp_response)
+                    client.close()
+                else:
+                    # Handle UDP Responses
+                    self._dns_sock_udp.sendto(response, addr)
+
+        except Exception:
+            LOG.exception(_LE("Unhandled exception while processing request "
+                              "from %(host)s:%(port)d") %
+                          {'host': addr[0], 'port': addr[1]})
 
 _launcher = None
 
