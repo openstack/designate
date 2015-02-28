@@ -19,7 +19,6 @@ import copy
 from oslo_context import context
 from oslo_log import log as logging
 
-from designate.openstack.common import local
 from designate import policy
 
 
@@ -34,8 +33,9 @@ class DesignateContext(context.RequestContext):
     def __init__(self, auth_token=None, user=None, tenant=None, domain=None,
                  user_domain=None, project_domain=None, is_admin=False,
                  read_only=False, show_deleted=False, request_id=None,
-                 resource_uuid=None, roles=None, service_catalog=None,
-                 all_tenants=False, user_identity=None, abandon=None):
+                 resource_uuid=None, overwrite=True, roles=None,
+                 service_catalog=None, all_tenants=False, user_identity=None,
+                 abandon=None):
         # NOTE: user_identity may be passed in, but will be silently dropped as
         #       it is a generated field based on several others.
 
@@ -51,19 +51,14 @@ class DesignateContext(context.RequestContext):
             read_only=read_only,
             show_deleted=show_deleted,
             request_id=request_id,
-            resource_uuid=resource_uuid)
+            resource_uuid=resource_uuid,
+            overwrite=overwrite)
 
         self.roles = roles
         self.service_catalog = service_catalog
 
         self.all_tenants = all_tenants
         self.abandon = abandon
-
-        if not hasattr(local.store, 'context'):
-            self.update_store()
-
-    def update_store(self):
-        local.store.context = self
 
     def deepcopy(self):
         d = self.to_dict()
