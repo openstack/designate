@@ -289,6 +289,7 @@ class StorageTestCase(object):
         self.assertEqual(result['name'], values['name'])
         self.assertEqual(result['algorithm'], values['algorithm'])
         self.assertEqual(result['secret'], values['secret'])
+        self.assertEqual(result['scope'], values['scope'])
 
     def test_create_tsigkey_duplicate(self):
         # Create the Initial TsigKey
@@ -313,6 +314,7 @@ class StorageTestCase(object):
         self.assertEqual(tsig['name'], actual[0]['name'])
         self.assertEqual(tsig['algorithm'], actual[0]['algorithm'])
         self.assertEqual(tsig['secret'], actual[0]['secret'])
+        self.assertEqual(tsig['scope'], actual[0]['scope'])
 
     def test_find_tsigkeys_paging(self):
         # Create 10 TSIG Keys
@@ -355,6 +357,7 @@ class StorageTestCase(object):
         self.assertEqual(actual['name'], expected['name'])
         self.assertEqual(actual['algorithm'], expected['algorithm'])
         self.assertEqual(actual['secret'], expected['secret'])
+        self.assertEqual(actual['scope'], expected['scope'])
 
     def test_get_tsigkey_missing(self):
         with testtools.ExpectedException(exceptions.TsigKeyNotFound):

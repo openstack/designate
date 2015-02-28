@@ -20,7 +20,9 @@ class TsigKey(base.DictObjectMixin, base.PersistentObjectMixin,
     FIELDS = {
         'name': {},
         'algorithm': {},
-        'secret': {}
+        'secret': {},
+        'scope': {},
+        'resource_id': {},
     }
 
 

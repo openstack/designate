@@ -32,6 +32,7 @@ RECORD_TYPES = ['A', 'AAAA', 'CNAME', 'MX', 'SRV', 'TXT', 'SPF', 'NS', 'PTR',
 TASK_STATUSES = ['ACTIVE', 'PENDING', 'DELETED', 'ERROR', 'COMPLETE']
 TSIG_ALGORITHMS = ['hmac-md5', 'hmac-sha1', 'hmac-sha224', 'hmac-sha256',
                    'hmac-sha384', 'hmac-sha512']
+TSIG_SCOPES = ['POOL', 'ZONE']
 POOL_PROVISIONERS = ['UNMANAGED']
 ACTIONS = ['CREATE', 'DELETE', 'UPDATE', 'NONE']
 
@@ -170,6 +171,8 @@ tsigkeys = Table('tsigkeys', metadata,
     Column('algorithm', Enum(name='tsig_algorithms', *TSIG_ALGORITHMS),
            nullable=False),
     Column('secret', String(255), nullable=False),
+    Column('scope', Enum(name='tsig_scopes', *TSIG_SCOPES), nullable=False),
+    Column('resource_id', UUID, nullable=False),
 
     mysql_engine='InnoDB',
     mysql_charset='utf8',

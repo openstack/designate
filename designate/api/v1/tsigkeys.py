@@ -15,6 +15,7 @@
 # under the License.
 import flask
 from oslo_log import log as logging
+from oslo.config import cfg
 
 from designate import schema
 from designate.central import rpcapi as central_rpcapi
@@ -25,6 +26,7 @@ LOG = logging.getLogger(__name__)
 blueprint = flask.Blueprint('tsigkeys', __name__)
 tsigkey_schema = schema.Schema('v1', 'tsigkey')
 tsigkeys_schema = schema.Schema('v1', 'tsigkeys')
+default_pool_id = cfg.CONF['service:central'].default_pool_id
 
 
 @blueprint.route('/schemas/tsigkey', methods=['GET'])
@@ -45,8 +47,15 @@ def create_tsigkey():
     central_api = central_rpcapi.CentralAPI.get_instance()
 
     tsigkey_schema.validate(values)
-    tsigkey = central_api.create_tsigkey(
-        context, tsigkey=TsigKey(**values))
+
+    tsigkey = TsigKey.from_dict(values)
+
+    # The V1 API only deals with the default pool, so we restrict the view
+    # of TSIG Keys to those scoped to the default pool.
+    tsigkey.scope = 'POOL'
+    tsigkey.resource_id = default_pool_id
+
+    tsigkey = central_api.create_tsigkey(context, tsigkey)
 
     response = flask.jsonify(tsigkey_schema.filter(tsigkey))
     response.status_int = 201
@@ -60,7 +69,9 @@ def get_tsigkeys():
     context = flask.request.environ.get('context')
 
     central_api = central_rpcapi.CentralAPI.get_instance()
-    tsigkeys = central_api.find_tsigkeys(context)
+
+    criterion = {'scope': 'POOL', 'resource_id': default_pool_id}
+    tsigkeys = central_api.find_tsigkeys(context, criterion)
 
     return flask.jsonify(tsigkeys_schema.filter({'tsigkeys': tsigkeys}))
 
@@ -70,7 +81,14 @@ def get_tsigkey(tsigkey_id):
     context = flask.request.environ.get('context')
 
     central_api = central_rpcapi.CentralAPI.get_instance()
-    tsigkey = central_api.get_tsigkey(context, tsigkey_id)
+
+    criterion = {
+        'scope': 'POOL',
+        'resource_id': default_pool_id,
+        'id': tsigkey_id,
+    }
+
+    tsigkey = central_api.find_tsigkey(context, criterion)
 
     return flask.jsonify(tsigkey_schema.filter(tsigkey))
 
@@ -82,8 +100,14 @@ def update_tsigkey(tsigkey_id):
 
     central_api = central_rpcapi.CentralAPI.get_instance()
 
-    # Fetch the existing resource
-    tsigkey = central_api.get_tsigkey(context, tsigkey_id)
+    # Fetch the existing tsigkey
+    criterion = {
+        'scope': 'POOL',
+        'resource_id': default_pool_id,
+        'id': tsigkey_id,
+    }
+
+    tsigkey = central_api.find_tsigkey(context, criterion)
 
     # Prepare a dict of fields for validation
     tsigkey_data = tsigkey_schema.filter(tsigkey)
@@ -104,6 +128,17 @@ def delete_tsigkey(tsigkey_id):
     context = flask.request.environ.get('context')
 
     central_api = central_rpcapi.CentralAPI.get_instance()
+
+    # Fetch the existing resource, this ensures the key to be deleted has the
+    # correct scope/resource_id values, otherwise it will trigger a 404.
+    criterion = {
+        'scope': 'POOL',
+        'resource_id': default_pool_id,
+        'id': tsigkey_id,
+    }
+    central_api.find_tsigkey(context, criterion)
+
+    # Delete the TSIG Key
     central_api.delete_tsigkey(context, tsigkey_id)
 
     return flask.Response(status=200)

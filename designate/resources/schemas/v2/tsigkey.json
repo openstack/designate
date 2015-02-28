@@ -1,0 +1,76 @@
+{
+    "$schema": "http://json-schema.org/draft-04/hyper-schema",
+
+    "id": "tsigkey",
+
+    "title": "tsigkey",
+    "description": "TSIG Key",
+    "additionalProperties": false,
+
+    "required": ["tsigkey"],
+
+    "properties": {
+        "tsigkey": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "algorithm", "secret", "scope", "resource_id"],
+
+            "properties":{
+                "id": {
+                    "type": "string",
+                    "description": "TSIG Key Identifier",
+                    "format": "uuid",
+                    "readOnly": true
+                },
+                "name": {
+                    "type": "string",
+                    "description": "TSIG Key Name",
+                    "maxLength": 255
+                },
+                "algorithm": {
+                    "type": "string",
+                    "description": "TSIG Algorithm",
+                    "enum": ["hmac-md5", "hmac-sha1", "hmac-sha224", "hmac-sha256", "hmac-sha384", "hmac-sha512"]
+                },
+                "secret": {
+                    "type": "string",
+                    "description": "TSIG Secret",
+                    "maxLength": 255
+                },
+                "scope": {
+                    "type": "string",
+                    "description": "TSIG Key Scope",
+                    "enum": ["POOL", "ZONE"]
+                },
+                "resource_id": {
+                    "type": "string",
+                    "description": "TSIG Key Resource ID",
+                    "format": "uuid"
+                },
+                "created_at": {
+                    "type": "string",
+                    "description": "Date and time of tsigkeyed zone creation",
+                    "format": "date-time",
+                    "readOnly": true
+                },
+                "updated_at": {
+                    "type": ["string", "null"],
+                    "description": "Date and time of last tsigkeyed zone update",
+                    "format": "date-time",
+                    "readOnly": true
+                },
+                "links": {
+                    "type": "object",
+                    "additionalProperties": false,
+
+                    "properties": {
+                        "self": {
+                            "type": "string",
+                            "format": "url"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
