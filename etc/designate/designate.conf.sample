@@ -60,7 +60,7 @@ debug = False
 ## Managed resources settings
 
 # Email to use for managed resources like domains created by the FloatingIP API
-#managed_resource_email = root@example.io.
+#managed_resource_email = hostmaster@example.com.
 
 # Tenant ID to own all managed resources - like auto-created records etc.
 #managed_resource_tenant_id = 123456
