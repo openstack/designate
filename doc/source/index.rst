@@ -40,6 +40,7 @@ Reference Documentation
 
    architecture
    getting-involved
+   developer-guidelines
    configuration
    rest
    devstack
