@@ -18,6 +18,7 @@ from oslo_log import log as logging
 
 from designate import utils
 from designate import service
+from designate import storage
 from designate import dnsutils
 from designate.mdns import handler
 from designate.mdns import notify
@@ -29,6 +30,9 @@ CONF = cfg.CONF
 class Service(service.DNSService, service.RPCService, service.Service):
     def __init__(self, threads=None):
         super(Service, self).__init__(threads=threads)
+
+        # Get a storage connection
+        self.storage = storage.get_storage(CONF['service:mdns'].storage_driver)
 
     @property
     def service_name(self):
@@ -42,9 +46,11 @@ class Service(service.DNSService, service.RPCService, service.Service):
     @property
     @utils.cache_result
     def _dns_application(self):
-        # Create an instance of the RequestHandler class
-        application = handler.RequestHandler()
-        application = dnsutils.ContextMiddleware(application)
-        application = dnsutils.SerializationMiddleware(application)
+        # Create an instance of the RequestHandler class and wrap with
+        # necessary middleware.
+        application = handler.RequestHandler(self.storage)
+        application = dnsutils.TsigInfoMiddleware(application, self.storage)
+        application = dnsutils.SerializationMiddleware(
+            application, dnsutils.TsigKeyring(self.storage))
 
         return application

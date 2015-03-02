@@ -32,6 +32,9 @@ OPTS = [
                  help='mDNS TCP Receive Timeout'),
     cfg.BoolOpt('all-tcp', default=False,
                 help='Send all traffic over TCP'),
+    cfg.BoolOpt('query-enforce-tsig', default=False,
+                help='Enforce all incoming queries (including AXFR) are TSIG '
+                     'signed'),
     cfg.StrOpt('storage-driver', default='sqlalchemy',
                help='The storage driver to use'),
 ]

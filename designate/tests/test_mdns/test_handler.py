@@ -16,19 +16,41 @@
 import binascii
 
 import dns
+from oslo.config import cfg
 
 from designate import context
 from designate.tests.test_mdns import MdnsTestCase
 from designate.mdns import handler
 
+CONF = cfg.CONF
+default_pool_id = CONF['service:central'].default_pool_id
+
 
 class MdnsRequestHandlerTest(MdnsTestCase):
     def setUp(self):
         super(MdnsRequestHandlerTest, self).setUp()
-        self.handler = handler.RequestHandler()
+        self.handler = handler.RequestHandler(self.storage)
         self.addr = ["0.0.0.0", 5556]
+
         self.context = context.DesignateContext.get_admin_context(
             all_tenants=True)
+
+        # Create a TSIG Key for the default pool, and another for some other
+        # pool.
+        self.tsigkey_pool_default = self.create_tsigkey(
+            name='default-pool',
+            scope='POOL',
+            resource_id=default_pool_id)
+
+        self.tsigkey_pool_unknown = self.create_tsigkey(
+            name='unknown-pool',
+            scope='POOL',
+            resource_id='628e55a0-c724-4767-8c59-0a61c15d3444')
+
+        self.tsigkey_zone_unknown = self.create_tsigkey(
+            name='unknown-zone',
+            scope='ZONE',
+            resource_id='82fd08be-9eb7-4d94-8267-a26f8348671d')
 
     def test_dispatch_opcode_iquery(self):
         # DNS packet with IQUERY opcode
@@ -283,4 +305,130 @@ class MdnsRequestHandlerTest(MdnsTestCase):
         request.environ = {'addr': self.addr, 'context': self.context}
         response = self.handler(request).to_wire()
 
+        self.assertEqual(expected_response, binascii.b2a_hex(response))
+
+    def test_dispatch_opcode_query_tsig_scope_pool(self):
+        # Create a domain/recordset/record to query
+        domain = self.create_domain(name='example.com.')
+        recordset = self.create_recordset(
+            domain, name='example.com.', type='A')
+        self.create_record(
+            domain, recordset, data='192.0.2.5')
+
+        # DNS packet with QUERY opcode for A example.com.
+        payload = ("c28901200001000000000001076578616d706c6503636f6d0000010001"
+                   "0000291000000000000000")
+
+        request = dns.message.from_wire(binascii.a2b_hex(payload))
+        request.environ = {
+            'addr': self.addr,
+            'context': self.context,
+            'tsigkey': self.tsigkey_pool_default,
+        }
+
+        # Ensure the Query, with the correct pool's TSIG, gives a NOERROR.
+        # id 49801
+        # opcode QUERY
+        # rcode NOERROR
+        # flags QR AA RD
+        # edns 0
+        # payload 8192
+        # ;QUESTION
+        # example.com. IN A
+        # ;ANSWER
+        # example.com. 3600 IN A 192.0.2.5
+        # ;AUTHORITY
+        # ;ADDITIONAL
+        expected_response = ("c28985000001000100000001076578616d706c6503636f6d"
+                             "0000010001c00c0001000100000e100004c0000205000029"
+                             "2000000000000000")
+
+        response = self.handler(request).to_wire()
+
+        self.assertEqual(expected_response, binascii.b2a_hex(response))
+
+        # Ensure the Query, with the incorrect pool's TSIG, gives a REFUSED
+        request.environ['tsigkey'] = self.tsigkey_pool_unknown
+
+        # id 49801
+        # opcode QUERY
+        # rcode REFUSED
+        # flags QR RD
+        # edns 0
+        # payload 8192
+        # ;QUESTION
+        # example.com. IN A
+        # ;ANSWER
+        # ;AUTHORITY
+        # ;ADDITIONAL
+        expected_response = ("c28981050001000000000001076578616d706c6503636f6d"
+                             "00000100010000292000000000000000")
+
+        response = self.handler(request).to_wire()
+        self.assertEqual(expected_response, binascii.b2a_hex(response))
+
+    def test_dispatch_opcode_query_tsig_scope_zone(self):
+        # Create a domain/recordset/record to query
+        domain = self.create_domain(name='example.com.')
+        recordset = self.create_recordset(
+            domain, name='example.com.', type='A')
+        self.create_record(
+            domain, recordset, data='192.0.2.5')
+
+        # Create a TSIG Key Matching the zone
+        tsigkey_zone_known = self.create_tsigkey(
+            name='known-zone',
+            scope='ZONE',
+            resource_id=domain.id)
+
+        # DNS packet with QUERY opcode for A example.com.
+        payload = ("c28901200001000000000001076578616d706c6503636f6d0000010001"
+                   "0000291000000000000000")
+
+        request = dns.message.from_wire(binascii.a2b_hex(payload))
+        request.environ = {
+            'addr': self.addr,
+            'context': self.context,
+            'tsigkey': tsigkey_zone_known,
+        }
+
+        # Ensure the Query, with the correct zone's TSIG, gives a NOERROR.
+        # id 49801
+        # opcode QUERY
+        # rcode NOERROR
+        # flags QR AA RD
+        # edns 0
+        # payload 8192
+        # ;QUESTION
+        # example.com. IN A
+        # ;ANSWER
+        # example.com. 3600 IN A 192.0.2.5
+        # ;AUTHORITY
+        # ;ADDITIONAL
+        expected_response = ("c28985000001000100000001076578616d706c6503636f6d"
+                             "0000010001c00c0001000100000e100004c0000205000029"
+                             "2000000000000000")
+
+        response = self.handler(request).to_wire()
+
+        self.assertEqual(expected_response, binascii.b2a_hex(response))
+
+        # Ensure the Query, with the incorrect zone's TSIG, gives a REFUSED
+        request.environ['tsigkey'] = self.tsigkey_zone_unknown
+
+        # id 49801
+        # opcode QUERY
+        # rcode REFUSED
+        # flags QR RD
+        # edns 0
+        # payload 8192
+        # ;QUESTION
+        # example.com. IN A
+        # ;ANSWER
+        # ;AUTHORITY
+        # ;ADDITIONAL
+        expected_response = ("c28981050001000000000001076578616d706c6503636f6d"
+                             "00000100010000292000000000000000")
+
+        response = self.handler(request).to_wire()
         self.assertEqual(expected_response, binascii.b2a_hex(response))

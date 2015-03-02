@@ -24,27 +24,28 @@ from oslo.config import cfg
 from oslo_log import log as logging
 
 from designate import exceptions
-from designate import storage
-from designate.i18n import _LE
+from designate.i18n import _LW
 
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
 
+CONF.import_opt('default_pool_id', 'designate.central',
+                group='service:central')
+
 
 class RequestHandler(object):
-    def __init__(self):
-        # Get a storage connection
-        storage_driver = cfg.CONF['service:mdns'].storage_driver
-        self.storage = storage.get_storage(storage_driver)
+    """MiniDNS Request Handler"""
+    # TODO(kiall): This class is getting a little unwieldy, we should rework
+    #              with a little more structure.
+    def __init__(self, storage):
+        self.storage = storage
 
     def __call__(self, request):
         """
         :param request: DNS Request Message
         :return: DNS Response Message
         """
-        context = request.environ['context']
-
         if request.opcode() == dns.opcode.QUERY:
             # Currently we expect exactly 1 question in the section
             # TSIG places the pseudo records into the additional section.
@@ -58,9 +59,9 @@ class RequestHandler(object):
             # receiving an IXFR request.
             # TODO(Ron): send IXFR response when receiving IXFR request.
             if q_rrset.rdtype in (dns.rdatatype.AXFR, dns.rdatatype.IXFR):
-                response = self._handle_axfr(context, request)
+                response = self._handle_axfr(request)
             else:
-                response = self._handle_record_query(context, request)
+                response = self._handle_record_query(request)
         else:
             # Unhandled OpCode's include STATUS, IQUERY, NOTIFY, UPDATE
             response = self._handle_query_error(request, dns.rcode.REFUSED)
@@ -79,18 +80,39 @@ class RequestHandler(object):
 
         return response
 
-    def _convert_to_rrset(self, context, recordset, domain=None):
+    def _domain_criterion_from_request(self, request, criterion=None):
+        """Builds a bare criterion dict based on the request attributes"""
+        criterion = criterion or {}
+
+        tsigkey = request.environ.get('tsigkey')
+
+        if tsigkey is None and CONF['service:mdns'].query_enforce_tsig:
+            raise exceptions.Forbidden('Request is not TSIG signed')
+
+        elif tsigkey is None:
+            # Default to using the default_pool_id when no TSIG key is
+            # available
+            criterion['pool_id'] = CONF['service:central'].default_pool_id
+
+        else:
+            if tsigkey.scope == 'POOL':
+                criterion['pool_id'] = tsigkey.resource_id
+
+            elif tsigkey.scope == 'ZONE':
+                criterion['id'] = tsigkey.resource_id
+
+            else:
+                raise NotImplementedError("Support for %s scoped TSIG Keys is "
+                                          "not implemented")
+
+        return criterion
+
+    def _convert_to_rrset(self, domain, recordset):
         # Fetch the domain or the config ttl if the recordset ttl is null
         if recordset.ttl:
             ttl = recordset.ttl
-        elif domain is not None:
-            ttl = domain.ttl
         else:
-            domain = self.storage.get_domain(context, recordset.domain_id)
-            if domain.ttl:
-                ttl = domain.ttl
-            else:
-                ttl = CONF.default_ttl
+            ttl = domain.ttl
 
         # construct rdata from all the records
         rdata = []
@@ -113,18 +135,28 @@ class RequestHandler(object):
 
         return r_rrset
 
-    def _handle_axfr(self, context, request):
+    def _handle_axfr(self, request):
+        context = request.environ['context']
+
         response = dns.message.make_response(request)
         q_rrset = request.question[0]
         # First check if there is an existing zone
         # TODO(vinod) once validation is separated from the api,
         # validate the parameters
-        criterion = {'name': q_rrset.name.to_text()}
         try:
+            criterion = self._domain_criterion_from_request(
+                request, {'name': q_rrset.name.to_text()})
             domain = self.storage.find_domain(context, criterion)
+
         except exceptions.DomainNotFound:
-            LOG.exception(_LE("got exception while handling axfr request. "
-                              "Question is %(qr)s") % {'qr': q_rrset})
+            LOG.warning(_LW("DomainNotFound while handling axfr request. "
+                            "Question was %(qr)s") % {'qr': q_rrset})
+
+            return self._handle_query_error(request, dns.rcode.REFUSED)
+
+        except exceptions.Forbidden:
+            LOG.warning(_LW("Forbidden while handling axfr request. "
+                            "Question was %(qr)s") % {'qr': q_rrset})
 
             return self._handle_query_error(request, dns.rcode.REFUSED)
 
@@ -135,20 +167,20 @@ class RequestHandler(object):
         soa_recordsets = self.storage.find_recordsets(context, criterion)
 
         for recordset in soa_recordsets:
-            r_rrsets.append(self._convert_to_rrset(context, recordset, domain))
+            r_rrsets.append(self._convert_to_rrset(domain, recordset))
 
         # Get all the recordsets other than SOA
         criterion = {'domain_id': domain.id, 'type': '!SOA'}
         recordsets = self.storage.find_recordsets(context, criterion)
 
         for recordset in recordsets:
-            r_rrset = self._convert_to_rrset(context, recordset, domain)
+            r_rrset = self._convert_to_rrset(domain, recordset)
             if r_rrset:
                 r_rrsets.append(r_rrset)
 
         # Append the SOA recordset at the end
         for recordset in soa_recordsets:
-            r_rrsets.append(self._convert_to_rrset(context, recordset, domain))
+            r_rrsets.append(self._convert_to_rrset(domain, recordset))
 
         response.set_rcode(dns.rcode.NOERROR)
         # TODO(vinod) check if we dnspython has an upper limit on the number
@@ -159,9 +191,11 @@ class RequestHandler(object):
 
         return response
 
-    def _handle_record_query(self, context, request):
+    def _handle_record_query(self, request):
         """Handle a DNS QUERY request for a record"""
+        context = request.environ['context']
         response = dns.message.make_response(request)
+
         try:
             q_rrset = request.question[0]
             # TODO(vinod) once validation is separated from the api,
@@ -172,11 +206,30 @@ class RequestHandler(object):
                 'domains_deleted': False
             }
             recordset = self.storage.find_recordset(context, criterion)
-            r_rrset = self._convert_to_rrset(context, recordset)
+
+            try:
+                criterion = self._domain_criterion_from_request(
+                    request, {'id': recordset.domain_id})
+                domain = self.storage.find_domain(context, criterion)
+
+            except exceptions.DomainNotFound:
+                LOG.warning(_LW("DomainNotFound while handling query request"
+                                ". Question was %(qr)s") % {'qr': q_rrset})
+
+                return self._handle_query_error(request, dns.rcode.REFUSED)
+
+            except exceptions.Forbidden:
+                LOG.warning(_LW("Forbidden while handling query request. "
+                                "Question was %(qr)s") % {'qr': q_rrset})
+
+                return self._handle_query_error(request, dns.rcode.REFUSED)
+
+            r_rrset = self._convert_to_rrset(domain, recordset)
             response.set_rcode(dns.rcode.NOERROR)
             response.answer = [r_rrset]
             # For all the data stored in designate mdns is Authoritative
             response.flags |= dns.flags.AA
+
         except exceptions.NotFound:
             # If an FQDN exists, like www.rackspace.com, but the specific
             # record type doesn't exist, like type SPF, then the return code
@@ -194,6 +247,9 @@ class RequestHandler(object):
             #
             # To simply things currently this returns a REFUSED in all cases.
             # If zone transfers needs different errors, we could revisit this.
+            response.set_rcode(dns.rcode.REFUSED)
+
+        except exceptions.Forbidden:
             response.set_rcode(dns.rcode.REFUSED)
 
         return response
