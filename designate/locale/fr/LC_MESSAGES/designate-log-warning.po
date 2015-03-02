@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Designate\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-02-25 06:29+0000\n"
-"PO-Revision-Date: 2015-02-24 20:26+0000\n"
+"POT-Creation-Date: 2015-03-02 06:35+0000\n"
+"PO-Revision-Date: 2015-02-27 17:46+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: French (http://www.transifex.com/projects/p/designate/"
 "language/fr/)\n"
@@ -29,17 +29,17 @@ msgstr ""
 msgid "Both sock_udp and client are None"
 msgstr ""
 
-#: designate/agent/handler.py:112
+#: designate/agent/handler.py:117
 #, python-format
 msgid "Refusing CREATE for %(name)s, zone already exists"
 msgstr ""
 
-#: designate/agent/handler.py:154
+#: designate/agent/handler.py:159
 #, python-format
 msgid "Refusing NOTIFY for %(name)s, doesn't exist"
 msgstr ""
 
-#: designate/agent/handler.py:218
+#: designate/agent/handler.py:223
 #, python-format
 msgid "%(verb)s for %(name)s from %(server)s refused"
 msgstr ""
@@ -93,28 +93,28 @@ msgstr ""
 msgid "Abandoning zone '%(zone)s'"
 msgstr ""
 
-#: designate/mdns/notify.py:109
+#: designate/mdns/notify.py:142
 #, python-format
 msgid ""
 "Got lower serial for '%(zone)s' to '%(host)s:%(port)s'. Expected:'%(es)d'. "
 "Got:'%(as)d'.Retries left='%(retries)d'"
 msgstr ""
 
-#: designate/mdns/notify.py:169
+#: designate/mdns/notify.py:199
 #, python-format
 msgid ""
 "Got Timeout while trying to send '%(msg)s' for '%(zone)s' to '%(server)s:"
 "%(port)d'. Timeout='%(timeout)d' seconds. Retry='%(retry)d'"
 msgstr ""
 
-#: designate/mdns/notify.py:181
+#: designate/mdns/notify.py:211
 #, python-format
 msgid ""
 "Got BadResponse while trying to send '%(msg)s' for '%(zone)s' to '%(server)s:"
 "%(port)d'. Timeout='%(timeout)d' seconds. Retry='%(retry)d'"
 msgstr ""
 
-#: designate/mdns/notify.py:194
+#: designate/mdns/notify.py:229
 #, python-format
 msgid ""
 "Failed to get expected response while trying to send '%(msg)s' for "
@@ -146,22 +146,27 @@ msgstr "la tâche %(func_name)s a dépassé l'intervalle de %(delay).2f sec"
 msgid "pid %d not in child list"
 msgstr "pid %d ne fait pas partie de la liste enfant"
 
-#: designate/pool_manager/service.py:188
+#: designate/pool_manager/service.py:175
+#, python-format
+msgid "Consensus not reached for creating domain %(domain)s"
+msgstr ""
+
+#: designate/pool_manager/service.py:201
 #, python-format
 msgid "Consensus not reached for deleting domain %(domain)s"
 msgstr ""
 
-#: designate/pool_manager/service.py:250
+#: designate/pool_manager/service.py:268
 #, python-format
 msgid "For domain %(domain)s the error serial is %(error_serial)s."
 msgstr ""
 
-#: designate/pool_manager/service.py:336
+#: designate/pool_manager/service.py:352
 #, python-format
 msgid "Failed to create domain %(domain)s on server %(server)s."
 msgstr ""
 
-#: designate/pool_manager/service.py:386
+#: designate/pool_manager/service.py:400
 #, python-format
 msgid "Failed to delete domain %(domain)s from server %(server)s."
 msgstr ""

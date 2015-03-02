@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: designate 2015.1.dev2\n"
+"Project-Id-Version: designate 2015.1.dev89\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-02-06 06:07+0000\n"
+"POT-Creation-Date: 2015-03-02 06:35+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -45,7 +45,7 @@ msgstr ""
 msgid "Using policy_file found at: %s"
 msgstr ""
 
-#: designate/agent/handler.py:50
+#: designate/agent/handler.py:55
 #, python-format
 msgid "Agent masters: %(masters)s"
 msgstr ""
@@ -437,20 +437,20 @@ msgid ""
 "delete_zone_transfer_accept."
 msgstr ""
 
-#: designate/central/service.py:209
+#: designate/central/service.py:270
 msgid "Checking for TLDs"
 msgstr ""
 
-#: designate/central/service.py:212
+#: designate/central/service.py:273
 msgid "NOT checking for TLDs"
 msgstr ""
 
-#: designate/central/service.py:1683
+#: designate/central/service.py:1765
 #, python-format
 msgid "Creating zone for %(fip_id)s:%(region)s - %(fip_addr)s zone %(zonename)s"
 msgstr ""
 
-#: designate/central/service.py:2090
+#: designate/central/service.py:2174
 msgid "Target Tenant ID found - using scoped policy"
 msgstr ""
 
@@ -464,27 +464,39 @@ msgstr ""
 msgid "Number of tlds added: %d"
 msgstr ""
 
-#: designate/mdns/notify.py:37
+#: designate/mdns/notify.py:45
 msgid "started mdns notify endpoint"
 msgstr ""
 
-#: designate/mdns/notify.py:160
+#: designate/mdns/notify.py:190
 #, python-format
 msgid "Sending '%(msg)s' for '%(zone)s' to '%(server)s:%(port)d'."
 msgstr ""
 
-#: designate/mdns/rpcapi.py:62
+#: designate/mdns/notify.py:223
+#, python-format
+msgid "%(zone)s not found on %(server)s:%(port)d"
+msgstr ""
+
+#: designate/mdns/rpcapi.py:63
 #, python-format
 msgid ""
 "notify_zone_changed: Calling mdns for zone '%(zone)s', serial "
 "'%(serial)s' to server '%(host)s:%(port)s'"
 msgstr ""
 
-#: designate/mdns/rpcapi.py:75
+#: designate/mdns/rpcapi.py:76
 #, python-format
 msgid ""
 "poll_for_serial_number: Calling mdns for zone '%(zone)s', serial "
 "'%(serial)s' to server '%(host)s:%(port)s'"
+msgstr ""
+
+#: designate/mdns/rpcapi.py:90
+#, python-format
+msgid ""
+"get_serial_number: Calling mdns for zone '%(zone)s', serial '%(serial)s' "
+"to server '%(host)s:%(port)s'"
 msgstr ""
 
 #: designate/mdns/service.py:62
@@ -577,40 +589,40 @@ msgstr ""
 msgid "update_status: Calling pool manager's update_status for %(domain)s"
 msgstr ""
 
-#: designate/pool_manager/service.py:77
+#: designate/pool_manager/service.py:78
 #, python-format
 msgid "Using topic %(topic)s for this pool manager instance."
 msgstr ""
 
-#: designate/pool_manager/service.py:131
+#: designate/pool_manager/service.py:132
 msgid "Starting periodic recovery timer."
 msgstr ""
 
-#: designate/pool_manager/service.py:137
+#: designate/pool_manager/service.py:138
 msgid "Starting periodic sync timer."
 msgstr ""
 
-#: designate/pool_manager/service.py:239
+#: designate/pool_manager/service.py:257
 #, python-format
 msgid "For domain %(domain)s the consensus serial is %(consensus_serial)s."
 msgstr ""
 
-#: designate/pool_manager/service.py:321
+#: designate/pool_manager/service.py:340
 #, python-format
 msgid "Created domain %(domain)s on server %(server)s."
 msgstr ""
 
-#: designate/pool_manager/service.py:365
+#: designate/pool_manager/service.py:384
 #, python-format
 msgid "Deleted domain %(domain)s from server %(server)s."
 msgstr ""
 
-#: designate/pool_manager/service.py:372
+#: designate/pool_manager/service.py:391
 #, python-format
 msgid "Consensus reached for deleting domain %(domain)s"
 msgstr ""
 
-#: designate/pool_manager/service.py:411
+#: designate/pool_manager/service.py:431
 #, python-format
 msgid "Updating domain %(domain)s on server %(server)s."
 msgstr ""
