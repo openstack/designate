@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Designate\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-03-02 06:35+0000\n"
-"PO-Revision-Date: 2015-02-27 17:46+0000\n"
+"POT-Creation-Date: 2015-03-03 06:04+0000\n"
+"PO-Revision-Date: 2015-03-02 22:07+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: French (http://www.transifex.com/projects/p/designate/"
 "language/fr/)\n"
@@ -138,10 +138,10 @@ msgstr ""
 
 #: designate/openstack/common/loopingcall.py:87
 #, python-format
-msgid "task %(func_name)s run outlasted interval by %(delay).2f sec"
-msgstr "la tâche %(func_name)s a dépassé l'intervalle de %(delay).2f sec"
+msgid "task %(func_name)r run outlasted interval by %(delay).2f sec"
+msgstr ""
 
-#: designate/openstack/common/service.py:357
+#: designate/openstack/common/service.py:355
 #, python-format
 msgid "pid %d not in child list"
 msgstr "pid %d ne fait pas partie de la liste enfant"
