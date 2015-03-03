@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  Designate\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-01-22 06:12+0000\n"
-"PO-Revision-Date: 2015-01-21 21:43+0000\n"
+"POT-Creation-Date: 2015-03-03 06:04+0000\n"
+"PO-Revision-Date: 2015-03-02 22:07+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: French "
 "(http://www.transifex.com/projects/p/designate/language/fr/)\n"
@@ -33,17 +33,17 @@ msgstr ""
 "Vérification de stratégie ayant échoué pour la règle '%(rule)s' pour la "
 "cible %(target)s"
 
-#: designate/service.py:73
+#: designate/service.py:74
 #, python-format
 msgid "Starting %(topic)s node (version %(version_string)s)"
 msgstr "Démarrage du noeud %(topic)s (version %(version_string)s)"
 
-#: designate/service.py:76
+#: designate/service.py:77
 #, python-format
 msgid "Creating RPC server on topic '%s'"
 msgstr "Créer un serveur RPC pour topic '%s'"
 
-#: designate/service.py:159
+#: designate/service.py:223
 msgid "serve() can only be called once"
 msgstr "serve() ne peut être appelé qu'une seule fois"
 
@@ -77,15 +77,16 @@ msgid ""
 "Directories where policy configuration files are stored. They can be "
 "relative to any directory in the search path defined by the config_dir "
 "option, or absolute paths. The file defined by policy_file must exist for"
-" these directories to be searched."
+" these directories to be searched.  Missing or empty directories are "
+"ignored."
 msgstr ""
 
-#: designate/openstack/common/policy.py:142
+#: designate/openstack/common/policy.py:143
 #, python-format
 msgid "Policy doesn't allow %s to be performed."
 msgstr "Stratégie ne permettant pas d'effectuer %s."
 
-#: designate/openstack/common/policy.py:239
+#: designate/openstack/common/policy.py:240
 #, python-format
 msgid "Rules must be an instance of dict or Rules, got %s instead"
 msgstr ""
@@ -120,34 +121,6 @@ msgstr ""
 #, python-format
 msgid "Invalid SSL version : %s"
 msgstr "Version SSL non valide : %s"
-
-#: designate/openstack/common/versionutils.py:90
-#, python-format
-msgid ""
-"%(what)s is deprecated as of %(as_of)s in favor of %(in_favor_of)s and "
-"may be removed in %(remove_in)s."
-msgstr ""
-"%(what)s déprécié depuis %(as_of)s au bénéfice de %(in_favor_of)s et sera"
-" sans doute retiré dans %(remove_in)s."
-
-#: designate/openstack/common/versionutils.py:94
-#, python-format
-msgid ""
-"%(what)s is deprecated as of %(as_of)s and may be removed in "
-"%(remove_in)s. It will not be superseded."
-msgstr ""
-"%(what)s déprécié depuis %(as_of)s et sera sans doute retiré dans "
-"%(remove_in)s. Ne sera pas remplacé."
-
-#: designate/openstack/common/versionutils.py:98
-#, python-format
-msgid "%(what)s is deprecated as of %(as_of)s in favor of %(in_favor_of)s."
-msgstr "%(what)s déprécié depuis %(as_of)s au bénéfice de %(in_favor_of)s."
-
-#: designate/openstack/common/versionutils.py:101
-#, python-format
-msgid "%(what)s is deprecated as of %(as_of)s. It will not be superseded."
-msgstr "%(what)s déprécié depuis %(as_of)s. Ne sera pas remplacé."
 
 #: designate/openstack/deprecated/exception.py:104
 msgid "Uncaught exception"
