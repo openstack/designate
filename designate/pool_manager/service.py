@@ -359,8 +359,8 @@ class Service(service.RPCService):
         domains = self._get_failed_domains(context, CREATE_ACTION)
 
         for domain in domains:
-            create_statuses = self._retrieve_from_cache(
-                context, domain, CREATE_ACTION, check_server=True)
+            create_statuses = self._retrieve_statuses(
+                context, domain, CREATE_ACTION)
             for create_status in create_statuses:
                 server_backend = self._get_server_backend(
                     create_status.server_id)
@@ -407,8 +407,8 @@ class Service(service.RPCService):
         domains = self._get_failed_domains(context, DELETE_ACTION)
 
         for domain in domains:
-            delete_statuses = self._retrieve_from_cache(
-                context, domain, DELETE_ACTION, check_server=True)
+            delete_statuses = self._retrieve_statuses(
+                context, domain, DELETE_ACTION)
             for delete_status in delete_statuses:
                 server_backend = self._get_server_backend(
                     delete_status.server_id)
@@ -438,8 +438,8 @@ class Service(service.RPCService):
         domains = self._get_failed_domains(context, UPDATE_ACTION)
 
         for domain in domains:
-            update_statuses = self._retrieve_from_cache(
-                context, domain, UPDATE_ACTION, check_server=True)
+            update_statuses = self._retrieve_statuses(
+                context, domain, UPDATE_ACTION)
             for update_status in update_statuses:
                 server_backend = self._get_server_backend(
                     update_status.server_id)
@@ -487,7 +487,7 @@ class Service(service.RPCService):
 
     def _is_success_consensus(self, context, domain, action, threshold=None):
         success_count = 0
-        pool_manager_statuses = self._retrieve_from_cache(
+        pool_manager_statuses = self._retrieve_statuses(
             context, domain, action)
         for pool_manager_status in pool_manager_statuses:
             if pool_manager_status.status == SUCCESS_STATUS:
@@ -510,7 +510,7 @@ class Service(service.RPCService):
 
     def _get_consensus_serial(self, context, domain):
         consensus_serial = 0
-        update_statuses = self._retrieve_from_cache(
+        update_statuses = self._retrieve_statuses(
             context, domain, UPDATE_ACTION)
         for serial in self._get_serials_descending(update_statuses):
             serial_count = 0
@@ -525,7 +525,7 @@ class Service(service.RPCService):
     def _get_error_serial(self, context, domain, consensus_serial):
         error_serial = 0
         if not self._is_success_consensus(context, domain, UPDATE_ACTION):
-            update_statuses = self._retrieve_from_cache(
+            update_statuses = self._retrieve_statuses(
                 context, domain, UPDATE_ACTION)
             for serial in self._get_serials_ascending(update_statuses):
                 if serial > consensus_serial:
@@ -568,15 +568,19 @@ class Service(service.RPCService):
         LOG.debug('Cleared cache for domain %s with action %s.' %
                   (domain.name, action))
 
-    def _is_in_cache(self, context, domain, action):
-        return len(self._retrieve_from_cache(
-            context, domain=domain, action=action)) > 0
-
     def _retrieve_from_mdns(self, context, server, domain, action):
-        (status, actual_serial, retries) = \
-            self.mdns_api.get_serial_number(
-                context, domain, server, self.timeout, self.retry_interval,
-                self.max_retries, self.delay)
+        try:
+            (status, actual_serial, retries) = \
+                self.mdns_api.get_serial_number(
+                    context, domain, server, self.timeout, self.retry_interval,
+                    self.max_retries, self.delay)
+        except messaging.MessagingException as msg_ex:
+            LOG.debug('Could not retrieve status and serial for domain %s on '
+                      'server %s with action %s from the server. %s:%s' %
+                      (domain.name, self._get_destination(server), action,
+                       type(msg_ex), str(msg_ex)))
+            return None
+
         pool_manager_status = self._build_status_object(server, domain, action)
         if status == NO_DOMAIN_STATUS:
             if action == CREATE_ACTION:
@@ -599,8 +603,7 @@ class Service(service.RPCService):
 
         return pool_manager_status
 
-    def _retrieve_from_cache(self, context, domain, action,
-                             check_server=False):
+    def _retrieve_statuses(self, context, domain, action):
         pool_manager_statuses = []
         for server_backend in self.server_backends:
             server = server_backend['server']
@@ -616,13 +619,10 @@ class Service(service.RPCService):
             except exceptions.PoolManagerStatusNotFound:
                 LOG.debug('Cache miss!  Did not retrieve status and serial '
                           'for domain %s on server %s with action %s from '
-                          'the cache.' %
+                          'the cache. Getting it from the server.' %
                           (domain.name, self._get_destination(server), action))
-                if check_server:
-                    pool_manager_status = self._retrieve_from_mdns(
-                        context, server, domain, action)
-                else:
-                    pool_manager_status = None
+                pool_manager_status = self._retrieve_from_mdns(
+                    context, server, domain, action)
 
             if pool_manager_status is not None:
                 pool_manager_statuses.append(pool_manager_status)

@@ -13,6 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from oslo import messaging
 from oslo.config import cfg
 from mock import call
 from mock import patch
@@ -76,18 +77,20 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
         }
         return objects.Domain(**values)
 
+    @patch.object(mdns_rpcapi.MdnsAPI, 'get_serial_number',
+                  side_effect=messaging.MessagingException)
     @patch.object(mdns_rpcapi.MdnsAPI, 'poll_for_serial_number')
     @patch.object(mdns_rpcapi.MdnsAPI, 'notify_zone_changed')
     @patch.object(central_rpcapi.CentralAPI, 'update_status')
     def test_create_domain(
             self, mock_update_status, mock_notify_zone_changed,
-            mock_poll_for_serial_number):
+            mock_poll_for_serial_number, _):
 
         domain = self._build_domain('example.org.', 'CREATE', 'PENDING')
 
         self.service.create_domain(self.admin_context, domain)
 
-        create_statuses = self.service._retrieve_from_cache(
+        create_statuses = self.service._retrieve_statuses(
             self.admin_context, domain, 'CREATE')
         self.assertEqual(0, len(create_statuses))
 
@@ -111,13 +114,15 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
         mock_update_status.assert_called_once_with(
             self.admin_context, domain.id, 'ERROR', domain.serial)
 
+    @patch.object(mdns_rpcapi.MdnsAPI, 'get_serial_number',
+                  side_effect=messaging.MessagingException)
     @patch.object(impl_fake.FakeBackend, 'create_domain')
     @patch.object(mdns_rpcapi.MdnsAPI, 'poll_for_serial_number')
     @patch.object(mdns_rpcapi.MdnsAPI, 'notify_zone_changed')
     @patch.object(central_rpcapi.CentralAPI, 'update_status')
     def test_create_domain_backend_both_failure(
             self, mock_update_status, mock_notify_zone_changed,
-            mock_poll_for_serial_number, mock_create_domain):
+            mock_poll_for_serial_number, mock_create_domain, _):
 
         domain = self._build_domain('example.org.', 'CREATE', 'PENDING')
 
@@ -125,7 +130,7 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
 
         self.service.create_domain(self.admin_context, domain)
 
-        create_statuses = self.service._retrieve_from_cache(
+        create_statuses = self.service._retrieve_statuses(
             self.admin_context, domain, 'CREATE')
         self.assertEqual(0, len(create_statuses))
 
@@ -137,13 +142,15 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
         mock_update_status.assert_called_once_with(
             self.admin_context, domain.id, 'ERROR', domain.serial)
 
+    @patch.object(mdns_rpcapi.MdnsAPI, 'get_serial_number',
+                  side_effect=messaging.MessagingException)
     @patch.object(impl_fake.FakeBackend, 'create_domain')
     @patch.object(mdns_rpcapi.MdnsAPI, 'poll_for_serial_number')
     @patch.object(mdns_rpcapi.MdnsAPI, 'notify_zone_changed')
     @patch.object(central_rpcapi.CentralAPI, 'update_status')
     def test_create_domain_backend_one_failure(
             self, mock_update_status, mock_notify_zone_changed,
-            mock_poll_for_serial_number, mock_create_domain):
+            mock_poll_for_serial_number, mock_create_domain, _):
 
         domain = self._build_domain('example.org.', 'CREATE', 'PENDING')
 
@@ -151,7 +158,7 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
 
         self.service.create_domain(self.admin_context, domain)
 
-        create_statuses = self.service._retrieve_from_cache(
+        create_statuses = self.service._retrieve_statuses(
             self.admin_context, domain, 'CREATE')
         self.assertEqual(0, len(create_statuses))
 
@@ -165,13 +172,15 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
         mock_update_status.assert_called_once_with(
             self.admin_context, domain.id, 'ERROR', domain.serial)
 
+    @patch.object(mdns_rpcapi.MdnsAPI, 'get_serial_number',
+                  side_effect=messaging.MessagingException)
     @patch.object(impl_fake.FakeBackend, 'create_domain')
     @patch.object(mdns_rpcapi.MdnsAPI, 'poll_for_serial_number')
     @patch.object(mdns_rpcapi.MdnsAPI, 'notify_zone_changed')
     @patch.object(central_rpcapi.CentralAPI, 'update_status')
     def test_create_domain_backend_one_failure_consensus(
             self, mock_update_status, mock_notify_zone_changed,
-            mock_poll_for_serial_number, mock_create_domain):
+            mock_poll_for_serial_number, mock_create_domain, _):
 
         self.service.stop()
         self.config(
@@ -185,7 +194,7 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
 
         self.service.create_domain(self.admin_context, domain)
 
-        create_statuses = self.service._retrieve_from_cache(
+        create_statuses = self.service._retrieve_statuses(
             self.admin_context, domain, 'CREATE')
         self.assertEqual(0, len(create_statuses))
 
@@ -199,24 +208,28 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
         mock_update_status.assert_called_once_with(
             self.admin_context, domain.id, 'ERROR', domain.serial)
 
+    @patch.object(mdns_rpcapi.MdnsAPI, 'get_serial_number',
+                  side_effect=messaging.MessagingException)
     @patch.object(central_rpcapi.CentralAPI, 'update_status')
-    def test_delete_domain(self, mock_update_status):
+    def test_delete_domain(self, mock_update_status, _):
 
         domain = self._build_domain('example.org.', 'DELETE', 'PENDING')
 
         self.service.delete_domain(self.admin_context, domain)
 
-        delete_statuses = self.service._retrieve_from_cache(
+        delete_statuses = self.service._retrieve_statuses(
             self.admin_context, domain, 'DELETE')
         self.assertEqual(0, len(delete_statuses))
 
         mock_update_status.assert_called_once_with(
             self.admin_context, domain.id, 'ERROR', domain.serial)
 
+    @patch.object(mdns_rpcapi.MdnsAPI, 'get_serial_number',
+                  side_effect=messaging.MessagingException)
     @patch.object(impl_fake.FakeBackend, 'delete_domain')
     @patch.object(central_rpcapi.CentralAPI, 'update_status')
     def test_delete_domain_backend_both_failure(
-            self, mock_update_status, mock_delete_domain):
+            self, mock_update_status, mock_delete_domain, _):
 
         domain = self._build_domain('example.org.', 'DELETE', 'PENDING')
 
@@ -224,17 +237,19 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
 
         self.service.delete_domain(self.admin_context, domain)
 
-        delete_statuses = self.service._retrieve_from_cache(
+        delete_statuses = self.service._retrieve_statuses(
             self.admin_context, domain, 'DELETE')
         self.assertEqual(0, len(delete_statuses))
 
         mock_update_status.assert_called_once_with(
             self.admin_context, domain.id, 'ERROR', domain.serial)
 
+    @patch.object(mdns_rpcapi.MdnsAPI, 'get_serial_number',
+                  side_effect=messaging.MessagingException)
     @patch.object(impl_fake.FakeBackend, 'delete_domain')
     @patch.object(central_rpcapi.CentralAPI, 'update_status')
     def test_delete_domain_backend_one_failure(
-            self, mock_update_status, mock_delete_domain):
+            self, mock_update_status, mock_delete_domain, _):
 
         domain = self._build_domain('example.org.', 'DELETE', 'PENDING')
 
@@ -242,17 +257,19 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
 
         self.service.delete_domain(self.admin_context, domain)
 
-        delete_statuses = self.service._retrieve_from_cache(
+        delete_statuses = self.service._retrieve_statuses(
             self.admin_context, domain, 'DELETE')
         self.assertEqual(0, len(delete_statuses))
 
         mock_update_status.assert_called_once_with(
             self.admin_context, domain.id, 'ERROR', domain.serial)
 
+    @patch.object(mdns_rpcapi.MdnsAPI, 'get_serial_number',
+                  side_effect=messaging.MessagingException)
     @patch.object(impl_fake.FakeBackend, 'delete_domain')
     @patch.object(central_rpcapi.CentralAPI, 'update_status')
     def test_delete_domain_backend_one_failure_consensus(
-            self, mock_update_status, mock_delete_domain):
+            self, mock_update_status, mock_delete_domain, _):
 
         self.service.stop()
         self.config(
@@ -266,15 +283,17 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
 
         self.service.delete_domain(self.admin_context, domain)
 
-        delete_statuses = self.service._retrieve_from_cache(
+        delete_statuses = self.service._retrieve_statuses(
             self.admin_context, domain, 'DELETE')
         self.assertEqual(0, len(delete_statuses))
 
         mock_update_status.assert_called_once_with(
             self.admin_context, domain.id, 'ERROR', domain.serial)
 
+    @patch.object(mdns_rpcapi.MdnsAPI, 'get_serial_number',
+                  side_effect=messaging.MessagingException)
     @patch.object(central_rpcapi.CentralAPI, 'update_status')
-    def test_update_status(self, mock_update_status):
+    def test_update_status(self, mock_update_status, _):
 
         domain = self._build_domain('example.org.', 'UPDATE', 'PENDING')
 
@@ -282,7 +301,7 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
                                    self.service.server_backends[0]['server'],
                                    'SUCCESS', domain.serial)
 
-        update_statuses = self.service._retrieve_from_cache(
+        update_statuses = self.service._retrieve_statuses(
             self.admin_context, domain, 'UPDATE')
         self.assertEqual(0, len(update_statuses))
 
@@ -293,15 +312,17 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
                                    self.service.server_backends[1]['server'],
                                    'SUCCESS', domain.serial)
 
-        update_statuses = self.service._retrieve_from_cache(
+        update_statuses = self.service._retrieve_statuses(
             self.admin_context, domain, 'UPDATE')
         self.assertEqual(0, len(update_statuses))
 
         # Ensure update_status was not called.
         self.assertEqual(False, mock_update_status.called)
 
+    @patch.object(mdns_rpcapi.MdnsAPI, 'get_serial_number',
+                  side_effect=messaging.MessagingException)
     @patch.object(central_rpcapi.CentralAPI, 'update_status')
-    def test_update_status_both_failure(self, mock_update_status):
+    def test_update_status_both_failure(self, mock_update_status, _):
 
         domain = self._build_domain('example.org.', 'UPDATE', 'PENDING')
 
@@ -309,7 +330,7 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
                                    self.service.server_backends[0]['server'],
                                    'ERROR', domain.serial)
 
-        update_statuses = self.service._retrieve_from_cache(
+        update_statuses = self.service._retrieve_statuses(
             self.admin_context, domain, 'UPDATE')
         self.assertEqual(0, len(update_statuses))
 
@@ -323,15 +344,17 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
                                    self.service.server_backends[1]['server'],
                                    'ERROR', domain.serial)
 
-        update_statuses = self.service._retrieve_from_cache(
+        update_statuses = self.service._retrieve_statuses(
             self.admin_context, domain, 'UPDATE')
         self.assertEqual(0, len(update_statuses))
 
         mock_update_status.assert_called_once_with(
             self.admin_context, domain.id, 'ERROR', 0)
 
+    @patch.object(mdns_rpcapi.MdnsAPI, 'get_serial_number',
+                  side_effect=messaging.MessagingException)
     @patch.object(central_rpcapi.CentralAPI, 'update_status')
-    def test_update_status_one_failure(self, mock_update_status):
+    def test_update_status_one_failure(self, mock_update_status, _):
 
         domain = self._build_domain('example.org.', 'UPDATE', 'PENDING')
 
@@ -339,7 +362,7 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
                                    self.service.server_backends[0]['server'],
                                    'SUCCESS', domain.serial)
 
-        update_statuses = self.service._retrieve_from_cache(
+        update_statuses = self.service._retrieve_statuses(
             self.admin_context, domain, 'UPDATE')
         self.assertEqual(0, len(update_statuses))
 
@@ -350,15 +373,17 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
                                    self.service.server_backends[1]['server'],
                                    'ERROR', domain.serial)
 
-        update_statuses = self.service._retrieve_from_cache(
+        update_statuses = self.service._retrieve_statuses(
             self.admin_context, domain, 'UPDATE')
         self.assertEqual(0, len(update_statuses))
 
         mock_update_status.assert_called_once_with(
             self.admin_context, domain.id, 'ERROR', 0)
 
+    @patch.object(mdns_rpcapi.MdnsAPI, 'get_serial_number',
+                  side_effect=messaging.MessagingException)
     @patch.object(central_rpcapi.CentralAPI, 'update_status')
-    def test_update_status_one_failure_consensus(self, mock_update_status):
+    def test_update_status_one_failure_consensus(self, mock_update_status, _):
 
         self.service.stop()
         self.config(
@@ -372,7 +397,7 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
                                    self.service.server_backends[0]['server'],
                                    'SUCCESS', domain.serial)
 
-        update_statuses = self.service._retrieve_from_cache(
+        update_statuses = self.service._retrieve_statuses(
             self.admin_context, domain, 'UPDATE')
         self.assertEqual(0, len(update_statuses))
 
@@ -386,7 +411,7 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
                                    self.service.server_backends[1]['server'],
                                    'ERROR', domain.serial)
 
-        update_statuses = self.service._retrieve_from_cache(
+        update_statuses = self.service._retrieve_statuses(
             self.admin_context, domain, 'UPDATE')
         self.assertEqual(0, len(update_statuses))
 
