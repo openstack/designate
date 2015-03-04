@@ -39,6 +39,11 @@ class RelationNotLoaded(Base):
     error_type = 'relation_not_loaded'
 
 
+class AdapterNotFound(Base):
+    error_code = 500
+    error_type = 'adapter_not_found'
+
+
 class NSD4SlaveBackendError(Backend):
     pass
 
