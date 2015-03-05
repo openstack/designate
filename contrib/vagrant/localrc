@@ -1,4 +1,5 @@
-# Passwords
+# General DevStack Config
+# =======================
 ADMIN_PASSWORD=password
 MYSQL_PASSWORD=password
 RABBIT_PASSWORD=password
@@ -17,12 +18,22 @@ LOG_COLOR=True
 # Enable the basic services we require
 ENABLED_SERVICES=rabbit,mysql,key
 
+# Designate Devstack Config
+# =========================
 # Enable core Designate services
-ENABLED_SERVICES+=,designate,designate-api,designate-central,designate-mdns,designate-pool-manager
+ENABLED_SERVICES+=,designate,designate-central,designate-api,designate-pool-manager,designate-mdns
 
 # Optional Designate services
+#ENABLED_SERVICES+=,designate-agent
 #ENABLED_SERVICES+=,designate-sink
 
+# Backend Driver (e.g. powerdns, bind9. See designate.backend section of
+#                 setup.cfg)
+#DESIGNATE_BACKEND_DRIVER=powerdns
+
+
+# Other Devstack Config
+# =====================
 # Optional TLS Proxy
 #ENABLED_SERVICES+=,tls-proxy
 
@@ -34,6 +45,3 @@ ENABLED_SERVICES+=,designate,designate-api,designate-central,designate-mdns,desi
 
 # Optional core OpenStack services (needed by horizon)
 #ENABLED_SERVICES+=,g-api,g-reg,n-api,n-crt,n-obj,n-cpu,n-net,n-cond,n-sch,n-novnc,n-xvnc,n-cauth
-
-# Designate Options
-#DESIGNATE_BACKEND_DRIVER=powerdns
