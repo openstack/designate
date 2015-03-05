@@ -34,7 +34,7 @@ class PoolManagerAPITest(PoolManagerTestCase):
             'name': 'example.org.',
             'pool_id': '794ccc2c-d751-44fe-b57f-8894c9f5c842'
         }
-        domain = objects.Domain(**values)
+        domain = objects.Domain.from_dict(values)
         PoolManagerAPI.get_instance().create_domain(self.admin_context, domain)
 
         mock_prepare.assert_called_once_with(
@@ -52,7 +52,7 @@ class PoolManagerAPITest(PoolManagerTestCase):
             'name': 'example.org.',
             'pool_id': '794ccc2c-d751-44fe-b57f-8894c9f5c842'
         }
-        domain = objects.Domain(**values)
+        domain = objects.Domain.from_dict(values)
         PoolManagerAPI.get_instance().delete_domain(self.admin_context, domain)
 
         mock_prepare.assert_called_once_with(
@@ -70,7 +70,7 @@ class PoolManagerAPITest(PoolManagerTestCase):
             'name': 'example.org.',
             'pool_id': '794ccc2c-d751-44fe-b57f-8894c9f5c842'
         }
-        domain = objects.Domain(**values)
+        domain = objects.Domain.from_dict(values)
         PoolManagerAPI.get_instance().update_domain(self.admin_context, domain)
 
         mock_prepare.assert_called_once_with(
@@ -88,12 +88,12 @@ class PoolManagerAPITest(PoolManagerTestCase):
             'name': 'example.org.',
             'pool_id': '794ccc2c-d751-44fe-b57f-8894c9f5c842'
         }
-        domain = objects.Domain(**values)
+        domain = objects.Domain.from_dict(values)
         values = {
             'host': '127.0.0.1',
             'port': '53'
         }
-        server = objects.PoolServer(**values)
+        server = objects.PoolServer.from_dict(values)
         PoolManagerAPI.get_instance().update_status(
             self.admin_context, domain, server, 'SUCCESS', 1)
 

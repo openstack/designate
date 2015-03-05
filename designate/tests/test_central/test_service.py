@@ -307,7 +307,7 @@ class CentralServiceTest(CentralTestCase):
 
         # Create a tsigkey
         tsigkey = self.central_service.create_tsigkey(
-            self.admin_context, tsigkey=objects.TsigKey(**values))
+            self.admin_context, tsigkey=objects.TsigKey.from_dict(values))
 
         # Ensure all values have been set correctly
         self.assertIsNotNone(tsigkey['id'])
@@ -414,7 +414,7 @@ class CentralServiceTest(CentralTestCase):
 
         # Create a domain
         domain = self.central_service.create_domain(
-            self.admin_context, domain=objects.Domain(**values))
+            self.admin_context, domain=objects.Domain.from_dict(values))
 
         # Ensure all values have been set correctly
         self.assertIsNotNone(domain['id'])
@@ -452,9 +452,9 @@ class CentralServiceTest(CentralTestCase):
             name='xn--3e0b707e'
         )
 
-        tld = objects.Tld(**values)
         # Create the appropriate TLD
-        self.central_service.create_tld(self.admin_context, tld=tld)
+        self.central_service.create_tld(
+            self.admin_context, objects.Tld.from_dict(values))
 
         # Test creation of a domain in 한국 (kr)
         values = dict(
@@ -481,7 +481,7 @@ class CentralServiceTest(CentralTestCase):
 
         # Create the subdomain
         domain = self.central_service.create_domain(
-            self.admin_context, domain=objects.Domain(**values))
+            self.admin_context, objects.Domain.from_dict(values))
 
         # Ensure all values have been set correctly
         self.assertIsNotNone(domain['id'])
@@ -504,8 +504,7 @@ class CentralServiceTest(CentralTestCase):
 
         # Create the Parent Domain using fixture 1
         parent_domain = self.central_service.create_domain(
-            self.admin_context, domain=objects.Domain(**domain_values)
-        )
+            self.admin_context, objects.Domain.from_dict(domain_values))
 
         # Get updated subdomain values
         subdomain = self.central_service.get_domain(self.admin_context,
@@ -536,7 +535,7 @@ class CentralServiceTest(CentralTestCase):
         # Attempt to create the subdomain
         with testtools.ExpectedException(exceptions.Forbidden):
             self.central_service.create_domain(
-                context, domain=objects.Domain(**values))
+                context, objects.Domain.from_dict(values))
 
     def test_create_superdomain_failure(self):
         context = self.get_admin_context()
@@ -563,7 +562,7 @@ class CentralServiceTest(CentralTestCase):
         # Attempt to create the domain
         with testtools.ExpectedException(exceptions.Forbidden):
             self.central_service.create_domain(
-                context, domain=objects.Domain(**domain_values))
+                context, objects.Domain.from_dict(domain_values))
 
     def test_create_blacklisted_domain_success(self):
         # Create blacklisted zone using default values
@@ -582,7 +581,7 @@ class CentralServiceTest(CentralTestCase):
 
         # Create a zone that is blacklisted
         domain = self.central_service.create_domain(
-            self.admin_context, domain=objects.Domain(**values))
+            self.admin_context, objects.Domain.from_dict(values))
 
         # Ensure all values have been set correctly
         self.assertIsNotNone(domain['id'])
@@ -603,14 +602,14 @@ class CentralServiceTest(CentralTestCase):
         with testtools.ExpectedException(exceptions.InvalidDomainName):
             # Create a domain
             self.central_service.create_domain(
-                self.admin_context, domain=objects.Domain(**values))
+                self.admin_context, objects.Domain.from_dict(values))
 
     def _test_create_domain_fail(self, values, exception):
 
         with testtools.ExpectedException(exception):
             # Create an invalid domain
             self.central_service.create_domain(
-                self.admin_context, domain=objects.Domain(**values))
+                self.admin_context, objects.Domain.from_dict(values))
 
     def test_create_domain_invalid_tld_fail(self):
         # Create a server
@@ -626,7 +625,7 @@ class CentralServiceTest(CentralTestCase):
 
         # Create a valid domain
         self.central_service.create_domain(
-            self.admin_context, domain=objects.Domain(**values))
+            self.admin_context, objects.Domain.from_dict(values))
 
         values = dict(
             name='example.net.',
@@ -637,7 +636,7 @@ class CentralServiceTest(CentralTestCase):
         with testtools.ExpectedException(exceptions.InvalidDomainName):
             # Create an invalid domain
             self.central_service.create_domain(
-                self.admin_context, domain=objects.Domain(**values))
+                self.admin_context, objects.Domain.from_dict(values))
 
     def test_create_domain_invalid_ttl_fail(self):
         self.policy({'use_low_ttl': '!'})
@@ -653,7 +652,7 @@ class CentralServiceTest(CentralTestCase):
 
         with testtools.ExpectedException(exceptions.InvalidTTL):
                     self.central_service.create_domain(
-                        context, domain=objects.Domain(**values))
+                        context, objects.Domain.from_dict(values))
 
     def test_create_domain_no_min_ttl(self):
         self.policy({'use_low_ttl': '!'})
@@ -667,7 +666,7 @@ class CentralServiceTest(CentralTestCase):
 
         # Create domain with random TTL
         domain = self.central_service.create_domain(
-            self.admin_context, domain=objects.Domain(**values))
+            self.admin_context, objects.Domain.from_dict(values))
 
         # Ensure all values have been set correctly
         self.assertEqual(domain['ttl'], values['ttl'])
@@ -1066,7 +1065,7 @@ class CentralServiceTest(CentralTestCase):
             self.central_service.create_recordset(
                 self.admin_context,
                 domain['id'],
-                recordset=objects.RecordSet(**values))
+                recordset=objects.RecordSet.from_dict(values))
 
     def test_create_invalid_recordset_location_cname_sharing(self):
         domain = self.create_domain()
@@ -1082,7 +1081,7 @@ class CentralServiceTest(CentralTestCase):
             self.central_service.create_recordset(
                 self.admin_context,
                 domain['id'],
-                recordset=objects.RecordSet(**values))
+                recordset=objects.RecordSet.from_dict(values))
 
     def test_create_invalid_recordset_location_wrong_domain(self):
         domain = self.create_domain()
@@ -1098,7 +1097,7 @@ class CentralServiceTest(CentralTestCase):
             self.central_service.create_recordset(
                 self.admin_context,
                 domain['id'],
-                recordset=objects.RecordSet(**values))
+                recordset=objects.RecordSet.from_dict(values))
 
     def test_create_invalid_recordset_ttl(self):
         self.policy({'use_low_ttl': '!'})
@@ -1117,7 +1116,7 @@ class CentralServiceTest(CentralTestCase):
             self.central_service.create_recordset(
                 self.admin_context,
                 domain['id'],
-                recordset=objects.RecordSet(**values))
+                recordset=objects.RecordSet.from_dict(values))
 
     def test_create_recordset_no_min_ttl(self):
         self.policy({'use_low_ttl': '!'})
@@ -1134,7 +1133,7 @@ class CentralServiceTest(CentralTestCase):
         recordset = self.central_service.create_recordset(
             self.admin_context,
             domain['id'],
-            recordset=objects.RecordSet(**values))
+            recordset=objects.RecordSet.from_dict(values))
         self.assertEqual(recordset['ttl'], values['ttl'])
 
     def test_get_recordset(self):
@@ -1567,10 +1566,8 @@ class CentralServiceTest(CentralTestCase):
 
         # Create a record
         record = self.central_service.create_record(
-            self.admin_context,
-            domain['id'],
-            recordset['id'],
-            record=objects.Record(**values))
+            self.admin_context, domain['id'], recordset['id'],
+            objects.Record.from_dict(values))
 
         # Ensure all values have been set correctly
         self.assertIsNotNone(record['id'])
@@ -1599,10 +1596,8 @@ class CentralServiceTest(CentralTestCase):
 
         # Create a record
         self.central_service.create_record(
-            self.admin_context,
-            domain['id'],
-            recordset['id'],
-            record=objects.Record(**values),
+            self.admin_context, domain['id'], recordset['id'],
+            objects.Record.from_dict(values),
             increment_serial=False)
 
         # Ensure the domains serial number was not updated
@@ -2448,8 +2443,7 @@ class CentralServiceTest(CentralTestCase):
         values = self.get_pool_fixture(fixture=0)
         # Create the pool using the values
         pool = self.central_service.create_pool(
-            context=self.admin_context,
-            pool=objects.Pool(**values))
+            self.admin_context, objects.Pool.from_dict(values))
 
         # Verify that all the values were set correctly
         self.assertIsNotNone(pool['id'])
@@ -2465,19 +2459,14 @@ class CentralServiceTest(CentralTestCase):
         # Compare the actual values of attributes and nameservers
         for k in range(0, len(values['attributes'])):
             self.assertDictContainsSubset(
-                values['attributes'][k].to_primitive()
-                ['designate_object.data'],
-                pool['attributes'][k].to_primitive()
-                ['designate_object.data']
+                values['attributes'][k],
+                pool['attributes'][k].to_primitive()['designate_object.data']
             )
 
         for k in range(0, len(values['nameservers'])):
             self.assertDictContainsSubset(
-                values['nameservers'][k].to_primitive()
-                ['designate_object.data'],
-                pool['nameservers'][k].to_primitive()
-                ['designate_object.data']
-            )
+                values['nameservers'][k],
+                pool['nameservers'][k].to_primitive()['designate_object.data'])
 
     def test_get_pool(self):
         # Create a server pool
@@ -2523,15 +2512,13 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(pools[1]['name'], values['name'])
 
         # Compare the actual values of attributes and nameservers
-        expected_attributes = \
-            values['attributes'][0].to_primitive()['designate_object.data']
+        expected_attributes = values['attributes'][0]
         actual_attributes = \
             pools[1]['attributes'][0].to_primitive()['designate_object.data']
         for k in expected_attributes:
             self.assertEqual(actual_attributes[k], expected_attributes[k])
 
-        expected_nameservers = \
-            values['nameservers'][0].to_primitive()['designate_object.data']
+        expected_nameservers = values['nameservers'][0]
         actual_nameservers = \
             pools[1]['nameservers'][0].to_primitive()['designate_object.data']
         for k in expected_nameservers:
