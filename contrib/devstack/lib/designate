@@ -2,7 +2,7 @@
 # Install and start **Designate** service
 
 # To enable Designate services, add the following to localrc
-# enable_service designate,designate-api,designate-central,designate-mdns,designate-sink,designate-pool-manager
+# enable_service designate,designate-central,designate-api,designate-pool-manager,designate-mdns,designate-agent,designate-sink
 
 # stack.sh
 # ---------
@@ -221,21 +221,12 @@ function install_designateclient {
 function start_designate {
     start_designate_backend
 
-    # If using bind9, central must have access to the bind zone/db files.
-    # The configure phase has already added the $STACK_USER to the bind
-    # system daemon group - we need to start central using that group using sg.
-    # nova does a similar "trick" with libvirtd and compute.
-    # sg will be used in run_process to execute designate-central as a member
-    # of the **$BIND_GROUP** group.
-    if [[ "$DESIGNATE_BACKEND_DRIVER" = 'bind9' ]]; then
-        run_process designate-central "designate-central --config-file $DESIGNATE_CONF" $BIND_GROUP
-    else
-        run_process designate-central "$DESIGNATE_BIN_DIR/designate-central --config-file $DESIGNATE_CONF"
-    fi
+    run_process designate-central "$DESIGNATE_BIN_DIR/designate-central --config-file $DESIGNATE_CONF"
     run_process designate-api "$DESIGNATE_BIN_DIR/designate-api --config-file $DESIGNATE_CONF"
-    run_process designate-mdns "$DESIGNATE_BIN_DIR/designate-mdns --config-file $DESIGNATE_CONF"
-    run_process designate-sink "$DESIGNATE_BIN_DIR/designate-sink --config-file $DESIGNATE_CONF"
     run_process designate-pool-manager "$DESIGNATE_BIN_DIR/designate-pool-manager --config-file $DESIGNATE_CONF"
+    run_process designate-mdns "$DESIGNATE_BIN_DIR/designate-mdns --config-file $DESIGNATE_CONF"
+    run_process designate-agent "$DESIGNATE_BIN_DIR/designate-agent --config-file $DESIGNATE_CONF"
+    run_process designate-sink "$DESIGNATE_BIN_DIR/designate-sink --config-file $DESIGNATE_CONF"
 
     # Start proxies if enabled
     if is_service_enabled designate-api && is_service_enabled tls-proxy; then
@@ -250,11 +241,12 @@ function start_designate {
 # stop_designate - Stop running processes
 function stop_designate {
     # Kill the designate screen windows
-    stop_process designate-api
     stop_process designate-central
-    stop_process designate-mdns
-    stop_process designate-sink
+    stop_process designate-api
     stop_process designate-pool-manager
+    stop_process designate-mdns
+    stop_process designate-agent
+    stop_process designate-sink
 
     stop_designate_backend
 }
