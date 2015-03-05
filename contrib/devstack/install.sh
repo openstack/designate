@@ -1,14 +1,15 @@
 #!/bin/bash
 
-DIR=$(readlink -e $(dirname $(readlink -f $0)))
+SOURCE_DIR=$(readlink -e $(dirname $(readlink -f $0)))
+DEVSTACK_DIR=$(pwd -P)
 
-pushd $DIR
+pushd $SOURCE_DIR >> /dev/null
 
-for f in lib/* extras.d/* exercises/*; do
-    if [ ! -e "$DIR/../../../devstack/$f" ]; then
-        echo "Installing symlink for $f"
-        ln -fs $DIR/$f $DIR/../../../devstack/$f
+for path in lib/* extras.d/* exercises/*; do
+    if [ ! -e "$DEVSTACK_DIR/$path" ]; then
+        echo "Installing symlink for $path"
+        ln -fs $SOURCE_DIR/$path $DEVSTACK_DIR/$path
     fi
 done
 
-popd
+popd >> /dev/null
