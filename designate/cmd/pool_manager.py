@@ -32,7 +32,6 @@ def main():
     utils.read_config('designate', sys.argv)
     logging.setup(CONF, 'designate')
 
-    server = pool_manager_service.Service.create(
-        binary='designate-pool-manager')
+    server = pool_manager_service.Service()
     service.serve(server, workers=CONF['service:pool_manager'].workers)
     service.wait()

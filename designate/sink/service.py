@@ -28,12 +28,16 @@ LOG = logging.getLogger(__name__)
 
 
 class Service(service.Service):
-    def __init__(self, *args, **kwargs):
-        super(Service, self).__init__(*args, **kwargs)
+    def __init__(self, threads=None):
+        super(Service, self).__init__(threads=threads)
 
         # Initialize extensions
         self.handlers = self._init_extensions()
         self.subscribers = self._get_subscribers()
+
+    @property
+    def service_name(self):
+        return 'sink'
 
     def _init_extensions(self):
         """Loads and prepares all enabled extensions"""

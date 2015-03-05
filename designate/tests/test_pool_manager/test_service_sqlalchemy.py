@@ -84,7 +84,7 @@ class PoolManagerServiceTest(PoolManagerTestCase):
     def test_pool_instance_topic(self):
         self.assertEqual(
             'pool_manager.%s' % cfg.CONF['service:pool_manager'].pool_id,
-            self.service.topic)
+            self.service._rpc_topic)
 
     def test_no_pool_servers_configured(self):
         self.service.stop()

@@ -31,7 +31,6 @@ def main():
     utils.read_config('designate', sys.argv)
     logging.setup(CONF, 'designate')
 
-    server = agent_service.Service.create(
-        binary='designate-agent')
+    server = agent_service.Service()
     service.serve(server, workers=CONF['service:agent'].workers)
     service.wait()

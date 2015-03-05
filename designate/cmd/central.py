@@ -31,7 +31,6 @@ def main():
     utils.read_config('designate', sys.argv)
     logging.setup(CONF, 'designate')
 
-    server = central.Service.create(binary='designate-central',
-                                    service_name='central')
+    server = central.Service()
     service.serve(server, workers=CONF['service:central'].workers)
     service.wait()

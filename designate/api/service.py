@@ -27,8 +27,15 @@ LOG = logging.getLogger(__name__)
 
 
 class Service(service.WSGIService):
-    def __init__(self, backlog=128, threads=1000):
+    def __init__(self, threads=None):
+        super(Service, self).__init__(threads=threads)
 
+    @property
+    def service_name(self):
+        return 'api'
+
+    @property
+    def _wsgi_application(self):
         api_paste_config = cfg.CONF['service:api'].api_paste_config
         config_paths = utils.find_config(api_paste_config)
 
@@ -38,11 +45,4 @@ class Service(service.WSGIService):
 
         LOG.info(_LI('Using api-paste-config found at: %s') % config_paths[0])
 
-        application = deploy.loadapp("config:%s" % config_paths[0],
-                                     name='osapi_dns')
-
-        super(Service, self).__init__(application=application,
-                                      host=cfg.CONF['service:api'].api_host,
-                                      port=cfg.CONF['service:api'].api_port,
-                                      backlog=backlog,
-                                      threads=threads)
+        return deploy.loadapp("config:%s" % config_paths[0], name='osapi_dns')

@@ -351,3 +351,27 @@ def extract_priority_from_data(recordset_type, record):
         priority, _, data = record['data'].partition(" ")
         priority = int(priority)
     return priority, data
+
+
+def cache_result(function):
+    """A function decorator to cache the result of the first call, every
+    additional call will simply return the cached value.
+
+    If we were python3 only, we would have used functools.lru_cache() in place
+    of this. If there's a python2 backport in a lightweight library, then we
+    should switch to that.
+    """
+    # NOTE: We're cheating a little here, by using a mutable type (a list),
+    #       we're able to read and update the value from within in inline
+    #       wrapper method. If we used an immutable type, the assignment
+    #       would not work as we want.
+    cache = [None]
+
+    def wrapper(*args, **kwargs):
+        if cache[0] is not None:
+            return cache[0]
+        else:
+            result = function(*args, **kwargs)
+            cache[0] = result
+        return result
+    return wrapper

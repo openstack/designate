@@ -71,13 +71,8 @@ class Service(service.RPCService):
 
     target = messaging.Target(version=RPC_API_VERSION)
 
-    def __init__(self, host, binary, topic, **kwargs):
-
-        # Modifying the topic so it is pool manager instance specific.
-        topic = '%s.%s' % (topic, cfg.CONF['service:pool_manager'].pool_id)
-        LOG.info(_LI('Using topic %(topic)s for this pool manager instance.')
-                 % {'topic': topic})
-        super(Service, self).__init__(host, binary, topic, **kwargs)
+    def __init__(self, threads=None):
+        super(Service, self).__init__(threads=threads)
 
         # Get a pool manager cache connection.
         cache_driver = cfg.CONF['service:pool_manager'].cache_driver
@@ -120,6 +115,21 @@ class Service(service.RPCService):
             cfg.CONF['service:pool_manager'].enable_recovery_timer
         self.enable_sync_timer = \
             cfg.CONF['service:pool_manager'].enable_sync_timer
+
+    @property
+    def service_name(self):
+        return 'pool_manager'
+
+    @property
+    def _rpc_topic(self):
+        # Modify the default topic so it's pool manager instance specific.
+        topic = super(Service, self)._rpc_topic
+
+        topic = '%s.%s' % (topic, cfg.CONF['service:pool_manager'].pool_id)
+        LOG.info(_LI('Using topic %(topic)s for this pool manager instance.')
+                 % {'topic': topic})
+
+        return topic
 
     def start(self):
         for server_backend in self.server_backends:

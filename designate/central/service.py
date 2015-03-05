@@ -250,8 +250,8 @@ class Service(service.RPCService):
 
     target = messaging.Target(version=RPC_API_VERSION)
 
-    def __init__(self, *args, **kwargs):
-        super(Service, self).__init__(*args, **kwargs)
+    def __init__(self, threads=None):
+        super(Service, self).__init__(threads=threads)
 
         # Get a storage connection
         storage_driver = cfg.CONF['service:central'].storage_driver
@@ -261,6 +261,10 @@ class Service(service.RPCService):
         self.quota = quota.get_quota()
 
         self.network_api = network_api.get_network_api(cfg.CONF.network_api)
+
+    @property
+    def service_name(self):
+        return 'central'
 
     def start(self):
         # Check to see if there are any TLDs in the database
