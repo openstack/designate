@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: designate 2015.1.dev100\n"
+"Project-Id-Version: designate 2015.1.dev117\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-03-03 06:04+0000\n"
+"POT-Creation-Date: 2015-03-06 06:05+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -50,14 +50,6 @@ msgstr ""
 msgid "Agent masters: %(masters)s"
 msgstr ""
 
-#: designate/agent/service.py:46
-msgid "Started Agent Service"
-msgstr ""
-
-#: designate/agent/service.py:50
-msgid "Stopped Agent Service"
-msgstr ""
-
 #: designate/api/middleware.py:53
 #, python-format
 msgid "Getting auth pipeline: %s"
@@ -79,7 +71,7 @@ msgstr ""
 msgid "Starting designate faultwrapper middleware"
 msgstr ""
 
-#: designate/api/service.py:39
+#: designate/api/service.py:46
 #, python-format
 msgid "Using api-paste-config found at: %s"
 msgstr ""
@@ -437,20 +429,20 @@ msgid ""
 "delete_zone_transfer_accept."
 msgstr ""
 
-#: designate/central/service.py:270
+#: designate/central/service.py:274
 msgid "Checking for TLDs"
 msgstr ""
 
-#: designate/central/service.py:273
+#: designate/central/service.py:277
 msgid "NOT checking for TLDs"
 msgstr ""
 
-#: designate/central/service.py:1765
+#: designate/central/service.py:1769
 #, python-format
 msgid "Creating zone for %(fip_id)s:%(region)s - %(fip_addr)s zone %(zonename)s"
 msgstr ""
 
-#: designate/central/service.py:2174
+#: designate/central/service.py:2178
 msgid "Target Tenant ID found - using scoped policy"
 msgstr ""
 
@@ -497,14 +489,6 @@ msgstr ""
 msgid ""
 "get_serial_number: Calling mdns for zone '%(zone)s', serial '%(serial)s' "
 "to server '%(host)s:%(port)s'"
-msgstr ""
-
-#: designate/mdns/service.py:62
-msgid "started mdns service"
-msgstr ""
-
-#: designate/mdns/service.py:68
-msgid "stopped mdns service"
 msgstr ""
 
 #: designate/openstack/common/eventlet_backdoor.py:146
@@ -584,40 +568,40 @@ msgstr ""
 msgid "update_status: Calling pool manager's update_status for %(domain)s"
 msgstr ""
 
-#: designate/pool_manager/service.py:78
+#: designate/pool_manager/service.py:129
 #, python-format
 msgid "Using topic %(topic)s for this pool manager instance."
 msgstr ""
 
-#: designate/pool_manager/service.py:132
+#: designate/pool_manager/service.py:142
 msgid "Starting periodic recovery timer."
 msgstr ""
 
-#: designate/pool_manager/service.py:138
+#: designate/pool_manager/service.py:148
 msgid "Starting periodic sync timer."
 msgstr ""
 
-#: designate/pool_manager/service.py:257
+#: designate/pool_manager/service.py:267
 #, python-format
 msgid "For domain %(domain)s the consensus serial is %(consensus_serial)s."
 msgstr ""
 
-#: designate/pool_manager/service.py:340
+#: designate/pool_manager/service.py:350
 #, python-format
 msgid "Created domain %(domain)s on server %(server)s."
 msgstr ""
 
-#: designate/pool_manager/service.py:384
+#: designate/pool_manager/service.py:394
 #, python-format
 msgid "Deleted domain %(domain)s from server %(server)s."
 msgstr ""
 
-#: designate/pool_manager/service.py:391
+#: designate/pool_manager/service.py:401
 #, python-format
 msgid "Consensus reached for deleting domain %(domain)s"
 msgstr ""
 
-#: designate/pool_manager/service.py:431
+#: designate/pool_manager/service.py:441
 #, python-format
 msgid "Updating domain %(domain)s on server %(server)s."
 msgstr ""

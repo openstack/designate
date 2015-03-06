@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  Designate\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-03-03 06:04+0000\n"
-"PO-Revision-Date: 2015-03-02 22:07+0000\n"
+"POT-Creation-Date: 2015-03-06 06:05+0000\n"
+"PO-Revision-Date: 2015-03-05 18:07+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: French "
 "(http://www.transifex.com/projects/p/designate/language/fr/)\n"
@@ -33,17 +33,34 @@ msgstr ""
 "Vérification de stratégie ayant échoué pour la règle '%(rule)s' pour la "
 "cible %(target)s"
 
-#: designate/service.py:74
+#: designate/service.py:86
 #, python-format
-msgid "Starting %(topic)s node (version %(version_string)s)"
-msgstr "Démarrage du noeud %(topic)s (version %(version_string)s)"
+msgid "Starting %(name)s service (version: %(version)s)"
+msgstr ""
 
-#: designate/service.py:77
+#: designate/service.py:91
 #, python-format
-msgid "Creating RPC server on topic '%s'"
-msgstr "Créer un serveur RPC pour topic '%s'"
+msgid "Stopping %(name)s service"
+msgstr ""
 
-#: designate/service.py:223
+#: designate/service.py:103
+#, python-format
+msgid "Creating RPC Server on topic '%s'"
+msgstr ""
+
+#: designate/service.py:119
+#, python-format
+msgid "Starting RPC server on topic '%s'"
+msgstr ""
+
+#: designate/service.py:192
+#, python-format
+msgid "Could not bind to %(host)s:%(port)s after trying for 30 seconds"
+msgstr ""
+"Impossible de se connecter au %(host)s:%(port)s après un effort d'une "
+"durée de 30 secondes"
+
+#: designate/service.py:271
 msgid "serve() can only be called once"
 msgstr "serve() ne peut être appelé qu'une seule fois"
 
@@ -121,49 +138,4 @@ msgstr ""
 #, python-format
 msgid "Invalid SSL version : %s"
 msgstr "Version SSL non valide : %s"
-
-#: designate/openstack/deprecated/exception.py:104
-msgid "Uncaught exception"
-msgstr "Exception non interceptée"
-
-#: designate/openstack/deprecated/wsgi.py:111
-#, python-format
-msgid "Could not bind to %(host)s:%(port)s after trying for 30 seconds"
-msgstr ""
-"Impossible de se connecter au %(host)s:%(port)s après un effort d'une "
-"durée de 30 secondes"
-
-#: designate/openstack/deprecated/wsgi.py:373
-msgid "Unsupported Content-Type"
-msgstr "Type de contenu non pris en charge"
-
-#: designate/openstack/deprecated/wsgi.py:376
-msgid "Malformed request body"
-msgstr "Corps de texte de la requête malformé"
-
-#: designate/openstack/deprecated/wsgi.py:661
-msgid "Empty body provided in request"
-msgstr "Aucun contenu dans la requête"
-
-#: designate/openstack/deprecated/wsgi.py:667
-msgid "Unrecognized Content-Type provided in request"
-msgstr "Type de contenu fourni dans la requête non reconnu"
-
-#: designate/openstack/deprecated/wsgi.py:671
-msgid "No Content-Type provided in request"
-msgstr "Aucun Type de contenu fourni dans la requête"
-
-#: designate/openstack/deprecated/wsgi.py:677
-msgid "Unable to deserialize body as provided Content-Type"
-msgstr ""
-"Impossible de dé sérialiser le corps de contenu fourni par le Type de "
-"contenu"
-
-#: designate/openstack/deprecated/wsgi.py:727
-msgid "cannot understand JSON"
-msgstr "ne comprend pas JSON"
-
-#: designate/openstack/deprecated/wsgi.py:751
-msgid "cannot understand XML"
-msgstr "ne comprend pas XML"
 
