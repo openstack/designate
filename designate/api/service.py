@@ -26,7 +26,7 @@ from designate import service
 LOG = logging.getLogger(__name__)
 
 
-class Service(service.WSGIService):
+class Service(service.WSGIService, service.Service):
     def __init__(self, threads=None):
         super(Service, self).__init__(threads=threads)
 

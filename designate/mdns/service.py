@@ -27,7 +27,7 @@ LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
 
 
-class Service(service.RPCService):
+class Service(service.RPCService, service.Service):
     def __init__(self, threads=None):
         super(Service, self).__init__(threads=threads)
 

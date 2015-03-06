@@ -245,7 +245,7 @@ def notification(notification_type):
     return outer
 
 
-class Service(service.RPCService):
+class Service(service.RPCService, service.Service):
     RPC_API_VERSION = '5.0'
 
     target = messaging.Target(version=RPC_API_VERSION)
