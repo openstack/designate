@@ -43,7 +43,8 @@ class Service(service.DNSService, service.Service):
     def _dns_application(self):
         # Create an instance of the RequestHandler class
         application = handler.RequestHandler()
-        application = dnsutils.DNSMiddleware(application)
+        application = dnsutils.ContextMiddleware(application)
+        application = dnsutils.SerializationMiddleware(application)
 
         return application
 

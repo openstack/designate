@@ -20,7 +20,6 @@ import dns
 import dns.message
 import mock
 
-from designate import dnsutils
 from designate.tests.test_mdns import MdnsTestCase
 
 
@@ -40,8 +39,7 @@ class MdnsServiceTest(MdnsTestCase):
 
     @mock.patch.object(dns.message, 'make_query')
     def test_handle_empty_payload(self, query_mock):
-        dnsutils.handle(self.addr, None, self.service.application,
-                        sock_udp=self.service._sock_udp)
+        self.service._dns_handle(self.addr, None)
         query_mock.assert_called_once_with('unknown', dns.rdatatype.A)
 
     @mock.patch.object(socket.socket, 'sendto', new_callable=mock.MagicMock)
@@ -62,8 +60,6 @@ class MdnsServiceTest(MdnsTestCase):
         expected_response = ("271289050001000000000000076578616d706c6503636f6d"
                              "0000010001")
 
-        dnsutils.handle(
-            self.addr, binascii.a2b_hex(payload), self.service.application,
-            sock_udp=self.service._sock_udp)
+        self.service._dns_handle(self.addr, binascii.a2b_hex(payload))
         sendto_mock.assert_called_once_with(
             binascii.a2b_hex(expected_response), self.addr)
