@@ -33,6 +33,7 @@ DOMAIN_NAME_REGEX = r'^(?!.{255,})(?:(?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-)\.)+$'
 WILDCARD_DOMAIN_NAME_REGEX = r'^(?!.{255,})(?:(^\*|(?!\-)[A-Za-z0-9_\-]{1,63})(?<!\-)\.)+$'  # noqa
 SRV_NAME_REGEX = r'^(?:_[A-Za-z0-9_\-]{1,62}\.){2}'
 SRV_DATA_REGEX = r'^(?:(?:6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[1-5][0-9]{4}|[1-9][0-9]{1,3}|[0-9])\s){2}(?!.{255,})((?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-)\.)+$'  # noqa
+SSHFP_DATA_REGEX = r'^[1-3]\s[1-2]\s\b([0-9a-fA-F]{5,40}|[0-9a-fA-F]{64})\b$'
 
 
 def handle_exc(func):
@@ -378,6 +379,12 @@ class RecordForm(forms.SelfHandlingForm):
         else:
             if record_type == 'TXT':
                 cleaned_data['data'] = cleaned_data['txt']
+
+        if record_type == 'SSHFP':
+            if not re.match(SSHFP_DATA_REGEX, cleaned_data['txt']):
+                self._add_field_error('txt',
+                                      _('Enter a valid SSHFP record'))
+            cleaned_data['data'] = cleaned_data['txt']
 
         cleaned_data.pop('txt')
 
