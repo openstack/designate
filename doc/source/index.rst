@@ -49,6 +49,7 @@ Reference Documentation
    glossary
    backends
    integrations
+   tempest
 
 Source Documentation
 ====================
