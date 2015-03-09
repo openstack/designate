@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Designate\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-03-03 06:04+0000\n"
-"PO-Revision-Date: 2015-03-02 22:07+0000\n"
+"POT-Creation-Date: 2015-03-09 06:05+0000\n"
+"PO-Revision-Date: 2015-03-06 18:02+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: French (http://www.transifex.com/projects/p/designate/"
 "language/fr/)\n"
@@ -20,13 +20,9 @@ msgstr ""
 "Generated-By: Babel 1.3\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: designate/dnsutils.py:195
+#: designate/service.py:292
 #, python-format
 msgid "TCP Timeout from: %(host)s:%(port)d"
-msgstr ""
-
-#: designate/dnsutils.py:248
-msgid "Both sock_udp and client are None"
 msgstr ""
 
 #: designate/agent/handler.py:117
@@ -88,7 +84,7 @@ msgstr "Veuillez lancer cette demande : %s"
 msgid "Deadlock detected. Retrying..."
 msgstr ""
 
-#: designate/central/service.py:992
+#: designate/central/service.py:996
 #, python-format
 msgid "Abandoning zone '%(zone)s'"
 msgstr ""
@@ -146,32 +142,32 @@ msgstr ""
 msgid "pid %d not in child list"
 msgstr "pid %d ne fait pas partie de la liste enfant"
 
-#: designate/pool_manager/service.py:175
+#: designate/pool_manager/service.py:185
 #, python-format
 msgid "Consensus not reached for creating domain %(domain)s"
 msgstr ""
 
-#: designate/pool_manager/service.py:201
+#: designate/pool_manager/service.py:211
 #, python-format
 msgid "Consensus not reached for deleting domain %(domain)s"
 msgstr ""
 
-#: designate/pool_manager/service.py:268
+#: designate/pool_manager/service.py:278
 #, python-format
 msgid "For domain %(domain)s the error serial is %(error_serial)s."
 msgstr ""
 
-#: designate/pool_manager/service.py:352
+#: designate/pool_manager/service.py:362
 #, python-format
 msgid "Failed to create domain %(domain)s on server %(server)s."
 msgstr ""
 
-#: designate/pool_manager/service.py:400
+#: designate/pool_manager/service.py:410
 #, python-format
 msgid "Failed to delete domain %(domain)s from server %(server)s."
 msgstr ""
 
-#: designate/sink/service.py:48
+#: designate/sink/service.py:52
 msgid "No designate-sink handlers enabled or loaded"
 msgstr "Aucun gestionnaire designate-sink n'a été activé ou téléchargé"
 
