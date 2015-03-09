@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Designate\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-03-06 06:05+0000\n"
+"POT-Creation-Date: 2015-03-09 06:05+0000\n"
 "PO-Revision-Date: 2015-03-05 18:07+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: French (http://www.transifex.com/projects/p/designate/"
@@ -20,25 +20,17 @@ msgstr ""
 "Generated-By: Babel 1.3\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: designate/dnsutils.py:147
+#: designate/dnsutils.py:166
 #, python-format
 msgid "Opening TCP Listening Socket on %(host)s:%(port)d"
 msgstr "Ouverture TCP Listening Socket sur %(host)s:%(port)d"
 
-#: designate/dnsutils.py:160
+#: designate/dnsutils.py:179
 #, python-format
 msgid "Opening UDP Listening Socket on %(host)s:%(port)d"
 msgstr "Ouverture UDP Listening Socket sur %(host)s:%(port)d"
 
-#: designate/dnsutils.py:169
-msgid "_handle_tcp thread started"
-msgstr "démarrage du thread _handle_tcp"
-
-#: designate/dnsutils.py:203
-msgid "_handle_udp thread started"
-msgstr "démarrage du thread _handle_udp"
-
-#: designate/dnsutils.py:262
+#: designate/dnsutils.py:194
 #, python-format
 msgid "Doing AXFR for %(name)s from %(host)s"
 msgstr ""
@@ -47,6 +39,14 @@ msgstr ""
 #, python-format
 msgid "Using policy_file found at: %s"
 msgstr "Utiliser le policy_file trouvé à : %s"
+
+#: designate/service.py:264
+msgid "_handle_tcp thread started"
+msgstr "démarrage du thread _handle_tcp"
+
+#: designate/service.py:299
+msgid "_handle_udp thread started"
+msgstr "démarrage du thread _handle_udp"
 
 #: designate/agent/handler.py:55
 #, python-format
