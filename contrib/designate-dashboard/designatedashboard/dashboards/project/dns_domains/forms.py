@@ -11,6 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import functools
 import logging
 import re
 
@@ -32,6 +33,36 @@ DOMAIN_NAME_REGEX = r'^(?!.{255,})(?:(?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-)\.)+$'
 WILDCARD_DOMAIN_NAME_REGEX = r'^(?!.{255,})(?:(^\*|(?!\-)[A-Za-z0-9_\-]{1,63})(?<!\-)\.)+$'  # noqa
 SRV_NAME_REGEX = r'^(?:_[A-Za-z0-9_\-]{1,62}\.){2}'
 SRV_DATA_REGEX = r'^(?:(?:6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[1-5][0-9]{4}|[1-9][0-9]{1,3}|[0-9])\s){2}(?!.{255,})((?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-)\.)+$'  # noqa
+
+
+def handle_exc(func):
+    @functools.wraps(func)
+    def wrapped(form, request, *args, **kwargs):
+        try:
+            return func(form, request, *args, **kwargs)
+        except designate_exceptions.RemoteError as ex:
+            msg = ""
+            data = {}
+
+            if ex.message is not None:
+                data['message'] = ex.message
+                msg += "Error: %(message)s"
+            else:
+                data["type"] = ex.type
+                msg += "Error Type: %(type)s"
+
+            if ex.code >= 500:
+                msg += " (Request ID: %(request_id)s"
+                data["request_id"] = ex.request_id
+
+            form.api_error(_(msg) % data)
+
+            return False
+        except Exception:
+            messages.error(request, form.exc_message)
+            return True
+
+    return wrapped
 
 
 class DomainForm(forms.SelfHandlingForm):
@@ -74,46 +105,26 @@ class DomainCreate(DomainForm):
     Name and email address are
     required.
     '''
+    exc_message = _("Unable to create domain.")
 
+    @handle_exc
     def handle(self, request, data):
-        try:
-            domain = api.designate.domain_create(
-                request,
-                name=data['name'],
-                email=data['email'],
-                ttl=data['ttl'],
-                description=data['description'])
-            messages.success(request,
-                             _('Domain %(name)s created.') %
-                             {"name": domain.name})
-            return domain
-
-        except designate_exceptions.RemoteError as ex:
-
-            if ex.code >= 500:
-                self.api_error(
-                    _('Error: %(message)s (Request ID: %(request_id)s)')
-                    % {
-                        "request_id": ex.request_id,
-                        "message": ex.message
-                    })
-            else:
-                self.api_error(
-                    _('Error: %(message)s')
-                    % {
-                        "message": ex.message
-                    })
-
-            return False
-
-        except Exception:
-            messages.error(request, _('Unable to create domain.'))
-            return True
+        domain = api.designate.domain_create(
+            request,
+            name=data['name'],
+            email=data['email'],
+            ttl=data['ttl'],
+            description=data['description'])
+        messages.success(request,
+                         _('Domain %(name)s created.') %
+                         {"name": domain.name})
+        return domain
 
 
 class DomainUpdate(DomainForm):
 
     '''Form for displaying domain record details and updating them.'''
+    exc_message = _('Unable to update domain.')
 
     id = forms.CharField(
         required=False,
@@ -159,40 +170,18 @@ class DomainUpdate(DomainForm):
             'updated_at',
         ]
 
+    @handle_exc
     def handle(self, request, data):
-        try:
-            domain = api.designate.domain_update(
-                request,
-                domain_id=data['id'],
-                email=data['email'],
-                ttl=data['ttl'],
-                description=data['description'])
-            messages.success(request,
-                             _('Domain %(name)s updated.') %
-                             {"name": domain.name})
-            return domain
-
-        except designate_exceptions.RemoteError as ex:
-
-            if ex.code >= 500:
-                self.api_error(
-                    _('Error: %(message)s (Request ID: %(request_id)s)')
-                    % {
-                        "request_id": ex.request_id,
-                        "message": ex.message
-                    })
-            else:
-                self.api_error(
-                    _('Error: %(message)s')
-                    % {
-                        "message": ex.message
-                    })
-
-            return False
-
-        except Exception:
-            messages.error(request, _('Unable to update domain.'))
-            return True
+        domain = api.designate.domain_update(
+            request,
+            domain_id=data['id'],
+            email=data['email'],
+            ttl=data['ttl'],
+            description=data['description'])
+        messages.success(request,
+                         _('Domain %(name)s updated.') %
+                         {"name": domain.name})
+        return domain
 
 
 class RecordForm(forms.SelfHandlingForm):
@@ -422,41 +411,21 @@ class RecordForm(forms.SelfHandlingForm):
 class RecordCreate(RecordForm):
 
     '''Form for creating a new domain record.'''
+    exc_message = _('Unable to create record.')
 
+    @handle_exc
     def handle(self, request, data):
-        try:
-            record = api.designate.record_create(request, **data)
-            messages.success(request,
-                             _('Domain record %(name)s created.') %
-                             {"name": record.name})
-            return record
-
-        except designate_exceptions.RemoteError as ex:
-
-            if ex.code >= 500:
-                self.api_error(
-                    _('Error: %(message)s (Request ID: %(request_id)s)')
-                    % {
-                        "request_id": ex.request_id,
-                        "message": ex.message
-                    })
-            else:
-                self.api_error(
-                    _('Error: %(message)s')
-                    % {
-                        "message": ex.message
-                    })
-
-            return False
-
-        except Exception:
-            messages.error(request, _('Unable to create record.'))
-            return True
+        record = api.designate.record_create(request, **data)
+        messages.success(request,
+                         _('Domain record %(name)s created.') %
+                         {"name": record.name})
+        return record
 
 
 class RecordUpdate(RecordForm):
 
     '''Form for editing a domain record.'''
+    exc_message = _('Unable to create record.')
 
     id = forms.CharField(widget=forms.HiddenInput())
 
@@ -483,37 +452,16 @@ class RecordUpdate(RecordForm):
             [choice for choice in self.fields['type'].choices
              if choice[0] == self.initial['type']])
 
+    @handle_exc
     def handle(self, request, data):
 
         if data['type'] in ('SOA', 'NS'):
             return True
 
-        try:
-            record = api.designate.record_update(request, **data)
+        record = api.designate.record_update(request, **data)
 
-            messages.success(request,
-                             _('Domain record %(name)s updated.') %
-                             {"name": record.name})
+        messages.success(request,
+                         _('Domain record %(name)s updated.') %
+                         {"name": record.name})
 
-            return record
-
-        except designate_exceptions.RemoteError as ex:
-            if ex.code >= 500:
-                self.api_error(
-                    _('Error: %(message)s (Request ID: %(request_id)s)')
-                    % {
-                        "request_id": ex.request_id,
-                        "message": ex.message
-                    })
-            else:
-                self.api_error(
-                    _('Error: %(message)s')
-                    % {
-                        "message": ex.message
-                    })
-
-            return False
-
-        except Exception:
-            messages.error(request, _('Unable to create record.'))
-            return True
+        return record
