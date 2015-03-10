@@ -26,6 +26,7 @@ from oslo_utils import strutils
 from designate import exceptions
 from designate import notifications
 from designate import context
+from designate import objects
 from designate.i18n import _LI
 from designate.i18n import _LW
 from designate.i18n import _LE
@@ -268,3 +269,66 @@ class FaultWrapperMiddleware(base.Middleware):
 
         return flask.Response(status=status, headers=headers,
                               response=json.dumps(response))
+
+
+class ValidationErrorMiddleware(base.Middleware):
+
+    def __init__(self, application):
+        super(ValidationErrorMiddleware, self).__init__(application)
+
+        LOG.info(_LI('Starting designate validation middleware'))
+
+    @webob.dec.wsgify
+    def __call__(self, request):
+        try:
+            return request.get_response(self.application)
+        except exceptions.InvalidObject as e:
+            # Allow current views validation to pass through to FaultWapper
+            if not isinstance(e.errors, objects.ValidationErrorList):
+                raise
+            return self._handle_errors(request, e)
+
+    def _handle_errors(self, request, exception):
+
+        response = {}
+
+        headers = [
+            ('Content-Type', 'application/json'),
+        ]
+
+        url = getattr(request, 'url', None)
+
+        response['code'] = exception.error_code
+
+        response['type'] = exception.error_type or 'unknown'
+
+        response['errors'] = list()
+
+        for error in exception.errors:
+            response['errors'].append(error.to_dict())
+
+        # Return the new response
+        if 'context' in request.environ:
+            response['request_id'] = request.environ['context'].request_id
+
+            notifications.send_api_fault(request.environ['context'], url,
+                                         response['code'], exception)
+        else:
+            # TODO(ekarlso): Remove after verifying that there's actually a
+            # context always set
+            LOG.error(_LE('Missing context in request, please check.'))
+
+        return flask.Response(status=exception.error_code, headers=headers,
+                              response=json.dumps(response))
+
+
+class APIv1ValidationErrorMiddleware(ValidationErrorMiddleware):
+    def __init__(self, application):
+        super(APIv1ValidationErrorMiddleware, self).__init__(application)
+        self.api_version = 'API_v1'
+
+
+class APIv2ValidationErrorMiddleware(ValidationErrorMiddleware):
+    def __init__(self, application):
+        super(APIv2ValidationErrorMiddleware, self).__init__(application)
+        self.api_version = 'API_v2'
