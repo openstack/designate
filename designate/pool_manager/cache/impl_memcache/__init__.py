@@ -35,6 +35,8 @@ OPTS.extend(memorycache.memcache_opts)
 cfg.CONF.register_opts(OPTS,
                        group='pool_manager_cache:memcache')
 
+DEFAULT_STATUS = 'NONE'
+
 
 class MemcachePoolManagerCache(cache_base.PoolManagerCache):
     __plugin_name__ = 'memcache'
@@ -58,8 +60,14 @@ class MemcachePoolManagerCache(cache_base.PoolManagerCache):
 
     def store(self, context, pool_manager_status):
         status_key = self._build_status_key(pool_manager_status)
-        self.cache.set(
-            status_key, pool_manager_status.status, self.expiration)
+
+        # TODO(vinod): memcache does not seem to store None as the values
+        # Investigate if we can do a different default value for status
+        if pool_manager_status.status:
+            self.cache.set(
+                status_key, pool_manager_status.status, self.expiration)
+        else:
+            self.cache.set(status_key, DEFAULT_STATUS, self.expiration)
 
         serial_number_key = self._build_serial_number_key(pool_manager_status)
         self.cache.set(
@@ -84,8 +92,11 @@ class MemcachePoolManagerCache(cache_base.PoolManagerCache):
         if serial_number is None:
             raise exceptions.PoolManagerStatusNotFound
 
-        pool_manager_status.status = status
         pool_manager_status.serial_number = serial_number
+        if status == DEFAULT_STATUS:
+            pool_manager_status.status = None
+        else:
+            pool_manager_status.status = status
 
         return pool_manager_status
 

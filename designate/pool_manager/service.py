@@ -180,16 +180,14 @@ class Service(service.RPCService, service.Service):
             self._create_domain_on_server(
                 context, create_status, domain, server_backend)
 
-        if not self._is_create_consensus(context, domain):
-            status = ERROR_STATUS
+        # ERROR status is updated right away, but success is updated when we
+        # hear back from mdns
+        if self._is_consensus(context, domain, CREATE_ACTION, ERROR_STATUS):
             LOG.warn(_LW('Consensus not reached '
                          'for creating domain %(domain)s') %
                      {'domain': domain.name})
             self.central_api.update_status(
-                context, domain.id, status, domain.serial)
-
-        if self._is_create_consensus(context, domain, MAXIMUM_THRESHOLD):
-            self._clear_cache(context, domain, CREATE_ACTION)
+                context, domain.id, ERROR_STATUS, domain.serial)
 
     def delete_domain(self, context, domain):
         """
@@ -206,17 +204,7 @@ class Service(service.RPCService, service.Service):
             self._delete_domain_on_server(
                 context, delete_status, domain, server_backend)
 
-        if not self._is_delete_consensus(context, domain):
-            status = ERROR_STATUS
-            LOG.warn(_LW('Consensus not reached '
-                         'for deleting domain %(domain)s') %
-                     {'domain': domain.name})
-            self.central_api.update_status(
-                context, domain.id, status, domain.serial)
-
-        if self._is_delete_consensus(context, domain, MAXIMUM_THRESHOLD):
-            # Clear all the entries from cache
-            self._clear_cache(context, domain)
+        self._check_delete_status(context, domain)
 
     def update_domain(self, context, domain):
         """
@@ -227,11 +215,23 @@ class Service(service.RPCService, service.Service):
         LOG.debug("Calling update_domain for %s" % domain.name)
 
         for server_backend in self.server_backends:
+            server = server_backend['server']
+            # See if there is already another update in progress
+            try:
+                update_status = self.cache.retrieve(
+                    context, server.id, domain.id, UPDATE_ACTION)
+            except exceptions.PoolManagerStatusNotFound:
+                update_status = self._build_status_object(
+                    server, domain, UPDATE_ACTION)
+                self.cache.store(context, update_status)
+
             self._update_domain_on_server(context, domain, server_backend)
 
-    def update_status(self, context, domain, server,
-                      status, actual_serial):
+    def update_status(self, context, domain, server, status, actual_serial):
         """
+        update_status is called by mdns for creates and updates.
+        deletes are handled by the backend entirely and status is determined
+        at the time of delete itself.
         :param context: Security context information.
         :param domain: The designate domain object.
         :param server: The server for which a status update is being sent.
@@ -240,30 +240,38 @@ class Service(service.RPCService, service.Service):
                               server for the domain.
         :return: None
         """
-        LOG.debug("Calling update_status for %s" % domain.name)
+        LOG.debug("Calling update_status for %s : %s : %s : %s" %
+                  (domain.name, domain.action, status, actual_serial))
+        action = UPDATE_ACTION if domain.action == 'NONE' else domain.action
 
         with lockutils.lock('update-status-%s' % domain.id):
             try:
-                update_status = self.cache.retrieve(
-                    context, server.id, domain.id, UPDATE_ACTION)
+                current_status = self.cache.retrieve(
+                    context, server.id, domain.id, action)
             except exceptions.PoolManagerStatusNotFound:
-                update_status = self._build_status_object(
-                    server, domain, UPDATE_ACTION)
-                self.cache.store(context, update_status)
-            cache_serial = update_status.serial_number
+                current_status = self._build_status_object(
+                    server, domain, action)
+                self.cache.store(context, current_status)
+            cache_serial = current_status.serial_number
 
-            LOG.debug('For domain %s on server %s the cache serial is %s '
+            LOG.debug('For domain %s : %s on server %s the cache serial is %s '
                       'and the actual serial is %s.' %
-                      (domain.name, self._get_destination(server),
+                      (domain.name, action,
+                       self._get_destination(server),
                        cache_serial, actual_serial))
-            if actual_serial and cache_serial < actual_serial:
-                update_status.status = status
-                update_status.serial_number = actual_serial
-                self.cache.store(context, update_status)
+            if actual_serial and cache_serial <= actual_serial:
+                current_status.status = status
+                current_status.serial_number = actual_serial
+                self.cache.store(context, current_status)
 
             consensus_serial = self._get_consensus_serial(context, domain)
 
-            if cache_serial < consensus_serial:
+            # If there is a valid consensus serial we can still send a success
+            # for that serial.
+            # If there is a higher error serial we can also send an error for
+            # the error serial.
+            if consensus_serial != 0 and cache_serial <= consensus_serial \
+                    and domain.status != 'ACTIVE':
                 LOG.info(_LI('For domain %(domain)s '
                              'the consensus serial is %(consensus_serial)s.') %
                          {'domain': domain.name,
@@ -282,10 +290,10 @@ class Service(service.RPCService, service.Service):
                     self.central_api.update_status(
                         context, domain.id, ERROR_STATUS, error_serial)
 
-            if consensus_serial == domain.serial \
-                    and self._is_update_consensus(context, domain,
-                                                  MAXIMUM_THRESHOLD):
-                self._clear_cache(context, domain, UPDATE_ACTION)
+            if consensus_serial == domain.serial and self._is_consensus(
+                    context, domain, action, SUCCESS_STATUS,
+                    MAXIMUM_THRESHOLD):
+                self._clear_cache(context, domain, action)
 
     def periodic_recovery(self):
         """
@@ -328,10 +336,7 @@ class Service(service.RPCService, service.Service):
 
         try:
             for domain in domains:
-                for server_backend in self.server_backends:
-                    self._update_domain_on_server(
-                        context, domain, server_backend)
-
+                self.update_domain(context, domain)
         except Exception:
             LOG.exception(_LE('An unhandled exception in periodic sync '
                               'occurred.  This should never happen!'))
@@ -345,10 +350,10 @@ class Service(service.RPCService, service.Service):
         try:
             with wrap_backend_call():
                 backend_instance.create_domain(context, domain)
-            create_status.status = SUCCESS_STATUS
+            # The status will be updated when we hear back the serial number
+            # from minidns
             self.cache.store(context, create_status)
-            LOG.info(_LI('Created domain %(domain)s '
-                         'on server %(server)s.') %
+            LOG.info(_LI('Created domain %(domain)s on server %(server)s.') %
                      {'domain': domain.name,
                       'server': self._get_destination(server)})
 
@@ -376,33 +381,22 @@ class Service(service.RPCService, service.Service):
                     create_status.server_id)
                 self._create_domain_on_server(
                     context, create_status, domain, server_backend)
-            if self._is_create_consensus(context, domain, MAXIMUM_THRESHOLD):
-                self._clear_cache(context, domain, CREATE_ACTION)
 
     def _delete_domain_on_server(self, context, delete_status, domain,
                                  server_backend):
 
         server = server_backend['server']
         backend_instance = server_backend['backend_instance']
-        consensus_existed = self._is_delete_consensus(context, domain)
 
         try:
             with wrap_backend_call():
                 backend_instance.delete_domain(context, domain)
             delete_status.status = SUCCESS_STATUS
+            delete_status.serial_number = domain.serial
             self.cache.store(context, delete_status)
-            LOG.info(_LI('Deleted domain %(domain)s '
-                         'from server %(server)s.') %
+            LOG.info(_LI('Deleted domain %(domain)s from server %(server)s.') %
                      {'domain': domain.name,
                       'server': self._get_destination(server)})
-
-            if not consensus_existed \
-                    and self._is_delete_consensus(context, domain):
-                LOG.info(_LI('Consensus reached '
-                             'for deleting domain %(domain)s') %
-                         {'domain': domain.name})
-                self.central_api.update_status(
-                    context, domain.id, SUCCESS_STATUS, domain.serial)
 
         except exceptions.Backend:
             delete_status.status = ERROR_STATUS
@@ -411,6 +405,23 @@ class Service(service.RPCService, service.Service):
                          'from server %(server)s.') %
                      {'domain': domain.name,
                       'server': self._get_destination(server)})
+
+    def _check_delete_status(self, context, domain):
+        if self._is_consensus(context, domain, DELETE_ACTION, SUCCESS_STATUS):
+            LOG.info(_LI('Consensus reached for deleting domain %(domain)s') %
+                     {'domain': domain.name})
+            self.central_api.update_status(
+                context, domain.id, SUCCESS_STATUS, domain.serial)
+        else:
+            LOG.warn(_LW('Consensus not reached for deleting domain '
+                         '%(domain)s') % {'domain': domain.name})
+            self.central_api.update_status(
+                context, domain.id, ERROR_STATUS, domain.serial)
+
+        if self._is_consensus(context, domain, DELETE_ACTION, SUCCESS_STATUS,
+                              MAXIMUM_THRESHOLD):
+            # Clear all the entries from cache
+            self._clear_cache(context, domain)
 
     def _periodic_delete_domains_that_failed(self, context):
 
@@ -424,9 +435,8 @@ class Service(service.RPCService, service.Service):
                     delete_status.server_id)
                 self._delete_domain_on_server(
                     context, delete_status, domain, server_backend)
-            if self._is_delete_consensus(context, domain, MAXIMUM_THRESHOLD):
-                # Clear all the entries from cache
-                self._clear_cache(context, domain)
+
+            self._check_delete_status(context, domain)
 
     def _update_domain_on_server(self, context, domain, server_backend):
 
@@ -438,8 +448,7 @@ class Service(service.RPCService, service.Service):
         self.mdns_api.poll_for_serial_number(
             context, domain, server, self.timeout, self.retry_interval,
             self.max_retries, self.delay)
-        LOG.info(_LI('Updating domain %(domain)s '
-                 'on server %(server)s.') %
+        LOG.info(_LI('Updating domain %(domain)s on server %(server)s.') %
                  {'domain': domain.name,
                   'server': self._get_destination(server)})
 
@@ -495,37 +504,26 @@ class Service(service.RPCService, service.Service):
     def _get_serials_descending(self, pool_manager_statuses):
         return self._get_sorted_serials(pool_manager_statuses, descending=True)
 
-    def _is_success_consensus(self, context, domain, action, threshold=None):
-        success_count = 0
+    def _is_consensus(self, context, domain, action, status, threshold=None):
+        status_count = 0
         pool_manager_statuses = self._retrieve_statuses(
             context, domain, action)
         for pool_manager_status in pool_manager_statuses:
-            if pool_manager_status.status == SUCCESS_STATUS:
-                success_count += 1
+            if pool_manager_status.status == status:
+                status_count += 1
         if threshold is None:
             threshold = self.threshold
-        return self._exceed_or_meet_threshold(success_count, threshold)
-
-    def _is_create_consensus(self, context, domain, threshold=None):
-        return self._is_success_consensus(
-            context, domain, CREATE_ACTION, threshold)
-
-    def _is_delete_consensus(self, context, domain, threshold=None):
-        return self._is_success_consensus(
-            context, domain, DELETE_ACTION, threshold)
-
-    def _is_update_consensus(self, context, domain, threshold=None):
-        return self._is_success_consensus(
-            context, domain, UPDATE_ACTION, threshold)
+        return self._exceed_or_meet_threshold(status_count, threshold)
 
     def _get_consensus_serial(self, context, domain):
         consensus_serial = 0
-        update_statuses = self._retrieve_statuses(
-            context, domain, UPDATE_ACTION)
-        for serial in self._get_serials_descending(update_statuses):
+        action = UPDATE_ACTION if domain.action == 'NONE' else domain.action
+
+        pm_statuses = self._retrieve_statuses(context, domain, action)
+        for serial in self._get_serials_descending(pm_statuses):
             serial_count = 0
-            for update_status in update_statuses:
-                if update_status.serial_number >= serial:
+            for pm_status in pm_statuses:
+                if pm_status.serial_number >= serial:
                     serial_count += 1
             if self._exceed_or_meet_threshold(serial_count, self.threshold):
                 consensus_serial = serial
@@ -534,22 +532,25 @@ class Service(service.RPCService, service.Service):
 
     def _get_error_serial(self, context, domain, consensus_serial):
         error_serial = 0
-        if not self._is_success_consensus(context, domain, UPDATE_ACTION):
-            update_statuses = self._retrieve_statuses(
-                context, domain, UPDATE_ACTION)
-            for serial in self._get_serials_ascending(update_statuses):
+        action = UPDATE_ACTION if domain.action == 'NONE' else domain.action
+
+        if self._is_consensus(context, domain, action, ERROR_STATUS):
+            pm_statuses = self._retrieve_statuses(context, domain, action)
+            for serial in self._get_serials_ascending(pm_statuses):
                 if serial > consensus_serial:
                     error_serial = serial
                     break
         return error_serial
 
+    # When we hear back from the server, the serial_number is set to the value
+    # the server
     @staticmethod
     def _build_status_object(server, domain, action):
         values = {
             'server_id': server.id,
             'domain_id': domain.id,
-            'status': 'ERROR',
-            'serial_number': domain.serial if action != UPDATE_ACTION else 0,
+            'status': None,
+            'serial_number': 0,
             'action': action
         }
         return objects.PoolManagerStatus(**values)
