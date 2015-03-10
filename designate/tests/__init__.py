@@ -90,10 +90,14 @@ class TestCase(base.BaseTestCase):
         'name': 'test-key-one',
         'algorithm': 'hmac-md5',
         'secret': 'SomeSecretKey',
+        'scope': 'POOL',
+        'resource_id': '6ca6baef-3305-4ad0-a52b-a82df5752b62',
     }, {
         'name': 'test-key-two',
         'algorithm': 'hmac-sha256',
         'secret': 'AnotherSecretKey',
+        'scope': 'ZONE',
+        'resource_id': '7fbb6304-5e74-4691-bd80-cef3cff5fe2f',
     }]
 
     # The last domain is invalid
