@@ -50,6 +50,7 @@ Reference Documentation
    backends
    integrations
    tempest
+   gmr
 
 Source Documentation
 ====================

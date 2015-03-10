@@ -31,6 +31,7 @@ CONF.import_opt('workers', 'designate.api', group='service:api')
 def main():
     utils.read_config('designate', sys.argv)
     logging.setup(CONF, 'designate')
+    utils.setup_gmr(log_dir=cfg.CONF.log_dir)
 
     rpc.init(CONF)
 
