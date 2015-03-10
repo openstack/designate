@@ -37,6 +37,9 @@ ENABLED_SERVICES+=,designate,designate-central,designate-api,designate-pool-mana
 # Optional TLS Proxy
 #ENABLED_SERVICES+=,tls-proxy
 
+# Optional Tempest
+#ENABLED_SERVICES+=,tempest
+
 # Optional Rally
 #ENABLED_SERVICES+=,rally
 

@@ -57,6 +57,9 @@ DESIGNATE_TEST_NSREC=${DESIGNATE_TEST_NSREC:-ns1.devstack.org.}
 DESIGNATE_ENABLED_EXTENSIONS_V1=${DESIGNATE_ENABLED_EXTENSIONS_V1:-"quotas"}
 DESIGNATE_ENABLED_EXTENSIONS_V2=${DESIGNATE_ENABLED_EXTENSIONS_V2:-"quotas"}
 
+# Tell Tempest this project is present
+TEMPEST_SERVICES+=,designate
+
 # Get backend configuration
 # ----------------------------
 if is_service_enabled designate && [[ -r $DESIGNATE_PLUGINS/backend-$DESIGNATE_BACKEND_DRIVER ]]; then
