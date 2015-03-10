@@ -16,7 +16,7 @@ from designate.objects import base
 
 
 class NameServer(base.DictObjectMixin, base.PersistentObjectMixin,
-                base.DesignateObject):
+                 base.DesignateObject):
     FIELDS = {
         'pool_id': {},
         'key': {},

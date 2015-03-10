@@ -18,8 +18,22 @@ from designate.objects import base
 class Blacklist(base.DictObjectMixin, base.PersistentObjectMixin,
                 base.DesignateObject):
     FIELDS = {
-        'pattern': {},
-        'description': {}
+        'pattern': {
+            'schema': {
+                'type': 'string',
+                'description': 'Regex for blacklisted zone name',
+                'format': 'regex',
+                'maxLength': 255,
+            },
+            'required': True
+        },
+        'description': {
+            'schema': {
+                'type': ['string', 'null'],
+                'description': 'Description for the blacklisted zone',
+                'maxLength': 160
+            }
+        }
     }
 
 

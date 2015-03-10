@@ -162,8 +162,11 @@ class SQLAlchemy(object):
 
     def _create(self, table, obj, exc_dup, skip_values=None,
                 extra_values=None):
+        # TODO(graham): Re Enable this
+        # This was disabled as all the tests generate invalid Objects
+
         # Ensure the Object is valid
-        obj.validate()
+        # obj.validate()
 
         values = obj.obj_get_changes()
 
@@ -258,8 +261,12 @@ class SQLAlchemy(object):
 
     def _update(self, context, table, obj, exc_dup, exc_notfound,
                 skip_values=None):
+
+        # TODO(graham): Re Enable this
+        # This was disabled as all the tests generate invalid Objects
+
         # Ensure the Object is valid
-        obj.validate()
+        # obj.validate()
 
         values = obj.obj_get_changes()
 

@@ -21,22 +21,103 @@ class Record(base.DictObjectMixin, base.PersistentObjectMixin,
     #              so we should remove it.
     FIELDS = {
         'data': {},
-        'domain_id': {},
-        'managed': {},
-        'managed_resource_type': {},
-        'managed_resource_id': {},
-        'managed_plugin_name': {},
-        'managed_plugin_type': {},
-        'hash': {},
-        'description': {},
-        'status': {},
-        'tenant_id': {},
-        'recordset_id': {},
-        'managed_tenant_id': {},
-        'managed_resource_region': {},
-        'managed_extra': {},
-        'action': {},
-        'serial': {}
+        'domain_id': {
+            'schema': {
+                'type': 'string',
+                'format': 'uuid',
+            },
+            'required': True
+        },
+        'managed': {
+            'schema': {
+                'type': 'boolean'
+            }
+        },
+        'managed_resource_type': {
+            'schema': {
+                'type': ['string', 'null'],
+                'maxLength': 160
+            },
+        },
+        'managed_resource_id': {
+            'schema': {
+                'type': ['string', 'null'],
+                'format': 'uuid',
+            },
+        },
+        'managed_plugin_name': {
+            'schema': {
+                'type': ['string', 'null'],
+                'maxLength': 160
+            },
+        },
+        'managed_plugin_type': {
+            'schema': {
+                'type': ['string', 'null'],
+                'maxLength': 160
+            },
+        },
+        'hash': {
+            'schema': {
+                'type': 'string',
+                'maxLength': 32
+            },
+            'required': True
+        },
+        'description': {
+            'schema': {
+                'type': ['string', 'null'],
+                'maxLength': 160
+            },
+        },
+        'status': {
+            'schema': {
+                'type': 'string',
+                'enum': ['ACTIVE', 'PENDING', 'ERROR'],
+            },
+        },
+        'tenant_id': {
+            'schema': {
+                'type': 'string',
+            },
+        },
+        'recordset_id': {
+            'schema': {
+                'type': 'string',
+                'format': 'uuid',
+            },
+            'required': True
+        },
+        'managed_tenant_id': {
+            'schema': {
+                'type': ['string', 'null'],
+            }
+        },
+        'managed_resource_region': {
+            'schema': {
+                'type': ['string', 'null'],
+                'maxLength': 160
+            },
+        },
+        'managed_extra': {
+            'schema': {
+                'type': ['string', 'null'],
+                'maxLength': 160
+            },
+        },
+        'action': {
+            'schema': {
+                'type': 'string',
+                'enum': ['CREATE', 'DELETE', 'UPDATE', 'NONE'],
+            },
+        },
+        'serial': {
+            'schema': {
+                'type': 'integer',
+                'minimum': 1,
+                'maximum': 4294967295,
+            },
+        },
     }
 
 

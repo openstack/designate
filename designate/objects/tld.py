@@ -18,8 +18,21 @@ from designate.objects import base
 class Tld(base.DictObjectMixin, base.PersistentObjectMixin,
           base.DesignateObject):
     FIELDS = {
-        'name': {},
-        'description': {}
+        'name': {
+            'schema': {
+                'type': 'string',
+                'format': 'tldname',
+                'maxLength': 255,
+            },
+            'immutable': True,
+            'required': True
+        },
+        'description': {
+            'schema': {
+                'type': ['string', 'null'],
+                'maxLength': 160
+            },
+        }
     }
 
 

@@ -18,20 +18,112 @@ from designate.objects import base
 class Domain(base.DictObjectMixin, base.SoftDeleteObjectMixin,
              base.PersistentObjectMixin, base.DesignateObject):
     FIELDS = {
-        'tenant_id': {},
-        'name': {},
-        'email': {},
-        'ttl': {},
-        'refresh': {},
-        'retry': {},
-        'expire': {},
-        'minimum': {},
-        'parent_domain_id': {},
-        'serial': {},
-        'description': {},
-        'status': {},
-        'action': {},
-        'pool_id': {},
+        'tenant_id': {
+            'schema': {
+                'type': 'string',
+            },
+            'immutable': True
+        },
+        'name': {
+            'schema': {
+                'type': 'string',
+                'description': 'Zone name',
+                'format': 'domainname',
+                'maxLength': 255,
+            },
+            'immutable': True,
+            'required': True
+        },
+        'email': {
+            'schema': {
+                'type': 'string',
+                'description': 'Hostmaster email address',
+                'format': 'email',
+                'maxLength': 255
+            },
+            'required': True
+        },
+        'ttl': {
+            'schema': {
+                'type': ['integer', 'null'],
+                'minimum': 0,
+                'maximum': 2147483647
+            },
+        },
+        'refresh': {
+            'schema': {
+                'type': 'integer',
+                'minimum': 0,
+                'maximum': 2147483647
+            },
+            'read_only': True
+        },
+        'retry': {
+            'schema': {
+                'type': 'integer',
+                'minimum': 0,
+                'maximum': 2147483647
+            },
+            'read_only': True
+        },
+        'expire': {
+            'schema': {
+                'type': 'integer',
+                'minimum': 0,
+                'maximum': 2147483647
+            },
+            'read_only': True
+        },
+        'minimum': {
+            'schema': {
+                'type': 'integer',
+                'minimum': 0,
+                'maximum': 2147483647
+            },
+            'read_only': True
+        },
+        'parent_domain_id': {
+            'schema': {
+                'type': 'string',
+                'format': 'uuid'
+            },
+            'read_only': True
+        },
+        'serial': {
+            'schema': {
+                'type': 'integer',
+                'minimum': 1,
+                'maximum': 4294967295,
+            },
+            'read_only': True
+        },
+        'description': {
+            'schema': {
+                'type': ['string', 'null'],
+                'maxLength': 160
+            },
+        },
+        'status': {
+            'schema': {
+                'type': 'string',
+                'enum': ['ACTIVE', 'PENDING', 'ERROR'],
+            },
+            'read_only': True,
+        },
+        'action': {
+            'schema': {
+                'type': 'string',
+                'enum': ['CREATE', 'DELETE', 'UPDATE', 'NONE'],
+            },
+            'read_only': True
+        },
+        'pool_id': {
+            'schema': {
+                'type': 'string',
+                'format': 'uuid',
+            },
+            'immutable': True,
+        },
         'recordsets': {
             'relation': True,
             'relation_cls': 'RecordSetList'

@@ -19,17 +19,46 @@ from designate.objects import base
 class Pool(base.DictObjectMixin, base.PersistentObjectMixin,
            base.DesignateObject):
     FIELDS = {
-        'name': {},
-        'description': {},
-        'tenant_id': {},
-        'provisioner': {},
+        'name': {
+            'schema': {
+                'type': 'string',
+                'description': 'Pool name',
+                'maxLength': 50,
+            },
+            'immutable': True,
+            'required': True
+        },
+        'description': {
+            'schema': {
+                'type': ['string', 'null'],
+                'description': 'Description for the pool',
+                'maxLength': 160
+            }
+        },
+        'tenant_id': {
+            'schema': {
+                'type': ['string', 'null'],
+                'description': 'Project identifier',
+                'maxLength': 36,
+            },
+            'immutable': True
+        },
+        'provisioner': {
+            'schema': {
+                'type': ['string', 'null'],
+                'description': 'Provisioner used for this pool',
+                'maxLength': 160
+            }
+        },
         'attributes': {
             'relation': True,
-            'relation_cls': 'PoolAttributeList'
+            'relation_cls': 'PoolAttributeList',
+            'required': True
         },
         'nameservers': {
             'relation': True,
-            'relation_cls': 'NameServerList'
+            'relation_cls': 'NameServerList',
+            'required': True
         },
     }
 
