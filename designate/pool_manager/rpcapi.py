@@ -60,8 +60,9 @@ class PoolManagerAPI(object):
         return MNGR_API
 
     def create_domain(self, context, domain):
-        LOG.info(_LI("create_domain: Calling pool manager's create_domain "
-                     "for %(domain)s") % {'domain': domain.name})
+        LOG.info(_LI("create_domain: Calling pool manager for %(domain)s, "
+                     "serial:%(serial)s") %
+                 {'domain': domain.name, 'serial': domain.serial})
 
         # Modifying the topic so it is pool manager instance specific.
         topic = '%s.%s' % (self.topic, domain.pool_id)
@@ -70,8 +71,9 @@ class PoolManagerAPI(object):
             context, 'create_domain', domain=domain)
 
     def delete_domain(self, context, domain):
-        LOG.info(_LI("delete_domain: Calling pool manager's delete_domain "
-                     "for %(domain)s") % {'domain': domain.name})
+        LOG.info(_LI("delete_domain: Calling pool manager for %(domain)s, "
+                     "serial:%(serial)s") %
+                 {'domain': domain.name, 'serial': domain.serial})
 
         # Modifying the topic so it is pool manager instance specific.
         topic = '%s.%s' % (self.topic, domain.pool_id)
@@ -80,8 +82,9 @@ class PoolManagerAPI(object):
             context, 'delete_domain', domain=domain)
 
     def update_domain(self, context, domain):
-        LOG.info(_LI("update_domain: Calling pool manager's update_domain "
-                     "for %(domain)s") % {'domain': domain.name})
+        LOG.info(_LI("update_domain: Calling pool manager for %(domain)s, "
+                     "serial:%(serial)s") %
+                 {'domain': domain.name, 'serial': domain.serial})
 
         # Modifying the topic so it is pool manager instance specific.
         topic = '%s.%s' % (self.topic, domain.pool_id)
@@ -90,8 +93,8 @@ class PoolManagerAPI(object):
             context, 'update_domain', domain=domain)
 
     def update_status(self, context, domain, server, status, actual_serial):
-        LOG.info(_LI("update_status: Calling pool manager's update_status "
-                     "for %(domain)s : %(action)s : %(status)s : %(serial)s") %
+        LOG.info(_LI("update_status: Calling pool manager for %(domain)s : "
+                     "%(action)s : %(status)s : %(serial)s") %
                  {'domain': domain.name, 'action': domain.action,
                   'status': domain.status, 'serial': actual_serial})
 
