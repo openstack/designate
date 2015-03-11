@@ -36,36 +36,10 @@ Instructions
    $ cd devstack
    $ ../designate/contrib/devstack/install.sh
 
-4. Create a `localrc` config file::
+4. Create a `localrc` config file:
 
-       ADMIN_PASSWORD=password
-       MYSQL_PASSWORD=password
-       RABBIT_PASSWORD=password
-       SERVICE_PASSWORD=password
-       SERVICE_TOKEN=tokentoken
-
-       # Just the basics to start with!
-       ENABLED_SERVICES=rabbit,mysql,key
-
-       # Enable core Designate services
-       ENABLED_SERVICES+=,designate,designate-api,designate-central
-
-       # Optional Designate services
-       #ENABLED_SERVICES+=,designate-sink
-
-       # ** Everything below is optional ***
-
-       # Enable Horizon with Designate integration (needs nova)
-       #ENABLED_SERVICES+=,horizon
-       #HORIZON_REPO=git://github.com/moniker-dns/horizon.git
-       #HORIZON_BRANCH=designate
-
-       # Enable Nova (needs glance)
-       #ENABLED_SERVICES+=,n-api,n-crt,n-obj,n-cpu,n-net,n-cond,n-sch
-       #IMAGE_URLS+=",https://launchpad.net/cirros/trunk/0.3.0/+download/cirros-0.3.0-x86_64-disk.img"
-
-       # Enable Glance
-       #ENABLED_SERVICES+=,g-api,g-reg
+   .. literalinclude:: ../../contrib/vagrant/localrc
+       :language: bash
 
 5. Run DevStack::
 
