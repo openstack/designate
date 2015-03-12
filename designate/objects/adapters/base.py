@@ -1,0 +1,200 @@
+# Copyright 2014 Hewlett-Packard Development Company, L.P.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
+import logging
+
+import six
+
+from designate import objects
+from designate import exceptions
+
+LOG = logging.getLogger(__name__)
+
+
+class DesignateObjectAdapterMetaclass(type):
+
+    def __init__(cls, names, bases, dict_):
+        if not hasattr(cls, '_adapter_classes'):
+            cls._adapter_classes = {}
+            return
+
+        key = '%s:%s' % (cls.adapter_format(), cls.adapter_object())
+
+        if key not in cls._adapter_classes:
+            cls._adapter_classes[key] = cls
+        else:
+            raise Exception(
+                "Duplicate DesignateAdapterObject with"
+                " format '%(format)s and object %(object)s'" %
+                {'format': cls.adapter_format(),
+                 'object': cls.adapter_object()}
+            )
+
+
+@six.add_metaclass(DesignateObjectAdapterMetaclass)
+class DesignateAdapter(object):
+    """docstring for DesignateObjectAdapter"""
+
+    ADAPTER_OBJECT = objects.DesignateObject
+
+    @classmethod
+    def adapter_format(cls):
+        return cls.ADAPTER_FORMAT
+
+    @classmethod
+    def adapter_object(cls):
+        return cls.ADAPTER_OBJECT.obj_name()
+
+    @classmethod
+    def get_object_adapter(cls, format_, object):
+        key = '%s:%s' % (format_, object.obj_name())
+        try:
+            return cls._adapter_classes[key]
+        except KeyError as e:
+            keys = e.message.split(':')
+            msg = "Adapter for %(object)s to format %(format)s not found" % {
+                "object": keys[1],
+                "format": keys[0]
+            }
+            raise exceptions.AdapterNotFound(msg)
+
+    #####################
+    # Rendering methods #
+    #####################
+
+    @classmethod
+    def render(cls, format_, object, *args, **kwargs):
+
+        if isinstance(object, objects.ListObjectMixin):
+            # type_ = 'list'
+            return cls.get_object_adapter(
+                format_, object)._render_list(object, *args, **kwargs)
+        else:
+            # type_ = 'object'
+            return cls.get_object_adapter(
+                format_, object)._render_object(object, *args, **kwargs)
+
+    @classmethod
+    def _render_inner_object(cls, object, *args, **kwargs):
+        # The dict we will return to be rendered to JSON / output format
+        r_obj = {}
+        # Loop over all fields that are supposed to be output
+        for key, value in cls.MODIFICATIONS['fields'].iteritems():
+            # Get properties for this field
+            field_props = cls.MODIFICATIONS['fields'][key]
+            # Check if it has to be renamed
+            if field_props.get('rename', False):
+                obj = getattr(object, field_props.get('rename'))
+                # if rename is specified we need to change the key
+                obj_key = field_props.get('rename')
+            else:
+                # if not, move on
+                obj = getattr(object, key, None)
+                obj_key = key
+            # Check if this item is a relation (another DesignateObject that
+            # will need to be converted itself
+            if object.FIELDS.get(obj_key, {}).get('relation'):
+                # Get a adapter for the nested object
+                # Get the class the object is and get its adapter, then set
+                # the item in the dict to the output
+                r_obj[key] = cls.get_object_adapter(
+                    cls.ADAPTER_FORMAT,
+                    object.FIELDS[obj_key].get('relation_cls')).render(
+                        obj, *args, **kwargs)
+            else:
+                # Just attach the damn item if there is no weird edge cases
+                r_obj[key] = obj
+        # Send it back
+        return r_obj
+
+    @classmethod
+    def _render_inner_list(cls, list_object, *args, **kwargs):
+        # The list we will return to be rendered to JSON / output format
+        r_list = []
+        # iterate and convert each DesignateObject in the list, and append to
+        # the object we are returning
+        for object in list_object:
+            r_list.append(cls.get_object_adapter(
+                cls.ADAPTER_FORMAT,
+                object.obj_name()).render(object, *args, **kwargs))
+        return r_list
+
+    #####################
+    #  Parsing methods  #
+    #####################
+
+    @classmethod
+    def parse(cls, format_, values, output_object, *args, **kwargs):
+
+        if isinstance(output_object, objects.ListObjectMixin):
+            # type_ = 'list'
+            return cls.get_object_adapter(
+                format_,
+                output_object.obj_name())._parse_list(
+                    values, output_object, *args, **kwargs)
+        else:
+            # type_ = 'object'
+            return cls.get_object_adapter(
+                format_,
+                output_object.obj_name())._parse_object(
+                    values, output_object, *args, **kwargs)
+
+    @classmethod
+    def _parse_inner_object(cls, values, output_object, *args, **kwargs):
+        error_keys = []
+
+        for key, value in values.iteritems():
+            error_flag = True
+            if key in cls.MODIFICATIONS['fields']:
+                # No rename needed
+                obj_key = key
+                error_flag = False
+                # This item may need to be translated
+                if cls.MODIFICATIONS['fields'][key].get('rename', False):
+                    obj_key = cls.MODIFICATIONS['fields'][key].get('rename')
+
+            # Check if the key is a nested object
+            if output_object.FIELDS.get(obj_key, {}).get('relation', False):
+                # Get the right class name
+                obj_class_name = output_object.FIELDS.get(
+                    obj_key, {}).get('relation_cls')
+                # Get the an instance of it
+                obj_class = \
+                    objects.DesignateObject.obj_cls_from_name(obj_class_name)
+                # Get the adapted object
+                obj = \
+                    cls.get_object_adapter(
+                        cls.ADAPTER_FORMAT, obj_class_name).parse(
+                            value, obj_class)
+                # Set the object on the main object
+                setattr(output_object, obj_key, obj)
+            else:
+                # No nested objects here, just set the value
+                setattr(output_object, obj_key, value)
+            if error_flag:
+                # We got an extra key
+                error_keys.append(key)
+
+        if error_keys:
+            error_message = str.format(
+                'Provided object does not match schema.  Keys {0} are not '
+                'valid in the request body',
+                error_keys)
+
+            raise exceptions.InvalidObject(error_message)
+
+        return output_object
+
+    @classmethod
+    def _parse_inner_list(cls, values, output_object, *args, **kwargs):
+        raise exceptions.NotImplemented('List adaption not implemented')
