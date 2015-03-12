@@ -75,7 +75,7 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
             'serial': 1422062497,
             'status': status
         }
-        return objects.Domain(**values)
+        return objects.Domain.from_dict(values)
 
     @patch.object(mdns_rpcapi.MdnsAPI, 'get_serial_number',
                   side_effect=messaging.MessagingException)
@@ -92,6 +92,8 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
 
         create_statuses = self.service._retrieve_statuses(
             self.admin_context, domain, 'CREATE')
+        # Even though _retrieve_statuses tries to get from mdns, mdns does
+        # not return any status
         self.assertEqual(0, len(create_statuses))
 
         # Ensure notify_zone_changed and poll_for_serial_number
@@ -111,8 +113,9 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
                   self.service.server_backends[1]['server'], 30, 2, 3, 1)],
             mock_poll_for_serial_number.call_args_list)
 
-        mock_update_status.assert_called_once_with(
-            self.admin_context, domain.id, 'ERROR', domain.serial)
+        # Pool manager needs to call into mdns to calculate consensus as
+        # there is no cache. So update_status is never called.
+        self.assertEqual(False, mock_update_status.called)
 
     @patch.object(mdns_rpcapi.MdnsAPI, 'get_serial_number',
                   side_effect=messaging.MessagingException)
@@ -139,8 +142,7 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
         self.assertEqual(False, mock_notify_zone_changed.called)
         self.assertEqual(False, mock_poll_for_serial_number.called)
 
-        mock_update_status.assert_called_once_with(
-            self.admin_context, domain.id, 'ERROR', domain.serial)
+        self.assertEqual(False, mock_update_status.called)
 
     @patch.object(mdns_rpcapi.MdnsAPI, 'get_serial_number',
                   side_effect=messaging.MessagingException)
@@ -169,8 +171,7 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
             self.admin_context, domain,
             self.service.server_backends[0]['server'], 30, 2, 3, 1)
 
-        mock_update_status.assert_called_once_with(
-            self.admin_context, domain.id, 'ERROR', domain.serial)
+        self.assertEqual(False, mock_update_status.called)
 
     @patch.object(mdns_rpcapi.MdnsAPI, 'get_serial_number',
                   side_effect=messaging.MessagingException)
@@ -205,8 +206,7 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
             self.admin_context, domain,
             self.service.server_backends[0]['server'], 30, 2, 3, 1)
 
-        mock_update_status.assert_called_once_with(
-            self.admin_context, domain.id, 'ERROR', domain.serial)
+        self.assertEqual(False, mock_update_status.called)
 
     @patch.object(mdns_rpcapi.MdnsAPI, 'get_serial_number',
                   side_effect=messaging.MessagingException)

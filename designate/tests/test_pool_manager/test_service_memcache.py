@@ -84,7 +84,7 @@ class PoolManagerServiceMemcacheTest(PoolManagerTestCase):
     @patch.object(central_rpcapi.CentralAPI, 'update_status')
     def test_create_domain(
             self, mock_update_status, mock_notify_zone_changed,
-            mock_poll_for_serial_number, mock_get_serial_number):
+            mock_poll_for_serial_number, _):
 
         domain = self._build_domain('example.org.', 'CREATE', 'PENDING')
 
@@ -92,7 +92,9 @@ class PoolManagerServiceMemcacheTest(PoolManagerTestCase):
 
         create_statuses = self.service._retrieve_statuses(
             self.admin_context, domain, 'CREATE')
-        self.assertEqual(0, len(create_statuses))
+        self.assertEqual(2, len(create_statuses))
+        self.assertEqual(None, create_statuses[0].status)
+        self.assertEqual(None, create_statuses[1].status)
 
         # Ensure notify_zone_changed and poll_for_serial_number
         # was called for each backend server.
@@ -110,14 +112,6 @@ class PoolManagerServiceMemcacheTest(PoolManagerTestCase):
              call(self.admin_context, domain,
                   self.service.server_backends[1]['server'], 30, 2, 3, 1)],
             mock_poll_for_serial_number.call_args_list)
-
-        self.assertEqual(2, mock_get_serial_number.call_count)
-        self.assertEqual(
-            [call(self.admin_context, domain,
-                  self.service.server_backends[0]['server'], 30, 2, 3, 1),
-             call(self.admin_context, domain,
-                  self.service.server_backends[1]['server'], 30, 2, 3, 1)],
-            mock_get_serial_number.call_args_list)
 
         self.assertEqual(False, mock_update_status.called)
 
@@ -166,7 +160,7 @@ class PoolManagerServiceMemcacheTest(PoolManagerTestCase):
         create_statuses = self.service._retrieve_statuses(
             self.admin_context, domain, 'CREATE')
         self.assertEqual(2, len(create_statuses))
-        self.assertEqual('SUCCESS', create_statuses[0].status)
+        self.assertEqual(None, create_statuses[0].status)
         self.assertEqual('ERROR', create_statuses[1].status)
 
         mock_notify_zone_changed.assert_called_once_with(
@@ -176,8 +170,7 @@ class PoolManagerServiceMemcacheTest(PoolManagerTestCase):
             self.admin_context, domain,
             self.service.server_backends[0]['server'], 30, 2, 3, 1)
 
-        mock_update_status.assert_called_once_with(
-            self.admin_context, domain.id, 'ERROR', domain.serial)
+        self.assertEqual(False, mock_update_status.called)
 
     @patch.object(impl_fake.FakeBackend, 'create_domain')
     @patch.object(mdns_rpcapi.MdnsAPI, 'poll_for_serial_number')
@@ -202,7 +195,7 @@ class PoolManagerServiceMemcacheTest(PoolManagerTestCase):
         create_statuses = self.service._retrieve_statuses(
             self.admin_context, domain, 'CREATE')
         self.assertEqual(2, len(create_statuses))
-        self.assertEqual('SUCCESS', create_statuses[0].status)
+        self.assertEqual(None, create_statuses[0].status)
         self.assertEqual('ERROR', create_statuses[1].status)
 
         mock_notify_zone_changed.assert_called_once_with(
@@ -212,7 +205,8 @@ class PoolManagerServiceMemcacheTest(PoolManagerTestCase):
             self.admin_context, domain,
             self.service.server_backends[0]['server'], 30, 2, 3, 1)
 
-        self.assertEqual(False, mock_update_status.called)
+        mock_update_status.assert_called_once_with(
+            self.admin_context, domain.id, 'ERROR', domain.serial)
 
     @patch.object(mdns_rpcapi.MdnsAPI, 'get_serial_number',
                   side_effect=messaging.MessagingException)
@@ -351,7 +345,7 @@ class PoolManagerServiceMemcacheTest(PoolManagerTestCase):
         self.assertEqual(domain.serial, update_statuses[0].serial_number)
 
         mock_update_status.assert_called_once_with(
-            self.admin_context, domain.id, 'ERROR', domain.serial)
+            self.admin_context, domain.id, 'ERROR', 0)
 
         # Reset the mock call attributes.
         mock_update_status.reset_mock()

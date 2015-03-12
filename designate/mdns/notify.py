@@ -123,8 +123,8 @@ class NotifyEndpoint(object):
         while (True):
             (response, retry) = self._make_and_send_dns_message(
                 domain, server, timeout, retry_interval, retries)
-            if response and response.rcode() in (dns.rcode.NXDOMAIN,
-                                                 dns.rcode.REFUSED):
+            if response and response.rcode() in (
+                    dns.rcode.NXDOMAIN, dns.rcode.REFUSED, dns.rcode.SERVFAIL):
                 status = 'NO_DOMAIN'
             elif response and len(response.answer) == 1 \
                     and str(response.answer[0].name) == str(domain.name) \
@@ -219,7 +219,8 @@ class NotifyEndpoint(object):
                 break
             # Check that we actually got a NOERROR in the rcode and and an
             # authoritative answer
-            elif response.rcode() in (dns.rcode.NXDOMAIN, dns.rcode.REFUSED):
+            elif response.rcode() in (dns.rcode.NXDOMAIN, dns.rcode.REFUSED,
+                                      dns.rcode.SERVFAIL):
                 LOG.info(_LI("%(zone)s not found on %(server)s:%(port)d") %
                          {'zone': domain.name, 'server': dest_ip,
                          'port': dest_port})
