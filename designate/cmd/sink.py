@@ -30,6 +30,7 @@ CONF.import_opt('workers', 'designate.sink', group='service:sink')
 def main():
     utils.read_config('designate', sys.argv)
     logging.setup(CONF, 'designate')
+    utils.setup_gmr(log_dir=cfg.CONF.log_dir)
 
     server = sink_service.Service()
     service.serve(server, workers=CONF['service:sink'].workers)

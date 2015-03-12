@@ -31,6 +31,7 @@ CONF.import_opt('workers', 'designate.pool_manager',
 def main():
     utils.read_config('designate', sys.argv)
     logging.setup(CONF, 'designate')
+    utils.setup_gmr(log_dir=cfg.CONF.log_dir)
 
     server = pool_manager_service.Service()
     service.serve(server, workers=CONF['service:pool_manager'].workers)

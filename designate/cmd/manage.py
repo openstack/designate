@@ -119,6 +119,7 @@ def main():
         print(_('Please re-run designate-manage as root.'))
         sys.exit(2)
 
+    utils.setup_gmr(log_dir=cfg.CONF.log_dir)
     fn = CONF.category.action_fn
 
     fn_args = fetch_func_args(fn)
