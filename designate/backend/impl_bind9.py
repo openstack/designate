@@ -85,7 +85,13 @@ class Bind9Backend(base.PoolBackend):
             (domain['name'].rstrip('.'), '; '.join(masters), domain['name'],
              domain['id']),
         ]
-        self._execute_rndc(rndc_op)
+
+        try:
+            self._execute_rndc(rndc_op)
+        except exceptions.Backend as e:
+            # If create fails because the domain exists, don't reraise
+            if "already exists" not in str(e.message):
+                raise
 
     def delete_domain(self, context, domain):
         LOG.debug('Delete Domain')
@@ -93,7 +99,13 @@ class Bind9Backend(base.PoolBackend):
             'delzone',
             '%s' % domain['name'].rstrip('.'),
         ]
-        self._execute_rndc(rndc_op)
+
+        try:
+            self._execute_rndc(rndc_op)
+        except exceptions.Backend as e:
+            # If domain is already deleted, don't reraise
+            if "not found" not in str(e.message):
+                raise
 
     def _rndc_base(self):
         rndc_call = [
