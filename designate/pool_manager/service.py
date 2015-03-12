@@ -229,6 +229,7 @@ class Service(service.RPCService, service.Service):
                                   'synchronization occurred.'))
 
     # Standard Create/Update/Delete Methods
+
     def create_domain(self, context, domain):
         """
         :param context: Security context information.
