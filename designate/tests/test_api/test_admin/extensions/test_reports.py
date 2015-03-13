@@ -16,16 +16,16 @@
 # under the License.
 from oslo.config import cfg
 
-from designate.tests.test_api.test_v2 import ApiV2TestCase
+from designate.tests.test_api.test_admin import AdminApiTestCase
 
-cfg.CONF.import_opt('enabled_extensions_v2', 'designate.api.v2',
+cfg.CONF.import_opt('enabled_extensions_admin', 'designate.api.admin',
                     group='service:api')
 
 
-class ApiV2ReportsTest(ApiV2TestCase):
+class AdminApiReportsTest(AdminApiTestCase):
     def setUp(self):
-        self.config(enabled_extensions_v2=['reports'], group='service:api')
-        super(ApiV2ReportsTest, self).setUp()
+        self.config(enabled_extensions_admin=['reports'], group='service:api')
+        super(AdminApiReportsTest, self).setUp()
 
     def test_get_counts(self):
         self.policy({'count_tenants': '@'})

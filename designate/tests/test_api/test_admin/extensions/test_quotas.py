@@ -16,16 +16,16 @@
 # under the License.
 from oslo.config import cfg
 
-from designate.tests.test_api.test_v2 import ApiV2TestCase
+from designate.tests.test_api.test_admin import AdminApiTestCase
 
-cfg.CONF.import_opt('enabled_extensions_v2', 'designate.api.v2',
+cfg.CONF.import_opt('enabled_extensions_admin', 'designate.api.admin',
                     group='service:api')
 
 
-class ApiV2QuotasTest(ApiV2TestCase):
+class AdminApiQuotasTest(AdminApiTestCase):
     def setUp(self):
-        self.config(enabled_extensions_v2=['quotas'], group='service:api')
-        super(ApiV2QuotasTest, self).setUp()
+        self.config(enabled_extensions_admin=['quotas'], group='service:api')
+        super(AdminApiQuotasTest, self).setUp()
 
     def test_get_quotas(self):
         self.policy({'get_quotas': '@'})

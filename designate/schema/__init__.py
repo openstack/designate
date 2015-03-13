@@ -34,7 +34,7 @@ class Schema(object):
             self.validator = validators.Draft3Validator(
                 self.raw_schema, resolver=self.resolver,
                 format_checker=format.draft3_format_checker)
-        elif version == 'v2':
+        elif version in ['v2', 'admin']:
             self.validator = validators.Draft4Validator(
                 self.raw_schema, resolver=self.resolver,
                 format_checker=format.draft4_format_checker)
