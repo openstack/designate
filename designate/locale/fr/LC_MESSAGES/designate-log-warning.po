@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Designate\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-03-09 06:05+0000\n"
+"POT-Creation-Date: 2015-03-13 06:09+0000\n"
 "PO-Revision-Date: 2015-03-06 18:02+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: French (http://www.transifex.com/projects/p/designate/"
@@ -25,17 +25,17 @@ msgstr ""
 msgid "TCP Timeout from: %(host)s:%(port)d"
 msgstr ""
 
-#: designate/agent/handler.py:117
+#: designate/agent/handler.py:118
 #, python-format
 msgid "Refusing CREATE for %(name)s, zone already exists"
 msgstr ""
 
-#: designate/agent/handler.py:159
+#: designate/agent/handler.py:161
 #, python-format
 msgid "Refusing NOTIFY for %(name)s, doesn't exist"
 msgstr ""
 
-#: designate/agent/handler.py:223
+#: designate/agent/handler.py:226
 #, python-format
 msgid "%(verb)s for %(name)s from %(server)s refused"
 msgstr ""
@@ -110,7 +110,7 @@ msgid ""
 "%(port)d'. Timeout='%(timeout)d' seconds. Retry='%(retry)d'"
 msgstr ""
 
-#: designate/mdns/notify.py:229
+#: designate/mdns/notify.py:230
 #, python-format
 msgid ""
 "Failed to get expected response while trying to send '%(msg)s' for "
@@ -142,29 +142,29 @@ msgstr ""
 msgid "pid %d not in child list"
 msgstr "pid %d ne fait pas partie de la liste enfant"
 
-#: designate/pool_manager/service.py:185
+#: designate/pool_manager/service.py:186
 #, python-format
 msgid "Consensus not reached for creating domain %(domain)s"
 msgstr ""
 
-#: designate/pool_manager/service.py:211
-#, python-format
-msgid "Consensus not reached for deleting domain %(domain)s"
-msgstr ""
-
-#: designate/pool_manager/service.py:278
+#: designate/pool_manager/service.py:286
 #, python-format
 msgid "For domain %(domain)s the error serial is %(error_serial)s."
 msgstr ""
 
-#: designate/pool_manager/service.py:362
+#: designate/pool_manager/service.py:367
 #, python-format
 msgid "Failed to create domain %(domain)s on server %(server)s."
 msgstr ""
 
-#: designate/pool_manager/service.py:410
+#: designate/pool_manager/service.py:404
 #, python-format
 msgid "Failed to delete domain %(domain)s from server %(server)s."
+msgstr ""
+
+#: designate/pool_manager/service.py:416
+#, python-format
+msgid "Consensus not reached for deleting domain %(domain)s"
 msgstr ""
 
 #: designate/sink/service.py:52

@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Designate\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-03-09 06:05+0000\n"
-"PO-Revision-Date: 2015-03-05 18:07+0000\n"
+"POT-Creation-Date: 2015-03-13 06:09+0000\n"
+"PO-Revision-Date: 2015-03-12 18:25+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: French (http://www.transifex.com/projects/p/designate/"
 "language/fr/)\n"
@@ -104,7 +104,7 @@ msgstr "Créer domaine %r"
 msgid "Delete Domain %r"
 msgstr "Suppression du domaine %r"
 
-#: designate/backend/agent_backend/impl_bind9.py:55
+#: designate/backend/agent_backend/impl_bind9.py:57
 msgid "Started bind9 backend"
 msgstr ""
 
@@ -357,76 +357,79 @@ msgid "delete_pool: Calling central's delete_pool."
 msgstr ""
 
 #: designate/central/rpcapi.py:395
-msgid "update_status: Calling central's update_status."
+#, python-format
+msgid ""
+"update_status: Calling central's update_status for %(domain_id)s : "
+"%(status)s : %(serial)s"
 msgstr ""
 
-#: designate/central/rpcapi.py:401
+#: designate/central/rpcapi.py:403
 msgid ""
 "create_zone_transfer_request:                      Calling central's "
 "create_zone_transfer_request."
 msgstr ""
 
-#: designate/central/rpcapi.py:409
+#: designate/central/rpcapi.py:411
 msgid ""
 "get_zone_transfer_request:                      Calling central's "
 "get_zone_transfer_request."
 msgstr ""
 
-#: designate/central/rpcapi.py:418
+#: designate/central/rpcapi.py:420
 msgid ""
 "find_zone_transfer_requests:                      Calling central's "
 "find_zone_transfer_requests."
 msgstr ""
 
-#: designate/central/rpcapi.py:426
+#: designate/central/rpcapi.py:428
 msgid ""
 "find_zone_transfer_request:                      Calling central's "
 "find_zone_transfer_request."
 msgstr ""
 
-#: designate/central/rpcapi.py:433
+#: designate/central/rpcapi.py:435
 msgid ""
 "update_zone_transfer_request:                      Calling central's "
 "update_zone_transfer_request."
 msgstr ""
 
-#: designate/central/rpcapi.py:440
+#: designate/central/rpcapi.py:442
 msgid ""
 "delete_zone_transfer_request:                      Calling central's "
 "delete_zone_transfer_request."
 msgstr ""
 
-#: designate/central/rpcapi.py:448
+#: designate/central/rpcapi.py:450
 msgid ""
 "create_zone_transfer_accept:                      Calling central's "
 "create_zone_transfer_accept."
 msgstr ""
 
-#: designate/central/rpcapi.py:455
+#: designate/central/rpcapi.py:457
 msgid ""
 "get_zone_transfer_accept:                      Calling central's "
 "get_zone_transfer_accept."
 msgstr ""
 
-#: designate/central/rpcapi.py:464
+#: designate/central/rpcapi.py:466
 msgid ""
 "find_zone_transfer_accepts:                      Calling central's "
 "find_zone_transfer_accepts."
 msgstr ""
 
-#: designate/central/rpcapi.py:471
+#: designate/central/rpcapi.py:473
 msgid ""
 "find_zone_transfer_accept:                      Calling central's "
 "find_zone_transfer_accept."
 msgstr ""
 
-#: designate/central/rpcapi.py:478
+#: designate/central/rpcapi.py:480
 msgid ""
 "update_zone_transfer_accept:                      Calling central's "
 "update_zone_transfer_accept."
 msgstr ""
 
-#: designate/central/rpcapi.py:485
+#: designate/central/rpcapi.py:487
 msgid ""
 "delete_zone_transfer_accept:                      Calling central's "
 "delete_zone_transfer_accept."
@@ -470,7 +473,7 @@ msgstr "démarrage du point de terminaison de notification de mdns"
 msgid "Sending '%(msg)s' for '%(zone)s' to '%(server)s:%(port)d'."
 msgstr ""
 
-#: designate/mdns/notify.py:223
+#: designate/mdns/notify.py:224
 #, python-format
 msgid "%(zone)s not found on %(server)s:%(port)d"
 msgstr ""
@@ -571,7 +574,9 @@ msgstr ""
 
 #: designate/pool_manager/rpcapi.py:93
 #, python-format
-msgid "update_status: Calling pool manager's update_status for %(domain)s"
+msgid ""
+"update_status: Calling pool manager's update_status for %(domain)s : "
+"%(action)s : %(status)s : %(serial)s"
 msgstr ""
 
 #: designate/pool_manager/service.py:129
@@ -587,27 +592,27 @@ msgstr ""
 msgid "Starting periodic sync timer."
 msgstr ""
 
-#: designate/pool_manager/service.py:267
+#: designate/pool_manager/service.py:275
 #, python-format
 msgid "For domain %(domain)s the consensus serial is %(consensus_serial)s."
 msgstr ""
 
-#: designate/pool_manager/service.py:350
+#: designate/pool_manager/service.py:356
 #, python-format
 msgid "Created domain %(domain)s on server %(server)s."
 msgstr ""
 
-#: designate/pool_manager/service.py:394
+#: designate/pool_manager/service.py:397
 #, python-format
 msgid "Deleted domain %(domain)s from server %(server)s."
 msgstr ""
 
-#: designate/pool_manager/service.py:401
+#: designate/pool_manager/service.py:411
 #, python-format
 msgid "Consensus reached for deleting domain %(domain)s"
 msgstr ""
 
-#: designate/pool_manager/service.py:441
+#: designate/pool_manager/service.py:451
 #, python-format
 msgid "Updating domain %(domain)s on server %(server)s."
 msgstr ""
