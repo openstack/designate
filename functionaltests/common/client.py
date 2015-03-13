@@ -24,9 +24,9 @@ class DesignateClient(RestClient):
 
     def __init__(self):
         creds = KeystoneV2Credentials(
-            username=CONF.identity.username,
-            password=CONF.identity.password,
-            tenant_name=CONF.identity.tenant_name,
+            username=CONF.identity.admin_username,
+            password=CONF.identity.admin_password,
+            tenant_name=CONF.identity.admin_tenant_name,
         )
         auth_provider = tempest.manager.get_auth_provider(creds)
         auth_provider.fill_credentials()
