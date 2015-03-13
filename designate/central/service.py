@@ -499,7 +499,7 @@ class Service(service.RPCService, service.Service):
             'type': "SOA",
             'records': recordlist
         }
-        soa = self._create_recordset_in_storage(
+        soa, zone = self._create_recordset_in_storage(
             context, zone, objects.RecordSet(**values),
             increment_serial=False)
         return soa
@@ -530,7 +530,7 @@ class Service(service.RPCService, service.Service):
             'type': "NS",
             'records': recordlist
         }
-        ns = self._create_recordset_in_storage(
+        ns, zone = self._create_recordset_in_storage(
             context, zone, objects.RecordSet(**values),
             increment_serial=False)
 
@@ -1085,7 +1085,7 @@ class Service(service.RPCService, service.Service):
 
         policy.check('create_recordset', context, target)
 
-        recordset = self._create_recordset_in_storage(
+        recordset, domain = self._create_recordset_in_storage(
             context, domain, recordset, increment_serial=increment_serial)
 
         self.pool_manager_api.update_domain(context, domain)
@@ -1125,7 +1125,8 @@ class Service(service.RPCService, service.Service):
         recordset = self.storage.create_recordset(context, domain.id,
                                                   recordset)
 
-        return recordset
+        # Return the domain too in case it was updated
+        return (recordset, domain)
 
     def get_recordset(self, context, domain_id, recordset_id):
         domain = self.storage.get_domain(context, domain_id)
@@ -1196,7 +1197,7 @@ class Service(service.RPCService, service.Service):
 
         policy.check('update_recordset', context, target)
 
-        recordset = self._update_recordset_in_storage(
+        recordset, domain = self._update_recordset_in_storage(
             context, domain, recordset, increment_serial=increment_serial)
 
         self.pool_manager_api.update_domain(context, domain)
@@ -1236,7 +1237,7 @@ class Service(service.RPCService, service.Service):
         # Update the recordset
         recordset = self.storage.update_recordset(context, recordset)
 
-        return recordset
+        return (recordset, domain)
 
     @notification('dns.recordset.delete')
     @synchronized_domain()
@@ -1258,7 +1259,7 @@ class Service(service.RPCService, service.Service):
 
         policy.check('delete_recordset', context, target)
 
-        recordset = self._delete_recordset_in_storage(
+        recordset, domain = self._delete_recordset_in_storage(
             context, domain, recordset, increment_serial=increment_serial)
 
         self.pool_manager_api.update_domain(context, domain)
@@ -1284,7 +1285,7 @@ class Service(service.RPCService, service.Service):
         self.storage.update_recordset(context, recordset)
         recordset = self.storage.delete_recordset(context, recordset.id)
 
-        return recordset
+        return (recordset, domain)
 
     def count_recordsets(self, context, criterion=None):
         if criterion is None:
@@ -1316,7 +1317,7 @@ class Service(service.RPCService, service.Service):
 
         policy.check('create_record', context, target)
 
-        record = self._create_record_in_storage(
+        record, domain = self._create_record_in_storage(
             context, domain, recordset, record,
             increment_serial=increment_serial)
 
@@ -1343,7 +1344,7 @@ class Service(service.RPCService, service.Service):
         record = self.storage.create_record(context, domain.id, recordset.id,
                                             record)
 
-        return record
+        return (record, domain)
 
     def get_record(self, context, domain_id, recordset_id, record_id):
         domain = self.storage.get_domain(context, domain_id)
@@ -1420,7 +1421,7 @@ class Service(service.RPCService, service.Service):
 
         policy.check('update_record', context, target)
 
-        record = self._update_record_in_storage(
+        record, domain = self._update_record_in_storage(
             context, domain, record, increment_serial=increment_serial)
 
         self.pool_manager_api.update_domain(context, domain)
@@ -1443,7 +1444,7 @@ class Service(service.RPCService, service.Service):
         # Update the record
         record = self.storage.update_record(context, record)
 
-        return record
+        return (record, domain)
 
     @notification('dns.record.delete')
     @synchronized_domain()
@@ -1472,7 +1473,7 @@ class Service(service.RPCService, service.Service):
 
         policy.check('delete_record', context, target)
 
-        record = self._delete_record_in_storage(
+        record, domain = self._delete_record_in_storage(
             context, domain, record, increment_serial=increment_serial)
 
         self.pool_manager_api.update_domain(context, domain)
@@ -1494,7 +1495,7 @@ class Service(service.RPCService, service.Service):
 
         record = self.storage.update_record(context, record)
 
-        return record
+        return (record, domain)
 
     def count_records(self, context, criterion=None):
         if criterion is None:
