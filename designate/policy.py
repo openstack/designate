@@ -15,13 +15,19 @@
 # under the License.
 from oslo.config import cfg
 from oslo_log import log as logging
+from oslo_policy import policy
+from oslo_policy import opts
 
-from designate.openstack.common import policy
 from designate.i18n import _
 from designate.i18n import _LI
 from designate import utils
 from designate import exceptions
 
+
+CONF = cfg.CONF
+
+# Add the default policy opts
+opts.set_defaults(CONF)
 
 LOG = logging.getLogger(__name__)
 
@@ -49,8 +55,7 @@ def set_rules(data, default_rule=None, overwrite=True):
     LOG.debug(msg, data, default_rule, overwrite)
 
     if isinstance(data, dict):
-        rules = dict((k, policy.parse_rule(v)) for k, v in data.items())
-        rules = policy.Rules(rules, default_rule)
+        rules = policy.Rules.from_dict(data, default_rule)
     else:
         rules = policy.Rules.load_json(data, default_rule)
 
@@ -58,7 +63,7 @@ def set_rules(data, default_rule=None, overwrite=True):
 
 
 def init(default_rule=None):
-    policy_files = utils.find_config(cfg.CONF.policy_file)
+    policy_files = utils.find_config(CONF['oslo_policy'].policy_file)
 
     if len(policy_files) == 0:
         msg = 'Unable to determine appropriate policy json file'
@@ -73,7 +78,7 @@ def init(default_rule=None):
     global _ENFORCER
     if not _ENFORCER:
         LOG.debug("Enforcer is not present, recreating.")
-        _ENFORCER = policy.Enforcer()
+        _ENFORCER = policy.Enforcer(CONF)
 
     _ENFORCER.set_rules(rules)
 
