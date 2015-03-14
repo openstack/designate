@@ -47,14 +47,15 @@ class CentralAPI(object):
         4.2 - Add methods for pool manager integration
         4.3 - Added Zone Transfer Methods
         5.0 - Remove dead server code
+        5.1 - Add xfr_domain
     """
-    RPC_API_VERSION = '5.0'
+    RPC_API_VERSION = '5.1'
 
     def __init__(self, topic=None):
         topic = topic if topic else cfg.CONF.central_topic
 
         target = messaging.Target(topic=topic, version=self.RPC_API_VERSION)
-        self.client = rpc.get_client(target, version_cap='5.0')
+        self.client = rpc.get_client(target, version_cap='5.1')
 
     @classmethod
     def get_instance(cls):
@@ -490,3 +491,8 @@ class CentralAPI(object):
             context,
             'delete_zone_transfer_accept',
             zone_transfer_accept_id=zone_transfer_accept_id)
+
+    def xfr_domain(self, context, domain_id):
+        LOG.info(_LI("xfr_domain: Calling central's xfr_domain"))
+        cctxt = self.client.prepare(version='5.1')
+        return cctxt.call(context, 'xfr_domain', domain_id=domain_id)

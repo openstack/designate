@@ -20,6 +20,7 @@ import random
 import mock
 import testtools
 from testtools.matchers import GreaterThan
+from oslo.config import cfg
 from oslo_log import log as logging
 from oslo_db import exception as db_exception
 from oslo_messaging.notify import notifier
@@ -987,6 +988,23 @@ class CentralServiceTest(CentralTestCase):
 
         # Ensure the serial was incremented
         self.assertTrue(domain['serial'] > expected_domain['serial'])
+
+    def test_xfr_domain(self):
+        # Create a domain
+        fixture = self.get_domain_fixture('SECONDARY', 0)
+        fixture['email'] = cfg.CONF['service:central'].managed_resource_email
+        fixture['attributes'] = [{"key": "master", "value": "10.0.0.10"}]
+
+        # Create a zone
+        secondary = self.create_domain(**fixture)
+
+        self.central_service.xfr_domain(self.admin_context, secondary.id)
+
+    def test_xfr_domain_invalid_type(self):
+        domain = self.create_domain()
+
+        with testtools.ExpectedException(exceptions.BadRequest):
+            self.central_service.xfr_domain(self.admin_context, domain.id)
 
     # RecordSet Tests
     def test_create_recordset(self):
