@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Designate\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-03-09 06:06+0000\n"
-"PO-Revision-Date: 2015-01-23 01:52+0000\n"
+"POT-Creation-Date: 2015-03-16 06:05+0000\n"
+"PO-Revision-Date: 2015-03-13 18:48+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: French (http://www.transifex.com/projects/p/designate/"
 "language/fr/)\n"
@@ -85,28 +85,17 @@ msgstr "en appel en boucle à durée fixe"
 msgid "in dynamic looping call"
 msgstr "en appel en boucle dynamique"
 
-#: designate/openstack/common/policy.py:564
-#: designate/openstack/common/policy.py:844
-#, python-format
-msgid "Failed to understand rule %s"
-msgstr "N'a pas compris la règle %s"
-
-#: designate/openstack/common/policy.py:574
-#, python-format
-msgid "No handler for matches of kind %s"
-msgstr "Aucun gestionnaire pour ce type de correspondance %s"
-
 #: designate/openstack/common/service.py:268
 msgid "Unhandled exception"
 msgstr "Exception non prise en charge"
 
-#: designate/pool_manager/service.py:303
+#: designate/pool_manager/service.py:311
 msgid ""
 "An unhandled exception in periodic recovery occurred.  This should never "
 "happen!"
 msgstr ""
 
-#: designate/pool_manager/service.py:336
+#: designate/pool_manager/service.py:341
 msgid ""
 "An unhandled exception in periodic sync occurred.  This should never happen!"
 msgstr ""

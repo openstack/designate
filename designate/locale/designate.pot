@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: designate 2015.1.dev117\n"
+"Project-Id-Version: designate 2015.1.dev159\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-03-06 06:05+0000\n"
+"POT-Creation-Date: 2015-03-16 06:05+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,42 +17,42 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
 
-#: designate/policy.py:95
+#: designate/policy.py:100
 #, python-format
 msgid "Policy check succeeded for rule '%(rule)s' on target %(target)s"
 msgstr ""
 
-#: designate/policy.py:99
+#: designate/policy.py:104
 #, python-format
 msgid "Policy check failed for rule '%(rule)s' on target %(target)s"
 msgstr ""
 
-#: designate/service.py:86
+#: designate/service.py:90
 #, python-format
 msgid "Starting %(name)s service (version: %(version)s)"
 msgstr ""
 
-#: designate/service.py:91
+#: designate/service.py:95
 #, python-format
 msgid "Stopping %(name)s service"
 msgstr ""
 
-#: designate/service.py:103
+#: designate/service.py:107
 #, python-format
 msgid "Creating RPC Server on topic '%s'"
 msgstr ""
 
-#: designate/service.py:119
+#: designate/service.py:123
 #, python-format
 msgid "Starting RPC server on topic '%s'"
 msgstr ""
 
-#: designate/service.py:192
+#: designate/service.py:204
 #, python-format
 msgid "Could not bind to %(host)s:%(port)s after trying for 30 seconds"
 msgstr ""
 
-#: designate/service.py:271
+#: designate/service.py:349
 msgid "serve() can only be called once"
 msgstr ""
 
@@ -71,33 +71,6 @@ msgstr ""
 
 #: designate/cmd/manage.py:119
 msgid "Please re-run designate-manage as root."
-msgstr ""
-
-#: designate/openstack/common/policy.py:111
-msgid "The JSON file that defines policies."
-msgstr ""
-
-#: designate/openstack/common/policy.py:114
-msgid "Default rule. Enforced when a requested rule is not found."
-msgstr ""
-
-#: designate/openstack/common/policy.py:118
-msgid ""
-"Directories where policy configuration files are stored. They can be "
-"relative to any directory in the search path defined by the config_dir "
-"option, or absolute paths. The file defined by policy_file must exist for"
-" these directories to be searched.  Missing or empty directories are "
-"ignored."
-msgstr ""
-
-#: designate/openstack/common/policy.py:143
-#, python-format
-msgid "Policy doesn't allow %s to be performed."
-msgstr ""
-
-#: designate/openstack/common/policy.py:240
-#, python-format
-msgid "Rules must be an instance of dict or Rules, got %s instead"
 msgstr ""
 
 #: designate/openstack/common/sslutils.py:53
@@ -121,7 +94,7 @@ msgid ""
 "key_file option value in your configuration file"
 msgstr ""
 
-#: designate/openstack/common/sslutils.py:101
+#: designate/openstack/common/sslutils.py:105
 #, python-format
 msgid "Invalid SSL version : %s"
 msgstr ""
