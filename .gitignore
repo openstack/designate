@@ -28,3 +28,5 @@ designate/versioninfo
 /dnsmasq
 .testrepository/*
 contrib/vagrant/.vagrant/
+functionaltests/tempest.log
+functionaltests/.testrepository/
