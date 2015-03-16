@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import socket
+import base64
 
 import dns
 import dns.zone
@@ -27,40 +28,6 @@ from designate.i18n import _LE
 from designate.i18n import _LI
 
 LOG = logging.getLogger(__name__)
-
-
-class SerializationMiddleware(object):
-    """DNS Middleware to serialize/deserialize DNS Packets"""
-
-    def __init__(self, application):
-        self.application = application
-
-    def __call__(self, request):
-        try:
-            message = dns.message.from_wire(request['payload'])
-
-            # Create + Attach the initial "environ" dict. This is similar to
-            # the environ dict used in typical WSGI middleware.
-            message.environ = {'addr': request['addr']}
-
-        except dns.exception.DNSException:
-            LOG.error(_LE("Failed to deserialize packet from %(host)s:"
-                          "%(port)d") % {'host': request['addr'][0],
-                                         'port': request['addr'][1]})
-
-            # We failed to deserialize the request, generate a failure
-            # response using a made up request.
-            response = dns.message.make_response(
-                dns.message.make_query('unknown', dns.rdatatype.A))
-            response.set_rcode(dns.rcode.FORMERR)
-
-        else:
-            # Hand the Deserialized packet on
-            response = self.application(message)
-
-        # Serialize and return the response if present
-        if response is not None:
-            return response.to_wire()
 
 
 class DNSMiddleware(object):
@@ -90,19 +57,117 @@ class DNSMiddleware(object):
         response = self.application(request)
         return self.process_response(response)
 
+    def _build_error_response(self):
+        response = dns.message.make_response(
+            dns.message.make_query('unknown', dns.rdatatype.A))
+        response.set_rcode(dns.rcode.FORMERR)
 
-class ContextMiddleware(DNSMiddleware):
-    """Temporary ContextMiddleware which attaches an admin context to every
-    request
+        return response
 
-    This will be replaced with a piece of middleware which generates, from
-    a TSIG signed request, an appropriate Request Context.
-    """
-    def process_request(self, request):
+
+class SerializationMiddleware(DNSMiddleware):
+    """DNS Middleware to serialize/deserialize DNS Packets"""
+
+    def __init__(self, application, tsig_keyring=None):
+        self.application = application
+        self.tsig_keyring = tsig_keyring
+
+    def __call__(self, request):
+        # Generate the initial context. This may be updated by other middleware
+        # as we learn more information about the Request.
         ctxt = context.DesignateContext.get_admin_context(all_tenants=True)
-        request.environ['context'] = ctxt
+
+        try:
+            message = dns.message.from_wire(request['payload'],
+                                            self.tsig_keyring)
+
+            if message.had_tsig:
+                LOG.debug('Request signed with TSIG key: %s', message.keyname)
+
+            # Create + Attach the initial "environ" dict. This is similar to
+            # the environ dict used in typical WSGI middleware.
+            message.environ = {
+                'context': ctxt,
+                'addr': request['addr'],
+            }
+
+        except dns.message.UnknownTSIGKey:
+            LOG.error(_LE("Unknown TSIG key from %(host)s:"
+                          "%(port)d") % {'host': request['addr'][0],
+                                         'port': request['addr'][1]})
+
+            response = self._build_error_response()
+
+        except dns.tsig.BadSignature:
+            LOG.error(_LE("Invalid TSIG signature from %(host)s:"
+                          "%(port)d") % {'host': request['addr'][0],
+                                         'port': request['addr'][1]})
+
+            response = self._build_error_response()
+
+        except dns.exception.DNSException:
+            LOG.error(_LE("Failed to deserialize packet from %(host)s:"
+                          "%(port)d") % {'host': request['addr'][0],
+                                         'port': request['addr'][1]})
+
+            response = self._build_error_response()
+
+        else:
+            # Hand the Deserialized packet onto the Application
+            response = self.application(message)
+
+        # Serialize and return the response if present
+        if response is not None:
+            return response.to_wire()
+
+
+class TsigInfoMiddleware(DNSMiddleware):
+    """Middleware which looks up the information available for a TsigKey"""
+
+    def __init__(self, application, storage):
+        super(TsigInfoMiddleware, self).__init__(application)
+
+        self.storage = storage
+
+    def process_request(self, request):
+        if not request.had_tsig:
+            return None
+
+        try:
+            criterion = {'name': request.keyname.to_text(True)}
+            tsigkey = self.storage.find_tsigkey(
+                    context.get_current(), criterion)
+
+            request.environ['tsigkey'] = tsigkey
+            request.environ['context'].tsigkey_id = tsigkey.id
+
+        except exceptions.TsigKeyNotFound:
+            # This should never happen, as we just validated the key.. Except
+            # for race conditions..
+            return self._build_error_response()
 
         return None
+
+
+class TsigKeyring(object):
+    """Implements the DNSPython KeyRing API, backed by the Designate DB"""
+
+    def __init__(self, storage):
+        self.storage = storage
+
+    def __getitem__(self, key):
+        return self.get(key)
+
+    def get(self, key, default=None):
+        try:
+            criterion = {'name': key.to_text(True)}
+            tsigkey = self.storage.find_tsigkey(
+                context.get_current(), criterion)
+
+            return base64.decodestring(tsigkey.secret)
+
+        except exceptions.TsigKeyNotFound:
+            return default
 
 
 def from_dnspython_zone(dnspython_zone):
