@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: designate 2015.1.dev147\n"
+"Project-Id-Version: designate 2015.1.dev159\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-03-13 06:09+0000\n"
+"POT-Creation-Date: 2015-03-16 06:05+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -32,7 +32,7 @@ msgstr ""
 msgid "Doing AXFR for %(name)s from %(host)s"
 msgstr ""
 
-#: designate/policy.py:67
+#: designate/policy.py:72
 #, python-format
 msgid "Using policy_file found at: %s"
 msgstr ""
@@ -440,12 +440,12 @@ msgstr ""
 msgid "NOT checking for TLDs"
 msgstr ""
 
-#: designate/central/service.py:1769
+#: designate/central/service.py:1770
 #, python-format
 msgid "Creating zone for %(fip_id)s:%(region)s - %(fip_addr)s zone %(zonename)s"
 msgstr ""
 
-#: designate/central/service.py:2178
+#: designate/central/service.py:2179
 msgid "Target Tenant ID found - using scoped policy"
 msgstr ""
 
@@ -553,24 +553,24 @@ msgstr ""
 
 #: designate/pool_manager/rpcapi.py:63
 #, python-format
-msgid "create_domain: Calling pool manager's create_domain for %(domain)s"
+msgid "create_domain: Calling pool manager for %(domain)s, serial:%(serial)s"
 msgstr ""
 
-#: designate/pool_manager/rpcapi.py:73
+#: designate/pool_manager/rpcapi.py:74
 #, python-format
-msgid "delete_domain: Calling pool manager's delete_domain for %(domain)s"
+msgid "delete_domain: Calling pool manager for %(domain)s, serial:%(serial)s"
 msgstr ""
 
-#: designate/pool_manager/rpcapi.py:83
+#: designate/pool_manager/rpcapi.py:85
 #, python-format
-msgid "update_domain: Calling pool manager's update_domain for %(domain)s"
+msgid "update_domain: Calling pool manager for %(domain)s, serial:%(serial)s"
 msgstr ""
 
-#: designate/pool_manager/rpcapi.py:93
+#: designate/pool_manager/rpcapi.py:96
 #, python-format
 msgid ""
-"update_status: Calling pool manager's update_status for %(domain)s : "
-"%(action)s : %(status)s : %(serial)s"
+"update_status: Calling pool manager for %(domain)s : %(action)s : "
+"%(status)s : %(serial)s"
 msgstr ""
 
 #: designate/pool_manager/service.py:129

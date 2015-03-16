@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Designate\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-03-13 06:09+0000\n"
-"PO-Revision-Date: 2015-03-06 18:02+0000\n"
+"POT-Creation-Date: 2015-03-16 06:05+0000\n"
+"PO-Revision-Date: 2015-03-13 21:01+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: French (http://www.transifex.com/projects/p/designate/"
 "language/fr/)\n"
@@ -27,15 +27,20 @@ msgstr ""
 
 #: designate/agent/handler.py:118
 #, python-format
-msgid "Refusing CREATE for %(name)s, zone already exists"
+msgid "Not creating %(name)s, zone already exists"
 msgstr ""
 
-#: designate/agent/handler.py:161
+#: designate/agent/handler.py:162
 #, python-format
 msgid "Refusing NOTIFY for %(name)s, doesn't exist"
 msgstr ""
 
-#: designate/agent/handler.py:226
+#: designate/agent/handler.py:213
+#, python-format
+msgid "Not deleting %(name)s, zone doesn't exist"
+msgstr ""
+
+#: designate/agent/handler.py:236
 #, python-format
 msgid "%(verb)s for %(name)s from %(server)s refused"
 msgstr ""
