@@ -30,3 +30,5 @@ designate/versioninfo
 contrib/vagrant/.vagrant/
 functionaltests/tempest.log
 functionaltests/.testrepository/
+*.ipynb
+/.ipynb_checkpoints/*
