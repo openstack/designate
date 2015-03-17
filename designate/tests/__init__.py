@@ -101,19 +101,43 @@ class TestCase(base.BaseTestCase):
     }]
 
     # The last domain is invalid
-    domain_fixtures = [{
-        'name': 'example.com.',
-        'email': 'example@example.com',
-    }, {
-        'name': 'example.net.',
-        'email': 'example@example.net',
-    }, {
-        'name': 'example.org.',
-        'email': 'example@example.org',
-    }, {
-        'name': 'invalid.com.....',
-        'email': 'example@invalid.com',
-    }]
+    domain_fixtures = {
+        'PRIMARY': [
+            {
+                'name': 'example.com.',
+                'type': 'PRIMARY',
+                'email': 'example@example.com',
+            }, {
+                'name': 'example.net.',
+                'type': 'PRIMARY',
+                'email': 'example@example.net',
+            }, {
+                'name': 'example.org.',
+                'type': 'PRIMARY',
+                'email': 'example@example.org',
+            }, {
+                'name': 'invalid.com.....',
+                'type': 'PRIMARY',
+                'email': 'example@invalid.com',
+            }
+        ],
+        'SECONDARY': [
+            {
+                'name': 'example.com.',
+                'type': 'SECONDARY',
+            }, {
+                'name': 'example.net.',
+                'type': 'SECONDARY',
+            }, {
+                'name': 'example.org.',
+                'type': 'SECONDARY',
+            }, {
+                'name': 'invalid.com.....',
+                'type': 'SECONDARY',
+            }
+        ]
+
+    }
 
     recordset_fixtures = {
         'A': [
@@ -381,10 +405,12 @@ class TestCase(base.BaseTestCase):
         _values.update(values)
         return _values
 
-    def get_domain_fixture(self, fixture=0, values=None):
+    def get_domain_fixture(self, domain_type=None, fixture=0, values=None):
+        domain_type = domain_type or 'PRIMARY'
         values = values or {}
 
-        _values = copy.copy(self.domain_fixtures[fixture])
+        _values = copy.copy(self.domain_fixtures[domain_type][fixture])
+
         _values.update(values)
         return _values
 
@@ -552,6 +578,7 @@ class TestCase(base.BaseTestCase):
     def create_domain(self, **kwargs):
         context = kwargs.pop('context', self.admin_context)
         fixture = kwargs.pop('fixture', 0)
+        domain_type = kwargs.pop('type', None)
 
         try:
             # We always need a server to create a server
@@ -565,7 +592,8 @@ class TestCase(base.BaseTestCase):
         except exceptions.DuplicatePoolAttribute:
             pass
 
-        values = self.get_domain_fixture(fixture=fixture, values=kwargs)
+        values = self.get_domain_fixture(domain_type=domain_type,
+                                         fixture=fixture, values=kwargs)
 
         if 'tenant_id' not in values:
             values['tenant_id'] = context.tenant

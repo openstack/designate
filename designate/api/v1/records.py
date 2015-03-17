@@ -40,6 +40,11 @@ def _find_recordset(context, domain_id, name, type):
 
 
 def _find_or_create_recordset(context, domain_id, name, type, ttl):
+    central_api = central_rpcapi.CentralAPI.get_instance()
+
+    criterion = {"id": domain_id, "type": "PRIMARY"}
+    central_api.find_domain(context, criterion=criterion)
+
     try:
         recordset = _find_recordset(context, domain_id, name, type)
     except exceptions.RecordSetNotFound:
@@ -49,7 +54,6 @@ def _find_or_create_recordset(context, domain_id, name, type, ttl):
             'type': type,
             'ttl': ttl,
         }
-        central_api = central_rpcapi.CentralAPI.get_instance()
 
         recordset = central_api.create_recordset(
             context, domain_id, objects.RecordSet(**values))
@@ -193,7 +197,8 @@ def update_record(domain_id, record_id):
 
     # NOTE: We need to ensure the domain actually exists, otherwise we may
     #       return a record not found instead of a domain not found
-    central_api.get_domain(context, domain_id)
+    criterion = {"id": domain_id, "type": "PRIMARY"}
+    central_api.find_domain(context, criterion)
 
     # Fetch the existing resource
     # NOTE(kiall): We use "find_record" rather than "get_record" as we do not
@@ -251,7 +256,8 @@ def delete_record(domain_id, record_id):
 
     # NOTE: We need to ensure the domain actually exists, otherwise we may
     #       return a record not found instead of a domain not found
-    central_api.get_domain(context, domain_id)
+    criterion = {"id": domain_id, "type": "PRIMARY"}
+    central_api.find_domain(context, criterion=criterion)
 
     # Find the record
     criterion = {'domain_id': domain_id, 'id': record_id}

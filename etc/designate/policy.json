@@ -1,5 +1,7 @@
 {
     "admin": "role:admin or is_admin:True",
+    "primary_zone": "target.domain_type:SECONDARY",
+
     "owner": "tenant:%(tenant_id)s",
     "admin_or_owner": "rule:admin or rule:owner",
     "target": "tenant:%(target_tenant_id)s",
@@ -45,6 +47,15 @@
     "abandon_domain": "rule:admin",
     "count_domains": "rule:admin_or_owner",
     "touch_domain": "rule:admin_or_owner",
+
+    "create_recordset": "('PRIMARY':%(domain_type)s and rule:admin_or_owner) OR ('SECONDARY':%(domain_type)s AND is_admin:True)",
+    "get_recordsets": "rule:admin_or_owner",
+    "get_recordset": "rule:admin_or_owner",
+    "find_recordsets": "rule:admin_or_owner",
+    "find_recordset": "rule:admin_or_owner",
+    "update_recordset": "('PRIMARY':%(domain_type)s and rule:admin_or_owner) OR ('SECONDARY':%(domain_type)s AND is_admin:True)",
+    "delete_recordset": "('PRIMARY':%(domain_type)s and rule:admin_or_owner) OR ('SECONDARY':%(domain_type)s AND is_admin:True)",
+    "count_recordset": "rule:admin_or_owner",
 
     "create_record": "rule:admin_or_owner",
     "get_records": "rule:admin_or_owner",

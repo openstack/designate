@@ -214,7 +214,7 @@ class CentralServiceTest(CentralTestCase):
                     group='service:central')
         context = self.get_context()
 
-        values = self.get_domain_fixture(1)
+        values = self.get_domain_fixture(fixture=1)
         values['ttl'] = 0
 
         with testtools.ExpectedException(exceptions.InvalidTTL):
@@ -443,7 +443,8 @@ class CentralServiceTest(CentralTestCase):
     def test_create_domain_over_tld(self):
         values = dict(
             name='example.com.',
-            email='info@example.com'
+            email='info@example.com',
+            type='PRIMARY'
         )
         self._test_create_domain(values)
 
@@ -459,7 +460,8 @@ class CentralServiceTest(CentralTestCase):
         # Test creation of a domain in 한국 (kr)
         values = dict(
             name='example.xn--3e0b707e.',
-            email='info@example.xn--3e0b707e'
+            email='info@example.xn--3e0b707e',
+            type='PRIMARY'
         )
         self._test_create_domain(values)
 
@@ -476,7 +478,7 @@ class CentralServiceTest(CentralTestCase):
         parent_domain = self.create_domain(fixture=0)
 
         # Prepare values for the subdomain using fixture 1 as a base
-        values = self.get_domain_fixture(1)
+        values = self.get_domain_fixture(fixture=1)
         values['name'] = 'www.%s' % parent_domain['name']
 
         # Create the subdomain
@@ -490,7 +492,7 @@ class CentralServiceTest(CentralTestCase):
     def test_create_superdomain(self):
         # Prepare values for the domain and subdomain
         # using fixture 1 as a base
-        domain_values = self.get_domain_fixture(1)
+        domain_values = self.get_domain_fixture(fixture=1)
 
         subdomain_values = copy.deepcopy(domain_values)
         subdomain_values['name'] = 'www.%s' % domain_values['name']
@@ -529,7 +531,7 @@ class CentralServiceTest(CentralTestCase):
         context.tenant = '2'
 
         # Prepare values for the subdomain using fixture 1 as a base
-        values = self.get_domain_fixture(1)
+        values = self.get_domain_fixture(fixture=1)
         values['name'] = 'www.%s' % parent_domain['name']
 
         # Attempt to create the subdomain
@@ -544,7 +546,7 @@ class CentralServiceTest(CentralTestCase):
         context.tenant = '1'
 
         # Set up domain and subdomain values
-        domain_values = self.get_domain_fixture(1)
+        domain_values = self.get_domain_fixture(fixture=1)
         domain_name = domain_values['name']
 
         subdomain_values = copy.deepcopy(domain_values)
@@ -644,7 +646,7 @@ class CentralServiceTest(CentralTestCase):
                     group='service:central')
         context = self.get_context()
 
-        values = self.get_domain_fixture(1)
+        values = self.get_domain_fixture(fixture=1)
         values['ttl'] = 0
 
         # Create a server
@@ -658,7 +660,7 @@ class CentralServiceTest(CentralTestCase):
         self.policy({'use_low_ttl': '!'})
         self.config(min_ttl="None",
                     group='service:central')
-        values = self.get_domain_fixture(1)
+        values = self.get_domain_fixture(fixture=1)
         values['ttl'] = -100
 
         # Create a server

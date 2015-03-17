@@ -1,3 +1,4 @@
+
 {
     "$schema": "http://json-schema.org/draft-04/hyper-schema",
 
@@ -13,7 +14,7 @@
         "zone": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["name", "email"],
+            "required": ["name"],
 
             "properties": {
                 "id": {
@@ -40,6 +41,19 @@
                     "format": "domainname",
                     "maxLength": 255,
                     "immutable": true
+                },
+                "type": {
+                    "type": "string",
+                    "description": "Zone Type",
+                    "enum": ["PRIMARY", "SECONDARY"]
+                },
+                "masters": {
+                    "type": ["array", "null"],
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Masters for this Zone",
+                    "uniqueItems": true
                 },
                 "email": {
                     "type": "string",
@@ -73,7 +87,7 @@
                 "serial": {
                     "type": "integer",
                     "description": "Zone serial number",
-                    "minimum": 1,
+                    "minimum": 0,
                     "maximum": 4294967295,
                     "readOnly": true
                 },
@@ -94,6 +108,12 @@
                     "format": "date-time",
                     "readOnly": true
                 },
+                "transferred_at": {
+                    "type": ["string", "null"],
+                    "description": "Date and time of last successful transfer",
+                    "format": "date-time",
+                    "readOnly": true
+                },
                 "links": {
                     "type": "object",
                     "additionalProperties": false,
@@ -105,7 +125,43 @@
                         }
                     }
                 }
-            }
+            },
+            "oneOf": [
+                {
+                    "description": "Primary zone",
+                    "required": ["email"],
+                    "properties": {
+                        "type": {
+                            "type": "string",
+                            "enum": ["PRIMARY"]
+                        },
+                        "masters": {
+                            "type": ["null", "array"],
+                            "maxItems": 0
+                        }
+                    }
+                },
+                {
+                    "description": "Secondary zone",
+                    "required": ["type", "masters"],
+                    "properties": {
+                        "type": {
+                            "type": "string",
+                            "enum": ["SECONDARY"]
+                        },
+                        "masters": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "format": "ipandport"
+                            },
+                            "description": "Masters for this Zone",
+                            "uniqueItems": true,
+                            "minItems": 1
+                        }
+                    }
+                }
+            ]
         }
     }
 }

@@ -13,6 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 from designate.objects import base
+from designate.objects.domain_attribute import DomainAttribute
+from designate.objects.domain_attribute import DomainAttributeList
 
 
 class Domain(base.DictObjectMixin, base.SoftDeleteObjectMixin,
@@ -36,7 +38,29 @@ class Domain(base.DictObjectMixin, base.SoftDeleteObjectMixin,
             'relation': True,
             'relation_cls': 'RecordSetList'
         },
+        'attributes': {
+            'relation': True,
+            'relation_cls': 'DomainAttributeList'
+        },
+        'type': {},
+        'transferred_at': {},
     }
+
+    @property
+    def masters(self):
+        if self.obj_attr_is_set('attributes'):
+            return [i.value for i in self.attributes if i.key == 'master']
+        else:
+            return None
+
+    # TODO(ekarlso): Make this a property sette rpr Kiall's comments later.
+    def set_masters(self, masters):
+        attributes = DomainAttributeList()
+
+        for m in masters:
+            obj = DomainAttribute(key='master', value=m)
+            attributes.append(obj)
+        self.attributes = attributes
 
 
 class DomainList(base.ListObjectMixin, base.DesignateObject,

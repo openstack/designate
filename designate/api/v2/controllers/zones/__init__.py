@@ -16,6 +16,7 @@
 import pecan
 from dns import zone as dnszone
 from dns import exception as dnsexception
+from oslo.config import cfg
 
 from designate import exceptions
 from designate import utils
@@ -26,7 +27,10 @@ from designate.api.v2.controllers import nameservers
 from designate.api.v2.controllers import recordsets
 from designate.api.v2.controllers.zones import tasks
 from designate.api.v2.views import zones as zones_view
-from designate.objects import Domain
+from designate import objects
+
+
+CONF = cfg.CONF
 
 
 class ZonesController(rest.RestController):
@@ -134,14 +138,30 @@ class ZonesController(rest.RestController):
         """'Normal' zone creation"""
         body = request.body_dict
 
+        # We need to check the zone type before validating the schema since if
+        # it's the type is SECONDARY we need to set the email to the mgmt email
+        zone = body.get('zone')
+        if isinstance(zone, dict):
+            if 'type' not in zone:
+                zone['type'] = 'PRIMARY'
+
+            if zone['type'] == 'SECONDARY':
+                mgmt_email = CONF['service:central'].managed_resource_email
+                body['zone']['email'] = mgmt_email
+
         # Validate the request conforms to the schema
         self._resource_schema.validate(body)
 
         # Convert from APIv2 -> Central format
         values = self._view.load(context, request, body)
 
+        # TODO(ekarlso): Fix this once setter or so works.
+        masters = values.pop('masters', [])
+        zone = objects.Domain.from_dict(values)
+        zone.set_masters(masters)
+
         # Create the zone
-        zone = self.central_api.create_domain(context, Domain(**values))
+        zone = self.central_api.create_domain(context, zone)
 
         # Prepare the response headers
         # If the zone has been created asynchronously
@@ -168,7 +188,9 @@ class ZonesController(rest.RestController):
                 # records are taken care of in _create_zone).
                 check_origin=False)
             domain = dnsutils.from_dnspython_zone(dnspython_zone)
-            for rrset in domain.recordsets:
+            domain.type = 'PRIMARY'
+
+            for rrset in list(domain.recordsets):
                 if rrset.type in ('NS', 'SOA'):
                     domain.recordsets.remove(rrset)
 
@@ -229,9 +251,26 @@ class ZonesController(rest.RestController):
             # Validate the new set of data
             self._resource_schema.validate(zone_data)
 
+            # Unpack the values
+            values = self._view.load(context, request, body)
+
+            zone.set_masters(values.pop('masters', []))
+
+            # If masters are specified then we set zone.transferred_at to None
+            # which will cause a new transfer
+            if 'attributes' in zone.obj_what_changed():
+                zone.transferred_at = None
+
             # Update and persist the resource
-            zone.update(self._view.load(context, request, body))
-            zone = self.central_api.update_domain(context, zone)
+            zone.update(values)
+
+            if zone.type == 'SECONDARY' and 'email' in zone.obj_what_changed():
+                msg = "Changed email is not allowed."
+                raise exceptions.InvalidObject(msg)
+
+            increment_serial = zone.type == 'PRIMARY'
+            zone = self.central_api.update_domain(
+                context, zone, increment_serial=increment_serial)
 
         if zone.status == 'PENDING':
             response.status_int = 202

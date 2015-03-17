@@ -18,6 +18,7 @@ import datetime
 
 from mock import patch
 from oslo import messaging
+from oslo.config import cfg
 from oslo_log import log as logging
 
 from designate import exceptions
@@ -35,6 +36,9 @@ class ApiV1DomainsTest(ApiV1Test):
 
         # Create a domain
         fixture = self.get_domain_fixture(0)
+
+        # V1 doesn't have these
+        del fixture['type']
 
         response = self.post('domains', data=fixture)
 
@@ -59,6 +63,9 @@ class ApiV1DomainsTest(ApiV1Test):
         # Create a domain
         fixture = self.get_domain_fixture(0)
 
+        # V1 doesn't have these
+        del fixture['type']
+
         self.post('domains', data=fixture, status_code=500)
 
     @patch.object(central_service.Service, 'create_domain',
@@ -67,6 +74,9 @@ class ApiV1DomainsTest(ApiV1Test):
         # Create a domain
         fixture = self.get_domain_fixture(0)
 
+        # V1 doesn't have these
+        del fixture['type']
+
         self.post('domains', data=fixture, status_code=504)
 
     @patch.object(central_service.Service, 'create_domain',
@@ -74,6 +84,10 @@ class ApiV1DomainsTest(ApiV1Test):
     def test_create_domain_duplicate(self, _):
         # Create a domain
         fixture = self.get_domain_fixture(0)
+
+        # V1 doesn't have these
+        del fixture['type']
+
         self.post('domains', data=fixture, status_code=409)
 
     def test_create_domain_null_ttl(self):
@@ -100,6 +114,9 @@ class ApiV1DomainsTest(ApiV1Test):
 
         # Create a domain
         fixture = self.get_domain_fixture(0)
+
+        # V1 doesn't have type
+        del fixture['type']
 
         # Give it a UTF-8 filled description
         fixture['description'] = "utf-8:2H₂+O₂⇌2H₂O,R=4.7kΩ,⌀200mm∮E⋅da=Q,n" \
@@ -218,7 +235,7 @@ class ApiV1DomainsTest(ApiV1Test):
         self.assertIn('id', response.json)
         self.assertEqual(response.json['id'], domain['id'])
 
-    @patch.object(central_service.Service, 'get_domain',
+    @patch.object(central_service.Service, 'find_domain',
                   side_effect=messaging.MessagingTimeout())
     def test_get_domain_timeout(self, _):
         # Create a domain
@@ -353,3 +370,33 @@ class ApiV1DomainsTest(ApiV1Test):
 
         self.delete('domains/2fdadfb1cf964259ac6bbb7b6d2ff980',
                     status_code=404)
+
+    def test_get_secondary_missing(self):
+        fixture = self.get_domain_fixture('SECONDARY', 0)
+        fixture['email'] = cfg.CONF['service:central'].managed_resource_email
+
+        domain = self.create_domain(**fixture)
+
+        self.get('domains/%s' % domain.id, status_code=404)
+
+    def test_update_secondary_missing(self):
+        fixture = self.get_domain_fixture('SECONDARY', 0)
+        fixture['email'] = cfg.CONF['service:central'].managed_resource_email
+
+        domain = self.create_domain(**fixture)
+
+        self.put('domains/%s' % domain.id, {}, status_code=404)
+
+    def test_delete_secondary_missing(self):
+        fixture = self.get_domain_fixture('SECONDARY', 0)
+        fixture['email'] = cfg.CONF['service:central'].managed_resource_email
+
+        domain = self.create_domain(**fixture)
+        self.delete('domains/%s' % domain.id, status_code=404)
+
+    def test_get_domain_servers_from_secondary(self):
+        fixture = self.get_domain_fixture('SECONDARY', 0)
+        fixture['email'] = cfg.CONF['service:central'].managed_resource_email
+
+        domain = self.create_domain(**fixture)
+        self.get('domains/%s/servers' % domain.id, status_code=404)
