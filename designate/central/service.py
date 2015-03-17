@@ -43,6 +43,7 @@ from designate import quota
 from designate import service
 from designate import utils
 from designate import storage
+from designate.mdns import rpcapi as mdns_rpcapi
 from designate.pool_manager import rpcapi as pool_manager_rpcapi
 
 
@@ -280,6 +281,10 @@ class Service(service.RPCService, service.Service):
 
     def stop(self):
         super(Service, self).stop()
+
+    @property
+    def mdns_api(self):
+        return mdns_rpcapi.MdnsAPI.get_instance()
 
     @property
     def pool_manager_api(self):
@@ -845,6 +850,8 @@ class Service(service.RPCService, service.Service):
 
         self.pool_manager_api.create_domain(context, domain)
 
+        self.mdns_api.perform_zone_xfr(context, domain)
+
         # If domain is a superdomain, update subdomains
         # with new parent IDs
         for subdomain in subdomains:
@@ -961,6 +968,10 @@ class Service(service.RPCService, service.Service):
 
         domain = self._update_domain_in_storage(
             context, domain, increment_serial=increment_serial)
+
+        # Fire off a XFR
+        if 'masters' in changes:
+            self.mdns_api.perform_zone_xfr(context, domain)
 
         self.pool_manager_api.update_domain(context, domain)
 

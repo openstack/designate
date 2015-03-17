@@ -62,6 +62,15 @@ class Domain(base.DictObjectMixin, base.SoftDeleteObjectMixin,
             attributes.append(obj)
         self.attributes = attributes
 
+    def get_master_by_ip(self, host):
+        """
+        Utility to get the master by it's ip for this domain.
+        """
+        for srv in self.masters:
+            if host == srv.split(":")[0]:
+                return srv
+        return False
+
 
 class DomainList(base.ListObjectMixin, base.DesignateObject,
                  base.PagedListObjectMixin):
