@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Designate\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-03-16 06:05+0000\n"
-"PO-Revision-Date: 2015-03-13 18:48+0000\n"
+"POT-Creation-Date: 2015-03-17 06:40+0000\n"
+"PO-Revision-Date: 2015-03-16 19:03+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: Portuguese (Brazil) (http://www.transifex.com/projects/p/"
 "designate/language/pt_BR/)\n"
@@ -20,12 +20,22 @@ msgstr ""
 "Generated-By: Babel 1.3\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: designate/dnsutils.py:47
+#: designate/dnsutils.py:95
+#, python-format
+msgid "Unknown TSIG key from %(host)s:%(port)d"
+msgstr ""
+
+#: designate/dnsutils.py:102
+#, python-format
+msgid "Invalid TSIG signature from %(host)s:%(port)d"
+msgstr ""
+
+#: designate/dnsutils.py:109
 #, python-format
 msgid "Failed to deserialize packet from %(host)s:%(port)d"
 msgstr "Falha ao deserializar pacote do %(host)s:%(port)d"
 
-#: designate/dnsutils.py:204
+#: designate/dnsutils.py:269
 msgid "There was a problem with the AXFR"
 msgstr ""
 
@@ -64,11 +74,6 @@ msgid ""
 msgstr ""
 "Linhas de erros:\n"
 "%s"
-
-#: designate/mdns/handler.py:126
-#, python-format
-msgid "got exception while handling axfr request. Question is %(qr)s"
-msgstr "obtida exceção enquanto processando requisição axfr. Questão é %(qr)s"
 
 #: designate/network_api/neutron.py:126
 #, python-format
