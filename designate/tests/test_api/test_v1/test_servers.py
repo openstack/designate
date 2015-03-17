@@ -15,6 +15,7 @@
 # under the License.
 from mock import patch
 from oslo import messaging
+from oslo_config import cfg
 from oslo_log import log as logging
 
 from designate import exceptions
@@ -22,6 +23,10 @@ from designate import objects
 from designate.central import service as central_service
 from designate.tests.test_api.test_v1 import ApiV1Test
 
+cfg.CONF.import_opt('default_pool_id',
+                    'designate.central',
+                    group='service:central')
+default_pool_id = cfg.CONF['service:central'].default_pool_id
 
 LOG = logging.getLogger(__name__)
 
@@ -82,26 +87,39 @@ class ApiV1ServersTest(ApiV1Test):
         self.post('servers', data=fixture, status_code=409)
 
     def test_get_servers(self):
+        # Fetch the default pool
+        pool = self.storage.get_pool(self.admin_context, default_pool_id)
+
+        # Fetch the list of servers
         response = self.get('servers')
 
         self.assertIn('servers', response.json)
-        self.assertEqual(0, len(response.json['servers']))
+        self.assertEqual(len(pool.ns_records), len(response.json['servers']))
 
-        # Create the nameserver
-        self.create_nameserver()
+        # Add a new NS record to the pool
+        pool.ns_records.append(
+            objects.PoolNsRecord(priority=0, hostname='new-ns1.example.org.'))
+
+        # Save the pool to add a new nameserver
+        self.storage.update_pool(self.admin_context, pool)
+
+        # Fetch the list of servers
+        response = self.get('servers')
+
+        self.assertIn('servers', response.json)
+        self.assertEqual(len(pool.ns_records), len(response.json['servers']))
+
+        # Add a new NS record to the pool
+        pool.ns_records.append(
+            objects.PoolNsRecord(priority=0, hostname='new-ns2.example.org.'))
+
+        # Save the pool to add a new nameserver
+        self.storage.update_pool(self.admin_context, pool)
 
         response = self.get('servers')
 
         self.assertIn('servers', response.json)
-        self.assertEqual(1, len(response.json['servers']))
-
-        # Create a second server
-        self.create_nameserver(fixture=1)
-
-        response = self.get('servers')
-
-        self.assertIn('servers', response.json)
-        self.assertEqual(2, len(response.json['servers']))
+        self.assertEqual(len(pool.ns_records), len(response.json['servers']))
 
     @patch.object(central_service.Service, 'get_pool',
                   side_effect=messaging.MessagingTimeout())
@@ -109,29 +127,22 @@ class ApiV1ServersTest(ApiV1Test):
         self.get('servers', status_code=504)
 
     def test_get_server(self):
-        # Create a server
-        nameserver = self.create_nameserver()
+        # Fetch the default pool
+        pool = self.storage.get_pool(self.admin_context, default_pool_id)
 
-        response = self.get('servers/%s' % nameserver['id'])
+        # Fetch the Server from the pool
+        response = self.get('servers/%s' % pool.ns_records[0].id)
 
         self.assertIn('id', response.json)
-        self.assertEqual(response.json['id'], nameserver['id'])
+        self.assertEqual(response.json['id'], pool.ns_records[0]['id'])
 
     @patch.object(central_service.Service, 'get_pool',
                   side_effect=messaging.MessagingTimeout())
     def test_get_server_timeout(self, _):
-        # # Create a server
-        # nameserver = self.create_nameserver()
+        # Fetch the default pool
+        pool = self.storage.get_pool(self.admin_context, default_pool_id)
 
-        fixture = self.get_server_fixture(0)
-        values = {
-            'key': 'name_server',
-            'value': fixture['name'],
-            'id': '2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980'
-        }
-        nameserver = objects.PoolAttribute.from_dict(values)
-
-        self.get('servers/%s' % nameserver['id'], status_code=504)
+        self.get('servers/%s' % pool.ns_records[0].id, status_code=504)
 
     def test_get_server_with_invalid_id(self):
         self.get('servers/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff98GH',
@@ -142,18 +153,19 @@ class ApiV1ServersTest(ApiV1Test):
                  status_code=404)
 
     def test_update_server(self):
-        # Create a server
-        server = self.create_nameserver()
+        # Fetch the default pool
+        pool = self.storage.get_pool(self.admin_context, default_pool_id)
 
-        data = {'name': 'test.example.org.'}
+        data = {'name': 'new-ns1.example.org.'}
 
-        response = self.put('servers/%s' % server['id'], data=data)
+        response = self.put('servers/%s' % pool.ns_records[0].id,
+                            data=data)
 
         self.assertIn('id', response.json)
-        self.assertEqual(response.json['id'], server['id'])
+        self.assertEqual(response.json['id'], pool.ns_records[0].id)
 
         self.assertIn('name', response.json)
-        self.assertEqual(response.json['name'], 'test.example.org.')
+        self.assertEqual(response.json['name'], 'new-ns1.example.org.')
 
     def test_update_server_missing(self):
         data = {'name': 'test.example.org.'}
@@ -161,29 +173,35 @@ class ApiV1ServersTest(ApiV1Test):
                  status_code=404)
 
     def test_update_server_junk(self):
-        # Create a server
-        server = self.create_nameserver()
+        # Fetch the default pool
+        pool = self.storage.get_pool(self.admin_context, default_pool_id)
 
         data = {'name': 'test.example.org.', 'junk': 'Junk Field'}
 
-        self.put('servers/%s' % server['id'], data=data, status_code=400)
+        self.put('servers/%s' % pool.ns_records[0].id, data=data,
+                 status_code=400)
 
     def test_delete_server(self):
-        # Create a server
-        server = self.create_nameserver()
+        # Fetch the default pool
+        pool = self.storage.get_pool(self.admin_context, default_pool_id)
 
         # Create a second server so that we can delete the first
         # because the last remaining server is not allowed to be deleted
-        server2 = self.create_nameserver(fixture=1)
+        # Add a new NS record to the pool
+        pool.ns_records.append(
+            objects.PoolNsRecord(priority=0, hostname='new-ns2.example.org.'))
+
+        # Save the pool to add a new nameserver
+        self.storage.update_pool(self.admin_context, pool)
 
         # Now delete the server
-        self.delete('servers/%s' % server['id'])
+        self.delete('servers/%s' % pool.ns_records[1].id)
 
         # Ensure we can no longer fetch the deleted server
-        self.get('servers/%s' % server['id'], status_code=404)
+        self.get('servers/%s' % pool.ns_records[1].id, status_code=404)
 
         # Also, verify we cannot delete last remaining server
-        self.delete('servers/%s' % server2['id'], status_code=400)
+        self.delete('servers/%s' % pool.ns_records[0].id, status_code=400)
 
     def test_delete_server_with_invalid_id(self):
         self.delete('servers/9fdadfb1-cf96-4259-ac6b-bb7b6d2ff98GH',

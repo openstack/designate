@@ -31,9 +31,6 @@ LOG = logging.getLogger(__name__)
 
 class ApiV1DomainsTest(ApiV1Test):
     def test_create_domain(self):
-        # Create a server
-        self.create_nameserver()
-
         # Create a domain
         fixture = self.get_domain_fixture(0)
 
@@ -47,9 +44,6 @@ class ApiV1DomainsTest(ApiV1Test):
         self.assertEqual(response.json['name'], fixture['name'])
 
     def test_create_domain_junk(self):
-        # Create a server
-        self.create_nameserver()
-
         # Create a domain
         fixture = self.get_domain_fixture(0)
 
@@ -58,15 +52,6 @@ class ApiV1DomainsTest(ApiV1Test):
 
         # Ensure it fails with a 400
         self.post('domains', data=fixture, status_code=400)
-
-    def test_create_domain_no_servers(self):
-        # Create a domain
-        fixture = self.get_domain_fixture(0)
-
-        # V1 doesn't have these
-        del fixture['type']
-
-        self.post('domains', data=fixture, status_code=500)
 
     @patch.object(central_service.Service, 'create_domain',
                   side_effect=messaging.MessagingTimeout())
@@ -109,9 +94,6 @@ class ApiV1DomainsTest(ApiV1Test):
         self.post('domains', data=fixture, status_code=400)
 
     def test_create_domain_utf_description(self):
-        # Create a nameserver
-        self.create_nameserver()
-
         # Create a domain
         fixture = self.get_domain_fixture(0)
 
@@ -125,9 +107,6 @@ class ApiV1DomainsTest(ApiV1Test):
         self.post('domains', data=fixture)
 
     def test_create_domain_description_too_long(self):
-        # Create a server
-        self.create_nameserver()
-
         # Create a domain
         fixture = self.get_domain_fixture(0)
         fixture['description'] = "x" * 161
@@ -136,12 +115,11 @@ class ApiV1DomainsTest(ApiV1Test):
         self.post('domains', data=fixture, status_code=400)
 
     def test_create_domain_with_unwanted_attributes(self):
-        # Create a server
+
         domain_id = "2d1d1d1d-1324-4a80-aa32-1f69a91bf2c8"
         created_at = datetime.datetime(2014, 6, 22, 21, 50, 0)
         updated_at = datetime.datetime(2014, 6, 22, 21, 50, 0)
         serial = 1234567
-        self.create_nameserver()
 
         # Create a domain
         fixture = self.get_domain_fixture(0)

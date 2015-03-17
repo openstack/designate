@@ -252,6 +252,10 @@ class DuplicateDomainAttribute(Duplicate):
     error_type = 'duplicate_domain_attribute'
 
 
+class DuplicatePoolNsRecord(Duplicate):
+    error_type = 'duplicate_pool_ns_record'
+
+
 class MethodNotAllowed(Base):
     expected = True
     error_code = 405
@@ -322,6 +326,10 @@ class PoolNotFound(NotFound):
 
 class PoolAttributeNotFound(NotFound):
     error_type = 'pool_attribute_not_found'
+
+
+class PoolNsRecordNotFound(NotFound):
+    error_type = 'pool_ns_record_not_found'
 
 
 class ZoneTransferRequestNotFound(NotFound):

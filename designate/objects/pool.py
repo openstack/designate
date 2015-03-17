@@ -55,9 +55,9 @@ class Pool(base.DictObjectMixin, base.PersistentObjectMixin,
             'relation_cls': 'PoolAttributeList',
             'required': True
         },
-        'nameservers': {
+        'ns_records': {
             'relation': True,
-            'relation_cls': 'NameServerList',
+            'relation_cls': 'PoolNsRecordList',
             'required': True
         },
     }

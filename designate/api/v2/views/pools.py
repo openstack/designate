@@ -34,7 +34,8 @@ class PoolsView(base_view.BaseView):
             "name": pool['name'],
             "project_id": pool['tenant_id'],
             "attributes": dict((r.key, r.value) for r in pool['attributes']),
-            "nameservers": [r.value for r in pool['nameservers']],
+            "ns_records": [{'priority': n.priority, 'hostname': n.hostname}
+                           for n in pool['ns_records']],
             "description": pool['description'],
             "created_at": pool['created_at'],
             "updated_at": pool['updated_at'],
@@ -43,13 +44,14 @@ class PoolsView(base_view.BaseView):
 
     def load(self, context, request, body):
         """Extract a "central" compatible dict from an API call"""
-        valid_keys = ('name', 'attributes', 'nameservers', 'description')
+        valid_keys = ('name', 'attributes', 'ns_records', 'description')
         result = self._load(context, request, body, valid_keys)
 
-        if 'nameservers' in result:
-            result['nameservers'] = objects.NameServerList(
-                objects=[objects.NameServer(key='name_server', value=r)
-                         for r in result['nameservers']])
+        if 'ns_records' in result:
+            result['ns_records'] = objects.PoolNsRecordList(
+                objects=[objects.PoolNsRecord(priority=r['priority'],
+                                              hostname=r['hostname'])
+                         for r in result['ns_records']])
 
         if 'attributes' in result:
             result['attributes'] = objects.PoolAttributeList(
