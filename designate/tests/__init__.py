@@ -285,9 +285,15 @@ class TestCase(base.BaseTestCase):
         self.db_fixture = self.useFixture(
             fixtures.DatabaseFixture.get_fixture(
                 REPOSITORY, manage_database.INIT_VERSION))
+
+        if os.getenv('DESIGNATE_SQL_DEBUG', True):
+            connection_debug = 50
+        else:
+            connection_debug = 0
+
         self.config(
             connection=self.db_fixture.url,
-            connection_debug=50,
+            connection_debug=connection_debug,
             group='storage:sqlalchemy'
         )
 
@@ -325,9 +331,15 @@ class TestCase(base.BaseTestCase):
                                                   'migrate_repo'))
         db_fixture = self.useFixture(
             fixtures.DatabaseFixture.get_fixture(repository))
+
+        if os.getenv('DESIGNATE_SQL_DEBUG', True):
+            connection_debug = 50
+        else:
+            connection_debug = 0
+
         self.config(
             connection=db_fixture.url,
-            connection_debug=50,
+            connection_debug=connection_debug,
             group='pool_manager_cache:sqlalchemy')
 
     # Config Methods
