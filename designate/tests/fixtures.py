@@ -22,7 +22,6 @@ import fixtures
 from oslo_log import log as logging
 from oslo_utils import importutils
 from oslo.config import cfg
-from oslo.messaging.notify import _impl_test as test_notifier
 
 from designate import policy
 from designate import network_api
@@ -32,18 +31,6 @@ from designate.sqlalchemy import utils as sqlalchemy_utils
 
 
 LOG = logging.getLogger(__name__)
-
-
-class NotifierFixture(fixtures.Fixture):
-    def setUp(self):
-        super(NotifierFixture, self).setUp()
-        self.addCleanup(test_notifier.reset)
-
-    def get(self):
-        return test_notifier.NOTIFICATIONS
-
-    def clear(self):
-        return test_notifier.reset()
 
 
 class RPCFixture(fixtures.Fixture):

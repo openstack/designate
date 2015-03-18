@@ -17,11 +17,12 @@
 import copy
 import random
 
+import mock
 import testtools
 from testtools.matchers import GreaterThan
-from mock import patch
 from oslo_log import log as logging
 from oslo_db import exception as db_exception
+from oslo_messaging.notify import notifier
 
 from designate import exceptions
 from designate import objects
@@ -42,7 +43,7 @@ class CentralServiceTest(CentralTestCase):
         list = objects.TldList()
         list.append(objects.Tld(name='com.'))
 
-        with patch.object(self.central_service.storage, 'find_tlds',
+        with mock.patch.object(self.central_service.storage, 'find_tlds',
                 return_value=list):
             self.central_service.start()
             self.assertTrue(self.central_service.check_for_tlds)
@@ -72,12 +73,12 @@ class CentralServiceTest(CentralTestCase):
         list.append(objects.Tld(name='biz'))
         list.append(objects.Tld(name='z'))
 
-        with patch.object(self.central_service.storage, 'find_tlds',
+        with mock.patch.object(self.central_service.storage, 'find_tlds',
                 return_value=list):
             self.central_service.start()
 
         context = self.get_context()
-        with patch.object(self.central_service.storage, 'find_tld',
+        with mock.patch.object(self.central_service.storage, 'find_tld',
                 return_value=objects.Tld(name='biz')):
             with testtools.ExpectedException(exceptions.InvalidDomainName):
                 self.central_service._is_valid_domain_name(context, 'biz.')
@@ -405,12 +406,13 @@ class CentralServiceTest(CentralTestCase):
             self.central_service.count_tenants(self.get_context())
 
     # Domain Tests
-    def _test_create_domain(self, values):
+    @mock.patch.object(notifier.Notifier, "info")
+    def _test_create_domain(self, values, mock_notifier):
         # Create a server
         self.create_nameserver()
 
-        # Reset the list of notifications
-        self.reset_notifications()
+        # Reset the mock to avoid the calls from the create_nameserver() call
+        mock_notifier.reset_mock()
 
         # Create a domain
         domain = self.central_service.create_domain(
@@ -422,23 +424,10 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(domain['email'], values['email'])
         self.assertIn('status', domain)
 
-        # Ensure we sent exactly 1 notification
-        notifications = self.get_notifications()
-        self.assertEqual(len(notifications), 1)
+        self.assertEqual(mock_notifier.call_count, 1)
 
-        # Ensure the notification wrapper contains the correct info
-        ctxt, message, priority, retry = notifications[0]
-
-        self.assertEqual(message['event_type'], 'dns.domain.create')
-        self.assertEqual(message['priority'], 'INFO')
-        self.assertIsNotNone(message['timestamp'])
-        self.assertIsNotNone(message['message_id'])
-
-        # Ensure the notification payload contains the correct info
-        payload = message['payload']
-        self.assertEqual(payload['id'], domain['id'])
-        self.assertEqual(payload['name'], domain['name'])
-        self.assertEqual(payload['tenant_id'], domain['tenant_id'])
+        mock_notifier.assert_called_once_with(
+            self.admin_context, 'dns.domain.create', domain)
 
     def test_create_domain_over_tld(self):
         values = dict(
@@ -777,51 +766,43 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(domain['email'], expected_domain['email'])
         self.assertIn('status', domain)
 
-    def test_update_domain(self):
+    @mock.patch.object(notifier.Notifier, "info")
+    def test_update_domain(self, mock_notifier):
         # Create a domain
         domain = self.create_domain(email='info@example.org')
         original_serial = domain.serial
 
-        # Reset the list of notifications
-        self.reset_notifications()
-
         # Update the object
         domain.email = 'info@example.net'
+
+        # Reset the mock to avoid the calls from the create_domain() call
+        mock_notifier.reset_mock()
 
         # Perform the update
         self.central_service.update_domain(self.admin_context, domain)
 
         # Fetch the domain again
-        domain = self.central_service.get_domain(self.admin_context, domain.id)
+        domain = self.central_service.get_domain(
+            self.admin_context, domain.id)
 
         # Ensure the domain was updated correctly
         self.assertTrue(domain.serial > original_serial)
         self.assertEqual('info@example.net', domain.email)
 
-        # Ensure we sent exactly 1 notification
-        notifications = self.get_notifications()
-        self.assertEqual(len(notifications), 1)
+        self.assertEqual(mock_notifier.call_count, 1)
 
-        # Ensure the notification wrapper contains the correct info
-        ctxt, message, priority, retry = notifications[0]
+        # Check that the object used in the notify is a Domain and the id
+        # matches up
+        notified_domain = mock_notifier.call_args[0][-1]
+        self.assertIsInstance(notified_domain, objects.Domain)
+        self.assertEqual(domain.id, notified_domain.id)
 
-        self.assertEqual(message['event_type'], 'dns.domain.update')
-        self.assertEqual(message['priority'], 'INFO')
-        self.assertIsNotNone(message['timestamp'])
-        self.assertIsNotNone(message['message_id'])
-
-        # Ensure the notification payload contains the correct info
-        payload = message['payload']
-        self.assertEqual(domain.id, payload['id'])
-        self.assertEqual(domain.name, payload['name'])
-        self.assertEqual(domain.tenant_id, payload['tenant_id'])
+        mock_notifier.assert_called_once_with(
+            self.admin_context, 'dns.domain.update', mock.ANY)
 
     def test_update_domain_without_id(self):
         # Create a domain
         domain = self.create_domain(email='info@example.org')
-
-        # Reset the list of notifications
-        self.reset_notifications()
 
         # Update the object
         domain.email = 'info@example.net'
@@ -834,9 +815,6 @@ class CentralServiceTest(CentralTestCase):
         # Create a domain
         domain = self.create_domain(email='info@example.org')
         original_serial = domain.serial
-
-        # Reset the list of notifications
-        self.reset_notifications()
 
         # Update the object
         domain.email = 'info@example.net'
@@ -882,7 +860,7 @@ class CentralServiceTest(CentralTestCase):
                 i[0] = True
                 raise db_exception.DBDeadlock()
 
-        with patch.object(self.central_service.storage, 'commit',
+        with mock.patch.object(self.central_service.storage, 'commit',
                           side_effect=fail_once_then_pass):
             # Perform the update
             domain = self.central_service.update_domain(
@@ -896,12 +874,12 @@ class CentralServiceTest(CentralTestCase):
         self.assertTrue(domain.serial > original_serial)
         self.assertEqual('info@example.net', domain.email)
 
-    def test_delete_domain(self):
+    @mock.patch.object(notifier.Notifier, "info")
+    def test_delete_domain(self, mock_notifier):
         # Create a domain
         domain = self.create_domain()
 
-        # Reset the list of notifications
-        self.reset_notifications()
+        mock_notifier.reset_mock()
 
         # Delete the domain
         self.central_service.delete_domain(self.admin_context, domain['id'])
@@ -922,22 +900,16 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(deleted_domain.serial, domain.serial)
         self.assertEqual(deleted_domain.pool_id, domain.pool_id)
 
-        # Ensure we sent exactly 1 notification
-        notifications = self.get_notifications()
-        self.assertEqual(len(notifications), 1)
+        self.assertEqual(mock_notifier.call_count, 1)
 
-        # Ensure the notification wrapper contains the correct info
-        ctxt, message, priority, retry = notifications.pop()
-        self.assertEqual(message['event_type'], 'dns.domain.delete')
-        self.assertEqual(message['priority'], 'INFO')
-        self.assertIsNotNone(message['timestamp'])
-        self.assertIsNotNone(message['message_id'])
+        # Check that the object used in the notify is a Domain and the id
+        # matches up
+        notified_domain = mock_notifier.call_args[0][-1]
+        self.assertIsInstance(notified_domain, objects.Domain)
+        self.assertEqual(deleted_domain.id, notified_domain.id)
 
-        # Ensure the notification payload contains the correct info
-        payload = message['payload']
-        self.assertEqual(payload['id'], domain['id'])
-        self.assertEqual(payload['name'], domain['name'])
-        self.assertEqual(payload['tenant_id'], domain['tenant_id'])
+        mock_notifier.assert_called_once_with(
+            self.admin_context, 'dns.domain.delete', mock.ANY)
 
     def test_delete_parent_domain(self):
         # Create the Parent Domain using fixture 0
@@ -1294,7 +1266,7 @@ class CentralServiceTest(CentralTestCase):
                 i[0] = True
                 raise db_exception.DBDeadlock()
 
-        with patch.object(self.central_service.storage, 'commit',
+        with mock.patch.object(self.central_service.storage, 'commit',
                           side_effect=fail_once_then_pass):
             # Perform the update
             recordset = self.central_service.update_recordset(
@@ -2605,9 +2577,6 @@ class CentralServiceTest(CentralTestCase):
     def test_update_status_delete_domain(self):
         # Create a domain
         domain = self.create_domain()
-
-        # Reset the list of notifications
-        self.reset_notifications()
 
         # Delete the domain
         self.central_service.delete_domain(self.admin_context, domain['id'])

@@ -14,7 +14,9 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import mock
 from oslo.config import cfg
+from oslo_messaging.notify import notifier
 
 from designate.tests.test_api import ApiTestCase
 from designate import context
@@ -196,7 +198,8 @@ class NormalizeURIMiddlewareTest(ApiTestCase):
 
 
 class FaultMiddlewareTest(ApiTestCase):
-    def test_notify_of_fault(self):
+    @mock.patch.object(notifier.Notifier, "error")
+    def test_notify_of_fault(self, mock_notifier):
         self.config(notify_api_faults=True)
         rpc.init(cfg.CONF)
         app = middleware.FaultWrapperMiddleware({})
@@ -213,12 +216,8 @@ class FaultMiddlewareTest(ApiTestCase):
         # Process the request
         app(request)
 
-        notifications = self.get_notifications()
-        self.assertEqual(1, len(notifications))
-
-        ctxt, message, priority, retry = notifications.pop()
-
-        self.assertEqual('ERROR', message['priority'])
-        self.assertEqual('dns.api.fault', message['event_type'])
-        self.assertIn('timestamp', message)
-        self.assertIn('publisher_id', message)
+        self.assertEqual(mock_notifier.call_count, 1)
+        mock_notifier.call_args(
+            ctxt,
+            'dns.api.fault',
+            {"url": None, "status": 409, "exception": ""})
