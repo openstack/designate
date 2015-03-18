@@ -140,7 +140,7 @@ class ApiV2ReverseFloatingIPTest(ApiV2TestCase):
 
         response = self.client.patch_json(
             '/reverse/floatingips/%s' % ":".join([fip['region'], fip['id']]),
-            {"floatingip": fixture},
+            {"floatingip": fixture.to_dict()},
             headers={'X-Test-Tenant-Id': 'tenant'})
 
         self.assertEqual(200, response.status_int)
@@ -163,7 +163,7 @@ class ApiV2ReverseFloatingIPTest(ApiV2TestCase):
         url = '/reverse/floatingips/%s' % ":".join([fip['region'], fip['id']])
 
         self._assert_exception('not_found', 404, self.client.patch_json, url,
-                               {'floatingip': fixture})
+                               {'floatingip': fixture.to_dict()})
 
     def test_set_floatingip_invalid_ptrdname(self):
         fip = self.network_api.fake.allocate_floatingip('tenant')

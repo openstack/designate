@@ -444,7 +444,7 @@ class TestCase(base.BaseTestCase):
 
         _values = copy.copy(self.ptr_fixtures[fixture])
         _values.update(values)
-        return _values
+        return objects.FloatingIP().from_dict(_values)
 
     def get_zonefile_fixture(self, variant=None):
         if variant is None:

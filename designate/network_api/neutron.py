@@ -81,7 +81,7 @@ def get_client(context, endpoint):
         params['username'] = CONF['network_api:neutron'].admin_username
         params['tenant_name'] = CONF['network_api:neutron'].admin_tenant_name
         params['password'] = CONF['network_api:neutron'].admin_password
-        params['auth_url'] = CONF['network_api:neutron'].admin_auth_url
+        params['auth_url'] = CONF['network_api:neutron'].auth_url
         params['auth_strategy'] = CONF['network_api:neutron'].auth_strategy
     return clientv20.Client(**params)
 
