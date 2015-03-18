@@ -19,6 +19,7 @@ from oslo_log import log as logging
 from designate import exceptions
 from designate import storage
 from designate import objects
+from designate.central import service as central_service
 from designate.quota.base import Quota
 
 
@@ -53,6 +54,7 @@ class StorageQuota(Quota):
 
         return {resource: quota['hard_limit']}
 
+    @central_service.transaction
     def set_quota(self, context, tenant_id, resource, hard_limit):
         context = context.deepcopy()
         context.all_tenants = True
@@ -73,17 +75,17 @@ class StorageQuota(Quota):
                                                   "resource", resource)
 
         try:
+            create_quota()
+        except exceptions.Duplicate:
             quota = self.storage.find_quota(context, {
                 'tenant_id': tenant_id,
                 'resource': resource,
             })
-        except exceptions.NotFound:
-            create_quota()
-        else:
             update_quota(quota)
 
         return {resource: hard_limit}
 
+    @central_service.transaction
     def reset_quotas(self, context, tenant_id):
         context = context.deepcopy()
         context.all_tenants = True
