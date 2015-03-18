@@ -850,7 +850,8 @@ class Service(service.RPCService, service.Service):
 
         self.pool_manager_api.create_domain(context, domain)
 
-        self.mdns_api.perform_zone_xfr(context, domain)
+        if domain.type == 'SECONDARY':
+            self.mdns_api.perform_zone_xfr(context, domain)
 
         # If domain is a superdomain, update subdomains
         # with new parent IDs
