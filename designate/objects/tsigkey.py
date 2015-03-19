@@ -18,11 +18,50 @@ from designate.objects import base
 class TsigKey(base.DictObjectMixin, base.PersistentObjectMixin,
               base.DesignateObject):
     FIELDS = {
-        'name': {},
-        'algorithm': {},
-        'secret': {},
-        'scope': {},
-        'resource_id': {},
+        'name': {
+            'schema': {
+                'type': 'string',
+                'maxLength': 160,
+                'format': 'domainnamne'
+            },
+            'required': True
+        },
+        'algorithm': {
+            'schema': {
+                'type': 'string',
+                'enum': [
+                        'hmac-md5',
+                        'hmac-sha1',
+                        'hmac-sha224',
+                        'hmac-sha256',
+                        'hmac-sha384',
+                        'hmac-sha512'
+                ]
+            },
+            'required': True
+        },
+        'secret': {
+            'schema': {
+                'type': 'string',
+                'maxLength': 160
+            },
+            'required': True
+        },
+        'scope': {
+            'schema': {
+                'type': 'string',
+                'enum': ['POOL', 'ZONE'],
+            },
+            'required': True
+        },
+        'resource_id': {
+            'schema': {
+                'type': 'string',
+                'format': 'uuid'
+            },
+            'read_only': True,
+            'required': True
+        },
     }
 
 

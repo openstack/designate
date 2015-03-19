@@ -18,7 +18,16 @@ from designate.objects import base
 class Server(base.DictObjectMixin, base.PersistentObjectMixin,
              base.DesignateObject):
     FIELDS = {
-        'name': {}
+        'name': {
+            'schema': {
+                'type': 'string',
+                'description': 'Zone name',
+                'format': 'domainname',
+                'maxLength': 255,
+            },
+            'immutable': True,
+            'required': True
+        }
     }
 
 

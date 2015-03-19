@@ -19,11 +19,38 @@ from designate.objects import base
 class PoolManagerStatus(base.DictObjectMixin, base.PersistentObjectMixin,
                         base.DesignateObject):
     FIELDS = {
-        'server_id': {},
-        'domain_id': {},
-        'status': {},
-        'serial_number': {},
-        'action': {}
+        'server_id': {
+            'schema': {
+                'type': 'string',
+                'format': 'uuid',
+            },
+            'required': True
+        },
+        'domain_id': {
+            'schema': {
+                'type': 'string',
+                'format': 'uuid',
+            },
+            'required': True},
+        'status': {
+            'schema': {
+                'type': ['string', 'null'],
+                'enum': ['ACTIVE', 'PENDING', 'ERROR'],
+            },
+        },
+        'serial_number': {
+            'schema': {
+                'type': 'integer',
+                'minimum': 0,
+                'maximum': 4294967295,
+            },
+        },
+        'action': {
+            'schema': {
+                'type': 'string',
+                'enum': ['CREATE', 'DELETE', 'UPDATE', 'NONE'],
+            },
+        }
     }
 
 

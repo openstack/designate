@@ -16,11 +16,30 @@ from designate.objects import base
 
 
 class PoolAttribute(base.DictObjectMixin, base.PersistentObjectMixin,
-                base.DesignateObject):
+                    base.DesignateObject):
     FIELDS = {
-        'pool_id': {},
-        'key': {},
-        'value': {}
+        'pool_id': {
+            'schema': {
+                'type': 'string',
+                'description': 'Pool identifier',
+                'format': 'uuid',
+            },
+            'required': True
+        },
+        'key': {
+            'schema': {
+                'type': 'string',
+                'maxLength': 50,
+            },
+            'required': True,
+        },
+        'value': {
+            'schema': {
+                'type': 'string',
+                'maxLength': 50,
+            },
+            'required': True
+        }
     }
 
 

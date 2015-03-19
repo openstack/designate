@@ -19,13 +19,53 @@ from designate.objects import base
 class ZoneTransferRequest(base.DictObjectMixin, base.PersistentObjectMixin,
                           base.DesignateObject,):
     FIELDS = {
-        'domain_id': {},
-        'key': {},
-        'description': {},
-        'tenant_id': {},
-        'target_tenant_id': {},
-        'status': {},
-        'domain_name': {},
+        'key': {
+            'schema': {
+                "type": "string",
+                "maxLength": 160
+            },
+            'required': True
+        },
+        'domain_id': {
+            'schema': {
+                "type": "string",
+                "description": "Zone identifier",
+                "format": "uuid"
+            },
+            "immutable": True
+        },
+        'description': {
+            'schema': {
+                "type": ["string", "null"],
+                "maxLength": 160
+            }
+        },
+        'tenant_id': {
+            'schema': {
+                'type': 'string',
+            },
+            'required': True,
+            'read_only': True
+        },
+        'target_tenant_id': {
+            'schema': {
+                'type': ['string', 'null'],
+            },
+            'immutable': True
+        },
+        'status': {
+            'schema': {
+                "type": "string",
+                "enum": ["ACTIVE", "PENDING", "DELETED", "ERROR", "COMPLETE"],
+            }
+        },
+        'domain_name': {
+            'schema': {
+                "type": ["string", "null"],
+                "maxLength": 255,
+            },
+            'read_only': True
+        },
     }
 
 

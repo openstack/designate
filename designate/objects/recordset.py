@@ -49,12 +49,56 @@ class RecordSet(base.DictObjectMixin, base.PersistentObjectMixin,
         return status
 
     FIELDS = {
-        'tenant_id': {},
-        'domain_id': {},
-        'name': {},
-        'type': {},
-        'ttl': {},
-        'description': {},
+        'tenant_id': {
+            'schema': {
+                'type': 'string',
+            },
+            'required': True,
+            'read_only': True
+        },
+        'domain_id': {
+            'schema': {
+                'type': 'string',
+                'description': 'Zone identifier',
+                'format': 'uuid'
+            },
+            'read_only': True,
+            'required': True
+        },
+        'name': {
+            'schema': {
+                'type': 'string',
+                'description': 'Zone name',
+                'format': 'domainname',
+                'maxLength': 255,
+            },
+            'immutable': True,
+            'required': True
+        },
+        'type': {
+            'schema': {
+                'type': 'string',
+                'description': 'RecordSet type (TODO: Make types extensible)',
+                'enum': ['A', 'AAAA', 'CNAME', 'MX', 'SRV', 'TXT', 'SPF', 'NS',
+                         'PTR', 'SSHFP', 'SOA']
+            },
+            'required': True,
+            'immutable': True
+        },
+        'ttl': {
+            'schema': {
+                'type': 'integer',
+                'description': 'Default time to live',
+                'minimum': 0,
+                'maximum': 2147483647
+            },
+        },
+        'description': {
+            'schema': {
+                'type': ['string', 'null'],
+                'maxLength': 160
+            },
+        },
         'records': {
             'relation': True,
             'relation_cls': 'RecordList'
