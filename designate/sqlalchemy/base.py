@@ -128,9 +128,7 @@ class SQLAlchemy(object):
 
     def _apply_tenant_criteria(self, context, table, query):
         if hasattr(table.c, 'tenant_id'):
-            if context.all_tenants:
-                LOG.debug('Including all tenants items in query results')
-            else:
+            if not context.all_tenants:
                 # NOTE: The query doesn't work with table.c.tenant_id is None,
                 # so I had to force flake8 to skip the check
                 query = query.where(or_(table.c.tenant_id == context.tenant,
