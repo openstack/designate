@@ -594,3 +594,40 @@ class ApiV1RecordsTest(ApiV1Test):
 
         url = 'domains/%s/records/%s' % (domain.id, record.id)
         self.delete(url, status_code=404)
+
+    def test_create_record_deleting_domain(self):
+        recordset_fixture = self.get_recordset_fixture(
+            self.domain['name'])
+
+        fixture = self.get_record_fixture(recordset_fixture['type'])
+        fixture.update({
+            'name': recordset_fixture['name'],
+            'type': recordset_fixture['type'],
+        })
+
+        self.delete('/domains/%s' % self.domain['id'])
+        self.post('domains/%s/records' % self.domain['id'],
+                  data=fixture, status_code=400)
+
+    def test_update_record_deleting_domain(self):
+        # Create a record
+        record = self.create_record(self.domain, self.recordset)
+
+        # Fetch another fixture to use in the update
+        fixture = self.get_record_fixture(self.recordset['type'], fixture=1)
+
+        # Update the record
+        data = {'data': fixture['data']}
+        self.delete('/domains/%s' % self.domain['id'])
+        self.put('domains/%s/records/%s' % (self.domain['id'],
+                                            record['id']),
+                 data=data, status_code=400)
+
+    def test_delete_record_deleting_domain(self):
+        # Create a record
+        record = self.create_record(self.domain, self.recordset)
+
+        self.delete('/domains/%s' % self.domain['id'])
+        self.delete('domains/%s/records/%s' % (self.domain['id'],
+                                               record['id']),
+                    status_code=400)

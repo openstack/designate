@@ -553,6 +553,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
         imported.delete_rdataset('delegation', 'NS')
         self.assertEqual(imported, exported)
 
+    # Metadata tests
     def test_metadata_exists(self):
         response = self.client.get('/zones/')
 
@@ -590,3 +591,14 @@ class ApiV2ZonesTest(ApiV2TestCase):
 
         # The total_count should know there are two
         self.assertEqual(2, response.json['metadata']['total_count'])
+
+    def test_no_update_deleting(self):
+        # Create a zone
+        zone = self.create_domain()
+
+        # Prepare an update body
+        body = {'zone': {'email': 'prefix-%s' % zone['email']}}
+
+        self.client.delete('/zones/%s' % zone['id'], status=202)
+        self._assert_exception('bad_request', 400, self.client.patch_json,
+                               '/zones/%s' % zone['id'], body)

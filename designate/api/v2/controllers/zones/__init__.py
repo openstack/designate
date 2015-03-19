@@ -228,6 +228,10 @@ class ZonesController(rest.RestController):
         # Fetch the existing zone
         zone = self.central_api.get_domain(context, zone_id)
 
+        # Don't allow updates to zones that are being deleted
+        if zone.action == "DELETE":
+            raise exceptions.BadRequest('Can not update a deleting zone')
+
         # Convert to APIv2 Format
         zone_data = self._view.show(context, request, zone)
 
