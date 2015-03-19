@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: designate 2015.1.dev169\n"
+"Project-Id-Version: designate 2015.1.dev181\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-03-17 06:40+0000\n"
+"POT-Creation-Date: 2015-03-19 06:06+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -76,57 +76,62 @@ msgstr ""
 msgid "Please issue this query: %s"
 msgstr ""
 
-#: designate/central/service.py:60
+#: designate/central/service.py:61
 msgid "Deadlock detected. Retrying..."
 msgstr ""
 
-#: designate/central/service.py:996
+#: designate/central/service.py:1019
 #, python-format
 msgid "Abandoning zone '%(zone)s'"
 msgstr ""
 
-#: designate/mdns/handler.py:152
+#: designate/mdns/handler.py:116
+#, python-format
+msgid "NOTIFY for %(name)s from non-master server %(addr)s, ignoring."
+msgstr ""
+
+#: designate/mdns/handler.py:224
 #, python-format
 msgid "DomainNotFound while handling axfr request. Question was %(qr)s"
 msgstr ""
 
-#: designate/mdns/handler.py:158
+#: designate/mdns/handler.py:230
 #, python-format
 msgid "Forbidden while handling axfr request. Question was %(qr)s"
 msgstr ""
 
-#: designate/mdns/handler.py:216
+#: designate/mdns/handler.py:288
 #, python-format
 msgid "DomainNotFound while handling query request. Question was %(qr)s"
 msgstr ""
 
-#: designate/mdns/handler.py:222
+#: designate/mdns/handler.py:294
 #, python-format
 msgid "Forbidden while handling query request. Question was %(qr)s"
 msgstr ""
 
-#: designate/mdns/notify.py:142
+#: designate/mdns/notify.py:149
 #, python-format
 msgid ""
 "Got lower serial for '%(zone)s' to '%(host)s:%(port)s'. "
 "Expected:'%(es)d'. Got:'%(as)d'.Retries left='%(retries)d'"
 msgstr ""
 
-#: designate/mdns/notify.py:199
+#: designate/mdns/notify.py:206
 #, python-format
 msgid ""
 "Got Timeout while trying to send '%(msg)s' for '%(zone)s' to "
 "'%(server)s:%(port)d'. Timeout='%(timeout)d' seconds. Retry='%(retry)d'"
 msgstr ""
 
-#: designate/mdns/notify.py:211
+#: designate/mdns/notify.py:218
 #, python-format
 msgid ""
 "Got BadResponse while trying to send '%(msg)s' for '%(zone)s' to "
 "'%(server)s:%(port)d'. Timeout='%(timeout)d' seconds. Retry='%(retry)d'"
 msgstr ""
 
-#: designate/mdns/notify.py:230
+#: designate/mdns/notify.py:237
 #, python-format
 msgid ""
 "Failed to get expected response while trying to send '%(msg)s' for "
