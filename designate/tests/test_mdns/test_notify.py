@@ -193,7 +193,7 @@ class MdnsNotifyTest(MdnsTestCase):
             0, 0, 2, 0)
         self.assertEqual(status, 'ERROR')
         self.assertEqual(serial, None)
-        self.assertEqual(retries, 2)
+        self.assertEqual(retries, 0)
 
     @patch('dns.query.udp', side_effect=dns.exception.Timeout)
     @patch('dns.query.tcp', side_effect=dns.exception.Timeout)

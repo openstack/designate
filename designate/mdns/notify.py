@@ -141,13 +141,11 @@ class NotifyEndpoint(xfr.XFRMixin):
                 rrset = response.answer[0]
                 actual_serial = rrset.to_rdataset().items[0].serial
 
-            if actual_serial is None:
-                break
-            # TODO(vinod): Account for serial number wrap around.
-            elif actual_serial < domain.serial:
+            if actual_serial is None or actual_serial < domain.serial:
+                # TODO(vinod): Account for serial number wrap around.
                 retries = retries - retry
                 LOG.warn(_LW("Got lower serial for '%(zone)s' to '%(host)s:"
-                             "%(port)s'. Expected:'%(es)d'. Got:'%(as)d'."
+                             "%(port)s'. Expected:'%(es)d'. Got:'%(as)s'."
                              "Retries left='%(retries)d'") %
                          {'zone': domain.name, 'host': server.host,
                           'port': server.port, 'es': domain.serial,

@@ -94,9 +94,11 @@ class PoolManagerAPI(object):
 
     def update_status(self, context, domain, server, status, actual_serial):
         LOG.info(_LI("update_status: Calling pool manager for %(domain)s : "
-                     "%(action)s : %(status)s : %(serial)s") %
+                     "%(action)s : %(status)s : %(serial)s on server "
+                     "'%(host)s:%(port)s'") %
                  {'domain': domain.name, 'action': domain.action,
-                  'status': domain.status, 'serial': actual_serial})
+                  'status': status, 'serial': actual_serial,
+                  'host': server.host, 'port': server.port})
 
         # Modifying the topic so it is pool manager instance specific.
         topic = '%s.%s' % (self.topic, domain.pool_id)
