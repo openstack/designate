@@ -57,7 +57,10 @@ class DesignateAdapter(object):
 
     @classmethod
     def get_object_adapter(cls, format_, object):
-        key = '%s:%s' % (format_, object.obj_name())
+        if isinstance(object, objects.DesignateObject):
+            key = '%s:%s' % (format_, object.obj_name())
+        else:
+            key = '%s:%s' % (format_, object)
         try:
             return cls._adapter_classes[key]
         except KeyError as e:
@@ -85,7 +88,7 @@ class DesignateAdapter(object):
                 format_, object)._render_object(object, *args, **kwargs)
 
     @classmethod
-    def _render_inner_object(cls, object, *args, **kwargs):
+    def _render_object(cls, object, *args, **kwargs):
         # The dict we will return to be rendered to JSON / output format
         r_obj = {}
         # Loop over all fields that are supposed to be output
@@ -110,7 +113,7 @@ class DesignateAdapter(object):
                 r_obj[key] = cls.get_object_adapter(
                     cls.ADAPTER_FORMAT,
                     object.FIELDS[obj_key].get('relation_cls')).render(
-                        obj, *args, **kwargs)
+                        cls.ADAPTER_FORMAT, obj, *args, **kwargs)
             else:
                 # Just attach the damn item if there is no weird edge cases
                 r_obj[key] = obj
@@ -118,7 +121,7 @@ class DesignateAdapter(object):
         return r_obj
 
     @classmethod
-    def _render_inner_list(cls, list_object, *args, **kwargs):
+    def _render_list(cls, list_object, *args, **kwargs):
         # The list we will return to be rendered to JSON / output format
         r_list = []
         # iterate and convert each DesignateObject in the list, and append to
@@ -126,8 +129,8 @@ class DesignateAdapter(object):
         for object in list_object:
             r_list.append(cls.get_object_adapter(
                 cls.ADAPTER_FORMAT,
-                object.obj_name()).render(object, *args, **kwargs))
-        return r_list
+                object).render(cls.ADAPTER_FORMAT, object, *args, **kwargs))
+        return {cls.MODIFICATIONS['options']['collection_name']: r_list}
 
     #####################
     #  Parsing methods  #
@@ -140,17 +143,17 @@ class DesignateAdapter(object):
             # type_ = 'list'
             return cls.get_object_adapter(
                 format_,
-                output_object.obj_name())._parse_list(
+                output_object)._parse_list(
                     values, output_object, *args, **kwargs)
         else:
             # type_ = 'object'
             return cls.get_object_adapter(
                 format_,
-                output_object.obj_name())._parse_object(
+                output_object)._parse_object(
                     values, output_object, *args, **kwargs)
 
     @classmethod
-    def _parse_inner_object(cls, values, output_object, *args, **kwargs):
+    def _parse_object(cls, values, output_object, *args, **kwargs):
         error_keys = []
 
         for key, value in values.iteritems():
@@ -162,6 +165,24 @@ class DesignateAdapter(object):
                 # This item may need to be translated
                 if cls.MODIFICATIONS['fields'][key].get('rename', False):
                     obj_key = cls.MODIFICATIONS['fields'][key].get('rename')
+
+            ##############################################################
+            # TODO(graham): Remove this section of code  when validation #
+            # is moved into DesignateObjects properly                    #
+            ##############################################################
+
+            # Check if the field should be allowed change after it is initially
+            # set (eg domain name)
+            if cls.MODIFICATIONS['fields'][key].get('idempotent', False):
+                if getattr(output_object, obj_key, False) and \
+                        getattr(output_object, obj_key) != value:
+                    error_keys.append(key)
+                    break
+            # Is this field a read only field
+            elif cls.MODIFICATIONS['fields'][key].get('read_only', True) and \
+                    getattr(output_object, obj_key) != value:
+                error_keys.append(key)
+                break
 
             # Check if the key is a nested object
             if output_object.FIELDS.get(obj_key, {}).get('relation', False):
@@ -196,5 +217,5 @@ class DesignateAdapter(object):
         return output_object
 
     @classmethod
-    def _parse_inner_list(cls, values, output_object, *args, **kwargs):
+    def _parse_list(cls, values, output_object, *args, **kwargs):
         raise exceptions.NotImplemented('List adaption not implemented')

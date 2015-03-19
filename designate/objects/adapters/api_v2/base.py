@@ -35,36 +35,31 @@ class APIv2Adapter(base.DesignateAdapter):
     #####################
 
     @classmethod
-    def render(cls, object, *args, **kwargs):
-        return super(APIv2Adapter, cls).render(
-            cls.ADAPTER_FORMAT, object, *args, **kwargs)
-
-    @classmethod
     def _render_list(cls, list_object, *args, **kwargs):
-        inner = cls._render_inner_list(list_object, *args, **kwargs)
-        outer = {}
+        r_list = super(APIv2Adapter, cls)._render_list(
+            list_object, *args, **kwargs)
 
-        if cls.MODIFICATIONS['options'].get('links', True):
-            outer['links'] = cls._get_collection_links(
+        if cls.MODIFICATIONS['options'].get('links', True)\
+                and 'request' in kwargs:
+            r_list['links'] = cls._get_collection_links(
                 list_object, kwargs['request'])
         # Check if we should include metadata
         if isinstance(list_object, obj_base.PagedListObjectMixin):
             metadata = {}
             metadata['total_count'] = list_object.total_count
-            outer['metadata'] = metadata
+            r_list['metadata'] = metadata
 
-        outer[cls.MODIFICATIONS['options']['collection_name']] = inner
-
-        return outer
+        return r_list
 
     @classmethod
     def _render_object(cls, object, *args, **kwargs):
-        inner = cls._render_inner_object(object, *args, **kwargs)
+        obj = super(APIv2Adapter, cls)._render_object(object, *args, **kwargs)
 
-        if cls.MODIFICATIONS['options'].get('links', True):
-            inner['links'] = cls._get_resource_links(object, kwargs['request'])
+        if cls.MODIFICATIONS['options'].get('links', True)\
+                and 'request' in kwargs:
+            obj['links'] = cls._get_resource_links(object, kwargs['request'])
 
-        return {cls.MODIFICATIONS['options']['resource_name']: inner}
+        return obj
 
     #####################
     #  Parsing methods  #
@@ -74,16 +69,6 @@ class APIv2Adapter(base.DesignateAdapter):
     def parse(cls, values, output_object, *args, **kwargs):
         return super(APIv2Adapter, cls).parse(
             cls.ADAPTER_FORMAT, values, output_object, *args, **kwargs)
-
-    @classmethod
-    def _parse_list(cls, values, output_object, *args, **kwargs):
-
-        return cls._parse_inner_list(values, output_object, *args, **kwargs)
-
-    @classmethod
-    def _parse_object(cls, values, output_object, *args, **kwargs):
-        inner = values[cls.MODIFICATIONS['options']['resource_name']]
-        return cls._parse_inner_object(inner, output_object, *args, **kwargs)
 
     #####################
     #    Link methods   #

@@ -32,28 +32,11 @@ class DesignateTestAdapter(adapters.DesignateAdapter):
         'options': {}
     }
 
-    @classmethod
-    def render(cls, object, *args, **kwargs):
-        return super(DesignateTestAdapter, cls).render(
-            cls.ADAPTER_FORMAT, object, *args, **kwargs)
-
-    @classmethod
-    def _render_list(cls, list_object, *args, **kwargs):
-        inner = cls._render_inner_list(list_object, *args, **kwargs)
-
-        return inner
-
-    @classmethod
-    def _render_object(cls, object, *args, **kwargs):
-        inner = cls._render_inner_object(object, *args, **kwargs)
-
-        return inner
-
 
 class DesignateAdapterTest(tests.TestCase):
     def test_get_object_adapter(self):
         adapters.DesignateAdapter.get_object_adapter(
-            'TEST_API', objects.DesignateObject)
+            'TEST_API', objects.DesignateObject())
 
-    def test_get_object_render(self):
-        adapters.DesignateAdapter.render('TEST_API', objects.DesignateObject)
+    def test_object_render(self):
+        adapters.DesignateAdapter.render('TEST_API', objects.DesignateObject())

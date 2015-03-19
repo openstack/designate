@@ -21,39 +21,3 @@ LOG = logging.getLogger(__name__)
 class APIv1Adapter(base.DesignateAdapter):
 
     ADAPTER_FORMAT = 'API_v1'
-
-    #####################
-    # Rendering methods #
-    #####################
-
-    @classmethod
-    def render(cls, object, *args, **kwargs):
-        return super(APIv1Adapter, cls).render(
-            cls.ADAPTER_FORMAT, object, *args, **kwargs)
-
-    @classmethod
-    def _render_list(cls, list_object, *args, **kwargs):
-        inner = cls._render_inner_list(list_object, *args, **kwargs)
-
-        return {cls.MODIFICATIONS['options']['collection_name']: inner}
-
-    @classmethod
-    def _render_object(cls, object, *args, **kwargs):
-        return cls._render_inner_object(object, *args, **kwargs)
-
-    #####################
-    #  Parsing methods  #
-    #####################
-
-    @classmethod
-    def parse(cls, values, output_object, *args, **kwargs):
-        return super(APIv1Adapter, cls).parse(
-            cls.ADAPTER_FORMAT, values, output_object, *args, **kwargs)
-
-    @classmethod
-    def _parse_list(cls, values, output_object, *args, **kwargs):
-        return cls._parse_inner_list(values, output_object, *args, **kwargs)
-
-    @classmethod
-    def _parse_object(cls, values, output_object, *args, **kwargs):
-        return cls._parse_inner_object(values, output_object, *args, **kwargs)
