@@ -262,8 +262,6 @@ class TestCase(base.BaseTestCase):
 
         self.config(notification_driver='test')
 
-        self.notifications = self.useFixture(fixtures.NotifierFixture())
-
         self.useFixture(fixtures.RPCFixture(cfg.CONF))
 
         self.config(
@@ -356,13 +354,6 @@ class TestCase(base.BaseTestCase):
 
         # Set the rules
         policy.set_rules(rules, default_rule, overwrite)
-
-    # Other Utility Methods
-    def get_notifications(self):
-        return self.notifications.get()
-
-    def reset_notifications(self):
-        self.notifications.clear()
 
     def start_service(self, svc_name, *args, **kw):
         """
