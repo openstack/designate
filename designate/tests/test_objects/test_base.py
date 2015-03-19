@@ -381,8 +381,9 @@ class DesignateObjectTest(tests.TestCase):
         self.assertEqual('format', error.validator)
 
         # Ensure the nested ID field has triggered the failure.
-        self.assertEqual('nested.id', error.absolute_path)
-        self.assertEqual('nested.id', error.relative_path)
+        # For some reason testtools turns lists into deques :/
+        self.assertEqual(list(error.absolute_path), ['nested', 'id'])
+        self.assertEqual(list(error.relative_path), ['nested', 'id'])
 
         # Set the Nested ID field to a valid value
         obj.nested.id = 'ffded5c4-e4f6-4e02-a175-48e13c5c12a0'

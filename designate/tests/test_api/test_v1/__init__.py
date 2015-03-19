@@ -42,6 +42,10 @@ class ApiV1Test(ApiTestCase):
         self.app.wsgi_app = middleware.FaultWrapperMiddleware(
             self.app.wsgi_app)
 
+        # Inject the ValidationError middleware
+        self.app.wsgi_app = middleware.APIv1ValidationErrorMiddleware(
+            self.app.wsgi_app)
+
         # Inject the TestAuth middleware
         self.app.wsgi_app = middleware.TestContextMiddleware(
             self.app.wsgi_app, self.admin_context.tenant,

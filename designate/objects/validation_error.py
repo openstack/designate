@@ -30,8 +30,8 @@ class ValidationError(base.DesignateObject):
         """
 
         e = cls()
-        e.relative_path = ".".join([str(x) for x in js_error.relative_path])
-        e.absolute_path = ".".join([str(x) for x in js_error.absolute_path])
+        e.relative_path = js_error.relative_path
+        e.absolute_path = js_error.absolute_path
         e.message = js_error.message
         e.validator = js_error.validator
         e.validator_value = js_error.validator_value

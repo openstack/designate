@@ -49,6 +49,9 @@ class ApiV2TestCase(ApiTestCase):
         # Inject the FaultWrapper middleware
         self.app = middleware.FaultWrapperMiddleware(self.app)
 
+        # Inject the ValidationError middleware
+        self.app = middleware.APIv2ValidationErrorMiddleware(self.app)
+
         # Inject the TestContext middleware
         self.app = middleware.TestContextMiddleware(
             self.app, self.admin_context.tenant,
