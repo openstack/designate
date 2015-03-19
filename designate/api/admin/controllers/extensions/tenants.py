@@ -18,29 +18,30 @@ import pecan
 from oslo_log import log as logging
 
 from designate.api.v2.controllers import rest
-from designate.api.v2.views.extensions import reports as reports_view
+from designate.api.admin.views.extensions import reports as reports_view
 
 LOG = logging.getLogger(__name__)
 
 
-class CountsController(rest.RestController):
+class TenantsController(rest.RestController):
 
-    _view = reports_view.CountsView()
+    _view = reports_view.TenantsView()
 
     @pecan.expose(template='json:', content_type='application/json')
     def get_all(self):
         request = pecan.request
         context = pecan.request.environ['context']
 
-        counts = self.central_api.count_report(context)
+        tenants = self.central_api.find_tenants(context)
 
-        return self._view.show(context, request, counts)
+        return self._view.list(context, request, tenants)
 
     @pecan.expose(template='json:', content_type='application/json')
-    def get_one(self, criterion):
+    def get_one(self, tenant_id):
+        """Get Tenant"""
         request = pecan.request
-        context = pecan.request.environ['context']
+        context = request.environ['context']
 
-        counts = self.central_api.count_report(context, criterion=criterion)
+        tenant = self.central_api.get_tenant(context, tenant_id)
 
-        return self._view.show(context, request, counts)
+        return self._view.show_detail(context, request, tenant)

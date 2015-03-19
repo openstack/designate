@@ -24,7 +24,7 @@ class QuotasClient(object):
 
     @classmethod
     def quotas_uri(cls, tenant_id):
-        return "/v2/quotas/" + tenant_id
+        return "/admin/quotas/" + tenant_id
 
     @classmethod
     def deserialize(cls, resp, body, model_type):

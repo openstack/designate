@@ -18,7 +18,7 @@ from oslo_log import log as logging
 
 from designate import schema
 from designate.api.v2.controllers import rest
-from designate.api.v2.views.extensions import quotas as quotas_view
+from designate.api.admin.views.extensions import quotas as quotas_view
 
 LOG = logging.getLogger(__name__)
 

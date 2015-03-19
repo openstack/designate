@@ -55,7 +55,8 @@ DESIGNATE_SERVICE_PORT_MDNS=${DESIGNATE_SERVICE_PORT_MDNS:-5354}
 DESIGNATE_TEST_NSREC=${DESIGNATE_TEST_NSREC:-ns1.devstack.org.}
 
 DESIGNATE_ENABLED_EXTENSIONS_V1=${DESIGNATE_ENABLED_EXTENSIONS_V1:-"quotas"}
-DESIGNATE_ENABLED_EXTENSIONS_V2=${DESIGNATE_ENABLED_EXTENSIONS_V2:-"quotas"}
+DESIGNATE_ENABLED_EXTENSIONS_V2=${DESIGNATE_ENABLED_EXTENSIONS_V2:-""}
+DESIGNATE_ENABLED_EXTENSIONS_ADMIN=${DESIGNATE_ENABLED_EXTENSIONS_ADMIN:-"quotas"}
 
 # Tell Tempest this project is present
 TEMPEST_SERVICES+=,designate
@@ -113,6 +114,7 @@ function configure_designate {
     iniset $DESIGNATE_CONF pool_manager_cache:sqlalchemy connection `database_connection_url designate_pool_manager`
     iniset $DESIGNATE_CONF service:api enabled_extensions_v1 $DESIGNATE_ENABLED_EXTENSIONS_V1
     iniset $DESIGNATE_CONF service:api enabled_extensions_v2 $DESIGNATE_ENABLED_EXTENSIONS_V2
+    iniset $DESIGNATE_CONF service:api enabled_extensions_admin $DESIGNATE_ENABLED_EXTENSIONS_ADMIN
 
     sudo cp $DESIGNATE_DIR/etc/designate/rootwrap.conf.sample $DESIGNATE_ROOTWRAP_CONF
     iniset $DESIGNATE_ROOTWRAP_CONF DEFAULT filters_path $DESIGNATE_DIR/etc/designate/rootwrap.d root-helper
@@ -146,6 +148,7 @@ function configure_designate {
     iniset $DESIGNATE_CONF service:api api_base_uri $DESIGNATE_SERVICE_PROTOCOL://$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT/
     iniset $DESIGNATE_CONF service:api enable_api_v1 True
     iniset $DESIGNATE_CONF service:api enable_api_v2 True
+    iniset $DESIGNATE_CONF service:api enable_api_admin True
     if is_service_enabled tls-proxy; then
         # Set the service port for a proxy to take the original
         iniset $DESIGNATE_CONF service:api api_port $DESIGNATE_SERVICE_PORT_INT

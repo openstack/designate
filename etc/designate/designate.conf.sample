@@ -84,6 +84,13 @@ debug = False
 # Enable Version 2 API (experimental)
 #enable_api_v2 = False
 
+# Enable Admin API (experimental)
+#enable_api_admin = False
+
+# Enabled Admin API extensions
+# Can be one or more of : reports, quotas, counts, tenants
+#enabled_extensions_admin =
+
 # Show the pecan HTML based debug interface (v2 only)
 # This is only useful for development, and WILL break python-designateclient
 # if an error occurs
@@ -94,7 +101,7 @@ debug = False
 #enabled_extensions_v1 =
 
 # Enabled API Version 2 extensions
-# Can be one or more of : reports, quotas
+# Can be one or more of :
 #enabled_extensions_v2 =
 
 #-----------------------

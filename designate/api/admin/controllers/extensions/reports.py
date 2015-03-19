@@ -17,8 +17,8 @@
 from oslo_log import log as logging
 
 from designate.api.v2.controllers import rest
-from designate.api.v2.controllers.extensions import counts
-from designate.api.v2.controllers.extensions import tenants
+from designate.api.admin.controllers.extensions import counts
+from designate.api.admin.controllers.extensions import tenants
 
 LOG = logging.getLogger(__name__)
 
