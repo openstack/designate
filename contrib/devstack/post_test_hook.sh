@@ -6,4 +6,4 @@ set -ex
 $BASE/new/devstack/exercises/designate.sh
 
 # Run the Designate Tempest tests
-#sudo ./run_tempest_tests.sh
+sudo ./run_tempest_tests.sh
