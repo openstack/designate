@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Designate\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-03-19 06:06+0000\n"
-"PO-Revision-Date: 2015-03-17 13:34+0000\n"
+"POT-Creation-Date: 2015-03-20 06:41+0000\n"
+"PO-Revision-Date: 2015-03-19 15:07+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: French (http://www.transifex.com/projects/p/designate/"
 "language/fr/)\n"
@@ -53,26 +53,30 @@ msgstr "démarrage du thread _handle_udp"
 msgid "Agent masters: %(masters)s"
 msgstr ""
 
-#: designate/api/middleware.py:53
+#: designate/api/middleware.py:54
 #, python-format
 msgid "Getting auth pipeline: %s"
 msgstr "Obtenir une pipeline d'auth : %s"
 
-#: designate/api/middleware.py:93
+#: designate/api/middleware.py:94
 msgid "Starting designate keystonecontext middleware"
 msgstr "Démarrage de Middleware Keystonecontext de Designate"
 
-#: designate/api/middleware.py:126
+#: designate/api/middleware.py:127
 msgid "Starting designate noauthcontext middleware"
 msgstr "Démarrage de Middleware Noauthcontext de Designate"
 
-#: designate/api/middleware.py:167
+#: designate/api/middleware.py:168
 msgid "Starting designate maintenance middleware"
 msgstr "Démarrage de Middleware Maintenance de Designate"
 
-#: designate/api/middleware.py:201
+#: designate/api/middleware.py:202
 msgid "Starting designate faultwrapper middleware"
 msgstr "Démarrage de Middleware Faultwrapper de Designate"
+
+#: designate/api/middleware.py:279
+msgid "Starting designate validation middleware"
+msgstr ""
 
 #: designate/api/service.py:46
 #, python-format
@@ -443,14 +447,14 @@ msgstr "Vérification des TLD"
 msgid "NOT checking for TLDs"
 msgstr "AUCUNE vérification des TLD"
 
-#: designate/central/service.py:1801
+#: designate/central/service.py:1802
 #, python-format
 msgid ""
 "Creating zone for %(fip_id)s:%(region)s - %(fip_addr)s zone %(zonename)s"
 msgstr ""
 "Créer une zone pour %(fip_id)s:%(region)s - %(fip_addr)s zone %(zonename)s"
 
-#: designate/central/service.py:2211
+#: designate/central/service.py:2212
 msgid "Target Tenant ID found - using scoped policy"
 msgstr ""
 
