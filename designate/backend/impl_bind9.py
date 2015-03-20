@@ -52,7 +52,7 @@ class Bind9Backend(base.PoolBackend):
     @staticmethod
     def _parse_master(master):
         try:
-            (ip_address, port) = master.split(':', 1)
+            (ip_address, port) = utils.split_host_port(master)
         except ValueError:
             ip_address = str(master)
             port = DEFAULT_MASTER_PORT

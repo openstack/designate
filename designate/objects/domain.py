@@ -12,6 +12,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+from designate import utils
 from designate.objects import base
 from designate.objects.domain_attribute import DomainAttribute
 from designate.objects.domain_attribute import DomainAttributeList
@@ -159,7 +160,8 @@ class Domain(base.DictObjectMixin, base.SoftDeleteObjectMixin,
         Utility to get the master by it's ip for this domain.
         """
         for srv in self.masters:
-            if host == srv.split(":")[0]:
+            srv_host, _ = utils.split_host_port(srv)
+            if host == srv_host:
                 return srv
         return False
 

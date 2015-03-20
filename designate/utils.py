@@ -381,3 +381,14 @@ def cache_result(function):
 
 def setup_gmr(log_dir=None):
     gmr.TextGuruMeditation.setup_autorun(designate_version, log_dir=log_dir)
+
+
+def split_host_port(string, default_port=53):
+    try:
+        (host, port) = string.split(':', 1)
+        port = int(port)
+    except ValueError:
+        host = str(string)
+        port = default_port
+
+    return (host, port)

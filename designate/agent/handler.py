@@ -22,6 +22,7 @@ import dns.opcode
 from oslo.config import cfg
 from oslo_log import log as logging
 
+from designate import utils
 from designate import dnsutils
 from designate.backend import agent_backend
 from designate.i18n import _LW
@@ -48,7 +49,7 @@ class RequestHandler(object):
     def __init__(self):
         self.masters = []
         for server in CONF['service:agent'].masters:
-            raw_server = server.split(':')
+            raw_server = utils.split_host_port(server)
             master = {'ip': raw_server[0], 'port': int(raw_server[1])}
             self.masters.append(master)
 

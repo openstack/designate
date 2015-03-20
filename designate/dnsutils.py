@@ -27,6 +27,7 @@ from oslo.config import cfg
 
 from designate import context
 from designate import exceptions
+from designate import utils
 from designate import objects
 from designate.i18n import _LE
 from designate.i18n import _LI
@@ -270,9 +271,7 @@ def expand_servers(servers):
     data = []
     for srv in servers:
         if isinstance(srv, basestring):
-            parts = srv.split(":")
-            host = parts[0]
-            port = int(parts[1]) if len(parts) == 2 else 53
+            host, port = utils.split_host_port(srv, 53)
         srv = {"ip": host, "port": port}
         data.append(srv)
 
