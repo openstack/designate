@@ -23,7 +23,6 @@ from designate import utils
 from designate import schema
 from designate import dnsutils
 from designate.api.v2.controllers import rest
-from designate.api.v2.controllers import nameservers
 from designate.api.v2.controllers import recordsets
 from designate.api.v2.controllers.zones import tasks
 from designate.api.v2.views import zones as zones_view
@@ -40,7 +39,6 @@ class ZonesController(rest.RestController):
     SORT_KEYS = ['created_at', 'id', 'updated_at', 'name', 'tenant_id',
                  'serial', 'ttl', 'status']
 
-    nameservers = nameservers.NameServersController()
     recordsets = recordsets.RecordSetsController()
     tasks = tasks.TasksController()
 

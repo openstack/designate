@@ -31,9 +31,6 @@ class ApiV2ZonesTest(ApiV2TestCase):
     def setUp(self):
         super(ApiV2ZonesTest, self).setUp()
 
-        # Create a server
-        self.create_nameserver()
-
         # Create the default TLDs
         self.create_default_tlds()
 

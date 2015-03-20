@@ -13,7 +13,7 @@
         "pool": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["name", "attributes", "nameservers"],
+            "required": ["name", "attributes", "ns_records"],
 
             "properties": {
                 "id": {
@@ -42,6 +42,7 @@
                 "attributes": {
                     "type": "object",
                     "description": "Pool attributes as name value pairs",
+                    "additionalProperties": true,
                     "properties": {
                         "scope": {
                             "type": "string",
@@ -49,14 +50,26 @@
                         }
                     }
                 },
-                "nameservers": {
+                "ns_records": {
                     "type": "array",
-                    "description": "Nameservers that would go in the NS record",
+                    "description": "List of NS Records for Zones in this pool",
                     "minItems": 1,
                     "items": {
-                        "type": "string",
-                        "format": "hostname",
-                        "maxLength": 255
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": ["priority", "hostname"],
+                        "properties": {
+                            "priority": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 1000
+                            },
+                            "hostname": {
+                                "type": "string",
+                                "format": "hostname",
+                                "maxLength": 255
+                            }
+                        }
                     }
                 },
                 "version": {

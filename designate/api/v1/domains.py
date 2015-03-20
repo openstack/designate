@@ -29,17 +29,16 @@ domains_schema = schema.Schema('v1', 'domains')
 servers_schema = schema.Schema('v1', 'servers')
 
 
-def _poolattribute_to_server(pool_attribute):
+def _pool_ns_record_to_server(pool_ns_record):
     server_values = {
-        'id': pool_attribute.id,
-        'created_at': pool_attribute.created_at,
-        'updated_at': pool_attribute.updated_at,
-        'version': pool_attribute.version,
-        'name': pool_attribute.value
+        'id': pool_ns_record.id,
+        'created_at': pool_ns_record.created_at,
+        'updated_at': pool_ns_record.updated_at,
+        'version': pool_ns_record.version,
+        'name': pool_ns_record.hostname
     }
 
-    server = objects.Server(**server_values)
-    return server
+    return objects.Server.from_dict(server_values)
 
 
 @blueprint.route('/schemas/domain', methods=['GET'])
@@ -153,6 +152,6 @@ def get_domain_servers(domain_id):
     servers = objects.ServerList()
 
     for ns in nameservers:
-        servers.append(_poolattribute_to_server(ns))
+        servers.append(_pool_ns_record_to_server(ns))
 
     return flask.jsonify(servers_schema.filter({'servers': servers}))

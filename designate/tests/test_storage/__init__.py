@@ -2179,8 +2179,8 @@ class StorageTestCase(object):
     def test_create_pool_attribute(self):
         values = {
             'pool_id': "d5d10661-0312-4ae1-8664-31188a4310b7",
-            'key': "name_server",
-            'value': 'ns1.example.org.'
+            'key': "test-attribute",
+            'value': 'test-value'
         }
 
         result = self.storage.create_pool_attribute(

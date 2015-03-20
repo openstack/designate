@@ -26,7 +26,7 @@ from designate.objects.pool_manager_status import PoolManagerStatus, PoolManager
 from designate.objects.pool_server import PoolServer, PoolServerList  # noqa
 from designate.objects.pool import Pool, PoolList  # noqa
 from designate.objects.pool_attribute import PoolAttribute, PoolAttributeList  # noqa
-from designate.objects.nameserver import NameServer, NameServerList  # noqa
+from designate.objects.pool_ns_record import PoolNsRecord, PoolNsRecordList  # noqa
 from designate.objects.quota import Quota, QuotaList  # noqa
 from designate.objects.rrdata_a import RRData_A  # noqa
 from designate.objects.rrdata_aaaa import RRData_AAAA  # noqa

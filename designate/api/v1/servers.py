@@ -34,17 +34,16 @@ default_pool_id = cfg.CONF['service:central'].default_pool_id
 # to work
 
 
-def _poolattribute_to_server(pool_attribute):
+def _pool_ns_record_to_server(pool_ns_record):
     server_values = {
-        'id': pool_attribute.id,
-        'created_at': pool_attribute.created_at,
-        'updated_at': pool_attribute.updated_at,
-        'version': pool_attribute.version,
-        'name': pool_attribute.value
+        'id': pool_ns_record.id,
+        'created_at': pool_ns_record.created_at,
+        'updated_at': pool_ns_record.updated_at,
+        'version': pool_ns_record.version,
+        'name': pool_ns_record.hostname
     }
 
-    server = objects.Server(**server_values)
-    return server
+    return objects.Server.from_dict(server_values)
 
 
 @blueprint.route('/schemas/server', methods=['GET'])
@@ -65,19 +64,18 @@ def create_server():
     # Validate against the original server schema
     server_schema.validate(values)
 
-    # Create a PoolAttribute object
-    pa_values = {
-        'pool_id': default_pool_id,
-        'key': 'name_server',
-        'value': values['name']
+    # Create a PoolNsRecord object
+    pns_values = {
+        'priority': 10,
+        'hostname': values['name']
     }
-    nameserver = objects.NameServer(**pa_values)
+    ns_record = objects.PoolNsRecord.from_dict(pns_values)
 
     # Get the default pool
     pool = central_api.get_pool(context, default_pool_id)
 
     # Add the new PoolAttribute to the pool as a nameserver
-    pool.nameservers.append(nameserver)
+    pool.ns_records.append(ns_record)
 
     try:
         # Update the pool
@@ -86,15 +84,15 @@ def create_server():
     except exceptions.DuplicatePoolAttribute:
         raise exceptions.DuplicateServer()
 
-    # Go through the pool.nameservers to find the right one to get the ID
-    for ns in updated_pool.nameservers:
-        if ns.value == pa_values['value']:
-            created_nameserver = ns
+    # Go through the pool.ns_records to find the right one to get the ID
+    for ns in updated_pool.ns_records:
+        if ns.hostname == pns_values['hostname']:
+            created_ns_record = ns
             break
 
     # Convert the PoolAttribute to a Server so we can validate with the
     # original schema and display
-    server = _poolattribute_to_server(created_nameserver)
+    server = _pool_ns_record_to_server(created_ns_record)
 
     response = flask.jsonify(server_schema.filter(server))
     response.status_int = 201
@@ -114,8 +112,8 @@ def get_servers():
 
     servers = objects.ServerList()
 
-    for ns in pool.nameservers:
-        servers.append(_poolattribute_to_server(ns))
+    for ns in pool.ns_records:
+        servers.append(_pool_ns_record_to_server(ns))
 
     return flask.jsonify(servers_schema.filter({'servers': servers}))
 
@@ -129,11 +127,11 @@ def get_server(server_id):
     # Get the default pool
     pool = central_api.get_pool(context, default_pool_id)
 
-    # Create an empty PoolAttribute object
-    nameserver = objects.NameServer()
+    # Create an empty PoolNsRecord object
+    nameserver = objects.PoolNsRecord()
 
     # Get the desired nameserver from the pool
-    for ns in pool.nameservers:
+    for ns in pool.ns_records:
         if ns.id == server_id:
             nameserver = ns
             break
@@ -142,7 +140,7 @@ def get_server(server_id):
     if nameserver.id != server_id:
         raise exceptions.ServerNotFound
 
-    server = _poolattribute_to_server(nameserver)
+    server = _pool_ns_record_to_server(nameserver)
 
     return flask.jsonify(server_schema.filter(server))
 
@@ -159,31 +157,31 @@ def update_server(server_id):
 
     # Get the Nameserver from the pool
     index = -1
-    nameservers = pool.nameservers
-    for ns in nameservers:
+    ns_records = pool.ns_records
+    for ns in ns_records:
         if ns.id == server_id:
-            index = nameservers.index(ns)
+            index = ns_records.index(ns)
             break
 
     if index == -1:
         raise exceptions.ServerNotFound
 
-    # Get the nameserver from the pool so we can update it
-    nameserver = nameservers.pop(index)
+    # Get the ns_record from the pool so we can update it
+    nameserver = ns_records.pop(index)
 
     # Update it with the new values
-    nameserver.update({'value': values['name']})
+    nameserver.update({'hostname': values['name']})
 
     # Change it to a server, so we can use the original validation. We want
     # to make sure we don't change anything in v1
-    server = _poolattribute_to_server(nameserver)
+    server = _pool_ns_record_to_server(nameserver)
     server_data = server_schema.filter(server)
     server_data.update(values)
     # Validate the new set of data
     server_schema.validate(server_data)
 
     # Now that it's been validated, add it back to the pool and persist it
-    pool.nameservers.append(nameserver)
+    pool.ns_records.append(nameserver)
     central_api.update_pool(context, pool)
 
     return flask.jsonify(server_schema.filter(server))
@@ -200,17 +198,17 @@ def delete_server(server_id):
 
     # Get the Nameserver from the pool
     index = -1
-    nameservers = pool.nameservers
-    for ns in nameservers:
+    ns_records = pool.ns_records
+    for ns in ns_records:
         if ns.id == server_id:
-            index = nameservers.index(ns)
+            index = ns_records.index(ns)
             break
 
     if index == -1:
         raise exceptions.ServerNotFound
 
     # Remove the nameserver from the pool so it will be deleted
-    nameservers.pop(index)
+    ns_records.pop(index)
 
     # Update the pool without the deleted server
     central_api.update_pool(context, pool)
