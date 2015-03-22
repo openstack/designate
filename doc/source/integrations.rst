@@ -18,11 +18,11 @@ setting called "network_api".
 * Logic in Central to make it convenient for setting, unsetting, listing and
   getting FloatingIP PTR records compared to the Records themselves which would
   be more work. (This is outlined in code docstrings for the specific methods.)
-* Sink handlers for the varios backend to help us be more concistent.
+* Sink handlers for the various backend to help us be more consistent.
 
 Record invalidation
 ^^^^^^^^^^^^^^^^^^^
-Happens mainly happens via comparing a Tenant's FloatngIPs
+Happens mainly happens via comparing a Tenant's FloatingIPs
 towards the list we have of Records which are of a certain plugin type and
 with the use of a Sink handler that listens for incoming events from the
 various services.
@@ -47,7 +47,7 @@ Configuring the FloatingIP feature is really simple:
 Note that using admin_user, admin_password and admin_tenant_name is optional,
 if not present we'll piggyback on the context.auth_token passed in by the API.
 
-.. note..
+.. note::
     If "endpoints" is not configured and there's no service catalog is present
     in the context passed by the API to Central the request will fail in
     a NoEndpoint exception.
