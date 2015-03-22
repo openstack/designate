@@ -15,20 +15,20 @@
 # under the License.
 from oslo_log import log as logging
 
-from designate.backend.base import PoolBackend
+from designate.backend.base import Backend
 
 LOG = logging.getLogger(__name__)
 
 
 def get_backend(backend_driver, backend_options):
     LOG.debug("Loading backend driver: %s" % backend_driver)
-    cls = PoolBackend.get_driver(backend_driver)
+    cls = Backend.get_driver(backend_driver)
 
     return cls(backend_options)
 
 
 def get_server_object(backend_driver, server_id):
     LOG.debug("Loading backend driver: %s" % backend_driver)
-    cls = PoolBackend.get_driver(backend_driver)
+    cls = Backend.get_driver(backend_driver)
 
     return cls.get_server_object(backend_driver, server_id)

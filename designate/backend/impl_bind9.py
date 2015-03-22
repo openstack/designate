@@ -27,7 +27,7 @@ LOG = logging.getLogger(__name__)
 DEFAULT_MASTER_PORT = 5354
 
 
-class Bind9Backend(base.PoolBackend):
+class Bind9Backend(base.Backend):
     __plugin_name__ = 'bind9'
 
     @classmethod
