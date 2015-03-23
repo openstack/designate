@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: designate 2015.1.0b3\n"
+"Project-Id-Version: designate 2015.1.dev5\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-03-20 06:41+0000\n"
+"POT-Creation-Date: 2015-03-23 06:04+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -444,12 +444,12 @@ msgstr ""
 msgid "NOT checking for TLDs"
 msgstr ""
 
-#: designate/central/service.py:1802
+#: designate/central/service.py:1778
 #, python-format
 msgid "Creating zone for %(fip_id)s:%(region)s - %(fip_addr)s zone %(zonename)s"
 msgstr ""
 
-#: designate/central/service.py:2212
+#: designate/central/service.py:2187
 msgid "Target Tenant ID found - using scoped policy"
 msgstr ""
 
@@ -477,12 +477,12 @@ msgstr ""
 msgid "started mdns notify endpoint"
 msgstr ""
 
-#: designate/mdns/notify.py:197
+#: designate/mdns/notify.py:195
 #, python-format
 msgid "Sending '%(msg)s' for '%(zone)s' to '%(server)s:%(port)d'."
 msgstr ""
 
-#: designate/mdns/notify.py:231
+#: designate/mdns/notify.py:229
 #, python-format
 msgid "%(zone)s not found on %(server)s:%(port)d"
 msgstr ""
@@ -593,7 +593,7 @@ msgstr ""
 #, python-format
 msgid ""
 "update_status: Calling pool manager for %(domain)s : %(action)s : "
-"%(status)s : %(serial)s"
+"%(status)s : %(serial)s on server '%(host)s:%(port)s'"
 msgstr ""
 
 #: designate/pool_manager/service.py:129

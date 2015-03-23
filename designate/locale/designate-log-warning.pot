@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: designate 2015.1.dev181\n"
+"Project-Id-Version: designate 2015.1.dev5\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-03-19 06:06+0000\n"
+"POT-Creation-Date: 2015-03-23 06:04+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -42,7 +42,7 @@ msgstr ""
 msgid "%(verb)s for %(name)s from %(server)s refused"
 msgstr ""
 
-#: designate/api/middleware.py:181
+#: designate/api/middleware.py:182
 msgid "Request authorized to bypass maintenance mode"
 msgstr ""
 
@@ -80,7 +80,7 @@ msgstr ""
 msgid "Deadlock detected. Retrying..."
 msgstr ""
 
-#: designate/central/service.py:1019
+#: designate/central/service.py:996
 #, python-format
 msgid "Abandoning zone '%(zone)s'"
 msgstr ""
@@ -110,28 +110,28 @@ msgstr ""
 msgid "Forbidden while handling query request. Question was %(qr)s"
 msgstr ""
 
-#: designate/mdns/notify.py:149
+#: designate/mdns/notify.py:147
 #, python-format
 msgid ""
 "Got lower serial for '%(zone)s' to '%(host)s:%(port)s'. "
-"Expected:'%(es)d'. Got:'%(as)d'.Retries left='%(retries)d'"
+"Expected:'%(es)d'. Got:'%(as)s'.Retries left='%(retries)d'"
 msgstr ""
 
-#: designate/mdns/notify.py:206
+#: designate/mdns/notify.py:204
 #, python-format
 msgid ""
 "Got Timeout while trying to send '%(msg)s' for '%(zone)s' to "
 "'%(server)s:%(port)d'. Timeout='%(timeout)d' seconds. Retry='%(retry)d'"
 msgstr ""
 
-#: designate/mdns/notify.py:218
+#: designate/mdns/notify.py:216
 #, python-format
 msgid ""
 "Got BadResponse while trying to send '%(msg)s' for '%(zone)s' to "
 "'%(server)s:%(port)d'. Timeout='%(timeout)d' seconds. Retry='%(retry)d'"
 msgstr ""
 
-#: designate/mdns/notify.py:237
+#: designate/mdns/notify.py:235
 #, python-format
 msgid ""
 "Failed to get expected response while trying to send '%(msg)s' for "
