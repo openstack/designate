@@ -110,8 +110,8 @@ class ZonesController(rest.RestController):
 
         # Extract any filter params.
         accepted_filters = ('name', 'email', 'status', )
-        criterion = dict((k, params[k]) for k in accepted_filters
-                         if k in params)
+        criterion = self._apply_filter_params(
+            params, accepted_filters, {})
 
         zones = self.central_api.find_domains(
             context, criterion, marker, limit, sort_key, sort_dir)
