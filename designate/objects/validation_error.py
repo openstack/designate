@@ -21,6 +21,7 @@ class ValidationError(base.DesignateObject):
         'message': {},
         'validator': {},
         'validator_value': {},
+        'raw': {},
     }
 
     @classmethod
@@ -30,11 +31,13 @@ class ValidationError(base.DesignateObject):
         """
 
         e = cls()
-        e.relative_path = js_error.relative_path
-        e.absolute_path = js_error.absolute_path
+        e.relative_path = list(js_error.relative_path)
+        e.absolute_path = list(js_error.absolute_path)
         e.message = js_error.message
         e.validator = js_error.validator
         e.validator_value = js_error.validator_value
+
+        e.raw = js_error._contents()
 
         return e
 

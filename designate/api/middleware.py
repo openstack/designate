@@ -27,6 +27,7 @@ from designate import exceptions
 from designate import notifications
 from designate import context
 from designate import objects
+from designate.objects.adapters import DesignateAdapter
 from designate.i18n import _LI
 from designate.i18n import _LW
 from designate.i18n import _LE
@@ -296,16 +297,16 @@ class ValidationErrorMiddleware(base.Middleware):
             ('Content-Type', 'application/json'),
         ]
 
+        rendered_errors = DesignateAdapter.render(
+            self.api_version, exception.errors, failed_object=exception.object)
+
         url = getattr(request, 'url', None)
 
         response['code'] = exception.error_code
 
         response['type'] = exception.error_type or 'unknown'
 
-        response['errors'] = list()
-
-        for error in exception.errors:
-            response['errors'].append(error.to_dict())
+        response['errors'] = rendered_errors
 
         # Return the new response
         if 'context' in request.environ:

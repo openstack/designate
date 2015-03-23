@@ -23,6 +23,7 @@ class Base(Exception):
 
     def __init__(self, *args, **kwargs):
         self.errors = kwargs.pop('errors', None)
+        self.object = kwargs.pop('object', None)
 
         super(Base, self).__init__(*args, **kwargs)
 
