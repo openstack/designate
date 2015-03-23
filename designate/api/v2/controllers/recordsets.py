@@ -106,7 +106,7 @@ class RecordSetsController(rest.RestController):
         # SOA recordsets cannot be created manually
         if values['type'] == 'SOA':
             raise exceptions.BadRequest(
-                "Creating a SOA recordset is now allowed")
+                "Creating a SOA recordset is not allowed")
 
         # Create the recordset
         recordset = self.central_api.create_recordset(
@@ -139,7 +139,7 @@ class RecordSetsController(rest.RestController):
         # SOA recordsets cannot be updated manually
         if recordset['type'] == 'SOA':
             raise exceptions.BadRequest(
-                'Updating SOA recordsets is now allowed')
+                'Updating SOA recordsets is not allowed')
 
         # NS recordsets at the zone root cannot be manually updated
         if recordset['type'] == 'NS':
@@ -208,7 +208,7 @@ class RecordSetsController(rest.RestController):
                                                    recordset_id)
         if recordset['type'] == 'SOA':
             raise exceptions.BadRequest(
-                'Deleting a SOA recordset is now allowed')
+                'Deleting a SOA recordset is not allowed')
 
         recordset = self.central_api.delete_recordset(
             context, zone_id, recordset_id)
