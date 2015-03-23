@@ -22,6 +22,7 @@ from designate.objects.backend_option import BackendOption, BackendOptionList  #
 from designate.objects.blacklist import Blacklist, BlacklistList  # noqa
 from designate.objects.domain import Domain, DomainList  # noqa
 from designate.objects.domain_attribute import DomainAttribute, DomainAttributeList  # noqa
+from designate.objects.floating_ip import FloatingIP, FloatingIPList  # noqa
 from designate.objects.pool_manager_status import PoolManagerStatus, PoolManagerStatusList  # noqa
 from designate.objects.pool_server import PoolServer, PoolServerList  # noqa
 from designate.objects.pool import Pool, PoolList  # noqa

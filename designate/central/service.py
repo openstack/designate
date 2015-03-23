@@ -1659,16 +1659,16 @@ class Service(service.RPCService, service.Service):
         elevated_context = context.elevated()
         elevated_context.all_tenants = True
 
-        fips = {}
+        fips = objects.FloatingIPList()
         for key, value in data.items():
-            fip_ptr = {
+            fip_ptr = objects.FloatingIP().from_dict({
                 'address': value[0]['address'],
                 'id': value[0]['id'],
                 'region': value[0]['region'],
                 'ptrdname': None,
                 'ttl': None,
                 'description': None
-            }
+            })
 
             # TTL population requires a present record in order to find the
             # RS or Zone
@@ -1694,7 +1694,7 @@ class Service(service.RPCService, service.Service):
                           value[0]['id'])
 
             # Store the "fip_record" with the region and it's id as key
-            fips[key] = fip_ptr
+            fips.append(fip_ptr)
         return fips
 
     def _list_floatingips(self, context, region=None):
@@ -1734,7 +1734,7 @@ class Service(service.RPCService, service.Service):
 
         self._invalidate_floatingips(context, invalid)
 
-        return self._format_floatingips(context, valid).values()
+        return self._format_floatingips(context, valid)
 
     def get_floatingip(self, context, region, floatingip_id):
         """
@@ -1752,14 +1752,12 @@ class Service(service.RPCService, service.Service):
 
         self._invalidate_floatingips(context, invalid)
 
-        mangled = self._format_floatingips(context, valid)
-        return mangled[region, floatingip_id]
+        return self._format_floatingips(context, valid)[0]
 
     def _set_floatingip_reverse(self, context, region, floatingip_id, values):
         """
         Set the FloatingIP's PTR record based on values.
         """
-        values.setdefault('description', None)
 
         elevated_context = context.elevated()
         elevated_context.all_tenants = True
@@ -1848,11 +1846,9 @@ class Service(service.RPCService, service.Service):
             recordset_id=recordset['id'],
             record=objects.Record(**record_values))
 
-        mangled = self._format_floatingips(
+        return self._format_floatingips(
             context, {(region, floatingip_id): (fip, record)},
-            {recordset['id']: recordset})
-
-        return mangled[region, floatingip_id]
+            {recordset['id']: recordset})[0]
 
     def _unset_floatingip_reverse(self, context, region, floatingip_id):
         """
@@ -1890,7 +1886,8 @@ class Service(service.RPCService, service.Service):
         We strictly see if values['ptrdname'] is str or None and set / unset
         the requested FloatingIP's PTR record based on that.
         """
-        if values['ptrdname'] is None:
+        if 'ptrdname' in values.obj_what_changed() and\
+                values['ptrdname'] is None:
             self._unset_floatingip_reverse(context, region, floatingip_id)
         elif isinstance(values['ptrdname'], basestring):
             return self._set_floatingip_reverse(

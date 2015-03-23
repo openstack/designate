@@ -19,6 +19,7 @@ import pecan
 
 from designate import exceptions
 from designate import schema
+from designate import objects
 from designate.api.v2.controllers import rest
 from designate.api.v2.views import floatingips as floatingips_views
 
@@ -68,7 +69,10 @@ class FloatingIPController(rest.RestController):
         self._resource_schema.validate(body)
 
         fip = self.central_api.update_floatingip(
-            context, region, id_, body['floatingip'])
+            context,
+            region,
+            id_,
+            objects.FloatingIP().from_dict(body['floatingip']))
 
         if fip:
             return self._view.show(context, request, fip)

@@ -30,7 +30,9 @@ class FloatingIPView(base_view.BaseView):
         return '%s/v2/reverse/floatingips' % self.base_uri
 
     def show_basic(self, context, request, item):
-        item['id'] = ":".join([item.pop('region'), item.pop('id')])
+        item = item.to_dict()
+        item['id'] = ":".join([item['region'], item['id']])
+        del item['region']
         item['links'] = self._get_resource_links(
             request, item, [item['id']])
         return item

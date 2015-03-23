@@ -2049,7 +2049,7 @@ class CentralServiceTest(CentralTestCase):
         self.network_api.fake.deallocate_floatingip(fip['id'])
 
         fips = self.central_service.list_floatingips(context_a)
-        self.assertEqual([], fips)
+        assert(len(fips) == 0)
 
         # Ensure that the record is still in DB (No invalidation)
         self.central_service.find_record(elevated_a, criterion)
@@ -2176,7 +2176,8 @@ class CentralServiceTest(CentralTestCase):
         self.assertIsNotNone(fip_ptr['ttl'])
 
         self.central_service.update_floatingip(
-            context, fip['region'], fip['id'], {'ptrdname': None})
+            context, fip['region'], fip['id'],
+            objects.FloatingIP().from_dict({'ptrdname': None}))
 
         self.central_service.get_floatingip(
             context, fip['region'], fip['id'])
