@@ -302,8 +302,9 @@ class DesignateObject(object):
             errors.append(ValidationError.from_js_error(error))
 
         if len(errors) > 0:
-            raise exceptions.InvalidObject("Provided object does not match "
-                                           "schema", errors=errors)
+            raise exceptions.InvalidObject(
+                "Provided object does not match "
+                "schema", errors=errors, object=self)
 
     def obj_attr_is_set(self, name):
         """
@@ -578,24 +579,28 @@ class PersistentObjectMixin(object):
             'schema': {
                 'type': 'string',
                 'format': 'uuid',
-            }
+            },
+            'read_only': True
         },
         'created_at': {
             'schema': {
                 'type': 'string',
                 'format': 'date-time',
-            }
+            },
+            'read_only': True
         },
         'updated_at': {
             'schema': {
                 'type': ['string', 'null'],
                 'format': 'date-time',
-            }
+            },
+            'read_only': True
         },
         'version': {
             'schema': {
                 'type': 'integer',
-            }
+            },
+            'read_only': True
         }
     }
 
@@ -610,13 +615,15 @@ class SoftDeleteObjectMixin(object):
         'deleted': {
             'schema': {
                 'type': ['string', 'integer'],
-            }
+            },
+            'read_only': True
         },
         'deleted_at': {
             'schema': {
                 'type': ['string', 'null'],
                 'format': 'date-time',
-            }
+            },
+            'read_only': True
         }
     }
 
