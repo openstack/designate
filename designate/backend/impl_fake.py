@@ -22,7 +22,7 @@ from designate.backend import base
 LOG = logging.getLogger(__name__)
 
 
-class FakeBackend(base.PoolBackend):
+class FakeBackend(base.Backend):
     __plugin_name__ = 'fake'
 
     def create_domain(self, context, domain):

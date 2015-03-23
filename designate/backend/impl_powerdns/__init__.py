@@ -34,7 +34,7 @@ def _map_col(keys, col):
     return dict([(keys[i], col[i]) for i in range(len(keys))])
 
 
-class PowerDNSBackend(base.PoolBackend):
+class PowerDNSBackend(base.Backend):
     __plugin_name__ = 'powerdns'
 
     @classmethod

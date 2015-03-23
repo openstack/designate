@@ -19,8 +19,7 @@ import copy
 from oslo.config import cfg
 from oslo_log import log as logging
 
-from designate.i18n import _LW
-from designate import exceptions
+from designate.i18n import _LI
 from designate.context import DesignateContext
 from designate.plugin import DriverPlugin
 from designate import objects
@@ -34,125 +33,20 @@ class Backend(DriverPlugin):
     __plugin_type__ = 'backend'
     __plugin_ns__ = 'designate.backend'
 
-    def __init__(self, central_service):
+    def __init__(self, backend_options):
         super(Backend, self).__init__()
-        self.central_service = central_service
+        self.backend_options = backend_options
+
         self.admin_context = DesignateContext.get_admin_context()
         self.admin_context.all_tenants = True
 
     def start(self):
-        pass
+        LOG.info(_LI('Starting %s backend'), self.get_canonical_name())
 
     def stop(self):
-        pass
+        LOG.info(_LI('Stopped %s backend'), self.get_canonical_name())
 
-    def create_tsigkey(self, context, tsigkey):
-        """Create a TSIG Key"""
-        raise exceptions.NotImplemented(
-            'TSIG is not supported by this backend')
-
-    def update_tsigkey(self, context, tsigkey):
-        """Update a TSIG Key"""
-        raise exceptions.NotImplemented(
-            'TSIG is not supported by this backend')
-
-    def delete_tsigkey(self, context, tsigkey):
-        """Delete a TSIG Key"""
-        raise exceptions.NotImplemented(
-            'TSIG is not supported by this backend')
-
-    @abc.abstractmethod
-    def create_domain(self, context, domain):
-        """Create a DNS domain"""
-
-    @abc.abstractmethod
-    def update_domain(self, context, domain):
-        """Update a DNS domain"""
-
-    @abc.abstractmethod
-    def delete_domain(self, context, domain):
-        """Delete a DNS domain"""
-
-    @abc.abstractmethod
-    def create_recordset(self, context, domain, recordset):
-        """Create a DNS recordset"""
-
-    @abc.abstractmethod
-    def update_recordset(self, context, domain, recordset):
-        """Update a DNS recordset"""
-
-    @abc.abstractmethod
-    def delete_recordset(self, context, domain, recordset):
-        """Delete a DNS recordset"""
-
-    @abc.abstractmethod
-    def create_record(self, context, domain, recordset, record):
-        """Create a DNS record"""
-
-    @abc.abstractmethod
-    def update_record(self, context, domain, recordset, record):
-        """Update a DNS record"""
-
-    @abc.abstractmethod
-    def delete_record(self, context, domain, recordset, record):
-        """Delete a DNS record"""
-
-    def sync_domain(self, context, domain, rdata):
-        """
-        Re-Sync a DNS domain
-
-        This is the default, naive, domain synchronization implementation.
-        """
-        # First up, delete the domain from the backend.
-        try:
-            self.delete_domain(context, domain)
-        except exceptions.DomainNotFound as e:
-            # NOTE(Kiall): This means a domain was missing from the backend.
-            #              Good thing we're doing a sync!
-            LOG.warn(_LW("Failed to delete domain '%(domain)s' during sync. "
-                         "Message: %(message)s") %
-                     {'domain': domain['id'], 'message': str(e)})
-
-        # Next, re-create the domain in the backend.
-        self.create_domain(context, domain)
-
-        # Finally, re-create the records for the domain.
-        for recordset, records in rdata:
-            # Re-create the record in the backend.
-            self.create_recordset(context, domain, recordset)
-            for record in records:
-                self.create_record(context, domain, recordset, record)
-
-    def sync_record(self, context, domain, recordset, record):
-        """
-        Re-Sync a DNS record.
-
-        This is the default, naive, record synchronization implementation.
-        """
-        # First up, delete the record from the backend.
-        try:
-            self.delete_record(context, domain, recordset, record)
-        except exceptions.RecordNotFound as e:
-            # NOTE(Kiall): This means a record was missing from the backend.
-            #              Good thing we're doing a sync!
-            LOG.warn(_LW("Failed to delete record '%(record)s' "
-                         "in domain '%(domain)s' during sync. "
-                         "Message: %(message)s") %
-                     {'record': record['id'], 'domain': domain['id'],
-                      'message': str(e)})
-
-        # Finally, re-create the record in the backend.
-        self.create_record(context, domain, recordset, record)
-
-    def ping(self, context):
-        """Ping the Backend service"""
-
-        return {
-            'status': None
-        }
-
-
-class PoolBackend(Backend):
+    # Config Methods
     @classmethod
     def get_cfg_opts(cls):
         group = cfg.OptGroup(
@@ -217,10 +111,15 @@ class PoolBackend(Backend):
     def _get_server_cfg_opts(cls):
         return []
 
-    def __init__(self, backend_options):
-        super(PoolBackend, self).__init__(None)
-        self.backend_options = backend_options
+    def get_backend_option(self, key):
+        """
+        Get the backend option value using the backend option key.
+        """
+        for backend_option in self.backend_options:
+            if backend_option['key'] == key:
+                return backend_option['value']
 
+    # Pool Mgr Object Creation
     @classmethod
     def _create_server_object(cls, backend, server_id, backend_options,
                               server_section_name):
@@ -286,23 +185,7 @@ class PoolBackend(Backend):
         return cls._create_server_object(
             backend, server_id, backend_options, server_section_name)
 
-    def get_backend_option(self, key):
-        """
-        Get the backend option value using the backend option key.
-        """
-        for backend_option in self.backend_options:
-            if backend_option['key'] == key:
-                return backend_option['value']
-
-    def create_tsigkey(self, context, tsigkey):
-        pass
-
-    def update_tsigkey(self, context, tsigkey):
-        pass
-
-    def delete_tsigkey(self, context, tsigkey):
-        pass
-
+    # Core Backend Interface
     @abc.abstractmethod
     def create_domain(self, context, domain):
         """
@@ -324,29 +207,9 @@ class PoolBackend(Backend):
         :param domain: the DNS domain.
         """
 
-    def create_recordset(self, context, domain, recordset):
-        pass
-
-    def update_recordset(self, context, domain, recordset):
-        pass
-
-    def delete_recordset(self, context, domain, recordset):
-        pass
-
-    def create_record(self, context, domain, recordset, record):
-        pass
-
-    def update_record(self, context, domain, recordset, record):
-        pass
-
-    def delete_record(self, context, domain, recordset, record):
-        pass
-
-    def sync_domain(self, context, domain, records):
-        pass
-
-    def sync_record(self, context, domain, record):
-        pass
-
     def ping(self, context):
-        pass
+        """Ping the Backend service"""
+
+        return {
+            'status': None
+        }
