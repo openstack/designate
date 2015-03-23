@@ -36,6 +36,7 @@ class APIv2Adapter(base.DesignateAdapter):
 
     @classmethod
     def _render_list(cls, list_object, *args, **kwargs):
+
         r_list = super(APIv2Adapter, cls)._render_list(
             list_object, *args, **kwargs)
 

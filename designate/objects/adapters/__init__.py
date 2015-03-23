@@ -13,3 +13,18 @@
 #    under the License.
 # Base Adapter Class
 from designate.objects.adapters.base import DesignateAdapter  # noqa
+# API v2
+from designate.objects.adapters.api_v2.blacklist import BlacklistAPIv2Adapter, BlacklistListAPIv2Adapter  # noqa
+from designate.objects.adapters.api_v2.domain import DomainAPIv2Adapter, DomainListAPIv2Adapter  # noqa
+from designate.objects.adapters.api_v2.floating_ip import FloatingIPAPIv2Adapter, FloatingIPListAPIv2Adapter  # noqa
+from designate.objects.adapters.api_v2.record import RecordAPIv2Adapter, RecordListAPIv2Adapter  # noqa
+from designate.objects.adapters.api_v2.recordset import RecordSetAPIv2Adapter, RecordSetListAPIv2Adapter  # noqa
+from designate.objects.adapters.api_v2.pool import PoolAPIv2Adapter, PoolListAPIv2Adapter  # noqa
+from designate.objects.adapters.api_v2.pool_attribute import PoolAttributeAPIv2Adapter, PoolAttributeListAPIv2Adapter  # noqa
+from designate.objects.adapters.api_v2.pool_ns_record import PoolNsRecordAPIv2Adapter, PoolNsRecordListAPIv2Adapter  # noqa
+from designate.objects.adapters.api_v2.tld import TldAPIv2Adapter, TldListAPIv2Adapter  # noqa
+from designate.objects.adapters.api_v2.tsigkey import TsigKeyAPIv2Adapter, TsigKeyListAPIv2Adapter  # noqa
+from designate.objects.adapters.api_v2.quota import QuotaAPIv2Adapter, QuotaListAPIv2Adapter  # noqa
+from designate.objects.adapters.api_v2.zone_transfer_accept import ZoneTransferAcceptAPIv2Adapter, ZoneTransferAcceptListAPIv2Adapter  # noqa
+from designate.objects.adapters.api_v2.zone_transfer_request import ZoneTransferRequestAPIv2Adapter, ZoneTransferRequestListAPIv2Adapter  # noqa
+from designate.objects.adapters.api_v2.validation_error import ValidationErrorAPIv2Adapter, ValidationErrorListAPIv2Adapter  # noqa
