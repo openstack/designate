@@ -23,6 +23,7 @@ from oslo.config import cfg
 from oslo_log import log as logging
 
 from designate import exceptions
+from designate import utils
 from designate.backend import base
 
 
@@ -81,7 +82,7 @@ class NSD4SlaveBackend(base.Backend):
 
     def _parse_server(self, cfg_server):
         try:
-            (host, port) = cfg_server.split(':')
+            (host, port) = utils.split_host_port(cfg_server)
             port = int(port)
         except ValueError:
             host = str(cfg_server)
