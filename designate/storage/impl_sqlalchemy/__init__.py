@@ -951,8 +951,8 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
 
     # Zone Transfer Methods
     def _find_zone_transfer_requests(self, context, criterion, one=False,
-                                    marker=None, limit=None, sort_key=None,
-                                    sort_dir=None):
+                                     marker=None, limit=None, sort_key=None,
+                                     sort_dir=None):
 
         table = tables.zone_transfer_requests
 
@@ -964,9 +964,7 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             [table, tables.domains.c.name.label("domain_name")]
         ).select_from(ljoin)
 
-        if context.all_tenants:
-            LOG.debug('Including all tenants items in query results')
-        else:
+        if not context.all_tenants:
             query = query.where(or_(
                 table.c.tenant_id == context.tenant,
                 table.c.target_tenant_id == context.tenant))
