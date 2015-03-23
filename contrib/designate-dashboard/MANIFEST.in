@@ -1,5 +1,6 @@
 include AUTHORS
 include ChangeLog
+recursive-include designatedashboard *.html
 exclude .gitignore
 exclude .gitreview
 
