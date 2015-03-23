@@ -16,21 +16,17 @@
 import pecan
 from oslo_log import log as logging
 
-from designate import schema
 from designate import utils
 from designate.api.v2.controllers import rest
-from designate.api.v2.views.zones.tasks import transfer_accepts as \
-    zone_transfer_accepts_view
 from designate.objects import ZoneTransferAccept
+from designate.objects.adapters import DesignateAdapter
 
 
 LOG = logging.getLogger(__name__)
 
 
 class TransferAcceptsController(rest.RestController):
-    _view = zone_transfer_accepts_view.ZoneTransferAcceptsView()
-    _resource_schema = schema.Schema('v2', 'transfer_accept')
-    _collection_schema = schema.Schema('v2', 'transfer_accepts')
+
     SORT_KEYS = ['created_at', 'id', 'updated_at']
 
     @pecan.expose(template='json:', content_type='application/json')
@@ -41,11 +37,11 @@ class TransferAcceptsController(rest.RestController):
         request = pecan.request
         context = request.environ['context']
 
-        transfer_accepts = \
+        return DesignateAdapter.render(
+            'API_v2',
             self.central_api.get_zone_transfer_accept(
-                context, transfer_accept_id)
-
-        return self._view.show(context, request, transfer_accepts)
+                context, transfer_accept_id),
+            request=request)
 
     @pecan.expose(template='json:', content_type='application/json')
     def post_all(self):
@@ -55,18 +51,19 @@ class TransferAcceptsController(rest.RestController):
         context = request.environ['context']
         body = request.body_dict
 
-        # Validate the request conforms to the schema
-        self._resource_schema.validate(body)
+        zone_transfer_accept = DesignateAdapter.parse(
+            'API_v2', body, ZoneTransferAccept())
 
-        # Convert from APIv2 -> Central format
-        values = self._view.load(context, request, body)
+        zone_transfer_accept.validate()
+
         # Create the zone_transfer_request
         zone_transfer_accept = self.central_api.create_zone_transfer_accept(
-            context, ZoneTransferAccept(**values))
+            context, zone_transfer_accept)
         response.status_int = 201
 
-        response.headers['Location'] = self._view._get_resource_href(
-            request,
-            zone_transfer_accept)
+        zone_transfer_accept = DesignateAdapter.render(
+            'API_v2', zone_transfer_accept, request=request)
+
+        response.headers['Location'] = zone_transfer_accept['links']['self']
         # Prepare and return the response body
-        return self._view.show(context, request, zone_transfer_accept)
+        return zone_transfer_accept

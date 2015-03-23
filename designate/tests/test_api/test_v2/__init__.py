@@ -46,11 +46,11 @@ class ApiV2TestCase(ApiTestCase):
         # Inject the NormalizeURIMiddleware middleware
         self.app = middleware.NormalizeURIMiddleware(self.app)
 
-        # Inject the FaultWrapper middleware
-        self.app = middleware.FaultWrapperMiddleware(self.app)
-
         # Inject the ValidationError middleware
         self.app = middleware.APIv2ValidationErrorMiddleware(self.app)
+
+        # Inject the FaultWrapper middleware
+        self.app = middleware.FaultWrapperMiddleware(self.app)
 
         # Inject the TestContext middleware
         self.app = middleware.TestContextMiddleware(

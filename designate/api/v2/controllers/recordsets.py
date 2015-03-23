@@ -17,21 +17,16 @@ import pecan
 from oslo_log import log as logging
 
 from designate import exceptions
-from designate import schema
 from designate import utils
 from designate.api.v2.controllers import rest
-from designate.api.v2.views import recordsets as recordsets_view
 from designate.objects import RecordSet
-from designate.objects import Record
-
+from designate.objects import RecordSetList
+from designate.objects.adapters import DesignateAdapter
 
 LOG = logging.getLogger(__name__)
 
 
 class RecordSetsController(rest.RestController):
-    _view = recordsets_view.RecordSetsView()
-    _resource_schema = schema.Schema('v2', 'recordset')
-    _collection_schema = schema.Schema('v2', 'recordsets')
     SORT_KEYS = ['created_at', 'id', 'updated_at', 'domain_id', 'tenant_id',
                  'name', 'type', 'ttl', 'records']
 
@@ -42,10 +37,11 @@ class RecordSetsController(rest.RestController):
         request = pecan.request
         context = request.environ['context']
 
-        recordset = self.central_api.get_recordset(context, zone_id,
-                                                   recordset_id)
-
-        return self._view.show(context, request, recordset)
+        return DesignateAdapter.render(
+            'API_v2',
+            self.central_api.get_recordset(
+                context, zone_id, recordset_id),
+            request=request)
 
     @pecan.expose(template='json:', content_type='application/json')
     @utils.validate_uuid('zone_id')
@@ -82,10 +78,16 @@ class RecordSetsController(rest.RestController):
                 context, criterion={'data': data, 'domain_id': zone_id})
             recordsets_with_data.update(
                 [record.recordset_id for record in records])
-            recordsets = [recordset for recordset in recordsets
-                          if recordset.id in recordsets_with_data]
 
-        return self._view.list(context, request, recordsets, [zone_id])
+            new_rsets = RecordSetList()
+
+            for recordset in recordsets:
+                if recordset.id in recordsets_with_data:
+                    new_rsets.append(recordset)
+
+            recordsets = new_rsets
+
+        return DesignateAdapter.render('API_v2', recordsets, request=request)
 
     @pecan.expose(template='json:', content_type='application/json')
     @utils.validate_uuid('zone_id')
@@ -97,31 +99,32 @@ class RecordSetsController(rest.RestController):
 
         body = request.body_dict
 
-        # Validate the request conforms to the schema
-        self._resource_schema.validate(body)
+        recordset = DesignateAdapter.parse('API_v2', body, RecordSet())
 
-        # Convert from APIv2 -> Central format
-        values = self._view.load(context, request, body)
+        recordset.validate()
 
         # SOA recordsets cannot be created manually
-        if values['type'] == 'SOA':
+        if recordset.type == 'SOA':
             raise exceptions.BadRequest(
                 "Creating a SOA recordset is not allowed")
 
         # Create the recordset
         recordset = self.central_api.create_recordset(
-            context, zone_id, RecordSet(**values))
+            context, zone_id, recordset)
 
         # Prepare the response headers
         if recordset['status'] == 'PENDING':
             response.status_int = 202
         else:
             response.status_int = 201
-        response.headers['Location'] = self._view._get_resource_href(
-            request, recordset, [zone_id])
+
+        recordset = DesignateAdapter.render(
+            'API_v2', recordset, request=request)
+
+        response.headers['Location'] = recordset['links']['self']
 
         # Prepare and return the response body
-        return self._view.show(context, request, recordset)
+        return recordset
 
     @pecan.expose(template='json:', content_type='application/json')
     @utils.validate_uuid('zone_id', 'recordset_id')
@@ -149,41 +152,10 @@ class RecordSetsController(rest.RestController):
                     'Updating a root zone NS record is not allowed')
 
         # Convert to APIv2 Format
-        recordset_data = self._view.show(context, request, recordset)
-        recordset_data = utils.deep_dict_merge(recordset_data, body)
-        new_recordset = self._view.load(context, request, body)
 
-        # Validate the new set of data
-        self._resource_schema.validate(recordset_data)
+        recordset = DesignateAdapter.parse('API_v2', body, recordset)
 
-        # Get original list of Records
-        original_records = set()
-        for record in recordset.records:
-            original_records.add(record.data)
-        # Get new list of Records
-        new_records = set()
-        if 'records' in new_recordset:
-            for record in new_recordset['records']:
-                new_records.add(record.data)
-        # Get differences of Records
-        records_to_add = new_records.difference(original_records)
-        records_to_rm = original_records.difference(new_records)
-
-        # Update all items except records
-        record_update = False
-        if 'records' in new_recordset:
-            record_update = True
-            del new_recordset['records']
-        recordset.update(new_recordset)
-
-        # Remove deleted records if we have provided a records array
-        if record_update:
-            recordset.records[:] = [record for record in recordset.records
-                                    if record.data not in records_to_rm]
-
-        # Add new records
-        for record in records_to_add:
-            recordset.records.append(Record(data=record))
+        recordset.validate()
 
         # Persist the resource
         recordset = self.central_api.update_recordset(context, recordset)
@@ -193,7 +165,7 @@ class RecordSetsController(rest.RestController):
         else:
             response.status_int = 200
 
-        return self._view.show(context, request, recordset)
+        return DesignateAdapter.render('API_v2', recordset, request=request)
 
     @pecan.expose(template='json:', content_type='application/json')
     @utils.validate_uuid('zone_id', 'recordset_id')
@@ -214,4 +186,4 @@ class RecordSetsController(rest.RestController):
             context, zone_id, recordset_id)
         response.status_int = 202
 
-        return self._view.show(context, request, recordset)
+        return DesignateAdapter.render('API_v2', recordset, request=request)

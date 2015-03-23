@@ -15,20 +15,16 @@
 import pecan
 from oslo_log import log as logging
 
-from designate import schema
 from designate import utils
 from designate.api.v2.controllers import rest
-from designate.api.v2.views import pools as pools_view
 from designate.objects import Pool
+from designate.objects.adapters import DesignateAdapter
 
 
 LOG = logging.getLogger(__name__)
 
 
 class PoolsController(rest.RestController):
-    _view = pools_view.PoolsView()
-    _resource_schema = schema.Schema('v2', 'pool')
-    _collection_schema = schema.Schema('v2', 'pools')
     SORT_KEYS = ['created_at', 'id', 'updated_at', 'name']
 
     @pecan.expose(template='json:', content_type='application/json')
@@ -38,8 +34,10 @@ class PoolsController(rest.RestController):
         request = pecan.request
         context = request.environ['context']
 
-        pool = self.central_api.get_pool(context, pool_id)
-        return self._view.show(context, request, pool)
+        return DesignateAdapter.render(
+            'API_v2',
+            self.central_api.get_pool(context, pool_id),
+            request=request)
 
     @pecan.expose(template='json:', content_type='application/json')
     def get_all(self, **params):
@@ -55,10 +53,11 @@ class PoolsController(rest.RestController):
         criterion = dict((k, params[k]) for k in accepted_filters
                          if k in params)
 
-        pools = self.central_api.find_pools(
-            context, criterion, marker, limit, sort_key, sort_dir)
-
-        return self._view.list(context, request, pools)
+        return DesignateAdapter.render(
+            'API_v2',
+            self.central_api.find_pools(
+                context, criterion, marker, limit, sort_key, sort_dir),
+            request=request)
 
     @pecan.expose(template='json:', content_type='application/json')
     def post_all(self):
@@ -68,20 +67,18 @@ class PoolsController(rest.RestController):
         context = request.environ['context']
         body = request.body_dict
 
-        # Validate the request conforms to the schema
-        self._resource_schema.validate(body)
+        pool = DesignateAdapter.parse('API_v2', body, Pool())
 
-        # Convert from APIv2 -> Central format
-        values = self._view.load(context, request, body)
+        pool.validate()
 
         # Create the pool
-        pool = self.central_api.create_pool(context, Pool(**values))
+        pool = self.central_api.create_pool(context, pool)
+        pool = DesignateAdapter.render('API_v2', pool, request=request)
         response.status_int = 201
 
-        response.headers['Location'] = self._view._get_resource_href(request,
-                                                                     pool)
+        response.headers['Location'] = pool['links']['self']
         # Prepare and return the response body
-        return self._view.show(context, request, pool)
+        return pool
 
     @pecan.expose(template='json:', content_type='application/json')
     @pecan.expose(template='json:', content_type='application/json-patch+json')
@@ -93,27 +90,21 @@ class PoolsController(rest.RestController):
         body = request.body_dict
         response = pecan.response
 
+        if request.content_type == 'application/json-patch+json':
+            raise NotImplemented('json-patch not implemented')
+
         # Fetch the existing pool
         pool = self.central_api.get_pool(context, pool_id)
 
-        # Convert to APIv2 Format
-        pool_data = self._view.show(context, request, pool)
+        pool = DesignateAdapter.parse('API_v2', body, pool)
 
-        if request.content_type == 'application/json-patch+json':
-            raise NotImplemented('json-patch not implemented')
-        else:
-            pool_data = utils.deep_dict_merge(pool_data, body)
+        pool.validate()
 
-            # Validate the new set of data
-            self._resource_schema.validate(pool_data)
-
-            # Update and persist the resource
-            pool.update(self._view.load(context, request, body))
-            pool = self.central_api.update_pool(context, pool)
+        pool = self.central_api.update_pool(context, pool)
 
         response.status_int = 200
 
-        return self._view.show(context, request, pool)
+        return DesignateAdapter.render('API_v2', pool, request=request)
 
     @pecan.expose(template=None, content_type='application/json')
     @utils.validate_uuid('pool_id')

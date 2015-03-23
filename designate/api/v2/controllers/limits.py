@@ -18,20 +18,22 @@ import pecan
 from oslo_log import log as logging
 
 from designate.api.v2.controllers import rest
-from designate.api.v2.views import limits as limits_view
 
 
 LOG = logging.getLogger(__name__)
 
 
 class LimitsController(rest.RestController):
-    _view = limits_view.LimitsView()
 
     @pecan.expose(template='json:', content_type='application/json')
     def get_all(self):
-        request = pecan.request
         context = pecan.request.environ['context']
 
         absolute_limits = self.central_api.get_absolute_limits(context)
 
-        return self._view.show(context, request, absolute_limits)
+        return {
+            "max_zones": absolute_limits['domains'],
+            "max_zone_recordsets": absolute_limits['domain_recordsets'],
+            "max_zone_records": absolute_limits['domain_records'],
+            "max_recordset_records": absolute_limits['recordset_records']
+        }

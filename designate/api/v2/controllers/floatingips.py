@@ -18,10 +18,9 @@ import re
 import pecan
 
 from designate import exceptions
-from designate import schema
 from designate import objects
+from designate.objects.adapters import DesignateAdapter
 from designate.api.v2.controllers import rest
-from designate.api.v2.views import floatingips as floatingips_views
 
 
 FIP_REGEX = '^(?P<region>[A-Za-z0-9\\.\\-_]{1,100}):' \
@@ -41,9 +40,6 @@ def fip_key_to_data(key):
 
 
 class FloatingIPController(rest.RestController):
-    _view = floatingips_views.FloatingIPView()
-    _resource_schema = schema.Schema('v2', 'floatingip')
-    _collection_schema = schema.Schema('v2', 'floatingips')
 
     @pecan.expose(template='json:', content_type='application/json')
     def get_all(self, **params):
@@ -51,8 +47,10 @@ class FloatingIPController(rest.RestController):
         request = pecan.request
         context = request.environ['context']
 
-        fips = self.central_api.list_floatingips(context)
-        return self._view.list(context, request, fips)
+        return DesignateAdapter.render(
+            'API_v2',
+            self.central_api.list_floatingips(context),
+            request=request)
 
     @pecan.expose(template='json:', content_type='application/json')
     def patch_one(self, fip_key):
@@ -61,21 +59,25 @@ class FloatingIPController(rest.RestController):
         """
         request = pecan.request
         context = request.environ['context']
-        body = request.body_dict
+        try:
+            body = request.body_dict
+        except Exception as e:
+            if e.message != 'TODO: Unsupported Content Type':
+                raise
+            else:
+                # Got a blank body
+                body = dict()
 
         region, id_ = fip_key_to_data(fip_key)
 
-        # Validate the request conforms to the schema
-        self._resource_schema.validate(body)
+        fip = DesignateAdapter.parse('API_v2', body, objects.FloatingIP())
 
-        fip = self.central_api.update_floatingip(
-            context,
-            region,
-            id_,
-            objects.FloatingIP().from_dict(body['floatingip']))
+        fip.validate()
+
+        fip = self.central_api.update_floatingip(context, region, id_, fip)
 
         if fip:
-            return self._view.show(context, request, fip)
+            return DesignateAdapter.render('API_v2', fip, request=request)
 
     @pecan.expose(template='json:', content_type='application/json')
     def get_one(self, fip_key):
@@ -87,6 +89,7 @@ class FloatingIPController(rest.RestController):
 
         region, id_ = fip_key_to_data(fip_key)
 
-        fip = self.central_api.get_floatingip(context, region, id_)
-
-        return self._view.show(context, request, fip)
+        return DesignateAdapter.render(
+            'API_v2',
+            self.central_api.get_floatingip(context, region, id_),
+            request=request)

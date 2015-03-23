@@ -15,20 +15,16 @@
 import pecan
 from oslo_log import log as logging
 
-from designate import schema
 from designate import utils
 from designate.api.v2.controllers import rest
-from designate.api.v2.views import tlds as tlds_view
 from designate.objects import Tld
+from designate.objects.adapters import DesignateAdapter
 
 
 LOG = logging.getLogger(__name__)
 
 
 class TldsController(rest.RestController):
-    _view = tlds_view.TldsView()
-    _resource_schema = schema.Schema('v2', 'tld')
-    _collection_schema = schema.Schema('v2', 'tlds')
     SORT_KEYS = ['created_at', 'id', 'updated_at', 'name']
 
     @pecan.expose(template='json:', content_type='application/json')
@@ -39,8 +35,10 @@ class TldsController(rest.RestController):
         request = pecan.request
         context = request.environ['context']
 
-        tld = self.central_api.get_tld(context, tld_id)
-        return self._view.show(context, request, tld)
+        return DesignateAdapter.render(
+            'API_v2',
+            self.central_api.get_tld(context, tld_id),
+            request=request)
 
     @pecan.expose(template='json:', content_type='application/json')
     def get_all(self, **params):
@@ -56,10 +54,11 @@ class TldsController(rest.RestController):
         criterion = dict((k, params[k]) for k in accepted_filters
                          if k in params)
 
-        tlds = self.central_api.find_tlds(
-            context, criterion, marker, limit, sort_key, sort_dir)
-
-        return self._view.list(context, request, tlds)
+        return DesignateAdapter.render(
+            'API_v2',
+            self.central_api.find_tlds(
+                context, criterion, marker, limit, sort_key, sort_dir),
+            request=request)
 
     @pecan.expose(template='json:', content_type='application/json')
     def post_all(self):
@@ -69,20 +68,19 @@ class TldsController(rest.RestController):
         context = request.environ['context']
         body = request.body_dict
 
-        # Validate the request conforms to the schema
-        self._resource_schema.validate(body)
+        tld = DesignateAdapter.parse('API_v2', body, Tld())
 
-        # Convert from APIv2 -> Central format
-        values = self._view.load(context, request, body)
+        tld.validate()
 
         # Create the tld
-        tld = self.central_api.create_tld(context, Tld(**values))
+        tld = self.central_api.create_tld(context, tld)
         response.status_int = 201
 
-        response.headers['Location'] = self._view._get_resource_href(request,
-                                                                     tld)
+        tld = DesignateAdapter.render('API_v2', tld, request=request)
+
+        response.headers['Location'] = tld['links']['self']
         # Prepare and return the response body
-        return self._view.show(context, request, tld)
+        return tld
 
     @pecan.expose(template='json:', content_type='application/json')
     @pecan.expose(template='json:', content_type='application/json-patch+json')
@@ -93,28 +91,21 @@ class TldsController(rest.RestController):
         context = request.environ['context']
         body = request.body_dict
         response = pecan.response
+        if request.content_type == 'application/json-patch+json':
+            raise NotImplemented('json-patch not implemented')
 
         # Fetch the existing tld
         tld = self.central_api.get_tld(context, tld_id)
 
-        # Convert to APIv2 Format
-        tld_data = self._view.show(context, request, tld)
+        tld = DesignateAdapter.parse('API_v2', body, tld)
 
-        if request.content_type == 'application/json-patch+json':
-            raise NotImplemented('json-patch not implemented')
-        else:
-            tld_data = utils.deep_dict_merge(tld_data, body)
+        tld.validate()
 
-            # Validate the new set of data
-            self._resource_schema.validate(tld_data)
-
-            # Update and persist the resource
-            tld.update(self._view.load(context, request, body))
-            tld = self.central_api.update_tld(context, tld)
+        tld = self.central_api.update_tld(context, tld)
 
         response.status_int = 200
 
-        return self._view.show(context, request, tld)
+        return DesignateAdapter.render('API_v2', tld, request=request)
 
     @pecan.expose(template=None, content_type='application/json')
     @utils.validate_uuid('tld_id')

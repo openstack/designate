@@ -16,20 +16,15 @@
 import pecan
 from oslo_log import log as logging
 
-from designate import schema
 from designate import utils
 from designate.api.v2.controllers import rest
-from designate.api.v2.views.zones.tasks import transfer_requests as \
-    zone_transfer_requests_view
 from designate.objects import ZoneTransferRequest
-
+from designate.objects.adapters import DesignateAdapter
 LOG = logging.getLogger(__name__)
 
 
 class TransferRequestsController(rest.RestController):
-    _view = zone_transfer_requests_view.ZoneTransferRequestsView()
-    _resource_schema = schema.Schema('v2', 'transfer_request')
-    _collection_schema = schema.Schema('v2', 'transfer_requests')
+
     SORT_KEYS = ['created_at', 'id', 'updated_at']
 
     @pecan.expose(template='json:', content_type='application/json')
@@ -40,11 +35,12 @@ class TransferRequestsController(rest.RestController):
         request = pecan.request
         context = request.environ['context']
 
-        transfer_request = \
+        return DesignateAdapter.render(
+            'API_v2',
             self.central_api.get_zone_transfer_request(
-                context, transfer_request_id)
-
-        return self._view.show(context, request, transfer_request)
+                context, transfer_request_id),
+            request=request,
+            context=context)
 
     @pecan.expose(template='json:', content_type='application/json')
     def get_all(self, **params):
@@ -58,10 +54,12 @@ class TransferRequestsController(rest.RestController):
         # Extract any filter params.
         criterion = self._apply_filter_params(params, ('status',), {})
 
-        zone_transfer_requests = self.central_api.find_zone_transfer_requests(
-            context, criterion, marker, limit, sort_key, sort_dir)
-
-        return self._view.list(context, request, zone_transfer_requests)
+        return DesignateAdapter.render(
+            'API_v2',
+            self.central_api.find_zone_transfer_requests(
+                context, criterion, marker, limit, sort_key, sort_dir),
+            request=request,
+            context=context)
 
     @pecan.expose(template='json:', content_type='application/json')
     @utils.validate_uuid('zone_id')
@@ -70,27 +68,33 @@ class TransferRequestsController(rest.RestController):
         request = pecan.request
         response = pecan.response
         context = request.environ['context']
-        body = request.body_dict
+        try:
+            body = request.body_dict
+        except Exception as e:
+            if e.message != 'TODO: Unsupported Content Type':
+                raise
+            else:
+                # Got a blank body
+                body = dict()
 
-        if body['transfer_request'] is not None:
-            body['transfer_request']['zone_id'] = zone_id
+        body['zone_id'] = zone_id
 
-        # Validate the request conforms to the schema
-        self._resource_schema.validate(body)
+        zone_transfer_request = DesignateAdapter.parse(
+            'API_v2', body, ZoneTransferRequest())
 
-        # Convert from APIv2 -> Central format
-        values = self._view.load(context, request, body)
+        zone_transfer_request.validate()
 
         # Create the zone_transfer_request
         zone_transfer_request = self.central_api.create_zone_transfer_request(
-            context, ZoneTransferRequest(**values))
+            context, zone_transfer_request)
         response.status_int = 201
 
-        response.headers['Location'] = self._view._get_resource_href(
-            request,
-            zone_transfer_request)
+        zone_transfer_request = DesignateAdapter.render(
+            'API_v2', zone_transfer_request, request=request, context=context)
+
+        response.headers['Location'] = zone_transfer_request['links']['self']
         # Prepare and return the response body
-        return self._view.show(context, request, zone_transfer_request)
+        return zone_transfer_request
 
     @pecan.expose(template='json:', content_type='application/json')
     @pecan.expose(template='json:', content_type='application/json-patch+json')
@@ -102,30 +106,25 @@ class TransferRequestsController(rest.RestController):
         body = request.body_dict
         response = pecan.response
 
-        # Fetch the existing zone_transfer_request
-        zt_request = self.central_api.get_zone_transfer_request(
-            context, zone_transfer_request_id)
-
-        # Convert to APIv2 Format
-        zt_request_data = self._view.show(context,
-                                          request, zt_request)
-
         if request.content_type == 'application/json-patch+json':
             raise NotImplemented('json-patch not implemented')
-        else:
-            zt_request_data = utils.deep_dict_merge(
-                zt_request_data, body)
 
-            # Validate the request conforms to the schema
-            self._resource_schema.validate(zt_request_data)
+        # Fetch the existing zone_transfer_request
+        zone_transfer_request = self.central_api.get_zone_transfer_request(
+            context, zone_transfer_request_id)
 
-            zt_request.update(self._view.load(context, request, body))
-            zt_request = self.central_api.update_zone_transfer_request(
-                context, zt_request)
+        zone_transfer_request = DesignateAdapter.parse(
+            'API_v2', body, zone_transfer_request)
+
+        zone_transfer_request.validate()
+
+        zone_transfer_request = self.central_api.update_zone_transfer_request(
+            context, zone_transfer_request)
 
         response.status_int = 200
 
-        return self._view.show(context, request, zt_request)
+        return DesignateAdapter.render(
+            'API_v2', zone_transfer_request, request=request, context=context)
 
     @pecan.expose(template=None, content_type='application/json')
     @utils.validate_uuid('zone_transfer_request_id')

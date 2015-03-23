@@ -17,12 +17,13 @@ example:
    Content-Type: application/json
 
    {                                # The rest is the body of request
-     "pool": {
-       "name": "Example Pool",
-       "nameservers": [
-         "ns1.example.org."
-       ]
-     }
+        "name": "Example Pool",
+        "ns_records": [
+            {
+              "hostname": "ns1.example.org.",
+              "priority": 1
+            }
+        ]
    }
 
 With this info we can make this request using the cURL_ tool. We'll
@@ -77,3 +78,12 @@ V2 API
        rest/v2/blacklists
        rest/v2/quotas
        rest/v2/pools
+
+Admin API
+---------
+    .. toctree::
+       :maxdepth: 2
+       :glob:
+
+       rest/admin/quotas
+

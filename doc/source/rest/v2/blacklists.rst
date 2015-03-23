@@ -65,10 +65,8 @@ Create a Blacklist
       Content-Type: application/json
 
       {
-        "blacklist" : {
-          "pattern" : "^([A-Za-z0-9_\\-]+\\.)*example\\.com\\.$",
-          "description" : "This is a blacklisted domain."
-        }
+        "pattern" : "^([A-Za-z0-9_\\-]+\\.)*example\\.com\\.$",
+        "description" : "This is a blacklisted domain."
       }
 
    **Example response**:
@@ -79,18 +77,16 @@ Create a Blacklist
       Content-Type: application/json; charset=UTF-8
       Location: 127.0.0.1:9001/v2/blacklists/c47229fb-0831-4b55-a5b5-380d361be4bd
 
-    {
-      "blacklist":{
-        "description":"This is a blacklisted domain.",
-        "links":{
-          "self":"http://127.0.0.1:9001/v2/blacklists/c47229fb-0831-4b55-a5b5-380d361be4bd"
-      },
-        "pattern":"^([A-Za-z0-9_\\-]+\\.)*example\\.com\\.$",
-        "created_at":"2014-03-11T21:54:57.000000",
-        "updated_at":null,
-        "id":"c47229fb-0831-4b55-a5b5-380d361be4bd"
+      {
+          "description":"This is a blacklisted domain.",
+          "links":{
+              "self":"http://127.0.0.1:9001/v2/blacklists/c47229fb-0831-4b55-a5b5-380d361be4bd"
+          },
+          "pattern":"^([A-Za-z0-9_\\-]+\\.)*example\\.com\\.$",
+          "created_at":"2014-03-11T21:54:57.000000",
+          "updated_at":null,
+          "id":"c47229fb-0831-4b55-a5b5-380d361be4bd"
       }
-    }
 
    :form created_at: timestamp
    :form updated_at: timestamp
@@ -126,16 +122,14 @@ Get a Blacklist
       Content-Type: application/json; charset=UTF-8
 
       {
-        "blacklist":{
-          "description":"This is a blacklisted domain.",
-          "links":{
-            "self":"http://127.0.0.1:9001/v2/blacklists/c47229fb-0831-4b55-a5b5-380d361be4bd"
-          },
-          "pattern":"^([A-Za-z0-9_\\-]+\\.)*example\\.com\\.$",
-          "created_at":"2014-03-11T21:54:57.000000",
-          "updated_at":null,
-          "id":"c47229fb-0831-4b55-a5b5-380d361be4bd"
-        }
+        "description":"This is a blacklisted domain.",
+        "links":{
+          "self":"http://127.0.0.1:9001/v2/blacklists/c47229fb-0831-4b55-a5b5-380d361be4bd"
+        },
+        "pattern":"^([A-Za-z0-9_\\-]+\\.)*example\\.com\\.$",
+        "created_at":"2014-03-11T21:54:57.000000",
+        "updated_at":null,
+        "id":"c47229fb-0831-4b55-a5b5-380d361be4bd"
       }
 
    :form created_at: timestamp
@@ -224,10 +218,8 @@ Update a Blacklist
       Content-Type: application/json
 
       {
-        "blacklist" : {
-          "pattern" : "^([A-Za-z0-9_\\-]+\\.)*example\\.com\\.$",
-          "description" : "Updated the description"
-        }
+        "pattern" : "^([A-Za-z0-9_\\-]+\\.)*example\\.com\\.$",
+        "description" : "Updated the description"
       }
 
    **Example response**:
@@ -238,16 +230,14 @@ Update a Blacklist
       Content-Type: application/json; charset=UTF-8
 
       {
-        "blacklist":{
-          "description":"Updated the pattern to catch subdomains",
-          "links":{
-            "self":"http://127.0.0.1:9001/v2/blacklists/c47229fb-0831-4b55-a5b5-380d361be4bd"
-          },
-          "created_at":"2014-03-11T21:54:57.000000",
-          "updated_at":"2014-03-13T16:49:32.117187",
-          "id":"c47229fb-0831-4b55-a5b5-380d361be4bd",
-          "pattern":"^([A-Za-z0-9_\\-]+\\.)*example\\.com\\.$"
-        }
+        "description":"Updated the pattern to catch subdomains",
+        "links":{
+          "self":"http://127.0.0.1:9001/v2/blacklists/c47229fb-0831-4b55-a5b5-380d361be4bd"
+        },
+        "created_at":"2014-03-11T21:54:57.000000",
+        "updated_at":"2014-03-13T16:49:32.117187",
+        "id":"c47229fb-0831-4b55-a5b5-380d361be4bd",
+        "pattern":"^([A-Za-z0-9_\\-]+\\.)*example\\.com\\.$"
       }
 
    :form created_at: timestamp
