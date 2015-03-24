@@ -23,6 +23,10 @@ class Quota(base.DictObjectMixin, base.PersistentObjectMixin,
         'hard_limit': {}
     }
 
+    STRING_KEYS = [
+        'id', 'resource', 'tenant_id', 'hard_limit'
+    ]
+
 
 class QuotaList(base.ListObjectMixin, base.DesignateObject):
     LIST_ITEM_TYPE = Quota

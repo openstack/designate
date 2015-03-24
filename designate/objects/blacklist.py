@@ -36,6 +36,10 @@ class Blacklist(base.DictObjectMixin, base.PersistentObjectMixin,
         }
     }
 
+    STRING_KEYS = [
+        'id', 'pattern'
+    ]
+
 
 class BlacklistList(base.ListObjectMixin, base.DesignateObject):
     LIST_ITEM_TYPE = Blacklist

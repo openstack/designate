@@ -22,7 +22,7 @@ from oslo_log import log as logging
 from designate import exceptions
 from designate.schema import validators
 from designate.schema import format
-
+from designate.i18n import _
 
 LOG = logging.getLogger(__name__)
 
@@ -149,6 +149,8 @@ class DesignateObjectMetaclass(type):
 class DesignateObject(object):
     FIELDS = {}
 
+    STRING_KEYS = []
+
     def _obj_check_relation(self, name):
         if name in self.FIELDS and self.FIELDS[name].get('relation', False):
             if not self.obj_attr_is_set(name):
@@ -233,6 +235,18 @@ class DesignateObject(object):
             else:
                 raise TypeError("__init__() got an unexpected keyword "
                                 "argument '%(name)s'" % {'name': name})
+
+    def __str__(self):
+        return (self._make_obj_str(self.STRING_KEYS)
+                % self)
+
+    @classmethod
+    def _make_obj_str(cls, keys):
+        msg = "<%(name)s" % {'name': cls.obj_name()}
+        for key in keys:
+            msg += " {0}:'%({0})s'".format(key)
+        msg += ">"
+        return msg
 
     def to_primitive(self):
         """
@@ -516,6 +530,12 @@ class ListObjectMixin(object):
             'designate_object.original_values': dict(self._obj_original_values)
         }
 
+    def __str__(self):
+        return (_("<%(type)s count:'%(count)s' object:'%(list_type)s'>")
+                % {'count': len(self),
+                   'type': self.LIST_ITEM_TYPE.obj_name(),
+                   'list_type': self.obj_name()})
+
     def __iter__(self):
         """List iterator interface"""
         return iter(self.objects)
@@ -615,6 +635,8 @@ class PersistentObjectMixin(object):
             'read_only': True
         }
     }
+
+    STRING_KEYS = ['id']
 
 
 class SoftDeleteObjectMixin(object):

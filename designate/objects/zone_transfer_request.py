@@ -66,6 +66,10 @@ class ZoneTransferRequest(base.DictObjectMixin, base.PersistentObjectMixin,
         },
     }
 
+    STRING_KEYS = [
+        'id', 'domain_id', 'domain_name', 'target_tenant_id'
+    ]
+
 
 class ZoneTransferRequestList(base.ListObjectMixin, base.DesignateObject):
     LIST_ITEM_TYPE = ZoneTransferRequest

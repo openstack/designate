@@ -45,6 +45,10 @@ class PoolNsRecord(base.DictObjectMixin, base.PersistentObjectMixin,
         }
     }
 
+    STRING_KEYS = [
+        'id', 'hostname', 'priority', 'pool_id'
+    ]
+
 
 class PoolNsRecordList(base.ListObjectMixin, base.DesignateObject):
     LIST_ITEM_TYPE = PoolNsRecord

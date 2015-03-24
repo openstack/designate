@@ -276,6 +276,10 @@ class RecordSet(base.DictObjectMixin, base.PersistentObjectMixin,
         # Send in the traditional Record objects to central / storage
         self.records = old_records
 
+    STRING_KEYS = [
+        'id', 'type', 'name', 'domain_id'
+    ]
+
 
 class RecordSetList(base.ListObjectMixin, base.DesignateObject,
                     base.PagedListObjectMixin):

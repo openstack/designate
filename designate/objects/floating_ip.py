@@ -70,6 +70,10 @@ class FloatingIP(base.DictObjectMixin, base.PersistentObjectMixin,
 
     }
 
+    STRING_KEYS = [
+        'key', 'address', 'ptrdname'
+    ]
+
     @property
     def key(self):
         return '%s:%s' % (self.region, self.id)

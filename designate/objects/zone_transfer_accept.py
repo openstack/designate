@@ -55,6 +55,10 @@ class ZoneTransferAccept(base.DictObjectMixin, base.PersistentObjectMixin,
         },
     }
 
+    STRING_KEYS = [
+        'id', 'domain_id', 'tenant_id', 'zone_transfer_request_id'
+    ]
+
 
 class ZoneTransferAcceptList(base.ListObjectMixin, base.DesignateObject,
                              base.PagedListObjectMixin):

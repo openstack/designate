@@ -53,6 +53,10 @@ class PoolManagerStatus(base.DictObjectMixin, base.PersistentObjectMixin,
         }
     }
 
+    STRING_KEYS = [
+        'id', 'action', 'status', 'server_id', 'domain_id'
+    ]
+
 
 class PoolManagerStatusList(base.ListObjectMixin, base.DesignateObject):
     LIST_ITEM_TYPE = PoolManagerStatus

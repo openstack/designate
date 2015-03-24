@@ -22,6 +22,10 @@ class Tenant(base.DictObjectMixin, base.DesignateObject):
         'domains': {}
     }
 
+    STRING_KEYS = [
+        'id'
+    ]
+
 
 class TenantList(base.ListObjectMixin, base.DesignateObject):
     LIST_ITEM_TYPE = Tenant

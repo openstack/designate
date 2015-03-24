@@ -30,6 +30,10 @@ class Server(base.DictObjectMixin, base.PersistentObjectMixin,
         }
     }
 
+    STRING_KEYS = [
+        'id', 'name'
+    ]
+
 
 class ServerList(base.ListObjectMixin, base.DesignateObject):
     LIST_ITEM_TYPE = Server

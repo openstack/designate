@@ -64,6 +64,10 @@ class TsigKey(base.DictObjectMixin, base.PersistentObjectMixin,
         },
     }
 
+    STRING_KEYS = [
+        'id', 'name', 'algorithm', 'scope', 'resource_id'
+    ]
+
 
 class TsigKeyList(base.ListObjectMixin, base.DesignateObject):
     LIST_ITEM_TYPE = TsigKey
