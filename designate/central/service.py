@@ -2094,8 +2094,10 @@ class Service(service.RPCService, service.Service):
         :param serial: The consensus serial number for the domain.
         :return: None
         """
-        self._update_domain_status(context, domain_id, status, serial)
+        # TODO(kiall): If the status is SUCCESS and the zone is already ACTIVE,
+        #              we likely don't need to do anything.
         self._update_record_status(context, domain_id, status, serial)
+        self._update_domain_status(context, domain_id, status, serial)
 
     def _update_domain_status(self, context, domain_id, status, serial):
         domain = self.storage.get_domain(context, domain_id)
@@ -2120,21 +2122,44 @@ class Service(service.RPCService, service.Service):
         criterion = {
             'domain_id': domain_id
         }
+
+        if status == 'SUCCESS':
+            criterion.update({
+                'status': ['PENDING', 'ERROR'],
+                'serial': '<=%d' % serial,
+            })
+
+        elif status == 'ERROR' and serial == 0:
+            criterion.update({
+                'status': 'PENDING',
+            })
+
+        elif status == 'ERROR':
+            criterion.update({
+                'status': 'PENDING',
+                'serial': '<=%d' % serial,
+            })
+
         records = self.storage.find_records(context, criterion=criterion)
 
         for record in records:
             record, deleted = self._update_domain_or_record_status(
                 record, status, serial)
 
-            LOG.debug('Setting record %s, serial %s: action %s, status %s'
-                      % (record.id, record.serial,
-                         record.action, record.status))
-            self.storage.update_record(context, record)
+            if record.obj_what_changed():
+                LOG.debug('Setting record %s, serial %s: action %s, status %s'
+                          % (record.id, record.serial,
+                             record.action, record.status))
+                self.storage.update_record(context, record)
 
             # TODO(Ron): Including this to retain the current logic.
             # We should NOT be deleting records.  The record status should
             # be used to indicate the record has been deleted.
             if deleted:
+                LOG.debug('Deleting record %s, serial %s: action %s, status %s'
+                          % (record.id, record.serial,
+                             record.action, record.status))
+
                 self.storage.delete_record(context, record.id)
 
                 recordset = self.storage.get_recordset(
