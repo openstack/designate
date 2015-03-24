@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Designate\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-03-19 06:06+0000\n"
-"PO-Revision-Date: 2015-03-17 13:34+0000\n"
+"POT-Creation-Date: 2015-03-24 06:04+0000\n"
+"PO-Revision-Date: 2015-03-23 18:21+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: Portuguese (Brazil) (http://www.transifex.com/projects/p/"
 "designate/language/pt_BR/)\n"
@@ -20,42 +20,42 @@ msgstr ""
 "Generated-By: Babel 1.3\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: designate/dnsutils.py:104
+#: designate/dnsutils.py:105
 #, python-format
 msgid "Unknown TSIG key from %(host)s:%(port)d"
 msgstr ""
 
-#: designate/dnsutils.py:111
+#: designate/dnsutils.py:112
 #, python-format
 msgid "Invalid TSIG signature from %(host)s:%(port)d"
 msgstr ""
 
-#: designate/dnsutils.py:118
+#: designate/dnsutils.py:119
 #, python-format
 msgid "Failed to deserialize packet from %(host)s:%(port)d"
 msgstr "Falha ao deserializar pacote do %(host)s:%(port)d"
 
-#: designate/dnsutils.py:301
+#: designate/dnsutils.py:300
 #, python-format
 msgid "AXFR timed out for %(name)s from %(host)s"
 msgstr ""
 
-#: designate/dnsutils.py:305
+#: designate/dnsutils.py:304
 #, python-format
 msgid "Domain %(name)s is not present on %(host)s.Trying next server."
 msgstr ""
 
-#: designate/dnsutils.py:309
+#: designate/dnsutils.py:308
 #, python-format
 msgid "Connection error when doing AXFR for %(name)s from %(host)s"
 msgstr ""
 
-#: designate/dnsutils.py:313
+#: designate/dnsutils.py:312
 #, python-format
 msgid "Problem doing AXFR %(name)s from %(host)s. Trying next server."
 msgstr ""
 
-#: designate/dnsutils.py:320
+#: designate/dnsutils.py:319
 #, python-format
 msgid "XFR failed for %(name)s. No servers in %(servers)s was reached."
 msgstr ""
@@ -66,21 +66,9 @@ msgid "Unhandled exception while processing request from %(host)s:%(port)d"
 msgstr ""
 "Exception não-tratada enquanto processando requisição do %(host)s:%(port)d"
 
-#: designate/api/middleware.py:267
+#: designate/api/middleware.py:269 designate/api/middleware.py:320
 msgid "Missing context in request, please check."
 msgstr "Faltando contexto na requisição, por favor verifique."
-
-#: designate/backend/impl_ipa/__init__.py:400
-msgid ""
-"Error: could not authenticate to IPA - please check for correct keytab file"
-msgstr ""
-"Erro: não foi possível autenticar no IPA - por favor, verifique para "
-"corrigir o arquivo do keytab"
-
-#: designate/backend/impl_ipa/auth.py:55 designate/backend/impl_ipa/auth.py:60
-#, python-format
-msgid "caught kerberos exception %r"
-msgstr "Capturada exceção do kerberos %r"
 
 #: designate/manage/tlds.py:138
 #, python-format

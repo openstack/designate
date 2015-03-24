@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: designate 2015.1.dev5\n"
+"Project-Id-Version: designate 2015.1.dev24\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-03-23 06:04+0000\n"
+"POT-Creation-Date: 2015-03-24 06:04+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,17 +17,17 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
 
-#: designate/dnsutils.py:243
+#: designate/dnsutils.py:244
 #, python-format
 msgid "Opening TCP Listening Socket on %(host)s:%(port)d"
 msgstr ""
 
-#: designate/dnsutils.py:256
+#: designate/dnsutils.py:257
 #, python-format
 msgid "Opening UDP Listening Socket on %(host)s:%(port)d"
 msgstr ""
 
-#: designate/dnsutils.py:294
+#: designate/dnsutils.py:293
 #, python-format
 msgid "Doing AXFR for %(name)s from %(host)s"
 msgstr ""
@@ -45,33 +45,33 @@ msgstr ""
 msgid "_handle_udp thread started"
 msgstr ""
 
-#: designate/agent/handler.py:55
+#: designate/agent/handler.py:56
 #, python-format
 msgid "Agent masters: %(masters)s"
 msgstr ""
 
-#: designate/api/middleware.py:54
+#: designate/api/middleware.py:55
 #, python-format
 msgid "Getting auth pipeline: %s"
 msgstr ""
 
-#: designate/api/middleware.py:94
+#: designate/api/middleware.py:95
 msgid "Starting designate keystonecontext middleware"
 msgstr ""
 
-#: designate/api/middleware.py:127
+#: designate/api/middleware.py:128
 msgid "Starting designate noauthcontext middleware"
 msgstr ""
 
-#: designate/api/middleware.py:168
+#: designate/api/middleware.py:169
 msgid "Starting designate maintenance middleware"
 msgstr ""
 
-#: designate/api/middleware.py:202
+#: designate/api/middleware.py:203
 msgid "Starting designate faultwrapper middleware"
 msgstr ""
 
-#: designate/api/middleware.py:279
+#: designate/api/middleware.py:280
 msgid "Starting designate validation middleware"
 msgstr ""
 
@@ -80,19 +80,14 @@ msgstr ""
 msgid "Using api-paste-config found at: %s"
 msgstr ""
 
-#: designate/backend/impl_dynect.py:340
+#: designate/backend/base.py:44
 #, python-format
-msgid "Creating domain %(d_id)s / %(d_name)s"
+msgid "Starting %s backend"
 msgstr ""
 
-#: designate/backend/impl_dynect.py:359
+#: designate/backend/base.py:47
 #, python-format
-msgid "Domain already exists, updating existing domain instead %s"
-msgstr ""
-
-#: designate/backend/impl_dynect.py:373
-#, python-format
-msgid "Deleting domain %(d_id)s / %(d_name)s"
+msgid "Stopped %s backend"
 msgstr ""
 
 #: designate/backend/impl_fake.py:29
@@ -444,12 +439,12 @@ msgstr ""
 msgid "NOT checking for TLDs"
 msgstr ""
 
-#: designate/central/service.py:1778
+#: designate/central/service.py:1776
 #, python-format
 msgid "Creating zone for %(fip_id)s:%(region)s - %(fip_addr)s zone %(zonename)s"
 msgstr ""
 
-#: designate/central/service.py:2187
+#: designate/central/service.py:2184
 msgid "Target Tenant ID found - using scoped policy"
 msgstr ""
 
