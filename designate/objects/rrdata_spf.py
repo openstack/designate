@@ -21,7 +21,12 @@ class RRData_SPF(Record):
     Defined in: RFC4408
     """
     FIELDS = {
-        'txt-data': {}
+        'txt-data': {
+            'schema': {
+                'type': 'string',
+            },
+            'required': True
+        }
     }
 
     # The record type is defined in the RFC. This will be used when the record

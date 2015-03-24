@@ -21,10 +21,38 @@ class RRData_SRV(Record):
     Defined in: RFC2782
     """
     FIELDS = {
-        'priority': {},
-        'weight': {},
-        'port': {},
-        'target': {}
+        'priority': {
+            'schema': {
+                'type': 'integer',
+                'minimum': 0,
+                'maximum': 65535
+            },
+            'required': True
+        },
+        'weight': {
+            'schema': {
+                'type': 'integer',
+                'minimum': 0,
+                'maximum': 65535
+            },
+            'required': True
+        },
+        'port': {
+            'schema': {
+                'type': 'integer',
+                'minimum': 0,
+                'maximum': 65535
+            },
+            'required': True
+        },
+        'target': {
+            'schema': {
+                'type': 'string',
+                'format': 'domainname',
+                'maxLength': 255,
+            },
+            'required': True
+        }
     }
 
     # The record type is defined in the RFC. This will be used when the record

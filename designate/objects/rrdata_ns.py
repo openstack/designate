@@ -21,7 +21,14 @@ class RRData_NS(Record):
     Defined in: RFC1035
     """
     FIELDS = {
-        'nsdname': {}
+        'nsdname': {
+            'schema': {
+                'type': 'string',
+                'format': 'domainname',
+                'maxLength': 255,
+            },
+            'required': True
+        }
     }
 
     # The record type is defined in the RFC. This will be used when the record

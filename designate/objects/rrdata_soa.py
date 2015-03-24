@@ -21,13 +21,62 @@ class RRData_SOA(Record):
     Defined in: RFC1035
     """
     FIELDS = {
-        'mname': {},
-        'rname': {},
-        'serial': {},
-        'refresh': {},
-        'retry': {},
-        'expire': {},
-        'minimum': {}
+        'mname': {
+            'schema': {
+                'type': 'string',
+                'format': 'domainname',
+                'maxLength': 255,
+            },
+            'required': True
+        },
+        'rname': {
+            'schema': {
+                'type': 'string',
+                'format': 'domainname',
+                'maxLength': 255,
+            },
+            'required': True
+        },
+        'serial': {
+            'schema': {
+                'type': 'integer',
+                'minimum': 1,
+                'maximum': 4294967295,
+            },
+            'required': True
+        },
+        'refresh': {
+            'schema': {
+                'type': 'integer',
+                'minimum': 0,
+                'maximum': 2147483647
+            },
+            'required': True
+        },
+        'retry': {
+            'schema': {
+                'type': 'integer',
+                'minimum': 0,
+                'maximum': 2147483647
+            },
+            'required': True
+        },
+        'expire': {
+            'schema': {
+                'type': 'integer',
+                'minimum': 0,
+                'maximum': 2147483647
+            },
+            'required': True
+        },
+        'minimum': {
+            'schema': {
+                'type': 'integer',
+                'minimum': 0,
+                'maximum': 2147483647
+            },
+            'required': True
+        },
     }
 
     # The record type is defined in the RFC. This will be used when the record

@@ -39,9 +39,10 @@ RE_IP_AND_PORT = r'^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}' \
                  r'|[1-5]\d{4}|[1-9]\d{0,3}|0))?$'
 
 RE_FIP_ID = r'^(?P<region>[A-Za-z0-9\\.\\-_]{1,100}):' \
-           r'(?P<id>[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-' \
-           r'[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$'
+            r'(?P<id>[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-' \
+            r'[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$'
 
+RE_SSHFP = r'^[0-9A-Fa-f]{40}$'
 
 draft3_format_checker = jsonschema.draft3_format_checker
 draft4_format_checker = jsonschema.draft4_format_checker
@@ -130,6 +131,17 @@ def is_email(instance):
     rname = instance.replace('@', '.', 1)
 
     if not re.match(RE_DOMAINNAME, "%s." % rname):
+        return False
+
+    return True
+
+
+@draft4_format_checker.checks("sshfp")
+def is_sshfp(instance):
+    if not isinstance(instance, compat.str_types):
+        return True
+
+    if not re.match(RE_SSHFP, instance):
         return False
 
     return True

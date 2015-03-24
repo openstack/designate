@@ -21,9 +21,29 @@ class RRData_SSHFP(Record):
     Defined in: RFC4255
     """
     FIELDS = {
-        'algorithm': {},
-        'fp_type': {},
-        'fingerprint': {}
+        'algorithm': {
+            'schema': {
+                'type': 'integer',
+                'minimum': 0,
+                'maximum': 2
+            },
+            'required': True
+        },
+        'fp_type': {
+            'schema': {
+                'type': 'integer',
+                'minimum': 0,
+                'maximum': 1
+            },
+            'required': True
+        },
+        'fingerprint': {
+            'schema': {
+                'type': 'string',
+                'format': 'sshfp'
+            },
+            'required': True
+        }
     }
 
     # The record type is defined in the RFC. This will be used when the record
