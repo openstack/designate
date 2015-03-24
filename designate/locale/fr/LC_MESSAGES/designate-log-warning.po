@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Designate\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-03-23 06:04+0000\n"
-"PO-Revision-Date: 2015-03-20 15:13+0000\n"
+"POT-Creation-Date: 2015-03-24 06:04+0000\n"
+"PO-Revision-Date: 2015-03-23 18:21+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: French (http://www.transifex.com/projects/p/designate/"
 "language/fr/)\n"
@@ -25,56 +25,29 @@ msgstr ""
 msgid "TCP Timeout from: %(host)s:%(port)d"
 msgstr ""
 
-#: designate/agent/handler.py:118
+#: designate/agent/handler.py:119
 #, python-format
 msgid "Not creating %(name)s, zone already exists"
 msgstr ""
 
-#: designate/agent/handler.py:162
+#: designate/agent/handler.py:163
 #, python-format
 msgid "Refusing NOTIFY for %(name)s, doesn't exist"
 msgstr ""
 
-#: designate/agent/handler.py:213
+#: designate/agent/handler.py:214
 #, python-format
 msgid "Not deleting %(name)s, zone doesn't exist"
 msgstr ""
 
-#: designate/agent/handler.py:236
+#: designate/agent/handler.py:237
 #, python-format
 msgid "%(verb)s for %(name)s from %(server)s refused"
 msgstr ""
 
-#: designate/api/middleware.py:182
+#: designate/api/middleware.py:183
 msgid "Request authorized to bypass maintenance mode"
 msgstr "Requête non assujettie au mode de maintenance"
-
-#: designate/backend/base.py:112
-#, python-format
-msgid "Failed to delete domain '%(domain)s' during sync. Message: %(message)s"
-msgstr ""
-"N'a pas pu supprimer le domaine '%(domain)s' pendant la sync. Message : "
-"%(message)s"
-
-#: designate/backend/base.py:138
-#, python-format
-msgid ""
-"Failed to delete record '%(record)s' in domain '%(domain)s' during sync. "
-"Message: %(message)s"
-msgstr ""
-"N'a pas pu supprimer l'enregistrement '%(record)s' dans le domaine "
-"'%(domain)s' pendant la sync. Message : %(message)s"
-
-#: designate/backend/impl_dynect.py:381
-#, python-format
-msgid "Attempt to delete %(d_id)s / %(d_name)s caused 404, ignoring."
-msgstr ""
-"Tentative de suppression des %(d_id)s / %(d_name)s entraînant l'erreur 404, "
-"ignore."
-
-#: designate/backend/impl_ipa/auth.py:41
-msgid "No IPA client kerberos keytab file given"
-msgstr "Aucun fichier keytab de kerberos de client IPA donné"
 
 #: designate/backend/impl_powerdns/migrate_repo/versions/006_add_inherit_ttl_col.py:56
 msgid "**** A manual post-migration step is required ****"

@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Designate\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-03-23 06:04+0000\n"
-"PO-Revision-Date: 2015-03-20 15:13+0000\n"
+"POT-Creation-Date: 2015-03-24 06:04+0000\n"
+"PO-Revision-Date: 2015-03-23 18:21+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: French (http://www.transifex.com/projects/p/designate/"
 "language/fr/)\n"
@@ -20,17 +20,17 @@ msgstr ""
 "Generated-By: Babel 1.3\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: designate/dnsutils.py:243
+#: designate/dnsutils.py:244
 #, python-format
 msgid "Opening TCP Listening Socket on %(host)s:%(port)d"
 msgstr "Ouverture TCP Listening Socket sur %(host)s:%(port)d"
 
-#: designate/dnsutils.py:256
+#: designate/dnsutils.py:257
 #, python-format
 msgid "Opening UDP Listening Socket on %(host)s:%(port)d"
 msgstr "Ouverture UDP Listening Socket sur %(host)s:%(port)d"
 
-#: designate/dnsutils.py:294
+#: designate/dnsutils.py:293
 #, python-format
 msgid "Doing AXFR for %(name)s from %(host)s"
 msgstr ""
@@ -48,33 +48,33 @@ msgstr "démarrage du thread _handle_tcp"
 msgid "_handle_udp thread started"
 msgstr "démarrage du thread _handle_udp"
 
-#: designate/agent/handler.py:55
+#: designate/agent/handler.py:56
 #, python-format
 msgid "Agent masters: %(masters)s"
 msgstr ""
 
-#: designate/api/middleware.py:54
+#: designate/api/middleware.py:55
 #, python-format
 msgid "Getting auth pipeline: %s"
 msgstr "Obtenir une pipeline d'auth : %s"
 
-#: designate/api/middleware.py:94
+#: designate/api/middleware.py:95
 msgid "Starting designate keystonecontext middleware"
 msgstr "Démarrage de Middleware Keystonecontext de Designate"
 
-#: designate/api/middleware.py:127
+#: designate/api/middleware.py:128
 msgid "Starting designate noauthcontext middleware"
 msgstr "Démarrage de Middleware Noauthcontext de Designate"
 
-#: designate/api/middleware.py:168
+#: designate/api/middleware.py:169
 msgid "Starting designate maintenance middleware"
 msgstr "Démarrage de Middleware Maintenance de Designate"
 
-#: designate/api/middleware.py:202
+#: designate/api/middleware.py:203
 msgid "Starting designate faultwrapper middleware"
 msgstr "Démarrage de Middleware Faultwrapper de Designate"
 
-#: designate/api/middleware.py:279
+#: designate/api/middleware.py:280
 msgid "Starting designate validation middleware"
 msgstr ""
 
@@ -83,20 +83,15 @@ msgstr ""
 msgid "Using api-paste-config found at: %s"
 msgstr "Utilisation de api-paste-config que l'on trouve à : %s"
 
-#: designate/backend/impl_dynect.py:340
+#: designate/backend/base.py:44
 #, python-format
-msgid "Creating domain %(d_id)s / %(d_name)s"
-msgstr "Créer les noms de domaine %(d_id)s / %(d_name)s"
+msgid "Starting %s backend"
+msgstr ""
 
-#: designate/backend/impl_dynect.py:359
+#: designate/backend/base.py:47
 #, python-format
-msgid "Domain already exists, updating existing domain instead %s"
-msgstr "Le domaine existe déjà, mettez plutôt à jour le domaine existant %s"
-
-#: designate/backend/impl_dynect.py:373
-#, python-format
-msgid "Deleting domain %(d_id)s / %(d_name)s"
-msgstr "Effacer les noms de domaine %(d_id)s / %(d_name)s"
+msgid "Stopped %s backend"
+msgstr ""
 
 #: designate/backend/impl_fake.py:29
 #, python-format
@@ -447,14 +442,14 @@ msgstr "Vérification des TLD"
 msgid "NOT checking for TLDs"
 msgstr "AUCUNE vérification des TLD"
 
-#: designate/central/service.py:1778
+#: designate/central/service.py:1776
 #, python-format
 msgid ""
 "Creating zone for %(fip_id)s:%(region)s - %(fip_addr)s zone %(zonename)s"
 msgstr ""
 "Créer une zone pour %(fip_id)s:%(region)s - %(fip_addr)s zone %(zonename)s"
 
-#: designate/central/service.py:2187
+#: designate/central/service.py:2184
 msgid "Target Tenant ID found - using scoped policy"
 msgstr ""
 
