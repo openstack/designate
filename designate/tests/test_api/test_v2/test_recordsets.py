@@ -744,3 +744,35 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
                                            recordset['id'])
 
         self._assert_exception('forbidden', 403, self.client.delete, url)
+
+    def test_no_create_rs_deleting_zone(self):
+        # Prepare a create
+        fixture = self.get_recordset_fixture(self.domain['name'], fixture=0)
+        body = {'recordset': fixture}
+
+        self.client.delete('/zones/%s' % self.domain['id'], status=202)
+        self._assert_exception('bad_request', 400, self.client.post_json,
+                               '/zones/%s/recordsets' % self.domain['id'],
+                               body)
+
+    def test_no_update_rs_deleting_zone(self):
+        # Create a recordset
+        recordset = self.create_recordset(self.domain)
+
+        # Prepare an update body
+        body = {'recordset': {'description': 'Tester'}}
+        url = '/zones/%s/recordsets/%s' % (recordset['domain_id'],
+                                           recordset['id'])
+        self.client.delete('/zones/%s' % self.domain['id'], status=202)
+        self._assert_exception('bad_request', 400, self.client.put_json, url,
+                               body)
+
+    def test_no_delete_rs_deleting_zone(self):
+        # Create a recordset
+        recordset = self.create_recordset(self.domain)
+
+        url = '/zones/%s/recordsets/%s' % (recordset['domain_id'],
+                                           recordset['id'])
+
+        self.client.delete('/zones/%s' % self.domain['id'], status=202)
+        self._assert_exception('bad_request', 400, self.client.delete, url)

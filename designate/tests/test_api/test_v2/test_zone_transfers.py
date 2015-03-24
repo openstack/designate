@@ -179,3 +179,17 @@ class ApiV2ZoneTransfersTest(ApiV2TestCase):
         self.assertEqual(
             'COMPLETE',
             new_ztr.json['transfer_request']['status'])
+
+    def test_create_zone_transfer_request_deleting_zone(self):
+        url = '/zones/%s/tasks/transfer_requests' % (self.domain.id)
+        body = {'transfer_request': {}}
+        self.client.delete('/zones/%s' % self.domain['id'], status=202)
+        self._assert_exception('bad_request', 400, self.client.post_json, url,
+                               body)
+
+    def test_create_zone_transfer_accept_deleting_zone(self):
+        url = '/zones/%s/tasks/transfer_requests' % (self.domain.id)
+        body = {'transfer_request': {}}
+        self.client.delete('/zones/%s' % self.domain['id'], status=202)
+        self._assert_exception('bad_request', 400, self.client.post_json, url,
+                               body)

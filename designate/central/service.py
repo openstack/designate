@@ -1076,6 +1076,10 @@ class Service(service.RPCService, service.Service):
                          increment_serial=True):
         domain = self.storage.get_domain(context, domain_id)
 
+        # Don't allow updates to zones that are being deleted
+        if domain.action == 'DELETE':
+            raise exceptions.BadRequest('Can not update a deleting zone')
+
         target = {
             'domain_id': domain_id,
             'domain_name': domain.name,
@@ -1189,6 +1193,10 @@ class Service(service.RPCService, service.Service):
             raise exceptions.BadRequest('Changing a recordsets type is not '
                                         'allowed')
 
+        # Don't allow updates to zones that are being deleted
+        if domain.action == 'DELETE':
+            raise exceptions.BadRequest('Can not update a deleting zone')
+
         target = {
             'domain_id': recordset.obj_get_original_value('domain_id'),
             'domain_type': domain.type,
@@ -1252,6 +1260,10 @@ class Service(service.RPCService, service.Service):
         if domain.id != recordset.domain_id:
             raise exceptions.RecordSetNotFound()
 
+        # Don't allow updates to zones that are being deleted
+        if domain.action == 'DELETE':
+            raise exceptions.BadRequest('Can not update a deleting zone')
+
         target = {
             'domain_id': domain_id,
             'domain_name': domain.name,
@@ -1308,6 +1320,10 @@ class Service(service.RPCService, service.Service):
     def create_record(self, context, domain_id, recordset_id, record,
                       increment_serial=True):
         domain = self.storage.get_domain(context, domain_id)
+
+        # Don't allow updates to zones that are being deleted
+        if domain.action == 'DELETE':
+            raise exceptions.BadRequest('Can not update a deleting zone')
 
         recordset = self.storage.get_recordset(context, recordset_id)
 
@@ -1397,6 +1413,10 @@ class Service(service.RPCService, service.Service):
         domain_id = record.obj_get_original_value('domain_id')
         domain = self.storage.get_domain(context, domain_id)
 
+        # Don't allow updates to zones that are being deleted
+        if domain.action == 'DELETE':
+            raise exceptions.BadRequest('Can not update a deleting zone')
+
         recordset_id = record.obj_get_original_value('recordset_id')
         recordset = self.storage.get_recordset(context, recordset_id)
 
@@ -1457,6 +1477,10 @@ class Service(service.RPCService, service.Service):
     def delete_record(self, context, domain_id, recordset_id, record_id,
                       increment_serial=True):
         domain = self.storage.get_domain(context, domain_id)
+
+        # Don't allow updates to zones that are being deleted
+        if domain.action == 'DELETE':
+            raise exceptions.BadRequest('Can not update a deleting zone')
 
         recordset = self.storage.get_recordset(context, recordset_id)
         record = self.storage.get_record(context, record_id)
@@ -2156,6 +2180,11 @@ class Service(service.RPCService, service.Service):
 
         # get zone
         zone = self.get_domain(context, zone_transfer_request.domain_id)
+
+        # Don't allow transfers for zones that are being deleted
+        if zone.action == 'DELETE':
+            raise exceptions.BadRequest('Can not transfer a deleting zone')
+
         target = {
             'tenant_id': zone.tenant_id,
         }
@@ -2276,6 +2305,10 @@ class Service(service.RPCService, service.Service):
             domain = self.storage.get_domain(
                 elevated_context,
                 zone_transfer_request.domain_id)
+
+            # Don't allow transfers for zones that are being deleted
+            if domain.action == 'DELETE':
+                raise exceptions.BadRequest('Can not transfer a deleting zone')
 
             domain.tenant_id = zone_transfer_accept.tenant_id
             self.storage.update_domain(elevated_context, domain)
