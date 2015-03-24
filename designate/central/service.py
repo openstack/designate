@@ -2042,8 +2042,7 @@ class Service(service.RPCService, service.Service):
             # Create new NS recordsets for every zone
             zones = self.find_domains(
                 context=elevated_context,
-                criterion={'pool_id': pool.id})
-
+                criterion={'pool_id': pool.id, 'action': '!DELETE'})
             for z in zones:
                 self._add_ns(elevated_context, z, ns)
 
@@ -2075,7 +2074,7 @@ class Service(service.RPCService, service.Service):
         elevated_context.all_tenants = True
         zones = self.find_domains(
             context=elevated_context,
-            criterion={'pool_id': pool_id})
+            criterion={'pool_id': pool_id, 'action': '!DELETE'})
 
         # If there are existing zones, do not delete the pool
         LOG.debug("Zones is None? %r " % zones)
