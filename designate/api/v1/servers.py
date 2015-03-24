@@ -20,6 +20,7 @@ from oslo_log import log as logging
 from designate import exceptions
 from designate import schema
 from designate import objects
+from designate.i18n import _LI
 from designate.central import rpcapi as central_rpcapi
 
 
@@ -80,6 +81,7 @@ def create_server():
     try:
         # Update the pool
         updated_pool = central_api.update_pool(context, pool)
+        LOG.info(_LI("Updated %(pool)s"), {'pool': pool})
 
     except exceptions.DuplicatePoolAttribute:
         raise exceptions.DuplicateServer()
@@ -109,11 +111,14 @@ def get_servers():
 
     # Get the default pool
     pool = central_api.get_pool(context, default_pool_id)
+    LOG.info(_LI("Retrieved %(pool)s"), {'pool': pool})
 
     servers = objects.ServerList()
 
     for ns in pool.ns_records:
         servers.append(_pool_ns_record_to_server(ns))
+
+    LOG.info(_LI("Retrieved %(servers)s"), {'servers': servers})
 
     return flask.jsonify(servers_schema.filter({'servers': servers}))
 
@@ -126,6 +131,7 @@ def get_server(server_id):
 
     # Get the default pool
     pool = central_api.get_pool(context, default_pool_id)
+    LOG.info(_LI("Retrieved %(pool)s"), {'pool': pool})
 
     # Create an empty PoolNsRecord object
     nameserver = objects.PoolNsRecord()
@@ -139,6 +145,8 @@ def get_server(server_id):
     # If the nameserver wasn't found, raise an exception
     if nameserver.id != server_id:
         raise exceptions.ServerNotFound
+
+    LOG.info(_LI("Retrieved %(server)s"), {'server': nameserver})
 
     server = _pool_ns_record_to_server(nameserver)
 
@@ -182,7 +190,8 @@ def update_server(server_id):
 
     # Now that it's been validated, add it back to the pool and persist it
     pool.ns_records.append(nameserver)
-    central_api.update_pool(context, pool)
+    pool = central_api.update_pool(context, pool)
+    LOG.info(_LI("Updated %(pool)s"), {'pool': pool})
 
     return flask.jsonify(server_schema.filter(server))
 
@@ -211,6 +220,7 @@ def delete_server(server_id):
     ns_records.pop(index)
 
     # Update the pool without the deleted server
-    central_api.update_pool(context, pool)
+    pool = central_api.update_pool(context, pool)
+    LOG.info(_LI("Updated %(pool)s"), {'pool': pool})
 
     return flask.Response(status=200)

@@ -21,6 +21,9 @@ from designate import exceptions
 from designate.api.v2.controllers import rest
 from designate.objects import ZoneTransferRequest
 from designate.objects.adapters import DesignateAdapter
+from designate.i18n import _LI
+
+
 LOG = logging.getLogger(__name__)
 
 
@@ -36,10 +39,15 @@ class TransferRequestsController(rest.RestController):
         request = pecan.request
         context = request.environ['context']
 
+        transfer_request = self.central_api.get_zone_transfer_request(
+            context, transfer_request_id)
+
+        LOG.info(_LI("Retrieved %(transfer_request)s"),
+                 {'transfer_request': transfer_request})
+
         return DesignateAdapter.render(
             'API_v2',
-            self.central_api.get_zone_transfer_request(
-                context, transfer_request_id),
+            transfer_request,
             request=request,
             context=context)
 
@@ -56,10 +64,15 @@ class TransferRequestsController(rest.RestController):
         # Extract any filter params.
         criterion = self._apply_filter_params(params, ('status',), {})
 
+        zone_transfer_requests = self.central_api.find_zone_transfer_requests(
+            context, criterion, marker, limit, sort_key, sort_dir)
+
+        LOG.info(_LI("Retrieved %(zone_transfer_requests)s"),
+                 {'zone_transfer_requests': zone_transfer_requests})
+
         return DesignateAdapter.render(
             'API_v2',
-            self.central_api.find_zone_transfer_requests(
-                context, criterion, marker, limit, sort_key, sort_dir),
+            zone_transfer_requests,
             request=request,
             context=context)
 
@@ -86,6 +99,9 @@ class TransferRequestsController(rest.RestController):
         zone_transfer_request = self.central_api.create_zone_transfer_request(
             context, zone_transfer_request)
         response.status_int = 201
+
+        LOG.info(_LI("Created %(zone_transfer_request)s"),
+                 {'zone_transfer_request': zone_transfer_request})
 
         zone_transfer_request = DesignateAdapter.render(
             'API_v2', zone_transfer_request, request=request, context=context)
@@ -119,6 +135,9 @@ class TransferRequestsController(rest.RestController):
         zone_transfer_request = self.central_api.update_zone_transfer_request(
             context, zone_transfer_request)
 
+        LOG.info(_LI("Updated %(zt_request)s"),
+                 {'zt_request': zone_transfer_request})
+
         response.status_int = 200
 
         return DesignateAdapter.render(
@@ -132,10 +151,13 @@ class TransferRequestsController(rest.RestController):
         response = pecan.response
         context = request.environ['context']
 
-        self.central_api.delete_zone_transfer_request(
+        zone_transfer_request = self.central_api.delete_zone_transfer_request(
             context, zone_transfer_request_id)
 
         response.status_int = 204
+
+        LOG.info(_LI("Deleted %(zone_transfer_request)s"),
+                 {'zone_transfer_request': zone_transfer_request})
 
         # NOTE: This is a hack and a half.. But Pecan needs it.
         return ''

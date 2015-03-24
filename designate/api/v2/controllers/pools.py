@@ -20,6 +20,7 @@ from designate.i18n import _LW
 from designate.api.v2.controllers import rest
 from designate.objects import Pool
 from designate.objects.adapters import DesignateAdapter
+from designate.i18n import _LI
 
 
 LOG = logging.getLogger(__name__)
@@ -35,10 +36,11 @@ class PoolsController(rest.RestController):
         request = pecan.request
         context = request.environ['context']
 
-        return DesignateAdapter.render(
-            'API_v2',
-            self.central_api.get_pool(context, pool_id),
-            request=request)
+        pool = self.central_api.get_pool(context, pool_id)
+
+        LOG.info(_LI("Retrieved %(pool)s"), {'pool': pool})
+
+        return DesignateAdapter.render('API_v2', pool, request=request)
 
     @pecan.expose(template='json:', content_type='application/json')
     def get_all(self, **params):
@@ -55,11 +57,12 @@ class PoolsController(rest.RestController):
         criterion = self._apply_filter_params(
             params, accepted_filters, {})
 
-        return DesignateAdapter.render(
-            'API_v2',
-            self.central_api.find_pools(
-                context, criterion, marker, limit, sort_key, sort_dir),
-            request=request)
+        pools = self.central_api.find_pools(
+            context, criterion, marker, limit, sort_key, sort_dir)
+
+        LOG.info(_LI("Retrieved %(pools)s"), {'pools': pools})
+
+        return DesignateAdapter.render('API_v2', pools, request=request)
 
     @pecan.expose(template='json:', content_type='application/json')
     def post_all(self):
@@ -80,10 +83,14 @@ class PoolsController(rest.RestController):
 
         # Create the pool
         pool = self.central_api.create_pool(context, pool)
+
+        LOG.info(_LI("Created %(pool)s"), {'pool': pool})
+
         pool = DesignateAdapter.render('API_v2', pool, request=request)
         response.status_int = 201
 
         response.headers['Location'] = pool['links']['self']
+
         # Prepare and return the response body
         return pool
 
@@ -114,6 +121,8 @@ class PoolsController(rest.RestController):
 
         pool = self.central_api.update_pool(context, pool)
 
+        LOG.info(_LI("Updated %(pool)s"), {'pool': pool})
+
         response.status_int = 202
 
         return DesignateAdapter.render('API_v2', pool, request=request)
@@ -131,7 +140,9 @@ class PoolsController(rest.RestController):
         response = pecan.response
         context = request.environ['context']
 
-        self.central_api.delete_pool(context, pool_id)
+        pool = self.central_api.delete_pool(context, pool_id)
+
+        LOG.info(_LI("Deleted %(pool)s"), {'pool': pool})
 
         response.status_int = 204
 

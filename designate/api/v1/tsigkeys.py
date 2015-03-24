@@ -20,6 +20,7 @@ from oslo_config import cfg
 from designate import schema
 from designate.central import rpcapi as central_rpcapi
 from designate.objects import TsigKey
+from designate.i18n import _LI
 
 
 LOG = logging.getLogger(__name__)
@@ -57,6 +58,8 @@ def create_tsigkey():
 
     tsigkey = central_api.create_tsigkey(context, tsigkey)
 
+    LOG.info(_LI("Created %(tsigkey)s"), {'tsigkey': tsigkey})
+
     response = flask.jsonify(tsigkey_schema.filter(tsigkey))
     response.status_int = 201
     response.location = flask.url_for('.get_tsigkey', tsigkey_id=tsigkey['id'])
@@ -72,6 +75,8 @@ def get_tsigkeys():
 
     criterion = {'scope': 'POOL', 'resource_id': default_pool_id}
     tsigkeys = central_api.find_tsigkeys(context, criterion)
+
+    LOG.info(_LI("Retrieved %(tsigkeys)s"), {'tsigkeys': tsigkeys})
 
     return flask.jsonify(tsigkeys_schema.filter({'tsigkeys': tsigkeys}))
 
@@ -89,6 +94,8 @@ def get_tsigkey(tsigkey_id):
     }
 
     tsigkey = central_api.find_tsigkeys(context, criterion)
+
+    LOG.info(_LI("Retrieved %(tsigkey)s"), {'tsigkey': tsigkey})
 
     return flask.jsonify(tsigkey_schema.filter(tsigkey))
 
@@ -120,6 +127,8 @@ def update_tsigkey(tsigkey_id):
     tsigkey.update(values)
     tsigkey = central_api.update_tsigkey(context, tsigkey)
 
+    LOG.info(_LI("Updated %(tsigkey)s"), {'tsigkey': tsigkey})
+
     return flask.jsonify(tsigkey_schema.filter(tsigkey))
 
 
@@ -139,6 +148,8 @@ def delete_tsigkey(tsigkey_id):
     central_api.find_tsigkeys(context, criterion)
 
     # Delete the TSIG Key
-    central_api.delete_tsigkey(context, tsigkey_id)
+    tsigkey = central_api.delete_tsigkey(context, tsigkey_id)
+
+    LOG.info(_LI("Deleted %(tsigkey)s"), {'tsigkey': tsigkey})
 
     return flask.Response(status=200)

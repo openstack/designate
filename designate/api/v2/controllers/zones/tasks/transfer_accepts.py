@@ -20,6 +20,7 @@ from designate import utils
 from designate.api.v2.controllers import rest
 from designate.objects import ZoneTransferAccept
 from designate.objects.adapters import DesignateAdapter
+from designate.i18n import _LI
 
 
 LOG = logging.getLogger(__name__)
@@ -37,11 +38,14 @@ class TransferAcceptsController(rest.RestController):
         request = pecan.request
         context = request.environ['context']
 
+        transfer_accepts = self.central_api.get_zone_transfer_accept(
+            context, transfer_accept_id)
+
+        LOG.info(_LI("Retrieved %(transfer_accepts)s"),
+                 {'transfer_accepts': transfer_accepts})
+
         return DesignateAdapter.render(
-            'API_v2',
-            self.central_api.get_zone_transfer_accept(
-                context, transfer_accept_id),
-            request=request)
+            'API_v2', transfer_accepts, request=request)
 
     @pecan.expose(template='json:', content_type='application/json')
     def post_all(self):
@@ -61,9 +65,13 @@ class TransferAcceptsController(rest.RestController):
             context, zone_transfer_accept)
         response.status_int = 201
 
+        LOG.info(_LI("Created %(zone_transfer_accept)s"),
+                 {'zone_transfer_accept': zone_transfer_accept})
+
         zone_transfer_accept = DesignateAdapter.render(
             'API_v2', zone_transfer_accept, request=request)
 
         response.headers['Location'] = zone_transfer_accept['links']['self']
+
         # Prepare and return the response body
         return zone_transfer_accept

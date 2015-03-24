@@ -14,9 +14,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import pecan
+from oslo_log import log as logging
 
 from designate import utils
 from designate.api.v2.controllers import rest
+from designate.i18n import _LI
+
+
+LOG = logging.getLogger(__name__)
 
 
 class XfrController(rest.RestController):
@@ -28,6 +33,10 @@ class XfrController(rest.RestController):
         request = pecan.request
         response = pecan.response
         context = request.environ['context']
+
+        zone = self.central_api.get_zone(context, zone_id)
+
+        LOG.info(_LI("Triggered XFR for %(zone)s"), {'zone': zone})
 
         self.central_api.xfr_zone(context, zone_id)
         response.status_int = 202
