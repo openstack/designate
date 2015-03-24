@@ -17,8 +17,8 @@ from oslo_config import cfg
 from oslo_log import log as logging
 import oslo_messaging as messaging
 
-from designate.i18n import _LI
 from designate import rpc
+from designate.loggingutils import rpc_logging
 
 
 LOG = logging.getLogger(__name__)
@@ -26,6 +26,7 @@ LOG = logging.getLogger(__name__)
 ZONE_MANAGER_API = None
 
 
+@rpc_logging(LOG, 'zone_manager')
 class ZoneManagerAPI(object):
     """
     Client side of the zone manager RPC API.
@@ -58,15 +59,9 @@ class ZoneManagerAPI(object):
 
     # Zone Export
     def start_zone_export(self, context, zone, export):
-        LOG.info(_LI("start_zone_export: "
-                     "Calling zone_manager's start_zone_export."))
-
         return self.client.cast(context, 'start_zone_export', zone=zone,
                                 export=export)
 
     def render_zone(self, context, zone_id):
-        LOG.info(_LI("render_zone: "
-                     "Calling zone_manager's render_zone."))
-
         return self.client.call(context, 'render_zone',
                                 zone_id=zone_id)

@@ -13,12 +13,14 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
 from oslo_config import cfg
 from oslo_log import log as logging
 import oslo_messaging as messaging
 
 from designate.i18n import _LI
 from designate import rpc
+from designate.loggingutils import rpc_logging
 
 
 LOG = logging.getLogger(__name__)
@@ -26,6 +28,7 @@ LOG = logging.getLogger(__name__)
 MNGR_API = None
 
 
+@rpc_logging(LOG, 'pool_manager')
 class PoolManagerAPI(object):
     """
     Client side of the Pool Manager RPC API.
@@ -64,7 +67,7 @@ class PoolManagerAPI(object):
     def target_sync(self, context, pool_id, target_id, timestamp):
         LOG.info(_LI("target_sync: Syncing target %(target) since "
                      "%(timestamp)d."),
-            {'target': target_id, 'timestamp': timestamp})
+                 {'target': target_id, 'timestamp': timestamp})
 
         # Modifying the topic so it is pool manager instance specific.
         topic = '%s.%s' % (self.topic, pool_id)
@@ -74,10 +77,6 @@ class PoolManagerAPI(object):
             timestamp=timestamp)
 
     def create_zone(self, context, zone):
-        LOG.info(_LI("create_zone: Calling pool manager for %(zone)s, "
-                     "serial:%(serial)s"),
-                 {'zone': zone.name, 'serial': zone.serial})
-
         # Modifying the topic so it is pool manager instance specific.
         topic = '%s.%s' % (self.topic, zone.pool_id)
         cctxt = self.client.prepare(topic=topic)
@@ -85,10 +84,6 @@ class PoolManagerAPI(object):
             context, 'create_zone', zone=zone)
 
     def delete_zone(self, context, zone):
-        LOG.info(_LI("delete_zone: Calling pool manager for %(zone)s, "
-                     "serial:%(serial)s"),
-                 {'zone': zone.name, 'serial': zone.serial})
-
         # Modifying the topic so it is pool manager instance specific.
         topic = '%s.%s' % (self.topic, zone.pool_id)
         cctxt = self.client.prepare(topic=topic)
@@ -96,10 +91,6 @@ class PoolManagerAPI(object):
             context, 'delete_zone', zone=zone)
 
     def update_zone(self, context, zone):
-        LOG.info(_LI("update_zone: Calling pool manager for %(zone)s, "
-                     "serial:%(serial)s"),
-                 {'zone': zone.name, 'serial': zone.serial})
-
         # Modifying the topic so it is pool manager instance specific.
         topic = '%s.%s' % (self.topic, zone.pool_id)
         cctxt = self.client.prepare(topic=topic)
@@ -108,12 +99,6 @@ class PoolManagerAPI(object):
 
     def update_status(self, context, zone, nameserver, status,
                       actual_serial):
-        LOG.info(_LI("update_status: Calling pool manager for %(zone)s : "
-                     "%(action)s : %(status)s : %(serial)s on nameserver "
-                     "'%(host)s:%(port)s'"),
-                 {'zone': zone.name, 'action': zone.action,
-                  'status': status, 'serial': actual_serial,
-                  'host': nameserver.host, 'port': nameserver.port})
 
         # Modifying the topic so it is pool manager instance specific.
         topic = '%s.%s' % (self.topic, zone.pool_id)

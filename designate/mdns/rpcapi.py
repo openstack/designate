@@ -18,13 +18,14 @@ import oslo_messaging as messaging
 
 from designate.i18n import _LI
 from designate import rpc
-
+from designate.loggingutils import rpc_logging
 
 LOG = logging.getLogger(__name__)
 
 MDNS_API = None
 
 
+@rpc_logging(LOG, 'mdns')
 class MdnsAPI(object):
 
     """
