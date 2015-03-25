@@ -83,9 +83,9 @@ class NoServersConfigured(ConfigurationError):
     error_type = 'no_servers_configured'
 
 
-class NoPoolServersConfigured(ConfigurationError):
+class NoPoolTargetsConfigured(ConfigurationError):
     error_code = 500
-    error_type = 'no_pool_servers_configured'
+    error_type = 'no_pool_targets_configured'
 
 
 class OverQuota(Base):

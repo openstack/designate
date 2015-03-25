@@ -23,7 +23,7 @@ from designate.pool_manager.cache.base import PoolManagerCache
 class PoolManagerCacheTestCase(object):
     def create_pool_manager_status(self):
         values = {
-            'server_id': '896aa661-198c-4379-bccd-5d8de7007030',
+            'nameserver_id': '896aa661-198c-4379-bccd-5d8de7007030',
             'domain_id': 'bce45113-4a22-418d-a54d-c9777d056312',
             'action': 'CREATE',
             'status': 'SUCCESS',
@@ -42,12 +42,12 @@ class PoolManagerCacheTestCase(object):
 
         with testtools.ExpectedException(exceptions.PoolManagerStatusNotFound):
             self.cache.retrieve(
-                self.admin_context, expected.server_id, expected.domain_id,
+                self.admin_context, expected.nameserver_id, expected.domain_id,
                 expected.action)
 
     def test_retrieve(self):
         expected = self.create_pool_manager_status()
         with testtools.ExpectedException(exceptions.PoolManagerStatusNotFound):
             self.cache.retrieve(
-                self.admin_context, expected.server_id, expected.domain_id,
+                self.admin_context, expected.nameserver_id, expected.domain_id,
                 expected.action)

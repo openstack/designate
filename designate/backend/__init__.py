@@ -20,15 +20,10 @@ from designate.backend.base import Backend
 LOG = logging.getLogger(__name__)
 
 
-def get_backend(backend_driver, backend_options):
-    LOG.debug("Loading backend driver: %s" % backend_driver)
-    cls = Backend.get_driver(backend_driver)
+def get_backend(type_, target):
+    # TODO(kiall): Type is attached to the target, use it.
+    LOG.debug("Loading backend driver: %s" % type_)
 
-    return cls(backend_options)
+    cls = Backend.get_driver(type_)
 
-
-def get_server_object(backend_driver, server_id):
-    LOG.debug("Loading backend driver: %s" % backend_driver)
-    cls = Backend.get_driver(backend_driver)
-
-    return cls.get_server_object(backend_driver, server_id)
+    return cls(target)

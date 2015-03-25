@@ -75,17 +75,15 @@ EOF
 
 # configure_designate_backend - make configuration changes, including those to other services
 function configure_designate_backend {
-    iniset $DESIGNATE_CONF service:pool_manager backends bind9
+    iniset $DESIGNATE_CONF pool_target:$DESIGNATE_TARGET_ID type bind9
+    iniset $DESIGNATE_CONF pool_target:$DESIGNATE_TARGET_ID masters $DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT_MDNS
+    iniset $DESIGNATE_CONF pool_target:$DESIGNATE_TARGET_ID options "rndc_host: $DESIGNATE_SERVICE_HOST, rndc_port: $DESIGNATE_SERVICE_PORT_RNDC, rndc_config_file: $BIND_CFG_DIR/rndc.conf, rndc_key_file: $BIND_CFG_DIR/rndc.key"
 
-    iniset $DESIGNATE_CONF backend:bind9 masters $DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT_MDNS
-    iniset $DESIGNATE_CONF backend:bind9 server_ids $DESIGNATE_SERVER_ID
-    iniset $DESIGNATE_CONF backend:bind9 rndc_port $DESIGNATE_SERVICE_PORT_RNDC
-    iniset $DESIGNATE_CONF backend:bind9 rndc_host $DESIGNATE_SERVICE_HOST
-    iniset $DESIGNATE_CONF backend:bind9 rndc_config_file "$BIND_CFG_DIR/rndc.conf"
-    iniset $DESIGNATE_CONF backend:bind9 rndc_key_file "$BIND_CFG_DIR/rndc.key"
-
-    iniset $DESIGNATE_CONF backend:bind9:$DESIGNATE_SERVER_ID host $DESIGNATE_SERVICE_HOST
-    iniset $DESIGNATE_CONF backend:bind9:$DESIGNATE_SERVER_ID port $DESIGNATE_SERVICE_PORT_DNS
+    # DevStack Managed BIND NameServer
+    local nameserver_id=`uuidgen`
+    iniset $DESIGNATE_CONF pool:$DESIGNATE_POOL_ID nameservers $nameserver_id
+    iniset $DESIGNATE_CONF pool_nameserver:$nameserver_id host $DESIGNATE_SERVICE_HOST
+    iniset $DESIGNATE_CONF pool_nameserver:$nameserver_id port $DESIGNATE_SERVICE_PORT_DNS
 
     sudo chown $STACK_USER $BIND_CFG_DIR
 

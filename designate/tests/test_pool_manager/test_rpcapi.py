@@ -93,12 +93,12 @@ class PoolManagerAPITest(PoolManagerTestCase):
             'host': '127.0.0.1',
             'port': '53'
         }
-        server = objects.PoolServer.from_dict(values)
+        nameserver = objects.PoolNameserver.from_dict(values)
         PoolManagerAPI.get_instance().update_status(
-            self.admin_context, domain, server, 'SUCCESS', 1)
+            self.admin_context, domain, nameserver, 'SUCCESS', 1)
 
         mock_prepare.assert_called_once_with(
             topic='pool_manager.%s' % domain.pool_id)
         mock_prepare.return_value.cast.assert_called_once_with(
             self.admin_context, 'update_status', domain=domain,
-            server=server, status='SUCCESS', actual_serial=1)
+            nameserver=nameserver, status='SUCCESS', actual_serial=1)

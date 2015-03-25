@@ -40,13 +40,13 @@ class NotifyEndpoint(base.BaseEndpoint):
     RPC_API_VERSION = '1.1'
     RPC_API_NAMESPACE = 'notify'
 
-    def notify_zone_changed(self, context, domain, server, timeout,
+    def notify_zone_changed(self, context, domain, nameserver, timeout,
                             retry_interval, max_retries, delay):
         """
         :param context: The user context.
         :param domain: The designate domain object.  This contains the domain
             name.
-        :param server: A notify is sent to server.host:server.port.
+        :param nameserver: A notify is sent to nameserver.host:nameserver.port.
         :param timeout: The time (in seconds) to wait for a NOTIFY response
             from server.
         :param retry_interval: The time (in seconds) between retries.
@@ -60,18 +60,19 @@ class NotifyEndpoint(base.BaseEndpoint):
         """
         time.sleep(delay)
         return self._make_and_send_dns_message(
-            domain, server, timeout, retry_interval, max_retries, notify=True)
+            domain, nameserver, timeout, retry_interval, max_retries,
+            notify=True)
 
-    def poll_for_serial_number(self, context, domain, server, timeout,
+    def poll_for_serial_number(self, context, domain, nameserver, timeout,
                                retry_interval, max_retries, delay):
         """
         :param context: The user context.
         :param domain: The designate domain object.  This contains the domain
             name. domain.serial = expected_serial
-        :param server: server.host:server.port is checked for an updated serial
-            number.
+        :param nameserver: nameserver.host:nameserver.port is checked for an
+            updated serial number.
         :param timeout: The time (in seconds) to wait for a SOA response from
-            server.
+            nameserver.
         :param retry_interval: The time (in seconds) between retries.
         :param max_retries: The maximum number of retries mindns would do for
             an expected serial number. After this many retries, mindns returns
@@ -80,21 +81,21 @@ class NotifyEndpoint(base.BaseEndpoint):
         :return: The pool manager is informed of the status with update_status.
         """
         (status, actual_serial, retries) = self.get_serial_number(
-            context, domain, server, timeout, retry_interval, max_retries,
+            context, domain, nameserver, timeout, retry_interval, max_retries,
             delay)
         self.pool_manager_api.update_status(
-            context, domain, server, status, actual_serial)
+            context, domain, nameserver, status, actual_serial)
 
-    def get_serial_number(self, context, domain, server, timeout,
+    def get_serial_number(self, context, domain, nameserver, timeout,
                           retry_interval, max_retries, delay):
         """
         :param context: The user context.
         :param domain: The designate domain object.  This contains the domain
             name. domain.serial = expected_serial
-        :param server: server.host:server.port is checked for an updated serial
-            number.
+        :param nameserver: nameserver.host:nameserver.port is checked for an
+            updated serial number.
         :param timeout: The time (in seconds) to wait for a SOA response from
-            server.
+            nameserver.
         :param retry_interval: The time (in seconds) between retries.
         :param max_retries: The maximum number of retries mindns would do for
             an expected serial number. After this many retries, mindns returns
@@ -103,7 +104,7 @@ class NotifyEndpoint(base.BaseEndpoint):
         :return: a tuple of (status, actual_serial, retries)
             status is either "SUCCESS" or "ERROR".
             actual_serial is either the serial number returned in the SOA
-            message from the server or None.
+            message from the nameserver or None.
             retries is the number of retries left.
             The return value is just used for testing and not by pool manager.
             The pool manager is informed of the status with update_status.
@@ -114,7 +115,7 @@ class NotifyEndpoint(base.BaseEndpoint):
         time.sleep(delay)
         while (True):
             (response, retry) = self._make_and_send_dns_message(
-                domain, server, timeout, retry_interval, retries)
+                domain, nameserver, timeout, retry_interval, retries)
             if response and response.rcode() in (
                     dns.rcode.NXDOMAIN, dns.rcode.REFUSED, dns.rcode.SERVFAIL):
                 status = 'NO_DOMAIN'
@@ -132,8 +133,8 @@ class NotifyEndpoint(base.BaseEndpoint):
                 LOG.warn(_LW("Got lower serial for '%(zone)s' to '%(host)s:"
                              "%(port)s'. Expected:'%(es)d'. Got:'%(as)s'."
                              "Retries left='%(retries)d'") %
-                         {'zone': domain.name, 'host': server.host,
-                          'port': server.port, 'es': domain.serial,
+                         {'zone': domain.name, 'host': nameserver.host,
+                          'port': nameserver.port, 'es': domain.serial,
                           'as': actual_serial, 'retries': retries})
                 if retries > 0:
                     # retry again
@@ -149,7 +150,7 @@ class NotifyEndpoint(base.BaseEndpoint):
         # Return retries for testing purposes.
         return (status, actual_serial, retries)
 
-    def _make_and_send_dns_message(self, domain, server, timeout,
+    def _make_and_send_dns_message(self, domain, nameserver, timeout,
                                    retry_interval, max_retries, notify=False):
         """
         :param domain: The designate domain object.  This contains the domain
@@ -167,8 +168,8 @@ class NotifyEndpoint(base.BaseEndpoint):
             response is the response on success or None on failure.
             current_retry is the current retry number
         """
-        dest_ip = server.host
-        dest_port = server.port
+        dest_ip = nameserver.host
+        dest_port = nameserver.port
 
         dns_message = self._make_dns_message(domain.name, notify=notify)
 

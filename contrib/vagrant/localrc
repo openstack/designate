@@ -31,6 +31,9 @@ ENABLED_SERVICES+=,designate,designate-central,designate-api,designate-pool-mana
 #                 setup.cfg)
 #DESIGNATE_BACKEND_DRIVER=powerdns
 
+# Pool Manager Cache Driver (e.g. noop, memcache, sqlalchemy. See
+#                            designate.backend section of setup.cfg)
+#DESIGNATE_POOL_MANAGER_CACHE_DRIVER=noop
 
 # Other Devstack Config
 # =====================

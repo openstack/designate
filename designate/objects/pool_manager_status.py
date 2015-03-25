@@ -19,7 +19,7 @@ from designate.objects import base
 class PoolManagerStatus(base.DictObjectMixin, base.PersistentObjectMixin,
                         base.DesignateObject):
     FIELDS = {
-        'server_id': {
+        'nameserver_id': {
             'schema': {
                 'type': 'string',
                 'format': 'uuid',

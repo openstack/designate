@@ -49,13 +49,14 @@ class PoolManagerCache(DriverPlugin):
         """
 
     @abc.abstractmethod
-    def retrieve(self, context, server_id, domain_id, action):
+    def retrieve(self, context, nameserver_id, domain_id, action):
         """
 
         Retrieve the pool manager status object.
 
         :param context: Security context information
-        :param server_id: the server ID of the pool manager status object
+        :param nameserver_id: the nameserver ID of the pool manager status
+                              object
         :param domain_id: the domain ID of the pool manger status object
         :param action: the action of the pool manager status object
         :return: the pool manager status object

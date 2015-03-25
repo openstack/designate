@@ -32,5 +32,5 @@ class NoopPoolManagerCache(cache_base.PoolManagerCache):
     def store(self, context, pool_manager_status):
         pass
 
-    def retrieve(self, context, server_id, domain_id, action):
+    def retrieve(self, context, nameserver_id, domain_id, action):
         raise exceptions.PoolManagerStatusNotFound

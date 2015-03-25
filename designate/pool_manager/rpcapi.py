@@ -92,17 +92,18 @@ class PoolManagerAPI(object):
         return cctxt.cast(
             context, 'update_domain', domain=domain)
 
-    def update_status(self, context, domain, server, status, actual_serial):
+    def update_status(self, context, domain, nameserver, status,
+                      actual_serial):
         LOG.info(_LI("update_status: Calling pool manager for %(domain)s : "
-                     "%(action)s : %(status)s : %(serial)s on server "
+                     "%(action)s : %(status)s : %(serial)s on nameserver "
                      "'%(host)s:%(port)s'") %
                  {'domain': domain.name, 'action': domain.action,
                   'status': status, 'serial': actual_serial,
-                  'host': server.host, 'port': server.port})
+                  'host': nameserver.host, 'port': nameserver.port})
 
         # Modifying the topic so it is pool manager instance specific.
         topic = '%s.%s' % (self.topic, domain.pool_id)
         cctxt = self.client.prepare(topic=topic)
         return cctxt.cast(
-            context, 'update_status', domain=domain, server=server,
+            context, 'update_status', domain=domain, nameserver=nameserver,
             status=status, actual_serial=actual_serial)

@@ -32,26 +32,33 @@ CONF = cfg.CONF
 utils.register_plugin_opts()
 
 
-def get_manager():
+def get_manager(pool_target_id):
+    pool_target_options = CONF['pool_target:%s' % pool_target_id].options
+    connection = pool_target_options['connection']
+
     migration_config = {
         'migration_repo_path': REPOSITORY,
-        'db_url': CONF['backend:powerdns'].connection}
+        'db_url': connection}
     return migration_manager.MigrationManager(migration_config)
 
 
 class DatabaseCommands(base.Commands):
-    def version(self):
-        current = get_manager().version()
+    @base.args('pool-target-id', help="Pool Target to Migrate", type=str)
+    def version(self, pool_target_id):
+        current = get_manager(pool_target_id).version()
         latest = versioning_api.version(repository=REPOSITORY).value
         print("Current: %s Latest: %s" % (current, latest))
 
-    def sync(self):
-        get_manager().upgrade(None)
+    @base.args('pool-target-id', help="Pool Target to Migrate", type=str)
+    def sync(self, pool_target_id):
+        get_manager(pool_target_id).upgrade(None)
 
+    @base.args('pool-target-id', help="Pool Target to Migrate", type=str)
     @base.args('revision', nargs='?')
-    def upgrade(self, revision):
-        get_manager().upgrade(revision)
+    def upgrade(self, pool_target_id, revision):
+        get_manager(pool_target_id).upgrade(revision)
 
+    @base.args('pool-target-id', help="Pool Target to Migrate", type=str)
     @base.args('revision', nargs='?')
-    def downgrade(self, revision):
-        get_manager().downgrade(revision)
+    def downgrade(self, pool_target_id, revision):
+        get_manager(pool_target_id).downgrade(revision)

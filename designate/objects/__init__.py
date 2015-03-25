@@ -18,16 +18,18 @@ from designate.objects.base import DesignateObject  # noqa
 from designate.objects.base import DictObjectMixin  # noqa
 from designate.objects.base import ListObjectMixin  # noqa
 from designate.objects.base import PagedListObjectMixin  # noqa
-from designate.objects.backend_option import BackendOption, BackendOptionList  # noqa
 from designate.objects.blacklist import Blacklist, BlacklistList  # noqa
 from designate.objects.domain import Domain, DomainList  # noqa
 from designate.objects.domain_attribute import DomainAttribute, DomainAttributeList  # noqa
 from designate.objects.floating_ip import FloatingIP, FloatingIPList  # noqa
 from designate.objects.pool_manager_status import PoolManagerStatus, PoolManagerStatusList  # noqa
-from designate.objects.pool_server import PoolServer, PoolServerList  # noqa
 from designate.objects.pool import Pool, PoolList  # noqa
 from designate.objects.pool_attribute import PoolAttribute, PoolAttributeList  # noqa
 from designate.objects.pool_ns_record import PoolNsRecord, PoolNsRecordList  # noqa
+from designate.objects.pool_nameserver import PoolNameserver, PoolNameserverList  # noqa
+from designate.objects.pool_target import PoolTarget, PoolTargetList  # noqa
+from designate.objects.pool_target_master import PoolTargetMaster, PoolTargetMasterList  # noqa
+from designate.objects.pool_target_option import PoolTargetOption, PoolTargetOptionList  # noqa
 from designate.objects.quota import Quota, QuotaList  # noqa
 from designate.objects.rrdata_a import RRData_A  # noqa
 from designate.objects.rrdata_aaaa import RRData_AAAA  # noqa
