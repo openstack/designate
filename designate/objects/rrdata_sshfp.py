@@ -46,6 +46,12 @@ class RRData_SSHFP(Record):
         }
     }
 
+    def _to_string(self):
+        return "%(algorithm)s %(fp_type)s %(fingerprint)s" % self
+
+    def _from_string(self, value):
+        self.algorithm, self.fp_type, self.fingerprint = value.split(' ')
+
     # The record type is defined in the RFC. This will be used when the record
     # is sent by mini-dns.
     RECORD_TYPE = 44
