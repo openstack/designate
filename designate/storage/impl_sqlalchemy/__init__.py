@@ -474,6 +474,28 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
 
         return recordsets
 
+    def find_recordsets_axfr(self, context, criterion=None):
+        query = None
+
+        # Check to see if the criterion can use the reverse_name column
+        criterion = self._rname_check(criterion)
+
+        rjoin = tables.records.join(
+            tables.recordsets,
+            tables.records.c.recordset_id == tables.recordsets.c.id)
+
+        query = select([tables.recordsets.c.id, tables.recordsets.c.type,
+                        tables.recordsets.c.ttl, tables.recordsets.c.name,
+                        tables.records.c.data, tables.records.c.action]).\
+            select_from(rjoin).where(tables.records.c.action != 'DELETE')
+
+        query = query.order_by(tables.recordsets.c.id)
+
+        raw_rows = self._select_raw(
+            context, tables.recordsets, criterion, query)
+
+        return raw_rows
+
     def create_recordset(self, context, domain_id, recordset):
         # Fetch the domain as we need the tenant_id
         domain = self._find_domains(context, {'id': domain_id}, one=True)

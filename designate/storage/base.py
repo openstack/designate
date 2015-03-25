@@ -332,6 +332,15 @@ class Storage(DriverPlugin):
         """
 
     @abc.abstractmethod
+    def find_recordsets_axfr(self, context, criterion=None):
+        """
+        Find RecordSets.
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        """
+
+    @abc.abstractmethod
     def find_recordset(self, context, criterion):
         """
         Find a single RecordSet.

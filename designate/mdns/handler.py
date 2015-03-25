@@ -207,6 +207,41 @@ class RequestHandler(xfr.XFRMixin):
 
         return r_rrset
 
+    def _prep_rrsets(self, raw_records, domain_ttl):
+        rrsets = []
+        rrset_id = None
+        current_rrset = None
+
+        for record in raw_records:
+            # If we're looking at the first, or a new rrset
+            if record[0] != rrset_id:
+                if current_rrset is not None:
+                    # If this isn't the first iteration
+                    rrsets.append(current_rrset)
+                # Set up a new rrset
+                rrset_id = record[0]
+                rrtype = str(record[1])
+                # gross
+                ttl = int(record[2]) if record[2] is not None else domain_ttl
+                name = str(record[3])
+                rdata = str(record[4])
+                current_rrset = dns.rrset.from_text_list(
+                    name, ttl, dns.rdataclass.IN, rrtype, [rdata])
+            else:
+                # We've already got an rrset, add the rdata
+                rrtype = str(record[1])
+                rdata = str(record[4])
+                rd = dns.rdata.from_text(dns.rdataclass.IN,
+                    dns.rdatatype.from_text(rrtype), rdata)
+                current_rrset.add(rd)
+
+        # If the last record examined was a new rrset, or there is only 1 rrset
+        if rrsets == [] or (rrsets != [] and rrsets[-1] != current_rrset):
+            if current_rrset is not None:
+                rrsets.append(current_rrset)
+
+        return rrsets
+
     def _handle_axfr(self, request):
         context = request.environ['context']
 
@@ -243,12 +278,10 @@ class RequestHandler(xfr.XFRMixin):
 
         # Get all the recordsets other than SOA
         criterion = {'domain_id': domain.id, 'type': '!SOA'}
-        recordsets = self.storage.find_recordsets(context, criterion)
 
-        for recordset in recordsets:
-            r_rrset = self._convert_to_rrset(domain, recordset)
-            if r_rrset:
-                r_rrsets.append(r_rrset)
+        # Get the raw record data out of storage and parse it
+        raw_records = self.storage.find_recordsets_axfr(context, criterion)
+        r_rrsets.extend(self._prep_rrsets(raw_records, domain.ttl))
 
         # Append the SOA recordset at the end
         for recordset in soa_recordsets:

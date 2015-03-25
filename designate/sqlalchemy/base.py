@@ -328,3 +328,20 @@ class SQLAlchemy(object):
         resultproxy = self.session.execute(query)
 
         return _set_object_from_model(obj, resultproxy.fetchone())
+
+    def _select_raw(self, context, table, criterion, query=None):
+        # Build the query
+        if query is None:
+            query = select([table])
+
+        query = self._apply_criterion(table, query, criterion)
+        query = self._apply_deleted_criteria(context, table, query)
+
+        try:
+            resultproxy = self.session.execute(query)
+            return resultproxy.fetchall()
+        # Any ValueErrors are propagated back to the user as is.
+        # If however central or storage is called directly, invalid values
+        # show up as ValueError
+        except ValueError as value_error:
+            raise exceptions.ValueError(value_error.message)
