@@ -149,40 +149,43 @@ class CentralServiceTest(CentralTestCase):
         context = self.get_context()
 
         # Create a domain (using the specified domain name)
-        self.create_domain(name='example.org.')
+        domain = self.create_domain(name='example.org.')
 
-        result = self.central_service._is_subdomain(context, 'org.')
+        result = self.central_service._is_subdomain(
+            context, 'org.', domain.pool_id)
         self.assertFalse(result)
 
-        result = self.central_service._is_subdomain(context,
-                                                    'www.example.net.')
+        result = self.central_service._is_subdomain(
+            context, 'www.example.net.', domain.pool_id)
         self.assertFalse(result)
 
-        result = self.central_service._is_subdomain(context, 'example.org.')
+        result = self.central_service._is_subdomain(
+            context, 'example.org.', domain.pool_id)
         self.assertFalse(result)
 
-        result = self.central_service._is_subdomain(context,
-                                                    'www.example.org.')
+        result = self.central_service._is_subdomain(
+            context, 'www.example.org.', domain.pool_id)
         self.assertTrue(result)
 
     def test_is_superdomain(self):
         context = self.get_context()
 
         # Create a domain (using the specified domain name)
-        self.create_domain(name='example.org.')
+        domain = self.create_domain(name='example.org.')
 
         LOG.debug("Testing 'org.'")
-        result = self.central_service._is_superdomain(context, 'org.')
+        result = self.central_service._is_superdomain(
+            context, 'org.', domain.pool_id)
         self.assertTrue(result)
 
         LOG.debug("Testing 'www.example.net.'")
-        result = self.central_service._is_superdomain(context,
-                                                      'www.example.net.')
+        result = self.central_service._is_superdomain(
+            context, 'www.example.net.', domain.pool_id)
         self.assertFalse(result)
 
         LOG.debug("Testing 'www.example.org.'")
-        result = self.central_service._is_superdomain(context,
-                                                      'www.example.org.')
+        result = self.central_service._is_superdomain(
+            context, 'www.example.org.', domain.pool_id)
         self.assertFalse(result)
 
     def test_is_valid_recordset_placement_subdomain(self):
@@ -439,6 +442,19 @@ class CentralServiceTest(CentralTestCase):
 
         mock_notifier.assert_called_once_with(
             self.admin_context, 'dns.domain.create', domain)
+        return domain
+
+    def test_create_domain_duplicate_different_pools(self):
+        fixture = self.get_domain_fixture()
+
+        # Create first domain that's placed in default pool
+        self.create_domain(**fixture)
+
+        # Create a secondary pool
+        second_pool = self.create_pool()
+        fixture["pool_id"] = second_pool.id
+
+        self.create_domain(**fixture)
 
     def test_create_domain_over_tld(self):
         values = dict(
@@ -488,6 +504,20 @@ class CentralServiceTest(CentralTestCase):
         # Ensure all values have been set correctly
         self.assertIsNotNone(domain['id'])
         self.assertEqual(domain['parent_domain_id'], parent_domain['id'])
+
+    def test_create_subdomain_different_pools(self):
+        fixture = self.get_domain_fixture()
+
+        # Create first domain that's placed in default pool
+        self.create_domain(**fixture)
+
+        # Create a secondary pool
+        second_pool = self.create_pool()
+        fixture["pool_id"] = second_pool.id
+        fixture["name"] = "sub.%s" % fixture["name"]
+
+        subdomain = self.create_domain(**fixture)
+        self.assertIsNone(subdomain.parent_domain_id)
 
     def test_create_superdomain(self):
         # Prepare values for the domain and subdomain
