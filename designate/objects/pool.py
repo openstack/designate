@@ -53,7 +53,6 @@ class Pool(base.DictObjectMixin, base.PersistentObjectMixin,
         'attributes': {
             'relation': True,
             'relation_cls': 'PoolAttributeList',
-            'required': True
         },
         'ns_records': {
             'relation': True,
