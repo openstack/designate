@@ -414,7 +414,7 @@ class Service(service.RPCService, service.Service):
 
         return False
 
-    def _is_subdomain(self, context, domain_name):
+    def _is_subdomain(self, context, domain_name, pool_id):
         """
         Ensures the provided domain_name is the subdomain
         of an existing domain (checks across all tenants)
@@ -425,14 +425,16 @@ class Service(service.RPCService, service.Service):
         # Break the name up into it's component labels
         labels = domain_name.split(".")
 
+        criterion = {"pool_id": pool_id}
+
         i = 1
 
         # Starting with label #2, search for matching domain's in the database
         while (i < len(labels)):
             name = '.'.join(labels[i:])
-
+            criterion["name"] = name
             try:
-                domain = self.storage.find_domain(context, {'name': name})
+                domain = self.storage.find_domain(context, criterion)
             except exceptions.DomainNotFound:
                 i += 1
             else:
@@ -440,7 +442,7 @@ class Service(service.RPCService, service.Service):
 
         return False
 
-    def _is_superdomain(self, context, domain_name):
+    def _is_superdomain(self, context, domain_name, pool_id):
         """
         Ensures the provided domain_name is the parent domain
         of an existing subdomain (checks across all tenants)
@@ -451,7 +453,7 @@ class Service(service.RPCService, service.Service):
         # Create wildcard term to catch all subdomains
         search_term = "%%.%(name)s" % {"name": domain_name}
 
-        criterion = {'name': search_term}
+        criterion = {'name': search_term, "pool_id": pool_id}
         subdomains = self.storage.find_domains(context, criterion)
 
         return subdomains
@@ -786,7 +788,8 @@ class Service(service.RPCService, service.Service):
             domain.pool_id = default_pool_id
 
         # Handle sub-domains appropriately
-        parent_domain = self._is_subdomain(context, domain.name)
+        parent_domain = self._is_subdomain(
+            context, domain.name, domain.pool_id)
         if parent_domain:
             if parent_domain.tenant_id == domain.tenant_id:
                 # Record the Parent Domain ID
@@ -796,7 +799,7 @@ class Service(service.RPCService, service.Service):
                                            'another tenants domain')
 
         # Handle super-domains appropriately
-        subdomains = self._is_superdomain(context, domain.name)
+        subdomains = self._is_superdomain(context, domain.name, domain.pool_id)
         if subdomains:
             LOG.debug("Domain '{0}' is a superdomain.".format(domain.name))
             for subdomain in subdomains:

@@ -102,7 +102,7 @@ domains = Table('domains', metadata,
     Column('pool_id', UUID, default=None, nullable=True),
     Column('reverse_name', String(255), nullable=False),
 
-    UniqueConstraint('name', 'deleted', name='unique_domain_name'),
+    UniqueConstraint('name', 'deleted', 'pool_id', name='unique_domain_name'),
     ForeignKeyConstraint(['parent_domain_id'],
                          ['domains.id'],
                          ondelete='SET NULL'),
