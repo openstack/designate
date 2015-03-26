@@ -906,7 +906,7 @@ class StorageTestCase(object):
 
         criterion = dict(
             domain_id=domain['id'],
-            name="*%s" % domain['name'],
+            name="%%%(name)s" % {"name": domain['name']},
         )
 
         results = self.storage.find_recordsets(self.admin_context, criterion)
@@ -1307,7 +1307,7 @@ class StorageTestCase(object):
         criterion = dict(
             domain_id=domain['id'],
             recordset_id=recordset['id'],
-            data="*.0.0.1",
+            data="%.0.0.1",
         )
 
         results = self.storage.find_records(self.admin_context, criterion)

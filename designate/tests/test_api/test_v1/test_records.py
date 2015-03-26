@@ -140,6 +140,34 @@ class ApiV1RecordsTest(ApiV1Test):
         self.post('domains/%s/records' % self.domain['id'], data=fixture,
                   status_code=400)
 
+    def test_create_wildcard_record_after_named(self):
+        # We want to test that a wildcard record rs doesnt use the previous one
+        # https://bugs.launchpad.net/designate/+bug/1391426
+
+        name = "foo.%s" % self.domain.name
+        fixture = {
+            "name": name,
+            "type": "A",
+            "data": "10.0.0.1"
+        }
+
+        self.post('domains/%s/records' % self.domain['id'],
+                  data=fixture)
+
+        wildcard_name = '*.%s' % self.domain["name"]
+
+        fixture['name'] = wildcard_name
+        self.post('domains/%s/records' % self.domain['id'],
+                  data=fixture)
+
+        named_rs = self.central_service.find_recordset(
+            self.admin_context, {"name": name})
+        wildcard_rs = self.central_service.find_recordset(
+            self.admin_context, {"name": wildcard_name})
+
+        self.assertNotEqual(named_rs.name, wildcard_rs.name)
+        self.assertNotEqual(named_rs.id, wildcard_rs.id)
+
     def test_create_record_utf_description(self):
         fixture = self.get_record_fixture(self.recordset['type'])
         fixture.update({

@@ -97,7 +97,7 @@ class RestController(pecan.rest.RestController):
 
         for k in accepted_filters:
             if k in params:
-                criterion[k] = params[k]
+                criterion[k] = params[k].replace("*", "%")
 
         return criterion
 

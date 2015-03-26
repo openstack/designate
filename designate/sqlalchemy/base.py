@@ -102,10 +102,9 @@ class SQLAlchemy(object):
             for name, value in criterion.items():
                 column = getattr(table.c, name)
 
-                # Wildcard value: '*'
-                if isinstance(value, basestring) and '*' in value:
-                    queryval = value.replace('*', '%')
-                    query = query.where(column.like(queryval))
+                # Wildcard value: '%'
+                if isinstance(value, basestring) and '%' in value:
+                    query = query.where(column.like(value))
                 elif isinstance(value, basestring) and value.startswith('!'):
                     queryval = value[1:]
                     query = query.where(column != queryval)

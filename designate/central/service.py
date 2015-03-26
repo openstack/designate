@@ -449,7 +449,7 @@ class Service(service.RPCService, service.Service):
         context.all_tenants = True
 
         # Create wildcard term to catch all subdomains
-        search_term = "*.%s" % domain_name
+        search_term = "%%.%(name)s" % {"name": domain_name}
 
         criterion = {'name': search_term}
         subdomains = self.storage.find_domains(context, criterion)
