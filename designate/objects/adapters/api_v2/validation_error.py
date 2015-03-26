@@ -32,9 +32,7 @@ class ValidationErrorAPIv2Adapter(base.APIv2Adapter):
 
     MODIFICATIONS = {
         'fields': {
-            "path": {
-                'rename': 'absolute_path'
-            },
+            "path": {},
             "message": {},
             "validator": {},
             "validator_value": {},

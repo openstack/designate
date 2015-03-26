@@ -16,8 +16,7 @@ from designate.objects import base
 
 class ValidationError(base.DesignateObject):
     FIELDS = {
-        'relative_path': {},
-        'absolute_path': {},
+        'path': {},
         'message': {},
         'validator': {},
         'validator_value': {},
@@ -31,8 +30,7 @@ class ValidationError(base.DesignateObject):
         """
 
         e = cls()
-        e.relative_path = list(js_error.relative_path)
-        e.absolute_path = list(js_error.absolute_path)
+        e.path = list(getattr(js_error, 'releative_path', js_error.path))
         e.message = js_error.message
         e.validator = js_error.validator
         e.validator_value = js_error.validator_value
