@@ -128,7 +128,7 @@ class SerializationMiddleware(DNSMiddleware):
 
         # Serialize and return the response if present
         if response is not None:
-            return response.to_wire()
+            return response.to_wire(max_size=65535)
 
 
 class TsigInfoMiddleware(DNSMiddleware):
