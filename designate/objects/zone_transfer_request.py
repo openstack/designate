@@ -24,7 +24,6 @@ class ZoneTransferRequest(base.DictObjectMixin, base.PersistentObjectMixin,
                 "type": "string",
                 "maxLength": 160
             },
-            'required': True
         },
         'domain_id': {
             'schema': {
@@ -44,7 +43,6 @@ class ZoneTransferRequest(base.DictObjectMixin, base.PersistentObjectMixin,
             'schema': {
                 'type': 'string',
             },
-            'required': True,
             'read_only': True
         },
         'target_tenant_id': {

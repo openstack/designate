@@ -30,7 +30,6 @@ class ZoneTransferAccept(base.DictObjectMixin, base.PersistentObjectMixin,
             'schema': {
                 'type': 'string',
             },
-            'required': True,
             'read_only': True
         },
         'status': {
@@ -57,5 +56,6 @@ class ZoneTransferAccept(base.DictObjectMixin, base.PersistentObjectMixin,
     }
 
 
-class ZoneTransferAcceptList(base.ListObjectMixin, base.DesignateObject):
+class ZoneTransferAcceptList(base.ListObjectMixin, base.DesignateObject,
+                             base.PagedListObjectMixin):
     LIST_ITEM_TYPE = ZoneTransferAccept

@@ -34,7 +34,7 @@ class FloatingIP(base.DictObjectMixin, base.PersistentObjectMixin,
         "id": {
             'schema': {
                 'type': 'string',
-                'format': 'floating-ip-id'
+                'format': 'uuid'
             }
         },
         "ptrdname": {
@@ -56,6 +56,10 @@ class FloatingIP(base.DictObjectMixin, base.PersistentObjectMixin,
             }
         }
     }
+
+    @property
+    def key(self):
+        return '%s:%s' % (self.region, self.id)
 
 
 class FloatingIPList(base.ListObjectMixin, base.DesignateObject):

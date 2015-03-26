@@ -1,0 +1,64 @@
+# Copyright 2014 Hewlett-Packard Development Company, L.P.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
+from oslo_log import log as logging
+
+from designate.objects.adapters.api_v2 import base
+from designate import objects
+LOG = logging.getLogger(__name__)
+
+
+class FloatingIPAPIv2Adapter(base.APIv2Adapter):
+
+    ADAPTER_OBJECT = objects.FloatingIP
+
+    MODIFICATIONS = {
+        'fields': {
+            "id": {
+                'rename': 'key'
+            },
+            "description": {
+                'read_only': False
+            },
+            "address": {},
+            "ptrdname": {
+                'read_only': False
+            },
+            "ttl": {
+                'read_only': False
+            },
+        },
+        'options': {
+            'links': True,
+            'resource_name': 'floatingip',
+            'collection_name': 'floatingips',
+        }
+    }
+
+    @classmethod
+    def _get_resource_links(cls, object, request):
+        return {'self': '%s%s/%s' %
+                (cls.BASE_URI, cls._get_path(request), object.key)}
+
+
+class FloatingIPListAPIv2Adapter(base.APIv2Adapter):
+
+    ADAPTER_OBJECT = objects.FloatingIPList
+
+    MODIFICATIONS = {
+        'options': {
+            'links': True,
+            'resource_name': 'floatingip',
+            'collection_name': 'floatingips',
+        }
+    }

@@ -24,7 +24,6 @@ class PoolAttribute(base.DictObjectMixin, base.PersistentObjectMixin,
                 'description': 'Pool identifier',
                 'format': 'uuid',
             },
-            'required': True
         },
         'key': {
             'schema': {

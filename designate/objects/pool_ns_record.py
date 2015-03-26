@@ -16,7 +16,7 @@ from designate.objects import base
 
 
 class PoolNsRecord(base.DictObjectMixin, base.PersistentObjectMixin,
-                base.DesignateObject):
+                   base.DesignateObject):
     FIELDS = {
         'pool_id': {
             'schema': {
@@ -24,7 +24,6 @@ class PoolNsRecord(base.DictObjectMixin, base.PersistentObjectMixin,
                 'description': 'Pool identifier',
                 'format': 'uuid',
             },
-            'required': True
         },
         'priority': {
             'schema': {

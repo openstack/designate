@@ -53,7 +53,6 @@ class RecordSet(base.DictObjectMixin, base.PersistentObjectMixin,
             'schema': {
                 'type': 'string',
             },
-            'required': True,
             'read_only': True
         },
         'domain_id': {
@@ -62,8 +61,6 @@ class RecordSet(base.DictObjectMixin, base.PersistentObjectMixin,
                 'description': 'Zone identifier',
                 'format': 'uuid'
             },
-            'read_only': True,
-            'required': True
         },
         'name': {
             'schema': {
@@ -87,7 +84,7 @@ class RecordSet(base.DictObjectMixin, base.PersistentObjectMixin,
         },
         'ttl': {
             'schema': {
-                'type': 'integer',
+                'type': ['integer', 'null'],
                 'description': 'Default time to live',
                 'minimum': 0,
                 'maximum': 2147483647

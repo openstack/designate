@@ -157,60 +157,60 @@ class DesignateAdapter(object):
         error_keys = []
 
         for key, value in values.iteritems():
-            error_flag = True
             if key in cls.MODIFICATIONS['fields']:
                 # No rename needed
                 obj_key = key
-                error_flag = False
                 # This item may need to be translated
                 if cls.MODIFICATIONS['fields'][key].get('rename', False):
                     obj_key = cls.MODIFICATIONS['fields'][key].get('rename')
 
-            ##############################################################
-            # TODO(graham): Remove this section of code  when validation #
-            # is moved into DesignateObjects properly                    #
-            ##############################################################
+                ##############################################################
+                # TODO(graham): Remove this section of code  when validation #
+                # is moved into DesignateObjects properly                    #
+                ##############################################################
 
-            # Check if the field should be allowed change after it is initially
-            # set (eg domain name)
-            if cls.MODIFICATIONS['fields'][key].get('idempotent', False):
-                if getattr(output_object, obj_key, False) and \
-                        getattr(output_object, obj_key) != value:
+                # Check if the field should be allowed change after it is
+                # initially set (eg domain name)
+                if cls.MODIFICATIONS['fields'][key].get('immutable', False):
+                    if getattr(output_object, obj_key, False) and \
+                            getattr(output_object, obj_key) != value:
+                        error_keys.append(key)
+                        break
+                # Is this field a read only field
+                elif cls.MODIFICATIONS['fields'][key].get('read_only', True) \
+                        and getattr(output_object, obj_key) != value:
                     error_keys.append(key)
                     break
-            # Is this field a read only field
-            elif cls.MODIFICATIONS['fields'][key].get('read_only', True) and \
-                    getattr(output_object, obj_key) != value:
-                error_keys.append(key)
-                break
 
-            # Check if the key is a nested object
-            if output_object.FIELDS.get(obj_key, {}).get('relation', False):
-                # Get the right class name
-                obj_class_name = output_object.FIELDS.get(
-                    obj_key, {}).get('relation_cls')
-                # Get the an instance of it
-                obj_class = \
-                    objects.DesignateObject.obj_cls_from_name(obj_class_name)
-                # Get the adapted object
-                obj = \
-                    cls.get_object_adapter(
-                        cls.ADAPTER_FORMAT, obj_class_name).parse(
-                            value, obj_class)
-                # Set the object on the main object
-                setattr(output_object, obj_key, obj)
+                # Check if the key is a nested object
+                if output_object.FIELDS.get(obj_key, {}).get(
+                        'relation', False):
+                    # Get the right class name
+                    obj_class_name = output_object.FIELDS.get(
+                        obj_key, {}).get('relation_cls')
+                    # Get the an instance of it
+                    obj_class = \
+                        objects.DesignateObject.obj_cls_from_name(
+                            obj_class_name)
+                    # Get the adapted object
+                    obj = \
+                        cls.get_object_adapter(
+                            cls.ADAPTER_FORMAT, obj_class_name).parse(
+                                value, obj_class())
+                    # Set the object on the main object
+                    setattr(output_object, obj_key, obj)
+                else:
+                    # No nested objects here, just set the value
+                    setattr(output_object, obj_key, value)
             else:
-                # No nested objects here, just set the value
-                setattr(output_object, obj_key, value)
-            if error_flag:
                 # We got an extra key
                 error_keys.append(key)
 
         if error_keys:
             error_message = str.format(
                 'Provided object does not match schema.  Keys {0} are not '
-                'valid in the request body',
-                error_keys)
+                'valid for {1}',
+                error_keys, cls.MODIFICATIONS['options']['resource_name'])
 
             raise exceptions.InvalidObject(error_message)
 
@@ -218,4 +218,18 @@ class DesignateAdapter(object):
 
     @classmethod
     def _parse_list(cls, values, output_object, *args, **kwargs):
-        raise exceptions.NotImplemented('List adaption not implemented')
+
+        for item in values:
+            # Add the object to the list
+            output_object.append(
+                # Get the right Adapter
+                cls.get_object_adapter(
+                    cls.ADAPTER_FORMAT,
+                    # This gets the internal type of the list, and parses it
+                    # We need to do `get_object_adapter` as we need a new
+                    # instance of the Adapter
+                    output_object.LIST_ITEM_TYPE()).parse(
+                        item, output_object.LIST_ITEM_TYPE()))
+
+        # Return the filled list
+        return output_object

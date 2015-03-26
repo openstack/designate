@@ -13,7 +13,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 from designate import utils
+from designate import exceptions
 from designate.objects import base
+from designate.objects.validation_error import ValidationError
+from designate.objects.validation_error import ValidationErrorList
 from designate.objects.domain_attribute import DomainAttribute
 from designate.objects.domain_attribute import DomainAttributeList
 
@@ -87,7 +90,7 @@ class Domain(base.DictObjectMixin, base.SoftDeleteObjectMixin,
         },
         'parent_domain_id': {
             'schema': {
-                'type': 'string',
+                'type': ['string', 'null'],
                 'format': 'uuid'
             },
             'read_only': True
@@ -135,8 +138,20 @@ class Domain(base.DictObjectMixin, base.SoftDeleteObjectMixin,
             'relation': True,
             'relation_cls': 'DomainAttributeList'
         },
-        'type': {},
-        'transferred_at': {},
+        'type': {
+            'schema': {
+                'type': 'string',
+                'enum': ['SECONDARY', 'PRIMARY'],
+            },
+            'immutable': True
+        },
+        'transferred_at': {
+            'schema': {
+                'type': ['string', 'null'],
+                'format': 'date-time',
+            },
+            'read_only': True
+        },
     }
 
     @property
@@ -164,6 +179,21 @@ class Domain(base.DictObjectMixin, base.SoftDeleteObjectMixin,
             if host == srv_host:
                 return srv
         return False
+
+    def validate(self):
+        if self.type == 'SECONDARY' and self.masters is None:
+            errors = ValidationErrorList()
+            e = ValidationError()
+            e.absolute_path = ['']
+            e.validator = 'required'
+            e.validator_value = ['masters']
+            e.message = "'masters' is a required property"
+            errors.append(e)
+            raise exceptions.InvalidObject(
+                "Provided object does not match "
+                "schema", errors=errors, object=self)
+
+        super(Domain, self).validate()
 
 
 class DomainList(base.ListObjectMixin, base.DesignateObject,
