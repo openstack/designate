@@ -285,9 +285,6 @@ class TestCase(base.BaseTestCase):
         self._setup_pool_manager_cache()
 
         self.config(network_api='fake')
-        self.config(
-            managed_resource_tenant_id='managing_tenant',
-            group='service:central')
 
         # "Read" Configuration
         self.CONF([], project='designate')

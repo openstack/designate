@@ -277,6 +277,11 @@ class Service(service.RPCService, service.Service):
             self.check_for_tlds = False
             LOG.info(_LI("NOT checking for TLDs"))
 
+        if (cfg.CONF['service:central'].managed_resource_tenant_id ==
+                "00000000-0000-0000-0000-000000000000"):
+            msg = _LW("Managed Resource Tenant ID is not properly configured")
+            LOG.warn(msg)
+
         super(Service, self).start()
 
     def stop(self):
