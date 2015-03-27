@@ -42,6 +42,8 @@ class ApiV2ReverseFloatingIPTest(ApiV2TestCase):
         self.assertEqual(fip['address'], fip_record['address'])
         self.assertEqual(None, fip_record['description'])
         self.assertEqual(None, fip_record['ptrdname'])
+        self.assertEqual(None, fip_record['action'])
+        self.assertEqual('ACTIVE', fip_record['status'])
 
     def test_get_floatingip_with_record(self):
         fixture = self.get_ptr_fixture()
@@ -69,6 +71,8 @@ class ApiV2ReverseFloatingIPTest(ApiV2TestCase):
         self.assertEqual(fip['address'], fip_record['address'])
         self.assertEqual(None, fip_record['description'])
         self.assertEqual(fixture['ptrdname'], fip_record['ptrdname'])
+        self.assertEqual('CREATE', fip_record['action'])
+        self.assertEqual('PENDING', fip_record['status'])
 
     def test_get_floatingip_not_allocated(self):
         url = '/reverse/floatingips/foo:04580c52-b253-4eb7-8791-fbb9de9f856f'
@@ -106,6 +110,8 @@ class ApiV2ReverseFloatingIPTest(ApiV2TestCase):
                          fip_record['id'])
         self.assertEqual(fip['address'], fip_record['address'])
         self.assertEqual(None, fip_record['description'])
+        self.assertEqual(None, fip_record['action'])
+        self.assertEqual('ACTIVE', fip_record['status'])
 
     def test_list_floatingip_with_record(self):
         fixture = self.get_ptr_fixture()
@@ -132,6 +138,8 @@ class ApiV2ReverseFloatingIPTest(ApiV2TestCase):
         self.assertEqual(fip['address'], fip_record['address'])
         self.assertEqual(None, fip_record['description'])
         self.assertEqual(fixture['ptrdname'], fip_record['ptrdname'])
+        self.assertEqual('CREATE', fip_record['action'])
+        self.assertEqual('PENDING', fip_record['status'])
 
     def test_set_floatingip(self):
         fixture = self.get_ptr_fixture()
@@ -143,7 +151,7 @@ class ApiV2ReverseFloatingIPTest(ApiV2TestCase):
             {"floatingip": fixture.to_dict()},
             headers={'X-Test-Tenant-Id': 'tenant'})
 
-        self.assertEqual(200, response.status_int)
+        self.assertEqual(202, response.status_int)
         self.assertEqual('application/json', response.content_type)
         self.assertIn('floatingip', response.json)
 
@@ -153,6 +161,8 @@ class ApiV2ReverseFloatingIPTest(ApiV2TestCase):
         self.assertEqual(fip['address'], fip_record['address'])
         self.assertEqual(None, fip_record['description'])
         self.assertEqual(fixture['ptrdname'], fip_record['ptrdname'])
+        self.assertEqual('CREATE', fip_record['action'])
+        self.assertEqual('PENDING', fip_record['status'])
 
     def test_set_floatingip_not_allocated(self):
         fixture = self.get_ptr_fixture()
@@ -209,7 +219,7 @@ class ApiV2ReverseFloatingIPTest(ApiV2TestCase):
             {'floatingip': {'ptrdname': None}},
             headers={'X-Test-Tenant-Id': context.tenant})
         self.assertEqual(None, response.json)
-        self.assertEqual(200, response.status_int)
+        self.assertEqual(202, response.status_int)
 
         # Simulate the unset on the backend
         domain_serial = self.central_service.get_domain(

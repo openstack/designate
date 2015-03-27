@@ -60,6 +60,8 @@ class FloatingIPController(rest.RestController):
         Set or unset a PTR
         """
         request = pecan.request
+        response = pecan.response
+
         context = request.environ['context']
         body = request.body_dict
 
@@ -73,6 +75,8 @@ class FloatingIPController(rest.RestController):
             region,
             id_,
             objects.FloatingIP().from_dict(body['floatingip']))
+
+        response.status_int = 202
 
         if fip:
             return self._view.show(context, request, fip)

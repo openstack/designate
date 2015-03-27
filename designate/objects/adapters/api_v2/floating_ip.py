@@ -37,6 +37,12 @@ class FloatingIPAPIv2Adapter(base.APIv2Adapter):
             "ttl": {
                 'read_only': False
             },
+            "action": {
+                "read_only": True,
+            },
+            "status": {
+                "read_only": True
+            }
         },
         'options': {
             'links': True,

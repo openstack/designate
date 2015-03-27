@@ -54,7 +54,20 @@ class FloatingIP(base.DictObjectMixin, base.PersistentObjectMixin,
             'schema': {
                 'type': ['string', 'null'],
             }
+        },
+        "action": {
+            'schema': {
+                'type': 'string',
+                'enum': ['CREATE', 'DELETE', 'UPDATE', 'NONE'],
+            }
+        },
+        "status": {
+            'schema': {
+                'type': 'string',
+                'enum': ['ACTIVE', 'PENDING', 'ERROR'],
+            }
         }
+
     }
 
     @property
