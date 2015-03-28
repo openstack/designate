@@ -243,10 +243,11 @@ class NotifyEndpoint(base.BaseEndpoint):
         dns_message.flags = 0
         if notify:
             dns_message.set_opcode(dns.opcode.NOTIFY)
+            dns_message.flags |= dns.flags.AA
         else:
             # Setting the flags to RD causes BIND9 to respond with a NXDOMAIN.
-            dns_message.flags = dns.flags.RD
             dns_message.set_opcode(dns.opcode.QUERY)
+            dns_message.flags |= dns.flags.RD
 
         return dns_message
 
