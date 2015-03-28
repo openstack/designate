@@ -14,11 +14,11 @@
 #    under the License.
 import time
 
+import eventlet
 import dns
 import dns.rdataclass
 import dns.rdatatype
 import dns.exception
-import dns.query
 import dns.flags
 import dns.rcode
 import dns.message
@@ -29,6 +29,8 @@ from oslo_log import log as logging
 from designate.mdns import base
 from designate.i18n import _LI
 from designate.i18n import _LW
+
+dns_query = eventlet.import_patched('dns.query')
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
@@ -195,7 +197,7 @@ class NotifyEndpoint(base.BaseEndpoint):
                 # retry sending the message if we get a Timeout.
                 time.sleep(retry_interval)
                 continue
-            elif isinstance(response, dns.query.BadResponse):
+            elif isinstance(response, dns_query.BadResponse):
                 LOG.warn(_LW("Got BadResponse while trying to send '%(msg)s' "
                              "for '%(zone)s' to '%(server)s:%(port)d'. Timeout"
                              "='%(timeout)d' seconds. Retry='%(retry)d'") %
@@ -254,17 +256,17 @@ class NotifyEndpoint(base.BaseEndpoint):
         :param dest_ip: The destination ip of dns_message.
         :param dest_port: The destination port of dns_message.
         :param timeout: The timeout in seconds to wait for a response.
-        :return: response or dns.exception.Timeout or dns.query.BadResponse
+        :return: response or dns.exception.Timeout or dns_query.BadResponse
         """
         try:
             if not CONF['service:mdns'].all_tcp:
-                response = dns.query.udp(
+                response = dns_query.udp(
                     dns_message, dest_ip, port=dest_port, timeout=timeout)
             else:
-                response = dns.query.tcp(
+                response = dns_query.tcp(
                     dns_message, dest_ip, port=dest_port, timeout=timeout)
             return response
         except dns.exception.Timeout as timeout:
             return timeout
-        except dns.query.BadResponse as badResponse:
+        except dns_query.BadResponse as badResponse:
             return badResponse
