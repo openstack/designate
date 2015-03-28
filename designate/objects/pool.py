@@ -68,6 +68,10 @@ class Pool(base.DictObjectMixin, base.PersistentObjectMixin,
             'relation': True,
             'relation_cls': 'PoolTargetList'
         },
+        'also_notifies': {
+            'relation': True,
+            'relation_cls': 'PoolAlsoNotifiesList'
+        },
     }
 
     @classmethod
@@ -76,6 +80,7 @@ class Pool(base.DictObjectMixin, base.PersistentObjectMixin,
 
         pool_target_ids = CONF['pool:%s' % pool_id].targets
         pool_nameserver_ids = CONF['pool:%s' % pool_id].nameservers
+        pool_also_notifies = CONF['pool:%s' % pool_id].also_notifies
 
         # Build Base Pool
         pool = {
@@ -83,7 +88,16 @@ class Pool(base.DictObjectMixin, base.PersistentObjectMixin,
             'description': 'Pool built from configuration on %s' % CONF.host,
             'targets': [],
             'nameservers': [],
+            'also_notifies': [],
         }
+
+        # Build Pool Also Notifies
+        for pool_also_notify in pool_also_notifies:
+            host, port = utils.split_host_port(pool_also_notify)
+            pool['also_notifies'].append({
+                'host': host,
+                'port': port,
+            })
 
         # Build Pool Targets
         for pool_target_id in pool_target_ids:

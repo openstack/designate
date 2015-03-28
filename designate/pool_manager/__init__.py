@@ -71,6 +71,7 @@ def register_dynamic_pool_options():
     pool_opts = [
         cfg.ListOpt('targets', default=[]),
         cfg.ListOpt('nameservers', default=[]),
+        cfg.ListOpt('also_notifies', default=[]),
     ]
 
     CONF.register_group(pool_group)
