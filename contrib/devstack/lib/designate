@@ -45,6 +45,7 @@ DESIGNATE_BACKEND_DRIVER=${DESIGNATE_BACKEND_DRIVER:=powerdns}
 DESIGNATE_POOL_MANAGER_CACHE_DRIVER=${DESIGNATE_POOL_MANAGER_CACHE_DRIVER:-noop}
 DESIGNATE_POOL_ID=${DESIGNATE_POOL_ID:-794ccc2c-d751-44fe-b57f-8894c9f5c842}
 DESIGNATE_TARGET_ID=${DESIGNATE_TARGET_ID:-f26e0b32-736f-4f0a-831b-039a415c481e}
+DESIGNATE_DEFAULT_NS_RECORD=${DESIGNATE_DEFAULT_NS_RECORD:-ns1.devstack.org.}
 
 # Public IP/Port Settings
 DESIGNATE_SERVICE_PROTOCOL=${DESIGNATE_SERVICE_PROTOCOL:-$SERVICE_PROTOCOL}
@@ -53,7 +54,6 @@ DESIGNATE_SERVICE_PORT=${DESIGNATE_SERVICE_PORT:-9001}
 DESIGNATE_SERVICE_PORT_INT=${DESIGNATE_SERVICE_PORT_INT:-19001}
 DESIGNATE_SERVICE_PORT_DNS=${DESIGNATE_SERVICE_PORT_DNS:-53}
 DESIGNATE_SERVICE_PORT_MDNS=${DESIGNATE_SERVICE_PORT_MDNS:-5354}
-DESIGNATE_TEST_NSREC=${DESIGNATE_TEST_NSREC:-ns1.devstack.org.}
 
 DESIGNATE_ENABLED_EXTENSIONS_V1=${DESIGNATE_ENABLED_EXTENSIONS_V1:-"quotas"}
 DESIGNATE_ENABLED_EXTENSIONS_V2=${DESIGNATE_ENABLED_EXTENSIONS_V2:-""}
@@ -105,17 +105,20 @@ function configure_designate {
     # (Re)create ``designate.conf``
     rm -f $DESIGNATE_CONF
 
+    # General Configuration
     iniset_rpc_backend designate $DESIGNATE_CONF DEFAULT
+
     iniset $DESIGNATE_CONF DEFAULT debug $ENABLE_DEBUG_LOG_LEVEL
     iniset $DESIGNATE_CONF DEFAULT verbose True
     iniset $DESIGNATE_CONF DEFAULT state_path $DESIGNATE_STATE_PATH
     iniset $DESIGNATE_CONF DEFAULT root-helper sudo designate-rootwrap $DESIGNATE_ROOTWRAP_CONF
     iniset $DESIGNATE_CONF storage:sqlalchemy connection `database_connection_url designate`
-    iniset $DESIGNATE_CONF service:api enabled_extensions_v1 $DESIGNATE_ENABLED_EXTENSIONS_V1
-    iniset $DESIGNATE_CONF service:api enabled_extensions_v2 $DESIGNATE_ENABLED_EXTENSIONS_V2
-    iniset $DESIGNATE_CONF service:api enabled_extensions_admin $DESIGNATE_ENABLED_EXTENSIONS_ADMIN
 
-    # Pool Manager
+    # Install the policy file for the API server
+    cp $DESIGNATE_DIR/etc/designate/policy.json $DESIGNATE_CONF_DIR/policy.json
+    iniset $DESIGNATE_CONF DEFAULT policy_file $DESIGNATE_CONF_DIR/policy.json
+
+    # Pool Manager Configuration
     iniset $DESIGNATE_CONF service:pool_manager pool_id $DESIGNATE_POOL_ID
     iniset $DESIGNATE_CONF service:pool_manager cache_driver $DESIGNATE_POOL_MANAGER_CACHE_DRIVER
 
@@ -127,10 +130,24 @@ function configure_designate {
     # Pool Options
     iniset $DESIGNATE_CONF pool:$DESIGNATE_POOL_ID targets $DESIGNATE_TARGET_ID
 
+    # API Configuration
+    sudo cp $DESIGNATE_DIR/etc/designate/api-paste.ini $DESIGNATE_APIPASTE_CONF
+    iniset $DESIGNATE_CONF service:api enabled_extensions_v1 $DESIGNATE_ENABLED_EXTENSIONS_V1
+    iniset $DESIGNATE_CONF service:api enabled_extensions_v2 $DESIGNATE_ENABLED_EXTENSIONS_V2
+    iniset $DESIGNATE_CONF service:api enabled_extensions_admin $DESIGNATE_ENABLED_EXTENSIONS_ADMIN
+    iniset $DESIGNATE_CONF service:api api_host $DESIGNATE_SERVICE_HOST
+    iniset $DESIGNATE_CONF service:api api_base_uri $DESIGNATE_SERVICE_PROTOCOL://$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT/
+    iniset $DESIGNATE_CONF service:api enable_api_v1 True
+    iniset $DESIGNATE_CONF service:api enable_api_v2 True
+    iniset $DESIGNATE_CONF service:api enable_api_admin True
+
+    # mDNS Configuration
+    iniset $DESIGNATE_CONF service:mdns host $DESIGNATE_SERVICE_HOST
+    iniset $DESIGNATE_CONF service:mdns port $DESIGNATE_SERVICE_PORT_MDNS
+
+    # Root Wrap
     sudo cp $DESIGNATE_DIR/etc/designate/rootwrap.conf.sample $DESIGNATE_ROOTWRAP_CONF
     iniset $DESIGNATE_ROOTWRAP_CONF DEFAULT filters_path $DESIGNATE_DIR/etc/designate/rootwrap.d root-helper
-
-    sudo cp $DESIGNATE_DIR/etc/designate/api-paste.ini $DESIGNATE_APIPASTE_CONF
 
     # Set up the rootwrap sudoers for designate
     local rootwrap_sudoer_cmd="$DESIGNATE_BIN_DIR/designate-rootwrap $DESIGNATE_ROOTWRAP_CONF *"
@@ -140,6 +157,21 @@ function configure_designate {
     sudo chown root:root $tempfile
     sudo mv $tempfile /etc/sudoers.d/designate-rootwrap
 
+    # TLS Proxy Configuration
+    if is_service_enabled tls-proxy; then
+        # Set the service port for a proxy to take the original
+        iniset $DESIGNATE_CONF service:api api_port $DESIGNATE_SERVICE_PORT_INT
+    else
+        iniset $DESIGNATE_CONF service:api api_port $DESIGNATE_SERVICE_PORT
+    fi
+
+    # Setup the Keystone Integration
+    if is_service_enabled key; then
+        iniset $DESIGNATE_CONF service:api auth_strategy keystone
+        configure_auth_token_middleware $DESIGNATE_CONF designate $DESIGNATE_AUTH_CACHE_DIR
+    fi
+
+    # Logging Configuration
     if [ "$SYSLOG" != "False" ]; then
         iniset $DESIGNATE_CONF DEFAULT use_syslog True
     fi
@@ -149,28 +181,7 @@ function configure_designate {
         setup_colorized_logging_designate $DESIGNATE_CONF DEFAULT "tenant" "user"
     fi
 
-    if is_service_enabled key; then
-        # Setup the Keystone Integration
-        iniset $DESIGNATE_CONF service:api auth_strategy keystone
-        configure_auth_token_middleware $DESIGNATE_CONF designate $DESIGNATE_AUTH_CACHE_DIR
-    fi
-
-    iniset $DESIGNATE_CONF service:api api_host $DESIGNATE_SERVICE_HOST
-    iniset $DESIGNATE_CONF service:api api_base_uri $DESIGNATE_SERVICE_PROTOCOL://$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT/
-    iniset $DESIGNATE_CONF service:api enable_api_v1 True
-    iniset $DESIGNATE_CONF service:api enable_api_v2 True
-    iniset $DESIGNATE_CONF service:api enable_api_admin True
-    if is_service_enabled tls-proxy; then
-        # Set the service port for a proxy to take the original
-        iniset $DESIGNATE_CONF service:api api_port $DESIGNATE_SERVICE_PORT_INT
-    else
-        iniset $DESIGNATE_CONF service:api api_port $DESIGNATE_SERVICE_PORT
-    fi
-
-    # Install the policy file for the API server
-    cp $DESIGNATE_DIR/etc/designate/policy.json $DESIGNATE_CONF_DIR/policy.json
-    iniset $DESIGNATE_CONF DEFAULT policy_file $DESIGNATE_CONF_DIR/policy.json
-
+    # Backend Plugin Configuation
     configure_designate_backend
 }
 
@@ -200,9 +211,14 @@ function create_designate_accounts {
     fi
 }
 
-function create_designate_initial_resources {
-    #ADMIN_TENANT_ID=$(keystone tenant-list | grep " admin " | get_field 1)
-    designate server-create --name $DESIGNATE_TEST_NSREC
+# create_designate_ns_records - Create Pool NS Records
+function create_designate_ns_records {
+    # Allow Backends to install their own NS Records rather than the default
+    if function_exists create_designate_ns_records_backend; then
+        create_designate_ns_records_backend
+    else
+        designate server-create --name $DESIGNATE_DEFAULT_NS_RECORD
+    fi
 }
 
 # init_designate - Initialize etc.
@@ -211,6 +227,10 @@ function init_designate {
     sudo mkdir -p $DESIGNATE_AUTH_CACHE_DIR
     sudo chown $STACK_USER $DESIGNATE_AUTH_CACHE_DIR
     rm -f $DESIGNATE_AUTH_CACHE_DIR/*
+
+    # Some Designate Backends require mdns be bound to port 53, make that
+    # doable.
+    sudo setcap 'cap_net_bind_service=+ep' $(readlink -f /usr/bin/python)
 
     # (Re)create designate database
     recreate_database designate utf8

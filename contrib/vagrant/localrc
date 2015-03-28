@@ -35,6 +35,21 @@ ENABLED_SERVICES+=,designate,designate-central,designate-api,designate-pool-mana
 #                            designate.backend section of setup.cfg)
 #DESIGNATE_POOL_MANAGER_CACHE_DRIVER=noop
 
+# mDNS Service DNS Port Number
+#DESIGNATE_SERVICE_PORT_MDNS=5354
+
+# Designate Backend Config
+# ========================
+# DynECT Backend
+# NOTEs:
+# - DynECT requires DESIGNATE_SERVICE_PORT_MDNS is set to "53"
+# - DESIGNATE_DYNECT_MASTERS must be a Publicly reachable IP, pointed to mDNS
+#DESIGNATE_DYNECT_CUSTOMER=
+#DESIGNATE_DYNECT_USERNAME=
+#DESIGNATE_DYNECT_PASSWORD=
+#DESIGNATE_DYNECT_NAMESERVERS=ns1.p13.dynect.net,ns2.p13.dynect.net,ns3.p13.dynect.net,ns4.p13.dynect.net
+#DESIGNATE_DYNECT_MASTERS=
+
 # Other Devstack Config
 # =====================
 # Optional TLS Proxy

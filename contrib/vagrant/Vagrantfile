@@ -85,7 +85,7 @@ SCRIPT
     ubuntu.vm.network :private_network, ip: "192.168.27.100"
 
     ubuntu.vm.provision :shell, :privileged => true, :inline => "DEBIAN_FRONTEND=noninteractive apt-get update"
-    ubuntu.vm.provision :shell, :privileged => true, :inline => "DEBIAN_FRONTEND=noninteractive apt-get install --yes git"
+    ubuntu.vm.provision :shell, :privileged => true, :inline => "DEBIAN_FRONTEND=noninteractive apt-get install --yes git lvm2"
 
     ubuntu.vm.provision :shell, :privileged => false, :inline => $script
   end
