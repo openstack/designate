@@ -33,8 +33,9 @@ source $TOP_DIR/exerciserc
 # Skip if designate is not enabled
 is_service_enabled designate || exit 55
 
-# Skip if the DynECT backend is in use
+# Skip if the DynECT or Akamai backend is in use
 [ "$DESIGNATE_BACKEND_DRIVER" != "dynect" ] || exit 55
+[ "$DESIGNATE_BACKEND_DRIVER" != "akamai" ] || exit 55
 
 # Import designate library
 source $TOP_DIR/lib/designate
