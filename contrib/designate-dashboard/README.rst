@@ -34,3 +34,8 @@ Howto
        openstack_dashboard.local.enabled,
        designatedashboard.enabled,      # ADD THIS LINE TOO
     ], HORIZON_CONFIG, INSTALLED_APPS)
+
+3. (Optional) Copy the designate policy file into horizon's policy files folder, and add this config::
+
+    'dns': 'designate_policy.json',
+

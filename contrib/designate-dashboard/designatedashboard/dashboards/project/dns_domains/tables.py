@@ -43,6 +43,7 @@ class CreateDomain(tables.LinkAction):
     verbose_name = _("Create Domain")
     url = "horizon:project:dns_domains:create_domain"
     classes = ("ajax-modal", "btn-create")
+    policy_rules = (("dns", "create_domain"),)
 
 
 class EditDomain(tables.LinkAction):
@@ -52,6 +53,7 @@ class EditDomain(tables.LinkAction):
     verbose_name = _("Edit Domain")
     url = "horizon:project:dns_domains:update_domain"
     classes = ("ajax-modal", "btn-edit")
+    policy_rules = (("dns", "update_domain"),)
 
 
 class ManageRecords(tables.LinkAction):
@@ -61,6 +63,7 @@ class ManageRecords(tables.LinkAction):
     verbose_name = _("Manage Records")
     url = "horizon:project:dns_domains:records"
     classes = ("btn-edit")
+    policy_rules = (("dns", "get_records"),)
 
 
 class DeleteDomain(tables.BatchAction):
@@ -72,6 +75,7 @@ class DeleteDomain(tables.BatchAction):
     data_type_singular = _("Domain")
     data_type_plural = _("Domains")
     classes = ('btn-danger', 'btn-delete')
+    policy_rules = (("dns", "delete_domain"),)
 
     def action(self, request, domain_id):
         api.designate.domain_delete(request, domain_id)
@@ -83,6 +87,7 @@ class CreateRecord(tables.LinkAction):
     name = "create_record"
     verbose_name = _("Create Record")
     classes = ("ajax-modal", "btn-create")
+    policy_rules = (("dns", "create_record"),)
 
     def get_link_url(self, datum=None):
         url = "horizon:project:dns_domains:create_record"
@@ -95,6 +100,7 @@ class EditRecord(tables.LinkAction):
     name = "edit_record"
     verbose_name = _("Edit Record")
     classes = ("ajax-modal", "btn-edit")
+    policy_rules = (("dns", "update_record"),)
 
     def get_link_url(self, datum=None):
         url = "horizon:project:dns_domains:update_record"
@@ -113,6 +119,7 @@ class DeleteRecord(tables.DeleteAction):
 
     '''Link action for navigating to the UpdateRecord view.'''
     data_type_singular = _("Record")
+    policy_rules = (("dns", "delete_record"),)
 
     def delete(self, request, record_id):
         domain_id = self.table.kwargs['domain_id']
@@ -131,6 +138,7 @@ class BatchDeleteRecord(tables.BatchAction):
     action_past = _("Deleted")
     data_type_singular = _("Record")
     classes = ('btn-danger', 'btn-delete')
+    policy_rules = (("dns", "delete_record"),)
 
     def action(self, request, record_id):
         domain_id = self.table.kwargs['domain_id']
