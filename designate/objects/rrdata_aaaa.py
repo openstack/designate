@@ -21,7 +21,13 @@ class RRData_AAAA(Record):
     Defined in: RFC3596
     """
     FIELDS = {
-        'address': {}
+        'address': {
+            'schema': {
+                'type': 'string',
+                'format': 'ipv6',
+            },
+            'required': True
+        }
     }
 
     # The record type is defined in the RFC. This will be used when the record

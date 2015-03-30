@@ -21,8 +21,22 @@ class RRData_MX(Record):
     Defined in: RFC1035
     """
     FIELDS = {
-        'priority': {},
-        'exchange': {}
+        'priority': {
+            'schema': {
+                'type': 'integer',
+                'minimum': 0,
+                'maximum': 65535
+            },
+            'required': True
+        },
+        'exchange': {
+            'schema': {
+                'type': 'string',
+                'format': 'domainname',
+                'maxLength': 255,
+            },
+            'required': True
+        }
     }
 
     # The record type is defined in the RFC. This will be used when the record
