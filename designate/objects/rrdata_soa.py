@@ -79,6 +79,14 @@ class RRData_SOA(Record):
         },
     }
 
+    def _to_string(self):
+        return ("%(mname)s %(rname)s %(serial)s %(refresh)s %(retry)s "
+                "%(expire)s %(minimum)s" % self)
+
+    def _from_string(self, value):
+        self.mname, self.rname, self.serial, self.refresh, self.retry, \
+            self.expire, self.minimum = value.split(' ')
+
     # The record type is defined in the RFC. This will be used when the record
     # is sent by mini-dns.
     RECORD_TYPE = 6

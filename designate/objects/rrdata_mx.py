@@ -39,6 +39,12 @@ class RRData_MX(Record):
         }
     }
 
+    def _to_string(self):
+        return '%(priority)s %(exchange)s' % self
+
+    def _from_string(self, value):
+        self.priority, self.exchange = value.split(' ')
+
     # The record type is defined in the RFC. This will be used when the record
     # is sent by mini-dns.
     RECORD_TYPE = 15

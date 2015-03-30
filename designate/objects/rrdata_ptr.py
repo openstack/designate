@@ -31,6 +31,12 @@ class RRData_PTR(Record):
         }
     }
 
+    def _to_string(self):
+        return self.ptrdname
+
+    def _from_string(self, value):
+        self.ptrdname = value
+
     # The record type is defined in the RFC. This will be used when the record
     # is sent by mini-dns.
     RECORD_TYPE = 12
