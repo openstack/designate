@@ -46,15 +46,13 @@ The following format can be used for common record set types including A, AAAA, 
         Content-Type: application/json
 
         {
-          "recordset" : {
-            "name" : "example.org.",
-            "description" : "This is an example record set.",
-            "type" : "A",
-            "ttl" : 3600,
-            "records" : [
-                "10.1.0.2"
-              ]
-          }
+          "name" : "example.org.",
+          "description" : "This is an example record set.",
+          "type" : "A",
+          "ttl" : 3600,
+          "records" : [
+              "10.1.0.2"
+          ]
         }
 
     **Example response:**
@@ -65,23 +63,21 @@ The following format can be used for common record set types including A, AAAA, 
         Content-Type: application/json
 
         {
-            "recordset": {
-                "description": "This is an example record set.",
-                "links": {
-                    "self": "https://127.0.0.1:9001/v2/zones/2150b1bf-dee2-4221-9d85-11f7886fb15f/recordsets/f7b10e9b-0cae-4a91-b162-562bc6096648"
-                },
-                "updated_at": null,
-                "records": [
-                    "10.1.0.2"
-                ],
-                "ttl": 3600,
-                "id": "f7b10e9b-0cae-4a91-b162-562bc6096648",
-                "name": "example.org.",
-                "zone_id": "2150b1bf-dee2-4221-9d85-11f7886fb15f",
-                "created_at": "2014-10-24T19:59:44.000000",
-                "version": 1,
-                "type": "A"
-            }
+            "description": "This is an example record set.",
+            "links": {
+                "self": "https://127.0.0.1:9001/v2/zones/2150b1bf-dee2-4221-9d85-11f7886fb15f/recordsets/f7b10e9b-0cae-4a91-b162-562bc6096648"
+            },
+            "updated_at": null,
+            "records": [
+                "10.1.0.2"
+            ],
+            "ttl": 3600,
+            "id": "f7b10e9b-0cae-4a91-b162-562bc6096648",
+            "name": "example.org.",
+            "zone_id": "2150b1bf-dee2-4221-9d85-11f7886fb15f",
+            "created_at": "2014-10-24T19:59:44.000000",
+            "version": 1,
+            "type": "A"
         }
 
 
@@ -120,23 +116,21 @@ Get Record Set
         Content-Type: application/json
 
         {
-            "recordset": {
-                "description": "This is an example recordset.",
-                "links": {
-                    "self": "https://127.0.0.1:9001/v2/zones/2150b1bf-dee2-4221-9d85-11f7886fb15f/recordsets/f7b10e9b-0cae-4a91-b162-562bc6096648"
-                },
-                "updated_at": null,
-                "records": [
-                    "10.1.0.2"
-                ],
-                "ttl": 3600,
-                "id": "f7b10e9b-0cae-4a91-b162-562bc6096648",
-                "name": "example.org.",
-                "zone_id": "2150b1bf-dee2-4221-9d85-11f7886fb15f",
-                "created_at": "2014-10-24T19:59:44.000000",
-                "version": 1,
-                "type": "A"
-            }
+            "description": "This is an example recordset.",
+            "links": {
+                "self": "https://127.0.0.1:9001/v2/zones/2150b1bf-dee2-4221-9d85-11f7886fb15f/recordsets/f7b10e9b-0cae-4a91-b162-562bc6096648"
+            },
+            "updated_at": null,
+            "records": [
+                "10.1.0.2"
+            ],
+            "ttl": 3600,
+            "id": "f7b10e9b-0cae-4a91-b162-562bc6096648",
+            "name": "example.org.",
+            "zone_id": "2150b1bf-dee2-4221-9d85-11f7886fb15f",
+            "created_at": "2014-10-24T19:59:44.000000",
+            "version": 1,
+            "type": "A"
         }
 
     :statuscode 200: Success
@@ -248,13 +242,11 @@ Update Record Set
         Content-Type: application/json
 
          {
-           "recordset" : {
-             "description" : "I updated this example.",
-             "ttl" : 60,
-             "records" : [
-                 "10.1.0.2"
-              ]
-           }
+            "description" : "I updated this example.",
+            "ttl" : 60,
+            "records" : [
+               "10.1.0.2"
+            ]
          }
 
     **Response:**
@@ -265,23 +257,21 @@ Update Record Set
         Content-Type: application/json
 
         {
-            "recordset": {
-                "description": "I updated this example.",
-                "ttl": 60,
-                "records": [
-                    "10.1.0.2"
-                ],
-                "links": {
-                    "self": "https://127.0.0.1:9001/v2/zones/2150b1bf-dee2-4221-9d85-11f7886fb15f/recordsets/f7b10e9b-0cae-4a91-b162-562bc6096648"
-                },
-                "updated_at": "2014-10-24T20:15:27.000000",
-                "id": "f7b10e9b-0cae-4a91-b162-562bc6096648",
-                "name": "example.org.",
-                "zone_id": "2150b1bf-dee2-4221-9d85-11f7886fb15f",
-                "created_at": "2014-10-24T19:59:44.000000",
-                "version": 1,
-                "type": "A"
-            }
+            "description": "I updated this example.",
+            "ttl": 60,
+            "records": [
+                "10.1.0.2"
+            ],
+            "links": {
+                "self": "https://127.0.0.1:9001/v2/zones/2150b1bf-dee2-4221-9d85-11f7886fb15f/recordsets/f7b10e9b-0cae-4a91-b162-562bc6096648"
+            },
+            "updated_at": "2014-10-24T20:15:27.000000",
+            "id": "f7b10e9b-0cae-4a91-b162-562bc6096648",
+            "name": "example.org.",
+            "zone_id": "2150b1bf-dee2-4221-9d85-11f7886fb15f",
+            "created_at": "2014-10-24T19:59:44.000000",
+            "version": 2,
+            "type": "A"
         }
 
     :form description: UTF-8 text field
@@ -334,18 +324,16 @@ Create MX Record Set
         Content-Type: application/json
 
         {
-          "recordset" : {
-          "name" : "mail.example.org.",
-          "description" : "An MX recordset.",
-          "type" : "MX",
-          "ttl" : 3600,
-          "records" : [
+            "name" : "mail.example.org.",
+            "description" : "An MX recordset.",
+            "type" : "MX",
+            "ttl" : 3600,
+            "records" : [
                 "10 mail1.example.org.",
-		"20 mail2.example.org.",
-		"30 mail3.example.org.",
-		"40 mail4.example.org."
-              ]
-          }
+                "20 mail2.example.org.",
+                "30 mail3.example.org.",
+                "40 mail4.example.org."
+            ]
         }
 
     **Example response:**
@@ -356,26 +344,24 @@ Create MX Record Set
         Content-Type: application/json
 
         {
-            "recordset": {
-                "description": "An MX recordset.",
-                "links": {
-                    "self": "https://127.0.0.1:9001/v2/zones/2150b1bf-dee2-4221-9d85-11f7886fb15f/recordsets/f7b10e9b-0cae-4a91-b162-562bc6096649"
-                },
-                "updated_at": null,
-                "records" : [
-	            "10 mail1.example.org.",
-		    "20 mail2.example.org.",
-		    "30 mail3.example.org.",
-		    "40 mail4.example.org."
-                ],
-                "ttl": 3600,
-                "id": "f7b10e9b-0cae-4a91-b162-562bc6096649",
-                "name": "mail.example.org.",
-                "zone_id": "2150b1bf-dee2-4221-9d85-11f7886fb15f",
-                "created_at": "2014-10-25T19:59:44.000000",
-                "version": 1,
-                "type": "MX"
-            }
+            "description": "An MX recordset.",
+            "links": {
+                "self": "https://127.0.0.1:9001/v2/zones/2150b1bf-dee2-4221-9d85-11f7886fb15f/recordsets/f7b10e9b-0cae-4a91-b162-562bc6096649"
+            },
+            "updated_at": null,
+            "records" : [
+                "10 mail1.example.org.",
+                "20 mail2.example.org.",
+                "30 mail3.example.org.",
+                "40 mail4.example.org."
+            ],
+            "ttl": 3600,
+            "id": "f7b10e9b-0cae-4a91-b162-562bc6096649",
+            "name": "mail.example.org.",
+            "zone_id": "2150b1bf-dee2-4221-9d85-11f7886fb15f",
+            "created_at": "2014-10-25T19:59:44.000000",
+            "version": 1,
+            "type": "MX"
         }
 
 
@@ -405,7 +391,6 @@ Create SSHFP Record Set
         Content-Type: application/json
 
         {
-          "recordset" : {
           "name" : "foo.example.org.",
           "description" : "An SSHFP recordset.",
           "type" : "SSHFP",
@@ -413,7 +398,6 @@ Create SSHFP Record Set
           "records" : [
             "1 2 aa2df857dc65c5359f02ca75ec5c4308c0100594d931e8d243a42f586257b5e8"
             ]
-          }
         }
 
     **Example response:**
@@ -424,23 +408,21 @@ Create SSHFP Record Set
         Content-Type: application/json
 
         {
-            "recordset": {
-                "description": "An SSHFP recordset.",
-                "links": {
-                    "self": "https://127.0.0.1:9001/v2/zones/2150b1bf-dee2-4221-9d85-11f7886fb15f/recordsets/f7b10e9b-0cae-4a91-b162-562bc6096650"
-                },
-                "updated_at": null,
-                "records" : [
-                    "1 2 aa2df857dc65c5359f02ca75ec5c4308c0100594d931e8d243a42f586257b5e8"
-                  ],
-                "ttl": 3600,
-                "id": "f7b10e9b-0cae-4a91-b162-562bc6096650",
-                "name": "foo.example.org.",
-                "zone_id": "2150b1bf-dee2-4221-9d85-11f7886fb15f",
-                "created_at": "2014-11-10T19:59:44.000000",
-                "version": 1,
-                "type": "SSHFP"
-            }
+            "description": "An SSHFP recordset.",
+            "links": {
+                "self": "https://127.0.0.1:9001/v2/zones/2150b1bf-dee2-4221-9d85-11f7886fb15f/recordsets/f7b10e9b-0cae-4a91-b162-562bc6096650"
+            },
+            "updated_at": null,
+            "records" : [
+                "1 2 aa2df857dc65c5359f02ca75ec5c4308c0100594d931e8d243a42f586257b5e8"
+            ],
+            "ttl": 3600,
+            "id": "f7b10e9b-0cae-4a91-b162-562bc6096650",
+            "name": "foo.example.org.",
+            "zone_id": "2150b1bf-dee2-4221-9d85-11f7886fb15f",
+            "created_at": "2014-11-10T19:59:44.000000",
+            "version": 1,
+            "type": "SSHFP"
         }
 
 
@@ -470,7 +452,6 @@ Create SPF Record Set
         Content-Type: application/json
 
         {
-          "recordset" : {
           "name" : "foospf.example.org.",
           "description" : "An SPF recordset.",
           "type" : "SPF",
@@ -478,7 +459,6 @@ Create SPF Record Set
           "records" : [
               "v=spf1 +all"
             ]
-          }
         }
 
     **Example response:**
@@ -489,23 +469,21 @@ Create SPF Record Set
         Content-Type: application/json
 
         {
-            "recordset": {
-                "description": "An SPF recordset.",
-                "links": {
-                    "self": "https://127.0.0.1:9001/v2/zones/2150b1bf-dee2-4221-9d85-11f7886fb15f/recordsets/f7b10e9b-0cae-4a91-b162-562bc6096651"
-                },
-                "updated_at": null,
-                "records" : [
-                    "v=spf1 +all"
-                  ],
-                "ttl": 3600,
-                "id": "f7b10e9b-0cae-4a91-b162-562bc6096651",
-                "name": "foospf.example.org.",
-                "zone_id": "2150b1bf-dee2-4221-9d85-11f7886fb15f",
-                "created_at": "2014-11-10T19:59:44.000000",
-                "version": 1,
-                "type": "SPF"
-            }
+            "description": "An SPF recordset.",
+            "links": {
+                "self": "https://127.0.0.1:9001/v2/zones/2150b1bf-dee2-4221-9d85-11f7886fb15f/recordsets/f7b10e9b-0cae-4a91-b162-562bc6096651"
+            },
+            "updated_at": null,
+            "records" : [
+                "v=spf1 +all"
+            ],
+            "ttl": 3600,
+            "id": "f7b10e9b-0cae-4a91-b162-562bc6096651",
+            "name": "foospf.example.org.",
+            "zone_id": "2150b1bf-dee2-4221-9d85-11f7886fb15f",
+            "created_at": "2014-11-10T19:59:44.000000",
+            "version": 1,
+            "type": "SPF"
         }
 
 
@@ -535,7 +513,6 @@ Create SRV Record Set
         Content-Type: application/json
 
         {
-          "recordset" : {
           "name" : "_sip.tcp.example.org.",
           "description" : "An SRV recordset.",
           "type" : "SRV",
@@ -543,7 +520,6 @@ Create SRV Record Set
           "records" : [
               "10 0 5060 server1.example.org."
             ]
-          }
         }
 
     **Example response:**
@@ -554,23 +530,21 @@ Create SRV Record Set
         Content-Type: application/json
 
         {
-            "recordset": {
-                "description": "An SRV recordset.",
-                "links": {
-                    "self": "https://127.0.0.1:9001/v2/zones/2150b1bf-dee2-4221-9d85-11f7886fb15f/recordsets/f7b10e9b-0cae-4a91-b162-562bc6096652"
-                },
-                "updated_at": null,
-                "records" : [
-                    "10 0 5060 server1.example.org."
-                  ],
-                "ttl": 3600,
-                "id": "f7b10e9b-0cae-4a91-b162-562bc6096652",
-                "name": "_sip.tcp.example.org.",
-                "zone_id": "2150b1bf-dee2-4221-9d85-11f7886fb15f",
-                "created_at": "2014-11-10T19:59:44.000000",
-                "version": 1,
-                "type": "SRV"
-            }
+            "description": "An SRV recordset.",
+            "links": {
+                "self": "https://127.0.0.1:9001/v2/zones/2150b1bf-dee2-4221-9d85-11f7886fb15f/recordsets/f7b10e9b-0cae-4a91-b162-562bc6096652"
+            },
+            "updated_at": null,
+            "records" : [
+                "10 0 5060 server1.example.org."
+            ],
+            "ttl": 3600,
+            "id": "f7b10e9b-0cae-4a91-b162-562bc6096652",
+            "name": "_sip.tcp.example.org.",
+            "zone_id": "2150b1bf-dee2-4221-9d85-11f7886fb15f",
+            "created_at": "2014-11-10T19:59:44.000000",
+            "version": 1,
+            "type": "SRV"
         }
 
 

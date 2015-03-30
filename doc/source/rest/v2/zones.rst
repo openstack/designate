@@ -37,12 +37,10 @@ Create Zone
         Content-Type: application/json
 
         {
-          "zone": {
             "name": "example.org.",
             "email": "joe@example.org",
             "ttl": 7200,
             "description": "This is an example zone."
-          }
         }
 
     **Example response:**
@@ -53,7 +51,6 @@ Create Zone
         Content-Type: application/json
 
         {
-          "zone": {
             "id": "a86dba58-0043-4cc6-a1bb-69d5e86f3ca3",
             "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2",
             "project_id": "4335d1f0-f793-11e2-b778-0800200c9a66",
@@ -72,7 +69,6 @@ Create Zone
             "links": {
               "self": "https://127.0.0.1:9001/v2/zones/a86dba58-0043-4cc6-a1bb-69d5e86f3ca3"
             }
-          }
         }
 
     :form description: UTF-8 text field.
@@ -112,7 +108,6 @@ Get Zone
         Content-Type: application/json
 
         {
-          "zone": {
             "id": "a86dba58-0043-4cc6-a1bb-69d5e86f3ca3",
             "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2",
             "project_id": "4335d1f0-f793-11e2-b778-0800200c9a66",
@@ -131,7 +126,6 @@ Get Zone
             "links": {
               "self": "https://127.0.0.1:9001/v2/zones/a86dba58-0043-4cc6-a1bb-69d5e86f3ca3"
             }
-          }
         }
 
     :statuscode 200: Success
@@ -229,9 +223,7 @@ Update Zone
         Content-Type: application/json
 
         {
-          "zone": {
             "ttl": 3600
-          }
         }
 
     **Response:**
@@ -242,7 +234,6 @@ Update Zone
         Content-Type: application/json
 
         {
-          "zone": {
             "id": "a86dba58-0043-4cc6-a1bb-69d5e86f3ca3",
             "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2",
             "project_id": "4335d1f0-f793-11e2-b778-0800200c9a66",
@@ -261,7 +252,6 @@ Update Zone
             "links": {
               "self": "https://127.0.0.1:9001/v2/zones/a86dba58-0043-4cc6-a1bb-69d5e86f3ca3"
             }
-          }
         }
 
     :form description: UTF-8 text field.
@@ -334,24 +324,22 @@ Import Zone
         Content-Type: application/json
 
         {
-            "zone": {
-                "email": "nsadmin@example.com",
-                "id": "6b78734a-aef1-45cd-9708-8eb3c2d26ff1",
-                "links": {
-                    "self": "http://127.0.0.1:9001/v2/zones/6b78734a-aef1-45cd-9708-8eb3c2d26ff1"
-                },
-                "name": "example.com.",
-                "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2",
-                "project_id": "d7accc2f8ce343318386886953f2fc6a",
-                "serial": 1404757531,
-                "ttl": "42",
-                "created_at": "2014-07-07T18:25:31.275934",
-                "updated_at": null,
-                "version": 1,
-                "masters": [],
-                "type": "PRIMARY",
-                "transferred_at": null
-            }
+            "email": "nsadmin@example.com",
+            "id": "6b78734a-aef1-45cd-9708-8eb3c2d26ff1",
+            "links": {
+                "self": "http://127.0.0.1:9001/v2/zones/6b78734a-aef1-45cd-9708-8eb3c2d26ff1"
+            },
+            "name": "example.com.",
+            "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2",
+            "project_id": "d7accc2f8ce343318386886953f2fc6a",
+            "serial": 1404757531,
+            "ttl": "42",
+            "created_at": "2014-07-07T18:25:31.275934",
+            "updated_at": null,
+            "version": 1,
+            "masters": [],
+            "type": "PRIMARY",
+            "transferred_at": null
         }
 
     :statuscode 201: Created
@@ -465,10 +453,8 @@ Create Zone Transfer Request
         Content-Type: application/json
 
         {
-            "transfer_request":{
-                "target_project_id": "123456",
-                "description": "Transfer qa.dev.example.com. to QA Team"
-            }
+            "target_project_id": "123456",
+            "description": "Transfer qa.dev.example.com. to QA Team"
         }
 
     **Example Response**
@@ -479,20 +465,18 @@ Create Zone Transfer Request
         Content-Type: application/json
 
         {
-            "transfer_request": {
-                "created_at": "2014-07-17T20:34:40.882579",
-                "description": null,
-                "id": "f2ad17b5-807a-423f-a991-e06236c247be",
-                "key": "9Z2R50Y0",
-                "project_id": "1",
-                "status": "ACTIVE",
-                "target_project_id": "123456",
-                "updated_at": null,
-                "zone_id": "6b78734a-aef1-45cd-9708-8eb3c2d26ff8",
-                "zone_name": "qa.dev.example.com.",
-                "links": {
-                    "self": "http://127.0.0.1:9001/v2/zones/tasks/transfer_requests/f2ad17b5-807a-423f-a991-e06236c247be"
-                }
+            "created_at": "2014-07-17T20:34:40.882579",
+            "description": null,
+            "id": "f2ad17b5-807a-423f-a991-e06236c247be",
+            "key": "9Z2R50Y0",
+            "project_id": "1",
+            "status": "ACTIVE",
+            "target_project_id": "123456",
+            "updated_at": null,
+            "zone_id": "6b78734a-aef1-45cd-9708-8eb3c2d26ff8",
+            "zone_name": "qa.dev.example.com.",
+            "links": {
+                "self": "http://127.0.0.1:9001/v2/zones/tasks/transfer_requests/f2ad17b5-807a-423f-a991-e06236c247be"
             }
         }
 
@@ -583,15 +567,13 @@ View a Transfer Request
         Content-Type: application/json
 
         {
-            "transfer_request":{
-                "description": "This is scoped to the requesting project",
-                "id": "efd2d720-b0c4-43d4-99f7-d9b53e08860d",
-                "zone_id": "2c4d5e37-f823-4bee-9859-031cb44f80e7",
-                "zone_name": "subdomain.example.com.",
-                "status": "ACTIVE",
-                "links": {
-                    "self": "http://127.0.0.1:9001/v2/zones/tasks/transfer_requests/efd2d720-b0c4-43d4-99f7-d9b53e08860d"
-                }
+            "description": "This is scoped to the requesting project",
+            "id": "efd2d720-b0c4-43d4-99f7-d9b53e08860d",
+            "zone_id": "2c4d5e37-f823-4bee-9859-031cb44f80e7",
+            "zone_name": "subdomain.example.com.",
+            "status": "ACTIVE",
+            "links": {
+                "self": "http://127.0.0.1:9001/v2/zones/tasks/transfer_requests/efd2d720-b0c4-43d4-99f7-d9b53e08860d"
             }
         }
 
@@ -616,10 +598,8 @@ Accept a Transfer Request
         Content-Type: application/json
 
         {
-            "transfer_accept":{
-                "key":"9Z2R50Y0",
-                "zone_transfer_request_id":"f2ad17b5-807a-423f-a991-e06236c247be"
-            }
+            "key":"9Z2R50Y0",
+            "zone_transfer_request_id":"f2ad17b5-807a-423f-a991-e06236c247be"
         }
 
     **Example Response**
@@ -630,13 +610,11 @@ Accept a Transfer Request
         Content-Type: application/json
 
         {
-            "transfer_accept": {
-                "id": "581891d5-99f5-49e1-86c3-eec0f44d66fd",
-                "links": {
-                    "self": "http://127.0.0.1:9001/v2/zones/tasks/transfer_accepts/581891d5-99f5-49e1-86c3-eec0f44d66fd",
-                    "zone": "http://127.0.0.1:9001/v2/zones/6b78734a-aef1-45cd-9708-8eb3c2d26ff8"
-                },
-                "status": "COMPLETE"
-            }
+            "id": "581891d5-99f5-49e1-86c3-eec0f44d66fd",
+            "links": {
+                "self": "http://127.0.0.1:9001/v2/zones/tasks/transfer_accepts/581891d5-99f5-49e1-86c3-eec0f44d66fd",
+                "zone": "http://127.0.0.1:9001/v2/zones/6b78734a-aef1-45cd-9708-8eb3c2d26ff8"
+            },
+            "status": "COMPLETE"
         }
 

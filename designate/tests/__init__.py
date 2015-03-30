@@ -194,13 +194,13 @@ class TestCase(base.BaseTestCase):
         {'name': 'Pool-One',
          'description': 'Pool-One description',
          'attributes': [{'key': 'scope', 'value': 'public'}],
-         'ns_records': [{'priority': 0, 'hostname': 'ns1.example.org.'},
-                        {'priority': 1, 'hostname': 'ns2.example.org.'}]},
+         'ns_records': [{'priority': 1, 'hostname': 'ns1.example.org.'},
+                        {'priority': 2, 'hostname': 'ns2.example.org.'}]},
 
         {'name': 'Pool-Two',
          'description': 'Pool-Two description',
          'attributes': [{'key': 'scope', 'value': 'public'}],
-         'ns_records': [{'priority': 0, 'hostname': 'ns1.example.org.'}]},
+         'ns_records': [{'priority': 1, 'hostname': 'ns1.example.org.'}]},
     ]
 
     pool_attribute_fixtures = [

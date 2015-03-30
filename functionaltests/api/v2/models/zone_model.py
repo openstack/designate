@@ -16,18 +16,12 @@ limitations under the License.
 
 from functionaltests.common.models import BaseModel
 from functionaltests.common.models import CollectionModel
-from functionaltests.common.models import EntityModel
 
 
-class ZoneData(BaseModel):
+class ZoneModel(BaseModel):
     pass
-
-
-class ZoneModel(EntityModel):
-    ENTITY_NAME = 'zone'
-    MODEL_TYPE = ZoneData
 
 
 class ZoneListModel(CollectionModel):
     COLLECTION_NAME = 'zones'
-    MODEL_TYPE = ZoneData
+    MODEL_TYPE = ZoneModel

@@ -17,20 +17,15 @@
 import pecan
 from oslo_log import log as logging
 
-from designate import schema
 from designate import utils
 from designate.api.v2.controllers import rest
-from designate.api.v2.views import tsigkeys as tsigkeys_view
 from designate.objects import TsigKey
-
+from designate.objects.adapters import DesignateAdapter
 
 LOG = logging.getLogger(__name__)
 
 
 class TsigKeysController(rest.RestController):
-    _view = tsigkeys_view.TsigKeysView()
-    _resource_schema = schema.Schema('v2', 'tsigkey')
-    _collection_schema = schema.Schema('v2', 'tsigkeys')
     SORT_KEYS = ['created_at', 'id', 'updated_at', 'name']
 
     @pecan.expose(template='json:', content_type='application/json')
@@ -41,9 +36,10 @@ class TsigKeysController(rest.RestController):
         request = pecan.request
         context = request.environ['context']
 
-        tsigkey = self.central_api.get_tsigkey(context, tsigkey_id)
-
-        return self._view.show(context, request, tsigkey)
+        return DesignateAdapter.render(
+            'API_v2',
+            self.central_api.get_tsigkey(context, tsigkey_id),
+            request=request)
 
     @pecan.expose(template='json:', content_type='application/json')
     def get_all(self, **params):
@@ -59,10 +55,11 @@ class TsigKeysController(rest.RestController):
         criterion = dict((k, params[k]) for k in accepted_filters
                          if k in params)
 
-        tsigkey = self.central_api.find_tsigkeys(
-            context, criterion, marker, limit, sort_key, sort_dir)
-
-        return self._view.list(context, request, tsigkey)
+        return DesignateAdapter.render(
+            'API_v2',
+            self.central_api.find_tsigkeys(
+                context, criterion, marker, limit, sort_key, sort_dir),
+            request=request)
 
     @pecan.expose(template='json:', content_type='application/json')
     def post_all(self):
@@ -70,26 +67,22 @@ class TsigKeysController(rest.RestController):
         request = pecan.request
         response = pecan.response
         context = request.environ['context']
-
         body = request.body_dict
 
-        # Validate the request conforms to the schema
-        self._resource_schema.validate(body)
+        tsigkey = DesignateAdapter.parse('API_v2', body, TsigKey())
 
-        # Convert from APIv2 -> Central format
-        values = self._view.load(context, request, body)
+        tsigkey.validate()
 
         # Create the tsigkey
         tsigkey = self.central_api.create_tsigkey(
-            context, TsigKey(**values))
+            context, tsigkey)
 
+        tsigkey = DesignateAdapter.render('API_v2', tsigkey, request=request)
+
+        response.headers['Location'] = tsigkey['links']['self']
         response.status_int = 201
-
-        response.headers['Location'] = self._view._get_resource_href(
-            request, tsigkey)
-
         # Prepare and return the response body
-        return self._view.show(context, request, tsigkey)
+        return tsigkey
 
     @pecan.expose(template='json:', content_type='application/json')
     @pecan.expose(template='json:', content_type='application/json-patch+json')
@@ -101,27 +94,23 @@ class TsigKeysController(rest.RestController):
         body = request.body_dict
         response = pecan.response
 
+        if request.content_type == 'application/json-patch+json':
+            raise NotImplemented('json-patch not implemented')
+
         # Fetch the existing tsigkey entry
         tsigkey = self.central_api.get_tsigkey(context, tsigkey_id)
 
-        # Convert to APIv2 Format
-        tsigkey_data = self._view.show(context, request, tsigkey)
+        tsigkey = DesignateAdapter.parse('API_v2', body, tsigkey)
 
-        if request.content_type == 'application/json-patch+json':
-            raise NotImplemented('json-patch not implemented')
-        else:
-            tsigkey_data = utils.deep_dict_merge(tsigkey_data, body)
+        # Validate the new set of data
+        tsigkey.validate()
 
-            # Validate the new set of data
-            self._resource_schema.validate(tsigkey_data)
-
-            # Update and persist the resource
-            tsigkey.update(self._view.load(context, request, body))
-            tsigkey = self.central_api.update_tsigkey(context, tsigkey)
+        # Update and persist the resource
+        tsigkey = self.central_api.update_tsigkey(context, tsigkey)
 
         response.status_int = 200
 
-        return self._view.show(context, request, tsigkey)
+        return DesignateAdapter.render('API_v2', tsigkey, request=request)
 
     @pecan.expose(template=None, content_type='application/json')
     @utils.validate_uuid('tsigkey_id')

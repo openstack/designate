@@ -27,7 +27,7 @@ The quotas extension can be used to retrieve a tenant's absolute limits.
 If Designate returns a 404 error, ensure that the following line has been
 added to the designate.conf file::
 
-    enabled_extensions_v2 = quotas
+    enabled_extensions_admin = quotas
 
 Once this line has been added, restart the designate-central and designate-api
 services.
@@ -44,7 +44,7 @@ Get Quotas
 
     .. sourcecode:: http
 
-        GET /v2/quotas/12345 HTTP/1.1
+        GET /admin/quotas/12345 HTTP/1.1
         Host: 127.0.0.1:9001
         Accept: application/json
         Content-Type: application/json
@@ -85,7 +85,7 @@ Update Quotas
 
     .. sourcecode:: http
 
-        PATCH /v2/quotas/12345 HTTP/1.1
+        PATCH /admin/quotas/12345 HTTP/1.1
         Host: 127.0.0.1:9001
         Accept: application/json
         Content-Type: application/json
@@ -128,7 +128,7 @@ Reset Quotas to Default
 
     .. sourcecode:: http
 
-        DELETE /v2/quotas/12345 HTTP/1.1
+        DELETE /admin/quotas/12345 HTTP/1.1
         Host: 127.0.0.1:9001
         Accept: application/json
         Content-Type: application/json

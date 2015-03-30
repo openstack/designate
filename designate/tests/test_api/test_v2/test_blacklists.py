@@ -58,16 +58,15 @@ class ApiV2BlacklistsTest(ApiV2TestCase):
         self.assertEqual('application/json', response.content_type)
 
         # Verify the body structure
-        self.assertIn('blacklist', response.json)
-        self.assertIn('links', response.json['blacklist'])
-        self.assertIn('self', response.json['blacklist']['links'])
+        self.assertIn('links', response.json)
+        self.assertIn('self', response.json['links'])
 
         # Verify the returned values
-        self.assertIn('id', response.json['blacklist'])
-        self.assertIn('created_at', response.json['blacklist'])
-        self.assertIsNone(response.json['blacklist']['updated_at'])
+        self.assertIn('id', response.json)
+        self.assertIn('created_at', response.json)
+        self.assertIsNone(response.json['updated_at'])
         self.assertEqual(self.get_blacklist_fixture(0)['pattern'],
-                         response.json['blacklist']['pattern'])
+                         response.json['pattern'])
 
     def test_get_bkaclist_invalid_id(self):
         self._assert_invalid_uuid(self.client.get, '/blacklists/%s')
@@ -75,24 +74,22 @@ class ApiV2BlacklistsTest(ApiV2TestCase):
     def test_create_blacklist(self):
         self.policy({'create_blacklist': '@'})
         fixture = self.get_blacklist_fixture(0)
-        response = self.client.post_json('/blacklists/',
-                                         {'blacklist': fixture})
+        response = self.client.post_json('/blacklists/', fixture)
 
         # Verify the headers
         self.assertEqual(201, response.status_int)
         self.assertEqual('application/json', response.content_type)
 
         # Verify the body structure
-        self.assertIn('blacklist', response.json)
-        self.assertIn('links', response.json['blacklist'])
-        self.assertIn('self', response.json['blacklist']['links'])
+        self.assertIn('links', response.json)
+        self.assertIn('self', response.json['links'])
 
         # Verify the returned values
-        self.assertIn('id', response.json['blacklist'])
-        self.assertIn('created_at', response.json['blacklist'])
-        self.assertIsNone(response.json['blacklist']['updated_at'])
+        self.assertIn('id', response.json)
+        self.assertIn('created_at', response.json)
+        self.assertIsNone(response.json['updated_at'])
         self.assertEqual(fixture['pattern'],
-                         response.json['blacklist']['pattern'])
+                         response.json['pattern'])
 
     def test_delete_blacklist(self):
         blacklist = self.create_blacklist(fixture=0)
@@ -108,8 +105,7 @@ class ApiV2BlacklistsTest(ApiV2TestCase):
         self.policy({'update_blacklist': '@'})
 
         # Prepare the update body
-        body = {'blacklist': {'description': 'prefix-%s' %
-                                             blacklist['description']}}
+        body = {'description': 'prefix-%s' % blacklist['description']}
 
         response = self.client.patch_json('/blacklists/%s' %
                                           blacklist['id'], body,
@@ -120,15 +116,14 @@ class ApiV2BlacklistsTest(ApiV2TestCase):
         self.assertEqual('application/json', response.content_type)
 
         # Verify the body structure
-        self.assertIn('blacklist', response.json)
-        self.assertIn('links', response.json['blacklist'])
-        self.assertIn('self', response.json['blacklist']['links'])
+        self.assertIn('links', response.json)
+        self.assertIn('self', response.json['links'])
 
         # Verify the returned values
-        self.assertIn('id', response.json['blacklist'])
-        self.assertIsNotNone(response.json['blacklist']['updated_at'])
+        self.assertIn('id', response.json)
+        self.assertIsNotNone(response.json['updated_at'])
         self.assertEqual('prefix-%s' % blacklist['description'],
-                         response.json['blacklist']['description'])
+                         response.json['description'])
 
     def test_update_bkaclist_invalid_id(self):
         self._assert_invalid_uuid(self.client.patch_json, '/blacklists/%s')

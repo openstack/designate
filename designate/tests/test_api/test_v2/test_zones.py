@@ -38,54 +38,52 @@ class ApiV2ZonesTest(ApiV2TestCase):
         # Create a zone
         fixture = self.get_domain_fixture(fixture=0)
 
-        response = self.client.post_json('/zones/', {'zone': fixture})
+        response = self.client.post_json('/zones/', fixture)
 
         # Check the headers are what we expect
         self.assertEqual(202, response.status_int)
         self.assertEqual('application/json', response.content_type)
 
         # Check the body structure is what we expect
-        self.assertIn('zone', response.json)
-        self.assertIn('links', response.json['zone'])
-        self.assertIn('self', response.json['zone']['links'])
+        self.assertIn('links', response.json)
+        self.assertIn('self', response.json['links'])
 
         # Check the values returned are what we expect
-        self.assertIn('id', response.json['zone'])
-        self.assertIn('created_at', response.json['zone'])
-        self.assertEqual('PENDING', response.json['zone']['status'])
-        self.assertEqual('PRIMARY', response.json['zone']['type'])
-        self.assertEqual([], response.json['zone']['masters'])
-        self.assertIsNone(response.json['zone']['updated_at'])
+        self.assertIn('id', response.json)
+        self.assertIn('created_at', response.json)
+        self.assertEqual('PENDING', response.json['status'])
+        self.assertEqual('PRIMARY', response.json['type'])
+        self.assertEqual([], response.json['masters'])
+        self.assertIsNone(response.json['updated_at'])
 
         for k in fixture:
-            self.assertEqual(fixture[k], response.json['zone'][k])
+            self.assertEqual(fixture[k], response.json[k])
 
     def test_create_zone_no_type(self):
         # Create a zone
         fixture = self.get_domain_fixture(fixture=0)
         del fixture['type']
 
-        response = self.client.post_json('/zones/', {'zone': fixture})
+        response = self.client.post_json('/zones/', fixture)
 
         # Check the headers are what we expect
         self.assertEqual(202, response.status_int)
         self.assertEqual('application/json', response.content_type)
 
         # Check the body structure is what we expect
-        self.assertIn('zone', response.json)
-        self.assertIn('links', response.json['zone'])
-        self.assertIn('self', response.json['zone']['links'])
+        self.assertIn('links', response.json)
+        self.assertIn('self', response.json['links'])
 
         # Check the values returned are what we expect
-        self.assertIn('id', response.json['zone'])
-        self.assertIn('created_at', response.json['zone'])
-        self.assertEqual('PENDING', response.json['zone']['status'])
-        self.assertEqual('PRIMARY', response.json['zone']['type'])
-        self.assertEqual([], response.json['zone']['masters'])
-        self.assertIsNone(response.json['zone']['updated_at'])
+        self.assertIn('id', response.json)
+        self.assertIn('created_at', response.json)
+        self.assertEqual('PENDING', response.json['status'])
+        self.assertEqual('PRIMARY', response.json['type'])
+        self.assertEqual([], response.json['masters'])
+        self.assertIsNone(response.json['updated_at'])
 
         for k in fixture:
-            self.assertEqual(fixture[k], response.json['zone'][k])
+            self.assertEqual(fixture[k], response.json[k])
 
     def test_create_zone_validation(self):
         # NOTE: The schemas should be tested separately to the API. So we
@@ -93,18 +91,11 @@ class ApiV2ZonesTest(ApiV2TestCase):
         # Fetch a fixture
         fixture = self.get_domain_fixture(fixture=0)
 
-        # Add a junk field to the wrapper
-        body = {'zone': fixture, 'junk': 'Junk Field'}
-
-        # Ensure it fails with a 400
-        self._assert_exception('invalid_object', 400, self.client.post_json,
-                               '/zones', body)
-
         # Add a junk field to the body
         fixture['junk'] = 'Junk Field'
 
         # Ensure it fails with a 400
-        body = {'zone': fixture}
+        body = fixture
 
         self._assert_exception('invalid_object', 400, self.client.post_json,
                                '/zones', body)
@@ -114,7 +105,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
         # Add id to the body
         fixture['id'] = '2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980'
         # Ensure it fails with a 400
-        body = {'zone': fixture}
+        body = fixture
         self._assert_exception('invalid_object', 400, self.client.post_json,
                                '/zones', body)
 
@@ -122,7 +113,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
         # Add created_at to the body
         fixture['created_at'] = '2014-03-12T19:07:53.000000'
         # Ensure it fails with a 400
-        body = {'zone': fixture}
+        body = fixture
         self._assert_exception('invalid_object', 400, self.client.post_json,
                                '/zones', body)
 
@@ -132,14 +123,14 @@ class ApiV2ZonesTest(ApiV2TestCase):
 
         # Ensure it fails with a 400
         self._assert_exception('invalid_object', 400, self.client.post_json,
-                               '/zones', {'zone': fixture})
+                               '/zones', fixture)
 
     @patch.object(central_service.Service, 'create_domain',
                   side_effect=messaging.MessagingTimeout())
     def test_create_zone_timeout(self, _):
         fixture = self.get_domain_fixture(fixture=0)
 
-        body = {'zone': fixture}
+        body = fixture
 
         self._assert_exception('timeout', 504, self.client.post_json,
                                '/zones/', body)
@@ -149,7 +140,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
     def test_create_zone_duplicate(self, _):
         fixture = self.get_domain_fixture(fixture=0)
 
-        body = {'zone': fixture}
+        body = fixture
 
         self._assert_exception('duplicate_domain', 409, self.client.post_json,
                                '/zones/', body)
@@ -215,17 +206,16 @@ class ApiV2ZonesTest(ApiV2TestCase):
         self.assertEqual('application/json', response.content_type)
 
         # Check the body structure is what we expect
-        self.assertIn('zone', response.json)
-        self.assertIn('links', response.json['zone'])
-        self.assertIn('self', response.json['zone']['links'])
+        self.assertIn('links', response.json)
+        self.assertIn('self', response.json['links'])
 
         # Check the values returned are what we expect
-        self.assertIn('id', response.json['zone'])
-        self.assertIn('created_at', response.json['zone'])
-        self.assertEqual('PENDING', response.json['zone']['status'])
-        self.assertIsNone(response.json['zone']['updated_at'])
-        self.assertEqual(zone['name'], response.json['zone']['name'])
-        self.assertEqual(zone['email'], response.json['zone']['email'])
+        self.assertIn('id', response.json)
+        self.assertIn('created_at', response.json)
+        self.assertEqual('PENDING', response.json['status'])
+        self.assertIsNone(response.json['updated_at'])
+        self.assertEqual(zone['name'], response.json['name'])
+        self.assertEqual(zone['email'], response.json['email'])
 
     def test_get_zone_invalid_id(self):
         self._assert_invalid_uuid(self.client.get, '/zones/%s')
@@ -259,7 +249,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
         zone = self.create_domain()
 
         # Prepare an update body
-        body = {'zone': {'email': 'prefix-%s' % zone['email']}}
+        body = {'email': 'prefix-%s' % zone['email']}
 
         response = self.client.patch_json('/zones/%s' % zone['id'], body,
                                           status=202)
@@ -269,16 +259,15 @@ class ApiV2ZonesTest(ApiV2TestCase):
         self.assertEqual('application/json', response.content_type)
 
         # Check the body structure is what we expect
-        self.assertIn('zone', response.json)
-        self.assertIn('links', response.json['zone'])
-        self.assertIn('self', response.json['zone']['links'])
-        self.assertIn('status', response.json['zone'])
+        self.assertIn('links', response.json)
+        self.assertIn('self', response.json['links'])
+        self.assertIn('status', response.json)
 
         # Check the values returned are what we expect
-        self.assertIn('id', response.json['zone'])
-        self.assertIsNotNone(response.json['zone']['updated_at'])
+        self.assertIn('id', response.json)
+        self.assertIsNotNone(response.json['updated_at'])
         self.assertEqual('prefix-%s' % zone['email'],
-                         response.json['zone']['email'])
+                         response.json['email'])
 
     def test_update_zone_invalid_id(self):
         self._assert_invalid_uuid(self.client.patch_json, '/zones/%s')
@@ -289,8 +278,8 @@ class ApiV2ZonesTest(ApiV2TestCase):
         # Create a zone
         zone = self.create_domain()
 
-        # Prepare an update body with junk in the wrapper
-        body = {'zone': {'email': 'prefix-%s' % zone['email']},
+        # Prepare an update body with junk in the body
+        body = {'email': 'prefix-%s' % zone['email'],
                 'junk': 'Junk Field'}
 
         url = '/zones/%s' % zone['id']
@@ -299,25 +288,17 @@ class ApiV2ZonesTest(ApiV2TestCase):
         self._assert_exception('invalid_object', 400, self.client.patch_json,
                                url, body)
 
-        # Prepare an update body with junk in the body
-        body = {'zone': {'email': 'prefix-%s' % zone['email'],
-                         'junk': 'Junk Field'}}
-
-        # Ensure it fails with a 400
-        self._assert_exception('invalid_object', 400, self.client.patch_json,
-                               url, body)
-
         # Prepare an update body with negative ttl in the body
-        body = {'zone': {'email': 'prefix-%s' % zone['email'],
-                         'ttl': -20}}
+        body = {'email': 'prefix-%s' % zone['email'],
+                'ttl': -20}
 
         # Ensure it fails with a 400
         self._assert_exception('invalid_object', 400, self.client.patch_json,
                                url, body)
 
         # Prepare an update body with ttl > maximum (2147483647) in the body
-        body = {'zone': {'email': 'prefix-%s' % zone['email'],
-                         'ttl': 2147483648}}
+        body = {'email': 'prefix-%s' % zone['email'],
+                'ttl': 2147483648}
 
         # Ensure it fails with a 400
         self._assert_exception('invalid_object', 400, self.client.patch_json,
@@ -327,7 +308,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
                   side_effect=exceptions.DuplicateDomain())
     def test_update_zone_duplicate(self, _):
         # Prepare an update body
-        body = {'zone': {'email': 'example@example.org'}}
+        body = {'email': 'example@example.org'}
 
         url = '/zones/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980'
 
@@ -339,7 +320,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
                   side_effect=messaging.MessagingTimeout())
     def test_update_zone_timeout(self, _):
         # Prepare an update body
-        body = {'zone': {'email': 'example@example.org'}}
+        body = {'email': 'example@example.org'}
 
         url = '/zones/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980'
 
@@ -351,7 +332,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
                   side_effect=exceptions.DomainNotFound())
     def test_update_zone_missing(self, _):
         # Prepare an update body
-        body = {'zone': {'email': 'example@example.org'}}
+        body = {'email': 'example@example.org'}
 
         url = '/zones/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980'
 
@@ -367,9 +348,8 @@ class ApiV2ZonesTest(ApiV2TestCase):
         # Check the headers are what we expect
         self.assertEqual(202, response.status_int)
         self.assertEqual('application/json', response.content_type)
-        self.assertIn('zone', response.json)
-        self.assertEqual('DELETE', response.json['zone']['action'])
-        self.assertEqual('PENDING', response.json['zone']['status'])
+        self.assertEqual('DELETE', response.json['action'])
+        self.assertEqual('PENDING', response.json['status'])
 
     def test_delete_zone_invalid_id(self):
         self._assert_invalid_uuid(self.client.delete, '/zones/%s')
@@ -422,39 +402,38 @@ class ApiV2ZonesTest(ApiV2TestCase):
         fixture = self.get_domain_fixture('SECONDARY', 0)
         fixture['masters'] = ["10.0.0.1"]
 
-        response = self.client.post_json('/zones/', {'zone': fixture})
+        response = self.client.post_json('/zones/', fixture)
 
         # Check the headers are what we expect
         self.assertEqual(202, response.status_int)
         self.assertEqual('application/json', response.content_type)
 
         # Check the body structure is what we expect
-        self.assertIn('zone', response.json)
-        self.assertIn('links', response.json['zone'])
-        self.assertIn('self', response.json['zone']['links'])
+        self.assertIn('links', response.json)
+        self.assertIn('self', response.json['links'])
 
         # Check the values returned are what we expect
-        self.assertIn('id', response.json['zone'])
-        self.assertIn('created_at', response.json['zone'])
-        self.assertEqual('PENDING', response.json['zone']['status'])
+        self.assertIn('id', response.json)
+        self.assertIn('created_at', response.json)
+        self.assertEqual('PENDING', response.json['status'])
         self.assertEqual(cfg.CONF['service:central'].managed_resource_email,
-                         response.json['zone']['email'])
+                         response.json['email'])
 
-        self.assertIsNone(response.json['zone']['updated_at'])
+        self.assertIsNone(response.json['updated_at'])
         # Zone is not transferred yet
-        self.assertIsNone(response.json['zone']['transferred_at'])
+        self.assertIsNone(response.json['transferred_at'])
         # Serial defaults to 1
-        self.assertEqual(response.json['zone']['serial'], 1)
+        self.assertEqual(response.json['serial'], 1)
 
         for k in fixture:
-            self.assertEqual(fixture[k], response.json['zone'][k])
+            self.assertEqual(fixture[k], response.json[k])
 
     def test_create_secondary_no_masters(self):
         # Create a zone
         fixture = self.get_domain_fixture('SECONDARY', 0)
 
         self._assert_exception('invalid_object', 400, self.client.post_json,
-                               '/zones/', {'zone': fixture})
+                               '/zones/', fixture)
 
     def test_update_secondary(self):
         # Create a zone
@@ -468,7 +447,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
         masters = ['10.0.0.1', '10.0.0.2']
 
         # Prepare an update body
-        body = {'zone': {'masters': masters}}
+        body = {'masters': masters}
 
         response = self.client.patch_json('/zones/%s' % zone['id'], body,
                                           status=202)
@@ -478,16 +457,15 @@ class ApiV2ZonesTest(ApiV2TestCase):
         self.assertEqual('application/json', response.content_type)
 
         # Check the body structure is what we expect
-        self.assertIn('zone', response.json)
-        self.assertIn('links', response.json['zone'])
-        self.assertIn('self', response.json['zone']['links'])
-        self.assertIn('status', response.json['zone'])
+        self.assertIn('links', response.json)
+        self.assertIn('self', response.json['links'])
+        self.assertIn('status', response.json)
 
         # Check the values returned are what we expect
-        self.assertIn('id', response.json['zone'])
-        self.assertIsNotNone(response.json['zone']['updated_at'])
-        self.assertEqual(masters, response.json['zone']['masters'])
-        self.assertEqual(1, response.json['zone']['serial'])
+        self.assertIn('id', response.json)
+        self.assertIsNotNone(response.json['updated_at'])
+        self.assertEqual(masters, response.json['masters'])
+        self.assertEqual(1, response.json['serial'])
 
     def test_update_secondary_email_invalid_object(self):
         # Create a zone
@@ -497,7 +475,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
         # Create a zone
         zone = self.create_domain(**fixture)
 
-        body = {'zone': {'email': 'foo@bar.io'}}
+        body = {'email': 'foo@bar.io'}
 
         self._assert_exception('invalid_object', 400, self.client.patch_json,
                                '/zones/%s' % zone['id'], body)
@@ -528,7 +506,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
                                          self.get_zonefile_fixture(),
                                          headers={'Content-type': 'text/dns'})
         get_response = self.client.get('/zones/%s' %
-                                       post_response.json['zone']['id'],
+                                       post_response.json['id'],
                                        headers={'Accept': 'text/dns'})
 
         exported_zonefile = get_response.body
@@ -566,7 +544,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
 
         # Create a zone
         fixture = self.get_domain_fixture(fixture=0)
-        response = self.client.post_json('/zones/', {'zone': fixture})
+        response = self.client.post_json('/zones/', fixture)
 
         response = self.client.get('/zones/')
 
@@ -576,10 +554,10 @@ class ApiV2ZonesTest(ApiV2TestCase):
     def test_total_count_pagination(self):
         # Create two zones
         fixture = self.get_domain_fixture(fixture=0)
-        response = self.client.post_json('/zones/', {'zone': fixture})
+        response = self.client.post_json('/zones/', fixture)
 
         fixture = self.get_domain_fixture(fixture=1)
-        response = self.client.post_json('/zones/', {'zone': fixture})
+        response = self.client.post_json('/zones/', fixture)
 
         # Paginate so that there is only one zone returned
         response = self.client.get('/zones?limit=1')

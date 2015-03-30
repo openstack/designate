@@ -46,13 +46,13 @@ Create Pool
      Content-Type: application/json
 
      {
-       "pool": {
-         "attributes": {},
-         "nameservers": [
-           "ns1.example.org."
-         ],
-         "name": "example_pool"
-       }
+        "name": "Example Pool",
+        "ns_records": [
+            {
+              "hostname": "ns1.example.org.",
+              "priority": 1
+            }
+        ]
      }
 
 
@@ -65,21 +65,22 @@ Create Pool
     Content-Type: application/json; charset=UTF-8
 
     {
-      "pool": {
-        "description": null,
-        "id": "d1716333-8c16-490f-85ee-29af36907605",
-        "project_id": "noauth-project",
-        "created_at": "2015-02-23T21:56:33.000000",
-        "attributes": null,
-        "nameservers": [
-          "ns1.example.org."
-        ],
-        "links": {
-          "self": "http://127.0.0.1:9001/v2/pools/d1716333-8c16-490f-85ee-29af36907605"
-        },
-        "name": "example_pool",
-        "updated_at": null
-      }
+      "description": null,
+      "id": "d1716333-8c16-490f-85ee-29af36907605",
+      "project_id": "noauth-project",
+      "created_at": "2015-02-23T21:56:33.000000",
+      "attributes": null,
+      "ns_records": [
+        {
+          "hostname": "ns1.example.org.",
+          "priority": 1
+        }
+      ],
+      "links": {
+        "self": "http://127.0.0.1:9001/v2/pools/d1716333-8c16-490f-85ee-29af36907605"
+      },
+      "name": "example_pool",
+      "updated_at": null
     }
 
   :form name: UTF-8 text field
@@ -87,7 +88,7 @@ Create Pool
   :form tenant_id: the UUID of the tenant
   :form provisioner: the type backend that should be used
   :form attributes: meta data for the pool
-  :form nameservers: a list of nameservers as fully qualified domains
+  :form ns_records: a list of ns_records as fully qualified domains
 
   :statuscode 201: Created
   :statuscode 400: Bad Request
@@ -131,8 +132,11 @@ Get Pools
           "project_id": null,
           "created_at": "2015-02-18T22:18:58.000000",
           "attributes": null,
-          "nameservers": [
-            "ns1.example.org."
+          "ns_records": [
+            {
+              "hostname": "ns1.example.org.",
+              "priority": 1
+            }
           ],
           "links": {
             "self": "http://127.0.0.1:9001/v2/pools/794ccc2c-d751-44fe-b57f-8894c9f5c842"
@@ -146,8 +150,11 @@ Get Pools
           "project_id": "noauth-project",
           "created_at": "2015-02-23T21:56:33.000000",
           "attributes": null,
-          "nameservers": [
-            "ns1.example.org."
+          "ns_records": [
+            {
+              "hostname": "ns2.example.org.",
+              "priority": 1
+            }
           ],
           "links": {
             "self": "http://127.0.0.1:9001/v2/pools/d1716333-8c16-490f-85ee-29af36907605"
@@ -186,21 +193,22 @@ Get Pool
     Content-Type: application/json; charset=UTF-8
 
     {
-      "pool": {
-        "description": null,
-        "id": "794ccc2c-d751-44fe-b57f-8894c9f5c842",
-        "project_id": null,
-        "created_at": "2015-02-18T22:18:58.000000",
-        "attributes": null,
-        "nameservers": [
-          "ns1.example.org."
-        ],
-        "links": {
-          "self": "http://127.0.0.1:9001/v2/pools/794ccc2c-d751-44fe-b57f-8894c9f5c842"
-        },
-        "name": "default",
-        "updated_at": "2015-02-19T15:59:44.000000"
-      }
+      "description": null,
+      "id": "794ccc2c-d751-44fe-b57f-8894c9f5c842",
+      "project_id": null,
+      "created_at": "2015-02-18T22:18:58.000000",
+      "attributes": null,
+      "ns_records": [
+        {
+          "hostname": "ns1.example.org.",
+          "priority": 1
+        }
+      ],
+      "links": {
+        "self": "http://127.0.0.1:9001/v2/pools/794ccc2c-d751-44fe-b57f-8894c9f5c842"
+      },
+      "name": "default",
+      "updated_at": "2015-02-19T15:59:44.000000"
     }
 
   :statuscode 200: OK
@@ -225,11 +233,16 @@ Update Pool
     Content-Type: application/json
 
     {
-      "pool": {
-        "nameservers": [
-          "ns3.example.org."
-        ]
-      }
+        "ns_records": [
+            {
+                "hostname": "ns1.example.org.",
+                "priority": 1
+            },
+            {
+                "hostname": "ns3.example.org.",
+                "priority": 2
+            }
+        ],
     }
 
   **Example response**:
@@ -241,22 +254,26 @@ Update Pool
     Content-Type: application/json; charset=UTF-8
 
     {
-      "pool": {
-        "description": null,
-        "id": "794ccc2c-d751-44fe-b57f-8894c9f5c842",
-        "project_id": null,
-        "created_at": "2015-02-18T22:18:58.000000",
-        "attributes": null,
-        "nameservers": [
-          "ns1.example.org.",
-          "ns3.example.org."
-        ],
-        "links": {
-          "self": "http://127.0.0.1:9001/v2/pools/794ccc2c-d751-44fe-b57f-8894c9f5c842"
-        },
-        "name": "default",
-        "updated_at": "2015-02-24T17:39:07.000000"
-      }
+      "description": null,
+      "id": "794ccc2c-d751-44fe-b57f-8894c9f5c842",
+      "project_id": null,
+      "created_at": "2015-02-18T22:18:58.000000",
+      "attributes": null,
+      "ns_records": [
+        {
+          "hostname": "ns1.example.org.",
+          "priority": 1
+        }
+        {
+          "hostname": "ns3.example.org.",
+          "priority": 2
+        }
+      ],
+      "links": {
+        "self": "http://127.0.0.1:9001/v2/pools/794ccc2c-d751-44fe-b57f-8894c9f5c842"
+      },
+      "name": "default",
+      "updated_at": "2015-02-24T17:39:07.000000"
     }
 
   .. note::
@@ -268,12 +285,15 @@ Update Pool
     .. code-block:: json
 
       {
-        "pool": {
-          "nameservers": ["ns3.example.org"]
-        }
+          "ns_records": [
+              {
+                "hostname": "ns3.example.org.",
+                "priority": 2
+              }
+          ]
       }
 
-    This would **replace** the value of the `nameservers` key.
+    This would **replace** the value of the `ns_records` key.
 
     It is a good practice to peform a GET and mutate the result
     accordingly.

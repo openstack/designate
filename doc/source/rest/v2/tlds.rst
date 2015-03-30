@@ -55,10 +55,8 @@ Create Tld
       Content-Type: application/json
 
       {
-        "tld" : {
           "name" : "com",
           "description" : "Tld source http://data.iana.org/TLD/tlds-alpha-by-domain.txt"
-        }
       }
 
    **Example response**:
@@ -70,7 +68,6 @@ Create Tld
       Location: http://127.0.0.1:9001/v2/tlds/5abe514c-9fb5-41e8-ab73-5ed25f8a73e9
 
       {
-        "tld":{
           "description":"Tld source http://data.iana.org/TLD/tlds-alpha-by-domain.txt",
           "links":{
             "self":"http://127.0.0.1:9001/v2/tlds/5abe514c-9fb5-41e8-ab73-5ed25f8a73e9"
@@ -79,7 +76,6 @@ Create Tld
           "updated_at":null,
           "id":"5abe514c-9fb5-41e8-ab73-5ed25f8a73e9",
           "name":"com"
-        }
       }
 
 
@@ -117,7 +113,6 @@ Get a Tld
       Content-Type: application/json; charset=UTF-8
 
       {
-        "tld":{
           "description":"Tld source http://data.iana.org/TLD/tlds-alpha-by-domain.txt",
           "links":{
             "self":"http://127.0.0.1:9001/v2/tlds/5abe514c-9fb5-41e8-ab73-5ed25f8a73e9"
@@ -126,7 +121,6 @@ Get a Tld
           "updated_at":null,
           "id":"5abe514c-9fb5-41e8-ab73-5ed25f8a73e9",
           "name":"com"
-        }
       }
 
    :form created_at: timestamp
@@ -215,10 +209,8 @@ Update a Tld
       Content-Type: application/json
 
       {
-        "tld" : {
           "name" : "org",
           "description" : "Updated the name from com to org"
-        }
       }
 
    **Example response**:
@@ -229,7 +221,6 @@ Update a Tld
       Content-Type: application/json; charset=UTF-8
 
       {
-        "tld":{
           "description":"Updated the name from com to org",
           "links":{
             "self":"http://127.0.0.1:9001/v2/tlds/5abe514c-9fb5-41e8-ab73-5ed25f8a73e9"
@@ -238,7 +229,6 @@ Update a Tld
           "updated_at":"2014-01-23T20:35:12.449599",
           "id":"5abe514c-9fb5-41e8-ab73-5ed25f8a73e9",
           "name":"org"
-        }
       }
 
    :form created_at: timestamp

@@ -27,118 +27,113 @@ class ApiV2ZoneTransfersTest(ApiV2TestCase):
     def test_create_zone_transfer_request(self):
         response = self.client.post_json(
             '/zones/%s/tasks/transfer_requests' % (self.domain.id),
-            {'transfer_request': {}})
+            {})
 
         # Check the headers are what we expect
         self.assertEqual(201, response.status_int)
         self.assertEqual('application/json', response.content_type)
 
         # Check the body structure is what we expect
-        self.assertIn('transfer_request', response.json)
-        self.assertIn('links', response.json['transfer_request'])
-        self.assertIn('self', response.json['transfer_request']['links'])
+        self.assertIn('links', response.json)
+        self.assertIn('self', response.json['links'])
 
         # Check the values returned are what we expect
-        self.assertIn('id', response.json['transfer_request'])
-        self.assertIn('created_at', response.json['transfer_request'])
-        self.assertEqual('ACTIVE', response.json['transfer_request']['status'])
+        self.assertIn('id', response.json)
+        self.assertIn('created_at', response.json)
+        self.assertEqual('ACTIVE', response.json['status'])
         self.assertEqual(
             self.domain.id,
-            response.json['transfer_request']['zone_id'])
-        self.assertIsNone(response.json['transfer_request']['updated_at'])
+            response.json['zone_id'])
+        self.assertIsNone(response.json['updated_at'])
 
     def test_create_zone_transfer_request_scoped(self):
         response = self.client.post_json(
             '/zones/%s/tasks/transfer_requests' % (self.domain.id),
-            {'transfer_request':
-                {'target_project_id': str(self.tenant_1_context.tenant)}})
+            {'target_project_id': str(self.tenant_1_context.tenant)})
 
         # Check the headers are what we expect
         self.assertEqual(201, response.status_int)
         self.assertEqual('application/json', response.content_type)
 
         # Check the body structure is what we expect
-        self.assertIn('transfer_request', response.json)
-        self.assertIn('links', response.json['transfer_request'])
-        self.assertIn('self', response.json['transfer_request']['links'])
+        self.assertIn('links', response.json)
+        self.assertIn('self', response.json['links'])
 
         # Check the values returned are what we expect
-        self.assertIn('id', response.json['transfer_request'])
-        self.assertIn('created_at', response.json['transfer_request'])
-        self.assertEqual('ACTIVE', response.json['transfer_request']['status'])
+        self.assertIn('id', response.json)
+        self.assertIn('created_at', response.json)
+        self.assertEqual('ACTIVE', response.json['status'])
         self.assertEqual(
             str(self.tenant_1_context.tenant),
-            response.json['transfer_request']['target_project_id'])
+            response.json['target_project_id'])
         self.assertEqual(
             self.domain.id,
-            response.json['transfer_request']['zone_id'])
-        self.assertIsNone(response.json['transfer_request']['updated_at'])
+            response.json['zone_id'])
+        self.assertIsNone(response.json['updated_at'])
 
     def test_get_zone_transfer_request(self):
         initial = self.client.post_json(
             '/zones/%s/tasks/transfer_requests' % (self.domain.id),
-            {'transfer_request': {}})
+            {})
 
         response = self.client.get(
             '/zones/tasks/transfer_requests/%s' %
-            (initial.json['transfer_request']['id']))
+            (initial.json['id']))
 
         # Check the headers are what we expect
         self.assertEqual(200, response.status_int)
         self.assertEqual('application/json', response.content_type)
 
         # Check the body structure is what we expect
-        self.assertIn('transfer_request', response.json)
-        self.assertIn('links', response.json['transfer_request'])
-        self.assertIn('self', response.json['transfer_request']['links'])
+        self.assertIn('links', response.json)
+        self.assertIn('self', response.json['links'])
 
         # Check the values returned are what we expect
-        self.assertIn('id', response.json['transfer_request'])
-        self.assertIn('created_at', response.json['transfer_request'])
-        self.assertEqual('ACTIVE', response.json['transfer_request']['status'])
+        self.assertIn('id', response.json)
+        self.assertIn('created_at', response.json)
+        self.assertEqual('ACTIVE', response.json['status'])
         self.assertEqual(
             self.domain.id,
-            response.json['transfer_request']['zone_id'])
-        self.assertIn('updated_at', response.json['transfer_request'])
+            response.json['zone_id'])
+        self.assertIn('updated_at', response.json)
 
     def test_update_zone_transfer_request(self):
         initial = self.client.post_json(
             '/zones/%s/tasks/transfer_requests' % (self.domain.id),
-            {'transfer_request': {}})
+            {})
 
         response = self.client.patch_json(
             '/zones/tasks/transfer_requests/%s' %
-            (initial.json['transfer_request']['id']),
-            {'transfer_request': {"description": "TEST"}})
+            (initial.json['id']),
+            {"description": "TEST"})
 
         # Check the headers are what we expect
         self.assertEqual(200, response.status_int)
         self.assertEqual('application/json', response.content_type)
 
         # Check the body structure is what we expect
-        self.assertIn('transfer_request', response.json)
-        self.assertIn('links', response.json['transfer_request'])
-        self.assertIn('self', response.json['transfer_request']['links'])
+        self.assertIn('links', response.json)
+        self.assertIn('self', response.json['links'])
 
         # Check the values returned are what we expect
-        self.assertIn('id', response.json['transfer_request'])
-        self.assertIn('created_at', response.json['transfer_request'])
-        self.assertEqual('ACTIVE', response.json['transfer_request']['status'])
+        self.assertIn('id', response.json)
+        self.assertIn('created_at', response.json)
+        self.assertEqual('ACTIVE', response.json['status'])
         self.assertEqual(
             self.domain.id,
-            response.json['transfer_request']['zone_id'])
+            response.json['zone_id'])
         self.assertEqual(
-            'TEST', response.json['transfer_request']['description'])
-        self.assertIn('updated_at', response.json['transfer_request'])
+            'TEST', response.json['description'])
+        self.assertIn('updated_at', response.json)
 
     def test_delete_zone_transfer_request(self):
         initial = self.client.post_json(
             '/zones/%s/tasks/transfer_requests' % (self.domain.id),
-            {'transfer_request': {}})
+            {})
 
         response = self.client.delete(
             '/zones/tasks/transfer_requests/%s' %
-            (initial.json['transfer_request']['id']))
+            (initial.json['id']))
 
         # Check the headers are what we expect
         self.assertEqual(204, response.status_int)
@@ -146,50 +141,49 @@ class ApiV2ZoneTransfersTest(ApiV2TestCase):
     def test_create_zone_transfer_accept(self):
         initial = self.client.post_json(
             '/zones/%s/tasks/transfer_requests' % (self.domain.id),
-            {'transfer_request': {}})
+            {})
 
         response = self.client.post_json(
             '/zones/tasks/transfer_accepts',
-            {'transfer_accept': {
+            {
                 'zone_transfer_request_id':
-                    initial.json['transfer_request']['id'],
-                'key': initial.json['transfer_request']['key']
-            }})
+                    initial.json['id'],
+                'key': initial.json['key']
+            })
 
         new_ztr = self.client.get(
             '/zones/tasks/transfer_requests/%s' %
-            (initial.json['transfer_request']['id']))
+            (initial.json['id']))
 
         # Check the headers are what we expect
         self.assertEqual(201, response.status_int)
         self.assertEqual('application/json', response.content_type)
 
         # Check the body structure is what we expect
-        self.assertIn('transfer_accept', response.json)
-        self.assertIn('links', response.json['transfer_accept'])
-        self.assertIn('self', response.json['transfer_accept']['links'])
-        self.assertIn('zone', response.json['transfer_accept']['links'])
+        self.assertIn('links', response.json)
+        self.assertIn('self', response.json['links'])
+        self.assertIn('zone', response.json['links'])
 
         # Check the values returned are what we expect
-        self.assertIn('id', response.json['transfer_accept'])
+        self.assertIn('id', response.json)
         self.assertEqual(
             'COMPLETE',
-            response.json['transfer_accept']['status'])
+            response.json['status'])
 
         self.assertEqual(
             'COMPLETE',
-            new_ztr.json['transfer_request']['status'])
+            new_ztr.json['status'])
 
     def test_create_zone_transfer_request_deleting_zone(self):
         url = '/zones/%s/tasks/transfer_requests' % (self.domain.id)
-        body = {'transfer_request': {}}
+        body = {}
         self.client.delete('/zones/%s' % self.domain['id'], status=202)
         self._assert_exception('bad_request', 400, self.client.post_json, url,
                                body)
 
     def test_create_zone_transfer_accept_deleting_zone(self):
         url = '/zones/%s/tasks/transfer_requests' % (self.domain.id)
-        body = {'transfer_request': {}}
+        body = {}
         self.client.delete('/zones/%s' % self.domain['id'], status=202)
         self._assert_exception('bad_request', 400, self.client.post_json, url,
                                body)

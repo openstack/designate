@@ -36,24 +36,23 @@ class ApiV2TsigKeysTest(ApiV2TestCase):
     def test_create_tsigkey(self):
         # Create a TSIG Key
         fixture = self.get_tsigkey_fixture(0)
-        response = self.client.post_json('/tsigkeys/', {'tsigkey': fixture})
+        response = self.client.post_json('/tsigkeys/', fixture)
 
         # Check the headers are what we expect
         self.assertEqual(201, response.status_int)
         self.assertEqual('application/json', response.content_type)
 
         # Check the body structure is what we expect
-        self.assertIn('tsigkey', response.json)
-        self.assertIn('links', response.json['tsigkey'])
-        self.assertIn('self', response.json['tsigkey']['links'])
+        self.assertIn('links', response.json)
+        self.assertIn('self', response.json['links'])
 
         # Check the generated values returned are what we expect
-        self.assertIn('id', response.json['tsigkey'])
-        self.assertIn('created_at', response.json['tsigkey'])
-        self.assertIsNone(response.json['tsigkey']['updated_at'])
+        self.assertIn('id', response.json)
+        self.assertIn('created_at', response.json)
+        self.assertIsNone(response.json['updated_at'])
 
         # Check the supplied values returned are what we expect
-        self.assertDictContainsSubset(fixture, response.json['tsigkey'])
+        self.assertDictContainsSubset(fixture, response.json)
 
     def test_create_tsigkey_validation(self):
         # NOTE: The schemas should be tested separately to the API. So we
@@ -61,18 +60,11 @@ class ApiV2TsigKeysTest(ApiV2TestCase):
         # Fetch a fixture
         fixture = self.get_tsigkey_fixture(0)
 
-        # Add a junk field to the wrapper
-        body = {'tsigkey': fixture, 'junk': 'Junk Field'}
-
-        # Ensure it fails with a 400
-        self._assert_exception('invalid_object', 400, self.client.post_json,
-                               '/tsigkeys', body)
-
         # Add a junk field to the body
         fixture['junk'] = 'Junk Field'
 
         # Ensure it fails with a 400
-        body = {'tsigkey': fixture}
+        body = fixture
 
         self._assert_exception('invalid_object', 400, self.client.post_json,
                                '/tsigkeys', body)
@@ -80,7 +72,7 @@ class ApiV2TsigKeysTest(ApiV2TestCase):
     def test_create_tsigkey_duplicate(self):
         # Prepare a TSIG Key fixture
         fixture = self.get_tsigkey_fixture(0)
-        body = {'tsigkey': fixture}
+        body = fixture
 
         # Create the first TSIG Key
         response = self.client.post_json('/tsigkeys', body)
@@ -126,23 +118,22 @@ class ApiV2TsigKeysTest(ApiV2TestCase):
         self.assertEqual('application/json', response.content_type)
 
         # Check the body structure is what we expect
-        self.assertIn('tsigkey', response.json)
-        self.assertIn('links', response.json['tsigkey'])
-        self.assertIn('self', response.json['tsigkey']['links'])
+        self.assertIn('links', response.json)
+        self.assertIn('self', response.json['links'])
 
         # Check the generated values returned are what we expect
-        self.assertIn('id', response.json['tsigkey'])
-        self.assertIn('created_at', response.json['tsigkey'])
-        self.assertIsNone(response.json['tsigkey']['updated_at'])
+        self.assertIn('id', response.json)
+        self.assertIn('created_at', response.json)
+        self.assertIsNone(response.json['updated_at'])
 
         # Check the supplied values returned are what we expect
-        self.assertEqual(tsigkey.name, response.json['tsigkey']['name'])
+        self.assertEqual(tsigkey.name, response.json['name'])
         self.assertEqual(
-            tsigkey.algorithm, response.json['tsigkey']['algorithm'])
-        self.assertEqual(tsigkey.secret, response.json['tsigkey']['secret'])
-        self.assertEqual(tsigkey.scope, response.json['tsigkey']['scope'])
+            tsigkey.algorithm, response.json['algorithm'])
+        self.assertEqual(tsigkey.secret, response.json['secret'])
+        self.assertEqual(tsigkey.scope, response.json['scope'])
         self.assertEqual(
-            tsigkey.resource_id, response.json['tsigkey']['resource_id'])
+            tsigkey.resource_id, response.json['resource_id'])
 
     def test_get_tsigkey_invalid_id(self):
         self._assert_invalid_uuid(self.client.get, '/tsigkeys/%s')
@@ -166,7 +157,7 @@ class ApiV2TsigKeysTest(ApiV2TestCase):
         tsigkey = self.create_tsigkey()
 
         # Prepare an update body
-        body = {'tsigkey': {'secret': 'prefix-%s' % tsigkey.secret}}
+        body = {'secret': 'prefix-%s' % tsigkey.secret}
 
         response = self.client.patch_json('/tsigkeys/%s' % tsigkey.id, body)
 
@@ -175,15 +166,14 @@ class ApiV2TsigKeysTest(ApiV2TestCase):
         self.assertEqual('application/json', response.content_type)
 
         # Check the body structure is what we expect
-        self.assertIn('tsigkey', response.json)
-        self.assertIn('links', response.json['tsigkey'])
-        self.assertIn('self', response.json['tsigkey']['links'])
+        self.assertIn('links', response.json)
+        self.assertIn('self', response.json['links'])
 
         # Check the values returned are what we expect
-        self.assertIn('id', response.json['tsigkey'])
-        self.assertIsNotNone(response.json['tsigkey']['updated_at'])
+        self.assertIn('id', response.json)
+        self.assertIsNotNone(response.json['updated_at'])
         self.assertEqual('prefix-%s' % tsigkey['secret'],
-                         response.json['tsigkey']['secret'])
+                         response.json['secret'])
 
     def test_update_tsigkey_invalid_id(self):
         self._assert_invalid_uuid(self.client.patch_json, '/tsigkeys/%s')
@@ -192,7 +182,7 @@ class ApiV2TsigKeysTest(ApiV2TestCase):
                   side_effect=exceptions.DuplicateTsigKey())
     def test_update_tsigkey_duplicate(self, _):
         # Prepare an update body
-        body = {'tsigkey': {'name': 'AnyOldName'}}
+        body = {'name': 'AnyOldName'}
 
         url = '/tsigkeys/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980'
 
@@ -204,7 +194,7 @@ class ApiV2TsigKeysTest(ApiV2TestCase):
                   side_effect=messaging.MessagingTimeout())
     def test_update_tsigkey_timeout(self, _):
         # Prepare an update body
-        body = {'tsigkey': {'name': 'AnyOldName'}}
+        body = {'name': 'AnyOldName'}
 
         url = '/tsigkeys/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980'
 
@@ -216,7 +206,7 @@ class ApiV2TsigKeysTest(ApiV2TestCase):
                   side_effect=exceptions.TsigKeyNotFound())
     def test_update_tsigkey_missing(self, _):
         # Prepare an update body
-        body = {'tsigkey': {'name': 'AnyOldName'}}
+        body = {'name': 'AnyOldName'}
 
         url = '/tsigkeys/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980'
 

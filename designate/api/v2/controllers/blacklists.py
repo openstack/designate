@@ -17,20 +17,16 @@
 import pecan
 from oslo_log import log as logging
 
-from designate import schema
 from designate import utils
 from designate.api.v2.controllers import rest
-from designate.api.v2.views import blacklists as blacklists_view
 from designate.objects import Blacklist
+from designate.objects.adapters import DesignateAdapter
 
 
 LOG = logging.getLogger(__name__)
 
 
 class BlacklistsController(rest.RestController):
-    _view = blacklists_view.BlacklistsView()
-    _resource_schema = schema.Schema('v2', 'blacklist')
-    _collection_schema = schema.Schema('v2', 'blacklists')
     SORT_KEYS = ['created_at', 'id', 'updated_at', 'pattern']
 
     @pecan.expose(template='json:', content_type='application/json')
@@ -41,9 +37,10 @@ class BlacklistsController(rest.RestController):
         request = pecan.request
         context = request.environ['context']
 
-        blacklist = self.central_api.get_blacklist(context, blacklist_id)
-
-        return self._view.show(context, request, blacklist)
+        return DesignateAdapter.render(
+            'API_v2',
+            self.central_api.get_blacklist(context, blacklist_id),
+            request=request)
 
     @pecan.expose(template='json:', content_type='application/json')
     def get_all(self, **params):
@@ -59,10 +56,11 @@ class BlacklistsController(rest.RestController):
         criterion = dict((k, params[k]) for k in accepted_filters
                          if k in params)
 
-        blacklist = self.central_api.find_blacklists(
-            context, criterion, marker, limit, sort_key, sort_dir)
-
-        return self._view.list(context, request, blacklist)
+        return DesignateAdapter.render(
+            'API_v2',
+            self.central_api.find_blacklists(
+                context, criterion, marker, limit, sort_key, sort_dir),
+            request=request)
 
     @pecan.expose(template='json:', content_type='application/json')
     def post_all(self):
@@ -70,26 +68,25 @@ class BlacklistsController(rest.RestController):
         request = pecan.request
         response = pecan.response
         context = request.environ['context']
-
         body = request.body_dict
 
-        # Validate the request conforms to the schema
-        self._resource_schema.validate(body)
+        blacklist = DesignateAdapter.parse('API_v2', body, Blacklist())
 
-        # Convert from APIv2 -> Central format
-        values = self._view.load(context, request, body)
+        blacklist.validate()
 
         # Create the blacklist
         blacklist = self.central_api.create_blacklist(
-            context, Blacklist(**values))
+            context, blacklist)
 
         response.status_int = 201
 
-        response.headers['Location'] = self._view._get_resource_href(
-            request, blacklist)
+        blacklist = DesignateAdapter.render(
+            'API_v2', blacklist, request=request)
+
+        response.headers['Location'] = blacklist['links']['self']
 
         # Prepare and return the response body
-        return self._view.show(context, request, blacklist)
+        return blacklist
 
     @pecan.expose(template='json:', content_type='application/json')
     @pecan.expose(template='json:', content_type='application/json-patch+json')
@@ -101,27 +98,21 @@ class BlacklistsController(rest.RestController):
         body = request.body_dict
         response = pecan.response
 
+        if request.content_type == 'application/json-patch+json':
+            raise NotImplemented('json-patch not implemented')
+
         # Fetch the existing blacklist entry
         blacklist = self.central_api.get_blacklist(context, blacklist_id)
 
-        # Convert to APIv2 Format
-        blacklist_data = self._view.show(context, request, blacklist)
+        blacklist = DesignateAdapter.parse('API_v2', body, blacklist)
 
-        if request.content_type == 'application/json-patch+json':
-            raise NotImplemented('json-patch not implemented')
-        else:
-            blacklist_data = utils.deep_dict_merge(blacklist_data, body)
+        blacklist.validate()
 
-            # Validate the new set of data
-            self._resource_schema.validate(blacklist_data)
-
-            # Update and persist the resource
-            blacklist.update(self._view.load(context, request, body))
-            blacklist = self.central_api.update_blacklist(context, blacklist)
+        blacklist = self.central_api.update_blacklist(context, blacklist)
 
         response.status_int = 200
 
-        return self._view.show(context, request, blacklist)
+        return DesignateAdapter.render('API_v2', blacklist, request=request)
 
     @pecan.expose(template=None, content_type='application/json')
     @utils.validate_uuid('blacklist_id')

@@ -19,7 +19,6 @@ from stevedore import named
 
 from designate.api.v2.controllers import limits
 from designate.api.v2.controllers import reverse
-from designate.api.v2.controllers import schemas
 from designate.api.v2.controllers import tlds
 from designate.api.v2.controllers import blacklists
 from designate.api.v2.controllers import errors
@@ -52,7 +51,6 @@ class RootController(object):
                 setattr(controller, path.split('.')[-1], ext.obj)
 
     limits = limits.LimitsController()
-    schemas = schemas.SchemasController()
     reverse = reverse.ReverseController()
     tlds = tlds.TldsController()
     zones = zones.ZonesController()

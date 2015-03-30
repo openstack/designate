@@ -184,7 +184,7 @@ class Domain(base.DictObjectMixin, base.SoftDeleteObjectMixin,
         if self.type == 'SECONDARY' and self.masters is None:
             errors = ValidationErrorList()
             e = ValidationError()
-            e.absolute_path = ['']
+            e.path = ['type']
             e.validator = 'required'
             e.validator_value = ['masters']
             e.message = "'masters' is a required property"

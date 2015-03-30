@@ -25,16 +25,14 @@ class ApiV2LimitsTest(ApiV2TestCase):
         self.assertEqual(200, response.status_int)
         self.assertEqual('application/json', response.content_type)
 
-        self.assertIn('limits', response.json)
-        self.assertIn('absolute', response.json['limits'])
-        self.assertIn('max_zones', response.json['limits']['absolute'])
-        self.assertIn('max_zone_records', response.json['limits']['absolute'])
+        self.assertIn('max_zones', response.json)
+        self.assertIn('max_zone_records', response.json)
         self.assertIn('max_zone_recordsets',
-                      response.json['limits']['absolute'])
+                      response.json)
         self.assertIn('max_recordset_records',
-                      response.json['limits']['absolute'])
+                      response.json)
 
-        absolutelimits = response.json['limits']['absolute']
+        absolutelimits = response.json
 
         self.assertEqual(cfg.CONF.quota_domains, absolutelimits['max_zones'])
         self.assertEqual(cfg.CONF.quota_domain_records,

@@ -22,22 +22,21 @@ class ApiV2TldsTest(ApiV2TestCase):
     def test_create_tld(self):
         self.policy({'create_tld': '@'})
         fixture = self.get_tld_fixture(0)
-        response = self.client.post_json('/tlds/', {'tld': fixture})
+        response = self.client.post_json('/tlds/', fixture)
 
         # Check the headers are what we expect
         self.assertEqual(201, response.status_int)
         self.assertEqual('application/json', response.content_type)
 
         # Check the body structure is what we expect
-        self.assertIn('tld', response.json)
-        self.assertIn('links', response.json['tld'])
-        self.assertIn('self', response.json['tld']['links'])
+        self.assertIn('links', response.json)
+        self.assertIn('self', response.json['links'])
 
         # Check the values returned are what we expect
-        self.assertIn('id', response.json['tld'])
-        self.assertIn('created_at', response.json['tld'])
-        self.assertIsNone(response.json['tld']['updated_at'])
-        self.assertEqual(fixture['name'], response.json['tld']['name'])
+        self.assertIn('id', response.json)
+        self.assertIn('created_at', response.json)
+        self.assertIsNone(response.json['updated_at'])
+        self.assertEqual(fixture['name'], response.json['name'])
 
     def test_create_tld_validation(self):
         self.policy({'create_tld': '@'})
@@ -45,7 +44,7 @@ class ApiV2TldsTest(ApiV2TestCase):
 
         # Ensure it fails with a 400
         self._assert_exception('invalid_object', 400, self.client.post_json,
-                               '/tlds', {'tld': invalid_fixture})
+                               '/tlds', invalid_fixture)
 
     def test_get_tlds(self):
         self.policy({'find_tlds': '@'})
@@ -78,16 +77,15 @@ class ApiV2TldsTest(ApiV2TestCase):
         self.assertEqual('application/json', response.content_type)
 
         # Check the body structure is what we expect
-        self.assertIn('tld', response.json)
-        self.assertIn('links', response.json['tld'])
-        self.assertIn('self', response.json['tld']['links'])
+        self.assertIn('links', response.json)
+        self.assertIn('self', response.json['links'])
 
         # Check the values returned are what we expect
-        self.assertIn('id', response.json['tld'])
-        self.assertIn('created_at', response.json['tld'])
-        self.assertIsNone(response.json['tld']['updated_at'])
+        self.assertIn('id', response.json)
+        self.assertIn('created_at', response.json)
+        self.assertIsNone(response.json['updated_at'])
         self.assertEqual(self.get_tld_fixture(0)['name'],
-                         response.json['tld']['name'])
+                         response.json['name'])
 
     def test_get_tld_invalid_id(self):
         self._assert_invalid_uuid(self.client.get, '/tlds/%s')
@@ -106,7 +104,7 @@ class ApiV2TldsTest(ApiV2TestCase):
         self.policy({'update_tld': '@'})
 
         # Prepare an update body
-        body = {'tld': {'description': 'prefix-%s' % tld['description']}}
+        body = {'description': 'prefix-%s' % tld['description']}
 
         response = self.client.patch_json('/tlds/%s' % tld['id'], body,
                                           status=200)
@@ -116,15 +114,14 @@ class ApiV2TldsTest(ApiV2TestCase):
         self.assertEqual('application/json', response.content_type)
 
         # Check the body structure is what we expect
-        self.assertIn('tld', response.json)
-        self.assertIn('links', response.json['tld'])
-        self.assertIn('self', response.json['tld']['links'])
+        self.assertIn('links', response.json)
+        self.assertIn('self', response.json['links'])
 
         # Check the values returned are what we expect
-        self.assertIn('id', response.json['tld'])
-        self.assertIsNotNone(response.json['tld']['updated_at'])
+        self.assertIn('id', response.json)
+        self.assertIsNotNone(response.json['updated_at'])
         self.assertEqual('prefix-%s' % tld['description'],
-                         response.json['tld']['description'])
+                         response.json['description'])
 
     def test_update_tld_invalid_id(self):
         self._assert_invalid_uuid(self.client.patch_json, '/tlds/%s')
