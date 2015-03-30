@@ -29,17 +29,6 @@ from designate.objects.pool import Pool, PoolList  # noqa
 from designate.objects.pool_attribute import PoolAttribute, PoolAttributeList  # noqa
 from designate.objects.pool_ns_record import PoolNsRecord, PoolNsRecordList  # noqa
 from designate.objects.quota import Quota, QuotaList  # noqa
-from designate.objects.rrdata_a import RRData_A  # noqa
-from designate.objects.rrdata_aaaa import RRData_AAAA  # noqa
-from designate.objects.rrdata_cname import RRData_CNAME  # noqa
-from designate.objects.rrdata_mx import RRData_MX  # noqa
-from designate.objects.rrdata_ns import RRData_NS  # noqa
-from designate.objects.rrdata_ptr import RRData_PTR  # noqa
-from designate.objects.rrdata_soa import RRData_SOA  # noqa
-from designate.objects.rrdata_spf import RRData_SPF  # noqa
-from designate.objects.rrdata_srv import RRData_SRV  # noqa
-from designate.objects.rrdata_sshfp import RRData_SSHFP  # noqa
-from designate.objects.rrdata_txt import RRData_TXT  # noqa
 from designate.objects.record import Record, RecordList  # noqa
 from designate.objects.recordset import RecordSet, RecordSetList  # noqa
 from designate.objects.server import Server, ServerList  # noqa
@@ -50,3 +39,17 @@ from designate.objects.validation_error import ValidationError  # noqa
 from designate.objects.validation_error import ValidationErrorList  # noqa
 from designate.objects.zone_transfer_request import ZoneTransferRequest, ZoneTransferRequestList  # noqa
 from designate.objects.zone_transfer_accept import ZoneTransferAccept, ZoneTransferAcceptList  # noqa
+
+#  Record Types
+
+from designate.objects.rrdata_a import A, AList  # noqa
+from designate.objects.rrdata_aaaa import AAAA, AAAAList  # noqa
+from designate.objects.rrdata_cname import CNAME, CNAMEList  # noqa
+from designate.objects.rrdata_mx import MX, MXList  # noqa
+from designate.objects.rrdata_ns import NS, NSList  # noqa
+from designate.objects.rrdata_ptr import PTR, PTRList  # noqa
+from designate.objects.rrdata_soa import SOA, SOAList  # noqa
+from designate.objects.rrdata_spf import SPF, SPFList  # noqa
+from designate.objects.rrdata_srv import SRV, SRVList  # noqa
+from designate.objects.rrdata_sshfp import SSHFP, SSHFPList  # noqa
+from designate.objects.rrdata_txt import TXT, TXTList  # noqa

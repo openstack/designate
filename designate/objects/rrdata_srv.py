@@ -13,9 +13,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 from designate.objects.record import Record
+from designate.objects.record import RecordList
 
 
-class RRData_SRV(Record):
+class SRV(Record):
     """
     SRV Resource Record Type
     Defined in: RFC2782
@@ -59,8 +60,17 @@ class RRData_SRV(Record):
         return "%(priority)s %(weight)s %(target)s %(port)s" % self
 
     def _from_string(self, value):
-        self.priortiy, self.weight, self.port, self.target = value.split(' ')
+        priortiy, weight, port, target = value.split(' ')
+        self.priortiy = int(priortiy)
+        self.weight = int(weight)
+        self.port = int(port)
+        self.target = target
 
     # The record type is defined in the RFC. This will be used when the record
     # is sent by mini-dns.
     RECORD_TYPE = 33
+
+
+class SRVList(RecordList):
+
+    LIST_ITEM_TYPE = SRV
