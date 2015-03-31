@@ -33,5 +33,5 @@ class NoopPoolManagerCacheTest(PoolManagerCacheTestCase, TestCase):
 
         with testtools.ExpectedException(exceptions.PoolManagerStatusNotFound):
             self.cache.retrieve(
-                self.admin_context, expected.server_id, expected.domain_id,
+                self.admin_context, expected.nameserver_id, expected.domain_id,
                 expected.action)

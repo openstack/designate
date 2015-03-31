@@ -42,8 +42,9 @@ DESIGNATE_APIPASTE_CONF=$DESIGNATE_CONF_DIR/api-paste.ini
 
 # Set up default options
 DESIGNATE_BACKEND_DRIVER=${DESIGNATE_BACKEND_DRIVER:=powerdns}
+DESIGNATE_POOL_MANAGER_CACHE_DRIVER=${DESIGNATE_POOL_MANAGER_CACHE_DRIVER:-noop}
 DESIGNATE_POOL_ID=${DESIGNATE_POOL_ID:-794ccc2c-d751-44fe-b57f-8894c9f5c842}
-DESIGNATE_SERVER_ID=${DESIGNATE_SERVER_ID:-f26e0b32-736f-4f0a-831b-039a415c481e}
+DESIGNATE_TARGET_ID=${DESIGNATE_TARGET_ID:-f26e0b32-736f-4f0a-831b-039a415c481e}
 
 # Public IP/Port Settings
 DESIGNATE_SERVICE_PROTOCOL=${DESIGNATE_SERVICE_PROTOCOL:-$SERVICE_PROTOCOL}
@@ -110,11 +111,21 @@ function configure_designate {
     iniset $DESIGNATE_CONF DEFAULT state_path $DESIGNATE_STATE_PATH
     iniset $DESIGNATE_CONF DEFAULT root-helper sudo designate-rootwrap $DESIGNATE_ROOTWRAP_CONF
     iniset $DESIGNATE_CONF storage:sqlalchemy connection `database_connection_url designate`
-    iniset $DESIGNATE_CONF service:pool_manager pool_id $DESIGNATE_POOL_ID
-    iniset $DESIGNATE_CONF pool_manager_cache:sqlalchemy connection `database_connection_url designate_pool_manager`
     iniset $DESIGNATE_CONF service:api enabled_extensions_v1 $DESIGNATE_ENABLED_EXTENSIONS_V1
     iniset $DESIGNATE_CONF service:api enabled_extensions_v2 $DESIGNATE_ENABLED_EXTENSIONS_V2
     iniset $DESIGNATE_CONF service:api enabled_extensions_admin $DESIGNATE_ENABLED_EXTENSIONS_ADMIN
+
+    # Pool Manager
+    iniset $DESIGNATE_CONF service:pool_manager pool_id $DESIGNATE_POOL_ID
+    iniset $DESIGNATE_CONF service:pool_manager cache_driver $DESIGNATE_POOL_MANAGER_CACHE_DRIVER
+
+    # Pool Manager Cache
+    if [ "$DESIGNATE_POOL_MANAGER_CACHE_DRIVER" == "sqlalchemy" ]; then
+        iniset $DESIGNATE_CONF pool_manager_cache:sqlalchemy connection `database_connection_url designate_pool_manager`
+    fi
+
+    # Pool Options
+    iniset $DESIGNATE_CONF pool:$DESIGNATE_POOL_ID targets $DESIGNATE_TARGET_ID
 
     sudo cp $DESIGNATE_DIR/etc/designate/rootwrap.conf.sample $DESIGNATE_ROOTWRAP_CONF
     iniset $DESIGNATE_ROOTWRAP_CONF DEFAULT filters_path $DESIGNATE_DIR/etc/designate/rootwrap.d root-helper
@@ -207,11 +218,13 @@ function init_designate {
     # Init and migrate designate database
     designate-manage database sync
 
-    # (Re)create designate_pool_manager cache
-    recreate_database designate_pool_manager utf8
+    if [ "$DESIGNATE_POOL_MANAGER_CACHE_DRIVER" == "sqlalchemy" ]; then
+        # (Re)create designate_pool_manager cache
+        recreate_database designate_pool_manager utf8
 
-    # Init and migrate designate pool-manager-cache
-    designate-manage pool-manager-cache sync
+        # Init and migrate designate pool-manager-cache
+        designate-manage pool-manager-cache sync
+    fi
 
     init_designate_backend
 }

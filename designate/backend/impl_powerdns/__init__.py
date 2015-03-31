@@ -16,6 +16,7 @@
 import copy
 import threading
 
+from oslo_config import cfg
 from oslo_db import options
 from oslo_log import log as logging
 from oslo_utils import excutils
@@ -38,22 +39,26 @@ class PowerDNSBackend(base.Backend):
     __plugin_name__ = 'powerdns'
 
     @classmethod
-    def _get_common_cfg_opts(cls):
+    def get_cfg_opts(cls):
+        group = cfg.OptGroup('backend:powerdns')
         opts = copy.deepcopy(options.database_opts)
 
-        # Overide the default DB connection path in order to avoid name
-        # conflicts between the Designate and PowerDNS databases.
-        for opt in opts:
-            if opt.name == 'connection':
-                opt.default = 'sqlite:///$state_path/powerdns.sqlite'
+        # Strip connection options
+        discard_opts = ('sqlite_db', 'connection', 'slave_connection')
+        opts = [opt for opt in opts if opt.name not in discard_opts]
 
-        return opts
+        return [(group, opts,)]
 
-    def __init__(self, backend_options):
-        super(PowerDNSBackend, self).__init__(backend_options)
+    def __init__(self, target):
+        super(PowerDNSBackend, self).__init__(target)
 
         self.local_store = threading.local()
-        self.masters = [m for m in self.get_backend_option('masters')]
+
+        default_connection = 'sqlite:///%(state_path)s/powerdns.sqlite' % {
+            'state_path': cfg.CONF.state_path
+        }
+
+        self.connection = self.options.get('connection', default_connection)
 
     @property
     def session(self):
@@ -61,10 +66,9 @@ class PowerDNSBackend(base.Backend):
         #       have it's own session stored correctly. Without this, each
         #       greenthread may end up using a single global session, which
         #       leads to bad things happening.
-        global LOCAL_STORE
-
         if not hasattr(self.local_store, 'session'):
-            self.local_store.session = session.get_session(self.name)
+            self.local_store.session = session.get_session(
+                self.name, self.connection, self.target.id)
 
         return self.local_store.session
 
@@ -114,10 +118,14 @@ class PowerDNSBackend(base.Backend):
         try:
             self.session.begin()
 
+            def _parse_master(master):
+                return '%s:%d' % (master.host, master.port)
+            masters = map(_parse_master, self.masters)
+
             domain_values = {
                 'designate_id': domain['id'],
                 'name': domain['name'].rstrip('.'),
-                'master': ','.join(self.masters),
+                'master': ','.join(masters),
                 'type': 'SLAVE',
                 'account': context.tenant
             }

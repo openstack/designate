@@ -26,42 +26,76 @@ from designate.mdns import rpcapi as mdns_rpcapi
 from designate.tests.test_pool_manager import PoolManagerTestCase
 
 
-class PoolManagerServiceMemcacheTest(PoolManagerTestCase):
+class PoolManagerServiceNoopTest(PoolManagerTestCase):
 
     def setUp(self):
-        super(PoolManagerServiceMemcacheTest, self).setUp()
+        super(PoolManagerServiceNoopTest, self).setUp()
 
         self.config(
-            backends=['fake'],
             threshold_percentage=100,
             enable_recovery_timer=False,
             enable_sync_timer=False,
-            cache_driver='memcache',
+            cache_driver='noop',
             group='service:pool_manager')
 
+        # TODO(kiall): Rework all this pool config etc into a fixture..
+        # Configure the Pool ID
         self.config(
-            server_ids=['f278782a-07dc-4502-9177-b5d85c5f7c7e',
-                        'a38703f2-b71e-4e5b-ab22-30caaed61dfd'],
-            group='backend:fake')
+            pool_id='794ccc2c-d751-44fe-b57f-8894c9f5c842',
+            group='service:pool_manager')
 
-        section_name = 'backend:fake:f278782a-07dc-4502-9177-b5d85c5f7c7e'
-        server_opts = [
-            cfg.StrOpt('host', default='10.0.0.2'),
-            cfg.IntOpt('port', default=53),
-            cfg.StrOpt('tsig_key')
+        # Configure the Pool
+        section_name = 'pool:794ccc2c-d751-44fe-b57f-8894c9f5c842'
+        section_opts = [
+            cfg.ListOpt('targets', default=[
+                'f278782a-07dc-4502-9177-b5d85c5f7c7e',
+                'a38703f2-b71e-4e5b-ab22-30caaed61dfd',
+            ]),
+            cfg.ListOpt('nameservers', default=[
+                'c5d64303-4cba-425a-9f3c-5d708584dde4',
+                'c67cdc95-9a9e-4d2a-98ed-dc78cbd85234',
+            ]),
         ]
         cfg.CONF.register_group(cfg.OptGroup(name=section_name))
-        cfg.CONF.register_opts(server_opts, group=section_name)
+        cfg.CONF.register_opts(section_opts, group=section_name)
 
-        section_name = 'backend:fake:a38703f2-b71e-4e5b-ab22-30caaed61dfd'
-        server_opts = [
-            cfg.StrOpt('host', default='10.0.0.3'),
-            cfg.IntOpt('port', default=53),
-            cfg.StrOpt('tsig_key')
+        # Configure the Pool Targets
+        section_name = 'pool_target:f278782a-07dc-4502-9177-b5d85c5f7c7e'
+        section_opts = [
+            cfg.StrOpt('type', default='fake'),
+            cfg.ListOpt('masters', default=['127.0.0.1:5354']),
+            cfg.DictOpt('options', default={})
         ]
         cfg.CONF.register_group(cfg.OptGroup(name=section_name))
-        cfg.CONF.register_opts(server_opts, group=section_name)
+        cfg.CONF.register_opts(section_opts, group=section_name)
 
+        section_name = 'pool_target:a38703f2-b71e-4e5b-ab22-30caaed61dfd'
+        section_opts = [
+            cfg.StrOpt('type', default='fake'),
+            cfg.ListOpt('masters', default=['127.0.0.1:5354']),
+            cfg.DictOpt('options', default={})
+        ]
+        cfg.CONF.register_group(cfg.OptGroup(name=section_name))
+        cfg.CONF.register_opts(section_opts, group=section_name)
+
+        # Configure the Pool Nameservers
+        section_name = 'pool_nameserver:c5d64303-4cba-425a-9f3c-5d708584dde4'
+        section_opts = [
+            cfg.StrOpt('host', default='127.0.0.1'),
+            cfg.StrOpt('port', default=5355),
+        ]
+        cfg.CONF.register_group(cfg.OptGroup(name=section_name))
+        cfg.CONF.register_opts(section_opts, group=section_name)
+
+        section_name = 'pool_nameserver:c67cdc95-9a9e-4d2a-98ed-dc78cbd85234'
+        section_opts = [
+            cfg.StrOpt('host', default='127.0.0.1'),
+            cfg.StrOpt('port', default=5356),
+        ]
+        cfg.CONF.register_group(cfg.OptGroup(name=section_name))
+        cfg.CONF.register_opts(section_opts, group=section_name)
+
+        # Start the Service
         self.service = self.start_service('pool_manager')
         self.cache = self.service.cache
 
@@ -92,36 +126,40 @@ class PoolManagerServiceMemcacheTest(PoolManagerTestCase):
 
         create_statuses = self.service._retrieve_statuses(
             self.admin_context, domain, 'CREATE')
-        self.assertEqual(2, len(create_statuses))
-        self.assertEqual(None, create_statuses[0].status)
-        self.assertEqual(None, create_statuses[1].status)
+        # Even though _retrieve_statuses tries to get from mdns, mdns does
+        # not return any status
+        self.assertEqual(0, len(create_statuses))
 
         # Ensure notify_zone_changed and poll_for_serial_number
-        # was called for each backend server.
+        # was called for each nameserver.
         self.assertEqual(2, mock_notify_zone_changed.call_count)
         self.assertEqual(
             [call(self.admin_context, domain,
-                  self.service.server_backends[0]['server'], 30, 2, 3, 0),
+                  self.service.pool.nameservers[0], 30, 2, 3, 0),
              call(self.admin_context, domain,
-                  self.service.server_backends[1]['server'], 30, 2, 3, 0)],
+                  self.service.pool.nameservers[1], 30, 2, 3, 0)],
             mock_notify_zone_changed.call_args_list)
         self.assertEqual(2, mock_poll_for_serial_number.call_count)
         self.assertEqual(
             [call(self.admin_context, domain,
-                  self.service.server_backends[0]['server'], 30, 2, 3, 1),
+                  self.service.pool.nameservers[0], 30, 2, 3, 1),
              call(self.admin_context, domain,
-                  self.service.server_backends[1]['server'], 30, 2, 3, 1)],
+                  self.service.pool.nameservers[1], 30, 2, 3, 1)],
             mock_poll_for_serial_number.call_args_list)
 
+        # Pool manager needs to call into mdns to calculate consensus as
+        # there is no cache. So update_status is never called.
         self.assertEqual(False, mock_update_status.called)
 
+    @patch.object(mdns_rpcapi.MdnsAPI, 'get_serial_number',
+                  side_effect=messaging.MessagingException)
     @patch.object(impl_fake.FakeBackend, 'create_domain')
     @patch.object(mdns_rpcapi.MdnsAPI, 'poll_for_serial_number')
     @patch.object(mdns_rpcapi.MdnsAPI, 'notify_zone_changed')
     @patch.object(central_rpcapi.CentralAPI, 'update_status')
-    def test_create_domain_backend_both_failure(
+    def test_create_domain_target_both_failure(
             self, mock_update_status, mock_notify_zone_changed,
-            mock_poll_for_serial_number, mock_create_domain):
+            mock_poll_for_serial_number, mock_create_domain, _):
 
         domain = self._build_domain('example.org.', 'CREATE', 'PENDING')
 
@@ -131,25 +169,26 @@ class PoolManagerServiceMemcacheTest(PoolManagerTestCase):
 
         create_statuses = self.service._retrieve_statuses(
             self.admin_context, domain, 'CREATE')
-        self.assertEqual(2, len(create_statuses))
-        self.assertEqual('ERROR', create_statuses[0].status)
-        self.assertEqual('ERROR', create_statuses[1].status)
+        self.assertEqual(0, len(create_statuses))
 
         # Ensure notify_zone_changed and poll_for_serial_number
         # were never called.
         self.assertEqual(False, mock_notify_zone_changed.called)
         self.assertEqual(False, mock_poll_for_serial_number.called)
 
-        mock_update_status.assert_called_once_with(
-            self.admin_context, domain.id, 'ERROR', domain.serial)
+        # Since consensus is not reached this early, we immediatly call
+        # central's update_status.
+        self.assertEqual(True, mock_update_status.called)
 
+    @patch.object(mdns_rpcapi.MdnsAPI, 'get_serial_number',
+                  side_effect=messaging.MessagingException)
     @patch.object(impl_fake.FakeBackend, 'create_domain')
     @patch.object(mdns_rpcapi.MdnsAPI, 'poll_for_serial_number')
     @patch.object(mdns_rpcapi.MdnsAPI, 'notify_zone_changed')
     @patch.object(central_rpcapi.CentralAPI, 'update_status')
-    def test_create_domain_backend_one_failure(
+    def test_create_domain_target_one_failure(
             self, mock_update_status, mock_notify_zone_changed,
-            mock_poll_for_serial_number, mock_create_domain):
+            mock_poll_for_serial_number, mock_create_domain, _):
 
         domain = self._build_domain('example.org.', 'CREATE', 'PENDING')
 
@@ -159,26 +198,21 @@ class PoolManagerServiceMemcacheTest(PoolManagerTestCase):
 
         create_statuses = self.service._retrieve_statuses(
             self.admin_context, domain, 'CREATE')
-        self.assertEqual(2, len(create_statuses))
-        self.assertEqual(None, create_statuses[0].status)
-        self.assertEqual('ERROR', create_statuses[1].status)
+        self.assertEqual(0, len(create_statuses))
 
-        mock_notify_zone_changed.assert_called_once_with(
-            self.admin_context, domain,
-            self.service.server_backends[0]['server'], 30, 2, 3, 0)
-        mock_poll_for_serial_number.assert_called_once_with(
-            self.admin_context, domain,
-            self.service.server_backends[0]['server'], 30, 2, 3, 1)
+        # Since consensus is not reached this early, we immediatly call
+        # central's update_status.
+        self.assertEqual(True, mock_update_status.called)
 
-        self.assertEqual(False, mock_update_status.called)
-
+    @patch.object(mdns_rpcapi.MdnsAPI, 'get_serial_number',
+                  side_effect=messaging.MessagingException)
     @patch.object(impl_fake.FakeBackend, 'create_domain')
     @patch.object(mdns_rpcapi.MdnsAPI, 'poll_for_serial_number')
     @patch.object(mdns_rpcapi.MdnsAPI, 'notify_zone_changed')
     @patch.object(central_rpcapi.CentralAPI, 'update_status')
-    def test_create_domain_backend_one_failure_consensus(
+    def test_create_domain_target_one_failure_consensus(
             self, mock_update_status, mock_notify_zone_changed,
-            mock_poll_for_serial_number, mock_create_domain):
+            mock_poll_for_serial_number, mock_create_domain, _):
 
         self.service.stop()
         self.config(
@@ -194,42 +228,42 @@ class PoolManagerServiceMemcacheTest(PoolManagerTestCase):
 
         create_statuses = self.service._retrieve_statuses(
             self.admin_context, domain, 'CREATE')
-        self.assertEqual(2, len(create_statuses))
-        self.assertEqual(None, create_statuses[0].status)
-        self.assertEqual('ERROR', create_statuses[1].status)
+        self.assertEqual(0, len(create_statuses))
 
-        mock_notify_zone_changed.assert_called_once_with(
-            self.admin_context, domain,
-            self.service.server_backends[0]['server'], 30, 2, 3, 0)
-        mock_poll_for_serial_number.assert_called_once_with(
-            self.admin_context, domain,
-            self.service.server_backends[0]['server'], 30, 2, 3, 1)
+        # Ensure notify_zone_changed and poll_for_serial_number
+        # was called for each nameserver.
+        self.assertEqual(2, mock_notify_zone_changed.call_count)
+        self.assertEqual(
+            [call(self.admin_context, domain,
+                  self.service.pool.nameservers[0], 30, 2, 3, 0),
+             call(self.admin_context, domain,
+                  self.service.pool.nameservers[1], 30, 2, 3, 0)],
+            mock_notify_zone_changed.call_args_list)
+        self.assertEqual(2, mock_poll_for_serial_number.call_count)
+        self.assertEqual(
+            [call(self.admin_context, domain,
+                  self.service.pool.nameservers[0], 30, 2, 3, 1),
+             call(self.admin_context, domain,
+                  self.service.pool.nameservers[1], 30, 2, 3, 1)],
+            mock_poll_for_serial_number.call_args_list)
 
-        mock_update_status.assert_called_once_with(
-            self.admin_context, domain.id, 'ERROR', domain.serial)
+        self.assertEqual(False, mock_update_status.called)
 
-    @patch.object(mdns_rpcapi.MdnsAPI, 'get_serial_number',
-                  side_effect=messaging.MessagingException)
+    @patch.object(impl_fake.FakeBackend, 'delete_domain',
+                  side_effect=exceptions.Backend)
     @patch.object(central_rpcapi.CentralAPI, 'update_status')
     def test_delete_domain(self, mock_update_status, _):
-
         domain = self._build_domain('example.org.', 'DELETE', 'PENDING')
 
         self.service.delete_domain(self.admin_context, domain)
 
-        delete_statuses = self.service._retrieve_statuses(
-            self.admin_context, domain, 'DELETE')
-        self.assertEqual(0, len(delete_statuses))
-
         mock_update_status.assert_called_once_with(
-            self.admin_context, domain.id, 'SUCCESS', domain.serial)
+            self.admin_context, domain.id, 'ERROR', domain.serial)
 
-    @patch.object(mdns_rpcapi.MdnsAPI, 'get_serial_number',
-                  side_effect=messaging.MessagingException)
     @patch.object(impl_fake.FakeBackend, 'delete_domain')
     @patch.object(central_rpcapi.CentralAPI, 'update_status')
-    def test_delete_domain_backend_both_failure(
-            self, mock_update_status, mock_delete_domain, _):
+    def test_delete_domain_target_both_failure(
+            self, mock_update_status, mock_delete_domain):
 
         domain = self._build_domain('example.org.', 'DELETE', 'PENDING')
 
@@ -237,21 +271,13 @@ class PoolManagerServiceMemcacheTest(PoolManagerTestCase):
 
         self.service.delete_domain(self.admin_context, domain)
 
-        delete_statuses = self.service._retrieve_statuses(
-            self.admin_context, domain, 'DELETE')
-        self.assertEqual(2, len(delete_statuses))
-        self.assertEqual('ERROR', delete_statuses[0].status)
-        self.assertEqual('ERROR', delete_statuses[1].status)
-
         mock_update_status.assert_called_once_with(
             self.admin_context, domain.id, 'ERROR', domain.serial)
 
-    @patch.object(mdns_rpcapi.MdnsAPI, 'get_serial_number',
-                  side_effect=messaging.MessagingException)
     @patch.object(impl_fake.FakeBackend, 'delete_domain')
     @patch.object(central_rpcapi.CentralAPI, 'update_status')
-    def test_delete_domain_backend_one_failure(
-            self, mock_update_status, mock_delete_domain, _):
+    def test_delete_domain_target_one_failure(
+            self, mock_update_status, mock_delete_domain):
 
         domain = self._build_domain('example.org.', 'DELETE', 'PENDING')
 
@@ -259,21 +285,13 @@ class PoolManagerServiceMemcacheTest(PoolManagerTestCase):
 
         self.service.delete_domain(self.admin_context, domain)
 
-        delete_statuses = self.service._retrieve_statuses(
-            self.admin_context, domain, 'DELETE')
-        self.assertEqual(2, len(delete_statuses))
-        self.assertEqual('SUCCESS', delete_statuses[0].status)
-        self.assertEqual('ERROR', delete_statuses[1].status)
-
         mock_update_status.assert_called_once_with(
             self.admin_context, domain.id, 'ERROR', domain.serial)
 
-    @patch.object(mdns_rpcapi.MdnsAPI, 'get_serial_number',
-                  side_effect=messaging.MessagingException)
     @patch.object(impl_fake.FakeBackend, 'delete_domain')
     @patch.object(central_rpcapi.CentralAPI, 'update_status')
-    def test_delete_domain_backend_one_failure_consensus(
-            self, mock_update_status, mock_delete_domain, _):
+    def test_delete_domain_target_one_failure_consensus(
+            self, mock_update_status, mock_delete_domain):
 
         self.service.stop()
         self.config(
@@ -287,14 +305,8 @@ class PoolManagerServiceMemcacheTest(PoolManagerTestCase):
 
         self.service.delete_domain(self.admin_context, domain)
 
-        delete_statuses = self.service._retrieve_statuses(
-            self.admin_context, domain, 'DELETE')
-        self.assertEqual(2, len(delete_statuses))
-        self.assertEqual('SUCCESS', delete_statuses[0].status)
-        self.assertEqual('ERROR', delete_statuses[1].status)
-
         mock_update_status.assert_called_once_with(
-            self.admin_context, domain.id, 'SUCCESS', domain.serial)
+            self.admin_context, domain.id, 'ERROR', domain.serial)
 
     @patch.object(mdns_rpcapi.MdnsAPI, 'get_serial_number',
                   side_effect=messaging.MessagingException)
@@ -304,45 +316,40 @@ class PoolManagerServiceMemcacheTest(PoolManagerTestCase):
         domain = self._build_domain('example.org.', 'UPDATE', 'PENDING')
 
         self.service.update_status(self.admin_context, domain,
-                                   self.service.server_backends[0]['server'],
-                                   'SUCCESS', domain.serial)
-
-        update_statuses = self.service._retrieve_statuses(
-            self.admin_context, domain, 'UPDATE')
-        self.assertEqual(1, len(update_statuses))
-        self.assertEqual('SUCCESS', update_statuses[0].status)
-        self.assertEqual(domain.serial, update_statuses[0].serial_number)
-
-        # Ensure update_status was not called.
-        self.assertEqual(False, mock_update_status.called)
-
-        self.service.update_status(self.admin_context, domain,
-                                   self.service.server_backends[1]['server'],
+                                   self.service.pool.nameservers[0],
                                    'SUCCESS', domain.serial)
 
         update_statuses = self.service._retrieve_statuses(
             self.admin_context, domain, 'UPDATE')
         self.assertEqual(0, len(update_statuses))
 
-        mock_update_status.assert_called_once_with(
-            self.admin_context, domain.id, 'SUCCESS', domain.serial)
+        # Ensure update_status was not called.
+        self.assertEqual(False, mock_update_status.called)
+
+        self.service.update_status(self.admin_context, domain,
+                                   self.service.pool.nameservers[1],
+                                   'SUCCESS', domain.serial)
+
+        update_statuses = self.service._retrieve_statuses(
+            self.admin_context, domain, 'UPDATE')
+        self.assertEqual(0, len(update_statuses))
+
+        # Ensure update_status was not called.
+        self.assertEqual(False, mock_update_status.called)
 
     @patch.object(mdns_rpcapi.MdnsAPI, 'get_serial_number',
                   side_effect=messaging.MessagingException)
     @patch.object(central_rpcapi.CentralAPI, 'update_status')
     def test_update_status_both_failure(self, mock_update_status, _):
-
         domain = self._build_domain('example.org.', 'UPDATE', 'PENDING')
 
         self.service.update_status(self.admin_context, domain,
-                                   self.service.server_backends[0]['server'],
+                                   self.service.pool.nameservers[0],
                                    'ERROR', domain.serial)
 
         update_statuses = self.service._retrieve_statuses(
             self.admin_context, domain, 'UPDATE')
-        self.assertEqual(1, len(update_statuses))
-        self.assertEqual('ERROR', update_statuses[0].status)
-        self.assertEqual(domain.serial, update_statuses[0].serial_number)
+        self.assertEqual(0, len(update_statuses))
 
         mock_update_status.assert_called_once_with(
             self.admin_context, domain.id, 'ERROR', 0)
@@ -351,60 +358,43 @@ class PoolManagerServiceMemcacheTest(PoolManagerTestCase):
         mock_update_status.reset_mock()
 
         self.service.update_status(self.admin_context, domain,
-                                   self.service.server_backends[1]['server'],
+                                   self.service.pool.nameservers[1],
                                    'ERROR', domain.serial)
 
         update_statuses = self.service._retrieve_statuses(
             self.admin_context, domain, 'UPDATE')
-        self.assertEqual(2, len(update_statuses))
-        self.assertEqual('ERROR', update_statuses[0].status)
-        self.assertEqual(domain.serial, update_statuses[0].serial_number)
-        self.assertEqual('ERROR', update_statuses[1].status)
-        self.assertEqual(domain.serial, update_statuses[1].serial_number)
+        self.assertEqual(0, len(update_statuses))
 
-        self.assertEqual(2, mock_update_status.call_count)
-        self.assertEqual(
-            [call(self.admin_context, domain.id, 'SUCCESS', domain.serial),
-             call(self.admin_context, domain.id, 'ERROR', 0)],
-            mock_update_status.call_args_list)
+        mock_update_status.assert_called_once_with(
+            self.admin_context, domain.id, 'ERROR', 0)
 
     @patch.object(mdns_rpcapi.MdnsAPI, 'get_serial_number',
                   side_effect=messaging.MessagingException)
     @patch.object(central_rpcapi.CentralAPI, 'update_status')
     def test_update_status_one_failure(self, mock_update_status, _):
-
         domain = self._build_domain('example.org.', 'UPDATE', 'PENDING')
 
         self.service.update_status(self.admin_context, domain,
-                                   self.service.server_backends[0]['server'],
+                                   self.service.pool.nameservers[0],
                                    'SUCCESS', domain.serial)
 
         update_statuses = self.service._retrieve_statuses(
             self.admin_context, domain, 'UPDATE')
-        self.assertEqual(1, len(update_statuses))
-        self.assertEqual('SUCCESS', update_statuses[0].status)
-        self.assertEqual(domain.serial, update_statuses[0].serial_number)
+        self.assertEqual(0, len(update_statuses))
 
         # Ensure update_status was not called.
         self.assertEqual(False, mock_update_status.called)
 
         self.service.update_status(self.admin_context, domain,
-                                   self.service.server_backends[1]['server'],
+                                   self.service.pool.nameservers[1],
                                    'ERROR', domain.serial)
 
         update_statuses = self.service._retrieve_statuses(
             self.admin_context, domain, 'UPDATE')
-        self.assertEqual(2, len(update_statuses))
-        self.assertEqual('SUCCESS', update_statuses[0].status)
-        self.assertEqual(domain.serial, update_statuses[0].serial_number)
-        self.assertEqual('ERROR', update_statuses[1].status)
-        self.assertEqual(domain.serial, update_statuses[1].serial_number)
+        self.assertEqual(0, len(update_statuses))
 
-        self.assertEqual(2, mock_update_status.call_count)
-        self.assertEqual(
-            [call(self.admin_context, domain.id, 'SUCCESS', domain.serial),
-             call(self.admin_context, domain.id, 'ERROR', 0)],
-            mock_update_status.call_args_list)
+        mock_update_status.assert_called_once_with(
+            self.admin_context, domain.id, 'ERROR', 0)
 
     @patch.object(mdns_rpcapi.MdnsAPI, 'get_serial_number',
                   side_effect=messaging.MessagingException)
@@ -420,35 +410,26 @@ class PoolManagerServiceMemcacheTest(PoolManagerTestCase):
         domain = self._build_domain('example.org.', 'UPDATE', 'PENDING')
 
         self.service.update_status(self.admin_context, domain,
-                                   self.service.server_backends[0]['server'],
+                                   self.service.pool.nameservers[0],
                                    'SUCCESS', domain.serial)
 
         update_statuses = self.service._retrieve_statuses(
             self.admin_context, domain, 'UPDATE')
-        self.assertEqual(1, len(update_statuses))
-        self.assertEqual('SUCCESS', update_statuses[0].status)
-        self.assertEqual(domain.serial, update_statuses[0].serial_number)
+        self.assertEqual(0, len(update_statuses))
 
-        mock_update_status.assert_called_once_with(
-            self.admin_context, domain.id, 'SUCCESS', domain.serial)
+        # Ensure update_status was not called.
+        self.assertEqual(False, mock_update_status.called)
 
         # Reset the mock call attributes.
         mock_update_status.reset_mock()
 
         self.service.update_status(self.admin_context, domain,
-                                   self.service.server_backends[1]['server'],
+                                   self.service.pool.nameservers[1],
                                    'ERROR', domain.serial)
 
         update_statuses = self.service._retrieve_statuses(
             self.admin_context, domain, 'UPDATE')
-        self.assertEqual(2, len(update_statuses))
-        self.assertEqual('SUCCESS', update_statuses[0].status)
-        self.assertEqual(domain.serial, update_statuses[0].serial_number)
-        self.assertEqual('ERROR', update_statuses[1].status)
-        self.assertEqual(domain.serial, update_statuses[1].serial_number)
+        self.assertEqual(0, len(update_statuses))
 
-        self.assertEqual(2, mock_update_status.call_count)
-        self.assertEqual(
-            [call(self.admin_context, domain.id, 'SUCCESS', domain.serial),
-             call(self.admin_context, domain.id, 'ERROR', 0)],
-            mock_update_status.call_args_list)
+        mock_update_status.assert_called_once_with(
+            self.admin_context, domain.id, 'ERROR', 0)

@@ -29,20 +29,23 @@ CONF = cfg.CONF
 _FACADES = {}
 
 
-def _create_facade_lazily(name):
-    if name not in _FACADES:
-        _FACADES[name] = session.EngineFacade(
-            cfg.CONF[name].connection,
-            **dict(cfg.CONF[name].iteritems()))
+def _create_facade_lazily(cfg_group, connection=None, discriminator=None):
+    connection = connection or cfg.CONF[cfg_group].connection
+    cache_name = "%s:%s" % (cfg_group, discriminator)
 
-    return _FACADES[name]
+    if cache_name not in _FACADES:
+        _FACADES[cache_name] = session.EngineFacade(
+            connection,
+            **dict(cfg.CONF[cfg_group].iteritems()))
+
+    return _FACADES[cache_name]
 
 
-def get_engine(name):
-    facade = _create_facade_lazily(name)
+def get_engine(cfg_group):
+    facade = _create_facade_lazily(cfg_group)
     return facade.get_engine()
 
 
-def get_session(name, **kwargs):
-    facade = _create_facade_lazily(name)
+def get_session(cfg_group, connection=None, discriminator=None, **kwargs):
+    facade = _create_facade_lazily(cfg_group, connection, discriminator)
     return facade.get_session(**kwargs)

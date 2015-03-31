@@ -46,14 +46,15 @@ function install_designate_backend {
 
 # configure_designate_backend - make configuration changes, including those to other services
 function configure_designate_backend {
-    iniset $DESIGNATE_CONF service:pool_manager backends powerdns
+    iniset $DESIGNATE_CONF pool_target:$DESIGNATE_TARGET_ID type powerdns
+    iniset $DESIGNATE_CONF pool_target:$DESIGNATE_TARGET_ID masters $DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT_MDNS
+    iniset $DESIGNATE_CONF pool_target:$DESIGNATE_TARGET_ID options "connection: `database_connection_url designate_pdns`"
 
-    iniset $DESIGNATE_CONF backend:powerdns server_ids $DESIGNATE_SERVER_ID
-    iniset $DESIGNATE_CONF backend:powerdns connection `database_connection_url designate_pdns`
-    iniset $DESIGNATE_CONF backend:powerdns masters "$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT_MDNS"
-
-    iniset $DESIGNATE_CONF backend:powerdns:$DESIGNATE_SERVER_ID host $DESIGNATE_SERVICE_HOST
-    iniset $DESIGNATE_CONF backend:powerdns:$DESIGNATE_SERVER_ID port $DESIGNATE_SERVICE_PORT_DNS
+    # DevStack Managed PDNS NameServer
+    local nameserver_id=`uuidgen`
+    iniset $DESIGNATE_CONF pool:$DESIGNATE_POOL_ID nameservers $nameserver_id
+    iniset $DESIGNATE_CONF pool_nameserver:$nameserver_id host $DESIGNATE_SERVICE_HOST
+    iniset $DESIGNATE_CONF pool_nameserver:$nameserver_id port $DESIGNATE_SERVICE_PORT_DNS
 
     sudo tee $POWERDNS_CFG_DIR/pdns.conf > /dev/null <<EOF
 # General Config
@@ -98,7 +99,7 @@ function init_designate_backend {
     recreate_database designate_pdns utf8
 
     # Init and migrate designate_pdns database
-    designate-manage powerdns sync
+    designate-manage powerdns sync $DESIGNATE_TARGET_ID
 }
 
 # start_designate_backend - start any external services

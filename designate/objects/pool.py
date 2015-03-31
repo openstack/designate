@@ -13,6 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from designate import utils
 from designate.objects import base
 
 
@@ -59,7 +60,72 @@ class Pool(base.DictObjectMixin, base.PersistentObjectMixin,
             'relation_cls': 'PoolNsRecordList',
             'required': True
         },
+        'nameservers': {
+            'relation': True,
+            'relation_cls': 'PoolNameserverList'
+        },
+        'targets': {
+            'relation': True,
+            'relation_cls': 'PoolTargetList'
+        },
     }
+
+    @classmethod
+    def from_config(cls, CONF):
+        pool_id = CONF['service:pool_manager'].pool_id
+
+        pool_target_ids = CONF['pool:%s' % pool_id].targets
+        pool_nameserver_ids = CONF['pool:%s' % pool_id].nameservers
+
+        # Build Base Pool
+        pool = {
+            'id': pool_id,
+            'description': 'Pool built from configuration on %s' % CONF.host,
+            'targets': [],
+            'nameservers': [],
+        }
+
+        # Build Pool Targets
+        for pool_target_id in pool_target_ids:
+            pool_target_group = 'pool_target:%s' % pool_target_id
+
+            pool_target = {
+                'id': pool_target_id,
+                'type': CONF[pool_target_group].type,
+                'masters': [],
+                'options': [],
+            }
+
+            # Build Pool Target Masters
+            for pool_target_master in CONF[pool_target_group].masters:
+                host, port = utils.split_host_port(pool_target_master)
+                pool_target['masters'].append({
+                    'host': host,
+                    'port': port,
+                })
+
+            # Build Pool Target Options
+            for k, v in CONF[pool_target_group].options.items():
+                pool_target['options'].append({
+                    'key': k,
+                    'value': v,
+                })
+
+            pool['targets'].append(pool_target)
+
+        # Build Pool Nameservers
+        for pool_nameserver_id in pool_nameserver_ids:
+            pool_nameserver_group = 'pool_nameserver:%s' % pool_nameserver_id
+
+            pool_nameserver = {
+                'id': pool_nameserver_id,
+                'host': CONF[pool_nameserver_group].host,
+                'port': CONF[pool_nameserver_group].port,
+            }
+
+            pool['nameservers'].append(pool_nameserver)
+
+        return cls.from_dict(pool)
 
 
 class PoolList(base.ListObjectMixin, base.DesignateObject):

@@ -13,20 +13,21 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from designate.objects import base
+from sqlalchemy.schema import Table, MetaData
 
 
-# TODO(Ron): replace the Server object with this object.
-class PoolServer(base.DictObjectMixin, base.DesignateObject):
-    FIELDS = {
-        'id': {},
-        'host': {},
-        'port': {},
-        'backend': {},
-        'backend_options': {},
-        'tsig_key': {}
-    }
+meta = MetaData()
 
 
-class PoolServerList(base.ListObjectMixin, base.DesignateObject):
-    LIST_ITEM_TYPE = PoolServer
+def upgrade(migrate_engine):
+    meta.bind = migrate_engine
+
+    pms_table = Table('pool_manager_statuses', meta, autoload=True)
+    pms_table.c.server_id.alter(name='nameserver_id')
+
+
+def downgrade(migrate_engine):
+    meta.bind = migrate_engine
+
+    pms_table = Table('pool_manager_statuses', meta, autoload=True)
+    pms_table.c.nameserver_id.alter(name='server_id')

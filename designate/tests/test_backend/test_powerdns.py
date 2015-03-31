@@ -28,22 +28,19 @@ class PowerDNSBackendTestCase(BackendTestCase):
     def setUp(self):
         super(PowerDNSBackendTestCase, self).setUp()
 
-        self.masters = [
-            '127.0.1.1:53',
-            '127.0.1.2:53',
-        ]
-
         self.domain = objects.Domain(id='e2bed4dc-9d01-11e4-89d3-123b93f75cba',
                                      name='example.com.',
                                      email='example@example.com')
 
-        backend_options = [
-            objects.BackendOption(key="host", value="127.0.0.1"),
-            objects.BackendOption(key="port", value=5353),
-            objects.BackendOption(key="masters", value=self.masters),
-        ]
+        self.target = objects.PoolTarget.from_dict({
+            'id': '4588652b-50e7-46b9-b688-a9bad40a873e',
+            'type': 'powerdns',
+            'masters': [{'host': '192.0.2.1', 'port': 53},
+                        {'host': '192.0.2.2', 'port': 35}],
+            'options': [{'key': 'connection', 'value': 'memory://'}],
+        })
 
-        self.backend = impl_powerdns.PowerDNSBackend(backend_options)
+        self.backend = impl_powerdns.PowerDNSBackend(self.target)
 
     # Helper Methpds
     def assertSessionTransactionCalls(self, session_mock, begin=0, commit=0,
@@ -73,7 +70,7 @@ class PowerDNSBackendTestCase(BackendTestCase):
         self.assertDictContainsSubset(
             {'type': 'SLAVE',
              'designate_id': self.domain.id,
-             'master': ','.join(self.masters),
+             'master': '192.0.2.1:53,192.0.2.2:35',
              'name': self.domain.name.rstrip('.')},
             session_mock.execute.call_args_list[0][0][1])
 

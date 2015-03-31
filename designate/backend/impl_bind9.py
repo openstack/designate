@@ -13,9 +13,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import socket
-
-from oslo.config import cfg
 from oslo_log import log as logging
 
 from designate import exceptions
@@ -30,55 +27,21 @@ DEFAULT_MASTER_PORT = 5354
 class Bind9Backend(base.Backend):
     __plugin_name__ = 'bind9'
 
-    @classmethod
-    def _get_common_cfg_opts(cls):
-        return [
-            cfg.StrOpt('rndc-host', default='127.0.0.1', help='RNDC Host'),
-            cfg.IntOpt('rndc-port', default=953, help='RNDC Port'),
-            cfg.StrOpt('rndc-config-file', default=None,
-                       help='RNDC Config File'),
-            cfg.StrOpt('rndc-key-file', default=None, help='RNDC Key File'),
-        ]
+    def __init__(self, target):
+        super(Bind9Backend, self).__init__(target)
 
-    def __init__(self, backend_options):
-        super(Bind9Backend, self).__init__(backend_options)
-        self.masters = [self._parse_master(master)
-                        for master in self.get_backend_option('masters')]
-        self.rndc_host = self.get_backend_option('rndc_host')
-        self.rndc_port = self.get_backend_option('rndc_port')
-        self.rndc_config_file = self.get_backend_option('rndc_config_file')
-        self.rndc_key_file = self.get_backend_option('rndc_key_file')
-
-    @staticmethod
-    def _parse_master(master):
-        try:
-            (ip_address, port) = utils.split_host_port(master)
-        except ValueError:
-            ip_address = str(master)
-            port = DEFAULT_MASTER_PORT
-        try:
-            port = int(port)
-        except ValueError:
-            raise exceptions.ConfigurationError(
-                'Invalid port "%s" in masters option.' % port)
-        if port < 0 or port > 65535:
-            raise exceptions.ConfigurationError(
-                'Port "%s" is not between 0 and 65535 in masters option.' %
-                port)
-        try:
-            socket.inet_pton(socket.AF_INET, ip_address)
-        except socket.error:
-            raise exceptions.ConfigurationError(
-                'Invalid IP address "%s" in masters option.' % ip_address)
-        return {'ip-address': ip_address, 'port': port}
+        self.rndc_host = self.options.get('rndc_host', '127.0.0.1')
+        self.rndc_port = int(self.options.get('rndc_port', 953))
+        self.rndc_config_file = self.options.get('rndc_config_file')
+        self.rndc_key_file = self.options.get('rndc_key_file')
 
     def create_domain(self, context, domain):
         LOG.debug('Create Domain')
         masters = []
         for master in self.masters:
-            ip_address = master['ip-address']
+            host = master['host']
             port = master['port']
-            masters.append('%s port %s' % (ip_address, port))
+            masters.append('%s port %s' % (host, port))
         rndc_op = [
             'addzone',
             '%s { type slave; masters { %s;}; file "slave.%s%s"; };' %

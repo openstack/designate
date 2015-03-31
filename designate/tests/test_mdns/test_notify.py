@@ -36,13 +36,11 @@ class MdnsNotifyTest(MdnsTestCase):
 
     def setUp(self):
         super(MdnsNotifyTest, self).setUp()
-        server_values = {
+        self.nameserver = objects.PoolNameserver.from_dict({
             'id': 'f278782a-07dc-4502-9177-b5d85c5f7c7e',
             'host': '127.0.0.1',
-            'port': 65255,
-            'backend': 'fake'
-        }
-        self.server = objects.PoolServer.from_dict(server_values)
+            'port': 65255
+        })
         self.mock_tg = mock.Mock()
         self.notify = notify.NotifyEndpoint(self.mock_tg)
 
@@ -63,7 +61,7 @@ class MdnsNotifyTest(MdnsTestCase):
                 binascii.a2b_hex(expected_notify_response))):
             response, retry = self.notify.notify_zone_changed(
                 context, objects.Domain.from_dict(self.test_domain),
-                self.server, 0, 0, 2, 0)
+                self.nameserver, 0, 0, 2, 0)
             self.assertEqual(response, dns.message.from_wire(
                 binascii.a2b_hex(expected_notify_response)))
             self.assertEqual(retry, 1)
@@ -85,7 +83,7 @@ class MdnsNotifyTest(MdnsTestCase):
                 binascii.a2b_hex(non_auth_notify_response))):
             response, retry = self.notify.notify_zone_changed(
                 context, objects.Domain.from_dict(self.test_domain),
-                self.server, 0, 0, 2, 0)
+                self.nameserver, 0, 0, 2, 0)
             self.assertEqual(response, None)
             self.assertEqual(retry, 1)
 
@@ -93,8 +91,8 @@ class MdnsNotifyTest(MdnsTestCase):
     def test_send_notify_message_timeout(self, _):
         context = self.get_context()
         response, retry = self.notify.notify_zone_changed(
-            context, objects.Domain.from_dict(self.test_domain), self.server,
-            0, 0, 2, 0)
+            context, objects.Domain.from_dict(self.test_domain),
+            self.nameserver, 0, 0, 2, 0)
         self.assertEqual(response, None)
         self.assertEqual(retry, 2)
 
@@ -102,8 +100,8 @@ class MdnsNotifyTest(MdnsTestCase):
     def test_send_notify_message_bad_response(self, _):
         context = self.get_context()
         response, retry = self.notify.notify_zone_changed(
-            context, objects.Domain.from_dict(self.test_domain), self.server,
-            0, 0, 2, 0)
+            context, objects.Domain.from_dict(self.test_domain),
+            self.nameserver, 0, 0, 2, 0)
         self.assertEqual(response, None)
         self.assertEqual(retry, 1)
 
@@ -128,7 +126,7 @@ class MdnsNotifyTest(MdnsTestCase):
                 binascii.a2b_hex(poll_response))):
             status, serial, retries = self.notify.get_serial_number(
                 context, objects.Domain.from_dict(self.test_domain),
-                self.server, 0, 0, 2, 0)
+                self.nameserver, 0, 0, 2, 0)
             self.assertEqual(status, 'SUCCESS')
             self.assertEqual(serial, self.test_domain['serial'])
             self.assertEqual(retries, 2)
@@ -154,7 +152,7 @@ class MdnsNotifyTest(MdnsTestCase):
                 binascii.a2b_hex(poll_response))):
             status, serial, retries = self.notify.get_serial_number(
                 context, objects.Domain.from_dict(self.test_domain),
-                self.server, 0, 0, 2, 0)
+                self.nameserver, 0, 0, 2, 0)
             self.assertEqual(status, 'ERROR')
             self.assertEqual(serial, 99)
             self.assertEqual(retries, 0)
@@ -180,7 +178,7 @@ class MdnsNotifyTest(MdnsTestCase):
                 binascii.a2b_hex(poll_response))):
             status, serial, retries = self.notify.get_serial_number(
                 context, objects.Domain.from_dict(self.test_domain),
-                self.server, 0, 0, 2, 0)
+                self.nameserver, 0, 0, 2, 0)
             self.assertEqual(status, 'SUCCESS')
             self.assertEqual(serial, 101)
             self.assertEqual(retries, 2)
@@ -189,8 +187,8 @@ class MdnsNotifyTest(MdnsTestCase):
     def test_poll_for_serial_number_timeout(self, _):
         context = self.get_context()
         status, serial, retries = self.notify.get_serial_number(
-            context, objects.Domain.from_dict(self.test_domain), self.server,
-            0, 0, 2, 0)
+            context, objects.Domain.from_dict(self.test_domain),
+            self.nameserver, 0, 0, 2, 0)
         self.assertEqual(status, 'ERROR')
         self.assertEqual(serial, None)
         self.assertEqual(retries, 0)
@@ -205,8 +203,8 @@ class MdnsNotifyTest(MdnsTestCase):
         context = self.get_context()
         test_domain = objects.Domain.from_dict(self.test_domain)
         status, serial, retries = self.notify.get_serial_number(
-            context, test_domain, self.server, 0, 0, 2, 0)
+            context, test_domain, self.nameserver, 0, 0, 2, 0)
         response, retry = self.notify.notify_zone_changed(
-            context, test_domain, self.server, 0, 0, 2, 0)
+            context, test_domain, self.nameserver, 0, 0, 2, 0)
         assert not udp.called
         assert tcp.called
