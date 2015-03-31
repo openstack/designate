@@ -247,7 +247,7 @@ def notification(notification_type):
 
 
 class Service(service.RPCService, service.Service):
-    RPC_API_VERSION = '5.0'
+    RPC_API_VERSION = '5.1'
 
     target = messaging.Target(version=RPC_API_VERSION)
 
@@ -1018,6 +1018,23 @@ class Service(service.RPCService, service.Service):
         domain = self.storage.update_domain(context, domain)
 
         return domain
+
+    def xfr_domain(self, context, domain_id):
+        domain = self.storage.get_domain(context, domain_id)
+
+        target = {
+            'domain_id': domain_id,
+            'domain_name': domain.name,
+            'tenant_id': domain.tenant_id
+        }
+
+        policy.check('xfr_domain', context, target)
+
+        if domain.type == 'SECONDARY':
+            self.mdns_api.perform_zone_xfr(context, domain)
+        else:
+            msg = "Can't XFR a non Secondary zone."
+            raise exceptions.BadRequest(msg)
 
     def count_domains(self, context, criterion=None):
         if criterion is None:
