@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: designate 2015.1.dev24\n"
+"Project-Id-Version: designate 2015.1.dev62\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-03-24 06:04+0000\n"
+"POT-Creation-Date: 2015-03-31 06:05+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -439,12 +439,12 @@ msgstr ""
 msgid "NOT checking for TLDs"
 msgstr ""
 
-#: designate/central/service.py:1776
+#: designate/central/service.py:1803
 #, python-format
 msgid "Creating zone for %(fip_id)s:%(region)s - %(fip_addr)s zone %(zonename)s"
 msgstr ""
 
-#: designate/central/service.py:2184
+#: designate/central/service.py:2240
 msgid "Target Tenant ID found - using scoped policy"
 msgstr ""
 
@@ -458,6 +458,11 @@ msgstr ""
 msgid "Number of tlds added: %d"
 msgstr ""
 
+#: designate/mdns/base.py:34
+#, python-format
+msgid "Initialized mDNS %s endpoint"
+msgstr ""
+
 #: designate/mdns/handler.py:129
 #, python-format
 msgid "Serial %(serial)s is the same for master and us for %(domain_id)s"
@@ -468,16 +473,12 @@ msgstr ""
 msgid "Scheduling AXFR for %(domain_id)s from %(master_addr)s"
 msgstr ""
 
-#: designate/mdns/notify.py:47
-msgid "started mdns notify endpoint"
-msgstr ""
-
-#: designate/mdns/notify.py:195
+#: designate/mdns/notify.py:180
 #, python-format
 msgid "Sending '%(msg)s' for '%(zone)s' to '%(server)s:%(port)d'."
 msgstr ""
 
-#: designate/mdns/notify.py:229
+#: designate/mdns/notify.py:214
 #, python-format
 msgid "%(zone)s not found on %(server)s:%(port)d"
 msgstr ""
@@ -506,10 +507,6 @@ msgstr ""
 #: designate/mdns/rpcapi.py:111
 #, python-format
 msgid "perform_zone_xfr: Calling mdns for zone %(zone)s"
-msgstr ""
-
-#: designate/mdns/xfr.py:61
-msgid "started mdns xfr endpoint"
 msgstr ""
 
 #: designate/openstack/common/eventlet_backdoor.py:146
