@@ -24,6 +24,7 @@ from designate.objects.domain_attribute import DomainAttribute, DomainAttributeL
 from designate.objects.floating_ip import FloatingIP, FloatingIPList  # noqa
 from designate.objects.pool_manager_status import PoolManagerStatus, PoolManagerStatusList  # noqa
 from designate.objects.pool import Pool, PoolList  # noqa
+from designate.objects.pool_also_notifies import PoolAlsoNotifies, PoolAlsoNotifiesList  # noqa
 from designate.objects.pool_attribute import PoolAttribute, PoolAttributeList  # noqa
 from designate.objects.pool_ns_record import PoolNsRecord, PoolNsRecordList  # noqa
 from designate.objects.pool_nameserver import PoolNameserver, PoolNameserverList  # noqa

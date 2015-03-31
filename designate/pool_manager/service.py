@@ -251,6 +251,10 @@ class Service(service.RPCService, service.Service):
 
             return
 
+        # Send a NOTIFY to each also-notifies
+        for also_notify in self.pool.also_notifies:
+            self._update_domain_on_also_notify(context, also_notify, domain)
+
         # Send a NOTIFY to each nameserver
         for nameserver in self.pool.nameservers:
             create_status = self._build_status_object(
@@ -308,6 +312,10 @@ class Service(service.RPCService, service.Service):
 
             return
 
+        # Send a NOTIFY to each also-notifies
+        for also_notify in self.pool.also_notifies:
+            self._update_domain_on_also_notify(context, also_notify, domain)
+
         # Send a NOTIFY to each nameserver
         for nameserver in self.pool.nameservers:
             # See if there is already another update in progress
@@ -341,6 +349,15 @@ class Service(service.RPCService, service.Service):
                               "%(target)s"),
                           {'domain': domain.name, 'target': target.id})
             return False
+
+    def _update_domain_on_also_notify(self, context, also_notify, domain):
+        LOG.info(_LI('Updating domain %(domain)s on also_notify %(server)s.') %
+                 {'domain': domain.name,
+                  'server': self._get_destination(also_notify)})
+
+        self.mdns_api.notify_zone_changed(
+            context, domain, also_notify, self.timeout, self.retry_interval,
+            self.max_retries, 0)
 
     def _update_domain_on_nameserver(self, context, nameserver, domain):
         LOG.info(_LI('Updating domain %(domain)s on nameserver %(server)s.') %

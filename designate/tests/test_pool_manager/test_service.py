@@ -55,6 +55,7 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
                 'c5d64303-4cba-425a-9f3c-5d708584dde4',
                 'c67cdc95-9a9e-4d2a-98ed-dc78cbd85234',
             ]),
+            cfg.ListOpt('also_notifies', default=[]),
         ]
         cfg.CONF.register_group(cfg.OptGroup(name=section_name))
         cfg.CONF.register_opts(section_opts, group=section_name)
