@@ -30,6 +30,7 @@ from designate.i18n import _LW
 
 
 LOG = logging.getLogger(__name__)
+CONF = cfg.CONF
 CFG_GROUP = 'backend:dynect'
 
 
@@ -225,7 +226,7 @@ class DynClient(object):
         """
         status = response.status
 
-        timeout = Timeout(cfg.CONF[CFG_GROUP].job_timeout)
+        timeout = Timeout(CONF[CFG_GROUP].job_timeout)
         try:
             while status == 307:
                 time.sleep(1)
@@ -247,13 +248,13 @@ class DynClient(object):
 
         try:
             response = self._request(method, url, **kwargs)
-        except DynClientAuthError as e:
+        except DynClientAuthError:
             if retries > 0:
                 self.token = None
                 retries = retries - 1
                 return self.request(method, url, retries, **kwargs)
             else:
-                raise e
+                raise
 
         if response.status_code == 307:
             response = self.poll_response(response)
@@ -309,32 +310,37 @@ class DynECTBackend(base.Backend):
         )
 
         opts = [
-            cfg.StrOpt('customer_name', help="Customer name at DynECT."),
-            cfg.StrOpt('username', help="Username to auth with DynECT."),
-            cfg.StrOpt('password', help="Password to auth with DynECT.",
-                       secret=True),
-            cfg.ListOpt('masters',
-                        help="Master servers from which to transfer from."),
-            cfg.StrOpt('contact_nickname',
-                       help="Nickname that will receive notifications."),
-            cfg.StrOpt('tsig_key_name', help="TSIG key name."),
             cfg.IntOpt('job_timeout', default=30,
                        help="Timeout in seconds for pulling a job in DynECT."),
             cfg.IntOpt('timeout', help="Timeout in seconds for API Requests.",
                        default=10),
             cfg.BoolOpt('timings', help="Measure requests timings.",
-                        default=False)
+                        default=False),
         ]
 
         return [(group, opts)]
 
+    def __init__(self, target):
+        super(DynECTBackend, self).__init__(target)
+
+        self.customer_name = self.options.get('customer_name')
+        self.username = self.options.get('username')
+        self.password = self.options.get('password')
+        self.contact_nickname = self.options.get('contact_nickname', None)
+        self.tsig_key_name = self.options.get('tsig_key_name', None)
+
+        for m in self.masters:
+            if m.port != 53:
+                raise exceptions.ConfigurationError(
+                    "DynECT only supports mDNS instances on port 53")
+
     def get_client(self):
         return DynClient(
-            customer_name=cfg.CONF[CFG_GROUP].customer_name,
-            user_name=cfg.CONF[CFG_GROUP].username,
-            password=cfg.CONF[CFG_GROUP].password,
-            timeout=cfg.CONF[CFG_GROUP].timeout,
-            timings=cfg.CONF[CFG_GROUP].timings)
+            customer_name=self.customer_name,
+            user_name=self.username,
+            password=self.password,
+            timeout=CONF[CFG_GROUP].timeout,
+            timings=CONF[CFG_GROUP].timings)
 
     def create_domain(self, context, domain):
         LOG.info(_LI('Creating domain %(d_id)s / %(d_name)s') %
@@ -342,26 +348,29 @@ class DynECTBackend(base.Backend):
 
         url = '/Secondary/%s' % domain['name'].rstrip('.')
         data = {
-            'masters': cfg.CONF[CFG_GROUP].masters
+            'masters': [m.host for m in self.masters]
         }
 
-        if cfg.CONF[CFG_GROUP].contact_nickname is not None:
-            data['contact_nickname'] = cfg.CONF[CFG_GROUP].contact_nickname
+        if self.contact_nickname is not None:
+            data['contact_nickname'] = self.contact_nickname
 
-        if cfg.CONF[CFG_GROUP].tsig_key_name is not None:
-            data['tsig_key_name'] = cfg.CONF[CFG_GROUP].tsig_key_name
+        if self.tsig_key_name is not None:
+            data['tsig_key_name'] = self.tsig_key_name
 
         client = self.get_client()
 
         try:
             client.post(url, data=data)
         except DynClientError as e:
-            msg = _LI(
-                "Domain already exists, updating existing domain instead %s")
-            LOG.info(msg % domain['name'])
             for emsg in e.msgs:
                 if emsg['ERR_CD'] == 'TARGET_EXISTS':
+                    msg = _LI("Domain already exists, updating existing "
+                              "domain instead %s")
+                    LOG.info(msg % domain['name'])
                     client.put(url, data=data)
+                    break
+            else:
+                raise e
 
         client.put(url, data={'activate': True})
         client.logout()

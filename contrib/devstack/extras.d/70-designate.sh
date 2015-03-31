@@ -29,8 +29,8 @@ if is_service_enabled designate; then
         echo_summary "Starting Designate"
         start_designate
 
-        echo_summary "Creating Initial Designate Resources"
-        create_designate_initial_resources
+        echo_summary "Creating Pool NS Records"
+        create_designate_ns_records
     fi
 
     if [[ "$1" == "unstack" ]]; then

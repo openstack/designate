@@ -32,8 +32,19 @@ DESIGNATE_DYNECT_PASSWORD=${DESIGNATE_DYNECT_PASSWORD:-password}
 DESIGNATE_DYNECT_CONTACT_NICKNAME=${DESIGNATE_DYNECT_CONTACT_NICKNAME:-}
 DESIGNATE_DYNECT_JOB_TIMEOUT=${DESIGNATE_DYNECT_JOB_TIMEOUT:-}
 DESIGNATE_DYNECT_TIMEOUT=${DESIGNATE_DYNECT_TIMEOUT:-}
-DESIGNATE_DYNECT_MASTERS=${DESIGNATE_DYNECT_MASTERS:-$DESIGNATE_SERVICE_HOST}
-DESIGNATE_DYNECT_SLAVES=${DESIGNATE_DYNECT_SLAVES:-204.13.249.65:53, 208.78.68.65:53}
+DESIGNATE_DYNECT_MASTERS=${DESIGNATE_DYNECT_MASTERS:-"$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT_MDNS"}
+DESIGNATE_DYNECT_NAMESERVERS=${DESIGNATE_DYNECT_NAMESERVERS:-""}
+DESIGNATE_DYNECT_ALSO_NOTIFIES=${DESIGNATE_DYNECT_ALSO_NOTIFIES:-"204.13.249.65:53,208.78.68.65:53"}
+
+# Sanity Checks
+# -------------
+if [ -z "$DESIGNATE_DYNECT_NAMESERVERS" ]; then
+    die $LINENO "You must configure DESIGNATE_DYNECT_NAMESERVERS"
+fi
+
+if [ "$DESIGNATE_SERVICE_PORT_MDNS" != "53" ]; then
+    die $LINENO "DynECT requires DESIGNATE_SERVICE_PORT_MDNS is set to '53'"
+fi
 
 # Entry Points
 # ------------
@@ -45,16 +56,30 @@ function install_designate_backend {
 
 # configure_designate_backend - make configuration changes, including those to other services
 function configure_designate_backend {
-    # DynECT Backend Settings
-    iniset $DESIGNATE_CONF backend:dynect masters "$DESIGNATE_DYNECT_MASTERS"
-    iniset $DESIGNATE_CONF backend:dynect customer_name "$DESIGNATE_DYNECT_CUSTOMER"
-    iniset $DESIGNATE_CONF backend:dynect username "$DESIGNATE_DYNECT_USERNAME"
-    iniset $DESIGNATE_CONF backend:dynect password "$DESIGNATE_DYNECT_PASSWORD"
+    iniset $DESIGNATE_CONF pool_target:$DESIGNATE_TARGET_ID type dynect
+    iniset $DESIGNATE_CONF pool_target:$DESIGNATE_TARGET_ID masters $DESIGNATE_DYNECT_MASTERS
+    iniset $DESIGNATE_CONF pool_target:$DESIGNATE_TARGET_ID options "customer_name: $DESIGNATE_DYNECT_CUSTOMER, username: $DESIGNATE_DYNECT_USERNAME, password: $DESIGNATE_DYNECT_PASSWORD"
 
-    if [ ! -z $DESIGNATE_DYNECT_CONTACT_NICKNAME ]; then
-        iniset $DESIGNATE_CONF backend:dynect contact_nickname "$DESIGNATE_DYNECT_CONTACT_NICKNAME"
-    fi
+    # Create a Pool Nameserver for each of the DynECT nameservers
+    local nameserver_ids=""
+    IFS=',' read -a nameservers <<< "$DESIGNATE_DYNECT_NAMESERVERS"
 
+    for nameserver in "${nameservers[@]}"; do
+        local nameserver_id=`uuidgen`
+        iniset $DESIGNATE_CONF pool_nameserver:$nameserver_id host $(dig +short A $nameserver | head -n 1)
+        iniset $DESIGNATE_CONF pool_nameserver:$nameserver_id port 53
+
+        # Append the Nameserver ID to the list
+        nameserver_ids+=${nameserver_id},
+    done
+
+    # Configure the Pool for the set of nameserver IDs, minus the trailing comma
+    iniset $DESIGNATE_CONF pool:$DESIGNATE_POOL_ID nameservers "${nameserver_ids:0:-1}"
+
+    # Configure the Pool to Notify DynECT's Transfer Agents
+    iniset $DESIGNATE_CONF pool:$DESIGNATE_POOL_ID also_notifies "$DESIGNATE_DYNECT_ALSO_NOTIFIES"
+
+    # Global DynECT Backend Settings
     if [ ! -z $DESIGNATE_DYNECT_JOB_TIMEOUT ]; then
         iniset $DESIGNATE_CONF backend:dynect job_timeout "$DESIGNATE_DYNECT_JOB_TIMEOUT"
     fi
@@ -62,6 +87,17 @@ function configure_designate_backend {
     if [ ! -z $DESIGNATE_DYNECT_TIMEOUT ]; then
         iniset $DESIGNATE_CONF backend:dynect timeout "$DESIGNATE_DYNECT_TIMEOUT"
     fi
+}
+
+# create_designate_ns_records - Create Pool NS Records
+function create_designate_ns_records_backend {
+    # Build an array of the DynECT nameservers.
+    IFS=',' read -a ns_records <<< "$DESIGNATE_DYNECT_NAMESERVERS"
+
+    # Create a NS Record for each of the DynECT nameservers
+    for ns_record in "${ns_records[@]}"; do
+        designate server-create --name "${ns_record%%.}."
+    done
 }
 
 # init_designate_backend - initialize databases, etc.
