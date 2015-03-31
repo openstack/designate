@@ -13,9 +13,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 from designate.objects.record import Record
+from designate.objects.record import RecordList
 
 
-class RRData_MX(Record):
+class MX(Record):
     """
     MX Resource Record Type
     Defined in: RFC1035
@@ -43,8 +44,16 @@ class RRData_MX(Record):
         return '%(priority)s %(exchange)s' % self
 
     def _from_string(self, value):
-        self.priority, self.exchange = value.split(' ')
+        priority, exchange = value.split(' ')
+
+        self.priority = int(priority)
+        self.exchange = exchange
 
     # The record type is defined in the RFC. This will be used when the record
     # is sent by mini-dns.
     RECORD_TYPE = 15
+
+
+class MXList(RecordList):
+
+    LIST_ITEM_TYPE = MX

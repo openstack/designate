@@ -13,9 +13,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 from designate.objects.record import Record
+from designate.objects.record import RecordList
 
 
-class RRData_SSHFP(Record):
+class SSHFP(Record):
     """
     SSHFP Resource Record Type
     Defined in: RFC4255
@@ -50,8 +51,17 @@ class RRData_SSHFP(Record):
         return "%(algorithm)s %(fp_type)s %(fingerprint)s" % self
 
     def _from_string(self, value):
-        self.algorithm, self.fp_type, self.fingerprint = value.split(' ')
+        algorithm, fp_type, fingerprint = value.split(' ')
+
+        self.algorithm = int(algorithm)
+        self.fp_type = int(fp_type)
+        self.fingerprint = fingerprint
 
     # The record type is defined in the RFC. This will be used when the record
     # is sent by mini-dns.
     RECORD_TYPE = 44
+
+
+class SSHFPList(RecordList):
+
+    LIST_ITEM_TYPE = SSHFP
