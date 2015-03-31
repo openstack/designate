@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:akaawsdt="https://control.akamai.com/AWS.xsd" xmlns:akaedns="https://control.akamai.com/2007/May/EnhancedDNS.xsd" xmlns:apachesoap="http://xml.apache.org/xml-soap" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:wsdlsoap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:zoneinfo="https://control.akamai.com/Edns.xsd" targetNamespace="https://control.akamai.com/2007/May/EnhancedDNS.xsd">
+    <!--WSDL created by Apache Axis version: 1.3
+Built on Jan 26, 2006 (05:12:02 PST)-->
+    <wsdl:types>
+        <schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="https://control.akamai.com/2007/May/EnhancedDNS.xsd">
+            <import namespace="https://control.akamai.com/AWS.xsd" />
+            <import namespace="https://control.akamai.com/Edns.xsd" />
+            <import namespace="http://schemas.xmlsoap.org/soap/encoding/" />
+            <complexType name="ArrayOfString">
+                <complexContent>
+                    <restriction base="soapenc:Array">
+                        <attribute ref="soapenc:arrayType" wsdl:arrayType="xsd:string[]" />
+                    </restriction>
+                </complexContent>
+            </complexType>
+            <complexType name="ArrayOfZone">
+                <complexContent>
+                    <restriction base="soapenc:Array">
+                        <attribute ref="soapenc:arrayType" wsdl:arrayType="zoneinfo:Zone[]" />
+                    </restriction>
+                </complexContent>
+            </complexType>
+        </schema>
+        <schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="https://control.akamai.com/Edns.xsd">
+            <import namespace="https://control.akamai.com/AWS.xsd" />
+            <import namespace="https://control.akamai.com/2007/May/EnhancedDNS.xsd" />
+            <import namespace="http://schemas.xmlsoap.org/soap/encoding/" />
+            <complexType name="Zone">
+                <sequence>
+                    <element name="currentDNSKEYRecord" nillable="true" type="xsd:string" />
+                    <element name="currentDSRecord" nillable="true" type="xsd:string" />
+                    <element name="currentKeyDate" nillable="true" type="xsd:dateTime" />
+                    <element name="deletePending" type="xsd:boolean" />
+                    <element name="deleteRequested" nillable="true" type="xsd:dateTime" />
+                    <element name="dnssec" type="xsd:boolean" />
+                    <element name="endCustomerId" nillable="true" type="xsd:string" />
+                    <element name="lastAttempt" nillable="true" type="xsd:dateTime" />
+                    <element name="lastModifiedDate" nillable="true" type="xsd:dateTime" />
+                    <element name="lastStatus" nillable="true" type="xsd:string" />
+                    <element name="lastSuccess" nillable="true" type="xsd:dateTime" />
+                    <element name="masters" nillable="true" type="akaedns:ArrayOfString" />
+                    <element name="newDNSKEYRecord" nillable="true" type="xsd:string" />
+                    <element name="newDSRecord" nillable="true" type="xsd:string" />
+                    <element name="newKeyDate" nillable="true" type="xsd:dateTime" />
+                    <element name="notify" type="xsd:int" />
+                    <element name="toplevels" nillable="true" type="akaedns:ArrayOfString" />
+                    <element name="transferMode" nillable="true" type="xsd:string" />
+                    <element name="tsigAlgorithm" nillable="true" type="xsd:string" />
+                    <element name="tsigKey" nillable="true" type="xsd:string" />
+                    <element name="tsigKeyName" nillable="true" type="xsd:string" />
+                    <element name="type" nillable="true" type="xsd:string" />
+                    <element name="zoneName" nillable="true" type="xsd:string" />
+                </sequence>
+            </complexType>
+        </schema>
+        <schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="https://control.akamai.com/AWS.xsd">
+            <import namespace="https://control.akamai.com/2007/May/EnhancedDNS.xsd" />
+            <import namespace="https://control.akamai.com/Edns.xsd" />
+            <import namespace="http://schemas.xmlsoap.org/soap/encoding/" />
+            <complexType name="AWSFault">
+                <sequence />
+            </complexType>
+        </schema>
+    </wsdl:types>
+    <wsdl:message name="reassignTopLevelsResponse">
+        <wsdl:part name="reassignTopLevelsReturn" type="xsd:boolean" />
+    </wsdl:message>
+    <wsdl:message name="setZonesRequest">
+        <wsdl:part name="zones" type="akaedns:ArrayOfZone" />
+    </wsdl:message>
+    <wsdl:message name="getZoneResponse">
+        <wsdl:part name="getZoneReturn" type="zoneinfo:Zone" />
+    </wsdl:message>
+    <wsdl:message name="cancelDeleteZonesResponse">
+        <wsdl:part name="cancelDeleteZonesReturn" type="xsd:boolean" />
+    </wsdl:message>
+    <wsdl:message name="deleteZonesResponse">
+        <wsdl:part name="deleteZonesReturn" type="xsd:boolean" />
+    </wsdl:message>
+    <wsdl:message name="getZonesRequest" />
+    <wsdl:message name="AWSFault">
+        <wsdl:part name="fault" type="akaawsdt:AWSFault" />
+    </wsdl:message>
+    <wsdl:message name="setZoneResponse">
+        <wsdl:part name="setZoneReturn" type="xsd:boolean" />
+    </wsdl:message>
+    <wsdl:message name="reassignTopLevelsRequest">
+        <wsdl:part name="zones" type="akaedns:ArrayOfZone" />
+    </wsdl:message>
+    <wsdl:message name="getZoneRequest">
+        <wsdl:part name="zoneName" type="xsd:string" />
+    </wsdl:message>
+    <wsdl:message name="setZonesResponse">
+        <wsdl:part name="setZonesReturn" type="xsd:boolean" />
+    </wsdl:message>
+    <wsdl:message name="cancelDeleteZonesRequest">
+        <wsdl:part name="zoneNames" type="akaedns:ArrayOfString" />
+    </wsdl:message>
+    <wsdl:message name="deleteZonesRequest">
+        <wsdl:part name="zoneNames" type="akaedns:ArrayOfString" />
+    </wsdl:message>
+    <wsdl:message name="getZonesResponse">
+        <wsdl:part name="getZonesReturn" type="akaedns:ArrayOfZone" />
+    </wsdl:message>
+    <wsdl:message name="setZoneRequest">
+        <wsdl:part name="zone" type="zoneinfo:Zone" />
+    </wsdl:message>
+    <wsdl:portType name="EDNSService">
+        <wsdl:operation name="getZone" parameterOrder="zoneName">
+            <wsdl:input message="akaedns:getZoneRequest" name="getZoneRequest" />
+            <wsdl:output message="akaedns:getZoneResponse" name="getZoneResponse" />
+            <wsdl:fault message="akaedns:AWSFault" name="AWSFault" />
+        </wsdl:operation>
+        <wsdl:operation name="setZone" parameterOrder="zone">
+            <wsdl:input message="akaedns:setZoneRequest" name="setZoneRequest" />
+            <wsdl:output message="akaedns:setZoneResponse" name="setZoneResponse" />
+            <wsdl:fault message="akaedns:AWSFault" name="AWSFault" />
+        </wsdl:operation>
+        <wsdl:operation name="getZones">
+            <wsdl:input message="akaedns:getZonesRequest" name="getZonesRequest" />
+            <wsdl:output message="akaedns:getZonesResponse" name="getZonesResponse" />
+            <wsdl:fault message="akaedns:AWSFault" name="AWSFault" />
+        </wsdl:operation>
+        <wsdl:operation name="setZones" parameterOrder="zones">
+            <wsdl:input message="akaedns:setZonesRequest" name="setZonesRequest" />
+            <wsdl:output message="akaedns:setZonesResponse" name="setZonesResponse" />
+            <wsdl:fault message="akaedns:AWSFault" name="AWSFault" />
+        </wsdl:operation>
+        <wsdl:operation name="reassignTopLevels" parameterOrder="zones">
+            <wsdl:input message="akaedns:reassignTopLevelsRequest" name="reassignTopLevelsRequest" />
+            <wsdl:output message="akaedns:reassignTopLevelsResponse" name="reassignTopLevelsResponse" />
+            <wsdl:fault message="akaedns:AWSFault" name="AWSFault" />
+        </wsdl:operation>
+        <wsdl:operation name="deleteZones" parameterOrder="zoneNames">
+            <wsdl:input message="akaedns:deleteZonesRequest" name="deleteZonesRequest" />
+            <wsdl:output message="akaedns:deleteZonesResponse" name="deleteZonesResponse" />
+            <wsdl:fault message="akaedns:AWSFault" name="AWSFault" />
+        </wsdl:operation>
+        <wsdl:operation name="cancelDeleteZones" parameterOrder="zoneNames">
+            <wsdl:input message="akaedns:cancelDeleteZonesRequest" name="cancelDeleteZonesRequest" />
+            <wsdl:output message="akaedns:cancelDeleteZonesResponse" name="cancelDeleteZonesResponse" />
+            <wsdl:fault message="akaedns:AWSFault" name="AWSFault" />
+        </wsdl:operation>
+    </wsdl:portType>
+    <wsdl:binding name="EnhancedDNS" type="akaedns:EDNSService">
+        <wsdlsoap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http" />
+        <wsdl:operation name="getZone">
+            <wsdlsoap:operation soapAction="" />
+            <wsdl:input name="getZoneRequest">
+                <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="https://control.akamai.com/2007/May/EnhancedDNS.xsd" use="encoded" />
+            </wsdl:input>
+            <wsdl:output name="getZoneResponse">
+                <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="https://control.akamai.com/2007/May/EnhancedDNS.xsd" use="encoded" />
+            </wsdl:output>
+            <wsdl:fault name="AWSFault">
+                <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="AWSFault" namespace="https://control.akamai.com/2007/May/EnhancedDNS.xsd" use="encoded" />
+            </wsdl:fault>
+        </wsdl:operation>
+        <wsdl:operation name="setZone">
+            <wsdlsoap:operation soapAction="" />
+            <wsdl:input name="setZoneRequest">
+                <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="https://control.akamai.com/2007/May/EnhancedDNS.xsd" use="encoded" />
+            </wsdl:input>
+            <wsdl:output name="setZoneResponse">
+                <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="https://control.akamai.com/2007/May/EnhancedDNS.xsd" use="encoded" />
+            </wsdl:output>
+            <wsdl:fault name="AWSFault">
+                <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="AWSFault" namespace="https://control.akamai.com/2007/May/EnhancedDNS.xsd" use="encoded" />
+            </wsdl:fault>
+        </wsdl:operation>
+        <wsdl:operation name="getZones">
+            <wsdlsoap:operation soapAction="" />
+            <wsdl:input name="getZonesRequest">
+                <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="https://control.akamai.com/2007/May/EnhancedDNS.xsd" use="encoded" />
+            </wsdl:input>
+            <wsdl:output name="getZonesResponse">
+                <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="https://control.akamai.com/2007/May/EnhancedDNS.xsd" use="encoded" />
+            </wsdl:output>
+            <wsdl:fault name="AWSFault">
+                <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="AWSFault" namespace="https://control.akamai.com/2007/May/EnhancedDNS.xsd" use="encoded" />
+            </wsdl:fault>
+        </wsdl:operation>
+        <wsdl:operation name="setZones">
+            <wsdlsoap:operation soapAction="" />
+            <wsdl:input name="setZonesRequest">
+                <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="https://control.akamai.com/2007/May/EnhancedDNS.xsd" use="encoded" />
+            </wsdl:input>
+            <wsdl:output name="setZonesResponse">
+                <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="https://control.akamai.com/2007/May/EnhancedDNS.xsd" use="encoded" />
+            </wsdl:output>
+            <wsdl:fault name="AWSFault">
+                <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="AWSFault" namespace="https://control.akamai.com/2007/May/EnhancedDNS.xsd" use="encoded" />
+            </wsdl:fault>
+        </wsdl:operation>
+        <wsdl:operation name="reassignTopLevels">
+            <wsdlsoap:operation soapAction="" />
+            <wsdl:input name="reassignTopLevelsRequest">
+                <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="https://control.akamai.com/2007/May/EnhancedDNS.xsd" use="encoded" />
+            </wsdl:input>
+            <wsdl:output name="reassignTopLevelsResponse">
+                <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="https://control.akamai.com/2007/May/EnhancedDNS.xsd" use="encoded" />
+            </wsdl:output>
+            <wsdl:fault name="AWSFault">
+                <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="AWSFault" namespace="https://control.akamai.com/2007/May/EnhancedDNS.xsd" use="encoded" />
+            </wsdl:fault>
+        </wsdl:operation>
+        <wsdl:operation name="deleteZones">
+            <wsdlsoap:operation soapAction="" />
+            <wsdl:input name="deleteZonesRequest">
+                <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="https://control.akamai.com/2007/May/EnhancedDNS.xsd" use="encoded" />
+            </wsdl:input>
+            <wsdl:output name="deleteZonesResponse">
+                <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="https://control.akamai.com/2007/May/EnhancedDNS.xsd" use="encoded" />
+            </wsdl:output>
+            <wsdl:fault name="AWSFault">
+                <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="AWSFault" namespace="https://control.akamai.com/2007/May/EnhancedDNS.xsd" use="encoded" />
+            </wsdl:fault>
+        </wsdl:operation>
+        <wsdl:operation name="cancelDeleteZones">
+            <wsdlsoap:operation soapAction="" />
+            <wsdl:input name="cancelDeleteZonesRequest">
+                <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="https://control.akamai.com/2007/May/EnhancedDNS.xsd" use="encoded" />
+            </wsdl:input>
+            <wsdl:output name="cancelDeleteZonesResponse">
+                <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="https://control.akamai.com/2007/May/EnhancedDNS.xsd" use="encoded" />
+            </wsdl:output>
+            <wsdl:fault name="AWSFault">
+                <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="AWSFault" namespace="https://control.akamai.com/2007/May/EnhancedDNS.xsd" use="encoded" />
+            </wsdl:fault>
+        </wsdl:operation>
+    </wsdl:binding>
+    <wsdl:service name="EnhancedDNS">
+        <wsdl:port binding="akaedns:EnhancedDNS" name="EnhancedDNS">
+            <wsdlsoap:address location="https://control.akamai.com/webservices/services/EnhancedDNS" />
+        </wsdl:port>
+    </wsdl:service>
+</wsdl:definitions>

@@ -1,0 +1,107 @@
+# lib/designate_plugins/backend-akamai
+# Configure the Akamai backend
+
+# Requirements:
+# An active Akamai account / contract will be requied to use this DevStack
+# plugin.
+
+# Enable with:
+# DESIGNATE_BACKEND_DRIVER=akamai
+
+# Dependencies:
+# ``functions`` file
+# ``designate`` configuration
+
+# install_designate_backend - install any external requirements
+# configure_designate_backend - make configuration changes, including those to other services
+# init_designate_backend - initialize databases, etc.
+# start_designate_backend - start any external services
+# stop_designate_backend - stop any external services
+# cleanup_designate_backend - remove transient data and cache
+
+# Save trace setting
+DP_AKAMAI_XTRACE=$(set +o | grep xtrace)
+set +o xtrace
+
+# Defaults
+# --------
+
+DESIGNATE_AKAMAI_USERNAME=${DESIGNATE_AKAMAI_USERNAME:-username}
+DESIGNATE_AKAMAI_PASSWORD=${DESIGNATE_AKAMAI_PASSWORD:-password}
+DESIGNATE_AKAMAI_MASTERS=${DESIGNATE_AKAMAI_MASTERS:-"$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT_MDNS"}
+DESIGNATE_AKAMAI_NAMESERVERS=${DESIGNATE_AKAMAI_NAMESERVERS:-""}
+DESIGNATE_AKAMAI_ALSO_NOTIFIES=${DESIGNATE_AKAMAI_ALSO_NOTIFIES:-"193.108.155.34:53,23.73.134.141:53,80.67.64.148:53,23.73.134.237:53,23.73.133.141:53,23.73.133.237:53,80.67.64.10:53,72.246.0.10:53,72.247.45.157:53,72.246.192.168:53,193.108.152.143:53,60.254.128.45:53,72.247.45.110:53,72.247.45.65:53,72.247.45.25:53"}
+
+# Sanity Checks
+# -------------
+if [ -z "$DESIGNATE_AKAMAI_NAMESERVERS" ]; then
+    die $LINENO "You must configure DESIGNATE_AKAMAI_NAMESERVERS"
+fi
+
+# Entry Points
+# ------------
+
+# install_designate_backend - install any external requirements
+function install_designate_backend {
+    :
+}
+
+# configure_designate_backend - make configuration changes, including those to other services
+function configure_designate_backend {
+    iniset $DESIGNATE_CONF pool_target:$DESIGNATE_TARGET_ID type akamai
+    iniset $DESIGNATE_CONF pool_target:$DESIGNATE_TARGET_ID masters $DESIGNATE_AKAMAI_MASTERS
+    iniset $DESIGNATE_CONF pool_target:$DESIGNATE_TARGET_ID options "username: $DESIGNATE_AKAMAI_USERNAME, password: $DESIGNATE_AKAMAI_PASSWORD"
+
+    # Create a Pool Nameserver for each of the Akamai nameservers
+    local nameserver_ids=""
+    IFS=',' read -a nameservers <<< "$DESIGNATE_AKAMAI_NAMESERVERS"
+
+    for nameserver in "${nameservers[@]}"; do
+        local nameserver_id=`uuidgen`
+        iniset $DESIGNATE_CONF pool_nameserver:$nameserver_id host $(dig +short A $nameserver | head -n 1)
+        iniset $DESIGNATE_CONF pool_nameserver:$nameserver_id port 53
+
+        # Append the Nameserver ID to the list
+        nameserver_ids+=${nameserver_id},
+    done
+
+    # Configure the Pool for the set of nameserver IDs, minus the trailing comma
+    iniset $DESIGNATE_CONF pool:$DESIGNATE_POOL_ID nameservers "${nameserver_ids:0:-1}"
+
+    # Configure the Pool to Notify Akamai's Transfer Agents
+    iniset $DESIGNATE_CONF pool:$DESIGNATE_POOL_ID also_notifies "$DESIGNATE_AKAMAI_ALSO_NOTIFIES"
+}
+
+# create_designate_ns_records - Create Pool NS Records
+function create_designate_ns_records_backend {
+    # Build an array of the Akamai nameservers.
+    IFS=',' read -a ns_records <<< "$DESIGNATE_AKAMAI_NAMESERVERS"
+
+    # Create a NS Record for each of the Akamai nameservers
+    for ns_record in "${ns_records[@]}"; do
+        designate server-create --name "${ns_record%%.}."
+    done
+}
+
+# init_designate_backend - initialize databases, etc.
+function init_designate_backend {
+    :
+}
+
+# start_designate_backend - start any external services
+function start_designate_backend {
+    :
+}
+
+# stop_designate_backend - stop any external services
+function stop_designate_backend {
+    :
+}
+
+# cleanup_designate_backend - remove transient data and cache
+function cleanup_designate_backend {
+    :
+}
+
+# Restore xtrace
+$DP_AKAMAI_XTRACE
