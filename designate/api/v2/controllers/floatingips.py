@@ -58,6 +58,8 @@ class FloatingIPController(rest.RestController):
         Set or unset a PTR
         """
         request = pecan.request
+        response = pecan.response
+
         context = request.environ['context']
         try:
             body = request.body_dict
@@ -75,6 +77,8 @@ class FloatingIPController(rest.RestController):
         fip.validate()
 
         fip = self.central_api.update_floatingip(context, region, id_, fip)
+
+        response.status_int = 202
 
         if fip:
             return DesignateAdapter.render('API_v2', fip, request=request)

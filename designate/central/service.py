@@ -1710,34 +1710,41 @@ class Service(service.RPCService, service.Service):
 
         fips = objects.FloatingIPList()
         for key, value in data.items():
+            fip, record = value
+
             fip_ptr = objects.FloatingIP().from_dict({
-                'address': value[0]['address'],
-                'id': value[0]['id'],
-                'region': value[0]['region'],
+                'address': fip['address'],
+                'id': fip['id'],
+                'region': fip['region'],
                 'ptrdname': None,
                 'ttl': None,
-                'description': None
+                'description': None,
+                'action': None,
+                'status': 'ACTIVE'
             })
 
             # TTL population requires a present record in order to find the
             # RS or Zone
-            if value[1]:
+            if record:
+                fip_ptr['action'] = record.action
+                fip_ptr['status'] = record.status
+
                 # We can have a recordset dict passed in
                 if (recordsets is not None and
-                        value[1]['recordset_id'] in recordsets):
-                    recordset = recordsets[value[1]['recordset_id']]
+                        record['recordset_id'] in recordsets):
+                    recordset = recordsets[record['recordset_id']]
                 else:
                     recordset = self.storage.get_recordset(
-                        elevated_context, value[1]['recordset_id'])
+                        elevated_context, record['recordset_id'])
 
                 if recordset['ttl'] is not None:
                     fip_ptr['ttl'] = recordset['ttl']
                 else:
                     zone = self.get_domain(
-                        elevated_context, value[1]['domain_id'])
+                        elevated_context, record['domain_id'])
                     fip_ptr['ttl'] = zone['ttl']
 
-                fip_ptr['ptrdname'] = value[1]['data']
+                fip_ptr['ptrdname'] = record['data']
             else:
                 LOG.debug("No record information found for %s" %
                           value[0]['id'])

@@ -37,7 +37,19 @@
                     "minimum": 0,
                     "maximum": 2147483647
                 },
-                    "links": {
+                "status": {
+                    "type": ["null", "string"],
+                    "description": "Floating IP PTR Status",
+                    "enum": ["ACTIVE", "PENDING", "ERROR"],
+                    "readOnly": true
+                },
+                "action": {
+                    "type": ["null", "string"],
+                    "description": "Floating IP PTR Action",
+                    "enum": ["CREATE", "DELETE", "UPDATE", "NONE"],
+                    "readOnly": true
+                },
+                "links": {
                     "type": "object",
                     "additionalProperties": false,
 
