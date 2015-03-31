@@ -34,6 +34,7 @@ cfg.CONF.register_opts([
     cfg.StrOpt('managed_resource_email', default='hostmaster@example.com',
                help='E-Mail for Managed resources'),
     cfg.StrOpt('managed_resource_tenant_id',
+               default="00000000-0000-0000-0000-000000000000",
                help="The Tenant ID that will own any managed resources."),
     cfg.StrOpt('min_ttl', default="None", help="Minimum TTL allowed"),
     # TODO(betsy): Move to Pool Service once that is written

@@ -2119,6 +2119,27 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(None, fip_ptr['description'])
         self.assertIsNotNone(fip_ptr['ttl'])
 
+    def test_set_floatingip_no_managed_resource_tenant_id(self):
+        context = self.get_context(tenant='a')
+
+        fixture = self.get_ptr_fixture()
+
+        fip = self.network_api.fake.allocate_floatingip(context.tenant)
+
+        self.central_service.update_floatingip(
+            context, fip['region'], fip['id'], fixture)
+
+        tenant_id = "00000000-0000-0000-0000-000000000000"
+
+        elevated_context = context.elevated()
+        elevated_context.all_tenants = True
+
+        # The domain created should have the default 0's uuid as owner
+        domain = self.central_service.find_domain(
+            elevated_context,
+            {"tenant_id": tenant_id})
+        self.assertEqual(tenant_id, domain.tenant_id)
+
     def test_set_floatingip_removes_old_record(self):
         context_a = self.get_context(tenant='a')
         elevated_a = context_a.elevated()
