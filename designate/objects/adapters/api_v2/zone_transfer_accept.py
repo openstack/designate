@@ -54,7 +54,7 @@ class ZoneTransferAcceptAPIv2Adapter(base.APIv2Adapter):
             object, *args, **kwargs)
 
         obj['links']['zone'] = \
-            '%s%s/%s' % (cls.BASE_URI, 'zones', obj['zone_id'])
+            '%s/v2/%s/%s' % (cls.BASE_URI, 'zones', obj['zone_id'])
 
         return obj
 
