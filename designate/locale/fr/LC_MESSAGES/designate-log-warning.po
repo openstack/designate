@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Designate\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-03-24 06:04+0000\n"
-"PO-Revision-Date: 2015-03-23 18:21+0000\n"
+"POT-Creation-Date: 2015-04-01 06:04+0000\n"
+"PO-Revision-Date: 2015-03-31 19:31+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: French (http://www.transifex.com/projects/p/designate/"
 "language/fr/)\n"
@@ -49,6 +49,32 @@ msgstr ""
 msgid "Request authorized to bypass maintenance mode"
 msgstr "Requête non assujettie au mode de maintenance"
 
+#: designate/backend/agent.py:79 designate/mdns/notify.py:190
+#, python-format
+msgid ""
+"Got Timeout while trying to send '%(msg)s' for '%(zone)s' to '%(server)s:"
+"%(port)d'. Timeout='%(timeout)d' seconds. Retry='%(retry)d'"
+msgstr ""
+
+#: designate/backend/agent.py:88 designate/mdns/notify.py:202
+#, python-format
+msgid ""
+"Got BadResponse while trying to send '%(msg)s' for '%(zone)s' to '%(server)s:"
+"%(port)d'. Timeout='%(timeout)d' seconds. Retry='%(retry)d'"
+msgstr ""
+
+#: designate/backend/agent.py:101
+#, python-format
+msgid ""
+"Failed to get expected response while trying to send '%(msg)s' for "
+"'%(zone)s' to '%(server)s:%(port)d'. Response message: %(resp)s"
+msgstr ""
+
+#: designate/backend/impl_dynect.py:390
+#, python-format
+msgid "Attempt to delete %(d_id)s / %(d_name)s caused 404, ignoring."
+msgstr ""
+
 #: designate/backend/impl_powerdns/migrate_repo/versions/006_add_inherit_ttl_col.py:56
 msgid "**** A manual post-migration step is required ****"
 msgstr "**** Étape manuelle de post-migration requise ****"
@@ -58,11 +84,19 @@ msgstr "**** Étape manuelle de post-migration requise ****"
 msgid "Please issue this query: %s"
 msgstr "Veuillez lancer cette demande : %s"
 
+#: designate/backend/impl_powerdns/migrate_repo/versions/011_records_drop_designate_ids.py:32
+msgid "It will not be possible to downgrade from schema #11"
+msgstr ""
+
 #: designate/central/service.py:61
 msgid "Deadlock detected. Retrying..."
 msgstr ""
 
-#: designate/central/service.py:996
+#: designate/central/service.py:282
+msgid "Managed Resource Tenant ID is not properly configured"
+msgstr ""
+
+#: designate/central/service.py:1004
 #, python-format
 msgid "Abandoning zone '%(zone)s'"
 msgstr ""
@@ -72,48 +106,34 @@ msgstr ""
 msgid "NOTIFY for %(name)s from non-master server %(addr)s, ignoring."
 msgstr ""
 
-#: designate/mdns/handler.py:224
+#: designate/mdns/handler.py:259
 #, python-format
 msgid "DomainNotFound while handling axfr request. Question was %(qr)s"
 msgstr ""
 
-#: designate/mdns/handler.py:230
+#: designate/mdns/handler.py:265
 #, python-format
 msgid "Forbidden while handling axfr request. Question was %(qr)s"
 msgstr ""
 
-#: designate/mdns/handler.py:288
+#: designate/mdns/handler.py:321
 #, python-format
 msgid "DomainNotFound while handling query request. Question was %(qr)s"
 msgstr ""
 
-#: designate/mdns/handler.py:294
+#: designate/mdns/handler.py:327
 #, python-format
 msgid "Forbidden while handling query request. Question was %(qr)s"
 msgstr ""
 
-#: designate/mdns/notify.py:147
+#: designate/mdns/notify.py:133
 #, python-format
 msgid ""
 "Got lower serial for '%(zone)s' to '%(host)s:%(port)s'. Expected:'%(es)d'. "
 "Got:'%(as)s'.Retries left='%(retries)d'"
 msgstr ""
 
-#: designate/mdns/notify.py:204
-#, python-format
-msgid ""
-"Got Timeout while trying to send '%(msg)s' for '%(zone)s' to '%(server)s:"
-"%(port)d'. Timeout='%(timeout)d' seconds. Retry='%(retry)d'"
-msgstr ""
-
-#: designate/mdns/notify.py:216
-#, python-format
-msgid ""
-"Got BadResponse while trying to send '%(msg)s' for '%(zone)s' to '%(server)s:"
-"%(port)d'. Timeout='%(timeout)d' seconds. Retry='%(retry)d'"
-msgstr ""
-
-#: designate/mdns/notify.py:235
+#: designate/mdns/notify.py:221
 #, python-format
 msgid ""
 "Failed to get expected response while trying to send '%(msg)s' for "
@@ -145,29 +165,24 @@ msgstr ""
 msgid "pid %d not in child list"
 msgstr "pid %d ne fait pas partie de la liste enfant"
 
-#: designate/pool_manager/service.py:186
+#: designate/pool_manager/service.py:246
 #, python-format
-msgid "Consensus not reached for creating domain %(domain)s"
+msgid "Consensus not reached for creating domain %(domain)s on pool targets"
 msgstr ""
 
-#: designate/pool_manager/service.py:286
+#: designate/pool_manager/service.py:307
+#, python-format
+msgid "Consensus not reached for updating domain %(domain)s on pool targets"
+msgstr ""
+
+#: designate/pool_manager/service.py:402
+#, python-format
+msgid "Consensus not reached for deleting domain %(domain)s on pool targets"
+msgstr ""
+
+#: designate/pool_manager/service.py:487
 #, python-format
 msgid "For domain %(domain)s the error serial is %(error_serial)s."
-msgstr ""
-
-#: designate/pool_manager/service.py:367
-#, python-format
-msgid "Failed to create domain %(domain)s on server %(server)s."
-msgstr ""
-
-#: designate/pool_manager/service.py:404
-#, python-format
-msgid "Failed to delete domain %(domain)s from server %(server)s."
-msgstr ""
-
-#: designate/pool_manager/service.py:416
-#, python-format
-msgid "Consensus not reached for deleting domain %(domain)s"
 msgstr ""
 
 #: designate/sink/service.py:52

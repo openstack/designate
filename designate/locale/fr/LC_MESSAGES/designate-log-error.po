@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Designate\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-03-24 06:04+0000\n"
-"PO-Revision-Date: 2015-03-23 18:21+0000\n"
+"POT-Creation-Date: 2015-04-01 06:04+0000\n"
+"PO-Revision-Date: 2015-03-31 18:11+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: French (http://www.transifex.com/projects/p/designate/"
 "language/fr/)\n"
@@ -71,6 +71,10 @@ msgstr ""
 msgid "Missing context in request, please check."
 msgstr "Contexte manquant dans la requête. Veuillez vérifier."
 
+#: designate/backend/impl_powerdns/migrate_repo/versions/011_records_drop_designate_ids.py:40
+msgid "It is not possible to downgrade from schema #11"
+msgstr ""
+
 #: designate/manage/tlds.py:138
 #, python-format
 msgid "Number of errors: %d"
@@ -102,13 +106,25 @@ msgstr "en appel en boucle dynamique"
 msgid "Unhandled exception"
 msgstr "Exception non prise en charge"
 
-#: designate/pool_manager/service.py:311
-msgid ""
-"An unhandled exception in periodic recovery occurred.  This should never "
-"happen!"
+#: designate/pool_manager/service.py:187
+msgid "An unhandled exception in periodic recovery occurred"
 msgstr ""
 
-#: designate/pool_manager/service.py:341
-msgid ""
-"An unhandled exception in periodic sync occurred.  This should never happen!"
+#: designate/pool_manager/service.py:221
+msgid "An unhandled exception in periodic synchronization occurred."
+msgstr ""
+
+#: designate/pool_manager/service.py:282
+#, python-format
+msgid "Failed to create domain %(domain)s on target %(target)s"
+msgstr ""
+
+#: designate/pool_manager/service.py:348
+#, python-format
+msgid "Failed to update domain %(domain)s on target %(target)s"
+msgstr ""
+
+#: designate/pool_manager/service.py:424
+#, python-format
+msgid "Failed to delete domain %(domain)s on target %(target)s"
 msgstr ""
