@@ -465,7 +465,7 @@ class Service(service.RPCService, service.Service):
 
     def _is_valid_ttl(self, context, ttl):
         min_ttl = cfg.CONF['service:central'].min_ttl
-        if min_ttl != "None" and ttl < int(min_ttl):
+        if min_ttl is not None and ttl < int(min_ttl):
             try:
                 policy.check('use_low_ttl', context)
             except exceptions.Forbidden:
