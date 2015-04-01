@@ -29,6 +29,9 @@ from designate.i18n import _LI
 from designate.i18n import _LW
 from designate.backend import base
 from designate import exceptions
+from designate.mdns import rpcapi as mdns_api
+from designate import objects
+
 
 dns_query = eventlet.import_patched('dns.query')
 
@@ -43,6 +46,13 @@ class AgentPoolBackend(base.Backend):
         super(AgentPoolBackend, self).__init__(target)
         self.host = self.options.get('host')
         self.port = int(self.options.get('port'))
+        self.timeout = CONF['service:pool_manager'].poll_timeout
+        self.retry_interval = CONF['service:pool_manager'].poll_retry_interval
+        self.max_retries = CONF['service:pool_manager'].poll_max_retries
+
+    @property
+    def mdns_api(self):
+        return mdns_api.MdnsAPI.get_instance()
 
     def create_domain(self, context, domain):
         LOG.debug('Create Domain')
@@ -50,6 +60,20 @@ class AgentPoolBackend(base.Backend):
                           65282, 65280, self.host, self.port)
         if response is None:
             raise exceptions.Backend()
+
+    def update_domain(self, context, domain):
+        LOG.debug('Update Domain')
+
+        values = {
+            'host': self.host,
+            'port': self.port,
+            'pool_id': '794ccc2c-d751-44fe-b57f-8894c9f5c842'
+        }
+        nameserver = objects.PoolNameserver(**values)
+
+        self.mdns_api.notify_zone_changed(
+            context, domain, nameserver, self.timeout,
+            self.retry_interval, self.max_retries, 0)
 
     def delete_domain(self, context, domain):
         LOG.debug('Delete Domain')
