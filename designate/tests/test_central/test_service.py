@@ -680,7 +680,7 @@ class CentralServiceTest(CentralTestCase):
 
     def test_create_domain_no_min_ttl(self):
         self.policy({'use_low_ttl': '!'})
-        self.config(min_ttl="None",
+        self.config(min_ttl=None,
                     group='service:central')
         values = self.get_domain_fixture(fixture=1)
         values['ttl'] = -100
@@ -1141,7 +1141,7 @@ class CentralServiceTest(CentralTestCase):
 
     def test_create_recordset_no_min_ttl(self):
         self.policy({'use_low_ttl': '!'})
-        self.config(min_ttl="None",
+        self.config(min_ttl=None,
                     group='service:central')
         domain = self.create_domain()
 
