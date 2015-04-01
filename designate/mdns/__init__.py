@@ -40,6 +40,8 @@ OPTS = [
                      'signed'),
     cfg.StrOpt('storage-driver', default='sqlalchemy',
                help='The storage driver to use'),
+    cfg.IntOpt('max-message-size', default=65535,
+               help='Maximum message size to emit'),
 ]
 
 cfg.CONF.register_opts(OPTS, group='service:mdns')

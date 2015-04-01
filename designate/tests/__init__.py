@@ -551,7 +551,8 @@ class TestCase(base.BaseTestCase):
         return self.central_service.create_domain(
             context, objects.Domain.from_dict(values))
 
-    def create_recordset(self, domain, type='A', **kwargs):
+    def create_recordset(self, domain, type='A', increment_serial=True,
+                         **kwargs):
         context = kwargs.pop('context', self.admin_context)
         fixture = kwargs.pop('fixture', 0)
 
@@ -560,9 +561,11 @@ class TestCase(base.BaseTestCase):
                                             values=kwargs)
 
         return self.central_service.create_recordset(
-            context, domain['id'], objects.RecordSet.from_dict(values))
+            context, domain['id'], objects.RecordSet.from_dict(values),
+            increment_serial=increment_serial)
 
-    def create_record(self, domain, recordset, **kwargs):
+    def create_record(self, domain, recordset, increment_serial=True,
+                      **kwargs):
         context = kwargs.pop('context', self.admin_context)
         fixture = kwargs.pop('fixture', 0)
 
@@ -571,7 +574,8 @@ class TestCase(base.BaseTestCase):
 
         return self.central_service.create_record(
             context, domain['id'], recordset['id'],
-            objects.Record.from_dict(values))
+            objects.Record.from_dict(values),
+            increment_serial=increment_serial)
 
     def create_blacklist(self, **kwargs):
         context = kwargs.pop('context', self.admin_context)

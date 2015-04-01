@@ -318,22 +318,23 @@ class DNSService(object):
         """
         try:
             # Call into the DNS Application itself with the payload and addr
-            response = self._dns_application({
-                'payload': payload,
-                'addr': addr
-            })
+            for response in self._dns_application(
+                    {'payload': payload, 'addr': addr}):
 
-            # Send back a response only if present
-            if response is not None:
-                if client:
-                    # Handle TCP Responses
-                    msg_length = len(response)
-                    tcp_response = struct.pack("!H", msg_length) + response
-                    client.send(tcp_response)
-                    client.close()
-                else:
-                    # Handle UDP Responses
-                    self._dns_sock_udp.sendto(response, addr)
+                # Send back a response only if present
+                if response is not None:
+                    if client:
+                        # Handle TCP Responses
+                        msg_length = len(response)
+                        tcp_response = struct.pack("!H", msg_length) + response
+                        client.send(tcp_response)
+                    else:
+                        # Handle UDP Responses
+                        self._dns_sock_udp.sendto(response, addr)
+
+            # Close the TCP connection if we have one.
+            if client:
+                client.close()
 
         except Exception:
             LOG.exception(_LE("Unhandled exception while processing request "

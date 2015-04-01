@@ -88,7 +88,8 @@ class RequestHandler(object):
             response = self._handle_query_error(request, dns.rcode.REFUSED)
 
         # TODO(Tim): Answer Type 65XXX queries
-        return response
+        yield response
+        raise StopIteration
 
     def _handle_query_error(self, request, rcode):
         """
