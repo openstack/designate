@@ -124,11 +124,13 @@ class SerializationMiddleware(DNSMiddleware):
 
         else:
             # Hand the Deserialized packet onto the Application
-            response = self.application(message)
+            for response in self.application(message):
+                # Serialize and return the response if present
+                if isinstance(response, dns.message.Message):
+                    yield response.to_wire(max_size=65535)
 
-        # Serialize and return the response if present
-        if response is not None:
-            return response.to_wire(max_size=65535)
+                elif isinstance(response, dns.renderer.Renderer):
+                    yield response.get_wire()
 
 
 class TsigInfoMiddleware(DNSMiddleware):

@@ -93,7 +93,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
 
         request = dns.message.from_wire(binascii.a2b_hex(payload))
         request.environ = {'addr': self.addr, 'context': self.context}
-        response = self.handler(request).to_wire()
+        response = self.handler(request).next().to_wire()
 
         self.assertEqual(expected_response, binascii.b2a_hex(response))
 
@@ -116,7 +116,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
 
         request = dns.message.from_wire(binascii.a2b_hex(payload))
         request.environ = {'addr': self.addr, 'context': self.context}
-        response = self.handler(request).to_wire()
+        response = self.handler(request).next().to_wire()
 
         self.assertEqual(expected_response, binascii.b2a_hex(response))
 
@@ -172,7 +172,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
 
         with mock.patch.object(self.handler.storage, 'find_domain',
                                return_value=domain):
-            response = self.handler(request).to_wire()
+            response = self.handler(request).next().to_wire()
 
         self.mock_tg.add_thread.assert_called_with(
             self.handler.domain_sync, self.context, domain, [master])
@@ -213,7 +213,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
 
         with mock.patch.object(self.handler.storage, 'find_domain',
                                return_value=domain):
-            response = self.handler(request).to_wire()
+            response = self.handler(request).next().to_wire()
 
         assert not self.mock_tg.add_thread.called
         self.assertEqual(expected_response, binascii.b2a_hex(response))
@@ -251,7 +251,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
 
         with mock.patch.object(self.handler.storage, 'find_domain',
                                return_value=domain):
-            response = self.handler(request).to_wire()
+            response = self.handler(request).next().to_wire()
 
         assert not self.mock_tg.add_thread.called
         self.assertEqual(expected_response, binascii.b2a_hex(response))
@@ -277,7 +277,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
             'context': self.context
         }
 
-        response = self.handler(request).to_wire()
+        response = self.handler(request).next().to_wire()
 
         assert not self.mock_tg.add_thread.called
         self.assertEqual(expected_response, binascii.b2a_hex(response))
@@ -305,7 +305,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
             'context': self.context
         }
 
-        response = self.handler(request).to_wire()
+        response = self.handler(request).next().to_wire()
 
         assert not self.mock_tg.add_thread.called
         self.assertEqual(expected_response, binascii.b2a_hex(response))
@@ -329,7 +329,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
 
         request = dns.message.from_wire(binascii.a2b_hex(payload))
         request.environ = {'addr': self.addr, 'context': self.context}
-        response = self.handler(request).to_wire()
+        response = self.handler(request).next().to_wire()
 
         self.assertEqual(expected_response, binascii.b2a_hex(response))
 
@@ -350,7 +350,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
 
     #     request = dns.message.from_wire(binascii.a2b_hex(payload))
     #     request.environ = {'addr': self.addr, 'context': self.context}
-    #     response = self.handler(request).to_wire()
+    #     response = self.handler(request).next().to_wire()
 
     #     # strip the id from the response and compare
     #     self.assertEqual(expected_response, binascii.b2a_hex(response)[5:])
@@ -377,7 +377,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
                              "00000100010000292000000000000000")
         request = dns.message.from_wire(binascii.a2b_hex(payload))
         request.environ = {'addr': self.addr, 'context': self.context}
-        response = self.handler(request).to_wire()
+        response = self.handler(request).next().to_wire()
 
         self.assertEqual(expected_response, binascii.b2a_hex(response))
 
@@ -408,7 +408,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
 
         request = dns.message.from_wire(binascii.a2b_hex(payload))
         request.environ = {'addr': self.addr, 'context': self.context}
-        response = self.handler(request).to_wire()
+        response = self.handler(request).next().to_wire()
 
         self.assertEqual(expected_response, binascii.b2a_hex(response))
 
@@ -439,9 +439,147 @@ class MdnsRequestHandlerTest(MdnsTestCase):
 
         request = dns.message.from_wire(binascii.a2b_hex(payload))
         request.environ = {'addr': self.addr, 'context': self.context}
-        response = self.handler(request).to_wire()
+        response = self.handler(request).next().to_wire()
 
         self.assertEqual(expected_response, binascii.b2a_hex(response))
+
+    def test_dispatch_opcode_query_AXFR(self):
+        # Query is for example.com. IN AXFR
+        # id 18883
+        # opcode QUERY
+        # rcode NOERROR
+        # flags AD
+        # edns 0
+        # payload 4096
+        # ;QUESTION
+        # example.com. IN AXFR
+        # ;ANSWER
+        # ;AUTHORITY
+        # ;ADDITIONAL
+        payload = ("49c300200001000000000001076578616d706c6503636f6d0000fc0001"
+                   "0000291000000000000000")
+
+        # id 18883
+        # opcode QUERY
+        # rcode NOERROR
+        # flags QR AA
+        # ;QUESTION
+        # example.com. IN AXFR
+        # ;ANSWER
+        # example.com. 3600 IN SOA ns1.example.org. example.example.com.
+        # -> 1427899961 3600 600 86400 3600
+        # mail.example.com. 3600 IN A 192.0.2.1
+        # example.com. 3600 IN NS ns1.example.org.
+        # ;AUTHORITY
+        # ;ADDITIONAL
+        expected_response = \
+            ("49c384000001000400000000076578616d706c6503636f6d0000fc0001c00c00"
+             "06000100000e10002f036e7331076578616d706c65036f726700076578616d70"
+             "6c65c00c551c063900000e10000002580001518000000e10c00c000200010000"
+             "0e100002c029046d61696cc00c0001000100000e100004c0000201c00c000600"
+             "0100000e100018c029c03a551c063900000e10000002580001518000000e10")
+
+        domain = objects.Domain.from_dict({
+            'name': 'example.com.',
+            'ttl': 3600,
+            'serial': 1427899961,
+            'email': 'example@example.com',
+        })
+
+        def _find_recordsets_axfr(context, criterion):
+            if criterion['type'] == 'SOA':
+                return [['UUID1', 'SOA', '3600', 'example.com.',
+                         'ns1.example.org. example.example.com. 1427899961 '
+                         '3600 600 86400 3600', 'ACTION']]
+
+            elif criterion['type'] == '!SOA':
+                return [
+                    ['UUID2', 'NS', '3600', 'example.com.', 'ns1.example.org.',
+                     'ACTION'],
+                    ['UUID3', 'A', '3600', 'mail.example.com.', '192.0.2.1',
+                     'ACTION'],
+                ]
+
+        with mock.patch.object(self.storage, 'find_domain',
+                               return_value=domain):
+            with mock.patch.object(self.storage, 'find_recordsets_axfr',
+                                   side_effect=_find_recordsets_axfr):
+                request = dns.message.from_wire(binascii.a2b_hex(payload))
+                request.environ = {'addr': self.addr, 'context': self.context}
+
+                response = self.handler(request).next().get_wire()
+
+                self.assertEqual(expected_response, binascii.b2a_hex(response))
+
+    def test_dispatch_opcode_query_AXFR_multiple_messages(self):
+        # Query is for example.com. IN AXFR
+        # id 18883
+        # opcode QUERY
+        # rcode NOERROR
+        # flags AD
+        # edns 0
+        # payload 4096
+        # ;QUESTION
+        # example.com. IN AXFR
+        # ;ANSWER
+        # ;AUTHORITY
+        # ;ADDITIONAL
+        payload = ("49c300200001000000000001076578616d706c6503636f6d0000fc0001"
+                   "0000291000000000000000")
+
+        expected_response = [
+            ("49c384000001000300000000076578616d706c6503636f6d0000fc0001c00c00"
+             "06000100000e10002f036e7331076578616d706c65036f726700076578616d70"
+             "6c65c00c551c063900000e10000002580001518000000e10c00c000200010000"
+             "0e100002c029046d61696cc00c0001000100000e100004c0000201"),
+
+            ("49c384000001000100000000076578616d706c6503636f6d0000fc0001c00c00"
+             "06000100000e10002f036e7331076578616d706c65036f726700076578616d70"
+             "6c65c00c551c063900000e10000002580001518000000e10"),
+        ]
+
+        # Set the max-message-size to 128
+        self.config(max_message_size=128, group='service:mdns')
+
+        domain = objects.Domain.from_dict({
+            'name': 'example.com.',
+            'ttl': 3600,
+            'serial': 1427899961,
+            'email': 'example@example.com',
+        })
+
+        def _find_recordsets_axfr(context, criterion):
+            if criterion['type'] == 'SOA':
+                return [['UUID1', 'SOA', '3600', 'example.com.',
+                         'ns1.example.org. example.example.com. 1427899961 '
+                         '3600 600 86400 3600', 'ACTION']]
+
+            elif criterion['type'] == '!SOA':
+                return [
+                    ['UUID2', 'NS', '3600', 'example.com.', 'ns1.example.org.',
+                     'ACTION'],
+                    ['UUID3', 'A', '3600', 'mail.example.com.', '192.0.2.1',
+                     'ACTION'],
+                ]
+
+        with mock.patch.object(self.storage, 'find_domain',
+                               return_value=domain):
+            with mock.patch.object(self.storage, 'find_recordsets_axfr',
+                                   side_effect=_find_recordsets_axfr):
+                request = dns.message.from_wire(binascii.a2b_hex(payload))
+                request.environ = {'addr': self.addr, 'context': self.context}
+
+                response_generator = self.handler(request)
+
+                # Validate the first response
+                response_one = response_generator.next().get_wire()
+                self.assertEqual(
+                    expected_response[0], binascii.b2a_hex(response_one))
+
+                # Validate the second response
+                response_two = response_generator.next().get_wire()
+                self.assertEqual(
+                    expected_response[1], binascii.b2a_hex(response_two))
 
     def test_dispatch_opcode_query_nonexistent_recordtype(self):
         # query is for mail.example.com. IN CNAME
@@ -469,7 +607,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
 
         request = dns.message.from_wire(binascii.a2b_hex(payload))
         request.environ = {'addr': self.addr, 'context': self.context}
-        response = self.handler(request).to_wire()
+        response = self.handler(request).next().to_wire()
 
         self.assertEqual(expected_response, binascii.b2a_hex(response))
 
@@ -492,7 +630,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
 
         request = dns.message.from_wire(binascii.a2b_hex(payload))
         request.environ = {'addr': self.addr, 'context': self.context}
-        response = self.handler(request).to_wire()
+        response = self.handler(request).next().to_wire()
 
         self.assertEqual(expected_response, binascii.b2a_hex(response))
 
@@ -532,7 +670,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
                              "0000010001c00c0001000100000e100004c0000205000029"
                              "2000000000000000")
 
-        response = self.handler(request).to_wire()
+        response = self.handler(request).next().to_wire()
 
         self.assertEqual(expected_response, binascii.b2a_hex(response))
 
@@ -553,7 +691,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
         expected_response = ("c28981050001000000000001076578616d706c6503636f6d"
                              "00000100010000292000000000000000")
 
-        response = self.handler(request).to_wire()
+        response = self.handler(request).next().to_wire()
         self.assertEqual(expected_response, binascii.b2a_hex(response))
 
     def test_dispatch_opcode_query_tsig_scope_zone(self):
@@ -598,7 +736,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
                              "0000010001c00c0001000100000e100004c0000205000029"
                              "2000000000000000")
 
-        response = self.handler(request).to_wire()
+        response = self.handler(request).next().to_wire()
 
         self.assertEqual(expected_response, binascii.b2a_hex(response))
 
@@ -619,5 +757,5 @@ class MdnsRequestHandlerTest(MdnsTestCase):
         expected_response = ("c28981050001000000000001076578616d706c6503636f6d"
                              "00000100010000292000000000000000")
 
-        response = self.handler(request).to_wire()
+        response = self.handler(request).next().to_wire()
         self.assertEqual(expected_response, binascii.b2a_hex(response))

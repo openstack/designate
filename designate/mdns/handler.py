@@ -58,7 +58,8 @@ class RequestHandler(xfr.XFRMixin):
             # TSIG places the pseudo records into the additional section.
             if (len(request.question) != 1 or
                     request.question[0].rdclass != dns.rdataclass.IN):
-                return self._handle_query_error(request, dns.rcode.REFUSED)
+                yield self._handle_query_error(request, dns.rcode.REFUSED)
+                raise StopIteration
 
             q_rrset = request.question[0]
             # Handle AXFR and IXFR requests with an AXFR responses for now.
@@ -66,15 +67,24 @@ class RequestHandler(xfr.XFRMixin):
             # receiving an IXFR request.
             # TODO(Ron): send IXFR response when receiving IXFR request.
             if q_rrset.rdtype in (dns.rdatatype.AXFR, dns.rdatatype.IXFR):
-                response = self._handle_axfr(request)
+                for response in self._handle_axfr(request):
+                    yield response
+                raise StopIteration
+
             else:
-                response = self._handle_record_query(request)
+                for response in self._handle_record_query(request):
+                    yield response
+                raise StopIteration
+
         elif request.opcode() == dns.opcode.NOTIFY:
-            response = self._handle_notify(request)
+            for response in self._handle_notify(request):
+                yield response
+            raise StopIteration
+
         else:
             # Unhandled OpCode's include STATUS, IQUERY, NOTIFY, UPDATE
-            response = self._handle_query_error(request, dns.rcode.REFUSED)
-        return response
+            yield self._handle_query_error(request, dns.rcode.REFUSED)
+            raise StopIteration
 
     def _handle_notify(self, request):
         """
@@ -90,7 +100,8 @@ class RequestHandler(xfr.XFRMixin):
 
         if len(request.question) != 1:
             response.set_rcode(dns.rcode.FORMERR)
-            return response
+            yield response
+            raise StopIteration
         else:
             question = request.question[0]
 
@@ -104,7 +115,8 @@ class RequestHandler(xfr.XFRMixin):
             domain = self.storage.find_domain(context, criterion)
         except exceptions.DomainNotFound:
             response.set_rcode(dns.rcode.NOTAUTH)
-            return response
+            yield response
+            raise StopIteration
 
         notify_addr = request.environ['addr'][0]
 
@@ -117,7 +129,8 @@ class RequestHandler(xfr.XFRMixin):
                       "%(addr)s, ignoring.")
             LOG.warn(msg % {"name": domain.name, "addr": notify_addr})
             response.set_rcode(dns.rcode.REFUSED)
-            return response
+            yield response
+            raise StopIteration
 
         resolver = dns.resolver.Resolver()
         # According to RFC we should query the server that sent the NOTIFY
@@ -138,7 +151,8 @@ class RequestHandler(xfr.XFRMixin):
 
         response.flags |= dns.flags.AA
 
-        return response
+        yield response
+        raise StopIteration
 
     def _handle_query_error(self, request, rcode):
         """
@@ -244,9 +258,8 @@ class RequestHandler(xfr.XFRMixin):
 
     def _handle_axfr(self, request):
         context = request.environ['context']
-
-        response = dns.message.make_response(request)
         q_rrset = request.question[0]
+
         # First check if there is an existing zone
         # TODO(vinod) once validation is separated from the api,
         # validate the parameters
@@ -259,42 +272,82 @@ class RequestHandler(xfr.XFRMixin):
             LOG.warning(_LW("DomainNotFound while handling axfr request. "
                             "Question was %(qr)s") % {'qr': q_rrset})
 
-            return self._handle_query_error(request, dns.rcode.REFUSED)
+            yield self._handle_query_error(request, dns.rcode.REFUSED)
+            raise StopIteration
 
         except exceptions.Forbidden:
             LOG.warning(_LW("Forbidden while handling axfr request. "
                             "Question was %(qr)s") % {'qr': q_rrset})
 
-            return self._handle_query_error(request, dns.rcode.REFUSED)
-
-        r_rrsets = []
+            yield self._handle_query_error(request, dns.rcode.REFUSED)
+            raise StopIteration
 
         # The AXFR response needs to have a SOA at the beginning and end.
         criterion = {'domain_id': domain.id, 'type': 'SOA'}
-        soa_recordsets = self.storage.find_recordsets(context, criterion)
+        soa_records = self.storage.find_recordsets_axfr(context, criterion)
 
-        for recordset in soa_recordsets:
-            r_rrsets.append(self._convert_to_rrset(domain, recordset))
-
-        # Get all the recordsets other than SOA
+        # Get all the records other than SOA
         criterion = {'domain_id': domain.id, 'type': '!SOA'}
+        records = self.storage.find_recordsets_axfr(context, criterion)
 
-        # Get the raw record data out of storage and parse it
-        raw_records = self.storage.find_recordsets_axfr(context, criterion)
-        r_rrsets.extend(self._prep_rrsets(raw_records, domain.ttl))
+        # Place the SOA RRSet at the front and end of the RRSet list
+        records.insert(0, soa_records[0])
+        records.append(soa_records[0])
 
-        # Append the SOA recordset at the end
-        for recordset in soa_recordsets:
-            r_rrsets.append(self._convert_to_rrset(domain, recordset))
+        # Build the DNSPython RRSets from the Records
+        rrsets = self._prep_rrsets(records, domain.ttl)
 
-        response.set_rcode(dns.rcode.NOERROR)
-        # TODO(vinod) check if we dnspython has an upper limit on the number
-        # of rrsets.
-        response.answer = r_rrsets
-        # For all the data stored in designate mdns is Authoritative
+        # Build up a dummy response, we're stealing it's logic for building
+        # the Flags.
+        response = dns.message.make_response(request)
         response.flags |= dns.flags.AA
+        response.set_rcode(dns.rcode.NOERROR)
 
-        return response
+        max_message_size = CONF['service:mdns'].max_message_size
+
+        # Render the results, yielding a packet after each TooBig exception.
+        i, renderer = 0, None
+        while i < len(rrsets):
+            # No renderer? Build one
+            if renderer is None:
+                renderer = dns.renderer.Renderer(
+                    response.id, response.flags, max_message_size)
+                for q in request.question:
+                    renderer.add_question(q.name, q.rdtype, q.rdclass)
+
+            try:
+                renderer.add_rrset(dns.renderer.ANSWER, rrsets[i])
+                i += 1
+            except dns.exception.TooBig:
+                renderer.write_header()
+                if request.had_tsig:
+                    renderer.add_tsig(
+                        request.keyname,
+                        request.keyring[request.keyname],
+                        request.fudge,
+                        request.original_id,
+                        request.tsig_error,
+                        request.other_data,
+                        request.request_mac,
+                        request.keyalgorithm)
+                yield renderer
+                renderer = None
+
+        if renderer is not None:
+            renderer.write_header()
+            if request.had_tsig:
+                renderer.add_tsig(
+                    request.keyname,
+                    request.keyring[request.keyname],
+                    request.fudge,
+                    request.original_id,
+                    request.tsig_error,
+                    request.other_data,
+                    request.request_mac,
+                    request.keyalgorithm)
+            yield renderer
+
+        raise StopIteration
 
     def _handle_record_query(self, request):
         """Handle a DNS QUERY request for a record"""
@@ -321,13 +374,15 @@ class RequestHandler(xfr.XFRMixin):
                 LOG.warning(_LW("DomainNotFound while handling query request"
                                 ". Question was %(qr)s") % {'qr': q_rrset})
 
-                return self._handle_query_error(request, dns.rcode.REFUSED)
+                yield self._handle_query_error(request, dns.rcode.REFUSED)
+                raise StopIteration
 
             except exceptions.Forbidden:
                 LOG.warning(_LW("Forbidden while handling query request. "
                                 "Question was %(qr)s") % {'qr': q_rrset})
 
-                return self._handle_query_error(request, dns.rcode.REFUSED)
+                yield self._handle_query_error(request, dns.rcode.REFUSED)
+                raise StopIteration
 
             r_rrset = self._convert_to_rrset(domain, recordset)
             response.set_rcode(dns.rcode.NOERROR)
@@ -357,4 +412,4 @@ class RequestHandler(xfr.XFRMixin):
         except exceptions.Forbidden:
             response.set_rcode(dns.rcode.REFUSED)
 
-        return response
+        yield response

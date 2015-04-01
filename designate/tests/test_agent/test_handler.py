@@ -56,7 +56,7 @@ class AgentRequestHandlerTest(AgentTestCase):
                             "6f6d0000060001")
         request = dns.message.from_wire(binascii.a2b_hex(payload))
         request.environ = {'addr': ["0.0.0.0", 1234]}
-        response = self.handler(request).to_wire()
+        response = self.handler(request).next().to_wire()
         self.assertEqual(expected_response, binascii.b2a_hex(response))
 
     def test_receive_notify_bad_notifier(self):
@@ -78,7 +78,7 @@ class AgentRequestHandlerTest(AgentTestCase):
         request = dns.message.from_wire(binascii.a2b_hex(payload))
         # Bad 'requester'
         request.environ = {'addr': ["6.6.6.6", 1234]}
-        response = self.handler(request).to_wire()
+        response = self.handler(request).next().to_wire()
 
         self.assertEqual(expected_response, binascii.b2a_hex(response))
 
@@ -108,7 +108,7 @@ class AgentRequestHandlerTest(AgentTestCase):
             designate.backend.agent_backend.impl_fake.FakeBackend,
                 'find_domain_serial', return_value=None):
 
-            response = self.handler(request).to_wire()
+            response = self.handler(request).next().to_wire()
             self.assertEqual(expected_response, binascii.b2a_hex(response))
 
     def test_receive_create_bad_notifier(self):
@@ -130,7 +130,7 @@ class AgentRequestHandlerTest(AgentTestCase):
         request = dns.message.from_wire(binascii.a2b_hex(payload))
         # Bad 'requester'
         request.environ = {'addr': ["6.6.6.6", 1234]}
-        response = self.handler(request).to_wire()
+        response = self.handler(request).next().to_wire()
 
         self.assertEqual(expected_response, binascii.b2a_hex(response))
 
@@ -154,7 +154,7 @@ class AgentRequestHandlerTest(AgentTestCase):
                              "00ff03ff00")
         request = dns.message.from_wire(binascii.a2b_hex(payload))
         request.environ = {'addr': ["0.0.0.0", 1234]}
-        response = self.handler(request).to_wire()
+        response = self.handler(request).next().to_wire()
 
         self.assertEqual(expected_response, binascii.b2a_hex(response))
 
@@ -178,7 +178,7 @@ class AgentRequestHandlerTest(AgentTestCase):
         request = dns.message.from_wire(binascii.a2b_hex(payload))
         # Bad 'requester'
         request.environ = {'addr': ["6.6.6.6", 1234]}
-        response = self.handler(request).to_wire()
+        response = self.handler(request).next().to_wire()
 
         self.assertEqual(expected_response, binascii.b2a_hex(response))
 
@@ -206,6 +206,6 @@ class AgentRequestHandlerTest(AgentTestCase):
         with mock.patch.object(
             designate.backend.agent_backend.impl_fake.FakeBackend,
                 'find_domain_serial', return_value=None):
-            response = self.handler(request).to_wire()
+            response = self.handler(request).next().to_wire()
             doaxfr.assert_called_with('example.com.', [], source="1.2.3.4")
             self.assertEqual(expected_response, binascii.b2a_hex(response))
