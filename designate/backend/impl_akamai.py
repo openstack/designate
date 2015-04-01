@@ -195,8 +195,13 @@ class AkamaiBackend(base.Backend):
 
         self.client = EnhancedDNSClient(self.username, self.password)
 
+        for m in self.masters:
+            if m.port != 53:
+                raise exceptions.ConfigurationError(
+                    "Akamai only supports mDNS instances on port 53")
+
     def _build_zone(self, domain):
-        masters = ["%(host)s:%(port)d" % m for m in self.masters]
+        masters = [m.host for m in self.masters]
 
         if self.tsig_key_name is not None:
             return self.client.buildZone(

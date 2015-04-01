@@ -38,6 +38,10 @@ if [ -z "$DESIGNATE_AKAMAI_NAMESERVERS" ]; then
     die $LINENO "You must configure DESIGNATE_AKAMAI_NAMESERVERS"
 fi
 
+if [ "$DESIGNATE_SERVICE_PORT_MDNS" != "53" ]; then
+    die $LINENO "Akamai requires DESIGNATE_SERVICE_PORT_MDNS is set to '53'"
+fi
+
 # Entry Points
 # ------------
 
