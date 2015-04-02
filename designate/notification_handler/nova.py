@@ -30,7 +30,8 @@ cfg.CONF.register_opts([
     cfg.ListOpt('notification-topics', default=['notifications']),
     cfg.StrOpt('control-exchange', default='nova'),
     cfg.StrOpt('domain-id', default=None),
-    cfg.StrOpt('format', default=None)
+    cfg.MultiStrOpt('format', default=[
+                    '%(octet0)s-%(octet1)s-%(octet2)s-%(octet3)s.%(domain)s'])
 ], group='handler:nova_fixed')
 
 

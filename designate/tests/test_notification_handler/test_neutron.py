@@ -30,6 +30,9 @@ class NeutronFloatingHandlerTest(TestCase, NotificationHandlerMixin):
         domain = self.create_domain()
         self.domain_id = domain['id']
         self.config(domain_id=domain['id'], group='handler:neutron_floatingip')
+        formats = ['%(octet0)s-%(octet1)s-%(octet2)s-%(octet3)s.%(domain)s',
+                   '%(octet0)s-%(octet1)s-%(octet2)s-%(octet3)s.X.%(domain)s']
+        self.config(format=formats, group='handler:neutron_floatingip')
 
         self.plugin = NeutronFloatingHandler()
 
@@ -55,7 +58,7 @@ class NeutronFloatingHandlerTest(TestCase, NotificationHandlerMixin):
         records = self.central_service.find_records(self.admin_context,
                                                     criterion)
 
-        self.assertEqual(3, len(records))
+        self.assertEqual(4, len(records))
 
     def test_floatingip_disassociate(self):
         start_event_type = 'floatingip.update.end'
@@ -77,7 +80,7 @@ class NeutronFloatingHandlerTest(TestCase, NotificationHandlerMixin):
         records = self.central_service.find_records(self.admin_context,
                                                     criterion)
 
-        self.assertEqual(3, len(records))
+        self.assertEqual(4, len(records))
 
         self.plugin.process_notification(
             self.admin_context, event_type, fixture['payload'])
@@ -113,7 +116,7 @@ class NeutronFloatingHandlerTest(TestCase, NotificationHandlerMixin):
         # Ensure we start with at least 1 record, plus NS and SOA
         records = self.central_service.find_records(self.admin_context,
                                                     criterion)
-        self.assertEqual(3, len(records))
+        self.assertEqual(4, len(records))
 
         self.plugin.process_notification(
             self.admin_context, event_type, fixture['payload'])
