@@ -16,11 +16,13 @@
 
 import pecan
 from oslo_log import log as logging
+from oslo_config import cfg
 
 from designate.api.v2.controllers import rest
 
 
 LOG = logging.getLogger(__name__)
+CONF = cfg.CONF
 
 
 class LimitsController(rest.RestController):
@@ -32,8 +34,19 @@ class LimitsController(rest.RestController):
         absolute_limits = self.central_api.get_absolute_limits(context)
 
         return {
+            # Resource Creation Limits
             "max_zones": absolute_limits['domains'],
             "max_zone_recordsets": absolute_limits['domain_recordsets'],
             "max_zone_records": absolute_limits['domain_records'],
-            "max_recordset_records": absolute_limits['recordset_records']
+            "max_recordset_records": absolute_limits['recordset_records'],
+
+            # Resource Field Value Limits
+            "min_ttl": CONF['service:central'].min_ttl,
+            "max_recordset_name_length":
+                CONF['service:central'].max_domain_name_len,
+            "max_recordset_name_length":
+                CONF['service:central'].max_recordset_name_len,
+
+            # Resource Fetching Limits
+            "max_page_limit": CONF['service:api'].max_limit_v2,
         }
