@@ -215,7 +215,7 @@ class CentralServiceTest(CentralTestCase):
 
     def test_is_valid_ttl(self):
         self.policy({'use_low_ttl': '!'})
-        self.config(min_ttl="100",
+        self.config(min_ttl=100,
                     group='service:central')
         context = self.get_context()
 
@@ -667,7 +667,7 @@ class CentralServiceTest(CentralTestCase):
 
     def test_create_domain_invalid_ttl_fail(self):
         self.policy({'use_low_ttl': '!'})
-        self.config(min_ttl="100",
+        self.config(min_ttl=100,
                     group='service:central')
         context = self.get_context()
 
@@ -1122,7 +1122,7 @@ class CentralServiceTest(CentralTestCase):
 
     def test_create_invalid_recordset_ttl(self):
         self.policy({'use_low_ttl': '!'})
-        self.config(min_ttl="100",
+        self.config(min_ttl=100,
                     group='service:central')
         domain = self.create_domain()
 
