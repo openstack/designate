@@ -86,6 +86,27 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         self.assertEqual('UPDATE', response.json['action'])
         self.assertEqual('PENDING', response.json['status'])
 
+    def test_create_recordset_with_invalid_name(self):
+        # Prepare a RecordSet fixture
+        body = self.get_recordset_fixture(
+            self.domain['name'],
+            'A',
+            fixture=0,
+            values={
+                'name': '`invalid`label`.%s' % self.domain['name'],
+                'records': [
+                    '192.0.2.1',
+                    '192.0.2.2',
+                ]
+            }
+        )
+
+        url = '/zones/%s/recordsets' % self.domain['id']
+
+        # Ensure it fails with a 400
+        self._assert_exception(
+            'invalid_object', 400, self.client.post_json, url, body)
+
     def test_create_recordset_invalid_id(self):
         self._assert_invalid_uuid(self.client.post, '/zones/%s/recordsets')
 

@@ -166,10 +166,11 @@ class RecordSet(base.DictObjectMixin, base.PersistentObjectMixin,
             # to validation above, so this re - inserts them, and makes sure
             # the index is right
             for error in e.errors:
-                error.path[1] += increment
-                while error.path[1] in error_indexes:
-                    increment += 1
-                    error.path[1] += 1
+                if len(error.path) > 1 and isinstance(error.path[1], int):
+                    error.path[1] += increment
+                    while error.path[1] in error_indexes:
+                        increment += 1
+                        error.path[1] += 1
             # Add the list from above
             e.errors.extend(errors)
             # Raise the exception
