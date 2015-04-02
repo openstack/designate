@@ -24,7 +24,12 @@ LOG = logging.getLogger(__name__)
 
 OPTS = [
     cfg.ListOpt('enabled-extensions-v2', default=[],
-                help='Enabled API Extensions'),
+                help='Enabled API Extensions for the V2 API'),
+    cfg.IntOpt('default-limit-v2', default=20,
+               help='Default per-page limit for the V2 API, a value of None '
+                    'means show all results by default'),
+    cfg.IntOpt('max-limit-v2', default=1000,
+               help='Max per-page limit for the V2 API'),
 ]
 
 cfg.CONF.register_opts(OPTS, group='service:api')

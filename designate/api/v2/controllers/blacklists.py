@@ -49,7 +49,8 @@ class BlacklistsController(rest.RestController):
         context = request.environ['context']
 
         # Extract the pagination params
-        marker, limit, sort_key, sort_dir = self._get_paging_params(params)
+        marker, limit, sort_key, sort_dir = utils.get_paging_params(
+            params, self.SORT_KEYS)
 
         # Extract any filter params
         accepted_filters = ('pattern')

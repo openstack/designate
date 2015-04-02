@@ -20,6 +20,7 @@ import inspect
 import os
 import uuid
 
+import six
 import pkg_resources
 from jinja2 import Template
 from oslo.config import cfg
@@ -28,6 +29,7 @@ from oslo_log import log as logging
 from oslo_utils import timeutils
 
 from designate import exceptions
+from designate.i18n import _
 from designate.openstack.common.report import guru_meditation_report as gmr
 from designate import version as designate_version
 
@@ -398,3 +400,51 @@ def split_host_port(string, default_port=53):
         port = default_port
 
     return (host, port)
+
+
+def get_paging_params(params, sort_keys):
+    """
+    Extract any paging parameters
+    """
+    marker = params.pop('marker', None)
+    limit = params.pop('limit', cfg.CONF['service:api'].default_limit_v2)
+    sort_key = params.pop('sort_key', None)
+    sort_dir = params.pop('sort_dir', None)
+    max_limit = cfg.CONF['service:api'].max_limit_v2
+
+    if isinstance(limit, six.string_types) and limit.lower() == "max":
+        # Support for retrieving the max results at once. If set to "max",
+        # the configured max limit will be used.
+        limit = max_limit
+
+    elif limit:
+        # Negative and zero limits are not caught in storage.
+        # With a number bigger than MAXSIZE, rpc throws an 'OverflowError long
+        # too big to convert'.
+        # So the parameter 'limit' is checked here.
+        invalid_limit_message = ('limit should be an integer between 1 and '
+                                 '%(max)s' % {'max': max_limit})
+        try:
+            int_limit = int(limit)
+            if int_limit <= 0 or int_limit > six.MAXSIZE:
+                raise exceptions.InvalidLimit(invalid_limit_message)
+        # This exception is raised for non ints when int(limit) is called
+        except ValueError:
+            raise exceptions.InvalidLimit(invalid_limit_message)
+
+    # sort_dir is checked in paginate_query.
+    # We duplicate the sort_dir check here to throw a more specific
+    # exception than ValueError.
+    if sort_dir and sort_dir not in ['asc', 'desc']:
+        raise exceptions.InvalidSortDir(_("Unknown sort direction, "
+                                          "must be 'desc' or 'asc'"))
+
+    if sort_keys is None:
+        sort_key = None
+        sort_dir = None
+
+    elif sort_key and sort_key not in sort_keys:
+        msg = 'sort key must be one of %(keys)s' % {'keys': sort_keys}
+        raise exceptions.InvalidSortKey(msg)
+
+    return marker, limit, sort_key, sort_dir

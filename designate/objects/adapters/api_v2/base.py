@@ -98,7 +98,16 @@ class APIv2Adapter(base.DesignateAdapter):
             'self': cls._get_collection_href(request)
         }
         params = request.GET
-        if 'limit' in params and int(params['limit']) == len(list):
+
+        limit = cfg.CONF['service:api'].default_limit_v2
+
+        if 'limit' in params and params['limit'] == 'max':
+            limit = cfg.CONF['service:api'].max_limit_v2
+
+        elif 'limit' in params:
+            limit = int(params['limit'])
+
+        if limit is not None and limit == len(list):
             links['next'] = cls._get_next_href(request, list)
 
         return links
