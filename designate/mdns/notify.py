@@ -37,16 +37,17 @@ CONF = cfg.CONF
 
 
 class NotifyEndpoint(base.BaseEndpoint):
-    RPC_API_VERSION = '1.1'
+    RPC_API_VERSION = '2.0'
     RPC_API_NAMESPACE = 'notify'
 
-    def notify_zone_changed(self, context, domain, nameserver, timeout,
+    def notify_zone_changed(self, context, domain, host, port, timeout,
                             retry_interval, max_retries, delay):
         """
         :param context: The user context.
         :param domain: The designate domain object.  This contains the domain
             name.
-        :param nameserver: A notify is sent to nameserver.host:nameserver.port.
+        :param host: A notify is sent to this host.
+        :param port: A notify is sent to this port.
         :param timeout: The time (in seconds) to wait for a NOTIFY response
             from server.
         :param retry_interval: The time (in seconds) between retries.
@@ -60,7 +61,7 @@ class NotifyEndpoint(base.BaseEndpoint):
         """
         time.sleep(delay)
         return self._make_and_send_dns_message(
-            domain, nameserver, timeout, retry_interval, max_retries,
+            domain, host, port, timeout, retry_interval, max_retries,
             notify=True)
 
     def poll_for_serial_number(self, context, domain, nameserver, timeout,
@@ -69,8 +70,7 @@ class NotifyEndpoint(base.BaseEndpoint):
         :param context: The user context.
         :param domain: The designate domain object.  This contains the domain
             name. domain.serial = expected_serial
-        :param nameserver: nameserver.host:nameserver.port is checked for an
-            updated serial number.
+        :param nameserver: Destination for the poll
         :param timeout: The time (in seconds) to wait for a SOA response from
             nameserver.
         :param retry_interval: The time (in seconds) between retries.
@@ -81,19 +81,19 @@ class NotifyEndpoint(base.BaseEndpoint):
         :return: The pool manager is informed of the status with update_status.
         """
         (status, actual_serial, retries) = self.get_serial_number(
-            context, domain, nameserver, timeout, retry_interval, max_retries,
-            delay)
+            context, domain, nameserver.host, nameserver.port, timeout,
+            retry_interval, max_retries, delay)
         self.pool_manager_api.update_status(
             context, domain, nameserver, status, actual_serial)
 
-    def get_serial_number(self, context, domain, nameserver, timeout,
+    def get_serial_number(self, context, domain, host, port, timeout,
                           retry_interval, max_retries, delay):
         """
         :param context: The user context.
         :param domain: The designate domain object.  This contains the domain
             name. domain.serial = expected_serial
-        :param nameserver: nameserver.host:nameserver.port is checked for an
-            updated serial number.
+        :param host: A notify is sent to this host.
+        :param port: A notify is sent to this port.
         :param timeout: The time (in seconds) to wait for a SOA response from
             nameserver.
         :param retry_interval: The time (in seconds) between retries.
@@ -115,7 +115,7 @@ class NotifyEndpoint(base.BaseEndpoint):
         time.sleep(delay)
         while (True):
             (response, retry) = self._make_and_send_dns_message(
-                domain, nameserver, timeout, retry_interval, retries)
+                domain, host, port, timeout, retry_interval, retries)
             if response and response.rcode() in (
                     dns.rcode.NXDOMAIN, dns.rcode.REFUSED, dns.rcode.SERVFAIL):
                 status = 'NO_DOMAIN'
@@ -133,8 +133,8 @@ class NotifyEndpoint(base.BaseEndpoint):
                 LOG.warn(_LW("Got lower serial for '%(zone)s' to '%(host)s:"
                              "%(port)s'. Expected:'%(es)d'. Got:'%(as)s'."
                              "Retries left='%(retries)d'") %
-                         {'zone': domain.name, 'host': nameserver.host,
-                          'port': nameserver.port, 'es': domain.serial,
+                         {'zone': domain.name, 'host': host,
+                          'port': port, 'es': domain.serial,
                           'as': actual_serial, 'retries': retries})
                 if retries > 0:
                     # retry again
@@ -150,13 +150,13 @@ class NotifyEndpoint(base.BaseEndpoint):
         # Return retries for testing purposes.
         return (status, actual_serial, retries)
 
-    def _make_and_send_dns_message(self, domain, nameserver, timeout,
+    def _make_and_send_dns_message(self, domain, host, port, timeout,
                                    retry_interval, max_retries, notify=False):
         """
         :param domain: The designate domain object.  This contains the domain
             name.
-        :param server: The destination for the dns message is
-            server.host:server.port.
+        :param host: The destination host for the dns message.
+        :param port: The destination port for the dns message.
         :param timeout: The time (in seconds) to wait for a response from
             destination.
         :param retry_interval: The time (in seconds) between retries.
@@ -168,9 +168,6 @@ class NotifyEndpoint(base.BaseEndpoint):
             response is the response on success or None on failure.
             current_retry is the current retry number
         """
-        dest_ip = nameserver.host
-        dest_port = nameserver.port
-
         dns_message = self._make_dns_message(domain.name, notify=notify)
 
         retry = 0
@@ -181,18 +178,18 @@ class NotifyEndpoint(base.BaseEndpoint):
             LOG.info(_LI("Sending '%(msg)s' for '%(zone)s' to '%(server)s:"
                          "%(port)d'.") %
                      {'msg': 'NOTIFY' if notify else 'SOA',
-                      'zone': domain.name, 'server': dest_ip,
-                      'port': dest_port})
+                      'zone': domain.name, 'server': host,
+                      'port': port})
             response = self._send_dns_message(
-                dns_message, dest_ip, dest_port, timeout)
+                dns_message, host, port, timeout)
 
             if isinstance(response, dns.exception.Timeout):
                 LOG.warn(_LW("Got Timeout while trying to send '%(msg)s' for "
                              "'%(zone)s' to '%(server)s:%(port)d'. Timeout="
                              "'%(timeout)d' seconds. Retry='%(retry)d'") %
                          {'msg': 'NOTIFY' if notify else 'SOA',
-                          'zone': domain.name, 'server': dest_ip,
-                          'port': dest_port, 'timeout': timeout,
+                          'zone': domain.name, 'server': host,
+                          'port': port, 'timeout': timeout,
                           'retry': retry})
                 response = None
                 # retry sending the message if we get a Timeout.
@@ -203,8 +200,8 @@ class NotifyEndpoint(base.BaseEndpoint):
                              "for '%(zone)s' to '%(server)s:%(port)d'. Timeout"
                              "='%(timeout)d' seconds. Retry='%(retry)d'") %
                          {'msg': 'NOTIFY' if notify else 'SOA',
-                          'zone': domain.name, 'server': dest_ip,
-                          'port': dest_port, 'timeout': timeout,
+                          'zone': domain.name, 'server': host,
+                          'port': port, 'timeout': timeout,
                           'retry': retry})
                 response = None
                 break
@@ -213,8 +210,8 @@ class NotifyEndpoint(base.BaseEndpoint):
             elif response.rcode() in (dns.rcode.NXDOMAIN, dns.rcode.REFUSED,
                                       dns.rcode.SERVFAIL):
                 LOG.info(_LI("%(zone)s not found on %(server)s:%(port)d") %
-                         {'zone': domain.name, 'server': dest_ip,
-                         'port': dest_port})
+                         {'zone': domain.name, 'server': host,
+                         'port': port})
                 break
             elif not (response.flags & dns.flags.AA) or dns.rcode.from_flags(
                     response.flags, response.ednsflags) != dns.rcode.NOERROR:
@@ -222,8 +219,8 @@ class NotifyEndpoint(base.BaseEndpoint):
                              "send '%(msg)s' for '%(zone)s' to '%(server)s:"
                              "%(port)d'.\nResponse message:\n%(resp)s\n") %
                          {'msg': 'NOTIFY' if notify else 'SOA',
-                          'zone': domain.name, 'server': dest_ip,
-                          'port': dest_port, 'resp': str(response)})
+                          'zone': domain.name, 'server': host,
+                          'port': port, 'resp': str(response)})
                 response = None
                 break
             else:
@@ -252,21 +249,21 @@ class NotifyEndpoint(base.BaseEndpoint):
 
         return dns_message
 
-    def _send_dns_message(self, dns_message, dest_ip, dest_port, timeout):
+    def _send_dns_message(self, dns_message, host, port, timeout):
         """
         :param dns_message: The dns message that needs to be sent.
-        :param dest_ip: The destination ip of dns_message.
-        :param dest_port: The destination port of dns_message.
+        :param host: The destination ip of dns_message.
+        :param port: The destination port of dns_message.
         :param timeout: The timeout in seconds to wait for a response.
         :return: response or dns.exception.Timeout or dns_query.BadResponse
         """
         try:
             if not CONF['service:mdns'].all_tcp:
                 response = dns_query.udp(
-                    dns_message, dest_ip, port=dest_port, timeout=timeout)
+                    dns_message, host, port=port, timeout=timeout)
             else:
                 response = dns_query.tcp(
-                    dns_message, dest_ip, port=dest_port, timeout=timeout)
+                    dns_message, host, port=port, timeout=timeout)
             return response
         except dns.exception.Timeout as timeout:
             return timeout

@@ -51,10 +51,6 @@ class InfobloxBackend(base.Backend):
             dns_view=dns_net_view
         )
 
-    def update_domain(self, context, domain):
-        # Since all updates are done via zone transfer, there is nothing to do
-        LOG.info(_LI('Update Domain %r') % domain)
-
     def delete_domain(self, context, domain):
         LOG.info(_LI('Delete Domain %r') % domain)
         self.infoblox.delete_zone_auth(domain['name'][0:-1])

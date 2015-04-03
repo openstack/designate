@@ -277,7 +277,9 @@ class Service(service.RPCService, coordination.CoordinationMixin,
                 nameserver, domain, CREATE_ACTION)
             self.cache.store(context, create_status)
 
-            self._update_domain_on_nameserver(context, nameserver, domain)
+            self.mdns_api.poll_for_serial_number(
+                context, domain, nameserver, self.timeout,
+                self.retry_interval, self.max_retries, self.delay)
 
     def _create_domain_on_target(self, context, target, domain):
         """
@@ -332,7 +334,7 @@ class Service(service.RPCService, coordination.CoordinationMixin,
         for also_notify in self.pool.also_notifies:
             self._update_domain_on_also_notify(context, also_notify, domain)
 
-        # Send a NOTIFY to each nameserver
+        # Ensure the change has propogated to each nameserver
         for nameserver in self.pool.nameservers:
             # See if there is already another update in progress
             try:
@@ -343,7 +345,9 @@ class Service(service.RPCService, coordination.CoordinationMixin,
                     nameserver, domain, UPDATE_ACTION)
                 self.cache.store(context, update_status)
 
-            self._update_domain_on_nameserver(context, nameserver, domain)
+            self.mdns_api.poll_for_serial_number(
+                context, domain, nameserver, self.timeout,
+                self.retry_interval, self.max_retries, self.delay)
 
     def _update_domain_on_target(self, context, target, domain):
         """
@@ -372,20 +376,8 @@ class Service(service.RPCService, coordination.CoordinationMixin,
                   'server': self._get_destination(also_notify)})
 
         self.mdns_api.notify_zone_changed(
-            context, domain, also_notify, self.timeout, self.retry_interval,
-            self.max_retries, 0)
-
-    def _update_domain_on_nameserver(self, context, nameserver, domain):
-        LOG.info(_LI('Updating domain %(domain)s on nameserver %(server)s.') %
-                 {'domain': domain.name,
-                  'server': self._get_destination(nameserver)})
-
-        self.mdns_api.notify_zone_changed(
-            context, domain, nameserver, self.timeout, self.retry_interval,
-            self.max_retries, 0)
-        self.mdns_api.poll_for_serial_number(
-            context, domain, nameserver, self.timeout, self.retry_interval,
-            self.max_retries, self.delay)
+            context, domain, also_notify.host, also_notify.port, self.timeout,
+            self.retry_interval, self.max_retries, 0)
 
     def delete_domain(self, context, domain):
         """
@@ -628,8 +620,9 @@ class Service(service.RPCService, coordination.CoordinationMixin,
         try:
             (status, actual_serial, retries) = \
                 self.mdns_api.get_serial_number(
-                    context, domain, nameserver, self.timeout,
-                    self.retry_interval, self.max_retries, self.delay)
+                    context, domain, nameserver.host, nameserver.port,
+                    self.timeout, self.retry_interval, self.max_retries,
+                    self.delay)
         except messaging.MessagingException as msg_ex:
             LOG.debug('Could not retrieve status and serial for domain %s on '
                       'nameserver %s with action %s (%s: %s)' %

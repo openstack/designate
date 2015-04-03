@@ -30,13 +30,24 @@ from designate.i18n import _LW
 from designate.backend import base
 from designate import exceptions
 from designate.mdns import rpcapi as mdns_api
-from designate import objects
 
 
 dns_query = eventlet.import_patched('dns.query')
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
+
+# Command and Control OPCODE
+CC = 14
+
+# Private DNS CLASS Uses
+CLASSCC = 65280
+
+# Private RR Code Uses
+SUCCESS = 65280
+FAILURE = 65281
+CREATE = 65282
+DELETE = 65283
 
 
 class AgentPoolBackend(base.Backend):
@@ -46,8 +57,8 @@ class AgentPoolBackend(base.Backend):
 
     def __init__(self, target):
         super(AgentPoolBackend, self).__init__(target)
-        self.host = self.options.get('host')
-        self.port = int(self.options.get('port'))
+        self.host = self.options.get('host', '127.0.0.1')
+        self.port = int(self.options.get('port', 53))
         self.timeout = CONF['service:pool_manager'].poll_timeout
         self.retry_interval = CONF['service:pool_manager'].poll_retry_interval
         self.max_retries = CONF['service:pool_manager'].poll_max_retries
@@ -58,29 +69,43 @@ class AgentPoolBackend(base.Backend):
 
     def create_domain(self, context, domain):
         LOG.debug('Create Domain')
-        response, retry = self._make_and_send_dns_message(domain.name, 15, 14,
-                          65282, 65280, self.host, self.port)
+        response, retry = self._make_and_send_dns_message(
+            domain.name,
+            self.timeout,
+            CC,
+            CREATE,
+            CLASSCC,
+            self.host,
+            self.port
+        )
         if response is None:
             raise exceptions.Backend()
 
     def update_domain(self, context, domain):
         LOG.debug('Update Domain')
 
-        values = {
-            'host': self.host,
-            'port': self.port,
-            'pool_id': CONF['service:central'].default_pool_id
-        }
-        nameserver = objects.PoolNameserver(**values)
-
         self.mdns_api.notify_zone_changed(
-            context, domain, nameserver, self.timeout,
-            self.retry_interval, self.max_retries, 0)
+            context,
+            domain,
+            self.host,
+            self.port,
+            self.timeout,
+            self.retry_interval,
+            self.max_retries,
+            self.delay
+        )
 
     def delete_domain(self, context, domain):
         LOG.debug('Delete Domain')
-        response, retry = self._make_and_send_dns_message(domain.name, 15, 14,
-                          65283, 65280, self.host, self.port)
+        response, retry = self._make_and_send_dns_message(
+            domain.name,
+            self.timeout,
+            CC,
+            DELETE,
+            CLASSCC,
+            self.host,
+            self.port
+        )
         if response is None:
             raise exceptions.Backend()
 

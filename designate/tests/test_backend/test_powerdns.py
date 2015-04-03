@@ -37,7 +37,9 @@ class PowerDNSBackendTestCase(BackendTestCase):
             'type': 'powerdns',
             'masters': [{'host': '192.0.2.1', 'port': 53},
                         {'host': '192.0.2.2', 'port': 35}],
-            'options': [{'key': 'connection', 'value': 'memory://'}],
+            'options': [{'key': 'connection', 'value': 'memory://',
+                         'key': 'host', 'value': '192.0.2.3',
+                         'key': 'port', 'value': 53}],
         })
 
         self.backend = impl_powerdns.PowerDNSBackend(self.target)

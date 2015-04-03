@@ -131,15 +131,7 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
         # not return any status
         self.assertEqual(0, len(create_statuses))
 
-        # Ensure notify_zone_changed and poll_for_serial_number
-        # was called for each nameserver.
-        self.assertEqual(2, mock_notify_zone_changed.call_count)
-        self.assertEqual(
-            [call(self.admin_context, domain,
-                  self.service.pool.nameservers[0], 30, 15, 10, 0),
-             call(self.admin_context, domain,
-                  self.service.pool.nameservers[1], 30, 15, 10, 0)],
-            mock_notify_zone_changed.call_args_list)
+        # Ensure poll_for_serial_number was called for each nameserver.
         self.assertEqual(2, mock_poll_for_serial_number.call_count)
         self.assertEqual(
             [call(self.admin_context, domain,
@@ -231,16 +223,7 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
             self.admin_context, domain, 'CREATE')
         self.assertEqual(0, len(create_statuses))
 
-        # Ensure notify_zone_changed and poll_for_serial_number
-        # was called for each nameserver.
-        self.assertEqual(2, mock_notify_zone_changed.call_count)
-        self.assertEqual(
-            [call(self.admin_context, domain,
-                  self.service.pool.nameservers[0], 30, 15, 10, 0),
-             call(self.admin_context, domain,
-                  self.service.pool.nameservers[1], 30, 15, 10, 0)],
-            mock_notify_zone_changed.call_args_list)
-        self.assertEqual(2, mock_poll_for_serial_number.call_count)
+        # Ensure poll_for_serial_number was called for each nameserver.
         self.assertEqual(
             [call(self.admin_context, domain,
                   self.service.pool.nameservers[0], 30, 15, 10, 5),
