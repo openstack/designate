@@ -67,8 +67,14 @@ ENABLED_SERVICES+=,designate,designate-central,designate-api,designate-pool-mana
 # Optional Rally
 #ENABLED_SERVICES+=,rally
 
-# Optional Horizon Panels
+# Optional Horizon
 #ENABLED_SERVICES+=,horizon
 
-# Optional core OpenStack services (needed by horizon)
-#ENABLED_SERVICES+=,g-api,g-reg,n-api,n-crt,n-obj,n-cpu,n-net,n-cond,n-sch,n-novnc,n-xvnc,n-cauth
+# Optional Glance
+#ENABLED_SERVICES+=,g-api,g-reg
+
+# Optional Nova
+#ENABLED_SERVICES+=,n-api,n-cpu,n-net,n-cond,n-sch,n-novnc
+
+# Optional Neutron
+#ENABLED_SERVICES+=,-n-net,q-svc,q-agt,q-dhcp,q-l3,q-meta
