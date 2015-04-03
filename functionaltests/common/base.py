@@ -39,9 +39,9 @@ class BaseDesignateTest(tempest_lib.base.BaseTestCase):
     def is_zone_active(self, zone_id):
         resp, model = self.client.get_zone(zone_id)
         self.assertEqual(resp.status, 200)
-        if model.zone.status == 'ACTIVE':
+        if model.status == 'ACTIVE':
             return True
-        elif model.zone.status == 'ERROR':
+        elif model.status == 'ERROR':
             raise Exception("Saw ERROR status")
         return False
 

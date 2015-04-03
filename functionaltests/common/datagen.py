@@ -48,8 +48,7 @@ def random_zone_data(name=None, email=None, ttl=None, description=None):
     if ttl is None:
         ttl = random.randint(1200, 8400),
     return ZoneModel.from_dict({
-        'zone': {
-            'name': name,
-            'email': email,
-            'ttl': random.randint(1200, 8400),
-            'description': description}})
+        'name': name,
+        'email': email,
+        'ttl': random.randint(1200, 8400),
+        'description': description})

@@ -48,7 +48,7 @@ class ZoneTest(BaseDesignateTest):
     def _create_zone(self, zone_model):
         resp, model = self.client.post_zone(zone_model)
         self.assertEqual(resp.status, 202)
-        self.wait_for_zone(model.zone.id)
+        self.wait_for_zone(model.id)
         return resp, model
 
     def test_list_zones(self):
@@ -65,21 +65,21 @@ class ZoneTest(BaseDesignateTest):
         resp, old_model = self._create_zone(post_model)
 
         patch_model = datagen.random_zone_data()
-        del patch_model.zone.name  # don't try to override the zone name
-        resp, new_model = self.client.patch_zone(old_model.zone.id,
+        del patch_model.name  # don't try to override the zone name
+        resp, new_model = self.client.patch_zone(old_model.id,
                                                  patch_model)
         self.assertEqual(resp.status, 202)
-        self.wait_for_zone(new_model.zone.id)
+        self.wait_for_zone(new_model.id)
 
-        resp, model = self.client.get_zone(new_model.zone.id)
+        resp, model = self.client.get_zone(new_model.id)
         self.assertEqual(resp.status, 200)
-        self.assertEqual(new_model.zone.id, old_model.zone.id)
-        self.assertEqual(new_model.zone.name, old_model.zone.name)
-        self.assertEqual(new_model.zone.ttl, patch_model.zone.ttl)
-        self.assertEqual(new_model.zone.email, patch_model.zone.email)
+        self.assertEqual(new_model.id, old_model.id)
+        self.assertEqual(new_model.name, old_model.name)
+        self.assertEqual(new_model.ttl, patch_model.ttl)
+        self.assertEqual(new_model.email, patch_model.email)
 
     def test_delete_zone(self):
         resp, model = self._create_zone(datagen.random_zone_data())
-        resp, model = self.client.delete_zone(model.zone.id)
+        resp, model = self.client.delete_zone(model.id)
         self.assertEqual(resp.status, 202)
-        self.wait_for_404(model.zone.id)
+        self.wait_for_404(model.id)
