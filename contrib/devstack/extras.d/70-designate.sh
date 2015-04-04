@@ -13,6 +13,11 @@ if is_service_enabled designate; then
         echo_summary "Installing Designate Client"
         install_designateclient
 
+        if is_service_enabled horizon; then
+            echo_summary "Installing Designate Dashboard"
+            install_designatedashboard
+        fi
+
     elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
         echo_summary "Configuring Designate"
         configure_designate
