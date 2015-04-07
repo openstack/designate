@@ -56,6 +56,16 @@ class SRV(Record):
         }
     }
 
+    @classmethod
+    def get_recordset_schema_changes(cls):
+        return {
+            'name': {
+                'schema': {
+                    'format': 'srv-hostname',
+                },
+            },
+        }
+
     def _to_string(self):
         return "%(priority)s %(weight)s %(target)s %(port)s" % self
 
