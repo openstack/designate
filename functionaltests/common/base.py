@@ -17,7 +17,6 @@ limitations under the License.
 import time
 
 import tempest_lib.base
-from tempest_lib.exceptions import NotFound
 
 from functionaltests.common.client import DesignateClient
 
@@ -35,20 +34,3 @@ class BaseDesignateTest(tempest_lib.base.BaseTestCase):
                 return
             time.sleep(interval)
         raise Exception("Timed out after {0} seconds".format(timeout))
-
-    def is_zone_active(self, zone_id):
-        resp, model = self.client.get_zone(zone_id)
-        self.assertEqual(resp.status, 200)
-        if model.status == 'ACTIVE':
-            return True
-        elif model.status == 'ERROR':
-            raise Exception("Saw ERROR status")
-        return False
-
-    def is_zone_404(self, zone_id):
-        try:
-            # tempest_lib rest client raises exceptions on bad status codes
-            resp, model = self.client.get_zone(zone_id)
-        except NotFound:
-            return True
-        return False
