@@ -33,28 +33,25 @@ source $TOP_DIR/exerciserc
 # Skip if designate is not enabled
 is_service_enabled designate || exit 55
 
-# Skip if the DynECT or Akamai backend is in use
-[ "$DESIGNATE_BACKEND_DRIVER" != "dynect" ] || exit 55
-[ "$DESIGNATE_BACKEND_DRIVER" != "akamai" ] || exit 55
-
 # Import designate library
 source $TOP_DIR/lib/designate
 
 # Settings
 # ========
 
-# used with dig to look up in DNS
+# Used with dig to look up in DNS
 DIG_TIMEOUT=30
+
+if [ "$DESIGNATE_BACKEND_DRIVER" == "akamai" ]; then
+    # Akamai can be slow to propagate changes out
+    DIG_TIMEOUT=300
+fi
 
 # used with dig to look up in DNS
 DIG_FLAGS="-p $DESIGNATE_SERVICE_PORT_DNS @$DESIGNATE_SERVICE_HOST"
 
 # used with dig to do an AXFR against MDNS
 DIG_AXFR_FLAGS="-p $DESIGNATE_SERVICE_PORT_MDNS @$DESIGNATE_SERVICE_HOST AXFR +tcp +nocmd"
-
-# NUMBER_OF_RECORDS keeps track of the records we need to get for AXFR
-# We start with 1 to account for the additional SOA at the end
-NUMBER_OF_RECORDS=1
 
 # Functions
 # =========
@@ -166,6 +163,14 @@ function get_record_id {
 # ===============
 designate server-list
 
+# NUMBER_OF_RECORDS keeps track of the records we need to get for AXFR
+# We start with the number of NS lines returned from server list
+# (Header line makes up for SOA + Number of NS record lines)
+NUMBER_OF_RECORDS=$(designate server-list -f csv | wc -l)
+
+# Add 1 extra to account for the additional SOA at the end of the AXFR
+((NUMBER_OF_RECORDS+=1))
+
 # Testing Domains
 # ===============
 
@@ -177,7 +182,6 @@ DOMAIN_NAME="exercise-$(openssl rand -hex 4).com."
 
 # Create the domain
 designate domain-create --name $DOMAIN_NAME --email devstack@example.org
-((NUMBER_OF_RECORDS+=2))
 
 # should have SOA and NS records
 ensure_record_present $DOMAIN_NAME SOA $DESIGNATE_DEFAULT_NS_RECORD
