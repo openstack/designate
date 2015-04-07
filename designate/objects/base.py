@@ -352,7 +352,8 @@ class DesignateObject(object):
 
     def __setattr__(self, name, value):
         """Enforces all object attributes are private or well defined"""
-        if name[0:5] == '_obj_' or name in self.FIELDS.keys():
+        if name[0:5] == '_obj_' or name in self.FIELDS.keys() \
+                or name == 'FIELDS':
             super(DesignateObject, self).__setattr__(name, value)
 
         else:

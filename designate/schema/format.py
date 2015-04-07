@@ -26,6 +26,9 @@ LOG = logging.getLogger(__name__)
 RE_DOMAINNAME = r'^(?!.{255,})(?:(?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-)\.)+$'
 RE_HOSTNAME = r'^(?!.{255,})(?:(?:^\*|(?!\-)[A-Za-z0-9_\-]{1,63})(?<!\-)\.)+$'
 
+RE_SRV_HOST_NAME = r'^(?:(?!\-)(?:\_[A-Za-z0-9_\-]{1,63}\.){2})(?!.{255,})' \
+                   r'(?:(?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-)\.)+$'
+
 # The TLD name will not end in a period.
 RE_TLDNAME = r'^(?!.{255,})(?:(?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-))' \
              r'(?:\.(?:(?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-)))*$'
@@ -101,6 +104,17 @@ def is_domainname(instance):
         return True
 
     if not re.match(RE_DOMAINNAME, instance):
+        return False
+
+    return True
+
+
+@draft4_format_checker.checks("srv-hostname")
+def is_srv_hostname(instance):
+    if not isinstance(instance, compat.str_types):
+        return True
+
+    if not re.match(RE_SRV_HOST_NAME, instance):
         return False
 
     return True

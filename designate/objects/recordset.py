@@ -12,12 +12,17 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import logging
 from copy import deepcopy
 
 from designate import exceptions
+from designate import utils
 from designate.objects import base
 from designate.objects.validation_error import ValidationError
 from designate.objects.validation_error import ValidationErrorList
+
+
+LOG = logging.getLogger(__name__)
 
 
 class RecordSet(base.DictObjectMixin, base.PersistentObjectMixin,
@@ -120,6 +125,15 @@ class RecordSet(base.DictObjectMixin, base.PersistentObjectMixin,
         record_list_cls = self.obj_cls_from_name('%sList' % self.type)
         record_cls = self.obj_cls_from_name(self.type)
 
+        # Get any rules that the record type imposes on the record
+        changes = record_cls.get_recordset_schema_changes()
+        old_fields = {}
+        if changes:
+            LOG.debug("Record %s is overriding the RecordSet schema with: %s" %
+                      (record_cls.obj_name(), changes))
+            old_fields = deepcopy(self.FIELDS)
+            self.FIELDS = utils.deep_dict_merge(self.FIELDS, changes)
+
         errors = ValidationErrorList()
         error_indexes = []
         # Copy these for safekeeping
@@ -182,6 +196,9 @@ class RecordSet(base.DictObjectMixin, base.PersistentObjectMixin,
                 raise exceptions.InvalidObject(
                     "Provided object does not match "
                     "schema", errors=errors, object=self)
+        finally:
+            if old_fields:
+                self.FIELDS = old_fields
         # Send in the traditional Record objects to central / storage
         self.records = old_records
 

@@ -117,6 +117,12 @@ class Record(base.DictObjectMixin, base.PersistentObjectMixin,
         },
     }
 
+    @classmethod
+    def get_recordset_schema_changes(cls):
+        # This is to allow record types to override the validation on a
+        # recordset
+        return {}
+
 
 class RecordList(base.ListObjectMixin, base.DesignateObject):
     LIST_ITEM_TYPE = Record
