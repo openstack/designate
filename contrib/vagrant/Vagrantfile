@@ -6,18 +6,8 @@ Vagrant.require_version ">= 1.5"
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.ssh.forward_agent = true
 
-  config.vm.synced_folder "../..", "/opt/stack/designate"
-
   config.vm.network "forwarded_port", guest: 5354, host: 5354, protocol: "tcp"
   config.vm.network "forwarded_port", guest: 5354, host: 5354, protocol: "udp"
-
-  if File.directory?("../../../python-designateclient")
-    config.vm.synced_folder "../../../python-designateclient", "/opt/stack/python-designateclient"
-  end
-
-  if File.directory?("../../../../stackforge/rally")
-    config.vm.synced_folder "../../../../stackforge/rally", "/opt/stack/rally"
-  end
 
   config.vm.provider "virtualbox" do |vb|
     vb.customize ["modifyvm", :id, "--memory", "2048"]
@@ -25,6 +15,36 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       vb.customize ["modifyvm", :id, "--cpus", `awk "/^processor/ {++n} END {print n}" /proc/cpuinfo 2> /dev/null || sh -c 'sysctl hw.logicalcpu 2> /dev/null || echo ": 2"' | awk \'{print \$2}\' `.chomp ]
     end
     vb.customize ["modifyvm", :id, "--nicpromisc3", "allow-all"]
+
+    config.vm.synced_folder "../..", "/opt/stack/designate"
+
+    if File.directory?("../../../python-designateclient")
+      config.vm.synced_folder "../../../python-designateclient", "/opt/stack/python-designateclient"
+    end
+
+    if File.directory?("../../../../stackforge/rally")
+      config.vm.synced_folder "../../../../stackforge/rally", "/opt/stack/rally"
+    end
+  end
+
+  config.vm.provider :libvirt do |lv|
+    lv.graphics_ip = '0.0.0.0'
+    lv.nested = true
+    lv.memory = 8192
+    if not RUBY_PLATFORM.downcase.include?("mswin")
+      lv.cpus = `awk "/^processor/ {++n} END {print n}" /proc/cpuinfo 2> /dev/null || sh -c 'sysctl hw.logicalcpu 2> /dev/null || echo ": 2"' | awk \'{print \$2}\' `.chomp
+    end
+
+    config.vm.synced_folder ".", "/vagrant", type: "nfs"
+    config.vm.synced_folder "../..", "/opt/stack/designate", type: "nfs"
+
+    if File.directory?("../../../python-designateclient")
+      config.vm.synced_folder "../../../python-designateclient", "/opt/stack/python-designateclient", type: "nfs"
+    end
+
+    if File.directory?("../../../../stackforge/rally")
+      config.vm.synced_folder "../../../../stackforge/rally", "/opt/stack/rally", type: "nfs"
+    end
   end
 
   $script = <<SCRIPT
