@@ -52,8 +52,8 @@ class TldsController(rest.RestController):
 
         # Extract any filter params.
         accepted_filters = ('name')
-        criterion = dict((k, params[k]) for k in accepted_filters
-                         if k in params)
+        criterion = self._apply_filter_params(
+            params, accepted_filters, {})
 
         return DesignateAdapter.render(
             'API_v2',
