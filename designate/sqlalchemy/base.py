@@ -242,7 +242,7 @@ class SQLAlchemy(object):
             try:
                 query = utils.paginate_query(
                     query, table, limit,
-                    [sort_key, 'id', 'created_at'], marker=marker,
+                    [sort_key, 'id'], marker=marker,
                     sort_dir=sort_dir)
 
                 resultproxy = self.session.execute(query)
