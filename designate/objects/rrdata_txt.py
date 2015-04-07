@@ -22,7 +22,7 @@ class TXT(Record):
     Defined in: RFC1035
     """
     FIELDS = {
-        'txt-data': {
+        'txt_data': {
             'schema': {
                 'type': 'string',
             },

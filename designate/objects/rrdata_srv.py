@@ -60,8 +60,8 @@ class SRV(Record):
         return "%(priority)s %(weight)s %(target)s %(port)s" % self
 
     def _from_string(self, value):
-        priortiy, weight, port, target = value.split(' ')
-        self.priortiy = int(priortiy)
+        priority, weight, port, target = value.split(' ')
+        self.priority = int(priority)
         self.weight = int(weight)
         self.port = int(port)
         self.target = target
