@@ -41,6 +41,8 @@ def upgrade(migrate_engine):
 
 
 def downgrade(migrate_engine):
+    meta.bind = migrate_engine
+
     domains_table = Table('domains', meta, autoload=True)
 
     constraint = UniqueConstraint('name', 'deleted', 'pool_id',

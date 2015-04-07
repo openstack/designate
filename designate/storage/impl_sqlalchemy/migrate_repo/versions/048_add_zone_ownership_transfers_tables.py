@@ -22,6 +22,7 @@ TASK_STATUSES = ['ACTIVE', 'PENDING', 'DELETED', 'ERROR', 'COMPLETE']
 
 meta = MetaData()
 
+
 zone_transfer_requests = Table(
     'zone_transfer_requests',
     meta,
@@ -31,7 +32,8 @@ zone_transfer_requests = Table(
     Column('description', String(255), nullable=True),
     Column('tenant_id', String(36), nullable=False),
     Column('target_tenant_id', String(36), nullable=True),
-    Column('status', Enum(name='resource_statuses', *TASK_STATUSES),
+    Column('status',
+           Enum(name='task_statuses_ztr', metadata=meta, *TASK_STATUSES),
            nullable=False, server_default='ACTIVE',),
     Column('created_at', DateTime()),
     Column('updated_at', DateTime()),
@@ -49,7 +51,8 @@ zone_transfer_accepts = Table(
            ForeignKey('zone_transfer_requests.id',
                       ondelete='CASCADE'),
            nullable=False),
-    Column('status', Enum(name='resource_statuses', *TASK_STATUSES),
+    Column('status',
+           Enum(name='task_statuses_zta', metadata=meta, *TASK_STATUSES),
            nullable=False, server_default='ACTIVE'),
     Column('tenant_id', String(36), nullable=False),
     Column('created_at', DateTime()),

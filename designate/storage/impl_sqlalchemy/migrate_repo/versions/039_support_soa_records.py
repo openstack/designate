@@ -54,6 +54,16 @@ def upgrade(migrate_engine):
                     'PTR', 'SSHFP', 'SOA']
 
     recordsets_table = Table('recordsets', meta, autoload=True)
+
+    dialect = migrate_engine.url.get_dialect().name
+    if dialect.startswith("postgresql"):
+        with migrate_engine.connect() as conn:
+            conn.execution_options(isolation_level="AUTOCOMMIT")
+            conn.execute(
+                "ALTER TYPE recordset_types ADD VALUE 'SOA' "
+                "AFTER 'SSHFP'")
+            conn.close()
+
     recordsets_table.c.type.alter(type=Enum(name='recordset_types',
                                             *RECORD_TYPES))
 
@@ -155,55 +165,4 @@ def upgrade(migrate_engine):
 
 
 def downgrade(migrate_engine):
-    meta.bind = migrate_engine
-    dialect = migrate_engine.url.get_dialect().name
-    zones_table = Table('domains', meta, autoload=True)
-    records_table = Table('records', meta, autoload=True)
-
-    RECORD_TYPES = ['A', 'AAAA', 'CNAME', 'MX', 'SRV', 'TXT', 'SPF', 'NS',
-                    'PTR', 'SSHFP']
-
-    recordsets_table = Table('recordsets', meta, autoload=True)
-
-    # Delete all SOA records
-    recordsets_table.delete().where(recordsets_table.c.type == 'SOA').execute()
-
-    # Remove SOA from the ENUM
-    recordsets_table.c.type.alter(type=Enum(name='recordset_types',
-                                            *RECORD_TYPES))
-
-    # Remove non-delegated NS records
-    # Get all the zones
-    zones = select(
-        columns=[
-            zones_table.c.id,
-            zones_table.c.created_at,
-            zones_table.c.tenant_id,
-            zones_table.c.name,
-            zones_table.c.email,
-            zones_table.c.serial,
-            zones_table.c.refresh,
-            zones_table.c.retry,
-            zones_table.c.expire,
-            zones_table.c.minimum
-        ]
-    ).execute().fetchall()
-
-    for zone in zones:
-        # for each zone, get all non-delegated NS recordsets
-        results = recordsets_table.select().\
-            where(recordsets_table.c.type == 'NS').\
-            where(recordsets_table.c.name == zone.name).execute()
-        for r in results:
-            records_table.delete().\
-                where(records_table.c.recordset_id == r.id).\
-                where(records_table.c.managed == 1).execute()
-        # NOTE: The value 1 is used instead of True because flake8 complains
-
-    # Re-add the constraint for sqlite
-    if dialect.startswith('sqlite'):
-        constraint = UniqueConstraint('domain_id', 'name', 'type',
-                                      name='unique_recordset',
-                                      table=recordsets_table)
-
-        constraint.create()
+    pass

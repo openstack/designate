@@ -40,7 +40,15 @@ function install_designate_backend {
         PDNS=pdns-server
     fi
 
-    install_package $PDNS pdns-backend-mysql
+    if is_service_enabled mysql; then
+        PDNS+=" pdns-backend-mysql"
+    elif is_service_enabled postgresql; then
+        PDNS+=" pdns-backend-pgsql"
+    else
+        die $LINENO "PowerDNS backend only supports MySQL / PostgreSQL"
+    fi
+
+    install_package $PDNS
     sudo rm -rf $POWERDNS_CFG_DIR/pdns.d
 }
 
@@ -86,8 +94,20 @@ gmysql-password=$DATABASE_PASSWORD
 gmysql-dbname=designate_pdns
 gmysql-dnssec=yes
 EOF
+    elif is_service_enabled postgresql; then
+        sudo tee -a $POWERDNS_CFG_DIR/pdns.conf > /dev/null <<EOF
+# Launch gpgsql backend
+launch=gpgsql
+
+# gmysql parameters
+gpgsql-host=$DATABASE_HOST
+gpgsql-user=$DATABASE_USER
+gpgsql-password=$DATABASE_PASSWORD
+gpgsql-dbname=designate_pdns
+gpgsql-dnssec=yes
+EOF
     else
-        die $LINENO "PowerDNS backend only supports MySQL"
+        die $LINENO "PowerDNS backend only supports MySQL / PostgreSQL"
     fi
 
     restart_service pdns
@@ -95,6 +115,12 @@ EOF
 
 # init_designate_backend - initialize databases, etc.
 function init_designate_backend {
+    # Stop pdns so that the migration succeeds, if not you get a error
+    # that the schema is still in use.
+    if is_service_enabled postgresql; then
+        stop_designate_backend
+    fi
+
     # (Re)create designate_pdns database
     recreate_database designate_pdns utf8
 

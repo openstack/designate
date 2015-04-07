@@ -13,9 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from sqlalchemy import MetaData, Table, Column
-
-from sqlalchemy.dialects.mysql import TINYINT
+from sqlalchemy import MetaData, Table, Column, Boolean
 
 
 meta = MetaData()
@@ -26,7 +24,7 @@ def upgrade(migrate_engine):
 
     records_table = Table('records', meta, autoload=True)
 
-    disabled = Column('disabled', TINYINT(1), server_default='0')
+    disabled = Column('disabled', Boolean(), server_default='0')
     disabled.create(records_table)
 
 

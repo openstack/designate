@@ -34,9 +34,11 @@ def upgrade(migrate_engine):
     # Load the TSIG Keys tables
     tsigkeys_table = Table('tsigkeys', meta, autoload=True)
 
+    scopes = Enum(name='tsig_scopes', metadata=meta, *TSIG_SCOPES)
+    scopes.create()
+
     # Create the scope and resource columns
-    scope_col = Column('scope', Enum(name='tsig_scopes', *TSIG_SCOPES),
-                       nullable=False, server_default='POOL')
+    scope_col = Column('scope', scopes, nullable=False, server_default='POOL')
     scope_col.create(tsigkeys_table)
 
     # Start with nullable=True and populate_default=True, then convert
@@ -62,10 +64,12 @@ def downgrade(migrate_engine):
 
     # Load the TSIG Keys tables
     tsigkeys_table = Table('tsigkeys', meta, autoload=True)
+    scopes = Enum(name='tsig_scopes', metadata=meta, *TSIG_SCOPES)
 
     # Create the scope and resource columns
     tsigkeys_table.c.scope.drop()
     tsigkeys_table.c.resource_id.drop()
+    scopes.drop()
 
     dialect = migrate_engine.url.get_dialect().name
     if dialect.startswith('sqlite'):

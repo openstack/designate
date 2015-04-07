@@ -18,38 +18,68 @@ from migrate.changeset.constraint import UniqueConstraint
 
 meta = MetaData()
 
+ACTIONS = ['CREATE', 'DELETE', 'UPDATE', 'NONE']
+
 
 def upgrade(migrate_engine):
     meta.bind = migrate_engine
 
     RESOURCE_STATUSES = ['ACTIVE', 'PENDING', 'DELETED', 'ERROR']
-    ACTIONS = ['CREATE', 'DELETE', 'UPDATE', 'NONE']
 
     # Get associated database tables
     domains_table = Table('domains', meta, autoload=True)
     records_table = Table('records', meta, autoload=True)
 
+    dialect = migrate_engine.url.get_dialect().name
+    if dialect.startswith("postgresql"):
+        migrate_engine.execute(
+            "ALTER TYPE domain_statuses RENAME TO resource_statuses;")
+
+        with migrate_engine.connect() as conn:
+            conn.execution_options(isolation_level="AUTOCOMMIT")
+            conn.execute(
+                "ALTER TYPE resource_statuses ADD VALUE 'ERROR' "
+                "AFTER 'DELETED'")
+            conn.close()
+
+    actions = Enum(name='actions', metadata=meta, *ACTIONS)
+    actions.create()
+
+    resource_statuses = Enum(name='resource_statuses', metadata=meta,
+                             *RESOURCE_STATUSES)
+
     # Upgrade the domains table.
     domains_table.c.status.alter(
-        type=Enum(name='resource_statuses', *RESOURCE_STATUSES),
+        type=resource_statuses,
         default='PENDING', server_default='PENDING')
-    action_column = Column('action', Enum(name='actions', *ACTIONS),
+
+    action_column = Column('action', actions,
                            default='CREATE', server_default='CREATE',
                            nullable=False)
     action_column.create(domains_table)
 
     # Re-add constraint for sqlite.
-    dialect = migrate_engine.url.get_dialect().name
     if dialect.startswith('sqlite'):
         constraint = UniqueConstraint(
             'name', 'deleted', name='unique_domain_name', table=domains_table)
         constraint.create()
 
     # Upgrade the records table.
-    records_table.c.status.alter(
-        type=Enum(name='resource_statuses', *RESOURCE_STATUSES),
-        default='PENDING', server_default='PENDING')
-    action_column = Column('action', Enum(name='actions', *ACTIONS),
+    if dialect.startswith("postgresql"):
+        sql = "ALTER TABLE records ALTER COLUMN status DROP DEFAULT, " \
+              "ALTER COLUMN status TYPE resource_statuses USING " \
+              "records::text::resource_statuses, ALTER COLUMN status " \
+              "SET DEFAULT 'PENDING';"
+        migrate_engine.execute(sql)
+        record_statuses = Enum(name='record_statuses', metadata=meta,
+                               *RESOURCE_STATUSES)
+        record_statuses.drop()
+    else:
+        records_table.c.status.alter(
+            type=resource_statuses,
+            default='PENDING', server_default='PENDING')
+
+    action_column = Column('action', actions,
                            default='CREATE', server_default='CREATE',
                            nullable=False)
     action_column.create(records_table)
@@ -65,36 +95,4 @@ def upgrade(migrate_engine):
 
 
 def downgrade(migrate_engine):
-    meta.bind = migrate_engine
-
-    RESOURCE_STATUSES = ['ACTIVE', 'PENDING', 'DELETED']
-
-    # Get associated database tables
-    domains_table = Table('domains', meta, autoload=True)
-    records_table = Table('records', meta, autoload=True)
-
-    # Downgrade the domains table.
-    domains_table.c.status.alter(
-        type=Enum(name='resource_statuses', *RESOURCE_STATUSES),
-        default='ACTIVE', server_default='ACTIVE')
-    domains_table.c.action.drop()
-
-    # Re-add constraint for sqlite.
-    dialect = migrate_engine.url.get_dialect().name
-    if dialect.startswith('sqlite'):
-        constraint = UniqueConstraint(
-            'name', 'deleted', name='unique_domain_name', table=domains_table)
-        constraint.create()
-
-    # Downgrade the records table.
-    records_table.c.status.alter(
-        type=Enum(name='resource_statuses', *RESOURCE_STATUSES),
-        default='ACTIVE', server_default='ACTIVE')
-    records_table.c.action.drop()
-    records_table.c.serial.drop()
-
-    # Re-add constraint for sqlite.
-    if dialect.startswith('sqlite'):
-        constraint = UniqueConstraint(
-            'hash', name='unique_record', table=records_table)
-        constraint.create()
+    pass
