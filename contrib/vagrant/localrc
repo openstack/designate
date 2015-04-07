@@ -56,6 +56,16 @@ ENABLED_SERVICES+=,designate,designate-central,designate-api,designate-pool-mana
 #DESIGNATE_AKAMAI_NAMESERVERS=a5-64.akam.net,a11-65.akam.net,a13-66.akam.net,a14-64.akam.net,a20-65.akam.net,a22-66.akam.net
 #DESIGNATE_AKAMAI_MASTERS=
 
+# Designate Misc Config
+# =====================
+
+# Enable a Notification Driver (e.g. for Ceiliometer)
+#DESIGNATE_NOTIFICATION_DRIVER=messaging
+
+# Set Notification topics
+#DESIGNATE_NOTIFICATION_TOPICS=notifications
+
+
 # Other Devstack Config
 # =====================
 # Optional TLS Proxy
