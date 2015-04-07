@@ -60,8 +60,8 @@ class RecordSetsController(rest.RestController):
 
         # Extract any filter params.
         accepted_filters = ('name', 'type', 'ttl', 'data', )
-        criterion = dict((k, params[k]) for k in accepted_filters
-                         if k in params)
+        criterion = self._apply_filter_params(
+            params, accepted_filters, {})
 
         criterion['domain_id'] = zone_id
 
