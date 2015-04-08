@@ -30,13 +30,16 @@ class DesignateContext(context.RequestContext):
     _all_tenants = False
     _abandon = None
     original_tenant = None
+    _edit_managed_records = False
 
     def __init__(self, auth_token=None, user=None, tenant=None, domain=None,
                  user_domain=None, project_domain=None, is_admin=False,
                  read_only=False, show_deleted=False, request_id=None,
                  resource_uuid=None, overwrite=True, roles=None,
                  service_catalog=None, all_tenants=False, abandon=None,
-                 tsigkey_id=None, user_identity=None, original_tenant=None):
+                 tsigkey_id=None, user_identity=None, original_tenant=None,
+                 edit_managed_records=False):
+
         # NOTE: user_identity may be passed in, but will be silently dropped as
         #       it is a generated field based on several others.
         super(DesignateContext, self).__init__(
@@ -61,6 +64,7 @@ class DesignateContext(context.RequestContext):
 
         self.all_tenants = all_tenants
         self.abandon = abandon
+        self.edit_managed_records = edit_managed_records
 
     def deepcopy(self):
         d = self.to_dict()
@@ -93,6 +97,7 @@ class DesignateContext(context.RequestContext):
             'service_catalog': self.service_catalog,
             'all_tenants': self.all_tenants,
             'abandon': self.abandon,
+            'edit_managed_records': self.edit_managed_records,
             'tsigkey_id': self.tsigkey_id
         })
 
@@ -166,6 +171,16 @@ class DesignateContext(context.RequestContext):
         if value:
             policy.check('abandon_domain', self)
         self._abandon = value
+
+    @property
+    def edit_managed_records(self):
+        return self._edit_managed_records
+
+    @edit_managed_records.setter
+    def edit_managed_records(self, value):
+        if value:
+            policy.check('edit_managed_records', self)
+        self._edit_managed_records = value
 
 
 def get_current():

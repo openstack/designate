@@ -206,8 +206,8 @@ def update_record(domain_id, record_id):
     criterion = {'domain_id': domain_id, 'id': record_id}
     record = central_api.find_record(context, criterion)
 
-    # Cannot update a managed record via the API.
-    if record['managed'] is True:
+    # TODO(graham): Move this further down the stack
+    if record.managed and not context.edit_managed_records:
         raise exceptions.BadRequest('Managed records may not be updated')
 
     # Find the associated recordset
@@ -262,10 +262,6 @@ def delete_record(domain_id, record_id):
     # Find the record
     criterion = {'domain_id': domain_id, 'id': record_id}
     record = central_api.find_record(context, criterion)
-
-    # Cannot delete a managed record via the API.
-    if record['managed'] is True:
-        raise exceptions.BadRequest('Managed records may not be deleted')
 
     central_api.delete_record(
         context, domain_id, record['recordset_id'], record_id)

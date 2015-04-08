@@ -140,6 +140,10 @@ class RecordSetsController(rest.RestController):
         recordset = self.central_api.get_recordset(context, zone_id,
                                                    recordset_id)
 
+        # TODO(graham): Move this further down the stack
+        if recordset.managed and not context.edit_managed_records:
+            raise exceptions.BadRequest('Managed records may not be updated')
+
         # SOA recordsets cannot be updated manually
         if recordset['type'] == 'SOA':
             raise exceptions.BadRequest(

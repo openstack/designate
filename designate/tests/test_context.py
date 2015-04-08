@@ -51,3 +51,18 @@ class TestDesignateContext(TestCase):
         ctxt = context.DesignateContext(user='12345', tenant='54321')
         with testtools.ExpectedException(exceptions.Forbidden):
             ctxt.all_tenants = True
+
+    def test_edit_managed_records(self):
+        ctxt = context.DesignateContext(user='12345', tenant='54321')
+        admin_ctxt = ctxt.elevated()
+
+        admin_ctxt.edit_managed_records = True
+
+        self.assertFalse(ctxt.is_admin)
+        self.assertTrue(admin_ctxt.is_admin)
+        self.assertTrue(admin_ctxt.edit_managed_records)
+
+    def test_edit_managed_records_failure(self):
+        ctxt = context.DesignateContext(user='12345', tenant='54321')
+        with testtools.ExpectedException(exceptions.Forbidden):
+            ctxt.edit_managed_records = True

@@ -92,6 +92,17 @@ class ContextMiddleware(base.Middleware):
                     strutils.bool_from_string(params['all_tenants'])
             else:
                 ctxt.all_tenants = False
+            if 'edit_managed_records' in params:
+                ctxt.edit_managed_records = \
+                    strutils.bool_from_string(params['edit_managed_records'])
+
+            elif headers.get('X-Designate-Edit-Managed-Records'):
+                ctxt.edit_managed_records = \
+                    strutils.bool_from_string(
+                        headers.get('X-Designate-Edit-Managed-Records'))
+
+            else:
+                ctxt.edit_managed_records = False
         finally:
             request.environ['context'] = ctxt
 

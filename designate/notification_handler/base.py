@@ -132,7 +132,9 @@ class BaseAddressHandler(NotificationHandler):
         LOG.debug('Event data: %s' % data)
         data['domain'] = domain['name']
 
-        context = DesignateContext.get_admin_context(all_tenants=True)
+        context = DesignateContext().elevated()
+        context.all_tenants = True
+        context.edit_managed_records = True
 
         for addr in addresses:
             event_data = data.copy()
@@ -178,7 +180,9 @@ class BaseAddressHandler(NotificationHandler):
                 'to remove managed=False'))
         criterion = criterion or {}
 
-        context = DesignateContext.get_admin_context(all_tenants=True)
+        context = DesignateContext().elevated()
+        context.all_tenants = True
+        context.edit_managed_records = True
 
         criterion.update({'domain_id': cfg.CONF[self.name].domain_id})
 
