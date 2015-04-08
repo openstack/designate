@@ -71,19 +71,29 @@ class ContextMiddleware(base.Middleware):
         headers = request.headers
         params = request.params
 
-        if headers.get('X-Auth-All-Projects'):
-            ctxt.all_tenants = \
-                strutils.bool_from_string(headers.get('X-Auth-All-Projects'))
-        elif 'all_projects' in params:
-            ctxt.all_tenants = \
-                strutils.bool_from_string(params['all_projects'])
-        elif 'all_tenants' in params:
-            ctxt.all_tenants = \
-                strutils.bool_from_string(params['all_tenants'])
-        else:
-            ctxt.all_tenants = False
+        try:
+            if headers.get('X-Auth-Sudo-Tenant-ID') or \
+                    headers.get('X-Auth-Sudo-Project-ID'):
 
-        request.environ['context'] = ctxt
+                ctxt.sudo(
+                    headers.get('X-Auth-Sudo-Tenant-ID') or
+                    headers.get('X-Auth-Sudo-Project-ID')
+                )
+
+            if headers.get('X-Auth-All-Projects'):
+                ctxt.all_tenants = \
+                    strutils.bool_from_string(
+                        headers.get('X-Auth-All-Projects'))
+            elif 'all_projects' in params:
+                ctxt.all_tenants = \
+                    strutils.bool_from_string(params['all_projects'])
+            elif 'all_tenants' in params:
+                ctxt.all_tenants = \
+                    strutils.bool_from_string(params['all_tenants'])
+            else:
+                ctxt.all_tenants = False
+        finally:
+            request.environ['context'] = ctxt
 
         return ctxt
 

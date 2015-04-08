@@ -20,7 +20,7 @@ from oslo_context import context
 from oslo_log import log as logging
 
 from designate import policy
-
+from designate.i18n import _LI
 
 LOG = logging.getLogger(__name__)
 
@@ -29,13 +29,14 @@ class DesignateContext(context.RequestContext):
 
     _all_tenants = False
     _abandon = None
+    original_tenant = None
 
     def __init__(self, auth_token=None, user=None, tenant=None, domain=None,
                  user_domain=None, project_domain=None, is_admin=False,
                  read_only=False, show_deleted=False, request_id=None,
                  resource_uuid=None, overwrite=True, roles=None,
                  service_catalog=None, all_tenants=False, abandon=None,
-                 tsigkey_id=None, user_identity=None):
+                 tsigkey_id=None, user_identity=None, original_tenant=None):
         # NOTE: user_identity may be passed in, but will be silently dropped as
         #       it is a generated field based on several others.
         super(DesignateContext, self).__init__(
@@ -55,6 +56,8 @@ class DesignateContext(context.RequestContext):
         self.roles = roles or []
         self.service_catalog = service_catalog
         self.tsigkey_id = tsigkey_id
+
+        self.original_tenant = original_tenant
 
         self.all_tenants = all_tenants
         self.abandon = abandon
@@ -85,6 +88,7 @@ class DesignateContext(context.RequestContext):
         # Update the dict with Designate specific extensions and overrides
         d.update({
             'user_identity': user_idt,
+            'original_tenant': self.original_tenant,
             'roles': self.roles,
             'service_catalog': self.service_catalog,
             'all_tenants': self.all_tenants,
@@ -110,6 +114,15 @@ class DesignateContext(context.RequestContext):
             context.show_deleted = show_deleted
 
         return context
+
+    def sudo(self, tenant):
+
+        policy.check('use_sudo', self)
+
+        LOG.info(_LI('Accepted sudo from user %(user)s to tenant %(tenant)s')
+                 % {'user': self.user, 'tenant': tenant})
+        self.original_tenant = self.tenant
+        self.tenant = tenant
 
     @classmethod
     def get_admin_context(cls, **kwargs):
