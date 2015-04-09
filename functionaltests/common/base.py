@@ -27,7 +27,7 @@ class BaseDesignateTest(tempest_lib.base.BaseTestCase):
         super(BaseDesignateTest, self).__init__(*args, **kwargs)
         self.base_client = DesignateClient()
 
-    def wait_for_condition(self, condition, interval=1, timeout=20):
+    def wait_for_condition(self, condition, interval=1, timeout=40):
         end_time = time.time() + timeout
         while time.time() < end_time:
             if condition():
