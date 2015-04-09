@@ -49,6 +49,14 @@ class RecordSet(base.DictObjectMixin, base.PersistentObjectMixin,
         return action
 
     @property
+    def managed(self):
+        managed = False
+        for record in self.records:
+            if record.managed:
+                return True
+        return managed
+
+    @property
     def status(self):
         # Return the worst status in order of ERROR, PENDING, ACTIVE
         status = 'ACTIVE'

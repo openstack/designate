@@ -1232,6 +1232,9 @@ class Service(service.RPCService, service.Service):
 
         policy.check('update_recordset', context, target)
 
+        if recordset.managed and not context.edit_managed_records:
+            raise exceptions.BadRequest('Managed records may not be updated')
+
         recordset, domain = self._update_recordset_in_storage(
             context, domain, recordset, increment_serial=increment_serial)
 
@@ -1298,6 +1301,9 @@ class Service(service.RPCService, service.Service):
         }
 
         policy.check('delete_recordset', context, target)
+
+        if recordset.managed and not context.edit_managed_records:
+            raise exceptions.BadRequest('Managed records may not be updated')
 
         recordset, domain = self._delete_recordset_in_storage(
             context, domain, recordset, increment_serial=increment_serial)
@@ -1472,6 +1478,9 @@ class Service(service.RPCService, service.Service):
 
         policy.check('update_record', context, target)
 
+        if recordset.managed and not context.edit_managed_records:
+            raise exceptions.BadRequest('Managed records may not be updated')
+
         record, domain = self._update_record_in_storage(
             context, domain, record, increment_serial=increment_serial)
 
@@ -1529,6 +1538,9 @@ class Service(service.RPCService, service.Service):
         }
 
         policy.check('delete_record', context, target)
+
+        if recordset.managed and not context.edit_managed_records:
+            raise exceptions.BadRequest('Managed records may not be updated')
 
         record, domain = self._delete_record_in_storage(
             context, domain, record, increment_serial=increment_serial)
@@ -1652,6 +1664,7 @@ class Service(service.RPCService, service.Service):
 
         elevated_context = context.elevated()
         elevated_context.all_tenants = True
+        elevated_context.edit_managed_records = True
 
         criterion = {
             'managed': True,
@@ -1692,6 +1705,7 @@ class Service(service.RPCService, service.Service):
         """
         elevated_context = context.elevated()
         elevated_context.all_tenants = True
+        elevated_context.edit_managed_records = True
 
         if records > 0:
             for r in records:
@@ -1782,6 +1796,7 @@ class Service(service.RPCService, service.Service):
         """
         elevated_context = context.elevated()
         elevated_context.all_tenants = True
+        elevated_context.edit_managed_records = True
 
         tenant_fips = self._list_floatingips(context)
 
@@ -1817,6 +1832,7 @@ class Service(service.RPCService, service.Service):
 
         elevated_context = context.elevated()
         elevated_context.all_tenants = True
+        elevated_context.edit_managed_records = True
 
         tenant_fips = self._list_floatingips(context, region=region)
 
@@ -1917,6 +1933,7 @@ class Service(service.RPCService, service.Service):
         """
         elevated_context = context.elevated()
         elevated_context.all_tenants = True
+        elevated_context.edit_managed_records = True
 
         criterion = {
             'managed_resource_id': floatingip_id,
