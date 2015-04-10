@@ -18,11 +18,15 @@
 import logging
 
 import sqlalchemy
+from sqlalchemy import exc as sqlalchemy_exc
+from sqlalchemy import select
 from oslo_db.sqlalchemy import utils
+from oslo_db import exception as oslo_db_exception
 from oslo_db.sqlalchemy.migration_cli import manager
 
 from designate.i18n import _
 from designate.i18n import _LW
+from designate import exceptions
 
 
 LOG = logging.getLogger(__name__)
@@ -40,38 +44,9 @@ def get_migration_manager(repo_path, url, init_version=None):
 # copy from olso/db/sqlalchemy/utils.py
 def paginate_query(query, table, limit, sort_keys, marker=None,
                    sort_dir=None, sort_dirs=None):
-    if 'id' not in sort_keys:
-        # TODO(justinsb): If this ever gives a false-positive, check
-        # the actual primary key, rather than assuming its id
-        LOG.warning(_LW('Id not in sort_keys; is sort_keys unique?'))
-
-    assert(not (sort_dir and sort_dirs))
-
-    # Default the sort direction to ascending
-    if sort_dirs is None and sort_dir is None:
-        sort_dir = 'asc'
-
-    # Ensure a per-column sort direction
-    if sort_dirs is None:
-        sort_dirs = [sort_dir for _sort_key in sort_keys]
-
-    assert(len(sort_dirs) == len(sort_keys))
 
     # Add sorting
-    for current_sort_key, current_sort_dir in zip(sort_keys, sort_dirs):
-        try:
-            sort_dir_func = {
-                'asc': sqlalchemy.asc,
-                'desc': sqlalchemy.desc,
-            }[current_sort_dir]
-        except KeyError:
-            raise ValueError(_("Unknown sort direction, "
-                               "must be 'desc' or 'asc'"))
-        try:
-            sort_key_attr = getattr(table.c, current_sort_key)
-        except AttributeError:
-            raise utils.InvalidSortKey()
-        query = query.order_by(sort_dir_func(sort_key_attr))
+    query, sort_dirs = sort_query(query, table, sort_keys, sort_dir=sort_dir)
 
     # Add pagination
     if marker is not None:
@@ -104,3 +79,62 @@ def paginate_query(query, table, limit, sort_keys, marker=None,
         query = query.limit(limit)
 
     return query
+
+
+def sort_query(query, table, sort_keys, sort_dir=None, sort_dirs=None):
+
+    if 'id' not in sort_keys:
+        # TODO(justinsb): If this ever gives a false-positive, check
+        # the actual primary key, rather than assuming its id
+        LOG.warning(_LW('Id not in sort_keys; is sort_keys unique?'))
+
+    assert(not (sort_dir and sort_dirs))
+
+    # Default the sort direction to ascending
+    if sort_dirs is None and sort_dir is None:
+        sort_dir = 'asc'
+
+    # Ensure a per-column sort direction
+    if sort_dirs is None:
+        sort_dirs = [sort_dir for _sort_key in sort_keys]
+
+    assert(len(sort_dirs) == len(sort_keys))
+
+    for current_sort_key, current_sort_dir in zip(sort_keys, sort_dirs):
+        try:
+            sort_dir_func = {
+                'asc': sqlalchemy.asc,
+                'desc': sqlalchemy.desc,
+            }[current_sort_dir]
+        except KeyError:
+            raise ValueError(_("Unknown sort direction, "
+                               "must be 'desc' or 'asc'"))
+        try:
+            sort_key_attr = getattr(table.c, current_sort_key)
+        except AttributeError:
+            raise utils.InvalidSortKey()
+        query = query.order_by(sort_dir_func(sort_key_attr))
+
+    return query, sort_dirs
+
+
+def check_marker(table, marker, session):
+
+    marker_query = select([table]).where(table.c.id == marker)
+
+    try:
+        marker_resultproxy = session.execute(marker_query)
+        marker = marker_resultproxy.fetchone()
+        if marker is None:
+            raise exceptions.MarkerNotFound(
+                'Marker %s could not be found' % marker)
+    except oslo_db_exception.DBError as e:
+        # Malformed UUIDs return StatementError wrapped in a
+        # DBError
+        if isinstance(e.inner_exception,
+                      sqlalchemy_exc.StatementError):
+            raise exceptions.InvalidMarker()
+        else:
+            raise
+
+    return marker
