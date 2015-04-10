@@ -107,7 +107,7 @@ class BaseAddressHandler(NotificationHandler):
     def _get_format(self):
         return cfg.CONF[self.name].get('format') or self.default_format
 
-    def _create(self, addresses, extra, managed=True,
+    def _create(self, addresses, extra, domain_id, managed=True,
                 resource_type=None, resource_id=None):
         """
         Create a a record from addresses
@@ -124,8 +124,8 @@ class BaseAddressHandler(NotificationHandler):
                 'Deprecation notice: Unmanaged designate-sink records are '
                 'being deprecated please update the call '
                 'to remove managed=False'))
-        LOG.debug('Using DomainID: %s' % cfg.CONF[self.name].domain_id)
-        domain = self.get_domain(cfg.CONF[self.name].domain_id)
+        LOG.debug('Using DomainID: %s' % domain_id)
+        domain = self.get_domain(domain_id)
         LOG.debug('Domain: %r' % domain)
 
         data = extra.copy()
@@ -166,8 +166,8 @@ class BaseAddressHandler(NotificationHandler):
                                            recordset['id'],
                                            Record(**record_values))
 
-    def _delete(self, managed=True, resource_id=None, resource_type='instance',
-                criterion=None):
+    def _delete(self, domain_id, managed=True, resource_id=None,
+                resource_type='instance', criterion=None):
         """
         Handle a generic delete of a fixed ip within a domain
 
@@ -184,7 +184,7 @@ class BaseAddressHandler(NotificationHandler):
         context.all_tenants = True
         context.edit_managed_records = True
 
-        criterion.update({'domain_id': cfg.CONF[self.name].domain_id})
+        criterion.update({'domain_id': domain_id})
 
         if managed:
             criterion.update({
@@ -201,6 +201,6 @@ class BaseAddressHandler(NotificationHandler):
             LOG.debug('Deleting record %s' % record['id'])
 
             self.central_api.delete_record(context,
-                                           cfg.CONF[self.name].domain_id,
+                                           domain_id,
                                            record['recordset_id'],
                                            record['id'])
