@@ -170,7 +170,7 @@ List Record Sets
                     },
                     "updated_at": null,
                     "records": [
-                        "ns2.rackspace.com."
+                        "ns2.example.com."
                     ],
                     "ttl": null,
                     "id": "65ee6b49-bb4c-4e52-9799-31330c94161f",
@@ -187,7 +187,7 @@ List Record Sets
                     },
                     "updated_at": "2014-10-24T19:59:46.000000",
                     "records": [
-                        "ns2.rackspace.com. joe.example.org. 1414180785 3600 600 86400 3600"
+                        "ns2.example.com. joe.example.org. 1414180785 3600 600 86400 3600"
                     ],
                     "ttl": null,
                     "id": "14500cf9-bdff-48f6-b06b-5fc7491ffd9e",
