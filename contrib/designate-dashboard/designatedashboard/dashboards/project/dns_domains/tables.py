@@ -151,8 +151,7 @@ class DomainsTable(tables.DataTable):
 
     name = tables.Column("name",
                          verbose_name=_("Name"),
-                         link=("horizon:project:dns_domains:update_domain"),
-                         link_classes=('ajax-modal',))
+                         link=("horizon:project:dns_domains:domain_detail"))
 
     email = tables.Column("email",
                           verbose_name=_("Email"))

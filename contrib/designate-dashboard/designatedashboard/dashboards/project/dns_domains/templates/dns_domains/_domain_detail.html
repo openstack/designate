@@ -1,0 +1,32 @@
+{% load i18n sizeformat %}
+
+<h3>{% trans "Domain Overview" %}</h3>
+
+<div class="info detail">
+  <dl class="dl-horizontal">
+    <dt>{% trans "ID" %}</dt>
+    <dd>{{ domain.id|default:_("None") }}</dd>
+    <dt>{% trans "Name" %}</dt>
+    <dd>{{ domain.name|default:_("None") }}</dd>
+    <dt>{% trans "Description" %}</dt>
+    <dd>{{ domain.description|default:_("None") }}</dd>
+    <dt>{% trans "Serial" %}</dt>
+    <dd>{{ domain.serial|yesno|capfirst }}</dd>
+    <dt>{% trans "Email" %}</dt>
+    <dd>{{ domain.email|default:_("Unknown") }}</dd>
+    <dt>{% trans "TTL" %}</dt>
+    <dd>{{ domain.ttl|default:_("Unknown") }}</dd>
+    <dt>{% trans "Created" %}</dt>
+    {% if domain.created_at %}
+      <dd>{{ domain.created_at|parse_isotime }}</dd>
+    {% else %}
+      <dd>{% trans "Unknown" %}</dd>
+    {% endif %}
+    <dt>{% trans "Updated" %}</dt>
+    {% if domain.updated_at %}
+      <dd>{{ domain.updated_at|parse_isotime }}</dd>
+    {% else %}
+      <dd>{% trans "Unknown" %}</dd>
+    {% endif %}
+  </dl>
+</div>

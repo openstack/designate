@@ -18,6 +18,7 @@ from .views import CreateRecordView  # noqa
 from .views import IndexView  # noqa
 from .views import RecordsView  # noqa
 from .views import UpdateDomainView  # noqa
+from .views import DomainDetailView  # noqa
 from .views import UpdateRecordView  # noqa
 
 
@@ -32,6 +33,9 @@ urlpatterns = patterns(
     url(r'^(?P<domain_id>[^/]+)/update$',
         UpdateDomainView.as_view(),
         name='update_domain'),
+    url(r'^(?P<domain_id>[^/]+)$',
+        DomainDetailView.as_view(),
+        name='domain_detail'),
     url(r'^(?P<domain_id>[^/]+)/records$',
         RecordsView.as_view(),
         name='records'),

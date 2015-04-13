@@ -17,6 +17,7 @@ from django.utils.translation import ugettext_lazy as _  # noqa
 from horizon import exceptions
 from horizon import forms
 from horizon import tables
+from horizon.views import HorizonTemplateView
 
 from designatedashboard import api
 
@@ -48,6 +49,25 @@ class CreateDomainView(forms.ModalFormView):
 
     def get_object_display(self, obj):
         return obj.ip
+
+
+class DomainDetailView(HorizonTemplateView):
+    template_name = 'project/dns_domains/domain_detail.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(DomainDetailView, self).get_context_data(**kwargs)
+        domain_id = self.kwargs['domain_id']
+        try:
+            context["domain"] = api.designate.domain_get(self.request,
+                                                         domain_id)
+            table = DomainsTable(self.request)
+            context["actions"] = table.render_row_actions(context["domain"])
+        except Exception:
+            redirect = reverse('horizon:project:dns_domains:index')
+            exceptions.handle(self.request,
+                              _('Unable to retrieve domain record.'),
+                              redirect=redirect)
+        return context
 
 
 class UpdateDomainView(forms.ModalFormView):
