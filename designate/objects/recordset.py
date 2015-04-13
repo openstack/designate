@@ -129,9 +129,24 @@ class RecordSet(base.DictObjectMixin, base.PersistentObjectMixin,
 
     def validate(self):
 
+        errors = ValidationErrorList()
+
         # Get the right classes (e.g. A for Recordsets with type: 'A')
-        record_list_cls = self.obj_cls_from_name('%sList' % self.type)
-        record_cls = self.obj_cls_from_name(self.type)
+        try:
+            record_list_cls = self.obj_cls_from_name('%sList' % self.type)
+            record_cls = self.obj_cls_from_name(self.type)
+        except KeyError as e:
+            e = ValidationError()
+            e.path = ['recordset', 'type']
+            e.validator = 'value'
+            e.validator_value = [self.type]
+            e.message = ("'%(type)s' is not a supported Record type"
+                         % {'type': self.type})
+            # Add it to the list for later
+            errors.append(e)
+            raise exceptions.InvalidObject(
+                "Provided object does not match "
+                "schema", errors=errors, object=self)
 
         # Get any rules that the record type imposes on the record
         changes = record_cls.get_recordset_schema_changes()
@@ -142,7 +157,6 @@ class RecordSet(base.DictObjectMixin, base.PersistentObjectMixin,
             old_fields = deepcopy(self.FIELDS)
             self.FIELDS = utils.deep_dict_merge(self.FIELDS, changes)
 
-        errors = ValidationErrorList()
         error_indexes = []
         # Copy these for safekeeping
         old_records = deepcopy(self.records)

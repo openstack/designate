@@ -107,6 +107,29 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         self._assert_exception(
             'invalid_object', 400, self.client.post_json, url, body)
 
+    def test_create_recordset_with_invalid_type(self):
+        # Prepare a RecordSet fixture
+        body = self.get_recordset_fixture(
+            self.domain['name'],
+            'A',
+            fixture=0,
+            values={
+                'name': 'name.%s' % self.domain['name'],
+                'records': [
+                    '192.0.2.1',
+                    '192.0.2.2',
+                ]
+            }
+        )
+
+        del body['type']
+
+        url = '/zones/%s/recordsets' % self.domain['id']
+
+        # Ensure it fails with a 400
+        self._assert_exception(
+            'invalid_object', 400, self.client.post_json, url, body)
+
     def test_create_recordset_invalid_id(self):
         self._assert_invalid_uuid(self.client.post, '/zones/%s/recordsets')
 
