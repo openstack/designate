@@ -42,7 +42,7 @@ class LimitsController(rest.RestController):
 
             # Resource Field Value Limits
             "min_ttl": CONF['service:central'].min_ttl,
-            "max_recordset_name_length":
+            "max_zone_name_length":
                 CONF['service:central'].max_domain_name_len,
             "max_recordset_name_length":
                 CONF['service:central'].max_recordset_name_len,
