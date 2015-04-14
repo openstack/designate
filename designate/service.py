@@ -264,18 +264,18 @@ class DNSService(object):
         LOG.info(_LI("_handle_tcp thread started"))
 
         while True:
-            client, addr = self._dns_sock_tcp.accept()
-
-            if self._service_config.tcp_recv_timeout:
-                client.settimeout(self._service_config.tcp_recv_timeout)
-
-            LOG.debug("Handling TCP Request from: %(host)s:%(port)d" %
-                      {'host': addr[0], 'port': addr[1]})
-
-            # Prepare a variable for the payload to be buffered
-            payload = ""
-
             try:
+                client, addr = self._dns_sock_tcp.accept()
+
+                if self._service_config.tcp_recv_timeout:
+                    client.settimeout(self._service_config.tcp_recv_timeout)
+
+                LOG.debug("Handling TCP Request from: %(host)s:%(port)d" %
+                          {'host': addr[0], 'port': addr[1]})
+
+                # Prepare a variable for the payload to be buffered
+                payload = ""
+
                 # Receive the first 2 bytes containing the payload length
                 expected_length_raw = client.recv(2)
                 (expected_length, ) = struct.unpack('!H', expected_length_raw)
@@ -292,21 +292,41 @@ class DNSService(object):
                 LOG.warn(_LW("TCP Timeout from: %(host)s:%(port)d") %
                          {'host': addr[0], 'port': addr[1]})
 
-            # Dispatch a thread to handle the query
-            self.tg.add_thread(self._dns_handle, addr, payload, client=client)
+            except struct.error:
+                client.close()
+                LOG.warn(_LW("Invalid packet from: %(host)s:%(port)d") %
+                         {'host': addr[0], 'port': addr[1]})
+
+            except Exception:
+                client.close()
+                LOG.exception(_LE("Unknown exception handling TCP request "
+                                  "from: %(host)s:%(port)d") %
+                              {'host': addr[0], 'port': addr[1]})
+
+            else:
+                # Dispatch a thread to handle the query
+                self.tg.add_thread(self._dns_handle, addr, payload,
+                                   client=client)
 
     def _dns_handle_udp(self):
         LOG.info(_LI("_handle_udp thread started"))
 
         while True:
-            # TODO(kiall): Determine the appropriate default value for
-            #              UDP recvfrom.
-            payload, addr = self._dns_sock_udp.recvfrom(8192)
+            try:
+                # TODO(kiall): Determine the appropriate default value for
+                #              UDP recvfrom.
+                payload, addr = self._dns_sock_udp.recvfrom(8192)
 
-            LOG.debug("Handling UDP Request from: %(host)s:%(port)d" %
-                     {'host': addr[0], 'port': addr[1]})
+                LOG.debug("Handling UDP Request from: %(host)s:%(port)d" %
+                         {'host': addr[0], 'port': addr[1]})
 
-            self.tg.add_thread(self._dns_handle, addr, payload)
+                # Dispatch a thread to handle the query
+                self.tg.add_thread(self._dns_handle, addr, payload)
+
+            except Exception:
+                LOG.exception(_LE("Unknown exception handling UDP request "
+                                  "from: %(host)s:%(port)d") %
+                              {'host': addr[0], 'port': addr[1]})
 
     def _dns_handle(self, addr, payload, client=None):
         """
