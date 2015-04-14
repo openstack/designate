@@ -45,10 +45,10 @@ def factory(global_config, **local_conf):
             })
 
     if cfg.CONF['service:api'].enable_api_v1:
-        _version('1', 'CURRENT')
+        _version('1', 'DEPRECATED')
 
     if cfg.CONF['service:api'].enable_api_v2:
-        _version('2', 'EXPERIMENTAL')
+        _version('2', 'CURRENT')
 
     @app.route('/', methods=['GET'])
     def version_list():
