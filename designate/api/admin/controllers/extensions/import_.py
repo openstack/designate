@@ -32,11 +32,16 @@ class ImportController(rest.RestController):
 
     @pecan.expose(template='json:', content_type='application/json')
     def post_all(self):
+
         request = pecan.request
         response = pecan.response
         context = pecan.request.environ['context']
 
         policy.check('zone_import', context)
+
+        if request.content_type != 'text/dns':
+            raise exceptions.UnsupportedContentType(
+                'Content-type must be text/dns')
 
         try:
             dnspython_zone = dnszone.from_text(
@@ -69,7 +74,7 @@ class ImportController(rest.RestController):
 
         zone = DesignateAdapter.render('API_v2', zone, request=request)
 
-        zone['links']['self'] = '%s%s/%s' % (
+        zone['links']['self'] = '%s/%s/%s' % (
             self.BASE_URI, 'v2/zones', zone['id'])
 
         response.headers['Location'] = zone['links']['self']
