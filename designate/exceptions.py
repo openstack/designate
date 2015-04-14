@@ -100,11 +100,13 @@ class QuotaResourceUnknown(Base):
 class InvalidObject(Base):
     error_code = 400
     error_type = 'invalid_object'
+    expected = True
 
 
 class BadRequest(Base):
     error_code = 400
     error_type = 'bad_request'
+    expected = True
 
 
 class InvalidUUID(BadRequest):
