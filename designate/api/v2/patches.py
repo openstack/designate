@@ -41,7 +41,8 @@ class Request(pecan.core.Request):
             except ValueError as valueError:
                 raise exceptions.InvalidJson(valueError.message)
         else:
-            raise Exception('TODO: Unsupported Content Type')
+            raise exceptions.UnsupportedContentType(
+                'Content-type must be application/json')
 
 __init__ = pecan.core.Pecan.__base__.__init__
 if not ismethod(__init__) or 'request_cls' not in getargspec(__init__).args:
