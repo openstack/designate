@@ -55,17 +55,23 @@ class NeutronFloatingHandler(BaseAddressHandler):
         LOG.debug('%s received notification - %s' %
                   (self.get_canonical_name(), event_type))
 
+        domain_id = cfg.CONF[self.name].domain_id
         if event_type.startswith('floatingip.delete'):
-            self._delete(resource_id=payload['floatingip_id'],
+            self._delete(domain_id=domain_id,
+                         resource_id=payload['floatingip_id'],
                          resource_type='floatingip')
         elif event_type.startswith('floatingip.update'):
             if payload['floatingip']['fixed_ip_address']:
                 address = {
                     'version': 4,
-                    'address': payload['floatingip']['floating_ip_address']}
-                self._create([address], payload['floatingip'],
+                    'address': payload['floatingip']['floating_ip_address']
+                }
+                self._create(addresses=[address],
+                             extra=payload['floatingip'],
+                             domain_id=domain_id,
                              resource_id=payload['floatingip']['id'],
                              resource_type='floatingip')
             elif not payload['floatingip']['fixed_ip_address']:
-                self._delete(resource_id=payload['floatingip']['id'],
+                self._delete(domain_id=domain_id,
+                             resource_id=payload['floatingip']['id'],
                              resource_type='floatingip')

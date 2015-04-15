@@ -54,11 +54,15 @@ class NovaFixedHandler(BaseAddressHandler):
     def process_notification(self, context, event_type, payload):
         LOG.debug('NovaFixedHandler received notification - %s' % event_type)
 
+        domain_id = cfg.CONF[self.name].domain_id
         if event_type == 'compute.instance.create.end':
-            self._create(payload['fixed_ips'], payload,
+            self._create(addresses=payload['fixed_ips'],
+                         extra=payload,
+                         domain_id=domain_id,
                          resource_id=payload['instance_id'],
                          resource_type='instance')
 
         elif event_type == 'compute.instance.delete.start':
-            self._delete(resource_id=payload['instance_id'],
+            self._delete(domain_id=domain_id,
+                         resource_id=payload['instance_id'],
                          resource_type='instance')
