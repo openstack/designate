@@ -230,8 +230,12 @@ class DNSService(object):
     """
     DNS Service mixin used by all Designate DNS Services
     """
-    def __init__(self, *args, **kwargs):
-        super(DNSService, self).__init__(*args, **kwargs)
+    @abc.abstractproperty
+    def _dns_application(self):
+        pass
+
+    def start(self):
+        super(DNSService, self).start()
 
         self._dns_sock_tcp = dnsutils.bind_tcp(
             self._service_config.host,
@@ -241,13 +245,6 @@ class DNSService(object):
         self._dns_sock_udp = dnsutils.bind_udp(
             self._service_config.host,
             self._service_config.port)
-
-    @abc.abstractproperty
-    def _dns_application(self):
-        pass
-
-    def start(self):
-        super(DNSService, self).start()
 
         self.tg.add_thread(self._dns_handle_tcp)
         self.tg.add_thread(self._dns_handle_udp)
@@ -259,6 +256,12 @@ class DNSService(object):
         # When the service is stopped, the threads for _handle_tcp and
         # _handle_udp are stopped too.
         super(DNSService, self).stop()
+
+        if hasattr(self, '_dns_sock_tcp'):
+            self._dns_sock_tcp.close()
+
+        if hasattr(self, '_dns_sock_udp'):
+            self._dns_sock_udp.close()
 
     def _dns_handle_tcp(self):
         LOG.info(_LI("_handle_tcp thread started"))
