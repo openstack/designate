@@ -13,6 +13,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import random
+
 from oslo_log import log as logging
 
 from designate import exceptions
@@ -42,6 +44,10 @@ class Bind9Backend(base.Backend):
             host = master['host']
             port = master['port']
             masters.append('%s port %s' % (host, port))
+
+        # Ensure different MiniDNS instances are targetted for AXFRs
+        random.shuffle(masters)
+
         rndc_op = [
             'addzone',
             '%s { type slave; masters { %s;}; file "slave.%s%s"; };' %
