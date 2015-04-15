@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Designate\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-04-01 06:04+0000\n"
-"PO-Revision-Date: 2015-03-31 18:11+0000\n"
+"POT-Creation-Date: 2015-04-15 06:04+0000\n"
+"PO-Revision-Date: 2015-04-14 16:18+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: French (http://www.transifex.com/projects/p/designate/"
 "language/fr/)\n"
@@ -35,39 +35,49 @@ msgstr ""
 msgid "Failed to deserialize packet from %(host)s:%(port)d"
 msgstr "N'a pas pu dé-sérialiser le paquet de %(host)s:%(port)d"
 
-#: designate/dnsutils.py:300
+#: designate/dnsutils.py:302
 #, python-format
 msgid "AXFR timed out for %(name)s from %(host)s"
 msgstr ""
 
-#: designate/dnsutils.py:304
+#: designate/dnsutils.py:306
 #, python-format
 msgid "Domain %(name)s is not present on %(host)s.Trying next server."
 msgstr ""
 
-#: designate/dnsutils.py:308
+#: designate/dnsutils.py:310
 #, python-format
 msgid "Connection error when doing AXFR for %(name)s from %(host)s"
 msgstr ""
 
-#: designate/dnsutils.py:312
+#: designate/dnsutils.py:314
 #, python-format
 msgid "Problem doing AXFR %(name)s from %(host)s. Trying next server."
 msgstr ""
 
-#: designate/dnsutils.py:319
+#: designate/dnsutils.py:321
 #, python-format
 msgid "XFR failed for %(name)s. No servers in %(servers)s was reached."
 msgstr ""
 
-#: designate/service.py:339
+#: designate/service.py:302
+#, python-format
+msgid "Unknown exception handling TCP request from: %(host)s:%(port)d"
+msgstr ""
+
+#: designate/service.py:327
+#, python-format
+msgid "Unknown exception handling UDP request from: %(host)s:%(port)d"
+msgstr ""
+
+#: designate/service.py:360
 #, python-format
 msgid "Unhandled exception while processing request from %(host)s:%(port)d"
 msgstr ""
 "Exception non prise en charge lors du traitement d'une requête en provenance "
 "de  %(host)s:%(port)d"
 
-#: designate/api/middleware.py:269 designate/api/middleware.py:320
+#: designate/api/middleware.py:290 designate/api/middleware.py:341
 msgid "Missing context in request, please check."
 msgstr "Contexte manquant dans la requête. Veuillez vérifier."
 
