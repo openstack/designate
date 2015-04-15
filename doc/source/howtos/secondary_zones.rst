@@ -207,12 +207,10 @@ Defintion of values:
         Content-Type: application/json
 
         {
-          "zone": {
             "name": "example.com.",
             "type": "SECONDARY",
             "masters": ["192.168.27.100"],
             "description": "This is a slave for example.com."
-          }
         }
 
     **Example response:**
@@ -223,7 +221,6 @@ Defintion of values:
         Content-Type: application/json
 
         {
-          "zone": {
             "id": "a86dba58-0043-4cc6-a1bb-69d5e86f3ca3",
             "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2",
             "project_id": "4335d1f0-f793-11e2-b778-0800200c9a66",
@@ -242,7 +239,6 @@ Defintion of values:
             "links": {
               "self": "https://127.0.0.1:9001/v2/zones/a86dba58-0043-4cc6-a1bb-69d5e86f3ca3"
             }
-          }
         }
 
 
@@ -272,7 +268,6 @@ Get Zone
         Content-Type: application/json
 
         {
-          "zone": {
             "id": "a86dba58-0043-4cc6-a1bb-69d5e86f3ca3",
             "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2",
             "project_id": "4335d1f0-f793-11e2-b778-0800200c9a66",
@@ -291,7 +286,6 @@ Get Zone
             "links": {
               "self": "https://127.0.0.1:9001/v2/zones/a86dba58-0043-4cc6-a1bb-69d5e86f3ca3"
             }
-          }
         }
 
     :statuscode 200: Success
@@ -333,7 +327,7 @@ List Secondary Zones
             "ttl": 3600,
             "serial": 1404757531,
             "status": "ACTIVE",
-            "description": "This is a slave for example.com."
+            "description": "This is a slave for example.com.",
             "masters": ["192.168.27.100"],
             "type": "SECONDARY",
             "transferred_at": null,
@@ -343,7 +337,6 @@ List Secondary Zones
             "links": {
               "self": "https://127.0.0.1:9001/v2/zones/a86dba58-0043-4cc6-a1bb-69d5e86f3ca3"
             }
-          }
           }, {
             "id": "a86dba58-0043-4cc6-a1bb-69d5e86f3ca4",
             "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2",
@@ -353,10 +346,10 @@ List Secondary Zones
             "ttl": 3600,
             "serial": 10,
             "status": "ACTIVE",
-            "description": "This is a slave for bar.io."
+            "description": "This is a slave for bar.io.",
             "masters": ["192.168.27.100"],
             "type": "SECONDARY",
-            "transferred_at": 2014-07-07T18:25:35.275934,
+            "transferred_at": "2014-07-07T18:25:35.275934",
             "version": 2,
             "created_at": "2014-07-07T18:25:31.275934",
             "updated_at": null,
@@ -391,9 +384,7 @@ Update Zone
         Content-Type: application/json
 
         {
-          "zone": {
             "masters": ["192.168.27.101"]
-          }
         }
 
     **Response:**
@@ -404,7 +395,6 @@ Update Zone
         Content-Type: application/json
 
         {
-          "zone": {
             "id": "a86dba58-0043-4cc6-a1bb-69d5e86f3ca3",
             "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2",
             "project_id": "4335d1f0-f793-11e2-b778-0800200c9a66",
@@ -413,17 +403,16 @@ Update Zone
             "ttl": 3600,
             "serial": 1404757531,
             "status": "ACTIVE",
-            "description": "This is a slave for example.com."
+            "description": "This is a slave for example.com.",
             "masters": ["192.168.27.101"],
             "type": "SECONDARY",
             "transferred_at": null,
             "version": 2,
             "created_at": "2014-07-07T18:25:31.275934",
-            "updated_at": 2014-07-07T18:25:34.275934,
+            "updated_at": "2014-07-07T18:25:34.275934",
             "links": {
               "self": "https://127.0.0.1:9001/v2/zones/a86dba58-0043-4cc6-a1bb-69d5e86f3ca3"
             }
-          }
         }
 
     :form description: UTF-8 text field.
