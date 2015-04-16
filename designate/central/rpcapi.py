@@ -396,8 +396,8 @@ class CentralAPI(object):
         LOG.info(_LI("update_status: Calling central's update_status "
                      "for %(domain_id)s : %(status)s : %(serial)s") %
                  {'domain_id': domain_id, 'status': status, 'serial': serial})
-        return self.client.call(context, 'update_status', domain_id=domain_id,
-                                status=status, serial=serial)
+        self.client.cast(context, 'update_status', domain_id=domain_id,
+                         status=status, serial=serial)
 
     # Zone Ownership Transfers
     def create_zone_transfer_request(self, context, zone_transfer_request):
