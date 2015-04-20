@@ -25,30 +25,20 @@ def factory(global_config, **local_conf):
     base = cfg.CONF['service:api'].api_base_uri.rstrip('/')
 
     def _version(version, status):
-        if version.isdigit():
-            versions.append({
-                'id': 'v%s' % version,
-                'status': status,
-                'links': [{
-                    'href': base + '/v' + version,
-                    'rel': 'self'
-                }]
-            })
-        else:
-            versions.append({
-                'id': '%s' % version,
-                'status': status,
-                'links': [{
-                    'href': base + '/' + version,
-                    'rel': 'self'
-                }]
-            })
+        versions.append({
+            'id': '%s' % version,
+            'status': status,
+            'links': [{
+                'href': base + '/' + version,
+                'rel': 'self'
+            }]
+        })
 
     if cfg.CONF['service:api'].enable_api_v1:
-        _version('1', 'DEPRECATED')
+        _version('v1', 'DEPRECATED')
 
     if cfg.CONF['service:api'].enable_api_v2:
-        _version('2', 'CURRENT')
+        _version('v2', 'CURRENT')
 
     @app.route('/', methods=['GET'])
     def version_list():
