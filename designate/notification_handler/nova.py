@@ -51,6 +51,11 @@ class NovaFixedHandler(BaseAddressHandler):
             'compute.instance.delete.start',
         ]
 
+    def _get_ip_data(self, addr_dict):
+        data = super(NovaFixedHandler, self)._get_ip_data(addr_dict)
+        data['label'] = addr_dict['label']
+        return data
+
     def process_notification(self, context, event_type, payload):
         LOG.debug('NovaFixedHandler received notification - %s' % event_type)
 

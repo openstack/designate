@@ -31,23 +31,6 @@ from designate.plugin import ExtensionPlugin
 LOG = logging.getLogger(__name__)
 
 
-def get_ip_data(addr_dict):
-    ip = addr_dict['address']
-    version = addr_dict['version']
-
-    data = {
-        'ip_version': version
-    }
-
-    # TODO(endre): Add v6 support
-    if version == 4:
-        data['ip_address'] = ip.replace('.', '-')
-        ip_data = ip.split(".")
-        for i in [0, 1, 2, 3]:
-            data["octet%s" % i] = ip_data[i]
-    return data
-
-
 class NotificationHandler(ExtensionPlugin):
     """Base class for notification handlers"""
     __plugin_ns__ = 'designate.notification.handler'
@@ -104,6 +87,22 @@ class NotificationHandler(ExtensionPlugin):
 class BaseAddressHandler(NotificationHandler):
     default_format = '%(octet0)s-%(octet1)s-%(octet2)s-%(octet3)s.%(domain)s'
 
+    def _get_ip_data(self, addr_dict):
+        ip = addr_dict['address']
+        version = addr_dict['version']
+
+        data = {
+            'ip_version': version,
+        }
+
+        # TODO(endre): Add v6 support
+        if version == 4:
+            data['ip_address'] = ip.replace('.', '-')
+            ip_data = ip.split(".")
+            for i in [0, 1, 2, 3]:
+                data["octet%s" % i] = ip_data[i]
+        return data
+
     def _get_format(self):
         return cfg.CONF[self.name].get('format') or self.default_format
 
@@ -138,7 +137,7 @@ class BaseAddressHandler(NotificationHandler):
 
         for addr in addresses:
             event_data = data.copy()
-            event_data.update(get_ip_data(addr))
+            event_data.update(self._get_ip_data(addr))
 
             recordset_values = {
                 'domain_id': domain['id'],
