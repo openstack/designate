@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: designate 2015.1.dev86\n"
+"Project-Id-Version: designate 2015.1.dev2.g34ef1cf\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-04-01 06:04+0000\n"
+"POT-Creation-Date: 2015-04-20 11:45+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -22,45 +22,50 @@ msgstr ""
 msgid "TCP Timeout from: %(host)s:%(port)d"
 msgstr ""
 
-#: designate/agent/handler.py:119
+#: designate/service.py:297
+#, python-format
+msgid "Invalid packet from: %(host)s:%(port)d"
+msgstr ""
+
+#: designate/agent/handler.py:120
 #, python-format
 msgid "Not creating %(name)s, zone already exists"
 msgstr ""
 
-#: designate/agent/handler.py:163
+#: designate/agent/handler.py:164
 #, python-format
 msgid "Refusing NOTIFY for %(name)s, doesn't exist"
 msgstr ""
 
-#: designate/agent/handler.py:214
+#: designate/agent/handler.py:215
 #, python-format
 msgid "Not deleting %(name)s, zone doesn't exist"
 msgstr ""
 
-#: designate/agent/handler.py:237
+#: designate/agent/handler.py:238
 #, python-format
 msgid "%(verb)s for %(name)s from %(server)s refused"
 msgstr ""
 
-#: designate/api/middleware.py:183
+#: designate/api/middleware.py:204
 msgid "Request authorized to bypass maintenance mode"
 msgstr ""
 
-#: designate/backend/agent.py:79 designate/mdns/notify.py:190
+#: designate/backend/agent.py:103 designate/mdns/notify.py:190
 #, python-format
 msgid ""
 "Got Timeout while trying to send '%(msg)s' for '%(zone)s' to "
 "'%(server)s:%(port)d'. Timeout='%(timeout)d' seconds. Retry='%(retry)d'"
 msgstr ""
 
-#: designate/backend/agent.py:88 designate/mdns/notify.py:202
+#: designate/backend/agent.py:112 designate/mdns/notify.py:202
 #, python-format
 msgid ""
 "Got BadResponse while trying to send '%(msg)s' for '%(zone)s' to "
 "'%(server)s:%(port)d'. Timeout='%(timeout)d' seconds. Retry='%(retry)d'"
 msgstr ""
 
-#: designate/backend/agent.py:101
+#: designate/backend/agent.py:125
 #, python-format
 msgid ""
 "Failed to get expected response while trying to send '%(msg)s' for "
@@ -98,27 +103,27 @@ msgstr ""
 msgid "Abandoning zone '%(zone)s'"
 msgstr ""
 
-#: designate/mdns/handler.py:116
+#: designate/mdns/handler.py:128
 #, python-format
 msgid "NOTIFY for %(name)s from non-master server %(addr)s, ignoring."
 msgstr ""
 
-#: designate/mdns/handler.py:259
+#: designate/mdns/handler.py:272
 #, python-format
 msgid "DomainNotFound while handling axfr request. Question was %(qr)s"
 msgstr ""
 
-#: designate/mdns/handler.py:265
+#: designate/mdns/handler.py:279
 #, python-format
 msgid "Forbidden while handling axfr request. Question was %(qr)s"
 msgstr ""
 
-#: designate/mdns/handler.py:321
+#: designate/mdns/handler.py:374
 #, python-format
 msgid "DomainNotFound while handling query request. Question was %(qr)s"
 msgstr ""
 
-#: designate/mdns/handler.py:327
+#: designate/mdns/handler.py:381
 #, python-format
 msgid "Forbidden while handling query request. Question was %(qr)s"
 msgstr ""
@@ -144,7 +149,7 @@ msgid "Calling Neutron resulted in a 401, please investigate."
 msgstr ""
 
 #: designate/notification_handler/base.py:123
-#: designate/notification_handler/base.py:175
+#: designate/notification_handler/base.py:177
 msgid ""
 "Deprecation notice: Unmanaged designate-sink records are being deprecated"
 " please update the call to remove managed=False"
