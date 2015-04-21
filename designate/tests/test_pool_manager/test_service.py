@@ -136,16 +136,16 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
         self.assertEqual(2, mock_notify_zone_changed.call_count)
         self.assertEqual(
             [call(self.admin_context, domain,
-                  self.service.pool.nameservers[0], 30, 2, 3, 0),
+                  self.service.pool.nameservers[0], 30, 15, 10, 0),
              call(self.admin_context, domain,
-                  self.service.pool.nameservers[1], 30, 2, 3, 0)],
+                  self.service.pool.nameservers[1], 30, 15, 10, 0)],
             mock_notify_zone_changed.call_args_list)
         self.assertEqual(2, mock_poll_for_serial_number.call_count)
         self.assertEqual(
             [call(self.admin_context, domain,
-                  self.service.pool.nameservers[0], 30, 2, 3, 1),
+                  self.service.pool.nameservers[0], 30, 15, 10, 5),
              call(self.admin_context, domain,
-                  self.service.pool.nameservers[1], 30, 2, 3, 1)],
+                  self.service.pool.nameservers[1], 30, 15, 10, 5)],
             mock_poll_for_serial_number.call_args_list)
 
         # Pool manager needs to call into mdns to calculate consensus as
@@ -236,16 +236,16 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
         self.assertEqual(2, mock_notify_zone_changed.call_count)
         self.assertEqual(
             [call(self.admin_context, domain,
-                  self.service.pool.nameservers[0], 30, 2, 3, 0),
+                  self.service.pool.nameservers[0], 30, 15, 10, 0),
              call(self.admin_context, domain,
-                  self.service.pool.nameservers[1], 30, 2, 3, 0)],
+                  self.service.pool.nameservers[1], 30, 15, 10, 0)],
             mock_notify_zone_changed.call_args_list)
         self.assertEqual(2, mock_poll_for_serial_number.call_count)
         self.assertEqual(
             [call(self.admin_context, domain,
-                  self.service.pool.nameservers[0], 30, 2, 3, 1),
+                  self.service.pool.nameservers[0], 30, 15, 10, 5),
              call(self.admin_context, domain,
-                  self.service.pool.nameservers[1], 30, 2, 3, 1)],
+                  self.service.pool.nameservers[1], 30, 15, 10, 5)],
             mock_poll_for_serial_number.call_args_list)
 
         self.assertEqual(False, mock_update_status.called)
