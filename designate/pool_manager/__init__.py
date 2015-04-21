@@ -24,6 +24,8 @@ CONF.register_group(cfg.OptGroup(
 OPTS = [
     cfg.IntOpt('workers', default=None,
                help='Number of Pool Manager worker processes to spawn'),
+    cfg.IntOpt('threads', default=1000,
+               help='Number of Pool Manager greenthreads to spawn'),
     cfg.StrOpt('pool-id', default='794ccc2c-d751-44fe-b57f-8894c9f5c842',
                help='The ID of the pool managed by this instance of the '
                     'Pool Manager'),

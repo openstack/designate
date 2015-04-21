@@ -25,6 +25,7 @@ from designate.central import service as central
 
 CONF = cfg.CONF
 CONF.import_opt('workers', 'designate.central', group='service:central')
+CONF.import_opt('threads', 'designate.central', group='service:central')
 
 
 def main():
@@ -32,6 +33,6 @@ def main():
     logging.setup(CONF, 'designate')
     utils.setup_gmr(log_dir=cfg.CONF.log_dir)
 
-    server = central.Service()
+    server = central.Service(threads=CONF['service:central'].threads)
     service.serve(server, workers=CONF['service:central'].workers)
     service.wait()

@@ -25,6 +25,7 @@ from designate.mdns import service as mdns_service
 
 CONF = cfg.CONF
 CONF.import_opt('workers', 'designate.mdns', group='service:mdns')
+CONF.import_opt('threads', 'designate.mdns', group='service:mdns')
 
 
 def main():
@@ -32,6 +33,6 @@ def main():
     logging.setup(CONF, 'designate')
     utils.setup_gmr(log_dir=cfg.CONF.log_dir)
 
-    server = mdns_service.Service()
+    server = mdns_service.Service(threads=CONF['service:mdns'].threads)
     service.serve(server, workers=CONF['service:mdns'].workers)
     service.wait()
