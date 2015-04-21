@@ -22,6 +22,8 @@ cfg.CONF.register_group(cfg.OptGroup(
 OPTS = [
     cfg.IntOpt('workers', default=None,
                help='Number of agent worker processes to spawn'),
+    cfg.IntOpt('threads', default=1000,
+               help='Number of agent greenthreads to spawn'),
     cfg.StrOpt('host', default='0.0.0.0',
                help='The Agent Bind Host'),
     cfg.IntOpt('port', default=5358,

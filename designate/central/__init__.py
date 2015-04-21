@@ -21,7 +21,9 @@ cfg.CONF.register_group(cfg.OptGroup(
 
 cfg.CONF.register_opts([
     cfg.IntOpt('workers', default=None,
-               help='Number of worker processes to spawn'),
+               help='Number of central worker processes to spawn'),
+    cfg.IntOpt('threads', default=1000,
+               help='Number of central greenthreads to spawn'),
     cfg.StrOpt('storage-driver', default='sqlalchemy',
                help='The storage driver to use'),
     cfg.ListOpt('enabled-notification-handlers', default=[],
