@@ -21,7 +21,9 @@ cfg.CONF.register_group(cfg.OptGroup(
 
 cfg.CONF.register_opts([
     cfg.IntOpt('workers', default=None,
-               help='Number of worker processes to spawn'),
+               help='Number of sink worker processes to spawn'),
+    cfg.IntOpt('threads', default=1000,
+               help='Number of sink greenthreads to spawn'),
     cfg.ListOpt('enabled-notification-handlers', default=[],
                 help='Enabled Notification Handlers'),
 ], group='service:sink')

@@ -19,13 +19,13 @@ from oslo.config import cfg
 from oslo_log import log as logging
 
 from designate.openstack.common import service
-from designate import rpc
 from designate import utils
 from designate.api import service as api_service
 
 
 CONF = cfg.CONF
 CONF.import_opt('workers', 'designate.api', group='service:api')
+CONF.import_opt('threads', 'designate.api', group='service:api')
 
 
 def main():
@@ -33,8 +33,6 @@ def main():
     logging.setup(CONF, 'designate')
     utils.setup_gmr(log_dir=cfg.CONF.log_dir)
 
-    rpc.init(CONF)
-
-    launcher = service.launch(api_service.Service(),
-                              CONF['service:api'].workers)
+    server = api_service.Service(threads=CONF['service:api'].threads)
+    launcher = service.launch(server, CONF['service:api'].workers)
     launcher.wait()

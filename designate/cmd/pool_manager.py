@@ -26,6 +26,8 @@ from designate.pool_manager import service as pool_manager_service
 CONF = cfg.CONF
 CONF.import_opt('workers', 'designate.pool_manager',
                 group='service:pool_manager')
+CONF.import_opt('threads', 'designate.pool_manager',
+                group='service:pool_manager')
 
 
 def main():
@@ -33,6 +35,7 @@ def main():
     logging.setup(CONF, 'designate')
     utils.setup_gmr(log_dir=cfg.CONF.log_dir)
 
-    server = pool_manager_service.Service()
+    server = pool_manager_service.Service(
+        threads=CONF['service:pool_manager'].threads)
     service.serve(server, workers=CONF['service:pool_manager'].workers)
     service.wait()

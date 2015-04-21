@@ -25,6 +25,7 @@ from designate.agent import service as agent_service
 
 CONF = cfg.CONF
 CONF.import_opt('workers', 'designate.agent', group='service:agent')
+CONF.import_opt('threads', 'designate.agent', group='service:agent')
 
 
 def main():
@@ -32,6 +33,6 @@ def main():
     logging.setup(CONF, 'designate')
     utils.setup_gmr(log_dir=cfg.CONF.log_dir)
 
-    server = agent_service.Service()
+    server = agent_service.Service(threads=CONF['service:agent'].threads)
     service.serve(server, workers=CONF['service:agent'].workers)
     service.wait()
