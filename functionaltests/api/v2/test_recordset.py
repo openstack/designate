@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from tempest_lib.exceptions import RestClientException
+
 from functionaltests.common import datagen
 from functionaltests.common import utils
 from functionaltests.api.v2.base import DesignateV2Test
@@ -78,3 +80,55 @@ class RecordsetTest(DesignateV2Test):
         self.assertEqual(resp.status, 202, "on delete response")
         RecordsetClient.as_user('default').wait_for_404(
             self.zone.id, recordset_id)
+
+
+class RecordsetOwnershipTest(DesignateV2Test):
+
+    def setUp(self):
+        super(RecordsetOwnershipTest, self).setUp()
+        self.increase_quotas(user='default')
+        self.increase_quotas(user='alt')
+
+    def test_no_create_recordset_by_alt_tenant(self):
+        resp, zone = ZoneClient.as_user('default').post_zone(
+            datagen.random_zone_data())
+
+        # try with name=A123456.zone.com.
+        recordset = datagen.random_a_recordset(zone_name=zone.name)
+        self.assertRaises(RestClientException,
+            lambda: RecordsetClient.as_user('alt')
+                    .post_recordset(zone.id, recordset))
+
+        # try with name=zone.com.
+        recordset.name = zone.name
+        self.assertRaises(RestClientException,
+            lambda: RecordsetClient.as_user('alt')
+                    .post_recordset(zone.id, recordset))
+
+    def test_no_create_super_recordsets(self):
+        # default creates zone a.b.c.example.com.
+        # alt fails to create record with name b.c.example.com
+        zone_data = datagen.random_zone_data()
+        recordset = datagen.random_a_recordset(zone_name=zone_data.name)
+        recordset.name = 'b.c.' + zone_data.name
+        zone_data.name = 'a.b.c.' + zone_data.name
+
+        resp, zone = ZoneClient.as_user('default').post_zone(zone_data)
+        self.assertRaises(RestClientException,
+            lambda: RecordsetClient.as_user('alt')
+                    .post_recordset(zone.id, recordset))
+
+    def test_no_create_recordset_via_alt_domain(self):
+        resp, zone = ZoneClient.as_user('default').post_zone(
+            datagen.random_zone_data())
+        resp, alt_zone = ZoneClient.as_user('alt').post_zone(
+            datagen.random_zone_data())
+
+        # alt attempts to create record with name A12345.{zone}
+        recordset = datagen.random_a_recordset(zone_name=zone.name)
+        self.assertRaises(RestClientException,
+            lambda: RecordsetClient.as_user('alt')
+                    .post_recordset(zone.id, recordset))
+        self.assertRaises(RestClientException,
+            lambda: RecordsetClient.as_user('alt')
+                    .post_recordset(alt_zone.id, recordset))
