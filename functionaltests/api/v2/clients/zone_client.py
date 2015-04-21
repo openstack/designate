@@ -14,14 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from tempest_lib.exceptions import NotFound
+
 from functionaltests.api.v2.models.zone_model import ZoneModel
 from functionaltests.api.v2.models.zone_model import ZoneListModel
+from functionaltests.common.client import ClientMixin
+from functionaltests.common import utils
 
 
-class ZoneClient(object):
-
-    def __init__(self, client):
-        self.client = client
+class ZoneClient(ClientMixin):
 
     @classmethod
     def zones_uri(cls):
@@ -30,10 +31,6 @@ class ZoneClient(object):
     @classmethod
     def zone_uri(cls, id):
         return "{0}/{1}".format(cls.zones_uri(), id)
-
-    @classmethod
-    def deserialize(cls, resp, body, model_type):
-        return resp, model_type.from_json(body)
 
     def list_zones(self, **kwargs):
         resp, body = self.client.get(self.zones_uri(), **kwargs)
@@ -56,3 +53,27 @@ class ZoneClient(object):
     def delete_zone(self, id, **kwargs):
         resp, body = self.client.delete(self.zone_uri(id), **kwargs)
         return self.deserialize(resp, body, ZoneModel)
+
+    def wait_for_zone(self, zone_id):
+        utils.wait_for_condition(lambda: self.is_zone_active(zone_id))
+
+    def wait_for_zone_404(self, zone_id):
+        utils.wait_for_condition(lambda: self.is_zone_404(zone_id))
+
+    def is_zone_active(self, zone_id):
+        resp, model = self.get_zone(zone_id)
+        # don't have assertEqual but still want to fail fast
+        assert resp.status == 200
+        if model.status == 'ACTIVE':
+            return True
+        elif model.status == 'ERROR':
+            raise Exception("Saw ERROR status")
+        return False
+
+    def is_zone_404(self, zone_id):
+        try:
+            # tempest_lib rest client raises exceptions on bad status codes
+            resp, model = self.get_zone(zone_id)
+        except NotFound:
+            return True
+        return False

@@ -14,23 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import time
-
 import tempest_lib.base
-
-from functionaltests.common.client import DesignateClient
 
 
 class BaseDesignateTest(tempest_lib.base.BaseTestCase):
 
     def __init__(self, *args, **kwargs):
         super(BaseDesignateTest, self).__init__(*args, **kwargs)
-        self.base_client = DesignateClient()
-
-    def wait_for_condition(self, condition, interval=1, timeout=40):
-        end_time = time.time() + timeout
-        while time.time() < end_time:
-            if condition():
-                return
-            time.sleep(interval)
-        raise Exception("Timed out after {0} seconds".format(timeout))

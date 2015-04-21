@@ -15,20 +15,14 @@ limitations under the License.
 """
 
 from functionaltests.api.v2.models.quotas_model import QuotasModel
+from functionaltests.common.client import ClientMixin
 
 
-class QuotasClient(object):
-
-    def __init__(self, client):
-        self.client = client
+class QuotasClient(ClientMixin):
 
     @classmethod
     def quotas_uri(cls, tenant_id):
         return "/admin/quotas/" + tenant_id
-
-    @classmethod
-    def deserialize(cls, resp, body, model_type):
-        return resp, model_type.from_json(body)
 
     def get_quotas(self, tenant_id, **kwargs):
         resp, body = self.client.get(self.quotas_uri(tenant_id), **kwargs)

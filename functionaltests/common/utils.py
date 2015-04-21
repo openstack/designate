@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 import functools
+import time
 import types
 
 
@@ -81,3 +82,12 @@ def parameterized(data):
         f._test_data = data
         return f
     return wrapped
+
+
+def wait_for_condition(condition, interval=1, timeout=40):
+    end_time = time.time() + timeout
+    while time.time() < end_time:
+        if condition():
+            return
+        time.sleep(interval)
+    raise Exception("Timed out after {0} seconds".format(timeout))

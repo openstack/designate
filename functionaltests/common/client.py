@@ -14,25 +14,80 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import abc
+
+from config import cfg
+from noauth import NoAuthAuthProvider
 from tempest_lib.common.rest_client import RestClient
 from tempest_lib.auth import KeystoneV2Credentials
 from tempest_lib.auth import KeystoneV2AuthProvider
-from config import cfg
-from noauth import NoAuthAuthProvider
 
 
-class DesignateClient(RestClient):
+class BaseDesignateClient(RestClient):
 
     def __init__(self):
-        if cfg.CONF.noauth.use_noauth:
-            auth_provider = self._get_noauth_auth_provider()
-        else:
-            auth_provider = self._get_keystone_auth_provider()
-        super(DesignateClient, self).__init__(
-            auth_provider=auth_provider,
+        super(BaseDesignateClient, self).__init__(
+            auth_provider=self.get_auth_provider(),
             service='dns',
-            region=cfg.CONF.identity.region,
+            region=cfg.CONF.identity.region
         )
+
+    def get_auth_provider(self):
+        if cfg.CONF.noauth.use_noauth:
+            return self._get_noauth_auth_provider()
+        return self._get_keystone_auth_provider()
+
+    @abc.abstractmethod
+    def _get_noauth_auth_provider(self):
+        pass
+
+    @abc.abstractmethod
+    def _get_keystone_auth_provider(self):
+        pass
+
+
+class DesignateClient(BaseDesignateClient):
+    """Client with default user"""
+
+    def _get_noauth_auth_provider(self):
+        creds = KeystoneV2Credentials(
+            tenant_id=cfg.CONF.noauth.tenant_id,
+        )
+        return NoAuthAuthProvider(creds, cfg.CONF.noauth.designate_endpoint)
+
+    def _get_keystone_auth_provider(self):
+        creds = KeystoneV2Credentials(
+            username=cfg.CONF.identity.username,
+            password=cfg.CONF.identity.password,
+            tenant_name=cfg.CONF.identity.tenant_name,
+        )
+        auth_provider = KeystoneV2AuthProvider(creds, cfg.CONF.identity.uri)
+        auth_provider.fill_credentials()
+        return auth_provider
+
+
+class DesignateAltClient(BaseDesignateClient):
+    """Client with alternate user"""
+
+    def _get_noauth_auth_provider(self):
+        creds = KeystoneV2Credentials(
+            tenant_id=cfg.CONF.noauth.alt_tenant_id,
+        )
+        return NoAuthAuthProvider(creds, cfg.CONF.noauth.designate_endpoint)
+
+    def _get_keystone_auth_provider(self):
+        creds = KeystoneV2Credentials(
+            username=cfg.CONF.identity.alt_username,
+            password=cfg.CONF.identity.alt_password,
+            tenant_name=cfg.CONF.identity.alt_tenant_name,
+        )
+        auth_provider = KeystoneV2AuthProvider(creds, cfg.CONF.identity.uri)
+        auth_provider.fill_credentials()
+        return auth_provider
+
+
+class DesignateAdminClient(BaseDesignateClient):
+    """Client with admin user"""
 
     def _get_noauth_auth_provider(self):
         creds = KeystoneV2Credentials(
@@ -49,3 +104,29 @@ class DesignateClient(RestClient):
         auth_provider = KeystoneV2AuthProvider(creds, cfg.CONF.identity.uri)
         auth_provider.fill_credentials()
         return auth_provider
+
+
+class ClientMixin(object):
+    CLIENTS = {
+        'default': DesignateClient(),
+        'alt': DesignateAltClient(),
+        'admin': DesignateAdminClient(),
+    }
+
+    def __init__(self, client):
+        self.client = client
+
+    @classmethod
+    def deserialize(cls, resp, body, model_type):
+        return resp, model_type.from_json(body)
+
+    @classmethod
+    def as_user(cls, user):
+        """
+        :param user: 'default', 'alt', or 'admin'
+        """
+        return cls(cls.CLIENTS[user])
+
+    @property
+    def tenant_id(self):
+        return self.client.tenant_id
