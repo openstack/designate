@@ -158,68 +158,74 @@ class Service(service.RPCService, service.Service):
     # Periodioc Tasks
     def periodic_recovery(self):
         """
-        :return:
+        :return: None
         """
-        context = DesignateContext.get_admin_context(all_tenants=True)
+        # TODO(kiall): Replace this inter-process-lock with a distributed
+        #              lock, likely using the tooz library - see bug 1445127.
+        with lockutils.lock('periodic_recovery', external=True, delay=30):
+            context = DesignateContext.get_admin_context(all_tenants=True)
 
-        LOG.debug("Starting Periodic Recovery")
+            LOG.debug("Starting Periodic Recovery")
 
-        try:
-            # Handle Deletion Failures
-            domains = self._get_failed_domains(context, DELETE_ACTION)
+            try:
+                # Handle Deletion Failures
+                domains = self._get_failed_domains(context, DELETE_ACTION)
 
-            for domain in domains:
-                self.delete_domain(context, domain)
+                for domain in domains:
+                    self.delete_domain(context, domain)
 
-            # Handle Creation Failures
-            domains = self._get_failed_domains(context, CREATE_ACTION)
+                # Handle Creation Failures
+                domains = self._get_failed_domains(context, CREATE_ACTION)
 
-            for domain in domains:
-                self.create_domain(context, domain)
+                for domain in domains:
+                    self.create_domain(context, domain)
 
-            # Handle Update Failures
-            domains = self._get_failed_domains(context, UPDATE_ACTION)
+                # Handle Update Failures
+                domains = self._get_failed_domains(context, UPDATE_ACTION)
 
-            for domain in domains:
-                self.update_domain(context, domain)
+                for domain in domains:
+                    self.update_domain(context, domain)
 
-        except Exception:
-            LOG.exception(_LE('An unhandled exception in periodic recovery '
-                              'occurred'))
+            except Exception:
+                LOG.exception(_LE('An unhandled exception in periodic '
+                                  'recovery occurred'))
 
     def periodic_sync(self):
         """
         :return: None
         """
-        context = DesignateContext.get_admin_context(all_tenants=True)  # noqa
+        # TODO(kiall): Replace this inter-process-lock with a distributed
+        #              lock, likely using the tooz library - see bug 1445127.
+        with lockutils.lock('periodic_sync', external=True, delay=30):
+            context = DesignateContext.get_admin_context(all_tenants=True)
 
-        LOG.debug("Starting Periodic Synchronization")
+            LOG.debug("Starting Periodic Synchronization")
 
-        criterion = {
-            'pool_id': CONF['service:pool_manager'].pool_id,
-            'status': '!%s' % ERROR_STATUS
-        }
+            criterion = {
+                'pool_id': CONF['service:pool_manager'].pool_id,
+                'status': '!%s' % ERROR_STATUS
+            }
 
-        periodic_sync_seconds = \
-            CONF['service:pool_manager'].periodic_sync_seconds
+            periodic_sync_seconds = \
+                CONF['service:pool_manager'].periodic_sync_seconds
 
-        if periodic_sync_seconds is not None:
-            # Generate the current serial, will provide a UTC Unix TS.
-            current = utils.increment_serial()
-            criterion['serial'] = ">%s" % (current - periodic_sync_seconds)
+            if periodic_sync_seconds is not None:
+                # Generate the current serial, will provide a UTC Unix TS.
+                current = utils.increment_serial()
+                criterion['serial'] = ">%s" % (current - periodic_sync_seconds)
 
-        domains = self.central_api.find_domains(context, criterion)
+            domains = self.central_api.find_domains(context, criterion)
 
-        try:
-            for domain in domains:
-                # TODO(kiall): If the domain was created within the last
-                #              periodic_sync_seconds, attempt to recreate to
-                #              fill in targets which may have failed.
-                self.update_domain(context, domain)
+            try:
+                for domain in domains:
+                    # TODO(kiall): If the domain was created within the last
+                    #              periodic_sync_seconds, attempt to recreate
+                    #              to fill in targets which may have failed.
+                    self.update_domain(context, domain)
 
-        except Exception:
-            LOG.exception(_LE('An unhandled exception in periodic '
-                              'synchronization occurred.'))
+            except Exception:
+                LOG.exception(_LE('An unhandled exception in periodic '
+                                  'synchronization occurred.'))
 
     # Standard Create/Update/Delete Methods
     def create_domain(self, context, domain):
