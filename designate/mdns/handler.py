@@ -36,6 +36,10 @@ CONF = cfg.CONF
 CONF.import_opt('default_pool_id', 'designate.central',
                 group='service:central')
 
+# 10 Bytes of RR metadata, 64 bytes of TSIG RR data, variable length TSIG Key
+# name (restricted in designate to 160 chars), 1 byte for trailing dot.
+TSIG_RRSIZE = 10 + 64 + 160 + 1
+
 
 class RequestHandler(xfr.XFRMixin):
 
@@ -305,6 +309,16 @@ class RequestHandler(xfr.XFRMixin):
 
         max_message_size = CONF['service:mdns'].max_message_size
 
+        if max_message_size > 65535:
+            LOG.warning(_LW('MDNS max message size must not be greater than '
+                            '65535'))
+            max_message_size = 65535
+
+        if request.had_tsig:
+            # Make some room for the TSIG RR to be appended at the end of the
+            # rendered message.
+            max_message_size = max_message_size - TSIG_RRSIZE
+
         # Render the results, yielding a packet after each TooBig exception.
         i, renderer = 0, None
         while i < len(rrsets):
@@ -321,6 +335,8 @@ class RequestHandler(xfr.XFRMixin):
             except dns.exception.TooBig:
                 renderer.write_header()
                 if request.had_tsig:
+                    # Make the space we reserved for TSIG available for use
+                    renderer.max_size += TSIG_RRSIZE
                     renderer.add_tsig(
                         request.keyname,
                         request.keyring[request.keyname],
@@ -336,6 +352,8 @@ class RequestHandler(xfr.XFRMixin):
         if renderer is not None:
             renderer.write_header()
             if request.had_tsig:
+                # Make the space we reserved for TSIG available for use
+                renderer.max_size += TSIG_RRSIZE
                 renderer.add_tsig(
                     request.keyname,
                     request.keyring[request.keyname],
