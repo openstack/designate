@@ -2135,6 +2135,7 @@ class Service(service.RPCService, service.Service):
         return pool
 
     # Pool Manager Integration
+    @transaction
     def update_status(self, context, domain_id, status, serial):
         """
         :param context: Security context information.
