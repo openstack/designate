@@ -281,3 +281,11 @@ debug = False
 #rndc_key_file = /etc/rndc.key
 #zone_file_path = $state_path/zones
 #query_destination = 127.0.0.1
+
+########################
+## Library Configuration
+########################
+[oslo_concurrency]
+# Path for Oslo Concurrency to store lock files, defaults to the value
+# of the state_path setting.
+#lock_path = $state_path
