@@ -29,6 +29,8 @@ TEMPEST_DIR=${TEMPEST_DIR:-/opt/stack/new/tempest}
 # Install tempest
 pip install -e $TEMPEST_DIR
 
+export TEMPEST_CONFIG=$TEMPEST_DIR/etc/tempest.conf
+
 pushd $DESIGNATE_DIR/functionaltests
 
 # run the tests in parallel

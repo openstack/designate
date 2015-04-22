@@ -15,23 +15,37 @@ limitations under the License.
 """
 
 from tempest_lib.common.rest_client import RestClient
-from tempest.auth import KeystoneV2Credentials
-from tempest.config import CONF
-import tempest.manager
+from tempest_lib.auth import KeystoneV2Credentials
+from tempest_lib.auth import KeystoneV2AuthProvider
+from config import cfg
+from noauth import NoAuthAuthProvider
 
 
 class DesignateClient(RestClient):
 
     def __init__(self):
-        creds = KeystoneV2Credentials(
-            username=CONF.identity.admin_username,
-            password=CONF.identity.admin_password,
-            tenant_name=CONF.identity.admin_tenant_name,
-        )
-        auth_provider = tempest.manager.get_auth_provider(creds)
-        auth_provider.fill_credentials()
+        if cfg.CONF.noauth.use_noauth:
+            auth_provider = self._get_noauth_auth_provider()
+        else:
+            auth_provider = self._get_keystone_auth_provider()
         super(DesignateClient, self).__init__(
             auth_provider=auth_provider,
             service='dns',
-            region=CONF.identity.region,
+            region=cfg.CONF.identity.region,
         )
+
+    def _get_noauth_auth_provider(self):
+        creds = KeystoneV2Credentials(
+            tenant_id=cfg.CONF.noauth.tenant_id,
+        )
+        return NoAuthAuthProvider(creds, cfg.CONF.noauth.designate_endpoint)
+
+    def _get_keystone_auth_provider(self):
+        creds = KeystoneV2Credentials(
+            username=cfg.CONF.identity.admin_username,
+            password=cfg.CONF.identity.admin_password,
+            tenant_name=cfg.CONF.identity.admin_tenant_name,
+        )
+        auth_provider = KeystoneV2AuthProvider(creds, cfg.CONF.identity.uri)
+        auth_provider.fill_credentials()
+        return auth_provider
