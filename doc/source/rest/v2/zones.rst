@@ -131,6 +131,47 @@ Get Zone
     :statuscode 200: Success
     :statuscode 401: Access Denied
 
+Get Zone Name Servers
+---------------------
+
+.. http:get:: /zones/(uuid:id)/nameservers
+
+    Retrieves the nameservers for a zone with zone_id of id
+
+    **Example request:**
+
+    .. sourcecode:: http
+
+        GET /v2/zones/a86dba58-0043-4cc6-a1bb-69d5e86f3ca3/nameservers HTTP/1.1
+        Host: 127.0.0.1:9001
+        Accept: application/json
+        Content-Type: application/json
+
+
+    **Example response:**
+
+    .. sourcecode:: http
+
+        HTTP/1.1 200 OK
+        Vary: Accept
+        Content-Type: application/json
+
+        {
+            "nameservers": [
+                {
+                    "hostname": "ns1.example.com.",
+                    "priority": 1
+                },
+                {
+                    "hostname": "ns2.example.com.",
+                    "priority": 2
+                }
+            ]
+        }
+
+    :statuscode 200: Success
+    :statuscode 401: Access Denied
+
 List Zones
 ----------
 

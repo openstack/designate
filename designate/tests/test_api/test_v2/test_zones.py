@@ -523,3 +523,17 @@ class ApiV2ZonesTest(ApiV2TestCase):
         self.client.delete('/zones/%s' % zone['id'], status=202)
         self._assert_exception('bad_request', 400, self.client.patch_json,
                                '/zones/%s' % zone['id'], body)
+
+    def test_get_nameservers(self):
+        # Create a zone
+        zone = self.create_domain()
+
+        # Prepare an update body
+
+        response = self.client.get('/zones/%s/nameservers' % zone['id'],
+                                   headers=[('Accept', 'application/json')])
+
+        self.assertIn('nameservers', response.json)
+        self.assertEqual(1, len(response.json['nameservers']))
+        self.assertIn('hostname', response.json['nameservers'][0])
+        self.assertIn('priority', response.json['nameservers'][0])
