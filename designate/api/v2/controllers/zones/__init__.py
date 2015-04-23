@@ -21,6 +21,7 @@ from designate import utils
 from designate.api.v2.controllers import rest
 from designate.api.v2.controllers import recordsets
 from designate.api.v2.controllers.zones import tasks
+from designate.api.v2.controllers.zones import nameservers
 from designate import objects
 from designate.objects.adapters import DesignateAdapter
 
@@ -35,6 +36,7 @@ class ZonesController(rest.RestController):
 
     recordsets = recordsets.RecordSetsController()
     tasks = tasks.TasksController()
+    nameservers = nameservers.NameServersController()
 
     @pecan.expose(template='json:', content_type='application/json')
     @utils.validate_uuid('zone_id')
