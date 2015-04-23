@@ -7,15 +7,19 @@
 {% block modal_id %}create_record_modal{% endblock %}
 {% block modal-header %}{% trans "Create Record for" %} {{ domain.name }}{% endblock %}
 
-{% block modal-body %}
-  <div class="full">
-    <fieldset>
-      {% include "horizon/common/_form_fields.html" %}
-    </fieldset>
-  </div>
-{% endblock %}
-
-{% block modal-footer %}
-  <input class="btn btn-primary pull-right" type="submit" value="{% trans "Create Domain Record" %}" />
-  <a href="{% url 'horizon:project:dns_domains:records' domain.id %}" class="btn secondary cancel close">{% trans "Cancel" %}</a>
+{% block modal-body-right %}
+  <h3>{% trans "Description:" %}</h3>
+  {% blocktrans %}
+  <p>
+     <strong>Please note:</strong>
+    For record types, the name <strong>must</strong> end with a period.
+  </p>
+  <p>
+    <strong>TTL</strong>
+    The TTL is the time-to-live for the record, in seconds.
+  </p>
+  <p>
+    See <a href="http://en.wikipedia.org/wiki/List_of_DNS_record_types" target="_designate_record_defs">more info</a> on record types.
+  </p>
+  {% endblocktrans %}
 {% endblock %}
