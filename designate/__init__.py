@@ -15,7 +15,7 @@
 # under the License.
 import eventlet
 
-eventlet.monkey_patch(os=False)
+eventlet.monkey_patch()
 
 import os
 import socket
