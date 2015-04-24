@@ -1,0 +1,41 @@
+# Copyright 2013 Hewlett-Packard Development Company, L.P.
+#
+# Author: Kiall Mac Innes <kiall@hp.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+import pecan
+from oslo.config import cfg
+
+from designate.api.v2.controllers import rest
+from designate.objects.adapters import DesignateAdapter
+
+
+CONF = cfg.CONF
+
+
+class NameServersController(rest.RestController):
+
+    @pecan.expose(template='json:', content_type='application/json')
+    def get_all(self, zone_id):
+        """List NameServers for Zone"""
+        request = pecan.request
+        context = request.environ['context']
+
+        # This is a work around to overcome the fact that pool ns_records list
+        # object have 2 different representations in the v2 API
+
+        return {
+            "nameservers": DesignateAdapter.render(
+                'API_v2',
+                self.central_api.get_domain_servers(context, zone_id),
+                request=request)}
