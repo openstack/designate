@@ -287,6 +287,12 @@ class DNSService(object):
                         break
                     payload += data
 
+            except socket.error as e:
+                client.close()
+                errname = errno.errorcode[e.args[0]]
+                LOG.warn(_LW("Socket error %(err)s from: %(host)s:%(port)d") %
+                         {'host': addr[0], 'port': addr[1], 'err': errname})
+
             except socket.timeout:
                 client.close()
                 LOG.warn(_LW("TCP Timeout from: %(host)s:%(port)d") %
@@ -322,6 +328,11 @@ class DNSService(object):
 
                 # Dispatch a thread to handle the query
                 self.tg.add_thread(self._dns_handle, addr, payload)
+
+            except socket.error as e:
+                errname = errno.errorcode[e.args[0]]
+                LOG.warn(_LW("Socket error %(err)s from: %(host)s:%(port)d") %
+                         {'host': addr[0], 'port': addr[1], 'err': errname})
 
             except Exception:
                 LOG.exception(_LE("Unknown exception handling UDP request "
