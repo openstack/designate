@@ -25,6 +25,7 @@ from designate.sink import service as sink_service
 
 CONF = cfg.CONF
 CONF.import_opt('workers', 'designate.sink', group='service:sink')
+CONF.import_opt('threads', 'designate.sink', group='service:sink')
 
 
 def main():
@@ -32,6 +33,6 @@ def main():
     logging.setup(CONF, 'designate')
     utils.setup_gmr(log_dir=cfg.CONF.log_dir)
 
-    server = sink_service.Service()
+    server = sink_service.Service(threads=CONF['service:sink'].threads)
     service.serve(server, workers=CONF['service:sink'].workers)
     service.wait()
