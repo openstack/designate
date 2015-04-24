@@ -89,12 +89,10 @@ reverse lookup.
   Content-Type: application/json
 
   {
-    "zone": {
-      "name": "example.org.",
-      "email": "admin@example.org",
-      "ttl": 3600,
-      "description": "A great example zone"
-    }
+    "name": "example.org.",
+    "email": "admin@example.org",
+    "ttl": 3600,
+    "description": "A great example zone"
   }
 
 
@@ -111,24 +109,22 @@ Here is the JSON response describing the new zone.
   Connection: keep-alive
 
   {
-    "zone": {
-      "email": "admin@example.org",
-      "project_id": "noauth-project",
-      "action": "CREATE",
-      "version": 1,
-      "pool_id": "794ccc2c-d751-44fe-b57f-8894c9f5c842",
-      "created_at": "2015-02-20T21:20:28.000000",
-      "name": "example.org.",
-      "id": "fe078042-0aa3-4500-a81e-8f328f79bf75",
-      "serial": 1424467228,
-      "ttl": 3600,
-      "updated_at": null,
-      "links": {
-        "self": "http://127.0.0.1:9001/v2/zones/fe078042-0aa3-4500-a81e-8f328f79bf75"
-      },
-      "description": "A great example zone",
-      "status": "PENDING"
-    }
+    "email": "admin@example.org",
+    "project_id": "noauth-project",
+    "action": "CREATE",
+    "version": 1,
+    "pool_id": "794ccc2c-d751-44fe-b57f-8894c9f5c842",
+    "created_at": "2015-02-20T21:20:28.000000",
+    "name": "example.org.",
+    "id": "fe078042-0aa3-4500-a81e-8f328f79bf75",
+    "serial": 1424467228,
+    "ttl": 3600,
+    "updated_at": null,
+    "links": {
+      "self": "http://127.0.0.1:9001/v2/zones/fe078042-0aa3-4500-a81e-8f328f79bf75"
+    },
+    "description": "A great example zone",
+    "status": "PENDING"
   }
 
 .. note::
@@ -150,12 +146,10 @@ name when we do a reverse look up.
   Content-Type: application/json
 
   {
-    "zone": {
-      "name": "11.2.0.192.in-addr.arpa.",
-      "email": "admin@example.org",
-      "ttl": 3600,
-      "description": "A in-addr.arpa. zone for reverse lookups."
-    }
+    "name": "11.2.0.192.in-addr.arpa.",
+    "email": "admin@example.org",
+    "ttl": 3600,
+    "description": "A in-addr.arpa. zone for reverse lookups."
   }
 
 As you can see, in the `name` field we've reversed our IP address and
@@ -174,24 +168,22 @@ Here is the response.
   Connection: keep-alive
 
   {
-    "zone": {
-      "email": "admin@example.org",
-      "project_id": "noauth-project",
-      "action": "CREATE",
-      "version": 1,
-      "pool_id": "794ccc2c-d751-44fe-b57f-8894c9f5c842",
-      "created_at": "2015-02-20T21:35:41.000000",
-      "name": "11.2.0.192.in-addr.arpa.",
-      "id": "1bed5d24-d487-4410-b813-f1c637db0ba3",
-      "serial": 1424468141,
-      "ttl": 3600,
-      "updated_at": null,
-      "links": {
-        "self": "http://127.0.0.1:9001/v2/zones/1bed5d24-d487-4410-b813-f1c637db0ba3"
-      },
-      "description": "A in-addr.arpa. zone for reverse lookups.",
-      "status": "PENDING"
-    }
+    "email": "admin@example.org",
+    "project_id": "noauth-project",
+    "action": "CREATE",
+    "version": 1,
+    "pool_id": "794ccc2c-d751-44fe-b57f-8894c9f5c842",
+    "created_at": "2015-02-20T21:35:41.000000",
+    "name": "11.2.0.192.in-addr.arpa.",
+    "id": "1bed5d24-d487-4410-b813-f1c637db0ba3",
+    "serial": 1424468141,
+    "ttl": 3600,
+    "updated_at": null,
+    "links": {
+      "self": "http://127.0.0.1:9001/v2/zones/1bed5d24-d487-4410-b813-f1c637db0ba3"
+    },
+    "description": "A in-addr.arpa. zone for reverse lookups.",
+    "status": "PENDING"
   }
 
 Now that we have our `in-addr.arpa.` zone, we add a new `PTR` record
@@ -204,15 +196,13 @@ to the zone.
   Accept: application/json
 
   {
-    "recordset": {
-      "name": "11.2.0.192.in-addr.arpa.",
-      "description": "A PTR recordset",
-      "type": "PTR",
-      "ttl": 3600,
-      "records": [
-        "example.org."
-      ]
-    }
+    "name": "11.2.0.192.in-addr.arpa.",
+    "description": "A PTR recordset",
+    "type": "PTR",
+    "ttl": 3600,
+    "records": [
+      "example.org."
+    ]
   }
 
 Here is the response.
@@ -228,25 +218,23 @@ Here is the response.
   Connection: keep-alive
 
   {
-    "recordset": {
-      "type": "PTR",
-      "action": "CREATE",
-      "version": 1,
-      "created_at": "2015-02-20T21:42:45.000000",
-      "zone_id": "1bed5d24-d487-4410-b813-f1c637db0ba3",
-      "name": "11.2.0.192.in-addr.arpa.",
-      "id": "a3dca24e-3eba-4523-8607-c0ad4b9a9272",
-      "ttl": 3600,
-      "records": [
-        "example.org."
-      ],
-      "updated_at": null,
-      "links": {
-        "self": "http://127.0.0.1:9001/v2/zones/1bed5d24-d487-4410-b813-f1c637db0ba3/recordsets/a3dca24e-3eba-4523-8607-c0ad4b9a9272"
-      },
-      "description": "A PTR recordset",
-      "status": "PENDING"
-    }
+    "type": "PTR",
+    "action": "CREATE",
+    "version": 1,
+    "created_at": "2015-02-20T21:42:45.000000",
+    "zone_id": "1bed5d24-d487-4410-b813-f1c637db0ba3",
+    "name": "11.2.0.192.in-addr.arpa.",
+    "id": "a3dca24e-3eba-4523-8607-c0ad4b9a9272",
+    "ttl": 3600,
+    "records": [
+      "example.org."
+    ],
+    "updated_at": null,
+    "links": {
+      "self": "http://127.0.0.1:9001/v2/zones/1bed5d24-d487-4410-b813-f1c637db0ba3/recordsets/a3dca24e-3eba-4523-8607-c0ad4b9a9272"
+    },
+    "description": "A PTR recordset",
+    "status": "PENDING"
   }
 
 We should now have a correct `PTR` record assigned in our nameserver
@@ -305,11 +293,9 @@ ensure *any* IP in a subnet resolves to a specific domain.
    Content-Type: application/json
 
    {
-     "zone": {
-       "name": "2.0.192.in-addr.arpa.",
-       "ttl": 3600,
-       "email": "admin@example.com"
-     }
+     "name": "2.0.192.in-addr.arpa.",
+     "ttl": 3600,
+     "email": "admin@example.com"
    }
 
 We then could use the corresponding domain to create a `PTR` record
@@ -322,14 +308,12 @@ for a specific IP.
    Content-Type: application/json
 
    {
-     "recordset": {
-       "name": "3.2.0.192.in-addr.arpa.",
-       "type": "PTR"
-       "ttl": 3600,
-       "records": [
-         "cats.example.com."
-       ]
-     }
+     "name": "3.2.0.192.in-addr.arpa.",
+     "type": "PTR"
+     "ttl": 3600,
+     "records": [
+       "cats.example.com."
+     ]
    }
 
 When we do our reverse look, we should see `cats.example.com.`
