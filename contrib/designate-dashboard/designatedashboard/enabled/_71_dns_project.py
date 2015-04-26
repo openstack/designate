@@ -12,9 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from designatedashboard import exceptions 
-
-PANEL = 'domains'
+from designatedashboard import exceptions
 
 # The name of the panel to be added to HORIZON_CONFIG. Required.
 PANEL = 'domains'
