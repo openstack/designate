@@ -15,7 +15,7 @@ from dns import zone as dnszone
 from dns import exception as dnsexception
 import pecan
 from oslo_log import log as logging
-from oslo.config import cfg
+from oslo_config import cfg
 
 from designate.api.v2.controllers import rest
 from designate import dnsutils

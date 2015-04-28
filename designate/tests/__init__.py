@@ -21,9 +21,9 @@ import inspect
 from testtools import testcase
 from oslotest import base
 from oslo_log import log as logging
-from oslo.config import cfg
-from oslo.config import fixture as cfg_fixture
-from oslo.messaging import conffixture as messaging_fixture
+from oslo_config import cfg
+from oslo_config import fixture as cfg_fixture
+from oslo_messaging import conffixture as messaging_fixture
 
 from designate import policy
 from designate import utils

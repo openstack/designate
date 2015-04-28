@@ -20,7 +20,7 @@ eventlet.monkey_patch()
 import os
 import socket
 
-from oslo.config import cfg
+from oslo_config import cfg
 from oslo_log import log
 from oslo_concurrency import lockutils
 from oslo import messaging

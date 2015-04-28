@@ -15,7 +15,7 @@
 # under the License.
 import pecan
 import pecan.deploy
-from oslo.config import cfg
+from oslo_config import cfg
 from oslo_log import log as logging
 
 from designate.api.v2 import patches

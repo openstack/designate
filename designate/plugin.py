@@ -19,7 +19,7 @@ import six
 from stevedore import driver
 from stevedore import enabled
 from stevedore import extension
-from oslo.config import cfg
+from oslo_config import cfg
 from oslo_log import log as logging
 
 

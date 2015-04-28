@@ -14,7 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from mock import patch
-from oslo.config import cfg
+from oslo_config import cfg
 from oslo import messaging
 from oslo_log import log as logging
 

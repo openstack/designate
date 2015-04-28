@@ -16,7 +16,7 @@
 from inspect import ismethod
 from inspect import getargspec
 
-from oslo.serialization import jsonutils
+from oslo_serialization import jsonutils
 import pecan.core
 
 from designate import exceptions

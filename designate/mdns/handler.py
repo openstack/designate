@@ -20,7 +20,7 @@ import dns.rcode
 import dns.rdataclass
 import dns.rdatatype
 import dns.message
-from oslo.config import cfg
+from oslo_config import cfg
 from oslo_log import log as logging
 
 from designate import exceptions

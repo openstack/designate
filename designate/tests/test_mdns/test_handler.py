@@ -21,7 +21,7 @@ import dns.rdatatype
 import dns.resolver
 import dns.rrset
 import mock
-from oslo.config import cfg
+from oslo_config import cfg
 
 from designate import context
 from designate import objects

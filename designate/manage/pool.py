@@ -15,7 +15,7 @@
 # under the License.
 import pprint
 
-from oslo.config import cfg
+from oslo_config import cfg
 from oslo_log import log as logging
 
 from designate.manage import base

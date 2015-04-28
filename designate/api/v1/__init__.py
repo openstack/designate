@@ -20,9 +20,9 @@ from werkzeug import exceptions as wexceptions
 from werkzeug import wrappers
 from werkzeug.routing import BaseConverter
 from werkzeug.routing import ValidationError
-from oslo.config import cfg
+from oslo_config import cfg
 from oslo_log import log as logging
-from oslo.serialization import jsonutils
+from oslo_serialization import jsonutils
 
 from designate import exceptions
 from designate import utils

@@ -18,7 +18,7 @@
 from sqlalchemy import Integer, String, DateTime, ForeignKeyConstraint
 from sqlalchemy.schema import Table, Column, MetaData
 from sqlalchemy.sql import select
-from oslo.config import cfg
+from oslo_config import cfg
 
 from designate import utils
 from designate.sqlalchemy.types import UUID

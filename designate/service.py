@@ -26,7 +26,7 @@ import time
 import six
 import eventlet.wsgi
 from oslo import messaging
-from oslo.config import cfg
+from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_log import loggers
 

@@ -22,7 +22,7 @@ import dns.flags
 import dns.rcode
 import dns.message
 import dns.opcode
-from oslo.config import cfg
+from oslo_config import cfg
 from oslo_log import log as logging
 
 from designate.i18n import _LI

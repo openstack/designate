@@ -21,7 +21,7 @@ import tempfile
 import fixtures
 from oslo_log import log as logging
 from oslo_utils import importutils
-from oslo.config import cfg
+from oslo_config import cfg
 
 from designate import policy
 from designate import network_api

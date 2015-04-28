@@ -26,11 +26,11 @@ __all__ = [
     'TRANSPORT_ALIASES',
 ]
 
-from oslo.config import cfg
+from oslo_config import cfg
 from oslo import messaging
-from oslo.messaging import server as msg_server
-from oslo.messaging.rpc import dispatcher as rpc_dispatcher
-from oslo.serialization import jsonutils
+from oslo_messaging import server as msg_server
+from oslo_messaging.rpc import dispatcher as rpc_dispatcher
+from oslo_serialization import jsonutils
 
 import designate.context
 import designate.exceptions

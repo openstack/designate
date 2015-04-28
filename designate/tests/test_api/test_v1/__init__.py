@@ -14,7 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from oslo_log import log as logging
-from oslo.serialization import jsonutils as json
+from oslo_serialization import jsonutils as json
 
 from designate.api import v1 as api_v1
 from designate.api import middleware

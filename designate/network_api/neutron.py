@@ -19,7 +19,7 @@
 
 from neutronclient.v2_0 import client as clientv20
 from neutronclient.common import exceptions as neutron_exceptions
-from oslo.config import cfg
+from oslo_config import cfg
 from oslo_log import log as logging
 
 from designate import exceptions
