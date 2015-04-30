@@ -14,14 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from tempest_lib.exceptions import NotFound
+
 from functionaltests.api.v2.models.recordset_model import RecordsetModel
 from functionaltests.api.v2.models.recordset_model import RecordsetListModel
+from functionaltests.common.client import ClientMixin
+from functionaltests.common import utils
 
 
-class RecordsetClient(object):
-
-    def __init__(self, client):
-        self.client = client
+class RecordsetClient(ClientMixin):
 
     @classmethod
     def recordsets_uri(cls, zone_id):
@@ -30,10 +31,6 @@ class RecordsetClient(object):
     @classmethod
     def recordset_uri(cls, zone_id, recordset_id):
         return "{0}/{1}".format(cls.recordsets_uri(zone_id), recordset_id)
-
-    @classmethod
-    def deserialize(cls, resp, body, model_type):
-        return resp, model_type.from_json(body)
 
     def list_recordsets(self, zone_id, **kwargs):
         resp, body = self.client.get(self.recordsets_uri(zone_id), **kwargs)
@@ -58,3 +55,28 @@ class RecordsetClient(object):
         resp, body = self.client.delete(
             self.recordset_uri(zone_id, recordset_id), **kwargs)
         return self.deserialize(resp, body, RecordsetModel)
+
+    def wait_for_recordset(self, zone_id, recordset_id):
+        utils.wait_for_condition(
+            lambda: self.is_recordset_active(zone_id, recordset_id))
+
+    def wait_for_404(self, zone_id, recordset_id):
+        utils.wait_for_condition(
+            lambda: self.is_recordset_404(zone_id, recordset_id))
+
+    def is_recordset_active(self, zone_id, recordset_id):
+        resp, model = self.get_recordset(
+            zone_id, recordset_id)
+        assert resp.status == 200
+        if model.status == 'ACTIVE':
+            return True
+        elif model.status == 'ERROR':
+            raise Exception("Saw ERROR status")
+        return False
+
+    def is_recordset_404(self, zone_id, recordset_id):
+        try:
+            self.get_recordset(zone_id, recordset_id)
+        except NotFound:
+            return True
+        return False

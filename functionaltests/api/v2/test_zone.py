@@ -14,30 +14,34 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from tempest_lib.exceptions import Conflict
+from tempest_lib.exceptions import Forbidden
+
 from functionaltests.common import datagen
 from functionaltests.api.v2.base import DesignateV2Test
+from functionaltests.api.v2.clients.zone_client import ZoneClient
 
 
 class ZoneTest(DesignateV2Test):
 
     def setUp(self):
         super(ZoneTest, self).setUp()
-        self.increase_quotas()
+        self.increase_quotas(user='default')
 
-    def _create_zone(self, zone_model):
-        resp, model = self.zone_client.post_zone(zone_model)
+    def _create_zone(self, zone_model, user='default'):
+        resp, model = ZoneClient.as_user(user).post_zone(zone_model)
         self.assertEqual(resp.status, 202)
-        self.wait_for_zone(model.id)
+        ZoneClient.as_user(user).wait_for_zone(model.id)
         return resp, model
 
     def test_list_zones(self):
         self._create_zone(datagen.random_zone_data())
-        resp, model = self.zone_client.list_zones()
+        resp, model = ZoneClient.as_user('default').list_zones()
         self.assertEqual(resp.status, 200)
         self.assertGreater(len(model.zones), 0)
 
     def test_create_zone(self):
-        self._create_zone(datagen.random_zone_data())
+        self._create_zone(datagen.random_zone_data(), user='default')
 
     def test_update_zone(self):
         post_model = datagen.random_zone_data()
@@ -45,12 +49,12 @@ class ZoneTest(DesignateV2Test):
 
         patch_model = datagen.random_zone_data()
         del patch_model.name  # don't try to override the zone name
-        resp, new_model = self.zone_client.patch_zone(old_model.id,
-                                                 patch_model)
+        resp, new_model = ZoneClient.as_user('default').patch_zone(
+            old_model.id, patch_model)
         self.assertEqual(resp.status, 202)
-        self.wait_for_zone(new_model.id)
+        ZoneClient.as_user('default').wait_for_zone(new_model.id)
 
-        resp, model = self.zone_client.get_zone(new_model.id)
+        resp, model = ZoneClient.as_user('default').get_zone(new_model.id)
         self.assertEqual(resp.status, 200)
         self.assertEqual(new_model.id, old_model.id)
         self.assertEqual(new_model.name, old_model.name)
@@ -59,6 +63,45 @@ class ZoneTest(DesignateV2Test):
 
     def test_delete_zone(self):
         resp, model = self._create_zone(datagen.random_zone_data())
-        resp, model = self.zone_client.delete_zone(model.id)
+        resp, model = ZoneClient.as_user('default').delete_zone(model.id)
         self.assertEqual(resp.status, 202)
-        self.wait_for_zone_404(model.id)
+        ZoneClient.as_user('default').wait_for_zone_404(model.id)
+
+
+class ZoneOwnershipTest(DesignateV2Test):
+
+    def setup(self):
+        super(ZoneTest, self).setUp()
+        self.increase_quotas(user='default')
+        self.increase_quotas(user='alt')
+
+    def _create_zone(self, zone_model, user):
+        resp, model = ZoneClient.as_user(user).post_zone(zone_model)
+        self.assertEqual(resp.status, 202)
+        ZoneClient.as_user(user).wait_for_zone(model.id)
+        return resp, model
+
+    def test_no_create_duplicate_domain(self):
+        zone = datagen.random_zone_data()
+        self._create_zone(zone, user='default')
+        self.assertRaises(Conflict,
+            lambda: self._create_zone(zone, user='default'))
+        self.assertRaises(Conflict,
+            lambda: self._create_zone(zone, user='alt'))
+
+    def test_no_create_subdomain_by_alt_user(self):
+        zone = datagen.random_zone_data()
+        subzone = datagen.random_zone_data(name='sub.' + zone.name)
+        subsubzone = datagen.random_zone_data(name='sub.sub.' + zone.name)
+        self._create_zone(zone, user='default')
+        self.assertRaises(Forbidden,
+            lambda: self._create_zone(subzone, user='alt'))
+        self.assertRaises(Forbidden,
+            lambda: self._create_zone(subsubzone, user='alt'))
+
+    def test_no_create_superdomain_by_alt_user(self):
+        superzone = datagen.random_zone_data()
+        zone = datagen.random_zone_data(name="a.b." + superzone.name)
+        self._create_zone(zone, user='default')
+        self.assertRaises(Forbidden,
+            lambda: self._create_zone(superzone, user='alt'))

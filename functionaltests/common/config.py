@@ -40,6 +40,11 @@ cfg.CONF.register_opts([
     cfg.StrOpt('password', secret=True),
     cfg.StrOpt('domain_name'),
 
+    cfg.StrOpt('alt_username'),
+    cfg.StrOpt('alt_tenant_name'),
+    cfg.StrOpt('alt_password', secret=True),
+    cfg.StrOpt('alt_domain_name'),
+
     cfg.StrOpt('admin_username'),
     cfg.StrOpt('admin_tenant_name'),
     cfg.StrOpt('admin_password', secret=True),
@@ -49,6 +54,8 @@ cfg.CONF.register_opts([
 cfg.CONF.register_opts([
     cfg.StrOpt('designate_endpoint', help="The Designate API endpoint"),
     cfg.StrOpt('tenant_id', default='noauth-project'),
+    cfg.StrOpt('alt_tenant_id', default='alt-project'),
+    cfg.StrOpt('admin_tenant_id', default='admin-project'),
     cfg.BoolOpt('use_noauth', default=False),
 ], group='noauth')
 
