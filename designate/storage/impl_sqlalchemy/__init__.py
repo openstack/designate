@@ -464,7 +464,7 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             recordset.records = self._find_records(
                 context, {'recordset_id': recordset.id})
 
-            recordset.obj_reset_changes(['recordset'])
+            recordset.obj_reset_changes(['records'])
 
         if one:
             _load_relations(recordsets)
