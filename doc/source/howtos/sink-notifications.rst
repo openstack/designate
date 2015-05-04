@@ -20,7 +20,7 @@ How To Setup Sink Notifications
 ===============================
 
 .. note::
-   In this how to, we assume you have the Designate installed and configured. If you can not manually add records via the API or dashboard,
+   In this how to, we assume you have Designate already installed and configured. If you can not manually add records via the API or dashboard,
    stop reading now, and go follow some of the other documentation to get that working first.
 
    This example will go over setting up the nova handler only.
@@ -40,12 +40,12 @@ On all nova compute nodes make changes to nova.conf to include at a minimum, the
     notify_on_state_change=vm_and_task_state
     default_notification_level=INFO
 
-This will setup the notifications and the send them to a new topic. This is critical to add as using the default topic will also be used for ceilometer, which will consume the notification prior to sink receiving it.
+This will setup the notifications and the send them to a new topic (called designate_sink). This is critical to add as using the default topic (called notifications) might already be in use by another process, which will consume the notification prior to designate-sink receiving it.
 
 Setup Sink nova_handler
 -----------------------
 
-On all sink nodes, make changes to designate.conf
+On all designate-sink nodes, make changes to designate.conf
 
 .. code-block:: bash
 
@@ -59,4 +59,4 @@ On all sink nodes, make changes to designate.conf
     #format = '%(octet0)s-%(octet1)s-%(octet2)s-%(octet3)s.%(domain)s'
     format = '%(instance_name)s.%(domain)s'
 
-This will setup the sink to consume from the new topic we created specifically for designate-sink. There are two choices for the format of the A record.
+This will setup designate-sink to consume from the new topic we created specifically (named designate_sink). There are two choices for the format of the A record.
