@@ -15,7 +15,7 @@
 # under the License.
 from sqlalchemy import MetaData, Table, Column, String, Integer
 
-from oslo.config import cfg
+from oslo_config import cfg
 
 from designate.sqlalchemy.types import UUID
 

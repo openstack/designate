@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from dns import zone as dnszone
-from oslo.config import cfg
+from oslo_config import cfg
 
 from designate.tests.test_api.test_admin import AdminApiTestCase
 

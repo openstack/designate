@@ -17,7 +17,7 @@ from sqlalchemy import (Table, MetaData, Column, String, Text, Integer, CHAR,
                         DateTime, Enum, Boolean, Unicode, UniqueConstraint,
                         ForeignKeyConstraint)
 
-from oslo.config import cfg
+from oslo_config import cfg
 from oslo_utils import timeutils
 
 from designate import utils

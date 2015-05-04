@@ -15,7 +15,7 @@
 # under the License.
 import abc
 
-from oslo.config import cfg
+from oslo_config import cfg
 from oslo_log import log as logging
 
 from designate.i18n import _LI

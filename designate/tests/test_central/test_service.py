@@ -20,7 +20,7 @@ import random
 import mock
 import testtools
 from testtools.matchers import GreaterThan
-from oslo.config import cfg
+from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_db import exception as db_exception
 from oslo_messaging.notify import notifier

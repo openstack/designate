@@ -14,7 +14,7 @@
 import urllib
 
 from oslo_log import log as logging
-from oslo.config import cfg
+from oslo_config import cfg
 
 from designate.objects.adapters import base
 from designate.objects import base as obj_base

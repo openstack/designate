@@ -16,7 +16,7 @@
 import os
 
 from migrate.versioning import api as versioning_api
-from oslo.config import cfg
+from oslo_config import cfg
 from oslo_log import log as logging
 
 from designate.manage import base

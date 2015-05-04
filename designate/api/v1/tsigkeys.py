@@ -15,7 +15,7 @@
 # under the License.
 import flask
 from oslo_log import log as logging
-from oslo.config import cfg
+from oslo_config import cfg
 
 from designate import schema
 from designate.central import rpcapi as central_rpcapi

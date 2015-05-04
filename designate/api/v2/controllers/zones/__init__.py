@@ -14,7 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import pecan
-from oslo.config import cfg
+from oslo_config import cfg
 
 from designate import exceptions
 from designate import utils

@@ -23,7 +23,7 @@ import uuid
 import six
 import pkg_resources
 from jinja2 import Template
-from oslo.config import cfg
+from oslo_config import cfg
 from oslo_concurrency import processutils
 from oslo_log import log as logging
 from oslo_utils import timeutils

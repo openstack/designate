@@ -19,7 +19,7 @@ import os
 import sys
 
 import eventlet
-from oslo.config import cfg
+from oslo_config import cfg
 from oslo_log import log as logging
 from stevedore.extension import ExtensionManager
 

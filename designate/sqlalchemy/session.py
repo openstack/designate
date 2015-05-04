@@ -16,7 +16,7 @@
 
 """Session Handling for SQLAlchemy backend."""
 
-from oslo.config import cfg
+from oslo_config import cfg
 from oslo_db.sqlalchemy import session
 from oslo_log import log as logging
 

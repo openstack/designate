@@ -15,7 +15,7 @@
 # under the License.
 import logging
 
-from oslo.config import cfg
+from oslo_config import cfg
 
 from designate.network_api.base import NetworkAPI
 

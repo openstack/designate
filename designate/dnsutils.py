@@ -23,7 +23,7 @@ import dns.zone
 import eventlet
 from dns import rdatatype
 from oslo_log import log as logging
-from oslo.config import cfg
+from oslo_config import cfg
 
 from designate import context
 from designate import exceptions

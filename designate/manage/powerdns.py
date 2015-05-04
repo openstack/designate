@@ -16,7 +16,7 @@
 import os
 
 from migrate.versioning import api as versioning_api
-from oslo.config import cfg
+from oslo_config import cfg
 from oslo_db.sqlalchemy.migration_cli import manager as migration_manager
 from oslo_log import log as logging
 

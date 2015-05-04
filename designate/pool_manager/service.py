@@ -16,7 +16,7 @@
 from contextlib import contextmanager
 from decimal import Decimal
 
-from oslo.config import cfg
+from oslo_config import cfg
 from oslo import messaging
 from oslo_log import log as logging
 from oslo_concurrency import lockutils
