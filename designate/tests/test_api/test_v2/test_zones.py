@@ -15,7 +15,7 @@
 # under the License.
 from mock import patch
 from oslo_config import cfg
-from oslo import messaging
+import oslo_messaging as messaging
 from oslo_log import log as logging
 
 from designate import exceptions

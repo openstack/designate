@@ -14,7 +14,7 @@
 #    under the License.
 from oslo_config import cfg
 from oslo_log import log as logging
-from oslo import messaging
+import oslo_messaging as messaging
 
 from designate.i18n import _LI
 from designate import rpc

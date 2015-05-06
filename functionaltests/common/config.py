@@ -16,7 +16,7 @@ limitations under the License.
 
 import os
 
-from oslo.config import cfg
+from oslo_config import cfg
 
 cfg.CONF.register_group(cfg.OptGroup(
     name='identity', title="Configuration for Keystone auth"

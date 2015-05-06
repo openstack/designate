@@ -22,7 +22,7 @@ import json
 import copy
 
 import requests
-from oslo.config import cfg
+from oslo_config import cfg
 
 from designate.backend import impl_ipa
 from designate.i18n import _LI
