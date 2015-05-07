@@ -15,7 +15,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from mock import patch
-from oslo import messaging
+import oslo_messaging as messaging
 from oslo_log import log as logging
 
 from designate.central import service as central_service

@@ -17,9 +17,9 @@ import pprint
 import time
 
 import requests
-from oslo.config import cfg
+from oslo_config import cfg
 from oslo_log import log as logging
-from oslo.serialization import jsonutils as json
+from oslo_serialization import jsonutils as json
 from oslo_utils import importutils
 
 from designate import exceptions

@@ -27,7 +27,7 @@ __all__ = [
 ]
 
 from oslo_config import cfg
-from oslo import messaging
+import oslo_messaging as messaging
 from oslo_messaging import server as msg_server
 from oslo_messaging.rpc import dispatcher as rpc_dispatcher
 from oslo_serialization import jsonutils

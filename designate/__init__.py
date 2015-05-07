@@ -23,7 +23,7 @@ import socket
 from oslo_config import cfg
 from oslo_log import log
 from oslo_concurrency import lockutils
-from oslo import messaging
+import oslo_messaging as messaging
 
 
 cfg.CONF.register_opts([

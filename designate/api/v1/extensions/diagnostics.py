@@ -14,7 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import flask
-from oslo import messaging
+import oslo_messaging as messaging
 from oslo_log import log as logging
 
 from designate import rpc

@@ -16,7 +16,7 @@
 import flask
 import webob.dec
 from oslo_config import cfg
-from oslo import messaging
+import oslo_messaging as messaging
 from oslo_log import log as logging
 from oslo_middleware import base
 from oslo_middleware import request_id

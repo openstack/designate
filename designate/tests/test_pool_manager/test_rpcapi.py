@@ -15,7 +15,7 @@
 # under the License.
 import mock
 from mock import patch
-from oslo import messaging
+import oslo_messaging as messaging
 
 from designate import objects
 from designate.pool_manager.rpcapi import PoolManagerAPI

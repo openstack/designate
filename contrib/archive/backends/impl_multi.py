@@ -16,7 +16,7 @@
 
 import logging
 
-from oslo.config import cfg
+from oslo_config import cfg
 from oslo_utils import excutils
 
 from designate import backend
