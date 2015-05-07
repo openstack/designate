@@ -9,25 +9,25 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.network "forwarded_port", guest: 5354, host: 5354, protocol: "tcp"
   config.vm.network "forwarded_port", guest: 5354, host: 5354, protocol: "udp"
 
-  config.vm.provider "virtualbox" do |vb|
+  config.vm.provider "virtualbox" do |vb, override|
     vb.customize ["modifyvm", :id, "--memory", "2048"]
     if not RUBY_PLATFORM.downcase.include?("mswin")
       vb.customize ["modifyvm", :id, "--cpus", `awk "/^processor/ {++n} END {print n}" /proc/cpuinfo 2> /dev/null || sh -c 'sysctl hw.logicalcpu 2> /dev/null || echo ": 2"' | awk \'{print \$2}\' `.chomp ]
     end
     vb.customize ["modifyvm", :id, "--nicpromisc3", "allow-all"]
 
-    config.vm.synced_folder "../..", "/opt/stack/designate"
+    override.vm.synced_folder "../..", "/opt/stack/designate"
 
     if File.directory?("../../../python-designateclient")
-      config.vm.synced_folder "../../../python-designateclient", "/opt/stack/python-designateclient"
+      override.vm.synced_folder "../../../python-designateclient", "/opt/stack/python-designateclient"
     end
 
     if File.directory?("../../../../openstack/rally")
-      config.vm.synced_folder "../../../../openstack/rally", "/opt/stack/rally"
+      override.vm.synced_folder "../../../../openstack/rally", "/opt/stack/rally"
     end
   end
 
-  config.vm.provider :libvirt do |lv|
+  config.vm.provider :libvirt do |lv, override|
     lv.graphics_ip = '0.0.0.0'
     lv.nested = true
     lv.memory = 8192
@@ -35,15 +35,15 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       lv.cpus = `awk "/^processor/ {++n} END {print n}" /proc/cpuinfo 2> /dev/null || sh -c 'sysctl hw.logicalcpu 2> /dev/null || echo ": 2"' | awk \'{print \$2}\' `.chomp
     end
 
-    config.vm.synced_folder ".", "/vagrant", type: "nfs"
-    config.vm.synced_folder "../..", "/opt/stack/designate", type: "nfs"
+    override.vm.synced_folder ".", "/vagrant", type: "nfs"
+    override.vm.synced_folder "../..", "/opt/stack/designate", type: "nfs"
 
     if File.directory?("../../../python-designateclient")
-      config.vm.synced_folder "../../../python-designateclient", "/opt/stack/python-designateclient", type: "nfs"
+      override.vm.synced_folder "../../../python-designateclient", "/opt/stack/python-designateclient", type: "nfs"
     end
 
     if File.directory?("../../../../openstack/rally")
-      config.vm.synced_folder "../../../../openstack/rally", "/opt/stack/rally", type: "nfs"
+      override.vm.synced_folder "../../../../openstack/rally", "/opt/stack/rally", type: "nfs"
     end
   end
 
