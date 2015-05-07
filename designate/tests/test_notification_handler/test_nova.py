@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright 2012 Managed I.T.
 #
 # Author: Kiall Mac Innes <kiall@managedit.ie>
@@ -58,6 +59,44 @@ class NovaFixedHandlerTest(TestCase, NotificationHandlerMixin):
                                                     criterion)
 
         self.assertEqual(3, len(records))
+
+    def test_instance_create_end_utf8(self):
+        self.config(format='%(display_name)s.%(domain)s',
+                    group='handler:nova_fixed')
+
+        event_type = 'compute.instance.create.end'
+        fixture = self.get_notification_fixture('nova', event_type)
+
+        # Set the instance display_name to a string containing UTF8.
+        fixture['payload']['display_name'] = u'Test↟Instance'
+
+        self.assertIn(event_type, self.plugin.get_event_types())
+
+        criterion = {'domain_id': self.domain_id}
+
+        # Ensure we start with 2 records
+        recordsets = self.central_service.find_recordsets(
+            self.admin_context, criterion)
+
+        # Should only be SOA and NS recordsets
+        self.assertEqual(2, len(recordsets))
+
+        self.plugin.process_notification(
+            self.admin_context, event_type, fixture['payload'])
+
+        # Ensure we now have exactly 1 more recordset
+        recordsets = self.central_service.find_recordsets(
+            self.admin_context, criterion)
+
+        self.assertEqual(3, len(recordsets))
+
+        # Ensure the created record was correctly converted per IDN rules.
+        criterion['type'] = 'A'
+        recordsets = self.central_service.find_recordsets(
+            self.admin_context, criterion)
+
+        self.assertEqual('xn--testinstance-q83g.example.com.',
+                         recordsets[0].name)
 
     def test_instance_delete_start(self):
         # Prepare for the test
