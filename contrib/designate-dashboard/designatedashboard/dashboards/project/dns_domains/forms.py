@@ -203,15 +203,15 @@ class RecordForm(forms.SelfHandlingForm):
         label=_("Record Type"),
         required=False,
         choices=[
-            ('a', _('A')),
-            ('aaaa', _('AAAA')),
-            ('cname', _('CNAME')),
-            ('mx', _('MX')),
-            ('ptr', _('PTR')),
-            ('spf', _('SPF')),
-            ('srv', _('SRV')),
-            ('sshfp', _('SSHFP')),
-            ('txt', _('TXT')),
+            ('a', _('A - Address record')),
+            ('aaaa', _('AAAA - IPv6 address record')),
+            ('cname', _('CNAME - Canonical name record')),
+            ('mx', _('MX - Mail exchange record')),
+            ('ptr', _('PTR - Pointer record')),
+            ('spf', _('SPF - Sender Policy Framework')),
+            ('srv', _('SRV - Service locator')),
+            ('sshfp', _('SSHFP - SSH Public Key Fingerprint')),
+            ('txt', _('TXT - Text record')),
         ],
         widget=forms.Select(attrs={
             'class': 'switchable',
@@ -338,7 +338,9 @@ class RecordForm(forms.SelfHandlingForm):
             else:
                 if not re.match(WILDCARD_DOMAIN_NAME_REGEX,
                                 cleaned_data['name']):
-                    self._add_field_error('name', _('Enter a valid hostname'))
+                    self._add_field_error('name', _('Enter a valid hostname.'
+                                                    ' The hostname should end'
+                                                    ' with a period.'))
                 elif not cleaned_data['name'].endswith(domain_name):
                     self._add_field_error(
                         'name',

@@ -1,4 +1,4 @@
-{% extends "horizon/common/_modal_form.html" %}
+{% extends "project/dns_domains/_create_record.html" %}
 {% load i18n %}
 {% load url from future %}
 
@@ -7,15 +7,3 @@
 
 {% block modal-header %}{% trans "Update Domain Record" %}{% endblock %}
 
-{% block modal-body %}
-  <div class="full">
-    <fieldset>
-    {% include "horizon/common/_form_fields.html" %}
-    </fieldset>
-  </div>
-{% endblock %}
-
-{% block modal-footer %}
-  <input class="btn btn-primary pull-right" type="submit" value="{% trans "Update Domain Record" %}" />
-  <a href="{% url 'horizon:project:dns_domains:records' record.domain_id %}" class="btn secondary cancel close">{% trans "Cancel" %}</a>
-{% endblock %}
