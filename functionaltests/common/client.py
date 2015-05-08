@@ -15,7 +15,7 @@ limitations under the License.
 """
 
 from tempest_lib.common.rest_client import RestClient
-from tempest.auth import KeystoneV2Credentials
+from tempest_lib.auth import KeystoneV2Credentials
 from tempest.config import CONF
 import tempest.manager
 
