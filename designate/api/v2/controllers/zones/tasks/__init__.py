@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from oslo_log import log as logging
+from oslo_config import cfg
 
 from designate.api.v2.controllers.zones.tasks.transfer_requests \
     import TransferRequestsController as TRC
@@ -21,7 +22,10 @@ from designate.api.v2.controllers.zones.tasks.transfer_accepts \
     import TransferAcceptsController as TRA
 from designate.api.v2.controllers.zones.tasks import abandon
 from designate.api.v2.controllers.zones.tasks.xfr import XfrController
+from designate.api.v2.controllers.zones.tasks.imports \
+    import ZoneImportController
 
+CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
 
 
@@ -31,3 +35,4 @@ class TasksController(object):
     transfer_requests = TRC()
     abandon = abandon.AbandonController()
     xfr = XfrController()
+    imports = ZoneImportController()

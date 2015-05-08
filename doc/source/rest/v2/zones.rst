@@ -559,3 +559,192 @@ Accept a Transfer Request
             "status": "COMPLETE"
         }
 
+
+Import Zone
+-----------
+
+Create a Zone Import
+^^^^^^^^^^^^^^^^^^^^
+
+.. http:post:: /zones/tasks/imports
+
+    To import a zonefile, set the Content-type to **text/dns** . The
+    **zoneextractor.py** tool in the **contrib** folder can generate zonefiles
+    that are suitable for Designate (without any **$INCLUDE** statements for
+    example).
+
+    An object will be returned that can be queried using the 'self' link the
+    'links' field.
+
+    **Example request:**
+
+    .. sourcecode:: http
+
+        POST /v2/zones/tasks/imports HTTP/1.1
+        Host: 127.0.0.1:9001
+        Content-type: text/dns
+
+        $ORIGIN example.com.
+        example.com. 42 IN SOA ns.example.com. nsadmin.example.com. 42 42 42 42 42
+        example.com. 42 IN NS ns.example.com.
+        example.com. 42 IN MX 10 mail.example.com.
+        ns.example.com. 42 IN A 10.0.0.1
+        mail.example.com. 42 IN A 10.0.0.2
+
+    **Example response:**
+
+    .. sourcecode:: http
+
+        HTTP/1.1 201 Created
+        Content-Type: application/json
+
+        {
+            "status": "PENDING",
+            "zone_id": null,
+            "links": {
+                "self": "http://127.0.0.1:9001/v2/zones/tasks/imports/074e805e-fe87-4cbb-b10b-21a06e215d41"
+            },
+            "created_at": "2015-05-08T15:43:42.000000",
+            "updated_at": null,
+            "version": 1,
+            "message": null,
+            "project_id": "1",
+            "id": "074e805e-fe87-4cbb-b10b-21a06e215d41"
+        }
+
+    :statuscode 202: Accepted
+    :statuscode 415: Unsupported Media Type
+
+
+View a Zone Import
+^^^^^^^^^^^^^^^^^^
+
+.. http:get:: /zones/tasks/imports/(uuid:id)
+
+    The status of a zone import can be viewed by querying the id
+    given when the request was created.
+
+    **Example request:**
+
+    .. sourcecode:: http
+
+        GET /v2/zones/tasks/imports/a86dba58-0043-4cc6-a1bb-69d5e86f3ca3 HTTP/1.1
+        Host: 127.0.0.1:9001
+        Accept: application/json
+
+    **Example response:**
+
+    .. sourcecode:: http
+
+        HTTP/1.1 200 OK
+        Content-Type: application/json
+
+        {
+            "status": "COMPLETE",
+            "zone_id": "6625198b-d67d-47dc-8d29-f90bd60f3ac4",
+            "links": {
+                "self": "http://127.0.0.1:9001/v2/zones/tasks/imports/074e805e-fe87-4cbb-b10b-21a06e215d41",
+                "href": "http://127.0.0.1:9001/v2/zones/6625198b-d67d-47dc-8d29-f90bd60f3ac4"
+            },
+            "created_at": "2015-05-08T15:43:42.000000",
+            "updated_at": "2015-05-08T15:43:42.000000",
+            "version": 2,
+            "message": "example.com. imported",
+            "project_id": "noauth-project",
+            "id": "074e805e-fe87-4cbb-b10b-21a06e215d41"
+        }
+
+    :statuscode 200: Success
+    :statuscode 401: Access Denied
+    :statuscode 404: Not Found
+
+    Notice the status has been updated, the message field shows that the zone was
+    successfully imported, and there is now a 'href' in the 'links' field that points
+    to the new zone.
+
+List Zone Imports
+^^^^^^^^^^^^^^^^^
+
+.. http:get:: /zones/tasks/imports/
+
+    List all of the zone imports created by this project.
+
+    **Example request:**
+
+    .. sourcecode:: http
+
+        GET /v2/zones/tasks/imports/ HTTP/1.1
+        Host: 127.0.0.1:9001
+        Accept: application/json
+
+    **Example response:**
+
+    .. sourcecode:: http
+
+        HTTP/1.1 200 OK
+        Content-Type: application/json
+
+        {
+            "imports": [
+                {
+                    "status": "COMPLETE",
+                    "zone_id": "ea2fd415-dc6d-401c-a8af-90a89d7efcf9",
+                    "links": {
+                        "self": "http://127.0.0.1:9001/v2/zones/tasks/imports/fb47a23e-eb97-4c86-a3d4-f3e1a4ca9f5e",
+                        "href": "http://127.0.0.1:9001/v2/zones/ea2fd415-dc6d-401c-a8af-90a89d7efcf9"
+                    },
+                    "created_at": "2015-05-08T15:22:50.000000",
+                    "updated_at": "2015-05-08T15:22:50.000000",
+                    "version": 2,
+                    "message": "example.com. imported",
+                    "project_id": "noauth-project",
+                    "id": "fb47a23e-eb97-4c86-a3d4-f3e1a4ca9f5e"
+                },
+                {
+                    "status": "COMPLETE",
+                    "zone_id": "6625198b-d67d-47dc-8d29-f90bd60f3ac4",
+                    "links": {
+                        "self": "http://127.0.0.1:9001/v2/zones/tasks/imports/074e805e-fe87-4cbb-b10b-21a06e215d41",
+                        "href": "http://127.0.0.1:9001/v2/zones/6625198b-d67d-47dc-8d29-f90bd60f3ac4"
+                    },
+                    "created_at": "2015-05-08T15:43:42.000000",
+                    "updated_at": "2015-05-08T15:43:42.000000",
+                    "version": 2,
+                    "message": "example.com. imported",
+                    "project_id": "noauth-project",
+                    "id": "074e805e-fe87-4cbb-b10b-21a06e215d41"
+                }
+            ],
+            "links": {
+                "self": "http://127.0.0.1:9001/v2/zones/tasks/imports"
+            }
+        }
+
+    :statuscode 200: Success
+    :statuscode 401: Access Denied
+    :statuscode 404: Not Found
+
+Delete Zone Import
+^^^^^^^^^^^^^^^^^^
+
+.. http:delete:: /zones/tasks/imports/(uuid:id)
+
+    Deletes a zone import with the specified ID. This does not affect the zone
+    that was imported, it simply removes the record of the import.
+
+    **Example Request:**
+
+    .. sourcecode:: http
+
+        DELETE /v2/zones/tasks/imports/a86dba58-0043-4cc6-a1bb-69d5e86f3ca3 HTTP/1.1
+        Host: 127.0.0.1:9001
+        Accept: application/json
+        Content-Type: application/json
+
+    **Example Response:**
+
+    .. sourcecode:: http
+
+        HTTP/1.1 204 No Content
+
+    :statuscode 204: No Content

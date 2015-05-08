@@ -28,3 +28,4 @@ from designate.objects.adapters.api_v2.quota import QuotaAPIv2Adapter, QuotaList
 from designate.objects.adapters.api_v2.zone_transfer_accept import ZoneTransferAcceptAPIv2Adapter, ZoneTransferAcceptListAPIv2Adapter  # noqa
 from designate.objects.adapters.api_v2.zone_transfer_request import ZoneTransferRequestAPIv2Adapter, ZoneTransferRequestListAPIv2Adapter  # noqa
 from designate.objects.adapters.api_v2.validation_error import ValidationErrorAPIv2Adapter, ValidationErrorListAPIv2Adapter  # noqa
+from designate.objects.adapters.api_v2.zone_import import ZoneImportAPIv2Adapter, ZoneImportListAPIv2Adapter  # noqa

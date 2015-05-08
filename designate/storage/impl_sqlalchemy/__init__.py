@@ -1122,6 +1122,43 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             zone_transfer_accept,
             exceptions.ZoneTransferAcceptNotFound)
 
+    # Zone Task Methods
+    def _find_zone_tasks(self, context, criterion, one=False, marker=None,
+                   limit=None, sort_key=None, sort_dir=None):
+        return self._find(
+            context, tables.zone_tasks, objects.ZoneTask,
+            objects.ZoneTaskList, exceptions.ZoneTaskNotFound, criterion,
+            one, marker, limit, sort_key, sort_dir)
+
+    def create_zone_task(self, context, zone_task):
+        return self._create(
+            tables.zone_tasks, zone_task, exceptions.DuplicateZoneTask)
+
+    def get_zone_task(self, context, zone_task_id):
+        return self._find_zone_tasks(context, {'id': zone_task_id},
+                                     one=True)
+
+    def find_zone_tasks(self, context, criterion=None, marker=None,
+                  limit=None, sort_key=None, sort_dir=None):
+        return self._find_zone_tasks(context, criterion, marker=marker,
+                               limit=limit, sort_key=sort_key,
+                               sort_dir=sort_dir)
+
+    def find_zone_task(self, context, criterion):
+        return self._find_zone_tasks(context, criterion, one=True)
+
+    def update_zone_task(self, context, zone_task):
+        return self._update(
+            context, tables.zone_tasks, zone_task,
+            exceptions.DuplicateZoneTask, exceptions.ZoneTaskNotFound)
+
+    def delete_zone_task(self, context, zone_task_id):
+        # Fetch the existing zone_task, we'll need to return it.
+        zone_task = self._find_zone_tasks(context, {'id': zone_task_id},
+                                one=True)
+        return self._delete(context, tables.zone_tasks, zone_task,
+                    exceptions.ZoneTaskNotFound)
+
     # diagnostics
     def ping(self, context):
         start_time = time.time()

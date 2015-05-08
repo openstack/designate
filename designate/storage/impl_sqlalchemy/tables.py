@@ -39,6 +39,7 @@ ACTIONS = ['CREATE', 'DELETE', 'UPDATE', 'NONE']
 ZONE_ATTRIBUTE_KEYS = ('master',)
 
 ZONE_TYPES = ('PRIMARY', 'SECONDARY',)
+ZONE_TASK_TYPES = ['IMPORT']
 
 
 metadata = MetaData()
@@ -307,3 +308,21 @@ zone_transfer_accepts = Table('zone_transfer_accepts', metadata,
     mysql_engine='InnoDB',
     mysql_charset='utf8',
 )
+
+zone_tasks = Table('zone_tasks', metadata,
+    Column('id', UUID(), default=utils.generate_uuid, primary_key=True),
+    Column('created_at', DateTime, default=lambda: timeutils.utcnow()),
+    Column('updated_at', DateTime, onupdate=lambda: timeutils.utcnow()),
+    Column('version', Integer(), default=1, nullable=False),
+    Column('tenant_id', String(36), default=None, nullable=True),
+
+    Column('domain_id', UUID(), nullable=True),
+    Column('task_type', Enum(name='task_types', *ZONE_TASK_TYPES),
+           nullable=True),
+    Column('message', String(160), nullable=True),
+    Column('status', Enum(name='resource_statuses', *TASK_STATUSES),
+           nullable=False, server_default='ACTIVE',
+           default='ACTIVE'),
+
+    mysql_engine='INNODB',
+    mysql_charset='utf8')

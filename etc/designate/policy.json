@@ -19,9 +19,6 @@
 
     "use_low_ttl": "rule:admin",
 
-    "zone_import": "rule:admin",
-    "zone_export": "rule:admin",
-
     "get_quotas": "rule:admin_or_owner",
     "get_quota": "rule:admin_or_owner",
     "set_quota": "rule:admin",
@@ -109,5 +106,13 @@
     "find_zone_transfer_accepts": "rule:admin",
     "find_zone_transfer_accept": "rule:admin",
     "update_zone_transfer_accept": "rule:admin",
-    "delete_zone_transfer_accept": "rule:admin"
+    "delete_zone_transfer_accept": "rule:admin",
+
+    "zone_export": "rule:admin_or_owner",
+
+    "create_zone_import": "rule:admin_or_owner",
+    "find_zone_imports": "rule:admin_or_owner",
+    "get_zone_import": "rule:admin_or_owner",
+    "update_zone_import": "rule:admin_or_owner",
+    "delete_zone_import": "rule:admin_or_owner"
 }

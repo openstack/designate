@@ -126,7 +126,7 @@ debug = False
 
 # Enabled Admin API extensions
 # Can be one or more of : reports, quotas, counts, tenants, zones
-# zone import / export is in zones extension
+# zone export is in zones extension
 #enabled_extensions_admin =
 
 # Show the pecan HTML based debug interface (v2 only)
