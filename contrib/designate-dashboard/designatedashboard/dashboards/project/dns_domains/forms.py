@@ -15,13 +15,15 @@ import functools
 import logging
 import re
 
+from designateclient import exceptions as designate_exceptions
 from django.core.exceptions import ValidationError  # noqa
 from django.core import validators
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext_lazy as _  # noqa
+
 from horizon import forms
 from horizon import messages
+
 from designatedashboard import api
-from designateclient import exceptions as designate_exceptions
 
 
 LOG = logging.getLogger(__name__)
@@ -56,7 +58,7 @@ def handle_exc(func):
                 msg += " (Request ID: %(request_id)s"
                 data["request_id"] = ex.request_id
 
-            form.api_error(_(msg) % data)
+            form.api_error(_(msg) % data)  # noqa
 
             return False
         except Exception:

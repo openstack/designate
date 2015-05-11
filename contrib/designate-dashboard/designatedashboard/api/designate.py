@@ -14,13 +14,13 @@
 
 from __future__ import absolute_import
 
-from horizon import exceptions
-from django.conf import settings
-import logging
-
 from designateclient.v1 import Client  # noqa
 from designateclient.v1.domains import Domain  # noqa
 from designateclient.v1.records import Record  # noqa
+from django.conf import settings  # noqa
+
+from horizon import exceptions
+import logging
 
 from openstack_dashboard.api.base import url_for  # noqa
 

@@ -16,7 +16,6 @@ import logging
 from django.core import urlresolvers
 from django.utils.translation import ugettext_lazy as _  # noqa
 
-from horizon import exceptions
 from horizon import tables
 
 from designatedashboard import api
