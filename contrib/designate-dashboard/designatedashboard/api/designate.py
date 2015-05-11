@@ -165,3 +165,10 @@ def record_update(request, domain_id, record_id, **kwargs):
     record.description = kwargs.get('description', None)
 
     return d_client.records.update(domain_id, record)
+
+
+def quota_get(request, project_id=None):
+    if not project_id:
+        project_id = request.user.project_id
+    d_client = designateclient(request)
+    return d_client.quotas.get(project_id)
