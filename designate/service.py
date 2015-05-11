@@ -219,6 +219,9 @@ class WSGIService(object):
 
     def _wsgi_handle(self, application, socket):
         logger = logging.getLogger('eventlet.wsgi')
+        # Adjust wsgi MAX_HEADER_LINE to accept large tokens.
+        eventlet.wsgi.MAX_HEADER_LINE = self._service_config.max_header_line
+
         eventlet.wsgi.server(socket,
                              application,
                              custom_pool=self.tg.pool,
