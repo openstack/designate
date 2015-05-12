@@ -88,7 +88,7 @@ def register_dynamic_pool_options():
     pool_target_opts = [
         cfg.StrOpt('type'),
         cfg.ListOpt('masters', default=[]),
-        cfg.DictOpt('options', default={}),
+        cfg.DictOpt('options', default={}, secret=True),
     ]
 
     for pool_target_id in pool_target_ids:
