@@ -46,9 +46,7 @@ def _find_or_create_recordset(context, domain_id, name, type, ttl):
     central_api.find_domain(context, criterion=criterion)
 
     try:
-        recordset = _find_recordset(context, domain_id, name, type)
-    except exceptions.RecordSetNotFound:
-        # Create an empty recordset
+        # Attempt to create an empty recordset
         values = {
             'name': name,
             'type': type,
@@ -57,6 +55,10 @@ def _find_or_create_recordset(context, domain_id, name, type, ttl):
 
         recordset = central_api.create_recordset(
             context, domain_id, objects.RecordSet(**values))
+
+    except exceptions.DuplicateRecordSet:
+        # Fetch the existing recordset
+        recordset = _find_recordset(context, domain_id, name, type)
 
     return recordset
 
