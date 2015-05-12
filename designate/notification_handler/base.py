@@ -87,8 +87,6 @@ class NotificationHandler(ExtensionPlugin):
 
 
 class BaseAddressHandler(NotificationHandler):
-    default_format = '%(octet0)s-%(octet1)s-%(octet2)s-%(octet3)s.%(domain)s'
-
     def _get_ip_data(self, addr_dict):
         ip = addr_dict['address']
         version = addr_dict['version']
@@ -104,9 +102,6 @@ class BaseAddressHandler(NotificationHandler):
             for i in [0, 1, 2, 3]:
                 data["octet%s" % i] = ip_data[i]
         return data
-
-    def _get_format(self):
-        return cfg.CONF[self.name].get('format') or self.default_format
 
     def _create(self, addresses, extra, domain_id, managed=True,
                 resource_type=None, resource_id=None):
@@ -141,31 +136,32 @@ class BaseAddressHandler(NotificationHandler):
             event_data = data.copy()
             event_data.update(self._get_ip_data(addr))
 
-            recordset_values = {
-                'domain_id': domain['id'],
-                'name': self._get_format() % event_data,
-                'type': 'A' if addr['version'] == 4 else 'AAAA'}
+            for fmt in cfg.CONF[self.name].get('format'):
+                recordset_values = {
+                    'domain_id': domain['id'],
+                    'name': fmt % event_data,
+                    'type': 'A' if addr['version'] == 4 else 'AAAA'}
 
-            recordset = self._find_or_create_recordset(
-                context, **recordset_values)
+                recordset = self._find_or_create_recordset(
+                    context, **recordset_values)
 
-            record_values = {
-                'data': addr['address']}
+                record_values = {
+                    'data': addr['address']}
 
-            if managed:
-                record_values.update({
-                    'managed': managed,
-                    'managed_plugin_name': self.get_plugin_name(),
-                    'managed_plugin_type': self.get_plugin_type(),
-                    'managed_resource_type': resource_type,
-                    'managed_resource_id': resource_id})
+                if managed:
+                    record_values.update({
+                        'managed': managed,
+                        'managed_plugin_name': self.get_plugin_name(),
+                        'managed_plugin_type': self.get_plugin_type(),
+                        'managed_resource_type': resource_type,
+                        'managed_resource_id': resource_id})
 
-            LOG.debug('Creating record in %s / %s with values %r' %
-                      (domain['id'], recordset['id'], record_values))
-            self.central_api.create_record(context,
-                                           domain['id'],
-                                           recordset['id'],
-                                           Record(**record_values))
+                LOG.debug('Creating record in %s / %s with values %r' %
+                          (domain['id'], recordset['id'], record_values))
+                self.central_api.create_record(context,
+                                               domain['id'],
+                                               recordset['id'],
+                                               Record(**record_values))
 
     def _delete(self, domain_id, managed=True, resource_id=None,
                 resource_type='instance', criterion=None):

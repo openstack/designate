@@ -220,6 +220,7 @@ debug = False
 #notification_topics = notifications
 #control_exchange = 'nova'
 #format = '%(octet0)s-%(octet1)s-%(octet2)s-%(octet3)s.%(domain)s'
+#format = '%(hostname)s.%(domain)s'
 
 #------------------------
 # Neutron Floating Handler
@@ -230,6 +231,7 @@ debug = False
 #notification_topics = notifications
 #control_exchange = 'neutron'
 #format = '%(octet0)s-%(octet1)s-%(octet2)s-%(octet3)s.%(domain)s'
+#format = '%(hostname)s.%(domain)s'
 
 ###################################
 ## Pool Manager Cache Configuration

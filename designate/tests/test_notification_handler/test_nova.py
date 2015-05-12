@@ -34,6 +34,9 @@ class NovaFixedHandlerTest(TestCase, NotificationHandlerMixin):
         domain = self.create_domain()
         self.domain_id = domain['id']
         self.config(domain_id=domain['id'], group='handler:nova_fixed')
+        self.config(format=['%(host)s.%(domain)s',
+                            '%(host)s.foo.%(domain)s'],
+                    group='handler:nova_fixed')
 
         self.plugin = NovaFixedHandler()
 
@@ -58,10 +61,10 @@ class NovaFixedHandlerTest(TestCase, NotificationHandlerMixin):
         records = self.central_service.find_records(self.admin_context,
                                                     criterion)
 
-        self.assertEqual(3, len(records))
+        self.assertEqual(4, len(records))
 
     def test_instance_create_end_utf8(self):
-        self.config(format='%(display_name)s.%(domain)s',
+        self.config(format=['%(display_name)s.%(domain)s'],
                     group='handler:nova_fixed')
 
         event_type = 'compute.instance.create.end'
@@ -119,7 +122,7 @@ class NovaFixedHandlerTest(TestCase, NotificationHandlerMixin):
         records = self.central_service.find_records(self.admin_context,
                                                     criterion)
 
-        self.assertEqual(3, len(records))
+        self.assertEqual(4, len(records))
 
         self.plugin.process_notification(
             self.admin_context, event_type, fixture['payload'])
@@ -138,7 +141,8 @@ class NovaFixedHandlerTest(TestCase, NotificationHandlerMixin):
 
     def test_label_in_format(self):
         event_type = 'compute.instance.create.end'
-        self.config(format='%(label)s.example.com', group='handler:nova_fixed')
+        self.config(format=['%(label)s.example.com'],
+                    group='handler:nova_fixed')
         fixture = self.get_notification_fixture('nova', event_type)
         with contextlib.nested(
                 mock.patch.object(self.plugin, '_find_or_create_recordset'),
