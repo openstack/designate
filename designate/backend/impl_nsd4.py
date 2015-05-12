@@ -33,6 +33,9 @@ LOG = logging.getLogger(__name__)
 
 
 class NSD4Backend(base.Backend):
+
+    __backend_status__ = 'untested'
+
     __plugin_name__ = 'nsd4'
     NSDCT_VERSION = 'NSDCT1'
 

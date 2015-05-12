@@ -29,6 +29,8 @@ DEFAULT_MASTER_PORT = 5354
 class Bind9Backend(base.Backend):
     __plugin_name__ = 'bind9'
 
+    __backend_status__ = 'integrated'
+
     def __init__(self, target):
         super(Bind9Backend, self).__init__(target)
 

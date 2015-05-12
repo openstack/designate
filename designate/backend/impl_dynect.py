@@ -303,6 +303,8 @@ class DynECTBackend(base.Backend):
     """
     __plugin_name__ = 'dynect'
 
+    __backend_status__ = 'release-compatible'
+
     @classmethod
     def get_cfg_opts(cls):
         group = cfg.OptGroup(
