@@ -15,7 +15,6 @@
 # under the License.
 from oslo_log import log as logging
 
-from designate.api.v2.controllers import rest
 from designate.api.v2.controllers.zones.tasks.transfer_requests \
     import TransferRequestsController as TRC
 from designate.api.v2.controllers.zones.tasks.transfer_accepts \
@@ -26,7 +25,7 @@ from designate.api.v2.controllers.zones.tasks.xfr import XfrController
 LOG = logging.getLogger(__name__)
 
 
-class TasksController(rest.RestController):
+class TasksController(object):
 
     transfer_accepts = TRA()
     transfer_requests = TRC()
