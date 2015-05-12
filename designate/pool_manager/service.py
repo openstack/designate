@@ -76,7 +76,8 @@ class Service(service.RPCService, service.Service):
         super(Service, self).__init__(threads=threads)
 
         # Build the Pool (and related) Object from Config
-        self.pool = objects.Pool.from_config(CONF)
+        self.pool = objects.Pool.from_config(
+            CONF, CONF['service:pool_manager'].pool_id)
 
         # Get a pool manager cache connection.
         self.cache = cache.get_pool_manager_cache(

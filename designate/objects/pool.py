@@ -75,9 +75,7 @@ class Pool(base.DictObjectMixin, base.PersistentObjectMixin,
     }
 
     @classmethod
-    def from_config(cls, CONF):
-        pool_id = CONF['service:pool_manager'].pool_id
-
+    def from_config(cls, CONF, pool_id):
         pool_target_ids = CONF['pool:%s' % pool_id].targets
         pool_nameserver_ids = CONF['pool:%s' % pool_id].nameservers
         pool_also_notifies = CONF['pool:%s' % pool_id].also_notifies
