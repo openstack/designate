@@ -48,14 +48,23 @@ debug = False
 # Central Service
 #-----------------------
 [service:central]
+# Number of central worker processes to spawn
+#workers = None
+
+# Number of central greenthreads to spawn
+#threads = 1000
+
 # Maximum domain name length
 #max_domain_name_len = 255
 
-# Maximum record name length
-#max_record_name_len = 255
+# Maximum recordset name length
+#max_recordset_name_len = 255
 
 # Minimum TTL
 #min_ttl = None
+
+# The name of the default pool
+#default_pool_id = '794ccc2c-d751-44fe-b57f-8894c9f5c842'
 
 ## Managed resources settings
 
@@ -69,6 +78,15 @@ debug = False
 # API Service
 #-----------------------
 [service:api]
+# Number of api worker processes to spawn
+#workers = None
+
+# Number of api greenthreads to spawn
+#threads = 1000
+
+# The base uri used in responses
+#api_base_uri = 'http://127.0.0.1:9001/'
+
 # Address to bind the API server
 #api_host = 0.0.0.0
 
@@ -83,20 +101,21 @@ debug = False
 # Authentication strategy to use - can be either "noauth" or "keystone"
 #auth_strategy = keystone
 
-# Enable Version 1 API
+# Enable Version 1 API (deprecated)
 #enable_api_v1 = True
 
 # Enabled API Version 1 extensions
 # Can be one or more of : diagnostics, quotas, reports, sync, touch
 #enabled_extensions_v1 =
 
-# Enable Version 2 API (experimental)
-#enable_api_v2 = False
+# Enable Version 2 API
+#enable_api_v2 = True
 
 # Enabled API Version 2 extensions
 #enabled_extensions_v2 =
 
-# Default page size in the V2 API
+# Default per-page limit for the V2 API, a value of None means show all results
+# by default
 #default_limit_v2 = 20
 
 # Max page size in the V2 API
@@ -139,11 +158,32 @@ debug = False
 # mDNS Service
 #-----------------------
 [service:mdns]
+# Number of mdns worker processes to spawn
 #workers = None
+
+# Number of mdns greenthreads to spawn
+#threads = 1000
+
+# mDNS Bind Host
 #host = 0.0.0.0
+
+# mDNS Port Number
 #port = 5354
+
+# mDNS TCP Backlog
 #tcp_backlog = 100
+
+# mDNS TCP Receive Timeout
+#tcp_recv_timeout = 0.5
+
+# Enforce all incoming queries (including AXFR) are TSIG signed
+#query_enforce_tsig = False
+
+# Send all traffic over TCP
 #all_tcp = False
+
+# Maximum message size to emit
+#max_message_size = 65535
 
 #-----------------------
 # Agent Service
@@ -163,17 +203,95 @@ debug = False
 # Pool Manager Service
 #-----------------------
 [service:pool_manager]
+# Number of Pool Manager worker processes to spawn
 #workers = None
+
+# Number of Pool Manager greenthreads to spawn
+#threads = 1000
+
+# The ID of the pool managed by this instance of the Pool Manager
 #pool_id = 794ccc2c-d751-44fe-b57f-8894c9f5c842
+
+# The percentage of servers requiring a successful update for a domain change
+# to be considered active
 #threshold_percentage = 100
+
+# The time to wait for a response from a server
 #poll_timeout = 30
+
+# The time between retrying to send a request and waiting for a response from a
+# server
 #poll_retry_interval = 15
+
+# The maximum number of times to retry sending a request and wait for a
+# response from a server
 #poll_max_retries = 10
+
+# The time to wait before sending the first request to a server
 #poll_delay = 5
+
+# Enable the recovery thread
+#enable_recovery_timer = True
+
+# The time between recovering from failures
 #periodic_recovery_interval = 120
+
+# Enable the sync thread
+#enable_sync_timer = True
+
+# The time between synchronizing the servers with storage
 #periodic_sync_interval = 1800
+
+# Zones Updated within last N seconds will be syncd. Use None to sync all zones
 #periodic_sync_seconds = None
+
+# The cache driver to use
 #cache_driver = sqlalchemy
+
+###################################
+## Pool Manager Cache Configuration
+###################################
+#-----------------------
+# SQLAlchemy Pool Manager Cache
+#-----------------------
+[pool_manager_cache:sqlalchemy]
+#connection = sqlite:///$state_path/designate_pool_manager.sqlite
+#connection_debug = 100
+#connection_trace = False
+#sqlite_synchronous = True
+#idle_timeout = 3600
+#max_retries = 10
+#retry_interval = 10
+
+#-----------------------
+# Memcache Pool Manager Cache
+#-----------------------
+[pool_manager_cache:memcache]
+#memcached_servers = None
+#expiration = 3600
+
+#####################
+## Pool Configuration
+#####################
+
+# This section does not have the defaults filled in but demonstrates an
+# example pool / server set up. Different backends will have different options.
+
+#[pool:794ccc2c-d751-44fe-b57f-8894c9f5c842]
+#nameservers = 0f66b842-96c2-4189-93fc-1dc95a08b012
+#targets = f26e0b32-736f-4f0a-831b-039a415c481e
+#also_notifies = 192.0.2.1:53, 192.0.2.2:53
+
+#[pool_nameserver:0f66b842-96c2-4189-93fc-1dc95a08b012]
+#port = 53
+#host = 192.168.27.100
+
+#[pool_target:f26e0b32-736f-4f0a-831b-039a415c481e]
+#options = rndc_host: 192.168.27.100, rndc_port: 953, rndc_config_file: /etc/bind/rndc.conf, rndc_key_file: /etc/bind/rndc.key
+#masters = 192.168.27.100:5354
+#type = bind9
+#port = 53
+#host = 192.168.27.100
 
 ##############
 ## Network API
@@ -232,51 +350,6 @@ debug = False
 #control_exchange = 'neutron'
 #format = '%(octet0)s-%(octet1)s-%(octet2)s-%(octet3)s.%(domain)s'
 #format = '%(hostname)s.%(domain)s'
-
-###################################
-## Pool Manager Cache Configuration
-###################################
-#-----------------------
-# SQLAlchemy Pool Manager Cache
-#-----------------------
-[pool_manager_cache:sqlalchemy]
-#connection = sqlite:///$state_path/designate_pool_manager.sqlite
-#connection_debug = 100
-#connection_trace = False
-#sqlite_synchronous = True
-#idle_timeout = 3600
-#max_retries = 10
-#retry_interval = 10
-
-#-----------------------
-# Memcache Pool Manager Cache
-#-----------------------
-[pool_manager_cache:memcache]
-#memcached_servers = None
-#expiration = 3600
-
-#####################
-## Pool Configuration
-#####################
-
-# This section does not have the defaults filled in but demonstrates an
-# example pool / server set up. Different backends will have different options.
-
-#[pool:794ccc2c-d751-44fe-b57f-8894c9f5c842]
-#nameservers = 0f66b842-96c2-4189-93fc-1dc95a08b012
-#targets = f26e0b32-736f-4f0a-831b-039a415c481e
-#also_notifies = 192.0.2.1:53, 192.0.2.2:53
-
-#[pool_nameserver:0f66b842-96c2-4189-93fc-1dc95a08b012]
-#port = 53
-#host = 192.168.27.100
-
-#[pool_target:f26e0b32-736f-4f0a-831b-039a415c481e]
-#options = rndc_host: 192.168.27.100, rndc_port: 953, rndc_config_file: /etc/bind/rndc.conf, rndc_key_file: /etc/bind/rndc.key
-#masters = 192.168.27.100:5354
-#type = bind9
-#port = 53
-#host = 192.168.27.100
 
 #############################
 ## Agent Backend Configuration
