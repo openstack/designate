@@ -17,6 +17,7 @@ from django.core import urlresolvers
 from django.utils.translation import ugettext_lazy as _  # noqa
 
 from horizon import tables
+from horizon.utils import memoized
 
 from designatedashboard import api
 
@@ -43,6 +44,17 @@ class CreateDomain(tables.LinkAction):
     url = "horizon:project:dns_domains:create_domain"
     classes = ("ajax-modal", "btn-create")
     policy_rules = (("dns", "create_domain"),)
+
+    @memoized.memoized_method
+    def allowed(self, request, datum):
+        try:
+            if self.table:
+                quota = api.designate.quota_get(request)
+                return quota['domains'] > len(self.table.data)
+        except:
+            msg = _("The quotas could not be retrieved.")
+            messages.warning(request, msg)
+        return True
 
 
 class EditDomain(tables.LinkAction):
