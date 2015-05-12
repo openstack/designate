@@ -15,10 +15,10 @@ from django.conf.urls import url, patterns  # noqa
 
 from .views import CreateDomainView  # noqa
 from .views import CreateRecordView  # noqa
+from .views import DomainDetailView  # noqa
 from .views import IndexView  # noqa
 from .views import RecordsView  # noqa
 from .views import UpdateDomainView  # noqa
-from .views import DomainDetailView  # noqa
 from .views import UpdateRecordView  # noqa
 
 

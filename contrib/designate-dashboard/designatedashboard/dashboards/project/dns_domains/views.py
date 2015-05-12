@@ -17,7 +17,7 @@ from django.utils.translation import ugettext_lazy as _  # noqa
 from horizon import exceptions
 from horizon import forms
 from horizon import tables
-from horizon.views import HorizonTemplateView
+from horizon.views import HorizonTemplateView   # noqa
 
 from designatedashboard import api
 
