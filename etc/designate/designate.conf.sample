@@ -288,6 +288,10 @@ debug = False
 #rndc_key_file = /etc/rndc.key
 #zone_file_path = $state_path/zones
 #query_destination = 127.0.0.1
+#
+[backend:agent:denominator]
+#name = dynect
+#config_file = /etc/denominator.conf
 
 ########################
 ## Library Configuration
