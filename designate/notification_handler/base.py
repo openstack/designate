@@ -69,12 +69,7 @@ class NotificationHandler(ExtensionPlugin):
         name = name.encode('idna')
 
         try:
-            recordset = self.central_api.find_recordset(context, {
-                'domain_id': domain_id,
-                'name': name,
-                'type': type,
-            })
-        except exceptions.RecordSetNotFound:
+            # Attempt to create an empty recordset
             values = {
                 'name': name,
                 'type': type,
@@ -82,6 +77,14 @@ class NotificationHandler(ExtensionPlugin):
             }
             recordset = self.central_api.create_recordset(
                 context, domain_id, RecordSet(**values))
+
+        except exceptions.DuplicateRecordSet:
+            # Fetch the existing recordset
+            recordset = self.central_api.find_recordset(context, {
+                'domain_id': domain_id,
+                'name': name,
+                'type': type,
+            })
 
         return recordset
 
