@@ -24,3 +24,4 @@ Contents:
 
    backends/bind9
    backends/powerdns
+   backends/infoblox

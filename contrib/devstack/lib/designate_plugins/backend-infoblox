@@ -1,0 +1,98 @@
+# lib/designate_plugins/backend-infoblox
+# Configure the infoblox backend
+
+# Requirements:
+# A NIOS Grid Master or Cloud Network Automation appliance (virtual or otherwise) is required
+# to use this DevStack plugin.
+
+# Enable with:
+# DESIGNATE_BACKEND_DRIVER=infoblox
+
+# Dependencies:
+# ``functions`` file
+# ``designate`` configuration
+
+# install_designate_backend - install any external requirements
+# configure_designate_backend - make configuration changes, including those to other services
+# init_designate_backend - initialize databases, etc.
+# start_designate_backend - start any external services
+# stop_designate_backend - stop any external services
+# cleanup_designate_backend - remove transient data and cache
+
+# Save trace setting
+DP_INFOBLOX_XTRACE=$(set +o | grep xtrace)
+set +o xtrace
+
+# Defaults
+# --------
+
+DESIGNATE_INFOBLOX_USERNAME=${DESIGNATE_INFOBLOX_USERNAME:-admin}
+DESIGNATE_INFOBLOX_PASSWORD=${DESIGNATE_INFOBLOX_PASSWORD:-infoblox}
+DESIGNATE_INFOBLOX_NAMESERVER_IP=${DESIGNATE_INFOBLOX_NAMESERVER_IP:-172.16.98.200}
+DESIGNATE_INFOBLOX_API_IP=${DESIGNATE_INFOBLOX_API_IP:-$DESIGNATE_INFOBLOX_NAMESERVER_IP}
+DESIGNATE_INFOBLOX_WAPI_URL=${DESIGNATE_INFOBLOX_WAPI_URL:-https://$DESIGNATE_INFOBLOX_API_IP/wapi/v2.0/}
+DESIGNATE_INFOBLOX_SSLVERIFY=${DESIGNATE_INFOBLOX_SSLVERIFY:-False}
+DESIGNATE_INFOBLOX_MULTI_TENANT=${DESIGNATE_INFOBLOX_MULTI_TENANT:-False}
+DESIGNATE_INFOBLOX_HTTP_POOL_CONNECTIONS=${DESIGNATE_INFOBLOX_HTTP_POOL_CONNECTIONS:-100}
+DESIGNATE_INFOBLOX_HTTP_POOL_MAXSIZE=${DESIGNATE_INFOBLOX_HTTP_POOL_MAXSIZE:-100}
+DESIGNATE_INFOBLOX_DNS_VIEW=${DESIGNATE_INFOBLOX_DNS_VIEW:-default}
+DESIGNATE_INFOBLOX_NET_VIEW=${DESIGNATE_INFOBLOX_NET_VIEW:-default}
+DESIGNATE_INFOBLOX_NS_GROUP=${DESIGNATE_INFOBLOX_NS_GROUP:-Designate}
+
+# Entry Points
+# ------------
+
+
+# install_designate_backend - install any external requirements
+function install_designate_backend {
+    if is_ubuntu; then
+        install_package python-dev libxslt1-dev libxslt1.1 libxml2-dev libxml2 libssl-dev
+    elif is_fedora; then
+        install_package python-devel libxslt1-devel libxslt1.1 libxml2-devel libxml2 libssl-devel
+    fi
+}
+
+# configure_designate_backend - make configuration changes, including those to other services
+function configure_designate_backend {
+    iniset $DESIGNATE_CONF pool_target:$DESIGNATE_TARGET_ID type infoblox
+    iniset $DESIGNATE_CONF pool_target:$DESIGNATE_TARGET_ID masters $DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT_MDNS
+
+    local nameserver_id=`uuidgen`
+    iniset $DESIGNATE_CONF pool:$DESIGNATE_POOL_ID nameservers $nameserver_id
+    iniset $DESIGNATE_CONF pool_nameserver:$nameserver_id host $DESIGNATE_INFOBLOX_NAMESERVER_IP
+    iniset $DESIGNATE_CONF pool_nameserver:$nameserver_id port $DESIGNATE_SERVICE_PORT_DNS
+
+    iniset $DESIGNATE_CONF backend:infoblox wapi_url $DESIGNATE_INFOBLOX_WAPI_URL
+    iniset $DESIGNATE_CONF backend:infoblox username $DESIGNATE_INFOBLOX_USERNAME
+    iniset $DESIGNATE_CONF backend:infoblox password $DESIGNATE_INFOBLOX_PASSWORD
+    iniset $DESIGNATE_CONF backend:infoblox sslverify $DESIGNATE_INFOBLOX_SSLVERIFY
+    iniset $DESIGNATE_CONF backend:infoblox multi_tenant $DESIGNATE_INFOBLOX_MULTI_TENANT
+    iniset $DESIGNATE_CONF backend:infoblox http_pool_connections $DESIGNATE_INFOBLOX_HTTP_POOL_CONNECTIONS
+    iniset $DESIGNATE_CONF backend:infoblox http_pool_maxsize $DESIGNATE_INFOBLOX_HTTP_POOL_MAXSIZE
+    iniset $DESIGNATE_CONF backend:infoblox dns_view $DESIGNATE_INFOBLOX_DNS_VIEW
+    iniset $DESIGNATE_CONF backend:infoblox net_view $DESIGNATE_INFOBLOX_NET_VIEW
+    iniset $DESIGNATE_CONF backend:infoblox ns_group $DESIGNATE_INFOBLOX_NS_GROUP
+}
+
+# init_designate_backend - initialize databases, etc.
+function init_designate_backend {
+    :
+}
+
+# start_designate_backend - start any external services
+function start_designate_backend {
+    :
+}
+
+# stop_designate_backend - stop any external services
+function stop_designate_backend {
+    :
+}
+
+# cleanup_designate_backend - remove transient data and cache
+function cleanup_designate_backend {
+    :
+}
+
+# Restore xtrace
+$DP_INFOBLOX_XTRACE
