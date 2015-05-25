@@ -183,10 +183,6 @@ DOMAIN_NAME="exercise-$(openssl rand -hex 4).com."
 # Create the domain
 designate domain-create --name $DOMAIN_NAME --email devstack@example.org
 
-# should have SOA and NS records
-ensure_record_present $DOMAIN_NAME SOA $DESIGNATE_DEFAULT_NS_RECORD
-ensure_record_present $DOMAIN_NAME NS $DESIGNATE_DEFAULT_NS_RECORD
-
 DOMAIN_ID=$(get_domain_id $DOMAIN_NAME 1)
 
 # Fetch the domain
@@ -300,10 +296,6 @@ designate domain-delete $DOMAIN_ID
 
 # Fetch the domain - should be gone
 designate domain-get $DOMAIN_ID || echo "good - domain was removed"
-
-# should not have SOA and NS records
-ensure_record_absent $DOMAIN_NAME SOA $DESIGNATE_DEFAULT_NS_RECORD
-ensure_record_absent $DOMAIN_NAME NS $DESIGNATE_DEFAULT_NS_RECORD
 
 set +o xtrace
 echo "*********************************************************************"
