@@ -18,8 +18,8 @@ import itertools
 import dns.rdata
 import dns.rdatatype
 import dns.rdataclass
-from oslo.config import cfg
-from oslo.concurrency import lockutils
+from oslo_config import cfg
+from oslo_concurrency import lockutils
 from oslo_log import log as logging
 
 from designate.backend.agent_backend import base
