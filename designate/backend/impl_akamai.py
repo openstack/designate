@@ -127,8 +127,30 @@ class EnhancedDNSClient(object):
 
         return zone
 
+    def getZone(self, zoneName):
+        LOG.debug("Performing getZone with zoneName: %s" % zoneName)
+        zoneName = self._sanitizeZoneName(zoneName)
+
+        try:
+            return self.client.service.getZone(zoneName=zoneName)
+        except Exception as e:
+            raise EnhancedDNSException('Akamai Communication Failure: %s' % e)
+
+    def setZones(self, zones):
+        LOG.debug("Performing setZones")
+        try:
+            return self.client.service.setZones(zones=zones)
+        except Exception as e:
+            if 'You do not have permission to view this zone' in str(e):
+                raise DuplicateDomain()
+            elif 'You do not have access to edit this zone' in str(e):
+                raise Forbidden()
+            else:
+                raise EnhancedDNSException('Akamai Communication Failure: %s'
+                                           % e)
+
     def setZone(self, zone):
-        LOG.debug("Performing setZone with zoneName: %s", zone.zoneName)
+        LOG.debug("Performing setZone with zoneName: %s" % zone.zoneName)
         try:
             self.client.service.setZone(zone=zone)
         except Exception as e:
@@ -166,6 +188,24 @@ class EnhancedDNSClient(object):
         return zoneName.rstrip('.').lower()
 
 
+def build_zone(client, target, domain):
+    masters = [m.host for m in target.masters]
+
+    if target.options.get("tsig_key_name", None):
+        return client.buildZone(
+            domain.name,
+            masters,
+            domain.id,
+            target.options["tsig_key_name"],
+            target.options.get("tsig_key_secret", None),
+            target.options.get("tsig_key_algorithm", None))
+    else:
+        return client.buildZone(
+            domain.name,
+            masters,
+            domain.id)
+
+
 class AkamaiBackend(base.Backend):
     __plugin_name__ = 'akamai'
 
@@ -189,10 +229,6 @@ class AkamaiBackend(base.Backend):
         self.username = self.options.get('username')
         self.password = self.options.get('password')
 
-        self.tsig_key_name = self.options.get('tsig_key_name', None)
-        self.tsig_key_algorithm = self.options.get('tsig_key_algorithm', None)
-        self.tsig_key_secret = self.options.get('tsig_key_secret', None)
-
         self.client = EnhancedDNSClient(self.username, self.password)
 
         for m in self.masters:
@@ -200,27 +236,9 @@ class AkamaiBackend(base.Backend):
                 raise exceptions.ConfigurationError(
                     "Akamai only supports mDNS instances on port 53")
 
-    def _build_zone(self, domain):
-        masters = [m.host for m in self.masters]
-
-        if self.tsig_key_name is not None:
-            return self.client.buildZone(
-                domain.name,
-                masters,
-                domain.id,
-                self.tsig_key_name,
-                self.tsig_key_secret,
-                self.tsig_key_algorithm)
-
-        else:
-            return self.client.buildZone(
-                domain.name,
-                masters,
-                domain.id)
-
     def create_domain(self, context, domain):
         """Create a DNS domain"""
-        zone = self._build_zone(domain)
+        zone = build_zone(self.client, self.target, domain)
 
         self.client.setZone(zone=zone)
 
