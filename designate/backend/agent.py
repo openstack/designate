@@ -67,7 +67,7 @@ class AgentPoolBackend(base.Backend):
         values = {
             'host': self.host,
             'port': self.port,
-            'pool_id': '794ccc2c-d751-44fe-b57f-8894c9f5c842'
+            'pool_id': CONF['service:central'].default_pool_id
         }
         nameserver = objects.PoolNameserver(**values)
 
