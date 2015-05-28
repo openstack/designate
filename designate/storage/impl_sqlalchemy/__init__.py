@@ -434,43 +434,43 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
     # RecordSet Methods
     def _find_recordsets(self, context, criterion, one=False, marker=None,
                          limit=None, sort_key=None, sort_dir=None):
-        query = None
 
         # Check to see if the criterion can use the reverse_name column
         criterion = self._rname_check(criterion)
 
         if criterion is not None \
                 and not criterion.get('domains_deleted', True):
-            # Ensure that we return only active recordsets
+            # remove 'domains_deleted' from the criterion, as _apply_criterion
+            # assumes each key in criterion to be a column name.
+            del criterion['domains_deleted']
+
+        if one:
             rjoin = tables.recordsets.join(
                 tables.domains,
                 tables.recordsets.c.domain_id == tables.domains.c.id)
             query = select([tables.recordsets]).select_from(rjoin).\
                 where(tables.domains.c.deleted == '0')
 
-            # remove 'domains_deleted' from the criterion, as _apply_criterion
-            # assumes each key in criterion to be a column name.
-            del criterion['domains_deleted']
-        recordsets = self._find(
-            context, tables.recordsets, objects.RecordSet,
-            objects.RecordSetList, exceptions.RecordSetNotFound, criterion,
-            one, marker, limit, sort_key, sort_dir, query)
+            recordsets = self._find(
+                context, tables.recordsets, objects.RecordSet,
+                objects.RecordSetList, exceptions.RecordSetNotFound, criterion,
+                one, marker, limit, sort_key, sort_dir, query)
 
-        if not one:
-            recordsets.total_count = self.count_recordsets(context, criterion)
+            recordsets.records = self._find_records(
+                context, {'recordset_id': recordsets.id})
 
-        # Load Relations
-        def _load_relations(recordset):
-            recordset.records = self._find_records(
-                context, {'recordset_id': recordset.id})
+            recordsets.obj_reset_changes(['records'])
 
-            recordset.obj_reset_changes(['records'])
-
-        if one:
-            _load_relations(recordsets)
         else:
-            for recordset in recordsets:
-                _load_relations(recordset)
+            recordsets = self._find_recordsets_with_records(
+                context, tables.recordsets, objects.RecordSet,
+                objects.RecordSetList, exceptions.RecordSetNotFound, criterion,
+                load_relations=True, relation_table=tables.records,
+                relation_cls=objects.Record,
+                relation_list_cls=objects.RecordList, limit=limit,
+                marker=marker, sort_key=sort_key, sort_dir=sort_dir)
+
+            recordsets.total_count = self.count_recordsets(context, criterion)
 
         return recordsets
 

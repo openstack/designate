@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import abc
+import operator
 import threading
 
 import six
@@ -21,7 +22,6 @@ from oslo_db.sqlalchemy import utils as oslodb_utils
 from oslo_db import exception as oslo_db_exception
 from oslo_log import log as logging
 from oslo_utils import timeutils
-from sqlalchemy import exc as sqlalchemy_exc
 from sqlalchemy import select, or_
 
 from designate import exceptions
@@ -194,6 +194,7 @@ class SQLAlchemy(object):
     def _find(self, context, table, cls, list_cls, exc_notfound, criterion,
               one=False, marker=None, limit=None, sort_key=None,
               sort_dir=None, query=None, apply_tenant_criteria=True):
+
         sort_key = sort_key or 'created_at'
         sort_dir = sort_dir or 'asc'
 
@@ -220,24 +221,7 @@ class SQLAlchemy(object):
                 return _set_object_from_model(cls(), results[0])
         else:
             if marker is not None:
-                # If marker is not none and basestring we query it.
-                # Otherwise, return all matching records
-                marker_query = select([table]).where(table.c.id == marker)
-
-                try:
-                    marker_resultproxy = self.session.execute(marker_query)
-                    marker = marker_resultproxy.fetchone()
-                    if marker is None:
-                        raise exceptions.MarkerNotFound(
-                            'Marker %s could not be found' % marker)
-                except oslo_db_exception.DBError as e:
-                    # Malformed UUIDs return StatementError wrapped in a
-                    # DBError
-                    if isinstance(e.inner_exception,
-                                  sqlalchemy_exc.StatementError):
-                        raise exceptions.InvalidMarker()
-                    else:
-                        raise
+                marker = utils.check_marker(table, marker, self.session)
 
             try:
                 query = utils.paginate_query(
@@ -257,6 +241,194 @@ class SQLAlchemy(object):
             # show up as ValueError
             except ValueError as value_error:
                 raise exceptions.ValueError(value_error.message)
+
+    def _find_recordsets_with_records(
+        self, context, table, cls,
+        list_cls, exc_notfound, criterion,
+        one=False, marker=None, limit=None, sort_key=None,
+        sort_dir=None, query=None, apply_tenant_criteria=True,
+        load_relations=False, relation_table=None, relation_cls=None,
+            relation_list_cls=None, relation_not_found_exc=None):
+
+        sort_key = sort_key or 'created_at'
+        sort_dir = sort_dir or 'asc'
+
+        # Join the 2 required tables
+        rjoin = table.outerjoin(
+            relation_table,
+            relation_table.c.recordset_id == table.c.id)
+
+        inner_q = select([table.c.id])
+
+        if marker is not None:
+            marker = utils.check_marker(table, marker, self.session)
+
+        try:
+            inner_q = utils.paginate_query(
+                inner_q, table, limit,
+                [sort_key, 'id'], marker=marker,
+                sort_dir=sort_dir)
+
+        except oslodb_utils.InvalidSortKey as sort_key_error:
+            raise exceptions.InvalidSortKey(sort_key_error.message)
+        # Any ValueErrors are propagated back to the user as is.
+        # Limits, sort_dir and sort_key are checked at the API layer.
+        # If however central or storage is called directly, invalid values
+        # show up as ValueError
+        except ValueError as value_error:
+            raise exceptions.ValueError(value_error.message)
+
+        inner_q = self._apply_criterion(table, inner_q, criterion)
+        inner_q = self._apply_deleted_criteria(context, table, inner_q)
+
+        # Get the list of IDs needed.
+        # This is a separate call due to
+        # http://dev.mysql.com/doc/mysql-reslimits-excerpt/5.6/en/subquery-restrictions.html  # noqa
+
+        inner_rproxy = self.session.execute(inner_q)
+        ids = inner_rproxy.fetchall()
+
+        # formatted_ids = [id[0] for id in ids]
+        formatted_ids = map(operator.itemgetter(0), ids)
+
+        query = select(
+            [
+                # RS Info
+                table.c.id,                                 # 0 - RS ID
+                table.c.version,                            # 1 - RS Version
+                table.c.created_at,                         # 2 - RS Created
+                table.c.updated_at,                         # 3 - RS Updated
+                table.c.tenant_id,                          # 4 - RS Tenant
+                table.c.domain_id,                          # 5 - RS Domain
+                table.c.name,                               # 6 - RS Name
+                table.c.type,                               # 7 - RS Type
+                table.c.ttl,                                # 8 - RS TTL
+                table.c.description,                        # 9 - RS Desc
+                # R Info
+                relation_table.c.id,                        # 10 - R ID
+                relation_table.c.version,                   # 11 - R Version
+                relation_table.c.created_at,                # 12 - R Created
+                relation_table.c.updated_at,                # 13 - R Updated
+                relation_table.c.tenant_id,                 # 14 - R Tenant
+                relation_table.c.domain_id,                 # 15 - R Domain
+                relation_table.c.recordset_id,              # 16 - R RSet
+                relation_table.c.data,                      # 17 - R Data
+                relation_table.c.description,               # 18 - R Desc
+                relation_table.c.hash,                      # 19 - R Hash
+                relation_table.c.managed,                   # 20 - R Mngd Flg
+                relation_table.c.managed_plugin_name,       # 21 - R Mngd Plg
+                relation_table.c.managed_resource_type,     # 22 - R Mngd Type
+                relation_table.c.managed_resource_region,   # 23 - R Mngd Rgn
+                relation_table.c.managed_resource_id,       # 24 - R Mngd ID
+                relation_table.c.managed_tenant_id,         # 25 - R Mngd T ID
+                relation_table.c.status,                    # 26 - R Status
+                relation_table.c.action,                    # 27 - R Action
+                relation_table.c.serial                     # 28 - R Serial
+            ]).\
+            select_from(
+                rjoin
+                       ).\
+            where(
+                table.c.id.in_(formatted_ids)
+                 )
+
+        # These make looking up indexes for the Raw Rows much easier,
+        # and maintainable
+
+        rs_map = {
+            "id": 0,
+            "version": 1,
+            "created_at": 2,
+            "updated_at": 3,
+            "tenant_id": 4,
+            "domain_id": 5,
+            "name": 6,
+            "type": 7,
+            "ttl": 8,
+            "description": 9,
+        }
+
+        r_map = {
+            "id": 10,
+            "version": 11,
+            "created_at": 12,
+            "updated_at": 13,
+            "tenant_id": 14,
+            "domain_id": 15,
+            "recordset_id": 16,
+            "data": 17,
+            "description": 18,
+            "hash": 19,
+            "managed": 20,
+            "managed_plugin_name": 21,
+            "managed_resource_type": 22,
+            "managed_resource_region": 23,
+            "managed_resource_id": 24,
+            "managed_tenant_id": 25,
+            "status": 26,
+            "action": 27,
+            "serial": 28,
+        }
+
+        query, sort_dirs = utils.sort_query(query, table, [sort_key, 'id'],
+                                            sort_dir=sort_dir)
+
+        try:
+            resultproxy = self.session.execute(query)
+            raw_rows = resultproxy.fetchall()
+
+        # Any ValueErrors are propagated back to the user as is.
+        # If however central or storage is called directly, invalid values
+        # show up as ValueError
+        except ValueError as value_error:
+            raise exceptions.ValueError(value_error.message)
+
+        rrsets = list_cls()
+        rrset_id = None
+        current_rrset = None
+
+        for record in raw_rows:
+            # If we're looking at the first, or a new rrset
+            if record[0] != rrset_id:
+                if current_rrset is not None:
+                    # If this isn't the first iteration
+                    rrsets.append(current_rrset)
+                # Set up a new rrset
+                current_rrset = cls()
+
+                rrset_id = record[rs_map['id']]
+
+                # Add all the loaded vars into RecordSet object
+
+                for key, value in rs_map.iteritems():
+                    setattr(current_rrset, key, record[value])
+
+                current_rrset.records = relation_list_cls()
+
+                if record[r_map['id']] is not None:
+                    rrdata = relation_cls()
+
+                    for key, value in r_map.iteritems():
+                        setattr(rrdata, key, record[value])
+
+                    current_rrset.records.append(rrdata)
+
+            else:
+                # We've already got an rrset, add the rdata
+                if record[r_map['id']] is not None:
+
+                    for key, value in r_map.iteritems():
+                        setattr(rrdata, key, record[value])
+
+                    current_rrset.records.append(rrdata)
+
+        # If the last record examined was a new rrset, or there is only 1 rrset
+        if len(rrsets) == 0 or \
+                (len(rrsets) != 0 and rrsets[-1] != current_rrset):
+            if current_rrset is not None:
+                rrsets.append(current_rrset)
+
+        return rrsets
 
     def _update(self, context, table, obj, exc_dup, exc_notfound,
                 skip_values=None):
