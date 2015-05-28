@@ -16,8 +16,15 @@ limitations under the License.
 
 import tempest_lib.base
 
+from functionaltests.common.config import read_config
+
 
 class BaseDesignateTest(tempest_lib.base.BaseTestCase):
 
     def __init__(self, *args, **kwargs):
         super(BaseDesignateTest, self).__init__(*args, **kwargs)
+
+    @classmethod
+    def setUpClass(cls):
+        super(BaseDesignateTest, cls).setUpClass()
+        read_config()

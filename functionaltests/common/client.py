@@ -22,6 +22,8 @@ from tempest_lib.common.rest_client import RestClient
 from tempest_lib.auth import KeystoneV2Credentials
 from tempest_lib.auth import KeystoneV2AuthProvider
 
+from functionaltests.common.utils import memoized
+
 
 class BaseDesignateClient(RestClient):
 
@@ -107,11 +109,15 @@ class DesignateAdminClient(BaseDesignateClient):
 
 
 class ClientMixin(object):
-    CLIENTS = {
-        'default': DesignateClient(),
-        'alt': DesignateAltClient(),
-        'admin': DesignateAdminClient(),
-    }
+
+    @classmethod
+    @memoized
+    def get_clients(cls):
+        return {
+            'default': DesignateClient(),
+            'alt': DesignateAltClient(),
+            'admin': DesignateAdminClient(),
+        }
 
     def __init__(self, client):
         self.client = client
@@ -125,7 +131,7 @@ class ClientMixin(object):
         """
         :param user: 'default', 'alt', or 'admin'
         """
-        return cls(cls.CLIENTS[user])
+        return cls(cls.get_clients()[user])
 
     @property
     def tenant_id(self):

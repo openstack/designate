@@ -64,4 +64,5 @@ def find_config_file():
     return os.environ.get('TEMPEST_CONFIG', 'tempest.conf')
 
 
-cfg.CONF(args=[], default_config_files=[find_config_file()])
+def read_config():
+    cfg.CONF(args=[], default_config_files=[find_config_file()])

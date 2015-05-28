@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+import collections
 import functools
 import time
 import types
@@ -91,3 +92,21 @@ def wait_for_condition(condition, interval=1, timeout=40):
             return
         time.sleep(interval)
     raise Exception("Timed out after {0} seconds".format(timeout))
+
+
+def memoized(func):
+    """A decorator to cache function's return value"""
+    cache = {}
+
+    @functools.wraps(func)
+    def wrapper(*args):
+        if not isinstance(args, collections.Hashable):
+            # args is not cacheable. just call the function.
+            return func(*args)
+        if args in cache:
+            return cache[args]
+        else:
+            value = func(*args)
+            cache[args] = value
+            return value
+    return wrapper
