@@ -13,10 +13,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-
+import dns.rdatatype
 from tempest_lib import exceptions
 
 from functionaltests.common import datagen
+from functionaltests.common import dnsclient
 from functionaltests.common import utils
 from functionaltests.api.v2.base import DesignateV2Test
 from functionaltests.api.v2.clients.recordset_client import RecordsetClient
@@ -37,6 +38,29 @@ class RecordsetTest(DesignateV2Test):
         resp, model = RecordsetClient.as_user('default') \
             .list_recordsets(self.zone.id)
         self.assertEqual(resp.status, 200)
+
+    def assert_dns(self, model):
+        results = dnsclient.query_servers(model.name, model.type)
+
+        model_data = model.to_dict()
+        if model.type == 'AAAA':
+            model_data['records'] = utils.shorten_ipv6_addrs(
+                model_data['records'])
+
+        for answer in results:
+            data = {
+                "type": dns.rdatatype.to_text(answer.rdtype),
+                "name": str(answer.canonical_name),
+                # DNSPython wraps TXT values in "" so '+all v=foo' becomes
+                # '"+all" "+v=foo"'
+                "records": [i.to_text().replace('"', '')
+                            for i in answer.rrset.items]
+            }
+
+            if answer.rrset.ttl != 0:
+                data['ttl'] = answer.rrset.ttl
+
+            self.assertEqual(model_data, data)
 
     @utils.parameterized({
         'A': dict(
@@ -72,6 +96,8 @@ class RecordsetTest(DesignateV2Test):
         RecordsetClient.as_user('default').wait_for_recordset(
             self.zone.id, recordset_id)
 
+        self.assert_dns(post_model)
+
         put_model = make_recordset(self.zone)
         del put_model.name  # don't try to update the name
         resp, put_resp_model = RecordsetClient.as_user('default') \
@@ -84,6 +110,9 @@ class RecordsetTest(DesignateV2Test):
 
         RecordsetClient.as_user('default').wait_for_recordset(
             self.zone.id, recordset_id)
+
+        put_model.name = post_model.name
+        self.assert_dns(put_model)
 
         resp, delete_resp_model = RecordsetClient.as_user('default') \
             .delete_recordset(self.zone.id, recordset_id)

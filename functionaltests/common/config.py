@@ -60,6 +60,11 @@ cfg.CONF.register_opts([
 ], group='noauth')
 
 
+cfg.CONF.register_opts([
+    cfg.ListOpt('nameservers', default=["127.0.0.1:53"])
+], group="designate")
+
+
 def find_config_file():
     return os.environ.get(
         'TEMPEST_CONFIG', '/opt/stack/tempest/etc/tempest.conf')

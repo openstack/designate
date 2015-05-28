@@ -31,6 +31,9 @@ if is_service_enabled designate; then
         echo_summary "Initializing Designate"
         init_designate
 
+        echo "Configuring Tempest options for Designate"
+        configure_designate_tempest
+
         echo_summary "Starting Designate"
         start_designate
 

@@ -18,6 +18,8 @@ import functools
 import time
 import types
 
+import netaddr
+
 
 def def_method(f, *args, **kwargs):
     @functools.wraps(f)
@@ -88,8 +90,9 @@ def parameterized(data):
 def wait_for_condition(condition, interval=1, timeout=40):
     end_time = time.time() + timeout
     while time.time() < end_time:
-        if condition():
-            return
+        result = condition()
+        if result:
+            return result
         time.sleep(interval)
     raise Exception("Timed out after {0} seconds".format(timeout))
 
@@ -110,3 +113,12 @@ def memoized(func):
             cache[args] = value
             return value
     return wrapper
+
+
+def shorten_ipv6_addrs(addrs):
+    """Shorten ipv6 addresses"""
+    new_addrs = []
+    for a in addrs:
+        an = netaddr.IPAddress(a, version=6)
+        new_addrs.append(an.format(netaddr.ipv6_compact))
+    return new_addrs
