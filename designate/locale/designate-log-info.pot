@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: designate 2015.1.dev128\n"
+"Project-Id-Version: designate 2015.2.0.dev68\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-04-09 07:02+0000\n"
+"POT-Creation-Date: 2015-05-28 06:04+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
 
-#: designate/context.py:122
+#: designate/context.py:127
 #, python-format
 msgid "Accepted sudo from user %(user)s to tenant %(tenant)s"
 msgstr ""
@@ -27,12 +27,12 @@ msgstr ""
 msgid "Opening TCP Listening Socket on %(host)s:%(port)d"
 msgstr ""
 
-#: designate/dnsutils.py:259
+#: designate/dnsutils.py:267
 #, python-format
 msgid "Opening UDP Listening Socket on %(host)s:%(port)d"
 msgstr ""
 
-#: designate/dnsutils.py:295
+#: designate/dnsutils.py:312
 #, python-format
 msgid "Doing AXFR for %(name)s from %(host)s"
 msgstr ""
@@ -42,11 +42,11 @@ msgstr ""
 msgid "Using policy_file found at: %s"
 msgstr ""
 
-#: designate/service.py:264
+#: designate/service.py:270
 msgid "_handle_tcp thread started"
 msgstr ""
 
-#: designate/service.py:299
+#: designate/service.py:324
 msgid "_handle_udp thread started"
 msgstr ""
 
@@ -60,23 +60,23 @@ msgstr ""
 msgid "Getting auth pipeline: %s"
 msgstr ""
 
-#: designate/api/middleware.py:105
+#: designate/api/middleware.py:116
 msgid "Starting designate keystonecontext middleware"
 msgstr ""
 
-#: designate/api/middleware.py:138
+#: designate/api/middleware.py:149
 msgid "Starting designate noauthcontext middleware"
 msgstr ""
 
-#: designate/api/middleware.py:179
+#: designate/api/middleware.py:190
 msgid "Starting designate maintenance middleware"
 msgstr ""
 
-#: designate/api/middleware.py:213
+#: designate/api/middleware.py:224
 msgid "Starting designate faultwrapper middleware"
 msgstr ""
 
-#: designate/api/middleware.py:290
+#: designate/api/middleware.py:301
 msgid "Starting designate validation middleware"
 msgstr ""
 
@@ -116,11 +116,13 @@ msgid "Deleting domain %(d_id)s / %(d_name)s"
 msgstr ""
 
 #: designate/backend/impl_fake.py:29
+#: designate/backend/impl_infoblox/__init__.py:44
 #, python-format
 msgid "Create Domain %r"
 msgstr ""
 
 #: designate/backend/impl_fake.py:32
+#: designate/backend/impl_infoblox/__init__.py:57
 #, python-format
 msgid "Delete Domain %r"
 msgstr ""
@@ -129,12 +131,29 @@ msgstr ""
 msgid "Started bind9 backend"
 msgstr ""
 
+#: designate/backend/agent_backend/impl_denominator.py:114
+msgid "Started Denominator backend"
+msgstr ""
+
+#: designate/backend/agent_backend/impl_denominator.py:117
+msgid "Stopped Denominator backend"
+msgstr ""
+
 #: designate/backend/agent_backend/impl_fake.py:28
 msgid "Started fake backend, Pool Manager will not work!"
 msgstr ""
 
 #: designate/backend/agent_backend/impl_fake.py:31
 msgid "Stopped fake backend"
+msgstr ""
+
+#: designate/backend/impl_infoblox/__init__.py:54
+#, python-format
+msgid "Update Domain %r"
+msgstr ""
+
+#: designate/backend/impl_infoblox/__init__.py:61
+msgid "Ping"
 msgstr ""
 
 #: designate/central/rpcapi.py:76
@@ -468,13 +487,27 @@ msgstr ""
 msgid "NOT checking for TLDs"
 msgstr ""
 
-#: designate/central/service.py:1832
+#: designate/central/service.py:1848
 #, python-format
 msgid "Creating zone for %(fip_id)s:%(region)s - %(fip_addr)s zone %(zonename)s"
 msgstr ""
 
-#: designate/central/service.py:2269
+#: designate/central/service.py:2287
 msgid "Target Tenant ID found - using scoped policy"
+msgstr ""
+
+#: designate/manage/akamai.py:79
+#, python-format
+msgid "Doing batches of %i"
+msgstr ""
+
+#: designate/manage/akamai.py:90
+msgid "Stopping as there are no more zones."
+msgstr ""
+
+#: designate/manage/akamai.py:99
+#, python-format
+msgid "Uploading %d Zones"
 msgstr ""
 
 #: designate/manage/tlds.py:114
@@ -492,12 +525,12 @@ msgstr ""
 msgid "Initialized mDNS %s endpoint"
 msgstr ""
 
-#: designate/mdns/handler.py:142
+#: designate/mdns/handler.py:146
 #, python-format
 msgid "Serial %(serial)s is the same for master and us for %(domain_id)s"
 msgstr ""
 
-#: designate/mdns/handler.py:146
+#: designate/mdns/handler.py:150
 #, python-format
 msgid "Scheduling AXFR for %(domain_id)s from %(master_addr)s"
 msgstr ""
@@ -612,50 +645,50 @@ msgid ""
 "%(status)s : %(serial)s on nameserver '%(host)s:%(port)s'"
 msgstr ""
 
-#: designate/pool_manager/service.py:104
+#: designate/pool_manager/service.py:105
 #, python-format
 msgid "%d targets setup"
 msgstr ""
 
-#: designate/pool_manager/service.py:119
+#: designate/pool_manager/service.py:120
 #, python-format
 msgid "Using topic %(topic)s for this pool manager instance."
 msgstr ""
 
-#: designate/pool_manager/service.py:131
+#: designate/pool_manager/service.py:132
 msgid "Starting periodic recovery timer"
 msgstr ""
 
-#: designate/pool_manager/service.py:138
+#: designate/pool_manager/service.py:139
 msgid "Starting periodic synchronization timer"
 msgstr ""
 
-#: designate/pool_manager/service.py:231
+#: designate/pool_manager/service.py:238
 #, python-format
 msgid "Creating new domain %s"
 msgstr ""
 
-#: designate/pool_manager/service.py:293
+#: designate/pool_manager/service.py:300
 #, python-format
 msgid "Updating domain %s"
 msgstr ""
 
-#: designate/pool_manager/service.py:354
+#: designate/pool_manager/service.py:361
 #, python-format
 msgid "Updating domain %(domain)s on also_notify %(server)s."
 msgstr ""
 
-#: designate/pool_manager/service.py:363
+#: designate/pool_manager/service.py:370
 #, python-format
 msgid "Updating domain %(domain)s on nameserver %(server)s."
 msgstr ""
 
-#: designate/pool_manager/service.py:380
+#: designate/pool_manager/service.py:387
 #, python-format
 msgid "Deleting domain %s"
 msgstr ""
 
-#: designate/pool_manager/service.py:476
+#: designate/pool_manager/service.py:483
 #, python-format
 msgid "For domain %(domain)s the consensus serial is %(consensus_serial)s."
 msgstr ""

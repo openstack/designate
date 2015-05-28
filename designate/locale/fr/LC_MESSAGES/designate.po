@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  Designate\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-05-04 06:04+0000\n"
-"PO-Revision-Date: 2015-03-13 18:48+0000\n"
+"POT-Creation-Date: 2015-05-28 06:04+0000\n"
+"PO-Revision-Date: 2015-05-26 20:34+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: French (http://www.transifex.com/projects/p/designate/"
 "language/fr/)\n"
@@ -20,10 +20,21 @@ msgstr ""
 "Generated-By: Babel 1.3\n"
 
 #, python-format
-msgid "Policy check succeeded for rule '%(rule)s' on target %(target)s"
+msgid "Could not bind to %(host)s:%(port)s after trying for 30 seconds"
 msgstr ""
-"Vérification de stratégie réussie pour la règle '%(rule)s' pour la cible "
-"%(target)s"
+"Impossible de se connecter au %(host)s:%(port)s après un effort d'une durée "
+"de 30 secondes"
+
+#, python-format
+msgid "Could not read %s. Re-running with sudo"
+msgstr "Impossible de lire %s. Nouvelle exécution avec sudo"
+
+#, python-format
+msgid "Invalid SSL version : %s"
+msgstr "Version SSL non valide : %s"
+
+msgid "Please re-run designate-manage as root."
+msgstr "Veuillez exécuter designate-manage à nouveau en tant que root"
 
 #, python-format
 msgid "Policy check failed for rule '%(rule)s' on target %(target)s"
@@ -32,38 +43,25 @@ msgstr ""
 "cible %(target)s"
 
 #, python-format
-msgid "Could not bind to %(host)s:%(port)s after trying for 30 seconds"
+msgid "Policy check succeeded for rule '%(rule)s' on target %(target)s"
 msgstr ""
-"Impossible de se connecter au %(host)s:%(port)s après un effort d'une durée "
-"de 30 secondes"
-
-msgid "serve() can only be called once"
-msgstr "serve() ne peut être appelé qu'une seule fois"
-
-msgid "Unknown sort direction, must be 'desc' or 'asc'"
-msgstr "Direction d'ordonnancement inconnue, choisir 'desc' ou 'asc'"
-
-#, python-format
-msgid "Could not read %s. Re-running with sudo"
-msgstr "Impossible de lire %s. Nouvelle exécution avec sudo"
-
-msgid "sudo failed, continuing as if nothing happened"
-msgstr "sudo a échoué, continue comme si de rien n'était"
-
-msgid "Please re-run designate-manage as root."
-msgstr "Veuillez exécuter designate-manage à nouveau en tant que root"
-
-#, python-format
-msgid "Unable to find cert_file : %s"
-msgstr "Impossible de trouver le cert_file : %s"
+"Vérification de stratégie réussie pour la règle '%(rule)s' pour la cible "
+"%(target)s"
 
 #, python-format
 msgid "Unable to find ca_file : %s"
 msgstr "Impossible de trouver le ca_file : %s"
 
 #, python-format
+msgid "Unable to find cert_file : %s"
+msgstr "Impossible de trouver le cert_file : %s"
+
+#, python-format
 msgid "Unable to find key_file : %s"
 msgstr "Impossible de trouver le key_file : %s"
+
+msgid "Unknown sort direction, must be 'desc' or 'asc'"
+msgstr "Direction d'ordonnancement inconnue, choisir 'desc' ou 'asc'"
 
 msgid ""
 "When running server in SSL mode, you must specify both a cert_file and "
@@ -72,6 +70,8 @@ msgstr ""
 "Quand vous exécutez un serveur en mode SSL,  vous devez spécifier la valeur "
 "des l'options cert_file et key_file dans votre fichier de configuration"
 
-#, python-format
-msgid "Invalid SSL version : %s"
-msgstr "Version SSL non valide : %s"
+msgid "serve() can only be called once"
+msgstr "serve() ne peut être appelé qu'une seule fois"
+
+msgid "sudo failed, continuing as if nothing happened"
+msgstr "sudo a échoué, continue comme si de rien n'était"

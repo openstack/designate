@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: designate 2015.1.dev159\n"
+"Project-Id-Version: designate 2015.2.0.dev68\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-03-16 06:05+0000\n"
+"POT-Creation-Date: 2015-05-28 06:04+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -52,12 +52,100 @@ msgstr ""
 msgid "Could not bind to %(host)s:%(port)s after trying for 30 seconds"
 msgstr ""
 
-#: designate/service.py:349
+#: designate/service.py:387
 msgid "serve() can only be called once"
 msgstr ""
 
-#: designate/api/v2/controllers/rest.py:87 designate/sqlalchemy/utils.py:68
+#: designate/utils.py:439 designate/sqlalchemy/utils.py:68
 msgid "Unknown sort direction, must be 'desc' or 'asc'"
+msgstr ""
+
+#: designate/backend/impl_infoblox/ibexceptions.py:30
+msgid "An unknown exception occurred."
+msgstr ""
+
+#: designate/backend/impl_infoblox/ibexceptions.py:51
+msgid "The service is unavailable"
+msgstr ""
+
+#: designate/backend/impl_infoblox/ibexceptions.py:66
+#, python-format
+msgid "Infoblox backend is misconfigured: '%(option)s' must be defined."
+msgstr ""
+
+#: designate/backend/impl_infoblox/ibexceptions.py:71
+#, python-format
+msgid "Cannot search '%(objtype)s' object(s): %(content)s [code %(code)s]"
+msgstr ""
+
+#: designate/backend/impl_infoblox/ibexceptions.py:76
+#, python-format
+msgid "Cannot create '%(objtype)s' object(s): %(content)s [code %(code)s]"
+msgstr ""
+
+#: designate/backend/impl_infoblox/ibexceptions.py:81
+#, python-format
+msgid "Cannot delete object with ref %(ref)s: %(content)s [code %(code)s]"
+msgstr ""
+
+#: designate/backend/impl_infoblox/ibexceptions.py:86
+#, python-format
+msgid "Cannot update object with ref %(ref)s: %(content)s [code %(code)s]"
+msgstr ""
+
+#: designate/backend/impl_infoblox/ibexceptions.py:91
+#, python-format
+msgid ""
+"Error occured during function's '%(func_name)s' call: ref %(ref)s: "
+"%(content)s [code %(code)s]"
+msgstr ""
+
+#: designate/backend/impl_infoblox/ibexceptions.py:96
+msgid "No Infoblox Member is available."
+msgstr ""
+
+#: designate/backend/impl_infoblox/ibexceptions.py:100
+#, python-format
+msgid "Infoblox object cannot be parsed from dict: %(data)s"
+msgstr ""
+
+#: designate/backend/impl_infoblox/object_manipulator.py:92
+#, python-format
+msgid "Issue happens during views creating: %s"
+msgstr ""
+
+#: designate/backend/impl_infoblox/object_manipulator.py:137
+#, python-format
+msgid "Infoblox %(obj_type)s already exists: %(ib_object)s"
+msgstr ""
+
+#: designate/backend/impl_infoblox/object_manipulator.py:145
+#, python-format
+msgid "Infoblox %(obj_type)s was created: %(ib_object)s"
+msgstr ""
+
+#: designate/backend/impl_infoblox/object_manipulator.py:164
+#, python-format
+msgid ""
+"Infoblox %(obj_type)s will not be updated because it cannot be found: "
+"%(payload)s"
+msgstr ""
+
+#: designate/backend/impl_infoblox/object_manipulator.py:181
+#, python-format
+msgid "Infoblox object was updated: %s"
+msgstr ""
+
+#: designate/backend/impl_infoblox/object_manipulator.py:185
+#, python-format
+msgid ""
+"Infoblox %(obj_type)s will not be deleted because it cannot be found: "
+"%(payload)s"
+msgstr ""
+
+#: designate/backend/impl_infoblox/object_manipulator.py:198
+#, python-format
+msgid "Infoblox object was deleted: %s"
 msgstr ""
 
 #: designate/cmd/manage.py:113
@@ -71,6 +159,16 @@ msgstr ""
 
 #: designate/cmd/manage.py:119
 msgid "Please re-run designate-manage as root."
+msgstr ""
+
+#: designate/manage/akamai.py:48
+#, python-format
+msgid "Failed to find target with ID %s"
+msgstr ""
+
+#: designate/manage/akamai.py:51
+#, python-format
+msgid "Found multiple targets with ID %s"
 msgstr ""
 
 #: designate/openstack/common/sslutils.py:53

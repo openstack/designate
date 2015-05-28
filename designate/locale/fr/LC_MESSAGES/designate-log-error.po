@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Designate\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-05-04 06:04+0000\n"
+"POT-Creation-Date: 2015-05-28 06:04+0000\n"
 "PO-Revision-Date: 2015-04-14 16:18+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
 "Language-Team: French (http://www.transifex.com/projects/p/designate/"
@@ -19,23 +19,6 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-
-#, python-format
-msgid "Failed to deserialize packet from %(host)s:%(port)d"
-msgstr "N'a pas pu dé-sérialiser le paquet de %(host)s:%(port)d"
-
-#, python-format
-msgid "Unhandled exception while processing request from %(host)s:%(port)d"
-msgstr ""
-"Exception non prise en charge lors du traitement d'une requête en provenance "
-"de  %(host)s:%(port)d"
-
-msgid "Missing context in request, please check."
-msgstr "Contexte manquant dans la requête. Veuillez vérifier."
-
-#, python-format
-msgid "Number of errors: %d"
-msgstr "Nombre d'erreurs : %d"
 
 #, python-format
 msgid ""
@@ -49,11 +32,28 @@ msgstr ""
 msgid "Failed calling Neutron %(region)s - %(endpoint)s"
 msgstr "Échec de l'appel Neutron %(region)s - %(endpoint)s"
 
-msgid "in fixed duration looping call"
-msgstr "en appel en boucle à durée fixe"
+#, python-format
+msgid "Failed to deserialize packet from %(host)s:%(port)d"
+msgstr "N'a pas pu dé-sérialiser le paquet de %(host)s:%(port)d"
+
+msgid "Missing context in request, please check."
+msgstr "Contexte manquant dans la requête. Veuillez vérifier."
+
+#, python-format
+msgid "Number of errors: %d"
+msgstr "Nombre d'erreurs : %d"
+
+msgid "Unhandled exception"
+msgstr "Exception non prise en charge"
+
+#, python-format
+msgid "Unhandled exception while processing request from %(host)s:%(port)d"
+msgstr ""
+"Exception non prise en charge lors du traitement d'une requête en provenance "
+"de  %(host)s:%(port)d"
 
 msgid "in dynamic looping call"
 msgstr "en appel en boucle dynamique"
 
-msgid "Unhandled exception"
-msgstr "Exception non prise en charge"
+msgid "in fixed duration looping call"
+msgstr "en appel en boucle à durée fixe"
