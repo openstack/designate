@@ -26,8 +26,11 @@ CONF = cfg.CONF
 
 
 class PoolCommands(base.Commands):
-    def show_config(self):
+
+    @base.args('--pool_id', help='ID of the pool to be examined',
+        default=CONF['service:central'].default_pool_id)
+    def show_config(self, pool_id):
         print('*' * 100)
         print('Pool Configuration:')
         print('*' * 100)
-        pprint.pprint(objects.Pool.from_config(CONF).to_dict())
+        pprint.pprint(objects.Pool.from_config(CONF, pool_id).to_dict())
