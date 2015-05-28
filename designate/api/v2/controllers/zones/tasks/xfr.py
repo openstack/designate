@@ -29,7 +29,7 @@ class XfrController(rest.RestController):
         response = pecan.response
         context = request.environ['context']
 
-        self.central_api.perform_zone_xfr(context, zone_id)
+        self.central_api.xfr_domain(context, zone_id)
         response.status_int = 202
 
         # NOTE: This is a hack and a half.. But Pecan needs it.
