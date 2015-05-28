@@ -59,7 +59,7 @@ class RecordSetsController(rest.RestController):
             params, self.SORT_KEYS)
 
         # Extract any filter params.
-        accepted_filters = ('name', 'type', 'ttl', 'data', )
+        accepted_filters = ('name', 'type', 'ttl', 'data', 'status', )
         criterion = self._apply_filter_params(
             params, accepted_filters, {})
 
@@ -68,6 +68,7 @@ class RecordSetsController(rest.RestController):
         # Data must be filtered separately, through the Records table
         recordsets_with_data = set()
         data = criterion.pop('data', None)
+        status = criterion.pop('status', None)
 
         # Retrieve recordsets
         recordsets = self.central_api.find_recordsets(
@@ -84,6 +85,16 @@ class RecordSetsController(rest.RestController):
 
             for recordset in recordsets:
                 if recordset.id in recordsets_with_data:
+                    new_rsets.append(recordset)
+
+            recordsets = new_rsets
+
+        # 'status' filter param: only return recordsets with matching status
+        if status:
+            new_rsets = RecordSetList()
+
+            for recordset in recordsets:
+                if recordset.status == status:
                     new_rsets.append(recordset)
 
             recordsets = new_rsets
