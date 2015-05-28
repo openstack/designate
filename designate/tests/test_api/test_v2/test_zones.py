@@ -461,6 +461,37 @@ class ApiV2ZonesTest(ApiV2TestCase):
         self.assertEqual(masters, response.json['masters'])
         self.assertEqual(1, response.json['serial'])
 
+    def test_xfr_request(self):
+        # Create a zone
+        fixture = self.get_domain_fixture('SECONDARY', 0)
+        fixture['email'] = cfg.CONF['service:central'].managed_resource_email
+        fixture['attributes'] = [{"key": "master", "value": "10.0.0.10"}]
+
+        # Create a zone
+        zone = self.create_domain(**fixture)
+
+        response = self.client.post_json(
+            '/zones/%s/tasks/xfr' % zone['id'],
+            None, status=202)
+
+        # Check the headers are what we expect
+        self.assertEqual(202, response.status_int)
+        self.assertEqual('application/json', response.content_type)
+
+    def test_invalid_xfr_request(self):
+        # Create a zone
+
+        # Create a zone
+        zone = self.create_domain()
+
+        response = self.client.post_json(
+            '/zones/%s/tasks/xfr' % zone['id'],
+            None, status=400)
+
+        # Check the headers are what we expect
+        self.assertEqual(400, response.status_int)
+        self.assertEqual('application/json', response.content_type)
+
     def test_update_secondary_email_invalid_object(self):
         # Create a zone
         fixture = self.get_domain_fixture('SECONDARY', 0)
