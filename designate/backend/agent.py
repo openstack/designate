@@ -42,6 +42,8 @@ CONF = cfg.CONF
 class AgentPoolBackend(base.Backend):
     __plugin_name__ = 'agent'
 
+    __backend_status__ = 'untested'
+
     def __init__(self, target):
         super(AgentPoolBackend, self).__init__(target)
         self.host = self.options.get('host')

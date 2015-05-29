@@ -33,6 +33,8 @@ CFG_GROUP = 'backend:agent:bind9'
 class Bind9Backend(base.AgentBackend):
     __plugin_name__ = 'bind9'
 
+    __backend_status__ = 'untested'
+
     @classmethod
     def get_cfg_opts(cls):
         group = cfg.OptGroup(

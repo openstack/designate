@@ -90,6 +90,8 @@ class Denominator(object):
 class DenominatorBackend(base.AgentBackend):
     __plugin_name__ = 'denominator'
 
+    __backend_status__ = 'untested'
+
     def __init__(self, agent_service):
         super(DenominatorBackend, self).__init__(agent_service)
         self.denominator = Denominator(cfg.CONF[CFG_GROUP])

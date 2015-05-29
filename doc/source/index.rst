@@ -51,6 +51,7 @@ Reference Documentation
    integrations
    tempest
    gmr
+   support-matrix
 
 Source Documentation
 ====================

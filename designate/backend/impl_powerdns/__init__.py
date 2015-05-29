@@ -38,6 +38,8 @@ def _map_col(keys, col):
 class PowerDNSBackend(base.Backend):
     __plugin_name__ = 'powerdns'
 
+    __backend_status__ = 'integrated'
+
     @classmethod
     def get_cfg_opts(cls):
         group = cfg.OptGroup('backend:powerdns')

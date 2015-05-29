@@ -209,6 +209,8 @@ def build_zone(client, target, domain):
 class AkamaiBackend(base.Backend):
     __plugin_name__ = 'akamai'
 
+    __backend_status__ = 'release-compatible'
+
     @classmethod
     def get_cfg_opts(cls):
         group = cfg.OptGroup(
