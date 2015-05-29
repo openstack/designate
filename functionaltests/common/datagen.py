@@ -18,6 +18,7 @@ import random
 
 from functionaltests.api.v2.models.zone_model import ZoneModel
 from functionaltests.api.v2.models.recordset_model import RecordsetModel
+from functionaltests.api.v2.models.pool_model import PoolModel
 
 
 def random_ip():
@@ -106,3 +107,16 @@ def random_mx_recordset(zone_name, pref=None, host=None, **kwargs):
         host = random_string(prefix='mail', suffix='.' + zone_name)
     data = "{0} {1}".format(pref, host)
     return random_recordset_data('MX', zone_name, records=[data], **kwargs)
+
+
+def random_pool_data():
+    ns_zone = random_zone_data().name
+    data = {
+        "name": random_string(),
+    }
+    ns_records = []
+    for i in range(0, 2):
+        ns_records.append("ns%s.%s" % (i, ns_zone))
+    data["ns_records"] = []
+
+    return PoolModel.from_dict(data)
