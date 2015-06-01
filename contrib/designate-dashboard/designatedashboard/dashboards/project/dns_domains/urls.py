@@ -20,6 +20,7 @@ from .views import IndexView  # noqa
 from .views import RecordsView  # noqa
 from .views import UpdateDomainView  # noqa
 from .views import UpdateRecordView  # noqa
+from .views import ViewRecordDetailsView  # noqa
 
 
 urlpatterns = patterns(
@@ -42,7 +43,10 @@ urlpatterns = patterns(
     url(r'^(?P<domain_id>[^/]+)/records/create$',
         CreateRecordView.as_view(),
         name='create_record'),
-    url(r'^(?P<domain_id>[^/]+)/records/(?P<record_id>[^/]+)/$',
+    url(r'^(?P<domain_id>[^/]+)/records/(?P<record_id>[^/]+)/update$',
         UpdateRecordView.as_view(),
         name='update_record'),
+    url(r'^(?P<domain_id>[^/]+)/records/(?P<record_id>[^/]+)/$',
+        ViewRecordDetailsView.as_view(),
+        name='view_record'),
 )

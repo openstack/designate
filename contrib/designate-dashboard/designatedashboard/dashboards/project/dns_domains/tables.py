@@ -180,11 +180,11 @@ class DomainsTable(tables.DataTable):
         row_actions = (ManageRecords, EditDomain, DeleteDomain,)
 
 
-def update_record_link(record):
+def record__details_link(record):
     '''Returns a link to the view for updating DNS records.'''
 
     return urlresolvers.reverse(
-        "horizon:project:dns_domains:update_record",
+        "horizon:project:dns_domains:view_record",
         args=(record.domain_id, record.id))
 
 
@@ -194,8 +194,7 @@ class RecordsTable(tables.DataTable):
 
     name = tables.Column("name",
                          verbose_name=_("Name"),
-                         link=update_record_link,
-                         link_classes=('ajax-modal',)
+                         link=record__details_link,
                          )
 
     type = tables.Column("type",

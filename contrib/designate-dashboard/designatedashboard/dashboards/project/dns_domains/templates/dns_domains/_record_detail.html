@@ -1,0 +1,36 @@
+{% load i18n sizeformat %}
+
+<h3><a href="{% url 'horizon:project:dns_domains:records' domain_id %}">{% trans "All Records" %}</a></h3>
+
+<h4>{{ record.name|default:_("None") }}</h4>
+
+<div class="info detail">
+  <dl class="dl-horizontal">
+    <dt>{% trans "Name" %}</dt>
+    <dd>{{ record.name|default:_("None") }}</dd>
+    <dt>{% trans "ID" %}</dt>
+    <dd>{{ record.id|default:_("None") }}</dd>
+    <dt>{% trans "Type" %}</dt>
+    <dd>{{ record.type|default:_("Unknown") }}</dd>
+    <dt>{% trans "Description" %}</dt>
+    <dd>{{ record.description|default:_("None") }}</dd>
+    <dt>{% trans "Record Data" %}</dt>
+    <dd>{{ record.data|default:_("None") }}</dd>
+    <dt>{% trans "Priority" %}</dt>
+    <dd>{{ record.priority|yesno|capfirst }}</dd>
+    <dt>{% trans "TTL" %}</dt>
+    <dd>{{ record.ttl|default:_("None") }}</dd>
+    <dt>{% trans "Created" %}</dt>
+    {% if record.created_at %}
+      <dd>{{ record.created_at|parse_isotime }}</dd>
+    {% else %}
+      <dd>{% trans "Unknown" %}</dd>
+    {% endif %}
+    <dt>{% trans "Updated" %}</dt>
+    {% if record.updated_at %}
+      <dd>{{ record.updated_at|parse_isotime }}</dd>
+    {% else %}
+      <dd>{% trans "Unknown" %}</dd>
+    {% endif %}
+  </dl>
+</div>
