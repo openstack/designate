@@ -33,3 +33,4 @@ functionaltests/tempest.log
 functionaltests/.testrepository/
 *.ipynb
 /.ipynb_checkpoints/*
+flake8_results.html
