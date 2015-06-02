@@ -145,6 +145,9 @@ class EnhancedDNSClient(object):
                 raise DuplicateDomain()
             elif 'You do not have access to edit this zone' in str(e):
                 raise Forbidden()
+            elif 'basic auth failed' in str(e):
+                raise exceptions.ConfigurationError(
+                    'Invalid Akamai credentials')
             else:
                 raise EnhancedDNSException('Akamai Communication Failure: %s'
                                            % e)
@@ -158,6 +161,9 @@ class EnhancedDNSClient(object):
                 raise DuplicateDomain()
             elif 'You do not have access to edit this zone' in str(e):
                 raise Forbidden()
+            elif 'basic auth failed' in str(e):
+                raise exceptions.ConfigurationError(
+                    'Invalid Akamai credentials')
             else:
                 raise EnhancedDNSException('Akamai Communication Failure: %s'
                                            % e)
@@ -180,6 +186,9 @@ class EnhancedDNSClient(object):
                 pass
             elif 'The following zones are still delegated to Akamai' in str(e):
                 raise DelegationExists()
+            elif 'basic auth failed' in str(e):
+                raise exceptions.ConfigurationError(
+                    'Invalid Akamai credentials')
             else:
                 raise EnhancedDNSException('Akamai Communication Failure: %s'
                                            % e)
