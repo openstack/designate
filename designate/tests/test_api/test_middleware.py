@@ -79,6 +79,23 @@ class KeystoneContextMiddlewareTest(ApiTestCase):
 
         self.assertEqual(response.status_code, 401)
 
+    def test_process_unscoped_token(self):
+        app = middleware.KeystoneContextMiddleware({})
+
+        request = FakeRequest()
+
+        request.headers = {
+            'X-Auth-Token': 'AuthToken',
+            'X-User-ID': 'UserID',
+            'X-Tenant-ID': None,
+            'X-Roles': 'admin,Member',
+        }
+
+        # Process the request
+        response = app(request)
+
+        self.assertEqual(response.status_code, 401)
+
 
 class NoAuthContextMiddlewareTest(ApiTestCase):
     def test_process_request(self):
