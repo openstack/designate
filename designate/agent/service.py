@@ -43,6 +43,8 @@ class Service(service.DNSService, service.Service):
     def _dns_application(self):
         # Create an instance of the RequestHandler class
         application = handler.RequestHandler()
+        if cfg.CONF['service:agent'].notify_delay > 0.0:
+            application = dnsutils.LimitNotifyMiddleware(application)
         application = dnsutils.SerializationMiddleware(application)
 
         return application

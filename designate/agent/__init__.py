@@ -40,6 +40,9 @@ OPTS = [
                help='The backend driver to use'),
     cfg.StrOpt('transfer-source', default=None,
                help='An IP address to be used to fetch zones transferred in'),
+    cfg.FloatOpt('notify-delay', default=0.0,
+               help='Delay after a NOTIFY arrives for a zone that the Agent '
+               'will pause and drop subsequent NOTIFYs for that zone'),
 ]
 
 cfg.CONF.register_opts(OPTS, group='service:agent')
