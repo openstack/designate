@@ -161,6 +161,29 @@ class CreateRecordView(BaseRecordFormView):
     template_name = 'project/dns_domains/create_record.html'
 
 
+class ViewRecordDetailsView(HorizonTemplateView):
+    template_name = 'project/dns_domains/record_detail.html'
+
+    def get_record(self):
+        domain_id = self.kwargs['domain_id']
+        record_id = self.kwargs['record_id']
+        try:
+            return api.designate.record_get(self.request, domain_id, record_id)
+        except Exception:
+            redirect = reverse('horizon:project:dns_domains:records',
+                               args=(self.kwargs['domain_id'],))
+            exceptions.handle(self.request,
+                              _('Unable to retrieve domain record.'),
+                              redirect=redirect)
+
+    def get_context_data(self, **kwargs):
+        context = super(ViewRecordDetailsView, self).get_context_data(**kwargs)
+        self.record = self.get_record()
+        context["record"] = self.record
+        context["domain_id"] = self.kwargs['domain_id']
+        return context
+
+
 class UpdateRecordView(BaseRecordFormView):
     form_class = RecordUpdate
     template_name = 'project/dns_domains/update_record.html'
