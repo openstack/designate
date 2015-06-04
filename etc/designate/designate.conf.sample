@@ -373,3 +373,24 @@ debug = False
 # Path for Oslo Concurrency to store lock files, defaults to the value
 # of the state_path setting.
 #lock_path = $state_path
+
+
+########################
+## Hook Points
+########################
+# Hook Points are enabled when added to the config and there has been
+# a package that provides the corresponding named designate.hook_point
+# entry point.
+
+# [hook_point:name_of_hook_point]
+# some_param_for_hook = 42
+# Hooks can be disabled in the config
+# enabled = False
+
+# Hook can also be applied to the import path when the hook has not
+# been given an explicit name. The name is created from the hook
+# target function / method:
+#
+#   name = '%s.%s' % (func.__module__, func.__name__)
+
+# [hook_point:designate.api.v2.controllers.zones.get_one]
