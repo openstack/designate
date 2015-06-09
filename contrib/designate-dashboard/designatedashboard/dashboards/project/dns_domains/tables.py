@@ -16,6 +16,7 @@ import logging
 from django.core import urlresolvers
 from django.utils.translation import ugettext_lazy as _  # noqa
 
+from horizon import messages
 from horizon import tables
 from horizon.utils import memoized
 
