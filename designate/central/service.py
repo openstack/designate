@@ -800,8 +800,9 @@ class Service(service.RPCService, service.Service):
                 # Record the Parent Domain ID
                 domain.parent_domain_id = parent_domain.id
             else:
-                raise exceptions.Forbidden('Unable to create subdomain in '
-                                           'another tenants domain')
+                raise exceptions.IllegalChildDomain('Unable to create'
+                                                    'subdomain in another '
+                                                    'tenants domain')
 
         # Handle super-domains appropriately
         subdomains = self._is_superdomain(context, domain.name, domain.pool_id)
@@ -809,10 +810,10 @@ class Service(service.RPCService, service.Service):
             LOG.debug("Domain '{0}' is a superdomain.".format(domain.name))
             for subdomain in subdomains:
                 if subdomain.tenant_id != domain.tenant_id:
-                    raise exceptions.Forbidden('Unable to create domain '
-                                               'because another tenant '
-                                               'owns a subdomain of '
-                                               'the domain')
+                    raise exceptions.IllegalParentDomain('Unable to create '
+                                                     'domain because another '
+                                                     'tenant owns a subdomain '
+                                                     'of the domain')
         # If this succeeds, subdomain parent IDs will be updated
         # after domain is created
 
