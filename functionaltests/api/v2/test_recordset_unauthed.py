@@ -29,6 +29,7 @@ class RecordsetTest(DesignateV2Test):
     def setUp(self):
         super(RecordsetTest, self).setUp()
         self.increase_quotas(user='default')
+        self.ensure_tld_exists('com')
         resp, self.zone = ZoneClient.as_user('default').post_zone(
             datagen.random_zone_data())
         ZoneClient.as_user('default').wait_for_zone(self.zone.id)

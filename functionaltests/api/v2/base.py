@@ -14,18 +14,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from tempest_lib import exceptions
 from oslo_config import cfg
+from tempest_lib import exceptions
 
 from functionaltests.api.v2.clients.quotas_client import QuotasClient
+from functionaltests.api.v2.clients.tld_client import TLDClient
 from functionaltests.api.v2.models.quotas_model import QuotasModel
+from functionaltests.api.v2.models.tld_model import TLDModel
 from functionaltests.common.base import BaseDesignateTest
 
 
 class DesignateV2Test(BaseDesignateTest):
-
-    def __init__(self, *args, **kwargs):
-        super(DesignateV2Test, self).__init__(*args, **kwargs)
 
     def increase_quotas(self, user):
         if cfg.CONF.testconfig.no_admin_setup:
@@ -38,6 +37,15 @@ class DesignateV2Test(BaseDesignateTest):
                     'recordset_records': 9999999,
                     'zone_records': 9999999,
                     'zone_recordsets': 9999999}}))
+
+    def ensure_tld_exists(self, tld='com'):
+        if cfg.CONF.testconfig.no_admin_setup:
+            return
+        try:
+            tld_model = TLDModel.from_dict({'name': tld})
+            TLDClient.as_user('admin').post_tld(tld_model)
+        except exceptions.Conflict:
+            pass
 
     def _assert_invalid_uuid(self, method, *args, **kw):
         """

@@ -24,6 +24,7 @@ from functionaltests.api.v2.models.transfer_accepts_model import \
     TransferAcceptsModel
 from functionaltests.api.v2.models.recordset_model import RecordsetModel
 from functionaltests.api.v2.models.zone_model import ZoneModel
+from functionaltests.api.v2.models.tld_model import TLDModel
 
 
 def random_ip():
@@ -213,3 +214,10 @@ def random_sshfp_recordset(zone_name, algorithm_number=None,
 def random_txt_recordset(zone_name, data=None, **kwargs):
     data = data or "v=spf1 +all"
     return random_recordset_data('TXT', zone_name, records=[data], **kwargs)
+
+
+def random_tld_data():
+    data = {
+        "name": random_string(prefix='tld')
+    }
+    return TLDModel.from_dict(data)

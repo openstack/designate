@@ -75,6 +75,7 @@ class RecordsetTest(DesignateV2Test):
     def setUp(self):
         super(RecordsetTest, self).setUp()
         self.increase_quotas(user='default')
+        self.ensure_tld_exists('com')
         self.zone = self.useFixture(ZoneFixture()).created_zone
 
     def test_list_recordsets(self):
@@ -200,6 +201,7 @@ class RecordsetOwnershipTest(DesignateV2Test):
         super(RecordsetOwnershipTest, self).setUp()
         self.increase_quotas(user='default')
         self.increase_quotas(user='alt')
+        self.ensure_tld_exists('com')
 
     def test_no_create_recordset_by_alt_tenant(self):
         zone = self.useFixture(ZoneFixture(user='default')).created_zone
