@@ -683,14 +683,14 @@ class Service(service.RPCService, service.Service):
     @notification('dns.tld.delete')
     @transaction
     def delete_tld(self, context, tld_id):
-        # Known issue - self.check_for_tld is not reset here.  So if the last
-        # TLD happens to be deleted, then we would incorrectly do the TLD
-        # validations.
-        # This decision was influenced by weighing the (ultra low) probability
-        # of hitting this issue vs doing the checks for every delete.
         policy.check('delete_tld', context, {'tld_id': tld_id})
 
         tld = self.storage.delete_tld(context, tld_id)
+
+        # We need to ensure that if there's no more TLD's we'll not break
+        # domain creation.
+        if not self.storage.find_tlds(context, limit=1):
+            self.check_for_tlds = False
 
         return tld
 
