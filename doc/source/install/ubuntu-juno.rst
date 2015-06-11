@@ -64,16 +64,18 @@ MySQL
 Create the MySQL user
 
 ::
+    $ mysql -u root -p
+    Enter password: <enter your password here>
 
-    $ GRANT ALL ON designate.* TO 'designate'@'localhost' IDENTIFIED BY 'designate'
-    $ GRANT ALL ON powerdns.* TO 'powerdns'@'localhost' IDENTIFIED BY 'powerdns'
+    mysql> GRANT ALL ON designate.* TO 'designate'@'localhost' IDENTIFIED BY 'designate';
+    mysql> GRANT ALL ON powerdns.* TO 'powerdns'@'localhost' IDENTIFIED BY 'powerdns';
 
 Create the database
 
 ::
 
-    $ CREATE DATABASE designate
-    $ CREATE DATABASE powerdns
+    mysql> CREATE DATABASE `designate` CHARACTER SET utf8 COLLATE utf8_general_ci;
+    mysql> CREATE DATABASE `powerdns` CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 .. _install-ubuntu-prereq-pdns:
 
@@ -90,7 +92,7 @@ Settings::
 
 Edit the MySQL backend settings::
 
-    $ sudo editor /etc/powerdns/pdns.d/pdns.local.gmysql
+    $ sudo editor /etc/powerdns/pdns.d/pdns.local.gmysql.conf
 
 Settings::
 
@@ -102,7 +104,7 @@ Settings::
 Delete a couple unnecessary files::
 
     $ rm  /etc/powerdns/bindbackend.conf
-    $ rm /etc/powerdns/pdns.dpdns.simplebind.conf
+    $ rm /etc/powerdns/pdns.d/pdns.simplebind.conf
 
 .. _install-ubuntu-source:
 
@@ -183,7 +185,7 @@ Designate
 
 Copy or mirror the configuration from this sample file here:
 
-.. literalinclude:: /examples/config-mysql-pdns.conf
+.. literalinclude:: /examples/basic-config-sample-juno.conf
    :language: ini
 
 Sync Database schemas

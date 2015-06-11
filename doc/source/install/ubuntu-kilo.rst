@@ -13,25 +13,9 @@
     License for the specific language governing permissions and limitations
     under the License.
 
-*********************************
-Development Environment on Ubuntu
-*********************************
-
-Designate is comprised of four main components :ref:`designate-api`, :ref:`designate-central`,
-:ref:`designate-mdns`, and :ref:`designate-pool-manager`, supported by a few
-standard open source components. For more information see :ref:`architecture`.
-
-There are many different options for customizing Designate, and two of these options
-have a major impact on the installation process:
-
-* The storage backend used (SQLite or MySQL)
-* The DNS backend used (PowerDNS or BIND9)
-
-This guide will walk you through setting up a typical development environment for Designate,
-using BIND9 as the DNS backend and MySQL as the storage backend. For a more complete discussion on
-installation & configuration options, please see :ref:`architecture` and :ref:`production-architecture`.
-
-For this guide you will need access to an Ubuntu Server (14.04).
+*************************
+Installing Kilo on Ubuntu
+*************************
 
 .. _Development Environment:
 
@@ -61,8 +45,13 @@ Installing Designate
    $ git clone https://github.com/openstack/designate.git
    $ cd designate
 
+3. Checkout a specific version (in this case, the Kilo release)
 
-3. Setup a virtualenv
+::
+
+   $ git checkout stable/kilo
+
+4. Setup a virtualenv
 
 .. note::
    This is an optional step, but will allow Designate's dependencies
@@ -74,8 +63,7 @@ Installing Designate
    $ virtualenv --no-site-packages .venv
    $ . .venv/bin/activate
 
-
-4. Install Designate and its dependencies
+5. Install Designate and its dependencies
 
 .. note::
    If you run into the error: Installed distribution pbr 1.1.1 conflicts with requirement pbr>=0.6,!=0.7,<1.0, try doing pip install pbr==0.11.0
@@ -85,8 +73,14 @@ Installing Designate
    $ pip install -r requirements.txt -r test-requirements.txt
    $ python setup.py develop
 
+If you run into the error: "Installed distribution oslo.config 1.9.3 conflicts with requirement oslo.config>=1.11.0", add the following into requirements.txt then repeat step 5:
 
-5. Change directories to the etc/designate folder.
+::
+
+   python-keystoneclient>=1.1.0,<1.4.0
+   pycadf>=0.8.0,<0.9.0
+
+6. Change directories to the etc/designate folder.
 
 .. note::
     Everything from here on out should take place in or below your designate/etc folder
@@ -96,21 +90,21 @@ Installing Designate
    $ cd etc/designate
 
 
-6. Create Designate's config files by copying the sample config files
+7. Create Designate's config files by copying the sample config files
 
 ::
 
    $ ls *.sample | while read f; do cp $f $(echo $f | sed "s/.sample$//g"); done
 
 
-7. Make the directory for Designate’s log files
+8. Make the directory for Designate’s log files
 
 ::
 
    $ mkdir -p ../../log
 
 
-8. Make the directory for Designate’s state files
+9. Make the directory for Designate’s state files
 
 ::
 
@@ -133,7 +127,7 @@ Open the designate.conf file for editing
 
 Copy or mirror the configuration from this sample file here:
 
-.. literalinclude:: ../examples/basic-config-sample.conf
+.. literalinclude:: ../examples/basic-config-sample-kilo.conf
     :language: ini
 
 
