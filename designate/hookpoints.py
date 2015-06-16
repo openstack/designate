@@ -13,14 +13,56 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import sys
 import functools
+import logging as logmodule
 
+import pkg_resources
 from oslo_config import cfg
 from oslo_log import log as logging
 from stevedore import hook
 
 
-LOG = logging.getLogger(__name__)
+class HookLog(object):
+    """Since logs are applied at import time, we record the log
+    messages for later use.
+    """
+    LVLS = dict(
+        debug=logmodule.DEBUG,
+        info=logmodule.INFO,
+        warning=logmodule.WARNING,
+        error=logmodule.ERROR,
+        critical=logmodule.CRITICAL,
+        exception=logmodule.ERROR,
+    )
+
+    def __init__(self):
+        self.messages = []
+
+    def log(self, logger=None):
+        logger = logging.getLogger(__name__)
+        for level, msg, args, kw in self.messages:
+            logger.log(level, msg, *args, **kw)
+
+    __call__ = log
+
+    def capture(self, lvl, msg, *args, **kw):
+        self.messages.append((lvl, msg, args, kw))
+
+    def __getattr__(self, name):
+        if name in self.LVLS:
+            return functools.partial(self.capture, self.LVLS[name])
+
+LOG = HookLog()
+
+
+def log_hook_setup():
+    """Replay the log messages during the hook point initialization.
+
+    Logging isn't configured when we set up the hook points, so this
+    will replay the log once the config has been loaded.
+    """
+    LOG()
 
 
 class BaseHook(object):
@@ -53,9 +95,11 @@ class BaseHook(object):
 
 class hook_point(object):
     NAMESPACE = 'designate.hook_point'
+    LOG_LEVEL = logmodule.INFO
 
     def __init__(self, name=None):
         self._name = name
+        self.log = []
 
     def update_config_opts(self, group, hooks):
         hooks_found = False
@@ -95,6 +139,7 @@ class hook_point(object):
         Try to inspect the function for a hook target path if one
         wasn't passed in and set up the necessary config options.
         """
+        LOG.debug('Initializing hook: %s', f)
         self.name = self.find_name(f)
         self.group = 'hook_point:%s' % self.name
         self.hooks = self.hook_manager(self.name)
@@ -119,3 +164,20 @@ class hook_point(object):
         for h in self.hooks:
             f = self.enable_hook(h, f)
         return f
+
+
+if __name__ == '__main__':
+    # Use this script to find existing hook points.
+    hook_names = sys.argv[1:]
+
+    print('Using namespace: %s' % hook_point.NAMESPACE)
+
+    print('pkg_resources has the following entry points:')
+    for ep in pkg_resources.iter_entry_points(hook_point.NAMESPACE):
+        print(ep)
+
+    print()
+    print('stevedore found the following hooks:')
+    for name in hook_names:
+        for hp in hook.HookManager(hook_point.NAMESPACE, name):
+            print(hp)

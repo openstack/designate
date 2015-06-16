@@ -20,6 +20,7 @@ from oslo_log import log as logging
 
 from designate import service
 from designate import utils
+from designate import hookpoints
 from designate.pool_manager import service as pool_manager_service
 
 
@@ -32,10 +33,16 @@ CONF.import_opt('threads', 'designate.pool_manager',
 
 def main():
     utils.read_config('designate', sys.argv)
+
     logging.setup(CONF, 'designate')
+
     utils.setup_gmr(log_dir=cfg.CONF.log_dir)
 
     server = pool_manager_service.Service(
-        threads=CONF['service:pool_manager'].threads)
+        threads=CONF['service:pool_manager'].threads
+    )
+
+    hookpoints.log_hook_setup()
+
     service.serve(server, workers=CONF['service:pool_manager'].workers)
     service.wait()

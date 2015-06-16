@@ -19,6 +19,7 @@ from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_service import service
 
+from designate import hookpoints
 from designate import utils
 from designate.api import service as api_service
 
@@ -32,6 +33,8 @@ def main():
     utils.read_config('designate', sys.argv)
     logging.setup(CONF, 'designate')
     utils.setup_gmr(log_dir=cfg.CONF.log_dir)
+
+    hookpoints.log_hook_setup()
 
     server = api_service.Service(threads=CONF['service:api'].threads)
     launcher = service.launch(CONF, server, CONF['service:api'].workers)
