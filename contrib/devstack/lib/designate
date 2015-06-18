@@ -27,11 +27,14 @@ DESIGNATE_REPO=${DESIGNATE_REPO:-${GIT_BASE}/openstack/designate.git}
 DESIGNATE_BRANCH=${DESIGNATE_BRANCH:-master}
 DESIGNATECLIENT_REPO=${DESIGNATECLIENT_REPO:-${GIT_BASE}/openstack/python-designateclient.git}
 DESIGNATECLIENT_BRANCH=${DESIGNATECLIENT_BRANCH:-master}
+DESIGNATEDASHBOARD_REPO=${DESIGNATEDASHBOARD_REPO:-${GIT_BASE}/openstack/designate-dashboard.git}
+DESIGNATEDASHBOARD_BRANCH=${DESIGNATEDASHBOARD_BRANCH:-master}
 
 # Set up default paths
 DESIGNATE_BIN_DIR=$(get_python_exec_prefix)
 DESIGNATE_DIR=$DEST/designate
 DESIGNATECLIENT_DIR=$DEST/python-designateclient
+DESIGNATEDASHBOARD_DIR=$DEST/designate-dashboard
 DESIGNATE_CONF_DIR=/etc/designate
 DESIGNATE_STATE_PATH=${DESIGNATE_STATE_PATH:=$DATA_DIR/designate}
 DESIGNATE_CONF=$DESIGNATE_CONF_DIR/designate.conf
@@ -284,9 +287,10 @@ function install_designateclient {
 
 # install_designatedashboard - Collect source and prepare
 function install_designatedashboard {
-    ln -fs $DESIGNATE_DIR/contrib/designate-dashboard/designatedashboard/enabled/_70_dns_add_group.py $HORIZON_DIR/openstack_dashboard/local/enabled/70_dns_add_group.py
-    ln -fs $DESIGNATE_DIR/contrib/designate-dashboard/designatedashboard/enabled/_71_dns_project.py $HORIZON_DIR/openstack_dashboard/local/enabled/71_dns_project.py
-    setup_develop $DESIGNATE_DIR/contrib/designate-dashboard
+    git_clone $DESIGNATEDASHBOARD_REPO $DESIGNATEDASHBOARD_DIR $DESIGNATEDASHBOARD_BRANCH
+    setup_develop $DESIGNATEDASHBOARD_DIR
+    ln -fs $DESIGNATEDASHBOARD_DIR/designatedashboard/enabled/_70_dns_add_group.py $HORIZON_DIR/openstack_dashboard/local/enabled/70_dns_add_group.py
+    ln -fs $DESIGNATEDASHBOARD_DIR/designatedashboard/enabled/_71_dns_project.py $HORIZON_DIR/openstack_dashboard/local/enabled/71_dns_project.py
 }
 
 # start_designate - Start running processes, including screen

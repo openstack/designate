@@ -22,6 +22,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       override.vm.synced_folder "../../../python-designateclient", "/opt/stack/python-designateclient"
     end
 
+    if File.directory?("../../../designate-dashboard")
+      override.vm.synced_folder "../../../designate-dashboard", "/opt/stack/designate-dashboard"
+    end
+
     if File.directory?("../../../../openstack/rally")
       override.vm.synced_folder "../../../../openstack/rally", "/opt/stack/rally"
     end
@@ -40,6 +44,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
     if File.directory?("../../../python-designateclient")
       override.vm.synced_folder "../../../python-designateclient", "/opt/stack/python-designateclient", type: "nfs"
+    end
+
+    if File.directory?("../../../designate-dashboard")
+      override.vm.synced_folder "../../../designate-dashboard", "/opt/stack/designate-dashboard", type: "nfs"
     end
 
     if File.directory?("../../../../openstack/rally")

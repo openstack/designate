@@ -1,8 +1,0 @@
-include AUTHORS
-include ChangeLog
-include README.rst
-recursive-include designatedashboard *.html
-exclude .gitignore
-exclude .gitreview
-
-global-exclude *.pyc
