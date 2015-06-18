@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+from tempest_lib import exceptions
+
 from functionaltests.api.v2.clients.quotas_client import QuotasClient
 from functionaltests.api.v2.models.quotas_model import QuotasModel
 from functionaltests.common.base import BaseDesignateTest
@@ -33,3 +35,21 @@ class DesignateV2Test(BaseDesignateTest):
                     'recordset_records': 9999999,
                     'zone_records': 9999999,
                     'zone_recordsets': 9999999}}))
+
+    def _assert_invalid_uuid(self, method, *args, **kw):
+        """
+        Test that UUIDs used in the URL is valid.
+        """
+        self._assert_exception(
+            exceptions.BadRequest, 'invalid_uuid', 400, method, *args)
+
+    def _assert_exception(self, exc, type_, status, method, *args, **kwargs):
+        """
+        Checks the response that a api call with a exception contains the
+        wanted data.
+        """
+        try:
+            method(*args, **kwargs)
+        except exc as e:
+            self.assertEqual(status, e.resp_body['code'])
+            self.assertEqual(type_, e.resp_body['type'])
