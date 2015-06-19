@@ -2,7 +2,7 @@
 # Install and start **Designate** service
 
 # To enable Designate services, add the following to localrc
-# enable_service designate,designate-central,designate-api,designate-pool-manager,designate-mdns,designate-agent,designate-sink
+# enable_service designate,designate-central,designate-api,designate-pool-manager,designate-zone-manager,designate-mdns,designate-agent,designate-sink
 
 # stack.sh
 # ---------
@@ -295,6 +295,7 @@ function start_designate {
     run_process designate-central "$DESIGNATE_BIN_DIR/designate-central --config-file $DESIGNATE_CONF"
     run_process designate-api "$DESIGNATE_BIN_DIR/designate-api --config-file $DESIGNATE_CONF"
     run_process designate-pool-manager "$DESIGNATE_BIN_DIR/designate-pool-manager --config-file $DESIGNATE_CONF"
+    run_process designate-zone-manager "$DESIGNATE_BIN_DIR/designate-zone-manager --config-file $DESIGNATE_CONF"
     run_process designate-mdns "$DESIGNATE_BIN_DIR/designate-mdns --config-file $DESIGNATE_CONF"
     run_process designate-agent "$DESIGNATE_BIN_DIR/designate-agent --config-file $DESIGNATE_CONF"
     run_process designate-sink "$DESIGNATE_BIN_DIR/designate-sink --config-file $DESIGNATE_CONF"
@@ -315,6 +316,7 @@ function stop_designate {
     stop_process designate-central
     stop_process designate-api
     stop_process designate-pool-manager
+    stop_process designate-zone-manager
     stop_process designate-mdns
     stop_process designate-agent
     stop_process designate-sink
