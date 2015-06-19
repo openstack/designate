@@ -20,6 +20,13 @@ class Record(base.DictObjectMixin, base.PersistentObjectMixin,
     # TODO(kiall): `hash` is an implementation detail of our SQLA driver,
     #              so we should remove it.
     FIELDS = {
+        'shard': {
+            'schema': {
+                'type': 'integer',
+                'minimum': 0,
+                'maximum': 4095
+            }
+        },
         'data': {},
         'domain_id': {
             'schema': {

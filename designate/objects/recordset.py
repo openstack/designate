@@ -68,6 +68,13 @@ class RecordSet(base.DictObjectMixin, base.PersistentObjectMixin,
         return status
 
     FIELDS = {
+        'shard': {
+            'schema': {
+                'type': 'integer',
+                'minimum': 0,
+                'maximum': 4095
+            }
+        },
         'tenant_id': {
             'schema': {
                 'type': 'string',

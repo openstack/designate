@@ -13,9 +13,9 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from sqlalchemy import (Table, MetaData, Column, String, Text, Integer, CHAR,
-                        DateTime, Enum, Boolean, Unicode, UniqueConstraint,
-                        ForeignKeyConstraint)
+from sqlalchemy import (Table, MetaData, Column, String, Text, Integer,
+                        SmallInteger, CHAR, DateTime, Enum, Boolean, Unicode,
+                        UniqueConstraint, ForeignKeyConstraint)
 
 from oslo_config import cfg
 from oslo_utils import timeutils
@@ -43,6 +43,11 @@ ZONE_TASK_TYPES = ['IMPORT']
 
 
 metadata = MetaData()
+
+
+def default_shard(context, id_col):
+    return int(context.current_parameters[id_col][0:3], 16)
+
 
 quotas = Table('quotas', metadata,
     Column('id', UUID, default=utils.generate_uuid, primary_key=True),
@@ -80,6 +85,8 @@ domains = Table('domains', metadata,
     Column('deleted', CHAR(32), nullable=False, default='0',
            server_default='0'),
     Column('deleted_at', DateTime, nullable=True, default=None),
+    Column('shard', SmallInteger(), nullable=False,
+           default=lambda ctxt: default_shard(ctxt, 'id')),
 
     Column('tenant_id', String(36), default=None, nullable=True),
     Column('name', String(255), nullable=False),
@@ -134,6 +141,8 @@ recordsets = Table('recordsets', metadata,
     Column('version', Integer(), default=1, nullable=False),
     Column('created_at', DateTime, default=lambda: timeutils.utcnow()),
     Column('updated_at', DateTime, onupdate=lambda: timeutils.utcnow()),
+    Column('domain_shard', SmallInteger(), nullable=False,
+           default=lambda ctxt: default_shard(ctxt, 'domain_id')),
 
     Column('tenant_id', String(36), default=None, nullable=True),
     Column('domain_id', UUID, nullable=False),
@@ -155,6 +164,8 @@ records = Table('records', metadata,
     Column('version', Integer(), default=1, nullable=False),
     Column('created_at', DateTime, default=lambda: timeutils.utcnow()),
     Column('updated_at', DateTime, onupdate=lambda: timeutils.utcnow()),
+    Column('domain_shard', SmallInteger(), nullable=False,
+           default=lambda ctxt: default_shard(ctxt, 'domain_id')),
 
     Column('tenant_id', String(36), default=None, nullable=True),
     Column('domain_id', UUID, nullable=False),
