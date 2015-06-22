@@ -45,7 +45,7 @@ class PoolTest(DesignateV2Test):
         patch_model = datagen.random_pool_data()
         resp, new_model = PoolClient.as_user('admin').patch_pool(
             old_model.id, patch_model)
-        self.assertEqual(resp.status, 200)
+        self.assertEqual(resp.status, 202)
 
         resp, model = PoolClient.as_user('admin').get_pool(new_model.id)
         self.assertEqual(resp.status, 200)
