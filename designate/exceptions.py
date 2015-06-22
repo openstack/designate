@@ -164,6 +164,7 @@ class UnsupportedContentType(BadRequest):
 class InvalidDomainName(Base):
     error_code = 400
     error_type = 'invalid_domain_name'
+    expected = True
 
 
 class InvalidRecordSetName(Base):
