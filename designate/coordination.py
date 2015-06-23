@@ -23,8 +23,9 @@ from oslo_config import cfg
 from oslo_log import log
 import tooz.coordination
 
-from designate.i18n import _LE
+from designate.i18n import _LI
 from designate.i18n import _LW
+from designate.i18n import _LE
 
 
 LOG = log.getLogger(__name__)
@@ -126,7 +127,7 @@ class Partitioner(object):
         self._callbacks = []
 
     def _warn_no_backend(self):
-        LOG.warning(_LW('No coordination backend configure, assuming we are '
+        LOG.warning(_LW('No coordination backend configured, assuming we are '
                         'the only worker. Please configure a coordination '
                         'backend'))
 
@@ -201,4 +202,94 @@ class Partitioner(object):
             callback(self._my_partitions, None, None)
 
     def unwatch_partition_change(self, callback):
+        self._callbacks.remove(callback)
+
+
+class LeaderElection(object):
+    def __init__(self, coordinator, group_id):
+        self._coordinator = coordinator
+        self._group_id = group_id
+
+        self._callbacks = []
+        self._started = False
+        self._leader = False
+
+    def _warn_no_backend(self):
+        LOG.warning(_LW('No coordination backend configured, assuming we are '
+                        'the leader. Please configure a coordination backend'))
+
+    def start(self):
+        self._started = True
+
+        if self._coordinator:
+            LOG.info(_LI('Starting leader election for group %(group)s'),
+                     {'group': self._group_id})
+
+            # Nominate myself for election
+            self._coordinator.watch_elected_as_leader(
+                self._group_id, self._on_elected_leader)
+        else:
+            self._warn_no_backend()
+            self._leader = True
+
+            for callback in self._callbacks:
+                callback(None)
+
+    def stop(self):
+        self._started = False
+
+        if self._coordinator:
+            LOG.info(_LI('Stopping leader election for group %(group)s'),
+                     {'group': self._group_id})
+
+            try:
+                # Remove the elected_as_leader callback
+                self._coordinator.unwatch_elected_as_leader(
+                    self._group_id, self._on_elected_leader)
+
+            except AttributeError:
+                # TODO(kiall): Remove when tooz bug #1467907 is fixed +
+                #              released, and is in our requirements.
+                if not self._coordinator._hooks_elected_leader[self._group_id]:
+                    del self._coordinator._hooks_elected_leader[self._group_id]
+
+            if self._leader:
+                # Tell Tooz we no longer wish to be the leader
+                LOG.info(_LI('Standing down as leader candidate for group '
+                             '%(group)s'), {'group': self._group_id})
+                self._leader = False
+                self._coordinator.stand_down_group_leader(self._group_id)
+
+        elif self._leader:
+            LOG.info(_LI('Standing down as leader candidate for group '
+                         '%(group)s'), {'group': self._group_id})
+            self._leader = False
+
+    @property
+    def is_leader(self):
+        return self._leader
+
+    def _on_elected_leader(self, event):
+        LOG.info(_LI('Sucessfully elected as leader of group %(group)s'),
+                 {'group': self._group_id})
+        self._leader = True
+
+        for callback in self._callbacks:
+            callback(event)
+
+    def watch_elected_as_leader(self, callback):
+        self._callbacks.append(callback)
+
+        if self._started and self._leader:
+            # We're started, and we're the leader, we should trigger the
+            # callback
+            callback(None)
+
+        elif self._started and not self._coordinator:
+            # We're started, and there's no coordination backend configured,
+            # we assume we're leader and call the callback.
+            self._warn_no_backend()
+            callback(None)
+
+    def unwatch_elected_as_leader(self, callback):
         self._callbacks.remove(callback)
