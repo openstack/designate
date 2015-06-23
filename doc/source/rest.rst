@@ -88,7 +88,6 @@ V2 API
        rest/v2/recordsets
        rest/v2/tlds
        rest/v2/blacklists
-       rest/v2/quotas
        rest/v2/pools
 
 Admin API
@@ -98,4 +97,5 @@ Admin API
        :glob:
 
        rest/admin/quotas
+       rest/admin/zones
 

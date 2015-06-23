@@ -15,7 +15,6 @@
 from oslo_log import log as logging
 
 from designate.api.v2.controllers import rest
-from designate.api.admin.controllers.extensions import import_
 from designate.api.admin.controllers.extensions import export
 
 LOG = logging.getLogger(__name__)
@@ -28,12 +27,6 @@ class ZonesController(rest.RestController):
         return '.zones'
 
     def __init__(self):
-        # Import is a keyword - so we have to do a setattr instead
-        setattr(self, 'import', import_.ImportController())
         super(ZonesController, self).__init__()
 
-    # We cannot do an assignment as import is a keyword. it is done as part of
-    # the __init__() above
-    #
-    # import = import_.CountsController()
     export = export.ExportController()

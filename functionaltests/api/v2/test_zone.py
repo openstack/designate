@@ -16,10 +16,12 @@ limitations under the License.
 
 from tempest_lib.exceptions import Conflict
 from tempest_lib.exceptions import Forbidden
+from tempest_lib.exceptions import NotFound
 
 from functionaltests.common import datagen
 from functionaltests.api.v2.base import DesignateV2Test
 from functionaltests.api.v2.clients.zone_client import ZoneClient
+from functionaltests.api.v2.clients.zone_import_client import ZoneImportClient
 
 
 class ZoneTest(DesignateV2Test):
@@ -105,3 +107,36 @@ class ZoneOwnershipTest(DesignateV2Test):
         self._create_zone(zone, user='default')
         self.assertRaises(Forbidden,
             lambda: self._create_zone(superzone, user='alt'))
+
+
+class ZoneImportTest(DesignateV2Test):
+
+    def setUp(self):
+        super(ZoneImportTest, self).setUp()
+
+    def test_import_domain(self):
+        user = 'default'
+        import_client = ZoneImportClient.as_user(user)
+        zone_client = ZoneClient.as_user(user)
+
+        zonefile = datagen.random_zonefile_data()
+        resp, model = import_client.post_zone_import(
+            zonefile)
+        import_id = model.id
+        self.assertEqual(resp.status, 202)
+        self.assertEqual(model.status, 'PENDING')
+        import_client.wait_for_zone_import(import_id)
+
+        resp, model = import_client.get_zone_import(
+            model.id)
+        self.assertEqual(resp.status, 200)
+        self.assertEqual(model.status, 'COMPLETE')
+
+        # Wait for the zone to become 'ACTIVE'
+        zone_client.wait_for_zone(model.zone_id)
+        resp, zone_model = zone_client.get_zone(model.zone_id)
+
+        # Now make sure we can delete the zone_import
+        import_client.delete_zone_import(import_id)
+        self.assertRaises(NotFound,
+            lambda: import_client.get_zone_import(model.id))

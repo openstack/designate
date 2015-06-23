@@ -260,6 +260,10 @@ class DuplicatePoolNsRecord(Duplicate):
     error_type = 'duplicate_pool_ns_record'
 
 
+class DuplicateZoneTask(Duplicate):
+    error_type = 'duplicate_zone_task'
+
+
 class MethodNotAllowed(Base):
     expected = True
     error_code = 405
@@ -342,6 +346,10 @@ class ZoneTransferRequestNotFound(NotFound):
 
 class ZoneTransferAcceptNotFound(NotFound):
     error_type = 'zone_transfer_accept_not_found'
+
+
+class ZoneTaskNotFound(NotFound):
+    error_type = 'zone_task_not_found'
 
 
 class LastServerDeleteNotAllowed(BadRequest):

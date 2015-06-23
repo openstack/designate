@@ -2913,3 +2913,112 @@ class CentralServiceTest(CentralTestCase):
             zone_transfer_accept = \
                 self.central_service.create_zone_transfer_accept(
                     tenant_3_context, zone_transfer_accept)
+
+    # Zone Import Tests
+    def test_create_zone_import(self):
+        # Create a Zone Import
+        context = self.get_context()
+        request_body = self.get_zonefile_fixture()
+        zone_import = self.central_service.create_zone_import(context,
+                                                              request_body)
+
+        # Ensure all values have been set correctly
+        self.assertIsNotNone(zone_import['id'])
+        self.assertEqual(zone_import.status, 'PENDING')
+        self.assertEqual(zone_import.message, None)
+        self.assertEqual(zone_import.domain_id, None)
+
+        self.wait_for_import(zone_import.id)
+
+    def test_find_zone_imports(self):
+        context = self.get_context()
+
+        # Ensure we have no zone_imports to start with.
+        zone_imports = self.central_service.find_zone_imports(
+                         self.admin_context)
+        self.assertEqual(len(zone_imports), 0)
+
+        # Create a single zone_import
+        request_body = self.get_zonefile_fixture()
+        self.central_service.create_zone_import(context, request_body)
+
+        # Ensure we can retrieve the newly created zone_import
+        zone_imports = self.central_service.find_zone_imports(
+                         self.admin_context)
+        self.assertEqual(len(zone_imports), 1)
+
+        # Create a second zone_import
+        request_body = self.get_zonefile_fixture(variant="two")
+        zone_import = self.central_service.create_zone_import(context,
+                                                              request_body)
+
+        # Wait for the imports to complete
+        self.wait_for_import(zone_import.id)
+
+        # Ensure we can retrieve both zone_imports
+        zone_imports = self.central_service.find_zone_imports(
+                         self.admin_context)
+        self.assertEqual(len(zone_imports), 2)
+        self.assertEqual(zone_imports[0].status, 'COMPLETE')
+        self.assertEqual(zone_imports[1].status, 'COMPLETE')
+
+    def test_get_zone_import(self):
+        # Create a Zone Import
+        context = self.get_context()
+        request_body = self.get_zonefile_fixture()
+        zone_import = self.central_service.create_zone_import(
+                    context, request_body)
+
+        # Wait for the import to complete
+        # time.sleep(1)
+        self.wait_for_import(zone_import.id)
+
+        # Retrieve it, and ensure it's the same
+        zone_import = self.central_service.get_zone_import(
+            self.admin_context, zone_import.id)
+
+        self.assertEqual(zone_import['id'], zone_import.id)
+        self.assertEqual(zone_import['status'], zone_import.status)
+        self.assertEqual('COMPLETE', zone_import.status)
+
+    def test_update_zone_import(self):
+        # Create a Zone Import
+        context = self.get_context()
+        request_body = self.get_zonefile_fixture()
+        zone_import = self.central_service.create_zone_import(
+                    context, request_body)
+
+        self.wait_for_import(zone_import.id)
+
+        # Update the Object
+        zone_import.message = 'test message'
+
+        # Perform the update
+        zone_import = self.central_service.update_zone_import(
+                self.admin_context, zone_import)
+
+        # Fetch the zone_import again
+        zone_import = self.central_service.get_zone_import(context,
+                                                           zone_import.id)
+
+        # Ensure the zone_import was updated correctly
+        self.assertEqual('test message', zone_import.message)
+
+    def test_delete_zone_import(self):
+        # Create a Zone Import
+        context = self.get_context()
+        request_body = self.get_zonefile_fixture()
+        zone_import = self.central_service.create_zone_import(
+                    context, request_body)
+
+        self.wait_for_import(zone_import.id)
+
+        # Delete the zone_import
+        self.central_service.delete_zone_import(context,
+                                                zone_import['id'])
+
+        # Fetch the zone_import again, ensuring an exception is raised
+        self.assertRaises(
+            exceptions.ZoneTaskNotFound,
+            self.central_service.get_zone_import,
+            context, zone_import['id'])

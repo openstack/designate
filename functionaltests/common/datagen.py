@@ -120,3 +120,18 @@ def random_pool_data():
     data["ns_records"] = []
 
     return PoolModel.from_dict(data)
+
+
+def random_zonefile_data(name=None, ttl=None):
+    """Generate random zone data, with optional overrides
+
+    :return: A ZoneModel
+    """
+    zone_base = ('$ORIGIN &\n& # IN SOA ns.& nsadmin.& # # # # #\n'
+                 '& # IN NS ns.&\n& # IN MX 10 mail.&\nns.& 360 IN A 1.0.0.1')
+    if name is None:
+        name = random_string(prefix='testdomain', suffix='.com.')
+    if ttl is None:
+        ttl = str(random.randint(1200, 8400))
+
+    return zone_base.replace('&', name).replace('#', ttl)

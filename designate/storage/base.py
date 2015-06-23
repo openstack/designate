@@ -630,6 +630,67 @@ class Storage(DriverPlugin):
         :param pool_attribute_id: The ID of the PoolAttribute to be deleted
         """
 
+    @abc.abstractmethod
+    def create_zone_task(self, context, zone_task):
+        """
+        Create a Zone Task.
+
+        :param context: RPC Context.
+        :param zone_task: Tld object with the values to be created.
+        """
+
+    @abc.abstractmethod
+    def get_zone_task(self, context, zone_task_id):
+        """
+        Get a Zone Task via ID.
+
+        :param context: RPC Context.
+        :param zone_task_id: Zone Task  ID to get.
+        """
+
+    @abc.abstractmethod
+    def find_zone_tasks(self, context, criterion=None, marker=None,
+                  limit=None, sort_key=None, sort_dir=None):
+        """
+        Find Zone Tasks
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        :param marker: Resource ID from which after the requested page will
+                       start after
+        :param limit: Integer limit of objects of the page size after the
+                      marker
+        :param sort_key: Key from which to sort after.
+        :param sort_dir: Direction to sort after using sort_key.
+        """
+
+    @abc.abstractmethod
+    def find_zone_task(self, context, criterion):
+        """
+        Find a single Zone Task.
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        """
+
+    @abc.abstractmethod
+    def update_zone_task(self, context, zone_task):
+        """
+        Update a Zone Task
+
+        :param context: RPC Context.
+        :param zone_task: Zone Task to update.
+        """
+
+    @abc.abstractmethod
+    def delete_zone_task(self, context, zone_task_id):
+        """
+        Delete a Zone Task via ID.
+
+        :param context: RPC Context.
+        :param zone_task_id: Delete a Zone Task via ID
+        """
+
     def ping(self, context):
         """Ping the Storage connection"""
         return {

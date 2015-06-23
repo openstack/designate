@@ -47,7 +47,8 @@ class APIv2Adapter(base.DesignateAdapter):
         # Check if we should include metadata
         if isinstance(list_object, obj_base.PagedListObjectMixin):
             metadata = {}
-            metadata['total_count'] = list_object.total_count
+            if list_object.total_count is not None:
+                metadata['total_count'] = list_object.total_count
             r_list['metadata'] = metadata
 
         return r_list
