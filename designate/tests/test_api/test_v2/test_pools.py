@@ -176,10 +176,10 @@ class ApiV2PoolsTest(ApiV2TestCase):
         body = {'description': 'Tester'}
 
         url = '/pools/%s' % pool['id']
-        response = self.client.patch_json(url, body, status=200)
+        response = self.client.patch_json(url, body, status=202)
 
         # Check the headers are what we expect
-        self.assertEqual(200, response.status_int)
+        self.assertEqual(202, response.status_int)
         self.assertEqual('application/json', response.content_type)
 
         # Check the body structure is what we expect
@@ -217,10 +217,10 @@ class ApiV2PoolsTest(ApiV2TestCase):
         ]}
 
         url = '/pools/%s' % pool['id']
-        response = self.client.patch_json(url, body, status=200)
+        response = self.client.patch_json(url, body, status=202)
 
         # Check the headers are what we expect
-        self.assertEqual(200, response.status_int)
+        self.assertEqual(202, response.status_int)
         self.assertEqual('application/json', response.content_type)
 
         # Check the body structure is what we expect
@@ -241,10 +241,10 @@ class ApiV2PoolsTest(ApiV2TestCase):
         body = {"attributes": {"scope": "private"}}
 
         url = '/pools/%s' % pool['id']
-        response = self.client.patch_json(url, body, status=200)
+        response = self.client.patch_json(url, body, status=202)
 
         # Check the headers are what we expect
-        self.assertEqual(200, response.status_int)
+        self.assertEqual(202, response.status_int)
         self.assertEqual('application/json', response.content_type)
 
         # Check the values returned are what we expect

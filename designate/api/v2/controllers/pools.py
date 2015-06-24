@@ -103,7 +103,7 @@ class PoolsController(rest.RestController):
 
         pool = self.central_api.update_pool(context, pool)
 
-        response.status_int = 200
+        response.status_int = 202
 
         return DesignateAdapter.render('API_v2', pool, request=request)
 
