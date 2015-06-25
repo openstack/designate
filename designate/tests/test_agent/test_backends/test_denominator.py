@@ -89,7 +89,6 @@ class DenominatorAgentBackendTestCase(TestCase, BackendTestMixin):
         # *create two A and two AAAA records
         # total: 8 calls
 
-        print(execute.call_args_list)
         self.assertEqual(8, execute.call_count)
 
         self.backend.denominator = mock.MagicMock
