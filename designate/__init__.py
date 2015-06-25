@@ -62,14 +62,16 @@ cfg.CONF.register_opts([
 log.set_defaults(default_log_levels=[
     'amqplib=WARN',
     'amqp=WARN',
-    'sqlalchemy=WARN',
     'boto=WARN',
-    'suds=INFO',
-    'keystone=INFO',
     'eventlet.wsgi.server=WARN',
-    'stevedore=WARN',
+    'iso8601=WARN',
+    'keystone=INFO',
     'keystonemiddleware.auth_token=INFO',
-    'oslo.messaging=WARN'])
+    'oslo.messaging=WARN',
+    'sqlalchemy=WARN',
+    'stevedore=WARN',
+    'suds=INFO',
+])
 
 # Set some Oslo RPC defaults
 messaging.set_transport_defaults('designate')
