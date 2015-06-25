@@ -21,6 +21,7 @@ import dns
 import dns.exception
 import dns.zone
 import eventlet
+import six
 from dns import rdatatype
 from oslo_log import log as logging
 from oslo_config import cfg
@@ -289,7 +290,7 @@ def expand_servers(servers):
     """
     data = []
     for srv in servers:
-        if isinstance(srv, basestring):
+        if isinstance(srv, six.string_types):
             host, port = utils.split_host_port(srv, 53)
         srv = {"ip": host, "port": port}
         data.append(srv)

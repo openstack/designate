@@ -50,7 +50,7 @@ if __name__ == '__main__':
 
     msg = "Creating %s records" % cfg.CONF.records
     LOG.info(msg)
-    for i in xrange(0, cfg.CONF.records):
+    for i in range(0, cfg.CONF.records):
         name = '%s.%s' % (str(uuid.uuid4()), domain.name)
         record = {"name": name, "type": "A", "data": "10.0.0.1"}
         client.records.create(domain, record)

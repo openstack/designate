@@ -319,7 +319,7 @@ class StorageTestCase(object):
     def test_find_tsigkeys_paging(self):
         # Create 10 TSIG Keys
         created = [self.create_tsigkey(name='tsig-%s' % i)
-                   for i in xrange(10)]
+                   for i in range(10)]
 
         # Ensure we can page through the results.
         self._ensure_paging(created, self.storage.find_tsigkeys)
@@ -543,7 +543,7 @@ class StorageTestCase(object):
     def test_find_domains_paging(self):
         # Create 10 Domains
         created = [self.create_domain(name='example-%d.org.' % i)
-                   for i in xrange(10)]
+                   for i in range(10)]
 
         # Ensure we can page through the results.
         self._ensure_paging(created, self.storage.find_domains)
@@ -856,7 +856,7 @@ class StorageTestCase(object):
 
         # Create 10 RecordSets
         created = [self.create_recordset(domain, name='r-%d.example.org.' % i)
-                   for i in xrange(10)]
+                   for i in range(10)]
 
         # Add in the SOA and NS recordsets that are automatically created
         soa = self.storage.find_recordset(self.admin_context,
@@ -1255,7 +1255,7 @@ class StorageTestCase(object):
 
         # Create 10 Records
         created = [self.create_record(domain, recordset, data='192.0.2.%d' % i)
-                   for i in xrange(10)]
+                   for i in range(10)]
 
         # Add in the SOA and NS records that are automatically created
         soa = self.storage.find_recordset(self.admin_context,
@@ -1540,7 +1540,7 @@ class StorageTestCase(object):
     def test_find_tlds_paging(self):
         # Create 10 Tlds
         created = [self.create_tld(name='org%d' % i)
-                   for i in xrange(10)]
+                   for i in range(10)]
 
         # Ensure we can page through the results.
         self._ensure_paging(created, self.storage.find_tlds)
@@ -1694,7 +1694,7 @@ class StorageTestCase(object):
     def test_find_blacklists_paging(self):
         # Create 10 Blacklists
         created = [self.create_blacklist(pattern='^example-%d.org.' % i)
-                   for i in xrange(10)]
+                   for i in range(10)]
 
         # Ensure we can page through the results.
         self._ensure_paging(created, self.storage.find_blacklists)
@@ -1848,7 +1848,7 @@ class StorageTestCase(object):
 
         # Create 10 Pools
         created = [self.create_pool(name='test%d' % i)
-            for i in xrange(10)]
+            for i in range(10)]
 
         # Add in the existing pools
 
@@ -2214,7 +2214,7 @@ class StorageTestCase(object):
     def test_find_pool_attributes_paging(self):
         # Create 10 Pool Attributes
         created = [self.create_pool_attribute(value='^ns%d.example.com.' % i)
-                   for i in xrange(10)]
+                   for i in range(10)]
 
         # Ensure we can page through the results.
         self._ensure_paging(created, self.storage.find_pool_attributes)
@@ -2382,7 +2382,7 @@ class StorageTestCase(object):
 
     def test_find_zone_tasks_paging(self):
         # Create 10 ZoneTasks
-        created = [self.create_zone_task() for i in xrange(10)]
+        created = [self.create_zone_task() for i in range(10)]
 
         # Ensure we can page through the results.
         self._ensure_paging(created, self.storage.find_zone_tasks)

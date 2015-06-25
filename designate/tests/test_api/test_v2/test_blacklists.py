@@ -40,7 +40,7 @@ class ApiV2BlacklistsTest(ApiV2TestCase):
         self.assertEqual(0, len(response.json['blacklists']))
 
         data = [self.create_blacklist(
-            pattern='x-%s.org.' % i) for i in xrange(0, 10)]
+            pattern='x-%s.org.' % i) for i in range(0, 10)]
 
         self._assert_paging(data, '/blacklists', key='blacklists')
 

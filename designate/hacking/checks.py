@@ -17,6 +17,17 @@ import re
 import pep8
 
 
+# D701: Default paramater value is a mutable type
+# D702: Log messages require translation
+# D703: Found use of _() without explicit import of _!
+# D704: Found import of %s. This oslo library has been graduated!
+# D705: timeutils.utcnow() must be used instead of datetime.%s()
+# D706: Don't translate debug level logs
+# D707: basestring is not Python3-compatible, use six.string_types instead.
+# D708: Do not use xrange. Use range, or six.moves.range for large loops.
+# D709: LOG.audit is deprecated, please use LOG.info!
+
+
 UNDERSCORE_IMPORT_FILES = []
 
 
@@ -54,6 +65,20 @@ def validate_log_translations(logical_line, physical_line, filename):
     msg = "D702: Log messages require translation"
     if log_translation.match(logical_line):
         yield (0, msg)
+
+
+def no_translate_debug_logs(logical_line, filename):
+    """Check for 'LOG.debug(_('
+    As per our translation policy,
+    https://wiki.openstack.org/wiki/LoggingStandards#Log_Translation
+    we shouldn't translate debug level logs.
+    * This check assumes that 'LOG' is a logger.
+    * Use filename so we can start enforcing this in specific folders instead
+      of needing to do so all at once.
+    N319
+    """
+    if logical_line.startswith("LOG.debug(_("):
+        yield(0, "D706: Don't translate debug level logs")
 
 
 def check_explicit_underscore_import(logical_line, filename):
@@ -95,8 +120,51 @@ def no_import_graduated_oslo_libraries(logical_line, filename):
                  "graduated!" % matches.group(1))
 
 
+def use_timeutils_utcnow(logical_line, filename):
+    # tools are OK to use the standard datetime module
+    if "/tools/" in filename:
+        return
+
+    msg = "D705: timeutils.utcnow() must be used instead of datetime.%s()"
+
+    datetime_funcs = ['now', 'utcnow']
+    for f in datetime_funcs:
+        pos = logical_line.find('datetime.%s' % f)
+        if pos != -1:
+            yield (pos, msg % f)
+
+
+def check_no_basestring(logical_line):
+    if re.search(r"\bbasestring\b", logical_line):
+        msg = ("D707: basestring is not Python3-compatible, use "
+               "six.string_types instead.")
+        yield(0, msg)
+
+
+def check_python3_xrange(logical_line):
+    if re.search(r"\bxrange\s*\(", logical_line):
+        yield(0, "D708: Do not use xrange. Use range, or six.moves.range for "
+                 "large loops.")
+
+
+def check_no_log_audit(logical_line):
+    """Ensure that we are not using LOG.audit messages
+    Plans are in place going forward as discussed in the following
+    spec (https://review.openstack.org/#/c/132552/) to take out
+    LOG.audit messages. Given that audit was a concept invented
+    for OpenStack we can enforce not using it.
+    """
+    if "LOG.audit(" in logical_line:
+        yield(0, "D709: LOG.audit is deprecated, please use LOG.info!")
+
+
 def factory(register):
     register(mutable_default_arguments)
     register(validate_log_translations)
+    register(no_translate_debug_logs)
     register(check_explicit_underscore_import)
     register(no_import_graduated_oslo_libraries)
+    register(use_timeutils_utcnow)
+    register(check_no_basestring)
+    register(check_python3_xrange)
+    register(check_no_log_audit)
