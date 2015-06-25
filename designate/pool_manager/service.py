@@ -22,6 +22,7 @@ from oslo_log import log as logging
 from oslo_concurrency import lockutils
 
 from designate import backend
+from designate import coordination
 from designate import exceptions
 from designate import objects
 from designate import utils
@@ -60,7 +61,8 @@ def wrap_backend_call():
         raise exceptions.Backend('Unknown backend failure: %r' % e)
 
 
-class Service(service.RPCService, service.Service):
+class Service(service.RPCService, coordination.CoordinationMixin,
+              service.Service):
     """
     Service side of the Pool Manager RPC API.
 
@@ -128,6 +130,12 @@ class Service(service.RPCService, service.Service):
 
         super(Service, self).start()
 
+        # Setup a Leader Election, use for ensuring certain tasks are executed
+        # on exactly one pool-manager instance at a time]
+        self._pool_election = coordination.LeaderElection(
+            self._coordinator, '%s:%s' % (self.service_name, self.pool.id))
+        self._pool_election.start()
+
         if CONF['service:pool_manager'].enable_recovery_timer:
             LOG.info(_LI('Starting periodic recovery timer'))
             self.tg.add_timer(
@@ -143,10 +151,12 @@ class Service(service.RPCService, service.Service):
                 CONF['service:pool_manager'].periodic_sync_interval)
 
     def stop(self):
-        for target in self.pool.targets:
-            self.target_backends[target.id].stop()
+        self._pool_election.stop()
 
         super(Service, self).stop()
+
+        for target in self.pool.targets:
+            self.target_backends[target.id].stop()
 
     @property
     def central_api(self):
@@ -161,9 +171,8 @@ class Service(service.RPCService, service.Service):
         """
         :return: None
         """
-        # TODO(kiall): Replace this inter-process-lock with a distributed
-        #              lock, likely using the tooz library - see bug 1445127.
-        with lockutils.lock('periodic_recovery', external=True, delay=30):
+        # NOTE(kiall): Only run this periodic task on the pool leader
+        if self._pool_election.is_leader:
             context = DesignateContext.get_admin_context(all_tenants=True)
 
             LOG.debug("Starting Periodic Recovery")
@@ -195,9 +204,8 @@ class Service(service.RPCService, service.Service):
         """
         :return: None
         """
-        # TODO(kiall): Replace this inter-process-lock with a distributed
-        #              lock, likely using the tooz library - see bug 1445127.
-        with lockutils.lock('periodic_sync', external=True, delay=30):
+        # NOTE(kiall): Only run this periodic task on the pool leader
+        if self._pool_election.is_leader:
             context = DesignateContext.get_admin_context(all_tenants=True)
 
             LOG.debug("Starting Periodic Synchronization")
