@@ -41,16 +41,13 @@ class QuotasView(base_view.BaseView):
         valid_keys = ('domain_records', 'domain_recordsets', 'domains',
                       'recordset_records')
 
-        quota = body["quota"]
-
-        old_keys = {
+        mapping = {
             'zones': 'domains',
             'zone_records': 'domain_records',
             'zone_recordsets': 'domain_recordsets',
             'recordset_records': 'recordset_records'
         }
 
-        for key in quota:
-            quota[old_keys[key]] = quota.pop(key)
+        body["quota"] = {mapping[k]: body["quota"][k] for k in body["quota"]}
 
         return self._load(context, request, body, valid_keys)
