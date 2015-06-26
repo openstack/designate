@@ -29,9 +29,9 @@ import oslo_messaging as messaging
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_log import loggers
+from oslo_service import service
+from oslo_service import sslutils
 
-from designate.openstack.common import service
-from designate.openstack.common import sslutils
 from designate.i18n import _
 from designate.i18n import _LE
 from designate.i18n import _LI
@@ -193,8 +193,8 @@ class WSGIService(object):
                 sock = eventlet.listen(bind_addr,
                                        backlog=cfg.CONF.backlog,
                                        family=family)
-                if sslutils.is_enabled():
-                    sock = sslutils.wrap(sock)
+                if sslutils.is_enabled(CONF):
+                    sock = sslutils.wrap(CONF, sock)
 
             except socket.error as err:
                 if err.args[0] != errno.EADDRINUSE:
@@ -386,7 +386,7 @@ def serve(server, workers=None):
     if _launcher:
         raise RuntimeError(_('serve() can only be called once'))
 
-    _launcher = service.launch(server, workers=workers)
+    _launcher = service.launch(CONF, server, workers=workers)
 
 
 def wait():
