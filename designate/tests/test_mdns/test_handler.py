@@ -93,7 +93,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
 
         request = dns.message.from_wire(binascii.a2b_hex(payload))
         request.environ = {'addr': self.addr, 'context': self.context}
-        response = self.handler(request).next().to_wire()
+        response = next(self.handler(request)).to_wire()
 
         self.assertEqual(expected_response, binascii.b2a_hex(response))
 
@@ -116,7 +116,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
 
         request = dns.message.from_wire(binascii.a2b_hex(payload))
         request.environ = {'addr': self.addr, 'context': self.context}
-        response = self.handler(request).next().to_wire()
+        response = next(self.handler(request)).to_wire()
 
         self.assertEqual(expected_response, binascii.b2a_hex(response))
 
@@ -172,7 +172,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
 
         with mock.patch.object(self.handler.storage, 'find_domain',
                                return_value=domain):
-            response = self.handler(request).next().to_wire()
+            response = next(self.handler(request)).to_wire()
 
         self.mock_tg.add_thread.assert_called_with(
             self.handler.domain_sync, self.context, domain, [master])
@@ -213,7 +213,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
 
         with mock.patch.object(self.handler.storage, 'find_domain',
                                return_value=domain):
-            response = self.handler(request).next().to_wire()
+            response = next(self.handler(request)).to_wire()
 
         assert not self.mock_tg.add_thread.called
         self.assertEqual(expected_response, binascii.b2a_hex(response))
@@ -251,7 +251,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
 
         with mock.patch.object(self.handler.storage, 'find_domain',
                                return_value=domain):
-            response = self.handler(request).next().to_wire()
+            response = next(self.handler(request)).to_wire()
 
         assert not self.mock_tg.add_thread.called
         self.assertEqual(expected_response, binascii.b2a_hex(response))
@@ -277,7 +277,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
             'context': self.context
         }
 
-        response = self.handler(request).next().to_wire()
+        response = next(self.handler(request)).to_wire()
 
         assert not self.mock_tg.add_thread.called
         self.assertEqual(expected_response, binascii.b2a_hex(response))
@@ -305,7 +305,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
             'context': self.context
         }
 
-        response = self.handler(request).next().to_wire()
+        response = next(self.handler(request)).to_wire()
 
         assert not self.mock_tg.add_thread.called
         self.assertEqual(expected_response, binascii.b2a_hex(response))
@@ -329,7 +329,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
 
         request = dns.message.from_wire(binascii.a2b_hex(payload))
         request.environ = {'addr': self.addr, 'context': self.context}
-        response = self.handler(request).next().to_wire()
+        response = next(self.handler(request)).to_wire()
 
         self.assertEqual(expected_response, binascii.b2a_hex(response))
 
@@ -377,7 +377,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
                              "00000100010000292000000000000000")
         request = dns.message.from_wire(binascii.a2b_hex(payload))
         request.environ = {'addr': self.addr, 'context': self.context}
-        response = self.handler(request).next().to_wire()
+        response = next(self.handler(request)).to_wire()
 
         self.assertEqual(expected_response, binascii.b2a_hex(response))
 
@@ -408,7 +408,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
 
         request = dns.message.from_wire(binascii.a2b_hex(payload))
         request.environ = {'addr': self.addr, 'context': self.context}
-        response = self.handler(request).next().to_wire()
+        response = next(self.handler(request)).to_wire()
 
         self.assertEqual(expected_response, binascii.b2a_hex(response))
 
@@ -439,7 +439,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
 
         request = dns.message.from_wire(binascii.a2b_hex(payload))
         request.environ = {'addr': self.addr, 'context': self.context}
-        response = self.handler(request).next().to_wire()
+        response = next(self.handler(request)).to_wire()
 
         self.assertEqual(expected_response, binascii.b2a_hex(response))
 
@@ -507,7 +507,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
                 request = dns.message.from_wire(binascii.a2b_hex(payload))
                 request.environ = {'addr': self.addr, 'context': self.context}
 
-                response = self.handler(request).next().get_wire()
+                response = next(self.handler(request)).get_wire()
 
                 self.assertEqual(expected_response, binascii.b2a_hex(response))
 
@@ -572,12 +572,12 @@ class MdnsRequestHandlerTest(MdnsTestCase):
                 response_generator = self.handler(request)
 
                 # Validate the first response
-                response_one = response_generator.next().get_wire()
+                response_one = next(response_generator).get_wire()
                 self.assertEqual(
                     expected_response[0], binascii.b2a_hex(response_one))
 
                 # Validate the second response
-                response_two = response_generator.next().get_wire()
+                response_two = next(response_generator).get_wire()
                 self.assertEqual(
                     expected_response[1], binascii.b2a_hex(response_two))
 
@@ -607,7 +607,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
 
         request = dns.message.from_wire(binascii.a2b_hex(payload))
         request.environ = {'addr': self.addr, 'context': self.context}
-        response = self.handler(request).next().to_wire()
+        response = next(self.handler(request)).to_wire()
 
         self.assertEqual(expected_response, binascii.b2a_hex(response))
 
@@ -630,7 +630,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
 
         request = dns.message.from_wire(binascii.a2b_hex(payload))
         request.environ = {'addr': self.addr, 'context': self.context}
-        response = self.handler(request).next().to_wire()
+        response = next(self.handler(request)).to_wire()
 
         self.assertEqual(expected_response, binascii.b2a_hex(response))
 
@@ -670,7 +670,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
                              "0000010001c00c0001000100000e100004c0000205000029"
                              "2000000000000000")
 
-        response = self.handler(request).next().to_wire()
+        response = next(self.handler(request)).to_wire()
 
         self.assertEqual(expected_response, binascii.b2a_hex(response))
 
@@ -691,7 +691,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
         expected_response = ("c28981050001000000000001076578616d706c6503636f6d"
                              "00000100010000292000000000000000")
 
-        response = self.handler(request).next().to_wire()
+        response = next(self.handler(request)).to_wire()
         self.assertEqual(expected_response, binascii.b2a_hex(response))
 
     def test_dispatch_opcode_query_tsig_scope_zone(self):
@@ -736,7 +736,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
                              "0000010001c00c0001000100000e100004c0000205000029"
                              "2000000000000000")
 
-        response = self.handler(request).next().to_wire()
+        response = next(self.handler(request)).to_wire()
 
         self.assertEqual(expected_response, binascii.b2a_hex(response))
 
@@ -757,5 +757,5 @@ class MdnsRequestHandlerTest(MdnsTestCase):
         expected_response = ("c28981050001000000000001076578616d706c6503636f6d"
                              "00000100010000292000000000000000")
 
-        response = self.handler(request).next().to_wire()
+        response = next(self.handler(request)).to_wire()
         self.assertEqual(expected_response, binascii.b2a_hex(response))
