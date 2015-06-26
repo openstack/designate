@@ -53,7 +53,7 @@ def make_class_properties(cls):
     # Store the results
     cls.FIELDS = fields
 
-    for field in cls.FIELDS.keys():
+    for field in six.iterkeys(cls.FIELDS):
         def getter(self, name=field):
             self._obj_check_relation(name)
             return getattr(self, get_attrname(name), None)
@@ -64,7 +64,8 @@ def make_class_properties(cls):
                 self._obj_changes.add(name)
 
             if (self.obj_attr_is_set(name) and value != getattr(self, name)
-                    and name not in self._obj_original_values.keys()):
+                    and name not in list(six.iterkeys(
+                        self._obj_original_values))):
                 self._obj_original_values[name] = getattr(self, name)
 
             return setattr(self, get_attrname(name), value)
@@ -227,7 +228,7 @@ class DesignateObject(object):
         self._obj_original_values = dict()
 
         for name, value in kwargs.items():
-            if name in self.FIELDS.keys():
+            if name in list(six.iterkeys(self.FIELDS)):
                 setattr(self, name, value)
             else:
                 raise TypeError("__init__() got an unexpected keyword "
@@ -243,7 +244,7 @@ class DesignateObject(object):
         """
         data = {}
 
-        for field in self.FIELDS.keys():
+        for field in six.iterkeys(self.FIELDS):
             if self.obj_attr_is_set(field):
                 if isinstance(getattr(self, field), DesignateObject):
                     data[field] = getattr(self, field).to_primitive()
@@ -261,7 +262,7 @@ class DesignateObject(object):
         """Convert the object to a simple dictionary."""
         data = {}
 
-        for field in self.FIELDS.keys():
+        for field in six.iterkeys(self.FIELDS):
             if self.obj_attr_is_set(field):
                 if isinstance(getattr(self, field), ListObjectMixin):
                     data[field] = getattr(self, field).to_list()
@@ -343,7 +344,7 @@ class DesignateObject(object):
 
     def obj_get_original_value(self, field):
         """Returns the original value of a field."""
-        if field in self._obj_original_values.keys():
+        if field in list(six.iterkeys(self._obj_original_values)):
             return self._obj_original_values[field]
         elif self.obj_attr_is_set(field):
             return getattr(self, field)
@@ -352,7 +353,7 @@ class DesignateObject(object):
 
     def __setattr__(self, name, value):
         """Enforces all object attributes are private or well defined"""
-        if name[0:5] == '_obj_' or name in self.FIELDS.keys() \
+        if name[0:5] == '_obj_' or name in list(six.iterkeys(self.FIELDS)) \
                 or name == 'FIELDS':
             super(DesignateObject, self).__setattr__(name, value)
 
@@ -375,7 +376,7 @@ class DesignateObject(object):
 
         c_obj = self.__class__()
 
-        for field in self.FIELDS.keys():
+        for field in six.iterkeys(self.FIELDS):
             if self.obj_attr_is_set(field):
                 c_field = copy.deepcopy(getattr(self, field), memodict)
                 setattr(c_obj, field, c_field)
@@ -408,10 +409,10 @@ class DictObjectMixin(object):
         setattr(self, key, value)
 
     def __contains__(self, item):
-        return item in self.FIELDS.keys()
+        return item in list(six.iterkeys(self.FIELDS))
 
     def get(self, key, default=NotSpecifiedSentinel):
-        if key not in self.FIELDS.keys():
+        if key not in list(six.iterkeys(self.FIELDS)):
             raise AttributeError("'%s' object has no attribute '%s'" % (
                                  self.__class__, key))
 
@@ -421,12 +422,12 @@ class DictObjectMixin(object):
             return getattr(self, key)
 
     def iteritems(self):
-        for field in self.FIELDS.keys():
+        for field in six.iterkeys(self.FIELDS):
             if self.obj_attr_is_set(field):
                 yield field, getattr(self, field)
 
     def __iter__(self):
-        for field in self.FIELDS.keys():
+        for field in six.iterkeys(self.FIELDS):
             if self.obj_attr_is_set(field):
                 yield field, getattr(self, field)
 
@@ -493,7 +494,7 @@ class ListObjectMixin(object):
     def to_primitive(self):
         data = {}
 
-        for field in self.FIELDS.keys():
+        for field in six.iterkeys(self.FIELDS):
             if self.obj_attr_is_set(field):
                 if field == 'objects':
                     data[field] = [o.to_primitive() for o in self.objects]

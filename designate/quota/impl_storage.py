@@ -13,6 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import six
 from oslo_config import cfg
 from oslo_log import log as logging
 
@@ -70,7 +71,8 @@ class StorageQuota(Quota):
 
             self.storage.update_quota(context, quota)
 
-        if resource not in self.get_default_quotas(context).keys():
+        if resource not in list(six.iterkeys(
+               self.get_default_quotas(context))):
             raise exceptions.QuotaResourceUnknown("%s is not a valid quota "
                                                   "resource", resource)
 

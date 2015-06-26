@@ -35,9 +35,9 @@ LOG = logging.getLogger(__name__)
 def _set_object_from_model(obj, model, **extra):
     """Update a DesignateObject with the values from a SQLA Model"""
 
-    for fieldname in obj.FIELDS.keys():
+    for fieldname in six.iterkeys(obj.FIELDS):
         if hasattr(model, fieldname):
-            if fieldname in extra.keys():
+            if fieldname in six.iterkeys(extra):
                 obj[fieldname] = extra[fieldname]
             else:
                 obj[fieldname] = getattr(model, fieldname)

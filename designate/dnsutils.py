@@ -17,11 +17,11 @@ import random
 import socket
 import base64
 
+import six
 import dns
 import dns.exception
 import dns.zone
 import eventlet
-import six
 from dns import rdatatype
 from oslo_log import log as logging
 from oslo_config import cfg
@@ -210,7 +210,7 @@ def from_dnspython_zone(dnspython_zone):
 def dnspyrecords_to_recordsetlist(dnspython_records):
     rrsets = objects.RecordList()
 
-    for rname in dnspython_records.keys():
+    for rname in six.iterkeys(dnspython_records):
         for rdataset in dnspython_records[rname]:
             rrset = dnspythonrecord_to_recordset(rname, rdataset)
 

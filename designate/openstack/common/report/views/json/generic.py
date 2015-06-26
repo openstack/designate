@@ -25,6 +25,7 @@ such strings specially)
 
 import copy
 
+import six
 from oslo_serialization import jsonutils as json
 
 from designate.openstack.common.report import utils as utils
@@ -57,7 +58,7 @@ class KeyValueView(object):
     def __call__(self, model):
         # this part deals with subviews that were already serialized
         cpy = copy.deepcopy(model)
-        for key in model.keys():
+        for key in six.iterkeys(model):
             if getattr(model[key], '__is_json__', False):
                 cpy[key] = json.loads(model[key])
 

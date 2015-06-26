@@ -214,7 +214,8 @@ def get_columns(data):
     def _seen(col):
         columns.add(str(col))
 
-    six.moves.map(lambda item: six.moves.map(_seen, item.keys()), data)
+    six.moves.map(lambda item: six.moves.map(_seen,
+        list(six.iterkeys(item))), data)
     return list(columns)
 
 

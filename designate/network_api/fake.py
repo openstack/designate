@@ -15,6 +15,7 @@
 # under the License.
 import uuid
 
+import six
 from oslo_log import log as logging
 
 from designate.network_api.base import NetworkAPI
@@ -41,7 +42,7 @@ def allocate_floatingip(tenant_id, floatingip_id=None):
     """
     ALLOCATIONS.setdefault(tenant_id, {})
 
-    id_ = floatingip_id or POOL.keys()[0]
+    id_ = floatingip_id or list(six.iterkeys(POOL))[0]
 
     ALLOCATIONS[tenant_id][id_] = POOL.pop(id_)
     values = _format_floatingip(id_, ALLOCATIONS[tenant_id][id_])

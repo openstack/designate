@@ -13,6 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import six
 from mock import Mock
 from mock import patch
 from oslo_config import cfg
@@ -102,7 +103,7 @@ class TestHookpointsConfigOpts(TestCase):
         hp = hook_point('foo')
         hp.hook_manager = Mock(return_value=get_hook_manager())
         hp(inc)
-        assert hp.group in self.CONF.keys()
+        assert hp.group in list(six.iterkeys(self.CONF))
 
 
 class TestHookpointsEnabling(TestCase):

@@ -11,6 +11,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import six
 from oslo_log import log as logging
 
 from designate.objects.adapters.api_v2 import base
@@ -44,7 +45,7 @@ class PoolAttributeAPIv2Adapter(base.APIv2Adapter):
 
     @classmethod
     def _parse_object(cls, values, object, *args, **kwargs):
-        for key in values.keys():
+        for key in six.iterkeys(values):
             object.key = key
             object.value = values[key]
 
@@ -72,7 +73,7 @@ class PoolAttributeListAPIv2Adapter(base.APIv2Adapter):
             value = cls.get_object_adapter(
                 cls.ADAPTER_FORMAT,
                 object).render(cls.ADAPTER_FORMAT, object, *args, **kwargs)
-            for key in value.keys():
+            for key in six.iterkeys(value):
                 r_list[key] = value[key]
 
         return r_list
