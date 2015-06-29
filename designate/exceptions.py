@@ -13,6 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import six
 
 
 class Base(Exception):
@@ -27,7 +28,7 @@ class Base(Exception):
 
         super(Base, self).__init__(*args, **kwargs)
 
-        if len(args) > 0 and isinstance(args[0], basestring):
+        if len(args) > 0 and isinstance(args[0], six.string_types):
             self.error_message = args[0]
 
 

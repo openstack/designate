@@ -104,7 +104,7 @@ class RPCService(object):
     def __init__(self, *args, **kwargs):
         super(RPCService, self).__init__(*args, **kwargs)
 
-        LOG.debug(_("Creating RPC Server on topic '%s'") % self._rpc_topic)
+        LOG.debug("Creating RPC Server on topic '%s'" % self._rpc_topic)
         self._rpc_server = rpc.get_server(
             messaging.Target(topic=self._rpc_topic, server=self._host),
             self._rpc_endpoints)
@@ -120,7 +120,7 @@ class RPCService(object):
     def start(self):
         super(RPCService, self).start()
 
-        LOG.debug(_("Starting RPC server on topic '%s'") % self._rpc_topic)
+        LOG.debug("Starting RPC server on topic '%s'" % self._rpc_topic)
         self._rpc_server.start()
 
         # TODO(kiall): This probably belongs somewhere else, maybe the base

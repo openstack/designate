@@ -103,25 +103,37 @@ class SQLAlchemy(object):
                 column = getattr(table.c, name)
 
                 # Wildcard value: '%'
-                if isinstance(value, basestring) and '%' in value:
+                if isinstance(value, six.string_types) and '%' in value:
                     query = query.where(column.like(value))
-                elif isinstance(value, basestring) and value.startswith('!'):
+
+                elif (isinstance(value, six.string_types) and
+                        value.startswith('!')):
                     queryval = value[1:]
                     query = query.where(column != queryval)
-                elif isinstance(value, basestring) and value.startswith('<='):
+
+                elif (isinstance(value, six.string_types) and
+                        value.startswith('<=')):
                     queryval = value[2:]
                     query = query.where(column <= queryval)
-                elif isinstance(value, basestring) and value.startswith('<'):
+
+                elif (isinstance(value, six.string_types) and
+                        value.startswith('<')):
                     queryval = value[1:]
                     query = query.where(column < queryval)
-                elif isinstance(value, basestring) and value.startswith('>='):
+
+                elif (isinstance(value, six.string_types) and
+                        value.startswith('>=')):
                     queryval = value[2:]
                     query = query.where(column >= queryval)
-                elif isinstance(value, basestring) and value.startswith('>'):
+
+                elif (isinstance(value, six.string_types) and
+                        value.startswith('>')):
                     queryval = value[1:]
                     query = query.where(column > queryval)
+
                 elif isinstance(value, list):
                     query = query.where(column.in_(value))
+
                 else:
                     query = query.where(column == value)
 

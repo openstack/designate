@@ -125,7 +125,8 @@ class ApiV2PoolsTest(ApiV2TestCase):
                                                      pool_id)
 
         # Add the default pool into the list
-        data = [self.create_pool(name='x-%s' % i) for i in xrange(0, 10)]
+        data = [self.create_pool(name='x-%s' % i) for i in
+                range(0, 10)]
         data.insert(0, default_pool)
 
         # Test the paging of the list

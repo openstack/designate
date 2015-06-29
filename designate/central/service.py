@@ -24,6 +24,7 @@ import string
 import random
 import time
 
+import six
 from eventlet import tpool
 from dns import zone as dnszone
 from dns import exception as dnsexception
@@ -1969,7 +1970,7 @@ class Service(service.RPCService, service.Service):
         if 'ptrdname' in values.obj_what_changed() and\
                 values['ptrdname'] is None:
             self._unset_floatingip_reverse(context, region, floatingip_id)
-        elif isinstance(values['ptrdname'], basestring):
+        elif isinstance(values['ptrdname'], six.string_types):
             return self._set_floatingip_reverse(
                 context, region, floatingip_id, values)
 

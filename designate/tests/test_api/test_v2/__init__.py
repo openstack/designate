@@ -141,7 +141,7 @@ class ApiV2TestCase(ApiTestCase):
 
         x = 0
         length = len(data)
-        for i in xrange(0, length):
+        for i in range(0, length):
             assert data[i]['id'] == response[x]['id']
 
             x += 1
