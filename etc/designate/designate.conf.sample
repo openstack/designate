@@ -374,6 +374,12 @@ debug = False
 # of the state_path setting.
 #lock_path = $state_path
 
+########################
+## Coordination
+########################
+# URL for the coordination backend to use.
+[coordination]
+#backend_url = zookeeper://127.0.0.1
 
 ########################
 ## Hook Points
