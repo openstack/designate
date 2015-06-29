@@ -236,17 +236,19 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         # Add recordsets for testing
         fixtures = [
             self.get_recordset_fixture(
-                self.domain['name'], 'A', fixture=0, values={'records': [
-                    '192.0.2.1',
-                    '192.0.2.2',
-                ]}
+                self.domain['name'], 'A', fixture=0, values={
+                    'records': ['192.0.2.1', '192.0.2.2'],
+                    'description': 'Tester1',
+                    'ttl': 3600
+                }
             ),
             self.get_recordset_fixture(
-                self.domain['name'], 'A', fixture=1, values={'records': [
-                    '192.0.2.1',
-                    '192.0.2.3'
-                ]}
-            ),
+                self.domain['name'], 'A', fixture=1, values={
+                    'records': ['192.0.2.1'],
+                    'description': 'Tester2',
+                    'ttl': 4000
+                }
+            )
         ]
 
         for fixture in fixtures:
@@ -255,13 +257,29 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
                 fixture)
 
         get_urls = [
+            # Filter by Name
+            '/zones/%s/recordsets?name=%s' % (
+                self.domain['id'], fixtures[0]['name']),
+            '/zones/%s/recordsets?data=192.0.2.1&name=%s' % (
+                self.domain['id'], fixtures[1]['name']),
+
+            # Filter by Type
+            '/zones/%s/recordsets?type=A' % self.domain['id'],
+            '/zones/%s/recordsets?type=A&name=%s' % (
+                self.domain['id'], fixtures[0]['name']),
+
+            # Filter by TTL
+            '/zones/%s/recordsets?ttl=3600' % self.domain['id'],
+
+            # Filter by Data
             '/zones/%s/recordsets?data=192.0.2.1' % self.domain['id'],
             '/zones/%s/recordsets?data=192.0.2.2' % self.domain['id'],
-            '/zones/%s/recordsets?data=192.0.2.1&name=%s' % (
-                self.domain['id'], fixtures[0]['name'])
+
+            # Filter by Description
+            '/zones/%s/recordsets?description=Tester1' % self.domain['id']
         ]
 
-        correct_results = [2, 1, 1]
+        correct_results = [1, 1, 2, 1, 1, 2, 1, 1]
 
         for get_url, correct_result in zip(get_urls, correct_results):
 

@@ -276,9 +276,9 @@ Filtering
 
     * **Blacklists**: pattern
     * **Records**: data
-    * **Recordsets**: name, type, ttl
+    * **Recordsets**: name, type, ttl, data, description, status
     * **TLDs**: name
-    * **Zones**: name, email
+    * **Zones**: name, email, ttl, description, status
 
     Filters can be an exact match search or a wildcard search. Currently,
     wildcard search is supported using the '*' character.
