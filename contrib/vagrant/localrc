@@ -21,7 +21,7 @@ ENABLED_SERVICES=rabbit,mysql,key
 # Designate Devstack Config
 # =========================
 # Enable core Designate services
-ENABLED_SERVICES+=,designate,designate-central,designate-api,designate-pool-manager,designate-mdns
+ENABLED_SERVICES+=,designate,designate-central,designate-api,designate-pool-manager,designate-zone-manager,designate-mdns
 
 # Optional Designate services
 #ENABLED_SERVICES+=,designate-agent

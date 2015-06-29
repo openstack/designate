@@ -22,6 +22,7 @@ import fixtures
 from oslo_log import log as logging
 from oslo_utils import importutils
 from oslo_config import cfg
+import tooz.coordination
 
 from designate import policy
 from designate import network_api
@@ -31,6 +32,20 @@ from designate.sqlalchemy import utils as sqlalchemy_utils
 
 
 LOG = logging.getLogger(__name__)
+
+
+class CoordinatorFixture(fixtures.Fixture):
+    def __init__(self, *args, **kwargs):
+        self._args = args
+        self._kwargs = kwargs
+
+    def setUp(self):
+        super(CoordinatorFixture, self).setUp()
+        self.coordinator = tooz.coordination.get_coordinator(
+            *self._args, **self._kwargs)
+
+        self.coordinator.start()
+        self.addCleanup(self.coordinator.stop)
 
 
 class RPCFixture(fixtures.Fixture):

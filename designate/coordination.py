@@ -16,6 +16,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import math
 import uuid
 
 from oslo_config import cfg
@@ -109,3 +110,93 @@ class CoordinationMixin(object):
             return
 
         self._coordinator.run_watchers()
+
+
+class Partitioner(object):
+    def __init__(self, coordinator, group_id, my_id, partitions):
+        self._coordinator = coordinator
+        self._group_id = group_id
+        self._my_id = my_id
+        self._partitions = partitions
+
+        self._started = False
+        self._my_partitions = None
+        self._callbacks = []
+
+    def _warn_no_backend(self):
+        LOG.warning(_LW('No coordination backend configure, assuming we are '
+                        'the only worker. Please configure a coordination '
+                        'backend'))
+
+    def _get_members(self, group_id):
+        get_members_req = self._coordinator.get_members(group_id)
+        try:
+            return get_members_req.get()
+        except tooz.ToozError:
+            self.join_group(group_id)
+
+    def _on_group_change(self, event):
+        LOG.debug("Received member change %s" % event)
+        members, self._my_partitions = self._update_partitions()
+
+        self._run_callbacks(members, event)
+
+    def _partition(self, members, me, partitions):
+        member_count = len(members)
+        partition_count = len(partitions)
+        partition_size = int(
+            math.ceil(float(partition_count) / float(member_count)))
+
+        my_index = members.index(me)
+        my_start = partition_size * my_index
+        my_end = my_start + partition_size
+
+        return partitions[my_start:my_end]
+
+    def _run_callbacks(self, members, event):
+        for cb in self._callbacks:
+            cb(self.my_partitions, members, event)
+
+    def _update_partitions(self):
+        # Recalculate partitions - we need to sort the list of members
+        # alphabetically so that it's the same order across all nodes.
+        members = sorted(list(self._get_members(self._group_id)))
+        partitions = self._partition(
+            members, self._my_id, self._partitions)
+        return members, partitions
+
+    @property
+    def my_partitions(self):
+        return self._my_partitions
+
+    def start(self):
+        """Allow the partitioner to start timers after the coordinator has
+        gotten it's connections up.
+        """
+        LOG.debug("Starting partitioner")
+        if self._coordinator:
+            self._coordinator.watch_join_group(
+                self._group_id, self._on_group_change)
+            self._coordinator.watch_leave_group(
+                self._group_id, self._on_group_change)
+
+            # We need to get our partitions now. Events doesn't help in this
+            # case since they require state change in the group that we wont
+            # get when starting initially
+            self._my_partitions = self._update_partitions()[1]
+        else:
+            self._my_partitions = self._partitions
+            self._run_callbacks(None, None)
+
+        self._started = True
+
+    def watch_partition_change(self, callback):
+        LOG.debug("Watching for change %s" % self._group_id)
+        self._callbacks.append(callback)
+        if self._started:
+            if not self._coordinator:
+                self._warn_no_backend()
+            callback(self._my_partitions, None, None)
+
+    def unwatch_partition_change(self, callback):
+        self._callbacks.remove(callback)
