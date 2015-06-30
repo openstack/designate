@@ -131,13 +131,14 @@ def resource_string(*args):
 def load_schema(version, name):
     schema_string = resource_string('schemas', version, '%s.json' % name)
 
-    return json.loads(schema_string)
+    return json.loads(schema_string.decode('utf-8'))
 
 
 def load_template(template_name):
     template_string = resource_string('templates', template_name)
 
-    return Template(template_string, keep_trailing_newline=True)
+    return Template(template_string.decode('utf-8'),
+                    keep_trailing_newline=True)
 
 
 def render_template(template, **template_context):
