@@ -22,7 +22,7 @@ from oslo_db.sqlalchemy import utils as oslodb_utils
 from oslo_db import exception as oslo_db_exception
 from oslo_log import log as logging
 from oslo_utils import timeutils
-from sqlalchemy import select, or_
+from sqlalchemy import select, or_, between
 
 from designate import exceptions
 from designate.sqlalchemy import session
@@ -97,7 +97,8 @@ class SQLAlchemy(object):
     def rollback(self):
         self.session.rollback()
 
-    def _apply_criterion(self, table, query, criterion):
+    @staticmethod
+    def _apply_criterion(table, query, criterion):
         if criterion is not None:
             for name, value in criterion.items():
                 column = getattr(table.c, name)
@@ -130,6 +131,13 @@ class SQLAlchemy(object):
                         value.startswith('>')):
                     queryval = value[1:]
                     query = query.where(column > queryval)
+
+                elif (isinstance(value, six.string_types) and
+                        value.startswith('BETWEEN')):
+                    elements = [i.strip(" ") for i in
+                                value.split(" ", 1)[1].strip(" ").split(",")]
+                    query = query.where(between(
+                        column, elements[0], elements[1]))
 
                 elif isinstance(value, list):
                     query = query.where(column.in_(value))
