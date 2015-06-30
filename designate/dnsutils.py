@@ -230,7 +230,7 @@ def dnspythonrecord_to_recordset(rname, rdataset):
         'type': record_type
     }
 
-    if rdataset.ttl != 0L:
+    if rdataset.ttl != 0:
         values['ttl'] = rdataset.ttl
 
     rrset = objects.RecordSet(**values)
