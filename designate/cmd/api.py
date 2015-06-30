@@ -17,9 +17,9 @@ import sys
 
 from oslo_config import cfg
 from oslo_log import log as logging
-from oslo_service import service
 
 from designate import hookpoints
+from designate import service
 from designate import utils
 from designate.api import service as api_service
 
@@ -37,5 +37,5 @@ def main():
     hookpoints.log_hook_setup()
 
     server = api_service.Service(threads=CONF['service:api'].threads)
-    launcher = service.launch(CONF, server, CONF['service:api'].workers)
-    launcher.wait()
+    service.serve(server, workers=CONF['service:api'].workers)
+    service.wait()
