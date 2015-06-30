@@ -77,8 +77,8 @@ class CentralServiceTestIPA(designate.tests.test_central.
         super(CentralServiceTestIPA, self).tearDown()
 
     def assertRecordsEqual(self, rec1, rec2):
-        rec1dict = dict(rec1.iteritems())
-        rec2dict = dict(rec2.iteritems())
+        rec1dict = dict(rec1.items())
+        rec2dict = dict(rec2.items())
         self.assertEqual(rec1dict, rec2dict)
 
     def test_delete_recordset_extra(self):

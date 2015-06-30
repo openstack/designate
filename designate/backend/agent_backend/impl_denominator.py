@@ -63,7 +63,7 @@ class Denominator(object):
         return self._execute(['zone', 'delete'], kwargs)
 
     def _params(self, **kwargs):
-        params = [('--%s' % k, str(v)) for k, v in kwargs.iteritems()]
+        params = [('--%s' % k, str(v)) for k, v in kwargs.items()]
         return list(itertools.chain(*params))
 
     def _base(self):
@@ -219,7 +219,7 @@ class DenominatorBackend(base.AgentBackend):
                               data=data)
 
             # Remaining records should be deleted
-            for name, types in subdomains.iteritems():
+            for name, types in subdomains.items():
                 for rtype in types:
                     self.denominator.delete_record(
                         zone=domain_name, id=name, type=rtype)

@@ -33,9 +33,9 @@ def parameterized_class(cls):
     Mark your test cases with @parameterized.
     """
     test_functions = {
-        k: v for k, v in vars(cls).iteritems() if k.startswith('test')
+        k: v for k, v in vars(cls).items() if k.startswith('test')
     }
-    for name, f in test_functions.iteritems():
+    for name, f in test_functions.items():
         if not hasattr(f, '_test_data'):
             continue
 
@@ -43,7 +43,7 @@ def parameterized_class(cls):
         delattr(cls, name)
 
         # add a new test function to the class for each entry in f._test_data
-        for tag, args in f._test_data.iteritems():
+        for tag, args in f._test_data.items():
             new_name = "{0}_{1}".format(f.__name__, tag)
             if hasattr(cls, new_name):
                 raise Exception(

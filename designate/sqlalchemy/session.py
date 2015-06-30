@@ -36,7 +36,7 @@ def _create_facade_lazily(cfg_group, connection=None, discriminator=None):
     if cache_name not in _FACADES:
         _FACADES[cache_name] = session.EngineFacade(
             connection,
-            **dict(cfg.CONF[cfg_group].iteritems()))
+            **dict(cfg.CONF[cfg_group].items()))
 
     return _FACADES[cache_name]
 

@@ -79,7 +79,7 @@ class CollectionModel(BaseModel):
             setattr(model, cls.COLLECTION_NAME, collection)
 
         # deserialize data['
-        for key, model_type in cls.SUB_MODELS.iteritems():
+        for key, model_type in cls.SUB_MODELS.items():
             if hasattr(model, key):
                 val = getattr(model, key)
                 setattr(model, key, model_type.from_dict(val))
