@@ -210,13 +210,8 @@ function configure_designate {
 # ------------------------------------------------------------------
 # service              designate  admin        # if enabled
 function create_designate_accounts {
-    local service_tenant=$(openstack project list | awk "/ $SERVICE_TENANT_NAME / { print \$2 }")
-    local admin_role=$(openstack role list | awk "/ admin / { print \$2 }")
-
-    if [[ "$ENABLED_SERVICES" =~ "designate-api" ]]; then
-        local designate_user=$(get_or_create_user "designate" \
-            "$SERVICE_PASSWORD" $service_tenant)
-        get_or_add_user_project_role $admin_role $designate_user $service_tenant
+    if is_service_enabled designate-api; then
+        create_service_user "designate"
 
         if [[ "$KEYSTONE_CATALOG_BACKEND" = 'sql' ]]; then
             local designate_service=$(get_or_create_service "designate" \
