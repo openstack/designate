@@ -17,9 +17,8 @@
 
 import json as jsonutils
 import logging
-import urllib
-import urlparse
 
+from six.moves.urllib import parse
 import requests
 
 from designate.backend.impl_infoblox.config import cfg
@@ -86,9 +85,9 @@ class Infoblox(object):
         if query_params:
             if len(query) > 1:
                 query += '&'
-            query += urllib.urlencode(query_params)
+            query += parse.urlencode(query_params)
 
-        baseurl = urlparse.urljoin(self.wapi_url, urllib.quote(relative_path))
+        baseurl = parse.urljoin(self.wapi_url, parse.quote(relative_path))
         return baseurl + query
 
     def _validate_objtype_or_die(self, objtype):

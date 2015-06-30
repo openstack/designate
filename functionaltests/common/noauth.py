@@ -15,9 +15,9 @@ limitations under the License.
 """
 
 import copy
-import urlparse
 import re
 
+from six.moves.urllib import parse
 from tempest_lib.auth import AuthProvider
 
 
@@ -45,9 +45,9 @@ class NoAuthAuthProvider(AuthProvider):
         else:
             # Join base URL and url, and remove multiple contiguous slashes
             _url = "/".join([base_url, url])
-            parts = [x for x in urlparse.urlparse(_url)]
+            parts = [x for x in parse.urlparse(_url)]
             parts[2] = re.sub("/{2,}", "/", parts[2])
-            _url = urlparse.urlunparse(parts)
+            _url = parse.urlunparse(parts)
         # no change to method or body
         return str(_url), _headers, body
 
