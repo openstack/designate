@@ -132,6 +132,8 @@ class RPCService(object):
                 e.start()
 
     def stop(self):
+        LOG.debug("Stopping RPC server on topic '%s'" % self._rpc_topic)
+
         for e in self._rpc_endpoints:
             if e != self and hasattr(e, 'stop'):
                 e.stop()
@@ -393,5 +395,5 @@ def wait():
     try:
         _launcher.wait()
     except KeyboardInterrupt:
-        _launcher.stop()
+        LOG.debug('Caught KeyboardInterrupt, shutting down now')
     rpc.cleanup()
