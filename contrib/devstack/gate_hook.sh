@@ -7,7 +7,9 @@ pushd $BASE/new/devstack
 DEVSTACK_GATE_DESIGNATE_DRIVER=${DEVSTACK_GATE_DESIGNATE_DRIVER:-powerdns}
 
 export KEEP_LOCALRC=1
-export ENABLED_SERVICES=designate,designate-api,designate-central,designate-sink,designate-mdns,designate-pool-manager
+export ENABLED_SERVICES=designate,designate-api,designate-central,designate-sink,designate-mdns,designate-pool-manager,designate-zone-manager
+
+# Remove once we require at least tempest-lib 0.6.0
 export DEVSTACK_PROJECT_FROM_GIT=tempest-lib
 
 echo "DESIGNATE_SERVICE_PORT_DNS=5322" >> $BASE/new/devstack/localrc
