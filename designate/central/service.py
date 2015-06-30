@@ -1715,7 +1715,7 @@ class Service(service.RPCService, service.Service):
         elevated_context.all_tenants = True
         elevated_context.edit_managed_records = True
 
-        if records > 0:
+        if len(records) > 0:
             for r in records:
                 msg = 'Deleting record %s for FIP %s'
                 LOG.debug(msg, r['id'], r['managed_resource_id'])
