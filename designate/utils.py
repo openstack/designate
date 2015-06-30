@@ -213,7 +213,7 @@ def get_columns(data):
     def _seen(col):
         columns.add(str(col))
 
-    map(lambda item: map(_seen, item.keys()), data)
+    six.moves.map(lambda item: six.moves.map(_seen, item.keys()), data)
     return list(columns)
 
 
