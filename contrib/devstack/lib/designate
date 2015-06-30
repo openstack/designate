@@ -50,6 +50,7 @@ DESIGNATE_NOTIFICATION_DRIVER=${DESIGNATE_NOTIFICATION_DRIVER:-}
 DESIGNATE_NOTIFICATION_TOPICS=${DESIGNATE_NOTIFICATION_TOPICS:-notifications}
 DESIGNATE_PERIODIC_RECOVERY_INTERVAL=${DESIGNATE_PERIODIC_RECOVERY_INTERVAL:-120}
 DESIGNATE_PERIODIC_SYNC_INTERVAL=${DESIGNATE_PERIODIC_SYNC_INTERVAL:-1800}
+DESIGNATE_COORDINATION_URL=${DESIGNATE_COORDINATION_URL:-}
 
 # Public IP/Port Settings
 DESIGNATE_SERVICE_PROTOCOL=${DESIGNATE_SERVICE_PROTOCOL:-$SERVICE_PROTOCOL}
@@ -117,6 +118,11 @@ function configure_designate {
     iniset $DESIGNATE_CONF DEFAULT state_path $DESIGNATE_STATE_PATH
     iniset $DESIGNATE_CONF DEFAULT root-helper sudo designate-rootwrap $DESIGNATE_ROOTWRAP_CONF
     iniset $DESIGNATE_CONF storage:sqlalchemy connection `database_connection_url designate`
+
+    # Coordination Configuration
+    if [[ -n "$DESIGNATE_COORDINATION_URL" ]]; then
+        iniset $DESIGNATE_CONF coordination backend_url $DESIGNATE_COORDINATION_URL
+    fi
 
     # Install the policy file for the API server
     cp $DESIGNATE_DIR/etc/designate/policy.json $DESIGNATE_CONF_DIR/policy.json

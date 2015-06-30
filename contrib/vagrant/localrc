@@ -65,6 +65,9 @@ ENABLED_SERVICES+=,designate,designate-central,designate-api,designate-pool-mana
 # Set Notification topics
 #DESIGNATE_NOTIFICATION_TOPICS=notifications
 
+# Set coordination service URL (e.g. kazoo://localhost/)
+#DESIGNATE_COORDINATION_URL=
+
 
 # Other Devstack Config
 # =====================
