@@ -13,6 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import six
 import flask
 from stevedore import extension
 from stevedore import named
@@ -98,7 +99,7 @@ def factory(global_config, **local_conf):
 
         return response
 
-    for code in wexceptions.default_exceptions.iterkeys():
+    for code in six.iterkeys(wexceptions.default_exceptions):
         app.error_handler_spec[None][code] = _json_error
 
     # TODO(kiall): Ideally, we want to make use of the Plugin class here.
