@@ -33,9 +33,9 @@ class CoordinatedService(coordination.CoordinationMixin, service.Service):
         return "dummy"
 
 
-class CoordinationMixinTests(TestCase):
+class TestCoordinationMixin(TestCase):
     def setUp(self):
-        super(CoordinationMixinTests, self).setUp()
+        super(TestCoordinationMixin, self).setUp()
         self.config(backend_url="zake://", group="coordination")
 
     def test_start(self):
@@ -70,7 +70,7 @@ class CoordinationMixinTests(TestCase):
         service.stop()
 
 
-class PartitionerTests(TestCase):
+class TestPartitioner(TestCase):
     def _get_partitioner(self, partitions, host='a'):
         fixture = self.useFixture(fixtures.CoordinatorFixture(
             'zake://', host))
@@ -175,7 +175,7 @@ class PartitionerTests(TestCase):
         self.assertEqual([8, 9, 10], p_three.my_partitions)
 
 
-class PartitionerNoCoordinationTests(TestCase):
+class TestPartitionerWithoutBackend(TestCase):
     def test_start(self):
         # We test starting the partitioner and calling the watch func first
         partitions = range(0, 10)
