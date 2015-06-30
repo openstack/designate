@@ -13,21 +13,15 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from oslo_config import cfg
+from oslo_log import log as logging
 
-CONF = cfg.CONF
+from designate.tests import TestCase
 
-CONF.register_group(cfg.OptGroup(
-    name='service:zone_manager', title="Configuration for Zone Manager Service"
-))
+LOG = logging.getLogger(__name__)
 
-OPTS = [
-    cfg.IntOpt('workers', default=None,
-               help='Number of Zone Manager worker processes to spawn'),
-    cfg.IntOpt('threads', default=1000,
-               help='Number of Zone Manager greenthreads to spawn'),
-    cfg.ListOpt('enabled_tasks', default=None,
-                help='Enabled tasks to run')
-]
 
-CONF.register_opts(OPTS, group='service:zone_manager')
+class ZoneManagerServiceTest(TestCase):
+    def test_stop(self):
+        # Test stopping the service
+        service = self.start_service("zone_manager")
+        service.stop()
