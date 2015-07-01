@@ -79,7 +79,7 @@ class Schema(object):
 
         filtered = {}
 
-        for name, subschema in properties.items():
+        for name, subschema in list(properties.items()):
             if 'type' in subschema and subschema['type'] == 'array':
                 subinstance = instance.get(name, None)
                 filtered[name] = self._filter_array(subinstance, subschema)
