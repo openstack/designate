@@ -301,7 +301,7 @@ class SQLAlchemy(object):
         ids = inner_rproxy.fetchall()
 
         # formatted_ids = [id[0] for id in ids]
-        formatted_ids = map(operator.itemgetter(0), ids)
+        formatted_ids = six.moves.map(operator.itemgetter(0), ids)
 
         query = select(
             [

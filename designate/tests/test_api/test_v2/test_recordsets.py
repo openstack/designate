@@ -13,6 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import six
 from mock import patch
 import oslo_messaging as messaging
 from oslo_log import log as logging
@@ -263,7 +264,8 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
 
         correct_results = [2, 1, 1]
 
-        for get_url, correct_result in zip(get_urls, correct_results):
+        for get_url, correct_result in \
+                six.moves.zip(get_urls, correct_results):
 
             response = self.client.get(get_url)
 
