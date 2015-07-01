@@ -624,7 +624,8 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
         Calculates the hash of the record, used to ensure record uniqueness.
         """
         md5 = hashlib.md5()
-        md5.update("%s:%s" % (record.recordset_id, record.data))
+        md5.update(("%s:%s" % (record.recordset_id,
+                               record.data)).encode('utf-8'))
 
         return md5.hexdigest()
 
