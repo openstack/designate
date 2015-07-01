@@ -90,7 +90,7 @@ class ValidationErrorAPIv2Adapter(base.APIv2Adapter):
             return path_segment, obj_adapter
 
         for key, value in obj_adapter.MODIFICATIONS.get(
-                'fields', {}).iteritems():
+                'fields', {}).items():
 
             # Check if this field as actually a nested object
             if object.FIELDS.get(path_segment, {}).get('relation', False):

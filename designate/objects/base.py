@@ -274,7 +274,7 @@ class DesignateObject(object):
 
     def update(self, values):
         """Update a object's fields with the supplied key/value pairs"""
-        for k, v in values.iteritems():
+        for k, v in values.items():
             setattr(self, k, v)
 
     @property
@@ -430,7 +430,7 @@ class DictObjectMixin(object):
             if self.obj_attr_is_set(field):
                 yield field, getattr(self, field)
 
-    items = lambda self: list(self.iteritems())
+    items = lambda self: list(self.items())
 
 
 class ListObjectMixin(object):

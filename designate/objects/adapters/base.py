@@ -92,7 +92,7 @@ class DesignateAdapter(object):
         # The dict we will return to be rendered to JSON / output format
         r_obj = {}
         # Loop over all fields that are supposed to be output
-        for key, value in cls.MODIFICATIONS['fields'].iteritems():
+        for key, value in cls.MODIFICATIONS['fields'].items():
             # Get properties for this field
             field_props = cls.MODIFICATIONS['fields'][key]
             # Check if it has to be renamed
@@ -156,7 +156,7 @@ class DesignateAdapter(object):
     def _parse_object(cls, values, output_object, *args, **kwargs):
         error_keys = []
 
-        for key, value in values.iteritems():
+        for key, value in values.items():
             if key in cls.MODIFICATIONS['fields']:
                 # No rename needed
                 obj_key = key

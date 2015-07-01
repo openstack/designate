@@ -412,7 +412,7 @@ class SQLAlchemy(object):
 
                 # Add all the loaded vars into RecordSet object
 
-                for key, value in rs_map.iteritems():
+                for key, value in rs_map.items():
                     setattr(current_rrset, key, record[value])
 
                 current_rrset.records = relation_list_cls()
@@ -420,7 +420,7 @@ class SQLAlchemy(object):
                 if record[r_map['id']] is not None:
                     rrdata = relation_cls()
 
-                    for key, value in r_map.iteritems():
+                    for key, value in r_map.items():
                         setattr(rrdata, key, record[value])
 
                     current_rrset.records.append(rrdata)
@@ -429,7 +429,7 @@ class SQLAlchemy(object):
                 # We've already got an rrset, add the rdata
                 if record[r_map['id']] is not None:
 
-                    for key, value in r_map.iteritems():
+                    for key, value in r_map.items():
                         setattr(rrdata, key, record[value])
 
                     current_rrset.records.append(rrdata)

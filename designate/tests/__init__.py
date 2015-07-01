@@ -360,7 +360,7 @@ class TestCase(base.BaseTestCase):
     def config(self, **kwargs):
         group = kwargs.pop('group', None)
 
-        for k, v in kwargs.iteritems():
+        for k, v in kwargs.items():
             cfg.CONF.set_override(k, v, group)
 
     def policy(self, rules, default_rule='allow', overwrite=True):

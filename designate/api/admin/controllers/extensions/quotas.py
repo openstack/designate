@@ -53,7 +53,7 @@ class QuotasController(rest.RestController):
 
         values = self._view.load(context, request, body)
 
-        for resource, hard_limit in values.iteritems():
+        for resource, hard_limit in values.items():
             self.central_api.set_quota(context, tenant_id, resource,
                                        hard_limit)
 
