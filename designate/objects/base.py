@@ -13,9 +13,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 import copy
-import urlparse
 
 import six
+from six.moves.urllib import parse
 import jsonschema
 from oslo_log import log as logging
 
@@ -78,7 +78,7 @@ def _schema_ref_resolver(uri):
 
     Sample URI: obj://ObjectName#/subpathA/subpathB
     """
-    obj_name = urlparse.urlsplit(uri).netloc
+    obj_name = parse.urlsplit(uri).netloc
     obj = DesignateObject.obj_cls_from_name(obj_name)
 
     return obj.obj_get_schema()

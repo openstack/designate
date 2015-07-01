@@ -13,8 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import urllib
-
+from six.moves.urllib import parse
 from oslo_config import cfg
 from oslo_log import log as logging
 
@@ -163,7 +162,7 @@ class BaseView(object):
 
         base_href = self._get_base_href(parents)
 
-        href = "%s?%s" % (base_href, urllib.urlencode(params))
+        href = "%s?%s" % (base_href, parse.urlencode(params))
 
         return href.rstrip('?')
 
