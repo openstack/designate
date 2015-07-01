@@ -11,6 +11,8 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import six
+
 from designate.objects import base
 
 
@@ -31,7 +33,7 @@ class ValidationError(base.DesignateObject):
 
         e = cls()
         e.path = list(getattr(js_error, 'releative_path', js_error.path))
-        e.message = js_error.message
+        e.message = six.text_type(js_error)
         e.validator = js_error.validator
         e.validator_value = js_error.validator_value
 

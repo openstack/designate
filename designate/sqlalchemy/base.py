@@ -246,13 +246,13 @@ class SQLAlchemy(object):
 
                 return _set_listobject_from_models(list_cls(), results)
             except oslodb_utils.InvalidSortKey as sort_key_error:
-                raise exceptions.InvalidSortKey(sort_key_error.message)
+                raise exceptions.InvalidSortKey(six.text_type(sort_key_error))
             # Any ValueErrors are propagated back to the user as is.
             # Limits, sort_dir and sort_key are checked at the API layer.
             # If however central or storage is called directly, invalid values
             # show up as ValueError
             except ValueError as value_error:
-                raise exceptions.ValueError(value_error.message)
+                raise exceptions.ValueError(six.text_type(value_error))
 
     def _find_recordsets_with_records(
         self, context, table, cls,
@@ -282,13 +282,13 @@ class SQLAlchemy(object):
                 sort_dir=sort_dir)
 
         except oslodb_utils.InvalidSortKey as sort_key_error:
-            raise exceptions.InvalidSortKey(sort_key_error.message)
+            raise exceptions.InvalidSortKey(six.text_type(sort_key_error))
         # Any ValueErrors are propagated back to the user as is.
         # Limits, sort_dir and sort_key are checked at the API layer.
         # If however central or storage is called directly, invalid values
         # show up as ValueError
         except ValueError as value_error:
-            raise exceptions.ValueError(value_error.message)
+            raise exceptions.ValueError(six.text_type(value_error))
 
         inner_q = self._apply_criterion(table, inner_q, criterion)
         inner_q = self._apply_deleted_criteria(context, table, inner_q)
@@ -393,7 +393,7 @@ class SQLAlchemy(object):
         # If however central or storage is called directly, invalid values
         # show up as ValueError
         except ValueError as value_error:
-            raise exceptions.ValueError(value_error.message)
+            raise exceptions.ValueError(six.text_type(value_error))
 
         rrsets = list_cls()
         rrset_id = None
@@ -528,4 +528,4 @@ class SQLAlchemy(object):
         # If however central or storage is called directly, invalid values
         # show up as ValueError
         except ValueError as value_error:
-            raise exceptions.ValueError(value_error.message)
+            raise exceptions.ValueError(six.text_type(value_error))

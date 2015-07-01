@@ -22,6 +22,7 @@ import random
 import socket
 import ssl
 
+import six
 import eventlet
 from oslo_log import log as logging
 
@@ -91,7 +92,7 @@ class NSD4Backend(base.Backend):
             self._execute_nsd4(command)
         except exceptions.Backend as e:
             # If create fails because the domain exists, don't reraise
-            if "already exists" not in str(e.message):
+            if "already exists" not in six.text_type(e):
                 raise
 
     def delete_domain(self, context, domain):
