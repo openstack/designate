@@ -647,6 +647,42 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         # Make sure total_count picked up the change
         self.assertEqual(3, response.json['metadata']['total_count'])
 
+    def test_total_count_filtered_by_data(self):
+        # Closes bug 1447325
+        url = '/zones/%s/recordsets' % self.domain['id']
+
+        # Create a recordset
+        fixture = self.get_recordset_fixture(self.domain['name'], fixture=0)
+        response = self.client.post_json(
+            '/zones/%s/recordsets' % self.domain['id'], fixture)
+
+        response = self.client.get(url)
+
+        # Make sure total_count picked up the change
+        self.assertEqual(3, response.json['metadata']['total_count'])
+
+        url = '/zones/%s/recordsets?data=nyan' % self.domain['id']
+        response = self.client.get(url)
+        self.assertEqual(0, response.json['metadata']['total_count'])
+
+        url = '/zones/%s/recordsets?data=ns1.example.org.' % self.domain['id']
+        response = self.client.get(url)
+        self.assertEqual(1, response.json['metadata']['total_count'])
+
+        # Test paging
+        new_domain = self.create_domain(name='example.net.')
+        recordset = self.create_recordset(new_domain, 'A')
+        self.create_record(new_domain, recordset, data='nyan')
+
+        recordset = self.create_recordset(new_domain, 'CNAME')
+        self.create_record(new_domain, recordset, data='nyan')
+
+        # Even with paging enabled, total_count is still the total number of
+        # recordsets matching the "data" filter
+        url = '/zones/%s/recordsets?limit=1&data=nyan' % new_domain.id
+        response = self.client.get(url)
+        self.assertEqual(2, response.json['metadata']['total_count'])
+
     def test_total_count_pagination(self):
         # Create two recordsets
         fixture = self.get_recordset_fixture(self.domain['name'], fixture=0)
