@@ -88,8 +88,8 @@ class MdnsRequestHandlerTest(MdnsTestCase):
         # ;ANSWER
         # ;AUTHORITY
         # ;ADDITIONAL
-        expected_response = ("271189050001000000000000076578616d706c6503636f6d"
-                             "0000010001")
+        expected_response = (b"271189050001000000000000076578616d706c6503636f"
+                             b"6d0000010001")
 
         request = dns.message.from_wire(binascii.a2b_hex(payload))
         request.environ = {'addr': self.addr, 'context': self.context}
@@ -111,8 +111,8 @@ class MdnsRequestHandlerTest(MdnsTestCase):
         # ;ANSWER
         # ;AUTHORITY
         # ;ADDITIONAL
-        expected_response = ("271291050001000000000000076578616d706c6503636f6d"
-                             "0000010001")
+        expected_response = (b"271291050001000000000000076578616d706c6503636f"
+                             b"6d0000010001")
 
         request = dns.message.from_wire(binascii.a2b_hex(payload))
         request.environ = {'addr': self.addr, 'context': self.context}
@@ -157,8 +157,8 @@ class MdnsRequestHandlerTest(MdnsTestCase):
         # ;ANSWER
         # ;AUTHORITY
         # ;ADDITIONAL
-        expected_response = ("c380a5000001000000000000076578616d706c6503636f6d"
-                             "0000060001")
+        expected_response = (b"c380a5000001000000000000076578616d706c6503636f"
+                             b"6d0000060001")
 
         # The SOA serial should be different from the one in thedomain and
         # will trigger a AXFR
@@ -198,8 +198,8 @@ class MdnsRequestHandlerTest(MdnsTestCase):
         # ;ANSWER
         # ;AUTHORITY
         # ;ADDITIONAL
-        expected_response = ("c380a5000001000000000000076578616d706c6503636f6d"
-                             "0000060001")
+        expected_response = (b"c380a5000001000000000000076578616d706c6503636f"
+                             b"6d0000060001")
 
         # The SOA serial should be different from the one in thedomain and
         # will trigger a AXFR
@@ -240,8 +240,8 @@ class MdnsRequestHandlerTest(MdnsTestCase):
         # ;ANSWER
         # ;AUTHORITY
         # ;ADDITIONAL
-        expected_response = ("c380a1050001000000000000076578616d706c6503636f6d"
-                             "0000060001")
+        expected_response = (b"c380a1050001000000000000076578616d706c6503636f"
+                             b"6d0000060001")
 
         request = dns.message.from_wire(binascii.a2b_hex(payload))
         request.environ = {
@@ -269,7 +269,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
         # ;ANSWER
         # ;AUTHORITY
         # ;ADDITIONAL
-        expected_response = ("f163a0010000000000000000")
+        expected_response = (b"f163a0010000000000000000")
 
         request = dns.message.from_wire(binascii.a2b_hex(payload))
         request.environ = {
@@ -296,8 +296,8 @@ class MdnsRequestHandlerTest(MdnsTestCase):
         # ;ANSWER
         # ;AUTHORITY
         # ;ADDITIONAL
-        expected_response = ("c380a1090001000000000000076578616d706c6503636f6"
-                             "d0000060001")
+        expected_response = (b"c380a1090001000000000000076578616d706c6503636f"
+                             b"6d0000060001")
 
         request = dns.message.from_wire(binascii.a2b_hex(payload))
         request.environ = {
@@ -324,8 +324,8 @@ class MdnsRequestHandlerTest(MdnsTestCase):
         # ;PREREQ
         # ;UPDATE
         # ;ADDITIONAL
-        expected_response = ("2714a9050001000000000000076578616d706c6503636f6d"
-                             "0000010001")
+        expected_response = (b"2714a9050001000000000000076578616d706c6503636f"
+                             b"6d0000010001")
 
         request = dns.message.from_wire(binascii.a2b_hex(payload))
         request.environ = {'addr': self.addr, 'context': self.context}
@@ -373,8 +373,8 @@ class MdnsRequestHandlerTest(MdnsTestCase):
         # ;ANSWER
         # ;AUTHORITY
         # ;ADDITIONAL
-        expected_response = ("271581050001000000000001076578616d706c6503636f6d"
-                             "00000100010000292000000000000000")
+        expected_response = (b"271581050001000000000001076578616d706c6503636f"
+                             b"6d00000100010000292000000000000000")
         request = dns.message.from_wire(binascii.a2b_hex(payload))
         request.environ = {'addr': self.addr, 'context': self.context}
         response = next(self.handler(request)).to_wire()
@@ -397,9 +397,9 @@ class MdnsRequestHandlerTest(MdnsTestCase):
         # mail.example.com. 3600 IN A 192.0.2.1
         # ;AUTHORITY
         # ;ADDITIONAL
-        expected_response = ("271685000001000100000000046d61696c076578616d706c"
-                             "6503636f6d0000010001c00c0001000100000e100004c000"
-                             "0201")
+        expected_response = (b"271685000001000100000000046d61696c076578616d70"
+                             b"6c6503636f6d0000010001c00c0001000100000e100004"
+                             b"c0000201")
 
         # This creates an A record for mail.example.com
         domain = self.create_domain()
@@ -428,9 +428,9 @@ class MdnsRequestHandlerTest(MdnsTestCase):
         # mail.example.com. 3600 IN MX 5 mail.example.org.
         # ;AUTHORITY
         # ;ADDITIONAL
-        expected_response = ("271785000001000100000000046d61696c076578616d706c"
-                             "6503636f6d00000f0001c00c000f000100000e1000140005"
-                             "046d61696c076578616d706c65036f726700")
+        expected_response = (b"271785000001000100000000046d61696c076578616d70"
+                             b"6c6503636f6d00000f0001c00c000f000100000e100014"
+                             b"0005046d61696c076578616d706c65036f726700")
 
         # This creates an MX record for mail.example.com
         domain = self.create_domain()
@@ -473,11 +473,12 @@ class MdnsRequestHandlerTest(MdnsTestCase):
         # ;AUTHORITY
         # ;ADDITIONAL
         expected_response = \
-            ("49c384000001000400000000076578616d706c6503636f6d0000fc0001c00c00"
-             "06000100000e10002f036e7331076578616d706c65036f726700076578616d70"
-             "6c65c00c551c063900000e10000002580001518000000e10c00c000200010000"
-             "0e100002c029046d61696cc00c0001000100000e100004c0000201c00c000600"
-             "0100000e100018c029c03a551c063900000e10000002580001518000000e10")
+            (b"49c384000001000400000000076578616d706c6503636f6d0000fc0001c0"
+             b"0c0006000100000e10002f036e7331076578616d706c65036f7267000765786"
+             b"16d706c65c00c551c063900000e10000002580001518000000e10c00c000200"
+             b"0100000e100002c029046d61696cc00c0001000100000e100004c0000201c00"
+             b"c0006000100000e100018c029c03a551c063900000e10000002580001518000"
+             b"000e10")
 
         domain = objects.Domain.from_dict({
             'name': 'example.com.',
@@ -528,14 +529,14 @@ class MdnsRequestHandlerTest(MdnsTestCase):
                    "0000291000000000000000")
 
         expected_response = [
-            ("49c384000001000300000000076578616d706c6503636f6d0000fc0001c00c00"
-             "06000100000e10002f036e7331076578616d706c65036f726700076578616d70"
-             "6c65c00c551c063900000e10000002580001518000000e10c00c000200010000"
-             "0e100002c029046d61696cc00c0001000100000e100004c0000201"),
+            (b"49c384000001000300000000076578616d706c6503636f6d0000fc0001c00c"
+             b"0006000100000e10002f036e7331076578616d706c65036f726700076578616"
+             b"d706c65c00c551c063900000e10000002580001518000000e10c00c0002000"
+             b"100000e100002c029046d61696cc00c0001000100000e100004c0000201"),
 
-            ("49c384000001000100000000076578616d706c6503636f6d0000fc0001c00c00"
-             "06000100000e10002f036e7331076578616d706c65036f726700076578616d70"
-             "6c65c00c551c063900000e10000002580001518000000e10"),
+            (b"49c384000001000100000000076578616d706c6503636f6d0000fc0001c00c"
+             b"0006000100000e10002f036e7331076578616d706c65036f72670007657861"
+             b"6d706c65c00c551c063900000e10000002580001518000000e10"),
         ]
 
         # Set the max-message-size to 128
@@ -596,8 +597,8 @@ class MdnsRequestHandlerTest(MdnsTestCase):
         # ;ANSWER
         # ;AUTHORITY
         # ;ADDITIONAL
-        expected_response = ("271881050001000000000000046d61696c076578616d706c"
-                             "6503636f6d0000050001")
+        expected_response = (b"271881050001000000000000046d61696c076578616d70"
+                             b"6c6503636f6d0000050001")
 
         # This creates an MX record for mail.example.com
         # But we query for a CNAME record
@@ -625,8 +626,8 @@ class MdnsRequestHandlerTest(MdnsTestCase):
         # ;ANSWER
         # ;AUTHORITY
         # ;ADDITIONAL
-        expected_response = ("271981050001000000000000076578616d706c6503636f6d"
-                             "0000270001")
+        expected_response = (b"271981050001000000000000076578616d706c6503636f"
+                             b"6d0000270001")
 
         request = dns.message.from_wire(binascii.a2b_hex(payload))
         request.environ = {'addr': self.addr, 'context': self.context}
@@ -666,9 +667,9 @@ class MdnsRequestHandlerTest(MdnsTestCase):
         # example.com. 3600 IN A 192.0.2.5
         # ;AUTHORITY
         # ;ADDITIONAL
-        expected_response = ("c28985000001000100000001076578616d706c6503636f6d"
-                             "0000010001c00c0001000100000e100004c0000205000029"
-                             "2000000000000000")
+        expected_response = (b"c28985000001000100000001076578616d706c6503636f"
+                             b"6d0000010001c00c0001000100000e100004c000020500"
+                             b"00292000000000000000")
 
         response = next(self.handler(request)).to_wire()
 
@@ -688,8 +689,8 @@ class MdnsRequestHandlerTest(MdnsTestCase):
         # ;ANSWER
         # ;AUTHORITY
         # ;ADDITIONAL
-        expected_response = ("c28981050001000000000001076578616d706c6503636f6d"
-                             "00000100010000292000000000000000")
+        expected_response = (b"c28981050001000000000001076578616d706c6503636f"
+                             b"6d00000100010000292000000000000000")
 
         response = next(self.handler(request)).to_wire()
         self.assertEqual(expected_response, binascii.b2a_hex(response))
@@ -732,9 +733,9 @@ class MdnsRequestHandlerTest(MdnsTestCase):
         # example.com. 3600 IN A 192.0.2.5
         # ;AUTHORITY
         # ;ADDITIONAL
-        expected_response = ("c28985000001000100000001076578616d706c6503636f6d"
-                             "0000010001c00c0001000100000e100004c0000205000029"
-                             "2000000000000000")
+        expected_response = (b"c28985000001000100000001076578616d706c6503636f"
+                             b"6d0000010001c00c0001000100000e100004c000020500"
+                             b"00292000000000000000")
 
         response = next(self.handler(request)).to_wire()
 
@@ -754,8 +755,8 @@ class MdnsRequestHandlerTest(MdnsTestCase):
         # ;ANSWER
         # ;AUTHORITY
         # ;ADDITIONAL
-        expected_response = ("c28981050001000000000001076578616d706c6503636f6d"
-                             "00000100010000292000000000000000")
+        expected_response = (b"c28981050001000000000001076578616d706c6503636f"
+                             b"6d00000100010000292000000000000000")
 
         response = next(self.handler(request)).to_wire()
         self.assertEqual(expected_response, binascii.b2a_hex(response))
