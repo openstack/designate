@@ -2940,7 +2940,11 @@ class CentralServiceTest(CentralTestCase):
 
         # Create a single zone_import
         request_body = self.get_zonefile_fixture()
-        self.central_service.create_zone_import(context, request_body)
+        zone_import_one = self.central_service.create_zone_import(
+            context, request_body)
+
+        # Wait for the import to complete
+        self.wait_for_import(zone_import_one.id)
 
         # Ensure we can retrieve the newly created zone_import
         zone_imports = self.central_service.find_zone_imports(
@@ -2949,11 +2953,11 @@ class CentralServiceTest(CentralTestCase):
 
         # Create a second zone_import
         request_body = self.get_zonefile_fixture(variant="two")
-        zone_import = self.central_service.create_zone_import(context,
-                                                              request_body)
+        zone_import_two = self.central_service.create_zone_import(
+            context, request_body)
 
         # Wait for the imports to complete
-        self.wait_for_import(zone_import.id)
+        self.wait_for_import(zone_import_two.id)
 
         # Ensure we can retrieve both zone_imports
         zone_imports = self.central_service.find_zone_imports(
@@ -2970,7 +2974,6 @@ class CentralServiceTest(CentralTestCase):
                     context, request_body)
 
         # Wait for the import to complete
-        # time.sleep(1)
         self.wait_for_import(zone_import.id)
 
         # Retrieve it, and ensure it's the same
