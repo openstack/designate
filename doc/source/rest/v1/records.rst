@@ -5,6 +5,13 @@ Resource record entries are used to generate records within a zone
 
 TODO: More detail.
 
+.. note:: V1 API has been deprecated since the Kilo release.
+
+.. note:: The "description" field on Records cannot be accessed from the V2
+    API. Likewise, the "description" field on Record Sets cannot be accessed
+    from the V1 API.
+
+
 
 Create Record
 -------------

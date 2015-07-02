@@ -27,6 +27,10 @@ The following illustrates a record set in the BIND file format:
                                 20 mail2.example.org.
                                 30 mail3.example.org.
 
+.. note:: The "description" field on Records cannot be accessed from the V2
+    API. Likewise, the "description" field on Record Sets cannot be accessed
+    from the V1 API.
+
 Create Record Set (A, AAAA, CNAME, NS, and TXT)
 -----------------------------------------------
 
