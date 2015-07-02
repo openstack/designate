@@ -43,9 +43,9 @@ class TestCoordinationMixin(TestCase):
         service.start()
 
         self.assertEqual(True, service._coordination_started)
-        self.assertIn(service.service_name,
+        self.assertIn(service.service_name.encode('utf-8'),
                       service._coordinator.get_groups().get())
-        self.assertIn(service._coordination_id,
+        self.assertIn(service._coordination_id.encode('utf-8'),
                       service._coordinator.get_members(
                             service.service_name).get())
         service.stop()
@@ -71,7 +71,7 @@ class TestCoordinationMixin(TestCase):
 
 
 class TestPartitioner(TestCase):
-    def _get_partitioner(self, partitions, host='a'):
+    def _get_partitioner(self, partitions, host=b'a'):
         fixture = self.useFixture(fixtures.CoordinatorFixture(
             'zake://', host))
         group = 'group'
@@ -84,7 +84,7 @@ class TestPartitioner(TestCase):
     def test_callbacks(self):
         cb1 = mock.Mock()
         cb2 = mock.Mock()
-        partitions = range(0, 10)
+        partitions = list(range(0, 10))
 
         p_one, c_one = self._get_partitioner(partitions)
         p_one.start()
@@ -99,19 +99,19 @@ class TestPartitioner(TestCase):
         cb2.reset_mock()
 
         # Startup a new partioner that will cause the cb's to be called
-        p_two, c_two = self._get_partitioner(partitions, host='b')
+        p_two, c_two = self._get_partitioner(partitions, host=b'b')
         p_two.start()
 
         # We'll get the 5 first partition ranges
         c_one.run_watchers()
-        cb1.assert_called_with(partitions[:5], ['a', 'b'], mock.ANY)
-        cb2.assert_called_with(partitions[:5], ['a', 'b'], mock.ANY)
+        cb1.assert_called_with(partitions[:5], [b'a', b'b'], mock.ANY)
+        cb2.assert_called_with(partitions[:5], [b'a', b'b'], mock.ANY)
 
     def test_two_even_partitions(self):
-        partitions = range(0, 10)
+        partitions = list(range(0, 10))
 
         p_one, c_one = self._get_partitioner(partitions)
-        p_two, c_two = self._get_partitioner(partitions, host='b')
+        p_two, c_two = self._get_partitioner(partitions, host=b'b')
 
         p_one.start()
         p_two.start()
@@ -123,10 +123,10 @@ class TestPartitioner(TestCase):
         self.assertEqual([5, 6, 7, 8, 9], p_two.my_partitions)
 
     def test_two_odd_partitions(self):
-        partitions = range(0, 11)
+        partitions = list(range(0, 11))
 
         p_one, c_one = self._get_partitioner(partitions)
-        p_two, c_two = self._get_partitioner(partitions, host='b')
+        p_two, c_two = self._get_partitioner(partitions, host=b'b')
 
         p_one.start()
         p_two.start()
@@ -138,11 +138,11 @@ class TestPartitioner(TestCase):
         self.assertEqual([6, 7, 8, 9, 10], p_two.my_partitions)
 
     def test_three_even_partitions(self):
-        partitions = range(0, 10)
+        partitions = list(range(0, 10))
 
         p_one, c_one = self._get_partitioner(partitions)
-        p_two, c_two = self._get_partitioner(partitions, host='b')
-        p_three, c_three = self._get_partitioner(partitions, host='c')
+        p_two, c_two = self._get_partitioner(partitions, host=b'b')
+        p_three, c_three = self._get_partitioner(partitions, host=b'c')
 
         p_one.start()
         p_two.start()
@@ -157,11 +157,11 @@ class TestPartitioner(TestCase):
         self.assertEqual([8, 9], p_three.my_partitions)
 
     def test_three_odd_partitions(self):
-        partitions = range(0, 11)
+        partitions = list(range(0, 11))
 
         p_one, c_one = self._get_partitioner(partitions)
-        p_two, c_two = self._get_partitioner(partitions, host='b')
-        p_three, c_three = self._get_partitioner(partitions, host='c')
+        p_two, c_two = self._get_partitioner(partitions, host=b'b')
+        p_three, c_three = self._get_partitioner(partitions, host=b'c')
 
         p_one.start()
         p_two.start()
@@ -178,7 +178,7 @@ class TestPartitioner(TestCase):
 class TestPartitionerWithoutBackend(TestCase):
     def test_start(self):
         # We test starting the partitioner and calling the watch func first
-        partitions = range(0, 10)
+        partitions = list(range(0, 10))
 
         cb1 = mock.Mock()
         cb2 = mock.Mock()
@@ -191,7 +191,7 @@ class TestPartitionerWithoutBackend(TestCase):
         cb2.assert_called_with(partitions, None, None)
 
     def test_cb_on_watch(self):
-        partitions = range(0, 10)
+        partitions = list(range(0, 10))
         cb = mock.Mock()
 
         partitioner = coordination.Partitioner(
