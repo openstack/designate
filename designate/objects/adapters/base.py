@@ -64,7 +64,7 @@ class DesignateAdapter(object):
         try:
             return cls._adapter_classes[key]
         except KeyError as e:
-            keys = e.message.split(':')
+            keys = six.text_type(e).split(':')
             msg = "Adapter for %(object)s to format %(format)s not found" % {
                 "object": keys[1],
                 "format": keys[0]
