@@ -59,7 +59,8 @@ class RecordSetsController(rest.RestController):
             params, self.SORT_KEYS)
 
         # Extract any filter params.
-        accepted_filters = ('name', 'type', 'ttl', 'data', 'status', )
+        accepted_filters = (
+            'name', 'type', 'ttl', 'data', 'status', 'description', )
         criterion = self._apply_filter_params(
             params, accepted_filters, {})
 

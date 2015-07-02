@@ -568,3 +568,52 @@ class ApiV2ZonesTest(ApiV2TestCase):
         self.assertEqual(1, len(response.json['nameservers']))
         self.assertIn('hostname', response.json['nameservers'][0])
         self.assertIn('priority', response.json['nameservers'][0])
+
+    def test_get_zones_filter(self):
+        # Add zones for testing
+        fixtures = [
+            self.get_domain_fixture(
+                'PRIMARY', fixture=0, values={
+                    'ttl': 3600,
+                    'description': 'test1'
+                }
+            ),
+            self.get_domain_fixture(
+                'PRIMARY', fixture=1, values={
+                    'ttl': 4000,
+                    'description': 'test2'
+                }
+            )
+        ]
+
+        for fixture in fixtures:
+            response = self.client.post_json('/zones/', fixture)
+
+        get_urls = [
+            # Filter by Name
+            '/zones?name=%s' % fixtures[0]['name'],
+
+            # Filter by Email
+            '/zones?email=example*',
+            '/zones?email=%s' % fixtures[1]['email'],
+
+            # Filter by TTL
+            '/zones?ttl=3600',
+
+            # Filter by Description
+            '/zones?description=test1',
+            '/zones?description=test*'
+        ]
+
+        correct_results = [1, 2, 1, 1, 1, 2]
+
+        for get_url, correct_result in zip(get_urls, correct_results):
+
+            response = self.client.get(get_url)
+
+            # Check the headers are what we expect
+            self.assertEqual(200, response.status_int)
+            self.assertEqual('application/json', response.content_type)
+
+            # Check that the correct number of zones match
+            self.assertEqual(correct_result, len(response.json['zones']))

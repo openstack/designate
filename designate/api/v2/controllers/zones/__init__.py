@@ -62,7 +62,7 @@ class ZonesController(rest.RestController):
             params, self.SORT_KEYS)
 
         # Extract any filter params.
-        accepted_filters = ('name', 'email', 'status', )
+        accepted_filters = ('name', 'email', 'status', 'description', 'ttl', )
 
         criterion = self._apply_filter_params(
             params, accepted_filters, {})
