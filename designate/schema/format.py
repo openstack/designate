@@ -24,12 +24,19 @@ from designate.openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)
 
-RE_DOMAINNAME = r'^(?!.{255,})(?:(?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-)\.)+$'
-RE_HOSTNAME = r'^(?!.{255,})(?:(^\*|(?!\-)[A-Za-z0-9_\-]{1,63})(?<!\-)\.)+$'
+# NOTE(kiall): All of the below regular expressions are termined with
+#              "(?![\n])$", rather than simply "$" to ensure a string with a
+#              trailing newline is NOT matched. See bug #1471158. Annoyingly,
+#              Python's re module has no equilivant to PCRE_DOLLAR_ENDONLY, so
+#              we do it by hand instead.
+
+RE_DOMAINNAME = r'^(?!.{255,})(?:(?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-)\.)+\Z'
+RE_HOSTNAME = r'^(?!.{255,})(?:(?:^\*|(?!\-)[A-Za-z0-9_\-]{1,63})(?<!\-)\.)+\Z'
 
 # The TLD name will not end in a period.
 RE_TLDNAME = r'^(?!.{255,})(?:(?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-))' \
-    r'(\.(?:(?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-)))*$'
+             r'(?:\.(?:(?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-)))*\Z'
+
 
 draft3_format_checker = jsonschema.draft3_format_checker
 draft4_format_checker = jsonschema.draft4_format_checker

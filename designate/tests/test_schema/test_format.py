@@ -45,6 +45,8 @@ class SchemaFormatTest(TestCase):
             'ABCDEF',
             'ABC/DEF',
             'ABC\\DEF',
+            # Trailing newline - Bug 1471158
+            "127.0.0.1\n",
         ]
 
         for ipaddress in valid_ipaddresses:
@@ -52,6 +54,29 @@ class SchemaFormatTest(TestCase):
 
         for ipaddress in invalid_ipaddresses:
             self.assertFalse(format.is_ipv4(ipaddress))
+
+    def test_is_ipv6(self):
+        valid_ipaddresses = [
+            '2001:db8::0',
+            '2001:0db8:85a3:0000:0000:8a2e:0370:7334',
+            '2001:db8:85a3:0000:0000:8a2e:0370:7334',
+            '2001:db8:85a3::8a2e:0370:7334',
+        ]
+
+        invalid_ipaddresses = [
+            # Invalid characters
+            'hhhh:hhhh:hhhh:hhhh:hhhh:hhhh:hhhh:hhhh'
+            # Trailing newline - Bug 1471158
+            "2001:db8::0\n",
+        ]
+
+        for ipaddress in valid_ipaddresses:
+            self.assertTrue(format.is_ipv6(ipaddress),
+                            'Expected Valid: %s' % ipaddress)
+
+        for ipaddress in invalid_ipaddresses:
+            self.assertFalse(format.is_ipv6(ipaddress),
+                             'Expected Invalid: %s' % ipaddress)
 
     def test_is_hostname(self):
         valid_hostnames = [
@@ -112,6 +137,8 @@ class SchemaFormatTest(TestCase):
             '-abc-.',
             'abc.-def-.',
             'abc.-def-.ghi.',
+            # Trailing newline - Bug 1471158
+            "www.example.com.\n",
         ]
 
         for hostname in valid_hostnames:
@@ -182,6 +209,8 @@ class SchemaFormatTest(TestCase):
             '-abc-.',
             'abc.-def-.',
             'abc.-def-.ghi.',
+            # Trailing newline - Bug 1471158
+            "example.com.\n",
         ]
 
         for domainname in valid_domainnames:
@@ -189,6 +218,30 @@ class SchemaFormatTest(TestCase):
 
         for domainname in invalid_domainnames:
             self.assertFalse(format.is_domainname(domainname))
+
+    def test_is_tldname(self):
+        valid_tldnames = [
+            'com',
+            'net',
+            'org',
+            'co.uk',
+        ]
+
+        invalid_tldnames = [
+            # Invalid Formats
+            'com.',
+            '.com',
+            # Trailing newline - Bug 1471158
+            "com\n",
+        ]
+
+        for tldname in valid_tldnames:
+            self.assertTrue(format.is_tldname(tldname),
+                            'Expected Valid: %s' % tldname)
+
+        for tldname in invalid_tldnames:
+            self.assertFalse(format.is_tldname(tldname),
+                             'Expected Invalid: %s' % tldname)
 
     def test_is_email(self):
         valid_emails = [
