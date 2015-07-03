@@ -47,6 +47,8 @@ class SchemaFormatTest(TestCase):
             'ABCDEF',
             'ABC/DEF',
             'ABC\\DEF',
+            # Trailing newline - Bug 1471158
+            "127.0.0.1\n",
         ]
 
         for ipaddress in valid_ipaddresses:
@@ -54,6 +56,29 @@ class SchemaFormatTest(TestCase):
 
         for ipaddress in invalid_ipaddresses:
             self.assertFalse(format.is_ipv4(ipaddress))
+
+    def test_is_ipv6(self):
+        valid_ipaddresses = [
+            '2001:db8::0',
+            '2001:0db8:85a3:0000:0000:8a2e:0370:7334',
+            '2001:db8:85a3:0000:0000:8a2e:0370:7334',
+            '2001:db8:85a3::8a2e:0370:7334',
+        ]
+
+        invalid_ipaddresses = [
+            # Invalid characters
+            'hhhh:hhhh:hhhh:hhhh:hhhh:hhhh:hhhh:hhhh'
+            # Trailing newline - Bug 1471158
+            "2001:db8::0\n",
+        ]
+
+        for ipaddress in valid_ipaddresses:
+            self.assertTrue(format.is_ipv6(ipaddress),
+                            'Expected Valid: %s' % ipaddress)
+
+        for ipaddress in invalid_ipaddresses:
+            self.assertFalse(format.is_ipv6(ipaddress),
+                             'Expected Invalid: %s' % ipaddress)
 
     def test_is_hostname(self):
         valid_hostnames = [
@@ -114,6 +139,8 @@ class SchemaFormatTest(TestCase):
             '-abc-.',
             'abc.-def-.',
             'abc.-def-.ghi.',
+            # Trailing newline - Bug 1471158
+            "www.example.com.\n",
         ]
 
         for hostname in valid_hostnames:
@@ -184,6 +211,8 @@ class SchemaFormatTest(TestCase):
             '-abc-.',
             'abc.-def-.',
             'abc.-def-.ghi.',
+            # Trailing newline - Bug 1471158
+            "example.com.\n",
         ]
 
         for domainname in valid_domainnames:
@@ -191,6 +220,54 @@ class SchemaFormatTest(TestCase):
 
         for domainname in invalid_domainnames:
             self.assertFalse(format.is_domainname(domainname))
+
+    def test_is_srv_hostname(self):
+        valid_hostnames = [
+            '_sip._tcp.example.com.',
+            '_sip._udp.example.com.',
+        ]
+
+        invalid_hostnames = [
+            # Invalid Formats
+            '_tcp.example.com.',
+            'sip._udp.example.com.',
+            '_sip.udp.example.com.',
+            'sip.udp.example.com.',
+            # Trailing newline - Bug 1471158
+            "_sip._tcp.example.com.\n",
+        ]
+
+        for hostname in valid_hostnames:
+            self.assertTrue(format.is_srv_hostname(hostname),
+                            'Expected Valid: %s' % hostname)
+
+        for hostname in invalid_hostnames:
+            self.assertFalse(format.is_srv_hostname(hostname),
+                             'Expected Invalid: %s' % hostname)
+
+    def test_is_tldname(self):
+        valid_tldnames = [
+            'com',
+            'net',
+            'org',
+            'co.uk',
+        ]
+
+        invalid_tldnames = [
+            # Invalid Formats
+            'com.',
+            '.com',
+            # Trailing newline - Bug 1471158
+            "com\n",
+        ]
+
+        for tldname in valid_tldnames:
+            self.assertTrue(format.is_tldname(tldname),
+                            'Expected Valid: %s' % tldname)
+
+        for tldname in invalid_tldnames:
+            self.assertFalse(format.is_tldname(tldname),
+                             'Expected Invalid: %s' % tldname)
 
     def test_is_email(self):
         valid_emails = [
@@ -240,3 +317,86 @@ class SchemaFormatTest(TestCase):
         for email in invalid_emails:
             LOG.debug('Expecting failure for: %s' % email)
             self.assertFalse(format.is_email(email))
+
+    def test_is_sshfp(self):
+        valid_sshfps = [
+            '72d30d211ce8c464de2811e534de23b9be9b4dc4',
+        ]
+
+        invalid_sshfps = [
+            # Invalid Formats
+            'P2d30d211ce8c464de2811e534de23b9be9b4dc4',  # "P" !IN [A-F]
+            '72d30d211',
+            # Trailing newline - Bug 1471158
+            "72d30d211ce8c464de2811e534de23b9be9b4dc4\n",
+        ]
+
+        for sshfp in valid_sshfps:
+            self.assertTrue(format.is_sshfp(sshfp),
+                            'Expected Valid: %s' % sshfp)
+
+        for sshfp in invalid_sshfps:
+            self.assertFalse(format.is_sshfp(sshfp),
+                             'Expected Invalid: %s' % sshfp)
+
+    def test_is_uuid(self):
+        valid_uuids = [
+            'd3693ef8-2188-11e5-bf77-676ff9eb39dd',
+        ]
+
+        invalid_uuids = [
+            # Invalid Formats
+            'p3693ef8-2188-11e5-bf77-676ff9eb39dd',  # "p" !IN [A-F]
+            'd3693ef8218811e5bf77676ff9eb39dd',
+            # Trailing newline - Bug 1471158
+            "d3693ef8-2188-11e5-bf77-676ff9eb39dd\n",
+        ]
+
+        for uuid in valid_uuids:
+            self.assertTrue(format.is_uuid(uuid),
+                            'Expected Valid: %s' % uuid)
+
+        for uuid in invalid_uuids:
+            self.assertFalse(format.is_uuid(uuid),
+                             'Expected Invalid: %s' % uuid)
+
+    def test_is_fip_id(self):
+        valid_fip_ids = [
+            'region-a:d3693ef8-2188-11e5-bf77-676ff9eb39dd',
+        ]
+
+        invalid_fip_ids = [
+            # Invalid Formats
+            'region-a:p3693ef8-2188-11e5-bf77-676ff9eb39dd',  # "p" !IN [A-F]
+            # Trailing newline - Bug 1471158
+            "region-a:d3693ef8-2188-11e5-bf77-676ff9eb39dd\n",
+        ]
+
+        for fip_id in valid_fip_ids:
+            self.assertTrue(format.is_floating_ip_id(fip_id),
+                            'Expected Valid: %s' % fip_id)
+
+        for fip_id in invalid_fip_ids:
+            self.assertFalse(format.is_floating_ip_id(fip_id),
+                             'Expected Invalid: %s' % fip_id)
+
+    def test_is_ip_and_port(self):
+        valid_ip_and_ports = [
+            '192.0.2.1:80',
+            '192.0.2.1:1',
+            '192.0.2.1:65535',
+        ]
+
+        invalid_ip_and_ports = [
+            '192.0.2.1:65536',
+            # Trailing newline - Bug 1471158
+            "192.0.2.1:80\n",
+        ]
+
+        for ip_and_port in valid_ip_and_ports:
+            self.assertTrue(format.is_ip_and_port(ip_and_port),
+                            'Expected Valid: %s' % ip_and_port)
+
+        for ip_and_port in invalid_ip_and_ports:
+            self.assertFalse(format.is_ip_and_port(ip_and_port),
+                             'Expected Invalid: %s' % ip_and_port)

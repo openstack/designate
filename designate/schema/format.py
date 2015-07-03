@@ -23,29 +23,34 @@ from oslo_log import log as logging
 
 LOG = logging.getLogger(__name__)
 
-RE_DOMAINNAME = r'^(?!.{255,})(?:(?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-)\.)+$'
-RE_HOSTNAME = r'^(?!.{255,})(?:(?:^\*|(?!\-)[A-Za-z0-9_\-]{1,63})(?<!\-)\.)+$'
+# NOTE(kiall): All of the below regular expressions are termined with
+#              "\Z", rather than simply "$" to ensure a string with a
+#              trailing newline is NOT matched. See bug #1471158.
+
+RE_DOMAINNAME = r'^(?!.{255,})(?:(?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-)\.)+\Z'
+RE_HOSTNAME = r'^(?!.{255,})(?:(?:^\*|(?!\-)[A-Za-z0-9_\-]{1,63})(?<!\-)\.)+\Z'
 
 RE_SRV_HOST_NAME = r'^(?:(?!\-)(?:\_[A-Za-z0-9_\-]{1,63}\.){2})(?!.{255,})' \
-                   r'(?:(?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-)\.)+$'
+                   r'(?:(?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-)\.)+\Z'
 
 # The TLD name will not end in a period.
 RE_TLDNAME = r'^(?!.{255,})(?:(?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-))' \
-             r'(?:\.(?:(?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-)))*$'
+             r'(?:\.(?:(?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-)))*\Z'
 
 RE_UUID = r'^(?:[0-9a-fA-F]){8}-(?:[0-9a-fA-F]){4}-(?:[0-9a-fA-F]){4}-' \
-          r'(?:[0-9a-fA-F]){4}-(?:[0-9a-fA-F]){12}$'
+          r'(?:[0-9a-fA-F]){4}-(?:[0-9a-fA-F]){12}\Z'
 
 RE_IP_AND_PORT = r'^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}' \
                  r'(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)' \
-                 r'(?::(6553[0-5]|655[0-2]\d|65[0-4]\d\d|6[0-4]\d{3}' \
-                 r'|[1-5]\d{4}|[1-9]\d{0,3}|0))?$'
+                 r'(?::(?:6553[0-5]|655[0-2]\d|65[0-4]\d\d|6[0-4]\d{3}' \
+                 r'|[1-5]\d{4}|[1-9]\d{0,3}|0))?\Z'
 
-RE_FIP_ID = r'^(?P<region>[A-Za-z0-9\\.\\-_]{1,100}):' \
+RE_FIP_ID = r'^(?P<region>[A-Za-z0-9\.\-_]{1,100}):' \
             r'(?P<id>[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-' \
-            r'[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$'
+            r'[0-9a-fA-F]{4}-[0-9a-fA-F]{12})\Z'
 
-RE_SSHFP = r'^[0-9A-Fa-f]{40}$'
+RE_SSHFP = r'^[0-9A-Fa-f]{40}\Z'
+
 
 draft3_format_checker = jsonschema.draft3_format_checker
 draft4_format_checker = jsonschema.draft4_format_checker
@@ -152,6 +157,9 @@ def is_email(instance):
 
 @draft4_format_checker.checks("sshfp")
 def is_sshfp(instance):
+    # TODO(kiall): This isn't actually validating an SSH FP, It's trying to
+    #              validate *part* of a SSHFP, we should either rename this
+    #              or actually validate a SSHFP rdata in it's entireity.
     if not isinstance(instance, compat.str_types):
         return True
 
@@ -176,6 +184,8 @@ def is_uuid(instance):
 @draft3_format_checker.checks("floating-ip-id")
 @draft4_format_checker.checks("floating-ip-id")
 def is_floating_ip_id(instance):
+    # TODO(kiall): Apparantly, this is used in exactly zero places outside the
+    #              tests. Determine if we should remove this code...
     if not isinstance(instance, compat.str_types):
         return True
 
