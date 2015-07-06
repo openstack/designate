@@ -15,9 +15,11 @@
 # under the License.
 import os
 
+
 from migrate.versioning import api as versioning_api
 from oslo.config import cfg
 from oslo_log import log as logging
+from oslo_db import exception
 
 from designate.manage import base
 from designate.sqlalchemy import utils
@@ -33,12 +35,24 @@ cfg.CONF.import_opt('connection',
                     'designate.pool_manager.cache.impl_sqlalchemy',
                     group='pool_manager_cache:sqlalchemy')
 
+cfg.CONF.import_opt('connection',
+                    'designate.storage.impl_sqlalchemy',
+                    group='storage:sqlalchemy')
+
 CONF = cfg.CONF
 
 
 def get_manager():
-    return utils.get_migration_manager(
-        REPOSITORY, CONF['pool_manager_cache:sqlalchemy'].connection)
+    storage_db = CONF['storage:sqlalchemy'].connection
+    pool_manager_cache_db = CONF['pool_manager_cache:sqlalchemy'].connection
+    if storage_db == pool_manager_cache_db:
+        raise exception.DbMigrationError(
+            message=(
+                "Pool Manager Cache requires its own database."
+                " Please check your config file."
+            ))
+    else:
+        return utils.get_migration_manager(REPOSITORY, pool_manager_cache_db)
 
 
 class DatabaseCommands(base.Commands):
