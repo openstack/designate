@@ -66,7 +66,7 @@ class NotificationHandler(ExtensionPlugin):
 
     def _find_or_create_recordset(self, context, domain_id, name, type,
                                   ttl=None):
-        name = name.encode('idna')
+        name = name.encode('idna').decode('utf-8')
 
         try:
             # Attempt to create an empty recordset
