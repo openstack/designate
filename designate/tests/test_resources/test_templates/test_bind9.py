@@ -26,4 +26,4 @@ class Bind9Test(TestCase):
     def test_bind9_zone_ends_with_empty_line(self):
         name = ['templates', 'bind9-zone.jinja2']
         resource_string = utils.resource_string(*name)
-        self.assertEqual('\n\n', resource_string[-2:])
+        self.assertEqual(b'\n\n', resource_string[-2:])
