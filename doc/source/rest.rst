@@ -63,6 +63,8 @@ API Versions
 
 The API has 2 versions - V1 and V2.
 
+.. note:: V1 has been deprecated since the Kilo release.
+
 V1 API
 ------
     .. toctree::
