@@ -53,7 +53,7 @@ class BlacklistsController(rest.RestController):
             params, self.SORT_KEYS)
 
         # Extract any filter params
-        accepted_filters = ('pattern')
+        accepted_filters = ('pattern', )
         criterion = self._apply_filter_params(
             params, accepted_filters, {})
 

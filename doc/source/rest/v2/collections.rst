@@ -275,8 +275,7 @@ Filtering
     Currently, the following attributes support filtering:
 
     * **Blacklists**: pattern
-    * **Records**: data
-    * **Recordsets**: name, type, ttl
+    * **Recordsets**: name, type, ttl, data, description, status
     * **TLDs**: name
     * **Zones**: name, email
 
