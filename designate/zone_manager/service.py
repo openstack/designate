@@ -19,11 +19,13 @@ from oslo_log import log as logging
 from designate.i18n import _LI
 from designate import coordination
 from designate import service
-from designate.central import rpcapi as central_api
+from designate.zone_manager import tasks
 
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
+
+NS = 'designate.periodic_tasks'
 
 
 class Service(coordination.CoordinationMixin, service.Service):
@@ -43,10 +45,18 @@ class Service(coordination.CoordinationMixin, service.Service):
         self._partitioner.start()
         self._partitioner.watch_partition_change(self._rebalance)
 
+        for task in tasks.PeriodicTask.get_extensions():
+            LOG.debug("Registering task %s" % task)
+
+            # Instantiate the task
+            task = task()
+
+            # Subscribe for partition size updates.
+            self._partitioner.watch_partition_change(task.on_partition_change)
+
+            interval = CONF[task.get_canonical_name()].interval
+            self.tg.add_timer(interval, task)
+
     @property
     def service_name(self):
         return 'zone_manager'
-
-    @property
-    def central_api(self):
-        return central_api.CentralAPI.get_instance()

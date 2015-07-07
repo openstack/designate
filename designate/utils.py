@@ -106,6 +106,9 @@ def register_plugin_opts():
     # Avoid circular dependency imports
     from designate import plugin
 
+    plugin.Plugin.register_cfg_opts('designate.zone_manager_tasks')
+    plugin.Plugin.register_extra_cfg_opts('designate.zone_manager_tasks')
+
     # Register Backend Plugin Config Options
     plugin.Plugin.register_cfg_opts('designate.backend')
     plugin.Plugin.register_extra_cfg_opts('designate.backend')
