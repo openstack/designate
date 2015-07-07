@@ -563,8 +563,8 @@ class ListObjectMixin(object):
         """List count of value occurrences"""
         return self.objects.count(value)
 
-    def sort(self, cmp=None, key=None, reverse=False):
-        self.objects.sort(cmp=cmp, key=key, reverse=reverse)
+    def sort(self, key=None, reverse=False):
+        self.objects.sort(key=key, reverse=reverse)
 
     def obj_what_changed(self):
         changes = set(self._obj_changes)

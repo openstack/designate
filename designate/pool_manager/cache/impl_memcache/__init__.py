@@ -13,6 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import six
 from oslo_config import cfg
 
 from designate import exceptions
@@ -108,7 +109,10 @@ class MemcachePoolManagerCache(cache_base.PoolManagerCache):
             action=pool_manager_status.action,
             tail=tail
         )
-        return key.encode('utf-8')
+        if six.PY2:
+            return key.encode('utf-8')
+        else:
+            return key
 
     def _build_serial_number_key(self, pool_manager_status):
         return self._status_key(pool_manager_status, 'serial_number')
