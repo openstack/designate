@@ -42,4 +42,4 @@ oslo.policy>=0.5.0 # Apache-2.0
 Werkzeug>=0.7 # BSD License
 python-memcached>=1.48
 psutil<2.0.0,>=1.1.1
-tooz>=0.13.1 # Apache-2.0
+tooz>=0.16.0 # Apache-2.0
