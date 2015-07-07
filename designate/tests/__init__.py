@@ -52,6 +52,8 @@ cfg.CONF.import_opt('connection',
                     group='pool_manager_cache:sqlalchemy')
 default_pool_id = cfg.CONF['service:central'].default_pool_id
 
+_TRUE_VALUES = ('true', '1', 'yes', 'y')
+
 
 class TestCase(base.BaseTestCase):
     quota_fixtures = [{
@@ -289,7 +291,7 @@ class TestCase(base.BaseTestCase):
             fixtures.DatabaseFixture.get_fixture(
                 REPOSITORY, manage_database.INIT_VERSION))
 
-        if os.getenv('DESIGNATE_SQL_DEBUG', True):
+        if os.getenv('DESIGNATE_SQL_DEBUG', "True").lower() in _TRUE_VALUES:
             connection_debug = 50
         else:
             connection_debug = 0
@@ -335,7 +337,7 @@ class TestCase(base.BaseTestCase):
         db_fixture = self.useFixture(
             fixtures.DatabaseFixture.get_fixture(repository))
 
-        if os.getenv('DESIGNATE_SQL_DEBUG', True):
+        if os.getenv('DESIGNATE_SQL_DEBUG', "True").lower() in _TRUE_VALUES:
             connection_debug = 50
         else:
             connection_debug = 0
