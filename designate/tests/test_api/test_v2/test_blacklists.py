@@ -14,6 +14,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import six
+
 from designate.tests.test_api.test_v2 import ApiV2TestCase
 
 
@@ -127,3 +129,35 @@ class ApiV2BlacklistsTest(ApiV2TestCase):
 
     def test_update_bkaclist_invalid_id(self):
         self._assert_invalid_uuid(self.client.patch_json, '/blacklists/%s')
+
+    def test_get_blacklists_filter(self):
+        # Add blacklists for testing
+        self.policy({'create_blacklists': '@'})
+        fixtures = [
+            self.get_blacklist_fixture(fixture=0),
+            self.get_blacklist_fixture(fixture=1)
+        ]
+
+        for fixture in fixtures:
+            response = self.client.post_json('/blacklists/', fixture)
+
+        get_urls = [
+            # Filter by Pattern
+            '/blacklists?pattern=blacklisted.com.',
+            '/blacklists?pattern=blacklisted*'
+        ]
+
+        correct_results = [1, 2]
+
+        for get_url, correct_result in \
+                six.moves.zip(get_urls, correct_results):
+
+            self.policy({'find_blacklists': '@'})
+            response = self.client.get(get_url)
+
+            # Check the headers are what we expect
+            self.assertEqual(200, response.status_int)
+            self.assertEqual('application/json', response.content_type)
+
+            # Check that the correct number of recordsets match
+            self.assertEqual(correct_result, len(response.json['blacklists']))
