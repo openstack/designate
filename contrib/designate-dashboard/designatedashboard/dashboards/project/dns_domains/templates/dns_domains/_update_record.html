@@ -1,9 +1,0 @@
-{% extends "project/dns_domains/_create_record.html" %}
-{% load i18n %}
-{% load url from future %}
-
-{% block form_id %}update_record_form{% endblock %}
-{% block form_action %}{% url 'horizon:project:dns_domains:update_record' record.domain_id record.id %}{% endblock %}
-
-{% block modal-header %}{% trans "Update Domain Record" %}{% endblock %}
-
