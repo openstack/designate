@@ -39,7 +39,7 @@ class MdnsServiceTest(MdnsTestCase):
 
     @mock.patch.object(dns.message, 'make_query')
     def test_handle_empty_payload(self, query_mock):
-        self.service._dns_handle(self.addr, None)
+        self.service._dns_handle(self.addr, ' '.encode('utf-8'))
         query_mock.assert_called_once_with('unknown', dns.rdatatype.A)
 
     @mock.patch.object(socket.socket, 'sendto', new_callable=mock.MagicMock)

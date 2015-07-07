@@ -123,6 +123,14 @@ class SerializationMiddleware(DNSMiddleware):
 
             response = self._build_error_response()
 
+        except Exception:
+            LOG.exception(_LE("Unknown exception deserializing packet "
+                          "from %(host)s %(port)d") %
+                          {'host': request['addr'][0],
+                           'port': request['addr'][1]})
+
+            response = self._build_error_response()
+
         else:
             # Hand the Deserialized packet onto the Application
             for response in self.application(message):
