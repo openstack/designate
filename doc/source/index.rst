@@ -41,11 +41,12 @@ Reference Documentation
    architecture
    getting-involved
    developer-guidelines
+   production-guidelines
+   production-architecture
    configuration
    rest
    devstack
    related
-   production-architecture
    glossary
    backends
    integrations

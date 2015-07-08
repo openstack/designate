@@ -80,6 +80,7 @@ slave=yes
 cache-ttl=0
 query-cache-ttl=0
 negquery-cache-ttl=0
+out-of-zone-additional-processing=no
 EOF
 
     if is_service_enabled mysql; then
