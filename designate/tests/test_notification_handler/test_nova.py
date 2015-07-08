@@ -14,8 +14,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import contextlib
-
 import mock
 from oslo_log import log as logging
 
@@ -144,14 +142,13 @@ class NovaFixedHandlerTest(TestCase, NotificationHandlerMixin):
         self.config(format=['%(label)s.example.com'],
                     group='handler:nova_fixed')
         fixture = self.get_notification_fixture('nova', event_type)
-        with contextlib.nested(
-                mock.patch.object(self.plugin, '_find_or_create_recordset'),
-                mock.patch.object(
-                    self.plugin.central_api, 'create_record')) as (
-                finder, creator):
-            finder.return_value = {'id': 'fakeid'}
-            self.plugin.process_notification(
-                self.admin_context, event_type, fixture['payload'])
-            finder.assert_called_once_with(
-                mock.ANY, type='A', domain_id=self.domain_id,
-                name='private.example.com')
+        with mock.patch.object(self.plugin, '_find_or_create_recordset')\
+                as finder:
+                with mock.patch.object(self.plugin.central_api,
+                                       'create_record'):
+                    finder.return_value = {'id': 'fakeid'}
+                    self.plugin.process_notification(
+                        self.admin_context, event_type, fixture['payload'])
+                    finder.assert_called_once_with(
+                        mock.ANY, type='A', domain_id=self.domain_id,
+                        name='private.example.com')
