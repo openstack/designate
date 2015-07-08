@@ -124,7 +124,7 @@ SCRIPT
     fedora.vm.network :private_network, ip: "192.168.27.101"
 
     fedora.vm.provision :shell, :privileged => true, :inline => "yum update -y vim-minimal" # RH Bug 1066983
-    fedora.vm.provision :shell, :privileged => true, :inline => "yum install -y git-core MySQL-python"
+    fedora.vm.provision :shell, :privileged => true, :inline => "yum install -y git-core"
 
     fedora.vm.provision :shell, :privileged => false, :inline => $script
   end

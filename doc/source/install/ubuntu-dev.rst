@@ -181,7 +181,7 @@ By default, the MySQL root password for Designate is "password". You can:
 
 * Change the root password to "password"
 * If you want your own password, edit the designate.conf file and change any instance of
-   "mysql://root:password@127.0.0.1/designate" to "mysql://root:YOUR_PASSWORD@127.0.0.1/designate"
+   "mysql+pymysql://root:password@127.0.0.1/designate?charset=utf8" to "mysql+pymysql://root:YOUR_PASSWORD@127.0.0.1/designate?charset=utf8"
 
 You can change your MySQL password anytime with the following command::
 
