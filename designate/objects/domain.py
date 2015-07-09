@@ -52,7 +52,7 @@ class Domain(base.DictObjectMixin, base.SoftDeleteObjectMixin,
         'ttl': {
             'schema': {
                 'type': ['integer', 'null'],
-                'minimum': 0,
+                'minimum': 1,
                 'maximum': 2147483647
             },
         },

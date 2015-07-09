@@ -96,7 +96,7 @@ class ApiV1RecordsTest(ApiV1Test):
 
         # Get the record 2 to ensure recordset did not get deleted
         rec_2_get_response = self.get('domains/%s/records/%s' %
-                                     (self.domain['id'], record_2.json['id']))
+                                      (self.domain['id'], record_2.json['id']))
 
         self.assertIn('id', rec_2_get_response.json)
         self.assertIn('name', rec_2_get_response.json)
@@ -205,6 +205,20 @@ class ApiV1RecordsTest(ApiV1Test):
 
         # Set the TTL to a negative value
         fixture['ttl'] = -1
+
+        # Create a record, Ensuring it Fails with a 400
+        self.post('domains/%s/records' % self.domain['id'], data=fixture,
+                  status_code=400)
+
+    def test_create_record_zero_ttl(self):
+        fixture = self.get_record_fixture(self.recordset['type'])
+        fixture.update({
+            'name': self.recordset['name'],
+            'type': self.recordset['type'],
+        })
+
+        # Set the TTL to a value zero
+        fixture['ttl'] = 0
 
         # Create a record, Ensuring it Fails with a 400
         self.post('domains/%s/records' % self.domain['id'], data=fixture,
@@ -462,6 +476,15 @@ class ApiV1RecordsTest(ApiV1Test):
         record = self.create_record(self.domain, self.recordset)
 
         data = {'ttl': -1}
+
+        self.put('domains/%s/records/%s' % (self.domain['id'], record['id']),
+                 data=data, status_code=400)
+
+    def test_update_record_zero_ttl(self):
+        # Create a record
+        record = self.create_record(self.domain, self.recordset)
+
+        data = {'ttl': 0}
 
         self.put('domains/%s/records/%s' % (self.domain['id'], record['id']),
                  data=data, status_code=400)
