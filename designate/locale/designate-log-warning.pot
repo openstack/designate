@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: designate 2015.2.dev34\n"
+"Project-Id-Version: designate 1.0.0.0b2.dev89\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-04-23 06:27+0000\n"
+"POT-Creation-Date: 2015-07-09 06:13+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,17 +17,29 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
 
-#: designate/service.py:296 designate/service.py:337
+#: designate/coordination.py:62
+msgid ""
+"No coordination backend configured, distributed coordination "
+"functionality will be disabled. Please configure a coordination backend."
+msgstr ""
+
+#: designate/coordination.py:127
+msgid ""
+"No coordination backend configure, assuming we are the only worker. "
+"Please configure a coordination backend"
+msgstr ""
+
+#: designate/service.py:301 designate/service.py:342
 #, python-format
 msgid "Socket error %(err)s from: %(host)s:%(port)d"
 msgstr ""
 
-#: designate/service.py:301
+#: designate/service.py:306
 #, python-format
 msgid "TCP Timeout from: %(host)s:%(port)d"
 msgstr ""
 
-#: designate/service.py:306
+#: designate/service.py:311
 #, python-format
 msgid "Invalid packet from: %(host)s:%(port)d"
 msgstr ""
@@ -52,32 +64,32 @@ msgstr ""
 msgid "%(verb)s for %(name)s from %(server)s refused"
 msgstr ""
 
-#: designate/api/middleware.py:204
+#: designate/api/middleware.py:208
 msgid "Request authorized to bypass maintenance mode"
 msgstr ""
 
-#: designate/backend/agent.py:103 designate/mdns/notify.py:190
+#: designate/backend/agent.py:105 designate/mdns/notify.py:190
 #, python-format
 msgid ""
 "Got Timeout while trying to send '%(msg)s' for '%(zone)s' to "
 "'%(server)s:%(port)d'. Timeout='%(timeout)d' seconds. Retry='%(retry)d'"
 msgstr ""
 
-#: designate/backend/agent.py:112 designate/mdns/notify.py:202
+#: designate/backend/agent.py:114 designate/mdns/notify.py:202
 #, python-format
 msgid ""
 "Got BadResponse while trying to send '%(msg)s' for '%(zone)s' to "
 "'%(server)s:%(port)d'. Timeout='%(timeout)d' seconds. Retry='%(retry)d'"
 msgstr ""
 
-#: designate/backend/agent.py:125
+#: designate/backend/agent.py:127
 #, python-format
 msgid ""
 "Failed to get expected response while trying to send '%(msg)s' for "
 "'%(zone)s' to '%(server)s:%(port)d'. Response message: %(resp)s"
 msgstr ""
 
-#: designate/backend/impl_dynect.py:390
+#: designate/backend/impl_dynect.py:392
 #, python-format
 msgid "Attempt to delete %(d_id)s / %(d_name)s caused 404, ignoring."
 msgstr ""
@@ -95,15 +107,15 @@ msgstr ""
 msgid "It will not be possible to downgrade from schema #11"
 msgstr ""
 
-#: designate/central/service.py:61
+#: designate/central/service.py:66
 msgid "Deadlock detected. Retrying..."
 msgstr ""
 
-#: designate/central/service.py:282
+#: designate/central/service.py:287
 msgid "Managed Resource Tenant ID is not properly configured"
 msgstr ""
 
-#: designate/central/service.py:1004
+#: designate/central/service.py:1012
 #, python-format
 msgid "Abandoning zone '%(zone)s'"
 msgstr ""
@@ -157,39 +169,29 @@ msgstr ""
 msgid "Calling Neutron resulted in a 401, please investigate."
 msgstr ""
 
-#: designate/notification_handler/base.py:123
+#: designate/notification_handler/base.py:122
 #: designate/notification_handler/base.py:177
 msgid ""
 "Deprecation notice: Unmanaged designate-sink records are being deprecated"
 " please update the call to remove managed=False"
 msgstr ""
 
-#: designate/openstack/common/loopingcall.py:87
-#, python-format
-msgid "task %(func_name)r run outlasted interval by %(delay).2f sec"
-msgstr ""
-
-#: designate/openstack/common/service.py:355
-#, python-format
-msgid "pid %d not in child list"
-msgstr ""
-
-#: designate/pool_manager/service.py:252
+#: designate/pool_manager/service.py:254
 #, python-format
 msgid "Consensus not reached for creating domain %(domain)s on pool targets"
 msgstr ""
 
-#: designate/pool_manager/service.py:313
+#: designate/pool_manager/service.py:315
 #, python-format
 msgid "Consensus not reached for updating domain %(domain)s on pool targets"
 msgstr ""
 
-#: designate/pool_manager/service.py:408
+#: designate/pool_manager/service.py:410
 #, python-format
 msgid "Consensus not reached for deleting domain %(domain)s on pool targets"
 msgstr ""
 
-#: designate/pool_manager/service.py:493
+#: designate/pool_manager/service.py:495
 #, python-format
 msgid "For domain %(domain)s the error serial is %(error_serial)s."
 msgstr ""
@@ -198,7 +200,11 @@ msgstr ""
 msgid "No designate-sink handlers enabled or loaded"
 msgstr ""
 
-#: designate/sqlalchemy/utils.py:46
+#: designate/sqlalchemy/utils.py:90
 msgid "Id not in sort_keys; is sort_keys unique?"
+msgstr ""
+
+#: designate/storage/impl_sqlalchemy/migrate_repo/versions/068_add_shard_column.py:91
+msgid "Updating migration for sharding failed, retrying."
 msgstr ""
 
