@@ -143,3 +143,31 @@ def random_zonefile_data(name=None, ttl=None):
         ttl = str(random.randint(1200, 8400))
 
     return zone_base.replace('&', name).replace('#', ttl)
+
+
+def random_spf_recordset(zone_name, data=None):
+    data = data or "v=spf1 +all"
+    return random_recordset_data('SPF', zone_name, records=[data])
+
+
+def random_srv_recordset(zone_name, data=None):
+    data = data or "10 0 8080 %s.%s" % (random_string(), zone_name)
+    return random_recordset_data('SRV', zone_name,
+                                 name="_sip._tcp.%s" % zone_name,
+                                 records=[data])
+
+
+def random_sshfp_recordset(zone_name, algorithm_number=None,
+                           fingerprint_type=None, fingerprint=None):
+    algorithm_number = algorithm_number or 2
+    fingerprint_type = fingerprint_type or 1
+    fingerprint = fingerprint or \
+        "123456789abcdef67890123456789abcdef67890"
+
+    data = "%s %s %s" % (algorithm_number, fingerprint_type, fingerprint)
+    return random_recordset_data('SSHFP', zone_name, records=[data])
+
+
+def random_txt_recordset(zone_name, data=None):
+    data = data or "v=spf1 +all"
+    return random_recordset_data('TXT', zone_name, records=[data])
