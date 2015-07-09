@@ -377,9 +377,9 @@ debug = False
 ########################
 ## Coordination
 ########################
-# URL for the coordination backend to use.
 [coordination]
-#backend_url = zookeeper://127.0.0.1
+# URL for the coordination backend to use.
+#backend_url = kazoo://127.0.0.1/
 
 ########################
 ## Hook Points
