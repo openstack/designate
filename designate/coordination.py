@@ -54,28 +54,28 @@ class CoordinationMixin(object):
     def __init__(self, *args, **kwargs):
         super(CoordinationMixin, self).__init__(*args, **kwargs)
 
-        self._coordination_id = ":".join([CONF.host, str(uuid.uuid4())])
         self._coordinator = None
-        if CONF.coordination.backend_url is not None:
-            self._init_coordination()
-        else:
-            msg = _LW("No coordination backend configured, distributed "
-                      "coordination functionality will be disabled."
-                      " Please configure a coordination backend.")
-            LOG.warn(msg)
-
-    def _init_coordination(self):
-        backend_url = cfg.CONF.coordination.backend_url
-        self._coordinator = tooz.coordination.get_coordinator(
-            backend_url, self._coordination_id)
-        self._coordination_started = False
-
-        self.tg.add_timer(cfg.CONF.coordination.heartbeat_interval,
-                          self._coordinator_heartbeat)
-        self.tg.add_timer(cfg.CONF.coordination.run_watchers_interval,
-                          self._coordinator_run_watchers)
 
     def start(self):
+        self._coordination_id = ":".join([CONF.host, str(uuid.uuid4())])
+
+        if CONF.coordination.backend_url is not None:
+            backend_url = cfg.CONF.coordination.backend_url
+            self._coordinator = tooz.coordination.get_coordinator(
+                backend_url, self._coordination_id)
+            self._coordination_started = False
+
+            self.tg.add_timer(cfg.CONF.coordination.heartbeat_interval,
+                              self._coordinator_heartbeat)
+            self.tg.add_timer(cfg.CONF.coordination.run_watchers_interval,
+                              self._coordinator_run_watchers)
+
+        else:
+            msg = _LW("No coordination backend configured, distributed "
+                      "coordination functionality will be disabled. "
+                      "Please configure a coordination backend.")
+            LOG.warn(msg)
+
         super(CoordinationMixin, self).start()
 
         if self._coordinator is not None:
@@ -94,6 +94,8 @@ class CoordinationMixin(object):
             self._coordinator.stop()
 
         super(CoordinationMixin, self).stop()
+
+        self._coordinator = None
 
     def _coordinator_heartbeat(self):
         if not self._coordination_started:

@@ -29,19 +29,17 @@ NS = 'designate.periodic_tasks'
 
 
 class Service(coordination.CoordinationMixin, service.Service):
-    def __init__(self, threads=None):
-        super(Service, self).__init__(threads=threads)
+    @property
+    def service_name(self):
+        return 'zone_manager'
+
+    def start(self):
+        super(Service, self).start()
 
         self._partitioner = coordination.Partitioner(
             self._coordinator, self.service_name, self._coordination_id,
             range(0, 4095))
 
-    def _rebalance(self, my_partitions, members, event):
-        LOG.info(_LI("Received rebalance event %s") % event)
-        self.partition_range = my_partitions
-
-    def start(self):
-        super(Service, self).start()
         self._partitioner.start()
         self._partitioner.watch_partition_change(self._rebalance)
 
@@ -57,6 +55,6 @@ class Service(coordination.CoordinationMixin, service.Service):
             interval = CONF[task.get_canonical_name()].interval
             self.tg.add_timer(interval, task)
 
-    @property
-    def service_name(self):
-        return 'zone_manager'
+    def _rebalance(self, my_partitions, members, event):
+        LOG.info(_LI("Received rebalance event %s") % event)
+        self.partition_range = my_partitions
