@@ -12,6 +12,8 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import six
+
 from designate.tests.test_api.test_v2 import ApiV2TestCase
 
 
@@ -125,3 +127,33 @@ class ApiV2TldsTest(ApiV2TestCase):
 
     def test_update_tld_invalid_id(self):
         self._assert_invalid_uuid(self.client.patch_json, '/tlds/%s')
+
+    def test_get_tld_filter(self):
+        self.policy({'create_tld': '@'})
+        fixtures = [
+            self.get_tld_fixture(0),
+            self.get_tld_fixture(1)
+        ]
+
+        for fixture in fixtures:
+            response = self.client.post_json('/tlds/', fixture)
+
+        get_urls = [
+            '/tlds?name=com',
+            '/tlds?name=co*'
+        ]
+
+        correct_results = [1, 2]
+
+        for get_url, correct_result in \
+                six.moves.zip(get_urls, correct_results):
+
+            self.policy({'find_tlds': '@'})
+            response = self.client.get(get_url)
+
+            # Check the headers are what we expect
+            self.assertEqual(200, response.status_int)
+            self.assertEqual('application/json', response.content_type)
+
+            # Check that the correct number of tlds match
+            self.assertEqual(correct_result, len(response.json['tlds']))
