@@ -12,7 +12,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
+import six
 from mock import MagicMock
 
 from designate import objects
@@ -96,9 +96,9 @@ class InfobloxBackendTestCase(BackendTestCase):
                    {'key': 'ns_group', 'value': 'test'}]
 
         target = self.get_target_fixture(options=options)
-        self.assertRaisesRegexp(ibexceptions.InfobloxIsMisconfigured,
-                                "wapi_url",
-                                self.set_up_backend, target)
+        six.assertRaisesRegex(self, ibexceptions.InfobloxIsMisconfigured,
+                              "wapi_url",
+                              self.set_up_backend, target)
 
     def test_missing_username(self):
         options = [{'key': 'wapi_url', 'value': 'test'},
@@ -106,9 +106,9 @@ class InfobloxBackendTestCase(BackendTestCase):
                    {'key': 'ns_group', 'value': 'test'}]
 
         target = self.get_target_fixture(options=options)
-        self.assertRaisesRegexp(ibexceptions.InfobloxIsMisconfigured,
-                                "username",
-                                self.set_up_backend, target)
+        six.assertRaisesRegex(self, ibexceptions.InfobloxIsMisconfigured,
+                              "username",
+                              self.set_up_backend, target)
 
     def test_missing_password(self):
         options = [{'key': 'wapi_url', 'value': 'test'},
@@ -116,9 +116,9 @@ class InfobloxBackendTestCase(BackendTestCase):
                    {'key': 'ns_group', 'value': 'test'}]
 
         target = self.get_target_fixture(options=options)
-        self.assertRaisesRegexp(ibexceptions.InfobloxIsMisconfigured,
-                                "password",
-                                self.set_up_backend, target)
+        six.assertRaisesRegex(self, ibexceptions.InfobloxIsMisconfigured,
+                              "password",
+                              self.set_up_backend, target)
 
     def test_missing_ns_group(self):
         options = [{'key': 'wapi_url', 'value': 'test'},
@@ -126,13 +126,13 @@ class InfobloxBackendTestCase(BackendTestCase):
                    {'key': 'password', 'value': 'test'}]
 
         target = self.get_target_fixture(options=options)
-        self.assertRaisesRegexp(ibexceptions.InfobloxIsMisconfigured,
-                                "ns_group",
-                                self.set_up_backend, target)
+        six.assertRaisesRegex(self, ibexceptions.InfobloxIsMisconfigured,
+                              "ns_group",
+                              self.set_up_backend, target)
 
     def test_wrong_port(self):
         masters = [{'host': '1.1.1.1', 'port': 100}]
         target = self.get_target_fixture(masters=masters)
-        self.assertRaisesRegexp(ConfigurationError,
-                                "port 53",
-                                self.set_up_backend, target)
+        six.assertRaisesRegex(self, ConfigurationError,
+                              "port 53",
+                              self.set_up_backend, target)
