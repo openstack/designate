@@ -333,39 +333,29 @@ class RequestHandler(xfr.XFRMixin):
                 renderer.add_rrset(dns.renderer.ANSWER, rrsets[i])
                 i += 1
             except dns.exception.TooBig:
-                renderer.write_header()
-                if request.had_tsig:
-                    # Make the space we reserved for TSIG available for use
-                    renderer.max_size += TSIG_RRSIZE
-                    renderer.add_tsig(
-                        request.keyname,
-                        request.keyring[request.keyname],
-                        request.fudge,
-                        request.original_id,
-                        request.tsig_error,
-                        request.other_data,
-                        request.request_mac,
-                        request.keyalgorithm)
-                yield renderer
+                yield self._finalize_packet(renderer, request)
                 renderer = None
 
         if renderer is not None:
-            renderer.write_header()
-            if request.had_tsig:
-                # Make the space we reserved for TSIG available for use
-                renderer.max_size += TSIG_RRSIZE
-                renderer.add_tsig(
-                    request.keyname,
-                    request.keyring[request.keyname],
-                    request.fudge,
-                    request.original_id,
-                    request.tsig_error,
-                    request.other_data,
-                    request.request_mac,
-                    request.keyalgorithm)
-            yield renderer
+            yield self._finalize_packet(renderer, request)
 
         raise StopIteration
+
+    def _finalize_packet(self, renderer, request):
+        renderer.write_header()
+        if request.had_tsig:
+            # Make the space we reserved for TSIG available for use
+            renderer.max_size += TSIG_RRSIZE
+            renderer.add_tsig(
+                request.keyname,
+                request.keyring[request.keyname],
+                request.fudge,
+                request.original_id,
+                request.tsig_error,
+                request.other_data,
+                request.request_mac,
+                request.keyalgorithm)
+        return renderer
 
     def _handle_record_query(self, request):
         """Handle a DNS QUERY request for a record"""
