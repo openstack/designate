@@ -21,7 +21,8 @@ import dns.rdatatype
 import dns.resolver
 import dns.rrset
 import mock
-from oslo.config import cfg
+import testtools
+from oslo_config import cfg
 
 from designate import context
 from designate import objects
@@ -580,6 +581,164 @@ class MdnsRequestHandlerTest(MdnsTestCase):
                 response_two = response_generator.next().get_wire()
                 self.assertEqual(
                     expected_response[1], binascii.b2a_hex(response_two))
+
+    def test_dispatch_opcode_query_AXFR_rrset_over_max_size(self):
+        # Query is for example.com. IN AXFR
+        # id 18883
+        # opcode QUERY
+        # rcode NOERROR
+        # flags AD
+        # edns 0
+        # payload 4096
+        # ;QUESTION
+        # example.com. IN AXFR
+        # ;ANSWER
+        # ;AUTHORITY
+        # ;ADDITIONAL
+        payload = ("49c300200001000000000001076578616d706c6503636f6d0000fc0001"
+                   "0000291000000000000000")
+
+        expected_response = [
+            # Initial SOA
+            ("49c384000001000100000000076578616d706c6503636f6d0000fc0001c00c00"
+             "06000100000e10002f036e7331076578616d706c65036f726700076578616d70"
+             "6c65c00c551c063900000e10000002580001518000000e10"),
+
+            # First NS record
+            ("49c384000001000100000000076578616d706c6503636f6d0000fc0001c00c00"
+             "02000100000e1000413f61616161616161616161616161616161616161616161"
+             "6161616161616161616161616161616161616161616161616161616161616161"
+             "61616161616161616100"),
+
+            # Second NS Record and SOA trailer
+            ("49c384000001000200000000076578616d706c6503636f6d0000fc0001c00c00"
+             "02000100000e10000c0a6262626262626262626200c00c0006000100000e1000"
+             "2f036e7331076578616d706c65036f726700076578616d706c65c00c551c0639"
+             "00000e10000002580001518000000e10"),
+        ]
+
+        # Set the max-message-size to 128
+        self.config(max_message_size=128, group='service:mdns')
+
+        domain = objects.Domain.from_dict({
+            'name': 'example.com.',
+            'ttl': 3600,
+            'serial': 1427899961,
+            'email': 'example@example.com',
+        })
+
+        def _find_recordsets_axfr(context, criterion):
+            if criterion['type'] == 'SOA':
+                return [['UUID1', 'SOA', '3600', 'example.com.',
+                         'ns1.example.org. example.example.com. 1427899961 '
+                         '3600 600 86400 3600', 'ACTION']]
+
+            elif criterion['type'] == '!SOA':
+                return [
+                    ['UUID2', 'NS', '3600', 'example.com.', 'a' * 63 + '.',
+                     'ACTION'],
+                    ['UUID2', 'NS', '3600', 'example.com.', 'b' * 10 + '.',
+                     'ACTION'],
+                ]
+
+        with mock.patch.object(self.storage, 'find_domain',
+                               return_value=domain):
+            with mock.patch.object(self.storage, 'find_recordsets_axfr',
+                                   side_effect=_find_recordsets_axfr):
+                request = dns.message.from_wire(binascii.a2b_hex(payload))
+                request.environ = {'addr': self.addr, 'context': self.context}
+
+                response_generator = self.handler(request)
+
+                # Validate the first response
+                response_one = next(response_generator).get_wire()
+                self.assertEqual(
+                    expected_response[0], binascii.b2a_hex(response_one))
+
+                # Validate the second response
+                response_two = next(response_generator).get_wire()
+                self.assertEqual(
+                    expected_response[1], binascii.b2a_hex(response_two))
+
+                # Validate the third response
+                response_three = next(response_generator).get_wire()
+                self.assertEqual(
+                    expected_response[2], binascii.b2a_hex(response_three))
+
+                # Ensure a StopIteration is raised after the final response.
+                with testtools.ExpectedException(StopIteration):
+                    next(response_generator)
+
+    def test_dispatch_opcode_query_AXFR_rr_over_max_size(self):
+        # Query is for example.com. IN AXFR
+        # id 18883
+        # opcode QUERY
+        # rcode NOERROR
+        # flags AD
+        # edns 0
+        # payload 4096
+        # ;QUESTION
+        # example.com. IN AXFR
+        # ;ANSWER
+        # ;AUTHORITY
+        # ;ADDITIONAL
+        payload = ("49c300200001000000000001076578616d706c6503636f6d0000fc0001"
+                   "0000291000000000000000")
+
+        expected_response = [
+            # Initial SOA
+            ("49c384000001000100000000076578616d706c6503636f6d0000fc0001c00c00"
+             "06000100000e10002f036e7331076578616d706c65036f726700076578616d70"
+             "6c65c00c551c063900000e10000002580001518000000e10"),
+
+            # SRVFAIL
+            (""),
+        ]
+
+        # Set the max-message-size to 128
+        self.config(max_message_size=128, group='service:mdns')
+
+        domain = objects.Domain.from_dict({
+            'name': 'example.com.',
+            'ttl': 3600,
+            'serial': 1427899961,
+            'email': 'example@example.com',
+        })
+
+        def _find_recordsets_axfr(context, criterion):
+            if criterion['type'] == 'SOA':
+                return [['UUID1', 'SOA', '3600', 'example.com.',
+                         'ns1.example.org. example.example.com. 1427899961 '
+                         '3600 600 86400 3600', 'ACTION']]
+
+            elif criterion['type'] == '!SOA':
+                return [
+                    ['UUID2', 'NS', '3600', 'example.com.',
+                    'a' * 63 + '.' + 'a' * 63 + '.', 'ACTION'],
+                ]
+
+        with mock.patch.object(self.storage, 'find_domain',
+                               return_value=domain):
+            with mock.patch.object(self.storage, 'find_recordsets_axfr',
+                                   side_effect=_find_recordsets_axfr):
+                request = dns.message.from_wire(binascii.a2b_hex(payload))
+                request.environ = {'addr': self.addr, 'context': self.context}
+
+                response_generator = self.handler(request)
+
+                # Validate the first response
+                response_one = next(response_generator).get_wire()
+                self.assertEqual(
+                    expected_response[0], binascii.b2a_hex(response_one))
+
+                # Validate the second response is a SERVFAIL
+                response_two = next(response_generator)
+                self.assertEqual(
+                    dns.rcode.SERVFAIL, response_two.rcode())
+
+                # Ensure a StopIteration is raised after the final response.
+                with testtools.ExpectedException(StopIteration):
+                    next(response_generator)
 
     def test_dispatch_opcode_query_nonexistent_recordtype(self):
         # query is for mail.example.com. IN CNAME

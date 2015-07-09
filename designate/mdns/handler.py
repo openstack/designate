@@ -225,41 +225,6 @@ class RequestHandler(xfr.XFRMixin):
 
         return r_rrset
 
-    def _prep_rrsets(self, raw_records, domain_ttl):
-        rrsets = []
-        rrset_id = None
-        current_rrset = None
-
-        for record in raw_records:
-            # If we're looking at the first, or a new rrset
-            if record[0] != rrset_id:
-                if current_rrset is not None:
-                    # If this isn't the first iteration
-                    rrsets.append(current_rrset)
-                # Set up a new rrset
-                rrset_id = record[0]
-                rrtype = str(record[1])
-                # gross
-                ttl = int(record[2]) if record[2] is not None else domain_ttl
-                name = str(record[3])
-                rdata = str(record[4])
-                current_rrset = dns.rrset.from_text_list(
-                    name, ttl, dns.rdataclass.IN, rrtype, [rdata])
-            else:
-                # We've already got an rrset, add the rdata
-                rrtype = str(record[1])
-                rdata = str(record[4])
-                rd = dns.rdata.from_text(dns.rdataclass.IN,
-                    dns.rdatatype.from_text(rrtype), rdata)
-                current_rrset.add(rd)
-
-        # If the last record examined was a new rrset, or there is only 1 rrset
-        if rrsets == [] or (rrsets != [] and rrsets[-1] != current_rrset):
-            if current_rrset is not None:
-                rrsets.append(current_rrset)
-
-        return rrsets
-
     def _handle_axfr(self, request):
         context = request.environ['context']
         q_rrset = request.question[0]
@@ -298,9 +263,6 @@ class RequestHandler(xfr.XFRMixin):
         records.insert(0, soa_records[0])
         records.append(soa_records[0])
 
-        # Build the DNSPython RRSets from the Records
-        rrsets = self._prep_rrsets(records, domain.ttl)
-
         # Build up a dummy response, we're stealing it's logic for building
         # the Flags.
         response = dns.message.make_response(request)
@@ -321,7 +283,9 @@ class RequestHandler(xfr.XFRMixin):
 
         # Render the results, yielding a packet after each TooBig exception.
         i, renderer = 0, None
-        while i < len(rrsets):
+        while i < len(records):
+            record = records[i]
+
             # No renderer? Build one
             if renderer is None:
                 renderer = dns.renderer.Renderer(
@@ -329,25 +293,48 @@ class RequestHandler(xfr.XFRMixin):
                 for q in request.question:
                     renderer.add_question(q.name, q.rdtype, q.rdclass)
 
+            # Build a DNSPython RRSet from the RR
+            rrset = dns.rrset.from_text_list(
+                str(record[3]),     # name
+                int(record[2]) if record[2] is not None else domain.ttl,  # ttl
+                dns.rdataclass.IN,  # class
+                str(record[1]),     # rrtype
+                [str(record[4])],   # rdata
+            )
+
             try:
-                renderer.add_rrset(dns.renderer.ANSWER, rrsets[i])
+                renderer.add_rrset(dns.renderer.ANSWER, rrset)
                 i += 1
             except dns.exception.TooBig:
-                renderer.write_header()
-                if request.had_tsig:
-                    # Make the space we reserved for TSIG available for use
-                    renderer.max_size += TSIG_RRSIZE
-                    renderer.add_tsig(
-                        request.keyname,
-                        request.keyring[request.keyname],
-                        request.fudge,
-                        request.original_id,
-                        request.tsig_error,
-                        request.other_data,
-                        request.request_mac,
-                        request.keyalgorithm)
-                yield renderer
-                renderer = None
+                if renderer.counts[dns.renderer.ANSWER] == 0:
+                    # We've received a TooBig from the first attempted RRSet in
+                    # this packet. Log a warning and abort the AXFR.
+                    LOG.warning(_LW('Aborted AXFR of %(domain)s, a single RR '
+                                    '(%(rrset_type)s %(rrset_name)s) '
+                                    'exceeded the max message size.'),
+                                {'domain': domain.name,
+                                 'rrset_type': record[1],
+                                 'rrset_name': record[3]})
+
+                    yield self._handle_query_error(request, dns.rcode.SERVFAIL)
+                    raise StopIteration
+
+                else:
+                    renderer.write_header()
+                    if request.had_tsig:
+                        # Make the space we reserved for TSIG available for use
+                        renderer.max_size += TSIG_RRSIZE
+                        renderer.add_tsig(
+                            request.keyname,
+                            request.keyring[request.keyname],
+                            request.fudge,
+                            request.original_id,
+                            request.tsig_error,
+                            request.other_data,
+                            request.request_mac,
+                            request.keyalgorithm)
+                    yield renderer
+                    renderer = None
 
         if renderer is not None:
             renderer.write_header()
