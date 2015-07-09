@@ -8,11 +8,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Designate\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-05-28 06:04+0000\n"
-"PO-Revision-Date: 2015-05-26 20:34+0000\n"
+"POT-Creation-Date: 2015-07-09 06:13+0000\n"
+"PO-Revision-Date: 2015-07-07 15:48+0000\n"
 "Last-Translator: openstackjenkins <jenkins@openstack.org>\n"
-"Language-Team: French (http://www.transifex.com/projects/p/designate/"
-"language/fr/)\n"
+"Language-Team: French (http://www.transifex.com/p/designate/language/fr/)\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -20,28 +19,8 @@ msgstr ""
 "Generated-By: Babel 1.3\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#, python-format
-msgid "Caught %s, exiting"
-msgstr "%s interceptée, sortie"
-
-#, python-format
-msgid "Caught %s, stopping children"
-msgstr "%s intercepté, arrêtant les dépendants"
-
 msgid "Checking for TLDs"
 msgstr "Vérification des TLD"
-
-#, python-format
-msgid "Child %(pid)d killed by signal %(sig)d"
-msgstr "%(pid)d du dépendant annihilés par le signal %(sig)d"
-
-#, python-format
-msgid "Child %(pid)s exited with status %(code)d"
-msgstr "%(pid)s du dépendant sortis avec le statut %(code)d"
-
-#, python-format
-msgid "Child caught %s, exiting"
-msgstr "Dépendance interceptée %s, sortie"
 
 #, python-format
 msgid "Create Domain %r"
@@ -56,14 +35,6 @@ msgstr ""
 #, python-format
 msgid "Delete Domain %r"
 msgstr "Suppression du domaine %r"
-
-#, python-format
-msgid "Eventlet backdoor listening on %(port)s for process %(pid)d"
-msgstr ""
-"La porte dérobée d'Eventlet écoute sur %(port)s pour le processus %(pid)d"
-
-msgid "Forking too fast, sleeping"
-msgstr "Bifurcation trop rapide, en veille"
 
 #, python-format
 msgid "Getting auth pipeline: %s"
@@ -88,17 +59,6 @@ msgstr "Ouverture TCP Listening Socket sur %(host)s:%(port)d"
 msgid "Opening UDP Listening Socket on %(host)s:%(port)d"
 msgstr "Ouverture UDP Listening Socket sur %(host)s:%(port)d"
 
-msgid "Parent process has died unexpectedly, exiting"
-msgstr "Le processus parent s'est soudainement achevé sans raison, sortie"
-
-#, python-format
-msgid "Started child %d"
-msgstr "Démarrage du dépendant %d"
-
-#, python-format
-msgid "Starting %d workers"
-msgstr "Démarrage des workers %d"
-
 msgid "Starting designate faultwrapper middleware"
 msgstr "Démarrage de Middleware Faultwrapper de Designate"
 
@@ -118,10 +78,6 @@ msgstr "Utilisation de api-paste-config que l'on trouve à : %s"
 #, python-format
 msgid "Using policy_file found at: %s"
 msgstr "Utiliser le policy_file trouvé à : %s"
-
-#, python-format
-msgid "Waiting on %d children to exit"
-msgstr "En attente de sortie des dépendants %d"
 
 msgid "_handle_tcp thread started"
 msgstr "démarrage du thread _handle_tcp"
