@@ -33,7 +33,7 @@ ENABLED_SERVICES+=,designate,designate-central,designate-api,designate-pool-mana
 
 # Pool Manager Cache Driver (e.g. noop, memcache, sqlalchemy. See
 #                            designate.backend section of setup.cfg)
-#DESIGNATE_POOL_MANAGER_CACHE_DRIVER=noop
+#DESIGNATE_POOL_MANAGER_CACHE_DRIVER=memcache
 
 # mDNS Service DNS Port Number
 #DESIGNATE_SERVICE_PORT_MDNS=5354

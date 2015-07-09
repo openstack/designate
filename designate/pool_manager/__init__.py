@@ -54,7 +54,7 @@ OPTS = [
     cfg.IntOpt('periodic-sync-seconds', default=21600,
                help='Zones Updated within last N seconds will be syncd. Use '
                     'None to sync all zones.'),
-    cfg.StrOpt('cache-driver', default='sqlalchemy',
+    cfg.StrOpt('cache-driver', default='memcache',
                help='The cache driver to use'),
 ]
 
