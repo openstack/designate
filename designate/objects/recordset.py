@@ -112,7 +112,7 @@ class RecordSet(base.DictObjectMixin, base.PersistentObjectMixin,
             'schema': {
                 'type': ['integer', 'null'],
                 'description': 'Default time to live',
-                'minimum': 0,
+                'minimum': 1,
                 'maximum': 2147483647
             },
         },
