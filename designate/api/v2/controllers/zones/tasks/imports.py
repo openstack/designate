@@ -13,6 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import six
 import pecan
 from oslo_log import log as logging
 
@@ -70,7 +71,10 @@ class ZoneImportController(rest.RestController):
         request = pecan.request
         response = pecan.response
         context = request.environ['context']
-        body = request.body
+        if six.PY2:
+            body = request.body
+        else:
+            body = request.body.decode('utf-8')
 
         if request.content_type != 'text/dns':
             raise exceptions.UnsupportedContentType(

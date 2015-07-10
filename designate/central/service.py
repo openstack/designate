@@ -2488,7 +2488,8 @@ class Service(service.RPCService, service.Service):
 
         def _import(self, context, zone_import, request_body):
             # Dnspython needs a str instead of a unicode object
-            request_body = str(request_body)
+            if six.PY2:
+                request_body = str(request_body)
             domain = None
             try:
                 dnspython_zone = dnszone.from_text(
