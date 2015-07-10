@@ -205,7 +205,7 @@ Install additional packages
 ::
 
     $ apt-get install libmysqlclient-dev
-    $ pip install mysql-python
+    $ pip install pymysql
 
 
 Installing BIND9

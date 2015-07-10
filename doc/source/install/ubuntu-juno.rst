@@ -64,6 +64,7 @@ MySQL
 Create the MySQL user
 
 ::
+
     $ mysql -u root -p
     Enter password: <enter your password here>
 
