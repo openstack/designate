@@ -38,6 +38,10 @@ class TestUtils(TestCase):
         with testtools.ExpectedException(exceptions.ResourceNotFound):
             utils.resource_string(name)
 
+    def test_resource_string_empty_args(self):
+        with testtools.ExpectedException(ValueError):
+            utils.resource_string()
+
     def test_load_schema(self):
         schema = utils.load_schema('v1', 'domain')
 
@@ -87,3 +91,40 @@ class TestUtils(TestCase):
                 self.assertEqual('Hello World', fh.read())
         finally:
             os.unlink(output_path)
+
+    def test_increment_serial(self):
+        ret_serial = utils.increment_serial(serial=20)
+        self.assertTrue(ret_serial > 20)
+
+    def test_is_uuid_like(self):
+        uuid_str = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'
+        self.assertTrue(utils.is_uuid_like(uuid_str))
+        uuid_str = '678'
+        self.assertFalse(utils.is_uuid_like(uuid_str))
+
+    def test_split_host_port(self):
+        host_port = "abc:abc"
+        host, port = utils.split_host_port(host_port)
+        self.assertEqual((host, port), ("abc:abc", 53))
+
+        host_port = "abc:25"
+        host, port = utils.split_host_port(host_port)
+        self.assertEqual((host, port), ("abc", 25))
+
+    def test_get_paging_params_invalid_limit(self):
+        for value in [9223372036854775809, -1]:
+            with testtools.ExpectedException(exceptions.InvalidLimit):
+                utils.get_paging_params({'limit': value}, [])
+
+    def test_get_paging_params_max_limit(self):
+        self.config(max_limit_v2=1000, group='service:api')
+        result = utils.get_paging_params({'limit': "max"}, [])
+        self.assertEqual(result[1], 1000)
+
+    def test_get_paging_params_invalid_sort_dir(self):
+        with testtools.ExpectedException(exceptions.InvalidSortDir):
+            utils.get_paging_params({'sort_dir': "dsc"}, [])
+
+    def test_get_paging_params_invalid_sort_key(self):
+        with testtools.ExpectedException(exceptions.InvalidSortKey):
+            utils.get_paging_params({'sort_key': "dsc"}, ['asc', 'desc'])
