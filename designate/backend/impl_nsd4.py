@@ -103,5 +103,5 @@ class NSD4Backend(base.Backend):
             self._execute_nsd4(command)
         except exceptions.Backend as e:
             # If domain is already deleted, don't reraise
-            if "not found" not in str(e.message):
+            if "not found" not in six.text_type(e):
                 raise

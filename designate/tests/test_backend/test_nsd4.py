@@ -29,7 +29,7 @@ from designate.tests import resources
 from designate.backend import impl_nsd4
 
 
-class NSD4ServerStub:
+class NSD4ServerStub(object):
     recved_command = None
     response = 'ok'
     keyfile = os.path.join(resources.path, 'ssl', 'nsd_server.key')
