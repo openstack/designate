@@ -39,7 +39,8 @@
                 ".testrepository",
                 "doc/build",
                 "doc/source/api",
-                "build"
+                "build",
+                "__pycache__"
             ],
             "path": "."
         }
