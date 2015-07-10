@@ -850,3 +850,8 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
 
         self.client.delete('/zones/%s' % self.domain['id'], status=202)
         self._assert_exception('bad_request', 400, self.client.delete, url)
+
+    def test_invalid_recordset_filter(self):
+        invalid_url = '/zones/%s/recordsets?action=NONE' % self.domain['id']
+        self._assert_exception(
+            'bad_request', 400, self.client.get, invalid_url)
