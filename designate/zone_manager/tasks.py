@@ -90,49 +90,6 @@ class PeriodicTask(plugin.ExtensionPlugin):
         return self._iter(self.central_api.find_domains, ctxt, criterion)
 
 
-class PeriodicExistsTask(PeriodicTask):
-    __plugin_name__ = 'periodic_exists'
-    __interval__ = 3600
-
-    def __init__(self):
-        super(PeriodicExistsTask, self).__init__()
-        self.notifier = rpc.get_notifier('zone_manager')
-
-    @classmethod
-    def get_cfg_opts(cls):
-        group = cfg.OptGroup(cls.get_canonical_name())
-        options = cls.get_base_opts()
-        return [(group, options)]
-
-    @staticmethod
-    def _get_period(seconds):
-        interval = datetime.timedelta(seconds=seconds)
-        end = timeutils.utcnow()
-        return end - interval, end
-
-    def __call__(self):
-        pstart, pend = self._my_range()
-        msg = _LI("Emitting zone exist events for %(start)s to %(end)s")
-        LOG.info(msg % {"start": pstart, "end": pend})
-
-        ctxt = context.DesignateContext.get_admin_context()
-        ctxt.all_tenants = True
-
-        start, end = self._get_period(self.options.interval)
-
-        data = {
-            "audit_period_beginning": str(start),
-            "audit_period_ending": str(end)
-        }
-
-        for zone in self._iter_zones(ctxt):
-            zone_data = dict(zone)
-            zone_data.update(data)
-            self.notifier.info(ctxt, 'dns.domain.exists', zone_data)
-
-        LOG.info(_LI("Finished emitting events."))
-
-
 class DeletedDomainPurgeTask(PeriodicTask):
     """Purge deleted domains that are exceeding the grace period time interval.
     Deleted domains have values in the deleted_at column.
@@ -187,3 +144,85 @@ class DeletedDomainPurgeTask(PeriodicTask):
             criterion,
             limit=self.options.batch_size,
         )
+
+
+class PeriodicExistsTask(PeriodicTask):
+    __plugin_name__ = 'periodic_exists'
+    __interval__ = 3600
+
+    def __init__(self):
+        super(PeriodicExistsTask, self).__init__()
+        self.notifier = rpc.get_notifier('zone_manager')
+
+    @classmethod
+    def get_cfg_opts(cls):
+        group = cfg.OptGroup(cls.get_canonical_name())
+        options = cls.get_base_opts()
+        return [(group, options)]
+
+    @staticmethod
+    def _get_period(seconds):
+        interval = datetime.timedelta(seconds=seconds)
+        end = timeutils.utcnow()
+        return end - interval, end
+
+    def __call__(self):
+        pstart, pend = self._my_range()
+        msg = _LI("Emitting zone exist events for %(start)s to %(end)s")
+        LOG.info(msg % {"start": pstart, "end": pend})
+
+        ctxt = context.DesignateContext.get_admin_context()
+        ctxt.all_tenants = True
+
+        start, end = self._get_period(self.options.interval)
+
+        data = {
+            "audit_period_beginning": str(start),
+            "audit_period_ending": str(end)
+        }
+
+        for zone in self._iter_zones(ctxt):
+            zone_data = dict(zone)
+            zone_data.update(data)
+            self.notifier.info(ctxt, 'dns.domain.exists', zone_data)
+
+        LOG.info(_LI("Finished emitting events."))
+
+
+class PeriodicSecondaryRefreshTask(PeriodicTask):
+    __plugin_name__ = 'periodic_secondary_refresh'
+    __interval__ = 3600
+
+    @classmethod
+    def get_cfg_opts(cls):
+        group = cfg.OptGroup(cls.get_canonical_name())
+        options = cls.get_base_opts()
+        return [(group, options)]
+
+    def __call__(self):
+        pstart, pend = self._my_range()
+        msg = _LI("Refreshing zones between for %(start)s to %(end)s")
+        LOG.info(msg % {"start": pstart, "end": pend})
+
+        ctxt = context.DesignateContext.get_admin_context()
+        ctxt.all_tenants = True
+
+        # each zone can have a different refresh / expire etc interval defined
+        # in the SOA at the source / master servers
+        criterion = {
+            "type": "SECONDARY"
+        }
+        for zone in self._iter_zones(ctxt, criterion):
+            # NOTE: If the zone isn't transferred yet, ignore it.
+            if zone.transferred_at is None:
+                continue
+
+            now = timeutils.utcnow(True)
+
+            transferred = timeutils.parse_isotime(zone.transferred_at)
+            seconds = timeutils.delta_seconds(transferred, now)
+            if seconds > zone.refresh:
+                msg = "Zone %(id)s has %(seconds)d seconds since last transfer, " \
+                      "executing AXFR"
+                LOG.debug(msg % {"id": zone.id, "seconds": seconds})
+                self.central_api.xfr_domain(ctxt, zone.id)

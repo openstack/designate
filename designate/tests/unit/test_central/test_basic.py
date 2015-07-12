@@ -861,9 +861,13 @@ class CentralDomainTestCase(CentralBasic):
         self.service.storage.get_domain.return_value = RoObject(
             name='example.org.',
             tenant_id='2',
-            type='SECONDARY'
+            type='SECONDARY',
+            masters=[RoObject(host='10.0.0.1', port=53)],
+            serial=1,
         )
         with fx_mdns_api:
+            self.service.mdns_api.get_serial_number.return_value = \
+                "SUCCESS", 2, 1
             self.service.xfr_domain(self.context, '1')
             assert self.service.mdns_api.perform_zone_xfr.called
 

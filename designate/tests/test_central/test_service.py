@@ -30,6 +30,7 @@ from oslo_messaging.notify import notifier
 
 from designate import exceptions
 from designate import objects
+from designate.mdns import rpcapi as mdns_api
 from designate.tests.test_central import CentralTestCase
 from designate.storage.impl_sqlalchemy import tables
 
@@ -1279,7 +1280,49 @@ class CentralServiceTest(CentralTestCase):
         # Create a zone
         secondary = self.create_domain(**fixture)
 
-        self.central_service.xfr_domain(self.admin_context, secondary.id)
+        mdns = mock.Mock()
+        with mock.patch.object(mdns_api.MdnsAPI, 'get_instance') as get_mdns:
+            get_mdns.return_value = mdns
+            mdns.get_serial_number.return_value = ('SUCCESS', 10, 1, )
+            self.central_service.xfr_domain(self.admin_context, secondary.id)
+
+        self.assertTrue(mdns.perform_zone_xfr.called)
+
+    def test_xfr_domain_same_serial(self):
+        # Create a domain
+        fixture = self.get_domain_fixture('SECONDARY', 0)
+        fixture['email'] = cfg.CONF['service:central'].managed_resource_email
+        fixture['attributes'] = [{"key": "master", "value": "10.0.0.10"}]
+
+        # Create a zone
+        secondary = self.create_domain(**fixture)
+
+        mdns = mock.Mock()
+        with mock.patch.object(mdns_api.MdnsAPI, 'get_instance') as get_mdns:
+            get_mdns.return_value = mdns
+            mdns.get_serial_number.return_value = ('SUCCESS', 1, 1, )
+            self.central_service.xfr_domain(self.admin_context, secondary.id)
+
+        self.assertFalse(mdns.perform_zone_xfr.called)
+
+    def test_xfr_domain_lower_serial(self):
+        # Create a domain
+        fixture = self.get_domain_fixture('SECONDARY', 0)
+        fixture['email'] = cfg.CONF['service:central'].managed_resource_email
+        fixture['attributes'] = [{"key": "master", "value": "10.0.0.10"}]
+        fixture['serial'] = 10
+
+        # Create a zone
+        secondary = self.create_domain(**fixture)
+        secondary.serial
+
+        mdns = mock.Mock()
+        with mock.patch.object(mdns_api.MdnsAPI, 'get_instance') as get_mdns:
+            get_mdns.return_value = mdns
+            mdns.get_serial_number.return_value = ('SUCCESS', 0, 1, )
+            self.central_service.xfr_domain(self.admin_context, secondary.id)
+
+        self.assertFalse(mdns.perform_zone_xfr.called)
 
     def test_xfr_domain_invalid_type(self):
         domain = self.create_domain()
