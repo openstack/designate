@@ -198,6 +198,19 @@ debug = False
 #backend_driver = fake
 #transfer_source = None
 
+#-----------------------
+# Zone Manager Service
+#-----------------------
+[service:zone_manager]
+# Number of Zone Manager worker processes to spawn
+#workers = None
+
+# Number of Zone Manager greenthreads to spawn
+#threads = 1000
+
+# List of Zone Manager tasks to enable, a value of None will enable all tasks.
+# Can be one or more of: periodic_exists
+#enabled_tasks = None
 
 #-----------------------
 # Pool Manager Service
