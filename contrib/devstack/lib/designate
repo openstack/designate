@@ -25,13 +25,12 @@ DESIGNATE_PLUGINS=$TOP_DIR/lib/designate_plugins
 # Set up default repos
 DESIGNATE_REPO=${DESIGNATE_REPO:-${GIT_BASE}/openstack/designate.git}
 DESIGNATE_BRANCH=${DESIGNATE_BRANCH:-master}
-DESIGNATECLIENT_REPO=${DESIGNATECLIENT_REPO:-${GIT_BASE}/openstack/python-designateclient.git}
-DESIGNATECLIENT_BRANCH=${DESIGNATECLIENT_BRANCH:-master}
 
 # Set up default paths
+GITDIR["python-designateclient"]=$DEST/python-designateclient
+
 DESIGNATE_BIN_DIR=$(get_python_exec_prefix)
 DESIGNATE_DIR=$DEST/designate
-DESIGNATECLIENT_DIR=$DEST/python-designateclient
 DESIGNATE_CONF_DIR=/etc/designate
 DESIGNATE_STATE_PATH=${DESIGNATE_STATE_PATH:=$DATA_DIR/designate}
 DESIGNATE_CONF=$DESIGNATE_CONF_DIR/designate.conf
@@ -296,8 +295,12 @@ function install_designate {
 
 # install_designateclient - Collect source and prepare
 function install_designateclient {
-    git_clone $DESIGNATECLIENT_REPO $DESIGNATECLIENT_DIR $DESIGNATECLIENT_BRANCH
-    setup_develop $DESIGNATECLIENT_DIR
+    if use_library_from_git "python-designateclient"; then
+        git_clone_by_name "python-designateclient"
+        setup_dev_lib "python-designateclient"
+    else
+        pip_install_gr "python-designateclient"
+    fi
 }
 
 # start_designate - Start running processes, including screen
