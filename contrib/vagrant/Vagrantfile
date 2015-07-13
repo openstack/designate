@@ -21,10 +21,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     if File.directory?("../../../python-designateclient")
       config.vm.synced_folder "../../../python-designateclient", "/opt/stack/python-designateclient"
     end
-
-    if File.directory?("../../../../stackforge/rally")
-      config.vm.synced_folder "../../../../stackforge/rally", "/opt/stack/rally"
-    end
   end
 
   config.vm.provider :libvirt do |lv|
@@ -40,10 +36,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
     if File.directory?("../../../python-designateclient")
       config.vm.synced_folder "../../../python-designateclient", "/opt/stack/python-designateclient", type: "nfs"
-    end
-
-    if File.directory?("../../../../stackforge/rally")
-      config.vm.synced_folder "../../../../stackforge/rally", "/opt/stack/rally", type: "nfs"
     end
   end
 
@@ -61,6 +53,10 @@ EOF
 # Clone DevStack
 if [ ! -d "/home/vagrant/devstack" ]; then
     git clone https://git.openstack.org/openstack-dev/devstack.git /home/vagrant/devstack
+    pushd /home/vagrant/devstack
+    git checkout stable/kilo
+    popd
+
 fi
 
 # Install Vagrant localrc sample
@@ -78,24 +74,6 @@ for f in lib/* extras.d/* exercises/*; do
         ln -fs /opt/stack/designate/contrib/devstack/$f -t /home/vagrant/devstack/$(dirname $f)
     fi
 done
-
-# Clone Rally
-if [ ! -d "/opt/stack/rally" ]; then
-    git clone https://git.openstack.org/stackforge/rally.git /opt/stack/rally
-fi
-
-# Install Rally DevStack extension
-cd /opt/stack/rally/contrib/devstack
-
-for f in lib/* extras.d/*; do
-    if [ ! -f "/home/vagrant/devstack/$f" ]; then
-        ln -fs /opt/stack/rally/contrib/devstack/$f -t /home/vagrant/devstack/$(dirname $f)
-    fi
-done
-
-# Link in the Rally Plugins
-mkdir /home/vagrant/.rally
-ln -s /opt/stack/designate/rally-scenarios/plugins /home/vagrant/.rally/plugins
 
 SCRIPT
 
