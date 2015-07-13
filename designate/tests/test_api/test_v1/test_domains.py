@@ -99,6 +99,11 @@ class ApiV1DomainsTest(ApiV1Test):
         fixture['ttl'] = "$?>&"
         self.post('domains', data=fixture, status_code=400)
 
+    def test_create_domain_ttl_greater_than_max(self):
+        fixture = self.get_domain_fixture(0)
+        fixture['ttl'] = 2147483648
+        self.post('domains', data=fixture, status_code=400)
+
     def test_create_domain_utf_description(self):
         # Create a domain
         fixture = self.get_domain_fixture(0)
@@ -154,6 +159,21 @@ class ApiV1DomainsTest(ApiV1Test):
 
             self.assertNotIn('id', response.json)
 
+    def test_create_domain_name_too_long(self):
+        fixture = self.get_domain_fixture(0)
+
+        long_name = 'a' * 255 + ".org."
+        fixture['name'] = long_name
+
+        response = self.post('domains', data=fixture, status_code=400)
+
+        self.assertNotIn('id', response.json)
+
+    def test_create_domain_name_is_not_present(self):
+        fixture = self.get_domain_fixture(0)
+        del fixture['name']
+        self.post('domains', data=fixture, status_code=400)
+
     def test_create_invalid_email(self):
         # Prepare a domain
         fixture = self.get_domain_fixture(0)
@@ -175,6 +195,21 @@ class ApiV1DomainsTest(ApiV1Test):
             response = self.post('domains', data=fixture, status_code=400)
 
             self.assertNotIn('id', response.json)
+
+    def test_create_domain_email_too_long(self):
+        fixture = self.get_domain_fixture(0)
+
+        long_email = 'a' * 255 + "@org.com"
+        fixture['email'] = long_email
+
+        response = self.post('domains', data=fixture, status_code=400)
+
+        self.assertNotIn('id', response.json)
+
+    def test_create_domain_email_not_present(self):
+        fixture = self.get_domain_fixture(0)
+        del fixture['email']
+        self.post('domains', data=fixture, status_code=400)
 
     def test_get_domains(self):
         response = self.get('domains')
@@ -327,6 +362,43 @@ class ApiV1DomainsTest(ApiV1Test):
 
         self.put('domains/2fdadfb1cf964259ac6bbb7b6d2ff980', data=data,
                  status_code=404)
+
+    def test_update_domain_ttl_greter_than_max(self):
+        # Create a domain
+        domain = self.create_domain()
+
+        data = {'ttl': 2147483648}
+
+        self.put('domains/%s' % domain['id'], data=data, status_code=400)
+
+    def test_update_domain_invalid_email(self):
+        # Create a domain
+        domain = self.create_domain()
+
+        invalid_emails = [
+            'org',
+            'example.org',
+            'bla.example.org',
+            'org.',
+            'example.org.',
+            'bla.example.org.',
+            'bla.example.org.',
+            'a' * 255 + "@com",
+            ''
+        ]
+
+        for invalid_email in invalid_emails:
+            data = {'email': invalid_email}
+            self.put('domains/%s' % domain['id'], data=data, status_code=400)
+
+    def test_update_domain_description_too_long(self):
+        # Create a domain
+        domain = self.create_domain()
+
+        invalid_des = 'a' * 165
+
+        data = {'description': invalid_des}
+        self.put('domains/%s' % domain['id'], data=data, status_code=400)
 
     def test_delete_domain(self):
         # Create a domain
