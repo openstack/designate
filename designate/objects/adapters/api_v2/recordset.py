@@ -73,8 +73,23 @@ class RecordSetAPIv2Adapter(base.APIv2Adapter):
         # Get new list of Records
         new_records = set()
         if 'records' in new_recordset:
-            for record in new_recordset['records']:
-                new_records.add(record)
+            if isinstance(new_recordset['records'], list):
+                for record in new_recordset['records']:
+                    new_records.add(record)
+            else:
+                errors = objects.ValidationErrorList()
+                e = objects.ValidationError()
+                e.path = ['records']
+                e.validator = 'type'
+                e.validator_value = ["list"]
+                e.message = ("'%(data)s' is not a valid list of records"
+                             % {'data': new_recordset['records']})
+                # Add it to the list for later
+                errors.append(e)
+                raise exceptions.InvalidObject(
+                    "Provided object does not match "
+                    "schema", errors=errors, object=cls.ADAPTER_OBJECT())
+
         # Get differences of Records
         records_to_add = new_records.difference(original_records)
         records_to_rm = original_records.difference(new_records)

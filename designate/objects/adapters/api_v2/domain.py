@@ -15,6 +15,8 @@ from oslo_log import log as logging
 
 from designate.objects.adapters.api_v2 import base
 from designate import objects
+from designate import exceptions
+
 LOG = logging.getLogger(__name__)
 
 
@@ -66,8 +68,22 @@ class DomainAPIv2Adapter(base.APIv2Adapter):
         # https://bugs.launchpad.net/designate/+bug/1432842 is fixed
 
         if 'masters' in values:
-            object.set_masters(values.get('masters'))
-            del values['masters']
+            if isinstance(values['masters'], list):
+                object.set_masters(values.get('masters'))
+                del values['masters']
+            else:
+                errors = objects.ValidationErrorList()
+                e = objects.ValidationError()
+                e.path = ['masters']
+                e.validator = 'type'
+                e.validator_value = ["list"]
+                e.message = ("'%(data)s' is not a valid list of masters"
+                             % {'data': values['masters']})
+                # Add it to the list for later
+                errors.append(e)
+                raise exceptions.InvalidObject(
+                    "Provided object does not match "
+                    "schema", errors=errors, object=cls.ADAPTER_OBJECT())
 
         return super(DomainAPIv2Adapter, cls)._parse_object(
             values, object, *args, **kwargs)
