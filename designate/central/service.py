@@ -595,18 +595,27 @@ class Service(service.RPCService, service.Service):
         self.quota.limit_check(context, tenant_id, domains=count)
 
     def _enforce_recordset_quota(self, context, domain):
-        # TODO(kiall): Enforce RRSet Quotas
-        pass
+        # Ensure the recordsets per domain quota is OK
+        criterion = {'domain_id': domain.id}
+        count = self.storage.count_recordsets(context, criterion)
+
+        self.quota.limit_check(
+            context, domain.tenant_id, domain_recordsets=count)
 
     def _enforce_record_quota(self, context, domain, recordset):
         # Ensure the records per domain quota is OK
-        criterion = {'domain_id': domain['id']}
+        criterion = {'domain_id': domain.id}
         count = self.storage.count_records(context, criterion)
 
-        self.quota.limit_check(context, domain['tenant_id'],
+        self.quota.limit_check(context, domain.tenant_id,
                                domain_records=count)
 
-        # TODO(kiall): Enforce Records per RRSet Quotas
+        # Ensure the records per recordset quota is OK
+        criterion = {'recordset_id': recordset.id}
+        count = self.storage.count_records(context, criterion)
+
+        self.quota.limit_check(context, domain.tenant_id,
+                               recordset_records=count)
 
     # Misc Methods
     def get_absolute_limits(self, context):
