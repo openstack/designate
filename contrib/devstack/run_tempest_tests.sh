@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -26,19 +26,7 @@ echo "Successfully contacted the Designate API"
 DESIGNATE_DIR=${DESIGNATE_DIR:-/opt/stack/new/designate}
 TEMPEST_DIR=${TEMPEST_DIR:-/opt/stack/new/tempest}
 
-# Install tempest
-pip install -e $TEMPEST_DIR
 
+pushd $DESIGNATE_DIR
 export TEMPEST_CONFIG=$TEMPEST_DIR/etc/tempest.conf
-
-pushd $DESIGNATE_DIR/functionaltests
-
-# run the tests in parallel
-testr init
-testr run --parallel --subunit | subunit-trace --no-failure-debug -f
-retval=$?
-testr slowest
-
-popd
-
-exit $retval
+tox -e functional
