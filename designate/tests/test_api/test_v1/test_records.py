@@ -480,6 +480,12 @@ class ApiV1RecordsTest(ApiV1Test):
         self.put('domains/%s/records/%s' % (self.domain['id'], record['id']),
                  data=data, status_code=400)
 
+    def test_update_record_ttl_greater_than_max(self):
+        record = self.create_record(self.domain, self.recordset)
+        data = {'ttl': 2174483648}
+        self.put('domains/%s/records/%s' % (self.domain['id'], record['id']),
+                 data=data, status_code=400)
+
     def test_update_record_zero_ttl(self):
         # Create a record
         record = self.create_record(self.domain, self.recordset)
@@ -495,6 +501,48 @@ class ApiV1RecordsTest(ApiV1Test):
 
         data = {'ttl': "$?>%"}
 
+        self.put('domains/%s/records/%s' % (self.domain['id'], record['id']),
+                 data=data, status_code=400)
+
+    def test_update_record_description_too_long(self):
+        record = self.create_record(self.domain, self.recordset)
+        data = {'description': 'x' * 165}
+        self.put('domains/%s/records/%s' % (self.domain['id'], record['id']),
+                 data=data, status_code=400)
+
+    def test_update_record_negative_priority(self):
+        record = self.create_record(self.domain, self.recordset)
+        data = {'priority': -1}
+        self.put('domains/%s/records/%s' % (self.domain['id'], record['id']),
+                 data=data, status_code=400)
+
+    def test_update_record_invalid_priority(self):
+        record = self.create_record(self.domain, self.recordset)
+        data = {'priority': "?!:>"}
+        self.put('domains/%s/records/%s' % (self.domain['id'], record['id']),
+                 data=data, status_code=400)
+
+    def test_update_record_priority_greater_than_max(self):
+        record = self.create_record(self.domain, self.recordset)
+        data = {'priority': 65536}
+        self.put('domains/%s/records/%s' % (self.domain['id'], record['id']),
+                 data=data, status_code=400)
+
+    def test_update_record_name_too_long(self):
+        record = self.create_record(self.domain, self.recordset)
+        data = {'name': 'w' * 256 + ".%s" % self.domain.name}
+        self.put('domains/%s/records/%s' % (self.domain['id'], record['id']),
+                 data=data, status_code=400)
+
+    def test_update_record_invalid_type(self):
+        record = self.create_record(self.domain, self.recordset)
+        data = {'type': 'ABC'}
+        self.put('domains/%s/records/%s' % (self.domain['id'], record['id']),
+                 data=data, status_code=400)
+
+    def test_update_record_data_too_long(self):
+        record = self.create_record(self.domain, self.recordset)
+        data = {'data': '1' * 255 + '.2.3.4'}
         self.put('domains/%s/records/%s' % (self.domain['id'], record['id']),
                  data=data, status_code=400)
 
