@@ -61,7 +61,8 @@ cfg.CONF.register_opts([
 
 
 def find_config_file():
-    return os.environ.get('TEMPEST_CONFIG', 'tempest.conf')
+    return os.environ.get(
+        'TEMPEST_CONFIG', '/opt/stack/tempest/etc/tempest.conf')
 
 
 def read_config():
