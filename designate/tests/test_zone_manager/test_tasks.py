@@ -32,7 +32,7 @@ class TaskTest(TestCase):
 
     def _enable_tasks(self, tasks):
         self.config(
-            enabled_tasks=",".join(tasks),
+            enabled_tasks=tasks,
             group="service:zone_manager")
 
 

@@ -43,7 +43,8 @@ class Service(coordination.CoordinationMixin, service.Service):
         self._partitioner.start()
         self._partitioner.watch_partition_change(self._rebalance)
 
-        for task in tasks.PeriodicTask.get_extensions():
+        enabled = CONF['service:zone_manager'].enabled_tasks
+        for task in tasks.PeriodicTask.get_extensions(enabled):
             LOG.debug("Registering task %s" % task)
 
             # Instantiate the task
