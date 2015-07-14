@@ -76,8 +76,8 @@ class PeriodicExistsTest(TaskTest):
         del data["attributes"]
         # For some reason domain.created when doing dict(domain) is a datetime
         data["created_at"] = datetime.datetime.isoformat(domain.created_at)
-        data["audit_period_start"] = str(start)
-        data["audit_period_end"] = str(end)
+        data["audit_period_beginning"] = str(start)
+        data["audit_period_ending"] = str(end)
 
         # .info(ctxt, event, payload)
         mock_notifier.assert_called_with(mock.ANY, "dns.domain.exists", data)

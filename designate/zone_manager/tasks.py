@@ -89,8 +89,8 @@ class PeriodicExistsTask(PeriodicTask):
         start, end = self._get_period(self.options.interval)
 
         data = {
-            "audit_period_start": str(start),
-            "audit_period_end": str(end)
+            "audit_period_beginning": str(start),
+            "audit_period_ending": str(end)
         }
 
         marker = None
