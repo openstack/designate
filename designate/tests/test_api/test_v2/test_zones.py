@@ -36,9 +36,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
     def test_create_zone(self):
         # Create a zone
         fixture = self.get_domain_fixture(fixture=0)
-
         response = self.client.post_json('/zones/', fixture)
-
         # Check the headers are what we expect
         self.assertEqual(202, response.status_int)
         self.assertEqual('application/json', response.content_type)
@@ -96,6 +94,93 @@ class ApiV2ZonesTest(ApiV2TestCase):
         # Ensure it fails with a 400
         body = fixture
 
+        self._assert_exception('invalid_object', 400, self.client.post_json,
+                               '/zones', body)
+
+    def test_create_zone_email_too_long(self):
+        fixture = self.get_domain_fixture(fixture=0)
+        fixture.update({'email': 'a' * 255 + '@abc.com'})
+        body = fixture
+        self._assert_exception('invalid_object', 400, self.client.post_json,
+                               '/zones', body)
+
+    def test_create_zone_invalid_email(self):
+        invalid_emails = [
+            'org',
+            'example.org',
+            'bla.example.org',
+            'org.',
+            'example.org.',
+            'bla.example.org.',
+        ]
+        fixture = self.get_domain_fixture(fixture=0)
+        for email in invalid_emails:
+            fixture.update({'email': email})
+            body = fixture
+            self._assert_exception('invalid_object', 400,
+                                   self.client.post_json,
+                                   '/zones', body)
+
+    def test_create_zone_email_missing(self):
+        fixture = self.get_domain_fixture(fixture=0)
+        del fixture['email']
+        body = fixture
+        self._assert_exception('invalid_object', 400, self.client.post_json,
+                               '/zones', body)
+
+    def test_create_zone_ttl_less_than_zero(self):
+        fixture = self.get_domain_fixture(fixture=0)
+        fixture['ttl'] = -1
+        body = fixture
+        self._assert_exception('invalid_object', 400, self.client.post_json,
+                               '/zones', body)
+
+    def test_create_zone_ttl_is_zero(self):
+        fixture = self.get_domain_fixture(fixture=0)
+        fixture['ttl'] = 0
+        body = fixture
+        self._assert_exception('invalid_object', 400, self.client.post_json,
+                               '/zones', body)
+
+    def test_create_zone_ttl_is_greater_than_max(self):
+        fixture = self.get_domain_fixture(fixture=0)
+        fixture['ttl'] = 2174483648
+        body = fixture
+        self._assert_exception('invalid_object', 400, self.client.post_json,
+                               '/zones', body)
+
+    def test_create_zone_ttl_is_invalid(self):
+        fixture = self.get_domain_fixture(fixture=0)
+        fixture['ttl'] = "!@?>"
+        body = fixture
+        self._assert_exception('invalid_object', 400, self.client.post_json,
+                               '/zones', body)
+
+    def test_create_zone_ttl_is_not_required_field(self):
+        fixture = self.get_domain_fixture(fixture=0)
+        body = fixture
+        response = self.client.post_json('/zones', body)
+        self.assertEqual(202, response.status_int)
+        self.assertEqual('application/json', response.content_type)
+
+    def test_create_zone_description_too_long(self):
+        fixture = self.get_domain_fixture(fixture=0)
+        fixture['description'] = "a" * 161
+        body = fixture
+        self._assert_exception('invalid_object', 400, self.client.post_json,
+                               '/zones', body)
+
+    def test_create_zone_name_is_missing(self):
+        fixture = self.get_domain_fixture(fixture=0)
+        del fixture['name']
+        body = fixture
+        self._assert_exception('invalid_object', 400, self.client.post_json,
+                               '/zones', body)
+
+    def test_create_zone_name_too_long(self):
+        fixture = self.get_domain_fixture(fixture=0)
+        fixture['name'] = 'x' * 255 + ".com"
+        body = fixture
         self._assert_exception('invalid_object', 400, self.client.post_json,
                                '/zones', body)
 
