@@ -48,6 +48,27 @@ class ApiV2TldsTest(ApiV2TestCase):
         self._assert_exception('invalid_object', 400, self.client.post_json,
                                '/tlds', invalid_fixture)
 
+    def test_create_tld_name_is_missing(self):
+        self.policy({'create_tld': '@'})
+        fixture = self.get_tld_fixture(0)
+        del fixture['name']
+        self._assert_exception('invalid_object', 400, self.client.post_json,
+                               '/tlds', fixture)
+
+    def test_create_tld_description_is_too_long(self):
+        self.policy({'create_tld': '@'})
+        fixture = self.get_tld_fixture(0)
+        fixture['description'] = 'x' * 161
+        self._assert_exception('invalid_object', 400, self.client.post_json,
+                               '/tlds', fixture)
+
+    def test_create_tld_junk_attribute(self):
+        self.policy({'create_tld': '@'})
+        fixture = self.get_tld_fixture(0)
+        fixture['junk'] = 'x'
+        self._assert_exception('invalid_object', 400, self.client.post_json,
+                               '/tlds', fixture)
+
     def test_get_tlds(self):
         self.policy({'find_tlds': '@'})
         response = self.client.get('/tlds/')
@@ -124,6 +145,20 @@ class ApiV2TldsTest(ApiV2TestCase):
         self.assertIsNotNone(response.json['updated_at'])
         self.assertEqual('prefix-%s' % tld['description'],
                          response.json['description'])
+
+    def test_update_tld_description_too_long(self):
+        tld = self.create_tld(fixture=0)
+        self.policy({'update_tld': '@'})
+        body = {'description': 'x' * 161}
+        self._assert_exception('invalid_object', 400, self.client.patch_json,
+                               '/tlds/%s' % tld['id'], body)
+
+    def test_update_tld_junk_attribute(self):
+        tld = self.create_tld(fixture=0)
+        self.policy({'update_tld': '@'})
+        body = {'junk': 'x'}
+        self._assert_exception('invalid_object', 400, self.client.patch_json,
+                               '/tlds/%s' % tld['id'], body)
 
     def test_update_tld_invalid_id(self):
         self._assert_invalid_uuid(self.client.patch_json, '/tlds/%s')
