@@ -421,7 +421,7 @@ class DictObjectMixin(object):
         else:
             return getattr(self, key)
 
-    def iteritems(self):
+    def items(self):
         for field in six.iterkeys(self.FIELDS):
             if self.obj_attr_is_set(field):
                 yield field, getattr(self, field)
@@ -430,8 +430,6 @@ class DictObjectMixin(object):
         for field in six.iterkeys(self.FIELDS):
             if self.obj_attr_is_set(field):
                 yield field, getattr(self, field)
-
-    items = lambda self: list(self.items())
 
 
 class ListObjectMixin(object):
