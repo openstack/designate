@@ -108,7 +108,23 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         self._assert_exception(
             'invalid_object', 400, self.client.post_json, url, body)
 
-    def test_create_recordset_with_invalid_type(self):
+    def test_create_recordset_with_name_too_long(self):
+        fixture = self.get_recordset_fixture(self.domain['name'], fixture=0)
+        fixture['name'] = 'x' * 255 + ".%s" % self.domain['name']
+        body = fixture
+        url = '/zones/%s/recordsets' % self.domain['id']
+        self._assert_exception(
+            'invalid_object', 400, self.client.post_json, url, body)
+
+    def test_create_recordset_with_name_missing(self):
+        fixture = self.get_recordset_fixture(self.domain['name'], fixture=0)
+        del fixture['name']
+        body = fixture
+        url = '/zones/%s/recordsets' % self.domain['id']
+        self._assert_exception(
+            'invalid_object', 400, self.client.post_json, url, body)
+
+    def test_create_recordset_type_is_missing(self):
         # Prepare a RecordSet fixture
         body = self.get_recordset_fixture(
             self.domain['name'],
@@ -128,6 +144,54 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         url = '/zones/%s/recordsets' % self.domain['id']
 
         # Ensure it fails with a 400
+        self._assert_exception(
+            'invalid_object', 400, self.client.post_json, url, body)
+
+    def test_create_recordset_with_invalid_type(self):
+        fixture = self.get_recordset_fixture(self.domain['name'], fixture=0)
+        fixture['type'] = "ABC"
+        body = fixture
+        url = '/zones/%s/recordsets' % self.domain['id']
+        self._assert_exception(
+            'invalid_object', 400, self.client.post_json, url, body)
+
+    def test_create_recordset_description_too_long(self):
+        fixture = self.get_recordset_fixture(self.domain['name'], fixture=0)
+        fixture['description'] = "x" * 161
+        body = fixture
+        url = '/zones/%s/recordsets' % self.domain['id']
+        self._assert_exception(
+            'invalid_object', 400, self.client.post_json, url, body)
+
+    def test_create_recordset_with_negative_ttl(self):
+        fixture = self.get_recordset_fixture(self.domain['name'], fixture=0)
+        fixture['ttl'] = -1
+        body = fixture
+        url = '/zones/%s/recordsets' % self.domain['id']
+        self._assert_exception(
+            'invalid_object', 400, self.client.post_json, url, body)
+
+    def test_create_recordset_with_zero_ttl(self):
+        fixture = self.get_recordset_fixture(self.domain['name'], fixture=0)
+        fixture['ttl'] = 0
+        body = fixture
+        url = '/zones/%s/recordsets' % self.domain['id']
+        self._assert_exception(
+            'invalid_object', 400, self.client.post_json, url, body)
+
+    def test_create_recordset_with_ttl_greater_than_max(self):
+        fixture = self.get_recordset_fixture(self.domain['name'], fixture=0)
+        fixture['ttl'] = 2147483648
+        body = fixture
+        url = '/zones/%s/recordsets' % self.domain['id']
+        self._assert_exception(
+            'invalid_object', 400, self.client.post_json, url, body)
+
+    def test_create_recordset_with_invalid_ttl(self):
+        fixture = self.get_recordset_fixture(self.domain['name'], fixture=0)
+        fixture['ttl'] = ">?!?"
+        body = fixture
+        url = '/zones/%s/recordsets' % self.domain['id']
         self._assert_exception(
             'invalid_object', 400, self.client.post_json, url, body)
 
@@ -577,6 +641,46 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
                % (self.domain['id']))
 
         self._assert_exception('recordset_not_found', 404,
+                               self.client.put_json, url, body)
+
+    def test_update_recordset_invalid_ttl(self):
+        recordset = self.create_recordset(self.domain)
+        body = {'ttl': '>?!@'}
+        url = '/zones/%s/recordsets/%s' % (recordset['domain_id'],
+                                           recordset['id'])
+        self._assert_exception('invalid_object', 400,
+                               self.client.put_json, url, body)
+
+    def test_update_recordset_zero_ttl(self):
+        recordset = self.create_recordset(self.domain)
+        body = {'ttl': 0}
+        url = '/zones/%s/recordsets/%s' % (recordset['domain_id'],
+                                           recordset['id'])
+        self._assert_exception('invalid_object', 400,
+                               self.client.put_json, url, body)
+
+    def test_update_recordset_negative_ttl(self):
+        recordset = self.create_recordset(self.domain)
+        body = {'ttl': -1}
+        url = '/zones/%s/recordsets/%s' % (recordset['domain_id'],
+                                           recordset['id'])
+        self._assert_exception('invalid_object', 400,
+                               self.client.put_json, url, body)
+
+    def test_update_recordset_ttl_greater_than_max(self):
+        recordset = self.create_recordset(self.domain)
+        body = {'ttl': 2174483648}
+        url = '/zones/%s/recordsets/%s' % (recordset['domain_id'],
+                                           recordset['id'])
+        self._assert_exception('invalid_object', 400,
+                               self.client.put_json, url, body)
+
+    def test_update_recordset_description_too_long(self):
+        recordset = self.create_recordset(self.domain)
+        body = {'description': 'x' * 161}
+        url = '/zones/%s/recordsets/%s' % (recordset['domain_id'],
+                                           recordset['id'])
+        self._assert_exception('invalid_object', 400,
                                self.client.put_json, url, body)
 
     def test_delete_recordset(self):
