@@ -259,7 +259,7 @@ debug = False
 #periodic_sync_seconds = None
 
 # The cache driver to use
-#cache_driver = sqlalchemy
+#cache_driver = memcache
 
 ###################################
 ## Pool Manager Cache Configuration
