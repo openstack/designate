@@ -69,6 +69,76 @@ class ApiV2TsigKeysTest(ApiV2TestCase):
         self._assert_exception('invalid_object', 400, self.client.post_json,
                                '/tsigkeys', body)
 
+    def test_create_tsigkey_name_missing(self):
+        fixture = self.get_tsigkey_fixture(0)
+        del fixture['name']
+        body = fixture
+        self._assert_exception('invalid_object', 400, self.client.post_json,
+                               '/tsigkeys', body)
+
+    def test_create_tsigkey_name_too_long(self):
+        fixture = self.get_tsigkey_fixture(0)
+        fixture['name'] = 'test-key-' + 'x' * 160
+        body = fixture
+        self._assert_exception('invalid_object', 400, self.client.post_json,
+                               '/tsigkeys', body)
+
+    def test_create_tsigkey_algorithm_missing(self):
+        fixture = self.get_tsigkey_fixture(0)
+        del fixture['algorithm']
+        body = fixture
+        self._assert_exception('invalid_object', 400, self.client.post_json,
+                               '/tsigkeys', body)
+
+    def test_create_tsigkey_algorithm_invalid_type(self):
+        fixture = self.get_tsigkey_fixture(0)
+        fixture['algorithm'] = "ABC"
+        body = fixture
+        self._assert_exception('invalid_object', 400, self.client.post_json,
+                               '/tsigkeys', body)
+
+    def test_create_tsigkey_secret_missing(self):
+        fixture = self.get_tsigkey_fixture(0)
+        del fixture['secret']
+        body = fixture
+        self._assert_exception('invalid_object', 400, self.client.post_json,
+                               '/tsigkeys', body)
+
+    def test_create_tsigkey_secret_too_long(self):
+        fixture = self.get_tsigkey_fixture(0)
+        fixture['secret'] = 'x' * 161
+        body = fixture
+        self._assert_exception('invalid_object', 400, self.client.post_json,
+                               '/tsigkeys', body)
+
+    def test_create_tsigkey_scope_missing(self):
+        fixture = self.get_tsigkey_fixture(0)
+        del fixture['scope']
+        body = fixture
+        self._assert_exception('invalid_object', 400, self.client.post_json,
+                               '/tsigkeys', body)
+
+    def test_create_tsigkey_scope_invalid_type(self):
+        fixture = self.get_tsigkey_fixture(0)
+        fixture['scope'] = "ABC"
+        body = fixture
+        self._assert_exception('invalid_object', 400, self.client.post_json,
+                               '/tsigkeys', body)
+
+    def test_create_tsigkey_resource_id_missing(self):
+        fixture = self.get_tsigkey_fixture(0)
+        del fixture['resource_id']
+        body = fixture
+        self._assert_exception('invalid_object', 400, self.client.post_json,
+                               '/tsigkeys', body)
+
+    def test_create_tsigkey_invalid_resource_id(self):
+        fixture = self.get_tsigkey_fixture(0)
+        fixture['resource_id'] = "xyz"
+        body = fixture
+        self._assert_exception('invalid_object', 400, self.client.post_json,
+                               '/tsigkeys', body)
+
     def test_create_tsigkey_duplicate(self):
         # Prepare a TSIG Key fixture
         fixture = self.get_tsigkey_fixture(0)
@@ -188,6 +258,34 @@ class ApiV2TsigKeysTest(ApiV2TestCase):
 
         # Ensure it fails with a 409
         self._assert_exception('duplicate_tsigkey', 409,
+                               self.client.patch_json, url, body)
+
+    def test_update_tsigkey_secret_too_long(self):
+        tsigkey = self.create_tsigkey()
+        body = {'secret': 'x' * 161}
+        url = '/tsigkeys/%s' % tsigkey.id
+        self._assert_exception('invalid_object', 400,
+                               self.client.patch_json, url, body)
+
+    def test_update_tsigkey_invalid_scope_type(self):
+        tsigkey = self.create_tsigkey()
+        body = {'scope': 'abc'}
+        url = '/tsigkeys/%s' % tsigkey.id
+        self._assert_exception('invalid_object', 400,
+                               self.client.patch_json, url, body)
+
+    def test_update_tsigkey_invalid_algorithm(self):
+        tsigkey = self.create_tsigkey()
+        body = {'algorithm': 'abc'}
+        url = '/tsigkeys/%s' % tsigkey.id
+        self._assert_exception('invalid_object', 400,
+                               self.client.patch_json, url, body)
+
+    def test_update_tsigkey_junk_field(self):
+        tsigkey = self.create_tsigkey()
+        body = {'junk': 'abc'}
+        url = '/tsigkeys/%s' % tsigkey.id
+        self._assert_exception('invalid_object', 400,
                                self.client.patch_json, url, body)
 
     @patch.object(central_service.Service, 'get_tsigkey',
