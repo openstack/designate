@@ -302,20 +302,22 @@ def do_axfr(zone_name, servers, timeout=None, source=None):
     Performs an AXFR for a given zone name
     """
     random.shuffle(servers)
-    timeout = timeout or 10
+    timeout = timeout or cfg.CONF["service:mdns"].xfr_timeout
 
     xfr = None
+
     for srv in servers:
-        timeout = eventlet.Timeout(timeout)
+        to = eventlet.Timeout(timeout)
         log_info = {'name': zone_name, 'host': srv}
         try:
             LOG.info(_LI("Doing AXFR for %(name)s from %(host)s") % log_info)
+
             xfr = dns.query.xfr(srv['ip'], zone_name, relativize=False,
                                 timeout=1, port=srv['port'], source=source)
             raw_zone = dns.zone.from_xfr(xfr, relativize=False)
             break
         except eventlet.Timeout as t:
-            if t == timeout:
+            if t == to:
                 msg = _LE("AXFR timed out for %(name)s from %(host)s")
                 LOG.error(msg % log_info)
                 continue
@@ -332,7 +334,7 @@ def do_axfr(zone_name, servers, timeout=None, source=None):
                       "Trying next server.")
             LOG.exception(msg % log_info)
         finally:
-            timeout.cancel()
+            to.cancel()
         continue
     else:
         msg = _LE("XFR failed for %(name)s. No servers in %(servers)s was "
