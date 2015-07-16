@@ -25,6 +25,7 @@ import time
 
 import six
 import eventlet.wsgi
+import eventlet.debug
 import oslo_messaging as messaging
 from oslo_config import cfg
 from oslo_log import log as logging
@@ -235,6 +236,13 @@ class DNSService(object):
     """
     DNS Service mixin used by all Designate DNS Services
     """
+    def __init__(self, *args, **kwargs):
+        super(DNSService, self).__init__(*args, **kwargs)
+
+        # Eventet will complain loudly about our use of multiple greentheads
+        # reading/writing to the UDP socket at once. Disable this warning.
+        eventlet.debug.hub_prevent_multiple_readers(False)
+
     @abc.abstractproperty
     def _dns_application(self):
         pass
