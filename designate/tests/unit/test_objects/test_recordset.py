@@ -1,0 +1,194 @@
+# Copyright 2015 Hewlett-Packard Development Company, L.P.
+#
+# Author: Federico Ceratto <federico.ceratto@hp.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+
+import itertools
+import unittest
+
+from oslo_log import log as logging
+from testtools import ExpectedException as raises  # with raises(...): ...
+import mock
+import oslotest.base
+
+from designate import exceptions
+from designate import objects
+
+LOG = logging.getLogger(__name__)
+
+
+def debug(*a, **kw):
+    for v in a:
+        LOG.debug(repr(v))
+
+    for k in sorted(kw):
+        LOG.debug("%s: %s", k, repr(kw[k]))
+
+
+class TestRecordSet(objects.RecordSet):
+    FIELDS = {
+        'id': {},
+        'name': {},
+        'records': {
+            'relation': True,
+            'relation_cls': 'RecordList',
+        },
+    }
+
+
+def create_test_recordset():
+    rs = objects.RecordSet(
+        name='www.example.org.',
+        type='A',
+        records=objects.RecordList(objects=[
+            objects.Record(data='192.0.2.1'),
+            objects.Record(data='192.0.2.2'),
+        ])
+    )
+    return rs
+
+
+class RecordSetTest(oslotest.base.BaseTestCase):
+
+    def test_init(self):
+        rs = create_test_recordset()
+        self.assertEqual(rs.name, 'www.example.org.')
+        self.assertEqual(rs.type, 'A')
+
+    def test_not_managed(self):
+        rs = create_test_recordset()
+        self.assertFalse(rs.managed)
+
+    def test_managed(self):
+        rs = objects.RecordSet(
+            name='www.example.org.',
+            type='A',
+            records=objects.RecordList(objects=[
+                objects.Record(data='192.0.2.1', managed=True),
+                objects.Record(data='192.0.2.2'),
+            ])
+        )
+        self.assertTrue(rs.managed)
+
+    def test_action(self):
+        action = 'CREATE'
+        rs = objects.RecordSet(
+            name='www.example.org.',
+            type='A',
+            records=objects.RecordList(objects=[
+                objects.Record(data='192.0.2.1', action=action),
+            ])
+        )
+        self.assertEqual(rs.action, action)
+
+    def test_action_create(self):
+        rs = objects.RecordSet(
+            name='www.example.org.', type='A',
+            records=objects.RecordList(objects=[
+                objects.Record(data='192.0.2.1', action='CREATE'),
+            ])
+        )
+        self.assertEqual(rs.action, 'CREATE')
+
+    def test_action_create_plus_update(self):
+        rs = objects.RecordSet(
+            name='www.example.org.', type='A',
+            records=objects.RecordList(objects=[
+                objects.Record(data='192.0.2.1', action='CREATE'),
+                objects.Record(data='192.0.2.2', action='UPDATE'),
+            ])
+        )
+        self.assertEqual(rs.action, 'UPDATE')
+
+    def test_action_delete_plus_update(self):
+        rs = objects.RecordSet(
+            name='www.example.org.', type='A',
+            records=objects.RecordList(objects=[
+                objects.Record(data='192.0.2.1', action='DELETE'),
+                objects.Record(data='192.0.2.2', action='UPDATE'),
+            ])
+        )
+        self.assertEqual(rs.action, 'UPDATE')
+
+    def test_action_delete_only(self):
+        rs = objects.RecordSet(
+            name='www.example.org.', type='A',
+            records=objects.RecordList(objects=[
+                objects.Record(data='192.0.2.1', action='DELETE'),
+                objects.Record(data='192.0.2.2', action='DELETE'),
+            ])
+        )
+        self.assertEqual(rs.action, 'DELETE')
+
+    @unittest.expectedFailure  # bug
+    def test_status_error(self):
+        statuses = ('ERROR', 'PENDING', 'ACTIVE')
+        failed = False
+        for s1, s2, s3 in itertools.permutations(statuses):
+            rs = objects.RecordSet(
+                name='www.example.org.', type='A',
+                records=objects.RecordList(objects=[
+                    objects.Record(data='192.0.2.1', status=s1),
+                    objects.Record(data='192.0.2.2', status=s2),
+                    objects.Record(data='192.0.2.3', status=s3),
+                ])
+            )
+            if rs.status != 'ERROR':
+                failed = True
+                print("test_status_error failed for %s %s %s: %s" % (
+                    s1, s2, s3, rs.status))
+
+        self.assertFalse(failed)
+
+    def test_status_pending(self):
+        rs = objects.RecordSet(
+            name='www.example.org.', type='A',
+            records=objects.RecordList(objects=[
+                objects.Record(data='192.0.2.2', status='PENDING'),
+                objects.Record(data='192.0.2.3', status='ACTIVE'),
+            ])
+        )
+        self.assertEqual(rs.status, 'PENDING')
+
+    def test_status_pending2(self):
+        rs = objects.RecordSet(
+            name='www.example.org.', type='A',
+            records=objects.RecordList(objects=[
+                objects.Record(data='192.0.2.3', status='ACTIVE'),
+                objects.Record(data='192.0.2.2', status='PENDING'),
+            ])
+        )
+        self.assertEqual(rs.status, 'PENDING')
+
+    def test_status_active(self):
+        rs = objects.RecordSet(
+            name='www.example.org.', type='A',
+            records=objects.RecordList(objects=[
+                objects.Record(data='192.0.2.3', status='ACTIVE'),
+            ])
+        )
+        self.assertEqual(rs.status, 'ACTIVE')
+
+    def test_validate(self):
+        rs = create_test_recordset()
+        rs.validate()
+
+    def test_validate_handle_exception(self):
+        rs = create_test_recordset()
+        with mock.patch('designate.objects.DesignateObject.obj_cls_from_name') \
+                as patched:
+            patched.side_effect = KeyError
+            with raises(exceptions.InvalidObject):
+                # TODO(Federico): check the attributes of the exception
+                rs.validate()

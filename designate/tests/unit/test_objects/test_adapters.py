@@ -13,9 +13,10 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from oslo_log import log as logging
 
-from designate import tests
+from oslo_log import log as logging
+import oslotest.base
+
 from designate import objects
 from designate.objects import adapters
 
@@ -33,7 +34,7 @@ class DesignateTestAdapter(adapters.DesignateAdapter):
     }
 
 
-class DesignateAdapterTest(tests.TestCase):
+class DesignateAdapterTest(oslotest.base.BaseTestCase):
     def test_get_object_adapter(self):
         adapters.DesignateAdapter.get_object_adapter(
             'TEST_API', objects.DesignateObject())

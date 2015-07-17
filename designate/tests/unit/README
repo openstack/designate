@@ -1,0 +1,10 @@
+This directory contains pure unit tests.
+
+Examples:
+
+ostestr --regex designate.tests.test_unit
+
+python setup.py testr --coverage -t designate.tests.test_unit
+
+
+ 

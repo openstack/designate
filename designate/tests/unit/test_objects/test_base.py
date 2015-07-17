@@ -13,16 +13,19 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import copy
+
 from operator import attrgetter
+import copy
+import unittest
 
-import testtools
 from oslo_log import log as logging
+from testtools import ExpectedException as raises  # with raises(...): ...
+import mock
+import oslotest.base
+import testtools
 
-from designate import tests
-from designate import objects
 from designate import exceptions
-
+from designate import objects
 
 LOG = logging.getLogger(__name__)
 
@@ -69,7 +72,7 @@ class TestValidatableObject(objects.DesignateObject):
     }
 
 
-class DesignateObjectTest(tests.TestCase):
+class DesignateObjectTest(oslotest.base.BaseTestCase):
     def test_obj_cls_from_name(self):
         cls = objects.DesignateObject.obj_cls_from_name('TestObject')
         self.assertEqual(TestObject, cls)
@@ -183,6 +186,40 @@ class DesignateObjectTest(tests.TestCase):
         # other for the nested field
         self.assertEqual(set(['id', 'nested_list']), obj.obj_what_changed())
 
+    def test_from_list(self):
+        with raises(NotImplementedError):
+            TestObject.from_list([])
+
+    def test_get_schema(self):
+        obj = TestValidatableObject()
+        obj.id = 'ffded5c4-e4f6-4e02-a175-48e13c5c12a0'
+        obj.validate()
+        self.assertTrue(hasattr(obj, '_obj_validator'))
+
+        expected = {
+            'description': 'Designate TestValidatableObject Object',
+            'title': 'TestValidatableObject', 'required': ['id'],
+            'additionalProperties': False,
+            '$schema': 'http://json-schema.org/draft-04/hyper-schema',
+            'type': 'object',
+            'properties': {
+                'id': {
+                    'type': 'string', 'format': 'uuid'
+                }
+            }
+        }
+        schema = obj._obj_validator.schema
+        self.assertEqual(schema, expected)
+
+        with raises(AttributeError):  # bug
+            schema = obj.obj_get_schema()
+
+    @unittest.expectedFailure  # bug
+    def test__schema_ref_resolver(self):
+        from designate.objects.base import _schema_ref_resolver
+        _schema_ref_resolver(
+            'obj://TestValidatableObject#/subpathA/subpathB')
+
     def test_init_invalid(self):
         with testtools.ExpectedException(TypeError):
             TestObject(extra_field='Fail')
@@ -190,17 +227,17 @@ class DesignateObjectTest(tests.TestCase):
     def test_hasattr(self):
         obj = TestObject()
 
-        # Suceess Cases
+        # Success Cases
         self.assertTrue(hasattr(obj, 'id'),
-            "Should have id attribute")
+                        "Should have id attribute")
         self.assertTrue(hasattr(obj, 'name'),
-            "Should have name attribute")
+                        "Should have name attribute")
 
         # Failure Cases
         self.assertFalse(hasattr(obj, 'email'),
-            "Should not have email attribute")
+                         "Should not have email attribute")
         self.assertFalse(hasattr(obj, 'names'),
-            "Should not have names attribute")
+                         "Should not have names attribute")
 
     def test_setattr(self):
         obj = TestObject()
@@ -307,6 +344,17 @@ class DesignateObjectTest(tests.TestCase):
         }
 
         self.assertEqual(expected, dict_)
+
+    def test_update(self):
+        obj = TestObject(id='MyID', name='test')
+        obj.update({'id': 'new_id', 'name': 'new_name'})
+        self.assertEqual(obj.id, 'new_id')
+        self.assertEqual(obj.name, 'new_name')
+
+    def test_update_unexpected_attribute(self):
+        obj = TestObject(id='MyID', name='test')
+        with raises(AttributeError):
+            obj.update({'id': 'new_id', 'new_key': 3})
 
     def test_is_valid(self):
         obj = TestValidatableObject(id='MyID')
@@ -505,6 +553,11 @@ class DesignateObjectTest(tests.TestCase):
         # Ensure they do not evaluate to equal
         self.assertNotEqual(obj_one, obj_two)
 
+    def test_eq_false(self):
+        obj = TestObject(id="My ID", name="My Name")
+        self.assertFalse(obj == tuple())
+        self.assertNotEqual(obj, tuple())
+
     def test_ne(self):
         # Create two equal objects
         obj_one = TestObject(id="My ID", name="My Name")
@@ -520,7 +573,7 @@ class DesignateObjectTest(tests.TestCase):
         self.assertTrue(obj_one != obj_two)
 
 
-class DictObjectMixinTest(tests.TestCase):
+class DictObjectMixinTest(oslotest.base.BaseTestCase):
     def test_cast_to_dict(self):
         # Create an object
         obj = TestObjectDict()
@@ -534,8 +587,53 @@ class DictObjectMixinTest(tests.TestCase):
 
         self.assertEqual(expected, dict(obj))
 
+    def test_gititem(self):
+        obj = TestObjectDict(name=1)
+        self.assertEqual(obj['name'], 1)
 
-class ListObjectMixinTest(tests.TestCase):
+    def test_setitem(self):
+        obj = TestObjectDict()
+        obj['name'] = 1
+        self.assertEqual(obj.name, 1)
+
+    def test_contains(self):
+        obj = TestObjectDict(name=1)
+        self.assertTrue('name' in obj)
+
+    def test_get(self):
+        obj = TestObjectDict(name=1)
+        v = obj.get('name')
+        self.assertEqual(v, 1)
+
+    def test_get_missing(self):
+        obj = TestObjectDict(name=1)
+        self.assertFalse(obj.obj_attr_is_set('foo'))
+        with raises(AttributeError):
+            obj.get('foo')
+
+    def test_get_default(self):
+        obj = TestObjectDict(name='n')
+        v = obj.get('name', default='default')
+        self.assertEqual(v, 'n')
+
+    def test_get_default_with_patch(self):
+        obj = TestObjectDict(name='v')
+        fname = 'designate.objects.base.DesignateObject.obj_attr_is_set'
+        with mock.patch(fname) as attr_is_set:
+            attr_is_set.return_value = False
+            v = obj.get('name', default='default')
+            self.assertEqual(v, 'default')
+
+    def test_iteritems(self):
+        obj = TestObjectDict(name=None, id=1)
+        items = tuple(obj.items())
+        self.assertEqual(
+            sorted(items),
+            [('id', 1), ('name', None)]
+        )
+
+
+class ListObjectMixinTest(oslotest.base.BaseTestCase):
     def test_from_primitive(self):
         primitive = {
             'designate_object.name': 'TestObjectList',
@@ -732,6 +830,16 @@ class ListObjectMixinTest(tests.TestCase):
 
         self.assertEqual(obj.objects, [obj_one, obj_two, obj_three])
 
+    def test_remove(self):
+        # Create a few objects
+        obj_one = TestObject(id="One")
+        obj_two = TestObject(id="Two")
+
+        # Create a ListObject
+        obj = TestObjectList(objects=[obj_one, obj_two])
+        obj.remove(obj_one)
+        self.assertEqual(obj.objects, [obj_two])
+
     def test_index(self):
         # Create a few objects
         obj_one = TestObject(id="One")
@@ -764,3 +872,31 @@ class ListObjectMixinTest(tests.TestCase):
         obj.sort(key=attrgetter('id'))
 
         self.assertEqual(obj.objects, [obj_one, obj_two, obj_three])
+
+    def test_to_dict(self):
+        # Create a ListObject containing a DesignateObject
+        obj_one = objects.DesignateObject()
+        obj = TestObjectList(objects=obj_one)
+
+        dict_ = obj.to_dict()
+        expected = {'objects': {}}
+        self.assertEqual(dict_, expected)
+
+    def test_to_dict_list_mixin(self):
+        # Create a ListObject containing an ObjectList
+        obj = TestObjectList(objects=TestObjectList())
+
+        dict_ = obj.to_dict()
+        expected = {'objects': []}
+        self.assertEqual(dict_, expected)
+
+    def test_to_list(self):
+        # Create a few objects
+        obj_one = TestObject(id="One")
+        obj_three = TestObject(id="Three")
+
+        # Create a ListObject
+        obj = TestObjectList(objects=[obj_one, obj_three])
+
+        li = obj.to_list()
+        self .assertEqual(li, [{'id': 'One'}, {'id': 'Three'}])
