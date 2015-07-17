@@ -31,9 +31,24 @@ class ApiV2LimitsTest(ApiV2TestCase):
                       response.json)
         self.assertIn('max_recordset_records',
                       response.json)
+        self.assertIn('min_ttl', response.json)
+        self.assertIn('max_zone_name_length',
+                      response.json)
+        self.assertIn('max_recordset_name_length',
+                      response.json)
+        self.assertIn('max_page_limit',
+                      response.json)
 
         absolutelimits = response.json
 
         self.assertEqual(cfg.CONF.quota_domains, absolutelimits['max_zones'])
         self.assertEqual(cfg.CONF.quota_domain_records,
                          absolutelimits['max_zone_recordsets'])
+        self.assertEqual(cfg.CONF['service:central'].min_ttl,
+                         absolutelimits['min_ttl'])
+        self.assertEqual(cfg.CONF['service:central'].max_domain_name_len,
+                         absolutelimits['max_zone_name_length'])
+        self.assertEqual(cfg.CONF['service:central'].max_recordset_name_len,
+                         absolutelimits['max_recordset_name_length'])
+        self.assertEqual(cfg.CONF['service:api'].max_limit_v2,
+                         absolutelimits['max_page_limit'])
