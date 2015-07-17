@@ -90,6 +90,46 @@ class ApiV2PoolsTest(ApiV2TestCase):
         self._assert_exception(
             'invalid_object', 400, self.client.post_json, '/pools', body)
 
+    def test_create_pool_name_missing(self):
+        fixture = self.get_pool_fixture(fixture=0)
+        fixture['attributes'] = self.get_pool_attribute_fixture(fixture=0)
+        del fixture['name']
+        body = fixture
+        self._assert_exception(
+            'invalid_object', 400, self.client.post_json, '/pools', body)
+
+    def test_create_pool_name_too_long(self):
+        fixture = self.get_pool_fixture(fixture=0)
+        fixture['attributes'] = self.get_pool_attribute_fixture(fixture=0)
+        fixture['name'] = 'x' * 51
+        body = fixture
+        self._assert_exception(
+            'invalid_object', 400, self.client.post_json, '/pools', body)
+
+    def test_create_pool_description_too_long(self):
+        fixture = self.get_pool_fixture(fixture=0)
+        fixture['attributes'] = self.get_pool_attribute_fixture(fixture=0)
+        fixture['description'] = 'x' * 161
+        body = fixture
+        self._assert_exception(
+            'invalid_object', 400, self.client.post_json, '/pools', body)
+
+    def test_create_pool_provisioner_too_long(self):
+        fixture = self.get_pool_fixture(fixture=0)
+        fixture['attributes'] = self.get_pool_attribute_fixture(fixture=0)
+        fixture['provisioner'] = 'x' * 161
+        body = fixture
+        self._assert_exception(
+            'invalid_object', 400, self.client.post_json, '/pools', body)
+
+    def test_create_pool_tenant_id_too_long(self):
+        fixture = self.get_pool_fixture(fixture=0)
+        fixture['attributes'] = self.get_pool_attribute_fixture(fixture=0)
+        fixture['tenant_id'] = 'x' * 37
+        body = fixture
+        self._assert_exception(
+            'invalid_object', 400, self.client.post_json, '/pools', body)
+
     def test_create_pool_duplicate(self):
         # Prepare a Pool fixture
         fixture = self.get_pool_fixture(fixture=0)
@@ -252,6 +292,30 @@ class ApiV2PoolsTest(ApiV2TestCase):
         self.assertEqual(1, len(response.json['attributes']))
         self.assertEqual('private',
                          response.json['attributes']['scope'])
+
+    def test_update_pool_name_too_long(self):
+        pool = self.create_pool()
+        body = {"attributes": {"scope": "private"}}
+        body['name'] = 'x' * 51
+        url = '/pools/%s' % pool['id']
+        self._assert_exception(
+            'invalid_object', 400, self.client.patch_json, url, body)
+
+    def test_update_pool_description_too_long(self):
+        pool = self.create_pool()
+        body = {"attributes": {"scope": "private"}}
+        body['description'] = 'x' * 161
+        url = '/pools/%s' % pool['id']
+        self._assert_exception(
+            'invalid_object', 400, self.client.patch_json, url, body)
+
+    def test_update_pool_provisioner_too_long(self):
+        pool = self.create_pool()
+        body = {"attributes": {"scope": "private"}}
+        body['provisioner'] = 'x' * 161
+        url = '/pools/%s' % pool['id']
+        self._assert_exception(
+            'invalid_object', 400, self.client.patch_json, url, body)
 
     def test_delete_pool(self):
         pool = self.create_pool()
