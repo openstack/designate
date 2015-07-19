@@ -39,7 +39,15 @@ class PeriodicTask(plugin.ExtensionPlugin):
 
     @classmethod
     def get_base_opts(cls):
-        return [cfg.IntOpt('interval', default=cls.__interval__)]
+        options = [
+            cfg.IntOpt('interval', default=cls.__interval__),
+            cfg.IntOpt('per_page', default=100),
+        ]
+        return options
+
+    @property
+    def central_api(self):
+        return rpcapi.CentralAPI.get_instance()
 
     def on_partition_change(self, my_partitions, members, event):
         self.my_partitions = my_partitions
@@ -49,6 +57,25 @@ class PeriodicTask(plugin.ExtensionPlugin):
 
     def _filter_between(self, col):
         return {col: "BETWEEN %s,%s" % self._my_range()}
+
+    def _iter(self, method, *args, **kwargs):
+        kwargs.setdefault("limit", self.options.per_page)
+        while True:
+            items = method(*args, **kwargs)
+
+            # Stop fetching if there's no more items
+            if len(items) == 0:
+                raise StopIteration
+            else:
+                kwargs["marker"] = items[-1].id
+
+            for i in items:
+                yield i
+
+    def _iter_zones(self, ctxt, criterion=None):
+        criterion = criterion or {}
+        criterion.update(self._filter_between('shard'))
+        return self._iter(self.central_api.find_domains, ctxt, criterion)
 
 
 class PeriodicExistsTask(PeriodicTask):
@@ -62,14 +89,8 @@ class PeriodicExistsTask(PeriodicTask):
     @classmethod
     def get_cfg_opts(cls):
         group = cfg.OptGroup(cls.get_canonical_name())
-        options = cls.get_base_opts() + [
-            cfg.IntOpt('per_page', default=100)
-        ]
+        options = cls.get_base_opts()
         return [(group, options)]
-
-    @property
-    def central_api(self):
-        return rpcapi.CentralAPI.get_instance()
 
     @staticmethod
     def _get_period(seconds):
@@ -84,7 +105,6 @@ class PeriodicExistsTask(PeriodicTask):
 
         ctxt = context.DesignateContext.get_admin_context()
         ctxt.all_tenants = True
-        criterion = self._filter_between('shard')
 
         start, end = self._get_period(self.options.interval)
 
@@ -93,19 +113,9 @@ class PeriodicExistsTask(PeriodicTask):
             "audit_period_ending": str(end)
         }
 
-        marker = None
-        while True:
-            zones = self.central_api.find_domains(ctxt, criterion,
-                                                  marker=marker,
-                                                  limit=self.options.per_page)
-            if len(zones) == 0:
-                LOG.info(_LI("Finished emitting events."))
-                break
-            else:
-                marker = zones.objects[-1].id
+        for zone in self._iter_zones(ctxt):
+            zone_data = dict(zone)
+            zone_data.update(data)
 
-            for zone in zones:
-                zone_data = dict(zone)
-                zone_data.update(data)
-
-                self.notifier.info(ctxt, 'dns.domain.exists', zone_data)
+            self.notifier.info(ctxt, 'dns.domain.exists', zone_data)
+        LOG.info(_LI("Finished emitting events."))
