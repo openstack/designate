@@ -264,12 +264,13 @@ class DesignateObject(object):
 
         for field in six.iterkeys(self.FIELDS):
             if self.obj_attr_is_set(field):
-                if isinstance(getattr(self, field), ListObjectMixin):
-                    data[field] = getattr(self, field).to_list()
-                elif isinstance(getattr(self, field), DesignateObject):
-                    data[field] = getattr(self, field).to_dict()
+                val = getattr(self, field)
+                if isinstance(val, ListObjectMixin):
+                    data[field] = val.to_list()
+                elif isinstance(val, DesignateObject):
+                    data[field] = val.to_dict()
                 else:
-                    data[field] = getattr(self, field)
+                    data[field] = val
 
         return data
 
