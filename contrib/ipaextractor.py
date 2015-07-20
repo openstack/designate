@@ -79,7 +79,7 @@ class CannotUseIPABackend(Exception):
 
 # create mapping of ipa record types to designate types
 iparectype2designate = {}
-for rectype, tup in impl_ipa.rectype2iparectype.iteritems():
+for rectype, tup in list(impl_ipa.rectype2iparectype.items()):
     iparectype = tup[0]
     iparectype2designate[iparectype] = rectype
 
@@ -195,7 +195,7 @@ def syncipaservers2des(servers, designatereq, designateurl):
                                      (server, pprint.pformat(resp.json())))
 
     # next - delete servers in designate not in ipa
-    for server, sid in dservers.iteritems():
+    for server, sid in list(dservers.items()):
         if server not in servers:
             delresp = designatereq.delete(srvurl + "/" + sid)
             if delresp.status_code == 200:
@@ -252,7 +252,7 @@ def main():
                 zrec['idnszoneactive'][0] == 'TRUE':
             # ipa returns every data field as a list
             # convert the list to a scalar
-            for n, v in zrec.iteritems():
+            for n, v in list(zrec.items()):
                 if n in zoneskips:
                     continue
                 if isinstance(v, list):
@@ -345,7 +345,7 @@ def main():
         zonerecs[desreq['name']] = resp.json()['id']
 
     # get the records for each zone
-    for zonename, domainid in zonerecs.iteritems():
+    for zonename, domainid in list(zonerecs.items()):
         recurl = designateurl + "/domains/" + domainid + "/records"
         iparecs = getiparecords(ipabackend, zonename, version)
         for rec in iparecs:
