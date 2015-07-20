@@ -72,7 +72,7 @@ def retry(cb=None, retries=50, delay=150):
     """A retry decorator that ignores attempts at creating nested retries"""
     def outer(f):
         @functools.wraps(f)
-        def wrapper(self, *args, **kwargs):
+        def retry_wrapper(self, *args, **kwargs):
             if not hasattr(RETRY_STATE, 'held'):
                 # Create the state vars if necessary
                 RETRY_STATE.held = False
@@ -109,7 +109,9 @@ def retry(cb=None, retries=50, delay=150):
                 result = f(self, *copy.deepcopy(args), **copy.deepcopy(kwargs))
 
             return result
-        return wrapper
+        retry_wrapper.__wrapped_function = f
+        retry_wrapper.__wrapper_name = 'retry'
+        return retry_wrapper
     return outer
 
 
@@ -117,7 +119,7 @@ def retry(cb=None, retries=50, delay=150):
 def transaction(f):
     @retry(cb=_retry_on_deadlock)
     @functools.wraps(f)
-    def wrapper(self, *args, **kwargs):
+    def transaction_wrapper(self, *args, **kwargs):
         self.storage.begin()
         try:
             result = f(self, *args, **kwargs)
@@ -127,7 +129,9 @@ def transaction(f):
             with excutils.save_and_reraise_exception():
                 self.storage.rollback()
 
-    return wrapper
+    transaction_wrapper.__wrapped_function = f
+    transaction_wrapper.__wrapper_name = 'transaction'
+    return transaction_wrapper
 
 
 def synchronized_domain(domain_arg=1, new_domain=False):
@@ -138,7 +142,7 @@ def synchronized_domain(domain_arg=1, new_domain=False):
     """
     def outer(f):
         @functools.wraps(f)
-        def wrapper(self, *args, **kwargs):
+        def sync_wrapper(self, *args, **kwargs):
             if not hasattr(DOMAIN_LOCKS, 'held'):
                 # Create the held set if necessary
                 DOMAIN_LOCKS.held = set()
@@ -201,14 +205,17 @@ def synchronized_domain(domain_arg=1, new_domain=False):
                     DOMAIN_LOCKS.held.remove(domain_id)
                     return result
 
-        return wrapper
+        sync_wrapper.__wrapped_function = f
+        sync_wrapper.__wrapper_name = 'synchronized_domain'
+        return sync_wrapper
+
     return outer
 
 
 def notification(notification_type):
     def outer(f):
         @functools.wraps(f)
-        def wrapper(self, *args, **kwargs):
+        def notification_wrapper(self, *args, **kwargs):
             if not hasattr(NOTIFICATION_BUFFER, 'queue'):
                 # Create the notifications queue if necessary
                 NOTIFICATION_BUFFER.stack = 0
@@ -247,7 +254,7 @@ def notification(notification_type):
                     # Reset the queue
                     NOTIFICATION_BUFFER.queue.clear()
 
-        return wrapper
+        return notification_wrapper
     return outer
 
 
