@@ -18,7 +18,6 @@ import unittest
 
 from oslo_log import log as logging
 from testtools import ExpectedException as raises  # with raises(...): ...
-import mock
 import oslotest.base
 
 from designate import exceptions
@@ -42,47 +41,37 @@ class DomainTest(oslotest.base.BaseTestCase):
 
     def test_masters_none(self):
         domain = objects.Domain()
-        self.assertEqual(domain.masters, None)
+        with raises(exceptions.RelationNotLoaded):
+            self.assertEqual(domain.masters, None)
 
     def test_masters(self):
         domain = objects.Domain(
-            attributes=objects.DomainAttributeList.from_list([
-                objects.DomainAttribute(key='master', value='1.0.0.0')
+            masters=objects.DomainMasterList.from_list([
+                {'host': '1.0.0.0', 'port': 53}
             ])
         )
-        self.assertEqual(domain.masters, ['1.0.0.0'])
+        self.assertEqual(
+            domain.masters.to_list(), [{'host': '1.0.0.0', 'port': 53}])
 
     def test_masters_2(self):
         domain = objects.Domain(
-            attributes=objects.DomainAttributeList.from_list([
-                objects.DomainAttribute(key='master', value='1.0.0.0'),
-                objects.DomainAttribute(key='master', value='2.0.0.0')
+            masters=objects.DomainMasterList.from_list([
+                {'host': '1.0.0.0'},
+                {'host': '2.0.0.0'}
             ])
         )
         self.assertEqual(len(domain.masters), 2)
 
-    def test_set_masters_none(self):
-        domain = create_test_domain()
-        domain.set_masters(('1.0.0.0', '2.0.0.0'))
-        self.assertEqual(len(domain.attributes), 2)
-
     def test_get_master_by_ip(self):
         domain = objects.Domain(
-            attributes=objects.DomainAttributeList.from_list([
-                objects.DomainAttribute(key='master', value='1.0.0.0'),
-                objects.DomainAttribute(key='master', value='2.0.0.0')
+            masters=objects.DomainMasterList.from_list([
+                {'host': '1.0.0.0', 'port': 53},
+                {'host': '2.0.0.0', 'port': 53}
             ])
         )
+        m = domain.get_master_by_ip('2.0.0.0').to_data()
 
-        def mock_split(v):
-            assert ':' not in v
-            return v, ''
-
-        with mock.patch('designate.objects.domain.utils.split_host_port',
-                        side_effect=mock_split):
-            m = domain.get_master_by_ip('2.0.0.0')
-
-        self.assertEqual(m, '2.0.0.0')
+        self.assertEqual(m, '2.0.0.0:53')
 
     @unittest.expectedFailure  # bug: domain.masters is not iterable
     def test_get_master_by_ip_none(self):

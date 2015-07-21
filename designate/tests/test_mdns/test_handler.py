@@ -121,13 +121,16 @@ class MdnsRequestHandlerTest(MdnsTestCase):
 
         self.assertEqual(expected_response, binascii.b2a_hex(response))
 
-    def _get_secondary_domain(self, values=None, attributes=None):
+    def _get_secondary_domain(self, values=None, attributes=None,
+                              masters=None):
         attributes = attributes or []
+        masters = masters or [{"host": "10.0.0.1", "port": 53}]
         fixture = self.get_domain_fixture("SECONDARY", values=values)
         fixture['email'] = cfg.CONF['service:central'].managed_resource_email
 
         domain = objects.Domain(**fixture)
-        domain.attributes = objects.DomainAttributeList()
+        domain.attributes = objects.DomainAttributeList().from_list(attributes)
+        domain.masters = objects.DomainMasterList().from_list(masters)
         return domain
 
     def _get_soa_answer(self, serial):
@@ -145,8 +148,6 @@ class MdnsRequestHandlerTest(MdnsTestCase):
 
         master = "10.0.0.1"
         domain = self._get_secondary_domain({"serial": 123})
-        domain.attributes.append(objects.DomainAttribute(
-            **{"key": "master", "value": master}))
 
         # expected response is an error code NOERROR.  The other fields are
         # id 50048
@@ -176,7 +177,8 @@ class MdnsRequestHandlerTest(MdnsTestCase):
             response = next(self.handler(request)).to_wire()
 
         self.mock_tg.add_thread.assert_called_with(
-            self.handler.domain_sync, self.context, domain, [master])
+            self.handler.domain_sync, self.context, domain,
+            [domain.masters[0]])
         self.assertEqual(expected_response, binascii.b2a_hex(response))
 
     @mock.patch.object(dns.resolver.Resolver, 'query')
@@ -186,8 +188,6 @@ class MdnsRequestHandlerTest(MdnsTestCase):
 
         master = "10.0.0.1"
         domain = self._get_secondary_domain({"serial": 123})
-        domain.attributes.append(objects.DomainAttribute(
-            **{"key": "master", "value": master}))
 
         # expected response is an error code NOERROR.  The other fields are
         # id 50048
@@ -226,10 +226,8 @@ class MdnsRequestHandlerTest(MdnsTestCase):
         # Have a domain with different master then the one where the notify
         # comes from causing it to be "ignored" as in not transferred and
         # logged
-        master = "10.0.0.1"
+
         domain = self._get_secondary_domain({"serial": 123})
-        domain.attributes.append(objects.DomainAttribute(
-            **{"key": "master", "value": master}))
 
         # expected response is an error code REFUSED.  The other fields are
         # id 50048
