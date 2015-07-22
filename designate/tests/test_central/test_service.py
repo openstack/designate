@@ -566,7 +566,7 @@ class CentralServiceTest(CentralTestCase):
         values['name'] = 'www.%s' % parent_domain['name']
 
         # Attempt to create the subdomain
-        with testtools.ExpectedException(exceptions.Forbidden):
+        with testtools.ExpectedException(exceptions.IllegalChildDomain):
             self.central_service.create_domain(
                 context, objects.Domain.from_dict(values))
 
@@ -593,7 +593,7 @@ class CentralServiceTest(CentralTestCase):
         context.tenant = '2'
 
         # Attempt to create the domain
-        with testtools.ExpectedException(exceptions.Forbidden):
+        with testtools.ExpectedException(exceptions.IllegalParentDomain):
             self.central_service.create_domain(
                 context, objects.Domain.from_dict(domain_values))
 

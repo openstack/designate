@@ -199,6 +199,14 @@ class Forbidden(Base):
     expected = True
 
 
+class IllegalChildDomain(Forbidden):
+    error_type = 'illegal_child'
+
+
+class IllegalParentDomain(Forbidden):
+    error_type = 'illegal_parent'
+
+
 class IncorrectZoneTransferKey(Forbidden):
     error_type = 'invalid_key'
 
