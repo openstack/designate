@@ -21,6 +21,7 @@ from designate.objects import base as obj_base
 LOG = logging.getLogger(__name__)
 
 cfg.CONF.import_opt('api_base_uri', 'designate.api', group='service:api')
+cfg.CONF.import_opt('enable_host_header', 'designate.api', group='service:api')
 
 
 class APIv2Adapter(base.DesignateAdapter):
@@ -77,8 +78,16 @@ class APIv2Adapter(base.DesignateAdapter):
 
     @classmethod
     def _get_resource_links(cls, object, request):
+        if cfg.CONF['service:api'].enable_host_header:
+            try:
+                base_uri = request.host_url
+            except Exception:
+                base_uri = cls.BASE_URI
+        else:
+            base_uri = cls.BASE_URI
+
         return {'self': '%s%s/%s' %
-                (cls.BASE_URI, cls._get_path(request), object.id)}
+                (base_uri, cls._get_path(request), object.id)}
 
     @classmethod
     def _get_path(cls, request):
@@ -119,8 +128,16 @@ class APIv2Adapter(base.DesignateAdapter):
         if extra_params is not None:
             params.update(extra_params)
 
+        if cfg.CONF['service:api'].enable_host_header:
+            try:
+                base_uri = request.host_url
+            except Exception:
+                base_uri = cls.BASE_URI
+        else:
+            base_uri = cls.BASE_URI
+
         href = "%s%s?%s" % (
-            cls.BASE_URI,
+            base_uri,
             cls._get_path(request),
             parse.urlencode(params))
 

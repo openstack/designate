@@ -25,6 +25,8 @@ cfg.CONF.register_opts([
                help='Number of api worker processes to spawn'),
     cfg.IntOpt('threads', default=1000,
                help='Number of api greenthreads to spawn'),
+    cfg.BoolOpt('enable-host-header', default=False,
+               help='Enable host request headers'),
     cfg.StrOpt('api-base-uri', default='http://127.0.0.1:9001/'),
     cfg.StrOpt('api_host', default='0.0.0.0',
                help='API Host'),

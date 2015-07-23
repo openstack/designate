@@ -84,6 +84,9 @@ debug = False
 # Number of api greenthreads to spawn
 #threads = 1000
 
+# Enable host request headers
+#enable_host_header = False
+
 # The base uri used in responses
 #api_base_uri = 'http://127.0.0.1:9001/'
 
