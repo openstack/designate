@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: designate 1.0.0.0b2.dev89\n"
+"Project-Id-Version: designate 1.0.0.0b2.dev172\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-07-09 06:13+0000\n"
+"POT-Creation-Date: 2015-07-27 06:06+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,29 +17,35 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
 
-#: designate/coordination.py:62
+#: designate/coordination.py:75
 msgid ""
 "No coordination backend configured, distributed coordination "
 "functionality will be disabled. Please configure a coordination backend."
 msgstr ""
 
-#: designate/coordination.py:127
+#: designate/coordination.py:130
 msgid ""
-"No coordination backend configure, assuming we are the only worker. "
+"No coordination backend configured, assuming we are the only worker. "
 "Please configure a coordination backend"
 msgstr ""
 
-#: designate/service.py:301 designate/service.py:342
+#: designate/coordination.py:218
+msgid ""
+"No coordination backend configured, assuming we are the leader. Please "
+"configure a coordination backend"
+msgstr ""
+
+#: designate/service.py:309 designate/service.py:350
 #, python-format
 msgid "Socket error %(err)s from: %(host)s:%(port)d"
 msgstr ""
 
-#: designate/service.py:306
+#: designate/service.py:314
 #, python-format
 msgid "TCP Timeout from: %(host)s:%(port)d"
 msgstr ""
 
-#: designate/service.py:311
+#: designate/service.py:319
 #, python-format
 msgid "Invalid packet from: %(host)s:%(port)d"
 msgstr ""
@@ -115,7 +121,7 @@ msgstr ""
 msgid "Managed Resource Tenant ID is not properly configured"
 msgstr ""
 
-#: designate/central/service.py:1012
+#: designate/central/service.py:1013
 #, python-format
 msgid "Abandoning zone '%(zone)s'"
 msgstr ""
@@ -139,12 +145,12 @@ msgstr ""
 msgid "MDNS max message size must not be greater than 65535"
 msgstr ""
 
-#: designate/mdns/handler.py:392
+#: designate/mdns/handler.py:382
 #, python-format
 msgid "DomainNotFound while handling query request. Question was %(qr)s"
 msgstr ""
 
-#: designate/mdns/handler.py:399
+#: designate/mdns/handler.py:389
 #, python-format
 msgid "Forbidden while handling query request. Question was %(qr)s"
 msgstr ""
@@ -176,22 +182,22 @@ msgid ""
 " please update the call to remove managed=False"
 msgstr ""
 
-#: designate/pool_manager/service.py:254
+#: designate/pool_manager/service.py:262
 #, python-format
 msgid "Consensus not reached for creating domain %(domain)s on pool targets"
 msgstr ""
 
-#: designate/pool_manager/service.py:315
+#: designate/pool_manager/service.py:323
 #, python-format
 msgid "Consensus not reached for updating domain %(domain)s on pool targets"
 msgstr ""
 
-#: designate/pool_manager/service.py:410
+#: designate/pool_manager/service.py:418
 #, python-format
 msgid "Consensus not reached for deleting domain %(domain)s on pool targets"
 msgstr ""
 
-#: designate/pool_manager/service.py:495
+#: designate/pool_manager/service.py:503
 #, python-format
 msgid "For domain %(domain)s the error serial is %(error_serial)s."
 msgstr ""
