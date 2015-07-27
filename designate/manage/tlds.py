@@ -19,6 +19,7 @@ from oslo_config import cfg
 from oslo_log import log as logging
 
 from designate import exceptions
+from designate import objects
 from designate import rpc
 from designate.central import rpcapi as central_rpcapi
 from designate.i18n import _LI
@@ -33,7 +34,7 @@ LOG = logging.getLogger(__name__)
 class TLDCommands(base.Commands):
     """
     Import TLDs to Designate.  The format of the command is:
-    designate-manage import-tlds --input-file="<complete path to input file>"
+    designate-manage tlds import --input_file="<complete path to input file>"
     [--delimiter="delimiter character"]
     The TLDs need to be provided in a csv file.  Each line in
     this file contains a TLD entry followed by an optional description.
@@ -92,7 +93,8 @@ class TLDCommands(base.Commands):
             return 0
         else:
             try:
-                self.central_api.create_tld(self.context, values=line)
+                self.central_api.create_tld(self.context,
+                                            tld=objects.Tld.from_dict(line))
                 return 1
             except exceptions.DuplicateTld:
                 error_lines.append("DuplicateTld --> " +
