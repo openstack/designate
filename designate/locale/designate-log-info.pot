@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: designate 1.0.0.0b2.dev89\n"
+"Project-Id-Version: designate 1.0.0.0b2.dev172\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-07-09 06:13+0000\n"
+"POT-Creation-Date: 2015-07-27 06:06+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -22,17 +22,37 @@ msgstr ""
 msgid "Accepted sudo from user %(user)s to tenant %(tenant)s"
 msgstr ""
 
-#: designate/dnsutils.py:247
+#: designate/coordination.py:225
+#, python-format
+msgid "Starting leader election for group %(group)s"
+msgstr ""
+
+#: designate/coordination.py:242
+#, python-format
+msgid "Stopping leader election for group %(group)s"
+msgstr ""
+
+#: designate/coordination.py:258 designate/coordination.py:264
+#, python-format
+msgid "Standing down as leader candidate for group %(group)s"
+msgstr ""
+
+#: designate/coordination.py:273
+#, python-format
+msgid "Sucessfully elected as leader of group %(group)s"
+msgstr ""
+
+#: designate/dnsutils.py:255
 #, python-format
 msgid "Opening TCP Listening Socket on %(host)s:%(port)d"
 msgstr ""
 
-#: designate/dnsutils.py:268
+#: designate/dnsutils.py:276
 #, python-format
 msgid "Opening UDP Listening Socket on %(host)s:%(port)d"
 msgstr ""
 
-#: designate/dnsutils.py:313
+#: designate/dnsutils.py:321
 #, python-format
 msgid "Doing AXFR for %(name)s from %(host)s"
 msgstr ""
@@ -42,11 +62,11 @@ msgstr ""
 msgid "Using policy_file found at: %s"
 msgstr ""
 
-#: designate/service.py:272
+#: designate/service.py:280
 msgid "_handle_tcp thread started"
 msgstr ""
 
-#: designate/service.py:326
+#: designate/service.py:334
 msgid "_handle_udp thread started"
 msgstr ""
 
@@ -507,12 +527,12 @@ msgstr ""
 msgid "NOT checking for TLDs"
 msgstr ""
 
-#: designate/central/service.py:1856
+#: designate/central/service.py:1857
 #, python-format
 msgid "Creating zone for %(fip_id)s:%(region)s - %(fip_addr)s zone %(zonename)s"
 msgstr ""
 
-#: designate/central/service.py:2295
+#: designate/central/service.py:2296
 msgid "Target Tenant ID found - using scoped policy"
 msgstr ""
 
@@ -608,55 +628,55 @@ msgid ""
 "%(status)s : %(serial)s on nameserver '%(host)s:%(port)s'"
 msgstr ""
 
-#: designate/pool_manager/service.py:105
+#: designate/pool_manager/service.py:107
 #, python-format
 msgid "%d targets setup"
 msgstr ""
 
-#: designate/pool_manager/service.py:120
+#: designate/pool_manager/service.py:122
 #, python-format
 msgid "Using topic %(topic)s for this pool manager instance."
 msgstr ""
 
-#: designate/pool_manager/service.py:132
+#: designate/pool_manager/service.py:140
 msgid "Starting periodic recovery timer"
 msgstr ""
 
-#: designate/pool_manager/service.py:139
+#: designate/pool_manager/service.py:147
 msgid "Starting periodic synchronization timer"
 msgstr ""
 
-#: designate/pool_manager/service.py:239
+#: designate/pool_manager/service.py:247
 #, python-format
 msgid "Creating new domain %s"
 msgstr ""
 
-#: designate/pool_manager/service.py:301
+#: designate/pool_manager/service.py:309
 #, python-format
 msgid "Updating domain %s"
 msgstr ""
 
-#: designate/pool_manager/service.py:362
+#: designate/pool_manager/service.py:370
 #, python-format
 msgid "Updating domain %(domain)s on also_notify %(server)s."
 msgstr ""
 
-#: designate/pool_manager/service.py:371
+#: designate/pool_manager/service.py:379
 #, python-format
 msgid "Updating domain %(domain)s on nameserver %(server)s."
 msgstr ""
 
-#: designate/pool_manager/service.py:388
+#: designate/pool_manager/service.py:396
 #, python-format
 msgid "Deleting domain %s"
 msgstr ""
 
-#: designate/pool_manager/service.py:484
+#: designate/pool_manager/service.py:492
 #, python-format
 msgid "For domain %(domain)s the consensus serial is %(consensus_serial)s."
 msgstr ""
 
-#: designate/zone_manager/service.py:40
+#: designate/zone_manager/service.py:60
 #, python-format
 msgid "Received rebalance event %s"
 msgstr ""
