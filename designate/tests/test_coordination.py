@@ -206,7 +206,7 @@ class TestLeaderElection(TestCase):
         super(TestLeaderElection, self).setUp()
 
         self.coord_fixture = self.useFixture(fixtures.CoordinatorFixture(
-            'zake://', 'InsertNameHere'))
+            'zake://', b'InsertNameHere'))
 
         self.election = coordination.LeaderElection(
             self.coordinator, 'President')
