@@ -17,6 +17,8 @@ import six
 
 from designate import objects
 from designate import exceptions
+from designate.i18n import _LE
+from designate.i18n import _LI
 
 LOG = logging.getLogger(__name__)
 
@@ -139,18 +141,57 @@ class DesignateAdapter(object):
     @classmethod
     def parse(cls, format_, values, output_object, *args, **kwargs):
 
-        if isinstance(output_object, objects.ListObjectMixin):
-            # type_ = 'list'
-            return cls.get_object_adapter(
-                format_,
-                output_object)._parse_list(
-                    values, output_object, *args, **kwargs)
-        else:
-            # type_ = 'object'
-            return cls.get_object_adapter(
-                format_,
-                output_object)._parse_object(
-                    values, output_object, *args, **kwargs)
+        LOG.debug("Creating %s object with values %r" %
+                  (output_object.obj_name(), values))
+
+        try:
+            if isinstance(output_object, objects.ListObjectMixin):
+                # type_ = 'list'
+                return cls.get_object_adapter(
+                    format_,
+                    output_object)._parse_list(
+                        values, output_object, *args, **kwargs)
+            else:
+                # type_ = 'object'
+                return cls.get_object_adapter(
+                    format_,
+                    output_object)._parse_object(
+                        values, output_object, *args, **kwargs)
+
+        except TypeError as e:
+            LOG.exception(_LE("TypeError creating %(name)s with values"
+                              " %(values)r") %
+                          {"name": output_object.obj_name(), "values": values})
+
+            error_message = str.format(
+                'Provided object does not match schema. '
+                'Got a TypeError with message %s' % six.text_type(e))
+            raise exceptions.InvalidObject(error_message)
+
+        except AttributeError as e:
+            LOG.exception(_LE("AttributeError creating %(name)s "
+                              "with values %(values)r") %
+                          {"name": output_object.obj_name(), "values": values})
+            error_message = str.format(
+                'Provided object is not valid. '
+                'Got an AttributeError with message %s' % six.text_type(e))
+            raise exceptions.InvalidObject(error_message)
+
+        except exceptions.InvalidObject:
+            LOG.info(_LI("InvalidObject creating %(name)s with "
+                         "values %(values)r") %
+                     {"name": output_object.obj_name(), "values": values})
+            raise
+
+        except Exception as e:
+            LOG.exception(_LE("Exception creating %(name)s with "
+                              "values %(values)r") %
+                          {"name": output_object.obj_name(), "values": values})
+            error_message = str.format(
+                'Provided object is not valid. '
+                'Got a %s error with message %s' %
+                (type(e).__name__, six.text_type(e)))
+            raise exceptions.InvalidObject(error_message)
 
     @classmethod
     def _parse_object(cls, values, output_object, *args, **kwargs):
