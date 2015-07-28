@@ -38,7 +38,7 @@ Create Server
 
       {
         "id": "384a9b20-239c-11e2-81c1-0800200c9a66",
-        "name": "ns1.example.org."
+        "name": "ns1.example.org.",
         "created_at": "2011-01-21T11:33:21Z",
         "updated_at": null
       }
@@ -116,8 +116,8 @@ Update Server
       Content-Type: application/json
 
       {
-        "id": "879c1100-9c92-4244-bc83-9535ee6534d0"t
-        "name": "ns1.example.org."
+        "id": "879c1100-9c92-4244-bc83-9535ee6534d0",
+        "name": "ns1.example.org.",
         "created_at": "2012-11-02T02:55:44.000000",
         "updated_at": "2012-11-02T02:58:41.993556"
       }
@@ -157,13 +157,13 @@ List Servers
       [
         {
           "id": "384a9b20-239c-11e2-81c1-0800200c9a66",
-          "name": "ns1.example.org."
+          "name": "ns1.example.org.",
           "created_at": "2011-01-21T11:33:21Z",
           "updated_at": null
         },
         {
           "id": "cf661142-e577-40b5-b3eb-75795cdc0cd7",
-          "name": "ns2.example.org."
+          "name": "ns2.example.org.",
           "created_at": "2011-01-21T11:33:21Z",
           "updated_at": "2011-01-21T11:33:21Z"
         }
