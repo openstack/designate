@@ -1063,15 +1063,16 @@ class CentralServiceTest(CentralTestCase):
         self.assertIsNotNone(recordset.records[1].id)
         self.assertThat(new_serial, GreaterThan(original_serial))
 
-    # def test_create_recordset_over_quota(self):
-    #     self.config(quota_domain_recordsets=1)
+    def test_create_recordset_over_quota(self):
+        # SOA, NS recordsets exist by default.
+        self.config(quota_domain_recordsets=3)
 
-    #     domain = self.create_domain()
+        domain = self.create_domain()
 
-    #     self.create_recordset(domain)
+        self.create_recordset(domain)
 
-    #     with testtools.ExpectedException(exceptions.OverQuota):
-    #         self.create_recordset(domain)
+        with testtools.ExpectedException(exceptions.OverQuota):
+            self.create_recordset(domain)
 
     def test_create_invalid_recordset_location_cname_at_apex(self):
         domain = self.create_domain()
@@ -1595,8 +1596,21 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(record['data'], values['data'])
         self.assertIn('status', record)
 
-    def test_create_record_over_quota(self):
+    def test_create_record_over_domain_quota(self):
+        # SOA and NS Records exist
         self.config(quota_domain_records=3)
+
+        # Creating the domain automatically creates SOA & NS records
+        domain = self.create_domain()
+        recordset = self.create_recordset(domain)
+
+        self.create_record(domain, recordset)
+
+        with testtools.ExpectedException(exceptions.OverQuota):
+            self.create_record(domain, recordset)
+
+    def test_create_record_over_recordset_quota(self):
+        self.config(quota_recordset_records=1)
 
         # Creating the domain automatically creates SOA & NS records
         domain = self.create_domain()
