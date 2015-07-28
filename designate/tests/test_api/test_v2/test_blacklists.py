@@ -161,3 +161,8 @@ class ApiV2BlacklistsTest(ApiV2TestCase):
 
             # Check that the correct number of recordsets match
             self.assertEqual(correct_result, len(response.json['blacklists']))
+
+    def test_invalid_blacklist_filter(self):
+        url = '/blacklists?description=test'
+        self.policy({'find_blacklists': '@'})
+        self._assert_exception('bad_request', 400, self.client.get, url)

@@ -702,3 +702,8 @@ class ApiV2ZonesTest(ApiV2TestCase):
 
             # Check that the correct number of zones match
             self.assertEqual(correct_result, len(response.json['zones']))
+
+    def test_invalid_zones_filter(self):
+        invalid_url = '/zones?type=PRIMARY'
+        self._assert_exception(
+            'bad_request', 400, self.client.get, invalid_url)

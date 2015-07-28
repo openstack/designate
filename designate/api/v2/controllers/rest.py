@@ -55,12 +55,17 @@ class RestController(pecan.rest.RestController):
         return central_rpcapi.CentralAPI.get_instance()
 
     def _apply_filter_params(self, params, accepted_filters, criterion):
-
-        for k in accepted_filters:
-            if k in params:
+        invalid=[]
+        for k in params:
+            if k in accepted_filters:
                 criterion[k] = params[k].replace("*", "%")
-
-        return criterion
+            else:
+                invalid.append(k)
+        if invalid:
+            raise exceptions.BadRequest(
+                'Invalid filters %s' % ', '.join(invalid))
+        else:
+            return criterion
 
     def _handle_post(self, method, remainder):
         '''
