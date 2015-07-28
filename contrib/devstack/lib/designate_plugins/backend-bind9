@@ -103,6 +103,7 @@ options {
     auth-nxdomain no;    # conform to RFC1035
     listen-on port $DESIGNATE_SERVICE_PORT_DNS { $DESIGNATE_SERVICE_HOST; };
     recursion no;
+    minimal-responses yes;
 };
 
 controls {
