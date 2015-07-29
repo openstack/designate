@@ -598,7 +598,7 @@ class DictObjectMixinTest(oslotest.base.BaseTestCase):
 
     def test_contains(self):
         obj = TestObjectDict(name=1)
-        self.assertTrue('name' in obj)
+        self.assertIn('name', obj)
 
     def test_get(self):
         obj = TestObjectDict(name=1)
@@ -799,9 +799,9 @@ class ListObjectMixinTest(oslotest.base.BaseTestCase):
         # Create a ListObject
         obj = TestObjectList(objects=[obj_one, obj_two])
 
-        self.assertTrue(obj_one in obj)
-        self.assertTrue(obj_two in obj)
-        self.assertFalse(obj_three in obj)
+        self.assertIn(obj_one, obj)
+        self.assertIn(obj_two, obj)
+        self.assertNotIn(obj_three, obj)
 
     def test_extend(self):
         # Create a few objects
