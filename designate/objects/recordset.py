@@ -92,7 +92,7 @@ class RecordSet(base.DictObjectMixin, base.PersistentObjectMixin,
             'schema': {
                 'type': 'string',
                 'description': 'Zone name',
-                'format': 'domainname',
+                'format': 'hostname',
                 'maxLength': 255,
             },
             'immutable': True,
