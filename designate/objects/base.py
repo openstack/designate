@@ -306,6 +306,13 @@ class DesignateObject(object):
             errors.append(ValidationError.from_js_error(error))
 
         if len(errors) > 0:
+            LOG.debug(
+                "Error Validating '%(name)s' object with values: "
+                "%(values)r", {
+                    'name': self.obj_name(),
+                    'values': values,
+                }
+            )
             raise exceptions.InvalidObject(
                 "Provided object does not match "
                 "schema", errors=errors, object=self)
