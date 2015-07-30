@@ -25,15 +25,18 @@ from functionaltests.common import utils
 class ZoneClient(ClientMixin):
 
     @classmethod
-    def zones_uri(cls):
-        return "/v2/zones"
+    def zones_uri(cls, filters=None):
+        url = "/v2/zones"
+        if filters:
+            url = cls.add_filters(url, filters)
+        return url
 
     @classmethod
     def zone_uri(cls, id):
         return "{0}/{1}".format(cls.zones_uri(), id)
 
-    def list_zones(self, **kwargs):
-        resp, body = self.client.get(self.zones_uri(), **kwargs)
+    def list_zones(self, filters=None, **kwargs):
+        resp, body = self.client.get(self.zones_uri(filters), **kwargs)
         return self.deserialize(resp, body, ZoneListModel)
 
     def get_zone(self, id, **kwargs):

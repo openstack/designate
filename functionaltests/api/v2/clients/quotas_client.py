@@ -21,11 +21,15 @@ from functionaltests.common.client import ClientMixin
 class QuotasClient(ClientMixin):
 
     @classmethod
-    def quotas_uri(cls, tenant_id):
-        return "/admin/quotas/" + tenant_id
+    def quotas_uri(cls, tenant_id, filters=None):
+        url = "/admin/quotas/{0}".format(tenant_id)
+        if filters:
+            url = cls.add_filters(url, filters)
+        return url
 
-    def get_quotas(self, tenant_id, **kwargs):
-        resp, body = self.client.get(self.quotas_uri(tenant_id), **kwargs)
+    def get_quotas(self, tenant_id, filters=None, **kwargs):
+        resp, body = self.client.get(
+            self.quotas_uri(tenant_id, filters), **kwargs)
         return self.deserialize(resp, body, QuotasModel)
 
     def patch_quotas(self, tenant_id, quotas_model, **kwargs):
