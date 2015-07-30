@@ -193,7 +193,7 @@ class ApiV2TldsTest(ApiV2TestCase):
             # Check that the correct number of tlds match
             self.assertEqual(correct_result, len(response.json['tlds']))
 
-    def test_invalid_recordset_filter(self):
+    def test_invalid_tld_filter(self):
         invalid_url = '/tlds?description=test'
         self._assert_exception(
             'bad_request', 400, self.client.get, invalid_url)
