@@ -19,7 +19,6 @@ import copy
 import unittest
 
 from oslo_log import log as logging
-from testtools import ExpectedException as raises  # with raises(...): ...
 import mock
 from oslo_serialization import jsonutils
 import oslotest.base
@@ -188,7 +187,7 @@ class DesignateObjectTest(oslotest.base.BaseTestCase):
         self.assertEqual(set(['id', 'nested_list']), obj.obj_what_changed())
 
     def test_from_list(self):
-        with raises(NotImplementedError):
+        with testtools.ExpectedException(NotImplementedError):
             TestObject.from_list([])
 
     def test_get_schema(self):
@@ -212,7 +211,7 @@ class DesignateObjectTest(oslotest.base.BaseTestCase):
         schema = obj._obj_validator.schema
         self.assertEqual(schema, expected)
 
-        with raises(AttributeError):  # bug
+        with testtools.ExpectedException(AttributeError):  # bug
             schema = obj.obj_get_schema()
 
     @unittest.expectedFailure  # bug
@@ -354,7 +353,7 @@ class DesignateObjectTest(oslotest.base.BaseTestCase):
 
     def test_update_unexpected_attribute(self):
         obj = TestObject(id='MyID', name='test')
-        with raises(AttributeError):
+        with testtools.ExpectedException(AttributeError):
             obj.update({'id': 'new_id', 'new_key': 3})
 
     def test_is_valid(self):
@@ -609,7 +608,7 @@ class DictObjectMixinTest(oslotest.base.BaseTestCase):
     def test_get_missing(self):
         obj = TestObjectDict(name=1)
         self.assertFalse(obj.obj_attr_is_set('foo'))
-        with raises(AttributeError):
+        with testtools.ExpectedException(AttributeError):
             obj.get('foo')
 
     def test_get_default(self):

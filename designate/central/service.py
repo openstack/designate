@@ -260,7 +260,7 @@ def notification(notification_type):
 
 
 class Service(service.RPCService, service.Service):
-    RPC_API_VERSION = '5.4'
+    RPC_API_VERSION = '5.5'
 
     target = messaging.Target(version=RPC_API_VERSION)
 
@@ -1010,6 +1010,12 @@ class Service(service.RPCService, service.Service):
     @notification('dns.domain.delete')
     @synchronized_domain()
     def delete_domain(self, context, domain_id):
+        """Delete or abandon a domain
+        On abandon, delete the domain from the DB immediately.
+        Otherwise, set action to DELETE and status to PENDING and poke
+        Pool Manager's "delete_domain" to update the resolvers. PM will then
+        poke back to set action to NONE and status to DELETED
+        """
         domain = self.storage.get_domain(context, domain_id)
 
         target = {
@@ -1041,6 +1047,9 @@ class Service(service.RPCService, service.Service):
 
     @transaction
     def _delete_domain_in_storage(self, context, domain):
+        """Set domain action to DELETE and status to PENDING
+        to have the domain soft-deleted later on
+        """
 
         domain.action = 'DELETE'
         domain.status = 'PENDING'
@@ -1048,6 +1057,19 @@ class Service(service.RPCService, service.Service):
         domain = self.storage.update_domain(context, domain)
 
         return domain
+
+    def purge_domains(self, context, criterion=None, limit=None):
+        """Purge deleted zones.
+        :returns: number of purged domains
+        """
+        policy.check('purge_domains', context, criterion)
+        if not criterion:
+            raise exceptions.BadRequest("A criterion is required")
+
+        LOG.debug("Performing purge with limit of %r and criterion of %r"
+                  % (limit, criterion))
+
+        return self.storage.purge_domains(context, criterion, limit)
 
     def xfr_domain(self, context, domain_id):
         domain = self.storage.get_domain(context, domain_id)

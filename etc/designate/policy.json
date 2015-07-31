@@ -51,6 +51,7 @@
     "xfr_domain": "rule:admin_or_owner",
     "abandon_domain": "rule:admin",
     "count_domains": "rule:admin_or_owner",
+    "purge_domains": "rule:admin",
     "touch_domain": "rule:admin_or_owner",
 
     "create_recordset": "rule:domain_primary_or_admin",

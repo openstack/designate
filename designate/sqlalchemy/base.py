@@ -225,6 +225,7 @@ class SQLAlchemy(object):
         query = self._apply_criterion(table, query, criterion)
         if apply_tenant_criteria:
             query = self._apply_tenant_criteria(context, table, query)
+
         query = self._apply_deleted_criteria(context, table, query)
 
         # Execute the Query
@@ -491,11 +492,20 @@ class SQLAlchemy(object):
 
         return _set_object_from_model(obj, resultproxy.fetchone())
 
-    def _delete(self, context, table, obj, exc_notfound):
-        if hasattr(table.c, 'deleted'):
-            # Perform a Soft Delete
+    def _delete(self, context, table, obj, exc_notfound, hard_delete=False):
+        """Perform item deletion or soft-delete.
+        """
+
+        if hasattr(table.c, 'deleted') and not hard_delete:
+            # Perform item soft-delete.
+            # Set the "status" column to "DELETED" and populate
+            # the "deleted_at" column
+
             # TODO(kiall): If the object has any changed fields, they will be
             #              persisted here when we don't want that.
+
+            # "deleted" is populated with the object id (rather than being a
+            # boolean) to keep (name, deleted) unique
             obj.deleted = obj.id.replace('-', '')
             obj.deleted_at = timeutils.utcnow()
 

@@ -15,6 +15,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import absolute_import
+
 import shutil
 import tempfile
 
@@ -130,3 +131,14 @@ class NetworkAPIFixture(fixtures.Fixture):
         self.api = network_api.get_network_api(cfg.CONF.network_api)
         self.fake = fake_network_api
         self.addCleanup(self.fake.reset_floatingips)
+
+
+class ZoneManagerTaskFixture(fixtures.Fixture):
+    def __init__(self, task_cls):
+        super(ZoneManagerTaskFixture, self).__init__()
+        self._task_cls = task_cls
+
+    def setUp(self):
+        super(ZoneManagerTaskFixture, self).setUp()
+        self.task = self._task_cls()
+        self.task.on_partition_change(range(0, 4095), None, None)
