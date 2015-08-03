@@ -4,14 +4,14 @@ Production Guidelines
 
 This document aims to provide a location for documented production
 configurations and considerations. Including common misconfigurations, attack
-mitigation techniques, and other relavant tips.
+mitigation techniques, and other relevant tips.
 
 DNS Zone Squatting
 ==================
 
 Designate's multi-tenant nature allows for any user to create (almost) any
 zone, which can result in the legitimate owner being unable to create the zone
-within Designate. There are several ways this can occour:
+within Designate. There are several ways this can occur:
 
 1. The squatter simply creates "example.com." in Designate before the
    legitimate owner can.
