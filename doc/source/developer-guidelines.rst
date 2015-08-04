@@ -20,7 +20,7 @@ IP space will likely trigger search indexers etc to begin crawling.
 Reserved Domains
 ----------------
 
-Reserverd DNS domains are documented here: `IANA Special Use Domain Names`_.
+Reserved DNS domains are documented here: `IANA Special Use Domain Names`_.
 
 Several common reserved domains:
 
@@ -31,7 +31,7 @@ Several common reserved domains:
 Reserved IP Space
 -----------------
 
-Reserverd IP space is documented here: `IANA IPv4 Special Registry`_, and
+Reserved IP space is documented here: `IANA IPv4 Special Registry`_, and
 `IANA IPv6 Special Registry`_.
 
 Several common reserved IP blocks:

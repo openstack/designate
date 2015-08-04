@@ -295,7 +295,7 @@ Update Pool
 
     This would **replace** the value of the `ns_records` key.
 
-    It is a good practice to peform a GET and mutate the result
+    It is a good practice to perform a GET and mutate the result
     accordingly.
 
   :statuscode 202: Accepted

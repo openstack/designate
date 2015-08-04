@@ -60,7 +60,7 @@ You need to configure PowerDNS to use the MySQL backend.
 .. note::
    PowerDNS can connect via socket or host/port.
 
-3. Configure the options for designate-central - specifaclly "connection" to point to your MySQL database::
+3. Configure the options for designate-central - specifically "connection" to point to your MySQL database::
 
     [backend:powerdns]
     connection = mysql+pymysql://<username>:<password>@<host>:<port>/<dbname>

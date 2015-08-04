@@ -182,7 +182,7 @@ In both cases the interaction between your master and Designate is handled by
 the MDNS instance at the Designate side.
 
 
-Defintion of values:
+Definition of values:
 
 -   *email* set to the value of the *managed_resource_email* option in the
     *central* section of the Designate configuration.

@@ -88,12 +88,12 @@ Pagination and Sorting
 ----------------------
 
     Pagination is available on all collections and is controlled
-    using a combination of four optional query paramaters:
+    using a combination of four optional query parameters:
 
     * `marker` - denotes the ID of the last item in the previous list.
     * `limit` - use to set the maximum number of items per page, use
                 "max" to return the upper limit of results as defined
-                by the operator. If not suppied, the default per page
+                by the operator. If not supplied, the default per page
                 limit as defined by the operator will be used.
     * `sort_key` - sorts the results by the specified attribute
 

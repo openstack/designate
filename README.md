@@ -25,7 +25,7 @@ python setup.py develop
 ````
 
 ## Building the documentation
-To build the documentation from the restructred text source, do the following:
+To build the documentation from the restructured text source, do the following:
 ````
 cd doc
 pip install -r requirements.txt
