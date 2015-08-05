@@ -50,7 +50,7 @@ class PoolsController(rest.RestController):
             params, self.SORT_KEYS)
 
         # Extract any filter params.
-        accepted_filters = ('name')
+        accepted_filters = ('name', )
         criterion = self._apply_filter_params(
             params, accepted_filters, {})
 

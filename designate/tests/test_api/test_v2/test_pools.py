@@ -12,6 +12,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import six
 from oslo_config import cfg
 from oslo_log import log as logging
 
@@ -172,6 +173,38 @@ class ApiV2PoolsTest(ApiV2TestCase):
         # Test the paging of the list
         self._assert_paging(data, '/pools', key='pools')
         self._assert_invalid_paging(data, '/pools', key='pools')
+
+    def test_get_pools_filter(self):
+        fixtures = [self.get_pool_fixture(fixture=0),
+                    self.get_pool_fixture(fixture=1)]
+
+        for fixture in fixtures:
+            fixture['attributes'] = _attributes_to_api(fixture['attributes'])
+            response = self.client.post_json('/pools', fixture)
+
+        get_urls = [
+            '/pools?name=Pool-One',
+            '/pools?name=Pool-T*',
+            '/pools?name=Pool-Three',
+        ]
+
+        correct_results = [1, 1, 0]
+
+        for get_url, correct_result in \
+                six.moves.zip(get_urls, correct_results):
+
+            response = self.client.get(get_url)
+
+            # Check the headers are what we expect
+            self.assertEqual(200, response.status_int)
+            self.assertEqual('application/json', response.content_type)
+            # Check that the correct number of pools match
+            self.assertEqual(correct_result, len(response.json['pools']))
+
+    def test_get_pools_invalid_filter(self):
+        invalid_url = '/pools?description=test'
+        self._assert_exception(
+            'bad_request', 400, self.client.get, invalid_url)
 
     def test_get_pool(self):
         # Create a pool
