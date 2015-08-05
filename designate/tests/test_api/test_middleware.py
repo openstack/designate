@@ -29,7 +29,14 @@ class FakeRequest(object):
     def __init__(self):
         self.headers = {}
         self.environ = {}
-        self.params = {}
+        self.GET = {}
+        self.POST = {}
+
+    @property
+    def params(self):
+        data = self.GET.copy()
+        data.update(self.POST)
+        return data
 
     def get_response(self, app):
         return "FakeResponse"

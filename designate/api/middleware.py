@@ -62,50 +62,47 @@ def auth_pipeline_factory(loader, global_conf, **local_conf):
 
 
 class ContextMiddleware(base.Middleware):
+    def _extract_sudo(self, ctxt, request):
+        if request.headers.get('X-Auth-Sudo-Tenant-ID') or \
+                request.headers.get('X-Auth-Sudo-Project-ID'):
+            ctxt.sudo(
+                request.headers.get('X-Auth-Sudo-Tenant-ID') or
+                request.headers.get('X-Auth-Sudo-Project-ID')
+            )
+
+    def _extract_all_projects(self, ctxt, request):
+        ctxt.all_tenants = False
+        if request.headers.get('X-Auth-All-Projects'):
+            value = request.headers.get('X-Auth-All-Projects')
+            ctxt.all_tenants = strutils.bool_from_string(value)
+
+        for i in ('all_projects', 'all_tenants', ):
+            if i in request.GET:
+                value = request.GET.pop(i)
+                ctxt.all_tenants = strutils.bool_from_string(value)
+
+    def _extract_edit_managed_records(self, ctxt, request):
+        ctxt.edit_managed_records = False
+        if 'edit_managed_records' in request.GET:
+            value = request.GET.pop('edit_managed_records')
+            ctxt.edit_managed_records = strutils.bool_from_string(value)
+        elif request.headers.get('X-Designate-Edit-Managed-Records'):
+            ctxt.edit_managed_records = \
+                strutils.bool_from_string(
+                    request.headers.get('X-Designate-Edit-Managed-Records'))
+
     def make_context(self, request, *args, **kwargs):
         req_id = request.environ.get(request_id.ENV_REQUEST_ID)
         kwargs.setdefault('request_id', req_id)
 
         ctxt = context.DesignateContext(*args, **kwargs)
 
-        headers = request.headers
-        params = request.params
-
         try:
-            if headers.get('X-Auth-Sudo-Tenant-ID') or \
-                    headers.get('X-Auth-Sudo-Project-ID'):
-
-                ctxt.sudo(
-                    headers.get('X-Auth-Sudo-Tenant-ID') or
-                    headers.get('X-Auth-Sudo-Project-ID')
-                )
-
-            if headers.get('X-Auth-All-Projects'):
-                ctxt.all_tenants = \
-                    strutils.bool_from_string(
-                        headers.get('X-Auth-All-Projects'))
-            elif 'all_projects' in params:
-                ctxt.all_tenants = \
-                    strutils.bool_from_string(params['all_projects'])
-            elif 'all_tenants' in params:
-                ctxt.all_tenants = \
-                    strutils.bool_from_string(params['all_tenants'])
-            else:
-                ctxt.all_tenants = False
-            if 'edit_managed_records' in params:
-                ctxt.edit_managed_records = \
-                    strutils.bool_from_string(params['edit_managed_records'])
-
-            elif headers.get('X-Designate-Edit-Managed-Records'):
-                ctxt.edit_managed_records = \
-                    strutils.bool_from_string(
-                        headers.get('X-Designate-Edit-Managed-Records'))
-
-            else:
-                ctxt.edit_managed_records = False
+            self._extract_sudo(ctxt, request)
+            self._extract_all_projects(ctxt, request)
+            self._extract_edit_managed_records(ctxt, request)
         finally:
             request.environ['context'] = ctxt
-
         return ctxt
 
 
