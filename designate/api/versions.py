@@ -16,6 +16,8 @@
 import flask
 from oslo_config import cfg
 
+cfg.CONF.import_opt('enable_host_header', 'designate.api', group='service:api')
+
 
 def factory(global_config, **local_conf):
     app = flask.Flask('designate.api.versions')
@@ -24,24 +26,32 @@ def factory(global_config, **local_conf):
 
     base = cfg.CONF['service:api'].api_base_uri.rstrip('/')
 
-    def _version(version, status):
+    def _host_header_links():
+        del versions[:]
+        host_url = flask.request.host_url
+        _version('v1', 'DEPRECATED', host_url)
+        _version('v2', 'CURRENT', host_url)
+
+    def _version(version, status, base_uri):
         versions.append({
             'id': '%s' % version,
             'status': status,
             'links': [{
-                'href': base + '/' + version,
+                'href': base_uri + '/' + version,
                 'rel': 'self'
             }]
         })
 
     if cfg.CONF['service:api'].enable_api_v1:
-        _version('v1', 'DEPRECATED')
+        _version('v1', 'DEPRECATED', base)
 
     if cfg.CONF['service:api'].enable_api_v2:
-        _version('v2', 'CURRENT')
+        _version('v2', 'CURRENT', base)
 
     @app.route('/', methods=['GET'])
     def version_list():
+        if cfg.CONF['service:api'].enable_host_header:
+            _host_header_links()
 
         return flask.jsonify({
             "versions": {
