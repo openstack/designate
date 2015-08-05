@@ -40,6 +40,26 @@ class ApiV1ServersTest(ApiV1Test):
 
         self.policy({'admin': '@'})
 
+    def test_get_server_schema(self):
+        response = self.get('schemas/server')
+        self.assertIn('description', response.json)
+        self.assertIn('id', response.json)
+        self.assertIn('title', response.json)
+        self.assertIn('additionalProperties', response.json)
+        self.assertIn('properties', response.json)
+        self.assertIn('name', response.json['properties'])
+        self.assertIn('links', response.json)
+        self.assertIn('created_at', response.json['properties'])
+        self.assertIn('updated_at', response.json['properties'])
+
+    def test_get_servers_schema(self):
+        response = self.get('schemas/servers')
+        self.assertIn('description', response.json)
+        self.assertIn('id', response.json)
+        self.assertIn('title', response.json)
+        self.assertIn('additionalProperties', response.json)
+        self.assertIn('properties', response.json)
+
     def test_create_server(self):
         # Create a server
         fixture = self.get_server_fixture(0)
@@ -68,6 +88,16 @@ class ApiV1ServersTest(ApiV1Test):
         fixture['name'] = '$#$%^^'
 
         # Ensure it fails with a 400
+        self.post('servers', data=fixture, status_code=400)
+
+    def test_create_server_name_missing(self):
+        fixture = self.get_server_fixture(0)
+        del fixture['name']
+        self.post('servers', data=fixture, status_code=400)
+
+    def test_create_server_name_too_long(self):
+        fixture = self.get_server_fixture(0)
+        fixture['name'] = 'a' * 255 + '.example.org.'
         self.post('servers', data=fixture, status_code=400)
 
     @patch.object(central_service.Service, 'update_pool',
