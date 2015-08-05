@@ -18,7 +18,8 @@ import abc
 
 from config import cfg
 from noauth import NoAuthAuthProvider
-from six.moves.urllib import parse
+from six import string_types
+from six.moves.urllib.parse import quote_plus
 from tempest_lib.common.rest_client import RestClient
 from tempest_lib.auth import KeystoneV2Credentials
 from tempest_lib.auth import KeystoneV2AuthProvider
@@ -146,16 +147,8 @@ class ClientMixin(object):
         """
         first = True
         for f in filters:
-            try:
-                filters[f] = parse.quote_plus(filters[f])
-
-            # This is a unicode character and we need to UTF-8 encode it first
-            except KeyError:
-                filters[f] = parse.quote_plus(filters[f].encode('utf-8'))
-
-            # This is an integer, or something else we don't want to quote
-            except TypeError:
-                pass
+            if isinstance(filters[f], string_types):
+                filters[f] = quote_plus(filters[f].encode('utf-8'))
 
             url = '{url}{sep}{var}={val}'.format(
                 url=url, sep=('?' if first else '&'), var=f, val=filters[f]
