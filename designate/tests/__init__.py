@@ -55,6 +55,11 @@ default_pool_id = cfg.CONF['service:central'].default_pool_id
 _TRUE_VALUES = ('true', '1', 'yes', 'y')
 
 
+class TestTimeoutError(Exception):
+    # Used in wait_for_condition
+    pass
+
+
 class TestCase(base.BaseTestCase):
     quota_fixtures = [{
         'resource': 'domains',
@@ -428,11 +433,11 @@ class TestCase(base.BaseTestCase):
 
     def get_domain_fixture(self, domain_type=None, fixture=0, values=None):
         domain_type = domain_type or 'PRIMARY'
-        values = values or {}
 
         _values = copy.copy(self.domain_fixtures[domain_type][fixture])
+        if values:
+            _values.update(values)
 
-        _values.update(values)
         return _values
 
     def get_recordset_fixture(self, domain_name, type='A', fixture=0,
@@ -695,7 +700,7 @@ class TestCase(base.BaseTestCase):
 
             # Retrieve it, and ensure it's the same
             zone_import = self.central_service.get_zone_import(
-                    self.admin_context, zone_import_id)
+                self.admin_context, zone_import_id)
 
             # If the import is done, we're done
             if zone_import.status == 'COMPLETE':
@@ -719,6 +724,26 @@ class TestCase(base.BaseTestCase):
             self.assertEqual(
                 in_arginfo, im_arginfo,
                 "Method Signature for '%s' mismatched" % name)
+
+    def wait_for_condition(self, condition, interval=0.3, timeout=2):
+        """Wait for a condition to be true or raise an exception after
+        `timeout` seconds.
+        Poll every `interval` seconds.  `condition` can be a callable.
+        (Caution: some mocks behave both as values and callables.)
+        """
+        t_max = time.time() + timeout
+        while time.time() < t_max:
+            if callable(condition):
+                result = condition()
+            else:
+                result = condition
+
+            if result:
+                return result
+
+            time.sleep(interval)
+
+        raise TestTimeoutError
 
 
 def _skip_decorator(func):
