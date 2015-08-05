@@ -30,6 +30,30 @@ LOG = logging.getLogger(__name__)
 
 
 class ApiV1DomainsTest(ApiV1Test):
+    def test_get_domain_schema(self):
+        response = self.get('schemas/domain')
+        self.assertIn('description', response.json)
+        self.assertIn('links', response.json)
+        self.assertIn('title', response.json)
+        self.assertIn('id', response.json)
+        self.assertIn('additionalProperties', response.json)
+        self.assertIn('properties', response.json)
+        self.assertIn('description', response.json['properties'])
+        self.assertIn('created_at', response.json['properties'])
+        self.assertIn('updated_at', response.json['properties'])
+        self.assertIn('name', response.json['properties'])
+        self.assertIn('email', response.json['properties'])
+        self.assertIn('ttl', response.json['properties'])
+        self.assertIn('serial', response.json['properties'])
+
+    def test_get_domains_schema(self):
+        response = self.get('schemas/domains')
+        self.assertIn('description', response.json)
+        self.assertIn('additionalProperties', response.json)
+        self.assertIn('properties', response.json)
+        self.assertIn('title', response.json)
+        self.assertIn('id', response.json)
+
     def test_create_domain(self):
         # Create a domain
         fixture = self.get_domain_fixture(0)
