@@ -22,15 +22,18 @@ from functionaltests.common.client import ClientMixin
 class BlacklistClient(ClientMixin):
 
     @classmethod
-    def blacklists_uri(cls):
-        return "/v2/blacklists"
+    def blacklists_uri(cls, filters=None):
+        url = "/v2/blacklists"
+        if filters:
+            url = cls.add_filters(url, filters)
+        return url
 
     @classmethod
     def blacklist_uri(cls, blacklist_id):
         return "{0}/{1}".format(cls.blacklists_uri(), blacklist_id)
 
-    def list_blacklists(self, **kwargs):
-        resp, body = self.client.get(self.blacklists_uri(), **kwargs)
+    def list_blacklists(self, filters=None, **kwargs):
+        resp, body = self.client.get(self.blacklists_uri(filters), **kwargs)
         return self.deserialize(resp, body, BlacklistListModel)
 
     def get_blacklist(self, blacklist_id, **kwargs):

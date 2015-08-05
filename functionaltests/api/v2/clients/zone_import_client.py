@@ -22,15 +22,19 @@ from functionaltests.common import utils
 class ZoneImportClient(ClientMixin):
 
     @classmethod
-    def zone_imports_uri(cls):
-        return "/v2/zones/tasks/imports"
+    def zone_imports_uri(cls, filters=None):
+        url = "/v2/zones/tasks/imports"
+        if filters:
+            url = cls.add_filters(url, filters)
+        return url
 
     @classmethod
     def zone_import_uri(cls, id):
         return "{0}/{1}".format(cls.zone_imports_uri(), id)
 
-    def list_zone_imports(self, **kwargs):
-        resp, body = self.client.get(self.zone_imports_uri(), **kwargs)
+    def list_zone_imports(self, filters=None, **kwargs):
+        resp, body = self.client.get(
+            self.zone_imports_uri(filters), **kwargs)
         return self.deserialize(resp, body, ZoneImportListModel)
 
     def get_zone_import(self, id, **kwargs):

@@ -22,15 +22,18 @@ from functionaltests.common.client import ClientMixin
 class PoolClient(ClientMixin):
 
     @classmethod
-    def pools_uri(cls):
-        return "/v2/pools"
+    def pools_uri(cls, filters=None):
+        url = "/v2/pools"
+        if filters:
+            url = cls.add_filters(url, filters)
+        return url
 
     @classmethod
     def pool_uri(cls, pool_id):
         return "{0}/{1}".format(cls.pools_uri(), pool_id)
 
-    def list_pools(self, **kwargs):
-        resp, body = self.client.get(self.pools_uri(), **kwargs)
+    def list_pools(self, filters=None, **kwargs):
+        resp, body = self.client.get(self.pools_uri(filters), **kwargs)
         return self.deserialize(resp, body, PoolListModel)
 
     def get_pool(self, pool_id, **kwargs):

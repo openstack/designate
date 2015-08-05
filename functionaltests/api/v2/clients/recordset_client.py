@@ -25,15 +25,19 @@ from functionaltests.common import utils
 class RecordsetClient(ClientMixin):
 
     @classmethod
-    def recordsets_uri(cls, zone_id):
-        return "/v2/zones/{0}/recordsets".format(zone_id)
+    def recordsets_uri(cls, zone_id, filters=None):
+        url = "/v2/zones/{0}/recordsets".format(zone_id)
+        if filters:
+            url = cls.add_filters(url, filters)
+        return url
 
     @classmethod
     def recordset_uri(cls, zone_id, recordset_id):
         return "{0}/{1}".format(cls.recordsets_uri(zone_id), recordset_id)
 
-    def list_recordsets(self, zone_id, **kwargs):
-        resp, body = self.client.get(self.recordsets_uri(zone_id), **kwargs)
+    def list_recordsets(self, zone_id, filters=None, **kwargs):
+        resp, body = self.client.get(
+            self.recordsets_uri(zone_id, filters), **kwargs)
         return self.deserialize(resp, body, RecordsetListModel)
 
     def get_recordset(self, zone_id, recordset_id, **kwargs):
