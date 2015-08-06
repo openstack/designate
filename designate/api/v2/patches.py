@@ -18,12 +18,13 @@ from inspect import getargspec
 
 import six
 from oslo_serialization import jsonutils
+from oslo_log import log as logging
 import pecan.core
 
 from designate import exceptions
 
-
 JSON_TYPES = ('application/json', 'application/json-patch+json')
+LOG = logging.getLogger(__name__)
 
 
 class Request(pecan.core.Request):
@@ -34,13 +35,16 @@ class Request(pecan.core.Request):
         Content-Type header.
 
         We add this method to ease future XML support, so the main code
-        is not hardcoded to call pecans "request.json()" method.
+        is not hardcoded to call pecans "request.json" method.
         """
         if self.content_type in JSON_TYPES:
             try:
                 return jsonutils.load(self.body_file)
             except ValueError as valueError:
-                raise exceptions.InvalidJson(six.text_type(valueError))
+                if len(self.body) == 0:
+                    raise exceptions.EmptyRequestBody('Request Body is empty')
+                else:
+                    raise exceptions.InvalidJson(six.text_type(valueError))
         else:
             raise exceptions.UnsupportedContentType(
                 'Content-type must be application/json')
