@@ -122,10 +122,12 @@ def random_pool_data():
     data = {
         "name": random_string(),
     }
-    ns_records = []
+    records = []
     for i in range(0, 2):
-        ns_records.append("ns%s.%s" % (i, ns_zone))
-    data["ns_records"] = []
+        records.append("ns%s.%s" % (i, ns_zone))
+    ns_records = [{"hostname": x, "priority": random.randint(1, 999)}
+                  for x in records]
+    data["ns_records"] = ns_records
 
     return PoolModel.from_dict(data)
 
