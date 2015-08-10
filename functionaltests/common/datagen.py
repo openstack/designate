@@ -184,9 +184,9 @@ def random_zonefile_data(name=None, ttl=None):
     return zone_base.replace('&', name).replace('#', ttl)
 
 
-def random_spf_recordset(zone_name, data=None):
+def random_spf_recordset(zone_name, data=None, **kwargs):
     data = data or "v=spf1 +all"
-    return random_recordset_data('SPF', zone_name, records=[data])
+    return random_recordset_data('SPF', zone_name, records=[data], **kwargs)
 
 
 def random_srv_recordset(zone_name, data=None):
@@ -197,16 +197,17 @@ def random_srv_recordset(zone_name, data=None):
 
 
 def random_sshfp_recordset(zone_name, algorithm_number=None,
-                           fingerprint_type=None, fingerprint=None):
+                           fingerprint_type=None, fingerprint=None,
+                           **kwargs):
     algorithm_number = algorithm_number or 2
     fingerprint_type = fingerprint_type or 1
     fingerprint = fingerprint or \
         "123456789abcdef67890123456789abcdef67890"
 
     data = "%s %s %s" % (algorithm_number, fingerprint_type, fingerprint)
-    return random_recordset_data('SSHFP', zone_name, records=[data])
+    return random_recordset_data('SSHFP', zone_name, records=[data], **kwargs)
 
 
-def random_txt_recordset(zone_name, data=None):
+def random_txt_recordset(zone_name, data=None, **kwargs):
     data = data or "v=spf1 +all"
-    return random_recordset_data('TXT', zone_name, records=[data])
+    return random_recordset_data('TXT', zone_name, records=[data], **kwargs)
