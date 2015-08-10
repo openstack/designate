@@ -434,6 +434,10 @@ class DictObjectMixin(object):
             if self.obj_attr_is_set(field):
                 yield field, getattr(self, field)
 
+    # Compatibility with jsonutils to_primitive(). See bug
+    # https://bugs.launchpad.net/designate/+bug/1481377
+    iteritems = items
+
     def __iter__(self):
         for field in six.iterkeys(self.FIELDS):
             if self.obj_attr_is_set(field):

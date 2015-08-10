@@ -21,6 +21,7 @@ import unittest
 from oslo_log import log as logging
 from testtools import ExpectedException as raises  # with raises(...): ...
 import mock
+from oslo_serialization import jsonutils
 import oslotest.base
 import testtools
 
@@ -631,6 +632,12 @@ class DictObjectMixinTest(oslotest.base.BaseTestCase):
             sorted(items),
             [('id', 1), ('name', None)]
         )
+
+    def test_jsonutils_to_primitive(self):
+        obj = TestObjectDict(name="foo")
+        dumped = jsonutils.to_primitive(obj, convert_instances=True)
+        self.assertIsInstance(dumped, dict)
+        self.assertEqual('foo', dumped['name'])
 
 
 class ListObjectMixinTest(oslotest.base.BaseTestCase):
