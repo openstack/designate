@@ -202,7 +202,8 @@ class SQLAlchemy(object):
         try:
             resultproxy = self.session.execute(query, [dict(values)])
         except oslo_db_exception.DBDuplicateEntry:
-            raise exc_dup()
+            msg = "Duplicate %s" % obj.obj_name()
+            raise exc_dup(msg)
 
         # Refetch the row, for generated columns etc
         query = select([table]).where(
@@ -236,7 +237,8 @@ class SQLAlchemy(object):
             results = resultproxy.fetchall()
 
             if len(results) != 1:
-                raise exc_notfound()
+                msg = "Could not find %s" % cls.obj_name()
+                raise exc_notfound(msg)
             else:
                 return _set_object_from_model(cls(), results[0])
         else:
@@ -476,10 +478,12 @@ class SQLAlchemy(object):
         try:
             resultproxy = self.session.execute(query)
         except oslo_db_exception.DBDuplicateEntry:
-            raise exc_dup()
+            msg = "Duplicate %s" % obj.obj_name()
+            raise exc_dup(msg)
 
         if resultproxy.rowcount != 1:
-            raise exc_notfound()
+            msg = "Could not find %s" % obj.obj_name()
+            raise exc_notfound(msg)
 
         # Refetch the row, for generated columns etc
         query = select([table]).where(table.c.id == obj.id)
@@ -513,7 +517,8 @@ class SQLAlchemy(object):
         resultproxy = self.session.execute(query)
 
         if resultproxy.rowcount != 1:
-            raise exc_notfound()
+            msg = "Could not find %s" % obj.obj_name()
+            raise exc_notfound(msg)
 
         # Refetch the row, for generated columns etc
         query = select([table]).where(table.c.id == obj.id)
