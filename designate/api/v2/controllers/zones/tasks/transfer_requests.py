@@ -13,11 +13,11 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import six
 import pecan
 from oslo_log import log as logging
 
 from designate import utils
+from designate import exceptions
 from designate.api.v2.controllers import rest
 from designate.objects import ZoneTransferRequest
 from designate.objects.adapters import DesignateAdapter
@@ -72,12 +72,8 @@ class TransferRequestsController(rest.RestController):
         context = request.environ['context']
         try:
             body = request.body_dict
-        except Exception as e:
-            if six.text_type(e) != 'TODO: Unsupported Content Type':
-                raise
-            else:
-                # Got a blank body
-                body = dict()
+        except exceptions.EmptyRequestBody:
+            body = dict()
 
         body['zone_id'] = zone_id
 

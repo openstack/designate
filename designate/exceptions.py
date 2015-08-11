@@ -110,6 +110,11 @@ class BadRequest(Base):
     expected = True
 
 
+class EmptyRequestBody(BadRequest):
+    error_type = 'empty_request_body'
+    expected = True
+
+
 class InvalidUUID(BadRequest):
     error_type = 'invalid_uuid'
 
