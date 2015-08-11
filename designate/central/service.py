@@ -252,7 +252,7 @@ def notification(notification_type):
 
 
 class Service(service.RPCService, service.Service):
-    RPC_API_VERSION = '5.2'
+    RPC_API_VERSION = '5.3'
 
     target = messaging.Target(version=RPC_API_VERSION)
 
@@ -1214,6 +1214,16 @@ class Service(service.RPCService, service.Service):
         recordset = self.storage.find_recordset(context, criterion)
 
         return recordset
+
+    def export_zone(self, context, zone_id):
+        domain = self.get_domain(context, zone_id)
+
+        criterion = {'domain_id': zone_id}
+        recordsets = self.storage.find_recordsets_export(context, criterion)
+
+        return utils.render_template('export-zone.jinja2',
+                                     domain=domain,
+                                     recordsets=recordsets)
 
     @notification('dns.recordset.update')
     @synchronized_domain()

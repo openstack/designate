@@ -49,14 +49,15 @@ class CentralAPI(object):
         5.0 - Remove dead server code
         5.1 - Add xfr_domain
         5.2 - Add Zone Import methods
+        5.3 - Add Zone Export method
     """
-    RPC_API_VERSION = '5.2'
+    RPC_API_VERSION = '5.3'
 
     def __init__(self, topic=None):
         topic = topic if topic else cfg.CONF.central_topic
 
         target = messaging.Target(topic=topic, version=self.RPC_API_VERSION)
-        self.client = rpc.get_client(target, version_cap='5.2')
+        self.client = rpc.get_client(target, version_cap='5.3')
 
     @classmethod
     def get_instance(cls):
@@ -229,6 +230,10 @@ class CentralAPI(object):
     def find_recordset(self, context, criterion=None):
         LOG.info(_LI("find_recordset: Calling central's find_recordset."))
         return self.client.call(context, 'find_recordset', criterion=criterion)
+
+    def export_zone(self, context, zone_id):
+        LOG.info(_LI("export_zone: Calling central's export_zone."))
+        return self.client.call(context, 'export_zone', zone_id=zone_id)
 
     def update_recordset(self, context, recordset, increment_serial=True):
         LOG.info(_LI("update_recordset: Calling central's update_recordset."))
@@ -495,7 +500,7 @@ class CentralAPI(object):
 
     def xfr_domain(self, context, domain_id):
         LOG.info(_LI("xfr_domain: Calling central's xfr_domain"))
-        cctxt = self.client.prepare(version='5.2')
+        cctxt = self.client.prepare(version='5.3')
         return cctxt.call(context, 'xfr_domain', domain_id=domain_id)
 
     # Zone Import Methods

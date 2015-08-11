@@ -1,0 +1,7 @@
+$ORIGIN {{ domain.name }}
+$TTL {{ domain.ttl }}
+
+{% for recordset in recordsets -%}
+{{recordset[0]}} {{recordset[1] or ''}} IN {{recordset[2]}} {{recordset[3]}}
+{% endfor %}
+

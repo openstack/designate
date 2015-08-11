@@ -523,6 +523,24 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
 
         return recordset
 
+    def find_recordsets_export(self, context, criterion=None):
+        query = None
+
+        rjoin = tables.records.join(
+            tables.recordsets,
+            tables.records.c.recordset_id == tables.recordsets.c.id)
+
+        query = select([tables.recordsets.c.name, tables.recordsets.c.ttl,
+                        tables.recordsets.c.type, tables.records.c.data]).\
+            select_from(rjoin)
+
+        query = query.order_by(tables.recordsets.c.created_at)
+
+        raw_rows = self._select_raw(
+            context, tables.recordsets, criterion, query)
+
+        return raw_rows
+
     def get_recordset(self, context, recordset_id):
         return self._find_recordsets(context, {'id': recordset_id}, one=True)
 
