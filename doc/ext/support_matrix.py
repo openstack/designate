@@ -21,8 +21,8 @@ It is used via a single directive in the .rst file
   .. support_matrix::
 
 """
-
-import ConfigParser
+import six
+import six.moves.configparser as config_parser
 
 from docutils import nodes
 from docutils.parsers import rst
@@ -88,7 +88,7 @@ class SupportMatrixDirective(rst.Directive):
         :returns: SupportMatrix instance
         """
 
-        cfg = ConfigParser.SafeConfigParser()
+        cfg = config_parser.SafeConfigParser()
         env = self.state.document.settings.env
         fname = self.options.get("support-matrix",
                                  "support-matrix.ini")
@@ -118,7 +118,7 @@ class SupportMatrixDirective(rst.Directive):
 
             try:
                 status = cfg.get("backends.%s" % item, "status")
-            except ConfigParser.NoOptionError:
+            except config_parser.NoOptionError:
                 if cfg.get("backends.%s" % item, "type") == "xfr":
                     backend = Backend.get_driver(name[0])
                 elif cfg.get("backends.%s" % item, "type") == "agent":
@@ -255,7 +255,7 @@ class SupportMatrixDirective(rst.Directive):
 
         content.append(detailstitle)
 
-        for key in matrix.backends.keys():
+        for key in six.iterkeys(matrix.backends):
 
             content.append(
                 self._build_backend_detail_table(
@@ -313,7 +313,7 @@ class SupportMatrixDirective(rst.Directive):
 
         summarytitle = nodes.title(text="Backends -  Summary")
         summary = nodes.table()
-        cols = len(matrix.backends.keys())
+        cols = len(list(six.iterkeys(matrix.backends)))
         cols += 2
         summarygroup = nodes.tgroup(cols=cols)
         summarybody = nodes.tbody()
@@ -350,7 +350,7 @@ class SupportMatrixDirective(rst.Directive):
         summaryhead.append(header)
 
         grades = matrix.grades
-        impls = matrix.backends.keys()
+        impls = list(six.iterkeys(matrix.backends))
         impls.sort()
         for grade in grades:
             for backend in impls:
