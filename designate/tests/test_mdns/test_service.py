@@ -57,8 +57,8 @@ class MdnsServiceTest(MdnsTestCase):
         # ;ANSWER
         # ;AUTHORITY
         # ;ADDITIONAL
-        expected_response = ("271289050001000000000000076578616d706c6503636f6d"
-                             "0000010001")
+        expected_response = (b"271289050001000000000000076578616d706c6503636f6"
+                             b"d0000010001")
 
         self.service._dns_handle(self.addr, binascii.a2b_hex(payload))
         sendto_mock.assert_called_once_with(
