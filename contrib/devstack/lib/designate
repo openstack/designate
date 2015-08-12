@@ -206,6 +206,30 @@ function configure_designate {
     configure_designate_backend
 }
 
+# Configure the needed tempest options
+function configure_designate_tempest() {
+    if is_service_enabled tempest; then
+        nameservers=$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT_DNS
+        case $DESIGNATE_BACKEND_DRIVER in
+            bind9|powerdns)
+                nameservers="$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT_DNS"
+                ;;
+            akamai)
+                nameservers="$DESIGNATE_AKAMAI_NAMESERVERS"
+                ;;
+            dynect)
+                nameservers="$DESIGNATE_DYNECT_NAMESERVERS"
+                ;;
+        esac
+
+        if [ ! -z "$DESIGNATE_NAMESERVERS" ]; then
+            nameservers=$DESIGNATE_NAMESERVERS
+        fi
+
+        iniset $TEMPEST_CONFIG designate nameservers $nameservers
+    fi
+}
+
 # create_designate_accounts - Set up common required designate accounts
 
 # Tenant               User       Roles
