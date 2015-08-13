@@ -24,6 +24,50 @@ from functionaltests.api.v2.clients.recordset_client import RecordsetClient
 from functionaltests.api.v2.clients.zone_client import ZoneClient
 
 
+RECORDSETS_DATASET = {
+    'A': dict(
+        make_recordset=lambda z: datagen.random_a_recordset(z.name)),
+    'AAAA': dict(
+        make_recordset=lambda z: datagen.random_aaaa_recordset(z.name)),
+    'CNAME': dict(
+        make_recordset=lambda z: datagen.random_cname_recordset(z.name)),
+    'MX': dict(
+        make_recordset=lambda z: datagen.random_mx_recordset(z.name)),
+    'SPF': dict(
+        make_recordset=lambda z: datagen.random_spf_recordset(z.name)),
+    'SRV': dict(
+        make_recordset=lambda z: datagen.random_srv_recordset(z.name)),
+    'SSHFP': dict(
+        make_recordset=lambda z: datagen.random_sshfp_recordset(z.name)),
+    'TXT': dict(
+        make_recordset=lambda z: datagen.random_txt_recordset(z.name)),
+}
+
+WILDCARD_RECORDSETS_DATASET = {
+    'wildcard_A': dict(make_recordset=lambda z:
+        datagen.random_a_recordset(zone_name=z.name,
+                                   name="*.{0}".format(z.name))),
+    'wildcard_AAAA': dict(make_recordset=lambda z:
+        datagen.random_aaaa_recordset(zone_name=z.name,
+                                      name="*.{0}".format(z.name))),
+    'wildcard_CNAME': dict(make_recordset=lambda z:
+        datagen.random_cname_recordset(zone_name=z.name,
+                                       name="*.{0}".format(z.name))),
+    'wildcard_MX': dict(make_recordset=lambda z:
+        datagen.random_mx_recordset(zone_name=z.name,
+                                    name="*.{0}".format(z.name))),
+    'wildcard_SPF': dict(make_recordset=lambda z:
+        datagen.random_spf_recordset(zone_name=z.name,
+                                     name="*.{0}".format(z.name))),
+    'wildcard_SSHFP': dict(make_recordset=lambda z:
+        datagen.random_sshfp_recordset(zone_name=z.name,
+                                       name="*.{0}".format(z.name))),
+    'wildcard_TXT': dict(make_recordset=lambda z:
+        datagen.random_txt_recordset(zone_name=z.name,
+                                     name="*.{0}".format(z.name))),
+}
+
+
 @utils.parameterized_class
 class RecordsetTest(DesignateV2Test):
 
@@ -62,25 +106,9 @@ class RecordsetTest(DesignateV2Test):
 
             self.assertEqual(model_data, data)
 
-    @utils.parameterized({
-        'A': dict(
-            make_recordset=lambda z: datagen.random_a_recordset(z.name)),
-        'AAAA': dict(
-            make_recordset=lambda z: datagen.random_aaaa_recordset(z.name)),
-        'CNAME': dict(
-            make_recordset=lambda z: datagen.random_cname_recordset(z.name)),
-        'MX': dict(
-            make_recordset=lambda z: datagen.random_mx_recordset(z.name)),
-        'SPF': dict(
-            make_recordset=lambda z: datagen.random_spf_recordset(z.name)),
-        'SRV': dict(
-            make_recordset=lambda z: datagen.random_srv_recordset(z.name)),
-        'SSHFP': dict(
-            make_recordset=lambda z: datagen.random_sshfp_recordset(z.name)),
-        'TXT': dict(
-            make_recordset=lambda z: datagen.random_txt_recordset(z.name)),
-
-    })
+    @utils.parameterized(
+        dict(RECORDSETS_DATASET.items() + WILDCARD_RECORDSETS_DATASET.items())
+    )
     def test_crud_recordset(self, make_recordset):
         post_model = make_recordset(self.zone)
 
@@ -120,24 +148,7 @@ class RecordsetTest(DesignateV2Test):
         RecordsetClient.as_user('default').wait_for_404(
             self.zone.id, recordset_id)
 
-    @utils.parameterized({
-        'A': dict(
-            make_recordset=lambda z: datagen.random_a_recordset(z.name)),
-        'AAAA': dict(
-            make_recordset=lambda z: datagen.random_aaaa_recordset(z.name)),
-        'CNAME': dict(
-            make_recordset=lambda z: datagen.random_cname_recordset(z.name)),
-        'MX': dict(
-            make_recordset=lambda z: datagen.random_mx_recordset(z.name)),
-        'SPF': dict(
-            make_recordset=lambda z: datagen.random_spf_recordset(z.name)),
-        'SRV': dict(
-            make_recordset=lambda z: datagen.random_srv_recordset(z.name)),
-        'SSHFP': dict(
-            make_recordset=lambda z: datagen.random_sshfp_recordset(z.name)),
-        'TXT': dict(
-            make_recordset=lambda z: datagen.random_txt_recordset(z.name)),
-    })
+    @utils.parameterized(RECORDSETS_DATASET)
     def test_create_invalid(self, make_recordset, data=None):
         data = data or ["b0rk"]
 
@@ -150,24 +161,7 @@ class RecordsetTest(DesignateV2Test):
                 exceptions.BadRequest, 'invalid_object', 400,
                 client.post_recordset, self.zone.id, model)
 
-    @utils.parameterized({
-        'A': dict(
-            make_recordset=lambda z: datagen.random_a_recordset(z.name)),
-        'AAAA': dict(
-            make_recordset=lambda z: datagen.random_aaaa_recordset(z.name)),
-        'CNAME': dict(
-            make_recordset=lambda z: datagen.random_cname_recordset(z.name)),
-        'MX': dict(
-            make_recordset=lambda z: datagen.random_mx_recordset(z.name)),
-        'SPF': dict(
-            make_recordset=lambda z: datagen.random_spf_recordset(z.name)),
-        'SRV': dict(
-            make_recordset=lambda z: datagen.random_srv_recordset(z.name)),
-        'SSHFP': dict(
-            make_recordset=lambda z: datagen.random_sshfp_recordset(z.name)),
-        'TXT': dict(
-            make_recordset=lambda z: datagen.random_txt_recordset(z.name)),
-    })
+    @utils.parameterized(RECORDSETS_DATASET)
     def test_update_invalid(self, make_recordset, data=None):
         data = data or ["b0rk"]
 
