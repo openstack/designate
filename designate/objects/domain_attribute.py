@@ -24,6 +24,10 @@ class DomainAttribute(base.DictObjectMixin, base.PersistentObjectMixin,
         'value': {}
     }
 
+    STRING_KEYS = [
+        'id', 'key', 'value', 'domain_id'
+    ]
+
 
 class DomainAttributeList(base.ListObjectMixin, base.DesignateObject):
     LIST_ITEM_TYPE = DomainAttribute

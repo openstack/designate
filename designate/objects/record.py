@@ -130,6 +130,16 @@ class Record(base.DictObjectMixin, base.PersistentObjectMixin,
         # recordset
         return {}
 
+    STRING_KEYS = [
+        'id', 'recordset_id', 'data'
+    ]
+
+    def __str__(self):
+        record = self.to_dict()
+        record['data'] = record['data'][:35]
+        return (self._make_obj_str(self.STRING_KEYS)
+                % record)
+
 
 class RecordList(base.ListObjectMixin, base.DesignateObject):
     LIST_ITEM_TYPE = Record

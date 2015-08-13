@@ -139,6 +139,10 @@ class Pool(base.DictObjectMixin, base.PersistentObjectMixin,
 
         return cls.from_dict(pool)
 
+    STRING_KEYS = [
+        'id', 'name'
+    ]
+
 
 class PoolList(base.ListObjectMixin, base.DesignateObject):
     LIST_ITEM_TYPE = Pool

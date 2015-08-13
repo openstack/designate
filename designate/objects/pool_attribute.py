@@ -41,6 +41,10 @@ class PoolAttribute(base.DictObjectMixin, base.PersistentObjectMixin,
         }
     }
 
+    STRING_KEYS = [
+        'id', 'key', 'value', 'pool_id'
+    ]
+
 
 class PoolAttributeList(base.ListObjectMixin, base.DesignateObject):
     LIST_ITEM_TYPE = PoolAttribute

@@ -161,6 +161,10 @@ class Domain(base.DictObjectMixin, base.SoftDeleteObjectMixin,
         },
     }
 
+    STRING_KEYS = [
+        'id', 'type', 'name', 'pool_id', 'serial', 'action', 'status'
+    ]
+
     @property
     def masters(self):
         if self.obj_attr_is_set('attributes'):
