@@ -200,6 +200,7 @@ debug = False
 #masters = 127.0.0.1:5354
 #backend_driver = fake
 #transfer_source = None
+#notify_delay = 0
 
 #-----------------------
 # Zone Manager Service

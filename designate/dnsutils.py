@@ -16,6 +16,8 @@
 import random
 import socket
 import base64
+import time
+from threading import Lock
 
 import six
 import dns
@@ -189,6 +191,78 @@ class TsigKeyring(object):
 
         except exceptions.TsigKeyNotFound:
             return default
+
+
+class ZoneLock(object):
+    """A Lock across all zones that enforces a rate limit on NOTIFYs"""
+
+    def __init__(self, delay):
+        self.lock = Lock()
+        self.data = {}
+        self.delay = delay
+
+    def acquire(self, zone):
+        with self.lock:
+            # If no one holds the lock for the zone, grant it
+            if zone not in self.data:
+                self.data[zone] = time.time()
+                return True
+
+            # Otherwise, get the time that it was locked
+            locktime = self.data[zone]
+            now = time.time()
+
+            period = now - locktime
+
+            # If it has been locked for longer than the allowed period
+            # give the lock to the new requester
+            if period > self.delay:
+                self.data[zone] = now
+                return True
+
+            LOG.debug('Lock for %(zone)s can\'t be releaesed for %(period)s'
+                      'seconds' % {'zone': zone,
+                                   'period': str(self.delay - period)})
+
+            # Don't grant the lock for the zone
+            return False
+
+    def release(self, zone):
+        # Release the lock
+        with self.lock:
+            try:
+                self.data.pop(zone)
+            except KeyError:
+                pass
+
+
+class LimitNotifyMiddleware(DNSMiddleware):
+    """Middleware that rate limits NOTIFYs to the Agent"""
+
+    def __init__(self, application):
+        super(LimitNotifyMiddleware, self).__init__(application)
+
+        self.delay = cfg.CONF['service:agent'].notify_delay
+        self.locker = ZoneLock(self.delay)
+
+    def process_request(self, request):
+        opcode = request.opcode()
+        if opcode != dns.opcode.NOTIFY:
+            return None
+
+        zone_name = request.question[0].name.to_text()
+
+        if self.locker.acquire(zone_name):
+            time.sleep(self.delay)
+            self.locker.release(zone_name)
+            return None
+        else:
+            LOG.debug('Threw away NOTIFY for %(zone)s, already '
+                     'working on an update.' % {'zone': zone_name})
+            response = dns.message.make_response(request)
+            # Provide an authoritative answer
+            response.flags |= dns.flags.AA
+            return (response,)
 
 
 def from_dnspython_zone(dnspython_zone):
