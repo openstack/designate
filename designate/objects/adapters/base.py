@@ -162,19 +162,18 @@ class DesignateAdapter(object):
             LOG.exception(_LE("TypeError creating %(name)s with values"
                               " %(values)r") %
                           {"name": output_object.obj_name(), "values": values})
-
-            error_message = str.format(
-                'Provided object does not match schema. '
-                'Got a TypeError with message %s' % six.text_type(e))
+            error_message = (u'Provided object is not valid. '
+                            u'Got a TypeError with message {}'.format(
+                                six.text_type(e)))
             raise exceptions.InvalidObject(error_message)
 
         except AttributeError as e:
             LOG.exception(_LE("AttributeError creating %(name)s "
                               "with values %(values)r") %
                           {"name": output_object.obj_name(), "values": values})
-            error_message = str.format(
-                'Provided object is not valid. '
-                'Got an AttributeError with message %s' % six.text_type(e))
+            error_message = (u'Provided object is not valid. '
+                            u'Got an AttributeError with message {}'.format(
+                                six.text_type(e)))
             raise exceptions.InvalidObject(error_message)
 
         except exceptions.InvalidObject:
@@ -187,10 +186,9 @@ class DesignateAdapter(object):
             LOG.exception(_LE("Exception creating %(name)s with "
                               "values %(values)r") %
                           {"name": output_object.obj_name(), "values": values})
-            error_message = str.format(
-                'Provided object is not valid. '
-                'Got a %s error with message %s' %
-                (type(e).__name__, six.text_type(e)))
+            error_message = (u'Provided object is not valid. '
+                            u'Got a {} error with message {}'.format(
+                                type(e).__name__, six.text_type(e)))
             raise exceptions.InvalidObject(error_message)
 
     @classmethod
