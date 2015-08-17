@@ -56,6 +56,33 @@ ENABLED_SERVICES+=,designate,designate-central,designate-api,designate-pool-mana
 #DESIGNATE_AKAMAI_NAMESERVERS=a5-64.akam.net,a11-65.akam.net,a13-66.akam.net,a14-64.akam.net,a20-65.akam.net,a22-66.akam.net
 #DESIGNATE_AKAMAI_MASTERS=
 
+# Designate D2D Backend
+# NOTEs:
+# - DESIGNATE_D2D_ALSO_NOTIFIES needs to be set to the source mdns ip:port in
+#   order for designate to receive the proper NOTIFY
+# - DESIGNATE_D2D_* credentials should be setup either to the source keystone
+#   or the destination
+#DESIGNATE_D2D_MASTERS=
+#DESIGNATE_D2D_ALSO_NOTIFIES=
+#DESIGNATE_D2D_NAMESERVERS=
+
+# Authentication options
+#DESIGNATE_D2D_KS_VERSION=3
+
+#DESIGNATE_D2D_AUTH_URL=
+#DESIGNATE_D2D_USERNAME=
+#DESIGNATE_D2D_PASSWORD=
+
+# Keystone V2
+#DESIGNATE_D2D_TENANT_NAME=${DESIGNATE_D2D_TENANT_NAME:-}
+#DESIGNATE_D2D_TENANT_NAME=${DESIGNATE_D2D_TENANT_ID:-}
+
+# Keystone V3
+#DESIGNATE_D2D_PROJECT_NAME=
+#DESIGNATE_D2D_PROJECT_DOMAIN_NAME=
+#DESIGNATE_D2D_USER_DOMAIN_NAME=
+
+
 # Designate Misc Config
 # =====================
 
