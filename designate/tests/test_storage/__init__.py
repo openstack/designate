@@ -2348,14 +2348,14 @@ class StorageTestCase(object):
             self.create_pool_attribute(fixture=0)
 
     # Zone Import Tests
-    def test_create_zone_task(self):
+    def test_create_zone_import(self):
         values = {
             'status': 'PENDING',
             'task_type': 'IMPORT'
         }
 
-        result = self.storage.create_zone_task(
-            self.admin_context, objects.ZoneTask.from_dict(values))
+        result = self.storage.create_zone_import(
+            self.admin_context, objects.ZoneImport.from_dict(values))
 
         self.assertIsNotNone(result['id'])
         self.assertIsNotNone(result['created_at'])
@@ -2365,104 +2365,105 @@ class StorageTestCase(object):
         self.assertEqual(result['domain_id'], None)
         self.assertEqual(result['message'], None)
 
-    def test_find_zone_tasks(self):
+    def test_find_zone_imports(self):
 
-        actual = self.storage.find_zone_tasks(self.admin_context)
+        actual = self.storage.find_zone_imports(self.admin_context)
         self.assertEqual(0, len(actual))
 
-        # Create a single ZoneTask
-        zone_task = self.create_zone_task(fixture=0)
+        # Create a single ZoneImport
+        zone_import = self.create_zone_import(fixture=0)
 
-        actual = self.storage.find_zone_tasks(self.admin_context)
+        actual = self.storage.find_zone_imports(self.admin_context)
         self.assertEqual(1, len(actual))
 
-        self.assertEqual(zone_task['status'], actual[0]['status'])
-        self.assertEqual(zone_task['message'], actual[0]['message'])
-        self.assertEqual(zone_task['domain_id'], actual[0]['domain_id'])
+        self.assertEqual(zone_import['status'], actual[0]['status'])
+        self.assertEqual(zone_import['message'], actual[0]['message'])
+        self.assertEqual(zone_import['domain_id'], actual[0]['domain_id'])
 
-    def test_find_zone_tasks_paging(self):
-        # Create 10 ZoneTasks
-        created = [self.create_zone_task() for i in range(10)]
+    def test_find_zone_imports_paging(self):
+        # Create 10 ZoneImports
+        created = [self.create_zone_import() for i in range(10)]
 
         # Ensure we can page through the results.
-        self._ensure_paging(created, self.storage.find_zone_tasks)
+        self._ensure_paging(created, self.storage.find_zone_imports)
 
-    def test_find_zone_tasks_with_criterion(self):
-        zone_task_one = self.create_zone_task(fixture=0)
-        zone_task_two = self.create_zone_task(fixture=1)
+    def test_find_zone_imports_with_criterion(self):
+        zone_import_one = self.create_zone_import(fixture=0)
+        zone_import_two = self.create_zone_import(fixture=1)
 
-        criterion_one = dict(status=zone_task_one['status'])
+        criterion_one = dict(status=zone_import_one['status'])
 
-        results = self.storage.find_zone_tasks(self.admin_context,
+        results = self.storage.find_zone_imports(self.admin_context,
                                          criterion_one)
         self.assertEqual(len(results), 1)
 
-        self.assertEqual(results[0]['status'], zone_task_one['status'])
+        self.assertEqual(results[0]['status'], zone_import_one['status'])
 
-        criterion_two = dict(status=zone_task_two['status'])
+        criterion_two = dict(status=zone_import_two['status'])
 
-        results = self.storage.find_zone_tasks(self.admin_context,
+        results = self.storage.find_zone_imports(self.admin_context,
                                          criterion_two)
         self.assertEqual(len(results), 1)
 
-        self.assertEqual(results[0]['status'], zone_task_two['status'])
+        self.assertEqual(results[0]['status'], zone_import_two['status'])
 
-    def test_get_zone_task(self):
-        # Create a zone_task
-        expected = self.create_zone_task()
-        actual = self.storage.get_zone_task(self.admin_context,
+    def test_get_zone_import(self):
+        # Create a zone_import
+        expected = self.create_zone_import()
+        actual = self.storage.get_zone_import(self.admin_context,
                                  expected['id'])
 
         self.assertEqual(actual['status'], expected['status'])
 
-    def test_get_zone_task_missing(self):
-        with testtools.ExpectedException(exceptions.ZoneTaskNotFound):
+    def test_get_zone_import_missing(self):
+        with testtools.ExpectedException(exceptions.ZoneImportNotFound):
             uuid = '4c8e7f82-3519-4bf7-8940-a66a4480f223'
-            self.storage.get_zone_task(self.admin_context, uuid)
+            self.storage.get_zone_import(self.admin_context, uuid)
 
-    def test_find_zone_task_criterion_missing(self):
-        expected = self.create_zone_task()
+    def test_find_zone_import_criterion_missing(self):
+        expected = self.create_zone_import()
 
         criterion = dict(status=expected['status'] + "NOT FOUND")
 
-        with testtools.ExpectedException(exceptions.ZoneTaskNotFound):
-            self.storage.find_zone_task(self.admin_context, criterion)
+        with testtools.ExpectedException(exceptions.ZoneImportNotFound):
+            self.storage.find_zone_import(self.admin_context, criterion)
 
-    def test_update_zone_task(self):
-        # Create a zone_task
-        zone_task = self.create_zone_task(status='PENDING', task_type='IMPORT')
+    def test_update_zone_import(self):
+        # Create a zone_import
+        zone_import = self.create_zone_import(status='PENDING',
+                                              task_type='IMPORT')
 
-        # Update the zone_task
-        zone_task.status = 'COMPLETE'
+        # Update the zone_import
+        zone_import.status = 'COMPLETE'
 
         # Update storage
-        zone_task = self.storage.update_zone_task(self.admin_context,
-                                                  zone_task)
+        zone_import = self.storage.update_zone_import(self.admin_context,
+                                                  zone_import)
 
         # Verify the new value
-        self.assertEqual('COMPLETE', zone_task.status)
+        self.assertEqual('COMPLETE', zone_import.status)
 
         # Ensure the version column was incremented
-        self.assertEqual(2, zone_task.version)
+        self.assertEqual(2, zone_import.version)
 
-    def test_update_zone_task_missing(self):
-        zone_task = objects.ZoneTask(
+    def test_update_zone_import_missing(self):
+        zone_import = objects.ZoneImport(
                         id='486f9cbe-b8b6-4d8c-8275-1a6e47b13e00')
-        with testtools.ExpectedException(exceptions.ZoneTaskNotFound):
-            self.storage.update_zone_task(self.admin_context, zone_task)
+        with testtools.ExpectedException(exceptions.ZoneImportNotFound):
+            self.storage.update_zone_import(self.admin_context, zone_import)
 
-    def test_delete_zone_task(self):
-        # Create a zone_task
-        zone_task = self.create_zone_task()
+    def test_delete_zone_import(self):
+        # Create a zone_import
+        zone_import = self.create_zone_import()
 
-        # Delete the zone_task
-        self.storage.delete_zone_task(self.admin_context, zone_task['id'])
+        # Delete the zone_import
+        self.storage.delete_zone_import(self.admin_context, zone_import['id'])
 
         # Verify that it's deleted
-        with testtools.ExpectedException(exceptions.ZoneTaskNotFound):
-            self.storage.get_zone_task(self.admin_context, zone_task['id'])
+        with testtools.ExpectedException(exceptions.ZoneImportNotFound):
+            self.storage.get_zone_import(self.admin_context, zone_import['id'])
 
-    def test_delete_zone_task_missing(self):
-        with testtools.ExpectedException(exceptions.ZoneTaskNotFound):
+    def test_delete_zone_import_missing(self):
+        with testtools.ExpectedException(exceptions.ZoneImportNotFound):
             uuid = 'cac1fc02-79b2-4e62-a1a4-427b6790bbe6'
-            self.storage.delete_zone_task(self.admin_context, uuid)
+            self.storage.delete_zone_import(self.admin_context, uuid)

@@ -22,7 +22,7 @@ LOG = logging.getLogger(__name__)
 
 class ZoneImportAPIv2Adapter(base.APIv2Adapter):
 
-    ADAPTER_OBJECT = objects.ZoneTask
+    ADAPTER_OBJECT = objects.ZoneImport
 
     MODIFICATIONS = {
         'fields': {
@@ -60,7 +60,7 @@ class ZoneImportAPIv2Adapter(base.APIv2Adapter):
 
 class ZoneImportListAPIv2Adapter(base.APIv2Adapter):
 
-    ADAPTER_OBJECT = objects.ZoneTaskList
+    ADAPTER_OBJECT = objects.ZoneImportList
 
     MODIFICATIONS = {
         'options': {

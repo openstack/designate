@@ -16,7 +16,7 @@
 from designate.objects import base
 
 
-class ZoneTask(base.DictObjectMixin, base.PersistentObjectMixin,
+class ZoneImport(base.DictObjectMixin, base.PersistentObjectMixin,
                base.DesignateObject):
     FIELDS = {
         'status': {
@@ -56,6 +56,6 @@ class ZoneTask(base.DictObjectMixin, base.PersistentObjectMixin,
     }
 
 
-class ZoneTaskList(base.ListObjectMixin, base.DesignateObject,
+class ZoneImportList(base.ListObjectMixin, base.DesignateObject,
                    base.PagedListObjectMixin):
-    LIST_ITEM_TYPE = ZoneTask
+    LIST_ITEM_TYPE = ZoneImport

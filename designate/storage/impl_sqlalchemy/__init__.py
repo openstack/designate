@@ -1259,42 +1259,45 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             zone_transfer_accept,
             exceptions.ZoneTransferAcceptNotFound)
 
-    # Zone Task Methods
-    def _find_zone_tasks(self, context, criterion, one=False, marker=None,
+    # Zone Import Methods
+    def _find_zone_imports(self, context, criterion, one=False, marker=None,
                    limit=None, sort_key=None, sort_dir=None):
+        if not criterion:
+            criterion = {}
+        criterion['task_type'] = 'IMPORT'
         return self._find(
-            context, tables.zone_tasks, objects.ZoneTask,
-            objects.ZoneTaskList, exceptions.ZoneTaskNotFound, criterion,
+            context, tables.zone_tasks, objects.ZoneImport,
+            objects.ZoneImportList, exceptions.ZoneImportNotFound, criterion,
             one, marker, limit, sort_key, sort_dir)
 
-    def create_zone_task(self, context, zone_task):
+    def create_zone_import(self, context, zone_import):
         return self._create(
-            tables.zone_tasks, zone_task, exceptions.DuplicateZoneTask)
+            tables.zone_tasks, zone_import, exceptions.DuplicateZoneImport)
 
-    def get_zone_task(self, context, zone_task_id):
-        return self._find_zone_tasks(context, {'id': zone_task_id},
+    def get_zone_import(self, context, zone_import_id):
+        return self._find_zone_imports(context, {'id': zone_import_id},
                                      one=True)
 
-    def find_zone_tasks(self, context, criterion=None, marker=None,
+    def find_zone_imports(self, context, criterion=None, marker=None,
                   limit=None, sort_key=None, sort_dir=None):
-        return self._find_zone_tasks(context, criterion, marker=marker,
+        return self._find_zone_imports(context, criterion, marker=marker,
                                limit=limit, sort_key=sort_key,
                                sort_dir=sort_dir)
 
-    def find_zone_task(self, context, criterion):
-        return self._find_zone_tasks(context, criterion, one=True)
+    def find_zone_import(self, context, criterion):
+        return self._find_zone_imports(context, criterion, one=True)
 
-    def update_zone_task(self, context, zone_task):
+    def update_zone_import(self, context, zone_import):
         return self._update(
-            context, tables.zone_tasks, zone_task,
-            exceptions.DuplicateZoneTask, exceptions.ZoneTaskNotFound)
+            context, tables.zone_tasks, zone_import,
+            exceptions.DuplicateZoneImport, exceptions.ZoneImportNotFound)
 
-    def delete_zone_task(self, context, zone_task_id):
-        # Fetch the existing zone_task, we'll need to return it.
-        zone_task = self._find_zone_tasks(context, {'id': zone_task_id},
+    def delete_zone_import(self, context, zone_import_id):
+        # Fetch the existing zone_import, we'll need to return it.
+        zone_import = self._find_zone_imports(context, {'id': zone_import_id},
                                 one=True)
-        return self._delete(context, tables.zone_tasks, zone_task,
-                    exceptions.ZoneTaskNotFound)
+        return self._delete(context, tables.zone_tasks, zone_import,
+                    exceptions.ZoneImportNotFound)
 
     # diagnostics
     def ping(self, context):

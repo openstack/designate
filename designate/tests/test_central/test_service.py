@@ -3036,6 +3036,6 @@ class CentralServiceTest(CentralTestCase):
 
         # Fetch the zone_import again, ensuring an exception is raised
         self.assertRaises(
-            exceptions.ZoneTaskNotFound,
+            exceptions.ZoneImportNotFound,
             self.central_service.get_zone_import,
             context, zone_import['id'])

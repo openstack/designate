@@ -2501,9 +2501,9 @@ class Service(service.RPCService, service.Service):
             'tenant_id': context.tenant,
             'task_type': 'IMPORT'
         }
-        zone_import = objects.ZoneTask(**values)
+        zone_import = objects.ZoneImport(**values)
 
-        created_zone_import = self.storage.create_zone_task(context,
+        created_zone_import = self.storage.create_zone_import(context,
                                                             zone_import)
 
         self.tg.add_thread(self._import_zone, context, created_zone_import,
@@ -2582,13 +2582,13 @@ class Service(service.RPCService, service.Service):
         criterion = {
             'task_type': 'IMPORT'
         }
-        return self.storage.find_zone_tasks(context, criterion, marker,
+        return self.storage.find_zone_imports(context, criterion, marker,
                                       limit, sort_key, sort_dir)
 
     def get_zone_import(self, context, zone_import_id):
         target = {'tenant_id': context.tenant}
         policy.check('get_zone_import', context, target)
-        return self.storage.get_zone_task(context, zone_import_id)
+        return self.storage.get_zone_import(context, zone_import_id)
 
     @notification('dns.zone_import.update')
     def update_zone_import(self, context, zone_import):
@@ -2597,7 +2597,7 @@ class Service(service.RPCService, service.Service):
         }
         policy.check('update_zone_import', context, target)
 
-        return self.storage.update_zone_task(context, zone_import)
+        return self.storage.update_zone_import(context, zone_import)
 
     @notification('dns.zone_import.delete')
     @transaction
@@ -2608,6 +2608,6 @@ class Service(service.RPCService, service.Service):
         }
         policy.check('delete_zone_import', context, target)
 
-        zone_import = self.storage.delete_zone_task(context, zone_import_id)
+        zone_import = self.storage.delete_zone_import(context, zone_import_id)
 
         return zone_import
