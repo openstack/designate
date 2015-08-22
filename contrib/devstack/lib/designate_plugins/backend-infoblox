@@ -56,6 +56,7 @@ function install_designate_backend {
 function configure_designate_backend {
     iniset $DESIGNATE_CONF pool_target:$DESIGNATE_TARGET_ID type infoblox
     iniset $DESIGNATE_CONF pool_target:$DESIGNATE_TARGET_ID masters $DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT_MDNS
+    iniset $DESIGNATE_CONF pool_target:$DESIGNATE_TARGET_ID options "host: $DESIGNATE_INFOBLOX_NAMESERVER_IP, port: $DESIGNATE_SERVICE_PORT_DNS"
 
     local nameserver_id=`uuidgen`
     iniset $DESIGNATE_CONF pool:$DESIGNATE_POOL_ID nameservers $nameserver_id

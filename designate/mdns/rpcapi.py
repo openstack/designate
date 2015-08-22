@@ -34,11 +34,12 @@ class MdnsAPI(object):
 
         1.0 - Added notify_zone_changed and poll_for_serial_number.
         1.1 - Added get_serial_number.
+        2.0 - Changed method signatures
 
     XFR API version history:
         1.0 - Added perform_zone_xfr.
     """
-    RPC_NOTIFY_API_VERSION = '1.1'
+    RPC_NOTIFY_API_VERSION = '2.0'
     RPC_XFR_API_VERSION = '1.0'
 
     def __init__(self, topic=None):
@@ -47,7 +48,7 @@ class MdnsAPI(object):
         notify_target = messaging.Target(topic=topic,
                                          namespace='notify',
                                          version=self.RPC_NOTIFY_API_VERSION)
-        self.notify_client = rpc.get_client(notify_target, version_cap='1.1')
+        self.notify_client = rpc.get_client(notify_target, version_cap='2.0')
 
         xfr_target = messaging.Target(topic=topic,
                                       namespace='xfr',
@@ -68,17 +69,17 @@ class MdnsAPI(object):
             MDNS_API = cls()
         return MDNS_API
 
-    def notify_zone_changed(self, context, domain, nameserver, timeout,
+    def notify_zone_changed(self, context, domain, host, port, timeout,
                             retry_interval, max_retries, delay):
         LOG.info(_LI("notify_zone_changed: Calling mdns for zone '%(zone)s', "
                      "serial '%(serial)s' to nameserver '%(host)s:%(port)s'") %
                  {'zone': domain.name, 'serial': domain.serial,
-                  'host': nameserver.host, 'port': nameserver.port})
+                  'host': host, 'port': port})
         # The notify_zone_changed method is a cast rather than a call since the
         # caller need not wait for the notify to complete.
         return self.notify_client.cast(
             context, 'notify_zone_changed', domain=domain,
-            nameserver=nameserver, timeout=timeout,
+            host=host, port=port, timeout=timeout,
             retry_interval=retry_interval, max_retries=max_retries,
             delay=delay)
 
@@ -98,17 +99,17 @@ class MdnsAPI(object):
             retry_interval=retry_interval, max_retries=max_retries,
             delay=delay)
 
-    def get_serial_number(self, context, domain, nameserver, timeout,
+    def get_serial_number(self, context, domain, host, port, timeout,
                           retry_interval, max_retries, delay):
         LOG.info(
             _LI("get_serial_number: Calling mdns for zone '%(zone)s', serial "
                 "%(serial)s' on nameserver '%(host)s:%(port)s'") %
             {'zone': domain.name, 'serial': domain.serial,
-             'host': nameserver.host, 'port': nameserver.port})
-        cctxt = self.notify_client.prepare(version='1.1')
+             'host': host, 'port': port})
+        cctxt = self.notify_client.prepare()
         return cctxt.call(
             context, 'get_serial_number', domain=domain,
-            nameserver=nameserver, timeout=timeout,
+            host=host, port=port, timeout=timeout,
             retry_interval=retry_interval, max_retries=max_retries,
             delay=delay)
 

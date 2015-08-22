@@ -55,6 +55,8 @@ class PowerDNSBackend(base.Backend):
     def __init__(self, target):
         super(PowerDNSBackend, self).__init__(target)
 
+        self.host = self.options.get('host', '127.0.0.1')
+        self.port = int(self.options.get('port', 53))
         self.local_store = threading.local()
 
         default_connection = 'sqlite:///%(state_path)s/powerdns.sqlite' % {
@@ -139,6 +141,10 @@ class PowerDNSBackend(base.Backend):
                 self.session.rollback()
         else:
             self.session.commit()
+
+        self.mdns_api.notify_zone_changed(
+            context, domain, self.host, self.port, self.timeout,
+            self.retry_interval, self.max_retries, self.delay)
 
     def delete_domain(self, context, domain):
         # TODO(kiall): We should make this match create_domain with regard to

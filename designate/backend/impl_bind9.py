@@ -35,6 +35,8 @@ class Bind9Backend(base.Backend):
     def __init__(self, target):
         super(Bind9Backend, self).__init__(target)
 
+        self.host = self.options.get('host', '127.0.0.1')
+        self.port = int(self.options.get('port', 53))
         self.rndc_host = self.options.get('rndc_host', '127.0.0.1')
         self.rndc_port = int(self.options.get('rndc_port', 953))
         self.rndc_config_file = self.options.get('rndc_config_file')
@@ -64,6 +66,10 @@ class Bind9Backend(base.Backend):
             # If create fails because the domain exists, don't reraise
             if "already exists" not in six.text_type(e):
                 raise
+
+        self.mdns_api.notify_zone_changed(
+            context, domain, self.host, self.port, self.timeout,
+            self.retry_interval, self.max_retries, self.delay)
 
     def delete_domain(self, context, domain):
         LOG.debug('Delete Domain')

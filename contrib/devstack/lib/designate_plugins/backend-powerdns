@@ -56,7 +56,7 @@ function install_designate_backend {
 function configure_designate_backend {
     iniset $DESIGNATE_CONF pool_target:$DESIGNATE_TARGET_ID type powerdns
     iniset $DESIGNATE_CONF pool_target:$DESIGNATE_TARGET_ID masters $DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT_MDNS
-    iniset $DESIGNATE_CONF pool_target:$DESIGNATE_TARGET_ID options "connection: `database_connection_url designate_pdns`"
+    iniset $DESIGNATE_CONF pool_target:$DESIGNATE_TARGET_ID options "connection: `database_connection_url designate_pdns`, host: $DESIGNATE_SERVICE_HOST, port: $DESIGNATE_SERVICE_PORT_DNS"
 
     # DevStack Managed PDNS NameServer
     local nameserver_id=`uuidgen`

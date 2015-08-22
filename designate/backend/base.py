@@ -21,6 +21,7 @@ from oslo_log import log as logging
 from designate.i18n import _LI
 from designate.context import DesignateContext
 from designate.plugin import DriverPlugin
+from designate.mdns import rpcapi as mdns_api
 
 
 LOG = logging.getLogger(__name__)
@@ -41,16 +42,28 @@ class Backend(DriverPlugin):
         self.target = target
         self.options = target.options
         self.masters = target.masters
+        self.host = self.options.get('host', '127.0.0.1')
+        self.port = int(self.options.get('port', 53))
 
         # TODO(kiall): Context's should never be shared accross requests.
         self.admin_context = DesignateContext.get_admin_context()
         self.admin_context.all_tenants = True
+
+        # Options for sending NOTIFYs
+        self.timeout = CONF['service:pool_manager'].poll_timeout
+        self.retry_interval = CONF['service:pool_manager'].poll_retry_interval
+        self.max_retries = CONF['service:pool_manager'].poll_max_retries
+        self.delay = CONF['service:pool_manager'].poll_delay
 
     def start(self):
         LOG.info(_LI('Starting %s backend'), self.get_canonical_name())
 
     def stop(self):
         LOG.info(_LI('Stopped %s backend'), self.get_canonical_name())
+
+    @property
+    def mdns_api(self):
+        return mdns_api.MdnsAPI.get_instance()
 
     # Core Backend Interface
     @abc.abstractmethod
@@ -69,6 +82,11 @@ class Backend(DriverPlugin):
         :param context: Security context information.
         :param domain: the DNS domain.
         """
+        LOG.debug('Update Domain')
+
+        self.mdns_api.notify_zone_changed(
+            context, domain, self.host, self.port, self.timeout,
+            self.retry_interval, self.max_retries, self.delay)
 
     @abc.abstractmethod
     def delete_domain(self, context, domain):

@@ -377,9 +377,6 @@ class DynECTBackend(base.Backend):
         client.put(url, data={'activate': True})
         client.logout()
 
-    def update_domain(self, context, domain):
-        LOG.debug('Discarding update_domain call, not-applicable')
-
     def delete_domain(self, context, domain):
         LOG.info(_LI('Deleting domain %(d_id)s / %(d_name)s') %
                  {'d_id': domain['id'], 'd_name': domain['name']})

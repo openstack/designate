@@ -78,7 +78,7 @@ class InfobloxBackendTestCase(BackendTestCase):
     def test_update_domain(self):
         self.set_up_backend()
         context = self.get_context()
-        domain = self.get_domain_fixture()
+        domain = objects.Domain().from_dict(self.get_domain_fixture())
         self.backend.update_domain(context, domain)
 
     def test_delete_domain(self):
