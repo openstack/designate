@@ -31,7 +31,7 @@ class XFRMixin(object):
     """
     def domain_sync(self, context, domain, servers=None):
         servers = servers or domain.masters
-        servers = dnsutils.expand_servers(servers)
+        servers = servers.to_list()
 
         timeout = cfg.CONF["service:mdns"].xfr_timeout
         try:

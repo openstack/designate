@@ -102,6 +102,20 @@ def is_hostname(instance):
     return True
 
 
+@draft3_format_checker.checks("ip-or-host")
+@draft4_format_checker.checks("ip-or-host")
+def is_ip_or_host(instance):
+    if not isinstance(instance, compat.str_types):
+        return True
+
+    if not re.match(RE_DOMAINNAME, instance)\
+            and not is_ipv4(instance)\
+            and not is_ipv6(instance):
+        return False
+
+    return True
+
+
 @draft3_format_checker.checks("domain-name")
 @draft4_format_checker.checks("domainname")
 def is_domainname(instance):

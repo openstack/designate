@@ -40,6 +40,18 @@ class RelationNotLoaded(Base):
     error_code = 500
     error_type = 'relation_not_loaded'
 
+    def __init__(self, *args, **kwargs):
+
+        self.relation = kwargs.pop('relation', None)
+
+        super(RelationNotLoaded, self).__init__(*args, **kwargs)
+
+        self.error_message = "%(relation)s is not loaded on %(object)s" % \
+            {"relation": self.relation, "object": self.object.obj_name()}
+
+    def __str__(self):
+        return self.error_message
+
 
 class AdapterNotFound(Base):
     error_code = 500
@@ -316,6 +328,10 @@ class BlacklistNotFound(NotFound):
 
 class DomainNotFound(NotFound):
     error_type = 'domain_not_found'
+
+
+class DomainMasterNotFound(NotFound):
+    error_type = 'domain_master_not_found'
 
 
 class DomainAttributeNotFound(NotFound):

@@ -17,8 +17,6 @@ from designate import exceptions
 from designate.objects import base
 from designate.objects.validation_error import ValidationError
 from designate.objects.validation_error import ValidationErrorList
-from designate.objects.domain_attribute import DomainAttribute
-from designate.objects.domain_attribute import DomainAttributeList
 
 
 class Domain(base.DictObjectMixin, base.SoftDeleteObjectMixin,
@@ -145,6 +143,10 @@ class Domain(base.DictObjectMixin, base.SoftDeleteObjectMixin,
             'relation': True,
             'relation_cls': 'DomainAttributeList'
         },
+        'masters': {
+            'relation': True,
+            'relation_cls': 'DomainMasterList'
+        },
         'type': {
             'schema': {
                 'type': 'string',
@@ -165,46 +167,42 @@ class Domain(base.DictObjectMixin, base.SoftDeleteObjectMixin,
         'id', 'type', 'name', 'pool_id', 'serial', 'action', 'status'
     ]
 
-    @property
-    def masters(self):
-        if self.obj_attr_is_set('attributes'):
-            return [i.value for i in self.attributes if i.key == 'master']
-        else:
-            return None
-
-    # TODO(ekarlso): Make this a property sette rpr Kiall's comments later.
-    def set_masters(self, masters):
-        attributes = DomainAttributeList()
-
-        for m in masters:
-            obj = DomainAttribute(key='master', value=m)
-            attributes.append(obj)
-        self.attributes = attributes
-
     def get_master_by_ip(self, host):
         """
         Utility to get the master by it's ip for this domain.
         """
         for srv in self.masters:
-            srv_host, _ = utils.split_host_port(srv)
+            srv_host, _ = utils.split_host_port(srv.to_data())
             if host == srv_host:
                 return srv
         return False
 
     def validate(self):
-        if self.type == 'SECONDARY' and self.masters is None:
+        try:
+            if self.type == 'SECONDARY' and self.masters is None:
+                errors = ValidationErrorList()
+                e = ValidationError()
+                e.path = ['type']
+                e.validator = 'required'
+                e.validator_value = ['masters']
+                e.message = "'masters' is a required property"
+                errors.append(e)
+                raise exceptions.InvalidObject(
+                    "Provided object does not match "
+                    "schema", errors=errors, object=self)
+
+            super(Domain, self).validate()
+        except exceptions.RelationNotLoaded as ex:
             errors = ValidationErrorList()
             e = ValidationError()
             e.path = ['type']
             e.validator = 'required'
-            e.validator_value = ['masters']
-            e.message = "'masters' is a required property"
+            e.validator_value = [ex.relation]
+            e.message = "'%s' is a required property" % ex.relation
             errors.append(e)
             raise exceptions.InvalidObject(
                 "Provided object does not match "
                 "schema", errors=errors, object=self)
-
-        super(Domain, self).validate()
 
 
 class DomainList(base.ListObjectMixin, base.DesignateObject,

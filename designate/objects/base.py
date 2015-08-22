@@ -154,7 +154,7 @@ class DesignateObject(object):
     def _obj_check_relation(self, name):
         if name in self.FIELDS and self.FIELDS[name].get('relation', False):
             if not self.obj_attr_is_set(name):
-                raise exceptions.RelationNotLoaded
+                raise exceptions.RelationNotLoaded(object=self, relation=name)
 
     @classmethod
     def obj_cls_from_name(cls, name):
@@ -310,8 +310,20 @@ class DesignateObject(object):
         ValidationErrorList = self.obj_cls_from_name('ValidationErrorList')
         ValidationError = self.obj_cls_from_name('ValidationError')
 
-        values = self.to_dict()
         errors = ValidationErrorList()
+
+        try:
+            values = self.to_dict()
+        except exceptions.RelationNotLoaded as e:
+            e = ValidationError()
+            e.path = ['type']
+            e.validator = 'required'
+            e.validator_value = [e.relation]
+            e.message = "'%s' is a required property" % e.relation
+            errors.append(e)
+            raise exceptions.InvalidObject(
+                "Provided object does not match "
+                "schema", errors=errors, object=self)
 
         LOG.debug("Validating '%(name)s' object with values: %(values)r", {
             'name': self.obj_name(),

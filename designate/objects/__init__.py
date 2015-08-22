@@ -21,6 +21,7 @@ from designate.objects.base import PagedListObjectMixin  # noqa
 from designate.objects.blacklist import Blacklist, BlacklistList  # noqa
 from designate.objects.domain import Domain, DomainList  # noqa
 from designate.objects.domain_attribute import DomainAttribute, DomainAttributeList  # noqa
+from designate.objects.domain_master import DomainMaster, DomainMasterList  # noqa
 from designate.objects.floating_ip import FloatingIP, FloatingIPList  # noqa
 from designate.objects.pool_manager_status import PoolManagerStatus, PoolManagerStatusList  # noqa
 from designate.objects.pool import Pool, PoolList  # noqa
