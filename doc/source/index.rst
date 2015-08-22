@@ -50,7 +50,7 @@ Reference Documentation
    glossary
    backends
    integrations
-   tempest
+   functional-tests
    gmr
    support-matrix
 
