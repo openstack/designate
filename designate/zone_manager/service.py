@@ -15,10 +15,16 @@
 # under the License.
 from oslo_config import cfg
 from oslo_log import log as logging
+import oslo_messaging as messaging
 
 from designate.i18n import _LI
 from designate import coordination
+from designate import exceptions
+from designate import quota
 from designate import service
+from designate import storage
+from designate import utils
+from designate.central import rpcapi
 from designate.zone_manager import tasks
 
 
@@ -28,10 +34,28 @@ CONF = cfg.CONF
 NS = 'designate.periodic_tasks'
 
 
-class Service(coordination.CoordinationMixin, service.Service):
+class Service(service.RPCService, coordination.CoordinationMixin,
+              service.Service):
+    RPC_API_VERSION = '1.0'
+
+    target = messaging.Target(version=RPC_API_VERSION)
+
+    def __init__(self, threads=None):
+        super(Service, self).__init__(threads=threads)
+
+        storage_driver = cfg.CONF['service:zone_manager'].storage_driver
+        self.storage = storage.get_storage(storage_driver)
+
+        # Get a quota manager instance
+        self.quota = quota.get_quota()
+
     @property
     def service_name(self):
         return 'zone_manager'
+
+    @property
+    def central_api(self):
+        return rpcapi.CentralAPI.get_instance()
 
     def start(self):
         super(Service, self).start()
@@ -59,3 +83,67 @@ class Service(coordination.CoordinationMixin, service.Service):
     def _rebalance(self, my_partitions, members, event):
         LOG.info(_LI("Received rebalance event %s") % event)
         self.partition_range = my_partitions
+
+    # Begin RPC Implementation
+
+    # Zone Export
+    def start_zone_export(self, context, domain, export):
+        criterion = {'domain_id': domain.id}
+        count = self.storage.count_recordsets(context, criterion)
+
+        export = self._determine_export_method(context, export, count)
+
+        self.central_api.update_zone_export(context, export)
+
+    def render_zone(self, context, zone_id):
+        return self._export_zone(context, zone_id)
+
+    def _determine_export_method(self, context, export, size):
+        synchronous = CONF['service:zone_manager'].export_synchronous
+
+        # NOTE(timsim):
+        # The logic here with swift will work like this:
+        #     cfg.CONF.export_swift_enabled:
+        #         An export will land in their swift container, even if it's
+        #         small, but the link that comes back will be the synchronous
+        #         link (unless export_syncronous is False, in which case it
+        #         will behave like the next option)
+        #     cfg.CONF.export_swift_preffered:
+        #         The link that the user gets back will always be the swift
+        #         container, and status of the export resource will depend
+        #         on the Swift process.
+        #     If the export is too large for synchronous, or synchronous is not
+        #     enabled and swift is not enabled, it will fall through to ERROR
+        # swift = False
+
+        if synchronous:
+            try:
+                self.quota.limit_check(
+                        context, context.tenant, api_export_size=size)
+            except exceptions.OverQuota():
+                LOG.debug('Zone Export too large to perform synchronously')
+                export['status'] = 'ERROR'
+                export['message'] = 'Zone is too large to export'
+                return export
+
+            export['location'] = \
+                "designate://v2/zones/tasks/exports/%(eid)s/export" % \
+                {'eid': export['id']}
+
+            export['status'] = 'COMPLETE'
+        else:
+            LOG.debug('No method found to export zone')
+            export['status'] = 'ERROR'
+            export['message'] = 'No suitable method for export'
+
+        return export
+
+    def _export_zone(self, context, zone_id):
+        domain = self.central_api.get_domain(context, zone_id)
+
+        criterion = {'domain_id': zone_id}
+        recordsets = self.storage.find_recordsets_export(context, criterion)
+
+        return utils.render_template('export-zone.jinja2',
+                                     domain=domain,
+                                     recordsets=recordsets)

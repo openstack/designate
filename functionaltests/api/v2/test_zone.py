@@ -22,6 +22,7 @@ from functionaltests.common import datagen
 from functionaltests.api.v2.base import DesignateV2Test
 from functionaltests.api.v2.clients.zone_client import ZoneClient
 from functionaltests.api.v2.clients.zone_import_client import ZoneImportClient
+from functionaltests.api.v2.clients.zone_export_client import ZoneExportClient
 
 
 class ZoneTest(DesignateV2Test):
@@ -140,3 +141,35 @@ class ZoneImportTest(DesignateV2Test):
         import_client.delete_zone_import(import_id)
         self.assertRaises(NotFound,
             lambda: import_client.get_zone_import(model.id))
+
+
+class ZoneExportTest(DesignateV2Test):
+
+    def setUp(self):
+        super(ZoneExportTest, self).setUp()
+
+    def test_import_domain(self):
+        user = 'default'
+        resp, zone = ZoneClient.as_user(user).post_zone(
+            datagen.random_zone_data())
+        ZoneClient.as_user(user).wait_for_zone(zone.id)
+
+        export_client = ZoneExportClient.as_user(user)
+
+        resp, model = export_client.post_zone_export(zone.id)
+
+        export_id = model.id
+        self.assertEqual(resp.status, 202)
+        self.assertEqual(model.status, 'PENDING')
+        export_client.wait_for_zone_export(export_id)
+
+        resp, model = export_client.get_zone_export(export_id)
+        self.assertEqual(resp.status, 200)
+        self.assertEqual(model.status, 'COMPLETE')
+
+        resp, body = export_client.get_exported_zone(export_id)
+        self.assertEqual(resp.status, 200)
+
+        export_client.delete_zone_export(export_id)
+        self.assertRaises(NotFound,
+            lambda: export_client.get_zone_export(model.id))

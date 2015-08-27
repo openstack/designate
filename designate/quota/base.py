@@ -55,6 +55,7 @@ class Quota(DriverPlugin):
             'domain_recordsets': cfg.CONF.quota_domain_recordsets,
             'domain_records': cfg.CONF.quota_domain_records,
             'recordset_records': cfg.CONF.quota_recordset_records,
+            'api_export_size': cfg.CONF.quota_api_export_size,
         }
 
     def get_quota(self, context, tenant_id, resource):

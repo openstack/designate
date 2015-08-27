@@ -24,6 +24,10 @@ from designate.api.v2.controllers.zones.tasks import abandon
 from designate.api.v2.controllers.zones.tasks.xfr import XfrController
 from designate.api.v2.controllers.zones.tasks.imports \
     import ZoneImportController
+from designate.api.v2.controllers.zones.tasks.exports \
+    import ZoneExportsController
+from designate.api.v2.controllers.zones.tasks.exports \
+    import ZoneExportCreateController
 
 CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
@@ -36,3 +40,5 @@ class TasksController(object):
     abandon = abandon.AbandonController()
     xfr = XfrController()
     imports = ZoneImportController()
+    exports = ZoneExportsController()
+    export = ZoneExportCreateController()

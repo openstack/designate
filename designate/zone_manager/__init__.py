@@ -27,7 +27,11 @@ OPTS = [
     cfg.IntOpt('threads', default=1000,
                help='Number of Zone Manager greenthreads to spawn'),
     cfg.ListOpt('enabled_tasks', default=None,
-                help='Enabled tasks to run')
+                help='Enabled tasks to run'),
+    cfg.StrOpt('storage-driver', default='sqlalchemy',
+               help='The storage driver to use'),
+    cfg.BoolOpt('export-synchronous', default=True,
+                help='Whether to allow synchronous zone exports'),
 ]
 
 CONF.register_opts(OPTS, group='service:zone_manager')

@@ -1299,6 +1299,46 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
         return self._delete(context, tables.zone_tasks, zone_import,
                     exceptions.ZoneImportNotFound)
 
+    # Zone Export Methods
+    def _find_zone_exports(self, context, criterion, one=False, marker=None,
+                   limit=None, sort_key=None, sort_dir=None):
+        if not criterion:
+            criterion = {}
+        criterion['task_type'] = 'EXPORT'
+        return self._find(
+            context, tables.zone_tasks, objects.ZoneExport,
+            objects.ZoneExportList, exceptions.ZoneExportNotFound, criterion,
+            one, marker, limit, sort_key, sort_dir)
+
+    def create_zone_export(self, context, zone_export):
+        return self._create(
+            tables.zone_tasks, zone_export, exceptions.DuplicateZoneExport)
+
+    def get_zone_export(self, context, zone_export_id):
+        return self._find_zone_exports(context, {'id': zone_export_id},
+                                     one=True)
+
+    def find_zone_exports(self, context, criterion=None, marker=None,
+                  limit=None, sort_key=None, sort_dir=None):
+        return self._find_zone_exports(context, criterion, marker=marker,
+                               limit=limit, sort_key=sort_key,
+                               sort_dir=sort_dir)
+
+    def find_zone_export(self, context, criterion):
+        return self._find_zone_exports(context, criterion, one=True)
+
+    def update_zone_export(self, context, zone_export):
+        return self._update(
+            context, tables.zone_tasks, zone_export,
+            exceptions.DuplicateZoneExport, exceptions.ZoneExportNotFound)
+
+    def delete_zone_export(self, context, zone_export_id):
+        # Fetch the existing zone_export, we'll need to return it.
+        zone_export = self._find_zone_exports(context, {'id': zone_export_id},
+                                one=True)
+        return self._delete(context, tables.zone_tasks, zone_export,
+                    exceptions.ZoneExportNotFound)
+
     # diagnostics
     def ping(self, context):
         start_time = time.time()
