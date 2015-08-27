@@ -25,7 +25,7 @@ LOG = logging.getLogger(__name__)
 
 class QuotasController(rest.RestController):
     _view = quotas_view.QuotasView()
-    _resource_schema = schema.Schema('v2', 'quota')
+    _resource_schema = schema.Schema('admin', 'quota')
 
     @staticmethod
     def get_path():
