@@ -143,3 +143,42 @@ class KeystoneContextMiddlewareTest(oslotest.base.BaseTestCase):
 
         self.app(self.request)
         self.assertFalse(self.ctxt.edit_managed_records)
+
+
+class SSLMiddlewareTest(oslotest.base.BaseTestCase):
+    def setUp(self):
+        super(SSLMiddlewareTest, self).setUp()
+        self.app = middleware.SSLMiddleware({})
+
+        self.request = FakeRequest()
+
+    def test_bogus_header(self):
+        self.request.environ['wsgi.url_scheme'] = 'http'
+        # If someone sends something bogus, it will infect their self links
+        self.request.environ['HTTP_X_FORWARDED_PROTO'] = 'poo'
+        self.app(self.request)
+
+        self.assertEqual(self.request.environ['wsgi.url_scheme'], 'poo')
+
+    def test_http_header(self):
+        self.request.environ['wsgi.url_scheme'] = ''
+        self.request.environ['HTTP_X_FORWARDED_PROTO'] = 'http'
+        self.app(self.request)
+
+        self.assertEqual(self.request.environ['wsgi.url_scheme'], 'http')
+
+    def test_https_header(self):
+        self.request.environ['wsgi.url_scheme'] = 'http'
+        self.request.environ['HTTP_X_FORWARDED_PROTO'] = 'https'
+        self.app(self.request)
+
+        self.assertEqual(self.request.environ['wsgi.url_scheme'], 'https')
+
+    def test_override_proto(self):
+        self.request.environ['wsgi.url_scheme'] = 'http'
+        self.request.environ['HTTP_X_FORWARDED_PROTO'] = 'https'
+        self.app.override = 'poo'
+
+        self.app(self.request)
+
+        self.assertEqual(self.request.environ['wsgi.url_scheme'], 'poo')
