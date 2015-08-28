@@ -27,6 +27,17 @@ from tempest_lib.auth import KeystoneV2AuthProvider
 from functionaltests.common.utils import memoized
 
 
+class KeystoneV2AuthProviderWithOverridableUrl(KeystoneV2AuthProvider):
+
+    def base_url(self, *args, **kwargs):
+        # use the base url from the config if it was specified
+        if cfg.CONF.identity.designate_override_url:
+            return cfg.CONF.identity.designate_override_url
+        else:
+            return super(KeystoneV2AuthProviderWithOverridableUrl, self) \
+                .base_url(*args, **kwargs)
+
+
 class BaseDesignateClient(RestClient):
 
     def __init__(self):
@@ -49,6 +60,12 @@ class BaseDesignateClient(RestClient):
     def _get_keystone_auth_provider(self):
         pass
 
+    def _create_keystone_auth_provider(self, creds):
+        auth_provider = KeystoneV2AuthProviderWithOverridableUrl(
+            creds, cfg.CONF.identity.uri)
+        auth_provider.fill_credentials()
+        return auth_provider
+
 
 class DesignateClient(BaseDesignateClient):
     """Client with default user"""
@@ -65,9 +82,7 @@ class DesignateClient(BaseDesignateClient):
             password=cfg.CONF.identity.password,
             tenant_name=cfg.CONF.identity.tenant_name,
         )
-        auth_provider = KeystoneV2AuthProvider(creds, cfg.CONF.identity.uri)
-        auth_provider.fill_credentials()
-        return auth_provider
+        return self._create_keystone_auth_provider(creds)
 
 
 class DesignateAltClient(BaseDesignateClient):
@@ -85,9 +100,7 @@ class DesignateAltClient(BaseDesignateClient):
             password=cfg.CONF.identity.alt_password,
             tenant_name=cfg.CONF.identity.alt_tenant_name,
         )
-        auth_provider = KeystoneV2AuthProvider(creds, cfg.CONF.identity.uri)
-        auth_provider.fill_credentials()
-        return auth_provider
+        return self._create_keystone_auth_provider(creds)
 
 
 class DesignateAdminClient(BaseDesignateClient):
@@ -105,9 +118,7 @@ class DesignateAdminClient(BaseDesignateClient):
             password=cfg.CONF.identity.admin_password,
             tenant_name=cfg.CONF.identity.admin_tenant_name,
         )
-        auth_provider = KeystoneV2AuthProvider(creds, cfg.CONF.identity.uri)
-        auth_provider.fill_credentials()
-        return auth_provider
+        return self._create_keystone_auth_provider(creds)
 
 
 class ClientMixin(object):

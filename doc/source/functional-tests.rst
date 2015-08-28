@@ -39,6 +39,9 @@ The config file should look like the following:
 ::
 
     [identity]
+    # optionally override the url from the service catalog
+    # designate_override_url = http://designate.example.com
+
     # Replace these with values that represent your identity configuration
     uri = http://localhost:5000/v2.0
     uri_v3 = http://localhost:5000/v3
