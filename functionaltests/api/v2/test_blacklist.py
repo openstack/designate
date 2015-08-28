@@ -21,27 +21,24 @@ from tempest_lib import exceptions
 from functionaltests.common import datagen
 from functionaltests.api.v2.base import DesignateV2Test
 from functionaltests.api.v2.clients.blacklist_client import BlacklistClient
+from functionaltests.api.v2.fixtures import BlacklistFixture
 
 
 class BlacklistTest(DesignateV2Test):
-    def _create_blacklist(self, blacklist_model, user='admin'):
-        resp, model = BlacklistClient.as_user(user).post_blacklist(
-            blacklist_model)
-        self.assertEqual(resp.status, 201)
-        return resp, model
 
     def test_list_blacklists(self):
-        self._create_blacklist(datagen.random_blacklist_data())
+        self.useFixture(BlacklistFixture())
         resp, model = BlacklistClient.as_user('admin').list_blacklists()
         self.assertEqual(resp.status, 200)
         self.assertGreater(len(model.blacklists), 0)
 
     def test_create_blacklist(self):
-        self._create_blacklist(datagen.random_blacklist_data(), user='admin')
+        fixture = self.useFixture(BlacklistFixture())
+        self.assertEqual(fixture.post_model.pattern,
+                         fixture.created_blacklist.pattern)
 
     def test_update_blacklist(self):
-        post_model = datagen.random_blacklist_data()
-        resp, old_model = self._create_blacklist(post_model)
+        old_model = self.useFixture(BlacklistFixture()).created_blacklist
 
         patch_model = datagen.random_blacklist_data()
         resp, new_model = BlacklistClient.as_user('admin').patch_blacklist(
@@ -55,9 +52,9 @@ class BlacklistTest(DesignateV2Test):
         self.assertEqual(new_model.pattern, model.pattern)
 
     def test_delete_blacklist(self):
-        resp, model = self._create_blacklist(datagen.random_blacklist_data())
+        fixture = self.useFixture(BlacklistFixture())
         resp, model = BlacklistClient.as_user('admin').delete_blacklist(
-            model.id)
+            fixture.created_blacklist.id)
         self.assertEqual(resp.status, 204)
 
     def test_get_blacklist_404(self):

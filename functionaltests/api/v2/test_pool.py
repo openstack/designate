@@ -21,26 +21,27 @@ from tempest_lib import exceptions
 from functionaltests.common import datagen
 from functionaltests.api.v2.base import DesignateV2Test
 from functionaltests.api.v2.clients.pool_client import PoolClient
+from functionaltests.api.v2.fixtures import PoolFixture
 
 
 class PoolTest(DesignateV2Test):
-    def _create_pool(self, pool_model, user='admin'):
-        resp, model = PoolClient.as_user(user).post_pool(pool_model)
-        self.assertEqual(resp.status, 201)
-        return resp, model
 
     def test_list_pools(self):
-        self._create_pool(datagen.random_pool_data())
+        self.useFixture(PoolFixture())
         resp, model = PoolClient.as_user('admin').list_pools()
         self.assertEqual(resp.status, 200)
         self.assertGreater(len(model.pools), 0)
 
     def test_create_pool(self):
-        self._create_pool(datagen.random_pool_data(), user='admin')
+        fixture = self.useFixture(PoolFixture())
+        post_model = fixture.post_model
+        created_pool = fixture.created_pool
+
+        self.assertEqual(post_model.name, created_pool.name)
+        self.assertEqual(post_model.ns_records, created_pool.ns_records)
 
     def test_update_pool(self):
-        post_model = datagen.random_pool_data()
-        resp, old_model = self._create_pool(post_model)
+        old_model = self.useFixture(PoolFixture()).created_pool
 
         patch_model = datagen.random_pool_data()
         resp, new_model = PoolClient.as_user('admin').patch_pool(
@@ -53,8 +54,8 @@ class PoolTest(DesignateV2Test):
         self.assertEqual(new_model.name, patch_model.name)
 
     def test_delete_pool(self):
-        resp, model = self._create_pool(datagen.random_pool_data())
-        resp, model = PoolClient.as_user('admin').delete_pool(model.id)
+        pool = self.useFixture(PoolFixture()).created_pool
+        resp, model = PoolClient.as_user('admin').delete_pool(pool.id)
         self.assertEqual(resp.status, 204)
 
     def test_get_pool_404(self):
