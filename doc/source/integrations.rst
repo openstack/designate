@@ -9,7 +9,7 @@ Reverse - FloatingIP
 ====================
 
 The FloatingIP PTR feature of Designate relies on information of the FloatingIP
-which is in a different service then Designate itself. It can be in any service
+which is in a different service than Designate itself. It can be in any service
 as long as their is a "plugin" for it that can be loaded via the configuration
 setting called "network_api".
 
