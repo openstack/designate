@@ -47,6 +47,8 @@ cfg.CONF.register_opts([
     cfg.StrOpt('mdns-topic', default='mdns', help='mDNS Topic'),
     cfg.StrOpt('pool-manager-topic', default='pool_manager',
                help='Pool Manager Topic'),
+    cfg.StrOpt('zone-manager-topic', default='zone_manager',
+               help='Zone Manager Topic'),
 
     # Default TTL
     cfg.IntOpt('default-ttl', default=3600),

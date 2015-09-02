@@ -44,6 +44,7 @@ class QuotaTestCase(tests.TestCase):
 
         self.assertIsNotNone(quotas)
         self.assertEqual({
+            'api_export_size': cfg.CONF.quota_api_export_size,
             'domains': cfg.CONF.quota_domains,
             'domain_recordsets': cfg.CONF.quota_domain_recordsets,
             'domain_records': cfg.CONF.quota_domain_records,

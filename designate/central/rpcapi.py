@@ -50,14 +50,15 @@ class CentralAPI(object):
         5.1 - Add xfr_domain
         5.2 - Add Zone Import methods
         5.3 - Add Zone Export method
+        5.4 - Add asynchronous Zone Export methods
     """
-    RPC_API_VERSION = '5.3'
+    RPC_API_VERSION = '5.4'
 
     def __init__(self, topic=None):
         topic = topic if topic else cfg.CONF.central_topic
 
         target = messaging.Target(topic=topic, version=self.RPC_API_VERSION)
-        self.client = rpc.get_client(target, version_cap='5.3')
+        self.client = rpc.get_client(target, version_cap='5.4')
 
     @classmethod
     def get_instance(cls):
@@ -535,3 +536,36 @@ class CentralAPI(object):
                      "delete_zone_import."))
         return self.client.call(context, 'delete_zone_import',
                                 zone_import_id=zone_import_id)
+
+    # Zone Export Methods
+    def create_zone_export(self, context, zone_id):
+        LOG.info(_LI("create_zone_export: Calling central's "
+                     "create_zone_export."))
+        return self.client.call(context, 'create_zone_export',
+                                zone_id=zone_id)
+
+    def find_zone_exports(self, context, criterion=None, marker=None,
+                  limit=None, sort_key=None, sort_dir=None):
+        LOG.info(_LI("find_zone_exports: Calling central's "
+                     "find_zone_exports."))
+        return self.client.call(context, 'find_zone_exports',
+                                criterion=criterion, marker=marker,
+                                limit=limit, sort_key=sort_key,
+                                sort_dir=sort_dir)
+
+    def get_zone_export(self, context, zone_export_id):
+        LOG.info(_LI("get_zone_export: Calling central's get_zone_export."))
+        return self.client.call(context, 'get_zone_export',
+                                zone_export_id=zone_export_id)
+
+    def update_zone_export(self, context, zone_export):
+        LOG.info(_LI("update_zone_export: Calling central's "
+                     "update_zone_export."))
+        return self.client.call(context, 'update_zone_export',
+                                zone_export=zone_export)
+
+    def delete_zone_export(self, context, zone_export_id):
+        LOG.info(_LI("delete_zone_export: Calling central's "
+                     "delete_zone_export."))
+        return self.client.call(context, 'delete_zone_export',
+                                zone_export_id=zone_export_id)

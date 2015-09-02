@@ -748,3 +748,232 @@ Delete Zone Import
         HTTP/1.1 204 No Content
 
     :statuscode 204: No Content
+
+Export Zone
+-----------
+
+Create a Zone Export
+^^^^^^^^^^^^^^^^^^^^
+
+.. http:post:: /zones/(uuid:id)/tasks/export
+
+    To export a zone in BIND9 zonefile format, a zone export resource must be
+    created. This is accomplished by initializing an export task.
+
+    **Example request:**
+
+    .. sourcecode:: http
+
+        POST /v2/zones/074e805e-fe87-4cbb-b10b-21a06e215d41/tasks/export HTTP/1.1
+        Host: 127.0.0.1:9001
+
+    **Example response:**
+
+    .. sourcecode:: http
+
+        HTTP/1.1 202 Accepted
+        Content-Type: application/json
+
+        {
+            "status": "PENDING",
+            "zone_id": "074e805e-fe87-4cbb-b10b-21a06e215d41",
+            "links": {
+                "self": "http://127.0.0.1:9001/v2/zones/tasks/exports/8ec17fe1-d1f9-41b4-aa98-4eeb4c27b720"
+            },
+            "created_at": "2015-08-27T20:57:03.000000",
+            "updated_at": null,
+            "version": 1,
+            "location": null,
+            "message": null,
+            "project_id": "1",
+            "id": "8ec17fe1-d1f9-41b4-aa98-4eeb4c27b720"
+        }
+    :statuscode 202: Accepted
+
+View a Zone Export Record
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. http:get:: /zones/tasks/exports/(uuid:id)
+
+    The status of a zone export can be viewed by querying the id
+    given when the request was created.
+
+    **Example request:**
+
+    .. sourcecode:: http
+
+        GET /v2/zones/tasks/exports/a86dba58-0043-4cc6-a1bb-69d5e86f3ca3 HTTP/1.1
+        Host: 127.0.0.1:9001
+        Accept: application/json
+
+    **Example response:**
+
+    .. sourcecode:: http
+
+        HTTP/1.1 200 OK
+        Content-Type: application/json
+
+        {
+            "status": "COMPLETE",
+            "zone_id": "6625198b-d67d-47dc-8d29-f90bd60f3ac4",
+            "links": {
+                "self": "http://127.0.0.1:9001/v2/zones/tasks/exports/8ec17fe1-d1f9-41b4-aa98-4eeb4c27b720",
+                "export": "http://127.0.0.1:9001/v2/zones/tasks/exports/8ec17fe1-d1f9-41b4-aa98-4eeb4c27b720/export"
+            },
+            "created_at": "2015-08-27T20:57:03.000000",
+            "updated_at": "2015-08-27T20:57:03.000000",
+            "version": 2,
+            "location": "designate://v2/zones/tasks/exports/8ec17fe1-d1f9-41b4-aa98-4eeb4c27b720/export",
+            "message": null,
+            "project_id": "noauth-project",
+            "id": "8ec17fe1-d1f9-41b4-aa98-4eeb4c27b720"
+        }
+
+    :statuscode 200: Success
+    :statuscode 401: Access Denied
+    :statuscode 404: Not Found
+
+    Notice the status has been updated and there is now an 'export' in the 'links' field that points
+    to a link where the export (zonefile) can be accessed.
+
+
+View the Exported Zone
+^^^^^^^^^^^^^^^^^^^^^^
+
+The link that is generated in the export field in an export resource can be followed to
+a Designate resource, or an external resource. If the link is to a Designate endpoint, the
+zonefile can be retrieved directly through the API by following that link.
+
+.. http:get:: /zones/tasks/exports/(uuid:id)
+
+    **Example request:**
+
+    .. sourcecode:: http
+
+        GET /zones/tasks/exports/8ec17fe1-d1f9-41b4-aa98-4eeb4c27b720/export HTTP/1.1
+        Host: 127.0.0.1:9001
+        Accept: text/dns
+
+
+    **Example response:**
+
+    .. sourcecode:: http
+
+        HTTP/1.1 200 OK
+        Content-Type: text/dns
+
+        $ORIGIN example.com.
+        $TTL 42
+
+        example.com. IN SOA ns.designate.com. nsadmin.example.com. (
+            1394213803 ; serial
+            3600 ; refresh
+            600 ; retry
+            86400 ; expire
+            3600 ; minimum
+        )
+
+
+        example.com. IN NS ns.designate.com.
+
+
+        example.com.  IN MX 10 mail.example.com.
+        ns.example.com.  IN A  10.0.0.1
+        mail.example.com.  IN A  10.0.0.2
+
+    :statuscode 200: Success
+    :statuscode 401: Access Denied
+    :statuscode 404: Not Found
+
+    Notice how the SOA and NS records are replaced with the Designate server(s).
+
+List Zone Exports
+^^^^^^^^^^^^^^^^^
+
+.. http:get:: /zones/tasks/exports/
+
+    List all of the zone exports created by this project.
+
+    **Example request:**
+
+    .. sourcecode:: http
+
+        GET /v2/zones/tasks/exports/ HTTP/1.1
+        Host: 127.0.0.1:9001
+        Accept: application/json
+
+    **Example response:**
+
+    .. sourcecode:: http
+
+        HTTP/1.1 200 OK
+        Content-Type: application/json
+
+        {
+            "exports": [
+                {
+                    "status": "COMPLETE",
+                    "zone_id": "30ea7692-7f9e-4195-889e-0ba11620b491",
+                    "links": {
+                        "self": "http://127.0.0.1:9001/v2/zones/tasks/exports/d2f36aa6-2da4-4b22-a2a9-9cdf19a2f248",
+                        "export": "http://127.0.0.1:9001/v2/zones/30ea7692-7f9e-4195-889e-0ba11620b491/tasks/exports/d2f36aa6-2da4-4b22-a2a9-9cdf19a2f248/export"
+                    },
+                    "created_at": "2015-08-24T19:46:50.000000",
+                    "updated_at": "2015-08-24T19:46:50.000000",
+                    "version": 2,
+                    "location": "designate://v2/zones/30ea7692-7f9e-4195-889e-0ba11620b491/tasks/exports/d2f36aa6-2da4-4b22-a2a9-9cdf19a2f248/export",
+                    "message": null,
+                    "project_id": "noauth-project",
+                    "id": "d2f36aa6-2da4-4b22-a2a9-9cdf19a2f248"
+                },
+                {
+                    "status": "COMPLETE",
+                    "zone_id": "0503f9fd-3938-47a4-bbf3-df99b088abfc",
+                    "links": {
+                        "self": "http://127.0.0.1:9001/v2/zones/tasks/exports/3d7d07a5-2ce3-458e-b3dd-6a29906234d8",
+                        "export": "http://127.0.0.1:9001/v2/zones/tasks/exports/3d7d07a5-2ce3-458e-b3dd-6a29906234d8/export"
+                    },
+                    "created_at": "2015-08-25T15:16:10.000000",
+                    "updated_at": "2015-08-25T15:16:10.000000",
+                    "version": 2,
+                    "location": "designate://v2/zones/tasks/exports/3d7d07a5-2ce3-458e-b3dd-6a29906234d8/export",
+                    "message": null,
+                    "project_id": "noauth-project",
+                    "id": "3d7d07a5-2ce3-458e-b3dd-6a29906234d8"
+                },
+            ],
+            "links": {
+                "self": "http://127.0.0.1:9001/v2/zones/tasks/exports"
+            }
+        }
+
+    :statuscode 200: Success
+    :statuscode 401: Access Denied
+    :statuscode 404: Not Found
+
+Delete Zone Export
+^^^^^^^^^^^^^^^^^^
+
+.. http:delete:: /zones/tasks/exports/(uuid:id)
+
+    Deletes a zone export with the specified ID. This does not affect the zone
+    that was exported, it simply removes the record of the export. If the link
+    to view the export was pointing to a Designate API endpoint, the endpoint
+    will no longer be available.
+
+    **Example Request:**
+
+    .. sourcecode:: http
+
+        DELETE /v2/zones/tasks/exports/a86dba58-0043-4cc6-a1bb-69d5e86f3ca3 HTTP/1.1
+        Host: 127.0.0.1:9001
+        Accept: application/json
+        Content-Type: application/json
+
+    **Example Response:**
+
+    .. sourcecode:: http
+
+        HTTP/1.1 204 No Content
+
+    :statuscode 204: No Content

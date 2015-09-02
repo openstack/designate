@@ -290,6 +290,10 @@ class DuplicateZoneImport(Duplicate):
     error_type = 'duplicate_zone_import'
 
 
+class DuplicateZoneExport(Duplicate):
+    error_type = 'duplicate_zone_export'
+
+
 class MethodNotAllowed(Base):
     expected = True
     error_code = 405
@@ -380,6 +384,10 @@ class ZoneTransferAcceptNotFound(NotFound):
 
 class ZoneImportNotFound(NotFound):
     error_type = 'zone_import_not_found'
+
+
+class ZoneExportNotFound(NotFound):
+    error_type = 'zone_export_not_found'
 
 
 class LastServerDeleteNotAllowed(BadRequest):

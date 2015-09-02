@@ -50,6 +50,7 @@ from designate import utils
 from designate import storage
 from designate.mdns import rpcapi as mdns_rpcapi
 from designate.pool_manager import rpcapi as pool_manager_rpcapi
+from designate.zone_manager import rpcapi as zone_manager_rpcapi
 
 
 LOG = logging.getLogger(__name__)
@@ -259,7 +260,7 @@ def notification(notification_type):
 
 
 class Service(service.RPCService, service.Service):
-    RPC_API_VERSION = '5.3'
+    RPC_API_VERSION = '5.4'
 
     target = messaging.Target(version=RPC_API_VERSION)
 
@@ -306,6 +307,10 @@ class Service(service.RPCService, service.Service):
     @property
     def pool_manager_api(self):
         return pool_manager_rpcapi.PoolManagerAPI.get_instance()
+
+    @property
+    def zone_manager_api(self):
+        return zone_manager_rpcapi.ZoneManagerAPI.get_instance()
 
     def _is_valid_domain_name(self, context, domain_name):
         # Validate domain name length
@@ -2611,3 +2616,68 @@ class Service(service.RPCService, service.Service):
         zone_import = self.storage.delete_zone_import(context, zone_import_id)
 
         return zone_import
+
+    # Zone Export Methods
+    @notification('dns.zone_export.create')
+    def create_zone_export(self, context, zone_id):
+        # Try getting the domain to ensure it exists
+        domain = self.storage.get_domain(context, zone_id)
+
+        target = {'tenant_id': context.tenant}
+        policy.check('create_zone_export', context, target)
+
+        values = {
+            'status': 'PENDING',
+            'message': None,
+            'domain_id': zone_id,
+            'tenant_id': context.tenant,
+            'task_type': 'EXPORT'
+        }
+        zone_export = objects.ZoneExport(**values)
+
+        created_zone_export = self.storage.create_zone_export(context,
+                                                              zone_export)
+
+        self.zone_manager_api.start_zone_export(context, domain,
+                                                created_zone_export)
+
+        return created_zone_export
+
+    def find_zone_exports(self, context, criterion=None, marker=None,
+                  limit=None, sort_key=None, sort_dir=None):
+        target = {'tenant_id': context.tenant}
+        policy.check('find_zone_exports', context, target)
+
+        criterion = {
+            'task_type': 'EXPORT'
+        }
+        return self.storage.find_zone_exports(context, criterion, marker,
+                                      limit, sort_key, sort_dir)
+
+    def get_zone_export(self, context, zone_export_id):
+        target = {'tenant_id': context.tenant}
+        policy.check('get_zone_export', context, target)
+
+        return self.storage.get_zone_export(context, zone_export_id)
+
+    @notification('dns.zone_export.update')
+    def update_zone_export(self, context, zone_export):
+        target = {
+            'tenant_id': zone_export.tenant_id,
+        }
+        policy.check('update_zone_export', context, target)
+
+        return self.storage.update_zone_export(context, zone_export)
+
+    @notification('dns.zone_export.delete')
+    @transaction
+    def delete_zone_export(self, context, zone_export_id):
+        target = {
+            'zone_export_id': zone_export_id,
+            'tenant_id': context.tenant
+        }
+        policy.check('delete_zone_export', context, target)
+
+        zone_export = self.storage.delete_zone_export(context, zone_export_id)
+
+        return zone_export

@@ -99,5 +99,4 @@ Admin API
        :glob:
 
        rest/admin/quotas
-       rest/admin/zones
 

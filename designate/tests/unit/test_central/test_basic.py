@@ -1753,3 +1753,112 @@ class IsSubdomainTestCase(CentralBasic):
         r = self.service._is_subdomain(self.context, 'foo.a.b.example.com.',
                                        '1')
         self.assertEqual(r, 'example.com.')
+
+
+class CentralZoneExportTests(CentralBasic):
+    def setUp(self):
+        super(CentralZoneExportTests, self).setUp()
+
+        def storage_find_tld(c, d):
+            if d['name'] not in ('org',):
+                raise exceptions.TldNotFound
+
+        self.service.storage.find_tld = storage_find_tld
+
+    def test_create_zone_export(self):
+        self.context = Mock()
+        self.context.tenant = 't'
+
+        self.service.storage.get_domain.return_value = RoObject(
+            name='example.com.',
+            id='123'
+        )
+
+        self.service.storage.create_zone_export = Mock(
+            return_value=RoObject(
+                domain_id='123',
+                task_type='EXPORT',
+                status='PENDING',
+                message=None,
+                tenant_id='t'
+            )
+        )
+
+        self.service.zone_manager_api.start_zone_export = Mock()
+
+        out = self.service.create_zone_export(
+            self.context,
+            '123'
+        )
+        self.assertEqual(out.domain_id, '123')
+        self.assertEqual(out.status, 'PENDING')
+        self.assertEqual(out.task_type, 'EXPORT')
+        self.assertEqual(out.message, None)
+        self.assertEqual(out.tenant_id, 't')
+
+    def test_get_zone_export(self):
+        self.context = Mock()
+        self.context.tenant = 't'
+
+        self.service.storage.get_zone_export.return_value = RoObject(
+                domain_id='123',
+                task_type='EXPORT',
+                status='PENDING',
+                message=None,
+                tenant_id='t'
+        )
+
+        out = self.service.get_zone_export(self.context, '1')
+
+        n, ctx, target = designate.central.service.policy.check.call_args[0]
+
+        # Check arguments to policy
+        self.assertEqual(target['tenant_id'], 't')
+
+        # Check output
+        self.assertEqual(out.domain_id, '123')
+        self.assertEqual(out.status, 'PENDING')
+        self.assertEqual(out.task_type, 'EXPORT')
+        self.assertEqual(out.message, None)
+        self.assertEqual(out.tenant_id, 't')
+
+    def test_find_zone_exports(self):
+        self.context = Mock()
+        self.context.tenant = 't'
+        self.service.storage.find_zone_exports = Mock()
+
+        self.service.find_zone_exports(self.context)
+
+        assert self.service.storage.find_zone_exports.called
+        pcheck, ctx, target = \
+            designate.central.service.policy.check.call_args[0]
+        self.assertEqual(pcheck, 'find_zone_exports')
+
+    def test_delete_zone_export(self):
+        self.context = Mock()
+        self.context.tenant = 't'
+
+        self.service.storage.delete_zone_export = Mock(
+            return_value=RoObject(
+                domain_id='123',
+                task_type='EXPORT',
+                status='PENDING',
+                message=None,
+                tenant_id='t'
+            )
+        )
+
+        out = self.service.delete_zone_export(self.context, '1')
+
+        assert self.service.storage.delete_zone_export.called
+
+        self.assertEqual(out.domain_id, '123')
+        self.assertEqual(out.status, 'PENDING')
+        self.assertEqual(out.task_type, 'EXPORT')
+        self.assertEqual(out.message, None)
+        self.assertEqual(out.tenant_id, 't')
+
+        assert designate.central.service.policy.check.called
+        pcheck, ctx, target = \
+            designate.central.service.policy.check.call_args[0]
+        self.assertEqual(pcheck, 'delete_zone_export')

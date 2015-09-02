@@ -216,6 +216,9 @@ debug = False
 # Can be one or more of: periodic_exists
 #enabled_tasks = None
 
+# Whether to allow synchronous zone exports
+#export_synchronous = True
+
 #-----------------------
 # Pool Manager Service
 #-----------------------

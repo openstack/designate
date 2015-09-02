@@ -39,7 +39,7 @@ ACTIONS = ['CREATE', 'DELETE', 'UPDATE', 'NONE']
 ZONE_ATTRIBUTE_KEYS = ('master',)
 
 ZONE_TYPES = ('PRIMARY', 'SECONDARY',)
-ZONE_TASK_TYPES = ['IMPORT']
+ZONE_TASK_TYPES = ['IMPORT', 'EXPORT']
 
 
 metadata = MetaData()
@@ -334,6 +334,7 @@ zone_tasks = Table('zone_tasks', metadata,
     Column('status', Enum(name='resource_statuses', *TASK_STATUSES),
            nullable=False, server_default='ACTIVE',
            default='ACTIVE'),
+    Column('location', String(160), nullable=True),
 
     mysql_engine='INNODB',
     mysql_charset='utf8')

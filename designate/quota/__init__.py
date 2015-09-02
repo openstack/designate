@@ -32,6 +32,8 @@ cfg.CONF.register_opts([
                help='Number of records allowed per domain'),
     cfg.IntOpt('quota-recordset-records', default=20,
                help='Number of records allowed per recordset'),
+    cfg.IntOpt('quota-api-export-size', default=1000,
+               help='Number of recordsets allowed in a zone export'),
 ])
 
 
