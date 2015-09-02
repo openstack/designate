@@ -43,7 +43,7 @@ from designate.objects.validation_error import ValidationError  # noqa
 from designate.objects.validation_error import ValidationErrorList  # noqa
 from designate.objects.zone_transfer_request import ZoneTransferRequest, ZoneTransferRequestList  # noqa
 from designate.objects.zone_transfer_accept import ZoneTransferAccept, ZoneTransferAcceptList  # noqa
-from designate.objects.zone_task import ZoneTask, ZoneTaskList  # noqa
+from designate.objects.zone_import import ZoneImport, ZoneImportList  # noqa
 
 #  Record Types
 

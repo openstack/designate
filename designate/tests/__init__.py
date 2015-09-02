@@ -245,7 +245,7 @@ class TestCase(base.BaseTestCase):
         "target_tenant_id": "target_tenant_id"
     }]
 
-    zone_task_fixtures = [{
+    zone_import_fixtures = [{
         'status': 'PENDING',
         'domain_id': None,
         'message': None,
@@ -528,10 +528,10 @@ class TestCase(base.BaseTestCase):
         _values.update(values)
         return _values
 
-    def get_zone_task_fixture(self, fixture=0, values=None):
+    def get_zone_import_fixture(self, fixture=0, values=None):
         values = values or {}
 
-        _values = copy.copy(self.zone_task_fixtures[fixture])
+        _values = copy.copy(self.zone_import_fixtures[fixture])
         _values.update(values)
         return _values
 
@@ -678,15 +678,15 @@ class TestCase(base.BaseTestCase):
         return self.central_service.create_zone_transfer_accept(
             context, objects.ZoneTransferAccept.from_dict(values))
 
-    def create_zone_task(self, **kwargs):
+    def create_zone_import(self, **kwargs):
         context = kwargs.pop('context', self.admin_context)
         fixture = kwargs.pop('fixture', 0)
 
-        zone_task = self.get_zone_task_fixture(fixture=fixture,
+        zone_import = self.get_zone_import_fixture(fixture=fixture,
                                                values=kwargs)
 
-        return self.storage.create_zone_task(
-            context, objects.ZoneTask.from_dict(zone_task))
+        return self.storage.create_zone_import(
+            context, objects.ZoneImport.from_dict(zone_import))
 
     def wait_for_import(self, zone_import_id, errorok=False):
         """

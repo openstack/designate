@@ -34,7 +34,7 @@ class ZoneImportController(rest.RestController):
     @pecan.expose(template='json:', content_type='application/json')
     @utils.validate_uuid('import_id')
     def get_one(self, import_id):
-        """Get imports"""
+        """Get Zone Imports"""
 
         request = pecan.request
         context = request.environ['context']
@@ -47,7 +47,7 @@ class ZoneImportController(rest.RestController):
 
     @pecan.expose(template='json:', content_type='application/json')
     def get_all(self, **params):
-        """List ZoneImports"""
+        """List Zone Imports"""
         request = pecan.request
         context = request.environ['context']
         marker, limit, sort_key, sort_dir = utils.get_paging_params(
@@ -67,7 +67,7 @@ class ZoneImportController(rest.RestController):
 
     @pecan.expose(template='json:', content_type='application/json')
     def post_all(self):
-        """Create ZoneImport"""
+        """Create Zone Import"""
         request = pecan.request
         response = pecan.response
         context = request.environ['context']
@@ -95,7 +95,7 @@ class ZoneImportController(rest.RestController):
     @pecan.expose(template='json:', content_type='application/json')
     @utils.validate_uuid('zone_import_id')
     def delete_one(self, zone_import_id):
-        """Delete Zone"""
+        """Delete Zone Import"""
         request = pecan.request
         response = pecan.response
         context = request.environ['context']
