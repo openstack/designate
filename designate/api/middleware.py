@@ -41,6 +41,16 @@ cfg.CONF.register_opts([
                 help='Enable API Maintenance Mode'),
     cfg.StrOpt('maintenance-mode-role', default='admin',
                help='Role allowed to bypass maintaince mode'),
+    cfg.StrOpt('secure-proxy-ssl-header',
+               default='X-Forwarded-Proto',
+               help="The HTTP Header that will be used to determine which "
+                    "the original request protocol scheme was, even if it was "
+                    "removed by an SSL terminating proxy."),
+    cfg.StrOpt('override-proto',
+               default=None,
+               help="A scheme that will be used to override "
+                    "the request protocol scheme, even if it was "
+                    "set by an SSL terminating proxy.")
 ], group='service:api')
 
 
@@ -355,3 +365,26 @@ class APIv2ValidationErrorMiddleware(ValidationErrorMiddleware):
     def __init__(self, application):
         super(APIv2ValidationErrorMiddleware, self).__init__(application)
         self.api_version = 'API_v2'
+
+
+class SSLMiddleware(base.Middleware):
+    """A middleware that replaces the request wsgi.url_scheme environment
+    variable with the value of HTTP header configured in
+    secure_proxy_ssl_header if exists in the incoming request.
+    This is useful if the server is behind a SSL termination proxy.
+
+    Code nabbed from Heat.
+    """
+    def __init__(self, application):
+        super(SSLMiddleware, self).__init__(application)
+        LOG.info(_LI('Starting designate ssl middleware'))
+        self.secure_proxy_ssl_header = 'HTTP_{0}'.format(
+            cfg.CONF['service:api'].secure_proxy_ssl_header.upper().
+            replace('-', '_'))
+        self.override = cfg.CONF['service:api'].override_proto
+
+    def process_request(self, request):
+        request.environ['wsgi.url_scheme'] = request.environ.get(
+            self.secure_proxy_ssl_header, request.environ['wsgi.url_scheme'])
+        if self.override:
+            request.environ['wsgi.url_scheme'] = self.override
