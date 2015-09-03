@@ -396,7 +396,7 @@ class Service(service.RPCService, coordination.CoordinationMixin,
 
         # TODO(kiall): We should monitor that the Domain is actually deleted
         #              correctly on each of the nameservers, rather than
-        #              assuming a sucessful delete-on-target is OK as we have
+        #              assuming a successful delete-on-target is OK as we have
         #              in the past.
         if self._exceed_or_meet_threshold(
                 results.count(True), MAXIMUM_THRESHOLD):
