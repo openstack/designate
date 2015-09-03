@@ -10,5 +10,4 @@ testrepository>=0.0.18
 testtools>=0.9.34
 unittest2
 django_nose
-
--e git+https://github.com/openstack/horizon.git#egg=horizon
+-e git+https://github.com/openstack/horizon.git@stable/kilo#egg=horizon
