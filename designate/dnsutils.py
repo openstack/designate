@@ -30,7 +30,6 @@ from oslo_config import cfg
 
 from designate import context
 from designate import exceptions
-from designate import utils
 from designate import objects
 from designate.i18n import _LE
 from designate.i18n import _LI
@@ -364,22 +363,6 @@ def bind_udp(host, port):
     return sock_udp
 
 
-def expand_servers(servers):
-    """
-    Expands list of server:port into a list of dicts.
-
-    Example: [{"host": ..., "port": 53}]
-    """
-    data = []
-    for srv in servers:
-        if isinstance(srv, six.string_types):
-            host, port = utils.split_host_port(srv, 53)
-        srv = {"ip": host, "port": port}
-        data.append(srv)
-
-    return data
-
-
 def do_axfr(zone_name, servers, timeout=None, source=None):
     """
     Performs an AXFR for a given zone name
@@ -395,7 +378,7 @@ def do_axfr(zone_name, servers, timeout=None, source=None):
         try:
             LOG.info(_LI("Doing AXFR for %(name)s from %(host)s") % log_info)
 
-            xfr = dns.query.xfr(srv['ip'], zone_name, relativize=False,
+            xfr = dns.query.xfr(srv['host'], zone_name, relativize=False,
                                 timeout=1, port=srv['port'], source=source)
             raw_zone = dns.zone.from_xfr(xfr, relativize=False)
             break

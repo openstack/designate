@@ -239,8 +239,8 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
                 # always have 0 results for a PRIMARY zone.
                 domain.masters = objects.DomainMasterList()
 
-            domain.attributes = self._find_domain_masters(
-                context, {'domain_id': domain.id})
+            domain.attributes = self._find_domain_attributes(
+                context, {'domain_id': domain.id, "key": "!master"})
 
             domain.obj_reset_changes(['masters', 'attributes'])
 
