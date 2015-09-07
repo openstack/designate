@@ -17,7 +17,7 @@ import re
 import pep8
 
 
-# D701: Default paramater value is a mutable type
+# D701: Default parameter value is a mutable type
 # D702: Log messages require translation
 # D703: Found use of _() without explicit import of _!
 # D704: Found import of %s. This oslo library has been graduated!
@@ -53,7 +53,7 @@ def mutable_default_arguments(logical_line, physical_line, filename):
         return
 
     if mutable_default_argument_check.match(logical_line):
-        yield (0, "D701: Default paramater value is a mutable type")
+        yield (0, "D701: Default parameter value is a mutable type")
 
 
 def validate_log_translations(logical_line, physical_line, filename):

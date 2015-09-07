@@ -50,7 +50,7 @@ class Bind9Backend(base.Backend):
             port = master['port']
             masters.append('%s port %s' % (host, port))
 
-        # Ensure different MiniDNS instances are targetted for AXFRs
+        # Ensure different MiniDNS instances are targeted for AXFRs
         random.shuffle(masters)
 
         rndc_op = [
