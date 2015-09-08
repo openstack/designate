@@ -21,9 +21,9 @@ from mock import patch
 from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
 from oslotest import base
-from testtools import ExpectedException as raises  # with raises(...): ...
 import fixtures
 import mock
+import testtools
 
 from designate import exceptions
 from designate.central.service import Service
@@ -104,13 +104,13 @@ class MockObjectTest(base.BaseTestCase):
         o = RoObject(a=1)
         self.assertEqual(o['a'], 1)
         self.assertEqual(o.a, 1)
-        with raises(NotImplementedError):
+        with testtools.ExpectedException(NotImplementedError):
             o.a = 2
-        with raises(NotImplementedError):
+        with testtools.ExpectedException(NotImplementedError):
             o.new = 1
-        with raises(NotImplementedError):
+        with testtools.ExpectedException(NotImplementedError):
             o['a'] = 2
-        with raises(NotImplementedError):
+        with testtools.ExpectedException(NotImplementedError):
             o['new'] = 1
 
     def test_rw(self):
@@ -123,9 +123,9 @@ class MockObjectTest(base.BaseTestCase):
         o['a'] = 3
         self.assertEqual(o.a, 3)
         self.assertEqual(o['a'], 3)
-        with raises(NotImplementedError):
+        with testtools.ExpectedException(NotImplementedError):
             o.new = 1
-        with raises(NotImplementedError):
+        with testtools.ExpectedException(NotImplementedError):
             o['new'] = 1
 
 
@@ -325,7 +325,7 @@ class CentralServiceTestCase(CentralBasic):
         designate.central.service.policy.check = mock.Mock(
             side_effect=exceptions.Forbidden
         )
-        with raises(exceptions.InvalidTTL):
+        with testtools.ExpectedException(exceptions.InvalidTTL):
             self.service._is_valid_ttl(self.context, 3)
 
     def test__update_soa_secondary(self):
@@ -440,7 +440,7 @@ class CentralServiceTestCase(CentralBasic):
 
         # self.assertEqual(parent_domain, '')
         self.service.check_for_tlds = False
-        with raises(exceptions.Forbidden):
+        with testtools.ExpectedException(exceptions.Forbidden):
             self.service.create_domain(self.context, MockDomain())
 
         # TODO(Federico) add more create_domain tests
@@ -463,28 +463,28 @@ class CentralDomainTestCase(CentralBasic):
 
     def test__is_valid_domain_name_invalid(self):
         self.service._is_blacklisted_domain_name = Mock()
-        with raises(exceptions.InvalidDomainName):
+        with testtools.ExpectedException(exceptions.InvalidDomainName):
             self.service._is_valid_domain_name(self.context, 'example^org.')
 
     def test__is_valid_domain_name_invalid_2(self):
         self.service._is_blacklisted_domain_name = Mock()
-        with raises(exceptions.InvalidDomainName):
+        with testtools.ExpectedException(exceptions.InvalidDomainName):
             self.service._is_valid_domain_name(self.context, 'example.tld.')
 
     def test__is_valid_domain_name_invalid_same_as_tld(self):
         self.service._is_blacklisted_domain_name = Mock()
-        with raises(exceptions.InvalidDomainName):
+        with testtools.ExpectedException(exceptions.InvalidDomainName):
             self.service._is_valid_domain_name(self.context, 'com.com.')
 
     def test__is_valid_domain_name_invalid_tld(self):
         self.service._is_blacklisted_domain_name = Mock()
-        with raises(exceptions.InvalidDomainName):
+        with testtools.ExpectedException(exceptions.InvalidDomainName):
             self.service._is_valid_domain_name(self.context, 'tld.')
 
     def test__is_valid_domain_name_blacklisted(self):
         self.service._is_blacklisted_domain_name = Mock(
             side_effect=exceptions.InvalidDomainName)
-        with raises(exceptions.InvalidDomainName):
+        with testtools.ExpectedException(exceptions.InvalidDomainName):
             self.service._is_valid_domain_name(self.context, 'valid.com.')
 
     def test__is_blacklisted_domain_name(self):
@@ -510,7 +510,7 @@ class CentralDomainTestCase(CentralBasic):
 
     def test__is_valid_recordset_name_no_dot(self):
         domain = RoObject(name='example.org.')
-        with raises(ValueError):
+        with testtools.ExpectedException(ValueError):
             self.service._is_valid_recordset_name(self.context, domain,
                                                   'foo.example.org')
 
@@ -519,20 +519,21 @@ class CentralDomainTestCase(CentralBasic):
         designate.central.service.cfg.CONF['service:central'].\
             max_recordset_name_len = 255
         rs_name = 'a' * 255 + '.org.'
-        with raises(exceptions.InvalidRecordSetName) as e:
+        with testtools.ExpectedException(exceptions.InvalidRecordSetName) as e:
             self.service._is_valid_recordset_name(self.context, domain,
                                                   rs_name)
             self.assertEqual(e.message, 'Name too long')
 
     def test__is_valid_recordset_name_wrong_domain(self):
         domain = RoObject(name='example.org.')
-        with raises(exceptions.InvalidRecordSetLocation):
+        with testtools.ExpectedException(exceptions.InvalidRecordSetLocation):
             self.service._is_valid_recordset_name(self.context, domain,
                                                   'foo.example.com.')
 
     def test_is_valid_recordset_placement_cname(self):
         domain = RoObject(name='example.org.')
-        with raises(exceptions.InvalidRecordSetLocation) as e:
+        with testtools.ExpectedException(exceptions.InvalidRecordSetLocation) \
+                as e:
             self.service._is_valid_recordset_placement(
                 self.context,
                 domain,
@@ -549,7 +550,8 @@ class CentralDomainTestCase(CentralBasic):
         self.service.storage.find_recordsets.return_value = [
             RoObject(id='2')
         ]
-        with raises(exceptions.InvalidRecordSetLocation) as e:
+        with testtools.ExpectedException(exceptions.InvalidRecordSetLocation) \
+                as e:
             self.service._is_valid_recordset_placement(
                 self.context,
                 domain,
@@ -567,7 +569,8 @@ class CentralDomainTestCase(CentralBasic):
             RoObject(),
             RoObject()
         ]
-        with raises(exceptions.InvalidRecordSetLocation) as e:
+        with testtools.ExpectedException(exceptions.InvalidRecordSetLocation) \
+                as e:
             self.service._is_valid_recordset_placement(
                 self.context,
                 domain,
@@ -616,7 +619,7 @@ class CentralDomainTestCase(CentralBasic):
         self.service.storage.find_domains.return_value = [
             RoObject(name='foo.example.org.')
         ]
-        with raises(exceptions.InvalidRecordSetLocation):
+        with testtools.ExpectedException(exceptions.InvalidRecordSetLocation):
             self.service._is_valid_recordset_placement_subdomain(
                 self.context,
                 domain,
@@ -702,7 +705,7 @@ class CentralDomainTestCase(CentralBasic):
             ns_records=[]
         )
 
-        with raises(exceptions.NoServersConfigured):
+        with testtools.ExpectedException(exceptions.NoServersConfigured):
             self.service.create_domain(
                 self.context,
                 RoObject(tenant_id='1', name='example.com.', ttl=60,
@@ -793,7 +796,7 @@ class CentralDomainTestCase(CentralBasic):
             tenant_id='2',
         )
         self.service.storage.count_domains.return_value = 2
-        with raises(exceptions.DomainHasSubdomain):
+        with testtools.ExpectedException(exceptions.DomainHasSubdomain):
             self.service.delete_domain(self.context, '1')
 
         pcheck, ctx, target = \
@@ -876,7 +879,7 @@ class CentralDomainTestCase(CentralBasic):
             tenant_id='2',
             type='PRIMARY'
         )
-        with raises(exceptions.BadRequest):
+        with testtools.ExpectedException(exceptions.BadRequest):
             self.service.xfr_domain(self.context, '1')
 
     def test_count_report(self):
@@ -923,7 +926,7 @@ class CentralDomainTestCase(CentralBasic):
         self.service.count_domains = Mock(return_value=1)
         self.service.count_records = Mock(return_value=2)
         self.service.count_tenants = Mock(return_value=3)
-        with raises(exceptions.ReportNotFound):
+        with testtools.ExpectedException(exceptions.ReportNotFound):
             self.service.count_report(
                 self.context,
                 criterion='bogus'
@@ -951,7 +954,7 @@ class CentralDomainTestCase(CentralBasic):
         self.service.storage.get_recordset.return_value = RoObject(
             domain_id='3'
         )
-        with raises(exceptions.RecordSetNotFound):
+        with testtools.ExpectedException(exceptions.RecordSetNotFound):
             self.service.get_recordset(
                 self.context,
                 '1',
@@ -1010,15 +1013,15 @@ class CentralDomainTestCase(CentralBasic):
         recordset.obj_get_original_value.return_value = '1'
 
         recordset.obj_get_changes.return_value = ['tenant_id', 'foo']
-        with raises(exceptions.BadRequest):
+        with testtools.ExpectedException(exceptions.BadRequest):
             self.service.update_recordset(self.context, recordset)
 
         recordset.obj_get_changes.return_value = ['domain_id', 'foo']
-        with raises(exceptions.BadRequest):
+        with testtools.ExpectedException(exceptions.BadRequest):
             self.service.update_recordset(self.context, recordset)
 
         recordset.obj_get_changes.return_value = ['type', 'foo']
-        with raises(exceptions.BadRequest):
+        with testtools.ExpectedException(exceptions.BadRequest):
             self.service.update_recordset(self.context, recordset)
 
     def test_update_recordset_action_delete(self):
@@ -1027,7 +1030,7 @@ class CentralDomainTestCase(CentralBasic):
         )
         recordset = Mock()
         recordset.obj_get_changes.return_value = ['foo']
-        with raises(exceptions.BadRequest):
+        with testtools.ExpectedException(exceptions.BadRequest):
             self.service.update_recordset(self.context, recordset)
 
     def test_update_recordset_action_fail_on_managed(self):
@@ -1042,7 +1045,7 @@ class CentralDomainTestCase(CentralBasic):
         recordset.managed = True
         self.context = Mock()
         self.context.edit_managed_records = False
-        with raises(exceptions.BadRequest):
+        with testtools.ExpectedException(exceptions.BadRequest):
             self.service.update_recordset(self.context, recordset)
 
     def test_update_recordset(self):
@@ -1169,7 +1172,7 @@ class CentralDomainTestCase(CentralBasic):
         )
         self.context = Mock()
         self.context.edit_managed_records = False
-        with raises(exceptions.RecordSetNotFound):
+        with testtools.ExpectedException(exceptions.RecordSetNotFound):
             self.service.delete_recordset(self.context, 'd', 'r')
 
     def test_delete_recordset_action_delete(self):
@@ -1187,7 +1190,7 @@ class CentralDomainTestCase(CentralBasic):
         )
         self.context = Mock()
         self.context.edit_managed_records = False
-        with raises(exceptions.BadRequest):
+        with testtools.ExpectedException(exceptions.BadRequest):
             self.service.delete_recordset(self.context, 'd', 'r')
 
     def test_delete_recordset_managed(self):
@@ -1205,7 +1208,7 @@ class CentralDomainTestCase(CentralBasic):
         )
         self.context = Mock()
         self.context.edit_managed_records = False
-        with raises(exceptions.BadRequest):
+        with testtools.ExpectedException(exceptions.BadRequest):
             self.service.delete_recordset(self.context, 'd', 'r')
 
     def test_delete_recordset(self):
@@ -1291,7 +1294,7 @@ class CentralDomainTestCase(CentralBasic):
             tenant_id='2',
             type='foo',
         )
-        with raises(exceptions.BadRequest):
+        with testtools.ExpectedException(exceptions.BadRequest):
             self.service.create_record(
                 self.context,
                 1,
@@ -1360,7 +1363,7 @@ class CentralDomainTestCase(CentralBasic):
         self.service.storage.get_recordset.return_value = RoObject(
             domain_id=3
         )
-        with raises(exceptions.RecordNotFound):
+        with testtools.ExpectedException(exceptions.RecordNotFound):
             self.service.get_record(self.context, 1, 2, 3)
 
     def test_get_record_not_found_2(self):
@@ -1379,7 +1382,7 @@ class CentralDomainTestCase(CentralBasic):
             domain_id=2,
             recordset_id=3
         )
-        with raises(exceptions.RecordNotFound):
+        with testtools.ExpectedException(exceptions.RecordNotFound):
             self.service.get_record(self.context, 1, 2, 3)
 
     def test_get_record(self):
@@ -1425,15 +1428,15 @@ class CentralDomainTestCase(CentralBasic):
         record.obj_get_original_value.return_value = 1
 
         record.obj_get_changes.return_value = ['tenant_id', 'foo']
-        with raises(exceptions.BadRequest):
+        with testtools.ExpectedException(exceptions.BadRequest):
             self.service.update_record(self.context, record)
 
         record.obj_get_changes.return_value = ['domain_id', 'foo']
-        with raises(exceptions.BadRequest):
+        with testtools.ExpectedException(exceptions.BadRequest):
             self.service.update_record(self.context, record)
 
         record.obj_get_changes.return_value = ['recordset_id', 'foo']
-        with raises(exceptions.BadRequest):
+        with testtools.ExpectedException(exceptions.BadRequest):
             self.service.update_record(self.context, record)
 
     def test_update_record_action_delete(self):
@@ -1441,7 +1444,7 @@ class CentralDomainTestCase(CentralBasic):
             action='DELETE',
         )
         record = Mock()
-        with raises(exceptions.BadRequest):
+        with testtools.ExpectedException(exceptions.BadRequest):
             self.service.update_record(self.context, record)
 
     def test_update_record_action_fail_on_managed(self):
@@ -1459,7 +1462,7 @@ class CentralDomainTestCase(CentralBasic):
         record.obj_get_changes.return_value = ['foo']
         self.context = Mock()
         self.context.edit_managed_records = False
-        with raises(exceptions.BadRequest):
+        with testtools.ExpectedException(exceptions.BadRequest):
             self.service.update_record(self.context, record)
 
     def test_update_record(self):
@@ -1518,7 +1521,7 @@ class CentralDomainTestCase(CentralBasic):
         self.service.storage.get_domain.return_value = RoObject(
             action='DELETE',
         )
-        with raises(exceptions.BadRequest):
+        with testtools.ExpectedException(exceptions.BadRequest):
             self.service.delete_record(self.context, 1, 2, 3)
 
     def test_delete_record_not_found(self):
@@ -1533,7 +1536,7 @@ class CentralDomainTestCase(CentralBasic):
             id=888,
         )
         # domain.id != record.domain_id
-        with raises(exceptions.RecordNotFound):
+        with testtools.ExpectedException(exceptions.RecordNotFound):
             self.service.delete_record(self.context, 1, 2, 3)
 
         self.service.storage.get_record.return_value = RoObject(
@@ -1542,7 +1545,7 @@ class CentralDomainTestCase(CentralBasic):
             recordset_id=7777,
         )
         #  recordset.id != record.recordset_id
-        with raises(exceptions.RecordNotFound):
+        with testtools.ExpectedException(exceptions.RecordNotFound):
             self.service.delete_record(self.context, 1, 2, 3)
 
     def test_delete_record(self):
@@ -1607,7 +1610,7 @@ class CentralDomainTestCase(CentralBasic):
         self.context.edit_managed_records = False
 
         with fx_pool_manager:
-            with raises(exceptions.BadRequest):
+            with testtools.ExpectedException(exceptions.BadRequest):
                 self.service.delete_record(self.context, 1, 2, 3)
 
     def test__delete_record_in_storage(self):

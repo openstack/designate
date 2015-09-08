@@ -288,6 +288,15 @@ class Storage(DriverPlugin):
         """
 
     @abc.abstractmethod
+    def purge_domain(self, context, zone):
+        """
+        Purge a Domain
+
+        :param context: RPC Context.
+        :param domain: Zone to delete.
+        """
+
+    @abc.abstractmethod
     def count_domains(self, context, criterion=None):
         """
         Count domains
@@ -385,7 +394,7 @@ class Storage(DriverPlugin):
         :param domain_id: Domain ID to create the record in.
         :param recordset_id: RecordSet ID to create the record in.
         :param record: Record object with the values to be created.
-       """
+        """
 
     @abc.abstractmethod
     def get_record(self, context, record_id):
@@ -650,7 +659,7 @@ class Storage(DriverPlugin):
 
     @abc.abstractmethod
     def find_zone_imports(self, context, criterion=None, marker=None,
-                  limit=None, sort_key=None, sort_dir=None):
+                          limit=None, sort_key=None, sort_dir=None):
         """
         Find Zone Imports
 

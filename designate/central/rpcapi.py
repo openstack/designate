@@ -51,14 +51,15 @@ class CentralAPI(object):
         5.2 - Add Zone Import methods
         5.3 - Add Zone Export method
         5.4 - Add asynchronous Zone Export methods
+        5.5 - Add deleted zone purging task
     """
-    RPC_API_VERSION = '5.4'
+    RPC_API_VERSION = '5.5'
 
     def __init__(self, topic=None):
         topic = topic if topic else cfg.CONF.central_topic
 
         target = messaging.Target(topic=topic, version=self.RPC_API_VERSION)
-        self.client = rpc.get_client(target, version_cap='5.4')
+        self.client = rpc.get_client(target, version_cap='5.5')
 
     @classmethod
     def get_instance(cls):
@@ -176,6 +177,14 @@ class CentralAPI(object):
     def delete_domain(self, context, domain_id):
         LOG.info(_LI("delete_domain: Calling central's delete_domain."))
         return self.client.call(context, 'delete_domain', domain_id=domain_id)
+
+    def purge_domains(self, context, criterion=None, limit=None):
+        LOG.info(_LI(
+            "purge_domains: Calling central's purge_domains."
+        ))
+        cctxt = self.client.prepare(version='5.5')
+        return cctxt.call(context, 'purge_domains',
+                          criterion=criterion, limit=limit)
 
     def count_domains(self, context, criterion=None):
         LOG.info(_LI("count_domains: Calling central's count_domains."))
@@ -512,7 +521,7 @@ class CentralAPI(object):
                                 request_body=request_body)
 
     def find_zone_imports(self, context, criterion=None, marker=None,
-                  limit=None, sort_key=None, sort_dir=None):
+                          limit=None, sort_key=None, sort_dir=None):
         LOG.info(_LI("find_zone_imports: Calling central's "
                      "find_zone_imports."))
         return self.client.call(context, 'find_zone_imports',

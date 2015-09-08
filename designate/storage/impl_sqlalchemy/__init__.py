@@ -24,12 +24,15 @@ from sqlalchemy.sql.expression import or_
 
 from designate import exceptions
 from designate import objects
+from designate.i18n import _LI
 from designate.sqlalchemy import base as sqlalchemy_base
 from designate.storage import base as storage_base
 from designate.storage.impl_sqlalchemy import tables
 
 
 LOG = logging.getLogger(__name__)
+
+MAXIMUM_SUBDOMAIN_DEPTH = 128
 
 cfg.CONF.register_group(cfg.OptGroup(
     name='storage:sqlalchemy', title="Configuration for SQLAlchemy Storage"
@@ -423,10 +426,71 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
         return updated_domain
 
     def delete_domain(self, context, domain_id):
+        """
+        """
         # Fetch the existing domain, we'll need to return it.
         domain = self._find_domains(context, {'id': domain_id}, one=True)
         return self._delete(context, tables.domains, domain,
                             exceptions.DomainNotFound)
+
+    def purge_domain(self, context, zone):
+        """Effectively remove a zone database record.
+        """
+        return self._delete(context, tables.domains, zone,
+                            exceptions.DomainNotFound, hard_delete=True)
+
+    def _walk_up_domains(self, current, zones_by_id):
+        """Walk upwards in a zone hierarchy until we find a parent zone
+        that does not belong to "zones_by_id"
+        :returns: parent zone ID or None
+        """
+        max_steps = MAXIMUM_SUBDOMAIN_DEPTH
+        while current.parent_domain_id in zones_by_id:
+            current = zones_by_id[current.parent_domain_id]
+            max_steps -= 1
+            if max_steps == 0:
+                raise exceptions.IllegalParentDomain("Loop detected in the"
+                                                     " domain hierarchy")
+
+        return current.parent_domain_id
+
+    def purge_domains(self, context, criterion, limit):
+        """Purge deleted zones.
+        Reparent orphan childrens, if any.
+        Transactions/locks are not needed.
+        :returns: number of purged domains
+        """
+        if 'deleted' in criterion:
+            context.show_deleted = True
+
+        zones = self.find_domains(
+            context=context,
+            criterion=criterion,
+            limit=limit,
+        )
+        if not zones:
+            LOG.info(_LI("No zones to be purged"))
+            return
+
+        LOG.debug(_LI("Purging %d zones"), len(zones))
+
+        zones_by_id = {z.id: z for z in zones}
+
+        for zone in zones:
+
+            # Reparent child zones, if any.
+            surviving_parent_id = self._walk_up_domains(zone, zones_by_id)
+            query = tables.domains.update().\
+                where(tables.domains.c.parent_domain_id == zone.id).\
+                values(parent_domain_id=surviving_parent_id)
+
+            resultproxy = self.session.execute(query)
+            LOG.debug(_LI("%d child zones updated"), resultproxy.rowcount)
+
+            self.purge_domain(context, zone)
+
+        LOG.info(_LI("Purged %d zones"), len(zones))
+        return len(zones)
 
     def count_domains(self, context, criterion=None):
         query = select([func.count(tables.domains.c.id)])

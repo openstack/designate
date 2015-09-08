@@ -18,9 +18,9 @@ import itertools
 import unittest
 
 from oslo_log import log as logging
-from testtools import ExpectedException as raises  # with raises(...): ...
 import mock
 import oslotest.base
+import testtools
 
 from designate import exceptions
 from designate import objects
@@ -186,9 +186,9 @@ class RecordSetTest(oslotest.base.BaseTestCase):
 
     def test_validate_handle_exception(self):
         rs = create_test_recordset()
-        with mock.patch('designate.objects.DesignateObject.obj_cls_from_name') \
-                as patched:
+        fn_name = 'designate.objects.DesignateObject.obj_cls_from_name'
+        with mock.patch(fn_name) as patched:
             patched.side_effect = KeyError
-            with raises(exceptions.InvalidObject):
+            with testtools.ExpectedException(exceptions.InvalidObject):
                 # TODO(Federico): check the attributes of the exception
                 rs.validate()

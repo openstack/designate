@@ -17,8 +17,8 @@
 import unittest
 
 from oslo_log import log as logging
-from testtools import ExpectedException as raises  # with raises(...): ...
 import oslotest.base
+import testtools
 
 from designate import exceptions
 from designate import objects
@@ -41,7 +41,7 @@ class DomainTest(oslotest.base.BaseTestCase):
 
     def test_masters_none(self):
         domain = objects.Domain()
-        with raises(exceptions.RelationNotLoaded):
+        with testtools.ExpectedException(exceptions.RelationNotLoaded):
             self.assertEqual(domain.masters, None)
 
     def test_masters(self):
@@ -87,5 +87,5 @@ class DomainTest(oslotest.base.BaseTestCase):
         domain = objects.Domain(
             type='SECONDARY',
         )
-        with raises(exceptions.InvalidObject):
+        with testtools.ExpectedException(exceptions.InvalidObject):
             domain.validate()
