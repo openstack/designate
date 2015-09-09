@@ -6,7 +6,7 @@
 # not use this file except in compliance with the License. You may obtain
 # a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#       http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
@@ -216,10 +216,10 @@ class SchemaFormatTest(TestCase):
         ]
 
         for domainname in valid_domainnames:
-            self.assertTrue(format.is_domainname(domainname))
+            self.assertTrue(format.is_domainname(domainname), domainname)
 
         for domainname in invalid_domainnames:
-            self.assertFalse(format.is_domainname(domainname))
+            self.assertFalse(format.is_domainname(domainname), domainname)
 
     def test_is_srv_hostname(self):
         valid_hostnames = [
