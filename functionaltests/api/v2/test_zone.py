@@ -20,12 +20,14 @@ from tempest_lib.exceptions import NotFound
 
 from functionaltests.common import datagen
 from functionaltests.api.v2.base import DesignateV2Test
+from functionaltests.api.v2.clients.recordset_client import RecordsetClient
 from functionaltests.api.v2.clients.zone_client import ZoneClient
 from functionaltests.api.v2.clients.zone_import_client import ZoneImportClient
 from functionaltests.api.v2.clients.zone_export_client import ZoneExportClient
 from functionaltests.api.v2.fixtures import ZoneFixture
 from functionaltests.api.v2.fixtures import ZoneImportFixture
 from functionaltests.api.v2.fixtures import ZoneExportFixture
+from functionaltests.common.models import ZoneFileRecord
 
 
 class ZoneTest(DesignateV2Test):
@@ -147,9 +149,21 @@ class ZoneExportTest(DesignateV2Test):
         self.assertEqual(resp.status, 200)
         self.assertEqual(model.status, 'COMPLETE')
 
-        resp, body = export_client.get_exported_zone(export_id)
+        # fetch the zone file
+        resp, zone_file = export_client.get_exported_zone(export_id)
         self.assertEqual(resp.status, 200)
+        self.assertEqual(zone_file.origin, zone.name)
+        self.assertEqual(zone_file.ttl, zone.ttl)
+
+        # the list of records in the zone file must match the zone's recordsets
+        # (in this case there should be only two records - a SOA and an NS?)
+        recordset_client = RecordsetClient.as_user(user)
+        resp, model = recordset_client.list_recordsets(zone.id)
+        records = []
+        for recordset in model.recordsets:
+            records.extend(ZoneFileRecord.records_from_recordset(recordset))
+        self.assertEqual(set(records), set(zone_file.records))
 
         export_client.delete_zone_export(export_id)
         self.assertRaises(NotFound,
-            lambda: export_client.get_zone_export(model.id))
+            lambda: export_client.get_zone_export(export_id))

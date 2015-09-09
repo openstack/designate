@@ -15,8 +15,9 @@ limitations under the License.
 """
 from functionaltests.api.v2.models.zone_export_model import ZoneExportModel
 from functionaltests.api.v2.models.zone_export_model import ZoneExportListModel
-from functionaltests.common.client import ClientMixin
 from functionaltests.common import utils
+from functionaltests.common.client import ClientMixin
+from functionaltests.common.models import ZoneFile
 
 
 class ZoneExportClient(ClientMixin):
@@ -42,13 +43,15 @@ class ZoneExportClient(ClientMixin):
         return self.deserialize(resp, body, ZoneExportModel)
 
     def get_exported_zone(self, id, **kwargs):
-        uri = "/v2/zones/tasks/exports/{0}".format(id)
-        resp, body = self.client.get(uri)
+        uri = "/v2/zones/tasks/exports/{0}/export".format(id)
+        headers = {'Accept': 'text/dns'}
+        resp, body = self.client.get(uri, headers=headers)
+        if resp.status < 400:
+            return resp, ZoneFile.from_text(body)
         return resp, body
 
     def post_zone_export(self, zone_id, **kwargs):
         uri = "/v2/zones/{0}/tasks/export".format(zone_id)
-
         resp, body = self.client.post(uri, body='', **kwargs)
         return self.deserialize(resp, body, ZoneExportModel)
 
