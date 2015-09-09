@@ -1,4 +1,5 @@
 #!/usr/bin/make -f
 
 %:
-	dh $@ --with python-virtualenv
+	dh $@ --with python-virtualenv --preinstall ${PIP_VERSION_PIN:-"pip==7.1.2"} --preinstall ${SETUPTOOLS_VERSION_PIN:-"setuptools==18.2"} --no-test
+
