@@ -234,6 +234,10 @@ class RequestHandler(object):
         return response
 
     def _allowed(self, request, requester, op, domain_name):
+        # If there are no explict notifiers specified, allow all
+        if not self.allow_notify:
+            return True
+
         if requester not in self.allow_notify:
             LOG.warn(_LW("%(verb)s for %(name)s from %(server)s refused") %
             {'verb': op, 'name': domain_name, 'server': requester})
