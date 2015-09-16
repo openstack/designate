@@ -184,6 +184,6 @@ class DeletedDomainPurgeTask(PeriodicTask):
 
         self.central_api.purge_domains(
             ctxt,
-            criterion=criterion,
+            criterion,
             limit=self.options.batch_size,
         )

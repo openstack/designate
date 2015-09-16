@@ -1039,12 +1039,12 @@ class CentralServiceTest(CentralTestCase):
         now = datetime.datetime(2015, 7, 31, 0, 0)
         self.central_service.purge_domains(
             self.admin_context,
-            limit=100,
-            criterion={
+            {
                 'status': 'DELETED',
                 'deleted': '!0',
                 'deleted_at': "<=%s" % now
             },
+            limit=100
         )
         self._assert_count_all_domains(1)
 
@@ -1059,11 +1059,11 @@ class CentralServiceTest(CentralTestCase):
 
         self.central_service.purge_domains(
             self.admin_context,
-            limit=100,
-            criterion={
+            {
                 'deleted': '!0',
                 'deleted_at': "<=%s" % now
             },
+            limit=100,
         )
         self._assert_count_all_domains(1)
 
@@ -1080,11 +1080,11 @@ class CentralServiceTest(CentralTestCase):
 
         purge_cnt = self.central_service.purge_domains(
             self.admin_context,
-            limit=100,
-            criterion={
+            {
                 'deleted': '!0',
                 'deleted_at': "<=%s" % time_threshold
             },
+            limit=100,
         )
         self._assert_count_all_domains(2)
         self.assertEqual(purge_cnt, 1)
@@ -1101,10 +1101,10 @@ class CentralServiceTest(CentralTestCase):
 
         purge_cnt = self.central_service.purge_domains(
             self.admin_context,
-            limit=100,
-            criterion={
+            {
                 'deleted': '!0',
             },
+            limit=100,
         )
         self._assert_count_all_domains(1)
         self.assertEqual(purge_cnt, 2)
@@ -1123,10 +1123,10 @@ class CentralServiceTest(CentralTestCase):
         # Nothing should be purged
         purge_cnt = self.central_service.purge_domains(
             self.admin_context,
-            limit=100,
-            criterion={
+            {
                 'deleted_at': "<=%s" % time_threshold
             },
+            limit=100,
         )
         self._assert_count_all_domains(3)
         self.assertEqual(purge_cnt, None)
@@ -1138,21 +1138,20 @@ class CentralServiceTest(CentralTestCase):
         # The domain is purged (even if it was not deleted)
         purge_cnt = self.central_service.purge_domains(
             self.admin_context,
-            limit=100,
-            criterion={
+            {
                 'name': 'example.com.'
             },
+            limit=100,
         )
         self._assert_count_all_domains(0)
         self.assertEqual(purge_cnt, 1)
 
     @mock.patch.object(notifier.Notifier, "info")
     def test_purge_domains_without_any_criterion(self, mock_notifier):
-        with testtools.ExpectedException(exceptions.BadRequest):
+        with testtools.ExpectedException(TypeError):
             self.central_service.purge_domains(
                 self.admin_context,
                 limit=100,
-                criterion={},
             )
 
     @mock.patch.object(notifier.Notifier, "info")
@@ -1165,12 +1164,12 @@ class CentralServiceTest(CentralTestCase):
         # purge domains in an empty shard
         self.central_service.purge_domains(
             self.admin_context,
-            limit=100,
-            criterion={
+            {
                 'deleted': '!0',
                 'deleted_at': "<=%s" % time_threshold,
                 'shard': 'BETWEEN 99998, 99999',
             },
+            limit=100,
         )
         n_zones = self.central_service.count_domains(self.admin_context)
         self.assertEqual(n_zones, 1)
@@ -1178,12 +1177,12 @@ class CentralServiceTest(CentralTestCase):
         # purge domains in a shard that contains the domain created above
         self.central_service.purge_domains(
             self.admin_context,
-            limit=100,
-            criterion={
+            {
                 'deleted': '!0',
                 'deleted_at': "<=%s" % time_threshold,
                 'shard': 'BETWEEN 0, %d' % domain.shard,
             },
+            limit=100,
         )
         n_zones = self.central_service.count_domains(self.admin_context)
         self.assertEqual(n_zones, 0)
@@ -1237,11 +1236,11 @@ class CentralServiceTest(CentralTestCase):
         self._log_all_domains(zones)
         self.central_service.purge_domains(
             self.admin_context,
-            limit=100,
-            criterion={
+            {
                 'deleted': '!0',
                 'deleted_at': "<=%s" % time_threshold
             },
+            limit=100,
         )
         self._assert_count_all_domains(2)
         zones = self._fetch_all_domains()

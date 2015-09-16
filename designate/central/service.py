@@ -260,7 +260,7 @@ def notification(notification_type):
 
 
 class Service(service.RPCService, service.Service):
-    RPC_API_VERSION = '5.5'
+    RPC_API_VERSION = '5.6'
 
     target = messaging.Target(version=RPC_API_VERSION)
 
@@ -1058,13 +1058,12 @@ class Service(service.RPCService, service.Service):
 
         return domain
 
-    def purge_domains(self, context, criterion=None, limit=None):
+    def purge_domains(self, context, criterion, limit=None):
         """Purge deleted zones.
         :returns: number of purged domains
         """
+
         policy.check('purge_domains', context, criterion)
-        if not criterion:
-            raise exceptions.BadRequest("A criterion is required")
 
         LOG.debug("Performing purge with limit of %r and criterion of %r"
                   % (limit, criterion))
