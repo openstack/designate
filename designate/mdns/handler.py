@@ -340,7 +340,7 @@ class RequestHandler(xfr.XFRMixin):
                 request.original_id,
                 request.tsig_error,
                 request.other_data,
-                request.request_mac,
+                request.mac,
                 request.keyalgorithm)
         return renderer
 
