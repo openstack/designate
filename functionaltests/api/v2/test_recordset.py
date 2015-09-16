@@ -21,7 +21,8 @@ from functionaltests.common import dnsclient
 from functionaltests.common import utils
 from functionaltests.api.v2.base import DesignateV2Test
 from functionaltests.api.v2.clients.recordset_client import RecordsetClient
-from functionaltests.api.v2.clients.zone_client import ZoneClient
+from functionaltests.api.v2.fixtures import ZoneFixture
+from functionaltests.api.v2.fixtures import RecordsetFixture
 
 
 RECORDSETS_DATASET = {
@@ -74,14 +75,15 @@ class RecordsetTest(DesignateV2Test):
     def setUp(self):
         super(RecordsetTest, self).setUp()
         self.increase_quotas(user='default')
-        resp, self.zone = ZoneClient.as_user('default').post_zone(
-            datagen.random_zone_data())
-        ZoneClient.as_user('default').wait_for_zone(self.zone.id)
+        self.zone = self.useFixture(ZoneFixture()).created_zone
 
     def test_list_recordsets(self):
+        post_model = datagen.random_a_recordset(self.zone.name)
+        self.useFixture(RecordsetFixture(self.zone.id, post_model))
         resp, model = RecordsetClient.as_user('default') \
             .list_recordsets(self.zone.id)
         self.assertEqual(resp.status, 200)
+        self.assertGreater(len(model.recordsets), 0)
 
     def assert_dns(self, model):
         results = dnsclient.query_servers(model.name, model.type)
@@ -109,20 +111,10 @@ class RecordsetTest(DesignateV2Test):
     @utils.parameterized(RECORDSETS_DATASET)
     def test_crud_recordset(self, make_recordset):
         post_model = make_recordset(self.zone)
+        fixture = self.useFixture(RecordsetFixture(self.zone.id, post_model))
+        recordset_id = fixture.created_recordset.id
 
-        resp, post_resp_model = RecordsetClient.as_user('default') \
-            .post_recordset(self.zone.id, post_model)
-        self.assertEqual(resp.status, 202, "on post response")
-        self.assertEqual(post_resp_model.status, "PENDING")
-        self.assertEqual(post_resp_model.name, post_model.name)
-        self.assertEqual(post_resp_model.records, post_model.records)
-        self.assertEqual(post_resp_model.ttl, post_model.ttl)
-
-        recordset_id = post_resp_model.id
-        RecordsetClient.as_user('default').wait_for_recordset(
-            self.zone.id, recordset_id)
-
-        self.assert_dns(post_model)
+        self.assert_dns(fixture.post_model)
 
         put_model = make_recordset(self.zone)
         del put_model.name  # don't try to update the name
@@ -164,16 +156,10 @@ class RecordsetTest(DesignateV2Test):
         data = data or ["b0rk"]
 
         post_model = make_recordset(self.zone)
+        fixture = self.useFixture(RecordsetFixture(self.zone.id, post_model))
+        recordset_id = fixture.created_recordset.id
 
         client = RecordsetClient.as_user('default')
-        resp, post_resp_model = client.post_recordset(
-            self.zone.id, post_model)
-
-        recordset_id = post_resp_model.id
-
-        client.wait_for_recordset(
-            self.zone.id, recordset_id)
-
         for i in data:
             model = make_recordset(self.zone)
             model.data = i
@@ -183,14 +169,8 @@ class RecordsetTest(DesignateV2Test):
 
     @utils.parameterized(WILDCARD_RECORDSETS_DATASET)
     def test_can_create_and_query_wildcard_recordset(self, make_recordset):
-        client = RecordsetClient.as_user('default')
         post_model = make_recordset(self.zone)
-
-        resp, post_resp_model = client.post_recordset(self.zone.id, post_model)
-        self.assertEqual(resp.status, 202)
-
-        recordset_id = post_resp_model.id
-        client.wait_for_recordset(self.zone.id, recordset_id)
+        self.useFixture(RecordsetFixture(self.zone.id, post_model))
 
         verify_models = [
             post_model.from_dict(post_model.to_dict()) for x in range(3)
@@ -211,8 +191,7 @@ class RecordsetOwnershipTest(DesignateV2Test):
         self.increase_quotas(user='alt')
 
     def test_no_create_recordset_by_alt_tenant(self):
-        resp, zone = ZoneClient.as_user('default').post_zone(
-            datagen.random_zone_data())
+        zone = self.useFixture(ZoneFixture(user='default')).created_zone
 
         # try with name=A123456.zone.com.
         recordset = datagen.random_a_recordset(zone_name=zone.name)
@@ -234,16 +213,14 @@ class RecordsetOwnershipTest(DesignateV2Test):
         recordset.name = 'b.c.' + zone_data.name
         zone_data.name = 'a.b.c.' + zone_data.name
 
-        resp, zone = ZoneClient.as_user('default').post_zone(zone_data)
+        fixture = self.useFixture(ZoneFixture(zone_data, user='default'))
         self.assertRaises(exceptions.RestClientException,
             lambda: RecordsetClient.as_user('alt')
-                    .post_recordset(zone.id, recordset))
+                    .post_recordset(fixture.created_zone.id, recordset))
 
     def test_no_create_recordset_via_alt_domain(self):
-        resp, zone = ZoneClient.as_user('default').post_zone(
-            datagen.random_zone_data())
-        resp, alt_zone = ZoneClient.as_user('alt').post_zone(
-            datagen.random_zone_data())
+        zone = self.useFixture(ZoneFixture(user='default')).created_zone
+        alt_zone = self.useFixture(ZoneFixture(user='alt')).created_zone
 
         # alt attempts to create record with name A12345.{zone}
         recordset = datagen.random_a_recordset(zone_name=zone.name)

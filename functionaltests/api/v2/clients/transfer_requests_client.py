@@ -78,4 +78,7 @@ class TransferRequestClient(ClientMixin):
     def delete_transfer_request(self, transfer_request_id, **kwargs):
         resp, body = self.client.delete(
             self.transfer_request_uri(transfer_request_id), **kwargs)
-        return self.deserialize(resp, body, TransferRequestsModel)
+        # the body is empty on a successful delete
+        if body:
+            return self.deserialize(resp, body, TransferRequestsModel)
+        return resp, body

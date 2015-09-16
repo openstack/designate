@@ -78,7 +78,7 @@ class CollectionModel(BaseModel):
                 collection.append(cls.MODEL_TYPE.from_dict(d))
             setattr(model, cls.COLLECTION_NAME, collection)
 
-        # deserialize data['
+        # deserialize data['links'], data['metadata'], etc
         for key, model_type in cls.SUB_MODELS.items():
             if hasattr(model, key):
                 val = getattr(model, key)
