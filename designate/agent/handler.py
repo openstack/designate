@@ -50,7 +50,7 @@ class RequestHandler(object):
         self.masters = []
         for server in CONF['service:agent'].masters:
             raw_server = utils.split_host_port(server)
-            master = {'ip': raw_server[0], 'port': int(raw_server[1])}
+            master = {'host': raw_server[0], 'port': int(raw_server[1])}
             self.masters.append(master)
 
         LOG.info(_LI("Agent masters: %(masters)s") %
