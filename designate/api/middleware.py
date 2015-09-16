@@ -144,13 +144,16 @@ class KeystoneContextMiddleware(ContextMiddleware):
 
         roles = headers.get('X-Roles').split(',')
 
-        self.make_context(
-            request,
-            auth_token=headers.get('X-Auth-Token'),
-            user=headers.get('X-User-ID'),
-            tenant=tenant_id,
-            roles=roles,
-            service_catalog=catalog)
+        try:
+            self.make_context(
+                request,
+                auth_token=headers.get('X-Auth-Token'),
+                user=headers.get('X-User-ID'),
+                tenant=tenant_id,
+                roles=roles,
+                service_catalog=catalog)
+        except exceptions.Forbidden:
+            return flask.Response(status=403)
 
 
 class NoAuthContextMiddleware(ContextMiddleware):
