@@ -1081,11 +1081,24 @@ class Service(service.RPCService, service.Service):
 
         policy.check('xfr_domain', context, target)
 
-        if domain.type == 'SECONDARY':
-            self.mdns_api.perform_zone_xfr(context, domain)
-        else:
+        if domain.type != 'SECONDARY':
             msg = "Can't XFR a non Secondary zone."
             raise exceptions.BadRequest(msg)
+
+        # Ensure the format of the servers are correct, then poll the
+        # serial
+        srv = random.choice(domain.masters)
+        status, serial, retries = self.mdns_api.get_serial_number(
+            context, domain, srv.host, srv.port, 3, 1, 3, 0)
+
+        # Perform XFR if serial's are not equal
+        if serial > domain.serial:
+            msg = _LI(
+                "Serial %(srv_serial)d is not equal to zone's %(serial)d,"
+                " performing AXFR")
+            LOG.info(
+                msg % {"srv_serial": serial, "serial": domain.serial})
+            self.mdns_api.perform_zone_xfr(context, domain)
 
     def count_domains(self, context, criterion=None):
         if criterion is None:

@@ -13,10 +13,12 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import datetime
 import uuid
 
 import mock
 from oslotest import base as test
+from oslo_utils import timeutils
 import six
 import testtools
 
@@ -210,3 +212,66 @@ class PeriodicExistsTest(TaskTest):
             data.update(self.period_data)
             self.mock_notifier.info.assert_called_with(
                 self.ctxt, "dns.domain.exists", data)
+
+
+class PeriodicSecondaryRefreshTest(TaskTest):
+    def setUp(self):
+        super(PeriodicSecondaryRefreshTest, self).setUp()
+
+        opts = {
+            "zone_manager_task:periodic_secondary_refresh": RoObject({
+                "per_page": 100
+            })
+        }
+        self.setup_opts(opts)
+
+        # Mock a ctxt...
+        self.ctxt = mock.Mock()
+        get_admin_ctxt_patcher = mock.patch.object(context.DesignateContext,
+                                                   'get_admin_context')
+        get_admin_context = get_admin_ctxt_patcher.start()
+        get_admin_context.return_value = self.ctxt
+
+        # Mock a central...
+        self.central = mock.Mock()
+        get_central_patcher = mock.patch.object(central_api.CentralAPI,
+                                        'get_instance')
+        get_central = get_central_patcher.start()
+        get_central.return_value = self.central
+
+        self.task = tasks.PeriodicSecondaryRefreshTask()
+        self.task.my_partitions = 0, 9
+
+    def test_refresh_no_zone(self):
+        with mock.patch.object(self.task, '_iter') as _iter:
+            _iter.return_value = []
+            self.task()
+
+        self.assertFalse(self.central.xfr_domain.called)
+
+    def test_refresh_zone(self):
+        transferred = timeutils.utcnow(True) - datetime.timedelta(minutes=62)
+        zone = RoObject(
+            id=str(uuid.uuid4()),
+            transferred_at=datetime.datetime.isoformat(transferred),
+            refresh=3600)
+
+        with mock.patch.object(self.task, '_iter') as _iter:
+            _iter.return_value = [zone]
+            self.task()
+
+        self.central.xfr_domain.assert_called_once_with(self.ctxt, zone.id)
+
+    def test_refresh_zone_not_expired(self):
+        # Dummy zone object
+        transferred = timeutils.utcnow(True) - datetime.timedelta(minutes=50)
+        zone = RoObject(
+            id=str(uuid.uuid4()),
+            transferred_at=datetime.datetime.isoformat(transferred),
+            refresh=3600)
+
+        with mock.patch.object(self.task, '_iter') as _iter:
+            _iter.return_value = [zone]
+            self.task()
+
+        self.assertFalse(self.central.xfr_domain.called)
