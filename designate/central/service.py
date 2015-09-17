@@ -406,6 +406,17 @@ class Service(service.RPCService, service.Service):
                     child_domain['name']
                 raise exceptions.InvalidRecordSetLocation(msg)
 
+    def _is_valid_recordset_records(self, recordset):
+        """
+        Check to make sure that the records in the recordset
+        follow the rules, and won't blow up on the nameserver.
+        """
+        if hasattr(recordset, 'records'):
+            if len(recordset.records) > 1 and recordset.type == 'CNAME':
+                raise exceptions.BadRequest(
+                    'CNAME recordsets may not have more than 1 record'
+                )
+
     def _is_blacklisted_domain_name(self, context, domain_name):
         """
         Ensures the provided domain_name is not blacklisted.
@@ -1149,6 +1160,7 @@ class Service(service.RPCService, service.Service):
                                            recordset.type)
         self._is_valid_recordset_placement_subdomain(
             context, domain, recordset.name)
+        self._is_valid_recordset_records(recordset)
 
         if recordset.obj_attr_is_set('records') and len(recordset.records) > 0:
             if increment_serial:
@@ -1263,6 +1275,7 @@ class Service(service.RPCService, service.Service):
                                            recordset.type, recordset.id)
         self._is_valid_recordset_placement_subdomain(
             context, domain, recordset.name)
+        self._is_valid_recordset_records(recordset)
 
         # Ensure TTL is above the minimum
         ttl = changes.get('ttl', None)
