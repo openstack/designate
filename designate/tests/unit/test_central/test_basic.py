@@ -626,6 +626,19 @@ class CentralDomainTestCase(CentralBasic):
                 'bar.example.org.'
             )
 
+    def test_is_valid_recordset_records(self):
+        recordset = RoObject(
+            records=[
+                'ww1.example.com.',
+                'ww2.example.com.'
+            ],
+            type='CNAME'
+        )
+        with testtools.ExpectedException(exceptions.BadRequest):
+            self.service._is_valid_recordset_records(
+                recordset
+            )
+
     def test__is_superdomain(self):
         self.service.storage.find_domains = Mock()
         self.service._is_superdomain(self.context, 'example.org.', '1')
