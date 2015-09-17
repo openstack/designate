@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: designate 1.0.0.0b2.dev193\n"
+"Project-Id-Version: designate 1.0.0.0b4.dev28\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-07-29 06:34+0000\n"
+"POT-Creation-Date: 2015-09-17 06:12+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -159,5 +159,10 @@ msgstr ""
 #: designate/manage/akamai.py:51
 #, python-format
 msgid "Found multiple targets with ID %s"
+msgstr ""
+
+#: designate/objects/base.py:550
+#, python-format
+msgid "<%(type)s count:'%(count)s' object:'%(list_type)s'>"
 msgstr ""
 

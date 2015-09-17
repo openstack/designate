@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: designate 1.0.0.0b2.dev193\n"
+"Project-Id-Version: designate 1.0.0.0b4.dev28\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-07-29 06:34+0000\n"
+"POT-Creation-Date: 2015-09-17 06:12+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -65,37 +65,42 @@ msgstr ""
 msgid "Not deleting %(name)s, zone doesn't exist"
 msgstr ""
 
-#: designate/agent/handler.py:238
+#: designate/agent/handler.py:242
 #, python-format
 msgid "%(verb)s for %(name)s from %(server)s refused"
 msgstr ""
 
-#: designate/api/middleware.py:208
+#: designate/api/middleware.py:218
 msgid "Request authorized to bypass maintenance mode"
 msgstr ""
 
-#: designate/backend/agent.py:105 designate/mdns/notify.py:190
+#: designate/backend/agent.py:130 designate/mdns/notify.py:187
 #, python-format
 msgid ""
 "Got Timeout while trying to send '%(msg)s' for '%(zone)s' to "
 "'%(server)s:%(port)d'. Timeout='%(timeout)d' seconds. Retry='%(retry)d'"
 msgstr ""
 
-#: designate/backend/agent.py:114 designate/mdns/notify.py:202
+#: designate/backend/agent.py:139 designate/mdns/notify.py:199
 #, python-format
 msgid ""
 "Got BadResponse while trying to send '%(msg)s' for '%(zone)s' to "
 "'%(server)s:%(port)d'. Timeout='%(timeout)d' seconds. Retry='%(retry)d'"
 msgstr ""
 
-#: designate/backend/agent.py:127
+#: designate/backend/agent.py:152
 #, python-format
 msgid ""
 "Failed to get expected response while trying to send '%(msg)s' for "
 "'%(zone)s' to '%(server)s:%(port)d'. Response message: %(resp)s"
 msgstr ""
 
-#: designate/backend/impl_dynect.py:392
+#: designate/backend/impl_designate.py:105
+#, python-format
+msgid "Zone %s not found on remote Designate, Ignoring"
+msgstr ""
+
+#: designate/backend/impl_dynect.py:389
 #, python-format
 msgid "Attempt to delete %(d_id)s / %(d_name)s caused 404, ignoring."
 msgstr ""
@@ -113,15 +118,15 @@ msgstr ""
 msgid "It will not be possible to downgrade from schema #11"
 msgstr ""
 
-#: designate/central/service.py:66
+#: designate/central/service.py:67
 msgid "Deadlock detected. Retrying..."
 msgstr ""
 
-#: designate/central/service.py:287
+#: designate/central/service.py:295
 msgid "Managed Resource Tenant ID is not properly configured"
 msgstr ""
 
-#: designate/central/service.py:1022
+#: designate/central/service.py:1040
 #, python-format
 msgid "Abandoning zone '%(zone)s'"
 msgstr ""
@@ -169,7 +174,7 @@ msgid ""
 "Expected:'%(es)d'. Got:'%(as)s'.Retries left='%(retries)d'"
 msgstr ""
 
-#: designate/mdns/notify.py:221
+#: designate/mdns/notify.py:218
 #, python-format
 msgid ""
 "Failed to get expected response while trying to send '%(msg)s' for "
@@ -194,17 +199,17 @@ msgstr ""
 msgid "Consensus not reached for creating domain %(domain)s on pool targets"
 msgstr ""
 
-#: designate/pool_manager/service.py:323
+#: designate/pool_manager/service.py:325
 #, python-format
 msgid "Consensus not reached for updating domain %(domain)s on pool targets"
 msgstr ""
 
-#: designate/pool_manager/service.py:418
+#: designate/pool_manager/service.py:410
 #, python-format
 msgid "Consensus not reached for deleting domain %(domain)s on pool targets"
 msgstr ""
 
-#: designate/pool_manager/service.py:503
+#: designate/pool_manager/service.py:495
 #, python-format
 msgid "For domain %(domain)s the error serial is %(error_serial)s."
 msgstr ""
