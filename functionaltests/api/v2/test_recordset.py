@@ -182,6 +182,17 @@ class RecordsetTest(DesignateV2Test):
         for m in verify_models:
             self.assert_dns(m)
 
+    def test_cname_recordsets_cannot_have_more_than_one_record(self):
+        post_model = datagen.random_cname_recordset(zone_name=self.zone.name)
+        post_model.records = [
+            "a.{0}".format(self.zone.name),
+            "b.{0}".format(self.zone.name),
+        ]
+
+        client = RecordsetClient.as_user('default')
+        self.assertRaises(exceptions.BadRequest,
+            client.post_recordset, self.zone.id, post_model)
+
 
 class RecordsetOwnershipTest(DesignateV2Test):
 
