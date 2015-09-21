@@ -4,4 +4,4 @@ source = designate
 omit = designate/tests/*,designate/openstack/*
 
 [report]
-ignore-errors = True
+ignore_errors = True
