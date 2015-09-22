@@ -466,7 +466,7 @@ class ApiV1RecordsTest(ApiV1Test):
         self.assertIn('records', response.json)
         self.assertEqual(4, len(response.json['records']))
 
-    @patch.object(central_service.Service, 'find_records',
+    @patch.object(central_service.Service, 'get_domain',
                   side_effect=messaging.MessagingTimeout())
     def test_get_records_timeout(self, _):
         self.get('domains/%s/records' % self.domain['id'],

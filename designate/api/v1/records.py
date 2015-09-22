@@ -92,15 +92,6 @@ def _format_record_v1(record, recordset):
     return record
 
 
-def _fetch_domain_recordsets(context, domain_id):
-    criterion = {'domain_id': domain_id}
-
-    central_api = central_rpcapi.CentralAPI.get_instance()
-    recordsets = central_api.find_recordsets(context, criterion)
-
-    return dict((r['id'], r) for r in recordsets)
-
-
 @blueprint.route('/schemas/record', methods=['GET'])
 def get_record_schema():
     return flask.jsonify(record_schema.raw)
@@ -154,15 +145,12 @@ def get_records(domain_id):
     #       return an empty records array instead of a domain not found
     central_api.get_domain(context, domain_id)
 
-    records = central_api.find_records(context, {'domain_id': domain_id})
+    recordsets = central_api.find_recordsets(context, {'domain_id': domain_id})
 
-    recordsets = _fetch_domain_recordsets(context, domain_id)
+    records = []
 
-    def _inner(record):
-        recordset = recordsets[record['recordset_id']]
-        return _format_record_v1(record, recordset)
-
-    records = [_inner(r) for r in records]
+    for rrset in recordsets:
+        records.extend([_format_record_v1(r, rrset) for r in rrset.records])
 
     return flask.jsonify(records_schema.filter({'records': records}))
 
