@@ -19,6 +19,7 @@ import functools
 import inspect
 import os
 import uuid
+import socket
 
 import six
 import pkg_resources
@@ -30,6 +31,7 @@ from oslo_utils import timeutils
 
 from designate import exceptions
 from designate.i18n import _
+from designate.i18n import _LI
 from designate.openstack.common.report import guru_meditation_report as gmr
 from designate import version as designate_version
 
@@ -453,3 +455,49 @@ def get_paging_params(params, sort_keys):
         raise exceptions.InvalidSortKey(msg)
 
     return marker, limit, sort_key, sort_dir
+
+
+def bind_tcp(host, port, tcp_backlog, tcp_keepidle=None):
+    # Bind to the TCP port
+    LOG.info(_LI('Opening TCP Listening Socket on %(host)s:%(port)d') %
+             {'host': host, 'port': port})
+    sock_tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock_tcp.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    sock_tcp.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
+
+    # NOTE: Linux supports socket.SO_REUSEPORT only in 3.9 and later releases.
+    try:
+        sock_tcp.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+    except Exception:
+        pass
+
+    # This option isn't available in the OS X version of eventlet
+    if tcp_keepidle and hasattr(socket, 'TCP_KEEPIDLE'):
+        sock_tcp.setsockopt(socket.IPPROTO_TCP,
+                            socket.TCP_KEEPIDLE,
+                            tcp_keepidle)
+
+    sock_tcp.setblocking(True)
+    sock_tcp.bind((host, port))
+    sock_tcp.listen(tcp_backlog)
+
+    return sock_tcp
+
+
+def bind_udp(host, port):
+    # Bind to the UDP port
+    LOG.info(_LI('Opening UDP Listening Socket on %(host)s:%(port)d') %
+             {'host': host, 'port': port})
+    sock_udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock_udp.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+    # NOTE: Linux supports socket.SO_REUSEPORT only in 3.9 and later releases.
+    try:
+        sock_udp.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+    except Exception:
+        pass
+
+    sock_udp.setblocking(True)
+    sock_udp.bind((host, port))
+
+    return sock_udp
