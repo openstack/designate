@@ -89,18 +89,12 @@ class ZonesController(rest.RestController):
             if 'type' not in zone:
                 zone['type'] = 'PRIMARY'
 
-            if zone['type'] == 'SECONDARY':
-                mgmt_email = CONF['service:central'].managed_resource_email
-                zone['email'] = mgmt_email
-
         zone = DesignateAdapter.parse('API_v2', zone, objects.Domain())
-
         zone.validate()
 
-        # # TODO(ekarlso): Fix this once setter or so works.
-        # masters = values.pop('masters', [])
-        # zone = objects.Domain.from_dict(values)
-        # zone.set_masters(masters)
+        if zone.type == 'SECONDARY':
+            mgmt_email = CONF['service:central'].managed_resource_email
+            zone['email'] = mgmt_email
 
         # Create the zone
         zone = self.central_api.create_domain(context, zone)

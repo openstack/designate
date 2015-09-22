@@ -20,6 +20,7 @@ import oslo_messaging as messaging
 from oslo_log import log as logging
 
 from designate import exceptions
+from designate import objects
 from designate.central import service as central_service
 from designate.mdns import rpcapi as mdns_api
 from designate.tests.test_api.test_v2 import ApiV2TestCase
@@ -519,10 +520,12 @@ class ApiV2ZonesTest(ApiV2TestCase):
     def test_update_secondary(self):
         # Create a zone
         fixture = self.get_domain_fixture('SECONDARY', 0)
-        fixture['email'] = cfg.CONF['service:central'].managed_resource_email
+
+        domain = objects.Domain(**fixture)
+        domain.email = cfg.CONF['service:central'].managed_resource_email
 
         # Create a zone
-        zone = self.create_domain(**fixture)
+        zone = self.central_service.create_domain(self.admin_context, domain)
 
         masters = ['10.0.0.1', '10.0.0.2']
 

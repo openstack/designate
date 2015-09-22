@@ -52,7 +52,7 @@ class Domain(base.DictObjectMixin, base.SoftDeleteObjectMixin,
                 'format': 'email',
                 'maxLength': 255
             },
-            'required': True
+            'required': False
         },
         'ttl': {
             'schema': {
@@ -177,19 +177,52 @@ class Domain(base.DictObjectMixin, base.SoftDeleteObjectMixin,
                 return srv
         return False
 
+    def _raise(self, errors):
+        if len(errors) != 0:
+            raise exceptions.InvalidObject(
+                "Provided object does not match "
+                "schema", errors=errors, object=self)
+
     def validate(self):
-        try:
-            if self.type == 'SECONDARY' and self.masters is None:
-                errors = ValidationErrorList()
+        errors = ValidationErrorList()
+
+        if self.type == 'PRIMARY':
+            if self.obj_attr_is_set('masters') and len(self.masters) != 0:
+                e = ValidationError()
+                e.path = ['type']
+                e.validator = 'maxItems'
+                e.validator_value = ['masters']
+                e.message = "'masters' has more items than allowed"
+                errors.append(e)
+            if self.email is None:
                 e = ValidationError()
                 e.path = ['type']
                 e.validator = 'required'
-                e.validator_value = ['masters']
-                e.message = "'masters' is a required property"
+                e.validator_value = 'email'
+                e.message = "'email' is a required property"
                 errors.append(e)
-                raise exceptions.InvalidObject(
-                    "Provided object does not match "
-                    "schema", errors=errors, object=self)
+            self._raise(errors)
+
+        try:
+            if self.type == 'SECONDARY':
+                if self.masters is None or len(self.masters) == 0:
+                    e = ValidationError()
+                    e.path = ['type']
+                    e.validator = 'required'
+                    e.validator_value = ['masters']
+                    e.message = "'masters' is a required property"
+                    errors.append(e)
+
+                for i in ['email', 'ttl']:
+                    if i in self.obj_what_changed():
+                        e = ValidationError()
+                        e.path = ['type']
+                        e.validator = 'not_allowed'
+                        e.validator_value = i
+                        e.message = "'%s' can't be specified when type is " \
+                            "SECONDARY" % i
+                        errors.append(e)
+                self._raise(errors)
 
             super(Domain, self).validate()
         except exceptions.RelationNotLoaded as ex:
@@ -200,9 +233,7 @@ class Domain(base.DictObjectMixin, base.SoftDeleteObjectMixin,
             e.validator_value = [ex.relation]
             e.message = "'%s' is a required property" % ex.relation
             errors.append(e)
-            raise exceptions.InvalidObject(
-                "Provided object does not match "
-                "schema", errors=errors, object=self)
+            self._raise(errors)
 
 
 class DomainList(base.ListObjectMixin, base.DesignateObject,
