@@ -346,7 +346,8 @@ class Service(service.RPCService, service.Service):
             raise exceptions.InvalidRecordSetName('Name too long')
 
         # RecordSets must be contained in the parent zone
-        if not recordset_name.endswith(domain['name']):
+        if (recordset_name != domain['name']
+                and not recordset_name.endswith("." + domain['name'])):
             raise exceptions.InvalidRecordSetLocation(
                 'RecordSet is not contained within it\'s parent domain')
 
