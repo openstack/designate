@@ -151,6 +151,24 @@ class CentralServiceTest(CentralTestCase):
 
         self.assertTrue(result)
 
+    def test_is_blacklisted_domain_name_evil(self):
+        evil_regex = "(([a-z])+.)+[A-Z]([a-z])+$"
+        evil_zone_name = ("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                          "aaaaaaaa.com.")
+
+        blacklists = objects.BlacklistList(
+            objects=[objects.Blacklist(pattern=evil_regex)])
+
+        context = self.get_context()
+
+        with mock.patch.object(self.central_service.storage,
+                               'find_blacklists',
+                               return_value=blacklists):
+
+            result = self.central_service._is_blacklisted_domain_name(
+                context, evil_zone_name)
+            self.assertTrue(result)
+
     def test_is_subdomain(self):
         context = self.get_context()
 
