@@ -38,19 +38,31 @@ class KeystoneV2AuthProviderWithOverridableUrl(KeystoneV2AuthProvider):
                 .base_url(*args, **kwargs)
 
 
+class KeystoneV2AuthProviderNoToken(KeystoneV2AuthProviderWithOverridableUrl):
+
+    def _decorate_request(self, filters, method, url, headers=None, body=None,
+                          auth_data=None):
+        _res = super(KeystoneV2AuthProviderNoToken, self)._decorate_request(
+            filters, method, url, headers=headers, body=body,
+            auth_data=auth_data)
+        _url, _headers, _body = _res
+        del _headers['X-Auth-Token']
+        return (_url, _headers, _body)
+
+
 class BaseDesignateClient(RestClient):
 
-    def __init__(self):
+    def __init__(self, with_token=True):
         super(BaseDesignateClient, self).__init__(
-            auth_provider=self.get_auth_provider(),
+            auth_provider=self.get_auth_provider(with_token),
             service='dns',
             region=cfg.CONF.identity.region
         )
 
-    def get_auth_provider(self):
+    def get_auth_provider(self, with_token=True):
         if cfg.CONF.noauth.use_noauth:
             return self._get_noauth_auth_provider()
-        return self._get_keystone_auth_provider()
+        return self._get_keystone_auth_provider(with_token)
 
     @abc.abstractmethod
     def _get_noauth_auth_provider(self):
@@ -60,9 +72,13 @@ class BaseDesignateClient(RestClient):
     def _get_keystone_auth_provider(self):
         pass
 
-    def _create_keystone_auth_provider(self, creds):
-        auth_provider = KeystoneV2AuthProviderWithOverridableUrl(
-            creds, cfg.CONF.identity.uri)
+    def _create_keystone_auth_provider(self, creds, with_token=True):
+        if with_token:
+            auth_provider = KeystoneV2AuthProviderWithOverridableUrl(
+                creds, cfg.CONF.identity.uri)
+        else:
+            auth_provider = KeystoneV2AuthProviderNoToken(
+                creds, cfg.CONF.identity.uri)
         auth_provider.fill_credentials()
         return auth_provider
 
@@ -76,13 +92,13 @@ class DesignateClient(BaseDesignateClient):
         )
         return NoAuthAuthProvider(creds, cfg.CONF.noauth.designate_endpoint)
 
-    def _get_keystone_auth_provider(self):
+    def _get_keystone_auth_provider(self, with_token=True):
         creds = KeystoneV2Credentials(
             username=cfg.CONF.identity.username,
             password=cfg.CONF.identity.password,
             tenant_name=cfg.CONF.identity.tenant_name,
         )
-        return self._create_keystone_auth_provider(creds)
+        return self._create_keystone_auth_provider(creds, with_token)
 
 
 class DesignateAltClient(BaseDesignateClient):
@@ -94,13 +110,13 @@ class DesignateAltClient(BaseDesignateClient):
         )
         return NoAuthAuthProvider(creds, cfg.CONF.noauth.designate_endpoint)
 
-    def _get_keystone_auth_provider(self):
+    def _get_keystone_auth_provider(self, with_token=True):
         creds = KeystoneV2Credentials(
             username=cfg.CONF.identity.alt_username,
             password=cfg.CONF.identity.alt_password,
             tenant_name=cfg.CONF.identity.alt_tenant_name,
         )
-        return self._create_keystone_auth_provider(creds)
+        return self._create_keystone_auth_provider(creds, with_token)
 
 
 class DesignateAdminClient(BaseDesignateClient):
@@ -112,24 +128,24 @@ class DesignateAdminClient(BaseDesignateClient):
         )
         return NoAuthAuthProvider(creds, cfg.CONF.noauth.designate_endpoint)
 
-    def _get_keystone_auth_provider(self):
+    def _get_keystone_auth_provider(self, with_token=True):
         creds = KeystoneV2Credentials(
             username=cfg.CONF.identity.admin_username,
             password=cfg.CONF.identity.admin_password,
             tenant_name=cfg.CONF.identity.admin_tenant_name,
         )
-        return self._create_keystone_auth_provider(creds)
+        return self._create_keystone_auth_provider(creds, with_token)
 
 
 class ClientMixin(object):
 
     @classmethod
     @memoized
-    def get_clients(cls):
+    def get_clients(cls, with_token):
         return {
-            'default': DesignateClient(),
-            'alt': DesignateAltClient(),
-            'admin': DesignateAdminClient(),
+            'default': DesignateClient(with_token),
+            'alt': DesignateAltClient(with_token),
+            'admin': DesignateAdminClient(with_token),
         }
 
     def __init__(self, client):
@@ -140,11 +156,13 @@ class ClientMixin(object):
         return resp, model_type.from_json(body)
 
     @classmethod
-    def as_user(cls, user):
+    def as_user(cls, user, with_token=True):
         """
         :param user: 'default', 'alt', or 'admin'
+        :param with_token: Boolean for whether to send the x-auth-token with
+            requests
         """
-        return cls(cls.get_clients()[user])
+        return cls(cls.get_clients(with_token)[user])
 
     @property
     def tenant_id(self):
