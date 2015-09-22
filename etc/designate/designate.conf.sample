@@ -132,6 +132,13 @@ debug = False
 # zone export is in zones extension
 #enabled_extensions_admin =
 
+# Default per-page limit for the Admin API, a value of None means show all results
+# by default
+#default_limit_admin = 20
+
+# Max page size in the Admin API
+#max_limit_admin = 1000
+
 # Show the pecan HTML based debug interface (v2 only)
 # This is only useful for development, and WILL break python-designateclient
 # if an error occurs
