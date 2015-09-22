@@ -340,14 +340,15 @@ class DNSService(object):
                         # Handle UDP Responses
                         self._dns_sock_udp.sendto(response, addr)
 
-            # Close the TCP connection if we have one.
-            if client:
-                client.close()
-
         except Exception:
             LOG.exception(_LE("Unhandled exception while processing request "
                               "from %(host)s:%(port)d") %
                           {'host': addr[0], 'port': addr[1]})
+
+        # Close the TCP connection if we have one.
+        if client:
+            client.close()
+
 
 _launcher = None
 
