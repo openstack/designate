@@ -323,46 +323,6 @@ def dnspythonrecord_to_recordset(rname, rdataset):
     return rrset
 
 
-def bind_tcp(host, port, tcp_backlog):
-    # Bind to the TCP port
-    LOG.info(_LI('Opening TCP Listening Socket on %(host)s:%(port)d') %
-             {'host': host, 'port': port})
-    sock_tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock_tcp.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    sock_tcp.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
-
-    # NOTE: Linux supports socket.SO_REUSEPORT only in 3.9 and later releases.
-    try:
-        sock_tcp.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
-    except Exception:
-        pass
-
-    sock_tcp.setblocking(True)
-    sock_tcp.bind((host, port))
-    sock_tcp.listen(tcp_backlog)
-
-    return sock_tcp
-
-
-def bind_udp(host, port):
-    # Bind to the UDP port
-    LOG.info(_LI('Opening UDP Listening Socket on %(host)s:%(port)d') %
-             {'host': host, 'port': port})
-    sock_udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock_udp.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-
-    # NOTE: Linux supports socket.SO_REUSEPORT only in 3.9 and later releases.
-    try:
-        sock_udp.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
-    except Exception:
-        pass
-
-    sock_udp.setblocking(True)
-    sock_udp.bind((host, port))
-
-    return sock_udp
-
-
 def do_axfr(zone_name, servers, timeout=None, source=None):
     """
     Performs an AXFR for a given zone name

@@ -21,7 +21,6 @@ import abc
 import socket
 import struct
 import errno
-import time
 
 import six
 import eventlet.wsgi
@@ -40,7 +39,7 @@ from designate.i18n import _LW
 from designate import rpc
 from designate import policy
 from designate import version
-from designate import dnsutils
+from designate import utils
 
 # TODO(kiall): These options have been cut+paste from the old WSGI code, and
 #              should be moved into service:api etc..
@@ -171,62 +170,24 @@ class WSGIService(object):
     def start(self):
         super(WSGIService, self).start()
 
-        socket = self._wsgi_get_socket()
-        application = self._wsgi_application
+        self._wsgi_sock = utils.bind_tcp(
+            self._service_config.api_host,
+            self._service_config.api_port,
+            CONF.backlog,
+            CONF.tcp_keepidle)
 
-        self.tg.add_thread(self._wsgi_handle, application, socket)
+        if sslutils.is_enabled(CONF):
+            self._wsgi_sock = sslutils.wrap(CONF, self._wsgi_sock)
 
-    def _wsgi_get_socket(self):
-        # TODO(dims): eventlet's green dns/socket module does not actually
-        # support IPv6 in getaddrinfo(). We need to get around this in the
-        # future or monitor upstream for a fix
-        info = socket.getaddrinfo(self._service_config.api_host,
-                                  self._service_config.api_port,
-                                  socket.AF_UNSPEC,
-                                  socket.SOCK_STREAM)[0]
-        family = info[0]
-        bind_addr = info[-1]
+        self.tg.add_thread(self._wsgi_handle)
 
-        sock = None
-        retry_until = time.time() + 30
-        while not sock and time.time() < retry_until:
-            try:
-                # TODO(kiall): Backlog should be a service specific setting,
-                #              rather than a global
-                sock = eventlet.listen(bind_addr,
-                                       backlog=cfg.CONF.backlog,
-                                       family=family)
-                if sslutils.is_enabled(CONF):
-                    sock = sslutils.wrap(CONF, sock)
-
-            except socket.error as err:
-                if err.args[0] != errno.EADDRINUSE:
-                    raise
-                eventlet.sleep(0.1)
-        if not sock:
-            raise RuntimeError(_("Could not bind to %(host)s:%(port)s "
-                               "after trying for 30 seconds") %
-                               {'host': self._service_config.api_host,
-                                'port': self._service_config.api_port})
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        # sockets can hang around forever without keepalive
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
-
-        # This option isn't available in the OS X version of eventlet
-        if hasattr(socket, 'TCP_KEEPIDLE'):
-            sock.setsockopt(socket.IPPROTO_TCP,
-                            socket.TCP_KEEPIDLE,
-                            CONF.tcp_keepidle)
-
-        return sock
-
-    def _wsgi_handle(self, application, socket):
+    def _wsgi_handle(self):
         logger = logging.getLogger('eventlet.wsgi')
         # Adjust wsgi MAX_HEADER_LINE to accept large tokens.
         eventlet.wsgi.MAX_HEADER_LINE = self._service_config.max_header_line
 
-        eventlet.wsgi.server(socket,
-                             application,
+        eventlet.wsgi.server(self._wsgi_sock,
+                             self._wsgi_application,
                              custom_pool=self.tg.pool,
                              log=loggers.WritableLogger(logger))
 
@@ -250,12 +211,12 @@ class DNSService(object):
     def start(self):
         super(DNSService, self).start()
 
-        self._dns_sock_tcp = dnsutils.bind_tcp(
+        self._dns_sock_tcp = utils.bind_tcp(
             self._service_config.host,
             self._service_config.port,
             self._service_config.tcp_backlog)
 
-        self._dns_sock_udp = dnsutils.bind_udp(
+        self._dns_sock_udp = utils.bind_udp(
             self._service_config.host,
             self._service_config.port)
 
