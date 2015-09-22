@@ -23,6 +23,16 @@ Install Guides
 
     install/*
 
+Upgrade Guides
+==============
+
+.. toctree::
+    :maxdepth: 1
+    :glob:
+
+    upgrade/*
+
+
 How To Guides
 =============
 
