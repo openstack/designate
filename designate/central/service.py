@@ -21,6 +21,7 @@ import functools
 import threading
 import itertools
 import string
+import signal
 import random
 import time
 
@@ -438,12 +439,33 @@ class Service(service.RPCService, service.Service):
         """
         Ensures the provided domain_name is not blacklisted.
         """
-
         blacklists = self.storage.find_blacklists(context)
 
-        for blacklist in blacklists:
-            if bool(re.search(blacklist.pattern, domain_name)):
-                return True
+        class Timeout(Exception):
+            pass
+
+        def _handle_timeout(signum, frame):
+            raise Timeout()
+
+        signal.signal(signal.SIGALRM, _handle_timeout)
+
+        try:
+            for blacklist in blacklists:
+                signal.setitimer(signal.ITIMER_REAL, 0.02)
+
+                try:
+                    if bool(re.search(blacklist.pattern, domain_name)):
+                        return True
+                finally:
+                    signal.setitimer(signal.ITIMER_REAL, 0)
+
+        except Timeout:
+            LOG.critical(_LC(
+                'Blacklist regex (%(pattern)s) took too long to evaluate '
+                'against zone name (%(zone_name)s') %
+                {'pattern': blacklist.pattern, 'zone_name': domain_name})
+
+            return True
 
         return False
 
