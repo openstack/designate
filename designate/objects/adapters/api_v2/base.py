@@ -17,6 +17,7 @@ from oslo_config import cfg
 
 from designate.objects.adapters import base
 from designate.objects import base as obj_base
+from designate import exceptions
 
 LOG = logging.getLogger(__name__)
 
@@ -101,23 +102,31 @@ class APIv2Adapter(base.DesignateAdapter):
                 item_path += '/' + part
 
     @classmethod
-    def _get_collection_links(cls, list, request):
+    def _get_collection_links(cls, item_list, request):
 
         links = {
             'self': cls._get_collection_href(request)
         }
         params = request.GET
 
+        # defined in etc/designate/designate.conf.sample
         limit = cfg.CONF['service:api'].default_limit_v2
 
-        if 'limit' in params and params['limit'] == 'max':
-            limit = cfg.CONF['service:api'].max_limit_v2
+        if 'limit' in params:
+            limit = params['limit']
+            if limit.lower() == 'max':
+                limit = cfg.CONF['service:api'].max_limit_v2
+            else:
+                try:
+                    limit = int(limit)
+                except ValueError:
+                    raise exceptions.ValueError(
+                        "'limit' should be an integer or 'max'")
 
-        elif 'limit' in params:
-            limit = int(params['limit'])
-
-        if limit is not None and limit == len(list):
-            links['next'] = cls._get_next_href(request, list)
+        # Bug: this creates a link to "next" even on the last page if
+        # len(item_list) happens to be == limit
+        if limit is not None and limit == len(item_list):
+            links['next'] = cls._get_next_href(request, item_list)
 
         return links
 

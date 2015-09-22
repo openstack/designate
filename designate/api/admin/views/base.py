@@ -127,21 +127,36 @@ class BaseView(object):
         #              when there are more/previous items.. This is what nova
         #              does.. But I think we can do better.
 
-        params = request.GET
+        # Duplicated code, see bug 1498432
 
-        result = {
+        links = {
             "self": self._get_collection_href(request, parents),
         }
+        params = request.GET
 
         # See above
         # if 'marker' in params:
         #    result['previous'] = self._get_previous_href(request, items,
         #                                                 parents)
 
-        if 'limit' in params and int(params['limit']) == len(items):
-            result['next'] = self._get_next_href(request, items, parents)
+        # defined in etc/designate/designate.conf.sample
+        limit = cfg.CONF['service:api'].default_limit_admin
 
-        return result
+        if 'limit' in params:
+            limit = params['limit']
+            if limit.lower() == 'max':
+                limit = cfg.CONF['service:api'].max_limit_admin
+            else:
+                try:
+                    limit = int(limit)
+                except ValueError:
+                    raise exceptions.ValueError(
+                        "'limit' should be an integer or 'max'")
+
+        if limit is not None and limit == len(items):
+            links['next'] = self._get_next_href(request, items)
+
+        return links
 
     def _get_base_href(self, parents=None):
         href = "%s/v2/%s" % (self.base_uri, self._collection_name)

@@ -21,6 +21,11 @@ LOG = logging.getLogger(__name__)
 OPTS = [
     cfg.ListOpt('enabled-extensions-admin', default=[],
                 help='Enabled Admin API Extensions'),
+    cfg.IntOpt('default-limit-admin', default=20,
+               help='Default per-page limit for the Admin API, a value of None'
+                    ' means show all results by default'),
+    cfg.IntOpt('max-limit-admin', default=1000,
+               help='Max per-page limit for the Admin API'),
 ]
 
 cfg.CONF.register_opts(OPTS, group='service:api')
