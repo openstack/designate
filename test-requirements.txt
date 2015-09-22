@@ -17,4 +17,4 @@ testtools>=1.4.0
 testrepository>=0.0.18
 testscenarios>=0.4
 WebTest>=2.0
-tempest-lib>=0.6.1
+tempest-lib>=0.8.0
