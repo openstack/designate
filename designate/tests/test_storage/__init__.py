@@ -916,11 +916,14 @@ class StorageTestCase(object):
 
     def test_find_recordsets_with_records(self):
         domain = self.create_domain()
-        recordset = self.create_recordset(domain)
 
-        # Create two Records in the RecordSet
-        self.create_record(domain, recordset)
-        self.create_record(domain, recordset, fixture=1)
+        records = [
+            {"data": "10.0.0.1"},
+            {"data": "10.0.0.2"},
+            {"data": "10.0.0.3"}
+        ]
+
+        recordset = self.create_recordset(domain, records=records)
 
         criterion = dict(
             id=recordset.id,
@@ -938,9 +941,13 @@ class StorageTestCase(object):
         self.assertIsInstance(recordset.records, objects.RecordList)
 
         # Ensure two Records are attached to the RecordSet correctly
-        self.assertEqual(2, len(recordset.records))
-        self.assertIsInstance(recordset.records[0], objects.Record)
-        self.assertIsInstance(recordset.records[1], objects.Record)
+        self.assertEqual(3, len(recordset.records))
+
+        records = []
+        for record in recordset.records:
+            self.assertIsInstance(record, objects.Record)
+            self.assertNotIn(record, records)
+            records.append(record)
 
     def test_get_recordset(self):
         domain = self.create_domain()

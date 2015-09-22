@@ -439,6 +439,7 @@ class SQLAlchemy(object):
             else:
                 # We've already got an rrset, add the rdata
                 if record[r_map['id']] is not None:
+                    rrdata = relation_cls()
 
                     for key, value in r_map.items():
                         setattr(rrdata, key, record[value])
@@ -455,8 +456,8 @@ class SQLAlchemy(object):
 
     def _update(self, context, table, obj, exc_dup, exc_notfound,
                 skip_values=None):
-
         # TODO(graham): Re Enable this
+
         # This was disabled as all the tests generate invalid Objects
 
         # Ensure the Object is valid
