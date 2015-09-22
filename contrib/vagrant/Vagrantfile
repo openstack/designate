@@ -87,21 +87,7 @@ for f in lib/* extras.d/* exercises/*; do
     fi
 done
 
-# Clone Rally
-if [ ! -d "/opt/stack/rally" ]; then
-    git clone https://git.openstack.org/openstack/rally.git /opt/stack/rally
-fi
-
-# Install Rally DevStack extension
-cd /opt/stack/rally/contrib/devstack
-
-for f in lib/* extras.d/*; do
-    if [ ! -f "/home/vagrant/devstack/$f" ]; then
-        ln -fs /opt/stack/rally/contrib/devstack/$f -t /home/vagrant/devstack/$(dirname $f)
-    fi
-done
-
-# Link in the Rally Plugins
+# Link in any Rally Plugins
 mkdir /home/vagrant/.rally
 ln -s /opt/stack/designate/rally-scenarios/plugins /home/vagrant/.rally/plugins
 
