@@ -26,10 +26,8 @@ class RecordsetClient(ClientMixin):
 
     @classmethod
     def recordsets_uri(cls, zone_id, filters=None):
-        url = "/v2/zones/{0}/recordsets".format(zone_id)
-        if filters:
-            url = cls.add_filters(url, filters)
-        return url
+        return cls.create_uri("/zones/{0}/recordsets".format(zone_id),
+                              filters=filters)
 
     @classmethod
     def recordset_uri(cls, zone_id, recordset_id):

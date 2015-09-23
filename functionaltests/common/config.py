@@ -29,11 +29,13 @@ cfg.CONF.register_group(cfg.OptGroup(
 cfg.CONF.register_opts([
     cfg.StrOpt('designate_override_url',
                help="Use this instead of the endpoint in the service catalog"),
+    cfg.BoolOpt('append_version_to_url', default=True,
+               help="Post to url + /v2/zones instead of url + /zones"),
 
     cfg.StrOpt('uri', help="The Keystone v2 endpoint"),
     cfg.StrOpt('uri_v3', help="The Keystone v3 endpoint"),
     cfg.StrOpt('auth_version', default='v2'),
-    cfg.StrOpt('region', default='RegionOne'),
+    cfg.StrOpt('region', default=None),
 
     cfg.StrOpt('username'),
     cfg.StrOpt('tenant_name'),

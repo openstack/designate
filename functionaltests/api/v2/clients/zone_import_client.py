@@ -23,10 +23,7 @@ class ZoneImportClient(ClientMixin):
 
     @classmethod
     def zone_imports_uri(cls, filters=None):
-        url = "/v2/zones/tasks/imports"
-        if filters:
-            url = cls.add_filters(url, filters)
-        return url
+        return cls.create_uri("/zones/tasks/imports", filters=filters)
 
     @classmethod
     def zone_import_uri(cls, id):

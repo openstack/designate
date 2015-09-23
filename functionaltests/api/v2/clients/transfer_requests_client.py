@@ -25,17 +25,17 @@ class TransferRequestClient(ClientMixin):
 
     @classmethod
     def create_transfer_requests_uri(cls, zone_id, filters=None):
-        url = "/v2/zones/{0}/tasks/transfer_requests".format(zone_id)
-        if filters:
-            url = cls.add_filters(url, filters)
-        return url
+        return cls.create_uri(
+            "/zones/{0}/tasks/transfer_requests".format(zone_id),
+            filters=filters,
+        )
 
     @classmethod
     def transfer_requests_uri(cls, filters=None):
-        url = "/v2/zones/tasks/transfer_requests"
-        if filters:
-            url = cls.add_filters(url, filters)
-        return url
+        return cls.create_uri(
+            "/zones/tasks/transfer_requests",
+            filters=filters,
+        )
 
     @classmethod
     def transfer_request_uri(cls, transfer_request_id):

@@ -23,10 +23,7 @@ class BlacklistClient(ClientMixin):
 
     @classmethod
     def blacklists_uri(cls, filters=None):
-        url = "/v2/blacklists"
-        if filters:
-            url = cls.add_filters(url, filters)
-        return url
+        return cls.create_uri("/blacklists", filters=filters)
 
     @classmethod
     def blacklist_uri(cls, blacklist_id):

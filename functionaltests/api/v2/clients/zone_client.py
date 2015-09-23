@@ -26,10 +26,7 @@ class ZoneClient(ClientMixin):
 
     @classmethod
     def zones_uri(cls, filters=None):
-        url = "/v2/zones"
-        if filters:
-            url = cls.add_filters(url, filters)
-        return url
+        return cls.create_uri("/zones", filters=filters)
 
     @classmethod
     def zone_uri(cls, id):

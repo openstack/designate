@@ -23,10 +23,7 @@ class PoolClient(ClientMixin):
 
     @classmethod
     def pools_uri(cls, filters=None):
-        url = "/v2/pools"
-        if filters:
-            url = cls.add_filters(url, filters)
-        return url
+        return cls.create_uri("/pools", filters=filters)
 
     @classmethod
     def pool_uri(cls, pool_id):

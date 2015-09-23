@@ -184,3 +184,13 @@ class ClientMixin(object):
             )
             first = False
         return url
+
+    @classmethod
+    def create_uri(cls, path, filters=None):
+        if cfg.CONF.identity.append_version_to_url:
+            uri = "/v2/{0}".format(path)
+        else:
+            uri = path
+        if filters:
+            uri = cls.add_filters(uri, filters)
+        return uri

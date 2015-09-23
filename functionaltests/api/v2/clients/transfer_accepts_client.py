@@ -25,15 +25,13 @@ class TransferAcceptClient(ClientMixin):
 
     @classmethod
     def transfer_accepts_uri(cls, filters=None):
-        url = "/v2/zones/tasks/transfer_accepts"
-        if filters:
-            url = cls.add_filters(url, filters)
-        return url
+        return cls.create_uri("/zones/tasks/transfer_accepts",
+                              filters=filters)
 
     @classmethod
     def transfer_accept_uri(cls, transfer_request_id):
-        return "/v2/zones/tasks/transfer_accepts/{1}".format(
-            transfer_request_id)
+        return "{0}/{1}".format(cls.transfer_accepts_uri(),
+                                transfer_request_id)
 
     def list_transfer_accepts(self, zone_id, filters=None, **kwargs):
         resp, body = self.client.get(
