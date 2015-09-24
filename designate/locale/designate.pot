@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: designate 1.0.0.0b4.dev28\n"
+"Project-Id-Version: designate 1.0.0.0rc1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-09-17 06:12+0000\n"
+"POT-Creation-Date: 2015-09-24 21:09+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -27,26 +27,21 @@ msgstr ""
 msgid "Policy check failed for rule '%(rule)s' on target %(target)s"
 msgstr ""
 
-#: designate/service.py:91
+#: designate/service.py:90
 #, python-format
 msgid "Starting %(name)s service (version: %(version)s)"
 msgstr ""
 
-#: designate/service.py:96
+#: designate/service.py:95
 #, python-format
 msgid "Stopping %(name)s service"
 msgstr ""
 
-#: designate/service.py:207
-#, python-format
-msgid "Could not bind to %(host)s:%(port)s after trying for 30 seconds"
-msgstr ""
-
-#: designate/service.py:397
+#: designate/service.py:359
 msgid "serve() can only be called once"
 msgstr ""
 
-#: designate/utils.py:444 designate/sqlalchemy/utils.py:112
+#: designate/utils.py:446 designate/sqlalchemy/utils.py:112
 msgid "Unknown sort direction, must be 'desc' or 'asc'"
 msgstr ""
 

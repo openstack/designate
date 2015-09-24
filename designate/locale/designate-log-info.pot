@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: designate 1.0.0.0b4.dev28\n"
+"Project-Id-Version: designate 1.0.0.0rc1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-09-17 06:12+0000\n"
+"POT-Creation-Date: 2015-09-24 21:09+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -42,17 +42,7 @@ msgstr ""
 msgid "Sucessfully elected as leader of group %(group)s"
 msgstr ""
 
-#: designate/dnsutils.py:328
-#, python-format
-msgid "Opening TCP Listening Socket on %(host)s:%(port)d"
-msgstr ""
-
-#: designate/dnsutils.py:349
-#, python-format
-msgid "Opening UDP Listening Socket on %(host)s:%(port)d"
-msgstr ""
-
-#: designate/dnsutils.py:379
+#: designate/dnsutils.py:339
 #, python-format
 msgid "Doing AXFR for %(name)s from %(host)s"
 msgstr ""
@@ -62,12 +52,22 @@ msgstr ""
 msgid "Using policy_file found at: %s"
 msgstr ""
 
-#: designate/service.py:280
+#: designate/service.py:241
 msgid "_handle_tcp thread started"
 msgstr ""
 
-#: designate/service.py:334
+#: designate/service.py:295
 msgid "_handle_udp thread started"
+msgstr ""
+
+#: designate/utils.py:462
+#, python-format
+msgid "Opening TCP Listening Socket on %(host)s:%(port)d"
+msgstr ""
+
+#: designate/utils.py:489
+#, python-format
+msgid "Opening UDP Listening Socket on %(host)s:%(port)d"
 msgstr ""
 
 #: designate/agent/handler.py:56
@@ -546,25 +546,25 @@ msgstr ""
 msgid "delete_zone_export: Calling central's delete_zone_export."
 msgstr ""
 
-#: designate/central/service.py:288
+#: designate/central/service.py:289
 msgid "Checking for TLDs"
 msgstr ""
 
-#: designate/central/service.py:291
+#: designate/central/service.py:292
 msgid "NOT checking for TLDs"
 msgstr ""
 
-#: designate/central/service.py:1096
+#: designate/central/service.py:1130
 #, python-format
 msgid "Serial %(srv_serial)d is not equal to zone's %(serial)d, performing AXFR"
 msgstr ""
 
-#: designate/central/service.py:1922
+#: designate/central/service.py:1958
 #, python-format
 msgid "Creating zone for %(fip_id)s:%(region)s - %(fip_addr)s zone %(zonename)s"
 msgstr ""
 
-#: designate/central/service.py:2361
+#: designate/central/service.py:2397
 msgid "Target Tenant ID found - using scoped policy"
 msgstr ""
 
@@ -638,7 +638,7 @@ msgstr ""
 msgid "perform_zone_xfr: Calling mdns for zone %(zone)s"
 msgstr ""
 
-#: designate/objects/adapters/base.py:181
+#: designate/objects/adapters/base.py:180
 #, python-format
 msgid "InvalidObject creating %(name)s with values %(values)r"
 msgstr ""
