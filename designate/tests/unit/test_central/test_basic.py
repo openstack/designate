@@ -677,9 +677,11 @@ class CentralDomainTestCase(CentralBasic):
 
     def test__add_ns_creation(self):
         self.service._create_ns = Mock()
-        self.service.find_recordset = Mock(
-            side_effect=exceptions.RecordSetNotFound
+
+        self.service.find_recordsets = Mock(
+            return_value=[]
         )
+
         self.service._add_ns(
             self.context,
             RoObject(id='1'),
@@ -690,9 +692,37 @@ class CentralDomainTestCase(CentralBasic):
 
     def test__add_ns(self):
         self.service._update_recordset_in_storage = Mock()
-        self.service.find_recordset = Mock(
-            return_value=RoObject(records=[])
+
+        recordsets = [
+            RoObject(records=[], managed=True)
+        ]
+        self.service.find_recordsets = Mock(
+            return_value=recordsets
         )
+
+        self.service._add_ns(
+            self.context,
+            RoObject(id='1'),
+            RoObject(name='bar')
+        )
+        ctx, zone, rset = \
+            self.service._update_recordset_in_storage.call_args[0]
+        self.assertEqual(len(rset.records), 1)
+        self.assertTrue(rset.records[0].managed)
+        self.assertEqual(rset.records[0].data.name, 'bar')
+
+    def test__add_ns_with_other_ns_rs(self):
+        self.service._update_recordset_in_storage = Mock()
+
+        recordsets = [
+            RoObject(records=[], managed=True),
+            RoObject(records=[], managed=False)
+        ]
+
+        self.service.find_recordsets = Mock(
+            return_value=recordsets
+        )
+
         self.service._add_ns(
             self.context,
             RoObject(id='1'),
