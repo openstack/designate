@@ -609,13 +609,22 @@ class Service(service.RPCService, service.Service):
     def _add_ns(self, context, zone, ns_record):
         # Get NS recordset
         # If the zone doesn't have an NS recordset yet, create one
-        try:
-            ns_recordset = self.find_recordset(
-                context, criterion={'domain_id': zone['id'], 'type': "NS"})
+        recordsets = self.find_recordsets(
+            context, criterion={'domain_id': zone['id'], 'type': "NS"}
+        )
 
-        except exceptions.RecordSetNotFound:
+        managed = []
+        for rs in recordsets:
+            if rs.managed:
+                managed.append(rs)
+
+        if len(managed) == 0:
             self._create_ns(context, zone, [ns_record])
             return
+        elif len(managed) != 1:
+            raise exceptions.RecordSetNotFound("No valid recordset found")
+
+        ns_recordset = managed[0]
 
         # Add new record to recordset based on the new nameserver
         ns_recordset.records.append(
