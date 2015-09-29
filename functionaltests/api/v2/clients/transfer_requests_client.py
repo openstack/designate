@@ -39,8 +39,9 @@ class TransferRequestClient(ClientMixin):
 
     @classmethod
     def transfer_request_uri(cls, transfer_request_id):
-        return "/v2/zones/tasks/transfer_requests/{0}".format(
-            transfer_request_id)
+        return cls.create_uri(
+            "/zones/tasks/transfer_requests/{0}".format(transfer_request_id)
+        )
 
     def list_transfer_requests(self, filters=None, **kwargs):
         resp, body = self.client.get(

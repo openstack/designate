@@ -15,6 +15,7 @@ limitations under the License.
 """
 
 from tempest_lib import exceptions
+from oslo_config import cfg
 
 from functionaltests.api.v2.clients.quotas_client import QuotasClient
 from functionaltests.api.v2.models.quotas_model import QuotasModel
@@ -27,6 +28,8 @@ class DesignateV2Test(BaseDesignateTest):
         super(DesignateV2Test, self).__init__(*args, **kwargs)
 
     def increase_quotas(self, user):
+        if cfg.CONF.testconfig.no_admin_setup:
+            return
         QuotasClient.as_user('admin').patch_quotas(
             QuotasClient.as_user(user).tenant_id,
             QuotasModel.from_dict({

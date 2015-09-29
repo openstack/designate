@@ -26,11 +26,13 @@ cfg.CONF.register_group(cfg.OptGroup(
     name='noauth', title="Configuration to run tests without Keystone"
 ))
 
+cfg.CONF.register_group(cfg.OptGroup(
+    name='testconfig', title="Configuration to customize how the tests run"
+))
+
 cfg.CONF.register_opts([
     cfg.StrOpt('designate_override_url',
                help="Use this instead of the endpoint in the service catalog"),
-    cfg.BoolOpt('append_version_to_url', default=True,
-               help="Post to url + /v2/zones instead of url + /zones"),
 
     cfg.StrOpt('uri', help="The Keystone v2 endpoint"),
     cfg.StrOpt('uri_v3', help="The Keystone v3 endpoint"),
@@ -61,10 +63,17 @@ cfg.CONF.register_opts([
     cfg.BoolOpt('use_noauth', default=False),
 ], group='noauth')
 
-
 cfg.CONF.register_opts([
     cfg.ListOpt('nameservers', default=["127.0.0.1:53"])
 ], group="designate")
+
+
+cfg.CONF.register_opts([
+    cfg.BoolOpt('append_version_to_url', default=True,
+               help="Post to url + /v2/zones instead of url + /zones"),
+    cfg.BoolOpt('no_admin_setup', default=False,
+                help="Skip admin actions (like increasing quotas) in setUp()")
+], group='testconfig')
 
 
 def find_config_file():
