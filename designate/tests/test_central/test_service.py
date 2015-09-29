@@ -2571,6 +2571,54 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(set([n.hostname for n in pool.ns_records]),
                          set([n.data for n in ns_recordset.records]))
 
+    def test_update_pool_add_ns_record_with_existing_ns_in_zone(self):
+        # Create a server pool and domain
+        pool = self.create_pool(fixture=0)
+        domain = self.create_domain(pool_id=pool.id)
+
+        records = [
+            objects.Record(data="ns-1.example.com."),
+            objects.Record(data="ns-2.example.com.")
+        ]
+        recordset = objects.RecordSet(
+            name="nsx.%s" % domain.name,
+            type="NS",
+            records=records
+        )
+
+        self.central_service.create_recordset(
+            self.admin_context, domain.id, recordset)
+
+        ns_record_count = len(pool.ns_records)
+        new_ns_record = objects.PoolNsRecord(
+            priority=10,
+            hostname='ns-new.example.org.')
+
+        # Update and save the pool
+        pool.ns_records.append(new_ns_record)
+        self.central_service.update_pool(self.admin_context, pool)
+
+        # Fetch the pool
+        pool = self.central_service.get_pool(self.admin_context, pool.id)
+
+        # Verify that the pool was updated correctly
+        self.assertEqual(ns_record_count + 1, len(pool.ns_records))
+        self.assertIn(new_ns_record.hostname,
+                      [n.hostname for n in pool.ns_records])
+
+        # Fetch the domains NS recordset
+        ns_recordsets = self.central_service.find_recordsets(
+            self.admin_context,
+            criterion={'domain_id': domain.id, 'type': "NS"})
+
+        # It should have 2
+        self.assertEqual(2, len(ns_recordsets))
+
+        # Verify that the doamins NS records ware updated correctly
+        managed = [i for i in ns_recordsets if i.managed][0]
+        self.assertEqual(set([n.hostname for n in pool.ns_records]),
+                         set([n.data for n in managed.records]))
+
     def test_update_pool_remove_ns_record(self):
         # Create a server pool and domain
         pool = self.create_pool(fixture=0)
