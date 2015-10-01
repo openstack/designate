@@ -185,12 +185,17 @@ class ClientMixin(object):
             first = False
         return url
 
-    @classmethod
-    def create_uri(cls, path, filters=None):
-        if cfg.CONF.testconfig.append_version_to_url:
-            uri = "/v2/{0}".format(path)
-        else:
-            uri = path
+    def create_uri(self, path, filters=None):
+        url_pattern = cfg.CONF.testconfig.v2_path_pattern
+        params = {
+            'path': path,
+            'tenant_id': self.client.tenant_id,
+            'tenant_name': self.client.tenant_name,
+            'user': self.client.user,
+            'user_id': self.client.user_id,
+        }
+        uri = url_pattern.format(**params)
+        uri.replace('//', '/')
         if filters:
-            uri = cls.add_filters(uri, filters)
+            uri = self.add_filters(uri, filters)
         return uri

@@ -21,13 +21,11 @@ from functionaltests.common.client import ClientMixin
 
 class BlacklistClient(ClientMixin):
 
-    @classmethod
-    def blacklists_uri(cls, filters=None):
-        return cls.create_uri("/blacklists", filters=filters)
+    def blacklists_uri(self, filters=None):
+        return self.create_uri("/blacklists", filters=filters)
 
-    @classmethod
-    def blacklist_uri(cls, blacklist_id):
-        return "{0}/{1}".format(cls.blacklists_uri(), blacklist_id)
+    def blacklist_uri(self, blacklist_id):
+        return "{0}/{1}".format(self.blacklists_uri(), blacklist_id)
 
     def list_blacklists(self, filters=None, **kwargs):
         resp, body = self.client.get(self.blacklists_uri(filters), **kwargs)

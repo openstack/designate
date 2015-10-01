@@ -69,8 +69,8 @@ cfg.CONF.register_opts([
 
 
 cfg.CONF.register_opts([
-    cfg.BoolOpt('append_version_to_url', default=True,
-               help="Post to url + /v2/zones instead of url + /zones"),
+    cfg.StrOpt('v2_path_pattern', default='/v2/{path}',
+               help="Specifies how to build the path for the request"),
     cfg.BoolOpt('no_admin_setup', default=False,
                 help="Skip admin actions (like increasing quotas) in setUp()")
 ], group='testconfig')

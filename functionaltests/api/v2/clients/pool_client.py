@@ -21,13 +21,11 @@ from functionaltests.common.client import ClientMixin
 
 class PoolClient(ClientMixin):
 
-    @classmethod
-    def pools_uri(cls, filters=None):
-        return cls.create_uri("/pools", filters=filters)
+    def pools_uri(self, filters=None):
+        return self.create_uri("/pools", filters=filters)
 
-    @classmethod
-    def pool_uri(cls, pool_id):
-        return "{0}/{1}".format(cls.pools_uri(), pool_id)
+    def pool_uri(self, pool_id):
+        return "{0}/{1}".format(self.pools_uri(), pool_id)
 
     def list_pools(self, filters=None, **kwargs):
         resp, body = self.client.get(self.pools_uri(filters), **kwargs)

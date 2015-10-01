@@ -24,14 +24,12 @@ from functionaltests.common import utils
 
 class RecordsetClient(ClientMixin):
 
-    @classmethod
-    def recordsets_uri(cls, zone_id, filters=None):
-        return cls.create_uri("/zones/{0}/recordsets".format(zone_id),
-                              filters=filters)
+    def recordsets_uri(self, zone_id, filters=None):
+        return self.create_uri("/zones/{0}/recordsets".format(zone_id),
+                               filters=filters)
 
-    @classmethod
-    def recordset_uri(cls, zone_id, recordset_id):
-        return "{0}/{1}".format(cls.recordsets_uri(zone_id), recordset_id)
+    def recordset_uri(self, zone_id, recordset_id):
+        return "{0}/{1}".format(self.recordsets_uri(zone_id), recordset_id)
 
     def list_recordsets(self, zone_id, filters=None, **kwargs):
         resp, body = self.client.get(
