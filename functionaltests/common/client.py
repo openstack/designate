@@ -53,10 +53,12 @@ class KeystoneV2AuthProviderNoToken(KeystoneV2AuthProviderWithOverridableUrl):
 class BaseDesignateClient(RestClient):
 
     def __init__(self, with_token=True):
+        no_cert_check = cfg.CONF.testconfig.disable_ssl_certificate_validation
         super(BaseDesignateClient, self).__init__(
             auth_provider=self.get_auth_provider(with_token),
             service='dns',
-            region=cfg.CONF.identity.region
+            region=cfg.CONF.identity.region,
+            disable_ssl_certificate_validation=no_cert_check,
         )
 
     def get_auth_provider(self, with_token=True):

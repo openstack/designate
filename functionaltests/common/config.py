@@ -72,7 +72,8 @@ cfg.CONF.register_opts([
     cfg.StrOpt('v2_path_pattern', default='/v2/{path}',
                help="Specifies how to build the path for the request"),
     cfg.BoolOpt('no_admin_setup', default=False,
-                help="Skip admin actions (like increasing quotas) in setUp()")
+                help="Skip admin actions (like increasing quotas) in setUp()"),
+    cfg.BoolOpt('disable_ssl_certificate_validation', default=False),
 ], group='testconfig')
 
 
