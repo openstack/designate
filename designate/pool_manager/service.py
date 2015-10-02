@@ -240,7 +240,7 @@ class Service(service.RPCService, coordination.CoordinationMixin,
     # Standard Create/Update/Delete Methods
 
     @hookpoints.hook_point()
-    def create_domain(self, ccontext, domain):
+    def create_domain(self, context, domain):
         """
         :param context: Security context information.
         :param domain: Domain to be created
