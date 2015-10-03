@@ -2357,6 +2357,15 @@ class Service(service.RPCService, service.Service):
                     and (serial >= domain_or_record.serial or serial == 0):
                 domain_or_record.status = 'ERROR'
 
+        elif status == 'NO_DOMAIN':
+            if domain_or_record.action in ['CREATE', 'UPDATE']:
+                domain_or_record.action = 'CREATE'
+                domain_or_record.status = 'ERROR'
+            elif domain_or_record.action == 'DELETE':
+                domain_or_record.action = 'NONE'
+                domain_or_record.status = 'DELETED'
+                deleted = True
+
         return domain_or_record, deleted
 
     # Zone Transfers

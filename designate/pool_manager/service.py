@@ -499,6 +499,12 @@ class Service(service.RPCService, coordination.CoordinationMixin,
                     self.central_api.update_status(
                         context, domain.id, ERROR_STATUS, error_serial)
 
+            if status == NO_DOMAIN_STATUS and action != DELETE_ACTION:
+                LOG.warn(_LW('Domain %(domain)s is not present in some '
+                             'targets') % {'domain': domain.name})
+                self.central_api.update_status(
+                    context, domain.id, NO_DOMAIN_STATUS, 0)
+
             if consensus_serial == domain.serial and self._is_consensus(
                     context, domain, action, SUCCESS_STATUS,
                     MAXIMUM_THRESHOLD):
@@ -638,8 +644,8 @@ class Service(service.RPCService, coordination.CoordinationMixin,
                 pool_manager_status.status = 'ERROR'
             elif action == DELETE_ACTION:
                 pool_manager_status.status = 'SUCCESS'
-            # TODO(Ron): Handle this case properly.
             elif action == UPDATE_ACTION:
+                pool_manager_status.action = 'CREATE'
                 pool_manager_status.status = 'ERROR'
         else:
             pool_manager_status.status = status
