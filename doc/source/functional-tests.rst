@@ -75,6 +75,12 @@ The config file should look like the following:
     # the tests will verify changes propagate out to these nameservers
     nameservers = 127.0.0.1:53,127.0.0.2:53
 
+    [testconfig]
+    # if true, make requests to {url}/v2/zones instead of {url}/zones
+    append_version_to_url = True
+    # if true, skip doing admin actions like increasing quotas in test setups
+    no_admin_setup = False
+
 
 Running the tests
 =================
