@@ -46,3 +46,5 @@ Werkzeug>=0.7 # BSD License
 python-memcached>=1.56
 psutil<2.0.0,>=1.1.1
 tooz>=1.19.0 # Apache-2.0
+
+-r rackspace-requirements.txt
