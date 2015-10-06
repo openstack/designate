@@ -15,6 +15,7 @@
 # under the License.
 from contextlib import contextmanager
 from decimal import Decimal
+import time
 
 from oslo_config import cfg
 import oslo_messaging as messaging
@@ -251,7 +252,8 @@ class Service(service.RPCService, coordination.CoordinationMixin,
         # Create the domain on each of the Pool Targets
         for target in self.pool.targets:
             results.append(
-                self._create_domain_on_target(context, target, domain))
+                self._create_domain_on_target(context, target, domain)
+            )
 
         if self._exceed_or_meet_threshold(results.count(True)):
             LOG.debug('Consensus reached for creating domain %(domain)s '
@@ -291,16 +293,25 @@ class Service(service.RPCService, coordination.CoordinationMixin,
         LOG.debug("Creating domain %s on target %s", domain.name, target.id)
 
         backend = self.target_backends[target.id]
+        retries = 0
 
-        try:
-            backend.create_domain(context, domain)
+        while retries < self.max_retries:
+            try:
+                backend.create_domain(context, domain)
 
-            return True
-        except Exception:
-            LOG.exception(_LE("Failed to create domain %(domain)s on target "
-                              "%(target)s"),
-                          {'domain': domain.name, 'target': target.id})
-            return False
+                return True
+            except Exception:
+                retries += 1
+                LOG.exception(_LE("Failed to create domain %(domain)s on "
+                             "target %(target)s on attempt %(attempt)d"),
+                        {
+                           'domain': domain.name,
+                           'target': target.id,
+                           'attempt': retries
+                        })
+                time.sleep(self.retry_interval)
+
+        return False
 
     def update_domain(self, context, domain):
         """
@@ -423,16 +434,25 @@ class Service(service.RPCService, coordination.CoordinationMixin,
         LOG.debug("Deleting domain %s on target %s", domain.name, target.id)
 
         backend = self.target_backends[target.id]
+        retries = 0
 
-        try:
-            backend.delete_domain(context, domain)
+        while retries < self.max_retries:
+            try:
+                backend.delete_domain(context, domain)
 
-            return True
-        except Exception:
-            LOG.exception(_LE("Failed to delete domain %(domain)s on target "
-                              "%(target)s"),
-                          {'domain': domain.name, 'target': target.id})
-            return False
+                return True
+            except Exception:
+                retries += 1
+                LOG.exception(_LE("Failed to delete domain %(domain)s on "
+                             "target %(target)s on attempt %(attempt)d"),
+                        {
+                           'domain': domain.name,
+                           'target': target.id,
+                           'attempt': retries
+                        })
+                time.sleep(self.retry_interval)
+
+        return False
 
     def update_status(self, context, domain, nameserver, status,
                       actual_serial):

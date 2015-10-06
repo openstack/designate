@@ -35,6 +35,8 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
             threshold_percentage=100,
             enable_recovery_timer=False,
             enable_sync_timer=False,
+            poll_retry_interval=0.5,
+            poll_max_retries=1,
             cache_driver='noop',
             group='service:pool_manager')
 
@@ -135,9 +137,9 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
         self.assertEqual(2, mock_poll_for_serial_number.call_count)
         self.assertEqual(
             [call(self.admin_context, domain,
-                  self.service.pool.nameservers[0], 30, 15, 10, 5),
+                  self.service.pool.nameservers[0], 30, 0.5, 1, 5),
              call(self.admin_context, domain,
-                  self.service.pool.nameservers[1], 30, 15, 10, 5)],
+                  self.service.pool.nameservers[1], 30, 0.5, 1, 5)],
             mock_poll_for_serial_number.call_args_list)
 
         # Pool manager needs to call into mdns to calculate consensus as
@@ -226,9 +228,9 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
         # Ensure poll_for_serial_number was called for each nameserver.
         self.assertEqual(
             [call(self.admin_context, domain,
-                  self.service.pool.nameservers[0], 30, 15, 10, 5),
+                  self.service.pool.nameservers[0], 30, 0.5, 1, 5),
              call(self.admin_context, domain,
-                  self.service.pool.nameservers[1], 30, 15, 10, 5)],
+                  self.service.pool.nameservers[1], 30, 0.5, 1, 5)],
             mock_poll_for_serial_number.call_args_list)
 
         self.assertEqual(False, mock_update_status.called)
