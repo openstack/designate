@@ -1,2 +1,2 @@
 # rackspace requirements
--e git+file:designate-dupdomain-hook
+-e file:designate-dupdomain-hook#egg=dupdomainhook
