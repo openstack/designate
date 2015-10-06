@@ -1,2 +1,2 @@
 # rackspace requirements
--e file:designate-dupdomain-hook#egg=dupdomainhook
+file:///./designate-dupdomain-hook#egg=dupdomainhook
