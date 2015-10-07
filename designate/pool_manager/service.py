@@ -25,6 +25,7 @@ from oslo_concurrency import lockutils
 from designate import backend
 from designate import coordination
 from designate import exceptions
+from designate import hookpoints
 from designate import objects
 from designate import utils
 from designate.central import rpcapi as central_api
@@ -239,6 +240,7 @@ class Service(service.RPCService, coordination.CoordinationMixin,
 
     # Standard Create/Update/Delete Methods
 
+    @hookpoints.hook_point()
     def create_domain(self, context, domain):
         """
         :param context: Security context information.
