@@ -1,0 +1,153 @@
+# Configure the bind9 pool backend
+
+# Enable with:
+# DESIGNATE_BACKEND_DRIVER=bind9
+
+# Dependencies:
+# ``functions`` file
+# ``designate`` configuration
+
+# install_designate_backend - install any external requirements
+# configure_designate_backend - make configuration changes, including those to other services
+# init_designate_backend - initialize databases, etc.
+# start_designate_backend - start any external services
+# stop_designate_backend - stop any external services
+# cleanup_designate_backend - remove transient data and cache
+
+# Save trace setting
+DP_BIND9_XTRACE=$(set +o | grep xtrace)
+set +o xtrace
+
+# Defaults
+# --------
+BIND_SERVICE_NAME=bind9
+BIND_CFG_DIR=/etc/bind
+BIND_VAR_DIR=/var/cache/bind
+BIND_CFG_FILE=$BIND_CFG_DIR/named.conf.options
+BIND_USER=bind
+BIND_GROUP=bind
+DESIGNATE_SERVICE_PORT_RNDC=${DESIGNATE_SERVICE_PORT_RNDC:-953}
+
+if is_fedora; then
+    BIND_SERVICE_NAME=named
+    BIND_CFG_DIR=/etc/named
+    BIND_CFG_FILE=/etc/named.conf
+    BIND_VAR_DIR=/var/named
+    BIND_USER=named
+    BIND_GROUP=named
+fi
+
+# Entry Points
+# ------------
+
+# install_designate_backend - install any external requirements
+function install_designate_backend {
+    if is_ubuntu; then
+        install_package bind9
+    elif is_fedora; then
+        install_package named
+    fi
+
+    # The user that designate runs as needs to be member of **$BIND_GROUP** group.
+    # The designate bind9 backend needs read/write access to $BIND_VAR_DIR
+    if ! getent group $BIND_GROUP >/dev/null; then
+        sudo groupadd $BIND_GROUP
+    fi
+    add_user_to_group $STACK_USER $BIND_GROUP
+    if [[ ! -d $BIND_CFG_DIR ]]; then
+        sudo mkdir -p $BIND_CFG_DIR
+        sudo chown $BIND_USER:$BIND_GROUP $BIND_CFG_DIR
+    fi
+
+    sudo chown -R $BIND_USER:$BIND_GROUP $BIND_CFG_DIR $BIND_VAR_DIR
+    sudo chmod -R g+r $BIND_CFG_DIR
+    sudo chmod -R g+rw $BIND_VAR_DIR
+
+    # Customize Bind9 apparmor profile if installed
+    if [[ -d /etc/apparmor.d ]]; then
+        sudo tee /etc/apparmor.d/local/usr.sbin.named > /dev/null << EOF
+$DESIGNATE_STATE_PATH/bind9/** rw,
+EOF
+        restart_service apparmor
+    fi
+}
+
+# configure_designate_backend - make configuration changes, including those to other services
+function configure_designate_backend {
+    iniset $DESIGNATE_CONF pool_target:$DESIGNATE_TARGET_ID type bind9
+    iniset $DESIGNATE_CONF pool_target:$DESIGNATE_TARGET_ID masters $DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT_MDNS
+    iniset $DESIGNATE_CONF pool_target:$DESIGNATE_TARGET_ID options "rndc_host: $DESIGNATE_SERVICE_HOST, rndc_port: $DESIGNATE_SERVICE_PORT_RNDC, rndc_config_file: $BIND_CFG_DIR/rndc.conf, rndc_key_file: $BIND_CFG_DIR/rndc.key, host: $DESIGNATE_SERVICE_HOST, port: $DESIGNATE_SERVICE_PORT_DNS"
+
+    # DevStack Managed BIND NameServer
+    local nameserver_id=`uuidgen`
+    iniset $DESIGNATE_CONF pool:$DESIGNATE_POOL_ID nameservers $nameserver_id
+    iniset $DESIGNATE_CONF pool_nameserver:$nameserver_id host $DESIGNATE_SERVICE_HOST
+    iniset $DESIGNATE_CONF pool_nameserver:$nameserver_id port $DESIGNATE_SERVICE_PORT_DNS
+
+    sudo chown $STACK_USER $BIND_CFG_DIR
+
+    # create rndc key and config
+    sudo rndc-confgen -a -c $BIND_CFG_DIR/rndc.key
+    sudo chown $BIND_USER:$BIND_GROUP $BIND_CFG_DIR/rndc.key
+    sudo chmod g+r $BIND_CFG_DIR/rndc.key
+
+    # Configure Bind
+    sudo tee $BIND_CFG_FILE > /dev/null <<EOF
+include "$BIND_CFG_DIR/rndc.key";
+
+options {
+    directory "$BIND_VAR_DIR";
+    allow-new-zones yes;
+    dnssec-validation auto;
+    auth-nxdomain no;    # conform to RFC1035
+    listen-on port $DESIGNATE_SERVICE_PORT_DNS { $DESIGNATE_SERVICE_HOST; };
+    recursion no;
+    minimal-responses yes;
+};
+
+controls {
+    inet $DESIGNATE_SERVICE_HOST port $DESIGNATE_SERVICE_PORT_RNDC allow { $DESIGNATE_SERVICE_HOST; } keys { "rndc-key"; };
+};
+EOF
+
+    # Configure RNDC
+    sudo tee $BIND_CFG_DIR/rndc.conf > /dev/null << EOF
+include "$BIND_CFG_DIR/rndc.key";
+
+options {
+    default-key "rndc-key";
+    default-server $DESIGNATE_SERVICE_HOST;
+    default-port $DESIGNATE_SERVICE_PORT_RNDC;
+};
+EOF
+
+    sudo chown $BIND_USER:$BIND_GROUP $BIND_CFG_FILE $BIND_CFG_DIR/rndc.conf
+    sudo chmod g+r $BIND_CFG_FILE $BIND_CFG_DIR/rndc.conf
+
+    restart_service $BIND_SERVICE_NAME
+}
+
+# init_designate_backend - initialize databases, etc.
+function init_designate_backend {
+    :
+}
+
+# start_designate_backend - start any external services
+function start_designate_backend {
+    start_service bind9
+}
+
+# stop_designate_backend - stop any external services
+function stop_designate_backend {
+    stop_service bind9
+}
+
+# cleanup_designate_backend - remove transient data and cache
+function cleanup_designate_backend {
+    sudo sh -c "rm -rf $BIND_VAR_DIR/*.nzf"
+    sudo sh -c "rm -rf $BIND_VAR_DIR/slave.*"
+    sudo rm -f $BIND_CFG_DIR/rndc.key
+}
+
+# Restore xtrace
+$DP_BIND9_XTRACE

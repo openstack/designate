@@ -18,6 +18,9 @@ LOG_COLOR=True
 # Enable the basic services we require
 ENABLED_SERVICES=rabbit,mysql,key
 
+# Enable designate
+enable_plugin designate https://git.openstack.org/openstack/designate
+
 # Designate Devstack Config
 # =========================
 # Enable core Designate services

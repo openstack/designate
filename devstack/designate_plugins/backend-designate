@@ -1,0 +1,135 @@
+# Configure the designate backend
+
+# Requirements:
+# Another Designate service is needed in order to install the SECONDARY zones in it.
+
+# Enable with:
+# DESIGNATE_BACKEND_DRIVER=designate
+
+# Dependencies:
+# ``functions`` file
+# ``designate`` configuration
+
+# install_designate_backend - install any external requirements
+# configure_designate_backend - make configuration changes, including those to other services
+# init_designate_backend - initialize databases, etc.
+# start_designate_backend - start any external services
+# stop_designate_backend - stop any external services
+# cleanup_designate_backend - remove transient data and cache
+
+# Save trace setting
+DP_D2D_XTRACE=$(set +o | grep xtrace)
+set +o xtrace
+
+# Defaults
+# --------
+
+# This is the Primary Designate MDNS servers.
+DESIGNATE_D2D_MASTERS=${DESIGNATE_D2D_MASTERS:-""}
+
+# DNS server to notify (MiniDNS ip:port)
+DESIGNATE_D2D_ALSO_NOTIES=${DESIGNATE_D2D_ALSO_NOTIES:-""}
+
+# DNS server to check SOA etc against
+DESIGNATE_D2D_NAMESERVERS=${DESIGNATE_D2D_NAMESERVERS:-""}
+
+# Destination openstack credentials
+DESIGNATE_D2D_KS_VERSION=${DESIGNATE_D2D_KS_VERSION:-3}
+
+DESIGNATE_D2D_AUTH_URL=${DESIGNATE_D2D_AUTH_URL:-}
+DESIGNATE_D2D_USERNAME=${DESIGNATE_D2D_USERNAME:-}
+DESIGNATE_D2D_PASSWORD=${DESIGNATE_D2D_PASSWORD:-}
+
+# Keystone V2
+DESIGNATE_D2D_TENANT_NAME=${DESIGNATE_D2D_TENANT_NAME:-}
+DESIGNATE_D2D_TENANT_NAME=${DESIGNATE_D2D_TENANT_ID:-}
+
+# Keystone V3
+DESIGNATE_D2D_PROJECT_NAME=${DESIGNATE_D2D_PROJECT_NAME:-}
+DESIGNATE_D2D_PROJECT_DOMAIN_NAME=${DESIGNATE_D2D_PROJECT_DOMAIN_NAME:-}
+DESIGNATE_D2D_USER_DOMAIN_NAME=${DESIGNATE_D2D_USER_DOMAIN_NAME:-}
+
+
+# Entry Points
+# ------------
+
+# install_designate_backend - install any external requirements
+function install_designate_backend {
+    :
+}
+
+# configure_designate_backend - make configuration changes, including those to other services
+function configure_designate_backend {
+    iniset $DESIGNATE_CONF pool_target:$DESIGNATE_TARGET_ID type designate
+    iniset $DESIGNATE_CONF pool_target:$DESIGNATE_TARGET_ID masters $DESIGNATE_D2D_MASTERS
+
+    options="auth_url: $DESIGNATE_D2D_AUTH_URL, username: $DESIGNATE_D2D_USERNAME, password: $DESIGNATE_D2D_PASSWORD,"
+    if [ "$DESIGNATE_D2D_KS_VERSION" == "2" ]; then
+        if [ ! -z "$DESIGNATE_D2D_TENANT_NAME" ]; then
+        options="$options tenant_name=$DESIGNATE_D2D_TENANT_NAME,"
+        fi
+
+        if [ ! -z "$DESIGNATE_D2D_TENANT_ID" ]; then
+            options="$options tenant_id=$DESIGNATE_D2D_TENANT_ID,"
+        fi
+    fi
+
+    if [ ! -z "$DESIGNATE_D2D_KS_VERSION" == "3" ]; then
+        options="$options project_name: $DESIGNATE_D2D_PROJECT_NAME, project_domain_name=$DESIGNATE_D2D_PROJECT_DOMAIN_NAME, user_domain_name=$DESIGNATE_D2D_USER_DOMAIN_NAME"
+    fi
+
+    iniset $DESIGNATE_CONF pool_target:$DESIGNATE_TARGET_ID options $options
+
+    # Create a Pool Nameserver for each of the Designate nameservers
+    local nameserver_ids=""
+    IFS=',' read -a nameservers <<< "$DESIGNATE_D2D_NAMESERVERS"
+
+    for nameserver in "${nameservers[@]}"; do
+        local nameserver_id=`uuidgen`
+        iniset $DESIGNATE_CONF pool_nameserver:$nameserver_id host $(dig +short A $nameserver | head -n 1)
+        iniset $DESIGNATE_CONF pool_nameserver:$nameserver_id port 53
+
+        # Append the Nameserver ID to the list
+        nameserver_ids+=${nameserver_id},
+    done
+
+    # Configure the Pool for the set of nameserver IDs, minus the trailing comma
+    iniset $DESIGNATE_CONF pool:$DESIGNATE_POOL_ID nameservers "${nameserver_ids:0:-1}"
+
+    # Configure the Pool to Notify the destination Mdns
+    iniset $DESIGNATE_CONF pool:$DESIGNATE_POOL_ID also_notifies "$DESIGNATE_D2D_ALSO_NOTIFIES"
+}
+
+# create_designate_ns_records - Create Pool NS Records
+function create_designate_ns_records_backend {
+    # Build an array of the Designate nameservers.
+    IFS=',' read -a ns_records <<< "$DESIGNATE_D2D_NAMESERVERS"
+
+    # Create a NS Record for each of the Designate nameservers
+    for ns_record in "${ns_records[@]}"; do
+        designate server-create --name "${ns_record%%.}."
+    done
+}
+
+# init_designate_backend - initialize databases, etc.
+function init_designate_backend {
+    :
+}
+
+# start_designate_backend - start any external services
+function start_designate_backend {
+    :
+}
+
+# stop_designate_backend - stop any external services
+function stop_designate_backend {
+    :
+}
+
+# cleanup_designate_backend - remove transient data and cache
+function cleanup_designate_backend {
+    :
+}
+
+# Restore xtrace
+$DP_D2D_XTRACE
