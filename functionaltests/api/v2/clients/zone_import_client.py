@@ -21,13 +21,11 @@ from functionaltests.common import utils
 
 class ZoneImportClient(ClientMixin):
 
-    @classmethod
-    def zone_imports_uri(cls, filters=None):
-        return cls.create_uri("/zones/tasks/imports", filters=filters)
+    def zone_imports_uri(self, filters=None):
+        return self.create_uri("/zones/tasks/imports", filters=filters)
 
-    @classmethod
-    def zone_import_uri(cls, id):
-        return "{0}/{1}".format(cls.zone_imports_uri(), id)
+    def zone_import_uri(self, id):
+        return "{0}/{1}".format(self.zone_imports_uri(), id)
 
     def list_zone_imports(self, filters=None, **kwargs):
         resp, body = self.client.get(

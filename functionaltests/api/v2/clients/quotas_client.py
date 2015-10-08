@@ -20,11 +20,10 @@ from functionaltests.common.client import ClientMixin
 
 class QuotasClient(ClientMixin):
 
-    @classmethod
-    def quotas_uri(cls, tenant_id, filters=None):
+    def quotas_uri(self, tenant_id, filters=None):
         url = "/admin/quotas/{0}".format(tenant_id)
         if filters:
-            url = cls.add_filters(url, filters)
+            url = self.add_filters(url, filters)
         return url
 
     def get_quotas(self, tenant_id, filters=None, **kwargs):

@@ -76,8 +76,14 @@ The config file should look like the following:
     nameservers = 127.0.0.1:53,127.0.0.2:53
 
     [testconfig]
-    # if true, make requests to {url}/v2/zones instead of {url}/zones
-    append_version_to_url = True
+    # Specify how build the path for the request. This will be appended
+    # directly to the url from the service catalog (or the override url).
+    #     {tenant_id} - the tenant id
+    #     {tenant_name} - the tenant name
+    #     {user} - the username of the tenant
+    #     {user_id} - the user_id of the tenant
+    #     {path} - the versionless resource path, e.g. /zones/ID"),
+    v2_path_pattern = '/v2/{path}'
     # if true, skip doing admin actions like increasing quotas in test setups
     no_admin_setup = False
 

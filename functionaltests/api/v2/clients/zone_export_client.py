@@ -22,20 +22,17 @@ from functionaltests.common.models import ZoneFile
 
 class ZoneExportClient(ClientMixin):
 
-    @classmethod
-    def zone_exports_uri(cls, filters=None):
-        return cls.create_uri("/zones/tasks/exports", filters=filters)
+    def zone_exports_uri(self, filters=None):
+        return self.create_uri("/zones/tasks/exports", filters=filters)
 
-    @classmethod
-    def create_zone_export_uri(cls, zone_id, filters=None):
-        return cls.create_uri(
+    def create_zone_export_uri(self, zone_id, filters=None):
+        return self.create_uri(
             "/zones/{0}/tasks/export".format(zone_id),
             filters=filters,
         )
 
-    @classmethod
-    def zone_export_uri(cls, id):
-        return "{0}/{1}".format(cls.zone_exports_uri(), id)
+    def zone_export_uri(self, id):
+        return "{0}/{1}".format(self.zone_exports_uri(), id)
 
     def list_zone_exports(self, filters=None, **kwargs):
         resp, body = self.client.get(

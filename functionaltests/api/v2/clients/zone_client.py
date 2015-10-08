@@ -24,13 +24,11 @@ from functionaltests.common import utils
 
 class ZoneClient(ClientMixin):
 
-    @classmethod
-    def zones_uri(cls, filters=None):
-        return cls.create_uri("/zones", filters=filters)
+    def zones_uri(self, filters=None):
+        return self.create_uri("/zones", filters=filters)
 
-    @classmethod
-    def zone_uri(cls, id):
-        return "{0}/{1}".format(cls.zones_uri(), id)
+    def zone_uri(self, id):
+        return "{0}/{1}".format(self.zones_uri(), id)
 
     def list_zones(self, filters=None, **kwargs):
         resp, body = self.client.get(self.zones_uri(filters), **kwargs)
