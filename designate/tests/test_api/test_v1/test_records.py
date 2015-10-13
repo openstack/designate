@@ -32,6 +32,34 @@ class ApiV1RecordsTest(ApiV1Test):
         self.domain = self.create_domain()
         self.recordset = self.create_recordset(self.domain, 'A')
 
+    def test_get_record_schema(self):
+        response = self.get('schemas/record')
+        self.assertIn('description', response.json)
+        self.assertIn('links', response.json)
+        self.assertIn('title', response.json)
+        self.assertIn('id', response.json)
+        self.assertIn('additionalProperties', response.json)
+        self.assertIn('properties', response.json)
+        self.assertIn('id', response.json['properties'])
+        self.assertIn('domain_id', response.json['properties'])
+        self.assertIn('type', response.json['properties'])
+        self.assertIn('data', response.json['properties'])
+        self.assertIn('priority', response.json['properties'])
+        self.assertIn('description', response.json['properties'])
+        self.assertIn('created_at', response.json['properties'])
+        self.assertIn('updated_at', response.json['properties'])
+        self.assertIn('name', response.json['properties'])
+        self.assertIn('ttl', response.json['properties'])
+        self.assertIn('oneOf', response.json)
+
+    def test_get_records_schema(self):
+        response = self.get('schemas/records')
+        self.assertIn('description', response.json)
+        self.assertIn('additionalProperties', response.json)
+        self.assertIn('properties', response.json)
+        self.assertIn('title', response.json)
+        self.assertIn('id', response.json)
+
     def test_create_record(self):
         recordset_fixture = self.get_recordset_fixture(
             self.domain['name'])
