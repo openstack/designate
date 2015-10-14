@@ -37,12 +37,12 @@ class DomainTest(oslotest.base.BaseTestCase):
 
     def test_init(self):
         domain = create_test_domain()
-        self.assertEqual(domain.name, 'www.example.org.')
+        self.assertEqual('www.example.org.', domain.name)
 
     def test_masters_none(self):
         domain = objects.Domain()
         with testtools.ExpectedException(exceptions.RelationNotLoaded):
-            self.assertEqual(domain.masters, None)
+            self.assertEqual(None, domain.masters)
 
     def test_masters(self):
         domain = objects.Domain(
@@ -51,7 +51,7 @@ class DomainTest(oslotest.base.BaseTestCase):
             ])
         )
         self.assertEqual(
-            domain.masters.to_list(), [{'host': '1.0.0.0', 'port': 53}])
+            [{'host': '1.0.0.0', 'port': 53}], domain.masters.to_list())
 
     def test_masters_2(self):
         domain = objects.Domain(
@@ -60,7 +60,7 @@ class DomainTest(oslotest.base.BaseTestCase):
                 {'host': '2.0.0.0'}
             ])
         )
-        self.assertEqual(len(domain.masters), 2)
+        self.assertEqual(2, len(domain.masters))
 
     def test_get_master_by_ip(self):
         domain = objects.Domain(
@@ -71,13 +71,13 @@ class DomainTest(oslotest.base.BaseTestCase):
         )
         m = domain.get_master_by_ip('2.0.0.0').to_data()
 
-        self.assertEqual(m, '2.0.0.0:53')
+        self.assertEqual('2.0.0.0:53', m)
 
     @unittest.expectedFailure  # bug: domain.masters is not iterable
     def test_get_master_by_ip_none(self):
         domain = objects.Domain()
         m = domain.get_master_by_ip('2.0.0.0')
-        self.assertEqual(m, False)
+        self.assertEqual(False, m)
 
     def test_validate(self):
         domain = create_test_domain()
