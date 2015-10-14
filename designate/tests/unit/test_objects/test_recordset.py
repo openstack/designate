@@ -63,8 +63,8 @@ class RecordSetTest(oslotest.base.BaseTestCase):
 
     def test_init(self):
         rs = create_test_recordset()
-        self.assertEqual(rs.name, 'www.example.org.')
-        self.assertEqual(rs.type, 'A')
+        self.assertEqual('www.example.org.', rs.name)
+        self.assertEqual('A', rs.type)
 
     def test_not_managed(self):
         rs = create_test_recordset()
@@ -90,7 +90,7 @@ class RecordSetTest(oslotest.base.BaseTestCase):
                 objects.Record(data='192.0.2.1', action=action),
             ])
         )
-        self.assertEqual(rs.action, action)
+        self.assertEqual(action, rs.action)
 
     def test_action_create(self):
         rs = objects.RecordSet(
@@ -99,7 +99,7 @@ class RecordSetTest(oslotest.base.BaseTestCase):
                 objects.Record(data='192.0.2.1', action='CREATE'),
             ])
         )
-        self.assertEqual(rs.action, 'CREATE')
+        self.assertEqual('CREATE', rs.action)
 
     def test_action_create_plus_update(self):
         rs = objects.RecordSet(
@@ -109,7 +109,7 @@ class RecordSetTest(oslotest.base.BaseTestCase):
                 objects.Record(data='192.0.2.2', action='UPDATE'),
             ])
         )
-        self.assertEqual(rs.action, 'UPDATE')
+        self.assertEqual('UPDATE', rs.action)
 
     def test_action_delete_plus_update(self):
         rs = objects.RecordSet(
@@ -119,7 +119,7 @@ class RecordSetTest(oslotest.base.BaseTestCase):
                 objects.Record(data='192.0.2.2', action='UPDATE'),
             ])
         )
-        self.assertEqual(rs.action, 'UPDATE')
+        self.assertEqual('UPDATE', rs.action)
 
     def test_action_delete_only(self):
         rs = objects.RecordSet(
@@ -129,7 +129,7 @@ class RecordSetTest(oslotest.base.BaseTestCase):
                 objects.Record(data='192.0.2.2', action='DELETE'),
             ])
         )
-        self.assertEqual(rs.action, 'DELETE')
+        self.assertEqual('DELETE', rs.action)
 
     @unittest.expectedFailure  # bug
     def test_status_error(self):
@@ -159,7 +159,7 @@ class RecordSetTest(oslotest.base.BaseTestCase):
                 objects.Record(data='192.0.2.3', status='ACTIVE'),
             ])
         )
-        self.assertEqual(rs.status, 'PENDING')
+        self.assertEqual('PENDING', rs.status)
 
     def test_status_pending2(self):
         rs = objects.RecordSet(
@@ -169,7 +169,7 @@ class RecordSetTest(oslotest.base.BaseTestCase):
                 objects.Record(data='192.0.2.2', status='PENDING'),
             ])
         )
-        self.assertEqual(rs.status, 'PENDING')
+        self.assertEqual('PENDING', rs.status)
 
     def test_status_active(self):
         rs = objects.RecordSet(
@@ -178,7 +178,7 @@ class RecordSetTest(oslotest.base.BaseTestCase):
                 objects.Record(data='192.0.2.3', status='ACTIVE'),
             ])
         )
-        self.assertEqual(rs.status, 'ACTIVE')
+        self.assertEqual('ACTIVE', rs.status)
 
     def test_validate(self):
         rs = create_test_recordset()
