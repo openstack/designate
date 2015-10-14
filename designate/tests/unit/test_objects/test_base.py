@@ -209,7 +209,7 @@ class DesignateObjectTest(oslotest.base.BaseTestCase):
             }
         }
         schema = obj._obj_validator.schema
-        self.assertEqual(schema, expected)
+        self.assertEqual(expected, schema)
 
         with testtools.ExpectedException(AttributeError):  # bug
             schema = obj.obj_get_schema()
@@ -348,8 +348,8 @@ class DesignateObjectTest(oslotest.base.BaseTestCase):
     def test_update(self):
         obj = TestObject(id='MyID', name='test')
         obj.update({'id': 'new_id', 'name': 'new_name'})
-        self.assertEqual(obj.id, 'new_id')
-        self.assertEqual(obj.name, 'new_name')
+        self.assertEqual('new_id', obj.id)
+        self.assertEqual('new_name', obj.name)
 
     def test_update_unexpected_attribute(self):
         obj = TestObject(id='MyID', name='test')
@@ -589,12 +589,12 @@ class DictObjectMixinTest(oslotest.base.BaseTestCase):
 
     def test_gititem(self):
         obj = TestObjectDict(name=1)
-        self.assertEqual(obj['name'], 1)
+        self.assertEqual(1, obj['name'])
 
     def test_setitem(self):
         obj = TestObjectDict()
         obj['name'] = 1
-        self.assertEqual(obj.name, 1)
+        self.assertEqual(1, obj.name)
 
     def test_contains(self):
         obj = TestObjectDict(name=1)
@@ -603,7 +603,7 @@ class DictObjectMixinTest(oslotest.base.BaseTestCase):
     def test_get(self):
         obj = TestObjectDict(name=1)
         v = obj.get('name')
-        self.assertEqual(v, 1)
+        self.assertEqual(1, v)
 
     def test_get_missing(self):
         obj = TestObjectDict(name=1)
@@ -614,7 +614,7 @@ class DictObjectMixinTest(oslotest.base.BaseTestCase):
     def test_get_default(self):
         obj = TestObjectDict(name='n')
         v = obj.get('name', default='default')
-        self.assertEqual(v, 'n')
+        self.assertEqual('n', v)
 
     def test_get_default_with_patch(self):
         obj = TestObjectDict(name='v')
@@ -622,14 +622,14 @@ class DictObjectMixinTest(oslotest.base.BaseTestCase):
         with mock.patch(fname) as attr_is_set:
             attr_is_set.return_value = False
             v = obj.get('name', default='default')
-            self.assertEqual(v, 'default')
+            self.assertEqual('default', v)
 
     def test_iteritems(self):
         obj = TestObjectDict(name=None, id=1)
         items = tuple(obj.items())
         self.assertEqual(
-            sorted(items),
-            [('id', 1), ('name', None)]
+            [('id', 1), ('name', None)],
+            sorted(items)
         )
 
     def test_jsonutils_to_primitive(self):
@@ -667,8 +667,8 @@ class ListObjectMixinTest(oslotest.base.BaseTestCase):
         self.assertIsInstance(obj[0], TestObject)
         self.assertIsInstance(obj[1], TestObject)
 
-        self.assertEqual(obj[0].id, 'One')
-        self.assertEqual(obj[1].id, 'Two')
+        self.assertEqual('One', obj[0].id)
+        self.assertEqual('Two', obj[1].id)
 
     def test_cast_to_list(self):
         # Create a few objects
@@ -834,7 +834,7 @@ class ListObjectMixinTest(oslotest.base.BaseTestCase):
 
         obj.insert(1, obj_two)
 
-        self.assertEqual(obj.objects, [obj_one, obj_two, obj_three])
+        self.assertEqual([obj_one, obj_two, obj_three], obj.objects)
 
     def test_remove(self):
         # Create a few objects
@@ -844,7 +844,7 @@ class ListObjectMixinTest(oslotest.base.BaseTestCase):
         # Create a ListObject
         obj = TestObjectList(objects=[obj_one, obj_two])
         obj.remove(obj_one)
-        self.assertEqual(obj.objects, [obj_two])
+        self.assertEqual([obj_two], obj.objects)
 
     def test_index(self):
         # Create a few objects
@@ -877,7 +877,7 @@ class ListObjectMixinTest(oslotest.base.BaseTestCase):
         obj = TestObjectList(objects=[obj_two, obj_three, obj_one])
         obj.sort(key=attrgetter('id'))
 
-        self.assertEqual(obj.objects, [obj_one, obj_two, obj_three])
+        self.assertEqual([obj_one, obj_two, obj_three], obj.objects)
 
     def test_to_dict(self):
         # Create a ListObject containing a DesignateObject
@@ -886,7 +886,7 @@ class ListObjectMixinTest(oslotest.base.BaseTestCase):
 
         dict_ = obj.to_dict()
         expected = {'objects': {}}
-        self.assertEqual(dict_, expected)
+        self.assertEqual(expected, dict_)
 
     def test_to_dict_list_mixin(self):
         # Create a ListObject containing an ObjectList
@@ -894,7 +894,7 @@ class ListObjectMixinTest(oslotest.base.BaseTestCase):
 
         dict_ = obj.to_dict()
         expected = {'objects': []}
-        self.assertEqual(dict_, expected)
+        self.assertEqual(expected, dict_)
 
     def test_to_list(self):
         # Create a few objects
@@ -905,4 +905,4 @@ class ListObjectMixinTest(oslotest.base.BaseTestCase):
         obj = TestObjectList(objects=[obj_one, obj_three])
 
         li = obj.to_list()
-        self .assertEqual(li, [{'id': 'One'}, {'id': 'Three'}])
+        self.assertEqual([{'id': 'One'}, {'id': 'Three'}], li)
