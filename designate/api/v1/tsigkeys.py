@@ -88,7 +88,7 @@ def get_tsigkey(tsigkey_id):
         'id': tsigkey_id,
     }
 
-    tsigkey = central_api.find_tsigkey(context, criterion)
+    tsigkey = central_api.find_tsigkeys(context, criterion)
 
     return flask.jsonify(tsigkey_schema.filter(tsigkey))
 
@@ -136,7 +136,7 @@ def delete_tsigkey(tsigkey_id):
         'resource_id': default_pool_id,
         'id': tsigkey_id,
     }
-    central_api.find_tsigkey(context, criterion)
+    central_api.find_tsigkeys(context, criterion)
 
     # Delete the TSIG Key
     central_api.delete_tsigkey(context, tsigkey_id)
