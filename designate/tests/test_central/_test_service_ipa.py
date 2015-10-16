@@ -105,7 +105,7 @@ class CentralServiceTestIPA(designate.tests.test_central.
         records = self.central_service.find_records(
             self.admin_context, criterion)
 
-        self.assertEqual(len(records), 2)
+        self.assertEqual(2, len(records))
         self.assertRecordsEqual(recA0, records[0])
         self.assertRecordsEqual(recA1, records[1])
 
@@ -114,7 +114,7 @@ class CentralServiceTestIPA(designate.tests.test_central.
         records = self.central_service.find_records(
             self.admin_context, criterion)
 
-        self.assertEqual(len(records), 2)
+        self.assertEqual(2, len(records))
         self.assertRecordsEqual(recMX0, records[0])
         self.assertRecordsEqual(recMX1, records[1])
 
@@ -138,7 +138,7 @@ class CentralServiceTestIPA(designate.tests.test_central.
             records = self.central_service.find_records(
                 self.admin_context, criterion)
 
-            self.assertEqual(len(records), 0)
+            self.assertEqual(0, len(records))
 
         # verify two records in recsetMX
         criterion['recordset_id'] = recsetMX['id']
@@ -146,7 +146,7 @@ class CentralServiceTestIPA(designate.tests.test_central.
         records = self.central_service.find_records(
             self.admin_context, criterion)
 
-        self.assertEqual(len(records), 2)
+        self.assertEqual(2, len(records))
 
         # Delete recsetMX
         self.central_service.delete_recordset(
