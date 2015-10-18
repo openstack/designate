@@ -327,7 +327,7 @@ debug = False
 #host = 192.168.27.100
 
 #[pool_target:f26e0b32-736f-4f0a-831b-039a415c481e]
-#options = rndc_host: 192.168.27.100, rndc_port: 953, rndc_config_file: /etc/bind/rndc.conf, rndc_key_file: /etc/bind/rndc.key, port: 53, host: 192.168.27.100
+#options = rndc_host: 192.168.27.100, rndc_port: 953, rndc_config_file: /etc/bind/rndc.conf, rndc_key_file: /etc/bind/rndc.key, port: 53, host: 192.168.27.100, clean_zonefile: false
 #masters = 192.168.27.100:5354
 #type = bind9
 

@@ -17,6 +17,7 @@ import random
 
 import six
 from oslo_log import log as logging
+from oslo_utils import strutils
 
 from designate import exceptions
 from designate import utils
@@ -41,6 +42,11 @@ class Bind9Backend(base.Backend):
         self.rndc_port = int(self.options.get('rndc_port', 953))
         self.rndc_config_file = self.options.get('rndc_config_file')
         self.rndc_key_file = self.options.get('rndc_key_file')
+
+        # Removes zone files when a zone is deleted.
+        # This option will take effect on bind>=9.10.0.
+        self.clean_zonefile = strutils.bool_from_string(
+                                  self.options.get('clean_zonefile', 'false'))
 
     def create_domain(self, context, domain):
         LOG.debug('Create Domain')
@@ -77,6 +83,8 @@ class Bind9Backend(base.Backend):
             'delzone',
             '%s' % domain['name'].rstrip('.'),
         ]
+        if self.clean_zonefile:
+            rndc_op.insert(1, '-clean')
 
         try:
             self._execute_rndc(rndc_op)
