@@ -57,10 +57,10 @@ class APIV2ZoneImportExportTest(ApiV2TestCase):
         url = '/zones/tasks/imports/%s' % import_id
 
         response = self.client.get(url)
-        self.assertEqual(response.json['status'], 'ERROR')
+        self.assertEqual('ERROR', response.json['status'])
         origin_msg = ("The $ORIGIN statement is required and must be the"
                      " first statement in the zonefile.")
-        self.assertEqual(response.json['message'], origin_msg)
+        self.assertEqual(origin_msg, response.json['message'])
 
     def test_missing_soa(self):
         fixture = self.get_zonefile_fixture(variant='nosoa')
@@ -74,9 +74,9 @@ class APIV2ZoneImportExportTest(ApiV2TestCase):
         url = '/zones/tasks/imports/%s' % import_id
 
         response = self.client.get(url)
-        self.assertEqual(response.json['status'], 'ERROR')
+        self.assertEqual('ERROR', response.json['status'])
         origin_msg = ("Malformed zonefile.")
-        self.assertEqual(response.json['message'], origin_msg)
+        self.assertEqual(origin_msg, response.json['message'])
 
     def test_malformed_zonefile(self):
         fixture = self.get_zonefile_fixture(variant='malformed')
@@ -90,9 +90,9 @@ class APIV2ZoneImportExportTest(ApiV2TestCase):
         url = '/zones/tasks/imports/%s' % import_id
 
         response = self.client.get(url)
-        self.assertEqual(response.json['status'], 'ERROR')
+        self.assertEqual('ERROR', response.json['status'])
         origin_msg = ("Malformed zonefile.")
-        self.assertEqual(response.json['message'], origin_msg)
+        self.assertEqual(origin_msg, response.json['message'])
 
     def test_import_export(self):
         # Since v2 doesn't support getting records, import and export the

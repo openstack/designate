@@ -114,9 +114,9 @@ class StorageTestCase(object):
         self.assertIsNotNone(result['created_at'])
         self.assertIsNone(result['updated_at'])
 
-        self.assertEqual(result['tenant_id'], self.admin_context.tenant)
-        self.assertEqual(result['resource'], values['resource'])
-        self.assertEqual(result['hard_limit'], values['hard_limit'])
+        self.assertEqual(self.admin_context.tenant, result['tenant_id'])
+        self.assertEqual(values['resource'], result['resource'])
+        self.assertEqual(values['hard_limit'], result['hard_limit'])
 
     def test_create_quota_duplicate(self):
         # Create the initial quota
@@ -160,11 +160,11 @@ class StorageTestCase(object):
 
         results = self.storage.find_quotas(self.admin_context, criterion)
 
-        self.assertEqual(len(results), 1)
+        self.assertEqual(1, len(results))
 
-        self.assertEqual(results[0]['tenant_id'], quota_one['tenant_id'])
-        self.assertEqual(results[0]['resource'], quota_one['resource'])
-        self.assertEqual(results[0]['hard_limit'], quota_one['hard_limit'])
+        self.assertEqual(quota_one['tenant_id'], results[0]['tenant_id'])
+        self.assertEqual(quota_one['resource'], results[0]['resource'])
+        self.assertEqual(quota_one['hard_limit'], results[0]['hard_limit'])
 
         criterion = dict(
             tenant_id=quota_two['tenant_id'],
@@ -173,20 +173,20 @@ class StorageTestCase(object):
 
         results = self.storage.find_quotas(self.admin_context, criterion)
 
-        self.assertEqual(len(results), 1)
+        self.assertEqual(1, len(results))
 
-        self.assertEqual(results[0]['tenant_id'], quota_two['tenant_id'])
-        self.assertEqual(results[0]['resource'], quota_two['resource'])
-        self.assertEqual(results[0]['hard_limit'], quota_two['hard_limit'])
+        self.assertEqual(quota_two['tenant_id'], results[0]['tenant_id'])
+        self.assertEqual(quota_two['resource'], results[0]['resource'])
+        self.assertEqual(quota_two['hard_limit'], results[0]['hard_limit'])
 
     def test_get_quota(self):
         # Create a quota
         expected = self.create_quota()
         actual = self.storage.get_quota(self.admin_context, expected['id'])
 
-        self.assertEqual(actual['tenant_id'], expected['tenant_id'])
-        self.assertEqual(actual['resource'], expected['resource'])
-        self.assertEqual(actual['hard_limit'], expected['hard_limit'])
+        self.assertEqual(expected['tenant_id'], actual['tenant_id'])
+        self.assertEqual(expected['resource'], actual['resource'])
+        self.assertEqual(expected['hard_limit'], actual['hard_limit'])
 
     def test_get_quota_missing(self):
         with testtools.ExpectedException(exceptions.QuotaNotFound):
@@ -204,9 +204,9 @@ class StorageTestCase(object):
 
         result = self.storage.find_quota(self.admin_context, criterion)
 
-        self.assertEqual(result['tenant_id'], quota_one['tenant_id'])
-        self.assertEqual(result['resource'], quota_one['resource'])
-        self.assertEqual(result['hard_limit'], quota_one['hard_limit'])
+        self.assertEqual(quota_one['tenant_id'], result['tenant_id'])
+        self.assertEqual(quota_one['resource'], result['resource'])
+        self.assertEqual(quota_one['hard_limit'], result['hard_limit'])
 
         criterion = dict(
             tenant_id=quota_two['tenant_id'],
@@ -215,9 +215,9 @@ class StorageTestCase(object):
 
         result = self.storage.find_quota(self.admin_context, criterion)
 
-        self.assertEqual(result['tenant_id'], quota_two['tenant_id'])
-        self.assertEqual(result['resource'], quota_two['resource'])
-        self.assertEqual(result['hard_limit'], quota_two['hard_limit'])
+        self.assertEqual(quota_two['tenant_id'], result['tenant_id'])
+        self.assertEqual(quota_two['resource'], result['resource'])
+        self.assertEqual(quota_two['hard_limit'], result['hard_limit'])
 
     def test_find_quota_criterion_missing(self):
         expected = self.create_quota()
@@ -286,10 +286,10 @@ class StorageTestCase(object):
         self.assertIsNotNone(result['created_at'])
         self.assertIsNone(result['updated_at'])
 
-        self.assertEqual(result['name'], values['name'])
-        self.assertEqual(result['algorithm'], values['algorithm'])
-        self.assertEqual(result['secret'], values['secret'])
-        self.assertEqual(result['scope'], values['scope'])
+        self.assertEqual(values['name'], result['name'])
+        self.assertEqual(values['algorithm'], result['algorithm'])
+        self.assertEqual(values['secret'], result['secret'])
+        self.assertEqual(values['scope'], result['scope'])
 
     def test_create_tsigkey_duplicate(self):
         # Create the Initial TsigKey
@@ -334,9 +334,9 @@ class StorageTestCase(object):
 
         results = self.storage.find_tsigkeys(self.admin_context, criterion)
 
-        self.assertEqual(len(results), 1)
+        self.assertEqual(1, len(results))
 
-        self.assertEqual(results[0]['name'], tsigkey_one['name'])
+        self.assertEqual(tsigkey_one['name'], results[0]['name'])
 
         criterion = dict(
             name=tsigkey_two['name']
@@ -344,9 +344,9 @@ class StorageTestCase(object):
 
         results = self.storage.find_tsigkeys(self.admin_context, criterion)
 
-        self.assertEqual(len(results), 1)
+        self.assertEqual(1, len(results))
 
-        self.assertEqual(results[0]['name'], tsigkey_two['name'])
+        self.assertEqual(tsigkey_two['name'], results[0]['name'])
 
     def test_get_tsigkey(self):
         # Create a tsigkey
@@ -354,10 +354,10 @@ class StorageTestCase(object):
 
         actual = self.storage.get_tsigkey(self.admin_context, expected['id'])
 
-        self.assertEqual(actual['name'], expected['name'])
-        self.assertEqual(actual['algorithm'], expected['algorithm'])
-        self.assertEqual(actual['secret'], expected['secret'])
-        self.assertEqual(actual['scope'], expected['scope'])
+        self.assertEqual(expected['name'], actual['name'])
+        self.assertEqual(expected['algorithm'], actual['algorithm'])
+        self.assertEqual(expected['secret'], actual['secret'])
+        self.assertEqual(expected['scope'], actual['scope'])
 
     def test_get_tsigkey_missing(self):
         with testtools.ExpectedException(exceptions.TsigKeyNotFound):
@@ -458,10 +458,10 @@ class StorageTestCase(object):
 
         result = self.storage.get_tenant(context, 1)
 
-        self.assertEqual(result['id'], 1)
-        self.assertEqual(result['domain_count'], 2)
-        self.assertEqual(sorted(result['domains']),
-                         [domain_1['name'], domain_2['name']])
+        self.assertEqual(1, result['id'])
+        self.assertEqual(2, result['domain_count'])
+        self.assertEqual([domain_1['name'], domain_2['name']],
+                         sorted(result['domains']))
 
     def test_count_tenants(self):
         context = self.get_admin_context()
@@ -473,7 +473,7 @@ class StorageTestCase(object):
 
         # in the beginning, there should be nothing
         tenants = self.storage.count_tenants(context)
-        self.assertEqual(tenants, 0)
+        self.assertEqual(0, tenants)
 
         # create 2 domains with 2 tenants
         self.create_domain(fixture=0, context=one_context, tenant_id=1)
@@ -485,7 +485,7 @@ class StorageTestCase(object):
         self.storage.delete_domain(context, domain['id'])
 
         tenants = self.storage.count_tenants(context)
-        self.assertEqual(tenants, 2)
+        self.assertEqual(2, tenants)
 
     def test_count_tenants_none_result(self):
         rp = mock.Mock()
@@ -493,7 +493,7 @@ class StorageTestCase(object):
         with mock.patch.object(self.storage.session, 'execute',
                                return_value=rp):
             tenants = self.storage.count_tenants(self.admin_context)
-            self.assertEqual(tenants, 0)
+            self.assertEqual(0, tenants)
 
     # Domain Tests
     def test_create_domain(self):
@@ -512,10 +512,10 @@ class StorageTestCase(object):
         self.assertIsNotNone(result['created_at'])
         self.assertIsNone(result['updated_at'])
 
-        self.assertEqual(result['tenant_id'], self.admin_context.tenant)
-        self.assertEqual(result['name'], values['name'])
-        self.assertEqual(result['email'], values['email'])
-        self.assertEqual(result['pool_id'], pool_id)
+        self.assertEqual(self.admin_context.tenant, result['tenant_id'])
+        self.assertEqual(values['name'], result['name'])
+        self.assertEqual(values['email'], result['email'])
+        self.assertEqual(pool_id, result['pool_id'])
         self.assertIn('status', result)
 
     def test_create_domain_duplicate(self):
@@ -558,10 +558,10 @@ class StorageTestCase(object):
 
         results = self.storage.find_domains(self.admin_context, criterion)
 
-        self.assertEqual(len(results), 1)
+        self.assertEqual(1, len(results))
 
-        self.assertEqual(results[0]['name'], domain_one['name'])
-        self.assertEqual(results[0]['email'], domain_one['email'])
+        self.assertEqual(domain_one['name'], results[0]['name'])
+        self.assertEqual(domain_one['email'], results[0]['email'])
         self.assertIn('status', domain_one)
 
         criterion = dict(
@@ -572,8 +572,8 @@ class StorageTestCase(object):
 
         self.assertEqual(len(results), 1)
 
-        self.assertEqual(results[0]['name'], domain_two['name'])
-        self.assertEqual(results[0]['email'], domain_two['email'])
+        self.assertEqual(domain_two['name'], results[0]['name'])
+        self.assertEqual(domain_two['email'], results[0]['email'])
         self.assertIn('status', domain_two)
 
     def test_find_domains_all_tenants(self):
@@ -613,8 +613,8 @@ class StorageTestCase(object):
         expected = self.create_domain()
         actual = self.storage.get_domain(self.admin_context, expected['id'])
 
-        self.assertEqual(actual['name'], expected['name'])
-        self.assertEqual(actual['email'], expected['email'])
+        self.assertEqual(expected['name'], actual['name'])
+        self.assertEqual(expected['email'], actual['email'])
         self.assertIn('status', actual)
 
     def test_get_domain_missing(self):
@@ -641,8 +641,8 @@ class StorageTestCase(object):
 
         result = self.storage.find_domain(self.admin_context, criterion)
 
-        self.assertEqual(result['name'], domain_one['name'])
-        self.assertEqual(result['email'], domain_one['email'])
+        self.assertEqual(domain_one['name'], result['name'])
+        self.assertEqual(domain_one['email'], result['email'])
         self.assertIn('status', domain_one)
 
         criterion = dict(
@@ -651,8 +651,8 @@ class StorageTestCase(object):
 
         result = self.storage.find_domain(self.admin_context, criterion)
 
-        self.assertEqual(result['name'], domain_two['name'])
-        self.assertEqual(result['email'], domain_two['email'])
+        self.assertEqual(domain_two['name'], result['name'])
+        self.assertEqual(domain_two['email'], result['email'])
         self.assertIn('status', domain_one)
         self.assertIn('status', domain_two)
 
@@ -686,7 +686,7 @@ class StorageTestCase(object):
 
         result = self.storage.find_domain(self.admin_context, criterion)
 
-        self.assertEqual(result['name'], domain['name'])
+        self.assertEqual(domain['name'], result['name'])
 
     def test_find_domain_criterion_greaterthan(self):
         domain = self.create_domain()
@@ -708,7 +708,7 @@ class StorageTestCase(object):
 
         result = self.storage.find_domain(self.admin_context, criterion)
 
-        self.assertEqual(result['name'], domain['name'])
+        self.assertEqual(domain['name'], result['name'])
 
     def test_update_domain(self):
         # Create a domain
@@ -758,7 +758,7 @@ class StorageTestCase(object):
     def test_count_domains(self):
         # in the beginning, there should be nothing
         domains = self.storage.count_domains(self.admin_context)
-        self.assertEqual(domains, 0)
+        self.assertEqual(0, domains)
 
         # Create a single domain
         self.create_domain()
@@ -767,7 +767,7 @@ class StorageTestCase(object):
         domains = self.storage.count_domains(self.admin_context)
 
         # well, did we get 1?
-        self.assertEqual(domains, 1)
+        self.assertEqual(1, domains)
 
     def test_count_domains_none_result(self):
         rp = mock.Mock()
@@ -775,7 +775,7 @@ class StorageTestCase(object):
         with mock.patch.object(self.storage.session, 'execute',
                                return_value=rp):
             domains = self.storage.count_domains(self.admin_context)
-            self.assertEqual(domains, 0)
+            self.assertEqual(0, domains)
 
     def test_create_recordset(self):
         domain = self.create_domain()
@@ -794,8 +794,8 @@ class StorageTestCase(object):
         self.assertIsNotNone(result['created_at'])
         self.assertIsNone(result['updated_at'])
 
-        self.assertEqual(result['name'], values['name'])
-        self.assertEqual(result['type'], values['type'])
+        self.assertEqual(values['name'], result['name'])
+        self.assertEqual(values['type'], result['type'])
 
     def test_create_recordset_duplicate(self):
         domain = self.create_domain()
@@ -885,7 +885,7 @@ class StorageTestCase(object):
         results = self.storage.find_recordsets(self.admin_context,
                                                criterion)
 
-        self.assertEqual(len(results), 1)
+        self.assertEqual(1, len(results))
 
         criterion = dict(
             domain_id=domain['id'],
@@ -895,7 +895,7 @@ class StorageTestCase(object):
         results = self.storage.find_recordsets(self.admin_context,
                                                criterion)
 
-        self.assertEqual(len(results), 2)
+        self.assertEqual(2, len(results))
 
     def test_find_recordsets_criterion_wildcard(self):
         domain = self.create_domain()
@@ -912,7 +912,7 @@ class StorageTestCase(object):
         results = self.storage.find_recordsets(self.admin_context, criterion)
 
         # Should be 3, as SOA and NS recordsets are automiatcally created
-        self.assertEqual(len(results), 3)
+        self.assertEqual(3, len(results))
 
     def test_find_recordsets_with_records(self):
         domain = self.create_domain()
@@ -955,8 +955,8 @@ class StorageTestCase(object):
 
         actual = self.storage.get_recordset(self.admin_context, expected['id'])
 
-        self.assertEqual(actual['name'], expected['name'])
-        self.assertEqual(actual['type'], expected['type'])
+        self.assertEqual(expected['name'], actual['name'])
+        self.assertEqual(expected['type'], actual['type'])
 
     def test_get_recordset_with_records(self):
         domain = self.create_domain()
@@ -994,8 +994,8 @@ class StorageTestCase(object):
 
         actual = self.storage.find_recordset(self.admin_context, criterion)
 
-        self.assertEqual(actual['name'], expected['name'])
-        self.assertEqual(actual['type'], expected['type'])
+        self.assertEqual(expected['name'], actual['name'])
+        self.assertEqual(expected['type'], actual['type'])
 
     def test_find_recordset_criterion_missing(self):
         domain = self.create_domain()
@@ -1180,7 +1180,7 @@ class StorageTestCase(object):
     def test_count_recordsets(self):
         # in the beginning, there should be nothing
         recordsets = self.storage.count_recordsets(self.admin_context)
-        self.assertEqual(recordsets, 0)
+        self.assertEqual(0, recordsets)
 
         # Create a single domain & recordset
         domain = self.create_domain()
@@ -1188,12 +1188,12 @@ class StorageTestCase(object):
 
         # we should have 3 recordsets now, including SOA & NS
         recordsets = self.storage.count_recordsets(self.admin_context)
-        self.assertEqual(recordsets, 3)
+        self.assertEqual(3, recordsets)
 
         # Delete the domain, we should be back to 0 recordsets
         self.storage.delete_domain(self.admin_context, domain.id)
         recordsets = self.storage.count_recordsets(self.admin_context)
-        self.assertEqual(recordsets, 0)
+        self.assertEqual(0, recordsets)
 
     def test_count_recordsets_none_result(self):
         rp = mock.Mock()
@@ -1201,7 +1201,7 @@ class StorageTestCase(object):
         with mock.patch.object(self.storage.session, 'execute',
                                return_value=rp):
             recordsets = self.storage.count_recordsets(self.admin_context)
-            self.assertEqual(recordsets, 0)
+            self.assertEqual(0, recordsets)
 
     def test_create_record(self):
         domain = self.create_domain()
@@ -1220,8 +1220,8 @@ class StorageTestCase(object):
         self.assertIsNotNone(result['hash'])
         self.assertIsNone(result['updated_at'])
 
-        self.assertEqual(result['tenant_id'], self.admin_context.tenant)
-        self.assertEqual(result['data'], values['data'])
+        self.assertEqual(self.admin_context.tenant, result['tenant_id'])
+        self.assertEqual(values['data'], result['data'])
         self.assertIn('status', result)
 
     def test_create_record_duplicate(self):
@@ -1292,7 +1292,7 @@ class StorageTestCase(object):
         )
 
         results = self.storage.find_records(self.admin_context, criterion)
-        self.assertEqual(len(results), 1)
+        self.assertEqual(1, len(results))
 
         criterion = dict(
             domain_id=domain['id'],
@@ -1301,7 +1301,7 @@ class StorageTestCase(object):
 
         results = self.storage.find_records(self.admin_context, criterion)
 
-        self.assertEqual(len(results), 2)
+        self.assertEqual(2, len(results))
 
     def test_find_records_criterion_wildcard(self):
         domain = self.create_domain()
@@ -1319,7 +1319,7 @@ class StorageTestCase(object):
 
         results = self.storage.find_records(self.admin_context, criterion)
 
-        self.assertEqual(len(results), 1)
+        self.assertEqual(1, len(results))
 
     def test_find_records_all_tenants(self):
         # Create two contexts with different tenant_id's
@@ -1370,7 +1370,7 @@ class StorageTestCase(object):
 
         actual = self.storage.get_record(self.admin_context, expected['id'])
 
-        self.assertEqual(actual['data'], expected['data'])
+        self.assertEqual(expected['data'], actual['data'])
         self.assertIn('status', actual)
 
     def test_get_record_missing(self):
@@ -1392,7 +1392,7 @@ class StorageTestCase(object):
 
         actual = self.storage.find_record(self.admin_context, criterion)
 
-        self.assertEqual(actual['data'], expected['data'])
+        self.assertEqual(expected['data'], actual['data'])
         self.assertIn('status', actual)
 
     def test_find_record_criterion_missing(self):
@@ -1468,7 +1468,7 @@ class StorageTestCase(object):
     def test_count_records(self):
         # in the beginning, there should be nothing
         records = self.storage.count_records(self.admin_context)
-        self.assertEqual(records, 0)
+        self.assertEqual(0, records)
 
         # Create a single domain & record
         domain = self.create_domain()
@@ -1477,12 +1477,12 @@ class StorageTestCase(object):
 
         # we should have 3 records now, including NS and SOA
         records = self.storage.count_records(self.admin_context)
-        self.assertEqual(records, 3)
+        self.assertEqual(3, records)
 
         # Delete the domain, we should be back to 0 records
         self.storage.delete_domain(self.admin_context, domain.id)
         records = self.storage.count_records(self.admin_context)
-        self.assertEqual(records, 0)
+        self.assertEqual(0, records)
 
     def test_count_records_none_result(self):
         rp = mock.Mock()
@@ -1490,7 +1490,7 @@ class StorageTestCase(object):
         with mock.patch.object(self.storage.session, 'execute',
                                return_value=rp):
             records = self.storage.count_records(self.admin_context)
-            self.assertEqual(records, 0)
+            self.assertEqual(0, records)
 
     def test_ping(self):
         pong = self.storage.ping(self.admin_context)
@@ -1519,8 +1519,8 @@ class StorageTestCase(object):
         self.assertIsNotNone(result['created_at'])
         self.assertIsNone(result['updated_at'])
         self.assertIsNotNone(result['version'])
-        self.assertEqual(result['name'], values['name'])
-        self.assertEqual(result['description'], values['description'])
+        self.assertEqual(values['name'], result['name'])
+        self.assertEqual(values['description'], result['description'])
 
     def test_create_tld_with_duplicate(self):
         # Create the First Tld
@@ -1560,9 +1560,9 @@ class StorageTestCase(object):
 
         results = self.storage.find_tlds(self.admin_context,
                                          criterion_one)
-        self.assertEqual(len(results), 1)
+        self.assertEqual(1, len(results))
 
-        self.assertEqual(results[0]['name'], tld_one['name'])
+        self.assertEqual(tld_one['name'], results[0]['name'])
 
         criterion_two = dict(name=tld_two['name'])
 
@@ -1570,14 +1570,14 @@ class StorageTestCase(object):
                                          criterion_two)
         self.assertEqual(len(results), 1)
 
-        self.assertEqual(results[0]['name'], tld_two['name'])
+        self.assertEqual(tld_two['name'], results[0]['name'])
 
     def test_get_tld(self):
         # Create a tld
         expected = self.create_tld()
         actual = self.storage.get_tld(self.admin_context, expected['id'])
 
-        self.assertEqual(actual['name'], expected['name'])
+        self.assertEqual(expected['name'], actual['name'])
 
     def test_get_tld_missing(self):
         with testtools.ExpectedException(exceptions.TldNotFound):
@@ -1595,14 +1595,14 @@ class StorageTestCase(object):
         result = self.storage.find_tld(self.admin_context, criterion)
 
         # Assert names match
-        self.assertEqual(result['name'], tld_one['name'])
+        self.assertEqual(tld_one['name'], result['name'])
 
         # Repeat with tld_two
         criterion = dict(name=tld_two['name'])
 
         result = self.storage.find_tld(self.admin_context, criterion)
 
-        self.assertEqual(result['name'], tld_two['name'])
+        self.assertEqual(tld_two['name'], result['name'])
 
     def test_find_tld_criterion_missing(self):
         expected = self.create_tld()
@@ -1675,8 +1675,8 @@ class StorageTestCase(object):
         self.assertIsNotNone(result['version'])
         self.assertIsNone(result['updated_at'])
 
-        self.assertEqual(result['pattern'], values['pattern'])
-        self.assertEqual(result['description'], values['description'])
+        self.assertEqual(values['pattern'], result['pattern'])
+        self.assertEqual(values['description'], result['description'])
 
     def test_create_blacklist_duplicate(self):
         # Create the initial Blacklist
@@ -1716,22 +1716,22 @@ class StorageTestCase(object):
 
         results = self.storage.find_blacklists(self.admin_context,
                                                criterion)
-        self.assertEqual(len(results), 1)
-        self.assertEqual(results[0]['pattern'], blacklist_one['pattern'])
+        self.assertEqual(1, len(results))
+        self.assertEqual(blacklist_one['pattern'], results[0]['pattern'])
 
         # Verify blacklist_two
         criterion = dict(pattern=blacklist_two['pattern'])
 
         results = self.storage.find_blacklists(self.admin_context,
                                                criterion)
-        self.assertEqual(len(results), 1)
-        self.assertEqual(results[0]['pattern'], blacklist_two['pattern'])
+        self.assertEqual(1, len(results))
+        self.assertEqual(blacklist_two['pattern'], results[0]['pattern'])
 
     def test_get_blacklist(self):
         expected = self.create_blacklist(fixture=0)
         actual = self.storage.get_blacklist(self.admin_context, expected['id'])
 
-        self.assertEqual(actual['pattern'], expected['pattern'])
+        self.assertEqual(expected['pattern'], actual['pattern'])
 
     def test_get_blacklist_missing(self):
         with testtools.ExpectedException(exceptions.BlacklistNotFound):
@@ -1746,13 +1746,13 @@ class StorageTestCase(object):
 
         result = self.storage.find_blacklist(self.admin_context, criterion)
 
-        self.assertEqual(result['pattern'], blacklist_one['pattern'])
+        self.assertEqual(blacklist_one['pattern'], result['pattern'])
 
         criterion = dict(pattern=blacklist_two['pattern'])
 
         result = self.storage.find_blacklist(self.admin_context, criterion)
 
-        self.assertEqual(result['pattern'], blacklist_two['pattern'])
+        self.assertEqual(blacklist_two['pattern'], result['pattern'])
 
     def test_find_blacklist_criterion_missing(self):
         expected = self.create_blacklist(fixture=0)
@@ -1823,9 +1823,9 @@ class StorageTestCase(object):
         self.assertIsNotNone(result['created_at'])
         self.assertIsNone(result['updated_at'])
 
-        self.assertEqual(result['name'], values['name'])
-        self.assertEqual(result['tenant_id'], values['tenant_id'])
-        self.assertEqual(result['provisioner'], values['provisioner'])
+        self.assertEqual(values['name'], result['name'])
+        self.assertEqual(values['tenant_id'], result['tenant_id'])
+        self.assertEqual(values['provisioner'], result['provisioner'])
 
     def test_create_pool_duplicate(self):
         # Create the first pool
@@ -1875,27 +1875,27 @@ class StorageTestCase(object):
 
         results = self.storage.find_pools(self.admin_context, criterion)
 
-        self.assertEqual(len(results), 1)
+        self.assertEqual(1, len(results))
 
-        self.assertEqual(results[0]['name'], pool_one['name'])
-        self.assertEqual(results[0]['provisioner'], pool_one['provisioner'])
+        self.assertEqual(pool_one['name'], results[0]['name'])
+        self.assertEqual(pool_one['provisioner'], results[0]['provisioner'])
 
         criterion = dict(name=pool_two['name'])
 
         results = self.storage.find_pools(self.admin_context, criterion)
 
-        self.assertEqual(len(results), 1)
+        self.assertEqual(1, len(results))
 
-        self.assertEqual(results[0]['name'], pool_two['name'])
-        self.assertEqual(results[0]['provisioner'], pool_two['provisioner'])
+        self.assertEqual(pool_two['name'], results[0]['name'])
+        self.assertEqual(pool_two['provisioner'], results[0]['provisioner'])
 
     def test_get_pool(self):
         # Create a pool
         expected = self.create_pool()
         actual = self.storage.get_pool(self.admin_context, expected['id'])
 
-        self.assertEqual(actual['name'], expected['name'])
-        self.assertEqual(actual['provisioner'], expected['provisioner'])
+        self.assertEqual(expected['name'], actual['name'])
+        self.assertEqual(expected['provisioner'], actual['provisioner'])
 
     def test_get_pool_missing(self):
         with testtools.ExpectedException(exceptions.PoolNotFound):
@@ -1910,15 +1910,15 @@ class StorageTestCase(object):
 
         result = self.storage.find_pool(self.admin_context, criterion)
 
-        self.assertEqual(result['name'], pool_one['name'])
-        self.assertEqual(result['provisioner'], pool_one['provisioner'])
+        self.assertEqual(pool_one['name'], result['name'])
+        self.assertEqual(pool_one['provisioner'], result['provisioner'])
 
         criterion = dict(name=pool_two['name'])
 
         result = self.storage.find_pool(self.admin_context, criterion)
 
-        self.assertEqual(result['name'], pool_two['name'])
-        self.assertEqual(result['provisioner'], pool_two['provisioner'])
+        self.assertEqual(pool_two['name'], result['name'])
+        self.assertEqual(pool_two['provisioner'], result['provisioner'])
 
     def test_find_pool_criterion_missing(self):
         expected = self.create_pool()
@@ -1983,7 +1983,7 @@ class StorageTestCase(object):
         result = self.storage.create_zone_transfer_request(
             self.admin_context, objects.ZoneTransferRequest.from_dict(values))
 
-        self.assertEqual(result['tenant_id'], self.admin_context.tenant)
+        self.assertEqual(self.admin_context.tenant, result['tenant_id'])
         self.assertIn('status', result)
 
     def test_create_zone_transfer_request_scoped(self):
@@ -2005,15 +2005,15 @@ class StorageTestCase(object):
         self.assertIsNotNone(result['created_at'])
         self.assertIsNone(result['updated_at'])
 
-        self.assertEqual(result['tenant_id'], self.admin_context.tenant)
-        self.assertEqual(result['target_tenant_id'], tenant_2_context.tenant)
+        self.assertEqual(self.admin_context.tenant, result['tenant_id'])
+        self.assertEqual(tenant_2_context.tenant, result['target_tenant_id'])
         self.assertIn('status', result)
 
         stored_ztr = self.storage.get_zone_transfer_request(
             tenant_2_context, result.id)
 
-        self.assertEqual(stored_ztr['tenant_id'], self.admin_context.tenant)
-        self.assertEqual(result['id'], stored_ztr['id'])
+        self.assertEqual(self.admin_context.tenant, stored_ztr['tenant_id'])
+        self.assertEqual(stored_ztr['id'], result['id'])
 
         with testtools.ExpectedException(
                 exceptions.ZoneTransferRequestNotFound):
@@ -2034,7 +2034,7 @@ class StorageTestCase(object):
 
         requests = self.storage.find_zone_transfer_requests(
             self.admin_context, {"tenant_id": self.admin_context.tenant})
-        self.assertEqual(len(requests), 1)
+        self.assertEqual(1, len(requests))
 
     def test_delete_zone_transfer_request(self):
         domain = self.create_domain()
@@ -2055,7 +2055,7 @@ class StorageTestCase(object):
         zt_request.description = 'New description'
         result = self.storage.update_zone_transfer_request(
             self.admin_context, zt_request)
-        self.assertEqual(result.description, 'New description')
+        self.assertEqual('New description', result.description)
 
     def test_get_zone_transfer_request(self):
         domain = self.create_domain()
@@ -2063,8 +2063,8 @@ class StorageTestCase(object):
 
         result = self.storage.get_zone_transfer_request(
             self.admin_context, zt_request.id)
-        self.assertEqual(result.id, zt_request.id)
-        self.assertEqual(result.domain_id, zt_request.domain_id)
+        self.assertEqual(zt_request.id, result.id)
+        self.assertEqual(zt_request.domain_id, result.domain_id)
 
     def test_create_zone_transfer_accept(self):
         domain = self.create_domain()
@@ -2083,7 +2083,7 @@ class StorageTestCase(object):
         self.assertIsNotNone(result['created_at'])
         self.assertIsNone(result['updated_at'])
 
-        self.assertEqual(result['tenant_id'], self.admin_context.tenant)
+        self.assertEqual(self.admin_context.tenant, result['tenant_id'])
         self.assertIn('status', result)
 
     def test_find_zone_transfer_accepts(self):
@@ -2101,7 +2101,7 @@ class StorageTestCase(object):
 
         accepts = self.storage.find_zone_transfer_accepts(
             self.admin_context, {"tenant_id": self.admin_context.tenant})
-        self.assertEqual(len(accepts), 1)
+        self.assertEqual(1, len(accepts))
 
     def test_find_zone_transfer_accept(self):
         domain = self.create_domain()
@@ -2118,7 +2118,7 @@ class StorageTestCase(object):
 
         accept = self.storage.find_zone_transfer_accept(
             self.admin_context, {"id": result.id})
-        self.assertEqual(accept.id, result.id)
+        self.assertEqual(result.id, accept.id)
 
     def test_transfer_zone_ownership(self):
         tenant_1_context = self.get_context(tenant='1')
@@ -2145,9 +2145,9 @@ class StorageTestCase(object):
         saved_record = self.storage.get_record(
             admin_context, record.id)
 
-        self.assertEqual(saved_domain.tenant_id, tenant_2_context.tenant)
-        self.assertEqual(saved_recordset.tenant_id, tenant_2_context.tenant)
-        self.assertEqual(saved_record.tenant_id, tenant_2_context.tenant)
+        self.assertEqual(tenant_2_context.tenant, saved_domain.tenant_id)
+        self.assertEqual(tenant_2_context.tenant, saved_recordset.tenant_id)
+        self.assertEqual(tenant_2_context.tenant, saved_record.tenant_id)
 
     def test_delete_zone_transfer_accept(self):
         domain = self.create_domain()
@@ -2170,7 +2170,7 @@ class StorageTestCase(object):
         zt_accept.status = 'COMPLETE'
         result = self.storage.update_zone_transfer_accept(
             self.admin_context, zt_accept)
-        self.assertEqual(result.status, 'COMPLETE')
+        self.assertEqual('COMPLETE', result.status)
 
     def test_get_zone_transfer_accept(self):
         domain = self.create_domain()
@@ -2179,8 +2179,8 @@ class StorageTestCase(object):
 
         result = self.storage.get_zone_transfer_accept(
             self.admin_context, zt_accept.id)
-        self.assertEqual(result.id, zt_accept.id)
-        self.assertEqual(result.domain_id, zt_accept.domain_id)
+        self.assertEqual(zt_accept.id, result.id)
+        self.assertEqual(zt_accept.domain_id, result.domain_id)
 
     # PoolAttribute tests
     def test_create_pool_attribute(self):
@@ -2199,9 +2199,9 @@ class StorageTestCase(object):
         self.assertIsNotNone(result['version'])
         self.assertIsNone(result['updated_at'])
 
-        self.assertEqual(result['pool_id'], values['pool_id'])
-        self.assertEqual(result['key'], values['key'])
-        self.assertEqual(result['value'], values['value'])
+        self.assertEqual(values['pool_id'], result['pool_id'])
+        self.assertEqual(values['key'], result['key'])
+        self.assertEqual(values['value'], result['value'])
 
     def test_find_pool_attribute(self):
         # Verify that there are no Pool Attributes created
@@ -2236,10 +2236,10 @@ class StorageTestCase(object):
 
         results = self.storage.find_pool_attributes(self.admin_context,
                                                     criterion)
-        self.assertEqual(len(results), 1)
-        self.assertEqual(results[0]['pool_id'], pool_attribute_one['pool_id'])
-        self.assertEqual(results[0]['key'], pool_attribute_one['key'])
-        self.assertEqual(results[0]['value'], pool_attribute_one['value'])
+        self.assertEqual(1, len(results))
+        self.assertEqual(pool_attribute_one['pool_id'], results[0]['pool_id'])
+        self.assertEqual(pool_attribute_one['key'], results[0]['key'])
+        self.assertEqual(pool_attribute_one['value'], results[0]['value'])
 
         # Verify pool_attribute_two
         criterion = dict(key=pool_attribute_two['key'])
@@ -2247,19 +2247,19 @@ class StorageTestCase(object):
 
         results = self.storage.find_pool_attributes(self.admin_context,
                                                     criterion)
-        self.assertEqual(len(results), 1)
-        self.assertEqual(results[0]['pool_id'], pool_attribute_two['pool_id'])
-        self.assertEqual(results[0]['key'], pool_attribute_two['key'])
-        self.assertEqual(results[0]['value'], pool_attribute_two['value'])
+        self.assertEqual(1, len(results))
+        self.assertEqual(pool_attribute_two['pool_id'], results[0]['pool_id'])
+        self.assertEqual(pool_attribute_two['key'], results[0]['key'])
+        self.assertEqual(pool_attribute_two['value'], results[0]['value'])
 
     def test_get_pool_attribute(self):
         expected = self.create_pool_attribute(fixture=0)
         actual = self.storage.get_pool_attribute(self.admin_context,
                                                  expected['id'])
 
-        self.assertEqual(actual['pool_id'], expected['pool_id'])
-        self.assertEqual(actual['key'], expected['key'])
-        self.assertEqual(actual['value'], expected['value'])
+        self.assertEqual(expected['pool_id'], actual['pool_id'])
+        self.assertEqual(expected['key'], actual['key'])
+        self.assertEqual(expected['value'], actual['value'])
 
     def test_get_pool_attribute_missing(self):
         with testtools.ExpectedException(exceptions.PoolAttributeNotFound):
@@ -2275,18 +2275,18 @@ class StorageTestCase(object):
         result = self.storage.find_pool_attribute(self.admin_context,
                                                   criterion)
 
-        self.assertEqual(result['pool_id'], pool_attribute_one['pool_id'])
-        self.assertEqual(result['key'], pool_attribute_one['key'])
-        self.assertEqual(result['value'], pool_attribute_one['value'])
+        self.assertEqual(pool_attribute_one['pool_id'], result['pool_id'])
+        self.assertEqual(pool_attribute_one['key'], result['key'])
+        self.assertEqual(pool_attribute_one['value'], result['value'])
 
         criterion = dict(key=pool_attribute_two['key'])
 
         result = self.storage.find_pool_attribute(self.admin_context,
                                                   criterion)
 
-        self.assertEqual(result['pool_id'], pool_attribute_two['pool_id'])
-        self.assertEqual(result['key'], pool_attribute_two['key'])
-        self.assertEqual(result['value'], pool_attribute_two['value'])
+        self.assertEqual(pool_attribute_two['pool_id'], result['pool_id'])
+        self.assertEqual(pool_attribute_two['key'], result['key'])
+        self.assertEqual(pool_attribute_two['value'], result['value'])
 
     def test_find_pool_attribute_criterion_missing(self):
         expected = self.create_pool_attribute(fixture=0)
@@ -2368,7 +2368,7 @@ class StorageTestCase(object):
         self.assertIsNotNone(result['created_at'])
         self.assertIsNone(result['updated_at'])
         self.assertIsNotNone(result['version'])
-        self.assertEqual(result['status'], values['status'])
+        self.assertEqual(values['status'], result['status'])
         self.assertIsNone(result['domain_id'])
         self.assertIsNone(result['message'])
 
@@ -2402,17 +2402,17 @@ class StorageTestCase(object):
 
         results = self.storage.find_zone_imports(self.admin_context,
                                          criterion_one)
-        self.assertEqual(len(results), 1)
+        self.assertEqual(1, len(results))
 
-        self.assertEqual(results[0]['status'], zone_import_one['status'])
+        self.assertEqual(zone_import_one['status'], results[0]['status'])
 
         criterion_two = dict(status=zone_import_two['status'])
 
         results = self.storage.find_zone_imports(self.admin_context,
                                          criterion_two)
-        self.assertEqual(len(results), 1)
+        self.assertEqual(1, len(results))
 
-        self.assertEqual(results[0]['status'], zone_import_two['status'])
+        self.assertEqual(zone_import_two['status'], results[0]['status'])
 
     def test_get_zone_import(self):
         # Create a zone_import
@@ -2420,7 +2420,7 @@ class StorageTestCase(object):
         actual = self.storage.get_zone_import(self.admin_context,
                                  expected['id'])
 
-        self.assertEqual(actual['status'], expected['status'])
+        self.assertEqual(expected['status'], actual['status'])
 
     def test_get_zone_import_missing(self):
         with testtools.ExpectedException(exceptions.ZoneImportNotFound):

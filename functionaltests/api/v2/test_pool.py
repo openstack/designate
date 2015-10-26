@@ -29,7 +29,7 @@ class PoolTest(DesignateV2Test):
     def test_list_pools(self):
         self.useFixture(PoolFixture())
         resp, model = PoolClient.as_user('admin').list_pools()
-        self.assertEqual(resp.status, 200)
+        self.assertEqual(200, resp.status)
         self.assertGreater(len(model.pools), 0)
 
     def test_create_pool(self):
@@ -46,17 +46,17 @@ class PoolTest(DesignateV2Test):
         patch_model = datagen.random_pool_data()
         resp, new_model = PoolClient.as_user('admin').patch_pool(
             old_model.id, patch_model)
-        self.assertEqual(resp.status, 202)
+        self.assertEqual(202, resp.status)
 
         resp, model = PoolClient.as_user('admin').get_pool(new_model.id)
-        self.assertEqual(resp.status, 200)
-        self.assertEqual(new_model.id, old_model.id)
-        self.assertEqual(new_model.name, patch_model.name)
+        self.assertEqual(200, resp.status)
+        self.assertEqual(old_model.id, new_model.id)
+        self.assertEqual(patch_model.name, new_model.name)
 
     def test_delete_pool(self):
         pool = self.useFixture(PoolFixture()).created_pool
         resp, model = PoolClient.as_user('admin').delete_pool(pool.id)
-        self.assertEqual(resp.status, 204)
+        self.assertEqual(204, resp.status)
 
     def test_get_pool_404(self):
         client = PoolClient.as_user('admin')

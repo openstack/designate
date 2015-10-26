@@ -59,11 +59,11 @@ class ApiV2PoolsTest(ApiV2TestCase):
         self.assertIsNone(response.json['updated_at'])
         self.assertEqual(response.json['name'], fixture['name'])
         self.assertEqual(
-            response.json['description'], fixture['description'])
+            fixture['description'], response.json['description'])
         self.assertEqual(
-            response.json['attributes'], fixture['attributes'])
+            fixture['attributes'], response.json['attributes'])
         self.assertEqual(
-            response.json['ns_records'], fixture['ns_records'])
+            fixture['ns_records'], response.json['ns_records'])
 
     def test_create_pool_validation(self):
         # NOTE: The schemas should be tested separatly to the API. So we

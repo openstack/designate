@@ -61,7 +61,7 @@ class ApiV1Test(ApiTestCase):
 
         LOG.debug('Response Body: %r' % resp.data)
 
-        self.assertEqual(resp.status_code, expected_status_code)
+        self.assertEqual(expected_status_code, resp.status_code)
 
         try:
             resp.json = json.loads(resp.data)
@@ -79,7 +79,7 @@ class ApiV1Test(ApiTestCase):
 
         LOG.debug('Response Body: %r' % resp.data)
 
-        self.assertEqual(resp.status_code, expected_status_code)
+        self.assertEqual(expected_status_code, resp.status_code)
 
         try:
             resp.json = json.loads(resp.data)
@@ -97,7 +97,7 @@ class ApiV1Test(ApiTestCase):
 
         LOG.debug('Response Body: %r' % resp.data)
 
-        self.assertEqual(resp.status_code, expected_status_code)
+        self.assertEqual(expected_status_code, resp.status_code)
 
         try:
             resp.json = json.loads(resp.data)
@@ -113,6 +113,6 @@ class ApiV1Test(ApiTestCase):
 
         LOG.debug('Response Body: %r' % resp.data)
 
-        self.assertEqual(resp.status_code, expected_status_code)
+        self.assertEqual(expected_status_code, resp.status_code)
 
         return resp

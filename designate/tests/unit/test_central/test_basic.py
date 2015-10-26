@@ -102,8 +102,8 @@ class RoObject(RwObject):
 class MockObjectTest(base.BaseTestCase):
     def test_ro(self):
         o = RoObject(a=1)
-        self.assertEqual(o['a'], 1)
-        self.assertEqual(o.a, 1)
+        self.assertEqual(1, o['a'])
+        self.assertEqual(1, o.a)
         with testtools.ExpectedException(NotImplementedError):
             o.a = 2
         with testtools.ExpectedException(NotImplementedError):
@@ -115,14 +115,14 @@ class MockObjectTest(base.BaseTestCase):
 
     def test_rw(self):
         o = RwObject(a=1)
-        self.assertEqual(o['a'], 1)
-        self.assertEqual(o.a, 1)
+        self.assertEqual(1, o['a'])
+        self.assertEqual(1, o.a)
         o.a = 2
-        self.assertEqual(o.a, 2)
-        self.assertEqual(o['a'], 2)
+        self.assertEqual(2, o.a)
+        self.assertEqual(2, o['a'])
         o['a'] = 3
-        self.assertEqual(o.a, 3)
-        self.assertEqual(o['a'], 3)
+        self.assertEqual(3, o.a)
+        self.assertEqual(3, o['a'])
         with testtools.ExpectedException(NotImplementedError):
             o.new = 1
         with testtools.ExpectedException(NotImplementedError):
@@ -396,10 +396,10 @@ class CentralServiceTestCase(CentralBasic):
 
         ctx, md, rset = self.service._create_recordset_in_storage.call_args[0]
 
-        self.assertEqual(rset.name, 'example.org.')
-        self.assertEqual(rset.type, 'SOA')
-        self.assertEqual(rset.type, 'SOA')
-        self.assertEqual(len(rset.records.objects), 1)
+        self.assertEqual('example.org.', rset.name)
+        self.assertEqual('SOA', rset.type)
+        self.assertEqual('SOA', rset.type)
+        self.assertEqual(1, len(rset.records.objects))
         self.assertTrue(rset.records.objects[0].managed)
 
     def test__create_domain_in_storage(self):
@@ -417,10 +417,10 @@ class CentralServiceTestCase(CentralBasic):
         domain = self.service._create_domain_in_storage(
             self.context, MockDomain()
         )
-        self.assertEqual(domain.status, 'PENDING')
-        self.assertEqual(domain.action, 'CREATE')
+        self.assertEqual('PENDING', domain.status)
+        self.assertEqual('CREATE', domain.action)
         ctx, domain, hostnames = self.service._create_ns.call_args[0]
-        self.assertEqual(hostnames, ['host_foo'])
+        self.assertEqual(['host_foo'], hostnames)
 
     @unittest.expectedFailure  # FIXME
     def test_create_domain_forbidden(self):
@@ -438,7 +438,7 @@ class CentralServiceTestCase(CentralBasic):
         parent_domain = self.service._is_subdomain(
             self.context, 'bogusname', 1234)
 
-        # self.assertEqual(parent_domain, '')
+        # self.assertEqual('', parent_domain)
         self.service.check_for_tlds = False
         with testtools.ExpectedException(exceptions.Forbidden):
             self.service.create_domain(self.context, MockDomain())
@@ -541,8 +541,8 @@ class CentralDomainTestCase(CentralBasic):
                 'CNAME',
             )
             self.assertEqual(
-                e.message,
-                'CNAME recordsets may not be created at the zone apex'
+                'CNAME recordsets may not be created at the zone apex',
+                e.message
             )
 
     def test_is_valid_recordset_placement_failing(self):
@@ -559,8 +559,8 @@ class CentralDomainTestCase(CentralBasic):
                 'A',
             )
             self.assertEqual(
-                e.message,
-                'CNAME recordsets may not share a name with any other records'
+                'CNAME recordsets may not share a name with any other records',
+                e.message
             )
 
     def test_is_valid_recordset_placement_failing_2(self):
@@ -578,8 +578,8 @@ class CentralDomainTestCase(CentralBasic):
                 'A',
             )
             self.assertEqual(
-                e.message,
-                'CNAME recordsets may not share a name with any other records'
+                'CNAME recordsets may not share a name with any other records',
+                e.message
             )
 
     def test_is_valid_recordset_placement(self):
@@ -643,7 +643,7 @@ class CentralDomainTestCase(CentralBasic):
         self.service.storage.find_domains = Mock()
         self.service._is_superdomain(self.context, 'example.org.', '1')
         _class_self_, crit = self.service.storage.find_domains.call_args[0]
-        self.assertEqual(crit, {'name': '%.example.org.', 'pool_id': '1'})
+        self.assertEqual({'name': '%.example.org.', 'pool_id': '1'}, crit)
 
     @patch('designate.central.service.utils.increment_serial')
     def FIXME_test__increment_domain_serial(self, utils_inc_ser):
@@ -661,9 +661,9 @@ class CentralDomainTestCase(CentralBasic):
         ctx, zone, rset = \
             self.service._create_recordset_in_storage.call_args[0]
 
-        self.assertEqual(rset.name, 'example.org.')
-        self.assertEqual(rset.type, 'NS')
-        self.assertEqual(len(rset.records), 3)
+        self.assertEqual('example.org.', rset.name)
+        self.assertEqual('NS', rset.type)
+        self.assertEqual(3, len(rset.records))
         self.assertTrue(rset.records[0].managed)
 
     def test__create_ns_skip(self):
@@ -709,7 +709,7 @@ class CentralDomainTestCase(CentralBasic):
             self.service._update_recordset_in_storage.call_args[0]
         self.assertEqual(len(rset.records), 1)
         self.assertTrue(rset.records[0].managed)
-        self.assertEqual(rset.records[0].data.name, 'bar')
+        self.assertEqual('bar', rset.records[0].data.name)
 
     def test__add_ns_with_other_ns_rs(self):
         self.service._update_recordset_in_storage = Mock()
@@ -730,9 +730,9 @@ class CentralDomainTestCase(CentralBasic):
         )
         ctx, zone, rset = \
             self.service._update_recordset_in_storage.call_args[0]
-        self.assertEqual(len(rset.records), 1)
+        self.assertEqual(1, len(rset.records))
         self.assertTrue(rset.records[0].managed)
-        self.assertEqual(rset.records[0].data.name, 'bar')
+        self.assertEqual('bar', rset.records[0].data.name)
 
     def test_create_domain_no_servers(self):
         self.service._enforce_domain_quota = Mock()
@@ -786,7 +786,7 @@ class CentralDomainTestCase(CentralBasic):
                 type='PRIMARY'
             )
         )
-        self.assertEqual(out.name, 'example.com.')
+        self.assertEqual('example.com.', out.name)
 
     def test_get_domain(self):
         self.service.storage.get_domain.return_value = RoObject(
@@ -795,9 +795,9 @@ class CentralDomainTestCase(CentralBasic):
         )
         self.service.get_domain(self.context, '1')
         n, ctx, target = designate.central.service.policy.check.call_args[0]
-        self.assertEqual(target['domain_id'], '1')
-        self.assertEqual(target['domain_name'], 'foo')
-        self.assertEqual(target['tenant_id'], '2')
+        self.assertEqual('1', target['domain_id'])
+        self.assertEqual('foo', target['domain_name'])
+        self.assertEqual('2', target['tenant_id'])
 
     def test_get_domain_servers(self):
         self.service.storage.get_domain.return_value = RoObject(
@@ -812,7 +812,7 @@ class CentralDomainTestCase(CentralBasic):
         )
 
         ctx, pool_id = self.service.storage.get_pool.call_args[0]
-        self.assertEqual(pool_id, '3')
+        self.assertEqual('3', pool_id)
 
     def test_find_domains(self):
         self.context = RoObject(tenant='t')
@@ -821,7 +821,7 @@ class CentralDomainTestCase(CentralBasic):
         assert self.service.storage.find_domains.called
         pcheck, ctx, target = \
             designate.central.service.policy.check.call_args[0]
-        self.assertEqual(pcheck, 'find_domains')
+        self.assertEqual('find_domains', pcheck)
 
     def test_find_domain(self):
         self.context = RoObject(tenant='t')
@@ -830,7 +830,7 @@ class CentralDomainTestCase(CentralBasic):
         assert self.service.storage.find_domain.called
         pcheck, ctx, target = \
             designate.central.service.policy.check.call_args[0]
-        self.assertEqual(pcheck, 'find_domain')
+        self.assertEqual('find_domain', pcheck)
 
     def test_delete_domain_has_subdomain(self):
         self.context.abandon = False
@@ -844,7 +844,7 @@ class CentralDomainTestCase(CentralBasic):
 
         pcheck, ctx, target = \
             designate.central.service.policy.check.call_args[0]
-        self.assertEqual(pcheck, 'delete_domain')
+        self.assertEqual('delete_domain', pcheck)
 
     def test_delete_domain_abandon(self):
         self.service.storage.get_domain.return_value = RoObject(
@@ -865,7 +865,7 @@ class CentralDomainTestCase(CentralBasic):
         assert not self.service.pool_manager_api.delete_domain.called
         pcheck, ctx, target = \
             designate.central.service.policy.check.call_args[0]
-        self.assertEqual(pcheck, 'abandon_domain')
+        self.assertEqual('abandon_domain', pcheck)
 
     def test_delete_domain(self):
         self.context.abandon = False
@@ -885,11 +885,11 @@ class CentralDomainTestCase(CentralBasic):
         assert designate.central.service.policy.check.called
         ctx, deleted_dom = \
             self.service.pool_manager_api.delete_domain.call_args[0]
-        self.assertEqual(deleted_dom.name, 'foo')
-        self.assertEqual(out.name, 'foo')
+        self.assertEqual('foo', deleted_dom.name)
+        self.assertEqual('foo', out.name)
         pcheck, ctx, target = \
             designate.central.service.policy.check.call_args[0]
-        self.assertEqual(pcheck, 'delete_domain')
+        self.assertEqual('delete_domain', pcheck)
 
     def test__delete_domain_in_storage(self):
         self.service._delete_domain_in_storage(
@@ -897,8 +897,8 @@ class CentralDomainTestCase(CentralBasic):
             RwObject(action='', status=''),
         )
         d = self.service.storage.update_domain.call_args[0][1]
-        self.assertEqual(d.action, 'DELETE')
-        self.assertEqual(d.status, 'PENDING')
+        self.assertEqual('DELETE', d.action)
+        self.assertEqual('PENDING', d.status)
 
     def test__xfr_domain_secondary(self):
         self.service.storage.get_domain.return_value = RoObject(
@@ -916,8 +916,8 @@ class CentralDomainTestCase(CentralBasic):
 
         assert designate.central.service.policy.check.called
         self.assertEqual(
-            designate.central.service.policy.check.call_args[0][0],
-            'xfr_domain'
+            'xfr_domain',
+            designate.central.service.policy.check.call_args[0][0]
         )
 
     def test__xfr_domain_not_secondary(self):
@@ -937,7 +937,7 @@ class CentralDomainTestCase(CentralBasic):
             self.context,
             criterion=None
         )
-        self.assertEqual(reports, [{'zones': 1, 'records': 2, 'tenants': 3}])
+        self.assertEqual([{'zones': 1, 'records': 2, 'tenants': 3}], reports)
 
     def test_count_report_zones(self):
         self.service.count_domains = Mock(return_value=1)
@@ -947,7 +947,7 @@ class CentralDomainTestCase(CentralBasic):
             self.context,
             criterion='zones'
         )
-        self.assertEqual(reports, [{'zones': 1}])
+        self.assertEqual([{'zones': 1}], reports)
 
     def test_count_report_records(self):
         self.service.count_domains = Mock(return_value=1)
@@ -957,7 +957,7 @@ class CentralDomainTestCase(CentralBasic):
             self.context,
             criterion='records'
         )
-        self.assertEqual(reports, [{'records': 2}])
+        self.assertEqual([{'records': 2}], reports)
 
     def test_count_report_tenants(self):
         self.service.count_domains = Mock(return_value=1)
@@ -967,7 +967,7 @@ class CentralDomainTestCase(CentralBasic):
             self.context,
             criterion='tenants'
         )
-        self.assertEqual(reports, [{'tenants': 3}])
+        self.assertEqual([{'tenants': 3}], reports)
 
     def test_count_report_not_found(self):
         self.service.count_domains = Mock(return_value=1)
@@ -990,8 +990,8 @@ class CentralDomainTestCase(CentralBasic):
 
         assert designate.central.service.policy.check.called
         self.assertEqual(
-            designate.central.service.policy.check.call_args[0][0],
-            'touch_domain'
+            'touch_domain',
+            designate.central.service.policy.check.call_args[0][0]
         )
 
     def test_get_recordset_not_found(self):
@@ -1024,17 +1024,16 @@ class CentralDomainTestCase(CentralBasic):
             '2',
         )
         self.assertEqual(
-            designate.central.service.policy.check.call_args[0][0],
-            'get_recordset'
+            'get_recordset',
+            designate.central.service.policy.check.call_args[0][0]
         )
         t, ctx, target = designate.central.service.policy.check.call_args[0]
-        self.assertEqual(t, 'get_recordset')
-        self.assertEqual(target, {
+        self.assertEqual('get_recordset', t)
+        self.assertEqual({
             'domain_id': '1',
             'domain_name': 'example.org.',
             'recordset_id': '3',
-            'tenant_id': '2'
-        })
+            'tenant_id': '2'}, target)
 
     def test_find_recordsets(self):
         self.context = Mock()
@@ -1042,8 +1041,8 @@ class CentralDomainTestCase(CentralBasic):
         self.service.find_recordsets(self.context)
         assert self.service.storage.find_recordsets.called
         n, ctx, target = designate.central.service.policy.check.call_args[0]
-        self.assertEqual(n, 'find_recordsets')
-        self.assertEqual(target, {'tenant_id': 't'})
+        self.assertEqual('find_recordsets', n)
+        self.assertEqual({'tenant_id': 't'}, target)
 
     def test_find_recordset(self):
         self.context = Mock()
@@ -1051,8 +1050,8 @@ class CentralDomainTestCase(CentralBasic):
         self.service.find_recordset(self.context)
         assert self.service.storage.find_recordset.called
         n, ctx, target = designate.central.service.policy.check.call_args[0]
-        self.assertEqual(n, 'find_recordset')
-        self.assertEqual(target, {'tenant_id': 't'})
+        self.assertEqual('find_recordset', n)
+        self.assertEqual({'tenant_id': 't'}, target)
 
     def test_update_recordset_fail_on_changes(self):
         self.service.storage.get_domain.return_value = RoObject()
@@ -1115,14 +1114,13 @@ class CentralDomainTestCase(CentralBasic):
             assert self.service._update_recordset_in_storage.called
 
         n, ctx, target = designate.central.service.policy.check.call_args[0]
-        self.assertEqual(n, 'update_recordset')
-        self.assertEqual(target, {
+        self.assertEqual('update_recordset', n)
+        self.assertEqual({
             'domain_id': '1',
             'domain_name': 'example.org.',
             'domain_type': 'foo',
             'recordset_id': '1',
-            'tenant_id': '2',
-        })
+            'tenant_id': '2'}, target)
 
     def test__update_recordset_in_storage(self):
         recordset = Mock()
@@ -1144,21 +1142,21 @@ class CentralDomainTestCase(CentralBasic):
         )
 
         self.assertEqual(
-            self.service._is_valid_recordset_name.call_args[0][2],
-            'n'
+            'n',
+            self.service._is_valid_recordset_name.call_args[0][2]
         )
         self.assertEqual(
-            self.service._is_valid_recordset_placement.call_args[0][2:],
-            ('n', 't', 'i')
+            ('n', 't', 'i'),
+            self.service._is_valid_recordset_placement.call_args[0][2:]
         )
         self.assertEqual(
+            'n',
             self.service._is_valid_recordset_placement_subdomain.
-            call_args[0][2],
-            'n'
+            call_args[0][2]
         )
         self.assertEqual(
-            self.service._is_valid_ttl.call_args[0][1],
-            90
+            90,
+            self.service._is_valid_ttl.call_args[0][1]
         )
         assert self.service.storage.update_recordset.called
         assert self.service._update_domain_in_storage.called
@@ -1188,17 +1186,17 @@ class CentralDomainTestCase(CentralBasic):
         )
 
         self.assertEqual(
-            self.service._is_valid_recordset_name.call_args[0][2],
-            'n'
+            'n',
+            self.service._is_valid_recordset_name.call_args[0][2]
         )
         self.assertEqual(
-            self.service._is_valid_recordset_placement.call_args[0][2:],
-            ('n', 't', 'i')
+            ('n', 't', 'i'),
+            self.service._is_valid_recordset_placement.call_args[0][2:]
         )
         self.assertEqual(
+            'n',
             self.service._is_valid_recordset_placement_subdomain.
-            call_args[0][2],
-            'n'
+            call_args[0][2]
         )
         assert not self.service._is_valid_ttl.called
         assert not self.service._update_domain_in_storage.called
@@ -1300,10 +1298,10 @@ class CentralDomainTestCase(CentralBasic):
         assert self.service.storage.update_recordset.called
         assert self.service.storage.delete_recordset.called
         rs = self.service.storage.update_recordset.call_args[0][1]
-        self.assertEqual(len(rs.records), 1)
-        self.assertEqual(rs.records[0].action, 'DELETE')
-        self.assertEqual(rs.records[0].status, 'PENDING')
-        self.assertEqual(rs.records[0].serial, 1)
+        self.assertEqual(1, len(rs.records))
+        self.assertEqual('DELETE', rs.records[0].action)
+        self.assertEqual('PENDING', rs.records[0].status)
+        self.assertEqual(1, rs.records[0].serial)
 
     def test__delete_recordset_in_storage_no_increment_serial(self):
         self.service._update_domain_in_storage = Mock()
@@ -1326,11 +1324,11 @@ class CentralDomainTestCase(CentralBasic):
     def test_count_recordset(self):
         self.service.count_recordsets(self.context)
         n, ctx, target = designate.central.service.policy.check.call_args[0]
-        self.assertEqual(n, 'count_recordsets')
-        self.assertEqual(target, {'tenant_id': None})
+        self.assertEqual('count_recordsets', n)
+        self.assertEqual({'tenant_id': None}, target)
         self.assertEqual(
-            self.service.storage.count_recordsets.call_args[0][1],
-            {}
+            {},
+            self.service.storage.count_recordsets.call_args[0][1]
         )
 
     def test_create_record_fail_on_delete(self):
@@ -1373,15 +1371,14 @@ class CentralDomainTestCase(CentralBasic):
             assert self.service.pool_manager_api.update_domain.called
 
         n, ctx, target = designate.central.service.policy.check.call_args[0]
-        self.assertEqual(n, 'create_record')
-        self.assertEqual(target, {
+        self.assertEqual('create_record', n)
+        self.assertEqual({
             'domain_id': 1,
             'domain_name': 'example.org.',
             'domain_type': 'foo',
             'recordset_id': 2,
             'recordset_name': 'rs',
-            'tenant_id': '2'
-        })
+            'tenant_id': '2'}, target)
 
     def test__create_record_in_storage(self):
         self.service._enforce_record_quota = Mock()
@@ -1397,11 +1394,11 @@ class CentralDomainTestCase(CentralBasic):
             increment_serial=False
         )
         ctx, did, rid, record = self.service.storage.create_record.call_args[0]
-        self.assertEqual(did, 1)
-        self.assertEqual(rid, 2)
-        self.assertEqual(record.action, 'CREATE')
-        self.assertEqual(record.status, 'PENDING')
-        self.assertEqual(record.serial, 4)
+        self.assertEqual(1, did)
+        self.assertEqual(2, rid)
+        self.assertEqual('CREATE', record.action)
+        self.assertEqual('PENDING', record.status)
+        self.assertEqual(4, record.serial)
 
     def test_get_record_not_found(self):
         self.service.storage.get_domain.return_value = RoObject(
@@ -1450,19 +1447,18 @@ class CentralDomainTestCase(CentralBasic):
         )
         self.service.get_record(self.context, 1, 2, 3)
         self.assertEqual(
-            designate.central.service.policy.check.call_args[0][0],
-            'get_record'
+            'get_record',
+            designate.central.service.policy.check.call_args[0][0]
         )
         t, ctx, target = designate.central.service.policy.check.call_args[0]
-        self.assertEqual(t, 'get_record')
-        self.assertEqual(target, {
+        self.assertEqual('get_record', t)
+        self.assertEqual({
             'domain_id': 1,
             'domain_name': 'example.org.',
             'record_id': 5,
             'recordset_id': 2,
             'recordset_name': 'foo',
-            'tenant_id': 2
-        })
+            'tenant_id': 2}, target)
 
     def test_update_record_fail_on_changes(self):
         self.service.storage.get_domain.return_value = RoObject(
@@ -1536,16 +1532,15 @@ class CentralDomainTestCase(CentralBasic):
             assert self.service._update_record_in_storage.called
 
         n, ctx, target = designate.central.service.policy.check.call_args[0]
-        self.assertEqual(n, 'update_record')
-        self.assertEqual(target, {
+        self.assertEqual('update_record', n)
+        self.assertEqual({
             'domain_id': '1',
             'domain_name': 'n',
             'domain_type': 't',
             'record_id': '1',
             'recordset_id': '1',
             'recordset_name': 'rsn',
-            'tenant_id': 'tid'
-        })
+            'tenant_id': 'tid'}, target)
 
     def test__update_record_in_storage(self):
         self.service._update_domain_in_storage = Mock()
@@ -1560,9 +1555,9 @@ class CentralDomainTestCase(CentralBasic):
             increment_serial=False
         )
         ctx, record = self.service.storage.update_record.call_args[0]
-        self.assertEqual(record.action, 'UPDATE')
-        self.assertEqual(record.status, 'PENDING')
-        self.assertEqual(record.serial, 1)
+        self.assertEqual('UPDATE', record.action)
+        self.assertEqual('PENDING', record.status)
+        self.assertEqual(1, record.serial)
 
     def test_delete_record_action_delete(self):
         self.service.storage.get_domain.return_value = RoObject(
@@ -1621,16 +1616,15 @@ class CentralDomainTestCase(CentralBasic):
             self.service.delete_record(self.context, 1, 2, 3)
 
         t, ctx, target = designate.central.service.policy.check.call_args[0]
-        self.assertEqual(t, 'delete_record')
-        self.assertEqual(target, {
+        self.assertEqual('delete_record', t)
+        self.assertEqual({
             'domain_id': 1,
             'domain_name': 'dn',
             'domain_type': 't',
             'record_id': 4,
             'recordset_id': 2,
             'recordset_name': 'rsn',
-            'tenant_id': 'tid'
-        })
+            'tenant_id': 'tid'}, target)
 
     def test_delete_record_fail_on_managed(self):
         self.service._delete_record_in_storage = Mock(
@@ -1668,15 +1662,15 @@ class CentralDomainTestCase(CentralBasic):
             increment_serial=False
         )
         r = self.service.storage.update_record.call_args[0][1]
-        self.assertEqual(r.action, 'DELETE')
-        self.assertEqual(r.status, 'PENDING')
-        self.assertEqual(r.serial, 2)
+        self.assertEqual('DELETE', r.action)
+        self.assertEqual('PENDING', r.status)
+        self.assertEqual(2, r.serial)
 
     def test_count_records(self):
         self.service.count_records(self.context)
         t, ctx, target = designate.central.service.policy.check.call_args[0]
-        self.assertEqual(t, 'count_records')
-        self.assertEqual(target, {'tenant_id': None})
+        self.assertEqual('count_records', t)
+        self.assertEqual({'tenant_id': None}, target)
 
     def test_sync_domains(self):
         self.service._sync_domain = Mock()
@@ -1687,8 +1681,8 @@ class CentralDomainTestCase(CentralBasic):
 
         res = self.service.sync_domains(self.context)
         t, ctx = designate.central.service.policy.check.call_args[0]
-        self.assertEqual(t, 'diagnostics_sync_domains')
-        self.assertEqual(len(res), 2)
+        self.assertEqual('diagnostics_sync_domains', t)
+        self.assertEqual(2, len(res))
 
     def test_sync_domain(self):
         self.service._sync_domain = Mock()
@@ -1701,9 +1695,9 @@ class CentralDomainTestCase(CentralBasic):
         self.service.sync_domain(self.context, 1)
 
         t, ctx, target = designate.central.service.policy.check.call_args[0]
-        self.assertEqual(t, 'diagnostics_sync_domain')
-        self.assertEqual(target, {'tenant_id': 'tid', 'domain_id': 1,
-                                  'domain_name': 'n'})
+        self.assertEqual('diagnostics_sync_domain', t)
+        self.assertEqual({'tenant_id': 'tid', 'domain_id': 1,
+                          'domain_name': 'n'}, target)
 
     def test_sync_record(self):
         self.service.storage.get_domain.return_value = RoObject(
@@ -1718,27 +1712,26 @@ class CentralDomainTestCase(CentralBasic):
         self.service.sync_record(self.context, 1, 2, 3)
 
         t, ctx, target = designate.central.service.policy.check.call_args[0]
-        self.assertEqual(t, 'diagnostics_sync_record')
-        self.assertEqual(target, {
+        self.assertEqual('diagnostics_sync_record', t)
+        self.assertEqual({
             'domain_id': 1,
             'domain_name': 'n',
             'record_id': 3,
             'recordset_id': 2,
             'recordset_name': 'n',
-            'tenant_id': 'tid'
-        })
+            'tenant_id': 'tid'}, target)
 
     def test_ping(self):
         self.service.storage.ping.return_value = True
         r = self.service.ping(self.context)
-        self.assertEqual(r['backend'], {'status': None})
+        self.assertEqual({'status': None}, r['backend'])
         self.assertTrue(r['status'])
         self.assertTrue(r['storage'])
 
     def test_ping2(self):
         self.service.storage.ping.return_value = False
         r = self.service.ping(self.context)
-        self.assertEqual(r['backend'], {'status': None})
+        self.assertEqual({'status': None}, r['backend'])
         self.assertFalse(r['status'])
         self.assertFalse(r['storage'])
 
@@ -1751,8 +1744,8 @@ class CentralDomainTestCase(CentralBasic):
 
         fips = {}
         data, invalid = self.service._determine_floatingips(self.context, fips)
-        self.assertEqual(data, {})
-        self.assertEqual(invalid, [])
+        self.assertEqual({}, data)
+        self.assertEqual([], invalid)
 
     def test__determine_floatingips_with_data(self):
         self.context = Mock()
@@ -1767,8 +1760,8 @@ class CentralDomainTestCase(CentralBasic):
             'k2': {'address': 2},
         }
         data, invalid = self.service._determine_floatingips(self.context, fips)
-        self.assertEqual(len(invalid), 1)
-        self.assertEqual(invalid[0].managed_tenant_id, 1)
+        self.assertEqual(1, len(invalid))
+        self.assertEqual(1, invalid[0].managed_tenant_id)
         self.assertEqual(data['k'], ({'address': 1}, None))
 
 
@@ -1793,16 +1786,16 @@ class IsSubdomainTestCase(CentralBasic):
 
     def FIXME_test__is_subdomain_false2(self):
         r = self.service._is_subdomain(self.context, 'com.', '1')
-        self.assertEqual(r, 'com.')
+        self.assertEqual('com.', r)
 
     def FIXME_test__is_subdomain_false3(self):
         r = self.service._is_subdomain(self.context, 'example.com.', '1')
-        self.assertEqual(r, 'example.com.')
+        self.assertEqual('example.com.', r)
 
     def test__is_subdomain_false4(self):
         r = self.service._is_subdomain(self.context, 'foo.a.b.example.com.',
                                        '1')
-        self.assertEqual(r, 'example.com.')
+        self.assertEqual('example.com.', r)
 
 
 class CentralZoneExportTests(CentralBasic):
@@ -1840,11 +1833,11 @@ class CentralZoneExportTests(CentralBasic):
             self.context,
             '123'
         )
-        self.assertEqual(out.domain_id, '123')
-        self.assertEqual(out.status, 'PENDING')
-        self.assertEqual(out.task_type, 'EXPORT')
+        self.assertEqual('123', out.domain_id)
+        self.assertEqual('PENDING', out.status)
+        self.assertEqual('EXPORT', out.task_type)
         self.assertIsNone(out.message)
-        self.assertEqual(out.tenant_id, 't')
+        self.assertEqual('t', out.tenant_id)
 
     def test_get_zone_export(self):
         self.context = Mock()
@@ -1863,14 +1856,14 @@ class CentralZoneExportTests(CentralBasic):
         n, ctx, target = designate.central.service.policy.check.call_args[0]
 
         # Check arguments to policy
-        self.assertEqual(target['tenant_id'], 't')
+        self.assertEqual('t', target['tenant_id'])
 
         # Check output
-        self.assertEqual(out.domain_id, '123')
-        self.assertEqual(out.status, 'PENDING')
-        self.assertEqual(out.task_type, 'EXPORT')
+        self.assertEqual('123', out.domain_id)
+        self.assertEqual('PENDING', out.status)
+        self.assertEqual('EXPORT', out.task_type)
         self.assertIsNone(out.message)
-        self.assertEqual(out.tenant_id, 't')
+        self.assertEqual('t', out.tenant_id)
 
     def test_find_zone_exports(self):
         self.context = Mock()
@@ -1882,7 +1875,7 @@ class CentralZoneExportTests(CentralBasic):
         assert self.service.storage.find_zone_exports.called
         pcheck, ctx, target = \
             designate.central.service.policy.check.call_args[0]
-        self.assertEqual(pcheck, 'find_zone_exports')
+        self.assertEqual('find_zone_exports', pcheck)
 
     def test_delete_zone_export(self):
         self.context = Mock()
@@ -1902,13 +1895,13 @@ class CentralZoneExportTests(CentralBasic):
 
         assert self.service.storage.delete_zone_export.called
 
-        self.assertEqual(out.domain_id, '123')
-        self.assertEqual(out.status, 'PENDING')
-        self.assertEqual(out.task_type, 'EXPORT')
+        self.assertEqual('123', out.domain_id)
+        self.assertEqual('PENDING', out.status)
+        self.assertEqual('EXPORT', out.task_type)
         self.assertIsNone(out.message)
-        self.assertEqual(out.tenant_id, 't')
+        self.assertEqual('t', out.tenant_id)
 
         assert designate.central.service.policy.check.called
         pcheck, ctx, target = \
             designate.central.service.policy.check.call_args[0]
-        self.assertEqual(pcheck, 'delete_zone_export')
+        self.assertEqual('delete_zone_export', pcheck)

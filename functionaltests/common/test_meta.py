@@ -32,8 +32,8 @@ class MetaTest(tempest_lib.base.BaseTestCase):
             mydomain.com.  IN NS ns1.example.com.
             mydomain.com.  IN SOA ns1.example.com. mail.mydomain.com. 1 2 3 4 5
             """)
-        self.assertEqual(zone_file.origin, 'mydomain.com.')
-        self.assertEqual(zone_file.ttl, 1234)
+        self.assertEqual('mydomain.com.', zone_file.origin)
+        self.assertEqual(1234, zone_file.ttl)
 
         ns_record = ZoneFileRecord(
             name='mydomain.com.', type='NS', data='ns1.example.com.')
@@ -69,4 +69,4 @@ class MetaTest(tempest_lib.base.BaseTestCase):
             ZoneFileRecord(name="mydomain.com.", type="NS", data="ns2.a.com."),
             ZoneFileRecord(name="mydomain.com.", type="NS", data="ns3.a.com."),
         ]
-        self.assertEqual(records, expected)
+        self.assertEqual(expected, records)

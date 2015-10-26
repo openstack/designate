@@ -43,7 +43,7 @@ class TransferZoneOwnerShipTest(DesignateV2Test):
         ))
         resp, model = TransferRequestClient.as_user('default') \
             .list_transfer_requests()
-        self.assertEqual(resp.status, 200)
+        self.assertEqual(200, resp.status)
         self.assertGreater(len(model.transfer_requests), 0)
 
     def test_create_zone_transfer_request(self):
@@ -51,19 +51,19 @@ class TransferZoneOwnerShipTest(DesignateV2Test):
             zone=self.zone,
             post_model=datagen.random_transfer_request_data(),
         ))
-        self.assertEqual(fixture.post_resp.status, 201)
-        self.assertEqual(fixture.transfer_request.zone_id, self.zone.id)
+        self.assertEqual(201, fixture.post_resp.status)
+        self.assertEqual(self.zone.id, fixture.transfer_request.zone_id)
         # todo: this fails. the zone_name is null in the POST's response, but
         #       it's filled in on a subsequent get
-        # self.assertEqual(fixture.transfer_request.zone_name, self.zone.name)
-        self.assertEqual(fixture.transfer_request.project_id,
-                         TransferRequestClient.as_user(fixture.user).tenant_id)
+        # self.assertEqual(self.zone.name, fixture.transfer_request.zone_name)
+        self.assertEqual(TransferRequestClient.as_user(fixture.user).tenant_id,
+                         fixture.transfer_request.project_id)
         self.assertEqual(fixture.transfer_request.target_project_id, None)
 
         # check that the zone_name is filled in
         resp, transfer_request = TransferRequestClient.as_user(fixture.user) \
             .get_transfer_request(fixture.transfer_request.id)
-        self.assertEqual(transfer_request.zone_name, self.zone.name)
+        self.assertEqual(self.zone.name, transfer_request.zone_name)
 
     def test_view_zone_transfer_request(self):
         fixture = self.useFixture(TransferRequestFixture(
@@ -88,19 +88,19 @@ class TransferZoneOwnerShipTest(DesignateV2Test):
             target_user='alt',
         ))
 
-        self.assertEqual(fixture.post_resp.status, 201)
-        self.assertEqual(fixture.transfer_request.zone_id, self.zone.id)
+        self.assertEqual(201, fixture.post_resp.status)
+        self.assertEqual(self.zone.id, fixture.transfer_request.zone_id)
         # todo: the zone_name is null initially, but shows up on later gets
         # self.assertEqual(fixture.transfer_request.zone_name, self.zone.name)
-        self.assertEqual(fixture.transfer_request.project_id,
-                         TransferRequestClient.as_user(fixture.user).tenant_id)
-        self.assertEqual(fixture.transfer_request.target_project_id,
-                         target_project_id)
+        self.assertEqual(TransferRequestClient.as_user(fixture.user).tenant_id,
+                         fixture.transfer_request.project_id)
+        self.assertEqual(target_project_id,
+                         fixture.transfer_request.target_project_id)
 
         resp, transfer_request = TransferRequestClient.as_user('alt')\
             .get_transfer_request(fixture.transfer_request.id)
 
-        self.assertEqual(resp.status, 200)
+        self.assertEqual(200, resp.status)
 
     def test_view_zone_transfer_request_scoped(self):
         target_project_id = TransferRequestClient.as_user('admin').tenant_id
@@ -126,13 +126,13 @@ class TransferZoneOwnerShipTest(DesignateV2Test):
         resp, transfer_request = TransferRequestClient.as_user('admin')\
             .get_transfer_request(transfer_request.id)
 
-        self.assertEqual(resp.status, 200)
+        self.assertEqual(200, resp.status)
 
     def test_create_zone_transfer_request_no_body(self):
         client = TransferRequestClient.as_user('default')
         resp, transfer_request = client \
             .post_transfer_request_empty_body(self.zone.id)
-        self.assertEqual(resp.status, 201)
+        self.assertEqual(201, resp.status)
         self.addCleanup(TransferRequestFixture.cleanup_transfer_request,
                         client, transfer_request.id)
 
@@ -151,7 +151,7 @@ class TransferZoneOwnerShipTest(DesignateV2Test):
                     key=transfer_request.key,
                     zone_transfer_request_id=transfer_request.id
                 ))
-        self.assertEqual(resp.status, 201)
+        self.assertEqual(201, resp.status)
 
     def test_do_zone_transfer_scoped(self):
         target_project_id = TransferRequestClient.as_user('alt').tenant_id
@@ -168,7 +168,7 @@ class TransferZoneOwnerShipTest(DesignateV2Test):
         resp, retrived_transfer_request = TransferRequestClient.\
             as_user('alt').get_transfer_request(transfer_request.id)
 
-        self.assertEqual(resp.status, 200)
+        self.assertEqual(200, resp.status)
 
         resp, transfer_accept = TransferAcceptClient.as_user('alt')\
             .post_transfer_accept(
@@ -176,7 +176,7 @@ class TransferZoneOwnerShipTest(DesignateV2Test):
                     key=transfer_request.key,
                     zone_transfer_request_id=transfer_request.id
                 ))
-        self.assertEqual(resp.status, 201)
+        self.assertEqual(201, resp.status)
 
         client = ZoneClient.as_user('default')
 
@@ -186,4 +186,4 @@ class TransferZoneOwnerShipTest(DesignateV2Test):
 
         resp, zone = ZoneClient.as_user('alt').get_zone(self.zone.id)
 
-        self.assertEqual(resp.status, 200)
+        self.assertEqual(200, resp.status)

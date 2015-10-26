@@ -309,7 +309,7 @@ class ApiV1DomainsTest(ApiV1Test):
         self.assertEqual(response.json['id'], domain['id'])
 
         self.assertIn('email', response.json)
-        self.assertEqual(response.json['email'], 'prefix-%s' % domain['email'])
+        self.assertEqual('prefix-%s' % domain['email'], response.json['email'])
 
     def test_update_domain_junk(self):
         # Create a domain
