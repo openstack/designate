@@ -89,7 +89,7 @@ class KeystoneContextMiddlewareTest(oslotest.base.BaseTestCase):
 
         self.app(self.request)
 
-        self.assertFalse('all_tenants' in self.request.params)
+        self.assertNotIn('all_tenants', self.request.params)
         self.assertTrue(self.ctxt.all_tenants)
 
     def test_all_tenants_in_params(self):
@@ -101,7 +101,7 @@ class KeystoneContextMiddlewareTest(oslotest.base.BaseTestCase):
 
         self.app(self.request)
 
-        self.assertFalse('all_tenants' in self.request.params)
+        self.assertNotIn('all_tenants', self.request.params)
         self.assertTrue(self.ctxt.all_tenants)
 
     def test_all_tenants_not_set(self):
@@ -122,7 +122,7 @@ class KeystoneContextMiddlewareTest(oslotest.base.BaseTestCase):
 
         self.app(self.request)
 
-        self.assertFalse('edit_managed_records' in self.request.params)
+        self.assertNotIn('edit_managed_records', self.request.params)
         self.assertTrue(self.ctxt.edit_managed_records)
 
     def test_edit_managed_records_in_headers(self):
