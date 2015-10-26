@@ -199,7 +199,7 @@ class PeriodicExistsTest(TaskTest):
             iter_.return_value = []
             self.task()
 
-        self.assertEqual(False, self.mock_notifier.info.called)
+        self.assertFalse(self.mock_notifier.info.called)
 
     def test_emit_exists_multiple_zones(self):
         zones = [RoObject() for i in range(0, 10)]

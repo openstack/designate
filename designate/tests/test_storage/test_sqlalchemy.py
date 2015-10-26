@@ -34,5 +34,5 @@ class SqlalchemyStorageTest(StorageTestCase, TestCase):
                                return_value=0):
             pong = self.storage.ping(self.admin_context)
 
-            self.assertEqual(pong['status'], False)
+            self.assertFalse(pong['status'])
             self.assertIsNotNone(pong['rtt'])

@@ -42,7 +42,7 @@ class TestCoordinationMixin(TestCase):
         service = CoordinatedService()
         service.start()
 
-        self.assertEqual(True, service._coordination_started)
+        self.assertTrue(service._coordination_started)
         self.assertIn(service.service_name.encode('utf-8'),
                       service._coordinator.get_groups().get())
         self.assertIn(service._coordination_id.encode('utf-8'),
@@ -54,7 +54,7 @@ class TestCoordinationMixin(TestCase):
         service = CoordinatedService()
         service.start()
         service.stop()
-        self.assertEqual(False, service._coordination_started)
+        self.assertFalse(service._coordination_started)
 
     def test_start_no_coordination(self):
         self.config(backend_url=None, group="coordination")
