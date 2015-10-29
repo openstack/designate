@@ -42,7 +42,7 @@ class DomainTest(oslotest.base.BaseTestCase):
     def test_masters_none(self):
         domain = objects.Domain()
         with testtools.ExpectedException(exceptions.RelationNotLoaded):
-            self.assertEqual(None, domain.masters)
+            self.assertIsNone(domain.masters)
 
     def test_masters(self):
         domain = objects.Domain(

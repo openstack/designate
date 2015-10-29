@@ -60,12 +60,12 @@ class TestCoordinationMixin(TestCase):
         self.config(backend_url=None, group="coordination")
         service = CoordinatedService()
         service.start()
-        self.assertEqual(None, service._coordinator)
+        self.assertIsNone(service._coordinator)
 
     def test_stop_no_coordination(self):
         self.config(backend_url=None, group="coordination")
         service = CoordinatedService()
-        self.assertEqual(None, service._coordinator)
+        self.assertIsNone(service._coordinator)
         service.start()
         service.stop()
 

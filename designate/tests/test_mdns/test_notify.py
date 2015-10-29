@@ -84,7 +84,7 @@ class MdnsNotifyTest(MdnsTestCase):
             response, retry = self.notify.notify_zone_changed(
                 context, objects.Domain.from_dict(self.test_domain),
                 self.nameserver.host, self.nameserver.port, 0, 0, 2, 0)
-            self.assertEqual(response, None)
+            self.assertIsNone(response)
             self.assertEqual(retry, 1)
 
     @patch.object(dns.query, 'udp', side_effect=dns.exception.Timeout)
@@ -93,7 +93,7 @@ class MdnsNotifyTest(MdnsTestCase):
         response, retry = self.notify.notify_zone_changed(
             context, objects.Domain.from_dict(self.test_domain),
             self.nameserver.host, self.nameserver.port, 0, 0, 2, 0)
-        self.assertEqual(response, None)
+        self.assertIsNone(response)
         self.assertEqual(retry, 2)
 
     @patch.object(dns.query, 'udp', side_effect=dns.query.BadResponse)
@@ -102,7 +102,7 @@ class MdnsNotifyTest(MdnsTestCase):
         response, retry = self.notify.notify_zone_changed(
             context, objects.Domain.from_dict(self.test_domain),
             self.nameserver.host, self.nameserver.port, 0, 0, 2, 0)
-        self.assertEqual(response, None)
+        self.assertIsNone(response)
         self.assertEqual(retry, 1)
 
     def test_poll_for_serial_number(self):
@@ -190,7 +190,7 @@ class MdnsNotifyTest(MdnsTestCase):
             context, objects.Domain.from_dict(self.test_domain),
             self.nameserver.host, self.nameserver.port, 0, 0, 2, 0)
         self.assertEqual(status, 'ERROR')
-        self.assertEqual(serial, None)
+        self.assertIsNone(serial)
         self.assertEqual(retries, 0)
 
     @patch('dns.query.udp', side_effect=dns.exception.Timeout)

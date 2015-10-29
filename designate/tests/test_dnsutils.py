@@ -135,7 +135,7 @@ class TestUtils(TestCase):
 
         # Send the NOTIFY through the middleware
         # No problem, middleware should return None to pass it on
-        self.assertEqual(middleware.process_request(notify), None)
+        self.assertIsNone(middleware.process_request(notify))
 
     @mock.patch('designate.dnsutils.ZoneLock.acquire', return_value=False)
     def test_limit_notify_middleware_no_acquire(self, acquire):

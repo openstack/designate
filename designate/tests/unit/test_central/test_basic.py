@@ -1843,7 +1843,7 @@ class CentralZoneExportTests(CentralBasic):
         self.assertEqual(out.domain_id, '123')
         self.assertEqual(out.status, 'PENDING')
         self.assertEqual(out.task_type, 'EXPORT')
-        self.assertEqual(out.message, None)
+        self.assertIsNone(out.message)
         self.assertEqual(out.tenant_id, 't')
 
     def test_get_zone_export(self):
@@ -1869,7 +1869,7 @@ class CentralZoneExportTests(CentralBasic):
         self.assertEqual(out.domain_id, '123')
         self.assertEqual(out.status, 'PENDING')
         self.assertEqual(out.task_type, 'EXPORT')
-        self.assertEqual(out.message, None)
+        self.assertIsNone(out.message)
         self.assertEqual(out.tenant_id, 't')
 
     def test_find_zone_exports(self):
@@ -1905,7 +1905,7 @@ class CentralZoneExportTests(CentralBasic):
         self.assertEqual(out.domain_id, '123')
         self.assertEqual(out.status, 'PENDING')
         self.assertEqual(out.task_type, 'EXPORT')
-        self.assertEqual(out.message, None)
+        self.assertIsNone(out.message)
         self.assertEqual(out.tenant_id, 't')
 
         assert designate.central.service.policy.check.called
