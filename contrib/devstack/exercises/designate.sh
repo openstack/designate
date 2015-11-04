@@ -56,6 +56,16 @@ DIG_AXFR_FLAGS="-p $DESIGNATE_SERVICE_PORT_MDNS @$DESIGNATE_SERVICE_HOST AXFR +t
 # Functions
 # =========
 
+function cleanup {
+    # Try to cleanup any domains, this is important for backends like
+    # Akamai/Dyn, where state is not fully reset between test runs.
+    source $TOP_DIR/openrc admin admin
+
+    designate --all-tenants domain-list -f csv | awk 'BEGIN { FS = "," } ; {print $1}' | \
+        tail -n+2 | xargs --no-run-if-empty -n1 designate --all-tenants domain-delete
+}
+trap cleanup EXIT
+
 function ensure_record_present {
     local record_name=$1
     local record_type=$2
