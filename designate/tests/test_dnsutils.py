@@ -106,16 +106,16 @@ class TestUtils(TestCase):
 
         # Ensure there's no lock for different zones
         for zone_name in ['foo.com.', 'bar.com.', 'example.com.']:
-            self.assertEqual(True, lock.acquire(zone_name))
+            self.assertTrue(lock.acquire(zone_name))
 
         # Ensure a lock for successive calls for the same zone
-        self.assertEqual(True, lock.acquire('example2.com.'))
-        self.assertEqual(False, lock.acquire('example2.com.'))
+        self.assertTrue(lock.acquire('example2.com.'))
+        self.assertFalse(lock.acquire('example2.com.'))
 
         # Acquire, release, and reacquire
-        self.assertEqual(True, lock.acquire('example3.com.'))
+        self.assertTrue(lock.acquire('example3.com.'))
         lock.release('example3.com.')
-        self.assertEqual(True, lock.acquire('example3.com.'))
+        self.assertTrue(lock.acquire('example3.com.'))
 
     def test_limit_notify_middleware(self):
         # Set the delay

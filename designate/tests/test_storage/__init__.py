@@ -1495,14 +1495,14 @@ class StorageTestCase(object):
     def test_ping(self):
         pong = self.storage.ping(self.admin_context)
 
-        self.assertEqual(pong['status'], True)
+        self.assertTrue(pong['status'])
         self.assertIsNotNone(pong['rtt'])
 
     def test_ping_fail(self):
         with mock.patch.object(self.storage.engine, "execute",
                                side_effect=Exception):
             result = self.storage.ping(self.admin_context)
-            self.assertEqual(False, result['status'])
+            self.assertFalse(result['status'])
             self.assertIsNotNone(result['rtt'])
 
     # TLD Tests

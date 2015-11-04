@@ -400,7 +400,7 @@ class CentralServiceTestCase(CentralBasic):
         self.assertEqual(rset.type, 'SOA')
         self.assertEqual(rset.type, 'SOA')
         self.assertEqual(len(rset.records.objects), 1)
-        self.assertEqual(rset.records.objects[0].managed, True)
+        self.assertTrue(rset.records.objects[0].managed)
 
     def test__create_domain_in_storage(self):
         self.service._create_soa = Mock()

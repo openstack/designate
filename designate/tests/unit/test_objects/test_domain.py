@@ -77,7 +77,7 @@ class DomainTest(oslotest.base.BaseTestCase):
     def test_get_master_by_ip_none(self):
         domain = objects.Domain()
         m = domain.get_master_by_ip('2.0.0.0')
-        self.assertEqual(False, m)
+        self.assertFalse(m)
 
     def test_validate(self):
         domain = create_test_domain()

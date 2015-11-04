@@ -90,7 +90,7 @@ class KeystoneContextMiddlewareTest(oslotest.base.BaseTestCase):
         self.app(self.request)
 
         self.assertFalse('all_tenants' in self.request.params)
-        self.assertEqual(self.ctxt.all_tenants, True)
+        self.assertTrue(self.ctxt.all_tenants)
 
     def test_all_tenants_in_params(self):
         self.request.headers.update({
@@ -102,7 +102,7 @@ class KeystoneContextMiddlewareTest(oslotest.base.BaseTestCase):
         self.app(self.request)
 
         self.assertFalse('all_tenants' in self.request.params)
-        self.assertEqual(self.ctxt.all_tenants, True)
+        self.assertTrue(self.ctxt.all_tenants)
 
     def test_all_tenants_not_set(self):
         self.request.headers.update({

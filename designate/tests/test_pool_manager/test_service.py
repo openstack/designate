@@ -173,7 +173,7 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
 
         # Since consensus is not reached this early, we immediatly call
         # central's update_status.
-        self.assertEqual(True, mock_update_status.called)
+        self.assertTrue(mock_update_status.called)
 
     @patch.object(mdns_rpcapi.MdnsAPI, 'get_serial_number',
                   side_effect=messaging.MessagingException)
@@ -197,7 +197,7 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
 
         # Since consensus is not reached this early, we immediatly call
         # central's update_status.
-        self.assertEqual(True, mock_update_status.called)
+        self.assertTrue(mock_update_status.called)
 
     @patch.object(mdns_rpcapi.MdnsAPI, 'get_serial_number',
                   side_effect=messaging.MessagingException)
