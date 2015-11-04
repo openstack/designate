@@ -57,12 +57,14 @@ Get Quotas
         Content-Type: application/json
 
         {
+          "api_export_size": 1000,
           "domains": 10,
           "recordset_records": 20,
           "domain_records": 500,
           "domain_recordsets": 500
         }
 
+    :from api_export_size: Number of recordsets allowed in a zone export
     :form domains: Number of domains the tenant is allowed to own
     :form recordset_records: Number of records allowed per recordset
     :form domain_records: Number of records allowed per domain
@@ -101,6 +103,7 @@ Update Quotas
         Content-Type: application/json
 
         {
+          "api_export_size": 1000,
           "domains": 1000,
           "recordset_records": 20,
           "domain_records": 50,
