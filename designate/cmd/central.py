@@ -17,10 +17,12 @@ import sys
 
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_reports import guru_meditation_report as gmr
 
 from designate import hookpoints
 from designate import service
 from designate import utils
+from designate import version
 from designate.central import service as central
 
 
@@ -32,7 +34,7 @@ CONF.import_opt('threads', 'designate.central', group='service:central')
 def main():
     utils.read_config('designate', sys.argv)
     logging.setup(CONF, 'designate')
-    utils.setup_gmr(log_dir=cfg.CONF.log_dir)
+    gmr.TextGuruMeditation.setup_autorun(version)
 
     hookpoints.log_hook_setup()
 

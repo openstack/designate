@@ -15,26 +15,6 @@
 # under the License.
 import pbr.version
 
-DESIGNATE_VENDOR = "OpenStack Foundation"
-DESIGNATE_PRODUCT = "OpenStack Designate"
 
 version_info = pbr.version.VersionInfo('designate')
-
-
-def vendor_string():
-    return DESIGNATE_VENDOR
-
-
-def product_string():
-    return DESIGNATE_PRODUCT
-
-
-def package_string():
-    return None
-
-
-def version_string_with_package():
-    if package_string() is None:
-        return version_info.version_string()
-    else:
-        return "%s-%s" % (version_info.version_string(), package_string())
+version_string = version_info.version_string
