@@ -1154,7 +1154,7 @@ class CentralServiceTest(CentralTestCase):
             limit=100,
         )
         self._assert_count_all_domains(3)
-        self.assertEqual(None, purge_cnt)
+        self.assertIsNone(purge_cnt)
 
     @mock.patch.object(notifier.Notifier, "info")
     def test_purge_domains_by_name(self, mock_notifier):
@@ -1272,7 +1272,7 @@ class CentralServiceTest(CentralTestCase):
         self._log_all_domains(zones)
         for z in zones:
             if z.name == 'alive.org.':
-                self.assertEqual(None, z.parent_domain_id)
+                self.assertIsNone(z.parent_domain_id)
             elif z.name == 'alive2.del3.del2.deleted.alive.org.':
                 # alive2.del2.deleted.alive.org is to be reparented under
                 # alive.org
@@ -2305,7 +2305,7 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(fip['region'], fip_ptr['region'])
         self.assertEqual(fip['id'], fip_ptr['id'])
         self.assertEqual(fip['address'], fip_ptr['address'])
-        self.assertEqual(None, fip_ptr['ptrdname'])
+        self.assertIsNone(fip_ptr['ptrdname'])
 
     def test_get_floatingip_with_record(self):
         context = self.get_context(tenant='a')
@@ -2376,7 +2376,7 @@ class CentralServiceTest(CentralTestCase):
         # There should be a fip returned with ptrdname of None
         fip_ptr = self.central_service.get_floatingip(
             context_b, fip['region'], fip['id'])
-        self.assertEqual(None, fip_ptr['ptrdname'])
+        self.assertIsNone(fip_ptr['ptrdname'])
 
         # Simulate the invalidation on the backend
         domain_serial = self.central_service.get_domain(
@@ -2404,11 +2404,11 @@ class CentralServiceTest(CentralTestCase):
         fips = self.central_service.list_floatingips(context)
 
         self.assertEqual(1, len(fips))
-        self.assertEqual(None, fips[0]['ptrdname'])
+        self.assertIsNone(fips[0]['ptrdname'])
         self.assertEqual(fip['id'], fips[0]['id'])
         self.assertEqual(fip['region'], fips[0]['region'])
         self.assertEqual(fip['address'], fips[0]['address'])
-        self.assertEqual(None, fips[0]['description'])
+        self.assertIsNone(fips[0]['description'])
 
     def test_list_floatingips_with_record(self):
         context = self.get_context(tenant='a')
@@ -2471,7 +2471,7 @@ class CentralServiceTest(CentralTestCase):
         # There should be a fip returned with ptrdname of None
         fips = self.central_service.list_floatingips(context_b)
         self.assertEqual(1, len(fips))
-        self.assertEqual(None, fips[0]['ptrdname'])
+        self.assertIsNone(fips[0]['ptrdname'])
 
         # Simulate the invalidation on the backend
         domain_serial = self.central_service.get_domain(
@@ -2496,7 +2496,7 @@ class CentralServiceTest(CentralTestCase):
 
         self.assertEqual(fixture['ptrdname'], fip_ptr['ptrdname'])
         self.assertEqual(fip['address'], fip_ptr['address'])
-        self.assertEqual(None, fip_ptr['description'])
+        self.assertIsNone(fip_ptr['description'])
         self.assertIsNotNone(fip_ptr['ttl'])
 
     def test_set_floatingip_no_managed_resource_tenant_id(self):
@@ -2603,7 +2603,7 @@ class CentralServiceTest(CentralTestCase):
 
         self.assertEqual(fixture['ptrdname'], fip_ptr['ptrdname'])
         self.assertEqual(fip['address'], fip_ptr['address'])
-        self.assertEqual(None, fip_ptr['description'])
+        self.assertIsNone(fip_ptr['description'])
         self.assertIsNotNone(fip_ptr['ttl'])
 
         self.central_service.update_floatingip(
@@ -3287,8 +3287,8 @@ class CentralServiceTest(CentralTestCase):
         # Ensure all values have been set correctly
         self.assertIsNotNone(zone_import['id'])
         self.assertEqual('PENDING', zone_import.status)
-        self.assertEqual(None, zone_import.message)
-        self.assertEqual(None, zone_import.domain_id)
+        self.assertIsNone(zone_import.message)
+        self.assertIsNone(zone_import.domain_id)
 
         self.wait_for_import(zone_import.id)
 

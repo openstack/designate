@@ -2369,8 +2369,8 @@ class StorageTestCase(object):
         self.assertIsNone(result['updated_at'])
         self.assertIsNotNone(result['version'])
         self.assertEqual(result['status'], values['status'])
-        self.assertEqual(result['domain_id'], None)
-        self.assertEqual(result['message'], None)
+        self.assertIsNone(result['domain_id'])
+        self.assertIsNone(result['message'])
 
     def test_find_zone_imports(self):
 
