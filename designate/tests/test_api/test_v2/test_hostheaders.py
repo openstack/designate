@@ -36,8 +36,8 @@ class ApiV2HostHeadersTest(ApiV2TestCase):
         self.assertEqual('application/json', response.content_type)
 
         # Check the host request header url
-        self.assertTrue('http://testhost.com/zones/' in
-                response.json_body['links']['self'])
+        self.assertIn('http://testhost.com/zones/',
+                      response.json_body['links']['self'])
 
         # Get zone with host header
         response = self.client.get('/zones/',
@@ -48,5 +48,5 @@ class ApiV2HostHeadersTest(ApiV2TestCase):
         self.assertEqual('application/json', response.content_type)
 
         # Check the host request header url
-        self.assertTrue('http://testhost.com/zones' in
-                response.json_body['links']['self'])
+        self.assertIn('http://testhost.com/zones',
+                      response.json_body['links']['self'])
