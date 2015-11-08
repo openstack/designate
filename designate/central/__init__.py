@@ -20,7 +20,7 @@ cfg.CONF.register_group(cfg.OptGroup(
 ))
 
 cfg.CONF.register_opts([
-    cfg.IntOpt('workers', default=None,
+    cfg.IntOpt('workers',
                help='Number of central worker processes to spawn'),
     cfg.IntOpt('threads', default=1000,
                help='Number of central greenthreads to spawn'),
@@ -38,7 +38,7 @@ cfg.CONF.register_opts([
     cfg.StrOpt('managed_resource_tenant_id',
                default="00000000-0000-0000-0000-000000000000",
                help="The Tenant ID that will own any managed resources."),
-    cfg.IntOpt('min_ttl', default=None, help="Minimum TTL allowed"),
+    cfg.IntOpt('min_ttl', help="Minimum TTL allowed"),
     # TODO(betsy): Move to Pool Service once that is written
     cfg.StrOpt('default_pool_id',
                default='794ccc2c-d751-44fe-b57f-8894c9f5c842',

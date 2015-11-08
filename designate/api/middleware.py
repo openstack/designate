@@ -47,7 +47,6 @@ cfg.CONF.register_opts([
                     "the original request protocol scheme was, even if it was "
                     "removed by an SSL terminating proxy."),
     cfg.StrOpt('override-proto',
-               default=None,
                help="A scheme that will be used to override "
                     "the request protocol scheme, even if it was "
                     "set by an SSL terminating proxy.")

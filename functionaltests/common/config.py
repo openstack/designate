@@ -37,7 +37,7 @@ cfg.CONF.register_opts([
     cfg.StrOpt('uri', help="The Keystone v2 endpoint"),
     cfg.StrOpt('uri_v3', help="The Keystone v3 endpoint"),
     cfg.StrOpt('auth_version', default='v2'),
-    cfg.StrOpt('region', default=None),
+    cfg.StrOpt('region'),
 
     cfg.StrOpt('username'),
     cfg.StrOpt('tenant_name'),

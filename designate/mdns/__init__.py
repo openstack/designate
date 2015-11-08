@@ -23,7 +23,7 @@ cfg.CONF.register_group(cfg.OptGroup(
 ))
 
 OPTS = [
-    cfg.IntOpt('workers', default=None,
+    cfg.IntOpt('workers',
                help='Number of mdns worker processes to spawn'),
     cfg.IntOpt('threads', default=1000,
                help='Number of mdns greenthreads to spawn'),

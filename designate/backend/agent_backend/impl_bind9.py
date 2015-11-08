@@ -44,9 +44,9 @@ class Bind9Backend(base.AgentBackend):
         opts = [
             cfg.StrOpt('rndc-host', default='127.0.0.1', help='RNDC Host'),
             cfg.IntOpt('rndc-port', default=953, help='RNDC Port'),
-            cfg.StrOpt('rndc-config-file', default=None,
+            cfg.StrOpt('rndc-config-file',
                        help='RNDC Config File'),
-            cfg.StrOpt('rndc-key-file', default=None, help='RNDC Key File'),
+            cfg.StrOpt('rndc-key-file', help='RNDC Key File'),
             cfg.StrOpt('zone-file-path', default='$state_path/zones',
                        help='Path where zone files are stored'),
             cfg.StrOpt('query-destination', default='127.0.0.1',
