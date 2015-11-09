@@ -34,6 +34,7 @@ class TransferZoneOwnerShipTest(DesignateV2Test):
         super(TransferZoneOwnerShipTest, self).setUp()
         self.increase_quotas(user='default')
         self.increase_quotas(user='alt')
+        self.ensure_tld_exists('com')
         self.zone = self.useFixture(ZoneFixture()).created_zone
 
     def test_list_transfer_requests(self):

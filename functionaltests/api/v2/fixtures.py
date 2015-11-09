@@ -22,6 +22,7 @@ from tempest_lib.exceptions import NotFound
 from functionaltests.api.v2.clients.blacklist_client import BlacklistClient
 from functionaltests.api.v2.clients.pool_client import PoolClient
 from functionaltests.api.v2.clients.recordset_client import RecordsetClient
+from functionaltests.api.v2.clients.tld_client import TLDClient
 from functionaltests.api.v2.clients.zone_client import ZoneClient
 from functionaltests.api.v2.clients.zone_import_client import ZoneImportClient
 from functionaltests.api.v2.clients.zone_export_client import ZoneExportClient
@@ -231,5 +232,30 @@ class BlacklistFixture(fixtures.Fixture):
     def cleanup_blacklist(cls, client, blacklist_id):
         try:
             client.delete_blacklist(blacklist_id)
+        except NotFound:
+            pass
+
+
+class TLDFixture(fixtures.Fixture):
+
+    def __init__(self, post_model=None, user='admin'):
+        super(TLDFixture, self).__init__()
+        self.post_model = post_model or datagen.random_tld_data()
+        self.user = user
+
+    def _setUp(self):
+        super(TLDFixture, self)._setUp()
+        self._create_tld()
+
+    def _create_tld(self):
+        client = TLDClient.as_user(self.user)
+        self.post_resp, self.created_tld = client.post_tld(self.post_model)
+        assert self.post_resp.status == 201
+        self.addCleanup(self.cleanup_tld, client, self.created_tld.id)
+
+    @classmethod
+    def cleanup_tld(cls, client, tld_id):
+        try:
+            client.delete_tld(tld_id)
         except NotFound:
             pass

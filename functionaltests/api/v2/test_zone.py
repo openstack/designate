@@ -35,6 +35,7 @@ class ZoneTest(DesignateV2Test):
     def setUp(self):
         super(ZoneTest, self).setUp()
         self.increase_quotas(user='default')
+        self.ensure_tld_exists('com')
         self.fixture = self.useFixture(ZoneFixture(user='default'))
 
     def test_list_zones(self):
@@ -75,6 +76,7 @@ class ZoneOwnershipTest(DesignateV2Test):
         super(ZoneTest, self).setUp()
         self.increase_quotas(user='default')
         self.increase_quotas(user='alt')
+        self.ensure_tld_exists('com')
 
     def test_no_create_duplicate_domain(self):
         post_model = self.useFixture(ZoneFixture(user='default')).post_model
@@ -105,6 +107,7 @@ class ZoneImportTest(DesignateV2Test):
     def setUp(self):
         super(ZoneImportTest, self).setUp()
         self.increase_quotas(user='default')
+        self.ensure_tld_exists('com')
 
     def test_import_domain(self):
         user = 'default'
@@ -134,6 +137,7 @@ class ZoneExportTest(DesignateV2Test):
     def setUp(self):
         super(ZoneExportTest, self).setUp()
         self.increase_quotas(user='default')
+        self.ensure_tld_exists('com')
 
     def test_export_domain(self):
         user = 'default'
