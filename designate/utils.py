@@ -32,8 +32,6 @@ from oslo_utils import timeutils
 from designate import exceptions
 from designate.i18n import _
 from designate.i18n import _LI
-from designate.openstack.common.report import guru_meditation_report as gmr
-from designate import version as designate_version
 
 
 LOG = logging.getLogger(__name__)
@@ -392,10 +390,6 @@ def cache_result(function):
             cache[0] = result
         return result
     return wrapper
-
-
-def setup_gmr(log_dir=None):
-    gmr.TextGuruMeditation.setup_autorun(designate_version, log_dir=log_dir)
 
 
 def split_host_port(string, default_port=53):

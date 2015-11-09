@@ -21,10 +21,12 @@ import sys
 import eventlet
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_reports import guru_meditation_report as gmr
 from stevedore.extension import ExtensionManager
 
 from designate import hookpoints
 from designate import utils
+from designate import version
 from designate.i18n import _
 
 eventlet.monkey_patch(os=False)
@@ -120,7 +122,7 @@ def main():
         print(_('Please re-run designate-manage as root.'))
         sys.exit(2)
 
-    utils.setup_gmr(log_dir=cfg.CONF.log_dir)
+    gmr.TextGuruMeditation.setup_autorun(version)
 
     hookpoints.log_hook_setup()
 
