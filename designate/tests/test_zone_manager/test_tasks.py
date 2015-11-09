@@ -77,7 +77,7 @@ class DeletedDomainPurgeTest(TaskTest):
         )
 
         pxy = self.central_service.storage.session.execute(query)
-        self.assertEqual(pxy.rowcount, 1)
+        self.assertEqual(1, pxy.rowcount)
         return domain
 
     def _create_deleted_zones(self):
@@ -104,4 +104,4 @@ class DeletedDomainPurgeTest(TaskTest):
 
         zones = self._fetch_all_domains()
         LOG.info("Number of zones: %d", len(zones))
-        self.assertEqual(len(zones), 7)
+        self.assertEqual(7, len(zones))

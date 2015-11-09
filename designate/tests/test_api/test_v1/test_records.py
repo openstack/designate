@@ -388,11 +388,11 @@ class ApiV1RecordsTest(ApiV1Test):
                              data=fixture)
 
         self.assertIn('id', response.json)
-        self.assertEqual(response.json['type'], fixture['type'])
-        self.assertEqual(response.json['name'], fixture['name'])
+        self.assertEqual(fixture['type'], response.json['type'])
+        self.assertEqual(fixture['name'], response.json['name'])
 
-        self.assertEqual(response.json['priority'], fixture['priority'])
-        self.assertEqual(response.json['data'], fixture['data'])
+        self.assertEqual(fixture['priority'], response.json['priority'])
+        self.assertEqual(fixture['data'], response.json['data'])
 
     def test_create_invalid_data_srv_record(self):
         recordset_fixture = self.get_recordset_fixture(
@@ -559,10 +559,10 @@ class ApiV1RecordsTest(ApiV1Test):
                             data=data)
 
         self.assertIn('id', response.json)
-        self.assertEqual(response.json['id'], record['id'])
-        self.assertEqual(response.json['data'], record['data'])
-        self.assertEqual(response.json['type'], self.recordset['type'])
-        self.assertEqual(response.json['ttl'], 100)
+        self.assertEqual(record['id'], response.json['id'])
+        self.assertEqual(record['data'], response.json['data'])
+        self.assertEqual(self.recordset['type'], response.json['type'])
+        self.assertEqual(100, response.json['ttl'])
 
     def test_update_record_junk(self):
         # Create a record

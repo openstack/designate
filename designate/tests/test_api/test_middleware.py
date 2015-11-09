@@ -84,7 +84,7 @@ class KeystoneContextMiddlewareTest(ApiTestCase):
         # Process the request
         response = app(request)
 
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(401, response.status_code)
 
     def test_process_unscoped_token(self):
         app = middleware.KeystoneContextMiddleware({})
@@ -101,7 +101,7 @@ class KeystoneContextMiddlewareTest(ApiTestCase):
         # Process the request
         response = app(request)
 
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(401, response.status_code)
 
 
 class NoAuthContextMiddlewareTest(ApiTestCase):
@@ -149,7 +149,7 @@ class MaintenanceMiddlewareTest(ApiTestCase):
         response = app(request)
 
         # Ensure request was blocked
-        self.assertEqual(response.status_code, 503)
+        self.assertEqual(503, response.status_code)
 
     def test_process_request_enabled_reject_no_roles(self):
         self.config(maintenance_mode=True, maintenance_mode_role='admin',
@@ -164,7 +164,7 @@ class MaintenanceMiddlewareTest(ApiTestCase):
         response = app(request)
 
         # Ensure request was blocked
-        self.assertEqual(response.status_code, 503)
+        self.assertEqual(503, response.status_code)
 
     def test_process_request_enabled_reject_no_context(self):
         self.config(maintenance_mode=True, maintenance_mode_role='admin',
@@ -177,7 +177,7 @@ class MaintenanceMiddlewareTest(ApiTestCase):
         response = app(request)
 
         # Ensure request was blocked
-        self.assertEqual(response.status_code, 503)
+        self.assertEqual(503, response.status_code)
 
     def test_process_request_enabled_bypass(self):
         self.config(maintenance_mode=True, maintenance_mode_role='admin',
@@ -192,7 +192,7 @@ class MaintenanceMiddlewareTest(ApiTestCase):
         response = app(request)
 
         # Ensure request was not blocked
-        self.assertEqual(response, 'FakeResponse')
+        self.assertEqual('FakeResponse', response)
 
 
 class NormalizeURIMiddlewareTest(ApiTestCase):
@@ -206,7 +206,7 @@ class NormalizeURIMiddlewareTest(ApiTestCase):
         app(request)
 
         # Ensure request's PATH_INFO had the trailing slash removed.
-        self.assertEqual(request.environ['PATH_INFO'], 'resource')
+        self.assertEqual('resource', request.environ['PATH_INFO'])
 
     def test_strip_trailing_slases_multiple(self):
         request = FakeRequest()
@@ -218,7 +218,7 @@ class NormalizeURIMiddlewareTest(ApiTestCase):
         app(request)
 
         # Ensure request's PATH_INFO had the trailing slash removed.
-        self.assertEqual(request.environ['PATH_INFO'], 'resource')
+        self.assertEqual('resource', request.environ['PATH_INFO'])
 
 
 class FaultMiddlewareTest(ApiTestCase):
@@ -240,7 +240,7 @@ class FaultMiddlewareTest(ApiTestCase):
         # Process the request
         app(request)
 
-        self.assertEqual(mock_notifier.call_count, 1)
+        self.assertEqual(1, mock_notifier.call_count)
         mock_notifier.call_args(
             ctxt,
             'dns.api.fault',

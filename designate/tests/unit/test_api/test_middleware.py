@@ -158,21 +158,21 @@ class SSLMiddlewareTest(oslotest.base.BaseTestCase):
         self.request.environ['HTTP_X_FORWARDED_PROTO'] = 'poo'
         self.app(self.request)
 
-        self.assertEqual(self.request.environ['wsgi.url_scheme'], 'poo')
+        self.assertEqual('poo', self.request.environ['wsgi.url_scheme'])
 
     def test_http_header(self):
         self.request.environ['wsgi.url_scheme'] = ''
         self.request.environ['HTTP_X_FORWARDED_PROTO'] = 'http'
         self.app(self.request)
 
-        self.assertEqual(self.request.environ['wsgi.url_scheme'], 'http')
+        self.assertEqual('http', self.request.environ['wsgi.url_scheme'])
 
     def test_https_header(self):
         self.request.environ['wsgi.url_scheme'] = 'http'
         self.request.environ['HTTP_X_FORWARDED_PROTO'] = 'https'
         self.app(self.request)
 
-        self.assertEqual(self.request.environ['wsgi.url_scheme'], 'https')
+        self.assertEqual('https', self.request.environ['wsgi.url_scheme'])
 
     def test_override_proto(self):
         self.request.environ['wsgi.url_scheme'] = 'http'
@@ -181,4 +181,4 @@ class SSLMiddlewareTest(oslotest.base.BaseTestCase):
 
         self.app(self.request)
 
-        self.assertEqual(self.request.environ['wsgi.url_scheme'], 'poo')
+        self.assertEqual('poo', self.request.environ['wsgi.url_scheme'])

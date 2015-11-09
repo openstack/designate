@@ -33,7 +33,7 @@ class StorageQuotaTest(tests.TestCase):
 
         quota = self.quota.set_quota(context, 'tenant_id', 'domains', 1500)
 
-        self.assertEqual(quota, {'domains': 1500})
+        self.assertEqual({'domains': 1500}, quota)
 
         # Drop into the storage layer directly to ensure the quota was created
         # successfully
@@ -44,9 +44,9 @@ class StorageQuotaTest(tests.TestCase):
 
         quota = self.quota.storage.find_quota(context, criterion)
 
-        self.assertEqual(quota['tenant_id'], 'tenant_id')
-        self.assertEqual(quota['resource'], 'domains')
-        self.assertEqual(quota['hard_limit'], 1500)
+        self.assertEqual('tenant_id', quota['tenant_id'])
+        self.assertEqual('domains', quota['resource'])
+        self.assertEqual(1500, quota['hard_limit'])
 
     def test_set_quota_update(self):
         context = self.get_admin_context()
@@ -67,9 +67,9 @@ class StorageQuotaTest(tests.TestCase):
 
         quota = self.quota.storage.find_quota(context, criterion)
 
-        self.assertEqual(quota['tenant_id'], 'tenant_id')
-        self.assertEqual(quota['resource'], 'domains')
-        self.assertEqual(quota['hard_limit'], 1234)
+        self.assertEqual('tenant_id', quota['tenant_id'])
+        self.assertEqual('domains', quota['resource'])
+        self.assertEqual(1234, quota['hard_limit'])
 
     def test_reset_quotas(self):
         context = self.get_admin_context()

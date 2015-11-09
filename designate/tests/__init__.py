@@ -714,7 +714,7 @@ class TestCase(base.BaseTestCase):
             attempts += 1
 
         if not errorok:
-            self.assertEqual(zone_import.status, 'COMPLETE')
+            self.assertEqual('COMPLETE', zone_import.status)
 
     def _ensure_interface(self, interface, implementation):
         for name in interface.__abstractmethods__:
