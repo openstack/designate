@@ -52,9 +52,9 @@ cfg.CONF.register_group(cfg.OptGroup(
 ))
 
 proxy_opts = [
-    cfg.StrOpt('http_proxy', default=None,
+    cfg.StrOpt('http_proxy',
                help='Proxy HTTP requests via this proxy.'),
-    cfg.StrOpt('https_proxy', default=None,
+    cfg.StrOpt('https_proxy',
                help='Proxy HTTPS requests via this proxy'),
     cfg.ListOpt('no_proxy', default=[],
                 help='These addresses should not be proxied')

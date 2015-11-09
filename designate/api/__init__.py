@@ -21,7 +21,7 @@ cfg.CONF.register_group(cfg.OptGroup(
 ))
 
 cfg.CONF.register_opts([
-    cfg.IntOpt('workers', default=None,
+    cfg.IntOpt('workers',
                help='Number of api worker processes to spawn'),
     cfg.IntOpt('threads', default=1000,
                help='Number of api greenthreads to spawn'),

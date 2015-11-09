@@ -22,11 +22,11 @@ CONF.register_group(cfg.OptGroup(
 ))
 
 OPTS = [
-    cfg.IntOpt('workers', default=None,
+    cfg.IntOpt('workers',
                help='Number of Zone Manager worker processes to spawn'),
     cfg.IntOpt('threads', default=1000,
                help='Number of Zone Manager greenthreads to spawn'),
-    cfg.ListOpt('enabled_tasks', default=None,
+    cfg.ListOpt('enabled_tasks',
                 help='Enabled tasks to run'),
     cfg.StrOpt('storage-driver', default='sqlalchemy',
                help='The storage driver to use'),

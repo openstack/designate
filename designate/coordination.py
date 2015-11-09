@@ -32,7 +32,6 @@ LOG = log.getLogger(__name__)
 
 OPTS = [
     cfg.StrOpt('backend_url',
-               default=None,
                help='The backend URL to use for distributed coordination. If '
                     'unset services that need coordination will function as '
                     'a standalone service.'),

@@ -22,7 +22,7 @@ CONF.register_group(cfg.OptGroup(
 ))
 
 OPTS = [
-    cfg.IntOpt('workers', default=None,
+    cfg.IntOpt('workers',
                help='Number of Pool Manager worker processes to spawn'),
     cfg.IntOpt('threads', default=1000,
                help='Number of Pool Manager greenthreads to spawn'),
