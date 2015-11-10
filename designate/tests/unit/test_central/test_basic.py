@@ -1905,3 +1905,19 @@ class CentralZoneExportTests(CentralBasic):
         pcheck, ctx, target = \
             designate.central.service.policy.check.call_args[0]
         self.assertEqual('delete_zone_export', pcheck)
+        self.assertEqual(pcheck, 'delete_zone_export')
+
+
+class CentralStatusTests(CentralBasic):
+
+    def test__update_domain_or_record_status_no_domain(self):
+        domain = RwObject(
+                    action='UPDATE',
+                    status='SUCCESS',
+                    serial=0,
+                )
+        dom, deleted = self.service.\
+            _update_domain_or_record_status(domain, 'NO_DOMAIN', 0)
+
+        self.assertEqual(dom.action, 'CREATE')
+        self.assertEqual(dom.status, 'ERROR')
