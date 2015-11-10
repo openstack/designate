@@ -47,7 +47,7 @@ def reports_counts():
     context = flask.request.environ.get('context')
 
     tenants = central_api.count_tenants(context)
-    domains = central_api.count_domains(context)
+    domains = central_api.count_zones(context)
     records = central_api.count_records(context)
 
     return flask.jsonify(tenants=tenants, domains=domains, records=records)
@@ -66,7 +66,7 @@ def reports_counts_tenants():
 def reports_counts_domains():
     context = flask.request.environ.get('context')
 
-    count = central_api.count_domains(context)
+    count = central_api.count_zones(context)
 
     return flask.jsonify(domains=count)
 

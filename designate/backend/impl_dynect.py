@@ -344,11 +344,11 @@ class DynECTBackend(base.Backend):
             timeout=CONF[CFG_GROUP].timeout,
             timings=CONF[CFG_GROUP].timings)
 
-    def create_domain(self, context, domain):
-        LOG.info(_LI('Creating domain %(d_id)s / %(d_name)s') %
-                 {'d_id': domain['id'], 'd_name': domain['name']})
+    def create_zone(self, context, zone):
+        LOG.info(_LI('Creating zone %(d_id)s / %(d_name)s') %
+                 {'d_id': zone['id'], 'd_name': zone['name']})
 
-        url = '/Secondary/%s' % domain['name'].rstrip('.')
+        url = '/Secondary/%s' % zone['name'].rstrip('.')
         data = {
             'masters': [m.host for m in self.masters]
         }
@@ -366,9 +366,9 @@ class DynECTBackend(base.Backend):
         except DynClientError as e:
             for emsg in e.msgs:
                 if emsg['ERR_CD'] == 'TARGET_EXISTS':
-                    msg = _LI("Domain already exists, updating existing "
-                              "domain instead %s")
-                    LOG.info(msg % domain['name'])
+                    msg = _LI("Zone already exists, updating existing "
+                              "zone instead %s")
+                    LOG.info(msg % zone['name'])
                     client.put(url, data=data)
                     break
             else:
@@ -377,10 +377,10 @@ class DynECTBackend(base.Backend):
         client.put(url, data={'activate': True})
         client.logout()
 
-    def delete_domain(self, context, domain):
-        LOG.info(_LI('Deleting domain %(d_id)s / %(d_name)s') %
-                 {'d_id': domain['id'], 'd_name': domain['name']})
-        url = '/Zone/%s' % domain['name'].rstrip('.')
+    def delete_zone(self, context, zone):
+        LOG.info(_LI('Deleting zone %(d_id)s / %(d_name)s') %
+                 {'d_id': zone['id'], 'd_name': zone['name']})
+        url = '/Zone/%s' % zone['name'].rstrip('.')
         client = self.get_client()
         try:
             client.delete(url)
@@ -388,26 +388,8 @@ class DynECTBackend(base.Backend):
             if e.http_status == 404:
                 LOG.warn(_LW("Attempt to delete %(d_id)s / %(d_name)s "
                              "caused 404, ignoring.") %
-                         {'d_id': domain['id'], 'd_name': domain['name']})
+                         {'d_id': zone['id'], 'd_name': zone['name']})
                 pass
             else:
                 raise
         client.logout()
-
-    def create_recordset(self, context, domain, recordset):
-        LOG.debug('Discarding create_recordset call, not-applicable')
-
-    def update_recordset(self, context, domain, recordset):
-        LOG.debug('Discarding update_recordset call, not-applicable')
-
-    def delete_recordset(self, context, domain, recordset):
-        LOG.debug('Discarding delete_recordset call, not-applicable')
-
-    def create_record(self, context, domain, recordset, record):
-        LOG.debug('Discarding create_record call, not-applicable')
-
-    def update_record(self, context, domain, recordset, record):
-        LOG.debug('Discarding update_record call, not-applicable')
-
-    def delete_record(self, context, domain, recordset, record):
-        LOG.debug('Discarding delete_record call, not-applicable')

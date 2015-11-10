@@ -46,7 +46,7 @@ class ZoneImport(base.DictObjectMixin, base.PersistentObjectMixin,
             },
             'read_only': True
         },
-        'domain_id': {
+        'zone_id': {
             'schema': {
                 "type": "string",
                 "format": "uuid"

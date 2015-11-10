@@ -29,8 +29,8 @@ class ApiV1RecordsTest(ApiV1Test):
     def setUp(self):
         super(ApiV1RecordsTest, self).setUp()
 
-        self.domain = self.create_domain()
-        self.recordset = self.create_recordset(self.domain, 'A')
+        self.zone = self.create_zone()
+        self.recordset = self.create_recordset(self.zone, 'A')
 
     def test_get_record_schema(self):
         response = self.get('schemas/record')
@@ -62,7 +62,7 @@ class ApiV1RecordsTest(ApiV1Test):
 
     def test_create_record(self):
         recordset_fixture = self.get_recordset_fixture(
-            self.domain['name'])
+            self.zone['name'])
 
         fixture = self.get_record_fixture(recordset_fixture['type'])
         fixture.update({
@@ -71,7 +71,7 @@ class ApiV1RecordsTest(ApiV1Test):
         })
 
         # Create a record
-        response = self.post('domains/%s/records' % self.domain['id'],
+        response = self.post('domains/%s/records' % self.zone['id'],
                              data=fixture)
 
         self.assertIn('id', response.json)
@@ -86,7 +86,7 @@ class ApiV1RecordsTest(ApiV1Test):
         })
 
         # Create a record
-        response = self.post('domains/%s/records' % self.domain['id'],
+        response = self.post('domains/%s/records' % self.zone['id'],
                              data=fixture)
 
         self.assertIn('id', response.json)
@@ -107,38 +107,38 @@ class ApiV1RecordsTest(ApiV1Test):
         })
 
         # Create 2 records
-        record_1 = self.post('domains/%s/records' % self.domain['id'],
+        record_1 = self.post('domains/%s/records' % self.zone['id'],
                              data=fixture_1)
-        record_2 = self.post('domains/%s/records' % self.domain['id'],
+        record_2 = self.post('domains/%s/records' % self.zone['id'],
                              data=fixture_2)
 
         # Delete record 1, this should not have any side effects
-        self.delete('domains/%s/records/%s' % (self.domain['id'],
+        self.delete('domains/%s/records/%s' % (self.zone['id'],
                                                record_1.json['id']))
 
         # Simulate the record 1 having been deleted on the backend
-        domain_serial = self.central_service.get_domain(
-            self.admin_context, self.domain['id']).serial
+        zone_serial = self.central_service.get_zone(
+            self.admin_context, self.zone['id']).serial
         self.central_service.update_status(
-            self.admin_context, self.domain['id'], "SUCCESS", domain_serial)
+            self.admin_context, self.zone['id'], "SUCCESS", zone_serial)
 
         # Get the record 2 to ensure recordset did not get deleted
         rec_2_get_response = self.get('domains/%s/records/%s' %
-                                      (self.domain['id'], record_2.json['id']))
+                                      (self.zone['id'], record_2.json['id']))
 
         self.assertIn('id', rec_2_get_response.json)
         self.assertIn('name', rec_2_get_response.json)
         self.assertEqual(rec_2_get_response.json['name'], fixture_1['name'])
 
         # Delete record 2, this should delete the null recordset too
-        self.delete('domains/%s/records/%s' % (self.domain['id'],
+        self.delete('domains/%s/records/%s' % (self.zone['id'],
                                                record_2.json['id']))
 
         # Simulate the record 2 having been deleted on the backend
-        domain_serial = self.central_service.get_domain(
-            self.admin_context, self.domain['id']).serial
+        zone_serial = self.central_service.get_zone(
+            self.admin_context, self.zone['id']).serial
         self.central_service.update_status(
-            self.admin_context, self.domain['id'], "SUCCESS", domain_serial)
+            self.admin_context, self.zone['id'], "SUCCESS", zone_serial)
 
         # Re-create as a different type, but use the same name
         fixture = self.get_record_fixture('CNAME')
@@ -147,7 +147,7 @@ class ApiV1RecordsTest(ApiV1Test):
             'type': 'CNAME'
         })
 
-        response = self.post('domains/%s/records' % self.domain['id'],
+        response = self.post('domains/%s/records' % self.zone['id'],
                              data=fixture)
 
         self.assertIn('id', response.json)
@@ -165,27 +165,27 @@ class ApiV1RecordsTest(ApiV1Test):
         fixture['junk'] = 'Junk Field'
 
         # Create a record, Ensuring it fails with a 400
-        self.post('domains/%s/records' % self.domain['id'], data=fixture,
+        self.post('domains/%s/records' % self.zone['id'], data=fixture,
                   status_code=400)
 
     def test_create_wildcard_record_after_named(self):
         # We want to test that a wildcard record rs doesnt use the previous one
         # https://bugs.launchpad.net/designate/+bug/1391426
 
-        name = "foo.%s" % self.domain.name
+        name = "foo.%s" % self.zone.name
         fixture = {
             "name": name,
             "type": "A",
             "data": "10.0.0.1"
         }
 
-        self.post('domains/%s/records' % self.domain['id'],
+        self.post('domains/%s/records' % self.zone['id'],
                   data=fixture)
 
-        wildcard_name = '*.%s' % self.domain["name"]
+        wildcard_name = '*.%s' % self.zone["name"]
 
         fixture['name'] = wildcard_name
-        self.post('domains/%s/records' % self.domain['id'],
+        self.post('domains/%s/records' % self.zone['id'],
                   data=fixture)
 
         named_rs = self.central_service.find_recordset(
@@ -208,7 +208,7 @@ class ApiV1RecordsTest(ApiV1Test):
                                  ",∑f(i)=∏g(i),∀x∈ℝ:⌈x⌉"
 
         # Create a record, Ensuring it succeeds
-        self.post('domains/%s/records' % self.domain['id'], data=fixture)
+        self.post('domains/%s/records' % self.zone['id'], data=fixture)
 
     def test_create_record_description_too_long(self):
         fixture = self.get_record_fixture(self.recordset['type'])
@@ -221,32 +221,32 @@ class ApiV1RecordsTest(ApiV1Test):
         fixture['description'] = "x" * 161
 
         # Create a record, Ensuring it Fails with a 400
-        self.post('domains/%s/records' % self.domain['id'], data=fixture,
+        self.post('domains/%s/records' % self.zone['id'], data=fixture,
                   status_code=400)
 
     def test_create_record_name_too_long(self):
         fixture = self.get_record_fixture(self.recordset['type'])
         fixture.update({'type': self.recordset['type']})
-        fixture['name'] = 'w' * 255 + ".%s" % self.domain.name
-        self.post('domains/%s/records' % self.domain['id'], data=fixture,
+        fixture['name'] = 'w' * 255 + ".%s" % self.zone.name
+        self.post('domains/%s/records' % self.zone['id'], data=fixture,
                   status_code=400)
 
     def test_create_record_name_is_missing(self):
         fixture = self.get_record_fixture(self.recordset['type'])
         fixture.update({'type': self.recordset['type']})
-        self.post('domains/%s/records' % self.domain['id'], data=fixture,
+        self.post('domains/%s/records' % self.zone['id'], data=fixture,
                   status_code=400)
 
     def test_create_record_type_is_missing(self):
         fixture = self.get_record_fixture(self.recordset['type'])
-        fixture['name'] = "www.%s" % self.domain.name
-        self.post('domains/%s/records' % self.domain['id'], data=fixture,
+        fixture['name'] = "www.%s" % self.zone.name
+        self.post('domains/%s/records' % self.zone['id'], data=fixture,
                   status_code=400)
 
     def test_create_record_invalid_type(self):
         fixture = self.get_record_fixture(self.recordset['type'])
         fixture.update({'type': "ABC", 'name': self.recordset['name']})
-        self.post('domains/%s/records' % self.domain['id'], data=fixture,
+        self.post('domains/%s/records' % self.zone['id'], data=fixture,
                   status_code=400)
 
     def test_create_record_data_is_missing(self):
@@ -254,7 +254,7 @@ class ApiV1RecordsTest(ApiV1Test):
         fixture.update({'type': self.recordset['type'],
                         'name': self.recordset['name']})
         del fixture['data']
-        self.post('domains/%s/records' % self.domain['id'], data=fixture,
+        self.post('domains/%s/records' % self.zone['id'], data=fixture,
                   status_code=400)
 
     def test_create_record_ttl_greater_than_max(self):
@@ -265,7 +265,7 @@ class ApiV1RecordsTest(ApiV1Test):
         })
 
         fixture['ttl'] = 2174483648
-        self.post('domains/%s/records' % self.domain['id'], data=fixture,
+        self.post('domains/%s/records' % self.zone['id'], data=fixture,
                   status_code=400)
 
     def test_create_record_negative_ttl(self):
@@ -279,7 +279,7 @@ class ApiV1RecordsTest(ApiV1Test):
         fixture['ttl'] = -1
 
         # Create a record, Ensuring it Fails with a 400
-        self.post('domains/%s/records' % self.domain['id'], data=fixture,
+        self.post('domains/%s/records' % self.zone['id'], data=fixture,
                   status_code=400)
 
     def test_create_record_zero_ttl(self):
@@ -293,7 +293,7 @@ class ApiV1RecordsTest(ApiV1Test):
         fixture['ttl'] = 0
 
         # Create a record, Ensuring it Fails with a 400
-        self.post('domains/%s/records' % self.domain['id'], data=fixture,
+        self.post('domains/%s/records' % self.zone['id'], data=fixture,
                   status_code=400)
 
     def test_create_record_invalid_ttl(self):
@@ -307,7 +307,7 @@ class ApiV1RecordsTest(ApiV1Test):
         fixture['ttl'] = "$?!."
 
         # Create a record, Ensuring it Fails with a 400
-        self.post('domains/%s/records' % self.domain['id'], data=fixture,
+        self.post('domains/%s/records' % self.zone['id'], data=fixture,
                   status_code=400)
 
     def test_create_record_invalid_priority(self):
@@ -317,7 +317,7 @@ class ApiV1RecordsTest(ApiV1Test):
             'type': self.recordset['type'],
         })
         fixture['priority'] = "$?!."
-        self.post('domains/%s/records' % self.domain['id'], data=fixture,
+        self.post('domains/%s/records' % self.zone['id'], data=fixture,
                   status_code=400)
 
     def test_create_record_negative_priority(self):
@@ -327,7 +327,7 @@ class ApiV1RecordsTest(ApiV1Test):
             'type': self.recordset['type'],
         })
         fixture['priority'] = -1
-        self.post('domains/%s/records' % self.domain['id'], data=fixture,
+        self.post('domains/%s/records' % self.zone['id'], data=fixture,
                   status_code=400)
 
     def test_create_record_priority_greater_than_max(self):
@@ -337,7 +337,7 @@ class ApiV1RecordsTest(ApiV1Test):
             'type': self.recordset['type'],
         })
         fixture['priority'] = 65536
-        self.post('domains/%s/records' % self.domain['id'], data=fixture,
+        self.post('domains/%s/records' % self.zone['id'], data=fixture,
                   status_code=400)
 
     @patch.object(central_service.Service, 'create_record',
@@ -350,7 +350,7 @@ class ApiV1RecordsTest(ApiV1Test):
         })
 
         # Create a record
-        self.post('domains/%s/records' % self.domain['id'], data=fixture,
+        self.post('domains/%s/records' % self.zone['id'], data=fixture,
                   status_code=504)
 
     def test_create_wildcard_record(self):
@@ -362,7 +362,7 @@ class ApiV1RecordsTest(ApiV1Test):
         })
 
         # Create a record
-        response = self.post('domains/%s/records' % self.domain['id'],
+        response = self.post('domains/%s/records' % self.zone['id'],
                              data=fixture)
 
         self.assertIn('id', response.json)
@@ -371,7 +371,7 @@ class ApiV1RecordsTest(ApiV1Test):
 
     def test_create_srv_record(self):
         recordset_fixture = self.get_recordset_fixture(
-            self.domain['name'], 'SRV')
+            self.zone['name'], 'SRV')
 
         fixture = self.get_record_fixture(recordset_fixture['type'])
         priority, _, data = fixture['data'].partition(" ")
@@ -384,7 +384,7 @@ class ApiV1RecordsTest(ApiV1Test):
         })
 
         # Create a record
-        response = self.post('domains/%s/records' % self.domain['id'],
+        response = self.post('domains/%s/records' % self.zone['id'],
                              data=fixture)
 
         self.assertIn('id', response.json)
@@ -396,7 +396,7 @@ class ApiV1RecordsTest(ApiV1Test):
 
     def test_create_invalid_data_srv_record(self):
         recordset_fixture = self.get_recordset_fixture(
-            self.domain['name'], 'SRV')
+            self.zone['name'], 'SRV')
 
         fixture = self.get_record_fixture(recordset_fixture['type'])
         fixture.update({
@@ -405,23 +405,23 @@ class ApiV1RecordsTest(ApiV1Test):
         })
 
         invalid_datas = [
-            'I 5060 sip.%s' % self.domain['name'],
-            '5060 sip.%s' % self.domain['name'],
-            '5060 I sip.%s' % self.domain['name'],
+            'I 5060 sip.%s' % self.zone['name'],
+            '5060 sip.%s' % self.zone['name'],
+            '5060 I sip.%s' % self.zone['name'],
             '0 5060 sip',
             'sip',
-            'sip.%s' % self.domain['name'],
+            'sip.%s' % self.zone['name'],
         ]
 
         for invalid_data in invalid_datas:
             fixture['data'] = invalid_data
             # Attempt to create the record
-            self.post('domains/%s/records' % self.domain['id'], data=fixture,
+            self.post('domains/%s/records' % self.zone['id'], data=fixture,
                       status_code=400)
 
     def test_create_invalid_name_srv_record(self):
         recordset_fixture = self.get_recordset_fixture(
-            self.domain['name'], 'SRV')
+            self.zone['name'], 'SRV')
 
         fixture = self.get_record_fixture(recordset_fixture['type'])
         fixture.update({
@@ -430,17 +430,17 @@ class ApiV1RecordsTest(ApiV1Test):
         })
 
         invalid_names = [
-            '%s' % self.domain['name'],
-            '_udp.%s' % self.domain['name'],
-            'sip._udp.%s' % self.domain['name'],
-            '_sip.udp.%s' % self.domain['name'],
+            '%s' % self.zone['name'],
+            '_udp.%s' % self.zone['name'],
+            'sip._udp.%s' % self.zone['name'],
+            '_sip.udp.%s' % self.zone['name'],
         ]
 
         for invalid_name in invalid_names:
             fixture['name'] = invalid_name
 
             # Attempt to create the record
-            self.post('domains/%s/records' % self.domain['id'], data=fixture,
+            self.post('domains/%s/records' % self.zone['id'], data=fixture,
                       status_code=400)
 
     def test_create_invalid_name(self):
@@ -464,65 +464,65 @@ class ApiV1RecordsTest(ApiV1Test):
             fixture['name'] = invalid_name
 
             # Create a record
-            response = self.post('domains/%s/records' % self.domain['id'],
+            response = self.post('domains/%s/records' % self.zone['id'],
                                  data=fixture, status_code=400)
 
             self.assertNotIn('id', response.json)
 
     def test_get_records(self):
-        response = self.get('domains/%s/records' % self.domain['id'])
+        response = self.get('domains/%s/records' % self.zone['id'])
 
         # Verify that the SOA & NS records are already created
         self.assertIn('records', response.json)
         self.assertEqual(2, len(response.json['records']))
 
         # Create a record
-        self.create_record(self.domain, self.recordset)
+        self.create_record(self.zone, self.recordset)
 
-        response = self.get('domains/%s/records' % self.domain['id'])
+        response = self.get('domains/%s/records' % self.zone['id'])
 
         # Verify that one more record has been added
         self.assertIn('records', response.json)
         self.assertEqual(3, len(response.json['records']))
 
         # Create a second record
-        self.create_record(self.domain, self.recordset, fixture=1)
+        self.create_record(self.zone, self.recordset, fixture=1)
 
-        response = self.get('domains/%s/records' % self.domain['id'])
+        response = self.get('domains/%s/records' % self.zone['id'])
 
         # Verfiy that all 4 records are there
         self.assertIn('records', response.json)
         self.assertEqual(4, len(response.json['records']))
 
-    @patch.object(central_service.Service, 'get_domain',
+    @patch.object(central_service.Service, 'get_zone',
                   side_effect=messaging.MessagingTimeout())
     def test_get_records_timeout(self, _):
-        self.get('domains/%s/records' % self.domain['id'],
+        self.get('domains/%s/records' % self.zone['id'],
                  status_code=504)
 
-    def test_get_records_missing_domain(self):
+    def test_get_records_missing_zone(self):
         self.get('domains/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980/records',
                  status_code=404)
 
-    def test_get_records_invalid_domain_id(self):
+    def test_get_records_invalid_zone_id(self):
         self.get('domains/2fdadfb1cf964259ac6bbb7b6d2ff980/records',
                  status_code=404)
 
     def test_get_record_missing(self):
         self.get('domains/%s/records/2fdadfb1-cf96-4259-ac6b-'
-                 'bb7b6d2ff980' % self.domain['id'],
+                 'bb7b6d2ff980' % self.zone['id'],
                  status_code=404)
 
     def test_get_record_with_invalid_id(self):
         self.get('domains/%s/records/2fdadfb1-cf96-4259-ac6b-'
-                 'bb7b6d2ff980GH' % self.domain['id'],
+                 'bb7b6d2ff980GH' % self.zone['id'],
                  status_code=404)
 
     def test_get_record(self):
         # Create a record
-        record = self.create_record(self.domain, self.recordset)
+        record = self.create_record(self.zone, self.recordset)
 
-        response = self.get('domains/%s/records/%s' % (self.domain['id'],
+        response = self.get('domains/%s/records/%s' % (self.zone['id'],
                                                        record['id']))
 
         self.assertIn('id', response.json)
@@ -532,14 +532,14 @@ class ApiV1RecordsTest(ApiV1Test):
 
     def test_update_record(self):
         # Create a record
-        record = self.create_record(self.domain, self.recordset)
+        record = self.create_record(self.zone, self.recordset)
 
         # Fetch another fixture to use in the update
         fixture = self.get_record_fixture(self.recordset['type'], fixture=1)
 
         # Update the record
         data = {'data': fixture['data']}
-        response = self.put('domains/%s/records/%s' % (self.domain['id'],
+        response = self.put('domains/%s/records/%s' % (self.zone['id'],
                                                        record['id']),
                             data=data)
 
@@ -550,11 +550,11 @@ class ApiV1RecordsTest(ApiV1Test):
 
     def test_update_record_ttl(self):
         # Create a record
-        record = self.create_record(self.domain, self.recordset)
+        record = self.create_record(self.zone, self.recordset)
 
         # Update the record
         data = {'ttl': 100}
-        response = self.put('domains/%s/records/%s' % (self.domain['id'],
+        response = self.put('domains/%s/records/%s' % (self.zone['id'],
                                                        record['id']),
                             data=data)
 
@@ -566,113 +566,113 @@ class ApiV1RecordsTest(ApiV1Test):
 
     def test_update_record_junk(self):
         # Create a record
-        record = self.create_record(self.domain, self.recordset)
+        record = self.create_record(self.zone, self.recordset)
 
         data = {'ttl': 100, 'junk': 'Junk Field'}
 
-        self.put('domains/%s/records/%s' % (self.domain['id'], record['id']),
+        self.put('domains/%s/records/%s' % (self.zone['id'], record['id']),
                  data=data, status_code=400)
 
     def test_update_record_negative_ttl(self):
         # Create a record
-        record = self.create_record(self.domain, self.recordset)
+        record = self.create_record(self.zone, self.recordset)
 
         data = {'ttl': -1}
 
-        self.put('domains/%s/records/%s' % (self.domain['id'], record['id']),
+        self.put('domains/%s/records/%s' % (self.zone['id'], record['id']),
                  data=data, status_code=400)
 
     def test_update_record_ttl_greater_than_max(self):
-        record = self.create_record(self.domain, self.recordset)
+        record = self.create_record(self.zone, self.recordset)
         data = {'ttl': 2174483648}
-        self.put('domains/%s/records/%s' % (self.domain['id'], record['id']),
+        self.put('domains/%s/records/%s' % (self.zone['id'], record['id']),
                  data=data, status_code=400)
 
     def test_update_record_zero_ttl(self):
         # Create a record
-        record = self.create_record(self.domain, self.recordset)
+        record = self.create_record(self.zone, self.recordset)
 
         data = {'ttl': 0}
 
-        self.put('domains/%s/records/%s' % (self.domain['id'], record['id']),
+        self.put('domains/%s/records/%s' % (self.zone['id'], record['id']),
                  data=data, status_code=400)
 
     def test_update_record_invalid_ttl(self):
         # Create a record
-        record = self.create_record(self.domain, self.recordset)
+        record = self.create_record(self.zone, self.recordset)
 
         data = {'ttl': "$?>%"}
 
-        self.put('domains/%s/records/%s' % (self.domain['id'], record['id']),
+        self.put('domains/%s/records/%s' % (self.zone['id'], record['id']),
                  data=data, status_code=400)
 
     def test_update_record_description_too_long(self):
-        record = self.create_record(self.domain, self.recordset)
+        record = self.create_record(self.zone, self.recordset)
         data = {'description': 'x' * 165}
-        self.put('domains/%s/records/%s' % (self.domain['id'], record['id']),
+        self.put('domains/%s/records/%s' % (self.zone['id'], record['id']),
                  data=data, status_code=400)
 
     def test_update_record_negative_priority(self):
-        record = self.create_record(self.domain, self.recordset)
+        record = self.create_record(self.zone, self.recordset)
         data = {'priority': -1}
-        self.put('domains/%s/records/%s' % (self.domain['id'], record['id']),
+        self.put('domains/%s/records/%s' % (self.zone['id'], record['id']),
                  data=data, status_code=400)
 
     def test_update_record_invalid_priority(self):
-        record = self.create_record(self.domain, self.recordset)
+        record = self.create_record(self.zone, self.recordset)
         data = {'priority': "?!:>"}
-        self.put('domains/%s/records/%s' % (self.domain['id'], record['id']),
+        self.put('domains/%s/records/%s' % (self.zone['id'], record['id']),
                  data=data, status_code=400)
 
     def test_update_record_priority_greater_than_max(self):
-        record = self.create_record(self.domain, self.recordset)
+        record = self.create_record(self.zone, self.recordset)
         data = {'priority': 65536}
-        self.put('domains/%s/records/%s' % (self.domain['id'], record['id']),
+        self.put('domains/%s/records/%s' % (self.zone['id'], record['id']),
                  data=data, status_code=400)
 
     def test_update_record_name_too_long(self):
-        record = self.create_record(self.domain, self.recordset)
-        data = {'name': 'w' * 256 + ".%s" % self.domain.name}
-        self.put('domains/%s/records/%s' % (self.domain['id'], record['id']),
+        record = self.create_record(self.zone, self.recordset)
+        data = {'name': 'w' * 256 + ".%s" % self.zone.name}
+        self.put('domains/%s/records/%s' % (self.zone['id'], record['id']),
                  data=data, status_code=400)
 
     def test_update_record_invalid_type(self):
-        record = self.create_record(self.domain, self.recordset)
+        record = self.create_record(self.zone, self.recordset)
         data = {'type': 'ABC'}
-        self.put('domains/%s/records/%s' % (self.domain['id'], record['id']),
+        self.put('domains/%s/records/%s' % (self.zone['id'], record['id']),
                  data=data, status_code=400)
 
     def test_update_record_data_too_long(self):
-        record = self.create_record(self.domain, self.recordset)
+        record = self.create_record(self.zone, self.recordset)
         data = {'data': '1' * 255 + '.2.3.4'}
-        self.put('domains/%s/records/%s' % (self.domain['id'], record['id']),
+        self.put('domains/%s/records/%s' % (self.zone['id'], record['id']),
                  data=data, status_code=400)
 
-    def test_update_record_outside_domain_fail(self):
+    def test_update_record_outside_zone_fail(self):
         # Create a record
-        record = self.create_record(self.domain, self.recordset)
+        record = self.create_record(self.zone, self.recordset)
 
-        data = {'name': 'test.someotherdomain.com.'}
+        data = {'name': 'test.someotherzone.com.'}
 
-        self.put('domains/%s/records/%s' % (self.domain['id'], record['id']),
+        self.put('domains/%s/records/%s' % (self.zone['id'], record['id']),
                  data=data, status_code=400)
 
-    @patch.object(central_service.Service, 'find_domain',
+    @patch.object(central_service.Service, 'find_zone',
                   side_effect=messaging.MessagingTimeout())
     def test_update_record_timeout(self, _):
         # Create a record
-        record = self.create_record(self.domain, self.recordset)
+        record = self.create_record(self.zone, self.recordset)
 
         data = {'name': 'test.example.org.'}
 
-        self.put('domains/%s/records/%s' % (self.domain['id'], record['id']),
+        self.put('domains/%s/records/%s' % (self.zone['id'], record['id']),
                  data=data, status_code=504)
 
     def test_update_record_missing(self):
         data = {'name': 'test.example.org.'}
 
         self.put('domains/%s/records/2fdadfb1-cf96-4259-ac6b-'
-                 'bb7b6d2ff980' % self.domain['id'],
+                 'bb7b6d2ff980' % self.zone['id'],
                  data=data,
                  status_code=404)
 
@@ -680,11 +680,11 @@ class ApiV1RecordsTest(ApiV1Test):
         data = {'name': 'test.example.org.'}
 
         self.put('domains/%s/records/2fdadfb1cf964259ac6bbb7b6d2ff980' %
-                 self.domain['id'],
+                 self.zone['id'],
                  data=data,
                  status_code=404)
 
-    def test_update_record_missing_domain(self):
+    def test_update_record_missing_zone(self):
         data = {'name': 'test.example.org.'}
 
         self.put('domains/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980/records/'
@@ -692,7 +692,7 @@ class ApiV1RecordsTest(ApiV1Test):
                  data=data,
                  status_code=404)
 
-    def test_update_record_invalid_domain_id(self):
+    def test_update_record_invalid_zone_id(self):
         data = {'name': 'test.example.org.'}
 
         self.put('domains/2fdadfb1cf964259ac6bbb7b6d2ff980/records/'
@@ -702,103 +702,103 @@ class ApiV1RecordsTest(ApiV1Test):
 
     def test_delete_record(self):
         # Create a record
-        record = self.create_record(self.domain, self.recordset)
+        record = self.create_record(self.zone, self.recordset)
 
-        self.delete('domains/%s/records/%s' % (self.domain['id'],
+        self.delete('domains/%s/records/%s' % (self.zone['id'],
                                                record['id']))
 
         # Simulate the record having been deleted on the backend
-        domain_serial = self.central_service.get_domain(
-            self.admin_context, self.domain['id']).serial
+        zone_serial = self.central_service.get_zone(
+            self.admin_context, self.zone['id']).serial
         self.central_service.update_status(
-            self.admin_context, self.domain['id'], "SUCCESS", domain_serial)
+            self.admin_context, self.zone['id'], "SUCCESS", zone_serial)
 
         # Ensure we can no longer fetch the record
-        self.get('domains/%s/records/%s' % (self.domain['id'],
+        self.get('domains/%s/records/%s' % (self.zone['id'],
                                             record['id']),
                  status_code=404)
 
-    @patch.object(central_service.Service, 'find_domain',
+    @patch.object(central_service.Service, 'find_zone',
                   side_effect=messaging.MessagingTimeout())
     def test_delete_record_timeout(self, _):
         # Create a record
-        record = self.create_record(self.domain, self.recordset)
+        record = self.create_record(self.zone, self.recordset)
 
-        self.delete('domains/%s/records/%s' % (self.domain['id'],
+        self.delete('domains/%s/records/%s' % (self.zone['id'],
                                                record['id']),
                     status_code=504)
 
     def test_delete_record_missing(self):
         self.delete('domains/%s/records/2fdadfb1-cf96-4259-ac6b-'
-                    'bb7b6d2ff980' % self.domain['id'],
+                    'bb7b6d2ff980' % self.zone['id'],
                     status_code=404)
 
-    def test_delete_record_missing_domain(self):
+    def test_delete_record_missing_zone(self):
         self.delete('domains/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980/records/'
                     '2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980',
                     status_code=404)
 
-    def test_delete_record_invalid_domain_id(self):
+    def test_delete_record_invalid_zone_id(self):
         self.delete('domains/2fdadfb1cf964259ac6bbb7b6d2ff980/records/'
                     '2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980',
                     status_code=404)
 
     def test_delete_record_invalid_id(self):
         self.delete('domains/%s/records/2fdadfb1-cf96-4259-ac6b-'
-                    'bb7b6d2ff980GH' % self.domain['id'],
+                    'bb7b6d2ff980GH' % self.zone['id'],
                     status_code=404)
 
     def test_get_record_in_secondary(self):
-        fixture = self.get_domain_fixture('SECONDARY', 1)
+        fixture = self.get_zone_fixture('SECONDARY', 1)
         fixture['email'] = "root@example.com"
 
-        domain = self.create_domain(**fixture)
+        zone = self.create_zone(**fixture)
 
-        record = self.create_record(domain, self.recordset)
+        record = self.create_record(zone, self.recordset)
 
-        url = 'domains/%s/records/%s' % (domain.id, record.id)
+        url = 'zones/%s/records/%s' % (zone.id, record.id)
         self.get(url, status_code=404)
 
     def test_create_record_in_secondary(self):
-        fixture = self.get_domain_fixture('SECONDARY', 1)
+        fixture = self.get_zone_fixture('SECONDARY', 1)
         fixture['email'] = "root@example.com"
 
-        domain = self.create_domain(**fixture)
+        zone = self.create_zone(**fixture)
 
         record = {
-            "name": "foo.%s" % domain.name,
+            "name": "foo.%s" % zone.name,
             "type": "A",
             "data": "10.0.0.1"
         }
 
-        url = 'domains/%s/records' % domain.id
+        url = 'zones/%s/records' % zone.id
         self.post(url, record, status_code=404)
 
     def test_update_record_in_secondary(self):
-        fixture = self.get_domain_fixture('SECONDARY', 1)
+        fixture = self.get_zone_fixture('SECONDARY', 1)
         fixture['email'] = "root@example.com"
 
-        domain = self.create_domain(**fixture)
+        zone = self.create_zone(**fixture)
 
-        record = self.create_record(domain, self.recordset)
+        record = self.create_record(zone, self.recordset)
 
-        url = 'domains/%s/records/%s' % (domain.id, record.id)
+        url = 'zones/%s/records/%s' % (zone.id, record.id)
         self.put(url, {"data": "10.0.0.1"}, status_code=404)
 
     def test_delete_record_in_secondary(self):
-        fixture = self.get_domain_fixture('SECONDARY', 1)
+        fixture = self.get_zone_fixture('SECONDARY', 1)
         fixture['email'] = "root@example.com"
 
-        domain = self.create_domain(**fixture)
+        zone = self.create_zone(**fixture)
 
-        record = self.create_record(domain, self.recordset)
+        record = self.create_record(zone, self.recordset)
 
-        url = 'domains/%s/records/%s' % (domain.id, record.id)
+        url = 'zones/%s/records/%s' % (zone.id, record.id)
         self.delete(url, status_code=404)
 
-    def test_create_record_deleting_domain(self):
+    def test_create_record_deleting_zone(self):
         recordset_fixture = self.get_recordset_fixture(
-            self.domain['name'])
+            self.zone['name'])
 
         fixture = self.get_record_fixture(recordset_fixture['type'])
         fixture.update({
@@ -806,29 +806,29 @@ class ApiV1RecordsTest(ApiV1Test):
             'type': recordset_fixture['type'],
         })
 
-        self.delete('/domains/%s' % self.domain['id'])
-        self.post('domains/%s/records' % self.domain['id'],
+        self.delete('/domains/%s' % self.zone['id'])
+        self.post('domains/%s/records' % self.zone['id'],
                   data=fixture, status_code=400)
 
-    def test_update_record_deleting_domain(self):
+    def test_update_record_deleting_zone(self):
         # Create a record
-        record = self.create_record(self.domain, self.recordset)
+        record = self.create_record(self.zone, self.recordset)
 
         # Fetch another fixture to use in the update
         fixture = self.get_record_fixture(self.recordset['type'], fixture=1)
 
         # Update the record
         data = {'data': fixture['data']}
-        self.delete('/domains/%s' % self.domain['id'])
-        self.put('domains/%s/records/%s' % (self.domain['id'],
+        self.delete('/domains/%s' % self.zone['id'])
+        self.put('domains/%s/records/%s' % (self.zone['id'],
                                             record['id']),
                  data=data, status_code=400)
 
-    def test_delete_record_deleting_domain(self):
+    def test_delete_record_deleting_zone(self):
         # Create a record
-        record = self.create_record(self.domain, self.recordset)
+        record = self.create_record(self.zone, self.recordset)
 
-        self.delete('/domains/%s' % self.domain['id'])
-        self.delete('domains/%s/records/%s' % (self.domain['id'],
+        self.delete('/domains/%s' % self.zone['id'])
+        self.delete('domains/%s/records/%s' % (self.zone['id'],
                                                record['id']),
                     status_code=400)

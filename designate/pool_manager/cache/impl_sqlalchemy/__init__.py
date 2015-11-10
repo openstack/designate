@@ -50,7 +50,7 @@ class SQLAlchemyPoolManagerCache(sqlalchemy_base.SQLAlchemy,
         if not pool_manager_status.id:
             pool_manager_status = self.retrieve(
                 context, pool_manager_status.nameserver_id,
-                pool_manager_status.domain_id, pool_manager_status.action)
+                pool_manager_status.zone_id, pool_manager_status.action)
         self._delete(
             context, tables.pool_manager_statuses, pool_manager_status,
             exceptions.PoolManagerStatusNotFound)
@@ -66,10 +66,10 @@ class SQLAlchemyPoolManagerCache(sqlalchemy_base.SQLAlchemy,
                 tables.pool_manager_statuses, pool_manager_status,
                 exceptions.DuplicatePoolManagerStatus)
 
-    def retrieve(self, context, nameserver_id, domain_id, action):
+    def retrieve(self, context, nameserver_id, zone_id, action):
         criterion = {
             'nameserver_id': nameserver_id,
-            'domain_id': domain_id,
+            'zone_id': zone_id,
             'action': action
         }
         return self._find(

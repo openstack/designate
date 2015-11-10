@@ -19,8 +19,8 @@ from designate.objects.validation_error import ValidationError
 from designate.objects.validation_error import ValidationErrorList
 
 
-class Domain(base.DictObjectMixin, base.SoftDeleteObjectMixin,
-             base.PersistentObjectMixin, base.DesignateObject):
+class Zone(base.DictObjectMixin, base.SoftDeleteObjectMixin,
+           base.PersistentObjectMixin, base.DesignateObject):
     FIELDS = {
         'shard': {
             'schema': {
@@ -93,7 +93,7 @@ class Domain(base.DictObjectMixin, base.SoftDeleteObjectMixin,
             },
             'read_only': True
         },
-        'parent_domain_id': {
+        'parent_zone_id': {
             'schema': {
                 'type': ['string', 'null'],
                 'format': 'uuid'
@@ -141,11 +141,11 @@ class Domain(base.DictObjectMixin, base.SoftDeleteObjectMixin,
         },
         'attributes': {
             'relation': True,
-            'relation_cls': 'DomainAttributeList'
+            'relation_cls': 'ZoneAttributeList'
         },
         'masters': {
             'relation': True,
-            'relation_cls': 'DomainMasterList'
+            'relation_cls': 'ZoneMasterList'
         },
         'type': {
             'schema': {
@@ -169,7 +169,7 @@ class Domain(base.DictObjectMixin, base.SoftDeleteObjectMixin,
 
     def get_master_by_ip(self, host):
         """
-        Utility to get the master by it's ip for this domain.
+        Utility to get the master by it's ip for this zone.
         """
         for srv in self.masters:
             srv_host, _ = utils.split_host_port(srv.to_data())
@@ -224,7 +224,7 @@ class Domain(base.DictObjectMixin, base.SoftDeleteObjectMixin,
                         errors.append(e)
                 self._raise(errors)
 
-            super(Domain, self).validate()
+            super(Zone, self).validate()
         except exceptions.RelationNotLoaded as ex:
             errors = ValidationErrorList()
             e = ValidationError()
@@ -236,6 +236,6 @@ class Domain(base.DictObjectMixin, base.SoftDeleteObjectMixin,
             self._raise(errors)
 
 
-class DomainList(base.ListObjectMixin, base.DesignateObject,
-                 base.PagedListObjectMixin):
-    LIST_ITEM_TYPE = Domain
+class ZoneList(base.ListObjectMixin, base.DesignateObject,
+               base.PagedListObjectMixin):
+    LIST_ITEM_TYPE = Zone

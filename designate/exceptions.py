@@ -179,9 +179,9 @@ class UnsupportedContentType(BadRequest):
     error_type = 'unsupported_content_type'
 
 
-class InvalidDomainName(Base):
+class InvalidZoneName(Base):
     error_code = 400
-    error_type = 'invalid_domain_name'
+    error_type = 'invalid_zone_name'
     expected = True
 
 
@@ -205,9 +205,9 @@ class InvalidTTL(Base):
     error_type = 'invalid_ttl'
 
 
-class DomainHasSubdomain(Base):
+class ZoneHasSubZone(Base):
     error_code = 400
-    error_type = 'domain_has_subdomain'
+    error_type = 'zone_has_sub_zone'
 
 
 class Forbidden(Base):
@@ -216,11 +216,11 @@ class Forbidden(Base):
     expected = True
 
 
-class IllegalChildDomain(Forbidden):
+class IllegalChildZone(Forbidden):
     error_type = 'illegal_child'
 
 
-class IllegalParentDomain(Forbidden):
+class IllegalParentZone(Forbidden):
     error_type = 'illegal_parent'
 
 
@@ -246,8 +246,8 @@ class DuplicateTsigKey(Duplicate):
     error_type = 'duplicate_tsigkey'
 
 
-class DuplicateDomain(Duplicate):
-    error_type = 'duplicate_domain'
+class DuplicateZone(Duplicate):
+    error_type = 'duplicate_zone'
 
 
 class DuplicateTld(Duplicate):
@@ -278,8 +278,8 @@ class DuplicatePoolAttribute(Duplicate):
     error_type = 'duplicate_pool_attribute'
 
 
-class DuplicateDomainAttribute(Duplicate):
-    error_type = 'duplicate_domain_attribute'
+class DuplicateZoneAttribute(Duplicate):
+    error_type = 'duplicate_zone_attribute'
 
 
 class DuplicatePoolNsRecord(Duplicate):
@@ -330,16 +330,16 @@ class BlacklistNotFound(NotFound):
     error_type = 'blacklist_not_found'
 
 
-class DomainNotFound(NotFound):
-    error_type = 'domain_not_found'
+class ZoneNotFound(NotFound):
+    error_type = 'zone_not_found'
 
 
-class DomainMasterNotFound(NotFound):
-    error_type = 'domain_master_not_found'
+class ZoneMasterNotFound(NotFound):
+    error_type = 'zone_master_not_found'
 
 
-class DomainAttributeNotFound(NotFound):
-    error_type = 'domain_attribute_not_found'
+class ZoneAttributeNotFound(NotFound):
+    error_type = 'zone_attribute_not_found'
 
 
 class TldNotFound(NotFound):

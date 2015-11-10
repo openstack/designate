@@ -87,20 +87,20 @@ class DesignateBackend(base.Backend):
             session=session, service_type=self.service_type)
         return self._client
 
-    def create_domain(self, context, domain):
-        msg = _LI('Creating domain %(d_id)s / %(d_name)s')
-        LOG.info(msg, {'d_id': domain['id'], 'd_name': domain['name']})
+    def create_zone(self, context, zone):
+        msg = _LI('Creating zone %(d_id)s / %(d_name)s')
+        LOG.info(msg, {'d_id': zone['id'], 'd_name': zone['name']})
 
         masters = ["%s:%s" % (i.host, i.port) for i in self.masters]
         self.client.zones.create(
-            domain.name, 'SECONDARY', masters=masters)
+            zone.name, 'SECONDARY', masters=masters)
 
-    def delete_domain(self, context, domain):
-        msg = _LI('Deleting domain %(d_id)s / %(d_name)s')
-        LOG.info(msg, {'d_id': domain['id'], 'd_name': domain['name']})
+    def delete_zone(self, context, zone):
+        msg = _LI('Deleting zone %(d_id)s / %(d_name)s')
+        LOG.info(msg, {'d_id': zone['id'], 'd_name': zone['name']})
 
         try:
-            self.client.zones.delete(domain.name)
+            self.client.zones.delete(zone.name)
         except exceptions.NotFound:
             msg = _LW("Zone %s not found on remote Designate, Ignoring")
-            LOG.warn(msg, domain.id)
+            LOG.warn(msg, zone.id)

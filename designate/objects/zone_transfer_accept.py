@@ -46,7 +46,7 @@ class ZoneTransferAccept(base.DictObjectMixin, base.PersistentObjectMixin,
             },
             'required': True
         },
-        'domain_id': {
+        'zone_id': {
             'schema': {
                 "type": "string",
                 "format": "uuid"
@@ -56,7 +56,7 @@ class ZoneTransferAccept(base.DictObjectMixin, base.PersistentObjectMixin,
     }
 
     STRING_KEYS = [
-        'id', 'domain_id', 'tenant_id', 'zone_transfer_request_id'
+        'id', 'zone_id', 'tenant_id', 'zone_transfer_request_id'
     ]
 
 

@@ -38,7 +38,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
 
     def test_create_zone(self):
         # Create a zone
-        fixture = self.get_domain_fixture(fixture=0)
+        fixture = self.get_zone_fixture(fixture=0)
         response = self.client.post_json('/zones/', fixture)
         # Check the headers are what we expect
         self.assertEqual(202, response.status_int)
@@ -61,7 +61,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
 
     def test_create_zone_no_type(self):
         # Create a zone
-        fixture = self.get_domain_fixture(fixture=0)
+        fixture = self.get_zone_fixture(fixture=0)
         del fixture['type']
 
         response = self.client.post_json('/zones/', fixture)
@@ -89,7 +89,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
         # NOTE: The schemas should be tested separately to the API. So we
         #       don't need to test every variation via the API itself.
         # Fetch a fixture
-        fixture = self.get_domain_fixture(fixture=0)
+        fixture = self.get_zone_fixture(fixture=0)
 
         # Add a junk field to the body
         fixture['junk'] = 'Junk Field'
@@ -101,7 +101,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
                                '/zones', body)
 
     def test_create_zone_email_too_long(self):
-        fixture = self.get_domain_fixture(fixture=0)
+        fixture = self.get_zone_fixture(fixture=0)
         fixture.update({'email': 'a' * 255 + '@abc.com'})
         body = fixture
         self._assert_exception('invalid_object', 400, self.client.post_json,
@@ -116,7 +116,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
             'example.org.',
             'bla.example.org.',
         ]
-        fixture = self.get_domain_fixture(fixture=0)
+        fixture = self.get_zone_fixture(fixture=0)
         for email in invalid_emails:
             fixture.update({'email': email})
             body = fixture
@@ -125,70 +125,70 @@ class ApiV2ZonesTest(ApiV2TestCase):
                                    '/zones', body)
 
     def test_create_zone_email_missing(self):
-        fixture = self.get_domain_fixture(fixture=0)
+        fixture = self.get_zone_fixture(fixture=0)
         del fixture['email']
         body = fixture
         self._assert_exception('invalid_object', 400, self.client.post_json,
                                '/zones', body)
 
     def test_create_zone_ttl_less_than_zero(self):
-        fixture = self.get_domain_fixture(fixture=0)
+        fixture = self.get_zone_fixture(fixture=0)
         fixture['ttl'] = -1
         body = fixture
         self._assert_exception('invalid_object', 400, self.client.post_json,
                                '/zones', body)
 
     def test_create_zone_ttl_is_zero(self):
-        fixture = self.get_domain_fixture(fixture=0)
+        fixture = self.get_zone_fixture(fixture=0)
         fixture['ttl'] = 0
         body = fixture
         self._assert_exception('invalid_object', 400, self.client.post_json,
                                '/zones', body)
 
     def test_create_zone_ttl_is_greater_than_max(self):
-        fixture = self.get_domain_fixture(fixture=0)
+        fixture = self.get_zone_fixture(fixture=0)
         fixture['ttl'] = 2174483648
         body = fixture
         self._assert_exception('invalid_object', 400, self.client.post_json,
                                '/zones', body)
 
     def test_create_zone_ttl_is_invalid(self):
-        fixture = self.get_domain_fixture(fixture=0)
+        fixture = self.get_zone_fixture(fixture=0)
         fixture['ttl'] = "!@?>"
         body = fixture
         self._assert_exception('invalid_object', 400, self.client.post_json,
                                '/zones', body)
 
     def test_create_zone_ttl_is_not_required_field(self):
-        fixture = self.get_domain_fixture(fixture=0)
+        fixture = self.get_zone_fixture(fixture=0)
         body = fixture
         response = self.client.post_json('/zones', body)
         self.assertEqual(202, response.status_int)
         self.assertEqual('application/json', response.content_type)
 
     def test_create_zone_description_too_long(self):
-        fixture = self.get_domain_fixture(fixture=0)
+        fixture = self.get_zone_fixture(fixture=0)
         fixture['description'] = "a" * 161
         body = fixture
         self._assert_exception('invalid_object', 400, self.client.post_json,
                                '/zones', body)
 
     def test_create_zone_name_is_missing(self):
-        fixture = self.get_domain_fixture(fixture=0)
+        fixture = self.get_zone_fixture(fixture=0)
         del fixture['name']
         body = fixture
         self._assert_exception('invalid_object', 400, self.client.post_json,
                                '/zones', body)
 
     def test_create_zone_name_too_long(self):
-        fixture = self.get_domain_fixture(fixture=0)
+        fixture = self.get_zone_fixture(fixture=0)
         fixture['name'] = 'x' * 255 + ".com"
         body = fixture
         self._assert_exception('invalid_object', 400, self.client.post_json,
                                '/zones', body)
 
     def test_create_zone_body_validation(self):
-        fixture = self.get_domain_fixture(fixture=0)
+        fixture = self.get_zone_fixture(fixture=0)
         # Add id to the body
         fixture['id'] = '2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980'
         # Ensure it fails with a 400
@@ -196,7 +196,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
         self._assert_exception('invalid_object', 400, self.client.post_json,
                                '/zones', body)
 
-        fixture = self.get_domain_fixture(fixture=0)
+        fixture = self.get_zone_fixture(fixture=0)
         # Add created_at to the body
         fixture['created_at'] = '2014-03-12T19:07:53.000000'
         # Ensure it fails with a 400
@@ -206,30 +206,30 @@ class ApiV2ZonesTest(ApiV2TestCase):
 
     def test_create_zone_invalid_name(self):
         # Try to create a zone with an invalid name
-        fixture = self.get_domain_fixture(fixture=-1)
+        fixture = self.get_zone_fixture(fixture=-1)
 
         # Ensure it fails with a 400
         self._assert_exception('invalid_object', 400, self.client.post_json,
                                '/zones', fixture)
 
-    @patch.object(central_service.Service, 'create_domain',
+    @patch.object(central_service.Service, 'create_zone',
                   side_effect=messaging.MessagingTimeout())
     def test_create_zone_timeout(self, _):
-        fixture = self.get_domain_fixture(fixture=0)
+        fixture = self.get_zone_fixture(fixture=0)
 
         body = fixture
 
         self._assert_exception('timeout', 504, self.client.post_json,
                                '/zones/', body)
 
-    @patch.object(central_service.Service, 'create_domain',
-                  side_effect=exceptions.DuplicateDomain())
+    @patch.object(central_service.Service, 'create_zone',
+                  side_effect=exceptions.DuplicateZone())
     def test_create_zone_duplicate(self, _):
-        fixture = self.get_domain_fixture(fixture=0)
+        fixture = self.get_zone_fixture(fixture=0)
 
         body = fixture
 
-        self._assert_exception('duplicate_domain', 409, self.client.post_json,
+        self._assert_exception('duplicate_zone', 409, self.client.post_json,
                                '/zones/', body)
 
     def test_create_zone_missing_content_type(self):
@@ -270,20 +270,20 @@ class ApiV2ZonesTest(ApiV2TestCase):
         # We should start with 0 zones
         self.assertEqual(0, len(response.json['zones']))
 
-        data = [self.create_domain(name='x-%s.com.' % i)
+        data = [self.create_zone(name='x-%s.com.' % i)
                 for i in 'abcdefghij']
         self._assert_paging(data, '/zones', key='zones')
 
         self._assert_invalid_paging(data, '/zones', key='zones')
 
-    @patch.object(central_service.Service, 'find_domains',
+    @patch.object(central_service.Service, 'find_zones',
                   side_effect=messaging.MessagingTimeout())
     def test_get_zones_timeout(self, _):
         self._assert_exception('timeout', 504, self.client.get, '/zones/')
 
     def test_get_zone(self):
         # Create a zone
-        zone = self.create_domain()
+        zone = self.create_zone()
 
         response = self.client.get('/zones/%s' % zone['id'],
                                    headers=[('Accept', 'application/json')])
@@ -307,18 +307,18 @@ class ApiV2ZonesTest(ApiV2TestCase):
     def test_get_zone_invalid_id(self):
         self._assert_invalid_uuid(self.client.get, '/zones/%s')
 
-    @patch.object(central_service.Service, 'get_domain',
+    @patch.object(central_service.Service, 'get_zone',
                   side_effect=messaging.MessagingTimeout())
     def test_get_zone_timeout(self, _):
         url = '/zones/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980'
         self._assert_exception('timeout', 504, self.client.get, url,
                                headers={'Accept': 'application/json'})
 
-    @patch.object(central_service.Service, 'get_domain',
-                  side_effect=exceptions.DomainNotFound())
+    @patch.object(central_service.Service, 'get_zone',
+                  side_effect=exceptions.ZoneNotFound())
     def test_get_zone_missing(self, _):
         url = '/zones/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980'
-        self._assert_exception('domain_not_found', 404, self.client.get, url,
+        self._assert_exception('zone_not_found', 404, self.client.get, url,
                                headers={'Accept': 'application/json'})
 
     def test_get_zone_bad_accept(self):
@@ -328,7 +328,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
 
     def test_update_zone(self):
         # Create a zone
-        zone = self.create_domain()
+        zone = self.create_zone()
 
         # Prepare an update body
         body = {'email': 'prefix-%s' % zone['email']}
@@ -358,7 +358,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
         # NOTE: The schemas should be tested separatly to the API. So we
         #       don't need to test every variation via the API itself.
         # Create a zone
-        zone = self.create_domain()
+        zone = self.create_zone()
 
         # Prepare an update body with junk in the body
         body = {'email': 'prefix-%s' % zone['email'],
@@ -386,8 +386,8 @@ class ApiV2ZonesTest(ApiV2TestCase):
         self._assert_exception('invalid_object', 400, self.client.patch_json,
                                url, body)
 
-    @patch.object(central_service.Service, 'get_domain',
-                  side_effect=exceptions.DuplicateDomain())
+    @patch.object(central_service.Service, 'get_zone',
+                  side_effect=exceptions.DuplicateZone())
     def test_update_zone_duplicate(self, _):
         # Prepare an update body
         body = {'email': 'example@example.org'}
@@ -395,10 +395,10 @@ class ApiV2ZonesTest(ApiV2TestCase):
         url = '/zones/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980'
 
         # Ensure it fails with a 409
-        self._assert_exception('duplicate_domain', 409, self.client.patch_json,
+        self._assert_exception('duplicate_zone', 409, self.client.patch_json,
                                url, body)
 
-    @patch.object(central_service.Service, 'get_domain',
+    @patch.object(central_service.Service, 'get_zone',
                   side_effect=messaging.MessagingTimeout())
     def test_update_zone_timeout(self, _):
         # Prepare an update body
@@ -410,8 +410,8 @@ class ApiV2ZonesTest(ApiV2TestCase):
         self._assert_exception('timeout', 504, self.client.patch_json,
                                url, body)
 
-    @patch.object(central_service.Service, 'get_domain',
-                  side_effect=exceptions.DomainNotFound())
+    @patch.object(central_service.Service, 'get_zone',
+                  side_effect=exceptions.ZoneNotFound())
     def test_update_zone_missing(self, _):
         # Prepare an update body
         body = {'email': 'example@example.org'}
@@ -419,11 +419,11 @@ class ApiV2ZonesTest(ApiV2TestCase):
         url = '/zones/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980'
 
         # Ensure it fails with a 404
-        self._assert_exception('domain_not_found', 404, self.client.patch_json,
+        self._assert_exception('zone_not_found', 404, self.client.patch_json,
                                url, body)
 
     def test_delete_zone(self):
-        zone = self.create_domain()
+        zone = self.create_zone()
 
         response = self.client.delete('/zones/%s' % zone['id'], status=202)
 
@@ -436,35 +436,35 @@ class ApiV2ZonesTest(ApiV2TestCase):
     def test_delete_zone_invalid_id(self):
         self._assert_invalid_uuid(self.client.delete, '/zones/%s')
 
-    @patch.object(central_service.Service, 'delete_domain',
+    @patch.object(central_service.Service, 'delete_zone',
                   side_effect=messaging.MessagingTimeout())
     def test_delete_zone_timeout(self, _):
         url = '/zones/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980'
 
         self._assert_exception('timeout', 504, self.client.delete, url)
 
-    @patch.object(central_service.Service, 'delete_domain',
-                  side_effect=exceptions.DomainNotFound())
+    @patch.object(central_service.Service, 'delete_zone',
+                  side_effect=exceptions.ZoneNotFound())
     def test_delete_zone_missing(self, _):
         url = '/zones/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980'
 
-        self._assert_exception('domain_not_found', 404, self.client.delete,
+        self._assert_exception('zone_not_found', 404, self.client.delete,
                                url)
 
     def test_post_abandon_zone(self):
-        zone = self.create_domain()
+        zone = self.create_zone()
         url = '/zones/%s/tasks/abandon' % zone.id
 
         # Ensure that we get permission denied
         self._assert_exception('forbidden', 403, self.client.post_json, url)
 
         # Ensure that abandon zone succeeds with the right policy
-        self.policy({'abandon_domain': '@'})
+        self.policy({'abandon_zone': '@'})
         response = self.client.post_json(url)
         self.assertEqual(204, response.status_int)
 
     def test_get_abandon_zone(self):
-        zone = self.create_domain()
+        zone = self.create_zone()
         url = '/zones/%s/tasks/abandon' % zone.id
         self._assert_exception('method_not_allowed', 405, self.client.get, url)
 
@@ -475,13 +475,13 @@ class ApiV2ZonesTest(ApiV2TestCase):
 
     def test_get_zone_tasks(self):
         # This is an invalid endpoint - should return 404
-        zone = self.create_domain()
+        zone = self.create_zone()
         url = '/zones/%s/tasks' % zone.id
         self._assert_exception('not_found', 404, self.client.get, url)
 
     def test_create_secondary(self):
         # Create a zone
-        fixture = self.get_domain_fixture('SECONDARY', 0)
+        fixture = self.get_zone_fixture('SECONDARY', 0)
         fixture['masters'] = ["10.0.0.1"]
 
         response = self.client.post_json('/zones/', fixture)
@@ -512,20 +512,20 @@ class ApiV2ZonesTest(ApiV2TestCase):
 
     def test_create_secondary_no_masters(self):
         # Create a zone
-        fixture = self.get_domain_fixture('SECONDARY', 0)
+        fixture = self.get_zone_fixture('SECONDARY', 0)
 
         self._assert_exception('invalid_object', 400, self.client.post_json,
                                '/zones/', fixture)
 
     def test_update_secondary(self):
         # Create a zone
-        fixture = self.get_domain_fixture('SECONDARY', 0)
+        fixture = self.get_zone_fixture('SECONDARY', 0)
 
-        domain = objects.Domain(**fixture)
-        domain.email = cfg.CONF['service:central'].managed_resource_email
+        zone = objects.Zone(**fixture)
+        zone.email = cfg.CONF['service:central'].managed_resource_email
 
         # Create a zone
-        zone = self.central_service.create_domain(self.admin_context, domain)
+        zone = self.central_service.create_zone(self.admin_context, zone)
 
         masters = ['10.0.0.1', '10.0.0.2']
 
@@ -552,12 +552,12 @@ class ApiV2ZonesTest(ApiV2TestCase):
 
     def test_xfr_request(self):
         # Create a zone
-        fixture = self.get_domain_fixture('SECONDARY', 0)
+        fixture = self.get_zone_fixture('SECONDARY', 0)
         fixture['email'] = cfg.CONF['service:central'].managed_resource_email
         fixture['attributes'] = [{"key": "master", "value": "10.0.0.10"}]
 
         # Create a zone
-        zone = self.create_domain(**fixture)
+        zone = self.create_zone(**fixture)
 
         mdns = mock.Mock()
         with mock.patch.object(mdns_api.MdnsAPI, 'get_instance') as get_mdns:
@@ -577,7 +577,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
 
     def test_invalid_xfr_request(self):
         # Create a zone
-        zone = self.create_domain()
+        zone = self.create_zone()
 
         response = self.client.post_json(
             '/zones/%s/tasks/xfr' % zone['id'],
@@ -589,11 +589,11 @@ class ApiV2ZonesTest(ApiV2TestCase):
 
     def test_update_secondary_email_invalid_object(self):
         # Create a zone
-        fixture = self.get_domain_fixture('SECONDARY', 0)
+        fixture = self.get_zone_fixture('SECONDARY', 0)
         fixture['email'] = cfg.CONF['service:central'].managed_resource_email
 
         # Create a zone
-        zone = self.create_domain(**fixture)
+        zone = self.create_zone(**fixture)
 
         body = {'email': 'foo@bar.io'}
 
@@ -615,7 +615,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
         self.assertEqual(0, response.json['metadata']['total_count'])
 
         # Create a zone
-        fixture = self.get_domain_fixture(fixture=0)
+        fixture = self.get_zone_fixture(fixture=0)
         response = self.client.post_json('/zones/', fixture)
 
         response = self.client.get('/zones/')
@@ -625,10 +625,10 @@ class ApiV2ZonesTest(ApiV2TestCase):
 
     def test_total_count_pagination(self):
         # Create two zones
-        fixture = self.get_domain_fixture(fixture=0)
+        fixture = self.get_zone_fixture(fixture=0)
         response = self.client.post_json('/zones/', fixture)
 
-        fixture = self.get_domain_fixture(fixture=1)
+        fixture = self.get_zone_fixture(fixture=1)
         response = self.client.post_json('/zones/', fixture)
 
         # Paginate so that there is only one zone returned
@@ -641,7 +641,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
 
     def test_no_update_deleting(self):
         # Create a zone
-        zone = self.create_domain()
+        zone = self.create_zone()
 
         # Prepare an update body
         body = {'zone': {'email': 'prefix-%s' % zone['email']}}
@@ -652,7 +652,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
 
     def test_get_nameservers(self):
         # Create a zone
-        zone = self.create_domain()
+        zone = self.create_zone()
 
         # Prepare an update body
 
@@ -667,13 +667,13 @@ class ApiV2ZonesTest(ApiV2TestCase):
     def test_get_zones_filter(self):
         # Add zones for testing
         fixtures = [
-            self.get_domain_fixture(
+            self.get_zone_fixture(
                 'PRIMARY', fixture=0, values={
                     'ttl': 3600,
                     'description': 'test1'
                 }
             ),
-            self.get_domain_fixture(
+            self.get_zone_fixture(
                 'PRIMARY', fixture=1, values={
                     'ttl': 4000,
                     'description': 'test2'

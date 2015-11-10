@@ -149,8 +149,8 @@ class SchemaFormatTest(TestCase):
         for hostname in invalid_hostnames:
             self.assertFalse(format.is_hostname(hostname))
 
-    def test_is_domainname(self):
-        valid_domainnames = [
+    def test_is_zonename(self):
+        valid_zonenames = [
             'example.com.',
             'www.example.com.',
             '12345.example.com.',
@@ -171,7 +171,7 @@ class SchemaFormatTest(TestCase):
              'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghi.'),
         ]
 
-        invalid_domainnames = [
+        invalid_zonenames = [
             '*.example.com.',
             '**.example.com.',
             '*.*.example.org.',
@@ -215,11 +215,11 @@ class SchemaFormatTest(TestCase):
             "example.com.\n",
         ]
 
-        for domainname in valid_domainnames:
-            self.assertTrue(format.is_domainname(domainname), domainname)
+        for zonename in valid_zonenames:
+            self.assertTrue(format.is_zonename(zonename), zonename)
 
-        for domainname in invalid_domainnames:
-            self.assertFalse(format.is_domainname(domainname), domainname)
+        for zonename in invalid_zonenames:
+            self.assertFalse(format.is_zonename(zonename), zonename)
 
     def test_is_srv_hostname(self):
         valid_hostnames = [

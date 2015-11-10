@@ -29,9 +29,9 @@ cfg.CONF.register_group(cfg.OptGroup(
 cfg.CONF.register_opts([
     cfg.ListOpt('notification-topics', default=['notifications']),
     cfg.StrOpt('control-exchange', default='nova'),
-    cfg.StrOpt('domain-id'),
+    cfg.StrOpt('zone-id'),
     cfg.MultiStrOpt('format', default=[
-                    '%(octet0)s-%(octet1)s-%(octet2)s-%(octet3)s.%(domain)s'])
+                    '%(octet0)s-%(octet1)s-%(octet2)s-%(octet3)s.%(zone)s'])
 ], group='handler:nova_fixed')
 
 
@@ -60,15 +60,15 @@ class NovaFixedHandler(BaseAddressHandler):
     def process_notification(self, context, event_type, payload):
         LOG.debug('NovaFixedHandler received notification - %s' % event_type)
 
-        domain_id = cfg.CONF[self.name].domain_id
+        zone_id = cfg.CONF[self.name].zone_id
         if event_type == 'compute.instance.create.end':
             self._create(addresses=payload['fixed_ips'],
                          extra=payload,
-                         domain_id=domain_id,
+                         zone_id=zone_id,
                          resource_id=payload['instance_id'],
                          resource_type='instance')
 
         elif event_type == 'compute.instance.delete.start':
-            self._delete(domain_id=domain_id,
+            self._delete(zone_id=zone_id,
                          resource_id=payload['instance_id'],
                          resource_type='instance')

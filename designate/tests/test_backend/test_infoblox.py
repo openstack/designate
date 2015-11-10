@@ -24,8 +24,8 @@ from designate.backend.impl_infoblox import ibexceptions
 
 class InfobloxBackendTestCase(BackendTestCase):
 
-    def get_domain_fixture(self):
-        return super(InfobloxBackendTestCase, self).get_domain_fixture(
+    def get_zone_fixture(self):
+        return super(InfobloxBackendTestCase, self).get_zone_fixture(
             values={
                 'name': 'test.example.com.'
             }
@@ -65,28 +65,28 @@ class InfobloxBackendTestCase(BackendTestCase):
         self.backend.start()
         self.backend.infoblox = MagicMock()
 
-    def test_create_domain(self):
+    def test_create_zone(self):
         self.set_up_backend()
         context = self.get_context()
-        domain = self.get_domain_fixture()
+        zone = self.get_zone_fixture()
         self.backend.infoblox.get_dns_view = MagicMock(return_value='default')
-        self.backend.create_domain(context, domain)
+        self.backend.create_zone(context, zone)
         self.backend.infoblox.create_zone_auth.assert_called_once_with(
                                 fqdn='test.example.com',
                                 dns_view='default')
 
-    def test_update_domain(self):
+    def test_update_zone(self):
         self.set_up_backend()
         context = self.get_context()
-        domain = objects.Domain().from_dict(self.get_domain_fixture())
-        self.backend.update_domain(context, domain)
+        zone = objects.Zone().from_dict(self.get_zone_fixture())
+        self.backend.update_zone(context, zone)
 
-    def test_delete_domain(self):
+    def test_delete_zone(self):
         self.set_up_backend()
         context = self.get_context()
-        domain = self.get_domain_fixture()
-        self.backend.create_domain(context, domain)
-        self.backend.delete_domain(context, domain)
+        zone = self.get_zone_fixture()
+        self.backend.create_zone(context, zone)
+        self.backend.delete_zone(context, zone)
         self.backend.infoblox.delete_zone_auth.assert_called_once_with(
                                 'test.example.com')
 

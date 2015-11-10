@@ -12,16 +12,14 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-
-
 from designate.objects.base import DesignateObject  # noqa
 from designate.objects.base import DictObjectMixin  # noqa
 from designate.objects.base import ListObjectMixin  # noqa
 from designate.objects.base import PagedListObjectMixin  # noqa
 from designate.objects.blacklist import Blacklist, BlacklistList  # noqa
-from designate.objects.domain import Domain, DomainList  # noqa
-from designate.objects.domain_attribute import DomainAttribute, DomainAttributeList  # noqa
-from designate.objects.domain_master import DomainMaster, DomainMasterList  # noqa
+from designate.objects.zone import Zone, ZoneList  # noqa
+from designate.objects.zone_attribute import ZoneAttribute, ZoneAttributeList  # noqa
+from designate.objects.zone_master import ZoneMaster, ZoneMasterList  # noqa
 from designate.objects.floating_ip import FloatingIP, FloatingIPList  # noqa
 from designate.objects.pool_manager_status import PoolManagerStatus, PoolManagerStatusList  # noqa
 from designate.objects.pool import Pool, PoolList  # noqa

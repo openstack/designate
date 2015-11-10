@@ -28,7 +28,7 @@ class Record(base.DictObjectMixin, base.PersistentObjectMixin,
             }
         },
         'data': {},
-        'domain_id': {
+        'zone_id': {
             'schema': {
                 'type': 'string',
                 'format': 'uuid',

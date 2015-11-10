@@ -242,7 +242,7 @@ def main():
     # create a fake domain in IPA
     # create a fake server in Designate
     # try to create the same fake domain in Designate
-    # if we get a DuplicateDomain error from Designate, then
+    # if we get a DuplicateZone error from Designate, then
     # raise the CannotUseIPABackend error, after deleting
     # the fake server and fake domain
     # find the first non-reverse zone

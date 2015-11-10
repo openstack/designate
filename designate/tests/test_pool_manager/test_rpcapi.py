@@ -25,7 +25,7 @@ from designate.tests.test_pool_manager import PoolManagerTestCase
 class PoolManagerAPITest(PoolManagerTestCase):
 
     @patch.object(messaging.RPCClient, 'prepare')
-    def test_create_domain(self, mock_prepare):
+    def test_create_zone(self, mock_prepare):
         inner_mock = mock.Mock()
         inner_mock.cast = mock.Mock(return_value=None)
         mock_prepare.return_value = inner_mock
@@ -34,16 +34,16 @@ class PoolManagerAPITest(PoolManagerTestCase):
             'name': 'example.org.',
             'pool_id': '794ccc2c-d751-44fe-b57f-8894c9f5c842'
         }
-        domain = objects.Domain.from_dict(values)
-        PoolManagerAPI.get_instance().create_domain(self.admin_context, domain)
+        zone = objects.Zone.from_dict(values)
+        PoolManagerAPI.get_instance().create_zone(self.admin_context, zone)
 
         mock_prepare.assert_called_once_with(
-            topic='pool_manager.%s' % domain.pool_id)
+            topic='pool_manager.%s' % zone.pool_id)
         mock_prepare.return_value.cast.assert_called_once_with(
-            self.admin_context, 'create_domain', domain=domain)
+            self.admin_context, 'create_zone', zone=zone)
 
     @patch.object(messaging.RPCClient, 'prepare')
-    def test_delete_domain(self, mock_prepare):
+    def test_delete_zone(self, mock_prepare):
         inner_mock = mock.Mock()
         inner_mock.cast = mock.Mock(return_value=None)
         mock_prepare.return_value = inner_mock
@@ -52,16 +52,16 @@ class PoolManagerAPITest(PoolManagerTestCase):
             'name': 'example.org.',
             'pool_id': '794ccc2c-d751-44fe-b57f-8894c9f5c842'
         }
-        domain = objects.Domain.from_dict(values)
-        PoolManagerAPI.get_instance().delete_domain(self.admin_context, domain)
+        zone = objects.Zone.from_dict(values)
+        PoolManagerAPI.get_instance().delete_zone(self.admin_context, zone)
 
         mock_prepare.assert_called_once_with(
-            topic='pool_manager.%s' % domain.pool_id)
+            topic='pool_manager.%s' % zone.pool_id)
         mock_prepare.return_value.cast.assert_called_once_with(
-            self.admin_context, 'delete_domain', domain=domain)
+            self.admin_context, 'delete_zone', zone=zone)
 
     @patch.object(messaging.RPCClient, 'prepare')
-    def test_update_domain(self, mock_prepare):
+    def test_update_zone(self, mock_prepare):
         inner_mock = mock.Mock()
         inner_mock.cast = mock.Mock(return_value=None)
         mock_prepare.return_value = inner_mock
@@ -70,13 +70,13 @@ class PoolManagerAPITest(PoolManagerTestCase):
             'name': 'example.org.',
             'pool_id': '794ccc2c-d751-44fe-b57f-8894c9f5c842'
         }
-        domain = objects.Domain.from_dict(values)
-        PoolManagerAPI.get_instance().update_domain(self.admin_context, domain)
+        zone = objects.Zone.from_dict(values)
+        PoolManagerAPI.get_instance().update_zone(self.admin_context, zone)
 
         mock_prepare.assert_called_once_with(
-            topic='pool_manager.%s' % domain.pool_id)
+            topic='pool_manager.%s' % zone.pool_id)
         mock_prepare.return_value.cast.assert_called_once_with(
-            self.admin_context, 'update_domain', domain=domain)
+            self.admin_context, 'update_zone', zone=zone)
 
     @patch.object(messaging.RPCClient, 'prepare')
     def test_update_status(self, mock_prepare):
@@ -88,17 +88,17 @@ class PoolManagerAPITest(PoolManagerTestCase):
             'name': 'example.org.',
             'pool_id': '794ccc2c-d751-44fe-b57f-8894c9f5c842'
         }
-        domain = objects.Domain.from_dict(values)
+        zone = objects.Zone.from_dict(values)
         values = {
             'host': '127.0.0.1',
             'port': '53'
         }
         nameserver = objects.PoolNameserver.from_dict(values)
         PoolManagerAPI.get_instance().update_status(
-            self.admin_context, domain, nameserver, 'SUCCESS', 1)
+            self.admin_context, zone, nameserver, 'SUCCESS', 1)
 
         mock_prepare.assert_called_once_with(
-            topic='pool_manager.%s' % domain.pool_id)
+            topic='pool_manager.%s' % zone.pool_id)
         mock_prepare.return_value.cast.assert_called_once_with(
-            self.admin_context, 'update_status', domain=domain,
+            self.admin_context, 'update_status', zone=zone,
             nameserver=nameserver, status='SUCCESS', actual_serial=1)

@@ -75,10 +75,10 @@ class MemcachePoolManagerCache(cache_base.PoolManagerCache):
             serial_number_key, pool_manager_status.serial_number,
             self.expiration)
 
-    def retrieve(self, context, nameserver_id, domain_id, action):
+    def retrieve(self, context, nameserver_id, zone_id, action):
         values = {
             'nameserver_id': nameserver_id,
-            'domain_id': domain_id,
+            'zone_id': zone_id,
             'action': action,
         }
         pool_manager_status = objects.PoolManagerStatus(**values)
@@ -103,9 +103,9 @@ class MemcachePoolManagerCache(cache_base.PoolManagerCache):
 
     @staticmethod
     def _status_key(pool_manager_status, tail):
-        key = '{nameserver}-{domain}-{action}-{tail}'.format(
+        key = '{nameserver}-{zone}-{action}-{tail}'.format(
             nameserver=pool_manager_status.nameserver_id,
-            domain=pool_manager_status.domain_id,
+            zone=pool_manager_status.zone_id,
             action=pool_manager_status.action,
             tail=tail
         )

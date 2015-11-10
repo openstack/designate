@@ -29,9 +29,9 @@ cfg.CONF.register_group(cfg.OptGroup(
 cfg.CONF.register_opts([
     cfg.ListOpt('notification-topics', default=['notifications']),
     cfg.StrOpt('control-exchange', default='neutron'),
-    cfg.StrOpt('domain-id'),
+    cfg.StrOpt('zone-id'),
     cfg.MultiStrOpt('format', default=[
-                    '%(octet0)s-%(octet1)s-%(octet2)s-%(octet3)s.%(domain)s'])
+                    '%(octet0)s-%(octet1)s-%(octet2)s-%(octet3)s.%(zone)s'])
 ], group='handler:neutron_floatingip')
 
 
@@ -56,9 +56,9 @@ class NeutronFloatingHandler(BaseAddressHandler):
         LOG.debug('%s received notification - %s' %
                   (self.get_canonical_name(), event_type))
 
-        domain_id = cfg.CONF[self.name].domain_id
+        zone_id = cfg.CONF[self.name].zone_id
         if event_type.startswith('floatingip.delete'):
-            self._delete(domain_id=domain_id,
+            self._delete(zone_id=zone_id,
                          resource_id=payload['floatingip_id'],
                          resource_type='floatingip')
         elif event_type.startswith('floatingip.update'):
@@ -69,10 +69,10 @@ class NeutronFloatingHandler(BaseAddressHandler):
                 }
                 self._create(addresses=[address],
                              extra=payload['floatingip'],
-                             domain_id=domain_id,
+                             zone_id=zone_id,
                              resource_id=payload['floatingip']['id'],
                              resource_type='floatingip')
             elif not payload['floatingip']['fixed_ip_address']:
-                self._delete(domain_id=domain_id,
+                self._delete(zone_id=zone_id,
                              resource_id=payload['floatingip']['id'],
                              resource_type='floatingip')

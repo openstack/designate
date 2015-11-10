@@ -37,5 +37,5 @@ class NameServersController(rest.RestController):
         return {
             "nameservers": DesignateAdapter.render(
                 'API_v2',
-                self.central_api.get_domain_servers(context, zone_id),
+                self.central_api.get_zone_ns_records(context, zone_id),
                 request=request)}

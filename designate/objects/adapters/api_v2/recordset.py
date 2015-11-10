@@ -27,7 +27,7 @@ class RecordSetAPIv2Adapter(base.APIv2Adapter):
         'fields': {
             "id": {},
             "zone_id": {
-                'rename': 'domain_id'
+                'rename': 'zone_id'
             },
             "name": {
                 'immutable': True

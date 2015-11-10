@@ -230,7 +230,7 @@ class FaultMiddlewareTest(ApiTestCase):
 
         class RaisingRequest(FakeRequest):
             def get_response(self, request):
-                raise exceptions.DuplicateDomain()
+                raise exceptions.DuplicateZone()
 
         request = RaisingRequest()
         ctxt = context.DesignateContext()

@@ -50,7 +50,7 @@ class Bind9Backend(base.AgentBackend):
             cfg.StrOpt('zone-file-path', default='$state_path/zones',
                        help='Path where zone files are stored'),
             cfg.StrOpt('query-destination', default='127.0.0.1',
-                       help='Host to query when finding domains')
+                       help='Host to query when finding zones')
         ]
 
         return [(group, opts)]
@@ -58,30 +58,30 @@ class Bind9Backend(base.AgentBackend):
     def start(self):
         LOG.info(_LI("Started bind9 backend"))
 
-    def find_domain_serial(self, domain_name):
-        LOG.debug("Finding %s" % domain_name)
+    def find_zone_serial(self, zone_name):
+        LOG.debug("Finding %s" % zone_name)
         resolver = dns.resolver.Resolver()
         resolver.nameservers = [cfg.CONF[CFG_GROUP].query_destination]
         try:
-            rdata = resolver.query(domain_name, 'SOA')[0]
+            rdata = resolver.query(zone_name, 'SOA')[0]
         except Exception:
             return None
         return rdata.serial
 
-    def create_domain(self, domain):
-        LOG.debug("Creating %s" % domain.origin.to_text())
-        self._sync_domain(domain, new_domain_flag=True)
+    def create_zone(self, zone):
+        LOG.debug("Creating %s" % zone.origin.to_text())
+        self._sync_zone(zone, new_zone_flag=True)
 
-    def update_domain(self, domain):
-        LOG.debug("Updating %s" % domain.origin.to_text())
-        self._sync_domain(domain)
+    def update_zone(self, zone):
+        LOG.debug("Updating %s" % zone.origin.to_text())
+        self._sync_zone(zone)
 
-    def delete_domain(self, domain_name):
-        LOG.debug('Delete Domain: %s' % domain_name)
+    def delete_zone(self, zone_name):
+        LOG.debug('Delete Zone: %s' % zone_name)
 
         rndc_op = 'delzone'
-        # RNDC doesn't like the trailing dot on the domain name
-        rndc_call = self._rndc_base() + [rndc_op, domain_name.rstrip('.')]
+        # RNDC doesn't like the trailing dot on the zone name
+        rndc_call = self._rndc_base() + [rndc_op, zone_name.rstrip('.')]
 
         utils.execute(*rndc_call)
 
@@ -102,39 +102,39 @@ class Bind9Backend(base.AgentBackend):
 
         return rndc_call
 
-    def _sync_domain(self, domain, new_domain_flag=False):
-        """Sync a single domain's zone file and reload bind config"""
+    def _sync_zone(self, zone, new_zone_flag=False):
+        """Sync a single zone's zone file and reload bind config"""
 
         # NOTE: Different versions of BIND9 behave differently with a trailing
         #       dot, so we're just going to take it off.
-        domain_name = domain.origin.to_text().rstrip('.')
+        zone_name = zone.origin.to_text().rstrip('.')
 
         # NOTE: Only one thread should be working with the Zonefile at a given
         #       time. The sleep(1) below introduces a not insignificant risk
         #       of more than 1 thread working with a zonefile at a given time.
-        with lockutils.lock('bind9-%s' % domain_name):
-            LOG.debug('Synchronising Domain: %s' % domain_name)
+        with lockutils.lock('bind9-%s' % zone_name):
+            LOG.debug('Synchronising Zone: %s' % zone_name)
 
             zone_path = cfg.CONF[CFG_GROUP].zone_file_path
 
             output_path = os.path.join(zone_path,
-                                       '%s.zone' % domain_name)
+                                       '%s.zone' % zone_name)
 
-            domain.to_file(output_path, relativize=False)
+            zone.to_file(output_path, relativize=False)
 
             rndc_call = self._rndc_base()
 
-            if new_domain_flag:
+            if new_zone_flag:
                 rndc_op = [
                     'addzone',
-                    '%s { type master; file "%s"; };' % (domain_name,
+                    '%s { type master; file "%s"; };' % (zone_name,
                                                          output_path),
                 ]
                 rndc_call.extend(rndc_op)
             else:
                 rndc_op = 'reload'
                 rndc_call.extend([rndc_op])
-                rndc_call.extend([domain_name])
+                rndc_call.extend([zone_name])
 
             LOG.debug('Calling RNDC with: %s' % " ".join(rndc_call))
             self._execute_rndc(rndc_call)

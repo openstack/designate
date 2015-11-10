@@ -182,7 +182,7 @@ class TransferZoneOwnerShipTest(DesignateV2Test):
         client = ZoneClient.as_user('default')
 
         self._assert_exception(
-            exceptions.NotFound, 'domain_not_found', 404,
+            exceptions.NotFound, 'zone_not_found', 404,
             client.get_zone, self.zone.id)
 
         resp, zone = ZoneClient.as_user('alt').get_zone(self.zone.id)

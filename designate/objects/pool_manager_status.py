@@ -26,7 +26,7 @@ class PoolManagerStatus(base.DictObjectMixin, base.PersistentObjectMixin,
             },
             'required': True
         },
-        'domain_id': {
+        'zone_id': {
             'schema': {
                 'type': 'string',
                 'format': 'uuid',
@@ -54,7 +54,7 @@ class PoolManagerStatus(base.DictObjectMixin, base.PersistentObjectMixin,
     }
 
     STRING_KEYS = [
-        'id', 'action', 'status', 'server_id', 'domain_id'
+        'id', 'action', 'status', 'server_id', 'zone_id'
     ]
 
 

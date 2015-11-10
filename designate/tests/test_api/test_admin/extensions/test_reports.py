@@ -45,10 +45,10 @@ class AdminApiReportsTest(AdminApiTestCase):
         self.assertEqual(0, response.json['counts'][0]['records'])
         self.assertEqual(0, response.json['counts'][0]['tenants'])
 
-        # Add a domain and check the counts
-        self.create_domain()
+        # Add a zone and check the counts
+        self.create_zone()
         response = self.client.get('/reports/counts')
-        # Should be one domain
+        # Should be one zone
         self.assertEqual(1, response.json['counts'][0]['zones'])
         # Should be 1 NS and 1 SOA records
         self.assertEqual(2, response.json['counts'][0]['records'])
@@ -56,7 +56,7 @@ class AdminApiReportsTest(AdminApiTestCase):
         self.assertEqual(1, response.json['counts'][0]['tenants'])
 
     def test_get_counts_zones(self):
-        self.policy({'count_domains': '@'})
+        self.policy({'count_zones': '@'})
         response = self.client.get('/reports/counts/zones')
 
         self.assertEqual(200, response.status_int)
@@ -67,9 +67,9 @@ class AdminApiReportsTest(AdminApiTestCase):
 
         self.assertEqual(0, response.json['counts'][0]['zones'])
 
-        # Create 2 domains
-        self.create_domain(fixture=0)
-        self.create_domain(fixture=1)
+        # Create 2 zones
+        self.create_zone(fixture=0)
+        self.create_zone(fixture=1)
 
         response = self.client.get('/reports/counts/zones')
 
@@ -87,8 +87,8 @@ class AdminApiReportsTest(AdminApiTestCase):
 
         self.assertEqual(0, response.json['counts'][0]['records'])
 
-        # Create a domain
-        self.create_domain()
+        # Create a zone
+        self.create_zone()
 
         response = self.client.get('/reports/counts/records')
 
@@ -107,8 +107,8 @@ class AdminApiReportsTest(AdminApiTestCase):
 
         self.assertEqual(0, response.json['counts'][0]['tenants'])
 
-        # Create a domain
-        self.create_domain()
+        # Create a zone
+        self.create_zone()
 
         response = self.client.get('/reports/counts/tenants')
 
@@ -117,7 +117,7 @@ class AdminApiReportsTest(AdminApiTestCase):
 
     def test_get_tenants(self):
         self.policy({'find_tenants': '@'})
-        self.create_domain()
+        self.create_zone()
 
         response = self.client.get('/reports/tenants')
 
@@ -131,8 +131,8 @@ class AdminApiReportsTest(AdminApiTestCase):
 
     def test_get_tenant(self):
         self.policy({'find_tenants': '@'})
-        domain = self.create_domain()
-        tenant = domain.tenant_id
+        zone = self.create_zone()
+        tenant = zone.tenant_id
 
         response = self.client.get('/reports/tenants/%s' % tenant)
         self.assertEqual(200, response.status_int)

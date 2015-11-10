@@ -139,7 +139,7 @@ def mock_out(name):
     return decorator
 
 
-class MockDomain(object):
+class Mockzone(object):
     id = 1
     name = 'example.org'
     pool_id = 1
@@ -211,9 +211,9 @@ fx_pool_manager = fixtures.MockPatch(
     'designate.central.service.pool_manager_rpcapi.Pool'
     'ManagerAPI.get_instance',
     mock.MagicMock(spec_set=[
-        'create_domain',
-        'update_domain',
-        'delete_domain'
+        'create_zone',
+        'update_zone',
+        'delete_zone'
     ])
 )
 
@@ -233,34 +233,34 @@ class CentralBasic(base.BaseTestCase):
         self.CONF = self.useFixture(cfg_fixture.Config(cfg.CONF)).conf
 
         mock_storage = mock.NonCallableMagicMock(spec_set=[
-            'count_domains', 'count_records', 'count_recordsets',
-            'count_tenants', 'create_blacklist', 'create_domain',
+            'count_zones', 'count_records', 'count_recordsets',
+            'count_tenants', 'create_blacklist', 'create_zone',
             'create_pool', 'create_pool_attribute', 'create_quota',
             'create_record', 'create_recordset', 'create_tld',
             'create_tsigkey',
-            'create_zone_task', 'delete_blacklist', 'delete_domain',
+            'create_zone_task', 'delete_blacklist', 'delete_zone',
             'delete_pool', 'delete_pool_attribute', 'delete_quota',
             'delete_record', 'delete_recordset', 'delete_tld',
             'delete_tsigkey', 'delete_zone_task', 'find_blacklist',
-            'find_blacklists', 'find_domain', 'find_domains', 'find_pool',
+            'find_blacklists', 'find_zone', 'find_zones', 'find_pool',
             'find_pool_attribute', 'find_pool_attributes', 'find_pools',
             'find_quota', 'find_quotas', 'find_record', 'find_records',
             'find_recordset', 'find_recordsets', 'find_recordsets_axfr',
             'find_tenants', 'find_tld', 'find_tlds', 'find_tsigkeys',
             'find_zone_task', 'find_zone_tasks', 'get_blacklist',
-            'get_canonical_name', 'get_cfg_opts', 'get_domain', 'get_driver',
+            'get_canonical_name', 'get_cfg_opts', 'get_zone', 'get_driver',
             'get_extra_cfg_opts', 'get_plugin_name', 'get_plugin_type',
             'get_pool', 'get_pool_attribute', 'get_quota', 'get_record',
             'get_recordset', 'get_tenant', 'get_tld', 'get_tsigkey',
             'get_zone_task', 'ping', 'register_cfg_opts',
-            'register_extra_cfg_opts', 'update_blacklist', 'update_domain',
+            'register_extra_cfg_opts', 'update_blacklist', 'update_zone',
             'update_pool', 'update_pool_attribute', 'update_quota',
             'update_record', 'update_recordset', 'update_tld',
             'update_tsigkey', 'update_zone_task', 'commit', 'begin',
             'rollback', ])
         attrs = {
-            'count_domains.return_value': 0,
-            'find_domain.return_value': MockDomain(),
+            'count_zones.return_value': 0,
+            'find_zone.return_value': Mockzone(),
             'get_pool.return_value': MockPool(),
             'begin.return_value': None,
         }
@@ -346,26 +346,26 @@ class CentralServiceTestCase(CentralBasic):
         mock_soa = RoObject(records=[MockRecord()])
 
         self.context.elevated = mock.Mock()
-        self.service._update_domain_in_storage = mock.Mock()
+        self.service._update_zone_in_storage = mock.Mock()
         self.service.storage.get_pool = mock.Mock(return_value=MockPool())
         self.service.find_recordset = mock.Mock(return_value=mock_soa)
         self.service._build_soa_record = mock.Mock()
         self.service._update_recordset_in_storage = mock.Mock()
 
-        self.service._update_soa(self.context, MockDomain())
+        self.service._update_soa(self.context, Mockzone())
 
         self.assertTrue(self.service._update_recordset_in_storage.called)
         self.assertTrue(self.context.elevated.called)
 
-    def test_count_domains(self):
-        self.service.count_domains(self.context)
-        self.service.storage.count_domains.assert_called_once_with(
+    def test_count_zones(self):
+        self.service.count_zones(self.context)
+        self.service.storage.count_zones.assert_called_once_with(
             self.context, {}
         )
 
-    def test_count_domains_criterion(self):
-        self.service.count_domains(self.context, criterion={'a': 1})
-        self.service.storage.count_domains.assert_called_once_with(
+    def test_count_zones_criterion(self):
+        self.service.count_zones(self.context, criterion={'a': 1})
+        self.service.storage.count_zones.assert_called_once_with(
             self.context, {'a': 1}
         )
 
@@ -374,15 +374,15 @@ class CentralServiceTestCase(CentralBasic):
         self.service._is_valid_ttl = mock.Mock()
         self.service._is_valid_recordset_name = mock.Mock()
         self.service._is_valid_recordset_placement = mock.Mock()
-        self.service._is_valid_recordset_placement_subdomain = mock.Mock()
+        self.service._is_valid_recordset_placement_subzone = mock.Mock()
         self.service.storage.create_recordset = mock.Mock(return_value='rs')
-        self.service._update_domain_in_storage = mock.Mock()
+        self.service._update_zone_in_storage = mock.Mock()
 
-        rs, domain = self.service._create_recordset_in_storage(
-            self.context, MockDomain(), MockRecordSet()
+        rs, zone = self.service._create_recordset_in_storage(
+            self.context, Mockzone(), MockRecordSet()
         )
         self.assertEqual(rs, 'rs')
-        self.assertFalse(self.service._update_domain_in_storage.called)
+        self.assertFalse(self.service._update_zone_in_storage.called)
 
     def test__create_soa(self):
         self.service._create_recordset_in_storage = Mock(
@@ -391,7 +391,7 @@ class CentralServiceTestCase(CentralBasic):
         self.service._build_soa_record = Mock(
             return_value='example.org. foo.bar 1 60 5 999 1'
         )
-        zone = MockDomain()
+        zone = Mockzone()
         self.service._create_soa(self.context, zone)
 
         ctx, md, rset = self.service._create_recordset_in_storage.call_args[0]
@@ -402,54 +402,54 @@ class CentralServiceTestCase(CentralBasic):
         self.assertEqual(1, len(rset.records.objects))
         self.assertTrue(rset.records.objects[0].managed)
 
-    def test__create_domain_in_storage(self):
+    def test__create_zone_in_storage(self):
         self.service._create_soa = Mock()
         self.service._create_ns = Mock()
-        self.service.get_domain_servers = Mock(
+        self.service.get_zone_ns_records = Mock(
             return_value=[RoObject(hostname='host_foo')]
         )
 
-        def cr_dom(ctx, domain):
-            return domain
+        def cr_dom(ctx, zone):
+            return zone
 
-        self.service.storage.create_domain = cr_dom
+        self.service.storage.create_zone = cr_dom
 
-        domain = self.service._create_domain_in_storage(
-            self.context, MockDomain()
+        zone = self.service._create_zone_in_storage(
+            self.context, Mockzone()
         )
-        self.assertEqual('PENDING', domain.status)
-        self.assertEqual('CREATE', domain.action)
-        ctx, domain, hostnames = self.service._create_ns.call_args[0]
+        self.assertEqual('PENDING', zone.status)
+        self.assertEqual('CREATE', zone.action)
+        ctx, zone, hostnames = self.service._create_ns.call_args[0]
         self.assertEqual(['host_foo'], hostnames)
 
     @unittest.expectedFailure  # FIXME
-    def test_create_domain_forbidden(self):
-        assert not self.service.storage.count_domains.called
+    def test_create_zone_forbidden(self):
+        assert not self.service.storage.count_zones.called
         designate.central.service.policy.check = mock.Mock(return_value=None)
-        self.service._enforce_domain_quota = mock.Mock(return_value=None)
-        self.service._is_valid_domain_name = mock.Mock(return_value=None)
+        self.service._enforce_zone_quota = mock.Mock(return_value=None)
+        self.service._is_valid_zone_name = mock.Mock(return_value=None)
         self.service._is_valid_ttl = mock.Mock(return_value=True)
-        self.service._is_subdomain = Mock()
-        self.service._create_domain_in_storage = mock.Mock(
-            return_value=MockDomain()
+        self.service._is_subzone = Mock()
+        self.service._create_zone_in_storage = mock.Mock(
+            return_value=Mockzone()
         )
-        self.service.storage.find_domain(self.context, {})
+        self.service.storage.find_zone(self.context, {})
 
-        parent_domain = self.service._is_subdomain(
+        parent_zone = self.service._is_subzone(
             self.context, 'bogusname', 1234)
 
-        # self.assertEqual('', parent_domain)
+        # self.assertEqual('', parent_zone)
         self.service.check_for_tlds = False
         with testtools.ExpectedException(exceptions.Forbidden):
-            self.service.create_domain(self.context, MockDomain())
+            self.service.create_zone(self.context, Mockzone())
 
-        # TODO(Federico) add more create_domain tests
-        assert parent_domain
+        # TODO(Federico) add more create_zone tests
+        assert parent_zone
 
 
-class CentralDomainTestCase(CentralBasic):
+class CentralzoneTestCase(CentralBasic):
     def setUp(self):
-        super(CentralDomainTestCase, self).setUp()
+        super(CentralzoneTestCase, self).setUp()
 
         def storage_find_tld(c, d):
             if d['name'] not in ('org',):
@@ -457,37 +457,37 @@ class CentralDomainTestCase(CentralBasic):
 
         self.service.storage.find_tld = storage_find_tld
 
-    def test__is_valid_domain_name_valid(self):
-        self.service._is_blacklisted_domain_name = Mock()
-        self.service._is_valid_domain_name(self.context, 'valid.org.')
+    def test__is_valid_zone_name_valid(self):
+        self.service._is_blacklisted_zone_name = Mock()
+        self.service._is_valid_zone_name(self.context, 'valid.org.')
 
-    def test__is_valid_domain_name_invalid(self):
-        self.service._is_blacklisted_domain_name = Mock()
-        with testtools.ExpectedException(exceptions.InvalidDomainName):
-            self.service._is_valid_domain_name(self.context, 'example^org.')
+    def test__is_valid_zone_name_invalid(self):
+        self.service._is_blacklisted_zone_name = Mock()
+        with testtools.ExpectedException(exceptions.InvalidZoneName):
+            self.service._is_valid_zone_name(self.context, 'example^org.')
 
-    def test__is_valid_domain_name_invalid_2(self):
-        self.service._is_blacklisted_domain_name = Mock()
-        with testtools.ExpectedException(exceptions.InvalidDomainName):
-            self.service._is_valid_domain_name(self.context, 'example.tld.')
+    def test__is_valid_zone_name_invalid_2(self):
+        self.service._is_blacklisted_zone_name = Mock()
+        with testtools.ExpectedException(exceptions.InvalidZoneName):
+            self.service._is_valid_zone_name(self.context, 'example.tld.')
 
-    def test__is_valid_domain_name_invalid_same_as_tld(self):
-        self.service._is_blacklisted_domain_name = Mock()
-        with testtools.ExpectedException(exceptions.InvalidDomainName):
-            self.service._is_valid_domain_name(self.context, 'com.com.')
+    def test__is_valid_zone_name_invalid_same_as_tld(self):
+        self.service._is_blacklisted_zone_name = Mock()
+        with testtools.ExpectedException(exceptions.InvalidZoneName):
+            self.service._is_valid_zone_name(self.context, 'com.com.')
 
-    def test__is_valid_domain_name_invalid_tld(self):
-        self.service._is_blacklisted_domain_name = Mock()
-        with testtools.ExpectedException(exceptions.InvalidDomainName):
-            self.service._is_valid_domain_name(self.context, 'tld.')
+    def test__is_valid_zone_name_invalid_tld(self):
+        self.service._is_blacklisted_zone_name = Mock()
+        with testtools.ExpectedException(exceptions.InvalidZoneName):
+            self.service._is_valid_zone_name(self.context, 'tld.')
 
-    def test__is_valid_domain_name_blacklisted(self):
-        self.service._is_blacklisted_domain_name = Mock(
-            side_effect=exceptions.InvalidDomainName)
-        with testtools.ExpectedException(exceptions.InvalidDomainName):
-            self.service._is_valid_domain_name(self.context, 'valid.com.')
+    def test__is_valid_zone_name_blacklisted(self):
+        self.service._is_blacklisted_zone_name = Mock(
+            side_effect=exceptions.InvalidZoneName)
+        with testtools.ExpectedException(exceptions.InvalidZoneName):
+            self.service._is_valid_zone_name(self.context, 'valid.com.')
 
-    def test__is_blacklisted_domain_name(self):
+    def test__is_blacklisted_zone_name(self):
         self.service.storage.find_blacklists.return_value = [
             RoObject(pattern='a'), RoObject(pattern='b')
         ]
@@ -497,46 +497,46 @@ class CentralDomainTestCase(CentralBasic):
             ('hi', False),
             ('', False)
         )
-        for domain, expected in blacklist_tests:
+        for zone, expected in blacklist_tests:
             self.assertEqual(
-                self.service._is_blacklisted_domain_name(self.context, domain),
+                self.service._is_blacklisted_zone_name(self.context, zone),
                 expected
             )
 
     def test__is_valid_recordset_name(self):
-        domain = RoObject(name='example.org.')
-        self.service._is_valid_recordset_name(self.context, domain,
+        zone = RoObject(name='example.org.')
+        self.service._is_valid_recordset_name(self.context, zone,
                                               'foo..example.org.')
 
     def test__is_valid_recordset_name_no_dot(self):
-        domain = RoObject(name='example.org.')
+        zone = RoObject(name='example.org.')
         with testtools.ExpectedException(ValueError):
-            self.service._is_valid_recordset_name(self.context, domain,
+            self.service._is_valid_recordset_name(self.context, zone,
                                                   'foo.example.org')
 
     def test__is_valid_recordset_name_too_long(self):
-        domain = RoObject(name='example.org.')
+        zone = RoObject(name='example.org.')
         designate.central.service.cfg.CONF['service:central'].\
             max_recordset_name_len = 255
         rs_name = 'a' * 255 + '.org.'
         with testtools.ExpectedException(exceptions.InvalidRecordSetName) as e:
-            self.service._is_valid_recordset_name(self.context, domain,
+            self.service._is_valid_recordset_name(self.context, zone,
                                                   rs_name)
             self.assertEqual(e.message, 'Name too long')
 
-    def test__is_valid_recordset_name_wrong_domain(self):
-        domain = RoObject(name='example.org.')
+    def test__is_valid_recordset_name_wrong_zone(self):
+        zone = RoObject(name='example.org.')
         with testtools.ExpectedException(exceptions.InvalidRecordSetLocation):
-            self.service._is_valid_recordset_name(self.context, domain,
+            self.service._is_valid_recordset_name(self.context, zone,
                                                   'foo.example.com.')
 
     def test_is_valid_recordset_placement_cname(self):
-        domain = RoObject(name='example.org.')
+        zone = RoObject(name='example.org.')
         with testtools.ExpectedException(exceptions.InvalidRecordSetLocation) \
                 as e:
             self.service._is_valid_recordset_placement(
                 self.context,
-                domain,
+                zone,
                 'example.org.',
                 'CNAME',
             )
@@ -546,7 +546,7 @@ class CentralDomainTestCase(CentralBasic):
             )
 
     def test_is_valid_recordset_placement_failing(self):
-        domain = RoObject(name='example.org.', id='1')
+        zone = RoObject(name='example.org.', id='1')
         self.service.storage.find_recordsets.return_value = [
             RoObject(id='2')
         ]
@@ -554,7 +554,7 @@ class CentralDomainTestCase(CentralBasic):
                 as e:
             self.service._is_valid_recordset_placement(
                 self.context,
-                domain,
+                zone,
                 'example.org.',
                 'A',
             )
@@ -564,7 +564,7 @@ class CentralDomainTestCase(CentralBasic):
             )
 
     def test_is_valid_recordset_placement_failing_2(self):
-        domain = RoObject(name='example.org.', id='1')
+        zone = RoObject(name='example.org.', id='1')
         self.service.storage.find_recordsets.return_value = [
             RoObject(),
             RoObject()
@@ -573,7 +573,7 @@ class CentralDomainTestCase(CentralBasic):
                 as e:
             self.service._is_valid_recordset_placement(
                 self.context,
-                domain,
+                zone,
                 'example.org.',
                 'A',
             )
@@ -583,46 +583,46 @@ class CentralDomainTestCase(CentralBasic):
             )
 
     def test_is_valid_recordset_placement(self):
-        domain = RoObject(name='example.org.', id='1')
+        zone = RoObject(name='example.org.', id='1')
         self.service.storage.find_recordsets.return_value = []
         ret = self.service._is_valid_recordset_placement(
             self.context,
-            domain,
+            zone,
             'example.org.',
             'A',
         )
         self.assertTrue(ret)
 
-    def test__is_valid_recordset_placement_subdomain(self):
-        domain = RoObject(name='example.org.', id='1')
-        self.service._is_valid_recordset_placement_subdomain(
+    def test__is_valid_recordset_placement_subzone(self):
+        zone = RoObject(name='example.org.', id='1')
+        self.service._is_valid_recordset_placement_subzone(
             self.context,
-            domain,
+            zone,
             'example.org.'
         )
 
-    def test__is_valid_recordset_placement_subdomain_2(self):
-        domain = RoObject(name='example.org.', id='1')
+    def test__is_valid_recordset_placement_subzone_2(self):
+        zone = RoObject(name='example.org.', id='1')
         self.service._is_valid_recordset_name = Mock(side_effect=Exception)
-        self.service.storage.find_domains.return_value = [
+        self.service.storage.find_zones.return_value = [
             RoObject(name='foo.example.org.')
         ]
-        self.service._is_valid_recordset_placement_subdomain(
+        self.service._is_valid_recordset_placement_subzone(
             self.context,
-            domain,
+            zone,
             'bar.example.org.'
         )
 
-    def test__is_valid_recordset_placement_subdomain_failing(self):
-        domain = RoObject(name='example.org.', id='1')
+    def test__is_valid_recordset_placement_subzone_failing(self):
+        zone = RoObject(name='example.org.', id='1')
         self.service._is_valid_recordset_name = Mock()
-        self.service.storage.find_domains.return_value = [
+        self.service.storage.find_zones.return_value = [
             RoObject(name='foo.example.org.')
         ]
         with testtools.ExpectedException(exceptions.InvalidRecordSetLocation):
-            self.service._is_valid_recordset_placement_subdomain(
+            self.service._is_valid_recordset_placement_subzone(
                 self.context,
-                domain,
+                zone,
                 'bar.example.org.'
             )
 
@@ -639,17 +639,17 @@ class CentralDomainTestCase(CentralBasic):
                 recordset
             )
 
-    def test__is_superdomain(self):
-        self.service.storage.find_domains = Mock()
-        self.service._is_superdomain(self.context, 'example.org.', '1')
-        _class_self_, crit = self.service.storage.find_domains.call_args[0]
+    def test__is_superzone(self):
+        self.service.storage.find_zones = Mock()
+        self.service._is_superzone(self.context, 'example.org.', '1')
+        _class_self_, crit = self.service.storage.find_zones.call_args[0]
         self.assertEqual({'name': '%.example.org.', 'pool_id': '1'}, crit)
 
     @patch('designate.central.service.utils.increment_serial')
-    def FIXME_test__increment_domain_serial(self, utils_inc_ser):
+    def FIXME_test__increment_zone_serial(self, utils_inc_ser):
         fixtures.MockPatch('designate.central.service.utils.increment_serial')
-        domain = RoObject(serial=1)
-        self.service._increment_domain_serial(self.context, domain)
+        zone = RoObject(serial=1)
+        self.service._increment_zone_serial(self.context, zone)
 
     def test__create_ns(self):
         self.service._create_recordset_in_storage = Mock(return_value=(0, 0))
@@ -734,14 +734,14 @@ class CentralDomainTestCase(CentralBasic):
         self.assertTrue(rset.records[0].managed)
         self.assertEqual('bar', rset.records[0].data.name)
 
-    def test_create_domain_no_servers(self):
-        self.service._enforce_domain_quota = Mock()
-        self.service._is_valid_domain_name = Mock()
+    def test_create_zone_no_servers(self):
+        self.service._enforce_zone_quota = Mock()
+        self.service._is_valid_zone_name = Mock()
         self.service._is_valid_ttl = Mock()
-        self.service._is_subdomain = Mock(
+        self.service._is_subzone = Mock(
             return_value=False
         )
-        self.service._is_superdomain = Mock(
+        self.service._is_superzone = Mock(
             return_value=[]
         )
         self.service.storage.get_pool.return_value = RoObject(
@@ -749,34 +749,34 @@ class CentralDomainTestCase(CentralBasic):
         )
 
         with testtools.ExpectedException(exceptions.NoServersConfigured):
-            self.service.create_domain(
+            self.service.create_zone(
                 self.context,
                 RoObject(tenant_id='1', name='example.com.', ttl=60,
                          pool_id='2')
             )
 
-    def test_create_domain(self):
-        self.service._enforce_domain_quota = Mock()
-        self.service._create_domain_in_storage = Mock(
+    def test_create_zone(self):
+        self.service._enforce_zone_quota = Mock()
+        self.service._create_zone_in_storage = Mock(
             return_value=RoObject(
                 name='example.com.',
                 type='PRIMARY',
             )
         )
-        self.service._is_valid_domain_name = Mock()
+        self.service._is_valid_zone_name = Mock()
         self.service._is_valid_ttl = Mock()
-        self.service._is_subdomain = Mock(
+        self.service._is_subzone = Mock(
             return_value=False
         )
-        self.service._is_superdomain = Mock(
+        self.service._is_superzone = Mock(
             return_value=[]
         )
         self.service.storage.get_pool.return_value = RoObject(
             ns_records=[RoObject()]
         )
-        # self.service.create_domain = unwrap(self.service.create_domain)
+        # self.service.create_zone = unwrap(self.service.create_zone)
 
-        out = self.service.create_domain(
+        out = self.service.create_zone(
             self.context,
             RoObject(
                 tenant_id='1',
@@ -788,66 +788,66 @@ class CentralDomainTestCase(CentralBasic):
         )
         self.assertEqual('example.com.', out.name)
 
-    def test_get_domain(self):
-        self.service.storage.get_domain.return_value = RoObject(
+    def test_get_zone(self):
+        self.service.storage.get_zone.return_value = RoObject(
             name='foo',
             tenant_id='2',
         )
-        self.service.get_domain(self.context, '1')
+        self.service.get_zone(self.context, '1')
         n, ctx, target = designate.central.service.policy.check.call_args[0]
-        self.assertEqual('1', target['domain_id'])
-        self.assertEqual('foo', target['domain_name'])
+        self.assertEqual('1', target['zone_id'])
+        self.assertEqual('foo', target['zone_name'])
         self.assertEqual('2', target['tenant_id'])
 
-    def test_get_domain_servers(self):
-        self.service.storage.get_domain.return_value = RoObject(
+    def test_get_zone_servers(self):
+        self.service.storage.get_zone.return_value = RoObject(
             name='foo',
             tenant_id='2',
             pool_id='3',
         )
 
-        self.service.get_domain_servers(
+        self.service.get_zone_ns_records(
             self.context,
-            domain_id='1'
+            zone_id='1'
         )
 
         ctx, pool_id = self.service.storage.get_pool.call_args[0]
         self.assertEqual('3', pool_id)
 
-    def test_find_domains(self):
+    def test_find_zones(self):
         self.context = RoObject(tenant='t')
-        self.service.storage.find_domains = Mock()
-        self.service.find_domains(self.context)
-        assert self.service.storage.find_domains.called
+        self.service.storage.find_zones = Mock()
+        self.service.find_zones(self.context)
+        assert self.service.storage.find_zones.called
         pcheck, ctx, target = \
             designate.central.service.policy.check.call_args[0]
-        self.assertEqual('find_domains', pcheck)
+        self.assertEqual('find_zones', pcheck)
 
-    def test_find_domain(self):
+    def test_find_zone(self):
         self.context = RoObject(tenant='t')
-        self.service.storage.find_domain = Mock()
-        self.service.find_domain(self.context)
-        assert self.service.storage.find_domain.called
+        self.service.storage.find_zone = Mock()
+        self.service.find_zone(self.context)
+        assert self.service.storage.find_zone.called
         pcheck, ctx, target = \
             designate.central.service.policy.check.call_args[0]
-        self.assertEqual('find_domain', pcheck)
+        self.assertEqual('find_zone', pcheck)
 
-    def test_delete_domain_has_subdomain(self):
+    def test_delete_zone_has_subzone(self):
         self.context.abandon = False
-        self.service.storage.get_domain.return_value = RoObject(
+        self.service.storage.get_zone.return_value = RoObject(
             name='foo',
             tenant_id='2',
         )
-        self.service.storage.count_domains.return_value = 2
-        with testtools.ExpectedException(exceptions.DomainHasSubdomain):
-            self.service.delete_domain(self.context, '1')
+        self.service.storage.count_zones.return_value = 2
+        with testtools.ExpectedException(exceptions.ZoneHasSubZone):
+            self.service.delete_zone(self.context, '1')
 
         pcheck, ctx, target = \
             designate.central.service.policy.check.call_args[0]
-        self.assertEqual('delete_domain', pcheck)
+        self.assertEqual('delete_zone', pcheck)
 
-    def test_delete_domain_abandon(self):
-        self.service.storage.get_domain.return_value = RoObject(
+    def test_delete_zone_abandon(self):
+        self.service.storage.get_zone.return_value = RoObject(
             name='foo',
             tenant_id='2',
             id='9'
@@ -859,49 +859,49 @@ class CentralDomainTestCase(CentralBasic):
             'check',
         ])
         self.context.abandon = True
-        self.service.storage.count_domains.return_value = 0
-        self.service.delete_domain(self.context, '1')
-        assert self.service.storage.delete_domain.called
-        assert not self.service.pool_manager_api.delete_domain.called
+        self.service.storage.count_zones.return_value = 0
+        self.service.delete_zone(self.context, '1')
+        assert self.service.storage.delete_zone.called
+        assert not self.service.pool_manager_api.delete_zone.called
         pcheck, ctx, target = \
             designate.central.service.policy.check.call_args[0]
-        self.assertEqual('abandon_domain', pcheck)
+        self.assertEqual('abandon_zone', pcheck)
 
-    def test_delete_domain(self):
+    def test_delete_zone(self):
         self.context.abandon = False
-        self.service.storage.get_domain.return_value = RoObject(
+        self.service.storage.get_zone.return_value = RoObject(
             name='foo',
             tenant_id='2',
         )
-        self.service._delete_domain_in_storage = Mock(
+        self.service._delete_zone_in_storage = Mock(
             return_value=RoObject(
                 name='foo'
             )
         )
-        self.service.storage.count_domains.return_value = 0
-        out = self.service.delete_domain(self.context, '1')
-        assert not self.service.storage.delete_domain.called
-        assert self.service.pool_manager_api.delete_domain.called
+        self.service.storage.count_zones.return_value = 0
+        out = self.service.delete_zone(self.context, '1')
+        assert not self.service.storage.delete_zone.called
+        assert self.service.pool_manager_api.delete_zone.called
         assert designate.central.service.policy.check.called
         ctx, deleted_dom = \
-            self.service.pool_manager_api.delete_domain.call_args[0]
+            self.service.pool_manager_api.delete_zone.call_args[0]
         self.assertEqual('foo', deleted_dom.name)
         self.assertEqual('foo', out.name)
         pcheck, ctx, target = \
             designate.central.service.policy.check.call_args[0]
-        self.assertEqual('delete_domain', pcheck)
+        self.assertEqual('delete_zone', pcheck)
 
-    def test__delete_domain_in_storage(self):
-        self.service._delete_domain_in_storage(
+    def test__delete_zone_in_storage(self):
+        self.service._delete_zone_in_storage(
             self.context,
             RwObject(action='', status=''),
         )
-        d = self.service.storage.update_domain.call_args[0][1]
+        d = self.service.storage.update_zone.call_args[0][1]
         self.assertEqual('DELETE', d.action)
         self.assertEqual('PENDING', d.status)
 
-    def test__xfr_domain_secondary(self):
-        self.service.storage.get_domain.return_value = RoObject(
+    def test__xfr_zone_secondary(self):
+        self.service.storage.get_zone.return_value = RoObject(
             name='example.org.',
             tenant_id='2',
             type='SECONDARY',
@@ -911,26 +911,26 @@ class CentralDomainTestCase(CentralBasic):
         with fx_mdns_api:
             self.service.mdns_api.get_serial_number.return_value = \
                 "SUCCESS", 2, 1
-            self.service.xfr_domain(self.context, '1')
+            self.service.xfr_zone(self.context, '1')
             assert self.service.mdns_api.perform_zone_xfr.called
 
         assert designate.central.service.policy.check.called
         self.assertEqual(
-            'xfr_domain',
+            'xfr_zone',
             designate.central.service.policy.check.call_args[0][0]
         )
 
-    def test__xfr_domain_not_secondary(self):
-        self.service.storage.get_domain.return_value = RoObject(
+    def test__xfr_zone_not_secondary(self):
+        self.service.storage.get_zone.return_value = RoObject(
             name='example.org.',
             tenant_id='2',
             type='PRIMARY'
         )
         with testtools.ExpectedException(exceptions.BadRequest):
-            self.service.xfr_domain(self.context, '1')
+            self.service.xfr_zone(self.context, '1')
 
     def test_count_report(self):
-        self.service.count_domains = Mock(return_value=1)
+        self.service.count_zones = Mock(return_value=1)
         self.service.count_records = Mock(return_value=2)
         self.service.count_tenants = Mock(return_value=3)
         reports = self.service.count_report(
@@ -940,7 +940,7 @@ class CentralDomainTestCase(CentralBasic):
         self.assertEqual([{'zones': 1, 'records': 2, 'tenants': 3}], reports)
 
     def test_count_report_zones(self):
-        self.service.count_domains = Mock(return_value=1)
+        self.service.count_zones = Mock(return_value=1)
         self.service.count_records = Mock(return_value=2)
         self.service.count_tenants = Mock(return_value=3)
         reports = self.service.count_report(
@@ -950,7 +950,7 @@ class CentralDomainTestCase(CentralBasic):
         self.assertEqual([{'zones': 1}], reports)
 
     def test_count_report_records(self):
-        self.service.count_domains = Mock(return_value=1)
+        self.service.count_zones = Mock(return_value=1)
         self.service.count_records = Mock(return_value=2)
         self.service.count_tenants = Mock(return_value=3)
         reports = self.service.count_report(
@@ -960,7 +960,7 @@ class CentralDomainTestCase(CentralBasic):
         self.assertEqual([{'records': 2}], reports)
 
     def test_count_report_tenants(self):
-        self.service.count_domains = Mock(return_value=1)
+        self.service.count_zones = Mock(return_value=1)
         self.service.count_records = Mock(return_value=2)
         self.service.count_tenants = Mock(return_value=3)
         reports = self.service.count_report(
@@ -970,7 +970,7 @@ class CentralDomainTestCase(CentralBasic):
         self.assertEqual([{'tenants': 3}], reports)
 
     def test_count_report_not_found(self):
-        self.service.count_domains = Mock(return_value=1)
+        self.service.count_zones = Mock(return_value=1)
         self.service.count_records = Mock(return_value=2)
         self.service.count_tenants = Mock(return_value=3)
         with testtools.ExpectedException(exceptions.ReportNotFound):
@@ -979,27 +979,27 @@ class CentralDomainTestCase(CentralBasic):
                 criterion='bogus'
             )
 
-    def test_touch_domain(self):
-        self.service._touch_domain_in_storage = Mock()
-        self.service.storage.get_domain.return_value = RoObject(
+    def test_touch_zone(self):
+        self.service._touch_zone_in_storage = Mock()
+        self.service.storage.get_zone.return_value = RoObject(
             name='example.org.',
             tenant_id='2',
         )
         with fx_pool_manager:
-            self.service.touch_domain(self.context, '1')
+            self.service.touch_zone(self.context, '1')
 
         assert designate.central.service.policy.check.called
         self.assertEqual(
-            'touch_domain',
+            'touch_zone',
             designate.central.service.policy.check.call_args[0][0]
         )
 
     def test_get_recordset_not_found(self):
-        self.service.storage.get_domain.return_value = RoObject(
+        self.service.storage.get_zone.return_value = RoObject(
             id='2',
         )
         self.service.storage.get_recordset.return_value = RoObject(
-            domain_id='3'
+            zone_id='3'
         )
         with testtools.ExpectedException(exceptions.RecordSetNotFound):
             self.service.get_recordset(
@@ -1009,13 +1009,13 @@ class CentralDomainTestCase(CentralBasic):
             )
 
     def test_get_recordset(self):
-        self.service.storage.get_domain.return_value = RoObject(
+        self.service.storage.get_zone.return_value = RoObject(
             id='2',
             name='example.org.',
             tenant_id='2',
         )
         self.service.storage.get_recordset.return_value = RoObject(
-            domain_id='2',
+            zone_id='2',
             id='3'
         )
         self.service.get_recordset(
@@ -1030,8 +1030,8 @@ class CentralDomainTestCase(CentralBasic):
         t, ctx, target = designate.central.service.policy.check.call_args[0]
         self.assertEqual('get_recordset', t)
         self.assertEqual({
-            'domain_id': '1',
-            'domain_name': 'example.org.',
+            'zone_id': '1',
+            'zone_name': 'example.org.',
             'recordset_id': '3',
             'tenant_id': '2'}, target)
 
@@ -1054,7 +1054,7 @@ class CentralDomainTestCase(CentralBasic):
         self.assertEqual({'tenant_id': 't'}, target)
 
     def test_update_recordset_fail_on_changes(self):
-        self.service.storage.get_domain.return_value = RoObject()
+        self.service.storage.get_zone.return_value = RoObject()
         recordset = Mock()
         recordset.obj_get_original_value.return_value = '1'
 
@@ -1062,7 +1062,7 @@ class CentralDomainTestCase(CentralBasic):
         with testtools.ExpectedException(exceptions.BadRequest):
             self.service.update_recordset(self.context, recordset)
 
-        recordset.obj_get_changes.return_value = ['domain_id', 'foo']
+        recordset.obj_get_changes.return_value = ['zone_id', 'foo']
         with testtools.ExpectedException(exceptions.BadRequest):
             self.service.update_recordset(self.context, recordset)
 
@@ -1071,7 +1071,7 @@ class CentralDomainTestCase(CentralBasic):
             self.service.update_recordset(self.context, recordset)
 
     def test_update_recordset_action_delete(self):
-        self.service.storage.get_domain.return_value = RoObject(
+        self.service.storage.get_zone.return_value = RoObject(
             action='DELETE',
         )
         recordset = Mock()
@@ -1080,7 +1080,7 @@ class CentralDomainTestCase(CentralBasic):
             self.service.update_recordset(self.context, recordset)
 
     def test_update_recordset_action_fail_on_managed(self):
-        self.service.storage.get_domain.return_value = RoObject(
+        self.service.storage.get_zone.return_value = RoObject(
             type='foo',
             name='example.org.',
             tenant_id='2',
@@ -1095,7 +1095,7 @@ class CentralDomainTestCase(CentralBasic):
             self.service.update_recordset(self.context, recordset)
 
     def test_update_recordset(self):
-        self.service.storage.get_domain.return_value = RoObject(
+        self.service.storage.get_zone.return_value = RoObject(
             type='foo',
             name='example.org.',
             tenant_id='2',
@@ -1116,9 +1116,9 @@ class CentralDomainTestCase(CentralBasic):
         n, ctx, target = designate.central.service.policy.check.call_args[0]
         self.assertEqual('update_recordset', n)
         self.assertEqual({
-            'domain_id': '1',
-            'domain_name': 'example.org.',
-            'domain_type': 'foo',
+            'zone_id': '1',
+            'zone_name': 'example.org.',
+            'zone_type': 'foo',
             'recordset_id': '1',
             'tenant_id': '2'}, target)
 
@@ -1131,9 +1131,9 @@ class CentralDomainTestCase(CentralBasic):
         recordset.records = []
         self.service._is_valid_recordset_name = Mock()
         self.service._is_valid_recordset_placement = Mock()
-        self.service._is_valid_recordset_placement_subdomain = Mock()
+        self.service._is_valid_recordset_placement_subzone = Mock()
         self.service._is_valid_ttl = Mock()
-        self.service._update_domain_in_storage = Mock()
+        self.service._update_zone_in_storage = Mock()
 
         self.service._update_recordset_in_storage(
             self.context,
@@ -1151,7 +1151,7 @@ class CentralDomainTestCase(CentralBasic):
         )
         self.assertEqual(
             'n',
-            self.service._is_valid_recordset_placement_subdomain.
+            self.service._is_valid_recordset_placement_subzone.
             call_args[0][2]
         )
         self.assertEqual(
@@ -1159,7 +1159,7 @@ class CentralDomainTestCase(CentralBasic):
             self.service._is_valid_ttl.call_args[0][1]
         )
         assert self.service.storage.update_recordset.called
-        assert self.service._update_domain_in_storage.called
+        assert self.service._update_zone_in_storage.called
 
     def test__update_recordset_in_storage_2(self):
         recordset = Mock()
@@ -1174,9 +1174,9 @@ class CentralDomainTestCase(CentralBasic):
         )]
         self.service._is_valid_recordset_name = Mock()
         self.service._is_valid_recordset_placement = Mock()
-        self.service._is_valid_recordset_placement_subdomain = Mock()
+        self.service._is_valid_recordset_placement_subzone = Mock()
         self.service._is_valid_ttl = Mock()
-        self.service._update_domain_in_storage = Mock()
+        self.service._update_zone_in_storage = Mock()
 
         self.service._update_recordset_in_storage(
             self.context,
@@ -1195,15 +1195,15 @@ class CentralDomainTestCase(CentralBasic):
         )
         self.assertEqual(
             'n',
-            self.service._is_valid_recordset_placement_subdomain.
+            self.service._is_valid_recordset_placement_subzone.
             call_args[0][2]
         )
         assert not self.service._is_valid_ttl.called
-        assert not self.service._update_domain_in_storage.called
+        assert not self.service._update_zone_in_storage.called
         assert self.service.storage.update_recordset.called
 
     def test_delete_recordset_not_found(self):
-        self.service.storage.get_domain.return_value = RoObject(
+        self.service.storage.get_zone.return_value = RoObject(
             action='bogus',
             id=4,
             name='example.org.',
@@ -1211,7 +1211,7 @@ class CentralDomainTestCase(CentralBasic):
             type='foo',
         )
         self.service.storage.get_recordset.return_value = RoObject(
-            domain_id='d',
+            zone_id='d',
             id='i',
             managed=False,
         )
@@ -1221,7 +1221,7 @@ class CentralDomainTestCase(CentralBasic):
             self.service.delete_recordset(self.context, 'd', 'r')
 
     def test_delete_recordset_action_delete(self):
-        self.service.storage.get_domain.return_value = RoObject(
+        self.service.storage.get_zone.return_value = RoObject(
             action='DELETE',
             id=4,
             name='example.org.',
@@ -1229,7 +1229,7 @@ class CentralDomainTestCase(CentralBasic):
             type='foo',
         )
         self.service.storage.get_recordset.return_value = RoObject(
-            domain_id=4,
+            zone_id=4,
             id='i',
             managed=False,
         )
@@ -1239,7 +1239,7 @@ class CentralDomainTestCase(CentralBasic):
             self.service.delete_recordset(self.context, 'd', 'r')
 
     def test_delete_recordset_managed(self):
-        self.service.storage.get_domain.return_value = RoObject(
+        self.service.storage.get_zone.return_value = RoObject(
             action='foo',
             id=4,
             name='example.org.',
@@ -1247,7 +1247,7 @@ class CentralDomainTestCase(CentralBasic):
             type='foo',
         )
         self.service.storage.get_recordset.return_value = RoObject(
-            domain_id=4,
+            zone_id=4,
             id='i',
             managed=True,
         )
@@ -1257,7 +1257,7 @@ class CentralDomainTestCase(CentralBasic):
             self.service.delete_recordset(self.context, 'd', 'r')
 
     def test_delete_recordset(self):
-        self.service.storage.get_domain.return_value = RoObject(
+        self.service.storage.get_zone.return_value = RoObject(
             action='foo',
             id=4,
             name='example.org.',
@@ -1265,7 +1265,7 @@ class CentralDomainTestCase(CentralBasic):
             type='foo',
         )
         self.service.storage.get_recordset.return_value = RoObject(
-            domain_id=4,
+            zone_id=4,
             id='i',
             managed=False,
         )
@@ -1276,14 +1276,14 @@ class CentralDomainTestCase(CentralBasic):
         )
         with fx_pool_manager:
             self.service.delete_recordset(self.context, 'd', 'r')
-            assert self.service.pool_manager_api.update_domain.called
+            assert self.service.pool_manager_api.update_zone.called
 
         assert self.service._delete_recordset_in_storage.called
 
     def test__delete_recordset_in_storage(self):
-        def mock_uds(c, domain, inc):
-            return domain
-        self.service._update_domain_in_storage = mock_uds
+        def mock_uds(c, zone, inc):
+            return zone
+        self.service._update_zone_in_storage = mock_uds
         self.service._delete_recordset_in_storage(
             self.context,
             RoObject(serial=1),
@@ -1304,7 +1304,7 @@ class CentralDomainTestCase(CentralBasic):
         self.assertEqual(1, rs.records[0].serial)
 
     def test__delete_recordset_in_storage_no_increment_serial(self):
-        self.service._update_domain_in_storage = Mock()
+        self.service._update_zone_in_storage = Mock()
         self.service._delete_recordset_in_storage(
             self.context,
             RoObject(serial=1),
@@ -1319,7 +1319,7 @@ class CentralDomainTestCase(CentralBasic):
         )
         assert self.service.storage.update_recordset.called
         assert self.service.storage.delete_recordset.called
-        assert not self.service._update_domain_in_storage.called
+        assert not self.service._update_zone_in_storage.called
 
     def test_count_recordset(self):
         self.service.count_recordsets(self.context)
@@ -1332,7 +1332,7 @@ class CentralDomainTestCase(CentralBasic):
         )
 
     def test_create_record_fail_on_delete(self):
-        self.service.storage.get_domain.return_value = RoObject(
+        self.service.storage.get_zone.return_value = RoObject(
             action='DELETE',
             id=4,
             name='example.org.',
@@ -1351,7 +1351,7 @@ class CentralDomainTestCase(CentralBasic):
         self.service._create_record_in_storage = Mock(
             return_value=(None, None)
         )
-        self.service.storage.get_domain.return_value = RoObject(
+        self.service.storage.get_zone.return_value = RoObject(
             action='a',
             id=4,
             name='example.org.',
@@ -1368,14 +1368,14 @@ class CentralDomainTestCase(CentralBasic):
                 2,
                 RoObject(),
             )
-            assert self.service.pool_manager_api.update_domain.called
+            assert self.service.pool_manager_api.update_zone.called
 
         n, ctx, target = designate.central.service.policy.check.call_args[0]
         self.assertEqual('create_record', n)
         self.assertEqual({
-            'domain_id': 1,
-            'domain_name': 'example.org.',
-            'domain_type': 'foo',
+            'zone_id': 1,
+            'zone_name': 'example.org.',
+            'zone_type': 'foo',
             'recordset_id': 2,
             'recordset_name': 'rs',
             'tenant_id': '2'}, target)
@@ -1401,48 +1401,48 @@ class CentralDomainTestCase(CentralBasic):
         self.assertEqual(4, record.serial)
 
     def test_get_record_not_found(self):
-        self.service.storage.get_domain.return_value = RoObject(
+        self.service.storage.get_zone.return_value = RoObject(
             id=2,
         )
         self.service.storage.get_recordset.return_value = RoObject(
-            domain_id=3
+            zone_id=3
         )
         with testtools.ExpectedException(exceptions.RecordNotFound):
             self.service.get_record(self.context, 1, 2, 3)
 
     def test_get_record_not_found_2(self):
-        self.service.storage.get_domain.return_value = RoObject(
+        self.service.storage.get_zone.return_value = RoObject(
             id=2,
             name='example.org.',
             tenant_id=2,
         )
         self.service.storage.get_recordset.return_value = RoObject(
-            domain_id=2,
+            zone_id=2,
             id=999,  # not matching record.recordset_id
             name='foo'
         )
         self.service.storage.get_record.return_value = RoObject(
             id=5,
-            domain_id=2,
+            zone_id=2,
             recordset_id=3
         )
         with testtools.ExpectedException(exceptions.RecordNotFound):
             self.service.get_record(self.context, 1, 2, 3)
 
     def test_get_record(self):
-        self.service.storage.get_domain.return_value = RoObject(
+        self.service.storage.get_zone.return_value = RoObject(
             id=2,
             name='example.org.',
             tenant_id=2,
         )
         self.service.storage.get_recordset.return_value = RoObject(
-            domain_id=2,
+            zone_id=2,
             id=3,
             name='foo'
         )
         self.service.storage.get_record.return_value = RoObject(
             id=5,
-            domain_id=2,
+            zone_id=2,
             recordset_id=3
         )
         self.service.get_record(self.context, 1, 2, 3)
@@ -1453,15 +1453,15 @@ class CentralDomainTestCase(CentralBasic):
         t, ctx, target = designate.central.service.policy.check.call_args[0]
         self.assertEqual('get_record', t)
         self.assertEqual({
-            'domain_id': 1,
-            'domain_name': 'example.org.',
+            'zone_id': 1,
+            'zone_name': 'example.org.',
             'record_id': 5,
             'recordset_id': 2,
             'recordset_name': 'foo',
             'tenant_id': 2}, target)
 
     def test_update_record_fail_on_changes(self):
-        self.service.storage.get_domain.return_value = RoObject(
+        self.service.storage.get_zone.return_value = RoObject(
             action='a',
             name='n',
             type='t',
@@ -1474,7 +1474,7 @@ class CentralDomainTestCase(CentralBasic):
         with testtools.ExpectedException(exceptions.BadRequest):
             self.service.update_record(self.context, record)
 
-        record.obj_get_changes.return_value = ['domain_id', 'foo']
+        record.obj_get_changes.return_value = ['zone_id', 'foo']
         with testtools.ExpectedException(exceptions.BadRequest):
             self.service.update_record(self.context, record)
 
@@ -1483,7 +1483,7 @@ class CentralDomainTestCase(CentralBasic):
             self.service.update_record(self.context, record)
 
     def test_update_record_action_delete(self):
-        self.service.storage.get_domain.return_value = RoObject(
+        self.service.storage.get_zone.return_value = RoObject(
             action='DELETE',
         )
         record = Mock()
@@ -1491,7 +1491,7 @@ class CentralDomainTestCase(CentralBasic):
             self.service.update_record(self.context, record)
 
     def test_update_record_action_fail_on_managed(self):
-        self.service.storage.get_domain.return_value = RoObject(
+        self.service.storage.get_zone.return_value = RoObject(
             action='a',
             name='n',
             tenant_id='tid',
@@ -1509,7 +1509,7 @@ class CentralDomainTestCase(CentralBasic):
             self.service.update_record(self.context, record)
 
     def test_update_record(self):
-        self.service.storage.get_domain.return_value = RoObject(
+        self.service.storage.get_zone.return_value = RoObject(
             action='a',
             name='n',
             tenant_id='tid',
@@ -1534,16 +1534,16 @@ class CentralDomainTestCase(CentralBasic):
         n, ctx, target = designate.central.service.policy.check.call_args[0]
         self.assertEqual('update_record', n)
         self.assertEqual({
-            'domain_id': '1',
-            'domain_name': 'n',
-            'domain_type': 't',
+            'zone_id': '1',
+            'zone_name': 'n',
+            'zone_type': 't',
             'record_id': '1',
             'recordset_id': '1',
             'recordset_name': 'rsn',
             'tenant_id': 'tid'}, target)
 
     def test__update_record_in_storage(self):
-        self.service._update_domain_in_storage = Mock()
+        self.service._update_zone_in_storage = Mock()
         self.service._update_record_in_storage(
             self.context,
             RoObject(serial=1),
@@ -1560,30 +1560,30 @@ class CentralDomainTestCase(CentralBasic):
         self.assertEqual(1, record.serial)
 
     def test_delete_record_action_delete(self):
-        self.service.storage.get_domain.return_value = RoObject(
+        self.service.storage.get_zone.return_value = RoObject(
             action='DELETE',
         )
         with testtools.ExpectedException(exceptions.BadRequest):
             self.service.delete_record(self.context, 1, 2, 3)
 
     def test_delete_record_not_found(self):
-        self.service.storage.get_domain.return_value = RoObject(
+        self.service.storage.get_zone.return_value = RoObject(
             action='a',
             id=2
         )
         self.service.storage.get_record.return_value = RoObject(
-            domain_id=999,
+            zone_id=999,
         )
         self.service.storage.get_recordset.return_value = RoObject(
             id=888,
         )
-        # domain.id != record.domain_id
+        # zone.id != record.zone_id
         with testtools.ExpectedException(exceptions.RecordNotFound):
             self.service.delete_record(self.context, 1, 2, 3)
 
         self.service.storage.get_record.return_value = RoObject(
             id=1,
-            domain_id=2,
+            zone_id=2,
             recordset_id=7777,
         )
         #  recordset.id != record.recordset_id
@@ -1594,7 +1594,7 @@ class CentralDomainTestCase(CentralBasic):
         self.service._delete_record_in_storage = Mock(
             return_value=(None, None)
         )
-        self.service.storage.get_domain.return_value = RoObject(
+        self.service.storage.get_zone.return_value = RoObject(
             action='a',
             id=2,
             name='dn',
@@ -1603,7 +1603,7 @@ class CentralDomainTestCase(CentralBasic):
         )
         self.service.storage.get_record.return_value = RoObject(
             id=4,
-            domain_id=2,
+            zone_id=2,
             recordset_id=3,
         )
         self.service.storage.get_recordset.return_value = RoObject(
@@ -1618,9 +1618,9 @@ class CentralDomainTestCase(CentralBasic):
         t, ctx, target = designate.central.service.policy.check.call_args[0]
         self.assertEqual('delete_record', t)
         self.assertEqual({
-            'domain_id': 1,
-            'domain_name': 'dn',
-            'domain_type': 't',
+            'zone_id': 1,
+            'zone_name': 'dn',
+            'zone_type': 't',
             'record_id': 4,
             'recordset_id': 2,
             'recordset_name': 'rsn',
@@ -1630,7 +1630,7 @@ class CentralDomainTestCase(CentralBasic):
         self.service._delete_record_in_storage = Mock(
             return_value=(None, None)
         )
-        self.service.storage.get_domain.return_value = RoObject(
+        self.service.storage.get_zone.return_value = RoObject(
             action='a',
             id=2,
             name='dn',
@@ -1639,7 +1639,7 @@ class CentralDomainTestCase(CentralBasic):
         )
         self.service.storage.get_record.return_value = RoObject(
             id=4,
-            domain_id=2,
+            zone_id=2,
             recordset_id=3,
         )
         self.service.storage.get_recordset.return_value = RoObject(
@@ -1672,35 +1672,35 @@ class CentralDomainTestCase(CentralBasic):
         self.assertEqual('count_records', t)
         self.assertEqual({'tenant_id': None}, target)
 
-    def test_sync_domains(self):
-        self.service._sync_domain = Mock()
-        self.service.storage.find_domains.return_value = [
+    def test_sync_zones(self):
+        self.service._sync_zone = Mock()
+        self.service.storage.find_zones.return_value = [
             RoObject(id=1),
             RoObject(id=2)
         ]
 
-        res = self.service.sync_domains(self.context)
+        res = self.service.sync_zones(self.context)
         t, ctx = designate.central.service.policy.check.call_args[0]
-        self.assertEqual('diagnostics_sync_domains', t)
+        self.assertEqual('diagnostics_sync_zones', t)
         self.assertEqual(2, len(res))
 
-    def test_sync_domain(self):
-        self.service._sync_domain = Mock()
-        self.service.storage.get_domain.return_value = RoObject(
+    def test_sync_zone(self):
+        self.service._sync_zone = Mock()
+        self.service.storage.get_zone.return_value = RoObject(
             id=1,
             name='n',
             tenant_id='tid',
         )
 
-        self.service.sync_domain(self.context, 1)
+        self.service.sync_zone(self.context, 1)
 
         t, ctx, target = designate.central.service.policy.check.call_args[0]
-        self.assertEqual('diagnostics_sync_domain', t)
-        self.assertEqual({'tenant_id': 'tid', 'domain_id': 1,
-                          'domain_name': 'n'}, target)
+        self.assertEqual('diagnostics_sync_zone', t)
+        self.assertEqual({'tenant_id': 'tid', 'zone_id': 1,
+                          'zone_name': 'n'}, target)
 
     def test_sync_record(self):
-        self.service.storage.get_domain.return_value = RoObject(
+        self.service.storage.get_zone.return_value = RoObject(
             id=1,
             name='n',
             tenant_id='tid',
@@ -1714,8 +1714,8 @@ class CentralDomainTestCase(CentralBasic):
         t, ctx, target = designate.central.service.policy.check.call_args[0]
         self.assertEqual('diagnostics_sync_record', t)
         self.assertEqual({
-            'domain_id': 1,
-            'domain_name': 'n',
+            'zone_id': 1,
+            'zone_name': 'n',
             'record_id': 3,
             'recordset_id': 2,
             'recordset_name': 'n',
@@ -1765,36 +1765,35 @@ class CentralDomainTestCase(CentralBasic):
         self.assertEqual(data['k'], ({'address': 1}, None))
 
 
-class IsSubdomainTestCase(CentralBasic):
+class IsSubzoneTestCase(CentralBasic):
     def setUp(self):
-        super(IsSubdomainTestCase, self).setUp()
+        super(IsSubzoneTestCase, self).setUp()
 
-        def find_domain(ctx, criterion):
-            print("Calling find_domain on %r" % criterion)
+        def find_zone(ctx, criterion):
+            print("Calling find_zone on %r" % criterion)
             if criterion['name'] == 'example.com.':
                 print("Returning %r" % criterion['name'])
                 return criterion['name']
 
             print("Not found")
-            raise exceptions.DomainNotFound
+            raise exceptions.ZoneNotFound
 
-        self.service.storage.find_domain = find_domain
+        self.service.storage.find_zone = find_zone
 
-    def test__is_subdomain_false(self):
-        r = self.service._is_subdomain(self.context, 'com', '1')
+    def test__is_subzone_false(self):
+        r = self.service._is_subzone(self.context, 'com', '1')
         self.assertFalse(r)
 
-    def FIXME_test__is_subdomain_false2(self):
-        r = self.service._is_subdomain(self.context, 'com.', '1')
+    def FIXME_test__is_subzone_false2(self):
+        r = self.service._is_subzone(self.context, 'com.', '1')
         self.assertEqual('com.', r)
 
-    def FIXME_test__is_subdomain_false3(self):
-        r = self.service._is_subdomain(self.context, 'example.com.', '1')
+    def FIXME_test__is_subzone_false3(self):
+        r = self.service._is_subzone(self.context, 'example.com.', '1')
         self.assertEqual('example.com.', r)
 
-    def test__is_subdomain_false4(self):
-        r = self.service._is_subdomain(self.context, 'foo.a.b.example.com.',
-                                       '1')
+    def test__is_subzone_false4(self):
+        r = self.service._is_subzone(self.context, 'foo.a.b.example.com.', '1')
         self.assertEqual('example.com.', r)
 
 
@@ -1812,14 +1811,14 @@ class CentralZoneExportTests(CentralBasic):
         self.context = Mock()
         self.context.tenant = 't'
 
-        self.service.storage.get_domain.return_value = RoObject(
+        self.service.storage.get_zone.return_value = RoObject(
             name='example.com.',
             id='123'
         )
 
         self.service.storage.create_zone_export = Mock(
             return_value=RoObject(
-                domain_id='123',
+                zone_id='123',
                 task_type='EXPORT',
                 status='PENDING',
                 message=None,
@@ -1833,7 +1832,7 @@ class CentralZoneExportTests(CentralBasic):
             self.context,
             '123'
         )
-        self.assertEqual('123', out.domain_id)
+        self.assertEqual('123', out.zone_id)
         self.assertEqual('PENDING', out.status)
         self.assertEqual('EXPORT', out.task_type)
         self.assertIsNone(out.message)
@@ -1844,7 +1843,7 @@ class CentralZoneExportTests(CentralBasic):
         self.context.tenant = 't'
 
         self.service.storage.get_zone_export.return_value = RoObject(
-                domain_id='123',
+                zone_id='123',
                 task_type='EXPORT',
                 status='PENDING',
                 message=None,
@@ -1859,7 +1858,7 @@ class CentralZoneExportTests(CentralBasic):
         self.assertEqual('t', target['tenant_id'])
 
         # Check output
-        self.assertEqual('123', out.domain_id)
+        self.assertEqual('123', out.zone_id)
         self.assertEqual('PENDING', out.status)
         self.assertEqual('EXPORT', out.task_type)
         self.assertIsNone(out.message)
@@ -1883,7 +1882,7 @@ class CentralZoneExportTests(CentralBasic):
 
         self.service.storage.delete_zone_export = Mock(
             return_value=RoObject(
-                domain_id='123',
+                zone_id='123',
                 task_type='EXPORT',
                 status='PENDING',
                 message=None,
@@ -1895,7 +1894,7 @@ class CentralZoneExportTests(CentralBasic):
 
         assert self.service.storage.delete_zone_export.called
 
-        self.assertEqual('123', out.domain_id)
+        self.assertEqual('123', out.zone_id)
         self.assertEqual('PENDING', out.status)
         self.assertEqual('EXPORT', out.task_type)
         self.assertIsNone(out.message)
@@ -1910,14 +1909,14 @@ class CentralZoneExportTests(CentralBasic):
 
 class CentralStatusTests(CentralBasic):
 
-    def test__update_domain_or_record_status_no_domain(self):
-        domain = RwObject(
+    def test__update_zone_or_record_status_no_zone(self):
+        zone = RwObject(
                     action='UPDATE',
                     status='SUCCESS',
                     serial=0,
                 )
         dom, deleted = self.service.\
-            _update_domain_or_record_status(domain, 'NO_DOMAIN', 0)
+            _update_zone_or_record_status(zone, 'NO_zone', 0)
 
         self.assertEqual(dom.action, 'CREATE')
         self.assertEqual(dom.status, 'ERROR')

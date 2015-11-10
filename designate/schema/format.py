@@ -27,7 +27,7 @@ LOG = logging.getLogger(__name__)
 #              "\Z", rather than simply "$" to ensure a string with a
 #              trailing newline is NOT matched. See bug #1471158.
 
-RE_DOMAINNAME = r'^(?!.{255,})(?:(?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-)\.)+\Z'
+RE_ZONENAME = r'^(?!.{255,})(?:(?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-)\.)+\Z'
 RE_HOSTNAME = r'^(?!.{255,})(?:(?:^\*|(?!\-)[A-Za-z0-9_\-]{1,63})(?<!\-)\.)+\Z'
 
 RE_SRV_HOST_NAME = r'^(?:(?!\-)(?:\_[A-Za-z0-9_\-]{1,63}\.){2})(?!.{255,})' \
@@ -108,7 +108,7 @@ def is_ip_or_host(instance):
     if not isinstance(instance, compat.str_types):
         return True
 
-    if not re.match(RE_DOMAINNAME, instance)\
+    if not re.match(RE_ZONENAME, instance)\
             and not is_ipv4(instance)\
             and not is_ipv6(instance):
         return False
@@ -118,11 +118,13 @@ def is_ip_or_host(instance):
 
 @draft3_format_checker.checks("domain-name")
 @draft4_format_checker.checks("domainname")
-def is_domainname(instance):
+@draft3_format_checker.checks("zone-name")
+@draft4_format_checker.checks("zonename")
+def is_zonename(instance):
     if not isinstance(instance, compat.str_types):
         return True
 
-    if not re.match(RE_DOMAINNAME, instance):
+    if not re.match(RE_ZONENAME, instance):
         return False
 
     return True
@@ -163,7 +165,7 @@ def is_email(instance):
 
     rname = instance.replace('@', '.', 1)
 
-    if not re.match(RE_DOMAINNAME, "%s." % rname):
+    if not re.match(RE_ZONENAME, "%s." % rname):
         return False
 
     return True

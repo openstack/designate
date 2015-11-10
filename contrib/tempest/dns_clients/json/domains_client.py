@@ -39,13 +39,13 @@ class DomainsClientJSON(rest_client.RestClient):
         """Get the details of a domain."""
         resp, body = self.get("v1/domains/%s" % str(domain_id))
         body = json.loads(body)
-        self.validate_response(schema.get_domain, resp, body)
+        self.validate_response(schema.get_zone, resp, body)
         return resp, body
 
     def delete_domain(self, domain_id):
         """Delete the given domain."""
         resp, body = self.delete("v1/domains/%s" % str(domain_id))
-        self.validate_response(schema.delete_domain, resp, body)
+        self.validate_response(schema.delete_zone, resp, body)
         return resp, body
 
     def create_domain(self, name, email, **kwargs):
@@ -61,7 +61,7 @@ class DomainsClientJSON(rest_client.RestClient):
                 post_body[post_param] = value
         resp, body = self.post('v1/domains', json.dumps(post_body))
         body = json.loads(body)
-        self.validate_response(schema.create_domain, resp, body)
+        self.validate_response(schema.create_zone, resp, body)
         return resp, body
 
     def update_domain(self, domain_id, **kwargs):
@@ -75,5 +75,5 @@ class DomainsClientJSON(rest_client.RestClient):
         resp, body = self.put('v1/domains/%s' % domain_id,
                               json.dumps(post_body))
         body = json.loads(body)
-        self.validate_response(schema.update_domain, resp, body)
+        self.validate_response(schema.update_zone, resp, body)
         return resp, body

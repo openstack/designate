@@ -87,20 +87,20 @@ class PeriodicTask(plugin.ExtensionPlugin):
     def _iter_zones(self, ctxt, criterion=None):
         criterion = criterion or {}
         criterion.update(self._filter_between('shard'))
-        return self._iter(self.central_api.find_domains, ctxt, criterion)
+        return self._iter(self.central_api.find_zones, ctxt, criterion)
 
 
-class DeletedDomainPurgeTask(PeriodicTask):
-    """Purge deleted domains that are exceeding the grace period time interval.
-    Deleted domains have values in the deleted_at column.
+class DeletedZonePurgeTask(PeriodicTask):
+    """Purge deleted zones that are exceeding the grace period time interval.
+    Deleted zones have values in the deleted_at column.
     Purging means removing them from the database entirely.
     """
 
-    __plugin_name__ = 'domain_purge'
+    __plugin_name__ = 'zone_purge'
     __interval__ = 3600
 
     def __init__(self):
-        super(DeletedDomainPurgeTask, self).__init__()
+        super(DeletedZonePurgeTask, self).__init__()
 
     @classmethod
     def get_cfg_opts(cls):
@@ -109,13 +109,13 @@ class DeletedDomainPurgeTask(PeriodicTask):
             cfg.IntOpt(
                 'time_threshold',
                 default=604800,
-                help="How old deleted domains should be (deleted_at) to be "
+                help="How old deleted zones should be (deleted_at) to be "
                 "purged, in seconds"
             ),
             cfg.IntOpt(
                 'batch_size',
                 default=100,
-                help='How many domains to be purged on each run'
+                help='How many zones to be purged on each run'
             ),
         ]
         return [(group, options)]
@@ -125,12 +125,12 @@ class DeletedDomainPurgeTask(PeriodicTask):
         expiration time and sharding range.
         """
         pstart, pend = self._my_range()
-        msg = _LI("Performing deleted domain purging for %(start)s to %(end)s")
+        msg = _LI("Performing deleted zone purging for %(start)s to %(end)s")
         LOG.info(msg % {"start": pstart, "end": pend})
 
         delta = datetime.timedelta(seconds=self.options.time_threshold)
         time_threshold = timeutils.utcnow() - delta
-        LOG.debug("Filtering deleted domains before %s", time_threshold)
+        LOG.debug("Filtering deleted zones before %s", time_threshold)
 
         criterion = self._filter_between('shard')
         criterion['deleted'] = '!0'
@@ -139,7 +139,7 @@ class DeletedDomainPurgeTask(PeriodicTask):
         ctxt = context.DesignateContext.get_admin_context()
         ctxt.all_tenants = True
 
-        self.central_api.purge_domains(
+        self.central_api.purge_zones(
             ctxt,
             criterion,
             limit=self.options.batch_size,
@@ -225,4 +225,4 @@ class PeriodicSecondaryRefreshTask(PeriodicTask):
                 msg = "Zone %(id)s has %(seconds)d seconds since last transfer, " \
                       "executing AXFR"
                 LOG.debug(msg % {"id": zone.id, "seconds": seconds})
-                self.central_api.xfr_domain(ctxt, zone.id)
+                self.central_api.xfr_zone(ctxt, zone.id)

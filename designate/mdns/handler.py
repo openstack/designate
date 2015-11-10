@@ -116,8 +116,8 @@ class RequestHandler(xfr.XFRMixin):
         }
 
         try:
-            domain = self.storage.find_domain(context, criterion)
-        except exceptions.DomainNotFound:
+            zone = self.storage.find_zone(context, criterion)
+        except exceptions.ZoneNotFound:
             response.set_rcode(dns.rcode.NOTAUTH)
             yield response
             raise StopIteration
@@ -127,11 +127,11 @@ class RequestHandler(xfr.XFRMixin):
         # We check if the src_master which is the assumed master for the zone
         # that is sending this NOTIFY OP is actually the master. If it's not
         # We'll reply but don't do anything with the NOTIFY.
-        master_addr = domain.get_master_by_ip(notify_addr)
+        master_addr = zone.get_master_by_ip(notify_addr)
         if not master_addr:
             msg = _LW("NOTIFY for %(name)s from non-master server "
                       "%(addr)s, ignoring.")
-            LOG.warn(msg % {"name": domain.name, "addr": notify_addr})
+            LOG.warn(msg % {"name": zone.name, "addr": notify_addr})
             response.set_rcode(dns.rcode.REFUSED)
             yield response
             raise StopIteration
@@ -140,17 +140,17 @@ class RequestHandler(xfr.XFRMixin):
         # According to RFC we should query the server that sent the NOTIFY
         resolver.nameservers = [notify_addr]
 
-        soa_answer = resolver.query(domain.name, 'SOA')
+        soa_answer = resolver.query(zone.name, 'SOA')
         soa_serial = soa_answer[0].serial
-        if soa_serial == domain.serial:
+        if soa_serial == zone.serial:
             msg = _LI("Serial %(serial)s is the same for master and us for "
-                      "%(domain_id)s")
-            LOG.info(msg % {"serial": soa_serial, "domain_id": domain.id})
+                      "%(zone_id)s")
+            LOG.info(msg % {"serial": soa_serial, "zone_id": zone.id})
         else:
-            msg = _LI("Scheduling AXFR for %(domain_id)s from %(master_addr)s")
-            info = {"domain_id": domain.id, "master_addr": master_addr}
+            msg = _LI("Scheduling AXFR for %(zone_id)s from %(master_addr)s")
+            info = {"zone_id": zone.id, "master_addr": master_addr}
             LOG.info(msg % info)
-            self.tg.add_thread(self.domain_sync, context, domain,
+            self.tg.add_thread(self.zone_sync, context, zone,
                                [master_addr])
 
         response.flags |= dns.flags.AA
@@ -170,7 +170,7 @@ class RequestHandler(xfr.XFRMixin):
 
         return response
 
-    def _domain_criterion_from_request(self, request, criterion=None):
+    def _zone_criterion_from_request(self, request, criterion=None):
         """Builds a bare criterion dict based on the request attributes"""
         criterion = criterion or {}
 
@@ -197,12 +197,12 @@ class RequestHandler(xfr.XFRMixin):
 
         return criterion
 
-    def _convert_to_rrset(self, domain, recordset):
-        # Fetch the domain or the config ttl if the recordset ttl is null
+    def _convert_to_rrset(self, zone, recordset):
+        # Fetch the zone or the config ttl if the recordset ttl is null
         if recordset.ttl:
             ttl = recordset.ttl
         else:
-            ttl = domain.ttl
+            ttl = zone.ttl
 
         # construct rdata from all the records
         rdata = []
@@ -233,12 +233,12 @@ class RequestHandler(xfr.XFRMixin):
         # TODO(vinod) once validation is separated from the api,
         # validate the parameters
         try:
-            criterion = self._domain_criterion_from_request(
+            criterion = self._zone_criterion_from_request(
                 request, {'name': q_rrset.name.to_text()})
-            domain = self.storage.find_domain(context, criterion)
+            zone = self.storage.find_zone(context, criterion)
 
-        except exceptions.DomainNotFound:
-            LOG.warning(_LW("DomainNotFound while handling axfr request. "
+        except exceptions.ZoneNotFound:
+            LOG.warning(_LW("ZoneNotFound while handling axfr request. "
                             "Question was %(qr)s") % {'qr': q_rrset})
 
             yield self._handle_query_error(request, dns.rcode.REFUSED)
@@ -252,11 +252,11 @@ class RequestHandler(xfr.XFRMixin):
             raise StopIteration
 
         # The AXFR response needs to have a SOA at the beginning and end.
-        criterion = {'domain_id': domain.id, 'type': 'SOA'}
+        criterion = {'zone_id': zone.id, 'type': 'SOA'}
         soa_records = self.storage.find_recordsets_axfr(context, criterion)
 
         # Get all the records other than SOA
-        criterion = {'domain_id': domain.id, 'type': '!SOA'}
+        criterion = {'zone_id': zone.id, 'type': '!SOA'}
         records = self.storage.find_recordsets_axfr(context, criterion)
 
         # Place the SOA RRSet at the front and end of the RRSet list
@@ -296,7 +296,7 @@ class RequestHandler(xfr.XFRMixin):
             # Build a DNSPython RRSet from the RR
             rrset = dns.rrset.from_text_list(
                 str(record[3]),     # name
-                int(record[2]) if record[2] is not None else domain.ttl,  # ttl
+                int(record[2]) if record[2] is not None else zone.ttl,  # ttl
                 dns.rdataclass.IN,  # class
                 str(record[1]),     # rrtype
                 [str(record[4])],   # rdata
@@ -309,10 +309,10 @@ class RequestHandler(xfr.XFRMixin):
                 if renderer.counts[dns.renderer.ANSWER] == 0:
                     # We've received a TooBig from the first attempted RRSet in
                     # this packet. Log a warning and abort the AXFR.
-                    LOG.warning(_LW('Aborted AXFR of %(domain)s, a single RR '
+                    LOG.warning(_LW('Aborted AXFR of %(zone)s, a single RR '
                                     '(%(rrset_type)s %(rrset_name)s) '
                                     'exceeded the max message size.'),
-                                {'domain': domain.name,
+                                {'zone': zone.name,
                                  'rrset_type': record[1],
                                  'rrset_name': record[3]})
 
@@ -356,17 +356,17 @@ class RequestHandler(xfr.XFRMixin):
             criterion = {
                 'name': q_rrset.name.to_text(),
                 'type': dns.rdatatype.to_text(q_rrset.rdtype),
-                'domains_deleted': False
+                'zones_deleted': False
             }
             recordset = self.storage.find_recordset(context, criterion)
 
             try:
-                criterion = self._domain_criterion_from_request(
-                    request, {'id': recordset.domain_id})
-                domain = self.storage.find_domain(context, criterion)
+                criterion = self._zone_criterion_from_request(
+                    request, {'id': recordset.zone_id})
+                zone = self.storage.find_zone(context, criterion)
 
-            except exceptions.DomainNotFound:
-                LOG.warning(_LW("DomainNotFound while handling query request"
+            except exceptions.ZoneNotFound:
+                LOG.warning(_LW("ZoneNotFound while handling query request"
                                 ". Question was %(qr)s") % {'qr': q_rrset})
 
                 yield self._handle_query_error(request, dns.rcode.REFUSED)
@@ -379,7 +379,7 @@ class RequestHandler(xfr.XFRMixin):
                 yield self._handle_query_error(request, dns.rcode.REFUSED)
                 raise StopIteration
 
-            r_rrset = self._convert_to_rrset(domain, recordset)
+            r_rrset = self._convert_to_rrset(zone, recordset)
             response.set_rcode(dns.rcode.NOERROR)
             response.answer = [r_rrset]
             # For all the data stored in designate mdns is Authoritative
@@ -396,9 +396,9 @@ class RequestHandler(xfr.XFRMixin):
             # However, an authoritative nameserver shouldn't return NXDOMAIN
             # for a zone it isn't authoritative for.  It would be more
             # appropriate for it to return REFUSED.  It should still return
-            # NXDOMAIN if it is authoritative for a domain but the FQDN doesn't
+            # NXDOMAIN if it is authoritative for a zone but the FQDN doesn't
             # exist, like abcdef.rackspace.com.  Of course, a wildcard within a
-            # domain would mean that NXDOMAIN isn't ever returned for a domain.
+            # zone would mean that NXDOMAIN isn't ever returned for a zone.
             #
             # To simply things currently this returns a REFUSED in all cases.
             # If zone transfers needs different errors, we could revisit this.

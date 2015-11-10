@@ -39,19 +39,19 @@ class AgentBackend(DriverPlugin):
         pass
 
     @abc.abstractmethod
-    def find_domain_serial(self, domain_name):
-        """Find a DNS Domain"""
+    def find_zone_serial(self, zone_name):
+        """Find a DNS Zone"""
 
     @abc.abstractmethod
-    def create_domain(self, domain):
-        """Create a DNS domain"""
-        """Domain is a DNSPython Zone object"""
+    def create_zone(self, zone):
+        """Create a DNS zone"""
+        """Zone is a DNSPython Zone object"""
 
     @abc.abstractmethod
-    def update_domain(self, domain):
-        """Update a DNS domain"""
-        """Domain is a DNSPython Zone object"""
+    def update_zone(self, zone):
+        """Update a DNS zone"""
+        """Zone is a DNSPython Zone object"""
 
     @abc.abstractmethod
-    def delete_domain(self, domain_name):
-        """Delete a DNS domain"""
+    def delete_zone(self, zone_name):
+        """Delete a DNS zone"""

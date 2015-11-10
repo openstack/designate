@@ -27,7 +27,7 @@ class ApiV2HostHeadersTest(ApiV2TestCase):
 
     def test_host_header(self):
         # Create a zone with host header
-        fixture = self.get_domain_fixture(fixture=0)
+        fixture = self.get_zone_fixture(fixture=0)
         response = self.client.post_json('/zones/',
                                          fixture,
                                          headers={'Host': 'testhost.com'})

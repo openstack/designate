@@ -322,7 +322,7 @@ class SQLAlchemy(object):
                 table.c.created_at,                         # 2 - RS Created
                 table.c.updated_at,                         # 3 - RS Updated
                 table.c.tenant_id,                          # 4 - RS Tenant
-                table.c.domain_id,                          # 5 - RS Domain
+                table.c.zone_id,                            # 5 - RS Zone
                 table.c.name,                               # 6 - RS Name
                 table.c.type,                               # 7 - RS Type
                 table.c.ttl,                                # 8 - RS TTL
@@ -333,7 +333,7 @@ class SQLAlchemy(object):
                 relation_table.c.created_at,                # 12 - R Created
                 relation_table.c.updated_at,                # 13 - R Updated
                 relation_table.c.tenant_id,                 # 14 - R Tenant
-                relation_table.c.domain_id,                 # 15 - R Domain
+                relation_table.c.zone_id,                   # 15 - R Zone
                 relation_table.c.recordset_id,              # 16 - R RSet
                 relation_table.c.data,                      # 17 - R Data
                 relation_table.c.description,               # 18 - R Desc
@@ -364,7 +364,7 @@ class SQLAlchemy(object):
             "created_at": 2,
             "updated_at": 3,
             "tenant_id": 4,
-            "domain_id": 5,
+            "zone_id": 5,
             "name": 6,
             "type": 7,
             "ttl": 8,
@@ -377,7 +377,7 @@ class SQLAlchemy(object):
             "created_at": 12,
             "updated_at": 13,
             "tenant_id": 14,
-            "domain_id": 15,
+            "zone_id": 15,
             "recordset_id": 16,
             "data": 17,
             "description": 18,

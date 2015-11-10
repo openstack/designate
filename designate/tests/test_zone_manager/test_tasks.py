@@ -37,38 +37,38 @@ class TaskTest(TestCase):
             group="service:zone_manager")
 
 
-class DeletedDomainPurgeTest(TaskTest):
+class DeletedzonePurgeTest(TaskTest):
     def setUp(self):
-        super(DeletedDomainPurgeTest, self).setUp()
+        super(DeletedzonePurgeTest, self).setUp()
 
         self.config(
             interval=3600,
             time_threshold=604800,
             batch_size=100,
-            group="zone_manager_task:domain_purge"
+            group="zone_manager_task:zone_purge"
         )
 
         self.purge_task_fixture = self.useFixture(
-            fixtures.ZoneManagerTaskFixture(tasks.DeletedDomainPurgeTask)
+            fixtures.ZoneManagerTaskFixture(tasks.DeletedZonePurgeTask)
         )
 
     def _create_deleted_zone(self, name, mock_deletion_time):
-        # Create a domain and set it as deleted
-        domain = self.create_domain(name=name)
-        self._delete_domain(domain, mock_deletion_time)
-        return domain
+        # Create a zone and set it as deleted
+        zone = self.create_zone(name=name)
+        self._delete_zone(zone, mock_deletion_time)
+        return zone
 
-    def _fetch_all_domains(self):
-        """Fetch all domains including deleted ones
+    def _fetch_all_zones(self):
+        """Fetch all zones including deleted ones
         """
-        query = tables.domains.select()
+        query = tables.zones.select()
         return self.central_service.storage.session.execute(query).fetchall()
 
-    def _delete_domain(self, domain, mock_deletion_time):
-        # Set a domain as deleted
-        zid = domain.id.replace('-', '')
-        query = tables.domains.update().\
-            where(tables.domains.c.id == zid).\
+    def _delete_zone(self, zone, mock_deletion_time):
+        # Set a zone as deleted
+        zid = zone.id.replace('-', '')
+        query = tables.zones.update().\
+            where(tables.zones.c.id == zid).\
             values(
                 action='NONE',
                 deleted=zid,
@@ -78,7 +78,7 @@ class DeletedDomainPurgeTest(TaskTest):
 
         pxy = self.central_service.storage.session.execute(query)
         self.assertEqual(1, pxy.rowcount)
-        return domain
+        return zone
 
     def _create_deleted_zones(self):
         # Create a number of deleted zones in the past days
@@ -97,11 +97,11 @@ class DeletedDomainPurgeTest(TaskTest):
     def test_purge_zones(self):
         """Create 18 zones, run zone_manager, check if 7 zones are remaining
         """
-        self.config(quota_domains=1000)
+        self.config(quota_zones=1000)
         self._create_deleted_zones()
 
         self.purge_task_fixture.task()
 
-        zones = self._fetch_all_domains()
+        zones = self._fetch_all_zones()
         LOG.info("Number of zones: %d", len(zones))
         self.assertEqual(7, len(zones))

@@ -19,6 +19,6 @@ from designate import schema
 
 class TestSchema(TestCase):
     def test_constructor(self):
-        domain = schema.Schema('v1', 'domain')
+        zone = schema.Schema('v1', 'domain')
 
-        self.assertIsInstance(domain, schema.Schema)
+        self.assertIsInstance(zone, schema.Schema)

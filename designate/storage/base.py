@@ -227,28 +227,28 @@ class Storage(DriverPlugin):
         """
 
     @abc.abstractmethod
-    def create_domain(self, context, domain):
+    def create_zone(self, context, zone):
         """
-        Create a new Domain.
+        Create a new Zone.
 
         :param context: RPC Context.
-        :param domain: Domain object with the values to be created.
+        :param zone: Zone object with the values to be created.
         """
 
     @abc.abstractmethod
-    def get_domain(self, context, domain_id):
+    def get_zone(self, context, zone_id):
         """
-        Get a Domain via its ID.
+        Get a Zone via its ID.
 
         :param context: RPC Context.
-        :param domain_id: ID of the Domain.
+        :param zone_id: ID of the Zone.
         """
 
     @abc.abstractmethod
-    def find_domains(self, context, criterion=None, marker=None,
-                     limit=None, sort_key=None, sort_dir=None):
+    def find_zones(self, context, criterion=None, marker=None,
+                   limit=None, sort_key=None, sort_dir=None):
         """
-        Find Domains
+        Find zones
 
         :param context: RPC Context.
         :param criterion: Criteria to filter by.
@@ -261,57 +261,57 @@ class Storage(DriverPlugin):
         """
 
     @abc.abstractmethod
-    def find_domain(self, context, criterion):
+    def find_zone(self, context, criterion):
         """
-        Find a single Domain.
+        Find a single Zone.
 
         :param context: RPC Context.
         :param criterion: Criteria to filter by.
         """
 
     @abc.abstractmethod
-    def update_domain(self, context, domain):
+    def update_zone(self, context, zone):
         """
-        Update a Domain
+        Update a Zone
 
         :param context: RPC Context.
-        :param domain: Domain object.
+        :param zone: Zone object.
         """
 
     @abc.abstractmethod
-    def delete_domain(self, context, domain_id):
+    def delete_zone(self, context, zone_id):
         """
-        Delete a Domain
+        Delete a Zone
 
         :param context: RPC Context.
-        :param domain_id: Domain ID to delete.
+        :param zone_id: Zone ID to delete.
         """
 
     @abc.abstractmethod
-    def purge_domain(self, context, zone):
+    def purge_zone(self, context, zone):
         """
-        Purge a Domain
+        Purge a Zone
 
         :param context: RPC Context.
-        :param domain: Zone to delete.
+        :param zone: Zone to delete.
         """
 
     @abc.abstractmethod
-    def count_domains(self, context, criterion=None):
+    def count_zones(self, context, criterion=None):
         """
-        Count domains
+        Count zones
 
         :param context: RPC Context.
         :param criterion: Criteria to filter by.
         """
 
     @abc.abstractmethod
-    def create_recordset(self, context, domain_id, recordset):
+    def create_recordset(self, context, zone_id, recordset):
         """
-        Create a recordset on a given Domain ID
+        Create a recordset on a given Zone ID
 
         :param context: RPC Context.
-        :param domain_id: Domain ID to create the recordset in.
+        :param zone_id: Zone ID to create the recordset in.
         :param recordset: RecordSet object with the values to be created.
         """
 
@@ -386,12 +386,12 @@ class Storage(DriverPlugin):
         """
 
     @abc.abstractmethod
-    def create_record(self, context, domain_id, recordset_id, record):
+    def create_record(self, context, zone_id, recordset_id, record):
         """
-        Create a record on a given Domain ID
+        Create a record on a given Zone ID
 
         :param context: RPC Context.
-        :param domain_id: Domain ID to create the record in.
+        :param zone_id: Zone ID to create the record in.
         :param recordset_id: RecordSet ID to create the record in.
         :param record: Record object with the values to be created.
         """

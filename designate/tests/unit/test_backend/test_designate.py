@@ -32,7 +32,7 @@ LOG = logging.getLogger(__name__)
 
 def create_zone():
     id_ = str(uuid.uuid4())
-    return objects.Domain(
+    return objects.Zone(
         id=id_,
         name='%s-example.com.' % id_,
         email='root@example.com',
@@ -57,8 +57,8 @@ class DesignateBackendTest(oslotest.base.BaseTestCase):
             username='user',
             password='secret',
             project_name='project',
-            project_domain_name='project_domain',
-            user_domain_name='user_domain'
+            project_zone_name='project_zone',
+            user_zone_name='user_zone'
         )
         self.target = RoObject({
             'id': '4588652b-50e7-46b9-b688-a9bad40a873e',
@@ -83,31 +83,31 @@ class DesignateBackendTest(oslotest.base.BaseTestCase):
             'create', 'delete'])
         self.client.configure_mock(zones=zones)
 
-    def test_create_domain(self):
+    def test_create_zone(self):
         zone = create_zone()
         masters = ["%(host)s:%(port)s" % self.target.masters[0]]
         with patch.object(
                 self.backend, '_get_client', return_value=self.client):
-            self.backend.create_domain(self.admin_context, zone)
+            self.backend.create_zone(self.admin_context, zone)
         self.client.zones.create.assert_called_once_with(
             zone.name, 'SECONDARY', masters=masters)
 
-    def test_delete_domain(self):
+    def test_delete_zone(self):
         zone = create_zone()
         with patch.object(
                 self.backend, '_get_client', return_value=self.client):
-            self.backend.delete_domain(self.admin_context, zone)
+            self.backend.delete_zone(self.admin_context, zone)
         self.client.zones.delete.assert_called_once_with(zone.name)
 
-    def test_delete_domain_notfound(self):
+    def test_delete_zone_notfound(self):
         zone = create_zone()
         self.client.delete.side_effect = exceptions.NotFound
         with patch.object(
                 self.backend, '_get_client', return_value=self.client):
-            self.backend.delete_domain(self.admin_context, zone)
+            self.backend.delete_zone(self.admin_context, zone)
         self.client.zones.delete.assert_called_once_with(zone.name)
 
-    def test_delete_domain_exc(self):
+    def test_delete_zone_exc(self):
         class Exc(Exception):
             pass
 
@@ -116,5 +116,5 @@ class DesignateBackendTest(oslotest.base.BaseTestCase):
         with testtools.ExpectedException(Exc):
             with patch.object(
                     self.backend, '_get_client', return_value=self.client):
-                self.backend.delete_domain(self.admin_context, zone)
+                self.backend.delete_zone(self.admin_context, zone)
         self.client.zones.delete.assert_called_once_with(zone.name)

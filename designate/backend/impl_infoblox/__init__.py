@@ -42,18 +42,18 @@ class InfobloxBackend(base.Backend):
                 raise exceptions.ConfigurationError(
                     "Infoblox only supports mDNS instances on port 53")
 
-    def create_domain(self, context, domain):
-        LOG.info(_LI('Create Domain %r') % domain)
+    def create_zone(self, context, zone):
+        LOG.info(_LI('Create Zone %r') % zone)
 
         dns_net_view = self.infoblox.get_dns_view(context.tenant)
         self.infoblox.create_zone_auth(
-            fqdn=domain['name'][0:-1],
+            fqdn=zone['name'][0:-1],
             dns_view=dns_net_view
         )
 
-    def delete_domain(self, context, domain):
-        LOG.info(_LI('Delete Domain %r') % domain)
-        self.infoblox.delete_zone_auth(domain['name'][0:-1])
+    def delete_zone(self, context, zone):
+        LOG.info(_LI('Delete Zone %r') % zone)
+        self.infoblox.delete_zone_auth(zone['name'][0:-1])
 
     def ping(self, context):
         LOG.info(_LI('Ping'))

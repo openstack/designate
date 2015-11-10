@@ -29,8 +29,8 @@ from designate.tests.test_api.test_v1 import ApiV1Test
 LOG = logging.getLogger(__name__)
 
 
-class ApiV1DomainsTest(ApiV1Test):
-    def test_get_domain_schema(self):
+class ApiV1zonesTest(ApiV1Test):
+    def test_get_zone_schema(self):
         response = self.get('schemas/domain')
         self.assertIn('description', response.json)
         self.assertIn('links', response.json)
@@ -46,7 +46,7 @@ class ApiV1DomainsTest(ApiV1Test):
         self.assertIn('ttl', response.json['properties'])
         self.assertIn('serial', response.json['properties'])
 
-    def test_get_domains_schema(self):
+    def test_get_zones_schema(self):
         response = self.get('schemas/domains')
         self.assertIn('description', response.json)
         self.assertIn('additionalProperties', response.json)
@@ -54,9 +54,9 @@ class ApiV1DomainsTest(ApiV1Test):
         self.assertIn('title', response.json)
         self.assertIn('id', response.json)
 
-    def test_create_domain(self):
-        # Create a domain
-        fixture = self.get_domain_fixture(0)
+    def test_create_zone(self):
+        # Create a zone
+        fixture = self.get_zone_fixture(0)
 
         # V1 doesn't have these
         del fixture['type']
@@ -67,9 +67,9 @@ class ApiV1DomainsTest(ApiV1Test):
         self.assertIn('name', response.json)
         self.assertEqual(response.json['name'], fixture['name'])
 
-    def test_create_domain_junk(self):
-        # Create a domain
-        fixture = self.get_domain_fixture(0)
+    def test_create_zone_junk(self):
+        # Create a zone
+        fixture = self.get_zone_fixture(0)
 
         # Add a junk property
         fixture['junk'] = 'Junk Field'
@@ -77,60 +77,60 @@ class ApiV1DomainsTest(ApiV1Test):
         # Ensure it fails with a 400
         self.post('domains', data=fixture, status_code=400)
 
-    @patch.object(central_service.Service, 'create_domain',
+    @patch.object(central_service.Service, 'create_zone',
                   side_effect=messaging.MessagingTimeout())
-    def test_create_domain_timeout(self, _):
-        # Create a domain
-        fixture = self.get_domain_fixture(0)
+    def test_create_zone_timeout(self, _):
+        # Create a zone
+        fixture = self.get_zone_fixture(0)
 
         # V1 doesn't have these
         del fixture['type']
 
         self.post('domains', data=fixture, status_code=504)
 
-    @patch.object(central_service.Service, 'create_domain',
-                  side_effect=exceptions.DuplicateDomain())
-    def test_create_domain_duplicate(self, _):
-        # Create a domain
-        fixture = self.get_domain_fixture(0)
+    @patch.object(central_service.Service, 'create_zone',
+                  side_effect=exceptions.DuplicateZone())
+    def test_create_zone_duplicate(self, _):
+        # Create a zone
+        fixture = self.get_zone_fixture(0)
 
         # V1 doesn't have these
         del fixture['type']
 
         self.post('domains', data=fixture, status_code=409)
 
-    def test_create_domain_null_ttl(self):
-        # Create a domain
-        fixture = self.get_domain_fixture(0)
+    def test_create_zone_null_ttl(self):
+        # Create a zone
+        fixture = self.get_zone_fixture(0)
         fixture['ttl'] = None
         self.post('domains', data=fixture, status_code=400)
 
-    def test_create_domain_negative_ttl(self):
-        # Create a domain
-        fixture = self.get_domain_fixture(0)
+    def test_create_zone_negative_ttl(self):
+        # Create a zone
+        fixture = self.get_zone_fixture(0)
         fixture['ttl'] = -1
         self.post('domains', data=fixture, status_code=400)
 
-    def test_create_domain_zero_ttl(self):
-        # Create a domain
-        fixture = self.get_domain_fixture(0)
+    def test_create_zone_zero_ttl(self):
+        # Create a zone
+        fixture = self.get_zone_fixture(0)
         fixture['ttl'] = 0
         self.post('domains', data=fixture, status_code=400)
 
-    def test_create_domain_invalid_ttl(self):
-        # Create a domain
-        fixture = self.get_domain_fixture(0)
+    def test_create_zone_invalid_ttl(self):
+        # Create a zone
+        fixture = self.get_zone_fixture(0)
         fixture['ttl'] = "$?>&"
         self.post('domains', data=fixture, status_code=400)
 
-    def test_create_domain_ttl_greater_than_max(self):
-        fixture = self.get_domain_fixture(0)
+    def test_create_zone_ttl_greater_than_max(self):
+        fixture = self.get_zone_fixture(0)
         fixture['ttl'] = 2147483648
         self.post('domains', data=fixture, status_code=400)
 
-    def test_create_domain_utf_description(self):
-        # Create a domain
-        fixture = self.get_domain_fixture(0)
+    def test_create_zone_utf_description(self):
+        # Create a zone
+        fixture = self.get_zone_fixture(0)
 
         # V1 doesn't have type
         del fixture['type']
@@ -138,27 +138,27 @@ class ApiV1DomainsTest(ApiV1Test):
         # Give it a UTF-8 filled description
         fixture['description'] = "utf-8:2H₂+O₂⇌2H₂O,R=4.7kΩ,⌀200mm∮E⋅da=Q,n" \
                                  ",∑f(i)=∏g(i),∀x∈ℝ:⌈x⌉"
-        # Create the domain, ensuring it succeeds, thus UTF-8 is supported
+        # Create the zone, ensuring it succeeds, thus UTF-8 is supported
         self.post('domains', data=fixture)
 
-    def test_create_domain_description_too_long(self):
-        # Create a domain
-        fixture = self.get_domain_fixture(0)
+    def test_create_zone_description_too_long(self):
+        # Create a zone
+        fixture = self.get_zone_fixture(0)
         fixture['description'] = "x" * 161
 
-        # Create the domain, ensuring it fails with a 400
+        # Create the zone, ensuring it fails with a 400
         self.post('domains', data=fixture, status_code=400)
 
-    def test_create_domain_with_unwanted_attributes(self):
+    def test_create_zone_with_unwanted_attributes(self):
 
-        domain_id = "2d1d1d1d-1324-4a80-aa32-1f69a91bf2c8"
+        zone_id = "2d1d1d1d-1324-4a80-aa32-1f69a91bf2c8"
         created_at = datetime.datetime(2014, 6, 22, 21, 50, 0)
         updated_at = datetime.datetime(2014, 6, 22, 21, 50, 0)
         serial = 1234567
 
-        # Create a domain
-        fixture = self.get_domain_fixture(0)
-        fixture['id'] = domain_id
+        # Create a zone
+        fixture = self.get_zone_fixture(0)
+        fixture['id'] = zone_id
         fixture['created_at'] = created_at
         fixture['updated_at'] = updated_at
         fixture['serial'] = serial
@@ -166,8 +166,8 @@ class ApiV1DomainsTest(ApiV1Test):
         self.post('domains', data=fixture, status_code=400)
 
     def test_create_invalid_name(self):
-        # Prepare a domain
-        fixture = self.get_domain_fixture(0)
+        # Prepare a zone
+        fixture = self.get_zone_fixture(0)
 
         invalid_names = [
             'org',
@@ -183,8 +183,8 @@ class ApiV1DomainsTest(ApiV1Test):
 
             self.assertNotIn('id', response.json)
 
-    def test_create_domain_name_too_long(self):
-        fixture = self.get_domain_fixture(0)
+    def test_create_zone_name_too_long(self):
+        fixture = self.get_zone_fixture(0)
 
         long_name = 'a' * 255 + ".org."
         fixture['name'] = long_name
@@ -193,14 +193,14 @@ class ApiV1DomainsTest(ApiV1Test):
 
         self.assertNotIn('id', response.json)
 
-    def test_create_domain_name_is_not_present(self):
-        fixture = self.get_domain_fixture(0)
+    def test_create_zone_name_is_not_present(self):
+        fixture = self.get_zone_fixture(0)
         del fixture['name']
         self.post('domains', data=fixture, status_code=400)
 
     def test_create_invalid_email(self):
-        # Prepare a domain
-        fixture = self.get_domain_fixture(0)
+        # Prepare a zone
+        fixture = self.get_zone_fixture(0)
 
         invalid_emails = [
             'org',
@@ -220,8 +220,8 @@ class ApiV1DomainsTest(ApiV1Test):
 
             self.assertNotIn('id', response.json)
 
-    def test_create_domain_email_too_long(self):
-        fixture = self.get_domain_fixture(0)
+    def test_create_zone_email_too_long(self):
+        fixture = self.get_zone_fixture(0)
 
         long_email = 'a' * 255 + "@org.com"
         fixture['email'] = long_email
@@ -230,154 +230,154 @@ class ApiV1DomainsTest(ApiV1Test):
 
         self.assertNotIn('id', response.json)
 
-    def test_create_domain_email_not_present(self):
-        fixture = self.get_domain_fixture(0)
+    def test_create_zone_email_not_present(self):
+        fixture = self.get_zone_fixture(0)
         del fixture['email']
         self.post('domains', data=fixture, status_code=400)
 
-    def test_get_domains(self):
+    def test_get_zones(self):
         response = self.get('domains')
 
         self.assertIn('domains', response.json)
         self.assertEqual(0, len(response.json['domains']))
 
-        # Create a domain
-        self.create_domain()
+        # Create a zone
+        self.create_zone()
 
         response = self.get('domains')
 
         self.assertIn('domains', response.json)
         self.assertEqual(1, len(response.json['domains']))
 
-        # Create a second domain
-        self.create_domain(fixture=1)
+        # Create a second zone
+        self.create_zone(fixture=1)
 
         response = self.get('domains')
 
         self.assertIn('domains', response.json)
         self.assertEqual(2, len(response.json['domains']))
 
-    def test_get_domain_servers(self):
-        # Create a domain
-        domain = self.create_domain()
-        response = self.get('domains/%s/servers' % domain['id'])
-        # Verify length of domain servers
+    def test_get_zone_servers(self):
+        # Create a zone
+        zone = self.create_zone()
+        response = self.get('domains/%s/servers' % zone['id'])
+        # Verify length of zone servers
         self.assertEqual(1, len(response.json['servers']))
 
-    @patch.object(central_service.Service, 'find_domains',
+    @patch.object(central_service.Service, 'find_zones',
                   side_effect=messaging.MessagingTimeout())
-    def test_get_domains_timeout(self, _):
+    def test_get_zones_timeout(self, _):
         self.get('domains', status_code=504)
 
-    def test_get_domain(self):
-        # Create a domain
-        domain = self.create_domain()
+    def test_get_zone(self):
+        # Create a zone
+        zone = self.create_zone()
 
-        response = self.get('domains/%s' % domain['id'])
+        response = self.get('domains/%s' % zone['id'])
 
         self.assertIn('id', response.json)
-        self.assertEqual(response.json['id'], domain['id'])
+        self.assertEqual(response.json['id'], zone['id'])
 
-    @patch.object(central_service.Service, 'find_domain',
+    @patch.object(central_service.Service, 'find_zone',
                   side_effect=messaging.MessagingTimeout())
-    def test_get_domain_timeout(self, _):
-        # Create a domain
-        domain = self.create_domain()
+    def test_get_zone_timeout(self, _):
+        # Create a zone
+        zone = self.create_zone()
 
-        self.get('domains/%s' % domain['id'], status_code=504)
+        self.get('domains/%s' % zone['id'], status_code=504)
 
-    def test_get_domain_missing(self):
+    def test_get_zone_missing(self):
         self.get('domains/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980',
                  status_code=404)
 
-    def test_get_domain_invalid_id(self):
+    def test_get_zone_invalid_id(self):
         # The letter "G" is not valid in a UUID
         self.get('domains/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff9GG',
                  status_code=404)
 
         self.get('domains/2fdadfb1cf964259ac6bbb7b6d2ff980', status_code=404)
 
-    def test_update_domain(self):
-        # Create a domain
-        domain = self.create_domain()
+    def test_update_zone(self):
+        # Create a zone
+        zone = self.create_zone()
 
-        data = {'email': 'prefix-%s' % domain['email']}
+        data = {'email': 'prefix-%s' % zone['email']}
 
-        response = self.put('domains/%s' % domain['id'], data=data)
+        response = self.put('domains/%s' % zone['id'], data=data)
 
         self.assertIn('id', response.json)
-        self.assertEqual(response.json['id'], domain['id'])
+        self.assertEqual(response.json['id'], zone['id'])
 
         self.assertIn('email', response.json)
-        self.assertEqual('prefix-%s' % domain['email'], response.json['email'])
+        self.assertEqual('prefix-%s' % zone['email'], response.json['email'])
 
-    def test_update_domain_junk(self):
-        # Create a domain
-        domain = self.create_domain()
+    def test_update_zone_junk(self):
+        # Create a zone
+        zone = self.create_zone()
 
-        data = {'email': 'prefix-%s' % domain['email'], 'junk': 'Junk Field'}
+        data = {'email': 'prefix-%s' % zone['email'], 'junk': 'Junk Field'}
 
-        self.put('domains/%s' % domain['id'], data=data, status_code=400)
+        self.put('domains/%s' % zone['id'], data=data, status_code=400)
 
-    def test_update_domain_name_fail(self):
-        # Create a domain
-        domain = self.create_domain()
+    def test_update_zone_name_fail(self):
+        # Create a zone
+        zone = self.create_zone()
 
         data = {'name': 'renamed.com.'}
 
-        self.put('domains/%s' % domain['id'], data=data, status_code=400)
+        self.put('domains/%s' % zone['id'], data=data, status_code=400)
 
-    def test_update_domain_null_ttl(self):
-        # Create a domain
-        domain = self.create_domain()
+    def test_update_zone_null_ttl(self):
+        # Create a zone
+        zone = self.create_zone()
 
         data = {'ttl': None}
 
-        self.put('domains/%s' % domain['id'], data=data, status_code=400)
+        self.put('domains/%s' % zone['id'], data=data, status_code=400)
 
-    def test_update_domain_negative_ttl(self):
-        # Create a domain
-        domain = self.create_domain()
+    def test_update_zone_negative_ttl(self):
+        # Create a zone
+        zone = self.create_zone()
 
         data = {'ttl': -1}
 
-        self.put('domains/%s' % domain['id'], data=data, status_code=400)
+        self.put('domains/%s' % zone['id'], data=data, status_code=400)
 
-    def test_update_domain_zero_ttl(self):
-        # Create a domain
-        domain = self.create_domain()
+    def test_update_zone_zero_ttl(self):
+        # Create a zone
+        zone = self.create_zone()
 
         data = {'ttl': 0}
 
-        self.put('domains/%s' % domain['id'], data=data, status_code=400)
+        self.put('domains/%s' % zone['id'], data=data, status_code=400)
 
-    @patch.object(central_service.Service, 'update_domain',
+    @patch.object(central_service.Service, 'update_zone',
                   side_effect=messaging.MessagingTimeout())
-    def test_update_domain_timeout(self, _):
-        # Create a domain
-        domain = self.create_domain()
+    def test_update_zone_timeout(self, _):
+        # Create a zone
+        zone = self.create_zone()
 
-        data = {'email': 'prefix-%s' % domain['email']}
+        data = {'email': 'prefix-%s' % zone['email']}
 
-        self.put('domains/%s' % domain['id'], data=data, status_code=504)
+        self.put('domains/%s' % zone['id'], data=data, status_code=504)
 
-    @patch.object(central_service.Service, 'update_domain',
-                  side_effect=exceptions.DuplicateDomain())
-    def test_update_domain_duplicate(self, _):
-        # Create a domain
-        domain = self.create_domain()
+    @patch.object(central_service.Service, 'update_zone',
+                  side_effect=exceptions.DuplicateZone())
+    def test_update_zone_duplicate(self, _):
+        # Create a zone
+        zone = self.create_zone()
 
-        data = {'email': 'prefix-%s' % domain['email']}
+        data = {'email': 'prefix-%s' % zone['email']}
 
-        self.put('domains/%s' % domain['id'], data=data, status_code=409)
+        self.put('domains/%s' % zone['id'], data=data, status_code=409)
 
-    def test_update_domain_missing(self):
+    def test_update_zone_missing(self):
         data = {'email': 'bla@bla.com'}
 
         self.put('domains/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980', data=data,
                  status_code=404)
 
-    def test_update_domain_invalid_id(self):
+    def test_update_zone_invalid_id(self):
         data = {'email': 'bla@bla.com'}
 
         # The letter "G" is not valid in a UUID
@@ -387,17 +387,17 @@ class ApiV1DomainsTest(ApiV1Test):
         self.put('domains/2fdadfb1cf964259ac6bbb7b6d2ff980', data=data,
                  status_code=404)
 
-    def test_update_domain_ttl_greter_than_max(self):
-        # Create a domain
-        domain = self.create_domain()
+    def test_update_zone_ttl_greter_than_max(self):
+        # Create a zone
+        zone = self.create_zone()
 
         data = {'ttl': 2147483648}
 
-        self.put('domains/%s' % domain['id'], data=data, status_code=400)
+        self.put('domains/%s' % zone['id'], data=data, status_code=400)
 
-    def test_update_domain_invalid_email(self):
-        # Create a domain
-        domain = self.create_domain()
+    def test_update_zone_invalid_email(self):
+        # Create a zone
+        zone = self.create_zone()
 
         invalid_emails = [
             'org',
@@ -413,45 +413,45 @@ class ApiV1DomainsTest(ApiV1Test):
 
         for invalid_email in invalid_emails:
             data = {'email': invalid_email}
-            self.put('domains/%s' % domain['id'], data=data, status_code=400)
+            self.put('domains/%s' % zone['id'], data=data, status_code=400)
 
-    def test_update_domain_description_too_long(self):
-        # Create a domain
-        domain = self.create_domain()
+    def test_update_zone_description_too_long(self):
+        # Create a zone
+        zone = self.create_zone()
 
         invalid_des = 'a' * 165
 
         data = {'description': invalid_des}
-        self.put('domains/%s' % domain['id'], data=data, status_code=400)
+        self.put('domains/%s' % zone['id'], data=data, status_code=400)
 
-    def test_delete_domain(self):
-        # Create a domain
-        domain = self.create_domain()
+    def test_delete_zone(self):
+        # Create a zone
+        zone = self.create_zone()
 
-        self.delete('domains/%s' % domain['id'])
+        self.delete('domains/%s' % zone['id'])
 
-        # Simulate the domain having been deleted on the backend
-        domain_serial = self.central_service.get_domain(
-            self.admin_context, domain['id']).serial
+        # Simulate the zone having been deleted on the backend
+        zone_serial = self.central_service.get_zone(
+            self.admin_context, zone['id']).serial
         self.central_service.update_status(
-            self.admin_context, domain['id'], "SUCCESS", domain_serial)
+            self.admin_context, zone['id'], "SUCCESS", zone_serial)
 
-        # Ensure we can no longer fetch the domain
-        self.get('domains/%s' % domain['id'], status_code=404)
+        # Ensure we can no longer fetch the zone
+        self.get('domains/%s' % zone['id'], status_code=404)
 
-    @patch.object(central_service.Service, 'delete_domain',
+    @patch.object(central_service.Service, 'delete_zone',
                   side_effect=messaging.MessagingTimeout())
-    def test_delete_domain_timeout(self, _):
-        # Create a domain
-        domain = self.create_domain()
+    def test_delete_zone_timeout(self, _):
+        # Create a zone
+        zone = self.create_zone()
 
-        self.delete('domains/%s' % domain['id'], status_code=504)
+        self.delete('domains/%s' % zone['id'], status_code=504)
 
-    def test_delete_domain_missing(self):
+    def test_delete_zone_missing(self):
         self.delete('domains/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff980',
                     status_code=404)
 
-    def test_delete_domain_invalid_id(self):
+    def test_delete_zone_invalid_id(self):
         # The letter "G" is not valid in a UUID
         self.delete('domains/2fdadfb1-cf96-4259-ac6b-bb7b6d2ff9GG',
                     status_code=404)
@@ -460,31 +460,31 @@ class ApiV1DomainsTest(ApiV1Test):
                     status_code=404)
 
     def test_get_secondary_missing(self):
-        fixture = self.get_domain_fixture('SECONDARY', 0)
+        fixture = self.get_zone_fixture('SECONDARY', 0)
         fixture['email'] = cfg.CONF['service:central'].managed_resource_email
 
-        domain = self.create_domain(**fixture)
+        zone = self.create_zone(**fixture)
 
-        self.get('domains/%s' % domain.id, status_code=404)
+        self.get('domains/%s' % zone.id, status_code=404)
 
     def test_update_secondary_missing(self):
-        fixture = self.get_domain_fixture('SECONDARY', 0)
+        fixture = self.get_zone_fixture('SECONDARY', 0)
         fixture['email'] = cfg.CONF['service:central'].managed_resource_email
 
-        domain = self.create_domain(**fixture)
+        zone = self.create_zone(**fixture)
 
-        self.put('domains/%s' % domain.id, {}, status_code=404)
+        self.put('domains/%s' % zone.id, {}, status_code=404)
 
     def test_delete_secondary_missing(self):
-        fixture = self.get_domain_fixture('SECONDARY', 0)
+        fixture = self.get_zone_fixture('SECONDARY', 0)
         fixture['email'] = cfg.CONF['service:central'].managed_resource_email
 
-        domain = self.create_domain(**fixture)
-        self.delete('domains/%s' % domain.id, status_code=404)
+        zone = self.create_zone(**fixture)
+        self.delete('domains/%s' % zone.id, status_code=404)
 
-    def test_get_domain_servers_from_secondary(self):
-        fixture = self.get_domain_fixture('SECONDARY', 0)
+    def test_get_zone_servers_from_secondary(self):
+        fixture = self.get_zone_fixture('SECONDARY', 0)
         fixture['email'] = cfg.CONF['service:central'].managed_resource_email
 
-        domain = self.create_domain(**fixture)
-        self.get('domains/%s/servers' % domain.id, status_code=404)
+        zone = self.create_zone(**fixture)
+        self.get('domains/%s/servers' % zone.id, status_code=404)

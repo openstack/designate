@@ -28,7 +28,7 @@ blueprint = flask.Blueprint('sync', __name__)
 def sync_domains():
     context = flask.request.environ.get('context')
 
-    central_api.sync_domains(context)
+    central_api.sync_zones(context)
 
     return flask.Response(status=200)
 
@@ -37,7 +37,7 @@ def sync_domains():
 def sync_domain(domain_id):
     context = flask.request.environ.get('context')
 
-    central_api.sync_domain(context, domain_id)
+    central_api.sync_zone(context, domain_id)
 
     return flask.Response(status=200)
 

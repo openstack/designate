@@ -30,7 +30,6 @@ class ZoneTransferRequestAPIv2Adapter(base.APIv2Adapter):
                 'protected': False
             },
             "zone_id": {
-                'rename': 'domain_id',
                 'immutable': True,
                 'protected': False
             },
@@ -50,7 +49,6 @@ class ZoneTransferRequestAPIv2Adapter(base.APIv2Adapter):
                 'protected': False
             },
             "zone_name": {
-                'rename': 'domain_name',
                 'protected': False
             },
             "created_at": {},

@@ -55,7 +55,7 @@ from designate.zone_manager import rpcapi as zone_manager_rpcapi
 
 
 LOG = logging.getLogger(__name__)
-DOMAIN_LOCKS = threading.local()
+ZONE_LOCKS = threading.local()
 NOTIFICATION_BUFFER = threading.local()
 RETRY_STATE = threading.local()
 
@@ -136,40 +136,40 @@ def transaction(f):
     return transaction_wrapper
 
 
-def synchronized_domain(domain_arg=1, new_domain=False):
-    """Ensures only a single operation is in progress for each domain
+def synchronized_zone(zone_arg=1, new_zone=False):
+    """Ensures only a single operation is in progress for each zone
 
     A Decorator which ensures only a single operation can be happening
-    on a single domain at once, within the current designate-central instance
+    on a single zone at once, within the current designate-central instance
     """
     def outer(f):
         @functools.wraps(f)
         def sync_wrapper(self, *args, **kwargs):
-            if not hasattr(DOMAIN_LOCKS, 'held'):
+            if not hasattr(ZONE_LOCKS, 'held'):
                 # Create the held set if necessary
-                DOMAIN_LOCKS.held = set()
+                ZONE_LOCKS.held = set()
 
-            domain_id = None
+            zone_id = None
 
-            if 'domain_id' in kwargs:
-                domain_id = kwargs['domain_id']
+            if 'zone_id' in kwargs:
+                zone_id = kwargs['zone_id']
 
-            elif 'domain' in kwargs:
-                domain_id = kwargs['domain'].id
+            elif 'zone' in kwargs:
+                zone_id = kwargs['zone'].id
 
             elif 'recordset' in kwargs:
-                domain_id = kwargs['recordset'].domain_id
+                zone_id = kwargs['recordset'].zone_id
 
             elif 'record' in kwargs:
-                domain_id = kwargs['record'].domain_id
+                zone_id = kwargs['record'].zone_id
 
             # The various objects won't always have an ID set, we should
             # attempt to locate an Object containing the ID.
-            if domain_id is None:
+            if zone_id is None:
                 for arg in itertools.chain(kwargs.values(), args):
-                    if isinstance(arg, objects.Domain):
-                        domain_id = arg.id
-                        if domain_id is not None:
+                    if isinstance(arg, objects.Zone):
+                        zone_id = arg.id
+                        if zone_id is not None:
                             break
 
                     elif (isinstance(arg, objects.RecordSet) or
@@ -177,38 +177,38 @@ def synchronized_domain(domain_arg=1, new_domain=False):
                           isinstance(arg, objects.ZoneTransferRequest) or
                           isinstance(arg, objects.ZoneTransferAccept)):
 
-                        domain_id = arg.domain_id
-                        if domain_id is not None:
+                        zone_id = arg.zone_id
+                        if zone_id is not None:
                             break
 
             # If we still don't have an ID, find the Nth argument as
-            # defined by the domain_arg decorator option.
-            if domain_id is None and len(args) > domain_arg:
-                domain_id = args[domain_arg]
+            # defined by the zone_arg decorator option.
+            if zone_id is None and len(args) > zone_arg:
+                zone_id = args[zone_arg]
 
-                if isinstance(domain_id, objects.Domain):
-                    # If the value is a Domain object, extract it's ID.
-                    domain_id = domain_id.id
+                if isinstance(zone_id, objects.Zone):
+                    # If the value is a Zone object, extract it's ID.
+                    zone_id = zone_id.id
 
-            if not new_domain and domain_id is None:
-                raise Exception('Failed to determine domain id for '
+            if not new_zone and zone_id is None:
+                raise Exception('Failed to determine zone id for '
                                 'synchronized operation')
 
-            if domain_id in DOMAIN_LOCKS.held:
+            if zone_id in ZONE_LOCKS.held:
                 # Call the wrapped function
                 return f(self, *args, **kwargs)
             else:
-                with lockutils.lock('domain-%s' % domain_id):
-                    DOMAIN_LOCKS.held.add(domain_id)
+                with lockutils.lock('zone-%s' % zone_id):
+                    ZONE_LOCKS.held.add(zone_id)
 
                     # Call the wrapped function
                     result = f(self, *args, **kwargs)
 
-                    DOMAIN_LOCKS.held.remove(domain_id)
+                    ZONE_LOCKS.held.remove(zone_id)
                     return result
 
         sync_wrapper.__wrapped_function = f
-        sync_wrapper.__wrapper_name = 'synchronized_domain'
+        sync_wrapper.__wrapper_name = 'synchronized_zone'
         return sync_wrapper
 
     return outer
@@ -261,7 +261,7 @@ def notification(notification_type):
 
 
 class Service(service.RPCService, service.Service):
-    RPC_API_VERSION = '5.6'
+    RPC_API_VERSION = '6.0'
 
     target = messaging.Target(version=RPC_API_VERSION)
 
@@ -313,48 +313,48 @@ class Service(service.RPCService, service.Service):
     def zone_manager_api(self):
         return zone_manager_rpcapi.ZoneManagerAPI.get_instance()
 
-    def _is_valid_domain_name(self, context, domain_name):
-        # Validate domain name length
-        if len(domain_name) > cfg.CONF['service:central'].max_domain_name_len:
-            raise exceptions.InvalidDomainName('Name too long')
+    def _is_valid_zone_name(self, context, zone_name):
+        # Validate zone name length
+        if len(zone_name) > cfg.CONF['service:central'].max_zone_name_len:
+            raise exceptions.InvalidZoneName('Name too long')
 
-        # Break the domain name up into its component labels
-        domain_labels = domain_name.strip('.').split('.')
+        # Break the zone name up into its component labels
+        zone_labels = zone_name.strip('.').split('.')
 
         # We need more than 1 label.
-        if len(domain_labels) <= 1:
-            raise exceptions.InvalidDomainName('More than one label is '
-                                               'required')
+        if len(zone_labels) <= 1:
+            raise exceptions.InvalidZoneName('More than one label is '
+                                             'required')
 
         # Check the TLD for validity if there are entries in the database
         if self.check_for_tlds:
             try:
-                self.storage.find_tld(context, {'name': domain_labels[-1]})
+                self.storage.find_tld(context, {'name': zone_labels[-1]})
             except exceptions.TldNotFound:
-                raise exceptions.InvalidDomainName('Invalid TLD')
+                raise exceptions.InvalidZoneName('Invalid TLD')
 
-            # Now check that the domain name is not the same as a TLD
+            # Now check that the zone name is not the same as a TLD
             try:
-                stripped_domain_name = domain_name.rstrip('.').lower()
+                stripped_zone_name = zone_name.rstrip('.').lower()
                 self.storage.find_tld(
                     context,
-                    {'name': stripped_domain_name})
+                    {'name': stripped_zone_name})
             except exceptions.TldNotFound:
                 pass
             else:
-                raise exceptions.InvalidDomainName(
-                    'Domain name cannot be the same as a TLD')
+                raise exceptions.InvalidZoneName(
+                    'Zone name cannot be the same as a TLD')
 
-        # Check domain name blacklist
-        if self._is_blacklisted_domain_name(context, domain_name):
+        # Check zone name blacklist
+        if self._is_blacklisted_zone_name(context, zone_name):
             # Some users are allowed bypass the blacklist.. Is this one?
-            if not policy.check('use_blacklisted_domain', context,
+            if not policy.check('use_blacklisted_zone', context,
                                 do_raise=False):
-                raise exceptions.InvalidDomainName('Blacklisted domain name')
+                raise exceptions.InvalidZoneName('Blacklisted zone name')
 
         return True
 
-    def _is_valid_recordset_name(self, context, domain, recordset_name):
+    def _is_valid_recordset_name(self, context, zone, recordset_name):
         if not recordset_name.endswith('.'):
             raise ValueError('Please supply a FQDN')
 
@@ -364,21 +364,21 @@ class Service(service.RPCService, service.Service):
             raise exceptions.InvalidRecordSetName('Name too long')
 
         # RecordSets must be contained in the parent zone
-        if (recordset_name != domain['name']
-                and not recordset_name.endswith("." + domain['name'])):
+        if (recordset_name != zone['name']
+                and not recordset_name.endswith("." + zone['name'])):
             raise exceptions.InvalidRecordSetLocation(
-                'RecordSet is not contained within it\'s parent domain')
+                'RecordSet is not contained within it\'s parent zone')
 
-    def _is_valid_recordset_placement(self, context, domain, recordset_name,
+    def _is_valid_recordset_placement(self, context, zone, recordset_name,
                                       recordset_type, recordset_id=None):
         # CNAME's must not be created at the zone apex.
-        if recordset_type == 'CNAME' and recordset_name == domain.name:
+        if recordset_type == 'CNAME' and recordset_name == zone.name:
             raise exceptions.InvalidRecordSetLocation(
                 'CNAME recordsets may not be created at the zone apex')
 
         # CNAME's must not share a name with other recordsets
         criterion = {
-            'domain_id': domain.id,
+            'zone_id': zone.id,
             'name': recordset_name,
         }
 
@@ -394,35 +394,35 @@ class Service(service.RPCService, service.Service):
 
         return True
 
-    def _is_valid_recordset_placement_subdomain(self, context, domain,
-                                                recordset_name,
-                                                criterion=None):
+    def _is_valid_recordset_placement_subzone(self, context, zone,
+                                              recordset_name,
+                                              criterion=None):
         """
         Check that the placement of the requested rrset belongs to any of the
-        domains subdomains..
+        zones subzones..
         """
-        LOG.debug("Checking if %s belongs in any of %s subdomains" %
-                  (recordset_name, domain.name))
+        LOG.debug("Checking if %s belongs in any of %s subzones" %
+                  (recordset_name, zone.name))
 
         criterion = criterion or {}
 
         context = context.elevated()
         context.all_tenants = True
 
-        if domain.name == recordset_name:
+        if zone.name == recordset_name:
             return
 
-        child_domains = self.storage.find_domains(
-            context, {"parent_domain_id": domain.id})
-        for child_domain in child_domains:
+        child_zones = self.storage.find_zones(
+            context, {"parent_zone_id": zone.id})
+        for child_zone in child_zones:
             try:
                 self._is_valid_recordset_name(
-                    context, child_domain, recordset_name)
+                    context, child_zone, recordset_name)
             except Exception:
                 continue
             else:
                 msg = 'RecordSet belongs in a child zone: %s' % \
-                    child_domain['name']
+                    child_zone['name']
                 raise exceptions.InvalidRecordSetLocation(msg)
 
     def _is_valid_recordset_records(self, recordset):
@@ -436,9 +436,9 @@ class Service(service.RPCService, service.Service):
                     'CNAME recordsets may not have more than 1 record'
                 )
 
-    def _is_blacklisted_domain_name(self, context, domain_name):
+    def _is_blacklisted_zone_name(self, context, zone_name):
         """
-        Ensures the provided domain_name is not blacklisted.
+        Ensures the provided zone_name is not blacklisted.
         """
         blacklists = self.storage.find_blacklists(context)
 
@@ -455,7 +455,7 @@ class Service(service.RPCService, service.Service):
                 signal.setitimer(signal.ITIMER_REAL, 0.02)
 
                 try:
-                    if bool(re.search(blacklist.pattern, domain_name)):
+                    if bool(re.search(blacklist.pattern, zone_name)):
                         return True
                 finally:
                     signal.setitimer(signal.ITIMER_REAL, 0)
@@ -464,55 +464,59 @@ class Service(service.RPCService, service.Service):
             LOG.critical(_LC(
                 'Blacklist regex (%(pattern)s) took too long to evaluate '
                 'against zone name (%(zone_name)s') %
-                {'pattern': blacklist.pattern, 'zone_name': domain_name})
+                         {
+                             'pattern': blacklist.pattern,
+                             'zone_name': zone_name
+                         }
+                        )
 
             return True
 
         return False
 
-    def _is_subdomain(self, context, domain_name, pool_id):
+    def _is_subzone(self, context, zone_name, pool_id):
         """
-        Ensures the provided domain_name is the subdomain
-        of an existing domain (checks across all tenants)
+        Ensures the provided zone_name is the subzone
+        of an existing zone (checks across all tenants)
         """
         context = context.elevated()
         context.all_tenants = True
 
         # Break the name up into it's component labels
-        labels = domain_name.split(".")
+        labels = zone_name.split(".")
 
         criterion = {"pool_id": pool_id}
 
         i = 1
 
-        # Starting with label #2, search for matching domain's in the database
+        # Starting with label #2, search for matching zone's in the database
         while (i < len(labels)):
             name = '.'.join(labels[i:])
             criterion["name"] = name
             try:
-                domain = self.storage.find_domain(context, criterion)
-            except exceptions.DomainNotFound:
+                zone = self.storage.find_zone(context, criterion)
+            except exceptions.ZoneNotFound:
                 i += 1
             else:
-                return domain
+                return zone
 
         return False
 
-    def _is_superdomain(self, context, domain_name, pool_id):
+    def _is_superzone(self, context, zone_name, pool_id):
         """
-        Ensures the provided domain_name is the parent domain
-        of an existing subdomain (checks across all tenants)
+        Ensures the provided zone_name is the parent zone
+        of an existing subzone (checks across all tenants)
         """
         context = context.elevated()
         context.all_tenants = True
 
-        # Create wildcard term to catch all subdomains
-        search_term = "%%.%(name)s" % {"name": domain_name}
+        # Create wildcard term to catch all subzones
+        search_term = "%%.%(name)s" % {"name": zone_name}
 
         criterion = {'name': search_term, "pool_id": pool_id}
-        subdomains = self.storage.find_domains(context, criterion)
+        subzones = self.storage.find_zones(context, criterion)
 
-        return subdomains
+        return subzones
 
     def _is_valid_ttl(self, context, ttl):
         min_ttl = cfg.CONF['service:central'].min_ttl
@@ -523,16 +527,16 @@ class Service(service.RPCService, service.Service):
                 raise exceptions.InvalidTTL('TTL is below the minimum: %s'
                                             % min_ttl)
 
-    def _increment_domain_serial(self, context, domain):
+    def _increment_zone_serial(self, context, zone):
 
         # Increment the serial number
-        domain.serial = utils.increment_serial(domain.serial)
-        domain = self.storage.update_domain(context, domain)
+        zone.serial = utils.increment_serial(zone.serial)
+        zone = self.storage.update_zone(context, zone)
 
         # Update SOA record
-        self._update_soa(context, domain)
+        self._update_soa(context, zone)
 
-        return domain
+        return zone
 
     # SOA Recordset Methods
     def _build_soa_record(self, zone, ns_records):
@@ -578,7 +582,7 @@ class Service(service.RPCService, service.Service):
         pool = self.storage.get_pool(elevated_context, zone.pool_id)
 
         soa = self.find_recordset(context,
-                                  criterion={'domain_id': zone['id'],
+                                  criterion={'zone_id': zone['id'],
                                              'type': "SOA"})
 
         soa.records[0].data = self._build_soa_record(zone, pool.ns_records)
@@ -610,7 +614,7 @@ class Service(service.RPCService, service.Service):
         # Get NS recordset
         # If the zone doesn't have an NS recordset yet, create one
         recordsets = self.find_recordsets(
-            context, criterion={'domain_id': zone['id'], 'type': "NS"}
+            context, criterion={'zone_id': zone['id'], 'type': "NS"}
         )
 
         managed = []
@@ -634,7 +638,7 @@ class Service(service.RPCService, service.Service):
 
     def _delete_ns(self, context, zone, ns_record):
         ns_recordset = self.find_recordset(
-            context, criterion={'domain_id': zone['id'], 'type': "NS"})
+            context, criterion={'zone_id': zone['id'], 'type': "NS"})
 
         for record in copy.deepcopy(ns_recordset.records):
             if record.data == ns_record:
@@ -643,33 +647,33 @@ class Service(service.RPCService, service.Service):
         self._update_recordset_in_storage(context, zone, ns_recordset)
 
     # Quota Enforcement Methods
-    def _enforce_domain_quota(self, context, tenant_id):
+    def _enforce_zone_quota(self, context, tenant_id):
         criterion = {'tenant_id': tenant_id}
-        count = self.storage.count_domains(context, criterion)
+        count = self.storage.count_zones(context, criterion)
 
-        self.quota.limit_check(context, tenant_id, domains=count)
+        self.quota.limit_check(context, tenant_id, zones=count)
 
-    def _enforce_recordset_quota(self, context, domain):
-        # Ensure the recordsets per domain quota is OK
-        criterion = {'domain_id': domain.id}
+    def _enforce_recordset_quota(self, context, zone):
+        # Ensure the recordsets per zone quota is OK
+        criterion = {'zone_id': zone.id}
         count = self.storage.count_recordsets(context, criterion)
 
         self.quota.limit_check(
-            context, domain.tenant_id, domain_recordsets=count)
+            context, zone.tenant_id, zone_recordsets=count)
 
-    def _enforce_record_quota(self, context, domain, recordset):
-        # Ensure the records per domain quota is OK
-        criterion = {'domain_id': domain.id}
+    def _enforce_record_quota(self, context, zone, recordset):
+        # Ensure the records per zone quota is OK
+        criterion = {'zone_id': zone.id}
         count = self.storage.count_records(context, criterion)
 
-        self.quota.limit_check(context, domain.tenant_id,
-                               domain_records=count)
+        self.quota.limit_check(context, zone.tenant_id,
+                               zone_records=count)
 
         # Ensure the records per recordset quota is OK
         criterion = {'recordset_id': recordset.id}
         count = self.storage.count_records(context, criterion)
 
-        self.quota.limit_check(context, domain.tenant_id,
+        self.quota.limit_check(context, zone.tenant_id,
                                recordset_records=count)
 
     # Misc Methods
@@ -757,7 +761,7 @@ class Service(service.RPCService, service.Service):
         tld = self.storage.delete_tld(context, tld_id)
 
         # We need to ensure that if there's no more TLD's we'll not break
-        # domain creation.
+        # zone creation.
         if not self.storage.find_tlds(context, limit=1):
             self.check_for_tlds = False
 
@@ -830,146 +834,147 @@ class Service(service.RPCService, service.Service):
         policy.check('count_tenants', context)
         return self.storage.count_tenants(context)
 
-    # Domain Methods
+    # Zone Methods
     @notification('dns.domain.create')
-    @synchronized_domain(new_domain=True)
-    def create_domain(self, context, domain):
+    @notification('dns.zone.create')
+    @synchronized_zone(new_zone=True)
+    def create_zone(self, context, zone):
         # TODO(kiall): Refactor this method into *MUCH* smaller chunks.
         # Default to creating in the current users tenant
-        if domain.tenant_id is None:
-            domain.tenant_id = context.tenant
+        if zone.tenant_id is None:
+            zone.tenant_id = context.tenant
 
         target = {
-            'tenant_id': domain.tenant_id,
-            'domain_name': domain.name
+            'tenant_id': zone.tenant_id,
+            'zone_name': zone.name
         }
 
-        policy.check('create_domain', context, target)
+        policy.check('create_zone', context, target)
 
         # Ensure the tenant has enough quota to continue
-        self._enforce_domain_quota(context, domain.tenant_id)
+        self._enforce_zone_quota(context, zone.tenant_id)
 
-        # Ensure the domain name is valid
-        self._is_valid_domain_name(context, domain.name)
+        # Ensure the zone name is valid
+        self._is_valid_zone_name(context, zone.name)
 
         # Ensure TTL is above the minimum
-        if domain.ttl is not None:
-            self._is_valid_ttl(context, domain.ttl)
+        if zone.ttl is not None:
+            self._is_valid_ttl(context, zone.ttl)
 
         # Get the default pool_id
         default_pool_id = cfg.CONF['service:central'].default_pool_id
-        if domain.pool_id is None:
-            domain.pool_id = default_pool_id
+        if zone.pool_id is None:
+            zone.pool_id = default_pool_id
 
-        # Handle sub-domains appropriately
-        parent_domain = self._is_subdomain(
-            context, domain.name, domain.pool_id)
-        if parent_domain:
-            if parent_domain.tenant_id == domain.tenant_id:
-                # Record the Parent Domain ID
-                domain.parent_domain_id = parent_domain.id
+        # Handle sub-zones appropriately
+        parent_zone = self._is_subzone(
+            context, zone.name, zone.pool_id)
+        if parent_zone:
+            if parent_zone.tenant_id == zone.tenant_id:
+                # Record the Parent Zone ID
+                zone.parent_zone_id = parent_zone.id
             else:
-                raise exceptions.IllegalChildDomain('Unable to create'
-                                                    'subdomain in another '
-                                                    'tenants domain')
+                raise exceptions.IllegalChildZone('Unable to create'
+                                                  'subzone in another '
+                                                  'tenants zone')
 
-        # Handle super-domains appropriately
-        subdomains = self._is_superdomain(context, domain.name, domain.pool_id)
-        if subdomains:
-            LOG.debug("Domain '{0}' is a superdomain.".format(domain.name))
-            for subdomain in subdomains:
-                if subdomain.tenant_id != domain.tenant_id:
-                    raise exceptions.IllegalParentDomain('Unable to create '
-                                                     'domain because another '
-                                                     'tenant owns a subdomain '
-                                                     'of the domain')
-        # If this succeeds, subdomain parent IDs will be updated
-        # after domain is created
+        # Handle super-zones appropriately
+        subzones = self._is_superzone(context, zone.name, zone.pool_id)
+        if subzones:
+            LOG.debug("Zone '{0}' is a superzone.".format(zone.name))
+            for subzone in subzones:
+                if subzone.tenant_id != zone.tenant_id:
+                    raise exceptions.IllegalParentZone('Unable to create '
+                                                       'zone because another '
+                                                       'tenant owns a subzone '
+                                                       'of the zone')
+        # If this succeeds, subzone parent IDs will be updated
+        # after zone is created
 
-        # NOTE(kiall): Fetch the servers before creating the domain, this way
-        #              we can prevent domain creation if no servers are
+        # NOTE(kiall): Fetch the servers before creating the zone, this way
+        #              we can prevent zone creation if no servers are
         #              configured.
         elevated_context = context.elevated()
         elevated_context.all_tenants = True
-        pool = self.storage.get_pool(elevated_context, domain.pool_id)
+        pool = self.storage.get_pool(elevated_context, zone.pool_id)
 
         if len(pool.ns_records) == 0:
             LOG.critical(_LC('No nameservers configured. '
                              'Please create at least one nameserver'))
             raise exceptions.NoServersConfigured()
 
-        if domain.type == 'SECONDARY' and domain.serial is None:
-            domain.serial = 1
+        if zone.type == 'SECONDARY' and zone.serial is None:
+            zone.serial = 1
 
-        domain = self._create_domain_in_storage(context, domain)
+        zone = self._create_zone_in_storage(context, zone)
 
-        self.pool_manager_api.create_domain(context, domain)
+        self.pool_manager_api.create_zone(context, zone)
 
-        if domain.type == 'SECONDARY':
-            self.mdns_api.perform_zone_xfr(context, domain)
+        if zone.type == 'SECONDARY':
+            self.mdns_api.perform_zone_xfr(context, zone)
 
-        # If domain is a superdomain, update subdomains
+        # If zone is a superzone, update subzones
         # with new parent IDs
-        for subdomain in subdomains:
-            LOG.debug("Updating subdomain '{0}' parent ID "
-                      "using superdomain ID '{1}'"
-                      .format(subdomain.name, domain.id))
-            subdomain.parent_domain_id = domain.id
-            self.update_domain(context, subdomain)
+        for subzone in subzones:
+            LOG.debug("Updating subzone '{0}' parent ID "
+                      "using superzone ID '{1}'"
+                      .format(subzone.name, zone.id))
+            subzone.parent_zone_id = zone.id
+            self.update_zone(context, subzone)
 
-        return domain
+        return zone
 
     @transaction
-    def _create_domain_in_storage(self, context, domain):
+    def _create_zone_in_storage(self, context, zone):
 
-        domain.action = 'CREATE'
-        domain.status = 'PENDING'
+        zone.action = 'CREATE'
+        zone.status = 'PENDING'
 
-        domain = self.storage.create_domain(context, domain)
-        pool_ns_records = self.get_domain_servers(context, domain['id'])
+        zone = self.storage.create_zone(context, zone)
+        pool_ns_records = self.get_zone_ns_records(context, zone['id'])
 
-        # Create the SOA and NS recordsets for the new domain.  The SOA
-        # record will always be the first 'created_at' record for a domain.
-        self._create_soa(context, domain)
-        self._create_ns(context, domain, [n.hostname for n in pool_ns_records])
+        # Create the SOA and NS recordsets for the new zone.  The SOA
+        # record will always be the first 'created_at' record for a zone.
+        self._create_soa(context, zone)
+        self._create_ns(context, zone, [n.hostname for n in pool_ns_records])
 
-        if domain.obj_attr_is_set('recordsets'):
-            for rrset in domain.recordsets:
+        if zone.obj_attr_is_set('recordsets'):
+            for rrset in zone.recordsets:
                 # This allows eventlet to yield, as this looping operation
                 # can be very long-lived.
                 time.sleep(0)
                 self._create_recordset_in_storage(
-                    context, domain, rrset, increment_serial=False)
+                    context, zone, rrset, increment_serial=False)
 
-        return domain
+        return zone
 
-    def get_domain(self, context, domain_id):
-        domain = self.storage.get_domain(context, domain_id)
+    def get_zone(self, context, zone_id):
+        zone = self.storage.get_zone(context, zone_id)
 
         target = {
-            'domain_id': domain_id,
-            'domain_name': domain.name,
-            'tenant_id': domain.tenant_id
+            'zone_id': zone_id,
+            'zone_name': zone.name,
+            'tenant_id': zone.tenant_id
         }
-        policy.check('get_domain', context, target)
+        policy.check('get_zone', context, target)
 
-        return domain
+        return zone
 
-    def get_domain_servers(self, context, domain_id=None, criterion=None):
+    def get_zone_ns_records(self, context, zone_id=None, criterion=None):
 
-        if domain_id is None:
-            policy.check('get_domain_servers', context)
+        if zone_id is None:
+            policy.check('get_zone_ns_records', context)
             pool_id = cfg.CONF['service:central'].default_pool_id
         else:
-            domain = self.storage.get_domain(context, domain_id)
+            zone = self.storage.get_zone(context, zone_id)
             target = {
-                'domain_id': domain_id,
-                'domain_name': domain.name,
-                'tenant_id': domain.tenant_id
+                'zone_id': zone_id,
+                'zone_name': zone.name,
+                'tenant_id': zone.tenant_id
             }
-            pool_id = domain.pool_id
+            pool_id = zone.pool_id
 
-            policy.check('get_domain_servers', context, target)
+            policy.check('get_zone_ns_records', context, target)
 
         # Need elevated context to get the pool
         elevated_context = context.elevated()
@@ -980,170 +985,172 @@ class Service(service.RPCService, service.Service):
 
         return pool.ns_records
 
-    def find_domains(self, context, criterion=None, marker=None, limit=None,
-                     sort_key=None, sort_dir=None):
+    def find_zones(self, context, criterion=None, marker=None, limit=None,
+                   sort_key=None, sort_dir=None):
         target = {'tenant_id': context.tenant}
-        policy.check('find_domains', context, target)
+        policy.check('find_zones', context, target)
 
-        return self.storage.find_domains(context, criterion, marker, limit,
-                                         sort_key, sort_dir)
+        return self.storage.find_zones(context, criterion, marker, limit,
+                                       sort_key, sort_dir)
 
-    def find_domain(self, context, criterion=None):
+    def find_zone(self, context, criterion=None):
         target = {'tenant_id': context.tenant}
-        policy.check('find_domain', context, target)
+        policy.check('find_zone', context, target)
 
-        return self.storage.find_domain(context, criterion)
+        return self.storage.find_zone(context, criterion)
 
     @notification('dns.domain.update')
-    @synchronized_domain()
-    def update_domain(self, context, domain, increment_serial=True):
+    @notification('dns.zone.update')
+    @synchronized_zone()
+    def update_zone(self, context, zone, increment_serial=True):
         # TODO(kiall): Refactor this method into *MUCH* smaller chunks.
         target = {
-            'domain_id': domain.obj_get_original_value('id'),
-            'domain_name': domain.obj_get_original_value('name'),
-            'tenant_id': domain.obj_get_original_value('tenant_id'),
+            'zone_id': zone.obj_get_original_value('id'),
+            'zone_name': zone.obj_get_original_value('name'),
+            'tenant_id': zone.obj_get_original_value('tenant_id'),
         }
 
-        policy.check('update_domain', context, target)
+        policy.check('update_zone', context, target)
 
-        changes = domain.obj_get_changes()
+        changes = zone.obj_get_changes()
 
         # Ensure immutable fields are not changed
         if 'tenant_id' in changes:
             # TODO(kiall): Moving between tenants should be allowed, but the
             #              current code will not take into account that
             #              RecordSets and Records must also be moved.
-            raise exceptions.BadRequest('Moving a domain between tenants is '
+            raise exceptions.BadRequest('Moving a zone between tenants is '
                                         'not allowed')
 
         if 'name' in changes:
-            raise exceptions.BadRequest('Renaming a domain is not allowed')
+            raise exceptions.BadRequest('Renaming a zone is not allowed')
 
         # Ensure TTL is above the minimum
         ttl = changes.get('ttl', None)
         if ttl is not None:
             self._is_valid_ttl(context, ttl)
 
-        domain = self._update_domain_in_storage(
-            context, domain, increment_serial=increment_serial)
+        zone = self._update_zone_in_storage(
+            context, zone, increment_serial=increment_serial)
 
         # Fire off a XFR
         if 'masters' in changes:
-            self.mdns_api.perform_zone_xfr(context, domain)
+            self.mdns_api.perform_zone_xfr(context, zone)
 
-        self.pool_manager_api.update_domain(context, domain)
+        self.pool_manager_api.update_zone(context, zone)
 
-        return domain
+        return zone
 
     @transaction
-    def _update_domain_in_storage(self, context, domain,
-                                  increment_serial=True):
+    def _update_zone_in_storage(self, context, zone,
+                                increment_serial=True):
 
-        domain.action = 'UPDATE'
-        domain.status = 'PENDING'
+        zone.action = 'UPDATE'
+        zone.status = 'PENDING'
 
         if increment_serial:
-            # _increment_domain_serial increments and updates the domain
-            domain = self._increment_domain_serial(context, domain)
+            # _increment_zone_serial increments and updates the zone
+            zone = self._increment_zone_serial(context, zone)
         else:
-            domain = self.storage.update_domain(context, domain)
+            zone = self.storage.update_zone(context, zone)
 
-        return domain
+        return zone
 
     @notification('dns.domain.delete')
-    @synchronized_domain()
-    def delete_domain(self, context, domain_id):
-        """Delete or abandon a domain
-        On abandon, delete the domain from the DB immediately.
+    @notification('dns.zone.delete')
+    @synchronized_zone()
+    def delete_zone(self, context, zone_id):
+        """Delete or abandon a zone
+        On abandon, delete the zone from the DB immediately.
         Otherwise, set action to DELETE and status to PENDING and poke
-        Pool Manager's "delete_domain" to update the resolvers. PM will then
+        Pool Manager's "delete_zone" to update the resolvers. PM will then
         poke back to set action to NONE and status to DELETED
         """
-        domain = self.storage.get_domain(context, domain_id)
+        zone = self.storage.get_zone(context, zone_id)
 
         target = {
-            'domain_id': domain_id,
-            'domain_name': domain.name,
-            'tenant_id': domain.tenant_id
+            'zone_id': zone_id,
+            'zone_name': zone.name,
+            'tenant_id': zone.tenant_id
         }
 
         if hasattr(context, 'abandon') and context.abandon:
-            policy.check('abandon_domain', context, target)
+            policy.check('abandon_zone', context, target)
         else:
-            policy.check('delete_domain', context, target)
+            policy.check('delete_zone', context, target)
 
         # Prevent deletion of a zone which has child zones
-        criterion = {'parent_domain_id': domain_id}
+        criterion = {'parent_zone_id': zone_id}
 
-        if self.storage.count_domains(context, criterion) > 0:
-            raise exceptions.DomainHasSubdomain('Please delete any subdomains '
-                                                'before deleting this domain')
+        if self.storage.count_zones(context, criterion) > 0:
+            raise exceptions.ZoneHasSubZone('Please delete any subzones '
+                                            'before deleting this zone')
 
         if hasattr(context, 'abandon') and context.abandon:
-            LOG.info(_LW("Abandoning zone '%(zone)s'") % {'zone': domain.name})
-            domain = self.storage.delete_domain(context, domain.id)
+            LOG.info(_LW("Abandoning zone '%(zone)s'") % {'zone': zone.name})
+            zone = self.storage.delete_zone(context, zone.id)
         else:
-            domain = self._delete_domain_in_storage(context, domain)
-            self.pool_manager_api.delete_domain(context, domain)
+            zone = self._delete_zone_in_storage(context, zone)
+            self.pool_manager_api.delete_zone(context, zone)
 
-        return domain
+        return zone
 
     @transaction
-    def _delete_domain_in_storage(self, context, domain):
-        """Set domain action to DELETE and status to PENDING
-        to have the domain soft-deleted later on
+    def _delete_zone_in_storage(self, context, zone):
+        """Set zone action to DELETE and status to PENDING
+        to have the zone soft-deleted later on
         """
 
-        domain.action = 'DELETE'
-        domain.status = 'PENDING'
+        zone.action = 'DELETE'
+        zone.status = 'PENDING'
 
-        domain = self.storage.update_domain(context, domain)
+        zone = self.storage.update_zone(context, zone)
 
-        return domain
+        return zone
 
-    def purge_domains(self, context, criterion, limit=None):
+    def purge_zones(self, context, criterion, limit=None):
         """Purge deleted zones.
-        :returns: number of purged domains
+        :returns: number of purged zones
         """
 
-        policy.check('purge_domains', context, criterion)
+        policy.check('purge_zones', context, criterion)
 
         LOG.debug("Performing purge with limit of %r and criterion of %r"
                   % (limit, criterion))
 
-        return self.storage.purge_domains(context, criterion, limit)
+        return self.storage.purge_zones(context, criterion, limit)
 
-    def xfr_domain(self, context, domain_id):
-        domain = self.storage.get_domain(context, domain_id)
+    def xfr_zone(self, context, zone_id):
+        zone = self.storage.get_zone(context, zone_id)
 
         target = {
-            'domain_id': domain_id,
-            'domain_name': domain.name,
-            'tenant_id': domain.tenant_id
+            'zone_id': zone_id,
+            'zone_name': zone.name,
+            'tenant_id': zone.tenant_id
         }
 
-        policy.check('xfr_domain', context, target)
+        policy.check('xfr_zone', context, target)
 
-        if domain.type != 'SECONDARY':
+        if zone.type != 'SECONDARY':
             msg = "Can't XFR a non Secondary zone."
             raise exceptions.BadRequest(msg)
 
         # Ensure the format of the servers are correct, then poll the
         # serial
-        srv = random.choice(domain.masters)
+        srv = random.choice(zone.masters)
         status, serial, retries = self.mdns_api.get_serial_number(
-            context, domain, srv.host, srv.port, 3, 1, 3, 0)
+            context, zone, srv.host, srv.port, 3, 1, 3, 0)
 
         # Perform XFR if serial's are not equal
-        if serial > domain.serial:
+        if serial > zone.serial:
             msg = _LI(
                 "Serial %(srv_serial)d is not equal to zone's %(serial)d,"
                 " performing AXFR")
             LOG.info(
-                msg % {"srv_serial": serial, "serial": domain.serial})
-            self.mdns_api.perform_zone_xfr(context, domain)
+                msg % {"srv_serial": serial, "serial": zone.serial})
+            self.mdns_api.perform_zone_xfr(context, zone)
 
-    def count_domains(self, context, criterion=None):
+    def count_zones(self, context, criterion=None):
         if criterion is None:
             criterion = {}
 
@@ -1151,9 +1158,9 @@ class Service(service.RPCService, service.Service):
             'tenant_id': criterion.get('tenant_id', None)
         }
 
-        policy.check('count_domains', context, target)
+        policy.check('count_zones', context, target)
 
-        return self.storage.count_domains(context, criterion)
+        return self.storage.count_zones(context, criterion)
 
     # Report combining all the count reports based on criterion
     def count_report(self, context, criterion=None):
@@ -1161,11 +1168,11 @@ class Service(service.RPCService, service.Service):
 
         if criterion is None:
             # Get all the reports
-            reports.append({'zones': self.count_domains(context),
+            reports.append({'zones': self.count_zones(context),
                             'records': self.count_records(context),
                             'tenants': self.count_tenants(context)})
         elif criterion == 'zones':
-            reports.append({'zones': self.count_domains(context)})
+            reports.append({'zones': self.count_zones(context)})
         elif criterion == 'records':
             reports.append({'records': self.count_records(context)})
         elif criterion == 'tenants':
@@ -1175,66 +1182,66 @@ class Service(service.RPCService, service.Service):
 
         return reports
 
-    @notification('dns.domain.touch')
-    @synchronized_domain()
-    def touch_domain(self, context, domain_id):
-        domain = self.storage.get_domain(context, domain_id)
+    @notification('dns.zone.touch')
+    @synchronized_zone()
+    def touch_zone(self, context, zone_id):
+        zone = self.storage.get_zone(context, zone_id)
 
         target = {
-            'domain_id': domain_id,
-            'domain_name': domain.name,
-            'tenant_id': domain.tenant_id
+            'zone_id': zone_id,
+            'zone_name': zone.name,
+            'tenant_id': zone.tenant_id
         }
 
-        policy.check('touch_domain', context, target)
+        policy.check('touch_zone', context, target)
 
-        self._touch_domain_in_storage(context, domain)
+        self._touch_zone_in_storage(context, zone)
 
-        self.pool_manager_api.update_domain(context, domain)
+        self.pool_manager_api.update_zone(context, zone)
 
-        return domain
+        return zone
 
     @transaction
-    def _touch_domain_in_storage(self, context, domain):
+    def _touch_zone_in_storage(self, context, zone):
 
-        domain = self._increment_domain_serial(context, domain)
+        zone = self._increment_zone_serial(context, zone)
 
-        return domain
+        return zone
 
     # RecordSet Methods
     @notification('dns.recordset.create')
-    @synchronized_domain()
-    def create_recordset(self, context, domain_id, recordset,
+    @synchronized_zone()
+    def create_recordset(self, context, zone_id, recordset,
                          increment_serial=True):
-        domain = self.storage.get_domain(context, domain_id)
+        zone = self.storage.get_zone(context, zone_id)
 
         # Don't allow updates to zones that are being deleted
-        if domain.action == 'DELETE':
+        if zone.action == 'DELETE':
             raise exceptions.BadRequest('Can not update a deleting zone')
 
         target = {
-            'domain_id': domain_id,
-            'domain_name': domain.name,
-            'domain_type': domain.type,
+            'zone_id': zone_id,
+            'zone_name': zone.name,
+            'zone_type': zone.type,
             'recordset_name': recordset.name,
-            'tenant_id': domain.tenant_id,
+            'tenant_id': zone.tenant_id,
         }
 
         policy.check('create_recordset', context, target)
 
-        recordset, domain = self._create_recordset_in_storage(
-            context, domain, recordset, increment_serial=increment_serial)
+        recordset, zone = self._create_recordset_in_storage(
+            context, zone, recordset, increment_serial=increment_serial)
 
-        self.pool_manager_api.update_domain(context, domain)
+        self.pool_manager_api.update_zone(context, zone)
 
         return recordset
 
     @transaction
-    def _create_recordset_in_storage(self, context, domain, recordset,
+    def _create_recordset_in_storage(self, context, zone, recordset,
                                      increment_serial=True):
 
         # Ensure the tenant has enough quota to continue
-        self._enforce_recordset_quota(context, domain)
+        self._enforce_recordset_quota(context, zone)
 
         # Ensure TTL is above the minimum
         ttl = getattr(recordset, 'ttl', None)
@@ -1242,43 +1249,43 @@ class Service(service.RPCService, service.Service):
             self._is_valid_ttl(context, ttl)
 
         # Ensure the recordset name and placement is valid
-        self._is_valid_recordset_name(context, domain, recordset.name)
-        self._is_valid_recordset_placement(context, domain, recordset.name,
+        self._is_valid_recordset_name(context, zone, recordset.name)
+        self._is_valid_recordset_placement(context, zone, recordset.name,
                                            recordset.type)
-        self._is_valid_recordset_placement_subdomain(
-            context, domain, recordset.name)
+        self._is_valid_recordset_placement_subzone(
+            context, zone, recordset.name)
         self._is_valid_recordset_records(recordset)
 
         if recordset.obj_attr_is_set('records') and len(recordset.records) > 0:
             if increment_serial:
                 # update the zone's status and increment the serial
-                domain = self._update_domain_in_storage(
-                    context, domain, increment_serial)
+                zone = self._update_zone_in_storage(
+                    context, zone, increment_serial)
 
             for record in recordset.records:
                 record.action = 'CREATE'
                 record.status = 'PENDING'
-                record.serial = domain.serial
+                record.serial = zone.serial
 
-        recordset = self.storage.create_recordset(context, domain.id,
+        recordset = self.storage.create_recordset(context, zone.id,
                                                   recordset)
 
-        # Return the domain too in case it was updated
-        return (recordset, domain)
+        # Return the zone too in case it was updated
+        return (recordset, zone)
 
-    def get_recordset(self, context, domain_id, recordset_id):
-        domain = self.storage.get_domain(context, domain_id)
+    def get_recordset(self, context, zone_id, recordset_id):
+        zone = self.storage.get_zone(context, zone_id)
         recordset = self.storage.get_recordset(context, recordset_id)
 
-        # Ensure the domain_id matches the record's domain_id
-        if domain.id != recordset.domain_id:
+        # Ensure the zone_id matches the record's zone_id
+        if zone.id != recordset.zone_id:
             raise exceptions.RecordSetNotFound()
 
         target = {
-            'domain_id': domain_id,
-            'domain_name': domain.name,
+            'zone_id': zone_id,
+            'zone_name': zone.name,
             'recordset_id': recordset.id,
-            'tenant_id': domain.tenant_id,
+            'tenant_id': zone.tenant_id,
         }
 
         policy.check('get_recordset', context, target)
@@ -1306,20 +1313,20 @@ class Service(service.RPCService, service.Service):
         return recordset
 
     def export_zone(self, context, zone_id):
-        domain = self.get_domain(context, zone_id)
+        zone = self.get_zone(context, zone_id)
 
-        criterion = {'domain_id': zone_id}
+        criterion = {'zone_id': zone_id}
         recordsets = self.storage.find_recordsets_export(context, criterion)
 
         return utils.render_template('export-zone.jinja2',
-                                     domain=domain,
+                                     zone=zone,
                                      recordsets=recordsets)
 
     @notification('dns.recordset.update')
-    @synchronized_domain()
+    @synchronized_zone()
     def update_recordset(self, context, recordset, increment_serial=True):
-        domain_id = recordset.obj_get_original_value('domain_id')
-        domain = self.storage.get_domain(context, domain_id)
+        zone_id = recordset.obj_get_original_value('zone_id')
+        zone = self.storage.get_zone(context, zone_id)
 
         changes = recordset.obj_get_changes()
 
@@ -1328,8 +1335,8 @@ class Service(service.RPCService, service.Service):
             raise exceptions.BadRequest('Moving a recordset between tenants '
                                         'is not allowed')
 
-        if 'domain_id' in changes:
-            raise exceptions.BadRequest('Moving a recordset between domains '
+        if 'zone_id' in changes:
+            raise exceptions.BadRequest('Moving a recordset between zones '
                                         'is not allowed')
 
         if 'type' in changes:
@@ -1337,15 +1344,15 @@ class Service(service.RPCService, service.Service):
                                         'allowed')
 
         # Don't allow updates to zones that are being deleted
-        if domain.action == 'DELETE':
+        if zone.action == 'DELETE':
             raise exceptions.BadRequest('Can not update a deleting zone')
 
         target = {
-            'domain_id': recordset.obj_get_original_value('domain_id'),
-            'domain_type': domain.type,
+            'zone_id': recordset.obj_get_original_value('zone_id'),
+            'zone_type': zone.type,
             'recordset_id': recordset.obj_get_original_value('id'),
-            'domain_name': domain.name,
-            'tenant_id': domain.tenant_id
+            'zone_name': zone.name,
+            'tenant_id': zone.tenant_id
         }
 
         policy.check('update_recordset', context, target)
@@ -1353,25 +1360,25 @@ class Service(service.RPCService, service.Service):
         if recordset.managed and not context.edit_managed_records:
             raise exceptions.BadRequest('Managed records may not be updated')
 
-        recordset, domain = self._update_recordset_in_storage(
-            context, domain, recordset, increment_serial=increment_serial)
+        recordset, zone = self._update_recordset_in_storage(
+            context, zone, recordset, increment_serial=increment_serial)
 
-        self.pool_manager_api.update_domain(context, domain)
+        self.pool_manager_api.update_zone(context, zone)
 
         return recordset
 
     @transaction
-    def _update_recordset_in_storage(self, context, domain, recordset,
+    def _update_recordset_in_storage(self, context, zone, recordset,
                                      increment_serial=True):
 
         changes = recordset.obj_get_changes()
 
         # Ensure the record name is valid
-        self._is_valid_recordset_name(context, domain, recordset.name)
-        self._is_valid_recordset_placement(context, domain, recordset.name,
+        self._is_valid_recordset_name(context, zone, recordset.name)
+        self._is_valid_recordset_placement(context, zone, recordset.name,
                                            recordset.type, recordset.id)
-        self._is_valid_recordset_placement_subdomain(
-            context, domain, recordset.name)
+        self._is_valid_recordset_placement_subzone(
+            context, zone, recordset.name)
         self._is_valid_recordset_records(recordset)
 
         # Ensure TTL is above the minimum
@@ -1381,42 +1388,42 @@ class Service(service.RPCService, service.Service):
 
         if increment_serial:
             # update the zone's status and increment the serial
-            domain = self._update_domain_in_storage(
-                context, domain, increment_serial)
+            zone = self._update_zone_in_storage(
+                context, zone, increment_serial)
 
         if recordset.records:
             for record in recordset.records:
                 if record.action != 'DELETE':
                     record.action = 'UPDATE'
                     record.status = 'PENDING'
-                    record.serial = domain.serial
+                    record.serial = zone.serial
 
         # Update the recordset
         recordset = self.storage.update_recordset(context, recordset)
 
-        return (recordset, domain)
+        return (recordset, zone)
 
     @notification('dns.recordset.delete')
-    @synchronized_domain()
-    def delete_recordset(self, context, domain_id, recordset_id,
+    @synchronized_zone()
+    def delete_recordset(self, context, zone_id, recordset_id,
                          increment_serial=True):
-        domain = self.storage.get_domain(context, domain_id)
+        zone = self.storage.get_zone(context, zone_id)
         recordset = self.storage.get_recordset(context, recordset_id)
 
-        # Ensure the domain_id matches the recordset's domain_id
-        if domain.id != recordset.domain_id:
+        # Ensure the zone_id matches the recordset's zone_id
+        if zone.id != recordset.zone_id:
             raise exceptions.RecordSetNotFound()
 
         # Don't allow updates to zones that are being deleted
-        if domain.action == 'DELETE':
+        if zone.action == 'DELETE':
             raise exceptions.BadRequest('Can not update a deleting zone')
 
         target = {
-            'domain_id': domain_id,
-            'domain_name': domain.name,
-            'domain_type': domain.type,
+            'zone_id': zone_id,
+            'zone_name': zone.name,
+            'zone_type': zone.type,
             'recordset_id': recordset.id,
-            'tenant_id': domain.tenant_id
+            'tenant_id': zone.tenant_id
         }
 
         policy.check('delete_recordset', context, target)
@@ -1424,33 +1431,33 @@ class Service(service.RPCService, service.Service):
         if recordset.managed and not context.edit_managed_records:
             raise exceptions.BadRequest('Managed records may not be updated')
 
-        recordset, domain = self._delete_recordset_in_storage(
-            context, domain, recordset, increment_serial=increment_serial)
+        recordset, zone = self._delete_recordset_in_storage(
+            context, zone, recordset, increment_serial=increment_serial)
 
-        self.pool_manager_api.update_domain(context, domain)
+        self.pool_manager_api.update_zone(context, zone)
 
         return recordset
 
     @transaction
-    def _delete_recordset_in_storage(self, context, domain, recordset,
+    def _delete_recordset_in_storage(self, context, zone, recordset,
                                      increment_serial=True):
 
         if increment_serial:
             # update the zone's status and increment the serial
-            domain = self._update_domain_in_storage(
-                context, domain, increment_serial)
+            zone = self._update_zone_in_storage(
+                context, zone, increment_serial)
 
         if recordset.records:
             for record in recordset.records:
                 record.action = 'DELETE'
                 record.status = 'PENDING'
-                record.serial = domain.serial
+                record.serial = zone.serial
 
         # Update the recordset's action/status and then delete it
         self.storage.update_recordset(context, recordset)
         recordset = self.storage.delete_recordset(context, recordset.id)
 
-        return (recordset, domain)
+        return (recordset, zone)
 
     def count_recordsets(self, context, criterion=None):
         if criterion is None:
@@ -1466,64 +1473,64 @@ class Service(service.RPCService, service.Service):
 
     # Record Methods
     @notification('dns.record.create')
-    @synchronized_domain()
-    def create_record(self, context, domain_id, recordset_id, record,
+    @synchronized_zone()
+    def create_record(self, context, zone_id, recordset_id, record,
                       increment_serial=True):
-        domain = self.storage.get_domain(context, domain_id)
+        zone = self.storage.get_zone(context, zone_id)
 
         # Don't allow updates to zones that are being deleted
-        if domain.action == 'DELETE':
+        if zone.action == 'DELETE':
             raise exceptions.BadRequest('Can not update a deleting zone')
 
         recordset = self.storage.get_recordset(context, recordset_id)
 
         target = {
-            'domain_id': domain_id,
-            'domain_name': domain.name,
-            'domain_type': domain.type,
+            'zone_id': zone_id,
+            'zone_name': zone.name,
+            'zone_type': zone.type,
             'recordset_id': recordset_id,
             'recordset_name': recordset.name,
-            'tenant_id': domain.tenant_id
+            'tenant_id': zone.tenant_id
         }
 
         policy.check('create_record', context, target)
 
-        record, domain = self._create_record_in_storage(
-            context, domain, recordset, record,
+        record, zone = self._create_record_in_storage(
+            context, zone, recordset, record,
             increment_serial=increment_serial)
 
-        self.pool_manager_api.update_domain(context, domain)
+        self.pool_manager_api.update_zone(context, zone)
 
         return record
 
     @transaction
-    def _create_record_in_storage(self, context, domain, recordset, record,
+    def _create_record_in_storage(self, context, zone, recordset, record,
                                   increment_serial=True):
 
         # Ensure the tenant has enough quota to continue
-        self._enforce_record_quota(context, domain, recordset)
+        self._enforce_record_quota(context, zone, recordset)
 
         if increment_serial:
             # update the zone's status and increment the serial
-            domain = self._update_domain_in_storage(
-                context, domain, increment_serial)
+            zone = self._update_zone_in_storage(
+                context, zone, increment_serial)
 
         record.action = 'CREATE'
         record.status = 'PENDING'
-        record.serial = domain.serial
+        record.serial = zone.serial
 
-        record = self.storage.create_record(context, domain.id, recordset.id,
+        record = self.storage.create_record(context, zone.id, recordset.id,
                                             record)
 
-        return (record, domain)
+        return (record, zone)
 
-    def get_record(self, context, domain_id, recordset_id, record_id):
-        domain = self.storage.get_domain(context, domain_id)
+    def get_record(self, context, zone_id, recordset_id, record_id):
+        zone = self.storage.get_zone(context, zone_id)
         recordset = self.storage.get_recordset(context, recordset_id)
         record = self.storage.get_record(context, record_id)
 
-        # Ensure the domain_id matches the record's domain_id
-        if domain.id != record.domain_id:
+        # Ensure the zone_id matches the record's zone_id
+        if zone.id != record.zone_id:
             raise exceptions.RecordNotFound()
 
         # Ensure the recordset_id matches the record's recordset_id
@@ -1531,12 +1538,12 @@ class Service(service.RPCService, service.Service):
             raise exceptions.RecordNotFound()
 
         target = {
-            'domain_id': domain_id,
-            'domain_name': domain.name,
+            'zone_id': zone_id,
+            'zone_name': zone.name,
             'recordset_id': recordset_id,
             'recordset_name': recordset.name,
             'record_id': record.id,
-            'tenant_id': domain.tenant_id
+            'tenant_id': zone.tenant_id
         }
 
         policy.check('get_record', context, target)
@@ -1558,13 +1565,13 @@ class Service(service.RPCService, service.Service):
         return self.storage.find_record(context, criterion)
 
     @notification('dns.record.update')
-    @synchronized_domain()
+    @synchronized_zone()
     def update_record(self, context, record, increment_serial=True):
-        domain_id = record.obj_get_original_value('domain_id')
-        domain = self.storage.get_domain(context, domain_id)
+        zone_id = record.obj_get_original_value('zone_id')
+        zone = self.storage.get_zone(context, zone_id)
 
         # Don't allow updates to zones that are being deleted
-        if domain.action == 'DELETE':
+        if zone.action == 'DELETE':
             raise exceptions.BadRequest('Can not update a deleting zone')
 
         recordset_id = record.obj_get_original_value('recordset_id')
@@ -1577,8 +1584,8 @@ class Service(service.RPCService, service.Service):
             raise exceptions.BadRequest('Moving a recordset between tenants '
                                         'is not allowed')
 
-        if 'domain_id' in changes:
-            raise exceptions.BadRequest('Moving a recordset between domains '
+        if 'zone_id' in changes:
+            raise exceptions.BadRequest('Moving a recordset between zones '
                                         'is not allowed')
 
         if 'recordset_id' in changes:
@@ -1586,13 +1593,13 @@ class Service(service.RPCService, service.Service):
                                         'recordsets is not allowed')
 
         target = {
-            'domain_id': record.obj_get_original_value('domain_id'),
-            'domain_name': domain.name,
-            'domain_type': domain.type,
+            'zone_id': record.obj_get_original_value('zone_id'),
+            'zone_name': zone.name,
+            'zone_type': zone.type,
             'recordset_id': record.obj_get_original_value('recordset_id'),
             'recordset_name': recordset.name,
             'record_id': record.obj_get_original_value('id'),
-            'tenant_id': domain.tenant_id
+            'tenant_id': zone.tenant_id
         }
 
         policy.check('update_record', context, target)
@@ -1600,46 +1607,46 @@ class Service(service.RPCService, service.Service):
         if recordset.managed and not context.edit_managed_records:
             raise exceptions.BadRequest('Managed records may not be updated')
 
-        record, domain = self._update_record_in_storage(
-            context, domain, record, increment_serial=increment_serial)
+        record, zone = self._update_record_in_storage(
+            context, zone, record, increment_serial=increment_serial)
 
-        self.pool_manager_api.update_domain(context, domain)
+        self.pool_manager_api.update_zone(context, zone)
 
         return record
 
     @transaction
-    def _update_record_in_storage(self, context, domain, record,
+    def _update_record_in_storage(self, context, zone, record,
                                   increment_serial=True):
 
         if increment_serial:
             # update the zone's status and increment the serial
-            domain = self._update_domain_in_storage(
-                context, domain, increment_serial)
+            zone = self._update_zone_in_storage(
+                context, zone, increment_serial)
 
         record.action = 'UPDATE'
         record.status = 'PENDING'
-        record.serial = domain.serial
+        record.serial = zone.serial
 
         # Update the record
         record = self.storage.update_record(context, record)
 
-        return (record, domain)
+        return (record, zone)
 
     @notification('dns.record.delete')
-    @synchronized_domain()
-    def delete_record(self, context, domain_id, recordset_id, record_id,
+    @synchronized_zone()
+    def delete_record(self, context, zone_id, recordset_id, record_id,
                       increment_serial=True):
-        domain = self.storage.get_domain(context, domain_id)
+        zone = self.storage.get_zone(context, zone_id)
 
         # Don't allow updates to zones that are being deleted
-        if domain.action == 'DELETE':
+        if zone.action == 'DELETE':
             raise exceptions.BadRequest('Can not update a deleting zone')
 
         recordset = self.storage.get_recordset(context, recordset_id)
         record = self.storage.get_record(context, record_id)
 
-        # Ensure the domain_id matches the record's domain_id
-        if domain.id != record.domain_id:
+        # Ensure the zone_id matches the record's zone_id
+        if zone.id != record.zone_id:
             raise exceptions.RecordNotFound()
 
         # Ensure the recordset_id matches the record's recordset_id
@@ -1647,13 +1654,13 @@ class Service(service.RPCService, service.Service):
             raise exceptions.RecordNotFound()
 
         target = {
-            'domain_id': domain_id,
-            'domain_name': domain.name,
-            'domain_type': domain.type,
+            'zone_id': zone_id,
+            'zone_name': zone.name,
+            'zone_type': zone.type,
             'recordset_id': recordset_id,
             'recordset_name': recordset.name,
             'record_id': record.id,
-            'tenant_id': domain.tenant_id
+            'tenant_id': zone.tenant_id
         }
 
         policy.check('delete_record', context, target)
@@ -1661,29 +1668,29 @@ class Service(service.RPCService, service.Service):
         if recordset.managed and not context.edit_managed_records:
             raise exceptions.BadRequest('Managed records may not be updated')
 
-        record, domain = self._delete_record_in_storage(
-            context, domain, record, increment_serial=increment_serial)
+        record, zone = self._delete_record_in_storage(
+            context, zone, record, increment_serial=increment_serial)
 
-        self.pool_manager_api.update_domain(context, domain)
+        self.pool_manager_api.update_zone(context, zone)
 
         return record
 
     @transaction
-    def _delete_record_in_storage(self, context, domain, record,
+    def _delete_record_in_storage(self, context, zone, record,
                                   increment_serial=True):
 
         if increment_serial:
             # update the zone's status and increment the serial
-            domain = self._update_domain_in_storage(
-                context, domain, increment_serial)
+            zone = self._update_zone_in_storage(
+                context, zone, increment_serial)
 
         record.action = 'DELETE'
         record.status = 'PENDING'
-        record.serial = domain.serial
+        record.serial = zone.serial
 
         record = self.storage.update_record(context, record)
 
-        return (record, domain)
+        return (record, zone)
 
     def count_records(self, context, criterion=None):
         if criterion is None:
@@ -1697,52 +1704,52 @@ class Service(service.RPCService, service.Service):
         return self.storage.count_records(context, criterion)
 
     # Diagnostics Methods
-    def _sync_domain(self, context, domain):
-        return self.pool_manager_api.update_domain(context, domain)
+    def _sync_zone(self, context, zone):
+        return self.pool_manager_api.update_zone(context, zone)
 
     @transaction
-    def sync_domains(self, context):
-        policy.check('diagnostics_sync_domains', context)
+    def sync_zones(self, context):
+        policy.check('diagnostics_sync_zones', context)
 
-        domains = self.storage.find_domains(context)
+        zones = self.storage.find_zones(context)
 
         results = {}
-        for domain in domains:
-            results[domain.id] = self._sync_domain(context, domain)
+        for zone in zones:
+            results[zone.id] = self._sync_zone(context, zone)
 
         return results
 
     @transaction
-    def sync_domain(self, context, domain_id):
-        domain = self.storage.get_domain(context, domain_id)
+    def sync_zone(self, context, zone_id):
+        zone = self.storage.get_zone(context, zone_id)
 
         target = {
-            'domain_id': domain_id,
-            'domain_name': domain.name,
-            'tenant_id': domain.tenant_id
+            'zone_id': zone_id,
+            'zone_name': zone.name,
+            'tenant_id': zone.tenant_id
         }
 
-        policy.check('diagnostics_sync_domain', context, target)
+        policy.check('diagnostics_sync_zone', context, target)
 
-        return self._sync_domain(context, domain)
+        return self._sync_zone(context, zone)
 
     @transaction
-    def sync_record(self, context, domain_id, recordset_id, record_id):
-        domain = self.storage.get_domain(context, domain_id)
+    def sync_record(self, context, zone_id, recordset_id, record_id):
+        zone = self.storage.get_zone(context, zone_id)
         recordset = self.storage.get_recordset(context, recordset_id)
 
         target = {
-            'domain_id': domain_id,
-            'domain_name': domain.name,
+            'zone_id': zone_id,
+            'zone_name': zone.name,
             'recordset_id': recordset_id,
             'recordset_name': recordset.name,
             'record_id': record_id,
-            'tenant_id': domain.tenant_id
+            'tenant_id': zone.tenant_id
         }
 
         policy.check('diagnostics_sync_record', context, target)
 
-        self.pool_manager_api.update_domain(context, domain)
+        self.pool_manager_api.update_zone(context, zone)
 
     def ping(self, context):
         policy.check('diagnostics_ping', context)
@@ -1830,7 +1837,7 @@ class Service(service.RPCService, service.Service):
             for r in records:
                 msg = 'Deleting record %s for FIP %s'
                 LOG.debug(msg, r['id'], r['managed_resource_id'])
-                self.delete_record(elevated_context, r['domain_id'],
+                self.delete_record(elevated_context, r['zone_id'],
                                    r['recordset_id'], r['id'])
 
     def _format_floatingips(self, context, data, recordsets=None):
@@ -1873,8 +1880,8 @@ class Service(service.RPCService, service.Service):
                 if recordset['ttl'] is not None:
                     fip_ptr['ttl'] = recordset['ttl']
                 else:
-                    zone = self.get_domain(
-                        elevated_context, record['domain_id'])
+                    zone = self.get_zone(
+                        elevated_context, record['zone_id'])
                     fip_ptr['ttl'] = zone['ttl']
 
                 fip_ptr['ptrdname'] = record['data']
@@ -1961,9 +1968,9 @@ class Service(service.RPCService, service.Service):
 
         # NOTE: Find existing zone or create it..
         try:
-            zone = self.storage.find_domain(
+            zone = self.storage.find_zone(
                 elevated_context, {'name': zone_name})
-        except exceptions.DomainNotFound:
+        except exceptions.ZoneNotFound:
             msg = _LI(
                 'Creating zone for %(fip_id)s:%(region)s - '
                 '%(fip_addr)s zone %(zonename)s') % \
@@ -1981,8 +1988,8 @@ class Service(service.RPCService, service.Service):
                 'tenant_id': tenant_id
             }
 
-            zone = self.create_domain(
-                elevated_context, objects.Domain(**zone_values))
+            zone = self.create_zone(
+                elevated_context, objects.Zone(**zone_values))
 
         record_name = self.network_api.address_name(fip['address'])
 
@@ -2000,7 +2007,7 @@ class Service(service.RPCService, service.Service):
             recordset.name = recordset_values['name']
             recordset.type = recordset_values['type']
             recordset.ttl = recordset_values['ttl']
-            recordset.domain_id = zone['id']
+            recordset.zone_id = zone['id']
             recordset = self.update_recordset(
                 elevated_context,
                 recordset=recordset)
@@ -2010,14 +2017,14 @@ class Service(service.RPCService, service.Service):
             for record in recordset.records:
                 self.delete_record(
                     elevated_context,
-                    domain_id=recordset['domain_id'],
+                    zone_id=recordset['zone_id'],
                     recordset_id=recordset['id'],
                     record_id=record['id'])
 
         except exceptions.RecordSetNotFound:
             recordset = self.create_recordset(
                 elevated_context,
-                domain_id=zone['id'],
+                zone_id=zone['id'],
                 recordset=objects.RecordSet(**recordset_values))
 
         record_values = {
@@ -2033,7 +2040,7 @@ class Service(service.RPCService, service.Service):
 
         record = self.create_record(
             elevated_context,
-            domain_id=zone['id'],
+            zone_id=zone['id'],
             recordset_id=recordset['id'],
             record=objects.Record(**record_values))
 
@@ -2068,7 +2075,7 @@ class Service(service.RPCService, service.Service):
 
         self.delete_record(
             elevated_context,
-            domain_id=record['domain_id'],
+            zone_id=record['zone_id'],
             recordset_id=record['recordset_id'],
             record_id=record['id'])
 
@@ -2085,7 +2092,7 @@ class Service(service.RPCService, service.Service):
             return self._set_floatingip_reverse(
                 context, region, floatingip_id, values)
 
-    # Blacklisted Domains
+    # Blacklisted zones
     @notification('dns.blacklist.create')
     @transaction
     def create_blacklist(self, context, blacklist):
@@ -2208,7 +2215,7 @@ class Service(service.RPCService, service.Service):
         # After the update, handle new ns_records
         for ns in create_ns:
             # Create new NS recordsets for every zone
-            zones = self.find_domains(
+            zones = self.find_zones(
                 context=elevated_context,
                 criterion={'pool_id': pool.id, 'action': '!DELETE'})
             for z in zones:
@@ -2223,7 +2230,7 @@ class Service(service.RPCService, service.Service):
                 )
 
             # Delete the NS record for every zone
-            zones = self.find_domains(
+            zones = self.find_zones(
                 context=elevated_context,
                 criterion={'pool_id': pool.id})
             for z in zones:
@@ -2240,7 +2247,7 @@ class Service(service.RPCService, service.Service):
         # Make sure that there are no existing zones in the pool
         elevated_context = context.elevated()
         elevated_context.all_tenants = True
-        zones = self.find_domains(
+        zones = self.find_zones(
             context=elevated_context,
             criterion={'pool_id': pool_id, 'action': '!DELETE'})
 
@@ -2255,41 +2262,41 @@ class Service(service.RPCService, service.Service):
 
     # Pool Manager Integration
     @transaction
-    def update_status(self, context, domain_id, status, serial):
+    def update_status(self, context, zone_id, status, serial):
         """
         :param context: Security context information.
-        :param domain_id: The ID of the designate domain.
+        :param zone_id: The ID of the designate zone.
         :param status: The status, 'SUCCESS' or 'ERROR'.
-        :param serial: The consensus serial number for the domain.
+        :param serial: The consensus serial number for the zone.
         :return: None
         """
         # TODO(kiall): If the status is SUCCESS and the zone is already ACTIVE,
         #              we likely don't need to do anything.
-        self._update_record_status(context, domain_id, status, serial)
-        self._update_domain_status(context, domain_id, status, serial)
+        self._update_record_status(context, zone_id, status, serial)
+        self._update_zone_status(context, zone_id, status, serial)
 
-    def _update_domain_status(self, context, domain_id, status, serial):
-        domain = self.storage.get_domain(context, domain_id)
+    def _update_zone_status(self, context, zone_id, status, serial):
+        zone = self.storage.get_zone(context, zone_id)
 
-        domain, deleted = self._update_domain_or_record_status(
-            domain, status, serial)
+        zone, deleted = self._update_zone_or_record_status(
+            zone, status, serial)
 
-        LOG.debug('Setting domain %s, serial %s: action %s, status %s'
-                  % (domain.id, domain.serial, domain.action, domain.status))
-        self.storage.update_domain(context, domain)
+        LOG.debug('Setting zone %s, serial %s: action %s, status %s'
+                  % (zone.id, zone.serial, zone.action, zone.status))
+        self.storage.update_zone(context, zone)
 
         # TODO(Ron): Including this to retain the current logic.
-        # We should NOT be deleting domains.  The domain status should be
-        # used to indicate the domain has been deleted and not the deleted
+        # We should NOT be deleting zones.  The zone status should be
+        # used to indicate the zone has been deleted and not the deleted
         # column.  The deleted column is needed for unique constraints.
         if deleted:
-            # TODO(vinod): Pass a domain to delete_domain rather than id so
+            # TODO(vinod): Pass a zone to delete_zone rather than id so
             # that the action, status and serial are updated correctly.
-            self.storage.delete_domain(context, domain.id)
+            self.storage.delete_zone(context, zone.id)
 
-    def _update_record_status(self, context, domain_id, status, serial):
+    def _update_record_status(self, context, zone_id, status, serial):
         criterion = {
-            'domain_id': domain_id
+            'zone_id': zone_id
         }
 
         if status == 'SUCCESS':
@@ -2312,7 +2319,7 @@ class Service(service.RPCService, service.Service):
         records = self.storage.find_records(context, criterion=criterion)
 
         for record in records:
-            record, deleted = self._update_domain_or_record_status(
+            record, deleted = self._update_zone_or_record_status(
                 record, status, serial)
 
             if record.obj_what_changed():
@@ -2337,36 +2344,36 @@ class Service(service.RPCService, service.Service):
                     self.storage.delete_recordset(context, recordset.id)
 
     @staticmethod
-    def _update_domain_or_record_status(domain_or_record, status, serial):
+    def _update_zone_or_record_status(zone_or_record, status, serial):
         deleted = False
         if status == 'SUCCESS':
-            if domain_or_record.action in ['CREATE', 'UPDATE'] \
-                    and domain_or_record.status in ['PENDING', 'ERROR'] \
-                    and serial >= domain_or_record.serial:
-                domain_or_record.action = 'NONE'
-                domain_or_record.status = 'ACTIVE'
-            elif domain_or_record.action == 'DELETE' \
-                    and domain_or_record.status in ['PENDING', 'ERROR'] \
-                    and serial >= domain_or_record.serial:
-                domain_or_record.action = 'NONE'
-                domain_or_record.status = 'DELETED'
+            if zone_or_record.action in ['CREATE', 'UPDATE'] \
+                    and zone_or_record.status in ['PENDING', 'ERROR'] \
+                    and serial >= zone_or_record.serial:
+                zone_or_record.action = 'NONE'
+                zone_or_record.status = 'ACTIVE'
+            elif zone_or_record.action == 'DELETE' \
+                    and zone_or_record.status in ['PENDING', 'ERROR'] \
+                    and serial >= zone_or_record.serial:
+                zone_or_record.action = 'NONE'
+                zone_or_record.status = 'DELETED'
                 deleted = True
 
         elif status == 'ERROR':
-            if domain_or_record.status == 'PENDING' \
-                    and (serial >= domain_or_record.serial or serial == 0):
-                domain_or_record.status = 'ERROR'
+            if zone_or_record.status == 'PENDING' \
+                    and (serial >= zone_or_record.serial or serial == 0):
+                zone_or_record.status = 'ERROR'
 
-        elif status == 'NO_DOMAIN':
-            if domain_or_record.action in ['CREATE', 'UPDATE']:
-                domain_or_record.action = 'CREATE'
-                domain_or_record.status = 'ERROR'
-            elif domain_or_record.action == 'DELETE':
-                domain_or_record.action = 'NONE'
-                domain_or_record.status = 'DELETED'
+        elif status == 'NO_zone':
+            if zone_or_record.action in ['CREATE', 'UPDATE']:
+                zone_or_record.action = 'CREATE'
+                zone_or_record.status = 'ERROR'
+            elif zone_or_record.action == 'DELETE':
+                zone_or_record.action = 'NONE'
+                zone_or_record.status = 'DELETED'
                 deleted = True
 
-        return domain_or_record, deleted
+        return zone_or_record, deleted
 
     # Zone Transfers
     def _transfer_key_generator(self, size=8):
@@ -2381,7 +2388,7 @@ class Service(service.RPCService, service.Service):
         elevated_context.all_tenants = True
 
         # get zone
-        zone = self.get_domain(context, zone_transfer_request.domain_id)
+        zone = self.get_zone(context, zone_transfer_request.zone_id)
 
         # Don't allow transfers for zones that are being deleted
         if zone.action == 'DELETE':
@@ -2444,8 +2451,8 @@ class Service(service.RPCService, service.Service):
     @transaction
     def update_zone_transfer_request(self, context, zone_transfer_request):
 
-        if 'domain_id' in zone_transfer_request.obj_what_changed():
-            raise exceptions.InvalidOperation('Domain cannot be changed')
+        if 'zone_id' in zone_transfer_request.obj_what_changed():
+            raise exceptions.InvalidOperation('Zone cannot be changed')
 
         target = {
             'tenant_id': zone_transfer_request.tenant_id,
@@ -2478,7 +2485,7 @@ class Service(service.RPCService, service.Service):
         zone_transfer_request = self.get_zone_transfer_request(
             context, zone_transfer_accept.zone_transfer_request_id)
 
-        zone_transfer_accept.domain_id = zone_transfer_request.domain_id
+        zone_transfer_accept.zone_id = zone_transfer_request.zone_id
 
         if zone_transfer_request.status != 'ACTIVE':
             if zone_transfer_request.status == 'COMPLETE':
@@ -2504,16 +2511,16 @@ class Service(service.RPCService, service.Service):
                 context, zone_transfer_accept)
 
         try:
-            domain = self.storage.get_domain(
+            zone = self.storage.get_zone(
                 elevated_context,
-                zone_transfer_request.domain_id)
+                zone_transfer_request.zone_id)
 
             # Don't allow transfers for zones that are being deleted
-            if domain.action == 'DELETE':
+            if zone.action == 'DELETE':
                 raise exceptions.BadRequest('Can not transfer a deleting zone')
 
-            domain.tenant_id = zone_transfer_accept.tenant_id
-            self.storage.update_domain(elevated_context, domain)
+            zone.tenant_id = zone_transfer_accept.tenant_id
+            self.storage.update_zone(elevated_context, zone)
 
         except Exception:
             created_zone_transfer_accept.status = 'ERROR'
@@ -2590,7 +2597,7 @@ class Service(service.RPCService, service.Service):
         values = {
             'status': 'PENDING',
             'message': None,
-            'domain_id': None,
+            'zone_id': None,
             'tenant_id': context.tenant,
             'task_type': 'IMPORT'
         }
@@ -2610,7 +2617,7 @@ class Service(service.RPCService, service.Service):
             # Dnspython needs a str instead of a unicode object
             if six.PY2:
                 request_body = str(request_body)
-            domain = None
+            zone = None
             try:
                 dnspython_zone = dnszone.from_text(
                     request_body,
@@ -2619,12 +2626,12 @@ class Service(service.RPCService, service.Service):
                     # Dont check origin, we allow missing NS records
                     # (missing SOA records are taken care of in _create_zone).
                     check_origin=False)
-                domain = dnsutils.from_dnspython_zone(dnspython_zone)
-                domain.type = 'PRIMARY'
+                zone = dnsutils.from_dnspython_zone(dnspython_zone)
+                zone.type = 'PRIMARY'
 
-                for rrset in list(domain.recordsets):
+                for rrset in list(zone.recordsets):
                     if rrset.type in ('NS', 'SOA'):
-                        domain.recordsets.remove(rrset)
+                        zone.recordsets.remove(rrset)
 
             except dnszone.UnknownOrigin:
                 zone_import.message = ('The $ORIGIN statement is required and'
@@ -2641,21 +2648,21 @@ class Service(service.RPCService, service.Service):
                 zone_import.message = 'An undefined error occured.'
                 zone_import.status = 'ERROR'
 
-            return domain, zone_import
+            return zone, zone_import
 
         # Execute the import in a real Python thread
-        domain, zone_import = tpool.execute(_import, self, context,
+        zone, zone_import = tpool.execute(_import, self, context,
             zone_import, request_body)
 
-        # If the zone import was valid, create the domain
+        # If the zone import was valid, create the zone
         if zone_import.status != 'ERROR':
             try:
-                zone = self.create_domain(context, domain)
+                zone = self.create_zone(context, zone)
                 zone_import.status = 'COMPLETE'
-                zone_import.domain_id = zone.id
+                zone_import.zone_id = zone.id
                 zone_import.message = '%(name)s imported' % {'name':
                                                              zone.name}
-            except exceptions.DuplicateDomain:
+            except exceptions.DuplicateZone:
                 zone_import.status = 'ERROR'
                 zone_import.message = 'Duplicate zone.'
             except exceptions.InvalidTTL as e:
@@ -2708,8 +2715,8 @@ class Service(service.RPCService, service.Service):
     # Zone Export Methods
     @notification('dns.zone_export.create')
     def create_zone_export(self, context, zone_id):
-        # Try getting the domain to ensure it exists
-        domain = self.storage.get_domain(context, zone_id)
+        # Try getting the zone to ensure it exists
+        zone = self.storage.get_zone(context, zone_id)
 
         target = {'tenant_id': context.tenant}
         policy.check('create_zone_export', context, target)
@@ -2717,7 +2724,7 @@ class Service(service.RPCService, service.Service):
         values = {
             'status': 'PENDING',
             'message': None,
-            'domain_id': zone_id,
+            'zone_id': zone_id,
             'tenant_id': context.tenant,
             'task_type': 'EXPORT'
         }
@@ -2726,7 +2733,7 @@ class Service(service.RPCService, service.Service):
         created_zone_export = self.storage.create_zone_export(context,
                                                               zone_export)
 
-        self.zone_manager_api.start_zone_export(context, domain,
+        self.zone_manager_api.start_zone_export(context, zone,
                                                 created_zone_export)
 
         return created_zone_export

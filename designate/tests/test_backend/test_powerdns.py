@@ -28,9 +28,9 @@ class PowerDNSBackendTestCase(BackendTestCase):
     def setUp(self):
         super(PowerDNSBackendTestCase, self).setUp()
 
-        self.domain = objects.Domain(id='e2bed4dc-9d01-11e4-89d3-123b93f75cba',
-                                     name='example.com.',
-                                     email='example@example.com')
+        self.zone = objects.Zone(id='e2bed4dc-9d01-11e4-89d3-123b93f75cba',
+                                 name='example.com.',
+                                 email='example@example.com')
 
         self.target = objects.PoolTarget.from_dict({
             'id': '4588652b-50e7-46b9-b688-a9bad40a873e',
@@ -55,9 +55,9 @@ class PowerDNSBackendTestCase(BackendTestCase):
     # Tests for Public Methpds
     @mock.patch.object(impl_powerdns.PowerDNSBackend, 'session',
                        new_callable=mock.MagicMock)
-    def test_create_domain(self, session_mock):
+    def test_create_zone(self, session_mock):
         context = self.get_context()
-        self.backend.create_domain(context, self.domain)
+        self.backend.create_zone(context, self.zone)
 
         self.assertSessionTransactionCalls(
             session_mock, begin=1, commit=1, rollback=0)
@@ -71,9 +71,9 @@ class PowerDNSBackendTestCase(BackendTestCase):
 
         self.assertDictContainsSubset(
             {'type': 'SLAVE',
-             'designate_id': self.domain.id,
+             'designate_id': self.zone.id,
              'master': '192.0.2.1:53,192.0.2.2:35',
-             'name': self.domain.name.rstrip('.')},
+             'name': self.zone.name.rstrip('.')},
             session_mock.execute.call_args_list[0][0][1])
 
         self.assertIsInstance(
@@ -84,9 +84,9 @@ class PowerDNSBackendTestCase(BackendTestCase):
                        new_callable=mock.Mock)
     @mock.patch.object(impl_powerdns.PowerDNSBackend, '_create',
                        side_effect=Exception)
-    def test_create_domain_failure_on_create(self, create_mock, session_mock):
+    def test_create_zone_failure_on_create(self, create_mock, session_mock):
         with testtools.ExpectedException(Exception):
-            self.backend.create_domain(self.get_context(), self.domain)
+            self.backend.create_zone(self.get_context(), self.zone)
 
         self.assertSessionTransactionCalls(
             session_mock, begin=1, commit=0, rollback=1)
@@ -98,12 +98,12 @@ class PowerDNSBackendTestCase(BackendTestCase):
                        new_callable=mock.Mock)
     @mock.patch.object(impl_powerdns.PowerDNSBackend, '_create',
                        return_value=None)
-    def test_create_domain_failure_on_commit(self, create_mock, session_mock):
+    def test_create_zone_failure_on_commit(self, create_mock, session_mock):
         # Configure the Session mocks's commit method to raise an exception
         session_mock.commit.side_effect = Exception
 
         with testtools.ExpectedException(Exception):
-            self.backend.create_domain(self.get_context(), self.domain)
+            self.backend.create_zone(self.get_context(), self.zone)
 
         self.assertSessionTransactionCalls(
             session_mock, begin=1, commit=1, rollback=0)
@@ -115,7 +115,7 @@ class PowerDNSBackendTestCase(BackendTestCase):
                        new_callable=mock.Mock)
     @mock.patch.object(impl_powerdns.PowerDNSBackend, '_get',
                        return_value=None)
-    def test_delete_domain(self, get_mock, session_mock):
+    def test_delete_zone(self, get_mock, session_mock):
         # Configure the Session mocks's execute method to return a fudged
         # resultproxy.
         rp_mock = mock.Mock()
@@ -124,11 +124,11 @@ class PowerDNSBackendTestCase(BackendTestCase):
         session_mock.execute.return_value = rp_mock
 
         context = self.get_context()
-        self.backend.delete_domain(context, self.domain)
+        self.backend.delete_zone(context, self.zone)
 
         # Ensure the _get method was called with the correct arguments
         get_mock.assert_called_once_with(
-            tables.domains, self.domain.id, exceptions.DomainNotFound,
+            tables.domains, self.zone.id, exceptions.ZoneNotFound,
             id_col=tables.domains.c.designate_id)
 
         # Ensure we have one query, a DELETE
@@ -143,17 +143,17 @@ class PowerDNSBackendTestCase(BackendTestCase):
     @mock.patch.object(impl_powerdns.PowerDNSBackend, 'session',
                        new_callable=mock.Mock)
     @mock.patch.object(impl_powerdns.PowerDNSBackend, '_get',
-                       side_effect=exceptions.DomainNotFound)
+                       side_effect=exceptions.ZoneNotFound)
     @mock.patch.object(impl_powerdns.PowerDNSBackend, '_delete',
                        return_value=None)
-    def test_delete_domain_domain_not_found(self, delete_mock, get_mock,
-                                            session_mock):
+    def test_delete_zone_zone_not_found(self, delete_mock, get_mock,
+                                        session_mock):
         context = self.get_context()
-        self.backend.delete_domain(context, self.domain)
+        self.backend.delete_zone(context, self.zone)
 
         # Ensure the _get method was called with the correct arguments
         get_mock.assert_called_once_with(
-            tables.domains, self.domain.id, exceptions.DomainNotFound,
+            tables.domains, self.zone.id, exceptions.ZoneNotFound,
             id_col=tables.domains.c.designate_id)
 
         # Ensure the _delete method was not called

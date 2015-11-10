@@ -47,7 +47,7 @@ class DelegationExists(exceptions.BadRequest, EnhancedDNSException):
     error_type = 'delegation_exists'
 
 
-class DuplicateDomain(exceptions.DuplicateDomain, EnhancedDNSException):
+class DuplicateZone(exceptions.DuplicateZone, EnhancedDNSException):
     """
     Raised when an attempt to create a zone which is registered to another
     Akamai account is made
@@ -60,7 +60,7 @@ class Forbidden(exceptions.Forbidden, EnhancedDNSException):
     Raised when an attempt to modify a zone which is registered to another
     Akamai account is made.
 
-    This appears to be returned when creating a new subdomain of domain which
+    This appears to be returned when creating a new subzone of zone which
     already exists in another Akamai account.
     """
     pass
@@ -142,7 +142,7 @@ class EnhancedDNSClient(object):
             return self.client.service.setZones(zones=zones)
         except Exception as e:
             if 'You do not have permission to view this zone' in str(e):
-                raise DuplicateDomain()
+                raise DuplicateZone()
             elif 'You do not have access to edit this zone' in str(e):
                 raise Forbidden()
             elif 'basic auth failed' in str(e):
@@ -158,7 +158,7 @@ class EnhancedDNSClient(object):
             self.client.service.setZone(zone=zone)
         except Exception as e:
             if 'You do not have permission to view this zone' in str(e):
-                raise DuplicateDomain()
+                raise DuplicateZone()
             elif 'You do not have access to edit this zone' in str(e):
                 raise Forbidden()
             elif 'basic auth failed' in str(e):
@@ -197,22 +197,22 @@ class EnhancedDNSClient(object):
         return zoneName.rstrip('.').lower()
 
 
-def build_zone(client, target, domain):
+def build_zone(client, target, zone):
     masters = [m.host for m in target.masters]
 
     if target.options.get("tsig_key_name", None):
         return client.buildZone(
-            domain.name,
+            zone.name,
             masters,
-            domain.id,
+            zone.id,
             target.options["tsig_key_name"],
             target.options.get("tsig_key_secret", None),
             target.options.get("tsig_key_algorithm", None))
     else:
         return client.buildZone(
-            domain.name,
+            zone.name,
             masters,
-            domain.id)
+            zone.id)
 
 
 class AkamaiBackend(base.Backend):
@@ -247,12 +247,12 @@ class AkamaiBackend(base.Backend):
                 raise exceptions.ConfigurationError(
                     "Akamai only supports mDNS instances on port 53")
 
-    def create_domain(self, context, domain):
-        """Create a DNS domain"""
-        zone = build_zone(self.client, self.target, domain)
+    def create_zone(self, context, zone):
+        """Create a DNS zone"""
+        zone = build_zone(self.client, self.target, zone)
 
         self.client.setZone(zone=zone)
 
-    def delete_domain(self, context, domain):
-        """Delete a DNS domain"""
-        self.client.deleteZone(zoneName=domain['name'])
+    def delete_zone(self, context, zone):
+        """Delete a DNS zone"""
+        self.client.deleteZone(zoneName=zone['name'])

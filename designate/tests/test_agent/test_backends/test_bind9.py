@@ -37,28 +37,28 @@ class Bind9AgentBackendTestCase(TestCase, BackendTestMixin):
         self.backend.agent_service.stop()
         self.backend.stop()
 
-    def test_find_domain_serial(self):
-        self.backend.find_domain_serial('example.org.')
+    def test_find_zone_serial(self):
+        self.backend.find_zone_serial('example.org.')
 
     @mock.patch('designate.utils.execute')
     @mock.patch(('designate.backend.agent_backend.impl_bind9.Bind9Backend'
-                '._sync_domain'))
-    def test_create_domain(self, execute, sync):
-        domain = self._create_dnspy_zone('example.org')
-        self.backend.create_domain(domain)
+                '._sync_zone'))
+    def test_create_zone(self, execute, sync):
+        zone = self._create_dnspy_zone('example.org')
+        self.backend.create_zone(zone)
 
     @mock.patch('designate.utils.execute')
     @mock.patch(('designate.backend.agent_backend.impl_bind9.Bind9Backend'
-                 '._sync_domain'))
-    def test_update_domain(self, execute, sync):
-        domain = self._create_dnspy_zone('example.org')
-        self.backend.update_domain(domain)
+                 '._sync_zone'))
+    def test_update_zone(self, execute, sync):
+        zone = self._create_dnspy_zone('example.org')
+        self.backend.update_zone(zone)
 
     @mock.patch('designate.utils.execute')
     @mock.patch(('designate.backend.agent_backend.impl_bind9.Bind9Backend'
-                 '._sync_domain'))
-    def test_delete_domain(self, execute, sync):
-        self.backend.delete_domain('example.org.')
+                 '._sync_zone'))
+    def test_delete_zone(self, execute, sync):
+        self.backend.delete_zone('example.org.')
 
     # Helper
     def _create_dnspy_zone(self, name):

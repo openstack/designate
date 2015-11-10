@@ -29,29 +29,29 @@ class XFRMixin(object):
     """
     Utility mixin that holds common methods for XFR functionality.
     """
-    def domain_sync(self, context, domain, servers=None):
-        servers = servers or domain.masters
+    def zone_sync(self, context, zone, servers=None):
+        servers = servers or zone.masters
         servers = servers.to_list()
 
         timeout = cfg.CONF["service:mdns"].xfr_timeout
         try:
-            dnspython_zone = dnsutils.do_axfr(domain.name, servers,
+            dnspython_zone = dnsutils.do_axfr(zone.name, servers,
                                               timeout=timeout)
         except exceptions.XFRFailure as e:
             LOG.warning(e.message)
             return
 
         zone = dnsutils.from_dnspython_zone(dnspython_zone)
-        domain.update(zone)
+        zone.update(zone)
 
-        domain.transferred_at = timeutils.utcnow()
+        zone.transferred_at = timeutils.utcnow()
 
-        self.central_api.update_domain(context, domain, increment_serial=False)
+        self.central_api.update_zone(context, zone, increment_serial=False)
 
 
 class XfrEndpoint(base.BaseEndpoint, XFRMixin):
     RPC_API_VERSION = '1.0'
     RPC_API_NAMESPACE = 'xfr'
 
-    def perform_zone_xfr(self, context, domain):
-        self.domain_sync(context, domain)
+    def perform_zone_xfr(self, context, zone):
+        self.zone_sync(context, zone)

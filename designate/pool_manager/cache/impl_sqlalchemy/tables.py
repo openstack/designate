@@ -33,7 +33,7 @@ pool_manager_statuses = Table(
     Column('created_at', DateTime, default=lambda: timeutils.utcnow()),
     Column('updated_at', DateTime, onupdate=lambda: timeutils.utcnow()),
     Column('nameserver_id', UUID, nullable=False),
-    Column('domain_id', UUID, nullable=False),
+    Column('zone_id', UUID, nullable=False),
     Column('action', Enum(name='update_actions', *UPDATE_ACTIONS),
            nullable=False),
     Column('status', Enum(name='update_statuses', *UPDATE_STATUSES),
@@ -41,9 +41,9 @@ pool_manager_statuses = Table(
     Column('serial_number', Integer, nullable=False),
 
 
-    UniqueConstraint('nameserver_id', 'domain_id', 'action',
+    UniqueConstraint('nameserver_id', 'zone_id', 'action',
                      name='unique_pool_manager_status'),
-    ForeignKeyConstraint(['domain_id'], ['domains.id']),
+    ForeignKeyConstraint(['zone_id'], ['zones.id']),
 
     mysql_engine='InnoDB',
     mysql_charset='utf8',

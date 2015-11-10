@@ -30,24 +30,15 @@ class QuotasView(base_view.BaseView):
     def show_basic(self, context, request, quota):
         """Basic view of a quota"""
         return {
-            "zones": quota['domains'],
-            "zone_records": quota['domain_records'],
-            "zone_recordsets": quota['domain_recordsets'],
+            "zones": quota['zones'],
+            "zone_records": quota['zone_records'],
+            "zone_recordsets": quota['zone_recordsets'],
             "recordset_records": quota['recordset_records']
         }
 
     def load(self, context, request, body):
         """Extract a "central" compatible dict from an API call"""
-        valid_keys = ('domain_records', 'domain_recordsets', 'domains',
+        valid_keys = ('zone_records', 'zone_recordsets', 'zones',
                       'recordset_records')
-
-        mapping = {
-            'zones': 'domains',
-            'zone_records': 'domain_records',
-            'zone_recordsets': 'domain_recordsets',
-            'recordset_records': 'recordset_records'
-        }
-
-        body["quota"] = {mapping[k]: body["quota"][k] for k in body["quota"]}
 
         return self._load(context, request, body, valid_keys)

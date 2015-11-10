@@ -36,7 +36,8 @@ class Quota(DriverPlugin):
                 if value >= quotas[resource]:
                     raise exceptions.OverQuota()
             else:
-                raise exceptions.QuotaResourceUnknown()
+                raise exceptions.QuotaResourceUnknown("%s is not a valid quota"
+                                                      " resource", resource)
 
     def get_quotas(self, context, tenant_id):
         quotas = self.get_default_quotas(context)
@@ -51,9 +52,9 @@ class Quota(DriverPlugin):
 
     def get_default_quotas(self, context):
         return {
-            'domains': cfg.CONF.quota_domains,
-            'domain_recordsets': cfg.CONF.quota_domain_recordsets,
-            'domain_records': cfg.CONF.quota_domain_records,
+            'zones': cfg.CONF.quota_zones,
+            'zone_recordsets': cfg.CONF.quota_zone_recordsets,
+            'zone_records': cfg.CONF.quota_zone_records,
             'recordset_records': cfg.CONF.quota_recordset_records,
             'api_export_size': cfg.CONF.quota_api_export_size,
         }
@@ -62,7 +63,8 @@ class Quota(DriverPlugin):
         quotas = self._get_quotas(context, tenant_id)
 
         if resource not in quotas:
-            raise exceptions.QuotaResourceUnknown()
+            raise exceptions.QuotaResourceUnknown("%s is not a valid quota "
+                                                  "resource", resource)
 
         return quotas[resource]
 

@@ -25,7 +25,7 @@ class ZoneTransferRequest(base.DictObjectMixin, base.PersistentObjectMixin,
                 "maxLength": 160
             },
         },
-        'domain_id': {
+        'zone_id': {
             'schema': {
                 "type": "string",
                 "description": "Zone identifier",
@@ -57,7 +57,7 @@ class ZoneTransferRequest(base.DictObjectMixin, base.PersistentObjectMixin,
                 "enum": ["ACTIVE", "PENDING", "DELETED", "ERROR", "COMPLETE"],
             }
         },
-        'domain_name': {
+        'zone_name': {
             'schema': {
                 "type": ["string", "null"],
                 "maxLength": 255,
@@ -67,7 +67,7 @@ class ZoneTransferRequest(base.DictObjectMixin, base.PersistentObjectMixin,
     }
 
     STRING_KEYS = [
-        'id', 'domain_id', 'domain_name', 'target_tenant_id'
+        'id', 'zone_id', 'zone_name', 'target_tenant_id'
     ]
 
 

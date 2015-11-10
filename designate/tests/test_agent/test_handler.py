@@ -106,7 +106,7 @@ class AgentRequestHandlerTest(AgentTestCase):
         request.environ = {'addr': ["0.0.0.0", 1234]}
         with mock.patch.object(
             designate.backend.agent_backend.impl_fake.FakeBackend,
-                'find_domain_serial', return_value=None):
+                'find_zone_serial', return_value=None):
 
             response = next(self.handler(request)).to_wire()
             self.assertEqual(expected_response, binascii.b2a_hex(response))
@@ -205,7 +205,7 @@ class AgentRequestHandlerTest(AgentTestCase):
         request.environ = {'addr': ["0.0.0.0", 1234]}
         with mock.patch.object(
             designate.backend.agent_backend.impl_fake.FakeBackend,
-                'find_domain_serial', return_value=None):
+                'find_zone_serial', return_value=None):
             response = next(self.handler(request)).to_wire()
             doaxfr.assert_called_with('example.com.', [], source="1.2.3.4")
             self.assertEqual(expected_response, binascii.b2a_hex(response))

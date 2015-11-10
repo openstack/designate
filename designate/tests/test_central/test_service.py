@@ -54,24 +54,24 @@ class CentralServiceTest(CentralTestCase):
             self.central_service.start()
             self.assertTrue(self.central_service.check_for_tlds)
 
-    def test_is_valid_domain_name(self):
-        self.config(max_domain_name_len=10,
+    def test_is_valid_zone_name(self):
+        self.config(max_zone_name_len=10,
                     group='service:central')
 
         context = self.get_context()
 
-        self.central_service._is_valid_domain_name(context, 'valid.org.')
+        self.central_service._is_valid_zone_name(context, 'valid.org.')
 
-        with testtools.ExpectedException(exceptions.InvalidDomainName):
-            self.central_service._is_valid_domain_name(context, 'example.org.')
+        with testtools.ExpectedException(exceptions.InvalidZoneName):
+            self.central_service._is_valid_zone_name(context, 'example.org.')
 
-        with testtools.ExpectedException(exceptions.InvalidDomainName):
-            self.central_service._is_valid_domain_name(context, 'example.tld.')
+        with testtools.ExpectedException(exceptions.InvalidZoneName):
+            self.central_service._is_valid_zone_name(context, 'example.tld.')
 
-        with testtools.ExpectedException(exceptions.InvalidDomainName):
-            self.central_service._is_valid_domain_name(context, 'tld.')
+        with testtools.ExpectedException(exceptions.InvalidZoneName):
+            self.central_service._is_valid_zone_name(context, 'tld.')
 
-    def test_is_valid_domain_name_with_tlds(self):
+    def test_is_valid_zone_name_with_tlds(self):
         # Stop Service
         self.central_service.stop()
         list = objects.TldList()
@@ -86,8 +86,8 @@ class CentralServiceTest(CentralTestCase):
         context = self.get_context()
         with mock.patch.object(self.central_service.storage, 'find_tld',
                 return_value=objects.Tld(name='biz')):
-            with testtools.ExpectedException(exceptions.InvalidDomainName):
-                self.central_service._is_valid_domain_name(context, 'biz.')
+            with testtools.ExpectedException(exceptions.InvalidZoneName):
+                self.central_service._is_valid_zone_name(context, 'biz.')
 
     def test_is_valid_recordset_name(self):
         self.config(max_recordset_name_len=18,
@@ -95,30 +95,30 @@ class CentralServiceTest(CentralTestCase):
 
         context = self.get_context()
 
-        domain = self.create_domain(name='example.org.')
+        zone = self.create_zone(name='example.org.')
 
         self.central_service._is_valid_recordset_name(
-            context, domain, 'valid.example.org.')
+            context, zone, 'valid.example.org.')
 
         with testtools.ExpectedException(exceptions.InvalidRecordSetName):
             self.central_service._is_valid_recordset_name(
-                context, domain, 'toolong.example.org.')
+                context, zone, 'toolong.example.org.')
 
         with testtools.ExpectedException(ValueError):
             self.central_service._is_valid_recordset_name(
-                context, domain, 'invalidtld.example.org')
+                context, zone, 'invalidtld.example.org')
 
         with testtools.ExpectedException(exceptions.InvalidRecordSetLocation):
             self.central_service._is_valid_recordset_name(
-                context, domain, 'a.example.COM.')
+                context, zone, 'a.example.COM.')
 
         with testtools.ExpectedException(exceptions.InvalidRecordSetLocation):
-            # Ensure names ending in the domain name, but
+            # Ensure names ending in the zone name, but
             # not contained in it fail
             self.central_service._is_valid_recordset_name(
-                context, domain, 'aexample.org.')
+                context, zone, 'aexample.org.')
 
-    def test_is_blacklisted_domain_name(self):
+    def test_is_blacklisted_zone_name(self):
         # Create blacklisted zones with specific names
         self.create_blacklist(pattern='example.org.')
         self.create_blacklist(pattern='example.net.')
@@ -126,38 +126,38 @@ class CentralServiceTest(CentralTestCase):
         self.create_blacklist(pattern='com.$')
 
         # Set the policy to reject the authz
-        self.policy({'use_blacklisted_domain': '!'})
+        self.policy({'use_blacklisted_zone': '!'})
 
         context = self.get_context()
 
-        result = self.central_service._is_blacklisted_domain_name(
+        result = self.central_service._is_blacklisted_zone_name(
             context, 'org.')
         self.assertFalse(result)
 
-        # Subdomains should not be allowed from a blacklisted domain
-        result = self.central_service._is_blacklisted_domain_name(
+        # subzones should not be allowed from a blacklisted zone
+        result = self.central_service._is_blacklisted_zone_name(
             context, 'www.example.org.')
         self.assertTrue(result)
 
-        result = self.central_service._is_blacklisted_domain_name(
+        result = self.central_service._is_blacklisted_zone_name(
             context, 'example.org.')
         self.assertTrue(result)
 
-        # Check for blacklisted domains containing regexps
-        result = self.central_service._is_blacklisted_domain_name(
+        # Check for blacklisted zones containing regexps
+        result = self.central_service._is_blacklisted_zone_name(
             context, 'example.net.')
         self.assertTrue(result)
 
-        result = self.central_service._is_blacklisted_domain_name(
+        result = self.central_service._is_blacklisted_zone_name(
             context, 'example.com.')
         self.assertTrue(result)
 
-        result = self.central_service._is_blacklisted_domain_name(
+        result = self.central_service._is_blacklisted_zone_name(
             context, 'blacklisted.org.')
 
         self.assertTrue(result)
 
-    def test_is_blacklisted_domain_name_evil(self):
+    def test_is_blacklisted_zone_name_evil(self):
         evil_regex = "(([a-z])+.)+[A-Z]([a-z])+$"
         evil_zone_name = ("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
                           "aaaaaaaa.com.")
@@ -171,76 +171,76 @@ class CentralServiceTest(CentralTestCase):
                                'find_blacklists',
                                return_value=blacklists):
 
-            result = self.central_service._is_blacklisted_domain_name(
+            result = self.central_service._is_blacklisted_zone_name(
                 context, evil_zone_name)
             self.assertTrue(result)
 
-    def test_is_subdomain(self):
+    def test_is_subzone(self):
         context = self.get_context()
 
-        # Create a domain (using the specified domain name)
-        domain = self.create_domain(name='example.org.')
+        # Create a zone (using the specified zone name)
+        zone = self.create_zone(name='example.org.')
 
-        result = self.central_service._is_subdomain(
-            context, 'org.', domain.pool_id)
+        result = self.central_service._is_subzone(
+            context, 'org.', zone.pool_id)
         self.assertFalse(result)
 
-        result = self.central_service._is_subdomain(
-            context, 'www.example.net.', domain.pool_id)
+        result = self.central_service._is_subzone(
+            context, 'www.example.net.', zone.pool_id)
         self.assertFalse(result)
 
-        result = self.central_service._is_subdomain(
-            context, 'example.org.', domain.pool_id)
+        result = self.central_service._is_subzone(
+            context, 'example.org.', zone.pool_id)
         self.assertFalse(result)
 
-        result = self.central_service._is_subdomain(
-            context, 'www.example.org.', domain.pool_id)
+        result = self.central_service._is_subzone(
+            context, 'www.example.org.', zone.pool_id)
         self.assertTrue(result)
 
-    def test_is_superdomain(self):
+    def test_is_superzone(self):
         context = self.get_context()
 
-        # Create a domain (using the specified domain name)
-        domain = self.create_domain(name='example.org.')
+        # Create a zone (using the specified zone name)
+        zone = self.create_zone(name='example.org.')
 
         LOG.debug("Testing 'org.'")
-        result = self.central_service._is_superdomain(
-            context, 'org.', domain.pool_id)
+        result = self.central_service._is_superzone(
+            context, 'org.', zone.pool_id)
         self.assertTrue(result)
 
         LOG.debug("Testing 'www.example.net.'")
-        result = self.central_service._is_superdomain(
-            context, 'www.example.net.', domain.pool_id)
+        result = self.central_service._is_superzone(
+            context, 'www.example.net.', zone.pool_id)
         self.assertFalse(result)
 
         LOG.debug("Testing 'www.example.org.'")
-        result = self.central_service._is_superdomain(
-            context, 'www.example.org.', domain.pool_id)
+        result = self.central_service._is_superzone(
+            context, 'www.example.org.', zone.pool_id)
         self.assertFalse(result)
 
-    def test_is_valid_recordset_placement_subdomain(self):
+    def test_is_valid_recordset_placement_subzone(self):
         context = self.get_context()
 
-        # Create a domain (using the specified domain name)
-        domain = self.create_domain(name='example.org.')
-        sub_domain = self.create_domain(name='sub.example.org.')
+        # Create a zone (using the specified zone name)
+        zone = self.create_zone(name='example.org.')
+        sub_zone = self.create_zone(name='sub.example.org.')
 
-        def _fail(domain_, name):
+        def _fail(zone_, name):
             with testtools.ExpectedException(
                     exceptions.InvalidRecordSetLocation):
-                self.central_service._is_valid_recordset_placement_subdomain(
-                    context, domain_, name)
+                self.central_service._is_valid_recordset_placement_subzone(
+                    context, zone_, name)
 
-        def _ok(domain_, name):
-            self.central_service._is_valid_recordset_placement_subdomain(
-                context, domain_, name)
+        def _ok(zone_, name):
+            self.central_service._is_valid_recordset_placement_subzone(
+                context, zone_, name)
 
-        _fail(domain, 'record.sub.example.org.')
-        _fail(domain, 'sub.example.org.')
-        _ok(domain, 'example.org.')
-        _ok(domain, 'record.example.org.')
+        _fail(zone, 'record.sub.example.org.')
+        _fail(zone, 'sub.example.org.')
+        _ok(zone, 'example.org.')
+        _ok(zone, 'record.example.org.')
 
-        _ok(sub_domain, 'record.example.org.')
+        _ok(sub_zone, 'record.example.org.')
 
     def test_is_valid_ttl(self):
         self.policy({'use_low_ttl': '!'})
@@ -248,7 +248,7 @@ class CentralServiceTest(CentralTestCase):
                     group='service:central')
         context = self.get_context()
 
-        values = self.get_domain_fixture(fixture=1)
+        values = self.get_zone_fixture(fixture=1)
         values['ttl'] = 0
 
         with testtools.ExpectedException(exceptions.InvalidTTL):
@@ -425,8 +425,8 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(0, tenants)
 
         # Explicitly set a tenant_id
-        self.create_domain(fixture=0, context=tenant_one_context)
-        self.create_domain(fixture=1, context=tenant_two_context)
+        self.create_zone(fixture=0, context=tenant_one_context)
+        self.create_zone(fixture=1, context=tenant_two_context)
 
         tenants = self.central_service.count_tenants(admin_context)
         self.assertEqual(2, tenants)
@@ -438,31 +438,31 @@ class CentralServiceTest(CentralTestCase):
         with testtools.ExpectedException(exceptions.Forbidden):
             self.central_service.count_tenants(self.get_context())
 
-    # Domain Tests
+    # Zone Tests
     @mock.patch.object(notifier.Notifier, "info")
-    def _test_create_domain(self, values, mock_notifier):
+    def _test_create_zone(self, values, mock_notifier):
         # Reset the mock to avoid the calls from the create_nameserver() call
         mock_notifier.reset_mock()
 
-        # Create a domain
-        domain = self.central_service.create_domain(
-            self.admin_context, domain=objects.Domain.from_dict(values))
+        # Create a zone
+        zone = self.central_service.create_zone(
+            self.admin_context, zone=objects.Zone.from_dict(values))
 
         # Ensure all values have been set correctly
-        self.assertIsNotNone(domain['id'])
-        self.assertEqual(values['name'], domain['name'])
-        self.assertEqual(values['email'], domain['email'])
-        self.assertIn('status', domain)
+        self.assertIsNotNone(zone['id'])
+        self.assertEqual(values['name'], zone['name'])
+        self.assertEqual(values['email'], zone['email'])
+        self.assertIn('status', zone)
 
-        self.assertEqual(1, mock_notifier.call_count)
+        self.assertEqual(2, mock_notifier.call_count)
 
         # Ensure the correct NS Records are in place
         pool = self.central_service.get_pool(
-            self.admin_context, domain.pool_id)
+            self.admin_context, zone.pool_id)
 
         ns_recordset = self.central_service.find_recordset(
             self.admin_context,
-            criterion={'domain_id': domain.id, 'type': "NS"})
+            criterion={'zone_id': zone.id, 'type': "NS"})
 
         self.assertIsNotNone(ns_recordset.id)
         self.assertEqual('NS', ns_recordset.type)
@@ -470,31 +470,29 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(set([n.hostname for n in pool.ns_records]),
                          set([n.data for n in ns_recordset.records]))
 
-        mock_notifier.assert_called_once_with(
-            self.admin_context, 'dns.domain.create', domain)
-        return domain
+        return zone
 
-    def test_create_domain_duplicate_different_pools(self):
-        fixture = self.get_domain_fixture()
+    def test_create_zone_duplicate_different_pools(self):
+        fixture = self.get_zone_fixture()
 
-        # Create first domain that's placed in default pool
-        self.create_domain(**fixture)
+        # Create first zone that's placed in default pool
+        self.create_zone(**fixture)
 
         # Create a secondary pool
         second_pool = self.create_pool()
         fixture["pool_id"] = second_pool.id
 
-        self.create_domain(**fixture)
+        self.create_zone(**fixture)
 
-    def test_create_domain_over_tld(self):
+    def test_create_zone_over_tld(self):
         values = dict(
             name='example.com.',
             email='info@example.com',
             type='PRIMARY'
         )
-        self._test_create_domain(values)
+        self._test_create_zone(values)
 
-    def test_idn_create_domain_over_tld(self):
+    def test_idn_create_zone_over_tld(self):
         values = dict(
             name='xn--3e0b707e'
         )
@@ -503,135 +501,135 @@ class CentralServiceTest(CentralTestCase):
         self.central_service.create_tld(
             self.admin_context, objects.Tld.from_dict(values))
 
-        # Test creation of a domain in 한국 (kr)
+        # Test creation of a zone in 한국 (kr)
         values = dict(
             name='example.xn--3e0b707e.',
             email='info@example.xn--3e0b707e',
             type='PRIMARY'
         )
-        self._test_create_domain(values)
+        self._test_create_zone(values)
 
-    def test_create_domain_over_quota(self):
-        self.config(quota_domains=1)
+    def test_create_zone_over_quota(self):
+        self.config(quota_zones=1)
 
-        self.create_domain()
+        self.create_zone()
 
         with testtools.ExpectedException(exceptions.OverQuota):
-            self.create_domain()
+            self.create_zone()
 
-    def test_create_subdomain(self):
-        # Create the Parent Domain using fixture 0
-        parent_domain = self.create_domain(fixture=0)
+    def test_create_subzone(self):
+        # Create the Parent Zone using fixture 0
+        parent_zone = self.create_zone(fixture=0)
 
-        # Prepare values for the subdomain using fixture 1 as a base
-        values = self.get_domain_fixture(fixture=1)
-        values['name'] = 'www.%s' % parent_domain['name']
+        # Prepare values for the subzone using fixture 1 as a base
+        values = self.get_zone_fixture(fixture=1)
+        values['name'] = 'www.%s' % parent_zone['name']
 
-        # Create the subdomain
-        domain = self.central_service.create_domain(
-            self.admin_context, objects.Domain.from_dict(values))
+        # Create the subzone
+        zone = self.central_service.create_zone(
+            self.admin_context, objects.Zone.from_dict(values))
 
         # Ensure all values have been set correctly
-        self.assertIsNotNone(domain['id'])
-        self.assertEqual(parent_domain['id'], domain['parent_domain_id'])
+        self.assertIsNotNone(zone['id'])
+        self.assertEqual(parent_zone['id'], zone['parent_zone_id'])
 
-    def test_create_subdomain_different_pools(self):
-        fixture = self.get_domain_fixture()
+    def test_create_subzone_different_pools(self):
+        fixture = self.get_zone_fixture()
 
-        # Create first domain that's placed in default pool
-        self.create_domain(**fixture)
+        # Create first zone that's placed in default pool
+        self.create_zone(**fixture)
 
         # Create a secondary pool
         second_pool = self.create_pool()
         fixture["pool_id"] = second_pool.id
         fixture["name"] = "sub.%s" % fixture["name"]
 
-        subdomain = self.create_domain(**fixture)
-        self.assertIsNone(subdomain.parent_domain_id)
+        subzone = self.create_zone(**fixture)
+        self.assertIsNone(subzone.parent_zone_id)
 
-    def test_create_superdomain(self):
-        # Prepare values for the domain and subdomain
+    def test_create_superzone(self):
+        # Prepare values for the zone and subzone
         # using fixture 1 as a base
-        domain_values = self.get_domain_fixture(fixture=1)
+        zone_values = self.get_zone_fixture(fixture=1)
 
-        subdomain_values = copy.deepcopy(domain_values)
-        subdomain_values['name'] = 'www.%s' % domain_values['name']
-        subdomain_values['context'] = self.admin_context
+        subzone_values = copy.deepcopy(zone_values)
+        subzone_values['name'] = 'www.%s' % zone_values['name']
+        subzone_values['context'] = self.admin_context
 
-        LOG.debug("domain_values: {0}".format(domain_values))
-        LOG.debug("subdomain_values: {0}".format(subdomain_values))
+        LOG.debug("zone_values: {0}".format(zone_values))
+        LOG.debug("subzone_values: {0}".format(subzone_values))
 
-        # Create the subdomain
-        subdomain = self.create_domain(**subdomain_values)
+        # Create the subzone
+        subzone = self.create_zone(**subzone_values)
 
-        # Create the Parent Domain using fixture 1
-        parent_domain = self.central_service.create_domain(
-            self.admin_context, objects.Domain.from_dict(domain_values))
+        # Create the Parent Zone using fixture 1
+        parent_zone = self.central_service.create_zone(
+            self.admin_context, objects.Zone.from_dict(zone_values))
 
-        # Get updated subdomain values
-        subdomain = self.central_service.get_domain(self.admin_context,
-                                                    subdomain.id)
+        # Get updated subzone values
+        subzone = self.central_service.get_zone(self.admin_context,
+                                                subzone.id)
 
         # Ensure all values have been set correctly
-        self.assertIsNotNone(parent_domain['id'])
-        self.assertEqual(parent_domain['id'], subdomain['parent_domain_id'])
+        self.assertIsNotNone(parent_zone['id'])
+        self.assertEqual(parent_zone['id'], subzone['parent_zone_id'])
 
-    def test_create_subdomain_failure(self):
+    def test_create_subzone_failure(self):
         context = self.get_admin_context()
 
         # Explicitly set a tenant_id
         context.tenant = '1'
 
-        # Create the Parent Domain using fixture 0
-        parent_domain = self.create_domain(fixture=0, context=context)
+        # Create the Parent Zone using fixture 0
+        parent_zone = self.create_zone(fixture=0, context=context)
 
         context = self.get_admin_context()
 
         # Explicitly use a different tenant_id
         context.tenant = '2'
 
-        # Prepare values for the subdomain using fixture 1 as a base
-        values = self.get_domain_fixture(fixture=1)
-        values['name'] = 'www.%s' % parent_domain['name']
+        # Prepare values for the subzone using fixture 1 as a base
+        values = self.get_zone_fixture(fixture=1)
+        values['name'] = 'www.%s' % parent_zone['name']
 
-        # Attempt to create the subdomain
-        with testtools.ExpectedException(exceptions.IllegalChildDomain):
-            self.central_service.create_domain(
-                context, objects.Domain.from_dict(values))
+        # Attempt to create the subzone
+        with testtools.ExpectedException(exceptions.IllegalChildZone):
+            self.central_service.create_zone(
+                context, objects.Zone.from_dict(values))
 
-    def test_create_superdomain_failure(self):
+    def test_create_superzone_failure(self):
         context = self.get_admin_context()
 
         # Explicitly set a tenant_id
         context.tenant = '1'
 
-        # Set up domain and subdomain values
-        domain_values = self.get_domain_fixture(fixture=1)
-        domain_name = domain_values['name']
+        # Set up zone and subzone values
+        zone_values = self.get_zone_fixture(fixture=1)
+        zone_name = zone_values['name']
 
-        subdomain_values = copy.deepcopy(domain_values)
-        subdomain_values['name'] = 'www.%s' % domain_name
-        subdomain_values['context'] = context
+        subzone_values = copy.deepcopy(zone_values)
+        subzone_values['name'] = 'www.%s' % zone_name
+        subzone_values['context'] = context
 
-        # Create sub domain
-        self.create_domain(**subdomain_values)
+        # Create sub zone
+        self.create_zone(**subzone_values)
 
         context = self.get_admin_context()
 
         # Explicitly use a different tenant_id
         context.tenant = '2'
 
-        # Attempt to create the domain
-        with testtools.ExpectedException(exceptions.IllegalParentDomain):
-            self.central_service.create_domain(
-                context, objects.Domain.from_dict(domain_values))
+        # Attempt to create the zone
+        with testtools.ExpectedException(exceptions.IllegalParentZone):
+            self.central_service.create_zone(
+                context, objects.Zone.from_dict(zone_values))
 
-    def test_create_blacklisted_domain_success(self):
+    def test_create_blacklisted_zone_success(self):
         # Create blacklisted zone using default values
         self.create_blacklist()
 
         # Set the policy to accept the authz
-        self.policy({'use_blacklisted_domain': '@'})
+        self.policy({'use_blacklisted_zone': '@'})
 
         values = dict(
             name='blacklisted.com.',
@@ -639,38 +637,38 @@ class CentralServiceTest(CentralTestCase):
         )
 
         # Create a zone that is blacklisted
-        domain = self.central_service.create_domain(
-            self.admin_context, objects.Domain.from_dict(values))
+        zone = self.central_service.create_zone(
+            self.admin_context, objects.Zone.from_dict(values))
 
         # Ensure all values have been set correctly
-        self.assertIsNotNone(domain['id'])
-        self.assertEqual(domain['name'], values['name'])
-        self.assertEqual(domain['email'], values['email'])
+        self.assertIsNotNone(zone['id'])
+        self.assertEqual(zone['name'], values['name'])
+        self.assertEqual(zone['email'], values['email'])
 
-    def test_create_blacklisted_domain_fail(self):
+    def test_create_blacklisted_zone_fail(self):
         self.create_blacklist()
 
         # Set the policy to reject the authz
-        self.policy({'use_blacklisted_domain': '!'})
+        self.policy({'use_blacklisted_zone': '!'})
 
         values = dict(
             name='blacklisted.com.',
             email='info@blacklisted.com'
         )
 
-        with testtools.ExpectedException(exceptions.InvalidDomainName):
-            # Create a domain
-            self.central_service.create_domain(
-                self.admin_context, objects.Domain.from_dict(values))
+        with testtools.ExpectedException(exceptions.InvalidZoneName):
+            # Create a zone
+            self.central_service.create_zone(
+                self.admin_context, objects.Zone.from_dict(values))
 
-    def _test_create_domain_fail(self, values, exception):
+    def _test_create_zone_fail(self, values, exception):
 
         with testtools.ExpectedException(exception):
-            # Create an invalid domain
-            self.central_service.create_domain(
-                self.admin_context, objects.Domain.from_dict(values))
+            # Create an invalid zone
+            self.central_service.create_zone(
+                self.admin_context, objects.Zone.from_dict(values))
 
-    def test_create_domain_invalid_tld_fail(self):
+    def test_create_zone_invalid_tld_fail(self):
         # add a tld for com
         self.create_tld(fixture=0)
 
@@ -679,9 +677,9 @@ class CentralServiceTest(CentralTestCase):
             email='info@example.com'
         )
 
-        # Create a valid domain
-        self.central_service.create_domain(
-            self.admin_context, objects.Domain.from_dict(values))
+        # Create a valid zone
+        self.central_service.create_zone(
+            self.admin_context, objects.Zone.from_dict(values))
 
         values = dict(
             name='example.net.',
@@ -689,224 +687,221 @@ class CentralServiceTest(CentralTestCase):
         )
 
         # There is no TLD for net so it should fail
-        with testtools.ExpectedException(exceptions.InvalidDomainName):
-            # Create an invalid domain
-            self.central_service.create_domain(
-                self.admin_context, objects.Domain.from_dict(values))
+        with testtools.ExpectedException(exceptions.InvalidZoneName):
+            # Create an invalid zone
+            self.central_service.create_zone(
+                self.admin_context, objects.Zone.from_dict(values))
 
-    def test_create_domain_invalid_ttl_fail(self):
+    def test_create_zone_invalid_ttl_fail(self):
         self.policy({'use_low_ttl': '!'})
         self.config(min_ttl=100,
                     group='service:central')
         context = self.get_context()
 
-        values = self.get_domain_fixture(fixture=1)
+        values = self.get_zone_fixture(fixture=1)
         values['ttl'] = 0
 
         with testtools.ExpectedException(exceptions.InvalidTTL):
-                    self.central_service.create_domain(
-                        context, objects.Domain.from_dict(values))
+                    self.central_service.create_zone(
+                        context, objects.Zone.from_dict(values))
 
-    def test_create_domain_no_min_ttl(self):
+    def test_create_zone_no_min_ttl(self):
         self.policy({'use_low_ttl': '!'})
         self.config(min_ttl=None,
                     group='service:central')
-        values = self.get_domain_fixture(fixture=1)
+        values = self.get_zone_fixture(fixture=1)
         values['ttl'] = -100
 
-        # Create domain with random TTL
-        domain = self.central_service.create_domain(
-            self.admin_context, objects.Domain.from_dict(values))
+        # Create zone with random TTL
+        zone = self.central_service.create_zone(
+            self.admin_context, objects.Zone.from_dict(values))
 
         # Ensure all values have been set correctly
-        self.assertEqual(values['ttl'], domain['ttl'])
+        self.assertEqual(values['ttl'], zone['ttl'])
 
-    def test_find_domains(self):
-        # Ensure we have no domains to start with.
-        domains = self.central_service.find_domains(self.admin_context)
-        self.assertEqual(0, len(domains))
+    def test_find_zones(self):
+        # Ensure we have no zones to start with.
+        zones = self.central_service.find_zones(self.admin_context)
+        self.assertEqual(0, len(zones))
 
-        # Create a single domain (using default values)
-        self.create_domain()
+        # Create a single zone (using default values)
+        self.create_zone()
 
-        # Ensure we can retrieve the newly created domain
-        domains = self.central_service.find_domains(self.admin_context)
-        self.assertEqual(1, len(domains))
-        self.assertEqual('example.com.', domains[0]['name'])
+        # Ensure we can retrieve the newly created zone
+        zones = self.central_service.find_zones(self.admin_context)
+        self.assertEqual(1, len(zones))
+        self.assertEqual('example.com.', zones[0]['name'])
 
-        # Create a second domain
-        self.create_domain(name='example.net.')
+        # Create a second zone
+        self.create_zone(name='example.net.')
 
-        # Ensure we can retrieve both domain
-        domains = self.central_service.find_domains(self.admin_context)
-        self.assertEqual(2, len(domains))
-        self.assertEqual('example.com.', domains[0]['name'])
-        self.assertEqual('example.net.', domains[1]['name'])
+        # Ensure we can retrieve both zone
+        zones = self.central_service.find_zones(self.admin_context)
+        self.assertEqual(2, len(zones))
+        self.assertEqual('example.com.', zones[0]['name'])
+        self.assertEqual('example.net.', zones[1]['name'])
 
-    def test_find_domains_criteria(self):
-        # Create a domain
-        domain_name = '%d.example.com.' % random.randint(10, 1000)
-        expected_domain = self.create_domain(name=domain_name)
+    def test_find_zones_criteria(self):
+        # Create a zone
+        zone_name = '%d.example.com.' % random.randint(10, 1000)
+        expected_zone = self.create_zone(name=zone_name)
 
         # Retrieve it, and ensure it's the same
-        criterion = {'name': domain_name}
+        criterion = {'name': zone_name}
 
-        domains = self.central_service.find_domains(
+        zones = self.central_service.find_zones(
             self.admin_context, criterion)
 
-        self.assertEqual(expected_domain['id'], domains[0]['id'])
-        self.assertEqual(expected_domain['name'], domains[0]['name'])
-        self.assertEqual(expected_domain['email'], domains[0]['email'])
+        self.assertEqual(expected_zone['id'], zones[0]['id'])
+        self.assertEqual(expected_zone['name'], zones[0]['name'])
+        self.assertEqual(expected_zone['email'], zones[0]['email'])
 
-    def test_find_domains_tenant_restrictions(self):
+    def test_find_zones_tenant_restrictions(self):
         admin_context = self.get_admin_context()
         admin_context.all_tenants = True
 
         tenant_one_context = self.get_context(tenant=1)
         tenant_two_context = self.get_context(tenant=2)
 
-        # Ensure we have no domains to start with.
-        domains = self.central_service.find_domains(admin_context)
-        self.assertEqual(0, len(domains))
+        # Ensure we have no zones to start with.
+        zones = self.central_service.find_zones(admin_context)
+        self.assertEqual(0, len(zones))
 
-        # Create a single domain (using default values)
-        domain = self.create_domain(context=tenant_one_context)
+        # Create a single zone (using default values)
+        zone = self.create_zone(context=tenant_one_context)
 
-        # Ensure admins can retrieve the newly created domain
-        domains = self.central_service.find_domains(admin_context)
-        self.assertEqual(1, len(domains))
-        self.assertEqual(domain['name'], domains[0]['name'])
+        # Ensure admins can retrieve the newly created zone
+        zones = self.central_service.find_zones(admin_context)
+        self.assertEqual(1, len(zones))
+        self.assertEqual(zone['name'], zones[0]['name'])
 
-        # Ensure tenant=1 can retrieve the newly created domain
-        domains = self.central_service.find_domains(tenant_one_context)
-        self.assertEqual(1, len(domains))
-        self.assertEqual(domain['name'], domains[0]['name'])
+        # Ensure tenant=1 can retrieve the newly created zone
+        zones = self.central_service.find_zones(tenant_one_context)
+        self.assertEqual(1, len(zones))
+        self.assertEqual(zone['name'], zones[0]['name'])
 
-        # Ensure tenant=2 can NOT retrieve the newly created domain
-        domains = self.central_service.find_domains(tenant_two_context)
-        self.assertEqual(0, len(domains))
+        # Ensure tenant=2 can NOT retrieve the newly created zone
+        zones = self.central_service.find_zones(tenant_two_context)
+        self.assertEqual(0, len(zones))
 
-    def test_get_domain(self):
-        # Create a domain
-        domain_name = '%d.example.com.' % random.randint(10, 1000)
-        expected_domain = self.create_domain(name=domain_name)
+    def test_get_zone(self):
+        # Create a zone
+        zone_name = '%d.example.com.' % random.randint(10, 1000)
+        expected_zone = self.create_zone(name=zone_name)
 
         # Retrieve it, and ensure it's the same
-        domain = self.central_service.get_domain(
-            self.admin_context, expected_domain['id'])
+        zone = self.central_service.get_zone(
+            self.admin_context, expected_zone['id'])
 
-        self.assertEqual(expected_domain['id'], domain['id'])
-        self.assertEqual(expected_domain['name'], domain['name'])
-        self.assertEqual(expected_domain['email'], domain['email'])
+        self.assertEqual(expected_zone['id'], zone['id'])
+        self.assertEqual(expected_zone['name'], zone['name'])
+        self.assertEqual(expected_zone['email'], zone['email'])
 
-    def test_get_domain_servers(self):
-        # Create a domain
-        domain = self.create_domain()
+    def test_get_zone_servers(self):
+        # Create a zone
+        zone = self.create_zone()
 
         # Retrieve the servers list
-        servers = self.central_service.get_domain_servers(
-            self.admin_context, domain['id'])
+        servers = self.central_service.get_zone_ns_records(
+            self.admin_context, zone['id'])
 
         self.assertTrue(len(servers) > 0)
 
-    def test_find_domain(self):
-        # Create a domain
-        domain_name = '%d.example.com.' % random.randint(10, 1000)
-        expected_domain = self.create_domain(name=domain_name)
+    def test_find_zone(self):
+        # Create a zone
+        zone_name = '%d.example.com.' % random.randint(10, 1000)
+        expected_zone = self.create_zone(name=zone_name)
 
         # Retrieve it, and ensure it's the same
-        criterion = {'name': domain_name}
+        criterion = {'name': zone_name}
 
-        domain = self.central_service.find_domain(
+        zone = self.central_service.find_zone(
             self.admin_context, criterion)
 
-        self.assertEqual(expected_domain['id'], domain['id'])
-        self.assertEqual(expected_domain['name'], domain['name'])
-        self.assertEqual(expected_domain['email'], domain['email'])
-        self.assertIn('status', domain)
+        self.assertEqual(expected_zone['id'], zone['id'])
+        self.assertEqual(expected_zone['name'], zone['name'])
+        self.assertEqual(expected_zone['email'], zone['email'])
+        self.assertIn('status', zone)
 
     @mock.patch.object(notifier.Notifier, "info")
-    def test_update_domain(self, mock_notifier):
-        # Create a domain
-        domain = self.create_domain(email='info@example.org')
-        original_serial = domain.serial
+    def test_update_zone(self, mock_notifier):
+        # Create a zone
+        zone = self.create_zone(email='info@example.org')
+        original_serial = zone.serial
 
         # Update the object
-        domain.email = 'info@example.net'
+        zone.email = 'info@example.net'
 
-        # Reset the mock to avoid the calls from the create_domain() call
+        # Reset the mock to avoid the calls from the create_zone() call
         mock_notifier.reset_mock()
 
         # Perform the update
-        self.central_service.update_domain(self.admin_context, domain)
+        self.central_service.update_zone(self.admin_context, zone)
 
-        # Fetch the domain again
-        domain = self.central_service.get_domain(
-            self.admin_context, domain.id)
+        # Fetch the zone again
+        zone = self.central_service.get_zone(
+            self.admin_context, zone.id)
 
-        # Ensure the domain was updated correctly
-        self.assertTrue(domain.serial > original_serial)
-        self.assertEqual('info@example.net', domain.email)
+        # Ensure the zone was updated correctly
+        self.assertTrue(zone.serial > original_serial)
+        self.assertEqual('info@example.net', zone.email)
 
-        self.assertEqual(1, mock_notifier.call_count)
+        self.assertEqual(2, mock_notifier.call_count)
 
-        # Check that the object used in the notify is a Domain and the id
+        # Check that the object used in the notify is a Zone and the id
         # matches up
-        notified_domain = mock_notifier.call_args[0][-1]
-        self.assertIsInstance(notified_domain, objects.Domain)
-        self.assertEqual(domain.id, notified_domain.id)
+        notified_zone = mock_notifier.call_args[0][-1]
+        self.assertIsInstance(notified_zone, objects.Zone)
+        self.assertEqual(zone.id, notified_zone.id)
 
-        mock_notifier.assert_called_once_with(
-            self.admin_context, 'dns.domain.update', mock.ANY)
-
-    def test_update_domain_without_id(self):
-        # Create a domain
-        domain = self.create_domain(email='info@example.org')
+    def test_update_zone_without_id(self):
+        # Create a zone
+        zone = self.create_zone(email='info@example.org')
 
         # Update the object
-        domain.email = 'info@example.net'
-        domain.id = None
+        zone.email = 'info@example.net'
+        zone.id = None
         # Perform the update
         with testtools.ExpectedException(Exception):
-            self.central_service.update_domain(self.admin_context, domain)
+            self.central_service.update_zone(self.admin_context, zone)
 
-    def test_update_domain_without_incrementing_serial(self):
-        # Create a domain
-        domain = self.create_domain(email='info@example.org')
-        original_serial = domain.serial
+    def test_update_zone_without_incrementing_serial(self):
+        # Create a zone
+        zone = self.create_zone(email='info@example.org')
+        original_serial = zone.serial
 
         # Update the object
-        domain.email = 'info@example.net'
+        zone.email = 'info@example.net'
 
         # Perform the update
-        self.central_service.update_domain(
-            self.admin_context, domain, increment_serial=False)
+        self.central_service.update_zone(
+            self.admin_context, zone, increment_serial=False)
 
-        # Fetch the domain again
-        domain = self.central_service.get_domain(self.admin_context, domain.id)
+        # Fetch the zone again
+        zone = self.central_service.get_zone(self.admin_context, zone.id)
 
-        # Ensure the domain was updated correctly
-        self.assertEqual(original_serial, domain.serial)
-        self.assertEqual('info@example.net', domain.email)
+        # Ensure the zone was updated correctly
+        self.assertEqual(original_serial, zone.serial)
+        self.assertEqual('info@example.net', zone.email)
 
-    def test_update_domain_name_fail(self):
-        # Create a domain
-        domain = self.create_domain(name='example.org.')
+    def test_update_zone_name_fail(self):
+        # Create a zone
+        zone = self.create_zone(name='example.org.')
 
         # Update the Object
-        domain.name = 'example.net.'
+        zone.name = 'example.net.'
 
         # Perform the update
         with testtools.ExpectedException(exceptions.BadRequest):
-            self.central_service.update_domain(self.admin_context, domain)
+            self.central_service.update_zone(self.admin_context, zone)
 
-    def test_update_domain_deadlock_retry(self):
-        # Create a domain
-        domain = self.create_domain(name='example.org.')
-        original_serial = domain.serial
+    def test_update_zone_deadlock_retry(self):
+        # Create a zone
+        zone = self.create_zone(name='example.org.')
+        original_serial = zone.serial
 
         # Update the Object
-        domain.email = 'info@example.net'
+        zone.email = 'info@example.net'
 
         # Due to Python's scoping of i - we need to make it a mutable type
         # for the counter to work.. In Py3, we can use the nonlocal keyword.
@@ -922,127 +917,124 @@ class CentralServiceTest(CentralTestCase):
         with mock.patch.object(self.central_service.storage, 'commit',
                           side_effect=fail_once_then_pass):
             # Perform the update
-            domain = self.central_service.update_domain(
-                self.admin_context, domain)
+            zone = self.central_service.update_zone(
+                self.admin_context, zone)
 
         # Ensure i[0] is True, indicating the side_effect code above was
         # triggered
         self.assertTrue(i[0])
 
-        # Ensure the domain was updated correctly
-        self.assertTrue(domain.serial > original_serial)
-        self.assertEqual('info@example.net', domain.email)
+        # Ensure the zone was updated correctly
+        self.assertTrue(zone.serial > original_serial)
+        self.assertEqual('info@example.net', zone.email)
 
     @mock.patch.object(notifier.Notifier, "info")
-    def test_delete_domain(self, mock_notifier):
-        # Create a domain
-        domain = self.create_domain()
+    def test_delete_zone(self, mock_notifier):
+        # Create a zone
+        zone = self.create_zone()
 
         mock_notifier.reset_mock()
 
-        # Delete the domain
-        self.central_service.delete_domain(self.admin_context, domain['id'])
+        # Delete the zone
+        self.central_service.delete_zone(self.admin_context, zone['id'])
 
-        # Fetch the domain
-        deleted_domain = self.central_service.get_domain(
-            self.admin_context, domain['id'])
+        # Fetch the zone
+        deleted_zone = self.central_service.get_zone(
+            self.admin_context, zone['id'])
 
-        # Ensure the domain is marked for deletion
-        self.assertEqual(domain.id, deleted_domain.id)
-        self.assertEqual(domain.name, deleted_domain.name)
-        self.assertEqual(domain.email, deleted_domain.email)
-        self.assertEqual('PENDING', deleted_domain.status)
-        self.assertEqual(domain.tenant_id, deleted_domain.tenant_id)
-        self.assertEqual(domain.parent_domain_id,
-                         deleted_domain.parent_domain_id)
-        self.assertEqual('DELETE', deleted_domain.action)
-        self.assertEqual(domain.serial, deleted_domain.serial)
-        self.assertEqual(domain.pool_id, deleted_domain.pool_id)
+        # Ensure the zone is marked for deletion
+        self.assertEqual(zone.id, deleted_zone.id)
+        self.assertEqual(zone.name, deleted_zone.name)
+        self.assertEqual(zone.email, deleted_zone.email)
+        self.assertEqual('PENDING', deleted_zone.status)
+        self.assertEqual(zone.tenant_id, deleted_zone.tenant_id)
+        self.assertEqual(zone.parent_zone_id,
+                         deleted_zone.parent_zone_id)
+        self.assertEqual('DELETE', deleted_zone.action)
+        self.assertEqual(zone.serial, deleted_zone.serial)
+        self.assertEqual(zone.pool_id, deleted_zone.pool_id)
 
-        self.assertEqual(1, mock_notifier.call_count)
+        self.assertEqual(2, mock_notifier.call_count)
 
-        # Check that the object used in the notify is a Domain and the id
+        # Check that the object used in the notify is a Zone and the id
         # matches up
-        notified_domain = mock_notifier.call_args[0][-1]
-        self.assertIsInstance(notified_domain, objects.Domain)
-        self.assertEqual(deleted_domain.id, notified_domain.id)
+        notified_zone = mock_notifier.call_args[0][-1]
+        self.assertIsInstance(notified_zone, objects.Zone)
+        self.assertEqual(deleted_zone.id, notified_zone.id)
 
-        mock_notifier.assert_called_once_with(
-            self.admin_context, 'dns.domain.delete', mock.ANY)
+    def test_delete_parent_zone(self):
+        # Create the Parent Zone using fixture 0
+        parent_zone = self.create_zone(fixture=0)
 
-    def test_delete_parent_domain(self):
-        # Create the Parent Domain using fixture 0
-        parent_domain = self.create_domain(fixture=0)
+        # Create the subzone
+        self.create_zone(fixture=1, name='www.%s' % parent_zone['name'])
 
-        # Create the subdomain
-        self.create_domain(fixture=1, name='www.%s' % parent_domain['name'])
+        # Attempt to delete the parent zone
+        with testtools.ExpectedException(exceptions.ZoneHasSubZone):
+            self.central_service.delete_zone(
+                self.admin_context, parent_zone['id'])
 
-        # Attempt to delete the parent domain
-        with testtools.ExpectedException(exceptions.DomainHasSubdomain):
-            self.central_service.delete_domain(
-                self.admin_context, parent_domain['id'])
-
-    def test_count_domains(self):
+    def test_count_zones(self):
         # in the beginning, there should be nothing
-        domains = self.central_service.count_domains(self.admin_context)
-        self.assertEqual(0, domains)
+        zones = self.central_service.count_zones(self.admin_context)
+        self.assertEqual(0, zones)
 
-        # Create a single domain
-        self.create_domain()
+        # Create a single zone
+        self.create_zone()
 
         # count 'em up
-        domains = self.central_service.count_domains(self.admin_context)
+        zones = self.central_service.count_zones(self.admin_context)
 
         # well, did we get 1?
-        self.assertEqual(1, domains)
+        self.assertEqual(1, zones)
 
-    def test_count_domains_policy_check(self):
+    def test_count_zones_policy_check(self):
         # Set the policy to reject the authz
-        self.policy({'count_domains': '!'})
+        self.policy({'count_zones': '!'})
 
         with testtools.ExpectedException(exceptions.Forbidden):
-            self.central_service.count_domains(self.get_context())
+            self.central_service.count_zones(self.get_context())
 
-    def _fetch_all_domains(self):
-        """Fetch all domains including deleted ones
+    def _fetch_all_zones(self):
+        """Fetch all zones including deleted ones
         """
-        query = tables.domains.select()
+        query = tables.zones.select()
         return self.central_service.storage.session.execute(query).fetchall()
 
-    def _log_all_domains(self, zones, msg=None):
+    def _log_all_zones(self, zones, msg=None):
         """Log out a summary of zones
         """
         if msg:
             LOG.debug("--- %s ---" % msg)
         cols = ('name', 'status', 'action', 'deleted', 'deleted_at',
-                'parent_domain_id')
+                'parent_zone_id')
         tpl = "%-35s | %-11s | %-11s | %-32s | %-20s | %s"
         LOG.debug(tpl % cols)
         for z in zones:
             LOG.debug(tpl % tuple(z[k] for k in cols))
 
-    def _assert_count_all_domains(self, n):
-        """Assert count ALL domains including deleted ones
+    def _assert_count_all_zones(self, n):
+        """Assert count ALL zones including deleted ones
         """
-        zones = self._fetch_all_domains()
+        zones = self._fetch_all_zones()
         if len(zones) == n:
             return
 
         msg = "failed: %d zones expected, %d found" % (n, len(zones))
-        self._log_all_domains(zones, msg=msg)
+        self._log_all_zones(zones, msg=msg)
         raise Exception("Unexpected number of zones")
 
-    def _create_deleted_domain(self, name, mock_deletion_time):
-        # Create a domain and set it as deleted
-        domain = self.create_domain(name=name)
-        self._delete_domain(domain, mock_deletion_time)
-        return domain
+    def _create_deleted_zone(self, name, mock_deletion_time):
+        # Create a zone and set it as deleted
+        zone = self.create_zone(name=name)
+        self._delete_zone(zone, mock_deletion_time)
+        return zone
 
-    def _delete_domain(self, domain, mock_deletion_time):
-        # Set a domain as deleted
-        zid = domain.id.replace('-', '')
-        query = tables.domains.update().\
-            where(tables.domains.c.id == zid).\
+    def _delete_zone(self, zone, mock_deletion_time):
+        # Set a zone as deleted
+        zid = zone.id.replace('-', '')
+        query = tables.zones.update().\
+            where(tables.zones.c.id == zid).\
             values(
                 action='NONE',
                 deleted=zid,
@@ -1052,17 +1044,17 @@ class CentralServiceTest(CentralTestCase):
 
         pxy = self.central_service.storage.session.execute(query)
         self.assertEqual(1, pxy.rowcount)
-        return domain
+        return zone
 
     @mock.patch.object(notifier.Notifier, "info")
-    def test_purge_domains_nothing_to_purge(self, mock_notifier):
+    def test_purge_zones_nothing_to_purge(self, mock_notifier):
         # Create a zone
-        self.create_domain()
+        self.create_zone()
         mock_notifier.reset_mock()
-        self._assert_count_all_domains(1)
+        self._assert_count_all_zones(1)
 
         now = datetime.datetime(2015, 7, 31, 0, 0)
-        self.central_service.purge_domains(
+        self.central_service.purge_zones(
             self.admin_context,
             {
                 'status': 'DELETED',
@@ -1071,18 +1063,18 @@ class CentralServiceTest(CentralTestCase):
             },
             limit=100
         )
-        self._assert_count_all_domains(1)
+        self._assert_count_all_zones(1)
 
     @mock.patch.object(notifier.Notifier, "info")
-    def test_purge_domains_one_to_purge(self, mock_notifier):
-        self.create_domain()
+    def test_purge_zones_one_to_purge(self, mock_notifier):
+        self.create_zone()
         new = datetime.datetime(2015, 7, 30, 0, 0)
         now = datetime.datetime(2015, 7, 31, 0, 0)
-        self._create_deleted_domain('example2.org.', new)
+        self._create_deleted_zone('example2.org.', new)
         mock_notifier.reset_mock()
-        self._assert_count_all_domains(2)
+        self._assert_count_all_zones(2)
 
-        self.central_service.purge_domains(
+        self.central_service.purge_zones(
             self.admin_context,
             {
                 'deleted': '!0',
@@ -1090,20 +1082,20 @@ class CentralServiceTest(CentralTestCase):
             },
             limit=100,
         )
-        self._assert_count_all_domains(1)
+        self._assert_count_all_zones(1)
 
     @mock.patch.object(notifier.Notifier, "info")
-    def test_purge_domains_one_to_purge_out_of_three(self, mock_notifier):
-        self.create_domain()
+    def test_purge_zones_one_to_purge_out_of_three(self, mock_notifier):
+        self.create_zone()
         old = datetime.datetime(2015, 7, 20, 0, 0)
         time_threshold = datetime.datetime(2015, 7, 25, 0, 0)
         new = datetime.datetime(2015, 7, 30, 0, 0)
-        self._create_deleted_domain('old.org.', old)
-        self._create_deleted_domain('new.org.', new)
+        self._create_deleted_zone('old.org.', old)
+        self._create_deleted_zone('new.org.', new)
         mock_notifier.reset_mock()
-        self._assert_count_all_domains(3)
+        self._assert_count_all_zones(3)
 
-        purge_cnt = self.central_service.purge_domains(
+        purge_cnt = self.central_service.purge_zones(
             self.admin_context,
             {
                 'deleted': '!0',
@@ -1111,83 +1103,83 @@ class CentralServiceTest(CentralTestCase):
             },
             limit=100,
         )
-        self._assert_count_all_domains(2)
+        self._assert_count_all_zones(2)
         self.assertEqual(1, purge_cnt)
 
     @mock.patch.object(notifier.Notifier, "info")
-    def test_purge_domains_without_time_threshold(self, mock_notifier):
-        self.create_domain()
+    def test_purge_zones_without_time_threshold(self, mock_notifier):
+        self.create_zone()
         old = datetime.datetime(2015, 7, 20, 0, 0)
         new = datetime.datetime(2015, 7, 30, 0, 0)
-        self._create_deleted_domain('old.org.', old)
-        self._create_deleted_domain('new.org.', new)
+        self._create_deleted_zone('old.org.', old)
+        self._create_deleted_zone('new.org.', new)
         mock_notifier.reset_mock()
-        self._assert_count_all_domains(3)
+        self._assert_count_all_zones(3)
 
-        purge_cnt = self.central_service.purge_domains(
+        purge_cnt = self.central_service.purge_zones(
             self.admin_context,
             {
                 'deleted': '!0',
             },
             limit=100,
         )
-        self._assert_count_all_domains(1)
+        self._assert_count_all_zones(1)
         self.assertEqual(2, purge_cnt)
 
     @mock.patch.object(notifier.Notifier, "info")
-    def test_purge_domains_without_deleted_criterion(self, mock_notifier):
-        self.create_domain()
+    def test_purge_zones_without_deleted_criterion(self, mock_notifier):
+        self.create_zone()
         old = datetime.datetime(2015, 7, 20, 0, 0)
         time_threshold = datetime.datetime(2015, 7, 25, 0, 0)
         new = datetime.datetime(2015, 7, 30, 0, 0)
-        self._create_deleted_domain('old.org.', old)
-        self._create_deleted_domain('new.org.', new)
+        self._create_deleted_zone('old.org.', old)
+        self._create_deleted_zone('new.org.', new)
         mock_notifier.reset_mock()
-        self._assert_count_all_domains(3)
+        self._assert_count_all_zones(3)
 
         # Nothing should be purged
-        purge_cnt = self.central_service.purge_domains(
+        purge_cnt = self.central_service.purge_zones(
             self.admin_context,
             {
                 'deleted_at': "<=%s" % time_threshold
             },
             limit=100,
         )
-        self._assert_count_all_domains(3)
+        self._assert_count_all_zones(3)
         self.assertIsNone(purge_cnt)
 
     @mock.patch.object(notifier.Notifier, "info")
-    def test_purge_domains_by_name(self, mock_notifier):
-        self.create_domain()
+    def test_purge_zones_by_name(self, mock_notifier):
+        self.create_zone()
 
-        # The domain is purged (even if it was not deleted)
-        purge_cnt = self.central_service.purge_domains(
+        # The zone is purged (even if it was not deleted)
+        purge_cnt = self.central_service.purge_zones(
             self.admin_context,
             {
                 'name': 'example.com.'
             },
             limit=100,
         )
-        self._assert_count_all_domains(0)
+        self._assert_count_all_zones(0)
         self.assertEqual(1, purge_cnt)
 
     @mock.patch.object(notifier.Notifier, "info")
-    def test_purge_domains_without_any_criterion(self, mock_notifier):
+    def test_purge_zones_without_any_criterion(self, mock_notifier):
         with testtools.ExpectedException(TypeError):
-            self.central_service.purge_domains(
+            self.central_service.purge_zones(
                 self.admin_context,
                 limit=100,
             )
 
     @mock.patch.object(notifier.Notifier, "info")
-    def test_purge_domains_with_sharding(self, mock_notifier):
+    def test_purge_zones_with_sharding(self, mock_notifier):
         old = datetime.datetime(2015, 7, 20, 0, 0)
         time_threshold = datetime.datetime(2015, 7, 25, 0, 0)
-        domain = self._create_deleted_domain('old.org.', old)
+        zone = self._create_deleted_zone('old.org.', old)
         mock_notifier.reset_mock()
 
-        # purge domains in an empty shard
-        self.central_service.purge_domains(
+        # purge zones in an empty shard
+        self.central_service.purge_zones(
             self.admin_context,
             {
                 'deleted': '!0',
@@ -1196,70 +1188,70 @@ class CentralServiceTest(CentralTestCase):
             },
             limit=100,
         )
-        n_zones = self.central_service.count_domains(self.admin_context)
+        n_zones = self.central_service.count_zones(self.admin_context)
         self.assertEqual(1, n_zones)
 
-        # purge domains in a shard that contains the domain created above
-        self.central_service.purge_domains(
+        # purge zones in a shard that contains the zone created above
+        self.central_service.purge_zones(
             self.admin_context,
             {
                 'deleted': '!0',
                 'deleted_at': "<=%s" % time_threshold,
-                'shard': 'BETWEEN 0, %d' % domain.shard,
+                'shard': 'BETWEEN 0, %d' % zone.shard,
             },
             limit=100,
         )
-        n_zones = self.central_service.count_domains(self.admin_context)
+        n_zones = self.central_service.count_zones(self.admin_context)
         self.assertEqual(0, n_zones)
 
-    def test_purge_domains_walk_up_domains(self):
-        Zone = namedtuple('Zone', 'id parent_domain_id')
+    def test_purge_zones_walk_up_zones(self):
+        Zone = namedtuple('Zone', 'id parent_zone_id')
         zones = [Zone(x + 1, x) for x in range(1234, 1237)]
 
         zones_by_id = {z.id: z for z in zones}
-        sid = self.central_service.storage._walk_up_domains(
+        sid = self.central_service.storage._walk_up_zones(
             zones[0], zones_by_id)
         self.assertEqual(1234, sid)
 
-        sid = self.central_service.storage._walk_up_domains(
+        sid = self.central_service.storage._walk_up_zones(
             zones[-1], zones_by_id)
         self.assertEqual(1234, sid)
 
-    def test_purge_domains_walk_up_domains_loop(self):
-        Zone = namedtuple('Zone', 'id parent_domain_id')
+    def test_purge_zones_walk_up_zones_loop(self):
+        Zone = namedtuple('Zone', 'id parent_zone_id')
         zones = [Zone(2, 1), Zone(3, 2), Zone(1, 3)]
         zones_by_id = {z.id: z for z in zones}
-        with testtools.ExpectedException(exceptions.IllegalParentDomain):
-            self.central_service.storage._walk_up_domains(
+        with testtools.ExpectedException(exceptions.IllegalParentZone):
+            self.central_service.storage._walk_up_zones(
                 zones[0], zones_by_id)
 
     @mock.patch.object(notifier.Notifier, "info")
-    def test_purge_domains_with_orphans(self, mock_notifier):
+    def test_purge_zones_with_orphans(self, mock_notifier):
         old = datetime.datetime(2015, 7, 20, 0, 0)
         time_threshold = datetime.datetime(2015, 7, 25, 0, 0)
 
-        # Create a tree of alive and deleted [sub]domains
-        z1 = self.create_domain(name='alive.org.')
-        z2 = self.create_domain(name='deleted.alive.org.')
-        z3 = self.create_domain(name='del2.deleted.alive.org.')
-        z4 = self.create_domain(name='del3.del2.deleted.alive.org.')
-        z5 = self.create_domain(name='alive2.del3.del2.deleted.alive.org.')
+        # Create a tree of alive and deleted [sub]zones
+        z1 = self.create_zone(name='alive.org.')
+        z2 = self.create_zone(name='deleted.alive.org.')
+        z3 = self.create_zone(name='del2.deleted.alive.org.')
+        z4 = self.create_zone(name='del3.del2.deleted.alive.org.')
+        z5 = self.create_zone(name='alive2.del3.del2.deleted.alive.org.')
 
-        self._delete_domain(z2, old)
-        self._delete_domain(z3, old)
-        self._delete_domain(z4, old)
+        self._delete_zone(z2, old)
+        self._delete_zone(z3, old)
+        self._delete_zone(z4, old)
 
-        self.assertEqual(z1.id, z2['parent_domain_id'])
-        self.assertEqual(z2.id, z3['parent_domain_id'])
-        self.assertEqual(z3.id, z4['parent_domain_id'])
-        self.assertEqual(z4.id, z5['parent_domain_id'])
+        self.assertEqual(z1.id, z2['parent_zone_id'])
+        self.assertEqual(z2.id, z3['parent_zone_id'])
+        self.assertEqual(z3.id, z4['parent_zone_id'])
+        self.assertEqual(z4.id, z5['parent_zone_id'])
 
-        self._assert_count_all_domains(5)
+        self._assert_count_all_zones(5)
         mock_notifier.reset_mock()
 
-        zones = self._fetch_all_domains()
-        self._log_all_domains(zones)
-        self.central_service.purge_domains(
+        zones = self._fetch_all_zones()
+        self._log_all_zones(zones)
+        self.central_service.purge_zones(
             self.admin_context,
             {
                 'deleted': '!0',
@@ -1267,113 +1259,113 @@ class CentralServiceTest(CentralTestCase):
             },
             limit=100,
         )
-        self._assert_count_all_domains(2)
-        zones = self._fetch_all_domains()
-        self._log_all_domains(zones)
+        self._assert_count_all_zones(2)
+        zones = self._fetch_all_zones()
+        self._log_all_zones(zones)
         for z in zones:
             if z.name == 'alive.org.':
-                self.assertIsNone(z.parent_domain_id)
+                self.assertIsNone(z.parent_zone_id)
             elif z.name == 'alive2.del3.del2.deleted.alive.org.':
                 # alive2.del2.deleted.alive.org is to be reparented under
                 # alive.org
-                self.assertEqual(z1.id, z.parent_domain_id)
+                self.assertEqual(z1.id, z.parent_zone_id)
             else:
                 raise Exception("Unexpected zone %r" % z)
 
-    def test_touch_domain(self):
-        # Create a domain
-        expected_domain = self.create_domain()
+    def test_touch_zone(self):
+        # Create a zone
+        expected_zone = self.create_zone()
 
-        # Touch the domain
-        self.central_service.touch_domain(
-            self.admin_context, expected_domain['id'])
+        # Touch the zone
+        self.central_service.touch_zone(
+            self.admin_context, expected_zone['id'])
 
-        # Fetch the domain again
-        domain = self.central_service.get_domain(
-            self.admin_context, expected_domain['id'])
+        # Fetch the zone again
+        zone = self.central_service.get_zone(
+            self.admin_context, expected_zone['id'])
 
         # Ensure the serial was incremented
-        self.assertTrue(domain['serial'] > expected_domain['serial'])
+        self.assertTrue(zone['serial'] > expected_zone['serial'])
 
-    def test_xfr_domain(self):
-        # Create a domain
-        fixture = self.get_domain_fixture('SECONDARY', 0)
+    def test_xfr_zone(self):
+        # Create a zone
+        fixture = self.get_zone_fixture('SECONDARY', 0)
         fixture['email'] = cfg.CONF['service:central'].managed_resource_email
         fixture['attributes'] = [{"key": "master", "value": "10.0.0.10"}]
 
         # Create a zone
-        secondary = self.create_domain(**fixture)
+        secondary = self.create_zone(**fixture)
 
         mdns = mock.Mock()
         with mock.patch.object(mdns_api.MdnsAPI, 'get_instance') as get_mdns:
             get_mdns.return_value = mdns
             mdns.get_serial_number.return_value = ('SUCCESS', 10, 1, )
-            self.central_service.xfr_domain(self.admin_context, secondary.id)
+            self.central_service.xfr_zone(self.admin_context, secondary.id)
 
         self.assertTrue(mdns.perform_zone_xfr.called)
 
-    def test_xfr_domain_same_serial(self):
-        # Create a domain
-        fixture = self.get_domain_fixture('SECONDARY', 0)
+    def test_xfr_zone_same_serial(self):
+        # Create a zone
+        fixture = self.get_zone_fixture('SECONDARY', 0)
         fixture['email'] = cfg.CONF['service:central'].managed_resource_email
         fixture['attributes'] = [{"key": "master", "value": "10.0.0.10"}]
 
         # Create a zone
-        secondary = self.create_domain(**fixture)
+        secondary = self.create_zone(**fixture)
 
         mdns = mock.Mock()
         with mock.patch.object(mdns_api.MdnsAPI, 'get_instance') as get_mdns:
             get_mdns.return_value = mdns
             mdns.get_serial_number.return_value = ('SUCCESS', 1, 1, )
-            self.central_service.xfr_domain(self.admin_context, secondary.id)
+            self.central_service.xfr_zone(self.admin_context, secondary.id)
 
         self.assertFalse(mdns.perform_zone_xfr.called)
 
-    def test_xfr_domain_lower_serial(self):
-        # Create a domain
-        fixture = self.get_domain_fixture('SECONDARY', 0)
+    def test_xfr_zone_lower_serial(self):
+        # Create a zone
+        fixture = self.get_zone_fixture('SECONDARY', 0)
         fixture['email'] = cfg.CONF['service:central'].managed_resource_email
         fixture['attributes'] = [{"key": "master", "value": "10.0.0.10"}]
         fixture['serial'] = 10
 
         # Create a zone
-        secondary = self.create_domain(**fixture)
+        secondary = self.create_zone(**fixture)
         secondary.serial
 
         mdns = mock.Mock()
         with mock.patch.object(mdns_api.MdnsAPI, 'get_instance') as get_mdns:
             get_mdns.return_value = mdns
             mdns.get_serial_number.return_value = ('SUCCESS', 0, 1, )
-            self.central_service.xfr_domain(self.admin_context, secondary.id)
+            self.central_service.xfr_zone(self.admin_context, secondary.id)
 
         self.assertFalse(mdns.perform_zone_xfr.called)
 
-    def test_xfr_domain_invalid_type(self):
-        domain = self.create_domain()
+    def test_xfr_zone_invalid_type(self):
+        zone = self.create_zone()
 
         with testtools.ExpectedException(exceptions.BadRequest):
-            self.central_service.xfr_domain(self.admin_context, domain.id)
+            self.central_service.xfr_zone(self.admin_context, zone.id)
 
     # RecordSet Tests
     def test_create_recordset(self):
-        domain = self.create_domain()
-        original_serial = domain.serial
+        zone = self.create_zone()
+        original_serial = zone.serial
 
         # Create the Object
-        recordset = objects.RecordSet(name='www.%s' % domain.name, type='A')
+        recordset = objects.RecordSet(name='www.%s' % zone.name, type='A')
 
         # Persist the Object
         recordset = self.central_service.create_recordset(
-            self.admin_context, domain.id, recordset=recordset)
+            self.admin_context, zone.id, recordset=recordset)
 
         # Get the zone again to check if serial increased
-        updated_domain = self.central_service.get_domain(self.admin_context,
-                                                         domain.id)
-        new_serial = updated_domain.serial
+        updated_zone = self.central_service.get_zone(self.admin_context,
+                                                     zone.id)
+        new_serial = updated_zone.serial
 
         # Ensure all values have been set correctly
         self.assertIsNotNone(recordset.id)
-        self.assertEqual('www.%s' % domain.name, recordset.name)
+        self.assertEqual('www.%s' % zone.name, recordset.name)
         self.assertEqual('A', recordset.type)
 
         self.assertIsNotNone(recordset.records)
@@ -1382,12 +1374,12 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(original_serial, new_serial)
 
     def test_create_recordset_with_records(self):
-        domain = self.create_domain()
-        original_serial = domain.serial
+        zone = self.create_zone()
+        original_serial = zone.serial
 
         # Create the Object
         recordset = objects.RecordSet(
-            name='www.%s' % domain.name,
+            name='www.%s' % zone.name,
             type='A',
             records=objects.RecordList(objects=[
                 objects.Record(data='192.3.3.15'),
@@ -1397,11 +1389,11 @@ class CentralServiceTest(CentralTestCase):
 
         # Persist the Object
         recordset = self.central_service.create_recordset(
-            self.admin_context, domain.id, recordset=recordset)
+            self.admin_context, zone.id, recordset=recordset)
 
         # Get updated serial number
-        updated_zone = self.central_service.get_domain(self.admin_context,
-                                                       domain.id)
+        updated_zone = self.central_service.get_zone(self.admin_context,
+                                                     zone.id)
         new_serial = updated_zone.serial
 
         # Ensure all values have been set correctly
@@ -1413,20 +1405,20 @@ class CentralServiceTest(CentralTestCase):
 
     def test_create_recordset_over_quota(self):
         # SOA, NS recordsets exist by default.
-        self.config(quota_domain_recordsets=3)
+        self.config(quota_zone_recordsets=3)
 
-        domain = self.create_domain()
+        zone = self.create_zone()
 
-        self.create_recordset(domain)
+        self.create_recordset(zone)
 
         with testtools.ExpectedException(exceptions.OverQuota):
-            self.create_recordset(domain)
+            self.create_recordset(zone)
 
     def test_create_invalid_recordset_location_cname_at_apex(self):
-        domain = self.create_domain()
+        zone = self.create_zone()
 
         values = dict(
-            name=domain['name'],
+            name=zone['name'],
             type='CNAME'
         )
 
@@ -1434,12 +1426,12 @@ class CentralServiceTest(CentralTestCase):
         with testtools.ExpectedException(exceptions.InvalidRecordSetLocation):
             self.central_service.create_recordset(
                 self.admin_context,
-                domain['id'],
+                zone['id'],
                 recordset=objects.RecordSet.from_dict(values))
 
     def test_create_invalid_recordset_location_cname_sharing(self):
-        domain = self.create_domain()
-        expected = self.create_recordset(domain)
+        zone = self.create_zone()
+        expected = self.create_recordset(zone)
 
         values = dict(
             name=expected['name'],
@@ -1450,33 +1442,33 @@ class CentralServiceTest(CentralTestCase):
         with testtools.ExpectedException(exceptions.InvalidRecordSetLocation):
             self.central_service.create_recordset(
                 self.admin_context,
-                domain['id'],
+                zone['id'],
                 recordset=objects.RecordSet.from_dict(values))
 
-    def test_create_invalid_recordset_location_wrong_domain(self):
-        domain = self.create_domain()
-        other_domain = self.create_domain(fixture=1)
+    def test_create_invalid_recordset_location_wrong_zone(self):
+        zone = self.create_zone()
+        other_zone = self.create_zone(fixture=1)
 
         values = dict(
-            name=other_domain['name'],
+            name=other_zone['name'],
             type='A'
         )
 
-        # Attempt to create a record in the incorrect domain
+        # Attempt to create a record in the incorrect zone
         with testtools.ExpectedException(exceptions.InvalidRecordSetLocation):
             self.central_service.create_recordset(
                 self.admin_context,
-                domain['id'],
+                zone['id'],
                 recordset=objects.RecordSet.from_dict(values))
 
     def test_create_invalid_recordset_ttl(self):
         self.policy({'use_low_ttl': '!'})
         self.config(min_ttl=100,
                     group='service:central')
-        domain = self.create_domain()
+        zone = self.create_zone()
 
         values = dict(
-            name='www.%s' % domain['name'],
+            name='www.%s' % zone['name'],
             type='A',
             ttl=10
         )
@@ -1485,73 +1477,73 @@ class CentralServiceTest(CentralTestCase):
         with testtools.ExpectedException(exceptions.InvalidTTL):
             self.central_service.create_recordset(
                 self.admin_context,
-                domain['id'],
+                zone['id'],
                 recordset=objects.RecordSet.from_dict(values))
 
     def test_create_recordset_no_min_ttl(self):
         self.policy({'use_low_ttl': '!'})
         self.config(min_ttl=None,
                     group='service:central')
-        domain = self.create_domain()
+        zone = self.create_zone()
 
         values = dict(
-            name='www.%s' % domain['name'],
+            name='www.%s' % zone['name'],
             type='A',
             ttl=10
         )
 
         recordset = self.central_service.create_recordset(
             self.admin_context,
-            domain['id'],
+            zone['id'],
             recordset=objects.RecordSet.from_dict(values))
         self.assertEqual(values['ttl'], recordset['ttl'])
 
     def test_get_recordset(self):
-        domain = self.create_domain()
+        zone = self.create_zone()
 
         # Create a recordset
-        expected = self.create_recordset(domain)
+        expected = self.create_recordset(zone)
 
         # Retrieve it, and ensure it's the same
         recordset = self.central_service.get_recordset(
-            self.admin_context, domain['id'], expected['id'])
+            self.admin_context, zone['id'], expected['id'])
 
         self.assertEqual(expected['id'], recordset['id'])
         self.assertEqual(expected['name'], recordset['name'])
         self.assertEqual(expected['type'], recordset['type'])
 
     def test_get_recordset_with_records(self):
-        domain = self.create_domain()
+        zone = self.create_zone()
 
         # Create a recordset and two records
-        recordset = self.create_recordset(domain)
-        self.create_record(domain, recordset)
-        self.create_record(domain, recordset, fixture=1)
+        recordset = self.create_recordset(zone)
+        self.create_record(zone, recordset)
+        self.create_record(zone, recordset, fixture=1)
 
         # Retrieve it, and ensure it's the same
         recordset = self.central_service.get_recordset(
-            self.admin_context, domain.id, recordset.id)
+            self.admin_context, zone.id, recordset.id)
 
         self.assertEqual(2, len(recordset.records))
         self.assertIsNotNone(recordset.records[0].id)
         self.assertIsNotNone(recordset.records[1].id)
 
-    def test_get_recordset_incorrect_domain_id(self):
-        domain = self.create_domain()
-        other_domain = self.create_domain(fixture=1)
+    def test_get_recordset_incorrect_zone_id(self):
+        zone = self.create_zone()
+        other_zone = self.create_zone(fixture=1)
 
         # Create a recordset
-        expected = self.create_recordset(domain)
+        expected = self.create_recordset(zone)
 
-        # Ensure we get a 404 if we use the incorrect domain_id
+        # Ensure we get a 404 if we use the incorrect zone_id
         with testtools.ExpectedException(exceptions.RecordSetNotFound):
             self.central_service.get_recordset(
-                self.admin_context, other_domain['id'], expected['id'])
+                self.admin_context, other_zone['id'], expected['id'])
 
     def test_find_recordsets(self):
-        domain = self.create_domain()
+        zone = self.create_zone()
 
-        criterion = {'domain_id': domain['id']}
+        criterion = {'zone_id': zone['id']}
 
         # Ensure we have two recordsets to start with as SOA & NS
         # recordsets are created automatically
@@ -1561,34 +1553,34 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(2, len(recordsets))
 
         # Create a single recordset (using default values)
-        self.create_recordset(domain, name='www.%s' % domain['name'])
+        self.create_recordset(zone, name='www.%s' % zone['name'])
 
         # Ensure we can retrieve the newly created recordset
         recordsets = self.central_service.find_recordsets(
             self.admin_context, criterion)
 
         self.assertEqual(3, len(recordsets))
-        self.assertEqual('www.%s' % domain['name'], recordsets[2]['name'])
+        self.assertEqual('www.%s' % zone['name'], recordsets[2]['name'])
 
         # Create a second recordset
-        self.create_recordset(domain, name='mail.%s' % domain['name'])
+        self.create_recordset(zone, name='mail.%s' % zone['name'])
 
         # Ensure we can retrieve both recordsets
         recordsets = self.central_service.find_recordsets(
             self.admin_context, criterion)
 
         self.assertEqual(4, len(recordsets))
-        self.assertEqual('www.%s' % domain['name'], recordsets[2]['name'])
-        self.assertEqual('mail.%s' % domain['name'], recordsets[3]['name'])
+        self.assertEqual('www.%s' % zone['name'], recordsets[2]['name'])
+        self.assertEqual('mail.%s' % zone['name'], recordsets[3]['name'])
 
     def test_find_recordset(self):
-        domain = self.create_domain()
+        zone = self.create_zone()
 
         # Create a recordset
-        expected = self.create_recordset(domain)
+        expected = self.create_recordset(zone)
 
         # Retrieve it, and ensure it's the same
-        criterion = {'domain_id': domain['id'], 'name': expected['name']}
+        criterion = {'zone_id': zone['id'], 'name': expected['name']}
 
         recordset = self.central_service.find_recordset(
             self.admin_context, criterion)
@@ -1597,15 +1589,15 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(expected['name'], recordset['name'])
 
     def test_find_recordset_with_records(self):
-        domain = self.create_domain()
+        zone = self.create_zone()
 
         # Create a recordset
-        recordset = self.create_recordset(domain)
-        self.create_record(domain, recordset)
-        self.create_record(domain, recordset, fixture=1)
+        recordset = self.create_recordset(zone)
+        self.create_record(zone, recordset)
+        self.create_record(zone, recordset, fixture=1)
 
         # Retrieve it, and ensure it's the same
-        criterion = {'domain_id': domain.id, 'name': recordset.name}
+        criterion = {'zone_id': zone.id, 'name': recordset.name}
 
         recordset = self.central_service.find_recordset(
             self.admin_context, criterion)
@@ -1615,12 +1607,12 @@ class CentralServiceTest(CentralTestCase):
         self.assertIsNotNone(recordset.records[1].id)
 
     def test_update_recordset(self):
-        # Create a domain
-        domain = self.create_domain()
-        original_serial = domain.serial
+        # Create a zone
+        zone = self.create_zone()
+        original_serial = zone.serial
 
         # Create a recordset
-        recordset = self.create_recordset(domain)
+        recordset = self.create_recordset(zone)
 
         # Update the recordset
         recordset.ttl = 1800
@@ -1628,25 +1620,25 @@ class CentralServiceTest(CentralTestCase):
         # Perform the update
         self.central_service.update_recordset(self.admin_context, recordset)
 
-        # Get domain again to verify that serial number was updated
-        updated_domain = self.central_service.get_domain(self.admin_context,
-                                                         domain.id)
-        new_serial = updated_domain.serial
+        # Get zone again to verify that serial number was updated
+        updated_zone = self.central_service.get_zone(self.admin_context,
+                                                     zone.id)
+        new_serial = updated_zone.serial
 
         # Fetch the resource again
         recordset = self.central_service.get_recordset(
-            self.admin_context, recordset.domain_id, recordset.id)
+            self.admin_context, recordset.zone_id, recordset.id)
 
         # Ensure the new value took
         self.assertEqual(1800, recordset.ttl)
         self.assertThat(new_serial, GreaterThan(original_serial))
 
     def test_update_recordset_deadlock_retry(self):
-        # Create a domain
-        domain = self.create_domain()
+        # Create a zone
+        zone = self.create_zone()
 
         # Create a recordset
-        recordset = self.create_recordset(domain)
+        recordset = self.create_recordset(zone)
 
         # Update the recordset
         recordset.ttl = 1800
@@ -1676,11 +1668,11 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(1800, recordset.ttl)
 
     def test_update_recordset_with_record_create(self):
-        # Create a domain
-        domain = self.create_domain()
+        # Create a zone
+        zone = self.create_zone()
 
         # Create a recordset
-        recordset = self.create_recordset(domain)
+        recordset = self.create_recordset(zone)
 
         # Append two new Records
         recordset.records.append(objects.Record(data='192.0.2.1'))
@@ -1691,7 +1683,7 @@ class CentralServiceTest(CentralTestCase):
 
         # Fetch the RecordSet again
         recordset = self.central_service.get_recordset(
-            self.admin_context, domain.id, recordset.id)
+            self.admin_context, zone.id, recordset.id)
 
         # Ensure two Records are attached to the RecordSet correctly
         self.assertEqual(2, len(recordset.records))
@@ -1699,14 +1691,14 @@ class CentralServiceTest(CentralTestCase):
         self.assertIsNotNone(recordset.records[1].id)
 
     def test_update_recordset_with_record_delete(self):
-        # Create a domain
-        domain = self.create_domain()
-        original_serial = domain.serial
+        # Create a zone
+        zone = self.create_zone()
+        original_serial = zone.serial
 
         # Create a recordset and two records
-        recordset = self.create_recordset(domain)
-        self.create_record(domain, recordset)
-        self.create_record(domain, recordset, fixture=1)
+        recordset = self.create_recordset(zone)
+        self.create_record(zone, recordset)
+        self.create_record(zone, recordset, fixture=1)
 
         # Append two new Records
         recordset.records.append(objects.Record(data='192.0.2.1'))
@@ -1720,12 +1712,12 @@ class CentralServiceTest(CentralTestCase):
 
         # Fetch the RecordSet again
         recordset = self.central_service.get_recordset(
-            self.admin_context, domain.id, recordset.id)
+            self.admin_context, zone.id, recordset.id)
 
-        # Fetch the Domain again
-        updated_domain = self.central_service.get_domain(self.admin_context,
-                                                         domain.id)
-        new_serial = updated_domain.serial
+        # Fetch the Zone again
+        updated_zone = self.central_service.get_zone(self.admin_context,
+                                                     zone.id)
+        new_serial = updated_zone.serial
 
         # Ensure two Records are attached to the RecordSet correctly
         self.assertEqual(1, len(recordset.records))
@@ -1733,17 +1725,17 @@ class CentralServiceTest(CentralTestCase):
         self.assertThat(new_serial, GreaterThan(original_serial))
 
     def test_update_recordset_with_record_update(self):
-        # Create a domain
-        domain = self.create_domain()
+        # Create a zone
+        zone = self.create_zone()
 
         # Create a recordset and two records
-        recordset = self.create_recordset(domain, 'A')
-        self.create_record(domain, recordset)
-        self.create_record(domain, recordset, fixture=1)
+        recordset = self.create_recordset(zone, 'A')
+        self.create_record(zone, recordset)
+        self.create_record(zone, recordset, fixture=1)
 
         # Fetch the RecordSet again
         recordset = self.central_service.get_recordset(
-            self.admin_context, domain.id, recordset.id)
+            self.admin_context, zone.id, recordset.id)
 
         # Update one of the Records
         updated_record_id = recordset.records[0].id
@@ -1754,7 +1746,7 @@ class CentralServiceTest(CentralTestCase):
 
         # Fetch the RecordSet again
         recordset = self.central_service.get_recordset(
-            self.admin_context, domain.id, recordset.id)
+            self.admin_context, zone.id, recordset.id)
 
         # Ensure the Record has been updated
         for record in recordset.records:
@@ -1767,14 +1759,14 @@ class CentralServiceTest(CentralTestCase):
         raise Exception('Updated record not found')
 
     def test_update_recordset_without_incrementing_serial(self):
-        domain = self.create_domain()
+        zone = self.create_zone()
 
         # Create a recordset
-        recordset = self.create_recordset(domain)
+        recordset = self.create_recordset(zone)
 
-        # Fetch the domain so we have the latest serial number
-        domain_before = self.central_service.get_domain(
-            self.admin_context, domain.id)
+        # Fetch the zone so we have the latest serial number
+        zone_before = self.central_service.get_zone(
+            self.admin_context, zone.id)
 
         # Update the recordset
         recordset.ttl = 1800
@@ -1785,134 +1777,134 @@ class CentralServiceTest(CentralTestCase):
 
         # Fetch the resource again
         recordset = self.central_service.get_recordset(
-            self.admin_context, recordset.domain_id, recordset.id)
+            self.admin_context, recordset.zone_id, recordset.id)
 
         # Ensure the recordset was updated correctly
         self.assertEqual(1800, recordset.ttl)
 
-        # Ensure the domains serial number was not updated
-        domain_after = self.central_service.get_domain(
-            self.admin_context, domain.id)
+        # Ensure the zones serial number was not updated
+        zone_after = self.central_service.get_zone(
+            self.admin_context, zone.id)
 
-        self.assertEqual(domain_before.serial, domain_after.serial)
+        self.assertEqual(zone_before.serial, zone_after.serial)
 
-    def test_update_recordset_immutable_domain_id(self):
-        domain = self.create_domain()
-        other_domain = self.create_domain(fixture=1)
+    def test_update_recordset_immutable_zone_id(self):
+        zone = self.create_zone()
+        other_zone = self.create_zone(fixture=1)
 
         # Create a recordset
-        recordset = self.create_recordset(domain)
+        recordset = self.create_recordset(zone)
 
         # Update the recordset
         recordset.ttl = 1800
-        recordset.domain_id = other_domain.id
+        recordset.zone_id = other_zone.id
 
-        # Ensure we get a BadRequest if we change the domain_id
+        # Ensure we get a BadRequest if we change the zone_id
         with testtools.ExpectedException(exceptions.BadRequest):
             self.central_service.update_recordset(
                 self.admin_context, recordset)
 
     def test_update_recordset_immutable_tenant_id(self):
-        domain = self.create_domain()
+        zone = self.create_zone()
 
         # Create a recordset
-        recordset = self.create_recordset(domain)
+        recordset = self.create_recordset(zone)
 
         # Update the recordset
         recordset.ttl = 1800
         recordset.tenant_id = 'other-tenant'
 
-        # Ensure we get a BadRequest if we change the domain_id
+        # Ensure we get a BadRequest if we change the zone_id
         with testtools.ExpectedException(exceptions.BadRequest):
             self.central_service.update_recordset(
                 self.admin_context, recordset)
 
     def test_update_recordset_immutable_type(self):
-        domain = self.create_domain()
+        zone = self.create_zone()
 
         # Create a recordset
-        recordset = self.create_recordset(domain)
-        cname_recordset = self.create_recordset(domain, type='CNAME')
+        recordset = self.create_recordset(zone)
+        cname_recordset = self.create_recordset(zone, type='CNAME')
 
         # Update the recordset
         recordset.ttl = 1800
         recordset.type = cname_recordset.type
 
-        # Ensure we get a BadRequest if we change the domain_id
+        # Ensure we get a BadRequest if we change the zone_id
         with testtools.ExpectedException(exceptions.BadRequest):
             self.central_service.update_recordset(
                 self.admin_context, recordset)
 
     def test_delete_recordset(self):
-        domain = self.create_domain()
-        original_serial = domain.serial
+        zone = self.create_zone()
+        original_serial = zone.serial
 
         # Create a recordset
-        recordset = self.create_recordset(domain)
+        recordset = self.create_recordset(zone)
 
         # Delete the recordset
         self.central_service.delete_recordset(
-            self.admin_context, domain['id'], recordset['id'])
+            self.admin_context, zone['id'], recordset['id'])
 
         # Fetch the recordset again, ensuring an exception is raised
         with testtools.ExpectedException(exceptions.RecordSetNotFound):
             self.central_service.get_recordset(
-                self.admin_context, domain['id'], recordset['id'])
+                self.admin_context, zone['id'], recordset['id'])
 
-        # Fetch the domain again to verify serial number increased
-        updated_domain = self.central_service.get_domain(self.admin_context,
-                                                         domain.id)
-        new_serial = updated_domain.serial
+        # Fetch the zone again to verify serial number increased
+        updated_zone = self.central_service.get_zone(self.admin_context,
+                                                     zone.id)
+        new_serial = updated_zone.serial
         self.assertThat(new_serial, GreaterThan(original_serial))
 
     def test_delete_recordset_without_incrementing_serial(self):
-        domain = self.create_domain()
+        zone = self.create_zone()
 
         # Create a recordset
-        recordset = self.create_recordset(domain)
+        recordset = self.create_recordset(zone)
 
-        # Fetch the domain so we have the latest serial number
-        domain_before = self.central_service.get_domain(
-            self.admin_context, domain['id'])
+        # Fetch the zone so we have the latest serial number
+        zone_before = self.central_service.get_zone(
+            self.admin_context, zone['id'])
 
         # Delete the recordset
         self.central_service.delete_recordset(
-            self.admin_context, domain['id'], recordset['id'],
+            self.admin_context, zone['id'], recordset['id'],
             increment_serial=False)
 
         # Fetch the record again, ensuring an exception is raised
         with testtools.ExpectedException(exceptions.RecordSetNotFound):
             self.central_service.get_recordset(
-                self.admin_context, domain['id'], recordset['id'])
+                self.admin_context, zone['id'], recordset['id'])
 
-        # Ensure the domains serial number was not updated
-        domain_after = self.central_service.get_domain(
-            self.admin_context, domain['id'])
+        # Ensure the zones serial number was not updated
+        zone_after = self.central_service.get_zone(
+            self.admin_context, zone['id'])
 
-        self.assertEqual(domain_before['serial'], domain_after['serial'])
+        self.assertEqual(zone_before['serial'], zone_after['serial'])
 
-    def test_delete_recordset_incorrect_domain_id(self):
-        domain = self.create_domain()
-        other_domain = self.create_domain(fixture=1)
+    def test_delete_recordset_incorrect_zone_id(self):
+        zone = self.create_zone()
+        other_zone = self.create_zone(fixture=1)
 
         # Create a recordset
-        recordset = self.create_recordset(domain)
+        recordset = self.create_recordset(zone)
 
-        # Ensure we get a 404 if we use the incorrect domain_id
+        # Ensure we get a 404 if we use the incorrect zone_id
         with testtools.ExpectedException(exceptions.RecordSetNotFound):
             self.central_service.delete_recordset(
-                self.admin_context, other_domain['id'], recordset['id'])
+                self.admin_context, other_zone['id'], recordset['id'])
 
     def test_count_recordsets(self):
         # in the beginning, there should be nothing
         recordsets = self.central_service.count_recordsets(self.admin_context)
         self.assertEqual(0, recordsets)
 
-        # Create a domain to put our recordset in
-        domain = self.create_domain()
+        # Create a zone to put our recordset in
+        zone = self.create_zone()
 
         # Create a recordset
-        self.create_recordset(domain)
+        self.create_recordset(zone)
 
         # We should have 1 recordset now, plus SOA & NS recordsets
         recordsets = self.central_service.count_recordsets(self.admin_context)
@@ -1927,8 +1919,8 @@ class CentralServiceTest(CentralTestCase):
 
     # Record Tests
     def test_create_record(self):
-        domain = self.create_domain()
-        recordset = self.create_recordset(domain, type='A')
+        zone = self.create_zone()
+        recordset = self.create_recordset(zone, type='A')
 
         values = dict(
             data='127.0.0.1'
@@ -1936,7 +1928,7 @@ class CentralServiceTest(CentralTestCase):
 
         # Create a record
         record = self.central_service.create_record(
-            self.admin_context, domain['id'], recordset['id'],
+            self.admin_context, zone['id'], recordset['id'],
             objects.Record.from_dict(values))
 
         # Ensure all values have been set correctly
@@ -1944,34 +1936,34 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(values['data'], record['data'])
         self.assertIn('status', record)
 
-    def test_create_record_over_domain_quota(self):
+    def test_create_record_over_zone_quota(self):
         # SOA and NS Records exist
-        self.config(quota_domain_records=3)
+        self.config(quota_zone_records=3)
 
-        # Creating the domain automatically creates SOA & NS records
-        domain = self.create_domain()
-        recordset = self.create_recordset(domain)
+        # Creating the zone automatically creates SOA & NS records
+        zone = self.create_zone()
+        recordset = self.create_recordset(zone)
 
-        self.create_record(domain, recordset)
+        self.create_record(zone, recordset)
 
         with testtools.ExpectedException(exceptions.OverQuota):
-            self.create_record(domain, recordset)
+            self.create_record(zone, recordset)
 
     def test_create_record_over_recordset_quota(self):
         self.config(quota_recordset_records=1)
 
-        # Creating the domain automatically creates SOA & NS records
-        domain = self.create_domain()
-        recordset = self.create_recordset(domain)
+        # Creating the zone automatically creates SOA & NS records
+        zone = self.create_zone()
+        recordset = self.create_recordset(zone)
 
-        self.create_record(domain, recordset)
+        self.create_record(zone, recordset)
 
         with testtools.ExpectedException(exceptions.OverQuota):
-            self.create_record(domain, recordset)
+            self.create_record(zone, recordset)
 
     def test_create_record_without_incrementing_serial(self):
-        domain = self.create_domain()
-        recordset = self.create_recordset(domain, type='A')
+        zone = self.create_zone()
+        recordset = self.create_recordset(zone, type='A')
 
         values = dict(
             data='127.0.0.1'
@@ -1979,65 +1971,65 @@ class CentralServiceTest(CentralTestCase):
 
         # Create a record
         self.central_service.create_record(
-            self.admin_context, domain['id'], recordset['id'],
+            self.admin_context, zone['id'], recordset['id'],
             objects.Record.from_dict(values),
             increment_serial=False)
 
-        # Ensure the domains serial number was not updated
-        updated_domain = self.central_service.get_domain(
-            self.admin_context, domain['id'])
+        # Ensure the zones serial number was not updated
+        updated_zone = self.central_service.get_zone(
+            self.admin_context, zone['id'])
 
-        self.assertEqual(domain['serial'], updated_domain['serial'])
+        self.assertEqual(zone['serial'], updated_zone['serial'])
 
     def test_get_record(self):
-        domain = self.create_domain()
-        recordset = self.create_recordset(domain)
+        zone = self.create_zone()
+        recordset = self.create_recordset(zone)
 
         # Create a record
-        expected = self.create_record(domain, recordset)
+        expected = self.create_record(zone, recordset)
 
         # Retrieve it, and ensure it's the same
         record = self.central_service.get_record(
-            self.admin_context, domain['id'], recordset['id'], expected['id'])
+            self.admin_context, zone['id'], recordset['id'], expected['id'])
 
         self.assertEqual(expected['id'], record['id'])
         self.assertEqual(expected['data'], record['data'])
         self.assertIn('status', record)
 
-    def test_get_record_incorrect_domain_id(self):
-        domain = self.create_domain()
-        recordset = self.create_recordset(domain)
-        other_domain = self.create_domain(fixture=1)
+    def test_get_record_incorrect_zone_id(self):
+        zone = self.create_zone()
+        recordset = self.create_recordset(zone)
+        other_zone = self.create_zone(fixture=1)
 
         # Create a record
-        expected = self.create_record(domain, recordset)
+        expected = self.create_record(zone, recordset)
 
-        # Ensure we get a 404 if we use the incorrect domain_id
+        # Ensure we get a 404 if we use the incorrect zone_id
         with testtools.ExpectedException(exceptions.RecordNotFound):
             self.central_service.get_record(
-                self.admin_context, other_domain['id'], recordset['id'],
+                self.admin_context, other_zone['id'], recordset['id'],
                 expected['id'])
 
     def test_get_record_incorrect_recordset_id(self):
-        domain = self.create_domain()
-        recordset = self.create_recordset(domain)
-        other_recordset = self.create_recordset(domain, fixture=1)
+        zone = self.create_zone()
+        recordset = self.create_recordset(zone)
+        other_recordset = self.create_recordset(zone, fixture=1)
 
         # Create a record
-        expected = self.create_record(domain, recordset)
+        expected = self.create_record(zone, recordset)
 
         # Ensure we get a 404 if we use the incorrect recordset_id
         with testtools.ExpectedException(exceptions.RecordNotFound):
             self.central_service.get_record(
-                self.admin_context, domain['id'], other_recordset['id'],
+                self.admin_context, zone['id'], other_recordset['id'],
                 expected['id'])
 
     def test_find_records(self):
-        domain = self.create_domain()
-        recordset = self.create_recordset(domain)
+        zone = self.create_zone()
+        recordset = self.create_recordset(zone)
 
         criterion = {
-            'domain_id': domain['id'],
+            'zone_id': zone['id'],
             'recordset_id': recordset['id']
         }
 
@@ -2048,7 +2040,7 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(0, len(records))
 
         # Create a single record (using default values)
-        expected_one = self.create_record(domain, recordset)
+        expected_one = self.create_record(zone, recordset)
 
         # Ensure we can retrieve the newly created record
         records = self.central_service.find_records(
@@ -2058,7 +2050,7 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(expected_one['data'], records[0]['data'])
 
         # Create a second record
-        expected_two = self.create_record(domain, recordset, fixture=1)
+        expected_two = self.create_record(zone, recordset, fixture=1)
 
         # Ensure we can retrieve both records
         records = self.central_service.find_records(
@@ -2069,15 +2061,15 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(expected_two['data'], records[1]['data'])
 
     def test_find_record(self):
-        domain = self.create_domain()
-        recordset = self.create_recordset(domain)
+        zone = self.create_zone()
+        recordset = self.create_recordset(zone)
 
         # Create a record
-        expected = self.create_record(domain, recordset)
+        expected = self.create_record(zone, recordset)
 
         # Retrieve it, and ensure it's the same
         criterion = {
-            'domain_id': domain['id'],
+            'zone_id': zone['id'],
             'recordset_id': recordset['id'],
             'data': expected['data']
         }
@@ -2090,11 +2082,11 @@ class CentralServiceTest(CentralTestCase):
         self.assertIn('status', record)
 
     def test_update_record(self):
-        domain = self.create_domain()
-        recordset = self.create_recordset(domain, 'A')
+        zone = self.create_zone()
+        recordset = self.create_recordset(zone, 'A')
 
         # Create a record
-        record = self.create_record(domain, recordset)
+        record = self.create_record(zone, recordset)
 
         # Update the Object
         record.data = '192.0.2.255'
@@ -2104,22 +2096,22 @@ class CentralServiceTest(CentralTestCase):
 
         # Fetch the resource again
         record = self.central_service.get_record(
-            self.admin_context, record.domain_id, record.recordset_id,
+            self.admin_context, record.zone_id, record.recordset_id,
             record.id)
 
         # Ensure the new value took
         self.assertEqual('192.0.2.255', record.data)
 
     def test_update_record_without_incrementing_serial(self):
-        domain = self.create_domain()
-        recordset = self.create_recordset(domain, 'A')
+        zone = self.create_zone()
+        recordset = self.create_recordset(zone, 'A')
 
         # Create a record
-        record = self.create_record(domain, recordset)
+        record = self.create_record(zone, recordset)
 
-        # Fetch the domain so we have the latest serial number
-        domain_before = self.central_service.get_domain(
-            self.admin_context, domain.id)
+        # Fetch the zone so we have the latest serial number
+        zone_before = self.central_service.get_zone(
+            self.admin_context, zone.id)
 
         # Update the Object
         record.data = '192.0.2.255'
@@ -2130,40 +2122,40 @@ class CentralServiceTest(CentralTestCase):
 
         # Fetch the resource again
         record = self.central_service.get_record(
-            self.admin_context, record.domain_id, record.recordset_id,
+            self.admin_context, record.zone_id, record.recordset_id,
             record.id)
 
         # Ensure the new value took
         self.assertEqual('192.0.2.255', record.data)
 
-        # Ensure the domains serial number was not updated
-        domain_after = self.central_service.get_domain(
-            self.admin_context, domain.id)
+        # Ensure the zones serial number was not updated
+        zone_after = self.central_service.get_zone(
+            self.admin_context, zone.id)
 
-        self.assertEqual(domain_before.serial, domain_after.serial)
+        self.assertEqual(zone_before.serial, zone_after.serial)
 
-    def test_update_record_immutable_domain_id(self):
-        domain = self.create_domain()
-        recordset = self.create_recordset(domain)
-        other_domain = self.create_domain(fixture=1)
+    def test_update_record_immutable_zone_id(self):
+        zone = self.create_zone()
+        recordset = self.create_recordset(zone)
+        other_zone = self.create_zone(fixture=1)
 
         # Create a record
-        record = self.create_record(domain, recordset)
+        record = self.create_record(zone, recordset)
 
         # Update the record
-        record.domain_id = other_domain.id
+        record.zone_id = other_zone.id
 
-        # Ensure we get a BadRequest if we change the domain_id
+        # Ensure we get a BadRequest if we change the zone_id
         with testtools.ExpectedException(exceptions.BadRequest):
             self.central_service.update_record(self.admin_context, record)
 
     def test_update_record_immutable_recordset_id(self):
-        domain = self.create_domain()
-        recordset = self.create_recordset(domain)
-        other_recordset = self.create_recordset(domain, fixture=1)
+        zone = self.create_zone()
+        recordset = self.create_recordset(zone)
+        other_recordset = self.create_recordset(zone, fixture=1)
 
         # Create a record
-        record = self.create_record(domain, recordset)
+        record = self.create_record(zone, recordset)
 
         # Update the record
         record.recordset_id = other_recordset.id
@@ -2173,102 +2165,102 @@ class CentralServiceTest(CentralTestCase):
             self.central_service.update_record(self.admin_context, record)
 
     def test_delete_record(self):
-        domain = self.create_domain()
-        recordset = self.create_recordset(domain)
+        zone = self.create_zone()
+        recordset = self.create_recordset(zone)
 
         # Create a record
-        record = self.create_record(domain, recordset)
+        record = self.create_record(zone, recordset)
 
-        # Fetch the domain serial number
-        domain_serial = self.central_service.get_domain(
-            self.admin_context, domain['id']).serial
+        # Fetch the zone serial number
+        zone_serial = self.central_service.get_zone(
+            self.admin_context, zone['id']).serial
 
         # Delete the record
         self.central_service.delete_record(
-            self.admin_context, domain['id'], recordset['id'], record['id'])
+            self.admin_context, zone['id'], recordset['id'], record['id'])
 
-        # Ensure the domain serial number was updated
-        new_domain_serial = self.central_service.get_domain(
-            self.admin_context, domain['id']).serial
-        self.assertNotEqual(new_domain_serial, domain_serial)
+        # Ensure the zone serial number was updated
+        new_zone_serial = self.central_service.get_zone(
+            self.admin_context, zone['id']).serial
+        self.assertNotEqual(new_zone_serial, zone_serial)
 
         # Fetch the record
         deleted_record = self.central_service.get_record(
-            self.admin_context, domain['id'], recordset['id'],
+            self.admin_context, zone['id'], recordset['id'],
             record['id'])
 
         # Ensure the record is marked for deletion
         self.assertEqual(record.id, deleted_record.id)
         self.assertEqual(record.data, deleted_record.data)
-        self.assertEqual(record.domain_id, deleted_record.domain_id)
+        self.assertEqual(record.zone_id, deleted_record.zone_id)
         self.assertEqual('PENDING', deleted_record.status)
         self.assertEqual(record.tenant_id, deleted_record.tenant_id)
         self.assertEqual(record.recordset_id, deleted_record.recordset_id)
         self.assertEqual('DELETE', deleted_record.action)
-        self.assertEqual(new_domain_serial, deleted_record.serial)
+        self.assertEqual(new_zone_serial, deleted_record.serial)
 
     def test_delete_record_without_incrementing_serial(self):
-        domain = self.create_domain()
-        recordset = self.create_recordset(domain)
+        zone = self.create_zone()
+        recordset = self.create_recordset(zone)
 
         # Create a record
-        record = self.create_record(domain, recordset)
+        record = self.create_record(zone, recordset)
 
-        # Fetch the domain serial number
-        domain_serial = self.central_service.get_domain(
-            self.admin_context, domain['id']).serial
+        # Fetch the zone serial number
+        zone_serial = self.central_service.get_zone(
+            self.admin_context, zone['id']).serial
 
         # Delete the record
         self.central_service.delete_record(
-            self.admin_context, domain['id'], recordset['id'], record['id'],
+            self.admin_context, zone['id'], recordset['id'], record['id'],
             increment_serial=False)
 
-        # Ensure the domains serial number was not updated
-        new_domain_serial = self.central_service.get_domain(
-            self.admin_context, domain['id'])['serial']
-        self.assertEqual(domain_serial, new_domain_serial)
+        # Ensure the zones serial number was not updated
+        new_zone_serial = self.central_service.get_zone(
+            self.admin_context, zone['id'])['serial']
+        self.assertEqual(zone_serial, new_zone_serial)
 
         # Fetch the record
         deleted_record = self.central_service.get_record(
-            self.admin_context, domain['id'], recordset['id'],
+            self.admin_context, zone['id'], recordset['id'],
             record['id'])
 
         # Ensure the record is marked for deletion
         self.assertEqual(record.id, deleted_record.id)
         self.assertEqual(record.data, deleted_record.data)
-        self.assertEqual(record.domain_id, deleted_record.domain_id)
+        self.assertEqual(record.zone_id, deleted_record.zone_id)
         self.assertEqual('PENDING', deleted_record.status)
         self.assertEqual(record.tenant_id, deleted_record.tenant_id)
         self.assertEqual(record.recordset_id, deleted_record.recordset_id)
         self.assertEqual('DELETE', deleted_record.action)
-        self.assertEqual(new_domain_serial, deleted_record.serial)
+        self.assertEqual(new_zone_serial, deleted_record.serial)
 
-    def test_delete_record_incorrect_domain_id(self):
-        domain = self.create_domain()
-        recordset = self.create_recordset(domain)
-        other_domain = self.create_domain(fixture=1)
+    def test_delete_record_incorrect_zone_id(self):
+        zone = self.create_zone()
+        recordset = self.create_recordset(zone)
+        other_zone = self.create_zone(fixture=1)
 
         # Create a record
-        record = self.create_record(domain, recordset)
+        record = self.create_record(zone, recordset)
 
-        # Ensure we get a 404 if we use the incorrect domain_id
+        # Ensure we get a 404 if we use the incorrect zone_id
         with testtools.ExpectedException(exceptions.RecordNotFound):
             self.central_service.delete_record(
-                self.admin_context, other_domain['id'], recordset['id'],
+                self.admin_context, other_zone['id'], recordset['id'],
                 record['id'])
 
     def test_delete_record_incorrect_recordset_id(self):
-        domain = self.create_domain()
-        recordset = self.create_recordset(domain)
-        other_recordset = self.create_recordset(domain, fixture=1)
+        zone = self.create_zone()
+        recordset = self.create_recordset(zone)
+        other_recordset = self.create_recordset(zone, fixture=1)
 
         # Create a record
-        record = self.create_record(domain, recordset)
+        record = self.create_record(zone, recordset)
 
         # Ensure we get a 404 if we use the incorrect recordset_id
         with testtools.ExpectedException(exceptions.RecordNotFound):
             self.central_service.delete_record(
-                self.admin_context, domain['id'], other_recordset['id'],
+                self.admin_context, zone['id'], other_recordset['id'],
                 record['id'])
 
     def test_count_records(self):
@@ -2276,12 +2268,12 @@ class CentralServiceTest(CentralTestCase):
         records = self.central_service.count_records(self.admin_context)
         self.assertEqual(0, records)
 
-        # Create a domain and recordset to put our record in
-        domain = self.create_domain()
-        recordset = self.create_recordset(domain)
+        # Create a zone and recordset to put our record in
+        zone = self.create_zone()
+        recordset = self.create_recordset(zone)
 
         # Create a record
-        self.create_record(domain, recordset)
+        self.create_record(zone, recordset)
 
         # we should have 1 record now, plus SOA & NS records
         records = self.central_service.count_records(self.admin_context)
@@ -2351,14 +2343,14 @@ class CentralServiceTest(CentralTestCase):
         criterion = {
             'managed_resource_id': fip['id'],
             'managed_tenant_id': context_a.tenant}
-        domain_id = self.central_service.find_record(
-            elevated_a, criterion).domain_id
+        zone_id = self.central_service.find_record(
+            elevated_a, criterion).zone_id
 
         # Simulate the update on the backend
-        domain_serial = self.central_service.get_domain(
-            elevated_a, domain_id).serial
+        zone_serial = self.central_service.get_zone(
+            elevated_a, zone_id).serial
         self.central_service.update_status(
-            elevated_a, domain_id, "SUCCESS", domain_serial)
+            elevated_a, zone_id, "SUCCESS", zone_serial)
 
         self.network_api.fake.deallocate_floatingip(fip['id'])
 
@@ -2379,10 +2371,10 @@ class CentralServiceTest(CentralTestCase):
         self.assertIsNone(fip_ptr['ptrdname'])
 
         # Simulate the invalidation on the backend
-        domain_serial = self.central_service.get_domain(
-            elevated_a, domain_id).serial
+        zone_serial = self.central_service.get_zone(
+            elevated_a, zone_id).serial
         self.central_service.update_status(
-            elevated_a, domain_id, "SUCCESS", domain_serial)
+            elevated_a, zone_id, "SUCCESS", zone_serial)
 
         # Ensure that the old record for tenant a for the fip now owned by
         # tenant b is gone
@@ -2447,14 +2439,14 @@ class CentralServiceTest(CentralTestCase):
         criterion = {
             'managed_resource_id': fip['id'],
             'managed_tenant_id': context_a.tenant}
-        domain_id = self.central_service.find_record(
-            elevated_a, criterion).domain_id
+        zone_id = self.central_service.find_record(
+            elevated_a, criterion).zone_id
 
         # Simulate the update on the backend
-        domain_serial = self.central_service.get_domain(
-            elevated_a, domain_id).serial
+        zone_serial = self.central_service.get_zone(
+            elevated_a, zone_id).serial
         self.central_service.update_status(
-            elevated_a, domain_id, "SUCCESS", domain_serial)
+            elevated_a, zone_id, "SUCCESS", zone_serial)
 
         self.network_api.fake.deallocate_floatingip(fip['id'])
 
@@ -2474,10 +2466,10 @@ class CentralServiceTest(CentralTestCase):
         self.assertIsNone(fips[0]['ptrdname'])
 
         # Simulate the invalidation on the backend
-        domain_serial = self.central_service.get_domain(
-            elevated_a, domain_id).serial
+        zone_serial = self.central_service.get_zone(
+            elevated_a, zone_id).serial
         self.central_service.update_status(
-            elevated_a, domain_id, "SUCCESS", domain_serial)
+            elevated_a, zone_id, "SUCCESS", zone_serial)
 
         # Ensure that the old record for tenant a for the fip now owned by
         # tenant b is gone
@@ -2514,11 +2506,11 @@ class CentralServiceTest(CentralTestCase):
         elevated_context = context.elevated()
         elevated_context.all_tenants = True
 
-        # The domain created should have the default 0's uuid as owner
-        domain = self.central_service.find_domain(
+        # The zone created should have the default 0's uuid as owner
+        zone = self.central_service.find_zone(
             elevated_context,
             {"tenant_id": tenant_id})
-        self.assertEqual(tenant_id, domain.tenant_id)
+        self.assertEqual(tenant_id, zone.tenant_id)
 
     def test_set_floatingip_removes_old_record(self):
         context_a = self.get_context(tenant='a')
@@ -2539,18 +2531,18 @@ class CentralServiceTest(CentralTestCase):
         criterion = {
             'managed_resource_id': fip['id'],
             'managed_tenant_id': context_a.tenant}
-        domain_id = self.central_service.find_record(
-            elevated_a, criterion).domain_id
+        zone_id = self.central_service.find_record(
+            elevated_a, criterion).zone_id
 
         fixture2 = self.get_ptr_fixture(fixture=1)
         self.central_service.update_floatingip(
             context_a, fip['region'], fip['id'], fixture2)
 
         # Simulate the update on the backend
-        domain_serial = self.central_service.get_domain(
-            elevated_a, domain_id).serial
+        zone_serial = self.central_service.get_zone(
+            elevated_a, zone_id).serial
         self.central_service.update_status(
-            elevated_a, domain_id, "SUCCESS", domain_serial)
+            elevated_a, zone_id, "SUCCESS", zone_serial)
 
         count = self.central_service.count_records(
             elevated_a, {'managed_resource_id': fip['id']})
@@ -2568,10 +2560,10 @@ class CentralServiceTest(CentralTestCase):
             context_b, fip['region'], fip['id'], fixture)
 
         # Simulate the update on the backend
-        domain_serial = self.central_service.get_domain(
-            elevated_a, domain_id).serial
+        zone_serial = self.central_service.get_zone(
+            elevated_a, zone_id).serial
         self.central_service.update_status(
-            elevated_a, domain_id, "SUCCESS", domain_serial)
+            elevated_a, zone_id, "SUCCESS", zone_serial)
 
         count = self.central_service.count_records(
             elevated_a, {'managed_resource_id': fip['id']})
@@ -2713,10 +2705,10 @@ class CentralServiceTest(CentralTestCase):
         # A SOA record should automatically be created each time
         # a zone is created
         # Create a zone
-        zone = self.create_domain(name='example3.org.')
+        zone = self.create_zone(name='example3.org.')
 
         # Retrieve SOA
-        criterion = {'domain_id': zone['id'], 'type': 'SOA'}
+        criterion = {'zone_id': zone['id'], 'type': 'SOA'}
 
         soa = self.central_service.find_recordset(self.admin_context,
                                                   criterion)
@@ -2741,20 +2733,20 @@ class CentralServiceTest(CentralTestCase):
     def test_update_soa(self):
         # Anytime the zone's serial number is incremented
         # the SOA recordset should automatically be updated
-        zone = self.create_domain(email='info@example.org')
+        zone = self.create_zone(email='info@example.org')
 
         # Update the object
         zone.email = 'info@example.net'
 
         # Perform the update
-        self.central_service.update_domain(self.admin_context, zone)
+        self.central_service.update_zone(self.admin_context, zone)
 
-        # Fetch the domain again
-        updated_zone = self.central_service.get_domain(self.admin_context,
-                                                       zone.id)
+        # Fetch the zone again
+        updated_zone = self.central_service.get_zone(self.admin_context,
+                                                     zone.id)
 
         # Retrieve SOA
-        criterion = {'domain_id': zone['id'], 'type': 'SOA'}
+        criterion = {'zone_id': zone['id'], 'type': 'SOA'}
 
         soa = self.central_service.find_recordset(self.admin_context,
                                                   criterion)
@@ -2889,9 +2881,9 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual("New Comment", pool.description)
 
     def test_update_pool_add_ns_record(self):
-        # Create a server pool and domain
+        # Create a server pool and zone
         pool = self.create_pool(fixture=0)
-        domain = self.create_domain(pool_id=pool.id)
+        zone = self.create_zone(pool_id=pool.id)
 
         ns_record_count = len(pool.ns_records)
         new_ns_record = objects.PoolNsRecord(
@@ -2910,19 +2902,19 @@ class CentralServiceTest(CentralTestCase):
         self.assertIn(new_ns_record.hostname,
                       [n.hostname for n in pool.ns_records])
 
-        # Fetch the domains NS recordset
+        # Fetch the zones NS recordset
         ns_recordset = self.central_service.find_recordset(
             self.admin_context,
-            criterion={'domain_id': domain.id, 'type': "NS"})
+            criterion={'zone_id': zone.id, 'type': "NS"})
 
         # Verify that the doamins NS records ware updated correctly
         self.assertEqual(set([n.hostname for n in pool.ns_records]),
                          set([n.data for n in ns_recordset.records]))
 
     def test_update_pool_remove_ns_record(self):
-        # Create a server pool and domain
+        # Create a server pool and zone
         pool = self.create_pool(fixture=0)
-        domain = self.create_domain(pool_id=pool.id)
+        zone = self.create_zone(pool_id=pool.id)
 
         ns_record_count = len(pool.ns_records)
 
@@ -2938,10 +2930,10 @@ class CentralServiceTest(CentralTestCase):
         self.assertNotIn(removed_ns_record.hostname,
                          [n.hostname for n in pool.ns_records])
 
-        # Fetch the domains NS recordset
+        # Fetch the zones NS recordset
         ns_recordset = self.central_service.find_recordset(
             self.admin_context,
-            criterion={'domain_id': domain.id, 'type': "NS"})
+            criterion={'zone_id': zone.id, 'type': "NS"})
 
         # Verify that the doamins NS records ware updated correctly
         self.assertEqual(set([n.hostname for n in pool.ns_records]),
@@ -2958,130 +2950,130 @@ class CentralServiceTest(CentralTestCase):
         with testtools.ExpectedException(exceptions.PoolNotFound):
             self.central_service.get_pool(self.admin_context, pool['id'])
 
-    def test_update_status_delete_domain(self):
-        # Create a domain
-        domain = self.create_domain()
+    def test_update_status_delete_zone(self):
+        # Create a zone
+        zone = self.create_zone()
 
-        # Delete the domain
-        self.central_service.delete_domain(self.admin_context, domain['id'])
+        # Delete the zone
+        self.central_service.delete_zone(self.admin_context, zone['id'])
 
-        # Simulate the domain having been deleted on the backend
-        domain_serial = self.central_service.get_domain(
-            self.admin_context, domain['id']).serial
+        # Simulate the zone having been deleted on the backend
+        zone_serial = self.central_service.get_zone(
+            self.admin_context, zone['id']).serial
         self.central_service.update_status(
-            self.admin_context, domain['id'], "SUCCESS", domain_serial)
+            self.admin_context, zone['id'], "SUCCESS", zone_serial)
 
-        # Fetch the domain again, ensuring an exception is raised
-        with testtools.ExpectedException(exceptions.DomainNotFound):
-            self.central_service.get_domain(self.admin_context, domain['id'])
+        # Fetch the zone again, ensuring an exception is raised
+        with testtools.ExpectedException(exceptions.ZoneNotFound):
+            self.central_service.get_zone(self.admin_context, zone['id'])
 
     def test_update_status_delete_last_record(self):
-        domain = self.create_domain()
-        recordset = self.create_recordset(domain)
+        zone = self.create_zone()
+        recordset = self.create_recordset(zone)
 
         # Create a record
-        record = self.create_record(domain, recordset)
+        record = self.create_record(zone, recordset)
 
         # Delete the record
         self.central_service.delete_record(
-            self.admin_context, domain['id'], recordset['id'], record['id'])
+            self.admin_context, zone['id'], recordset['id'], record['id'])
 
         # Simulate the record having been deleted on the backend
-        domain_serial = self.central_service.get_domain(
-            self.admin_context, domain['id']).serial
+        zone_serial = self.central_service.get_zone(
+            self.admin_context, zone['id']).serial
         self.central_service.update_status(
-            self.admin_context, domain['id'], "SUCCESS", domain_serial)
+            self.admin_context, zone['id'], "SUCCESS", zone_serial)
 
         # Fetch the record again, ensuring an exception is raised
         with testtools.ExpectedException(exceptions.RecordSetNotFound):
             self.central_service.get_record(
-                self.admin_context, domain['id'], recordset['id'],
+                self.admin_context, zone['id'], recordset['id'],
                 record['id'])
 
     def test_update_status_delete_last_record_without_incrementing_serial(
             self):
-        domain = self.create_domain()
-        recordset = self.create_recordset(domain)
+        zone = self.create_zone()
+        recordset = self.create_recordset(zone)
 
         # Create a record
-        record = self.create_record(domain, recordset)
+        record = self.create_record(zone, recordset)
 
-        # Fetch the domain serial number
-        domain_serial = self.central_service.get_domain(
-            self.admin_context, domain['id']).serial
+        # Fetch the zone serial number
+        zone_serial = self.central_service.get_zone(
+            self.admin_context, zone['id']).serial
 
         # Delete the record
         self.central_service.delete_record(
-            self.admin_context, domain['id'], recordset['id'], record['id'],
+            self.admin_context, zone['id'], recordset['id'], record['id'],
             increment_serial=False)
 
         # Simulate the record having been deleted on the backend
-        domain_serial = self.central_service.get_domain(
-            self.admin_context, domain['id']).serial
+        zone_serial = self.central_service.get_zone(
+            self.admin_context, zone['id']).serial
         self.central_service.update_status(
-            self.admin_context, domain['id'], "SUCCESS", domain_serial)
+            self.admin_context, zone['id'], "SUCCESS", zone_serial)
 
         # Fetch the record again, ensuring an exception is raised
         with testtools.ExpectedException(exceptions.RecordSetNotFound):
             self.central_service.get_record(
-                self.admin_context, domain['id'], recordset['id'],
+                self.admin_context, zone['id'], recordset['id'],
                 record['id'])
 
-        # Ensure the domains serial number was not updated
-        new_domain_serial = self.central_service.get_domain(
-            self.admin_context, domain['id']).serial
+        # Ensure the zones serial number was not updated
+        new_zone_serial = self.central_service.get_zone(
+            self.admin_context, zone['id']).serial
 
-        self.assertEqual(domain_serial, new_domain_serial)
+        self.assertEqual(zone_serial, new_zone_serial)
 
     def test_create_zone_transfer_request(self):
-        domain = self.create_domain()
-        zone_transfer_request = self.create_zone_transfer_request(domain)
+        zone = self.create_zone()
+        zone_transfer_request = self.create_zone_transfer_request(zone)
 
         # Verify all values have been set correctly
         self.assertIsNotNone(zone_transfer_request.id)
         self.assertIsNotNone(zone_transfer_request.tenant_id)
         self.assertIsNotNone(zone_transfer_request.key)
-        self.assertEqual(domain.id, zone_transfer_request.domain_id)
+        self.assertEqual(zone.id, zone_transfer_request.zone_id)
 
     def test_create_zone_transfer_request_duplicate(self):
-        domain = self.create_domain()
-        self.create_zone_transfer_request(domain)
+        zone = self.create_zone()
+        self.create_zone_transfer_request(zone)
         with testtools.ExpectedException(
                 exceptions.DuplicateZoneTransferRequest):
-            self.create_zone_transfer_request(domain)
+            self.create_zone_transfer_request(zone)
 
     def test_create_scoped_zone_transfer_request(self):
-        domain = self.create_domain()
+        zone = self.create_zone()
         values = self.get_zone_transfer_request_fixture(fixture=1)
-        zone_transfer_request = self.create_zone_transfer_request(domain,
+        zone_transfer_request = self.create_zone_transfer_request(zone,
                                                                   fixture=1)
 
         # Verify all values have been set correctly
         self.assertIsNotNone(zone_transfer_request.id)
         self.assertIsNotNone(zone_transfer_request.tenant_id)
-        self.assertEqual(domain.id, zone_transfer_request.domain_id)
+        self.assertEqual(zone.id, zone_transfer_request.zone_id)
         self.assertIsNotNone(zone_transfer_request.key)
         self.assertEqual(
             values['target_tenant_id'],
             zone_transfer_request.target_tenant_id)
 
     def test_get_zone_transfer_request(self):
-        domain = self.create_domain()
-        zt_request = self.create_zone_transfer_request(domain,
+        zone = self.create_zone()
+        zt_request = self.create_zone_transfer_request(zone,
                                                        fixture=1)
         retrived_zt = self.central_service.get_zone_transfer_request(
             self.admin_context,
             zt_request.id)
-        self.assertEqual(zt_request.domain_id, retrived_zt.domain_id)
+        self.assertEqual(zt_request.zone_id, retrived_zt.zone_id)
         self.assertEqual(zt_request.key, retrived_zt.key)
 
     def test_get_zone_transfer_request_scoped(self):
         tenant_1_context = self.get_context(tenant=1)
         tenant_2_context = self.get_context(tenant=2)
         tenant_3_context = self.get_context(tenant=3)
-        domain = self.create_domain(context=tenant_1_context)
+        zone = self.create_zone(context=tenant_1_context)
         zt_request = self.create_zone_transfer_request(
-            domain,
+            zone,
             context=tenant_1_context,
             target_tenant_id=2)
 
@@ -3096,8 +3088,8 @@ class CentralServiceTest(CentralTestCase):
                 tenant_3_context, zt_request.id)
 
     def test_update_zone_transfer_request(self):
-        domain = self.create_domain()
-        zone_transfer_request = self.create_zone_transfer_request(domain)
+        zone = self.create_zone()
+        zone_transfer_request = self.create_zone_transfer_request(zone)
 
         zone_transfer_request.description = 'TEST'
         self.central_service.update_zone_transfer_request(
@@ -3110,8 +3102,8 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual('TEST', zone_transfer_request.description)
 
     def test_delete_zone_transfer_request(self):
-        domain = self.create_domain()
-        zone_transfer_request = self.create_zone_transfer_request(domain)
+        zone = self.create_zone()
+        zone_transfer_request = self.create_zone_transfer_request(zone)
 
         self.central_service.delete_zone_transfer_request(
             self.admin_context, zone_transfer_request.id)
@@ -3128,34 +3120,34 @@ class CentralServiceTest(CentralTestCase):
         admin_context = self.get_admin_context()
         admin_context.all_tenants = True
 
-        domain = self.create_domain(context=tenant_1_context)
-        recordset = self.create_recordset(domain, context=tenant_1_context)
+        zone = self.create_zone(context=tenant_1_context)
+        recordset = self.create_recordset(zone, context=tenant_1_context)
         record = self.create_record(
-            domain, recordset, context=tenant_1_context)
+            zone, recordset, context=tenant_1_context)
 
         zone_transfer_request = self.create_zone_transfer_request(
-            domain, context=tenant_1_context)
+            zone, context=tenant_1_context)
 
         zone_transfer_accept = objects.ZoneTransferAccept()
         zone_transfer_accept.zone_transfer_request_id =\
             zone_transfer_request.id
 
         zone_transfer_accept.key = zone_transfer_request.key
-        zone_transfer_accept.domain_id = domain.id
+        zone_transfer_accept.zone_id = zone.id
 
         zone_transfer_accept = \
             self.central_service.create_zone_transfer_accept(
                 tenant_2_context, zone_transfer_accept)
 
         result = {}
-        result['domain'] = self.central_service.get_domain(
-            admin_context, domain.id)
+        result['zone'] = self.central_service.get_zone(
+            admin_context, zone.id)
 
         result['recordset'] = self.central_service.get_recordset(
-            admin_context, domain.id, recordset.id)
+            admin_context, zone.id, recordset.id)
 
         result['record'] = self.central_service.get_record(
-            admin_context, domain.id, recordset.id, record.id)
+            admin_context, zone.id, recordset.id, record.id)
 
         result['zt_accept'] = self.central_service.get_zone_transfer_accept(
             admin_context, zone_transfer_accept.id)
@@ -3163,7 +3155,7 @@ class CentralServiceTest(CentralTestCase):
             admin_context, zone_transfer_request.id)
 
         self.assertEqual(
-            str(tenant_2_context.tenant), result['domain'].tenant_id)
+            str(tenant_2_context.tenant), result['zone'].tenant_id)
         self.assertEqual(
             str(tenant_2_context.tenant), result['recordset'].tenant_id)
         self.assertEqual(
@@ -3179,13 +3171,13 @@ class CentralServiceTest(CentralTestCase):
         admin_context = self.get_admin_context()
         admin_context.all_tenants = True
 
-        domain = self.create_domain(context=tenant_1_context)
-        recordset = self.create_recordset(domain, context=tenant_1_context)
+        zone = self.create_zone(context=tenant_1_context)
+        recordset = self.create_recordset(zone, context=tenant_1_context)
         record = self.create_record(
-            domain, recordset, context=tenant_1_context)
+            zone, recordset, context=tenant_1_context)
 
         zone_transfer_request = self.create_zone_transfer_request(
-            domain,
+            zone,
             context=tenant_1_context,
             target_tenant_id='2')
 
@@ -3194,21 +3186,21 @@ class CentralServiceTest(CentralTestCase):
             zone_transfer_request.id
 
         zone_transfer_accept.key = zone_transfer_request.key
-        zone_transfer_accept.domain_id = domain.id
+        zone_transfer_accept.zone_id = zone.id
 
         zone_transfer_accept = \
             self.central_service.create_zone_transfer_accept(
                 tenant_2_context, zone_transfer_accept)
 
         result = {}
-        result['domain'] = self.central_service.get_domain(
-            admin_context, domain.id)
+        result['zone'] = self.central_service.get_zone(
+            admin_context, zone.id)
 
         result['recordset'] = self.central_service.get_recordset(
-            admin_context, domain.id, recordset.id)
+            admin_context, zone.id, recordset.id)
 
         result['record'] = self.central_service.get_record(
-            admin_context, domain.id, recordset.id, record.id)
+            admin_context, zone.id, recordset.id, record.id)
 
         result['zt_accept'] = self.central_service.get_zone_transfer_accept(
             admin_context, zone_transfer_accept.id)
@@ -3216,7 +3208,7 @@ class CentralServiceTest(CentralTestCase):
             admin_context, zone_transfer_request.id)
 
         self.assertEqual(
-            str(tenant_2_context.tenant), result['domain'].tenant_id)
+            str(tenant_2_context.tenant), result['zone'].tenant_id)
         self.assertEqual(
             str(tenant_2_context.tenant), result['recordset'].tenant_id)
         self.assertEqual(
@@ -3232,10 +3224,10 @@ class CentralServiceTest(CentralTestCase):
         admin_context = self.get_admin_context()
         admin_context.all_tenants = True
 
-        domain = self.create_domain(context=tenant_1_context)
+        zone = self.create_zone(context=tenant_1_context)
 
         zone_transfer_request = self.create_zone_transfer_request(
-            domain,
+            zone,
             context=tenant_1_context,
             target_tenant_id=2)
 
@@ -3244,7 +3236,7 @@ class CentralServiceTest(CentralTestCase):
             zone_transfer_request.id
 
         zone_transfer_accept.key = 'WRONG KEY'
-        zone_transfer_accept.domain_id = domain.id
+        zone_transfer_accept.zone_id = zone.id
 
         with testtools.ExpectedException(exceptions.IncorrectZoneTransferKey):
             zone_transfer_accept = \
@@ -3257,10 +3249,10 @@ class CentralServiceTest(CentralTestCase):
         admin_context = self.get_admin_context()
         admin_context.all_tenants = True
 
-        domain = self.create_domain(context=tenant_1_context)
+        zone = self.create_zone(context=tenant_1_context)
 
         zone_transfer_request = self.create_zone_transfer_request(
-            domain,
+            zone,
             context=tenant_1_context,
             target_tenant_id=2)
 
@@ -3269,7 +3261,7 @@ class CentralServiceTest(CentralTestCase):
             zone_transfer_request.id
 
         zone_transfer_accept.key = zone_transfer_request.key
-        zone_transfer_accept.domain_id = domain.id
+        zone_transfer_accept.zone_id = zone.id
 
         with testtools.ExpectedException(exceptions.Forbidden):
             zone_transfer_accept = \
@@ -3288,7 +3280,7 @@ class CentralServiceTest(CentralTestCase):
         self.assertIsNotNone(zone_import['id'])
         self.assertEqual('PENDING', zone_import.status)
         self.assertIsNone(zone_import.message)
-        self.assertIsNone(zone_import.domain_id)
+        self.assertIsNone(zone_import.zone_id)
 
         self.wait_for_import(zone_import.id)
 

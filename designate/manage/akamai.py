@@ -61,7 +61,7 @@ class AkamaiCommands(base.Commands):
         client = impl_akamai.EnhancedDNSClient(
             target.options.get("username"), target.options.get("password"))
 
-        zone = self.central_api.find_domain(self.context, {"name": zone_name})
+        zone = self.central_api.find_zone(self.context, {"name": zone_name})
         akamai_zone = client.getZone(zone_name)
 
         print("Designate zone\n%s" % pformat(zone.to_dict()))
@@ -70,7 +70,7 @@ class AkamaiCommands(base.Commands):
     @base.args('pool-id', help="Pool to Sync", type=str)
     @base.args('pool-target-id', help="Pool Target to Sync", type=str)
     @base.args('--batch-size', default=20, type=int)
-    def sync_domains(self, pool_id, pool_target_id, batch_size):
+    def sync_zones(self, pool_id, pool_target_id, batch_size):
         pool, target = self._get_config(pool_id, pool_target_id)
 
         client = impl_akamai.EnhancedDNSClient(
@@ -82,7 +82,7 @@ class AkamaiCommands(base.Commands):
         marker = None
 
         while (marker is not False):
-            zones = self.central_api.find_domains(
+            zones = self.central_api.find_zones(
                 self.context, criterion, limit=batch_size, marker=marker)
             update = []
 

@@ -57,14 +57,14 @@ class NotificationHandler(ExtensionPlugin):
     def process_notification(self, context, event_type, payload):
         """Processes a given notification"""
 
-    def get_domain(self, domain_id):
+    def get_zone(self, zone_id):
         """
-        Return the domain for this context
+        Return the zone for this context
         """
         context = DesignateContext.get_admin_context(all_tenants=True)
-        return self.central_api.get_domain(context, domain_id)
+        return self.central_api.get_zone(context, zone_id)
 
-    def _find_or_create_recordset(self, context, domain_id, name, type,
+    def _find_or_create_recordset(self, context, zone_id, name, type,
                                   ttl=None):
         name = name.encode('idna').decode('utf-8')
 
@@ -76,12 +76,12 @@ class NotificationHandler(ExtensionPlugin):
                 'ttl': ttl,
             }
             recordset = self.central_api.create_recordset(
-                context, domain_id, RecordSet(**values))
+                context, zone_id, RecordSet(**values))
 
         except exceptions.DuplicateRecordSet:
             # Fetch the existing recordset
             recordset = self.central_api.find_recordset(context, {
-                'domain_id': domain_id,
+                'zone_id': zone_id,
                 'name': name,
                 'type': type,
             })
@@ -106,7 +106,7 @@ class BaseAddressHandler(NotificationHandler):
                 data["octet%s" % i] = ip_data[i]
         return data
 
-    def _create(self, addresses, extra, domain_id, managed=True,
+    def _create(self, addresses, extra, zone_id, managed=True,
                 resource_type=None, resource_id=None):
         """
         Create a a record from addresses
@@ -123,13 +123,13 @@ class BaseAddressHandler(NotificationHandler):
                 'Deprecation notice: Unmanaged designate-sink records are '
                 'being deprecated please update the call '
                 'to remove managed=False'))
-        LOG.debug('Using DomainID: %s' % domain_id)
-        domain = self.get_domain(domain_id)
-        LOG.debug('Domain: %r' % domain)
+        LOG.debug('Using Zone ID: %s' % zone_id)
+        zone = self.get_zone(zone_id)
+        LOG.debug('Zone: %r' % zone)
 
         data = extra.copy()
         LOG.debug('Event data: %s' % data)
-        data['domain'] = domain['name']
+        data['zone'] = zone['name']
 
         context = DesignateContext().elevated()
         context.all_tenants = True
@@ -141,7 +141,7 @@ class BaseAddressHandler(NotificationHandler):
 
             for fmt in cfg.CONF[self.name].get('format'):
                 recordset_values = {
-                    'domain_id': domain['id'],
+                    'zone_id': zone['id'],
                     'name': fmt % event_data,
                     'type': 'A' if addr['version'] == 4 else 'AAAA'}
 
@@ -160,16 +160,16 @@ class BaseAddressHandler(NotificationHandler):
                         'managed_resource_id': resource_id})
 
                 LOG.debug('Creating record in %s / %s with values %r' %
-                          (domain['id'], recordset['id'], record_values))
+                          (zone['id'], recordset['id'], record_values))
                 self.central_api.create_record(context,
-                                               domain['id'],
+                                               zone['id'],
                                                recordset['id'],
                                                Record(**record_values))
 
-    def _delete(self, domain_id, managed=True, resource_id=None,
+    def _delete(self, zone_id, managed=True, resource_id=None,
                 resource_type='instance', criterion=None):
         """
-        Handle a generic delete of a fixed ip within a domain
+        Handle a generic delete of a fixed ip within a zone
 
         :param criterion: Criterion to search and destroy records
         """
@@ -184,7 +184,7 @@ class BaseAddressHandler(NotificationHandler):
         context.all_tenants = True
         context.edit_managed_records = True
 
-        criterion.update({'domain_id': domain_id})
+        criterion.update({'zone_id': zone_id})
 
         if managed:
             criterion.update({
@@ -201,6 +201,6 @@ class BaseAddressHandler(NotificationHandler):
             LOG.debug('Deleting record %s' % record['id'])
 
             self.central_api.delete_record(context,
-                                           domain_id,
+                                           zone_id,
                                            record['recordset_id'],
                                            record['id'])

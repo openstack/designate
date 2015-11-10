@@ -31,21 +31,21 @@ class StorageQuotaTest(tests.TestCase):
         context = self.get_admin_context()
         context.all_tenants = True
 
-        quota = self.quota.set_quota(context, 'tenant_id', 'domains', 1500)
+        quota = self.quota.set_quota(context, 'tenant_id', 'zones', 1500)
 
-        self.assertEqual({'domains': 1500}, quota)
+        self.assertEqual({'zones': 1500}, quota)
 
         # Drop into the storage layer directly to ensure the quota was created
         # successfully
         criterion = {
             'tenant_id': 'tenant_id',
-            'resource': 'domains'
+            'resource': 'zones'
         }
 
         quota = self.quota.storage.find_quota(context, criterion)
 
         self.assertEqual('tenant_id', quota['tenant_id'])
-        self.assertEqual('domains', quota['resource'])
+        self.assertEqual('zones', quota['resource'])
         self.assertEqual(1500, quota['hard_limit'])
 
     def test_set_quota_update(self):
@@ -53,33 +53,33 @@ class StorageQuotaTest(tests.TestCase):
         context.all_tenants = True
 
         # First up, Create the quota
-        self.quota.set_quota(context, 'tenant_id', 'domains', 1500)
+        self.quota.set_quota(context, 'tenant_id', 'zones', 1500)
 
         # Next, update the quota
-        self.quota.set_quota(context, 'tenant_id', 'domains', 1234)
+        self.quota.set_quota(context, 'tenant_id', 'zones', 1234)
 
         # Drop into the storage layer directly to ensure the quota was updated
         # successfully
         criterion = {
             'tenant_id': 'tenant_id',
-            'resource': 'domains'
+            'resource': 'zones'
         }
 
         quota = self.quota.storage.find_quota(context, criterion)
 
         self.assertEqual('tenant_id', quota['tenant_id'])
-        self.assertEqual('domains', quota['resource'])
+        self.assertEqual('zones', quota['resource'])
         self.assertEqual(1234, quota['hard_limit'])
 
     def test_reset_quotas(self):
         context = self.get_admin_context()
         context.all_tenants = True
 
-        # First up, Create a domains quota
-        self.quota.set_quota(context, 'tenant_id', 'domains', 1500)
+        # First up, Create a zones quota
+        self.quota.set_quota(context, 'tenant_id', 'zones', 1500)
 
-        # Then, Create a domain_records quota
-        self.quota.set_quota(context, 'tenant_id', 'domain_records', 800)
+        # Then, Create a zone_records quota
+        self.quota.set_quota(context, 'tenant_id', 'zone_records', 800)
 
         # Now, Reset the tenants quota
         self.quota.reset_quotas(context, 'tenant_id')

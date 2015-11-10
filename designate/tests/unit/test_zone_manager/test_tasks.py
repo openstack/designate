@@ -100,7 +100,7 @@ class PeriodicTest(TaskTest):
         ctxt = mock.Mock()
         iterer = self.task._iter_zones(ctxt)
 
-        central.find_domains.return_value = []
+        central.find_zones.return_value = []
 
         with testtools.ExpectedException(StopIteration):
             next(iterer)
@@ -115,22 +115,22 @@ class PeriodicTest(TaskTest):
         iterer = self.task._iter_zones(ctxt)
 
         items = [RoObject(id=str(uuid.uuid4())) for i in range(0, 5)]
-        central.find_domains.return_value = items
+        central.find_zones.return_value = items
 
         # Iterate through the items causing the "paging" to be done.
         map(lambda i: next(iterer), items)
-        central.find_domains.assert_called_once_with(
+        central.find_zones.assert_called_once_with(
             ctxt, {"shard": "BETWEEN 0,9"}, limit=100)
 
-        central.find_domains.reset_mock()
+        central.find_zones.reset_mock()
 
         # Call next on the iterator and see it trying to load a new page.
         # Also this will raise a StopIteration since there are no more items.
-        central.find_domains.return_value = []
+        central.find_zones.return_value = []
         with testtools.ExpectedException(StopIteration):
             next(iterer)
 
-        central.find_domains.assert_called_once_with(
+        central.find_zones.assert_called_once_with(
             ctxt,
             {"shard": "BETWEEN 0,9"},
             marker=items[-1].id,
@@ -181,14 +181,14 @@ class PeriodicExistsTest(TaskTest):
         self.get_period.return_value = self.period
 
     def test_emit_exists(self):
-        domain = RoObject(
+        zone = RoObject(
             id=str(uuid.uuid4()))
 
         with mock.patch.object(self.task, '_iter_zones') as iter_:
-            iter_.return_value = [domain]
+            iter_.return_value = [zone]
             self.task()
 
-        data = dict(domain)
+        data = dict(zone)
         data.update(self.period_data)
 
         self.mock_notifier.info.assert_called_with(
@@ -247,7 +247,7 @@ class PeriodicSecondaryRefreshTest(TaskTest):
             _iter.return_value = []
             self.task()
 
-        self.assertFalse(self.central.xfr_domain.called)
+        self.assertFalse(self.central.xfr_zone.called)
 
     def test_refresh_zone(self):
         transferred = timeutils.utcnow(True) - datetime.timedelta(minutes=62)
@@ -260,7 +260,7 @@ class PeriodicSecondaryRefreshTest(TaskTest):
             _iter.return_value = [zone]
             self.task()
 
-        self.central.xfr_domain.assert_called_once_with(self.ctxt, zone.id)
+        self.central.xfr_zone.assert_called_once_with(self.ctxt, zone.id)
 
     def test_refresh_zone_not_expired(self):
         # Dummy zone object
@@ -274,4 +274,4 @@ class PeriodicSecondaryRefreshTest(TaskTest):
             _iter.return_value = [zone]
             self.task()
 
-        self.assertFalse(self.central.xfr_domain.called)
+        self.assertFalse(self.central.xfr_zone.called)

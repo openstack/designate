@@ -118,8 +118,8 @@ class PowerDNSBackend(base.Backend):
         if resultproxy.rowcount != 1:
             raise exc_notfound()
 
-    # Domain Methods
-    def create_domain(self, context, domain):
+    # Zone Methods
+    def create_zone(self, context, zone):
         try:
             self.session.begin()
 
@@ -128,8 +128,8 @@ class PowerDNSBackend(base.Backend):
             masters = six.moves.map(_parse_master, self.masters)
 
             domain_values = {
-                'designate_id': domain['id'],
-                'name': domain['name'].rstrip('.'),
+                'designate_id': zone['id'],
+                'name': zone['name'].rstrip('.'),
                 'master': ','.join(masters),
                 'type': 'SLAVE',
                 'account': context.tenant
@@ -143,23 +143,23 @@ class PowerDNSBackend(base.Backend):
             self.session.commit()
 
         self.mdns_api.notify_zone_changed(
-            context, domain, self.host, self.port, self.timeout,
+            context, zone, self.host, self.port, self.timeout,
             self.retry_interval, self.max_retries, self.delay)
 
-    def delete_domain(self, context, domain):
-        # TODO(kiall): We should make this match create_domain with regard to
+    def delete_zone(self, context, zone):
+        # TODO(kiall): We should make this match create_zone with regard to
         #              transactions.
         try:
-            self._get(tables.domains, domain['id'], exceptions.DomainNotFound,
+            self._get(tables.domains, zone['id'], exceptions.ZoneNotFound,
                       id_col=tables.domains.c.designate_id)
-        except exceptions.DomainNotFound:
-            # If the Domain is already gone, that's ok. We're deleting it
+        except exceptions.ZoneNotFound:
+            # If the Zone is already gone, that's ok. We're deleting it
             # anyway, so just log and continue.
-            LOG.critical(_LC('Attempted to delete a domain which is '
+            LOG.critical(_LC('Attempted to delete a zone which is '
                              'not present in the backend. ID: %s') %
-                         domain['id'])
+                         zone['id'])
             return
 
-        self._delete(tables.domains, domain['id'],
-                     exceptions.DomainNotFound,
+        self._delete(tables.domains, zone['id'],
+                     exceptions.ZoneNotFound,
                      id_col=tables.domains.c.designate_id)

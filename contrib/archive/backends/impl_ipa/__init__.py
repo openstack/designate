@@ -213,11 +213,11 @@ class IPABackend(base.Backend):
         self.ntries = cfg.CONF[self.name].ipa_connect_retries
         self.force = cfg.CONF[self.name].ipa_force_ns_use
 
-    def create_domain(self, context, domain):
-        LOG.debug('Create Domain %r' % domain)
+    def create_zone(self, context, zone):
+        LOG.debug('Create Zone %r' % zone)
         ipareq = {'method': 'dnszone_add', 'id': 0}
-        params = [domain['name']]
-        servers = self.central_service.get_domain_servers(self.admin_context)
+        params = [zone['name']]
+        servers = self.central_service.get_zone_ns_records(self.admin_context)
         # just use the first one for zone creation - add the others
         # later, below - use force because designate assumes the NS
         # already exists somewhere, is resolvable, and already has
@@ -226,35 +226,35 @@ class IPABackend(base.Backend):
         if self.force:
             args['force'] = True
         for dkey, ipakey in list(domain2ipa.items()):
-            if dkey in domain:
-                args[ipakey] = domain[dkey]
+            if dkey in zone:
+                args[ipakey] = zone[dkey]
         ipareq['params'] = [params, args]
         self._call_and_handle_error(ipareq)
         # add NS records for all of the other servers
         if len(servers) > 1:
             ipareq = {'method': 'dnsrecord_add', 'id': 0}
-            params = [domain['name'], "@"]
+            params = [zone['name'], "@"]
             args = {'nsrecord': servers[1:]}
             if self.force:
                 args['force'] = True
             ipareq['params'] = [params, args]
             self._call_and_handle_error(ipareq)
 
-    def update_domain(self, context, domain):
-        LOG.debug('Update Domain %r' % domain)
+    def update_zone(self, context, zone):
+        LOG.debug('Update Zone %r' % zone)
         ipareq = {'method': 'dnszone_mod', 'id': 0}
-        params = [domain['name']]
+        params = [zone['name']]
         args = {}
         for dkey, ipakey in list(domain2ipa.items()):
-            if dkey in domain:
-                args[ipakey] = domain[dkey]
+            if dkey in zone:
+                args[ipakey] = zone[dkey]
         ipareq['params'] = [params, args]
         self._call_and_handle_error(ipareq)
 
-    def delete_domain(self, context, domain):
-        LOG.debug('Delete Domain %r' % domain)
+    def delete_zone(self, context, zone):
+        LOG.debug('Delete Zone %r' % zone)
         ipareq = {'method': 'dnszone_del', 'id': 0}
-        params = [domain['name']]
+        params = [zone['name']]
         args = {}
         ipareq['params'] = [params, args]
         self._call_and_handle_error(ipareq)

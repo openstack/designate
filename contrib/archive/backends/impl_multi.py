@@ -97,54 +97,54 @@ class MultiBackend(base.Backend):
             with excutils.save_and_reraise_exception():
                 self.slave.create_tsigkey(context, tsigkey)
 
-    def create_domain(self, context, domain):
-        self.master.create_domain(context, domain)
+    def create_zone(self, context, zone):
+        self.master.create_zone(context, zone)
         try:
-            self.slave.create_domain(context, domain)
+            self.slave.create_zone(context, zone)
         except Exception:
             with excutils.save_and_reraise_exception():
-                self.master.delete_domain(context, domain)
+                self.master.delete_zone(context, zone)
 
-    def update_domain(self, context, domain):
-        self.master.update_domain(context, domain)
+    def update_zone(self, context, zone):
+        self.master.update_zone(context, zone)
 
-    def delete_domain(self, context, domain):
-        # Fetch the full domain from Central first, as we may
+    def delete_zone(self, context, zone):
+        # Fetch the full zone from Central first, as we may
         # have to recreate it on slave if delete on master fails
         deleted_context = context.deepcopy()
         deleted_context.show_deleted = True
 
-        full_domain = self.central.find_domain(
-            deleted_context, {'id': domain['id']})
+        full_domain = self.central.find_zone(
+            deleted_context, {'id': zone['id']})
 
-        self.slave.delete_domain(context, domain)
+        self.slave.delete_zone(context, zone)
         try:
-            self.master.delete_domain(context, domain)
+            self.master.delete_zone(context, zone)
         except Exception:
             with excutils.save_and_reraise_exception():
-                self.slave.create_domain(context, domain)
+                self.slave.create_zone(context, zone)
 
-                [self.slave.create_record(context, domain, record)
+                [self.slave.create_record(context, zone, record)
                  for record in self.central.find_records(
                      context, {'domain_id': full_domain['id']})]
 
-    def create_recordset(self, context, domain, recordset):
-        self.master.create_recordset(context, domain, recordset)
+    def create_recordset(self, context, zone, recordset):
+        self.master.create_recordset(context, zone, recordset)
 
-    def update_recordset(self, context, domain, recordset):
-        self.master.update_recordset(context, domain, recordset)
+    def update_recordset(self, context, zone, recordset):
+        self.master.update_recordset(context, zone, recordset)
 
-    def delete_recordset(self, context, domain, recordset):
-        self.master.delete_recordset(context, domain, recordset)
+    def delete_recordset(self, context, zone, recordset):
+        self.master.delete_recordset(context, zone, recordset)
 
-    def create_record(self, context, domain, recordset, record):
-        self.master.create_record(context, domain, recordset, record)
+    def create_record(self, context, zone, recordset, record):
+        self.master.create_record(context, zone, recordset, record)
 
-    def update_record(self, context, domain, recordset, record):
-        self.master.update_record(context, domain, recordset, record)
+    def update_record(self, context, zone, recordset, record):
+        self.master.update_record(context, zone, recordset, record)
 
-    def delete_record(self, context, domain, recordset, record):
-        self.master.delete_record(context, domain, recordset, record)
+    def delete_record(self, context, zone, recordset, record):
+        self.master.delete_record(context, zone, recordset, record)
 
     def ping(self, context):
         return {

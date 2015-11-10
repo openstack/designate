@@ -25,8 +25,8 @@ LOG = logging.getLogger(__name__)
 class FakeBackend(base.Backend):
     __plugin_name__ = 'fake'
 
-    def create_domain(self, context, domain):
-        LOG.info(_LI('Create Domain %r') % domain)
+    def create_zone(self, context, zone):
+        LOG.info(_LI('Create Zone %r') % zone)
 
-    def delete_domain(self, context, domain):
-        LOG.info(_LI('Delete Domain %r') % domain)
+    def delete_zone(self, context, zone):
+        LOG.info(_LI('Delete Zone %r') % zone)

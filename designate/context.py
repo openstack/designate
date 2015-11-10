@@ -169,7 +169,7 @@ class DesignateContext(context.RequestContext):
     @abandon.setter
     def abandon(self, value):
         if value:
-            policy.check('abandon_domain', self)
+            policy.check('abandon_zone', self)
         self._abandon = value
 
     @property

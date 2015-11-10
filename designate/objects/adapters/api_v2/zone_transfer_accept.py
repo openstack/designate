@@ -36,7 +36,7 @@ class ZoneTransferAcceptAPIv2Adapter(base.APIv2Adapter):
             },
             "status": {},
             "zone_id": {
-                'rename': 'domain_id',
+                'rename': 'zone_id',
             },
             "created_at": {},
             "updated_at": {},

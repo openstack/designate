@@ -27,11 +27,11 @@ class NeutronFloatingHandlerTest(TestCase, NotificationHandlerMixin):
     def setUp(self):
         super(NeutronFloatingHandlerTest, self).setUp()
 
-        domain = self.create_domain()
-        self.domain_id = domain['id']
-        self.config(domain_id=domain['id'], group='handler:neutron_floatingip')
-        formats = ['%(octet0)s-%(octet1)s-%(octet2)s-%(octet3)s.%(domain)s',
-                   '%(octet0)s-%(octet1)s-%(octet2)s-%(octet3)s.X.%(domain)s']
+        zone = self.create_zone()
+        self.zone_id = zone['id']
+        self.config(zone_id=zone['id'], group='handler:neutron_floatingip')
+        formats = ['%(octet0)s-%(octet1)s-%(octet2)s-%(octet3)s.%(zone)s',
+                   '%(octet0)s-%(octet1)s-%(octet2)s-%(octet3)s.X.%(zone)s']
         self.config(format=formats, group='handler:neutron_floatingip')
 
         self.plugin = NeutronFloatingHandler()
@@ -43,7 +43,7 @@ class NeutronFloatingHandlerTest(TestCase, NotificationHandlerMixin):
 
         self.assertIn(event_type, self.plugin.get_event_types())
 
-        criterion = {'domain_id': self.domain_id}
+        criterion = {'zone_id': self.zone_id}
 
         # Ensure we start with only SOA and NS records
         records = self.central_service.find_records(self.admin_context,
@@ -74,7 +74,7 @@ class NeutronFloatingHandlerTest(TestCase, NotificationHandlerMixin):
 
         self.assertIn(event_type, self.plugin.get_event_types())
 
-        criterion = {'domain_id': self.domain_id}
+        criterion = {'zone_id': self.zone_id}
 
         # Ensure we start with at least 1 record, plus NS and SOA
         records = self.central_service.find_records(self.admin_context,
@@ -86,10 +86,10 @@ class NeutronFloatingHandlerTest(TestCase, NotificationHandlerMixin):
             self.admin_context, event_type, fixture['payload'])
 
         # Simulate the record having been deleted on the backend
-        domain_serial = self.central_service.get_domain(
-            self.admin_context, self.domain_id).serial
+        zone_serial = self.central_service.get_zone(
+            self.admin_context, self.zone_id).serial
         self.central_service.update_status(
-            self.admin_context, self.domain_id, "SUCCESS", domain_serial)
+            self.admin_context, self.zone_id, "SUCCESS", zone_serial)
 
         # Ensure we now have exactly 0 records, plus NS and SOA
         records = self.central_service.find_records(self.admin_context,
@@ -111,7 +111,7 @@ class NeutronFloatingHandlerTest(TestCase, NotificationHandlerMixin):
 
         self.assertIn(event_type, self.plugin.get_event_types())
 
-        criterion = {'domain_id': self.domain_id}
+        criterion = {'zone_id': self.zone_id}
 
         # Ensure we start with at least 1 record, plus NS and SOA
         records = self.central_service.find_records(self.admin_context,
@@ -122,10 +122,10 @@ class NeutronFloatingHandlerTest(TestCase, NotificationHandlerMixin):
             self.admin_context, event_type, fixture['payload'])
 
         # Simulate the record having been deleted on the backend
-        domain_serial = self.central_service.get_domain(
-            self.admin_context, self.domain_id).serial
+        zone_serial = self.central_service.get_zone(
+            self.admin_context, self.zone_id).serial
         self.central_service.update_status(
-            self.admin_context, self.domain_id, "SUCCESS", domain_serial)
+            self.admin_context, self.zone_id, "SUCCESS", zone_serial)
 
         # Ensure we now have exactly 0 records, plus NS and SOA
         records = self.central_service.find_records(self.admin_context,

@@ -30,7 +30,7 @@ class AbandonController(rest.RestController):
         context.abandon = 'True'
 
         # abandon the zone
-        zone = self.central_api.delete_domain(context, zone_id)
+        zone = self.central_api.delete_zone(context, zone_id)
         if zone.deleted_at:
             response.status_int = 204
         else:

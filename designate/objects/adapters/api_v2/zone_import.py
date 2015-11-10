@@ -30,7 +30,7 @@ class ZoneImportAPIv2Adapter(base.APIv2Adapter):
             "status": {},
             "message": {},
             "zone_id": {
-                'rename': 'domain_id',
+                'rename': 'zone_id',
             },
             "project_id": {
                 'rename': 'tenant_id'

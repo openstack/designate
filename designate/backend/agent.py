@@ -67,10 +67,10 @@ class AgentPoolBackend(base.Backend):
     def mdns_api(self):
         return mdns_api.MdnsAPI.get_instance()
 
-    def create_domain(self, context, domain):
-        LOG.debug('Create Domain')
+    def create_zone(self, context, zone):
+        LOG.debug('Create Zone')
         response, retry = self._make_and_send_dns_message(
-            domain.name,
+            zone.name,
             self.timeout,
             CC,
             CREATE,
@@ -81,12 +81,12 @@ class AgentPoolBackend(base.Backend):
         if response is None:
             raise exceptions.Backend()
 
-    def update_domain(self, context, domain):
-        LOG.debug('Update Domain')
+    def update_zone(self, context, zone):
+        LOG.debug('Update Zone')
 
         self.mdns_api.notify_zone_changed(
             context,
-            domain,
+            zone,
             self.host,
             self.port,
             self.timeout,
@@ -95,10 +95,10 @@ class AgentPoolBackend(base.Backend):
             self.delay
         )
 
-    def delete_domain(self, context, domain):
-        LOG.debug('Delete Domain')
+    def delete_zone(self, context, zone):
+        LOG.debug('Delete Zone')
         response, retry = self._make_and_send_dns_message(
-            domain.name,
+            zone.name,
             self.timeout,
             CC,
             DELETE,
@@ -109,10 +109,10 @@ class AgentPoolBackend(base.Backend):
         if response is None:
             raise exceptions.Backend()
 
-    def _make_and_send_dns_message(self, domain_name, timeout, opcode,
-                                  rdatatype, rdclass, dest_ip,
-                                  dest_port):
-        dns_message = self._make_dns_message(domain_name, opcode, rdatatype,
+    def _make_and_send_dns_message(self, zone_name, timeout, opcode,
+                                   rdatatype, rdclass, dest_ip,
+                                   dest_port):
+        dns_message = self._make_dns_message(zone_name, opcode, rdatatype,
                                              rdclass)
 
         retry = 0
@@ -121,7 +121,7 @@ class AgentPoolBackend(base.Backend):
         LOG.info(_LI("Sending '%(msg)s' for '%(zone)s' to '%(server)s:"
                      "%(port)d'.") %
                  {'msg': str(opcode),
-                  'zone': domain_name, 'server': dest_ip,
+                  'zone': zone_name, 'server': dest_ip,
                   'port': dest_port})
         response = self._send_dns_message(
             dns_message, dest_ip, dest_port, timeout)
@@ -131,7 +131,7 @@ class AgentPoolBackend(base.Backend):
                          "'%(zone)s' to '%(server)s:%(port)d'. Timeout="
                          "'%(timeout)d' seconds. Retry='%(retry)d'") %
                      {'msg': str(opcode),
-                      'zone': domain_name, 'server': dest_ip,
+                      'zone': zone_name, 'server': dest_ip,
                       'port': dest_port, 'timeout': timeout,
                       'retry': retry})
             response = None
@@ -140,7 +140,7 @@ class AgentPoolBackend(base.Backend):
                          "for '%(zone)s' to '%(server)s:%(port)d'. Timeout"
                          "='%(timeout)d' seconds. Retry='%(retry)d'") %
                      {'msg': str(opcode),
-                      'zone': domain_name, 'server': dest_ip,
+                      'zone': zone_name, 'server': dest_ip,
                       'port': dest_port, 'timeout': timeout,
                       'retry': retry})
             response = None
@@ -153,7 +153,7 @@ class AgentPoolBackend(base.Backend):
                          "send '%(msg)s' for '%(zone)s' to '%(server)s:"
                          "%(port)d'. Response message: %(resp)s") %
                      {'msg': str(opcode),
-                      'zone': domain_name, 'server': dest_ip,
+                      'zone': zone_name, 'server': dest_ip,
                       'port': dest_port, 'resp': str(response)})
             response = None
             return (response, retry)

@@ -33,7 +33,7 @@ class BaseView(object):
     as part of the API call.
 
     For example, in the V2 API, we did s/domain/zone/. Adapting a record
-    resources "domain_id" <-> "zone_id" is the responsibility of a View.
+    resources "tenant_id" <-> "project_id" is the responsibility of a View.
     """
     _resource_name = None
     _collection_name = None

@@ -67,34 +67,34 @@ class Backend(DriverPlugin):
 
     # Core Backend Interface
     @abc.abstractmethod
-    def create_domain(self, context, domain):
+    def create_zone(self, context, zone):
         """
-        Create a DNS domain.
+        Create a DNS zone.
 
         :param context: Security context information.
-        :param domain: the DNS domain.
+        :param zone: the DNS zone.
         """
 
-    def update_domain(self, context, domain):
+    def update_zone(self, context, zone):
         """
-        Update a DNS domain.
+        Update a DNS zone.
 
         :param context: Security context information.
-        :param domain: the DNS domain.
+        :param zone: the DNS zone.
         """
-        LOG.debug('Update Domain')
+        LOG.debug('Update Zone')
 
         self.mdns_api.notify_zone_changed(
-            context, domain, self.host, self.port, self.timeout,
+            context, zone, self.host, self.port, self.timeout,
             self.retry_interval, self.max_retries, self.delay)
 
     @abc.abstractmethod
-    def delete_domain(self, context, domain):
+    def delete_zone(self, context, zone):
         """
-        Delete a DNS domain.
+        Delete a DNS zone.
 
         :param context: Security context information.
-        :param domain: the DNS domain.
+        :param zone: the DNS zone.
         """
 
     def ping(self, context):

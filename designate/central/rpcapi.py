@@ -47,20 +47,21 @@ class CentralAPI(object):
         4.2 - Add methods for pool manager integration
         4.3 - Added Zone Transfer Methods
         5.0 - Remove dead server code
-        5.1 - Add xfr_domain
+        5.1 - Add xfr_zone
         5.2 - Add Zone Import methods
         5.3 - Add Zone Export method
         5.4 - Add asynchronous Zone Export methods
         5.5 - Add deleted zone purging task
-        5.6 - Changed 'purge_domains' function args
+        5.6 - Changed 'purge_zones' function args
+        6.0 - Renamed domains to zones
     """
-    RPC_API_VERSION = '5.6'
+    RPC_API_VERSION = '6.0'
 
     def __init__(self, topic=None):
         topic = topic if topic else cfg.CONF.central_topic
 
         target = messaging.Target(topic=topic, version=self.RPC_API_VERSION)
-        self.client = rpc.get_client(target, version_cap='5.6')
+        self.client = rpc.get_client(target, version_cap='6.0')
 
     @classmethod
     def get_instance(cls):
@@ -144,56 +145,55 @@ class CentralAPI(object):
         LOG.info(_LI("count_tenants: Calling central's count_tenants."))
         return self.client.call(context, 'count_tenants')
 
-    # Domain Methods
-    def create_domain(self, context, domain):
-        LOG.info(_LI("create_domain: Calling central's create_domain."))
-        return self.client.call(context, 'create_domain', domain=domain)
+    # Zone Methods
+    def create_zone(self, context, zone):
+        LOG.info(_LI("create_zone: Calling central's create_zone."))
+        return self.client.call(context, 'create_zone', zone=zone)
 
-    def get_domain(self, context, domain_id):
-        LOG.info(_LI("get_domain: Calling central's get_domain."))
-        return self.client.call(context, 'get_domain', domain_id=domain_id)
+    def get_zone(self, context, zone_id):
+        LOG.info(_LI("get_zone: Calling central's get_zone."))
+        return self.client.call(context, 'get_zone', zone_id=zone_id)
 
-    def get_domain_servers(self, context, domain_id):
-        LOG.info(_LI("get_domain_servers: "
-                     "Calling central's get_domain_servers."))
-        return self.client.call(context, 'get_domain_servers',
-                                domain_id=domain_id)
+    def get_zone_ns_records(self, context, zone_id):
+        LOG.info(_LI("get_zone_ns_records: "
+                     "Calling central's get_zone_ns_records."))
+        return self.client.call(context, 'get_zone_ns_records',
+                                zone_id=zone_id)
 
-    def find_domains(self, context, criterion=None, marker=None, limit=None,
-                     sort_key=None, sort_dir=None):
-        LOG.info(_LI("find_domains: Calling central's find_domains."))
-        return self.client.call(context, 'find_domains', criterion=criterion,
+    def find_zones(self, context, criterion=None, marker=None, limit=None,
+                   sort_key=None, sort_dir=None):
+        LOG.info(_LI("find_zones: Calling central's find_zones."))
+        return self.client.call(context, 'find_zones', criterion=criterion,
                                 marker=marker, limit=limit, sort_key=sort_key,
                                 sort_dir=sort_dir)
 
-    def find_domain(self, context, criterion=None):
-        LOG.info(_LI("find_domain: Calling central's find_domain."))
-        return self.client.call(context, 'find_domain', criterion=criterion)
+    def find_zone(self, context, criterion=None):
+        LOG.info(_LI("find_zone: Calling central's find_zone."))
+        return self.client.call(context, 'find_zone', criterion=criterion)
 
-    def update_domain(self, context, domain, increment_serial=True):
-        LOG.info(_LI("update_domain: Calling central's update_domain."))
-        return self.client.call(context, 'update_domain', domain=domain,
+    def update_zone(self, context, zone, increment_serial=True):
+        LOG.info(_LI("update_zone: Calling central's update_zone."))
+        return self.client.call(context, 'update_zone', zone=zone,
                                 increment_serial=increment_serial)
 
-    def delete_domain(self, context, domain_id):
-        LOG.info(_LI("delete_domain: Calling central's delete_domain."))
-        return self.client.call(context, 'delete_domain', domain_id=domain_id)
+    def delete_zone(self, context, zone_id):
+        LOG.info(_LI("delete_zone: Calling central's delete_zone."))
+        return self.client.call(context, 'delete_zone', zone_id=zone_id)
 
-    def purge_domains(self, context, criterion, limit=None):
+    def purge_zones(self, context, criterion, limit=None):
         LOG.info(_LI(
-            "purge_domains: Calling central's purge_domains."
+            "purge_zones: Calling central's purge_zones."
         ))
-        cctxt = self.client.prepare(version='5.6')
-        return cctxt.call(context, 'purge_domains',
+        return self.client.call(context, 'purge_zones',
                           criterion=criterion, limit=limit)
 
-    def count_domains(self, context, criterion=None):
-        LOG.info(_LI("count_domains: Calling central's count_domains."))
-        return self.client.call(context, 'count_domains', criterion=criterion)
+    def count_zones(self, context, criterion=None):
+        LOG.info(_LI("count_zones: Calling central's count_zones."))
+        return self.client.call(context, 'count_zones', criterion=criterion)
 
-    def touch_domain(self, context, domain_id):
-        LOG.info(_LI("touch_domain: Calling central's touch_domain."))
-        return self.client.call(context, 'touch_domain', domain_id=domain_id)
+    def touch_zone(self, context, zone_id):
+        LOG.info(_LI("touch_zone: Calling central's touch_zone."))
+        return self.client.call(context, 'touch_zone', zone_id=zone_id)
 
     # TLD Methods
     def create_tld(self, context, tld):
@@ -220,14 +220,14 @@ class CentralAPI(object):
         return self.client.call(context, 'delete_tld', tld_id=tld_id)
 
     # RecordSet Methods
-    def create_recordset(self, context, domain_id, recordset):
+    def create_recordset(self, context, zone_id, recordset):
         LOG.info(_LI("create_recordset: Calling central's create_recordset."))
         return self.client.call(context, 'create_recordset',
-                                domain_id=domain_id, recordset=recordset)
+                                zone_id=zone_id, recordset=recordset)
 
-    def get_recordset(self, context, domain_id, recordset_id):
+    def get_recordset(self, context, zone_id, recordset_id):
         LOG.info(_LI("get_recordset: Calling central's get_recordset."))
-        return self.client.call(context, 'get_recordset', domain_id=domain_id,
+        return self.client.call(context, 'get_recordset', zone_id=zone_id,
                                 recordset_id=recordset_id)
 
     def find_recordsets(self, context, criterion=None, marker=None, limit=None,
@@ -252,11 +252,11 @@ class CentralAPI(object):
                                 recordset=recordset,
                                 increment_serial=increment_serial)
 
-    def delete_recordset(self, context, domain_id, recordset_id,
+    def delete_recordset(self, context, zone_id, recordset_id,
                          increment_serial=True):
         LOG.info(_LI("delete_recordset: Calling central's delete_recordset."))
         return self.client.call(context, 'delete_recordset',
-                                domain_id=domain_id,
+                                zone_id=zone_id,
                                 recordset_id=recordset_id,
                                 increment_serial=increment_serial)
 
@@ -266,19 +266,19 @@ class CentralAPI(object):
                                 criterion=criterion)
 
     # Record Methods
-    def create_record(self, context, domain_id, recordset_id, record,
+    def create_record(self, context, zone_id, recordset_id, record,
                       increment_serial=True):
         LOG.info(_LI("create_record: Calling central's create_record."))
         return self.client.call(context, 'create_record',
-                                domain_id=domain_id,
+                                zone_id=zone_id,
                                 recordset_id=recordset_id,
                                 record=record,
                                 increment_serial=increment_serial)
 
-    def get_record(self, context, domain_id, recordset_id, record_id):
+    def get_record(self, context, zone_id, recordset_id, record_id):
         LOG.info(_LI("get_record: Calling central's get_record."))
         return self.client.call(context, 'get_record',
-                                domain_id=domain_id,
+                                zone_id=zone_id,
                                 recordset_id=recordset_id,
                                 record_id=record_id)
 
@@ -299,11 +299,11 @@ class CentralAPI(object):
                                 record=record,
                                 increment_serial=increment_serial)
 
-    def delete_record(self, context, domain_id, recordset_id, record_id,
+    def delete_record(self, context, zone_id, recordset_id, record_id,
                       increment_serial=True):
         LOG.info(_LI("delete_record: Calling central's delete_record."))
         return self.client.call(context, 'delete_record',
-                                domain_id=domain_id,
+                                zone_id=zone_id,
                                 recordset_id=recordset_id,
                                 record_id=record_id,
                                 increment_serial=increment_serial)
@@ -312,24 +312,24 @@ class CentralAPI(object):
         LOG.info(_LI("count_records: Calling central's count_records."))
         return self.client.call(context, 'count_records', criterion=criterion)
 
-    # Misc. Report combining counts for tenants, domains and records
+    # Misc. Report combining counts for tenants, zones and records
     def count_report(self, context, criterion=None):
         LOG.info(_LI("count_report: Calling central's count_report."))
         return self.client.call(context, 'count_report', criterion=criterion)
 
     # Sync Methods
-    def sync_domains(self, context):
-        LOG.info(_LI("sync_domains: Calling central's sync_domains."))
-        return self.client.call(context, 'sync_domains')
+    def sync_zones(self, context):
+        LOG.info(_LI("sync_zones: Calling central's sync_zones."))
+        return self.client.call(context, 'sync_zones')
 
-    def sync_domain(self, context, domain_id):
-        LOG.info(_LI("sync_domain: Calling central's sync_domains."))
-        return self.client.call(context, 'sync_domain', domain_id=domain_id)
+    def sync_zone(self, context, zone_id):
+        LOG.info(_LI("sync_zone: Calling central's sync_zones."))
+        return self.client.call(context, 'sync_zone', zone_id=zone_id)
 
-    def sync_record(self, context, domain_id, recordset_id, record_id):
+    def sync_record(self, context, zone_id, recordset_id, record_id):
         LOG.info(_LI("sync_record: Calling central's sync_record."))
         return self.client.call(context, 'sync_record',
-                                domain_id=domain_id,
+                                zone_id=zone_id,
                                 recordset_id=recordset_id,
                                 record_id=record_id)
 
@@ -348,7 +348,7 @@ class CentralAPI(object):
         return self.client.call(context, 'update_floatingip', region=region,
                                 floatingip_id=floatingip_id, values=values)
 
-    # Blacklisted Domain Methods
+    # Blacklisted Zone Methods
     def create_blacklist(self, context, blacklist):
         LOG.info(_LI("create_blacklist: Calling central's create_blacklist"))
         return self.client.call(context, 'create_blacklist',
@@ -409,11 +409,11 @@ class CentralAPI(object):
         return self.client.call(context, 'delete_pool', pool_id=pool_id)
 
     # Pool Manager Integration Methods
-    def update_status(self, context, domain_id, status, serial):
+    def update_status(self, context, zone_id, status, serial):
         LOG.info(_LI("update_status: Calling central's update_status "
-                     "for %(domain_id)s : %(status)s : %(serial)s") %
-                 {'domain_id': domain_id, 'status': status, 'serial': serial})
-        self.client.cast(context, 'update_status', domain_id=domain_id,
+                     "for %(zone_id)s : %(status)s : %(serial)s") %
+                 {'zone_id': zone_id, 'status': status, 'serial': serial})
+        self.client.cast(context, 'update_status', zone_id=zone_id,
                          status=status, serial=serial)
 
     # Zone Ownership Transfers
@@ -509,10 +509,9 @@ class CentralAPI(object):
             'delete_zone_transfer_accept',
             zone_transfer_accept_id=zone_transfer_accept_id)
 
-    def xfr_domain(self, context, domain_id):
-        LOG.info(_LI("xfr_domain: Calling central's xfr_domain"))
-        cctxt = self.client.prepare(version='5.3')
-        return cctxt.call(context, 'xfr_domain', domain_id=domain_id)
+    def xfr_zone(self, context, zone_id):
+        LOG.info(_LI("xfr_zone: Calling central's xfr_zone"))
+        return self.client.call(context, 'xfr_zone', zone_id=zone_id)
 
     # Zone Import Methods
     def create_zone_import(self, context, request_body):

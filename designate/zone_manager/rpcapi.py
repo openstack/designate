@@ -57,11 +57,11 @@ class ZoneManagerAPI(object):
         return ZONE_MANAGER_API
 
     # Zone Export
-    def start_zone_export(self, context, domain, export):
+    def start_zone_export(self, context, zone, export):
         LOG.info(_LI("start_zone_export: "
                      "Calling zone_manager's start_zone_export."))
 
-        return self.client.cast(context, 'start_zone_export', domain=domain,
+        return self.client.cast(context, 'start_zone_export', zone=zone,
                                 export=export)
 
     def render_zone(self, context, zone_id):

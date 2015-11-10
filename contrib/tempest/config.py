@@ -305,7 +305,7 @@ ComputeAdminGroup = [
                help="API key to use when authenticating as admin.",
                secret=True),
     cfg.StrOpt('domain_name',
-               help="Domain name for authentication as admin (Keystone V3)."
+               help="Zone name for authentication as admin (Keystone V3)."
                     "The same domain applies to user and project"),
 ]
 

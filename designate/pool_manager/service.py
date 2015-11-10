@@ -71,7 +71,7 @@ class Service(service.RPCService, coordination.CoordinationMixin,
 
         1.0 - Initial version
     """
-    RPC_API_VERSION = '1.0'
+    RPC_API_VERSION = '2.0'
 
     target = messaging.Target(version=RPC_API_VERSION)
 
@@ -180,22 +180,22 @@ class Service(service.RPCService, coordination.CoordinationMixin,
 
             try:
                 # Handle Deletion Failures
-                domains = self._get_failed_domains(context, DELETE_ACTION)
+                zones = self._get_failed_zones(context, DELETE_ACTION)
 
-                for domain in domains:
-                    self.delete_domain(context, domain)
+                for zone in zones:
+                    self.delete_zone(context, zone)
 
                 # Handle Creation Failures
-                domains = self._get_failed_domains(context, CREATE_ACTION)
+                zones = self._get_failed_zones(context, CREATE_ACTION)
 
-                for domain in domains:
-                    self.create_domain(context, domain)
+                for zone in zones:
+                    self.create_zone(context, zone)
 
                 # Handle Update Failures
-                domains = self._get_failed_domains(context, UPDATE_ACTION)
+                zones = self._get_failed_zones(context, UPDATE_ACTION)
 
-                for domain in domains:
-                    self.update_domain(context, domain)
+                for zone in zones:
+                    self.update_zone(context, zone)
 
             except Exception:
                 LOG.exception(_LE('An unhandled exception in periodic '
@@ -224,14 +224,14 @@ class Service(service.RPCService, coordination.CoordinationMixin,
                 current = utils.increment_serial()
                 criterion['serial'] = ">%s" % (current - periodic_sync_seconds)
 
-            domains = self.central_api.find_domains(context, criterion)
+            zones = self.central_api.find_zones(context, criterion)
 
             try:
-                for domain in domains:
-                    # TODO(kiall): If the domain was created within the last
+                for zone in zones:
+                    # TODO(kiall): If the zone was created within the last
                     #              periodic_sync_seconds, attempt to recreate
                     #              to fill in targets which may have failed.
-                    self.update_domain(context, domain)
+                    self.update_zone(context, zone)
 
             except Exception:
                 LOG.exception(_LE('An unhandled exception in periodic '
@@ -239,73 +239,73 @@ class Service(service.RPCService, coordination.CoordinationMixin,
 
     # Standard Create/Update/Delete Methods
 
-    def create_domain(self, context, domain):
+    def create_zone(self, context, zone):
         """
         :param context: Security context information.
-        :param domain: Domain to be created
+        :param zone: Zone to be created
         :return: None
         """
-        LOG.info(_LI("Creating new domain %s"), domain.name)
+        LOG.info(_LI("Creating new zone %s"), zone.name)
 
         results = []
 
-        # Create the domain on each of the Pool Targets
+        # Create the zone on each of the Pool Targets
         for target in self.pool.targets:
             results.append(
-                self._create_domain_on_target(context, target, domain)
+                self._create_zone_on_target(context, target, zone)
             )
 
         if self._exceed_or_meet_threshold(results.count(True)):
-            LOG.debug('Consensus reached for creating domain %(domain)s '
-                      'on pool targets' % {'domain': domain.name})
+            LOG.debug('Consensus reached for creating zone %(zone)s '
+                      'on pool targets' % {'zone': zone.name})
 
         else:
 
-            LOG.warn(_LW('Consensus not reached for creating domain %(domain)s'
-                         ' on pool targets') % {'domain': domain.name})
+            LOG.warn(_LW('Consensus not reached for creating zone %(zone)s'
+                         ' on pool targets') % {'zone': zone.name})
 
             self.central_api.update_status(
-                    context, domain.id, ERROR_STATUS, domain.serial)
+                    context, zone.id, ERROR_STATUS, zone.serial)
 
             return
 
         # Send a NOTIFY to each also-notifies
         for also_notify in self.pool.also_notifies:
-            self._update_domain_on_also_notify(context, also_notify, domain)
+            self._update_zone_on_also_notify(context, also_notify, zone)
 
         # Send a NOTIFY to each nameserver
         for nameserver in self.pool.nameservers:
             create_status = self._build_status_object(
-                nameserver, domain, CREATE_ACTION)
+                nameserver, zone, CREATE_ACTION)
             self.cache.store(context, create_status)
 
             self.mdns_api.poll_for_serial_number(
-                context, domain, nameserver, self.timeout,
+                context, zone, nameserver, self.timeout,
                 self.retry_interval, self.max_retries, self.delay)
 
-    def _create_domain_on_target(self, context, target, domain):
+    def _create_zone_on_target(self, context, target, zone):
         """
         :param context: Security context information.
-        :param target: Target to create Domain on
-        :param domain: Domain to be created
+        :param target: Target to create Zone on
+        :param zone: Zone to be created
         :return: True/False
         """
-        LOG.debug("Creating domain %s on target %s", domain.name, target.id)
+        LOG.debug("Creating zone %s on target %s", zone.name, target.id)
 
         backend = self.target_backends[target.id]
         retries = 0
 
         while retries < self.max_retries:
             try:
-                backend.create_domain(context, domain)
+                backend.create_zone(context, zone)
 
                 return True
             except Exception:
                 retries += 1
-                LOG.exception(_LE("Failed to create domain %(domain)s on "
+                LOG.exception(_LE("Failed to create zone %(zone)s on "
                              "target %(target)s on attempt %(attempt)d"),
                         {
-                           'domain': domain.name,
+                           'zone': zone.name,
                            'target': target.id,
                            'attempt': retries
                         })
@@ -313,140 +313,140 @@ class Service(service.RPCService, coordination.CoordinationMixin,
 
         return False
 
-    def update_domain(self, context, domain):
+    def update_zone(self, context, zone):
         """
         :param context: Security context information.
-        :param domain: Domain to be updated
+        :param zone: Zone to be updated
         :return: None
         """
-        LOG.info(_LI("Updating domain %s"), domain.name)
+        LOG.info(_LI("Updating zone %s"), zone.name)
 
         results = []
 
-        # Update the domain on each of the Pool Targets
+        # Update the zone on each of the Pool Targets
         for target in self.pool.targets:
             results.append(
-                self._update_domain_on_target(context, target, domain))
+                self._update_zone_on_target(context, target, zone))
 
         if self._exceed_or_meet_threshold(results.count(True)):
-            LOG.debug('Consensus reached for updating domain %(domain)s '
-                      'on pool targets' % {'domain': domain.name})
+            LOG.debug('Consensus reached for updating zone %(zone)s '
+                      'on pool targets' % {'zone': zone.name})
 
         else:
-            LOG.warn(_LW('Consensus not reached for updating domain %(domain)s'
-                         ' on pool targets') % {'domain': domain.name})
+            LOG.warn(_LW('Consensus not reached for updating zone %(zone)s'
+                         ' on pool targets') % {'zone': zone.name})
 
             self.central_api.update_status(
-                    context, domain.id, ERROR_STATUS, domain.serial)
+                    context, zone.id, ERROR_STATUS, zone.serial)
 
             return
 
         # Send a NOTIFY to each also-notifies
         for also_notify in self.pool.also_notifies:
-            self._update_domain_on_also_notify(context, also_notify, domain)
+            self._update_zone_on_also_notify(context, also_notify, zone)
 
         # Ensure the change has propogated to each nameserver
         for nameserver in self.pool.nameservers:
             # See if there is already another update in progress
             try:
                 update_status = self.cache.retrieve(
-                    context, nameserver.id, domain.id, UPDATE_ACTION)
+                    context, nameserver.id, zone.id, UPDATE_ACTION)
             except exceptions.PoolManagerStatusNotFound:
                 update_status = self._build_status_object(
-                    nameserver, domain, UPDATE_ACTION)
+                    nameserver, zone, UPDATE_ACTION)
                 self.cache.store(context, update_status)
 
             self.mdns_api.poll_for_serial_number(
-                context, domain, nameserver, self.timeout,
+                context, zone, nameserver, self.timeout,
                 self.retry_interval, self.max_retries, self.delay)
 
-    def _update_domain_on_target(self, context, target, domain):
+    def _update_zone_on_target(self, context, target, zone):
         """
         :param context: Security context information.
-        :param target: Target to update Domain on
-        :param domain: Domain to be updated
+        :param target: Target to update Zone on
+        :param zone: Zone to be updated
         :return: True/False
         """
-        LOG.debug("Updating domain %s on target %s", domain.name, target.id)
+        LOG.debug("Updating zone %s on target %s", zone.name, target.id)
 
         backend = self.target_backends[target.id]
 
         try:
-            backend.update_domain(context, domain)
+            backend.update_zone(context, zone)
 
             return True
         except Exception:
-            LOG.exception(_LE("Failed to update domain %(domain)s on target "
+            LOG.exception(_LE("Failed to update zone %(zone)s on target "
                               "%(target)s"),
-                          {'domain': domain.name, 'target': target.id})
+                          {'zone': zone.name, 'target': target.id})
             return False
 
-    def _update_domain_on_also_notify(self, context, also_notify, domain):
-        LOG.info(_LI('Updating domain %(domain)s on also_notify %(server)s.') %
-                 {'domain': domain.name,
+    def _update_zone_on_also_notify(self, context, also_notify, zone):
+        LOG.info(_LI('Updating zone %(zone)s on also_notify %(server)s.') %
+                 {'zone': zone.name,
                   'server': self._get_destination(also_notify)})
 
         self.mdns_api.notify_zone_changed(
-            context, domain, also_notify.host, also_notify.port, self.timeout,
+            context, zone, also_notify.host, also_notify.port, self.timeout,
             self.retry_interval, self.max_retries, 0)
 
-    def delete_domain(self, context, domain):
+    def delete_zone(self, context, zone):
         """
         :param context: Security context information.
-        :param domain: Domain to be deleted
+        :param zone: Zone to be deleted
         :return: None
         """
-        LOG.info(_LI("Deleting domain %s"), domain.name)
+        LOG.info(_LI("Deleting zone %s"), zone.name)
 
         results = []
 
-        # Delete the domain on each of the Pool Targets
+        # Delete the zone on each of the Pool Targets
         for target in self.pool.targets:
             results.append(
-                self._delete_domain_on_target(context, target, domain))
+                self._delete_zone_on_target(context, target, zone))
 
-        # TODO(kiall): We should monitor that the Domain is actually deleted
+        # TODO(kiall): We should monitor that the Zone is actually deleted
         #              correctly on each of the nameservers, rather than
         #              assuming a successful delete-on-target is OK as we have
         #              in the past.
         if self._exceed_or_meet_threshold(
                 results.count(True), MAXIMUM_THRESHOLD):
-            LOG.debug('Consensus reached for deleting domain %(domain)s '
-                      'on pool targets' % {'domain': domain.name})
+            LOG.debug('Consensus reached for deleting zone %(zone)s '
+                      'on pool targets' % {'zone': zone.name})
 
             self.central_api.update_status(
-                    context, domain.id, SUCCESS_STATUS, domain.serial)
+                    context, zone.id, SUCCESS_STATUS, zone.serial)
 
         else:
-            LOG.warn(_LW('Consensus not reached for deleting domain %(domain)s'
-                         ' on pool targets') % {'domain': domain.name})
+            LOG.warn(_LW('Consensus not reached for deleting zone %(zone)s'
+                         ' on pool targets') % {'zone': zone.name})
 
             self.central_api.update_status(
-                    context, domain.id, ERROR_STATUS, domain.serial)
+                    context, zone.id, ERROR_STATUS, zone.serial)
 
-    def _delete_domain_on_target(self, context, target, domain):
+    def _delete_zone_on_target(self, context, target, zone):
         """
         :param context: Security context information.
-        :param target: Target to delete Domain from
-        :param domain: Domain to be deleted
+        :param target: Target to delete Zone from
+        :param zone: Zone to be deleted
         :return: True/False
         """
-        LOG.debug("Deleting domain %s on target %s", domain.name, target.id)
+        LOG.debug("Deleting zone %s on target %s", zone.name, target.id)
 
         backend = self.target_backends[target.id]
         retries = 0
 
         while retries < self.max_retries:
             try:
-                backend.delete_domain(context, domain)
+                backend.delete_zone(context, zone)
 
                 return True
             except Exception:
                 retries += 1
-                LOG.exception(_LE("Failed to delete domain %(domain)s on "
+                LOG.exception(_LE("Failed to delete zone %(zone)s on "
                              "target %(target)s on attempt %(attempt)d"),
                         {
-                           'domain': domain.name,
+                           'zone': zone.name,
                            'target': target.id,
                            'attempt': retries
                         })
@@ -454,38 +454,38 @@ class Service(service.RPCService, coordination.CoordinationMixin,
 
         return False
 
-    def update_status(self, context, domain, nameserver, status,
+    def update_status(self, context, zone, nameserver, status,
                       actual_serial):
         """
         update_status is called by mdns for creates and updates.
         deletes are handled by the backend entirely and status is determined
         at the time of delete itself.
         :param context: Security context information.
-        :param domain: The designate domain object.
+        :param zone: The designate zone object.
         :param nameserver: The nameserver for which a status update is being
                            sent.
         :param status: The status, 'SUCCESS' or 'ERROR'.
         :param actual_serial: The actual serial number received from the name
-                              server for the domain.
+                              server for the zone.
         :return: None
         """
         LOG.debug("Calling update_status for %s : %s : %s : %s" %
-                  (domain.name, domain.action, status, actual_serial))
-        action = UPDATE_ACTION if domain.action == 'NONE' else domain.action
+                  (zone.name, zone.action, status, actual_serial))
+        action = UPDATE_ACTION if zone.action == 'NONE' else zone.action
 
-        with lockutils.lock('update-status-%s' % domain.id):
+        with lockutils.lock('update-status-%s' % zone.id):
             try:
                 current_status = self.cache.retrieve(
-                    context, nameserver.id, domain.id, action)
+                    context, nameserver.id, zone.id, action)
             except exceptions.PoolManagerStatusNotFound:
                 current_status = self._build_status_object(
-                    nameserver, domain, action)
+                    nameserver, zone, action)
                 self.cache.store(context, current_status)
             cache_serial = current_status.serial_number
 
-            LOG.debug('For domain %s : %s on nameserver %s the cache serial '
+            LOG.debug('For zone %s : %s on nameserver %s the cache serial '
                       'is %s and the actual serial is %s.' %
-                      (domain.name, action,
+                      (zone.name, action,
                        self._get_destination(nameserver),
                        cache_serial, actual_serial))
             if actual_serial and cache_serial <= actual_serial:
@@ -493,51 +493,51 @@ class Service(service.RPCService, coordination.CoordinationMixin,
                 current_status.serial_number = actual_serial
                 self.cache.store(context, current_status)
 
-            consensus_serial = self._get_consensus_serial(context, domain)
+            consensus_serial = self._get_consensus_serial(context, zone)
 
             # If there is a valid consensus serial we can still send a success
             # for that serial.
             # If there is a higher error serial we can also send an error for
             # the error serial.
             if consensus_serial != 0 and cache_serial <= consensus_serial \
-                    and domain.status != 'ACTIVE':
-                LOG.info(_LI('For domain %(domain)s '
+                    and zone.status != 'ACTIVE':
+                LOG.info(_LI('For zone %(zone)s '
                              'the consensus serial is %(consensus_serial)s.') %
-                         {'domain': domain.name,
+                         {'zone': zone.name,
                           'consensus_serial': consensus_serial})
                 self.central_api.update_status(
-                    context, domain.id, SUCCESS_STATUS, consensus_serial)
+                    context, zone.id, SUCCESS_STATUS, consensus_serial)
 
             if status == ERROR_STATUS:
                 error_serial = self._get_error_serial(
-                    context, domain, consensus_serial)
+                    context, zone, consensus_serial)
                 if error_serial > consensus_serial or error_serial == 0:
-                    LOG.warn(_LW('For domain %(domain)s '
+                    LOG.warn(_LW('For zone %(zone)s '
                                  'the error serial is %(error_serial)s.') %
-                             {'domain': domain.name,
+                             {'zone': zone.name,
                               'error_serial': error_serial})
                     self.central_api.update_status(
-                        context, domain.id, ERROR_STATUS, error_serial)
+                        context, zone.id, ERROR_STATUS, error_serial)
 
             if status == NO_DOMAIN_STATUS and action != DELETE_ACTION:
-                LOG.warn(_LW('Domain %(domain)s is not present in some '
-                             'targets') % {'domain': domain.name})
+                LOG.warn(_LW('Zone %(zone)s is not present in some '
+                             'targets') % {'zone': zone.name})
                 self.central_api.update_status(
-                    context, domain.id, NO_DOMAIN_STATUS, 0)
+                    context, zone.id, NO_DOMAIN_STATUS, 0)
 
-            if consensus_serial == domain.serial and self._is_consensus(
-                    context, domain, action, SUCCESS_STATUS,
+            if consensus_serial == zone.serial and self._is_consensus(
+                    context, zone, action, SUCCESS_STATUS,
                     MAXIMUM_THRESHOLD):
-                self._clear_cache(context, domain, action)
+                self._clear_cache(context, zone, action)
 
     # Utility Methods
-    def _get_failed_domains(self, context, action):
+    def _get_failed_zones(self, context, action):
         criterion = {
             'pool_id': CONF['service:pool_manager'].pool_id,
             'action': action,
             'status': 'ERROR'
         }
-        return self.central_api.find_domains(context, criterion)
+        return self.central_api.find_zones(context, criterion)
 
     @staticmethod
     def _get_destination(nameserver):
@@ -567,10 +567,10 @@ class Service(service.RPCService, coordination.CoordinationMixin,
     def _get_serials_descending(self, pool_manager_statuses):
         return self._get_sorted_serials(pool_manager_statuses, descending=True)
 
-    def _is_consensus(self, context, domain, action, status, threshold=None):
+    def _is_consensus(self, context, zone, action, status, threshold=None):
         status_count = 0
         pool_manager_statuses = self._retrieve_statuses(
-            context, domain, action)
+            context, zone, action)
         for pool_manager_status in pool_manager_statuses:
             if pool_manager_status.status == status:
                 status_count += 1
@@ -578,11 +578,11 @@ class Service(service.RPCService, coordination.CoordinationMixin,
             threshold = self.threshold
         return self._exceed_or_meet_threshold(status_count, threshold)
 
-    def _get_consensus_serial(self, context, domain):
+    def _get_consensus_serial(self, context, zone):
         consensus_serial = 0
-        action = UPDATE_ACTION if domain.action == 'NONE' else domain.action
+        action = UPDATE_ACTION if zone.action == 'NONE' else zone.action
 
-        pm_statuses = self._retrieve_statuses(context, domain, action)
+        pm_statuses = self._retrieve_statuses(context, zone, action)
         for serial in self._get_serials_descending(pm_statuses):
             serial_count = 0
             for pm_status in pm_statuses:
@@ -593,12 +593,12 @@ class Service(service.RPCService, coordination.CoordinationMixin,
                 break
         return consensus_serial
 
-    def _get_error_serial(self, context, domain, consensus_serial):
+    def _get_error_serial(self, context, zone, consensus_serial):
         error_serial = 0
-        action = UPDATE_ACTION if domain.action == 'NONE' else domain.action
+        action = UPDATE_ACTION if zone.action == 'NONE' else zone.action
 
-        if self._is_consensus(context, domain, action, ERROR_STATUS):
-            pm_statuses = self._retrieve_statuses(context, domain, action)
+        if self._is_consensus(context, zone, action, ERROR_STATUS):
+            pm_statuses = self._retrieve_statuses(context, zone, action)
             for serial in self._get_serials_ascending(pm_statuses):
                 if serial > consensus_serial:
                     error_serial = serial
@@ -608,10 +608,10 @@ class Service(service.RPCService, coordination.CoordinationMixin,
     # When we hear back from the nameserver, the serial_number is set to the
     # value the nameserver
     @staticmethod
-    def _build_status_object(nameserver, domain, action):
+    def _build_status_object(nameserver, zone, action):
         values = {
             'nameserver_id': nameserver.id,
-            'domain_id': domain.id,
+            'zone_id': zone.id,
             'status': None,
             'serial_number': 0,
             'action': action
@@ -619,9 +619,9 @@ class Service(service.RPCService, coordination.CoordinationMixin,
         return objects.PoolManagerStatus(**values)
 
     # Methods for manipulating the cache.
-    def _clear_cache(self, context, domain, action=None):
-        LOG.debug('Clearing cache for domain %s with action %s.' %
-                  (domain.name, action))
+    def _clear_cache(self, context, zone, action=None):
+        LOG.debug('Clearing cache for zone %s with action %s.' %
+                  (zone.name, action))
 
         pool_manager_statuses = []
         if action:
@@ -632,7 +632,7 @@ class Service(service.RPCService, coordination.CoordinationMixin,
         for nameserver in self.pool.nameservers:
             for action in actions:
                 pool_manager_status = self._build_status_object(
-                    nameserver, domain, action)
+                    nameserver, zone, action)
                 pool_manager_statuses.append(pool_manager_status)
 
         for pool_manager_status in pool_manager_statuses:
@@ -642,22 +642,22 @@ class Service(service.RPCService, coordination.CoordinationMixin,
             except exceptions.PoolManagerStatusNotFound:
                 pass
 
-    def _retrieve_from_mdns(self, context, nameserver, domain, action):
+    def _retrieve_from_mdns(self, context, nameserver, zone, action):
         try:
             (status, actual_serial, retries) = \
                 self.mdns_api.get_serial_number(
-                    context, domain, nameserver.host, nameserver.port,
+                    context, zone, nameserver.host, nameserver.port,
                     self.timeout, self.retry_interval, self.max_retries,
                     self.delay)
         except messaging.MessagingException as msg_ex:
-            LOG.debug('Could not retrieve status and serial for domain %s on '
+            LOG.debug('Could not retrieve status and serial for zone %s on '
                       'nameserver %s with action %s (%s: %s)' %
-                      (domain.name, self._get_destination(nameserver), action,
+                      (zone.name, self._get_destination(nameserver), action,
                        type(msg_ex), str(msg_ex)))
             return None
 
         pool_manager_status = self._build_status_object(
-            nameserver, domain, action)
+            nameserver, zone, action)
 
         if status == NO_DOMAIN_STATUS:
             if action == CREATE_ACTION:
@@ -671,37 +671,37 @@ class Service(service.RPCService, coordination.CoordinationMixin,
             pool_manager_status.status = status
         pool_manager_status.serial_number = actual_serial \
             if actual_serial is not None else 0
-        LOG.debug('Retrieved status %s and serial %s for domain %s '
+        LOG.debug('Retrieved status %s and serial %s for zone %s '
                   'on nameserver %s with action %s from mdns.' %
                   (pool_manager_status.status,
                    pool_manager_status.serial_number,
-                   domain.name, self._get_destination(nameserver), action))
+                   zone.name, self._get_destination(nameserver), action))
         self.cache.store(context, pool_manager_status)
 
         return pool_manager_status
 
-    def _retrieve_statuses(self, context, domain, action):
+    def _retrieve_statuses(self, context, zone, action):
         pool_manager_statuses = []
         for nameserver in self.pool.nameservers:
             try:
                 pool_manager_status = self.cache.retrieve(
-                    context, nameserver.id, domain.id, action)
+                    context, nameserver.id, zone.id, action)
                 LOG.debug('Cache hit! Retrieved status %s and serial %s '
-                          'for domain %s on nameserver %s with action %s from '
+                          'for zone %s on nameserver %s with action %s from '
                           'the cache.' %
                           (pool_manager_status.status,
                            pool_manager_status.serial_number,
-                           domain.name,
+                           zone.name,
                            self._get_destination(nameserver), action))
             except exceptions.PoolManagerStatusNotFound:
                 LOG.debug('Cache miss! Did not retrieve status and serial '
-                          'for domain %s on nameserver %s with action %s from '
+                          'for zone %s on nameserver %s with action %s from '
                           'the cache. Getting it from the server.' %
-                          (domain.name,
+                          (zone.name,
                            self._get_destination(nameserver),
                            action))
                 pool_manager_status = self._retrieve_from_mdns(
-                    context, nameserver, domain, action)
+                    context, nameserver, zone, action)
 
             if pool_manager_status is not None:
                 pool_manager_statuses.append(pool_manager_status)

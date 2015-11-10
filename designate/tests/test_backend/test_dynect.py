@@ -153,9 +153,9 @@ class DynECTTestsCase(BackendTestCase):
         self.stub_url('POST', ['/Session'], json=LOGIN_SUCCESS)
         self.stub_url('DELETE', ['/Session'], json=LOGIN_SUCCESS)
 
-    def test_create_domain_raise_dynclienterror(self):
+    def test_create_zone_raise_dynclienterror(self):
         context = self.get_context()
-        domain = self.create_domain()
+        zone = self.create_zone()
 
         self._stub_login()
 
@@ -165,15 +165,15 @@ class DynECTTestsCase(BackendTestCase):
             status_code=400)
 
         with testtools.ExpectedException(impl_dynect.DynClientError):
-            self.backend.create_domain(context, domain)
+            self.backend.create_zone(context, zone)
 
-    def test_create_domain_duplicate_updates_existing(self):
+    def test_create_zone_duplicate_updates_existing(self):
         context = self.get_context()
-        domain = self.create_domain()
+        zone = self.create_zone()
 
         self._stub_login()
 
-        parts = ['/Secondary', '/%s' % domain['name'].rstrip('.')]
+        parts = ['/Secondary', '/%s' % zone['name'].rstrip('.')]
 
         self.stub_url(
             'POST', parts,
@@ -182,6 +182,6 @@ class DynECTTestsCase(BackendTestCase):
 
         update = self.stub_url('PUT', parts, json=ACTIVATE_SUCCESS)
 
-        self.backend.create_domain(context, domain)
+        self.backend.create_zone(context, zone)
 
         self.assertTrue(update.called)

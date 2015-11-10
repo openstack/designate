@@ -29,11 +29,11 @@ class SqlalchemyPoolManagerCacheTest(PoolManagerCacheTestCase, TestCase):
         self.cache.store(self.admin_context, expected)
 
         actual = self.cache.retrieve(
-            self.admin_context, expected.nameserver_id, expected.domain_id,
+            self.admin_context, expected.nameserver_id, expected.zone_id,
             expected.action)
 
         self.assertEqual(expected.nameserver_id, actual.nameserver_id)
-        self.assertEqual(expected.domain_id, actual.domain_id)
+        self.assertEqual(expected.zone_id, actual.zone_id)
         self.assertEqual(expected.status, actual.status)
         self.assertEqual(expected.serial_number, actual.serial_number)
         self.assertEqual(expected.action, actual.action)

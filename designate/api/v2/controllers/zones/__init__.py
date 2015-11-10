@@ -49,7 +49,7 @@ class ZonesController(rest.RestController):
 
         return DesignateAdapter.render(
             'API_v2',
-            self.central_api.get_domain(context, zone_id),
+            self.central_api.get_zone(context, zone_id),
             request=request)
 
     @pecan.expose(template='json:', content_type='application/json')
@@ -70,7 +70,7 @@ class ZonesController(rest.RestController):
 
         return DesignateAdapter.render(
             'API_v2',
-            self.central_api.find_domains(
+            self.central_api.find_zones(
                 context, criterion, marker, limit, sort_key, sort_dir),
             request=request)
 
@@ -90,7 +90,7 @@ class ZonesController(rest.RestController):
             if 'type' not in zone:
                 zone['type'] = 'PRIMARY'
 
-        zone = DesignateAdapter.parse('API_v2', zone, objects.Domain())
+        zone = DesignateAdapter.parse('API_v2', zone, objects.Zone())
         zone.validate()
 
         if zone.type == 'SECONDARY':
@@ -98,7 +98,7 @@ class ZonesController(rest.RestController):
             zone['email'] = mgmt_email
 
         # Create the zone
-        zone = self.central_api.create_domain(context, zone)
+        zone = self.central_api.create_zone(context, zone)
 
         # Prepare the response headers
         # If the zone has been created asynchronously
@@ -129,7 +129,7 @@ class ZonesController(rest.RestController):
         # TODO(kiall): Validate we have a sane UUID for zone_id
 
         # Fetch the existing zone
-        zone = self.central_api.get_domain(context, zone_id)
+        zone = self.central_api.get_zone(context, zone_id)
 
         # Don't allow updates to zones that are being deleted
         if zone.action == "DELETE":
@@ -166,7 +166,7 @@ class ZonesController(rest.RestController):
                 raise exceptions.InvalidObject(msg)
 
             increment_serial = zone.type == 'PRIMARY'
-            zone = self.central_api.update_domain(
+            zone = self.central_api.update_zone(
                 context, zone, increment_serial=increment_serial)
 
         if zone.status == 'PENDING':
@@ -184,7 +184,7 @@ class ZonesController(rest.RestController):
         response = pecan.response
         context = request.environ['context']
 
-        zone = self.central_api.delete_domain(context, zone_id)
+        zone = self.central_api.delete_zone(context, zone_id)
         response.status_int = 202
 
         return DesignateAdapter.render('API_v2', zone, request=request)

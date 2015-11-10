@@ -30,15 +30,15 @@ class FakeBackend(base.AgentBackend):
     def stop(self):
         LOG.info(_LI("Stopped fake backend"))
 
-    def find_domain_serial(self, domain_name):
-        LOG.debug("Finding %s" % domain_name)
+    def find_zone_serial(self, zone_name):
+        LOG.debug("Finding %s" % zone_name)
         return 0
 
-    def create_domain(self, domain):
-        LOG.debug("Creating %s" % domain.origin.to_text())
+    def create_zone(self, zone):
+        LOG.debug("Creating %s" % zone.origin.to_text())
 
-    def update_domain(self, domain):
-        LOG.debug("Updating %s" % domain.origin.to_text())
+    def update_zone(self, zone):
+        LOG.debug("Updating %s" % zone.origin.to_text())
 
-    def delete_domain(self, domain_name):
-        LOG.debug('Delete Domain: %s' % domain_name)
+    def delete_zone(self, zone_name):
+        LOG.debug('Delete Zone: %s' % zone_name)

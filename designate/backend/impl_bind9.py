@@ -48,8 +48,8 @@ class Bind9Backend(base.Backend):
         self.clean_zonefile = strutils.bool_from_string(
                                   self.options.get('clean_zonefile', 'false'))
 
-    def create_domain(self, context, domain):
-        LOG.debug('Create Domain')
+    def create_zone(self, context, zone):
+        LOG.debug('Create Zone')
         masters = []
         for master in self.masters:
             host = master['host']
@@ -62,26 +62,26 @@ class Bind9Backend(base.Backend):
         rndc_op = [
             'addzone',
             '%s { type slave; masters { %s;}; file "slave.%s%s"; };' %
-            (domain['name'].rstrip('.'), '; '.join(masters), domain['name'],
-             domain['id']),
+            (zone['name'].rstrip('.'), '; '.join(masters), zone['name'],
+             zone['id']),
         ]
 
         try:
             self._execute_rndc(rndc_op)
         except exceptions.Backend as e:
-            # If create fails because the domain exists, don't reraise
+            # If create fails because the zone exists, don't reraise
             if "already exists" not in six.text_type(e):
                 raise
 
         self.mdns_api.notify_zone_changed(
-            context, domain, self.host, self.port, self.timeout,
+            context, zone, self.host, self.port, self.timeout,
             self.retry_interval, self.max_retries, self.delay)
 
-    def delete_domain(self, context, domain):
-        LOG.debug('Delete Domain')
+    def delete_zone(self, context, zone):
+        LOG.debug('Delete Zone')
         rndc_op = [
             'delzone',
-            '%s' % domain['name'].rstrip('.'),
+            '%s' % zone['name'].rstrip('.'),
         ]
         if self.clean_zonefile:
             rndc_op.insert(1, '-clean')
@@ -89,7 +89,7 @@ class Bind9Backend(base.Backend):
         try:
             self._execute_rndc(rndc_op)
         except exceptions.Backend as e:
-            # If domain is already deleted, don't reraise
+            # If zone is already deleted, don't reraise
             if "not found" not in six.text_type(e):
                 raise
 

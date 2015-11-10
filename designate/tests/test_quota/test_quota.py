@@ -45,9 +45,9 @@ class QuotaTestCase(tests.TestCase):
         self.assertIsNotNone(quotas)
         self.assertEqual({
             'api_export_size': cfg.CONF.quota_api_export_size,
-            'domains': cfg.CONF.quota_domains,
-            'domain_recordsets': cfg.CONF.quota_domain_recordsets,
-            'domain_records': cfg.CONF.quota_domain_records,
+            'zones': cfg.CONF.quota_zones,
+            'zone_recordsets': cfg.CONF.quota_zone_recordsets,
+            'zone_records': cfg.CONF.quota_zone_records,
             'recordset_records': cfg.CONF.quota_recordset_records,
         }, quotas)
 
@@ -58,53 +58,53 @@ class QuotaTestCase(tests.TestCase):
             self.quota.limit_check(context, 'tenant_id', unknown=0)
 
         with testtools.ExpectedException(exceptions.QuotaResourceUnknown):
-            self.quota.limit_check(context, 'tenant_id', unknown=0, domains=0)
+            self.quota.limit_check(context, 'tenant_id', unknown=0, zones=0)
 
     def test_limit_check_under(self):
         context = self.get_admin_context()
 
-        self.quota.limit_check(context, 'tenant_id', domains=0)
-        self.quota.limit_check(context, 'tenant_id', domain_records=0)
-        self.quota.limit_check(context, 'tenant_id', domains=0,
-                               domain_records=0)
+        self.quota.limit_check(context, 'tenant_id', zones=0)
+        self.quota.limit_check(context, 'tenant_id', zone_records=0)
+        self.quota.limit_check(context, 'tenant_id', zones=0,
+                               zone_records=0)
 
         self.quota.limit_check(context, 'tenant_id',
-                               domains=(cfg.CONF.quota_domains - 1))
+                               zones=(cfg.CONF.quota_zones - 1))
         self.quota.limit_check(
             context,
             'tenant_id',
-            domain_records=(cfg.CONF.quota_domain_records - 1))
+            zone_records=(cfg.CONF.quota_zone_records - 1))
 
     def test_limit_check_at(self):
         context = self.get_admin_context()
 
         with testtools.ExpectedException(exceptions.OverQuota):
             self.quota.limit_check(context, 'tenant_id',
-                                   domains=cfg.CONF.quota_domains)
+                                   zones=cfg.CONF.quota_zones)
 
         with testtools.ExpectedException(exceptions.OverQuota):
             self.quota.limit_check(
                 context,
                 'tenant_id',
-                domain_records=cfg.CONF.quota_domain_records)
+                zone_records=cfg.CONF.quota_zone_records)
 
     def test_limit_check_over(self):
         context = self.get_admin_context()
 
         with testtools.ExpectedException(exceptions.OverQuota):
-            self.quota.limit_check(context, 'tenant_id', domains=99999)
+            self.quota.limit_check(context, 'tenant_id', zones=99999)
 
         with testtools.ExpectedException(exceptions.OverQuota):
-            self.quota.limit_check(context, 'tenant_id', domain_records=99999)
+            self.quota.limit_check(context, 'tenant_id', zone_records=99999)
 
         with testtools.ExpectedException(exceptions.OverQuota):
-            self.quota.limit_check(context, 'tenant_id', domains=99999,
-                                   domain_records=99999)
+            self.quota.limit_check(context, 'tenant_id', zones=99999,
+                                   zone_records=99999)
 
         with testtools.ExpectedException(exceptions.OverQuota):
-            self.quota.limit_check(context, 'tenant_id', domains=99999,
-                                   domain_records=0)
+            self.quota.limit_check(context, 'tenant_id', zones=99999,
+                                   zone_records=0)
 
         with testtools.ExpectedException(exceptions.OverQuota):
-            self.quota.limit_check(context, 'tenant_id', domains=0,
-                                   domain_records=99999)
+            self.quota.limit_check(context, 'tenant_id', zones=0,
+                                   zone_records=99999)

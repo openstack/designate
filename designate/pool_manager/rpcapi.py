@@ -35,15 +35,16 @@ class PoolManagerAPI(object):
         API version history:
 
         1.0 - Initial version
+        2.0 - Rename domains to zones
     """
-    RPC_API_VERSION = '1.0'
+    RPC_API_VERSION = '2.0'
 
     def __init__(self, topic=None):
         self.topic = topic if topic else cfg.CONF.pool_manager_topic
 
         target = messaging.Target(topic=self.topic,
                                   version=self.RPC_API_VERSION)
-        self.client = rpc.get_client(target, version_cap='1.0')
+        self.client = rpc.get_client(target, version_cap='2.0')
 
     @classmethod
     def get_instance(cls):
@@ -59,51 +60,51 @@ class PoolManagerAPI(object):
             MNGR_API = cls()
         return MNGR_API
 
-    def create_domain(self, context, domain):
-        LOG.info(_LI("create_domain: Calling pool manager for %(domain)s, "
+    def create_zone(self, context, zone):
+        LOG.info(_LI("create_zone: Calling pool manager for %(zone)s, "
                      "serial:%(serial)s") %
-                 {'domain': domain.name, 'serial': domain.serial})
+                 {'zone': zone.name, 'serial': zone.serial})
 
         # Modifying the topic so it is pool manager instance specific.
-        topic = '%s.%s' % (self.topic, domain.pool_id)
+        topic = '%s.%s' % (self.topic, zone.pool_id)
         cctxt = self.client.prepare(topic=topic)
         return cctxt.cast(
-            context, 'create_domain', domain=domain)
+            context, 'create_zone', zone=zone)
 
-    def delete_domain(self, context, domain):
-        LOG.info(_LI("delete_domain: Calling pool manager for %(domain)s, "
+    def delete_zone(self, context, zone):
+        LOG.info(_LI("delete_zone: Calling pool manager for %(zone)s, "
                      "serial:%(serial)s") %
-                 {'domain': domain.name, 'serial': domain.serial})
+                 {'zone': zone.name, 'serial': zone.serial})
 
         # Modifying the topic so it is pool manager instance specific.
-        topic = '%s.%s' % (self.topic, domain.pool_id)
+        topic = '%s.%s' % (self.topic, zone.pool_id)
         cctxt = self.client.prepare(topic=topic)
         return cctxt.cast(
-            context, 'delete_domain', domain=domain)
+            context, 'delete_zone', zone=zone)
 
-    def update_domain(self, context, domain):
-        LOG.info(_LI("update_domain: Calling pool manager for %(domain)s, "
+    def update_zone(self, context, zone):
+        LOG.info(_LI("update_zone: Calling pool manager for %(zone)s, "
                      "serial:%(serial)s") %
-                 {'domain': domain.name, 'serial': domain.serial})
+                 {'zone': zone.name, 'serial': zone.serial})
 
         # Modifying the topic so it is pool manager instance specific.
-        topic = '%s.%s' % (self.topic, domain.pool_id)
+        topic = '%s.%s' % (self.topic, zone.pool_id)
         cctxt = self.client.prepare(topic=topic)
         return cctxt.cast(
-            context, 'update_domain', domain=domain)
+            context, 'update_zone', zone=zone)
 
-    def update_status(self, context, domain, nameserver, status,
+    def update_status(self, context, zone, nameserver, status,
                       actual_serial):
-        LOG.info(_LI("update_status: Calling pool manager for %(domain)s : "
+        LOG.info(_LI("update_status: Calling pool manager for %(zone)s : "
                      "%(action)s : %(status)s : %(serial)s on nameserver "
                      "'%(host)s:%(port)s'") %
-                 {'domain': domain.name, 'action': domain.action,
+                 {'zone': zone.name, 'action': zone.action,
                   'status': status, 'serial': actual_serial,
                   'host': nameserver.host, 'port': nameserver.port})
 
         # Modifying the topic so it is pool manager instance specific.
-        topic = '%s.%s' % (self.topic, domain.pool_id)
+        topic = '%s.%s' % (self.topic, zone.pool_id)
         cctxt = self.client.prepare(topic=topic)
         return cctxt.cast(
-            context, 'update_status', domain=domain, nameserver=nameserver,
+            context, 'update_status', zone=zone, nameserver=nameserver,
             status=status, actual_serial=actual_serial)

@@ -33,7 +33,7 @@ def _find_recordset(context, domain_id, name, type):
     central_api = central_rpcapi.CentralAPI.get_instance()
 
     return central_api.find_recordset(context, {
-        'domain_id': domain_id,
+        'zone_id': domain_id,
         'name': name,
         'type': type,
     })
@@ -43,7 +43,7 @@ def _find_or_create_recordset(context, domain_id, name, type, ttl):
     central_api = central_rpcapi.CentralAPI.get_instance()
 
     criterion = {"id": domain_id, "type": "PRIMARY"}
-    central_api.find_domain(context, criterion=criterion)
+    central_api.find_zone(context, criterion=criterion)
 
     try:
         # Attempt to create an empty recordset
@@ -82,6 +82,10 @@ def _format_record_v1(record, recordset):
 
     record['priority'], record['data'] = utils.extract_priority_from_data(
         recordset.type, record)
+
+    record['domain_id'] = record['zone_id']
+
+    del record['zone_id']
 
     record.update({
         'name': recordset['name'],
@@ -122,8 +126,8 @@ def create_record(domain_id):
 
     central_api = central_rpcapi.CentralAPI.get_instance()
     record = central_api.create_record(context, domain_id,
-                                   recordset['id'],
-                                   record)
+                                       recordset['id'],
+                                       record)
 
     record = _format_record_v1(record, recordset)
 
@@ -143,9 +147,9 @@ def get_records(domain_id):
 
     # NOTE: We need to ensure the domain actually exists, otherwise we may
     #       return an empty records array instead of a domain not found
-    central_api.get_domain(context, domain_id)
+    central_api.get_zone(context, domain_id)
 
-    recordsets = central_api.find_recordsets(context, {'domain_id': domain_id})
+    recordsets = central_api.find_recordsets(context, {'zone_id': domain_id})
 
     records = []
 
@@ -164,9 +168,9 @@ def get_record(domain_id, record_id):
 
     # NOTE: We need to ensure the domain actually exists, otherwise we may
     #       return an record not found instead of a domain not found
-    central_api.get_domain(context, domain_id)
+    central_api.get_zone(context, domain_id)
 
-    criterion = {'domain_id': domain_id, 'id': record_id}
+    criterion = {'zone_id': domain_id, 'id': record_id}
     record = central_api.find_record(context, criterion)
 
     recordset = central_api.get_recordset(
@@ -188,12 +192,12 @@ def update_record(domain_id, record_id):
     # NOTE: We need to ensure the domain actually exists, otherwise we may
     #       return a record not found instead of a domain not found
     criterion = {"id": domain_id, "type": "PRIMARY"}
-    central_api.find_domain(context, criterion)
+    central_api.find_zone(context, criterion)
 
     # Fetch the existing resource
     # NOTE(kiall): We use "find_record" rather than "get_record" as we do not
     #              have the recordset_id.
-    criterion = {'domain_id': domain_id, 'id': record_id}
+    criterion = {'zone_id': domain_id, 'id': record_id}
     record = central_api.find_record(context, criterion)
 
     # TODO(graham): Move this further down the stack
@@ -247,10 +251,10 @@ def delete_record(domain_id, record_id):
     # NOTE: We need to ensure the domain actually exists, otherwise we may
     #       return a record not found instead of a domain not found
     criterion = {"id": domain_id, "type": "PRIMARY"}
-    central_api.find_domain(context, criterion=criterion)
+    central_api.find_zone(context, criterion=criterion)
 
     # Find the record
-    criterion = {'domain_id': domain_id, 'id': record_id}
+    criterion = {'zone_id': domain_id, 'id': record_id}
     record = central_api.find_record(context, criterion)
 
     central_api.delete_record(

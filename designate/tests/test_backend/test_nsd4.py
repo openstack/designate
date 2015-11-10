@@ -99,40 +99,40 @@ class NSD4BackendTestCase(BackendTestCase):
 
         self.backend = impl_nsd4.NSD4Backend(self.target)
 
-    def test_create_domain(self):
+    def test_create_zone(self):
         context = self.get_context()
-        domain = self.get_domain_fixture()
-        self.backend.create_domain(context, domain)
-        command = 'NSDCT1 addzone %s test-pattern\n' % domain['name']
+        zone = self.get_zone_fixture()
+        self.backend.create_zone(context, zone)
+        command = 'NSDCT1 addzone %s test-pattern\n' % zone['name']
         self.assertEqual(command, self.server_fixture.server.recved_command)
 
-    def test_delete_domain(self):
+    def test_delete_zone(self):
         context = self.get_context()
-        domain = self.get_domain_fixture()
-        self.backend.delete_domain(context, domain)
-        command = 'NSDCT1 delzone %s\n' % domain['name']
+        zone = self.get_zone_fixture()
+        self.backend.delete_zone(context, zone)
+        command = 'NSDCT1 delzone %s\n' % zone['name']
         self.assertEqual(command, self.server_fixture.server.recved_command)
 
     def test_server_not_ok(self):
         self.server_fixture.server.response = 'goat'
         context = self.get_context()
-        domain = self.get_domain_fixture()
+        zone = self.get_zone_fixture()
         self.assertRaises(exceptions.Backend,
-                          self.backend.create_domain,
-                          context, domain)
+                          self.backend.create_zone,
+                          context, zone)
 
     def test_ssl_error(self):
         self.backend._command = MagicMock(side_effect=ssl.SSLError)
         context = self.get_context()
-        domain = self.get_domain_fixture()
+        zone = self.get_zone_fixture()
         self.assertRaises(exceptions.Backend,
-                          self.backend.create_domain,
-                          context, domain)
+                          self.backend.create_zone,
+                          context, zone)
 
     def test_socket_error(self):
         self.backend._command = MagicMock(side_effect=socket.error)
         context = self.get_context()
-        domain = self.get_domain_fixture()
+        zone = self.get_zone_fixture()
         self.assertRaises(exceptions.Backend,
-                          self.backend.create_domain,
-                          context, domain)
+                          self.backend.create_zone,
+                          context, zone)

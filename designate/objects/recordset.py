@@ -84,7 +84,7 @@ class RecordSet(base.DictObjectMixin, base.PersistentObjectMixin,
             },
             'read_only': True
         },
-        'domain_id': {
+        'zone_id': {
             'schema': {
                 'type': 'string',
                 'description': 'Zone identifier',
@@ -277,7 +277,7 @@ class RecordSet(base.DictObjectMixin, base.PersistentObjectMixin,
         self.records = old_records
 
     STRING_KEYS = [
-        'id', 'type', 'name', 'domain_id'
+        'id', 'type', 'name', 'zone_id'
     ]
 
 

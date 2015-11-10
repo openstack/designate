@@ -31,7 +31,7 @@ class ZoneExportAPIv2Adapter(base.APIv2Adapter):
             "message": {},
             "location": {},
             "zone_id": {
-                'rename': 'domain_id',
+                'rename': 'zone_id',
             },
             "project_id": {
                 'rename': 'tenant_id'

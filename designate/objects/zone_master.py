@@ -17,10 +17,10 @@ from designate.objects import base
 from designate import utils
 
 
-class DomainMaster(base.DictObjectMixin, base.PersistentObjectMixin,
-                   base.DesignateObject):
+class ZoneMaster(base.DictObjectMixin, base.PersistentObjectMixin,
+                 base.DesignateObject):
     FIELDS = {
-        'domain_id': {},
+        'zone_id': {},
         'host': {
             'schema': {
                 'type': 'string',
@@ -47,8 +47,8 @@ class DomainMaster(base.DictObjectMixin, base.PersistentObjectMixin,
         return cls.from_dict({"host": host, "port": port})
 
 
-class DomainMasterList(base.ListObjectMixin, base.DesignateObject):
-    LIST_ITEM_TYPE = DomainMaster
+class ZoneMasterList(base.ListObjectMixin, base.DesignateObject):
+    LIST_ITEM_TYPE = ZoneMaster
 
     def to_data(self):
         rlist = []

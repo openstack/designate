@@ -52,27 +52,27 @@ class CentralServiceTestIPA(designate.tests.test_central.
         # go directly through storage api to bypass tenant/policy checks
         save_all_tenants = self.admin_context.all_tenants
         self.admin_context.all_tenants = True
-        self.startdomains = self.central_service.storage.\
-            find_domains(self.admin_context)
-        LOG.debug("%s.setUp: startdomains %d" % (self.__class__,
-                                                 len(self.startdomains)))
+        self.startzones = self.central_service.storage.\
+            find_zones(self.admin_context)
+        LOG.debug("%s.setUp: startzones %d" % (self.__class__,
+                                               len(self.startzones)))
         self.admin_context.all_tenants = save_all_tenants
 
     def tearDown(self):
-        # delete domains
+        # delete zones
         # go directly through storage api to bypass tenant/policy checks
         self.admin_context.all_tenants = True
-        domains = self.central_service.storage.\
-            find_domains(self.admin_context)
-        LOG.debug("%s.tearDown: domains %d" % (self.__class__,
-                                               len(self.startdomains)))
-        for domain in domains:
-            if domain in self.startdomains:
+        zones = self.central_service.storage.\
+            find_zones(self.admin_context)
+        LOG.debug("%s.tearDown: zones %d" % (self.__class__,
+                                             len(self.startzones)))
+        for zone in zones:
+            if zone in self.startzones:
                 continue
-            # go directly to backend - front end domains will be
+            # go directly to backend - front end zones will be
             # removed when the database fixture is reset
-            self.central_service.backend.delete_domain(self.admin_context,
-                                                       domain)
+            self.central_service.backend.delete_zone(self.admin_context,
+                                                     zone)
 
         super(CentralServiceTestIPA, self).tearDown()
 
@@ -82,23 +82,23 @@ class CentralServiceTestIPA(designate.tests.test_central.
         self.assertEqual(rec1dict, rec2dict)
 
     def test_delete_recordset_extra(self):
-        domain = self.create_domain()
+        zone = self.create_zone()
 
         # Create a recordset
-        recsetA = self.create_recordset(domain, 'A')
-        recsetMX = self.create_recordset(domain, 'MX')
+        recsetA = self.create_recordset(zone, 'A')
+        recsetMX = self.create_recordset(zone, 'MX')
 
         # create two records in recsetA
-        recA0 = self.create_record(domain, recsetA, fixture=0)
-        recA1 = self.create_record(domain, recsetA, fixture=1)
+        recA0 = self.create_record(zone, recsetA, fixture=0)
+        recA1 = self.create_record(zone, recsetA, fixture=1)
 
         # create two records in recsetMX
-        recMX0 = self.create_record(domain, recsetMX, fixture=0)
-        recMX1 = self.create_record(domain, recsetMX, fixture=1)
+        recMX0 = self.create_record(zone, recsetMX, fixture=0)
+        recMX1 = self.create_record(zone, recsetMX, fixture=1)
 
         # verify two records in each recset
         criterion = {
-            'domain_id': domain['id'],
+            'zone_id': zone['id'],
             'recordset_id': recsetA['id']
         }
 
@@ -120,12 +120,12 @@ class CentralServiceTestIPA(designate.tests.test_central.
 
         # Delete recsetA
         self.central_service.delete_recordset(
-            self.admin_context, domain['id'], recsetA['id'])
+            self.admin_context, zone['id'], recsetA['id'])
 
         # Fetch the recordset again, ensuring an exception is raised
         with testtools.ExpectedException(exceptions.RecordSetNotFound):
             self.central_service.get_recordset(
-                self.admin_context, domain['id'], recsetA['id'])
+                self.admin_context, zone['id'], recsetA['id'])
 
         # should be no records left in recsetA
         # however, that doesn't appear to be how
@@ -150,28 +150,28 @@ class CentralServiceTestIPA(designate.tests.test_central.
 
         # Delete recsetMX
         self.central_service.delete_recordset(
-            self.admin_context, domain['id'], recsetMX['id'])
+            self.admin_context, zone['id'], recsetMX['id'])
 
-    def test_create_domain_no_min_ttl(self):
+    def test_create_zone_no_min_ttl(self):
         """Override - ipa does not allow negative ttl values -
         instead, check for proper error
         """
         self.policy({'use_low_ttl': '!'})
         self.config(min_ttl="None",
                     group='service:central')
-        values = self.get_domain_fixture(1)
+        values = self.get_zone_fixture(1)
         values['ttl'] = -100
 
         # Create a server
         self.create_nameserver()
 
-        # Create domain with negative TTL
+        # Create zone with negative TTL
         with testtools.ExpectedException(impl_ipa.IPAInvalidData):
-            self.central_service.create_domain(
+            self.central_service.create_zone(
                 self.admin_context, values=values)
 
     @unittest.skip("this is currently broken in IPA")
-    def test_idn_create_domain_over_tld(self):
+    def test_idn_create_zone_over_tld(self):
         pass
 
     @unittest.skip("not supported in IPA")

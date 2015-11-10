@@ -40,7 +40,7 @@ class ZoneExportController(rest.RestController):
 
         if export.location and export.location.startswith('designate://'):
             return self.zone_manager_api.\
-                render_zone(context, export['domain_id'])
+                render_zone(context, export['zone_id'])
         else:
             msg = 'Zone can not be exported synchronously'
             raise exceptions.BadRequest(msg)

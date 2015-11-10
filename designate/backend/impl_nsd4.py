@@ -75,8 +75,8 @@ class NSD4Backend(base.Backend):
         if result != 'ok':
             raise exceptions.Backend(result)
 
-    def create_domain(self, context, domain):
-        LOG.debug('Create Domain')
+    def create_zone(self, context, zone):
+        LOG.debug('Create Zone')
         masters = []
         for master in self.masters:
             host = master['host']
@@ -86,22 +86,22 @@ class NSD4Backend(base.Backend):
         # Ensure different MiniDNS instances are targeted for AXFRs
         random.shuffle(masters)
 
-        command = 'addzone %s %s' % (domain['name'], self.pattern)
+        command = 'addzone %s %s' % (zone['name'], self.pattern)
 
         try:
             self._execute_nsd4(command)
         except exceptions.Backend as e:
-            # If create fails because the domain exists, don't reraise
+            # If create fails because the zone exists, don't reraise
             if "already exists" not in six.text_type(e):
                 raise
 
-    def delete_domain(self, context, domain):
-        LOG.debug('Delete Domain')
-        command = 'delzone %s' % domain['name']
+    def delete_zone(self, context, zone):
+        LOG.debug('Delete Zone')
+        command = 'delzone %s' % zone['name']
 
         try:
             self._execute_nsd4(command)
         except exceptions.Backend as e:
-            # If domain is already deleted, don't reraise
+            # If zone is already deleted, don't reraise
             if "not found" not in six.text_type(e):
                 raise

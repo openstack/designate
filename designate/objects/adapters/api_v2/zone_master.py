@@ -19,9 +19,9 @@ from designate import utils
 LOG = logging.getLogger(__name__)
 
 
-class DomainMasterAPIv2Adapter(base.APIv2Adapter):
+class ZoneMasterAPIv2Adapter(base.APIv2Adapter):
 
-    ADAPTER_OBJECT = objects.DomainMaster
+    ADAPTER_OBJECT = objects.ZoneMaster
 
     MODIFICATIONS = {
         'fields': {
@@ -49,9 +49,9 @@ class DomainMasterAPIv2Adapter(base.APIv2Adapter):
         return object
 
 
-class DomainMasterListAPIv2Adapter(base.APIv2Adapter):
+class ZoneMasterListAPIv2Adapter(base.APIv2Adapter):
 
-    ADAPTER_OBJECT = objects.DomainMasterList
+    ADAPTER_OBJECT = objects.ZoneMasterList
 
     MODIFICATIONS = {
         'options': {

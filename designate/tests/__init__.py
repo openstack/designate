@@ -62,7 +62,7 @@ class TestTimeoutError(Exception):
 
 class TestCase(base.BaseTestCase):
     quota_fixtures = [{
-        'resource': 'domains',
+        'resource': 'zones',
         'hard_limit': 5,
     }, {
         'resource': 'records',
@@ -108,8 +108,8 @@ class TestCase(base.BaseTestCase):
         'resource_id': '7fbb6304-5e74-4691-bd80-cef3cff5fe2f',
     }]
 
-    # The last domain is invalid
-    domain_fixtures = {
+    # The last zone is invalid
+    zone_fixtures = {
         'PRIMARY': [
             {
                 'name': 'example.com.',
@@ -179,8 +179,8 @@ class TestCase(base.BaseTestCase):
             {'data': '10 1 5060 server2.example.org.'},
         ],
         'CNAME': [
-            {'data': 'www.somedomain.org.'},
-            {'data': 'www.someotherdomain.com.'},
+            {'data': 'www.somezone.org.'},
+            {'data': 'www.someotherzone.com.'},
         ]
     }
 
@@ -247,17 +247,17 @@ class TestCase(base.BaseTestCase):
 
     zone_import_fixtures = [{
         'status': 'PENDING',
-        'domain_id': None,
+        'zone_id': None,
         'message': None,
         'task_type': 'IMPORT'
     }, {
         'status': 'ERROR',
-        'domain_id': None,
+        'zone_id': None,
         'message': None,
         'task_type': 'IMPORT'
     }, {
         'status': 'COMPLETE',
-        'domain_id': '6ca6baef-3305-4ad0-a52b-a82df5752b62',
+        'zone_id': '6ca6baef-3305-4ad0-a52b-a82df5752b62',
         'message': None,
         'task_type': 'IMPORT'
     }]
@@ -431,16 +431,16 @@ class TestCase(base.BaseTestCase):
         _values.update(values)
         return _values
 
-    def get_domain_fixture(self, domain_type=None, fixture=0, values=None):
-        domain_type = domain_type or 'PRIMARY'
+    def get_zone_fixture(self, zone_type=None, fixture=0, values=None):
+        zone_type = zone_type or 'PRIMARY'
 
-        _values = copy.copy(self.domain_fixtures[domain_type][fixture])
+        _values = copy.copy(self.zone_fixtures[zone_type][fixture])
         if values:
             _values.update(values)
 
         return _values
 
-    def get_recordset_fixture(self, domain_name, type='A', fixture=0,
+    def get_recordset_fixture(self, zone_name, type='A', fixture=0,
                               values=None):
         values = values or {}
 
@@ -448,7 +448,7 @@ class TestCase(base.BaseTestCase):
         _values.update(values)
 
         try:
-            _values['name'] = _values['name'] % domain_name
+            _values['name'] = _values['name'] % zone_name
         except TypeError:
             pass
 
@@ -569,34 +569,34 @@ class TestCase(base.BaseTestCase):
         return self.central_service.create_tsigkey(
             context, objects.TsigKey.from_dict(values))
 
-    def create_domain(self, **kwargs):
+    def create_zone(self, **kwargs):
         context = kwargs.pop('context', self.admin_context)
         fixture = kwargs.pop('fixture', 0)
-        domain_type = kwargs.pop('type', None)
+        zone_type = kwargs.pop('type', None)
 
-        values = self.get_domain_fixture(domain_type=domain_type,
-                                         fixture=fixture, values=kwargs)
+        values = self.get_zone_fixture(zone_type=zone_type,
+                                       fixture=fixture, values=kwargs)
 
         if 'tenant_id' not in values:
             values['tenant_id'] = context.tenant
 
-        return self.central_service.create_domain(
-            context, objects.Domain.from_dict(values))
+        return self.central_service.create_zone(
+            context, objects.Zone.from_dict(values))
 
-    def create_recordset(self, domain, type='A', increment_serial=True,
+    def create_recordset(self, zone, type='A', increment_serial=True,
                          **kwargs):
         context = kwargs.pop('context', self.admin_context)
         fixture = kwargs.pop('fixture', 0)
 
-        values = self.get_recordset_fixture(domain['name'], type=type,
+        values = self.get_recordset_fixture(zone['name'], type=type,
                                             fixture=fixture,
                                             values=kwargs)
 
         return self.central_service.create_recordset(
-            context, domain['id'], objects.RecordSet.from_dict(values),
+            context, zone['id'], objects.RecordSet.from_dict(values),
             increment_serial=increment_serial)
 
-    def create_record(self, domain, recordset, increment_serial=True,
+    def create_record(self, zone, recordset, increment_serial=True,
                       **kwargs):
         context = kwargs.pop('context', self.admin_context)
         fixture = kwargs.pop('fixture', 0)
@@ -605,7 +605,7 @@ class TestCase(base.BaseTestCase):
                                          values=kwargs)
 
         return self.central_service.create_record(
-            context, domain['id'], recordset['id'],
+            context, zone['id'], recordset['id'],
             objects.Record.from_dict(values),
             increment_serial=increment_serial)
 
@@ -645,15 +645,15 @@ class TestCase(base.BaseTestCase):
             context, default_pool_id,
             objects.PoolAttribute.from_dict(values))
 
-    def create_zone_transfer_request(self, domain, **kwargs):
+    def create_zone_transfer_request(self, zone, **kwargs):
         context = kwargs.pop('context', self.admin_context)
         fixture = kwargs.pop('fixture', 0)
 
         values = self.get_zone_transfer_request_fixture(
             fixture=fixture, values=kwargs)
 
-        if 'domain_id' not in values:
-            values['domain_id'] = domain.id
+        if 'zone_id' not in values:
+            values['zone_id'] = zone.id
 
         return self.central_service.create_zone_transfer_request(
             context, objects.ZoneTransferRequest.from_dict(values))
@@ -669,8 +669,8 @@ class TestCase(base.BaseTestCase):
         if 'zone_transfer_request_id' not in values:
             values['zone_transfer_request_id'] = zone_transfer_request.id
 
-        if 'domain_id' not in values:
-            values['domain_id'] = zone_transfer_request.domain_id
+        if 'zone_id' not in values:
+            values['zone_id'] = zone_transfer_request.zone_id
 
         if 'key' not in values:
             values['key'] = zone_transfer_request.key

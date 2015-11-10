@@ -108,28 +108,28 @@ class RequestHandler(object):
 
         question = request.question[0]
         requester = request.environ['addr'][0]
-        domain_name = question.name.to_text()
+        zone_name = question.name.to_text()
 
-        if not self._allowed(request, requester, "CREATE", domain_name):
+        if not self._allowed(request, requester, "CREATE", zone_name):
             response.set_rcode(dns.rcode.from_text("REFUSED"))
             return response
 
-        serial = self.backend.find_domain_serial(domain_name)
+        serial = self.backend.find_zone_serial(zone_name)
 
         if serial is not None:
             LOG.warn(_LW("Not creating %(name)s, zone already exists") %
-                 {'name': domain_name})
+                 {'name': zone_name})
             # Provide an authoritative answer
             response.flags |= dns.flags.AA
             return response
 
         LOG.debug("Received %(verb)s for %(name)s from %(host)s" %
-                 {'verb': "CREATE", 'name': domain_name, 'host': requester})
+                 {'verb': "CREATE", 'name': zone_name, 'host': requester})
 
         try:
-            zone = dnsutils.do_axfr(domain_name, self.masters,
+            zone = dnsutils.do_axfr(zone_name, self.masters,
                 source=self.transfer_source)
-            self.backend.create_domain(zone)
+            self.backend.create_zone(zone)
         except Exception:
             response.set_rcode(dns.rcode.from_text("SERVFAIL"))
             return response
@@ -152,35 +152,35 @@ class RequestHandler(object):
 
         question = request.question[0]
         requester = request.environ['addr'][0]
-        domain_name = question.name.to_text()
+        zone_name = question.name.to_text()
 
-        if not self._allowed(request, requester, "NOTIFY", domain_name):
+        if not self._allowed(request, requester, "NOTIFY", zone_name):
             response.set_rcode(dns.rcode.from_text("REFUSED"))
             return response
 
-        serial = self.backend.find_domain_serial(domain_name)
+        serial = self.backend.find_zone_serial(zone_name)
 
         if serial is None:
             LOG.warn(_LW("Refusing NOTIFY for %(name)s, doesn't exist") %
-                 {'name': domain_name})
+                 {'name': zone_name})
             response.set_rcode(dns.rcode.from_text("REFUSED"))
             return response
 
         LOG.debug("Received %(verb)s for %(name)s from %(host)s" %
-                 {'verb': "NOTIFY", 'name': domain_name, 'host': requester})
+                 {'verb': "NOTIFY", 'name': zone_name, 'host': requester})
 
         # According to RFC we should query the server that sent the NOTIFY
         # TODO(Tim): Reenable this when it makes more sense
         # resolver = dns.resolver.Resolver()
         # resolver.nameservers = [requester]
         # This assumes that the Master is running on port 53
-        # soa_answer = resolver.query(domain_name, 'SOA')
+        # soa_answer = resolver.query(zone_name, 'SOA')
         # Check that the serial is < serial above
 
         try:
-            zone = dnsutils.do_axfr(domain_name, self.masters,
+            zone = dnsutils.do_axfr(zone_name, self.masters,
                 source=self.transfer_source)
-            self.backend.update_domain(zone)
+            self.backend.update_zone(zone)
         except Exception:
             response.set_rcode(dns.rcode.from_text("SERVFAIL"))
             return response
@@ -203,44 +203,44 @@ class RequestHandler(object):
 
         question = request.question[0]
         requester = request.environ['addr'][0]
-        domain_name = question.name.to_text()
+        zone_name = question.name.to_text()
 
-        if not self._allowed(request, requester, "DELETE", domain_name):
+        if not self._allowed(request, requester, "DELETE", zone_name):
             response.set_rcode(dns.rcode.from_text("REFUSED"))
             return response
 
-        serial = self.backend.find_domain_serial(domain_name)
+        serial = self.backend.find_zone_serial(zone_name)
 
         if serial is None:
             LOG.warn(_LW("Not deleting %(name)s, zone doesn't exist") %
-                 {'name': domain_name})
+                 {'name': zone_name})
             # Provide an authoritative answer
             response.flags |= dns.flags.AA
             return response
 
         LOG.debug("Received DELETE for %(name)s from %(host)s" %
-                 {'name': domain_name, 'host': requester})
+                 {'name': zone_name, 'host': requester})
 
         # Provide an authoritative answer
         response.flags |= dns.flags.AA
 
         # Call into the backend to Delete
         try:
-            self.backend.delete_domain(domain_name)
+            self.backend.delete_zone(zone_name)
         except Exception:
             response.set_rcode(dns.rcode.from_text("SERVFAIL"))
             return response
 
         return response
 
-    def _allowed(self, request, requester, op, domain_name):
+    def _allowed(self, request, requester, op, zone_name):
         # If there are no explict notifiers specified, allow all
         if not self.allow_notify:
             return True
 
         if requester not in self.allow_notify:
             LOG.warn(_LW("%(verb)s for %(name)s from %(server)s refused") %
-            {'verb': op, 'name': domain_name, 'server': requester})
+                     {'verb': op, 'name': zone_name, 'server': requester})
             return False
 
         return True

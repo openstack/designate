@@ -18,8 +18,8 @@ from designate.objects import base
 class Tenant(base.DictObjectMixin, base.DesignateObject):
     FIELDS = {
         'id': {},
-        'domain_count': {},
-        'domains': {}
+        'zone_count': {},
+        'zones': {}
     }
 
     STRING_KEYS = [

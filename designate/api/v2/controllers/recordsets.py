@@ -27,7 +27,7 @@ LOG = logging.getLogger(__name__)
 
 
 class RecordSetsController(rest.RestController):
-    SORT_KEYS = ['created_at', 'id', 'updated_at', 'domain_id', 'tenant_id',
+    SORT_KEYS = ['created_at', 'id', 'updated_at', 'zone_id', 'tenant_id',
                  'name', 'type', 'ttl', 'records']
 
     @pecan.expose(template='json:', content_type='application/json')
@@ -50,9 +50,9 @@ class RecordSetsController(rest.RestController):
         request = pecan.request
         context = request.environ['context']
 
-        # NOTE: We need to ensure the domain actually exists, otherwise we may
-        #       return deleted recordsets instead of a domain not found
-        self.central_api.get_domain(context, zone_id)
+        # NOTE: We need to ensure the zone actually exists, otherwise we may
+        #       return deleted recordsets instead of a zone not found
+        self.central_api.get_zone(context, zone_id)
 
         # Extract the pagination params
         marker, limit, sort_key, sort_dir = utils.get_paging_params(
@@ -64,7 +64,7 @@ class RecordSetsController(rest.RestController):
         criterion = self._apply_filter_params(
             params, accepted_filters, {})
 
-        criterion['domain_id'] = zone_id
+        criterion['zone_id'] = zone_id
 
         # Data must be filtered separately, through the Records table
         data = criterion.pop('data', None)
@@ -77,7 +77,7 @@ class RecordSetsController(rest.RestController):
         # 'data' filter param: only return recordsets with matching data
         if data:
             records = self.central_api.find_records(
-                context, criterion={'data': data, 'domain_id': zone_id})
+                context, criterion={'data': data, 'zone_id': zone_id})
             recordset_with_data_ids = set(record.recordset_id
                                           for record in records)
 
@@ -163,7 +163,7 @@ class RecordSetsController(rest.RestController):
 
         # NS recordsets at the zone root cannot be manually updated
         if recordset['type'] == 'NS':
-            zone = self.central_api.get_domain(context, zone_id)
+            zone = self.central_api.get_zone(context, zone_id)
             if recordset['name'] == zone['name']:
                 raise exceptions.BadRequest(
                     'Updating a root zone NS record is not allowed')

@@ -40,8 +40,8 @@ class DenominatorAgentBackendTestCase(TestCase, BackendTestMixin):
     @mock.patch('designate.utils.execute', return_value=(
                 'example.org SOA 86400 ns1.designate.com. '
                 'hostmaster@example.org. 475 3600 600 604800 1800', None))
-    def test_find_domain_serial(self, execute):
-        serial = self.backend.find_domain_serial('example.org.')
+    def test_find_zone_serial(self, execute):
+        serial = self.backend.find_zone_serial('example.org.')
 
         # Ensure returned right serial number
         self.assertEqual(475, serial)
@@ -51,22 +51,22 @@ class DenominatorAgentBackendTestCase(TestCase, BackendTestMixin):
         self.assertIn('get', execute.call_args[0])
 
     @mock.patch('designate.utils.execute', return_value=('', None))
-    def test_find_domain_serial_fail(self, execute):
-        serial = self.backend.find_domain_serial('example.org.')
+    def test_find_zone_serial_fail(self, execute):
+        serial = self.backend.find_zone_serial('example.org.')
         self.assertIsNone(serial)
 
     @mock.patch('designate.utils.execute', return_value=(None, None))
-    def test_create_domain(self, execute):
-        domain = self._create_dnspy_zone('example.org.')
-        self.backend.create_domain(domain)
+    def test_create_zone(self, execute):
+        zone = self._create_dnspy_zone('example.org.')
+        self.backend.create_zone(zone)
 
         # Ensure denominator called for each record (except SOA)
         # plus one to update zone data
-        self.assertEqual(len(list(domain.iterate_rdatas())),
+        self.assertEqual(len(list(zone.iterate_rdatas())),
                          execute.call_count)
 
     @mock.patch('designate.utils.execute')
-    def test_update_domain(self, execute):
+    def test_update_zone(self, execute):
         # Output from 'designate record list' command
         records = ('example.org SOA 86400 ns1.designate.com. '
         'hostmaster@example.org. 475 3600 600 604800 1800\n'
@@ -74,12 +74,12 @@ class DenominatorAgentBackendTestCase(TestCase, BackendTestMixin):
         'example.org NS 86400 ns2.designator.net.\n'
         'example.org MX 86400 10 mx1.designator.net.')
 
-        # That should force update_domain to delete A and AAAA records
+        # That should force update_zone to delete A and AAAA records
         # from the zone and create a new MX record.
         execute.return_value = (records, None)
 
-        domain = self._create_dnspy_zone('example.org.')
-        self.backend.update_domain(domain)
+        zone = self._create_dnspy_zone('example.org.')
+        self.backend.update_zone(zone)
 
         # Ensure denominator called to:
         # *update zone info
@@ -99,7 +99,7 @@ class DenominatorAgentBackendTestCase(TestCase, BackendTestMixin):
             setattr(self.backend.denominator, method, mock.Mock(
                 return_value=records))
 
-        self.backend.update_domain(domain)
+        self.backend.update_zone(zone)
         self.assertEqual(1, self.backend.denominator.update_zone.call_count)
         self.assertEqual(1, self.backend.denominator.get_records.call_count)
         self.assertEqual(4, self.backend.denominator.create_record.call_count)
@@ -107,8 +107,8 @@ class DenominatorAgentBackendTestCase(TestCase, BackendTestMixin):
         self.assertEqual(1, self.backend.denominator.delete_record.call_count)
 
     @mock.patch('designate.utils.execute', return_value=(None, None))
-    def test_delete_domain(self, execute):
-        self.backend.delete_domain('example.org.')
+    def test_delete_zone(self, execute):
+        self.backend.delete_zone('example.org.')
 
         # Ensure called 'denominator zone delete'
         self.assertEqual(1, execute.call_count)

@@ -121,17 +121,17 @@ class MdnsRequestHandlerTest(MdnsTestCase):
 
         self.assertEqual(expected_response, binascii.b2a_hex(response))
 
-    def _get_secondary_domain(self, values=None, attributes=None,
-                              masters=None):
+    def _get_secondary_zone(self, values=None, attributes=None,
+                            masters=None):
         attributes = attributes or []
         masters = masters or [{"host": "10.0.0.1", "port": 53}]
-        fixture = self.get_domain_fixture("SECONDARY", values=values)
+        fixture = self.get_zone_fixture("SECONDARY", values=values)
         fixture['email'] = cfg.CONF['service:central'].managed_resource_email
 
-        domain = objects.Domain(**fixture)
-        domain.attributes = objects.DomainAttributeList().from_list(attributes)
-        domain.masters = objects.DomainMasterList().from_list(masters)
-        return domain
+        zone = objects.Zone(**fixture)
+        zone.attributes = objects.ZoneAttributeList().from_list(attributes)
+        zone.masters = objects.ZoneMasterList().from_list(masters)
+        return zone
 
     def _get_soa_answer(self, serial):
         text = "\n".join(ANSWER) % {"serial": str(serial)}
@@ -147,7 +147,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
         payload = "c38021000001000000000000076578616d706c6503636f6d0000060001"
 
         master = "10.0.0.1"
-        domain = self._get_secondary_domain({"serial": 123})
+        zone = self._get_secondary_zone({"serial": 123})
 
         # expected response is an error code NOERROR.  The other fields are
         # id 50048
@@ -162,7 +162,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
         expected_response = (b"c380a5000001000000000000076578616d706c6503636f"
                              b"6d0000060001")
 
-        # The SOA serial should be different from the one in thedomain and
+        # The SOA serial should be different from the one in thezone and
         # will trigger a AXFR
         func.return_value = self._get_soa_answer(123123)
 
@@ -172,13 +172,13 @@ class MdnsRequestHandlerTest(MdnsTestCase):
             'context': self.context
         }
 
-        with mock.patch.object(self.handler.storage, 'find_domain',
-                               return_value=domain):
+        with mock.patch.object(self.handler.storage, 'find_zone',
+                               return_value=zone):
             response = next(self.handler(request)).to_wire()
 
         self.mock_tg.add_thread.assert_called_with(
-            self.handler.domain_sync, self.context, domain,
-            [domain.masters[0]])
+            self.handler.zone_sync, self.context, zone,
+            [zone.masters[0]])
         self.assertEqual(expected_response, binascii.b2a_hex(response))
 
     @mock.patch.object(dns.resolver.Resolver, 'query')
@@ -187,7 +187,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
         payload = "c38021000001000000000000076578616d706c6503636f6d0000060001"
 
         master = "10.0.0.1"
-        domain = self._get_secondary_domain({"serial": 123})
+        zone = self._get_secondary_zone({"serial": 123})
 
         # expected response is an error code NOERROR.  The other fields are
         # id 50048
@@ -202,9 +202,9 @@ class MdnsRequestHandlerTest(MdnsTestCase):
         expected_response = (b"c380a5000001000000000000076578616d706c6503636f"
                              b"6d0000060001")
 
-        # The SOA serial should be different from the one in thedomain and
+        # The SOA serial should be different from the one in thezone and
         # will trigger a AXFR
-        func.return_value = self._get_soa_answer(domain.serial)
+        func.return_value = self._get_soa_answer(zone.serial)
 
         request = dns.message.from_wire(binascii.a2b_hex(payload))
         request.environ = {
@@ -212,8 +212,8 @@ class MdnsRequestHandlerTest(MdnsTestCase):
             'context': self.context
         }
 
-        with mock.patch.object(self.handler.storage, 'find_domain',
-                               return_value=domain):
+        with mock.patch.object(self.handler.storage, 'find_zone',
+                               return_value=zone):
             response = next(self.handler(request)).to_wire()
 
         assert not self.mock_tg.add_thread.called
@@ -223,11 +223,11 @@ class MdnsRequestHandlerTest(MdnsTestCase):
         # DNS packet with NOTIFY opcode
         payload = "c38021000001000000000000076578616d706c6503636f6d0000060001"
 
-        # Have a domain with different master then the one where the notify
+        # Have a zone with different master then the one where the notify
         # comes from causing it to be "ignored" as in not transferred and
         # logged
 
-        domain = self._get_secondary_domain({"serial": 123})
+        zone = self._get_secondary_zone({"serial": 123})
 
         # expected response is an error code REFUSED.  The other fields are
         # id 50048
@@ -248,8 +248,8 @@ class MdnsRequestHandlerTest(MdnsTestCase):
             'context': self.context
         }
 
-        with mock.patch.object(self.handler.storage, 'find_domain',
-                               return_value=domain):
+        with mock.patch.object(self.handler.storage, 'find_zone',
+                               return_value=zone):
             response = next(self.handler(request)).to_wire()
 
         assert not self.mock_tg.add_thread.called
@@ -281,7 +281,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
         assert not self.mock_tg.add_thread.called
         self.assertEqual(expected_response, binascii.b2a_hex(response))
 
-    def test_dispatch_opcode_notify_invalid_domain(self):
+    def test_dispatch_opcode_notify_invalid_zone(self):
         # DNS packet with NOTIFY opcode
         payload = "c38021000001000000000000076578616d706c6503636f6d0000060001"
 
@@ -354,7 +354,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
     #     # strip the id from the response and compare
     #     self.assertEqual(expected_response, binascii.b2a_hex(response)[5:])
 
-    def test_dispatch_opcode_query_non_existent_domain(self):
+    def test_dispatch_opcode_query_non_existent_zone(self):
         # DNS packet with QUERY opcode
         # query is for example.com. IN A
         payload = ("271501200001000000000001076578616d706c6503636f6d0000010001"
@@ -401,9 +401,9 @@ class MdnsRequestHandlerTest(MdnsTestCase):
                              b"c0000201")
 
         # This creates an A record for mail.example.com
-        domain = self.create_domain()
-        recordset = self.create_recordset(domain, 'A')
-        self.create_record(domain, recordset)
+        zone = self.create_zone()
+        recordset = self.create_recordset(zone, 'A')
+        self.create_record(zone, recordset)
 
         request = dns.message.from_wire(binascii.a2b_hex(payload))
         request.environ = {'addr': self.addr, 'context': self.context}
@@ -432,9 +432,9 @@ class MdnsRequestHandlerTest(MdnsTestCase):
                              b"0005046d61696c076578616d706c65036f726700")
 
         # This creates an MX record for mail.example.com
-        domain = self.create_domain()
-        recordset = self.create_recordset(domain, 'MX')
-        self.create_record(domain, recordset)
+        zone = self.create_zone()
+        recordset = self.create_recordset(zone, 'MX')
+        self.create_record(zone, recordset)
 
         request = dns.message.from_wire(binascii.a2b_hex(payload))
         request.environ = {'addr': self.addr, 'context': self.context}
@@ -479,7 +479,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
              b"c0006000100000e100018c029c03a551c063900000e10000002580001518000"
              b"000e10")
 
-        domain = objects.Domain.from_dict({
+        zone = objects.Zone.from_dict({
             'name': 'example.com.',
             'ttl': 3600,
             'serial': 1427899961,
@@ -500,8 +500,8 @@ class MdnsRequestHandlerTest(MdnsTestCase):
                      'ACTION'],
                 ]
 
-        with mock.patch.object(self.storage, 'find_domain',
-                               return_value=domain):
+        with mock.patch.object(self.storage, 'find_zone',
+                               return_value=zone):
             with mock.patch.object(self.storage, 'find_recordsets_axfr',
                                    side_effect=_find_recordsets_axfr):
                 request = dns.message.from_wire(binascii.a2b_hex(payload))
@@ -541,7 +541,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
         # Set the max-message-size to 128
         self.config(max_message_size=128, group='service:mdns')
 
-        domain = objects.Domain.from_dict({
+        zone = objects.Zone.from_dict({
             'name': 'example.com.',
             'ttl': 3600,
             'serial': 1427899961,
@@ -562,8 +562,8 @@ class MdnsRequestHandlerTest(MdnsTestCase):
                      'ACTION'],
                 ]
 
-        with mock.patch.object(self.storage, 'find_domain',
-                               return_value=domain):
+        with mock.patch.object(self.storage, 'find_zone',
+                               return_value=zone):
             with mock.patch.object(self.storage, 'find_recordsets_axfr',
                                    side_effect=_find_recordsets_axfr):
                 request = dns.message.from_wire(binascii.a2b_hex(payload))
@@ -619,7 +619,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
         # Set the max-message-size to 128
         self.config(max_message_size=128, group='service:mdns')
 
-        domain = objects.Domain.from_dict({
+        zone = objects.Zone.from_dict({
             'name': 'example.com.',
             'ttl': 3600,
             'serial': 1427899961,
@@ -640,8 +640,8 @@ class MdnsRequestHandlerTest(MdnsTestCase):
                      'ACTION'],
                 ]
 
-        with mock.patch.object(self.storage, 'find_domain',
-                               return_value=domain):
+        with mock.patch.object(self.storage, 'find_zone',
+                               return_value=zone):
             with mock.patch.object(self.storage, 'find_recordsets_axfr',
                                    side_effect=_find_recordsets_axfr):
                 request = dns.message.from_wire(binascii.a2b_hex(payload))
@@ -697,7 +697,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
         # Set the max-message-size to 128
         self.config(max_message_size=128, group='service:mdns')
 
-        domain = objects.Domain.from_dict({
+        zone = objects.Zone.from_dict({
             'name': 'example.com.',
             'ttl': 3600,
             'serial': 1427899961,
@@ -716,8 +716,8 @@ class MdnsRequestHandlerTest(MdnsTestCase):
                     'a' * 63 + '.' + 'a' * 63 + '.', 'ACTION'],
                 ]
 
-        with mock.patch.object(self.storage, 'find_domain',
-                               return_value=domain):
+        with mock.patch.object(self.storage, 'find_zone',
+                               return_value=zone):
             with mock.patch.object(self.storage, 'find_recordsets_axfr',
                                    side_effect=_find_recordsets_axfr):
                 request = dns.message.from_wire(binascii.a2b_hex(payload))
@@ -759,9 +759,9 @@ class MdnsRequestHandlerTest(MdnsTestCase):
 
         # This creates an MX record for mail.example.com
         # But we query for a CNAME record
-        domain = self.create_domain()
-        recordset = self.create_recordset(domain, 'MX')
-        self.create_record(domain, recordset)
+        zone = self.create_zone()
+        recordset = self.create_recordset(zone, 'MX')
+        self.create_record(zone, recordset)
 
         request = dns.message.from_wire(binascii.a2b_hex(payload))
         request.environ = {'addr': self.addr, 'context': self.context}
@@ -793,12 +793,12 @@ class MdnsRequestHandlerTest(MdnsTestCase):
         self.assertEqual(expected_response, binascii.b2a_hex(response))
 
     def test_dispatch_opcode_query_tsig_scope_pool(self):
-        # Create a domain/recordset/record to query
-        domain = self.create_domain(name='example.com.')
+        # Create a zone/recordset/record to query
+        zone = self.create_zone(name='example.com.')
         recordset = self.create_recordset(
-            domain, name='example.com.', type='A')
+            zone, name='example.com.', type='A')
         self.create_record(
-            domain, recordset, data='192.0.2.5')
+            zone, recordset, data='192.0.2.5')
 
         # DNS packet with QUERY opcode for A example.com.
         payload = ("c28901200001000000000001076578616d706c6503636f6d0000010001"
@@ -853,18 +853,18 @@ class MdnsRequestHandlerTest(MdnsTestCase):
         self.assertEqual(expected_response, binascii.b2a_hex(response))
 
     def test_dispatch_opcode_query_tsig_scope_zone(self):
-        # Create a domain/recordset/record to query
-        domain = self.create_domain(name='example.com.')
+        # Create a zone/recordset/record to query
+        zone = self.create_zone(name='example.com.')
         recordset = self.create_recordset(
-            domain, name='example.com.', type='A')
+            zone, name='example.com.', type='A')
         self.create_record(
-            domain, recordset, data='192.0.2.5')
+            zone, recordset, data='192.0.2.5')
 
         # Create a TSIG Key Matching the zone
         tsigkey_zone_known = self.create_tsigkey(
             name='known-zone',
             scope='ZONE',
-            resource_id=domain.id)
+            resource_id=zone.id)
 
         # DNS packet with QUERY opcode for A example.com.
         payload = ("c28901200001000000000001076578616d706c6503636f6d0000010001"

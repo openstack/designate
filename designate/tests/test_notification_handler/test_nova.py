@@ -29,11 +29,11 @@ class NovaFixedHandlerTest(TestCase, NotificationHandlerMixin):
     def setUp(self):
         super(NovaFixedHandlerTest, self).setUp()
 
-        domain = self.create_domain()
-        self.domain_id = domain['id']
-        self.config(domain_id=domain['id'], group='handler:nova_fixed')
-        self.config(format=['%(host)s.%(domain)s',
-                            '%(host)s.foo.%(domain)s'],
+        zone = self.create_zone()
+        self.zone_id = zone['id']
+        self.config(zone_id=zone['id'], group='handler:nova_fixed')
+        self.config(format=['%(host)s.%(zone)s',
+                            '%(host)s.foo.%(zone)s'],
                     group='handler:nova_fixed')
 
         self.plugin = NovaFixedHandler()
@@ -44,7 +44,7 @@ class NovaFixedHandlerTest(TestCase, NotificationHandlerMixin):
 
         self.assertIn(event_type, self.plugin.get_event_types())
 
-        criterion = {'domain_id': self.domain_id}
+        criterion = {'zone_id': self.zone_id}
 
         # Ensure we start with 2 records
         records = self.central_service.find_records(self.admin_context,
@@ -62,7 +62,7 @@ class NovaFixedHandlerTest(TestCase, NotificationHandlerMixin):
         self.assertEqual(4, len(records))
 
     def test_instance_create_end_utf8(self):
-        self.config(format=['%(display_name)s.%(domain)s'],
+        self.config(format=['%(display_name)s.%(zone)s'],
                     group='handler:nova_fixed')
 
         event_type = 'compute.instance.create.end'
@@ -73,7 +73,7 @@ class NovaFixedHandlerTest(TestCase, NotificationHandlerMixin):
 
         self.assertIn(event_type, self.plugin.get_event_types())
 
-        criterion = {'domain_id': self.domain_id}
+        criterion = {'zone_id': self.zone_id}
 
         # Ensure we start with 2 records
         recordsets = self.central_service.find_recordsets(
@@ -114,7 +114,7 @@ class NovaFixedHandlerTest(TestCase, NotificationHandlerMixin):
 
         self.assertIn(event_type, self.plugin.get_event_types())
 
-        criterion = {'domain_id': self.domain_id}
+        criterion = {'zone_id': self.zone_id}
 
         # Ensure we start with at least 1 record, plus NS and SOA
         records = self.central_service.find_records(self.admin_context,
@@ -126,10 +126,10 @@ class NovaFixedHandlerTest(TestCase, NotificationHandlerMixin):
             self.admin_context, event_type, fixture['payload'])
 
         # Simulate the record having been deleted on the backend
-        domain_serial = self.central_service.get_domain(
-            self.admin_context, self.domain_id).serial
+        zone_serial = self.central_service.get_zone(
+            self.admin_context, self.zone_id).serial
         self.central_service.update_status(
-            self.admin_context, self.domain_id, "SUCCESS", domain_serial)
+            self.admin_context, self.zone_id, "SUCCESS", zone_serial)
 
         # Ensure we now have exactly 0 records, plus NS and SOA
         records = self.central_service.find_records(self.admin_context,
@@ -150,5 +150,5 @@ class NovaFixedHandlerTest(TestCase, NotificationHandlerMixin):
                     self.plugin.process_notification(
                         self.admin_context, event_type, fixture['payload'])
                     finder.assert_called_once_with(
-                        mock.ANY, type='A', domain_id=self.domain_id,
+                        mock.ANY, type='A', zone_id=self.zone_id,
                         name='private.example.com')

@@ -35,15 +35,15 @@ class LimitsController(rest.RestController):
 
         return {
             # Resource Creation Limits
-            "max_zones": absolute_limits['domains'],
-            "max_zone_recordsets": absolute_limits['domain_recordsets'],
-            "max_zone_records": absolute_limits['domain_records'],
+            "max_zones": absolute_limits['zones'],
+            "max_zone_recordsets": absolute_limits['zone_recordsets'],
+            "max_zone_records": absolute_limits['zone_records'],
             "max_recordset_records": absolute_limits['recordset_records'],
 
             # Resource Field Value Limits
             "min_ttl": CONF['service:central'].min_ttl,
             "max_zone_name_length":
-                CONF['service:central'].max_domain_name_len,
+                CONF['service:central'].max_zone_name_len,
             "max_recordset_name_length":
                 CONF['service:central'].max_recordset_name_len,
 

@@ -27,7 +27,7 @@ class MemcachePoolManagerCacheTest(PoolManagerCacheTestCase, TestCase):
         self.cache = cache.get_pool_manager_cache('memcache')
         self.mock_status = Mock(
             nameserver_id='nameserver_id',
-            domain_id='domain_id',
+            zone_id='zone_id',
             action='CREATE',
         )
 
@@ -36,11 +36,11 @@ class MemcachePoolManagerCacheTest(PoolManagerCacheTestCase, TestCase):
         self.cache.store(self.admin_context, expected)
 
         actual = self.cache.retrieve(
-            self.admin_context, expected.nameserver_id, expected.domain_id,
+            self.admin_context, expected.nameserver_id, expected.zone_id,
             expected.action)
 
         self.assertEqual(expected.nameserver_id, actual.nameserver_id)
-        self.assertEqual(expected.domain_id, actual.domain_id)
+        self.assertEqual(expected.zone_id, actual.zone_id)
         self.assertEqual(expected.status, actual.status)
         self.assertEqual(expected.serial_number, actual.serial_number)
         self.assertEqual(expected.action, actual.action)
@@ -53,7 +53,7 @@ class MemcachePoolManagerCacheTest(PoolManagerCacheTestCase, TestCase):
         """
         key = self.cache._build_serial_number_key(self.mock_status)
         self.assertIsInstance(key, str)
-        self.assertEqual(key, 'nameserver_id-domain_id-CREATE-serial_number')
+        self.assertEqual(key, 'nameserver_id-zone_id-CREATE-serial_number')
 
     def test_status_key_is_a_string(self):
         """Memcache requires keys be strings.
@@ -63,4 +63,4 @@ class MemcachePoolManagerCacheTest(PoolManagerCacheTestCase, TestCase):
         """
         key = self.cache._build_status_key(self.mock_status)
         self.assertIsInstance(key, str)
-        self.assertEqual(key, 'nameserver_id-domain_id-CREATE-status')
+        self.assertEqual(key, 'nameserver_id-zone_id-CREATE-status')
