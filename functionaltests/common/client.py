@@ -54,11 +54,17 @@ class BaseDesignateClient(RestClient):
 
     def __init__(self, with_token=True):
         no_cert_check = cfg.CONF.testconfig.disable_ssl_certificate_validation
+
+        interface = cfg.CONF.designate.interface
+        if not interface.endswith('URL'):
+            interface += "URL"
+
         super(BaseDesignateClient, self).__init__(
             auth_provider=self.get_auth_provider(with_token),
-            service='dns',
+            service=cfg.CONF.designate.service,
             region=cfg.CONF.identity.region,
             disable_ssl_certificate_validation=no_cert_check,
+            endpoint_type=interface
         )
 
     def get_auth_provider(self, with_token=True):

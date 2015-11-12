@@ -64,7 +64,9 @@ cfg.CONF.register_opts([
 ], group='noauth')
 
 cfg.CONF.register_opts([
-    cfg.ListOpt('nameservers', default=["127.0.0.1:53"])
+    cfg.ListOpt('nameservers', default=["127.0.0.1:53"]),
+    cfg.StrOpt('interface', default='public'),
+    cfg.StrOpt('service', default='dns')
 ], group="designate")
 
 
