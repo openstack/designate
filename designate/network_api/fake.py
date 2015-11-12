@@ -46,7 +46,7 @@ def allocate_floatingip(tenant_id, floatingip_id=None):
 
     ALLOCATIONS[tenant_id][id_] = POOL.pop(id_)
     values = _format_floatingip(id_, ALLOCATIONS[tenant_id][id_])
-    LOG.debug("Allocated to id_ %s to %s - %s" % (id_, tenant_id, values))
+    LOG.debug("Allocated to id_ %s to %s - %s", id_, tenant_id, values)
     return values
 
 
@@ -54,7 +54,7 @@ def deallocate_floatingip(id_):
     """
     Deallocate a floatingip
     """
-    LOG.debug('De-allocating %s' % id_)
+    LOG.debug('De-allocating %s', id_)
     for tenant_id, allocated in list(ALLOCATIONS.items()):
         if id_ in allocated:
             POOL[id_] = allocated.pop(id_)
@@ -82,6 +82,6 @@ class FakeNetworkAPI(NetworkAPI):
             data = list(ALLOCATIONS.get(context.tenant, {}).items())
 
         formatted = [_format_floatingip(k, v) for k, v in data]
-        LOG.debug('Returning %i FloatingIPs: %s' %
-                  (len(formatted), formatted))
+        LOG.debug('Returning %i FloatingIPs: %s',
+                  len(formatted), formatted)
         return formatted

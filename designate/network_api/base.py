@@ -57,7 +57,7 @@ class NetworkAPI(DriverPlugin):
             msg = 'No service_catalog and no configured endpoints'
             raise exceptions.ConfigurationError(msg)
 
-        LOG.debug('Returning endpoints: %s' % endpoints)
+        LOG.debug('Returning endpoints: %s', endpoints)
         return endpoints
 
     def _endpoints_from_catalog(self, service_catalog, service_type,
