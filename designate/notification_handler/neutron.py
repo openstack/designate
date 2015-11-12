@@ -53,8 +53,8 @@ class NeutronFloatingHandler(BaseAddressHandler):
         ]
 
     def process_notification(self, context, event_type, payload):
-        LOG.debug('%s received notification - %s' %
-                  (self.get_canonical_name(), event_type))
+        LOG.debug('%s received notification - %s',
+                  self.get_canonical_name(), event_type)
 
         zone_id = cfg.CONF[self.name].zone_id
         if event_type.startswith('floatingip.delete'):

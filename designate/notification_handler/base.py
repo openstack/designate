@@ -123,12 +123,12 @@ class BaseAddressHandler(NotificationHandler):
                 'Deprecation notice: Unmanaged designate-sink records are '
                 'being deprecated please update the call '
                 'to remove managed=False'))
-        LOG.debug('Using Zone ID: %s' % zone_id)
+        LOG.debug('Using Zone ID: %s', zone_id)
         zone = self.get_zone(zone_id)
-        LOG.debug('Zone: %r' % zone)
+        LOG.debug('Domain: %r', zone)
 
         data = extra.copy()
-        LOG.debug('Event data: %s' % data)
+        LOG.debug('Event data: %s', data)
         data['zone'] = zone['name']
 
         context = DesignateContext().elevated()
@@ -159,8 +159,8 @@ class BaseAddressHandler(NotificationHandler):
                         'managed_resource_type': resource_type,
                         'managed_resource_id': resource_id})
 
-                LOG.debug('Creating record in %s / %s with values %r' %
-                          (zone['id'], recordset['id'], record_values))
+                LOG.debug('Creating record in %s / %s with values %r',
+                          zone['id'], recordset['id'], record_values)
                 self.central_api.create_record(context,
                                                zone['id'],
                                                recordset['id'],
@@ -198,7 +198,7 @@ class BaseAddressHandler(NotificationHandler):
         records = self.central_api.find_records(context, criterion)
 
         for record in records:
-            LOG.debug('Deleting record %s' % record['id'])
+            LOG.debug('Deleting record %s', record['id'])
 
             self.central_api.delete_record(context,
                                            zone_id,

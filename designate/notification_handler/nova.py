@@ -58,7 +58,7 @@ class NovaFixedHandler(BaseAddressHandler):
         return data
 
     def process_notification(self, context, event_type, payload):
-        LOG.debug('NovaFixedHandler received notification - %s' % event_type)
+        LOG.debug('NovaFixedHandler received notification - %s', event_type)
 
         zone_id = cfg.CONF[self.name].zone_id
         if event_type == 'compute.instance.create.end':
