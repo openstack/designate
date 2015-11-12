@@ -50,7 +50,9 @@ class RequestHandler(xfr.XFRMixin):
 
     @property
     def central_api(self):
-        return central_api.CentralAPI.get_instance()
+        if not hasattr(self, '_central_api'):
+            self._central_api = central_api.CentralAPI.get_instance()
+        return self._central_api
 
     def __call__(self, request):
         """
@@ -69,7 +71,6 @@ class RequestHandler(xfr.XFRMixin):
             # Handle AXFR and IXFR requests with an AXFR responses for now.
             # It is permissible for a server to send an AXFR response when
             # receiving an IXFR request.
-            # TODO(Ron): send IXFR response when receiving IXFR request.
             if q_rrset.rdtype in (dns.rdatatype.AXFR, dns.rdatatype.IXFR):
                 for response in self._handle_axfr(request):
                     yield response
@@ -86,7 +87,7 @@ class RequestHandler(xfr.XFRMixin):
             raise StopIteration
 
         else:
-            # Unhandled OpCode's include STATUS, IQUERY, NOTIFY, UPDATE
+            # Unhandled OpCode's include STATUS, IQUERY, UPDATE
             yield self._handle_query_error(request, dns.rcode.REFUSED)
             raise StopIteration
 
