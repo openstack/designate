@@ -224,5 +224,5 @@ class PeriodicSecondaryRefreshTask(PeriodicTask):
             if seconds > zone.refresh:
                 msg = "Zone %(id)s has %(seconds)d seconds since last transfer, " \
                       "executing AXFR"
-                LOG.debug(msg % {"id": zone.id, "seconds": seconds})
+                LOG.debug(msg, {"id": zone.id, "seconds": seconds})
                 self.central_api.xfr_zone(ctxt, zone.id)
