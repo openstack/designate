@@ -12,6 +12,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+echo "Tempest tests have been disabled on the Kilo branch"
+exit 0
+
 # How many seconds to wait for the API to be responding before giving up
 API_RESPONDING_TIMEOUT=20
 
