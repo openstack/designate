@@ -272,6 +272,7 @@ pool_ns_records = Table('pool_ns_records', metadata,
     Column('hostname', String(255), nullable=False),
 
     ForeignKeyConstraint(['pool_id'], ['pools.id'], ondelete='CASCADE'),
+    UniqueConstraint('pool_id', 'hostname', name='unique_ns_name'),
 
     mysql_engine='INNODB',
     mysql_charset='utf8')
