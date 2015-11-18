@@ -2954,12 +2954,19 @@ class CentralServiceTest(CentralTestCase):
         # Create a zone
         zone = self.create_zone()
 
-        # Delete the zone
+        # Delete the zone (flag it for purging)
         self.central_service.delete_zone(self.admin_context, zone['id'])
+
+        # The domain should be still there, albeit flagged for purging
+        self.central_service.get_zone(self.admin_context, zone['id'])
+
+        zones = self.central_service.find_zones(self.admin_context)
+        self.assertEqual(1, len(zones))
 
         # Simulate the zone having been deleted on the backend
         zone_serial = self.central_service.get_zone(
             self.admin_context, zone['id']).serial
+
         self.central_service.update_status(
             self.admin_context, zone['id'], "SUCCESS", zone_serial)
 

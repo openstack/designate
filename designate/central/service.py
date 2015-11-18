@@ -949,6 +949,8 @@ class Service(service.RPCService, service.Service):
         return zone
 
     def get_zone(self, context, zone_id):
+        """Get a zone, even if flagged for deletion
+        """
         zone = self.storage.get_zone(context, zone_id)
 
         target = {
@@ -987,6 +989,8 @@ class Service(service.RPCService, service.Service):
 
     def find_zones(self, context, criterion=None, marker=None, limit=None,
                    sort_key=None, sort_dir=None):
+        """List existing zones including the ones flagged for deletion.
+        """
         target = {'tenant_id': context.tenant}
         policy.check('find_zones', context, target)
 

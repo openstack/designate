@@ -433,6 +433,10 @@ class ApiV2ZonesTest(ApiV2TestCase):
         self.assertEqual('DELETE', response.json['action'])
         self.assertEqual('PENDING', response.json['status'])
 
+        # The deleted zone should still be listed
+        zones = self.client.get('/zones/')
+        self.assertEqual(1, len(zones.json['zones']))
+
     def test_delete_zone_invalid_id(self):
         self._assert_invalid_uuid(self.client.delete, '/zones/%s')
 
