@@ -1,0 +1,25 @@
+---
+prelude: >
+    Import of release notes from https://wiki.openstack.org/wiki/ReleaseNotes/Liberty#OpenStack_DNS_.28Designate.29
+features:
+  - Horizon Plugin moved out of tree
+  - Purging deleted domains
+  - Ceilometer "exists" periodic event per domain
+  - ASync Import
+  - ASync Export
+  - Active / passive failover for designate-pool-manager periodic tasks
+  - OpenStack client integration
+  - Added InfoBlox Backend
+  - Added Designate Backend
+upgrade:
+  - New service designate-zone-manager
+  - "designate-zone-manager : It is recommended to use a supported tooz backend."
+  - "designate-zone-manager : ZooKeeper is recommended, or anything supported by tooz."
+  - "designate-zone-manager : If a tooz backend is not used, all zone-managers will assume ownership of all zones, and there will be 'n' 'exists' messages per hour, where 'n' is the number of zone-manager processes."
+  - "designate-pool-manager : The service can do active/passive failover for periodic tasks."
+  - "designate-pool-manager : It is recommended to use a supported tooz backend."
+  - "designate-pool-manager : If a tooz backend is not used, all pool-managers will assume ownership of the pool, and multiple periodic tasks will run. This can result in unforeseen consequences."
+other:
+  - "deprecations : V1 API : An initial notice of intent, as there are operations that still require the Designate CLI interface which talks to V1, and Horizon panels that only talk to V1."
+
+
