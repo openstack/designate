@@ -70,10 +70,11 @@ class SqlalchemyStorageTest(StorageTestCase, TestCase):
                 "rrset_type_domainid": "CREATE INDEX rrset_type_domainid ON recordsets (type, zone_id)"  # noqa
             },
             "zones": {
+                "delayed_notify": "CREATE INDEX delayed_notify ON zones (delayed_notify)",  # noqa
                 "reverse_name_deleted": "CREATE INDEX reverse_name_deleted ON zones (reverse_name, deleted)",  # noqa
                 "zone_created_at": "CREATE INDEX zone_created_at ON zones (created_at)",  # noqa
                 "zone_deleted": "CREATE INDEX zone_deleted ON zones (deleted)",
-                "zone_tenant_deleted": "CREATE INDEX zone_tenant_deleted ON zones (tenant_id, deleted)"  # noqa
+                "zone_tenant_deleted": "CREATE INDEX zone_tenant_deleted ON zones (tenant_id, deleted)",  # noqa
             }
         }
         self.assertDictEqual(expected, indexes)

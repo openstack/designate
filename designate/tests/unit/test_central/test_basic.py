@@ -782,11 +782,12 @@ class CentralzoneTestCase(CentralBasic):
 
         out = self.service.create_zone(
             self.context,
-            RoObject(
+            RwObject(
                 tenant_id='1',
                 name='example.com.',
                 ttl=60,
                 pool_id='2',
+                refresh=0,
                 type='PRIMARY'
             )
         )

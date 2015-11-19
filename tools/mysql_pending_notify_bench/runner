@@ -1,0 +1,95 @@
+#!/bin/bash
+#
+# Copyright 2015 Hewlett-Packard Development Company, L.P.
+# Licensed under the Apache License, Version 2.0, see LICENSE file
+
+echo "Creating DB and table"
+mysql <<EOF
+DROP DATABASE IF EXISTS mysqlslap;
+CREATE DATABASE mysqlslap;
+USE mysqlslap;
+CREATE TABLE zones (
+    id CHAR(32),
+    version INT(32),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    name VARCHAR(255),
+    email VARCHAR(255),
+    pending_notify BOOLEAN
+);
+EOF
+
+
+populate() {
+    pending_num=$1
+    not_pending_num=$2
+    end_num=$(($pending_num+$not_pending_num))
+
+mysql mysqlslap <<EOF
+DROP PROCEDURE IF EXISTS populate_not_pending;
+DELIMITER #
+CREATE PROCEDURE populate_not_pending()
+BEGIN
+
+DECLARE i INT UNSIGNED DEFAULT 0;
+WHILE i < $not_pending_num DO
+    INSERT INTO zones (id, version, name, pending_notify) SELECT i, 1, concat(i, '.example.com'), 0;
+    SET i = i + 1;
+END WHILE;
+
+COMMIT;
+END #
+EOF
+
+mysql mysqlslap <<EOF
+DROP PROCEDURE IF EXISTS populate_pending;
+DELIMITER #
+CREATE PROCEDURE populate_pending()
+BEGIN
+
+DECLARE i INT UNSIGNED DEFAULT $not_pending_num;
+WHILE i < $end_num DO
+    INSERT INTO zones (id, version, name, pending_notify) SELECT i, 1, concat(i, '.example.com'), 1;
+    SET i = i + 1;
+END WHILE;
+
+COMMIT;
+END #
+
+EOF
+
+
+    echo "Populating non-pending rows"
+    mysql mysqlslap -e "CALL populate_not_pending();"
+    echo "Populating pending rows"
+    mysql mysqlslap -e "CALL populate_pending();"
+
+    mysql mysqlslap -e "SELECT COUNT(id) FROM zones WHERE pending_notify = True ORDER BY updated_at DESC;"
+    mysql mysqlslap -e "SELECT COUNT(id) FROM zones WHERE pending_notify = False ORDER BY updated_at DESC;"
+}
+
+run_bench() {
+    query="SELECT * FROM zones WHERE pending_notify = True ORDER BY updated_at ASC LIMIT 500;"
+    mysqlslap -C --iterations=100 --concurrency 3 --query "$query" > /dev/null # warmup
+    mysql mysqlslap -e "EXPLAIN $query"
+    mysqlslap -C --iterations=100 --concurrency 3 --query "$query"
+}
+
+
+populate 5000 200000
+# mysql mysqlslap -e "$query"
+
+echo "Without any index"
+run_bench
+
+echo "With pending_notify index"
+mysql mysqlslap -e "CREATE INDEX pending_notify_idx ON zones (pending_notify);"
+run_bench
+
+echo "With created_at and pending_notify index"
+mysql mysqlslap -e "CREATE INDEX created_at_idx ON zones (created_at);"
+run_bench
+
+echo "Drop DB"
+mysql -e "DROP DATABASE mysqlslap"
+

@@ -161,6 +161,11 @@ class Zone(base.DictObjectMixin, base.SoftDeleteObjectMixin,
             },
             'read_only': True
         },
+        'delayed_notify': {
+            'schema': {
+                'type': 'boolean',
+            },
+        },
     }
 
     STRING_KEYS = [

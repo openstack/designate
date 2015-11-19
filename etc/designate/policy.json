@@ -51,6 +51,7 @@
     "xfr_zone": "rule:admin_or_owner",
     "abandon_zone": "rule:admin",
     "count_zones": "rule:admin_or_owner",
+    "count_zones_pending_notify": "rule:admin_or_owner",
     "purge_zones": "rule:admin",
     "touch_zone": "rule:admin_or_owner",
 

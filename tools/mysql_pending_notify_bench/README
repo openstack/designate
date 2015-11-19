@@ -1,0 +1,56 @@
+
+A simple benchmark was run on 2015-11-24 to measure the effectiveness of adding an index on pending_notify
+
+$ sudo ./runner
+Creating DB and table
+Populating non-pending rows
+Populating pending rows
++-----------+
+| COUNT(id) |
++-----------+
+|      5000 |
++-----------+
++-----------+
+| COUNT(id) |
++-----------+
+|    200000 |
++-----------+
+Without any index
++----+-------------+-------+------+---------------+------+---------+------+--------+-----------------------------+
+| id | select_type | table | type | possible_keys | key  | key_len | ref  | rows   | Extra                       |
++----+-------------+-------+------+---------------+------+---------+------+--------+-----------------------------+
+|  1 | SIMPLE      | zones | ALL  | NULL          | NULL | NULL    | NULL | 204013 | Using where; Using filesort |
++----+-------------+-------+------+---------------+------+---------+------+--------+-----------------------------+
+Benchmark
+	Average number of seconds to run all queries: 0.137 seconds
+	Minimum number of seconds to run all queries: 0.122 seconds
+	Maximum number of seconds to run all queries: 0.158 seconds
+	Number of clients running queries: 3
+	Average number of queries per client: 1
+
+With pending_notify index
++----+-------------+-------+------+--------------------+--------------------+---------+-------+------+-----------------------------+
+| id | select_type | table | type | possible_keys      | key                | key_len | ref   | rows | Extra                       |
++----+-------------+-------+------+--------------------+--------------------+---------+-------+------+-----------------------------+
+|  1 | SIMPLE      | zones | ref  | pending_notify_idx | pending_notify_idx | 2       | const | 4999 | Using where; Using filesort |
++----+-------------+-------+------+--------------------+--------------------+---------+-------+------+-----------------------------+
+Benchmark
+	Average number of seconds to run all queries: 0.012 seconds
+	Minimum number of seconds to run all queries: 0.010 seconds
+	Maximum number of seconds to run all queries: 0.019 seconds
+	Number of clients running queries: 3
+	Average number of queries per client: 1
+
+With created_at and pending_notify index
++----+-------------+-------+------+--------------------+--------------------+---------+-------+------+-----------------------------+
+| id | select_type | table | type | possible_keys      | key                | key_len | ref   | rows | Extra                       |
++----+-------------+-------+------+--------------------+--------------------+---------+-------+------+-----------------------------+
+|  1 | SIMPLE      | zones | ref  | pending_notify_idx | pending_notify_idx | 2       | const | 4999 | Using where; Using filesort |
++----+-------------+-------+------+--------------------+--------------------+---------+-------+------+-----------------------------+
+Benchmark
+	Average number of seconds to run all queries: 0.012 seconds
+	Minimum number of seconds to run all queries: 0.010 seconds
+	Maximum number of seconds to run all queries: 0.018 seconds
+	Number of clients running queries: 3
+	Average number of queries per client: 1
+

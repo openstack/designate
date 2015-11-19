@@ -246,6 +246,16 @@ debug = False
 # How old deleted records should be (deleted_at) to be purged, in seconds
 #time_threshold = 604800  # 7 days
 
+#------------------------
+# Delayed zones NOTIFY
+#------------------------
+[zone_manager_task:delayed_notify]
+# How frequently to scan for zones pending NOTIFY, in seconds
+#interval = 5
+
+# How many zones to receive NOTIFY on each run
+#batch_size = 100
+
 #-----------------------
 # Pool Manager Service
 #-----------------------

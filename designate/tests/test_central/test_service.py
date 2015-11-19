@@ -2881,9 +2881,11 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(u"New Comment", pool.description)
 
     def test_update_pool_add_ns_record(self):
-        # Create a server pool and zone
+        # Create a server pool and 3 zones
         pool = self.create_pool(fixture=0)
         zone = self.create_zone(pool_id=pool.id)
+        self.create_zone(fixture=1, pool_id=pool.id)
+        self.create_zone(fixture=2, pool_id=pool.id)
 
         ns_record_count = len(pool.ns_records)
         new_ns_record = objects.PoolNsRecord(
@@ -2907,9 +2909,16 @@ class CentralServiceTest(CentralTestCase):
             self.admin_context,
             criterion={'zone_id': zone.id, 'type': "NS"})
 
-        # Verify that the doamins NS records ware updated correctly
+        # Verify that the doamins NS records were updated correctly
         self.assertEqual(set([n.hostname for n in pool.ns_records]),
                          set([n.data for n in ns_recordset.records]))
+
+        # Verify that the 3 zones are in the database and that
+        # the delayed_notify flag is set
+        zones = self._fetch_all_zones()
+        self.assertEqual(3, len(zones))
+        for z in zones:
+            self.assertTrue(z.delayed_notify)
 
     def test_update_pool_add_ns_record_without_priority(self):
         pool = self.create_pool(fixture=0)
@@ -2947,6 +2956,10 @@ class CentralServiceTest(CentralTestCase):
         # Verify that the doamins NS records ware updated correctly
         self.assertEqual(set([n.hostname for n in pool.ns_records]),
                          set([n.data for n in ns_recordset.records]))
+
+        zones = self._fetch_all_zones()
+        self.assertEqual(1, len(zones))
+        self.assertTrue(zones[0].delayed_notify)
 
     def test_delete_pool(self):
         # Create a server pool

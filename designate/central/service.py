@@ -527,10 +527,16 @@ class Service(service.RPCService, service.Service):
                 raise exceptions.InvalidTTL('TTL is below the minimum: %s'
                                             % min_ttl)
 
-    def _increment_zone_serial(self, context, zone):
+    def _increment_zone_serial(self, context, zone, set_delayed_notify=False):
+        """Update the zone serial and the SOA record
+        Optionally set delayed_notify to have PM issue delayed notify
+        """
 
         # Increment the serial number
         zone.serial = utils.increment_serial(zone.serial)
+        if set_delayed_notify:
+            zone.delayed_notify = True
+
         zone = self.storage.update_zone(context, zone)
 
         # Update SOA record
@@ -634,7 +640,8 @@ class Service(service.RPCService, service.Service):
         ns_recordset.records.append(
             objects.Record(data=ns_record, managed=True))
 
-        self._update_recordset_in_storage(context, zone, ns_recordset)
+        self._update_recordset_in_storage(context, zone, ns_recordset,
+                                          set_delayed_notify=True)
 
     def _delete_ns(self, context, zone, ns_record):
         ns_recordset = self.find_recordset(
@@ -644,7 +651,8 @@ class Service(service.RPCService, service.Service):
             if record.data == ns_record:
                 ns_recordset.records.remove(record)
 
-        self._update_recordset_in_storage(context, zone, ns_recordset)
+        self._update_recordset_in_storage(context, zone, ns_recordset,
+                                          set_delayed_notify=True)
 
     # Quota Enforcement Methods
     def _enforce_zone_quota(self, context, tenant_id):
@@ -1047,14 +1055,15 @@ class Service(service.RPCService, service.Service):
 
     @transaction
     def _update_zone_in_storage(self, context, zone,
-                                increment_serial=True):
+            increment_serial=True, set_delayed_notify=False):
 
         zone.action = 'UPDATE'
         zone.status = 'PENDING'
 
         if increment_serial:
             # _increment_zone_serial increments and updates the zone
-            zone = self._increment_zone_serial(context, zone)
+            zone = self._increment_zone_serial(
+                context, zone, set_delayed_notify=set_delayed_notify)
         else:
             zone = self.storage.update_zone(context, zone)
 
@@ -1175,12 +1184,21 @@ class Service(service.RPCService, service.Service):
             reports.append({'zones': self.count_zones(context),
                             'records': self.count_records(context),
                             'tenants': self.count_tenants(context)})
+
         elif criterion == 'zones':
             reports.append({'zones': self.count_zones(context)})
+
+        elif criterion == 'zones_delayed_notify':
+            num_zones = self.count_zones(context, criterion=dict(
+                delayed_notify=True))
+            reports.append({'zones_delayed_notify': num_zones})
+
         elif criterion == 'records':
             reports.append({'records': self.count_records(context)})
+
         elif criterion == 'tenants':
             reports.append({'tenants': self.count_tenants(context)})
+
         else:
             raise exceptions.ReportNotFound()
 
@@ -1373,7 +1391,7 @@ class Service(service.RPCService, service.Service):
 
     @transaction
     def _update_recordset_in_storage(self, context, zone, recordset,
-                                     increment_serial=True):
+            increment_serial=True, set_delayed_notify=False):
 
         changes = recordset.obj_get_changes()
 
@@ -1393,7 +1411,8 @@ class Service(service.RPCService, service.Service):
         if increment_serial:
             # update the zone's status and increment the serial
             zone = self._update_zone_in_storage(
-                context, zone, increment_serial)
+                context, zone, increment_serial,
+                set_delayed_notify=set_delayed_notify)
 
         if recordset.records:
             for record in recordset.records:
