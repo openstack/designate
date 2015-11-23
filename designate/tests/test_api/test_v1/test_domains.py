@@ -16,6 +16,7 @@
 # under the License.
 import datetime
 
+import testtools
 from mock import patch
 import oslo_messaging as messaging
 from oslo_config import cfg
@@ -235,6 +236,17 @@ class ApiV1zonesTest(ApiV1Test):
         del fixture['email']
         self.post('domains', data=fixture, status_code=400)
 
+    def test_create_zone_twice(self):
+        self.create_zone()
+        with testtools.ExpectedException(exceptions.DuplicateZone):
+            self.create_zone()
+
+    def test_create_zone_pending_deletion(self):
+        zone = self.create_zone()
+        self.delete('domains/%s' % zone['id'])
+        with testtools.ExpectedException(exceptions.DuplicateZone):
+            self.create_zone()
+
     def test_get_zones(self):
         response = self.get('domains')
 
@@ -424,6 +436,11 @@ class ApiV1zonesTest(ApiV1Test):
         data = {'description': invalid_des}
         self.put('domains/%s' % zone['id'], data=data, status_code=400)
 
+    def test_update_zone_in_pending_deletion(self):
+        zone = self.create_zone()
+        self.delete('domains/%s' % zone['id'])
+        self.put('domains/%s' % zone['id'], data={}, status_code=404)
+
     def test_delete_zone(self):
         # Create a zone
         zone = self.create_zone()
@@ -438,6 +455,21 @@ class ApiV1zonesTest(ApiV1Test):
 
         # Ensure we can no longer fetch the zone
         self.get('domains/%s' % zone['id'], status_code=404)
+
+    def test_zone_in_pending_deletion(self):
+        zone1 = self.create_zone()
+        self.create_zone(fixture=1)
+        response = self.get('domains')
+        self.assertEqual(2, len(response.json['domains']))
+
+        # Delete zone1
+        self.delete('domains/%s' % zone1['id'])
+
+        # Ensure we can no longer list nor fetch the deleted zone
+        response = self.get('domains')
+        self.assertEqual(1, len(response.json['domains']))
+
+        self.get('domains/%s' % zone1['id'], status_code=404)
 
     @patch.object(central_service.Service, 'delete_zone',
                   side_effect=messaging.MessagingTimeout())

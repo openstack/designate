@@ -42,7 +42,7 @@ def _find_recordset(context, domain_id, name, type):
 def _find_or_create_recordset(context, domain_id, name, type, ttl):
     central_api = central_rpcapi.CentralAPI.get_instance()
 
-    criterion = {"id": domain_id, "type": "PRIMARY"}
+    criterion = {"id": domain_id, "type": "PRIMARY", "action": "!DELETE"}
     central_api.find_zone(context, criterion=criterion)
 
     try:
@@ -191,7 +191,7 @@ def update_record(domain_id, record_id):
 
     # NOTE: We need to ensure the domain actually exists, otherwise we may
     #       return a record not found instead of a domain not found
-    criterion = {"id": domain_id, "type": "PRIMARY"}
+    criterion = {"id": domain_id, "type": "PRIMARY", "action": "!DELETE"}
     central_api.find_zone(context, criterion)
 
     # Fetch the existing resource
@@ -250,7 +250,7 @@ def delete_record(domain_id, record_id):
 
     # NOTE: We need to ensure the domain actually exists, otherwise we may
     #       return a record not found instead of a domain not found
-    criterion = {"id": domain_id, "type": "PRIMARY"}
+    criterion = {"id": domain_id, "type": "PRIMARY", "action": "!DELETE"}
     central_api.find_zone(context, criterion=criterion)
 
     # Find the record

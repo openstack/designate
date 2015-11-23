@@ -808,7 +808,7 @@ class ApiV1RecordsTest(ApiV1Test):
 
         self.delete('/domains/%s' % self.zone['id'])
         self.post('domains/%s/records' % self.zone['id'],
-                  data=fixture, status_code=400)
+                  data=fixture, status_code=404)
 
     def test_update_record_deleting_zone(self):
         # Create a record
@@ -822,7 +822,7 @@ class ApiV1RecordsTest(ApiV1Test):
         self.delete('/domains/%s' % self.zone['id'])
         self.put('domains/%s/records/%s' % (self.zone['id'],
                                             record['id']),
-                 data=data, status_code=400)
+                 data=data, status_code=404)
 
     def test_delete_record_deleting_zone(self):
         # Create a record
@@ -831,4 +831,4 @@ class ApiV1RecordsTest(ApiV1Test):
         self.delete('/domains/%s' % self.zone['id'])
         self.delete('domains/%s/records/%s' % (self.zone['id'],
                                                record['id']),
-                    status_code=400)
+                    status_code=404)

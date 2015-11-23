@@ -76,22 +76,27 @@ def create_domain():
 
 @blueprint.route('/domains', methods=['GET'])
 def get_domains():
+    """List existing zones except those flagged for deletion
+    """
     context = flask.request.environ.get('context')
 
     central_api = central_rpcapi.CentralAPI.get_instance()
 
-    domains = central_api.find_zones(context, criterion={"type": "PRIMARY"})
+    domains = central_api.find_zones(context, criterion={"type": "PRIMARY",
+                                                         "action": "!DELETE"})
 
     return flask.jsonify(domains_schema.filter({'domains': domains}))
 
 
 @blueprint.route('/domains/<uuid:domain_id>', methods=['GET'])
 def get_domain(domain_id):
+    """Return zone data unless the zone is flagged for purging
+    """
     context = flask.request.environ.get('context')
 
     central_api = central_rpcapi.CentralAPI.get_instance()
 
-    criterion = {"id": domain_id, "type": "PRIMARY"}
+    criterion = {"id": domain_id, "type": "PRIMARY", "action": "!DELETE"}
     domain = central_api.find_zone(context, criterion=criterion)
 
     return flask.jsonify(domain_schema.filter(domain))
@@ -105,7 +110,7 @@ def update_domain(domain_id):
     central_api = central_rpcapi.CentralAPI.get_instance()
 
     # Fetch the existing resource
-    criterion = {"id": domain_id, "type": "PRIMARY"}
+    criterion = {"id": domain_id, "type": "PRIMARY", "action": "!DELETE"}
     domain = central_api.find_zone(context, criterion=criterion)
 
     # Prepare a dict of fields for validation
@@ -129,7 +134,7 @@ def delete_domain(domain_id):
     central_api = central_rpcapi.CentralAPI.get_instance()
 
     # TODO(ekarlso): Fix this to something better.
-    criterion = {"id": domain_id, "type": "PRIMARY"}
+    criterion = {"id": domain_id, "type": "PRIMARY", "action": "!DELETE"}
     central_api.find_zone(context, criterion=criterion)
 
     central_api.delete_zone(context, domain_id)
@@ -144,7 +149,7 @@ def get_domain_servers(domain_id):
     central_api = central_rpcapi.CentralAPI.get_instance()
 
     # TODO(ekarlso): Fix this to something better.
-    criterion = {"id": domain_id, "type": "PRIMARY"}
+    criterion = {"id": domain_id, "type": "PRIMARY", "action": "!DELETE"}
     central_api.find_zone(context, criterion=criterion)
 
     nameservers = central_api.get_zone_ns_records(context, domain_id)
