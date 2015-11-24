@@ -30,6 +30,7 @@ class QuotasView(base_view.BaseView):
     def show_basic(self, context, request, quota):
         """Basic view of a quota"""
         return {
+            "api_export_size": quota['api_export_size'],
             "zones": quota['zones'],
             "zone_records": quota['zone_records'],
             "zone_recordsets": quota['zone_recordsets'],
@@ -39,6 +40,6 @@ class QuotasView(base_view.BaseView):
     def load(self, context, request, body):
         """Extract a "central" compatible dict from an API call"""
         valid_keys = ('zone_records', 'zone_recordsets', 'zones',
-                      'recordset_records')
+                      'recordset_records', 'api_export_size')
 
         return self._load(context, request, body, valid_keys)

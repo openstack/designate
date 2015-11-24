@@ -59,6 +59,7 @@ Get Quotas
 
         {
           "quota": {
+            "api_export_size: 1000,
             "zones": 10,
             "recordset_records": 20,
             "zone_records": 500,
@@ -66,6 +67,8 @@ Get Quotas
           }
         }
 
+    :api_export_size: Number of records allowed in a synchronous zone export
+                      done via API
     :form zones: Number of zones the tenant is allowed to own
     :form recordset_records: Number of records allowed per recordset
     :form zone_records: Number of records allowed per zone
@@ -107,6 +110,7 @@ Update Quotas
 
         {
           "quota": {
+            "api_export_size: 1000,
             "zones": 1000,
             "recordset_records": 20,
             "zone_records": 50,
