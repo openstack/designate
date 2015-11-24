@@ -19,6 +19,7 @@ from oslo_config import cfg
 from oslo_log import log as logging
 
 from designate import exceptions
+from designate import policy
 from designate import rpc
 from designate.i18n import _  # noqa
 from designate.i18n import _LI
@@ -35,8 +36,6 @@ class AkamaiCommands(base.Commands):
         super(AkamaiCommands, self).__init__()
         rpc.init(cfg.CONF)
         self.central_api = central_rpcapi.CentralAPI()
-
-        self.context.all_tenants = True
 
     def _get_config(self, pool_id, target_id):
         pool = pool_object.Pool.from_config(cfg.CONF, pool_id)
@@ -61,6 +60,10 @@ class AkamaiCommands(base.Commands):
         client = impl_akamai.EnhancedDNSClient(
             target.options.get("username"), target.options.get("password"))
 
+        # Bug 1519356 - Init policy after configuration has been read
+        policy.init()
+        self.context.all_tenants = True
+
         zone = self.central_api.find_domain(self.context, {"name": zone_name})
         akamai_zone = client.getZone(zone_name)
 
@@ -80,6 +83,10 @@ class AkamaiCommands(base.Commands):
 
         criterion = {"pool_id": pool_id}
         marker = None
+
+        # Bug 1519356 - Init policy after configuration has been read
+        policy.init()
+        self.context.all_tenants = True
 
         while (marker is not False):
             zones = self.central_api.find_domains(

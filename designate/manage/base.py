@@ -13,7 +13,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from designate import policy
 from designate.context import DesignateContext
 
 
@@ -39,4 +38,3 @@ class Commands(object):
     def __init__(self):
         self.context = DesignateContext.get_admin_context(
             request_id='designate-manage')
-        policy.init()
