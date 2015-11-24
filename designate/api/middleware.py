@@ -13,6 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from debtcollector import removals
 import flask
 import webob.dec
 from oslo_config import cfg
@@ -377,6 +378,8 @@ class SSLMiddleware(base.Middleware):
 
     Code nabbed from Heat.
     """
+    # Replaced by oslo.middleware's http_proxy_to_wsgi middleware
+    @removals.remove
     def __init__(self, application):
         super(SSLMiddleware, self).__init__(application)
         LOG.info(_LI('Starting designate ssl middleware'))

@@ -28,7 +28,7 @@ def factory(global_config, **local_conf):
 
     def _host_header_links():
         del versions[:]
-        host_url = flask.request.host_url
+        host_url = flask.request.host_url.rstrip('/')
         _version('v1', 'DEPRECATED', host_url)
         _version('v2', 'CURRENT', host_url)
 
