@@ -40,6 +40,7 @@ class AdminApiQuotasTest(AdminApiTestCase):
 
         self.assertIn('quota', response.json)
         self.assertIn('zones', response.json['quota'])
+        self.assertIn('api_export_size', response.json['quota'])
         self.assertIn('zone_records', response.json['quota'])
         self.assertIn('zone_recordsets', response.json['quota'])
         self.assertIn('recordset_records', response.json['quota'])
