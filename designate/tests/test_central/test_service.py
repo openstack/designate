@@ -107,6 +107,12 @@ class CentralServiceTest(CentralTestCase):
             self.central_service._is_valid_recordset_name(
                 context, domain, 'a.example.COM.')
 
+        with testtools.ExpectedException(exceptions.InvalidRecordSetLocation):
+            # Ensure names ending in the domain name, but
+            # not contained in it fail
+            self.central_service._is_valid_recordset_name(
+                context, domain, 'aexample.org.')
+
     def test_is_blacklisted_domain_name(self):
         # Create blacklisted zones with specific names
         self.create_blacklist(pattern='example.org.')
