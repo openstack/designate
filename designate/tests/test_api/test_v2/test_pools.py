@@ -206,15 +206,17 @@ class ApiV2PoolsTest(ApiV2TestCase):
             [n.hostname for n in pool['ns_records']],
             [n['hostname'] for n in response.json['ns_records']])
 
-    def test_update_pool_ns_records(self):
+    def _test_update_pool_ns_records(self, new_ns_records):
+        new_ns_names = [n['hostname'] for n in new_ns_records]
+
         # Create a pool
         pool = self.create_pool()
 
+        # Ensure we have a zone on the pool
+        zone = self.create_domain(pool_id=pool.id)
+
         # Prepare an update body
-        body = {'ns_records': [
-            {'priority': 1, 'hostname': 'new-ns1.example.org.'},
-            {'priority': 2, 'hostname': 'new-ns2.example.org.'},
-        ]}
+        body = {'ns_records': new_ns_records}
 
         url = '/pools/%s' % pool['id']
         response = self.client.patch_json(url, body, status=200)
@@ -228,10 +230,49 @@ class ApiV2PoolsTest(ApiV2TestCase):
         self.assertIn('links', response.json)
 
         # Check the values returned are what we expect
-        self.assertEqual(2, len(response.json['ns_records']))
-        self.assertEqual(['new-ns1.example.org.', 'new-ns2.example.org.'],
-                         [n['hostname'] for n in
-                          response.json['ns_records']])
+        self.assertEqual(len(new_ns_names), len(response.json['ns_records']))
+        self.assertEqual(
+            new_ns_names, [n['hostname'] for n in response.json['ns_records']])
+
+        # Ensure the Zone has the new NS Records
+        url = '/zones/%s/recordsets' % zone['id']
+        params = {'type': 'NS'}
+        response = self.client.get(url, params)
+
+        # Ensure we only matched one RecordSet
+        self.assertEqual(1, len(response.json['recordsets']))
+
+        records = response.json['recordsets'][0]['records']
+
+        # Ensure the RecordSet has exactly the right number of records
+        self.assertEqual(len(new_ns_names), len(records))
+
+        # Ensure the new values are present
+        self.assertEqual(new_ns_names, records)
+
+    def test_update_pool_ns_records(self):
+        new_ns_records = [
+            {'priority': 1, 'hostname': 'new-ns1.example.org.'},
+            {'priority': 2, 'hostname': 'new-ns2.example.org.'},
+        ]
+
+        self._test_update_pool_ns_records(new_ns_records)
+
+    def test_update_pool_add_ns_record(self):
+        new_ns_records = [
+            {'priority': 1, 'hostname': 'ns1.example.org.'},
+            {'priority': 2, 'hostname': 'ns2.example.org.'},
+            {'priority': 3, 'hostname': 'ns3.example.org.'},
+        ]
+
+        self._test_update_pool_ns_records(new_ns_records)
+
+    def test_update_pool_remove_ns_record(self):
+        new_ns_records = [
+            {'priority': 1, 'hostname': 'ns1.example.org.'},
+        ]
+
+        self._test_update_pool_ns_records(new_ns_records)
 
     def test_update_pool_attributes(self):
         # Create a pool
