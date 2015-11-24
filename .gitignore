@@ -24,6 +24,9 @@ functionaltests/tempest.log
 htmlcov/
 venv
 
+# Files created by releasenotes build
+releasenotes/build
+
 # Editors
 
 *.sublime-workspace
