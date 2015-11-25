@@ -132,7 +132,7 @@ zone_attributes = Table('zone_attributes', metadata,
     UniqueConstraint('key', 'value', 'zone_id', name='unique_attributes'),
     ForeignKeyConstraint(['zone_id'], ['zones.id'], ondelete='CASCADE'),
 
-    mysql_engine='INNODB',
+    mysql_engine='InnoDB',
     mysql_charset='utf8'
 )
 
@@ -241,7 +241,7 @@ pools = Table('pools', metadata,
 
     UniqueConstraint('name', name='unique_pool_name'),
 
-    mysql_engine='INNODB',
+    mysql_engine='InnoDB',
     mysql_charset='utf8'
 )
 
@@ -257,7 +257,7 @@ pool_attributes = Table('pool_attributes', metadata,
 
     ForeignKeyConstraint(['pool_id'], ['pools.id'], ondelete='CASCADE'),
 
-    mysql_engine='INNODB',
+    mysql_engine='InnoDB',
     mysql_charset='utf8'
 )
 
@@ -273,7 +273,7 @@ pool_ns_records = Table('pool_ns_records', metadata,
 
     ForeignKeyConstraint(['pool_id'], ['pools.id'], ondelete='CASCADE'),
 
-    mysql_engine='INNODB',
+    mysql_engine='InnoDB',
     mysql_charset='utf8')
 
 zone_transfer_requests = Table('zone_transfer_requests', metadata,
@@ -336,5 +336,5 @@ zone_tasks = Table('zone_tasks', metadata,
            default='ACTIVE'),
     Column('location', String(160), nullable=True),
 
-    mysql_engine='INNODB',
+    mysql_engine='InnoDB',
     mysql_charset='utf8')

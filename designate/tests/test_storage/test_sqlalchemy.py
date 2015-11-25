@@ -36,3 +36,44 @@ class SqlalchemyStorageTest(StorageTestCase, TestCase):
 
             self.assertFalse(pong['status'])
             self.assertIsNotNone(pong['rtt'])
+
+    def test_schema_table_names(self):
+        table_names = [
+            u'blacklists', u'migrate_version', u'pool_attributes',
+            u'pool_ns_records', u'pools', u'quotas', u'records', u'recordsets',
+            u'tlds', u'tsigkeys', u'zone_attributes', u'zone_tasks',
+            u'zone_transfer_accepts', u'zone_transfer_requests', u'zones'
+        ]
+        self.assertEqual(table_names, self.storage.engine.table_names())
+
+    def test_schema_table_indexes(self):
+        indexes_t = self.storage.engine.execute("SELECT * FROM sqlite_master WHERE type = 'index';")
+
+        indexes = {}  # table name -> index names -> cmd
+        for _, index_name, table_name, num, cmd in indexes_t:
+            if index_name.startswith("sqlite_"):
+                continue  # ignore sqlite-specific indexes
+            if table_name not in indexes:
+                indexes[table_name] = {}
+            indexes[table_name][index_name] = cmd
+
+        expected = {
+            "records": {
+                "record_created_at": "CREATE INDEX record_created_at ON records (created_at)",
+                "records_tenant": "CREATE INDEX records_tenant ON records (tenant_id)",
+                "update_status_index": "CREATE INDEX update_status_index ON records (status, zone_id, tenant_id, created_at, serial)"
+            },
+            "recordsets": {
+                "recordset_created_at": "CREATE INDEX recordset_created_at ON recordsets (created_at)",
+                "recordset_type_name": "CREATE INDEX recordset_type_name ON recordsets (type, name)",
+                "reverse_name_dom_id": "CREATE INDEX reverse_name_dom_id ON recordsets (reverse_name, zone_id)",
+                "rrset_type_domainid": "CREATE INDEX rrset_type_domainid ON recordsets (type, zone_id)"
+            },
+            "zones": {
+                "reverse_name_deleted": "CREATE INDEX reverse_name_deleted ON zones (reverse_name, deleted)",
+                "zone_created_at": "CREATE INDEX zone_created_at ON zones (created_at)",
+                "zone_deleted": "CREATE INDEX zone_deleted ON zones (deleted)",
+                "zone_tenant_deleted": "CREATE INDEX zone_tenant_deleted ON zones (tenant_id, deleted)"
+            }
+        }  # flake8: noqa
+        self.assertDictEqual(expected, indexes)
