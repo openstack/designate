@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import six
 from tempest.api.dns import base
 from tempest.common.utils import data_utils
 from tempest import exceptions
@@ -62,7 +63,8 @@ class RecordsTest(base.BaseDnsTest):
         _, records = self.client.list_records(self.domain['id'])
         # Verify records created in setup class are in the list
         for record in self.setup_records:
-            self.assertIn(record['id'], map(lambda x: x['id'], records))
+            self.assertIn(record['id'],
+                          six.moves.map(lambda x: x['id'], records))
 
     @test.attr(type='smoke')
     def test_create_update_get_delete_record(self):
