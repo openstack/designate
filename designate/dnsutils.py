@@ -336,7 +336,7 @@ def do_axfr(zone_name, servers, timeout=None, source=None):
         to = eventlet.Timeout(timeout)
         log_info = {'name': zone_name, 'host': srv}
         try:
-            LOG.info(_LI("Doing AXFR for %(name)s from %(host)s") % log_info)
+            LOG.info(_LI("Doing AXFR for %(name)s from %(host)s"), log_info)
 
             xfr = dns.query.xfr(srv['host'], zone_name, relativize=False,
                                 timeout=1, port=srv['port'], source=source)

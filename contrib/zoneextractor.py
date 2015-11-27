@@ -171,7 +171,7 @@ class Extractor:
                                                      allow_include=True)
                 except dns.zone.UnknownOrigin:
                     LOG.info(_LI('%(zonefile)s is missing $ORIGIN, '
-                                 'inserting %(name)s') %
+                                 'inserting %(name)s'),
                              {'zonefile': zonefile, 'name': name})
                     zone_object = dns.zone.from_file(zonefile,
                                                      allow_include=True,

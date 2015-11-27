@@ -53,7 +53,7 @@ class RequestHandler(object):
             master = {'host': raw_server[0], 'port': int(raw_server[1])}
             self.masters.append(master)
 
-        LOG.info(_LI("Agent masters: %(masters)s") %
+        LOG.info(_LI("Agent masters: %(masters)s"),
                  {'masters': self.masters})
 
         self.allow_notify = CONF['service:agent'].allow_notify

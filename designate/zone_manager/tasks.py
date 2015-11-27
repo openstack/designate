@@ -126,7 +126,7 @@ class DeletedZonePurgeTask(PeriodicTask):
         """
         pstart, pend = self._my_range()
         msg = _LI("Performing deleted zone purging for %(start)s to %(end)s")
-        LOG.info(msg % {"start": pstart, "end": pend})
+        LOG.info(msg, {"start": pstart, "end": pend})
 
         delta = datetime.timedelta(seconds=self.options.time_threshold)
         time_threshold = timeutils.utcnow() - delta
@@ -169,7 +169,7 @@ class PeriodicExistsTask(PeriodicTask):
     def __call__(self):
         pstart, pend = self._my_range()
         msg = _LI("Emitting zone exist events for %(start)s to %(end)s")
-        LOG.info(msg % {"start": pstart, "end": pend})
+        LOG.info(msg, {"start": pstart, "end": pend})
 
         ctxt = context.DesignateContext.get_admin_context()
         ctxt.all_tenants = True
@@ -202,7 +202,7 @@ class PeriodicSecondaryRefreshTask(PeriodicTask):
     def __call__(self):
         pstart, pend = self._my_range()
         msg = _LI("Refreshing zones between for %(start)s to %(end)s")
-        LOG.info(msg % {"start": pstart, "end": pend})
+        LOG.info(msg, {"start": pstart, "end": pend})
 
         ctxt = context.DesignateContext.get_admin_context()
         ctxt.all_tenants = True

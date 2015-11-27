@@ -43,6 +43,6 @@ class Service(service.WSGIService, service.Service):
             msg = 'Unable to determine appropriate api-paste-config file'
             raise exceptions.ConfigurationError(msg)
 
-        LOG.info(_LI('Using api-paste-config found at: %s') % config_paths[0])
+        LOG.info(_LI('Using api-paste-config found at: %s'), config_paths[0])
 
         return deploy.loadapp("config:%s" % config_paths[0], name='osapi_dns')

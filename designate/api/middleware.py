@@ -62,7 +62,7 @@ def auth_pipeline_factory(loader, global_conf, **local_conf):
     """
     pipeline = local_conf[cfg.CONF['service:api'].auth_strategy]
     pipeline = pipeline.split()
-    LOG.info(_LI('Getting auth pipeline: %s') % pipeline[:-1])
+    LOG.info(_LI('Getting auth pipeline: %s'), pipeline[:-1])
     filters = [loader.get_filter(n) for n in pipeline[:-1]]
     app = loader.get_app(pipeline[-1])
     filters.reverse()

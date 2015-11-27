@@ -62,7 +62,7 @@ class PoolManagerAPI(object):
 
     def create_zone(self, context, zone):
         LOG.info(_LI("create_zone: Calling pool manager for %(zone)s, "
-                     "serial:%(serial)s") %
+                     "serial:%(serial)s"),
                  {'zone': zone.name, 'serial': zone.serial})
 
         # Modifying the topic so it is pool manager instance specific.
@@ -73,7 +73,7 @@ class PoolManagerAPI(object):
 
     def delete_zone(self, context, zone):
         LOG.info(_LI("delete_zone: Calling pool manager for %(zone)s, "
-                     "serial:%(serial)s") %
+                     "serial:%(serial)s"),
                  {'zone': zone.name, 'serial': zone.serial})
 
         # Modifying the topic so it is pool manager instance specific.
@@ -84,7 +84,7 @@ class PoolManagerAPI(object):
 
     def update_zone(self, context, zone):
         LOG.info(_LI("update_zone: Calling pool manager for %(zone)s, "
-                     "serial:%(serial)s") %
+                     "serial:%(serial)s"),
                  {'zone': zone.name, 'serial': zone.serial})
 
         # Modifying the topic so it is pool manager instance specific.
@@ -97,7 +97,7 @@ class PoolManagerAPI(object):
                       actual_serial):
         LOG.info(_LI("update_status: Calling pool manager for %(zone)s : "
                      "%(action)s : %(status)s : %(serial)s on nameserver "
-                     "'%(host)s:%(port)s'") %
+                     "'%(host)s:%(port)s'"),
                  {'zone': zone.name, 'action': zone.action,
                   'status': status, 'serial': actual_serial,
                   'host': nameserver.host, 'port': nameserver.port})

@@ -81,7 +81,7 @@ class Service(service.RPCService, coordination.CoordinationMixin,
             self.tg.add_timer(interval, task)
 
     def _rebalance(self, my_partitions, members, event):
-        LOG.info(_LI("Received rebalance event %s") % event)
+        LOG.info(_LI("Received rebalance event %s"), event)
         self.partition_range = my_partitions
 
     # Begin RPC Implementation
