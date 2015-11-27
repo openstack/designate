@@ -17,6 +17,7 @@
 # under the License.
 
 import math
+import time
 import uuid
 
 from oslo_config import cfg
@@ -79,12 +80,17 @@ class CoordinationMixin(object):
         super(CoordinationMixin, self).start()
 
         if self._coordinator is not None:
-            self._coordinator.start()
+            while not self._coordination_started:
+                try:
+                    self._coordinator.start()
+                    self._coordinator.create_group(self.service_name)
+                    self._coordinator.join_group(self.service_name)
+                    self._coordination_started = True
 
-            self._coordinator.create_group(self.service_name)
-            self._coordinator.join_group(self.service_name)
-
-            self._coordination_started = True
+                except Exception:
+                    LOG.warn(_LW("Failed to start Coordinator:"),
+                             exc_info=True)
+                    time.sleep(15)
 
     def stop(self):
         if self._coordinator is not None:

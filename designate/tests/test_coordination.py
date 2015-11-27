@@ -47,7 +47,7 @@ class TestCoordinationMixin(TestCase):
                       service._coordinator.get_groups().get())
         self.assertIn(service._coordination_id.encode('utf-8'),
                       service._coordinator.get_members(
-                            service.service_name).get())
+                          service.service_name).get())
         service.stop()
 
     def test_stop(self):
