@@ -453,7 +453,7 @@ def get_paging_params(params, sort_keys):
 
 def bind_tcp(host, port, tcp_backlog, tcp_keepidle=None):
     # Bind to the TCP port
-    LOG.info(_LI('Opening TCP Listening Socket on %(host)s:%(port)d') %
+    LOG.info(_LI('Opening TCP Listening Socket on %(host)s:%(port)d'),
              {'host': host, 'port': port})
     sock_tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock_tcp.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -480,7 +480,7 @@ def bind_tcp(host, port, tcp_backlog, tcp_keepidle=None):
 
 def bind_udp(host, port):
     # Bind to the UDP port
-    LOG.info(_LI('Opening UDP Listening Socket on %(host)s:%(port)d') %
+    LOG.info(_LI('Opening UDP Listening Socket on %(host)s:%(port)d'),
              {'host': host, 'port': port})
     sock_udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock_udp.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)

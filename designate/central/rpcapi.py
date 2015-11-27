@@ -411,7 +411,7 @@ class CentralAPI(object):
     # Pool Manager Integration Methods
     def update_status(self, context, zone_id, status, serial):
         LOG.info(_LI("update_status: Calling central's update_status "
-                     "for %(zone_id)s : %(status)s : %(serial)s") %
+                     "for %(zone_id)s : %(status)s : %(serial)s"),
                  {'zone_id': zone_id, 'status': status, 'serial': serial})
         self.client.cast(context, 'update_status', zone_id=zone_id,
                          status=status, serial=serial)

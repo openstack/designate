@@ -145,11 +145,11 @@ class RequestHandler(xfr.XFRMixin):
         if soa_serial == zone.serial:
             msg = _LI("Serial %(serial)s is the same for master and us for "
                       "%(zone_id)s")
-            LOG.info(msg % {"serial": soa_serial, "zone_id": zone.id})
+            LOG.info(msg, {"serial": soa_serial, "zone_id": zone.id})
         else:
             msg = _LI("Scheduling AXFR for %(zone_id)s from %(master_addr)s")
             info = {"zone_id": zone.id, "master_addr": master_addr}
-            LOG.info(msg % info)
+            LOG.info(msg, info)
             self.tg.add_thread(self.zone_sync, context, zone,
                                [master_addr])
 

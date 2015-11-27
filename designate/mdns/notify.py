@@ -176,7 +176,7 @@ class NotifyEndpoint(base.BaseEndpoint):
         while retry < max_retries:
             retry = retry + 1
             LOG.info(_LI("Sending '%(msg)s' for '%(zone)s' to '%(server)s:"
-                         "%(port)d'.") %
+                         "%(port)d'."),
                      {'msg': 'NOTIFY' if notify else 'SOA',
                       'zone': zone.name, 'server': host,
                       'port': port})
@@ -209,7 +209,7 @@ class NotifyEndpoint(base.BaseEndpoint):
             # authoritative answer
             elif response.rcode() in (dns.rcode.NXDOMAIN, dns.rcode.REFUSED,
                                       dns.rcode.SERVFAIL):
-                LOG.info(_LI("%(zone)s not found on %(server)s:%(port)d") %
+                LOG.info(_LI("%(zone)s not found on %(server)s:%(port)d"),
                          {'zone': zone.name, 'server': host,
                          'port': port})
                 break

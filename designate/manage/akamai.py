@@ -79,7 +79,7 @@ class AkamaiCommands(base.Commands):
         client = impl_akamai.EnhancedDNSClient(
             target.options.get("username"), target.options.get("password"))
 
-        LOG.info(_LI("Doing batches of %i") % batch_size)
+        LOG.info(_LI("Doing batches of %i"), batch_size)
 
         criterion = {"pool_id": pool_id}
         marker = None
@@ -103,6 +103,6 @@ class AkamaiCommands(base.Commands):
                 z = impl_akamai.build_zone(client, target, zone)
                 update.append(z)
 
-            LOG.info(_LI('Uploading %d Zones') % len(update))
+            LOG.info(_LI('Uploading %d Zones'), len(update))
 
             client.setZones(update)

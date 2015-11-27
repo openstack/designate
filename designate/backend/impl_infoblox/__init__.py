@@ -43,7 +43,7 @@ class InfobloxBackend(base.Backend):
                     "Infoblox only supports mDNS instances on port 53")
 
     def create_zone(self, context, zone):
-        LOG.info(_LI('Create Zone %r') % zone)
+        LOG.info(_LI('Create Zone %r'), zone)
 
         dns_net_view = self.infoblox.get_dns_view(context.tenant)
         self.infoblox.create_zone_auth(
@@ -52,7 +52,7 @@ class InfobloxBackend(base.Backend):
         )
 
     def delete_zone(self, context, zone):
-        LOG.info(_LI('Delete Zone %r') % zone)
+        LOG.info(_LI('Delete Zone %r'), zone)
         self.infoblox.delete_zone_auth(zone['name'][0:-1])
 
     def ping(self, context):

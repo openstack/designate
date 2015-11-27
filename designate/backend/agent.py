@@ -119,7 +119,7 @@ class AgentPoolBackend(base.Backend):
         response = None
 
         LOG.info(_LI("Sending '%(msg)s' for '%(zone)s' to '%(server)s:"
-                     "%(port)d'.") %
+                     "%(port)d'."),
                  {'msg': str(opcode),
                   'zone': zone_name, 'server': dest_ip,
                   'port': dest_port})
