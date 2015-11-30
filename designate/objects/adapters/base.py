@@ -178,7 +178,7 @@ class DesignateAdapter(object):
 
         except exceptions.InvalidObject:
             LOG.info(_LI("InvalidObject creating %(name)s with "
-                         "values %(values)r") %
+                         "values %(values)r"),
                      {"name": output_object.obj_name(), "values": values})
             raise
 

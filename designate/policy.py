@@ -69,7 +69,7 @@ def init(default_rule=None):
         msg = 'Unable to determine appropriate policy json file'
         raise exceptions.ConfigurationError(msg)
 
-    LOG.info(_LI('Using policy_file found at: %s') % policy_files[0])
+    LOG.info(_LI('Using policy_file found at: %s'), policy_files[0])
 
     with open(policy_files[0]) as fh:
         policy_string = fh.read()
@@ -98,9 +98,9 @@ def check(rule, ctxt, target=None, do_raise=True, exc=exceptions.Forbidden):
 
         if result:
             LOG.info(_("Policy check succeeded for rule '%(rule)s' "
-                       "on target %(target)s") %
+                       "on target %(target)s"),
                      {'rule': rule, 'target': repr(target)}, extra=extra)
         else:
             LOG.info(_("Policy check failed for rule '%(rule)s' "
-                       "on target %(target)s") %
+                       "on target %(target)s"),
                      {'rule': rule, 'target': repr(target)}, extra=extra)

@@ -87,12 +87,12 @@ class Service(service.Service):
     def start(self):
         super(Service, self).start()
 
-        LOG.info(_('Starting %(name)s service (version: %(version)s)') %
+        LOG.info(_('Starting %(name)s service (version: %(version)s)'),
                  {'name': self.service_name,
                   'version': version.version_info.version_string()})
 
     def stop(self):
-        LOG.info(_('Stopping %(name)s service') % {'name': self.service_name})
+        LOG.info(_('Stopping %(name)s service'), {'name': self.service_name})
 
         super(Service, self).stop()
 

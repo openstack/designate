@@ -48,7 +48,7 @@ if __name__ == '__main__':
 
     domain = client.domains.get(cfg.CONF.domain_id)
 
-    msg = "Creating %s records" % cfg.CONF.records
+    msg = "Creating %s records", cfg.CONF.records
     LOG.info(msg)
     for i in range(0, cfg.CONF.records):
         name = '%s.%s' % (str(uuid.uuid4()), domain.name)

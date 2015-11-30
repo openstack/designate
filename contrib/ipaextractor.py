@@ -111,7 +111,7 @@ def rec2des(rec, zonename):
                 rectypes.append(k)
             else:
                 LOG.info(_LI("Skipping unknown record type "
-                             "%(type)s in %(name)s") %
+                             "%(type)s in %(name)s"),
                          {'type': k, 'name': name})
 
     desrecs = []
@@ -182,14 +182,14 @@ def syncipaservers2des(servers, designatereq, designateurl):
     # first - add servers from ipa not already in designate
     for server in servers:
         if server in dservers:
-            LOG.info(_LI("Skipping ipa server %s already in designate")
-                     % server)
+            LOG.info(_LI("Skipping ipa server %s already in designate"),
+                     server)
         else:
             desreq = {"name": server}
             resp = designatereq.post(srvurl, data=json.dumps(desreq))
             LOG.debug("Response: %s" % pprint.pformat(resp.json()))
             if resp.status_code == 200:
-                LOG.info(_LI("Added server %s to designate") % server)
+                LOG.info(_LI("Added server %s to designate"), server)
             else:
                 raise AddServerError("Unable to add %s: %s" %
                                      (server, pprint.pformat(resp.json())))
@@ -199,7 +199,7 @@ def syncipaservers2des(servers, designatereq, designateurl):
         if server not in servers:
             delresp = designatereq.delete(srvurl + "/" + sid)
             if delresp.status_code == 200:
-                LOG.info(_LI("Deleted server %s") % server)
+                LOG.info(_LI("Deleted server %s"), server)
             else:
                 raise DeleteServerError("Unable to delete %s: %s" %
                                         (server,
@@ -293,7 +293,7 @@ def main():
     exc = None
     fakezoneid = None
     if resp.status_code == 200:
-        LOG.info(_LI("Added domain %s") % domname)
+        LOG.info(_LI("Added domain %s"), domname)
         fakezoneid = resp.json()['id']
         delresp = designatereq.delete(domainurl + "/" + fakezoneid)
         if delresp.status_code != 200:
@@ -338,7 +338,7 @@ def main():
         desreq = zone2des(zonerec)
         resp = designatereq.post(domainurl, data=json.dumps(desreq))
         if resp.status_code == 200:
-            LOG.info(_LI("Added domain %s") % desreq['name'])
+            LOG.info(_LI("Added domain %s"), desreq['name'])
         else:
             raise AddDomainError("Unable to add domain %s: %s" %
                                  (desreq['name'], pprint.pformat(resp.json())))
@@ -354,7 +354,7 @@ def main():
                 resp = designatereq.post(recurl, data=json.dumps(desreq))
                 if resp.status_code == 200:
                     LOG.info(_LI("Added record %(record)s "
-                                 "for domain %(domain)s") %
+                                 "for domain %(domain)s"),
                              {'record': desreq['name'], 'domain': zonename})
                 else:
                     raise AddRecordError("Could not add record %s: %s" %

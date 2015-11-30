@@ -120,8 +120,8 @@ class Service(service.RPCService, coordination.CoordinationMixin,
         topic = super(Service, self)._rpc_topic
 
         topic = '%s.%s' % (topic, CONF['service:pool_manager'].pool_id)
-        LOG.info(_LI('Using topic %(topic)s for this pool manager instance.')
-                 % {'topic': topic})
+        LOG.info(_LI('Using topic %(topic)s for this pool manager instance.'),
+                 {'topic': topic})
 
         return topic
 
@@ -382,7 +382,7 @@ class Service(service.RPCService, coordination.CoordinationMixin,
             return False
 
     def _update_zone_on_also_notify(self, context, also_notify, zone):
-        LOG.info(_LI('Updating zone %(zone)s on also_notify %(server)s.') %
+        LOG.info(_LI('Updating zone %(zone)s on also_notify %(server)s.'),
                  {'zone': zone.name,
                   'server': self._get_destination(also_notify)})
 
@@ -502,7 +502,7 @@ class Service(service.RPCService, coordination.CoordinationMixin,
             if consensus_serial != 0 and cache_serial <= consensus_serial \
                     and zone.status != 'ACTIVE':
                 LOG.info(_LI('For zone %(zone)s '
-                             'the consensus serial is %(consensus_serial)s.') %
+                             'the consensus serial is %(consensus_serial)s.'),
                          {'zone': zone.name,
                           'consensus_serial': consensus_serial})
                 self.central_api.update_status(
