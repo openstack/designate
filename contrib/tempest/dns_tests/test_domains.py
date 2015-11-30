@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import six
 from tempest.api.dns import base
 from tempest.common.utils import data_utils
 from tempest import exceptions
@@ -50,7 +51,8 @@ class DnsDomainsTest(base.BaseDnsTest):
         _, domains = self.client.list_domains()
         # Verify domains created in setup class are in the list
         for domain in self.setup_domains:
-            self.assertIn(domain['id'], map(lambda x: x['id'], domains))
+            self.assertIn(domain['id'],
+                          six.moves.map(lambda x: x['id'], domains))
 
     @test.attr(type='smoke')
     def test_create_update_get_domain(self):

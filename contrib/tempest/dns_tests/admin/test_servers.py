@@ -12,6 +12,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import six
 from tempest.api.dns import base
 from tempest.common.utils import data_utils
 from tempest import exceptions
@@ -51,7 +52,8 @@ class ServersAdminTestJSON(base.BaseDnsAdminTest):
         _, servers = self.client.list_servers()
         # Verify servers created in setup class are in the list
         for server in self.setup_servers:
-            self.assertIn(server['id'], map(lambda x: x['id'], servers))
+            self.assertIn(server['id'],
+                          six.moves.map(lambda x: x['id'], servers))
 
     @test.attr(type='smoke')
     def test_create_update_get_delete_server(self):
