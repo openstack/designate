@@ -685,6 +685,9 @@ class ApiV2ZonesTest(ApiV2TestCase):
             response = self.client.post_json('/zones/', fixture)
 
         get_urls = [
+            # Filter by Type
+            '/zones?type=%s' % fixtures[0]['type'],
+
             # Filter by Name
             '/zones?name=%s' % fixtures[0]['name'],
 
@@ -700,7 +703,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
             '/zones?description=test*'
         ]
 
-        correct_results = [1, 2, 1, 1, 1, 2]
+        correct_results = [2, 1, 2, 1, 1, 1, 2]
 
         for get_url, correct_result in zip(get_urls, correct_results):
 
@@ -714,6 +717,6 @@ class ApiV2ZonesTest(ApiV2TestCase):
             self.assertEqual(correct_result, len(response.json['zones']))
 
     def test_invalid_zones_filter(self):
-        invalid_url = '/zones?type=PRIMARY'
+        invalid_url = '/zones?id=155477ef-e6c5-4b94-984d-8fc68c0c1a14'
         self._assert_exception(
             'bad_request', 400, self.client.get, invalid_url)
