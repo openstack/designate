@@ -832,3 +832,30 @@ class ApiV1RecordsTest(ApiV1Test):
         self.delete('domains/%s/records/%s' % (self.zone['id'],
                                                record['id']),
                     status_code=404)
+
+
+class ApiV1TxtRecordsTest(ApiV1Test):
+    def setUp(self):
+        super(ApiV1TxtRecordsTest, self).setUp()
+
+        self.zone = self.create_zone()
+        self.recordset = self.create_recordset(self.zone, 'TXT')
+
+    def test_create_txt_record(self):
+        # See bug #1474012
+        record = self.create_record(self.zone, self.recordset)
+        data = {'data': 'a' * 255}
+        self.put(
+            'domains/%s/records/%s' % (self.zone['id'], record['id']),
+            data=data
+        )
+
+    def test_create_txt_record_too_long(self):
+        # See bug #1474012
+        record = self.create_record(self.zone, self.recordset)
+        data = {'data': 'a' * 256}
+        self.put(
+            'domains/%s/records/%s' % (self.zone['id'], record['id']),
+            data=data,
+            status_code=400
+        )
