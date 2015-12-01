@@ -23,12 +23,39 @@ LOG = logging.getLogger(__name__)
 central_api = central_rpcapi.CentralAPI()
 blueprint = flask.Blueprint('quotas', __name__)
 
+KEYS_TO_SWAP = {
+    'zones': 'domains',
+    'zone_records': 'domain_records',
+    'zone_recordsets': 'domain_recordsets',
+    'recordset_records': 'recordset_records',
+    'api_export_size': 'api_export_size',
+}
+
+KEYS_TO_SWAP_REVERSE = {
+    'domains': 'zones',
+    'domain_records': 'zone_records',
+    'domain_recordsets': 'zone_recordsets',
+    'recordset_records': 'recordset_records',
+    'api_export_size': 'api_export_size',
+}
+
+
+def swap_keys(quotas, reverse=False):
+
+    if reverse:
+        quotas = {KEYS_TO_SWAP_REVERSE[k]: quotas[k] for k in quotas}
+    else:
+        quotas = {KEYS_TO_SWAP[k]: quotas[k] for k in quotas}
+    return quotas
+
 
 @blueprint.route('/quotas/<tenant_id>', methods=['GET'])
 def get_quotas(tenant_id):
     context = flask.request.environ.get('context')
 
     quotas = central_api.get_quotas(context, tenant_id)
+
+    quotas = swap_keys(quotas)
 
     return flask.jsonify(quotas)
 
@@ -38,10 +65,14 @@ def set_quota(tenant_id):
     context = flask.request.environ.get('context')
     values = flask.request.json
 
+    values = swap_keys(values, reverse=True)
+
     for resource, hard_limit in values.items():
         central_api.set_quota(context, tenant_id, resource, hard_limit)
 
     quotas = central_api.get_quotas(context, tenant_id)
+    quotas = swap_keys(quotas)
+
     return flask.jsonify(quotas)
 
 
