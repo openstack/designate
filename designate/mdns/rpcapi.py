@@ -72,7 +72,7 @@ class MdnsAPI(object):
     def notify_zone_changed(self, context, zone, host, port, timeout,
                             retry_interval, max_retries, delay):
         LOG.info(_LI("notify_zone_changed: Calling mdns for zone '%(zone)s', "
-                     "serial '%(serial)s' to nameserver '%(host)s:%(port)s'") %
+                     "serial '%(serial)s' to nameserver '%(host)s:%(port)s'"),
                  {'zone': zone.name, 'serial': zone.serial,
                   'host': host, 'port': port})
         # The notify_zone_changed method is a cast rather than a call since the
@@ -87,7 +87,7 @@ class MdnsAPI(object):
                                retry_interval, max_retries, delay):
         LOG.info(
             _LI("poll_for_serial_number: Calling mdns for zone '%(zone)s', "
-                "serial '%(serial)s' on nameserver '%(host)s:%(port)s'") %
+                "serial '%(serial)s' on nameserver '%(host)s:%(port)s'"),
             {'zone': zone.name, 'serial': zone.serial,
              'host': nameserver.host, 'port': nameserver.port})
         # The poll_for_serial_number method is a cast rather than a call since
@@ -103,7 +103,7 @@ class MdnsAPI(object):
                           retry_interval, max_retries, delay):
         LOG.info(
             _LI("get_serial_number: Calling mdns for zone '%(zone)s', serial "
-                "%(serial)s' on nameserver '%(host)s:%(port)s'") %
+                "%(serial)s' on nameserver '%(host)s:%(port)s'"),
             {'zone': zone.name, 'serial': zone.serial,
              'host': host, 'port': port})
         cctxt = self.notify_client.prepare()
@@ -114,6 +114,6 @@ class MdnsAPI(object):
             delay=delay)
 
     def perform_zone_xfr(self, context, zone):
-        LOG.info(_LI("perform_zone_xfr: Calling mdns for zone %(zone)s") %
+        LOG.info(_LI("perform_zone_xfr: Calling mdns for zone %(zone)s"),
                  {"zone": zone.name})
         return self.xfr_client.cast(context, 'perform_zone_xfr', zone=zone)

@@ -26,7 +26,7 @@ class FakeBackend(base.Backend):
     __plugin_name__ = 'fake'
 
     def create_zone(self, context, zone):
-        LOG.info(_LI('Create Zone %r') % zone)
+        LOG.info(_LI('Create Zone %r'), zone)
 
     def delete_zone(self, context, zone):
-        LOG.info(_LI('Delete Zone %r') % zone)
+        LOG.info(_LI('Delete Zone %r'), zone)

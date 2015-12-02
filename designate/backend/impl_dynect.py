@@ -345,7 +345,7 @@ class DynECTBackend(base.Backend):
             timings=CONF[CFG_GROUP].timings)
 
     def create_zone(self, context, zone):
-        LOG.info(_LI('Creating zone %(d_id)s / %(d_name)s') %
+        LOG.info(_LI('Creating zone %(d_id)s / %(d_name)s'),
                  {'d_id': zone['id'], 'd_name': zone['name']})
 
         url = '/Secondary/%s' % zone['name'].rstrip('.')
@@ -368,7 +368,7 @@ class DynECTBackend(base.Backend):
                 if emsg['ERR_CD'] == 'TARGET_EXISTS':
                     msg = _LI("Zone already exists, updating existing "
                               "zone instead %s")
-                    LOG.info(msg % zone['name'])
+                    LOG.info(msg, zone['name'])
                     client.put(url, data=data)
                     break
             else:
@@ -378,7 +378,7 @@ class DynECTBackend(base.Backend):
         client.logout()
 
     def delete_zone(self, context, zone):
-        LOG.info(_LI('Deleting zone %(d_id)s / %(d_name)s') %
+        LOG.info(_LI('Deleting zone %(d_id)s / %(d_name)s'),
                  {'d_id': zone['id'], 'd_name': zone['name']})
         url = '/Zone/%s' % zone['name'].rstrip('.')
         client = self.get_client()

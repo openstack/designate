@@ -1091,7 +1091,7 @@ class Service(service.RPCService, service.Service):
                                             'before deleting this zone')
 
         if hasattr(context, 'abandon') and context.abandon:
-            LOG.info(_LW("Abandoning zone '%(zone)s'") % {'zone': zone.name})
+            LOG.info(_LW("Abandoning zone '%(zone)s'"), {'zone': zone.name})
             zone = self.storage.delete_zone(context, zone.id)
         else:
             zone = self._delete_zone_in_storage(context, zone)
@@ -1151,7 +1151,7 @@ class Service(service.RPCService, service.Service):
                 "Serial %(srv_serial)d is not equal to zone's %(serial)d,"
                 " performing AXFR")
             LOG.info(
-                msg % {"srv_serial": serial, "serial": zone.serial})
+                msg, {"srv_serial": serial, "serial": zone.serial})
             self.mdns_api.perform_zone_xfr(context, zone)
 
     def count_zones(self, context, criterion=None):
@@ -1977,7 +1977,7 @@ class Service(service.RPCService, service.Service):
         except exceptions.ZoneNotFound:
             msg = _LI(
                 'Creating zone for %(fip_id)s:%(region)s - '
-                '%(fip_addr)s zone %(zonename)s') % \
+                '%(fip_addr)s zone %(zonename)s'), \
                 {'fip_id': floatingip_id, 'region': region,
                 'fip_addr': fip['address'], 'zonename': zone_name}
             LOG.info(msg)
