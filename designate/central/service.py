@@ -2368,7 +2368,7 @@ class Service(service.RPCService, service.Service):
                     and (serial >= zone_or_record.serial or serial == 0):
                 zone_or_record.status = 'ERROR'
 
-        elif status == 'NO_zone':
+        elif status == 'NO_ZONE':
             if zone_or_record.action in ['CREATE', 'UPDATE']:
                 zone_or_record.action = 'CREATE'
                 zone_or_record.status = 'ERROR'

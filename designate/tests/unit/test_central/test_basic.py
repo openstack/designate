@@ -1916,7 +1916,7 @@ class CentralStatusTests(CentralBasic):
                     serial=0,
                 )
         dom, deleted = self.service.\
-            _update_zone_or_record_status(zone, 'NO_zone', 0)
+            _update_zone_or_record_status(zone, 'NO_ZONE', 0)
 
         self.assertEqual(dom.action, 'CREATE')
         self.assertEqual(dom.status, 'ERROR')
