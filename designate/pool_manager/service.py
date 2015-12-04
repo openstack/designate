@@ -42,7 +42,7 @@ CONF = cfg.CONF
 
 SUCCESS_STATUS = 'SUCCESS'
 ERROR_STATUS = 'ERROR'
-NO_DOMAIN_STATUS = 'NO_DOMAIN'
+NO_ZONE_STATUS = 'NO_ZONE'
 CREATE_ACTION = 'CREATE'
 DELETE_ACTION = 'DELETE'
 UPDATE_ACTION = 'UPDATE'
@@ -519,11 +519,11 @@ class Service(service.RPCService, coordination.CoordinationMixin,
                     self.central_api.update_status(
                         context, zone.id, ERROR_STATUS, error_serial)
 
-            if status == NO_DOMAIN_STATUS and action != DELETE_ACTION:
+            if status == NO_ZONE_STATUS and action != DELETE_ACTION:
                 LOG.warn(_LW('Zone %(zone)s is not present in some '
                              'targets') % {'zone': zone.name})
                 self.central_api.update_status(
-                    context, zone.id, NO_DOMAIN_STATUS, 0)
+                    context, zone.id, NO_ZONE_STATUS, 0)
 
             if consensus_serial == zone.serial and self._is_consensus(
                     context, zone, action, SUCCESS_STATUS,
@@ -659,7 +659,7 @@ class Service(service.RPCService, coordination.CoordinationMixin,
         pool_manager_status = self._build_status_object(
             nameserver, zone, action)
 
-        if status == NO_DOMAIN_STATUS:
+        if status == NO_ZONE_STATUS:
             if action == CREATE_ACTION:
                 pool_manager_status.status = 'ERROR'
             elif action == DELETE_ACTION:

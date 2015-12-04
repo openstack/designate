@@ -118,7 +118,7 @@ class NotifyEndpoint(base.BaseEndpoint):
                 zone, host, port, timeout, retry_interval, retries)
             if response and response.rcode() in (
                     dns.rcode.NXDOMAIN, dns.rcode.REFUSED, dns.rcode.SERVFAIL):
-                status = 'NO_DOMAIN'
+                status = 'NO_ZONE'
             elif response and len(response.answer) == 1 \
                     and str(response.answer[0].name) == str(zone.name) \
                     and response.answer[0].rdclass == dns.rdataclass.IN \
