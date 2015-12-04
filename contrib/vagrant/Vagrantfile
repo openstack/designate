@@ -71,11 +71,11 @@ if [ ! -d "/home/vagrant/devstack" ]; then
     git clone https://git.openstack.org/openstack-dev/devstack.git /home/vagrant/devstack
 fi
 
-# Install Vagrant localrc sample
+# Install Vagrant local.conf sample
 cd /opt/stack/designate/contrib/vagrant
 
-if [ ! -f "/home/vagrant/devstack/localrc" ]; then
-    cp localrc /home/vagrant/devstack/localrc
+if [ ! -f "/home/vagrant/devstack/local.conf" ]; then
+    cp local.conf /home/vagrant/devstack/local.conf
 fi
 
 # Link in any Rally Plugins
