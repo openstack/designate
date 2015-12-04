@@ -159,6 +159,9 @@ class TestCase(base.BaseTestCase):
             {'name': '_sip._tcp.%s', 'type': 'SRV'},
             {'name': '_sip._udp.%s', 'type': 'SRV'},
         ],
+        'TXT': [
+            {'name': 'text.%s', 'type': 'TXT'},
+        ],
         'CNAME': [
             {'name': 'www.%s', 'type': 'CNAME'},
             {'name': 'sub1.%s', 'type': 'CNAME'},
@@ -181,6 +184,9 @@ class TestCase(base.BaseTestCase):
         'CNAME': [
             {'data': 'www.somezone.org.'},
             {'data': 'www.someotherzone.com.'},
+        ],
+        'TXT': [
+            {'data': 'footxtdata'}
         ]
     }
 

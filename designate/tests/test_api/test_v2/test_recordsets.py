@@ -545,6 +545,28 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         self.assertEqual('UPDATE', response.json['action'])
         self.assertEqual('PENDING', response.json['status'])
 
+    def test_create_txt_record(self):
+        # See bug #1474012
+        new_zone = self.create_zone(name='example.net.')
+        recordset = self.create_recordset(new_zone, 'TXT')
+        self.create_record(new_zone, recordset)
+        body = {'description': 'Tester', 'records': ['a' * 255]}
+
+        url = '/zones/%s/recordsets/%s' % (recordset['zone_id'],
+                                           recordset['id'])
+        self.client.put_json(url, body, status=202)
+
+    def test_create_txt_record_too_long(self):
+        # See bug #1474012
+        new_zone = self.create_zone(name='example.net.')
+        recordset = self.create_recordset(new_zone, 'TXT')
+        self.create_record(new_zone, recordset)
+        body = {'description': 'Tester', 'records': ['a' * 512]}
+        url = '/zones/%s/recordsets/%s' % (recordset['zone_id'],
+                                           recordset['id'])
+        self._assert_exception('invalid_object', 400,
+                               self.client.put_json, url, body)
+
     def test_update_recordset_with_record_clear(self):
         # Create a recordset with one record
         recordset = self.create_recordset(self.zone, 'A')
