@@ -124,7 +124,7 @@ Installing using Source (Git)
 
 ::
 
-    $ git clone git://github.com/openstack/designate designate
+    $ git clone https://git.openstack.org/openstack/designate designate
 
 3. Change directory to the newly cloned repository
 
