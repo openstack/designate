@@ -307,6 +307,18 @@ class ApiV2PoolsTest(ApiV2TestCase):
                          [n['hostname'] for n in
                           response.json['ns_records']])
 
+    def test_update_pool_ns_records_without_priority(self):
+        pool = self.create_pool()
+        body = {'ns_records': [
+            {'hostname': 'new-ns1.example.org.'},
+            {'hostname': 'new-ns2.example.org.'},
+        ]}
+        url = '/pools/%s' % pool['id']
+        # The missing "apriority" field triggers an object validation error
+        response = self.client.patch_json(url, body, status=400)
+        errmsg = response.json['errors']['errors'][0]['message']
+        self.assertEqual("'priority' is a required property", errmsg)
+
     def test_update_pool_attributes(self):
         # Create a pool
         pool = self.create_pool()
