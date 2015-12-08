@@ -2919,6 +2919,15 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(set([n.hostname for n in pool.ns_records]),
                          set([n.data for n in ns_recordset.records]))
 
+    def test_update_pool_add_ns_record_without_priority(self):
+        pool = self.create_pool(fixture=0)
+        self.create_domain(pool_id=pool.id)
+        new_ns_record = objects.PoolNsRecord(hostname='ns-new.example.org.')
+        pool.ns_records.append(new_ns_record)
+        # PoolNsRecord without "priority" triggers a DB exception
+        with testtools.ExpectedException(db_exception.DBError):
+            self.central_service.update_pool(self.admin_context, pool)
+
     def test_update_pool_remove_ns_record(self):
         # Create a server pool and domain
         pool = self.create_pool(fixture=0)
