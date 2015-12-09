@@ -32,6 +32,7 @@ class PoolNsRecord(base.DictObjectMixin, base.PersistentObjectMixin,
                 'minimum': 1,
                 'maximum': 10000
             },
+            'required': True
         },
         'hostname': {
             'schema': {
