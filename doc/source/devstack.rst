@@ -24,21 +24,25 @@ The Designate team maintains a fork of devstack with Designate integration.
 Instructions
 ++++++++++++
 
-1. Get a clean Ubuntu 12.04 VM. DevStack "takes over". Don't use your desktop!
+.. note::
 
-2. Clone Designate and DevStack inside the VM::
+    If you want to use local sources for development then you should concider
+    using the contrib/vagrant folder in the
+    `repository <https://git.openstack.org/openstack/designate>`_.
 
-   $ git clone https://git.openstack.org/openstack/designate.git
+1. Get a clean Ubuntu 14.04 VM. DevStack "takes over". Don't use your desktop!
+
+2. Clone DevStack inside the VM::
+
    $ git clone https://git.openstack.org/openstack-dev/devstack.git
 
-3. Install the Designate extension for DevStack::
+3. Move to ``devstack`` directory::
 
    $ cd devstack
-   $ ../designate/contrib/devstack/install.sh
 
-4. Create a `localrc` config file:
+4. Create a `local.conf` config file:
 
-   .. literalinclude:: ../../contrib/vagrant/localrc
+   .. literalinclude:: ../../contrib/vagrant/local.conf
        :language: bash
 
 5. Run DevStack::
@@ -108,4 +112,3 @@ Instructions
        | type       | A                                    |
        | domain_id  | 1fb5d17c-efaf-4e3c-aac0-482875d24b3e |
        +------------+--------------------------------------+
-
