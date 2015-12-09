@@ -221,11 +221,16 @@ class Service(service.RPCService, service.Service):
                     # TODO(kiall): If the domain was created within the last
                     #              periodic_sync_seconds, attempt to recreate
                     #              to fill in targets which may have failed.
-                    self.update_domain(context, domain)
+                    success = self.update_domain(context, domain)
+                    if not success:
+                        self.central_api.update_status(
+                            context, domain.id, ERROR_STATUS, domain.serial)
 
             except Exception:
                 LOG.exception(_LE('An unhandled exception in periodic '
                                   'synchronization occurred.'))
+                self.central_api.update_status(context, domain.id,
+                                               ERROR_STATUS, domain.serial)
 
     # Standard Create/Update/Delete Methods
     def create_domain(self, context, domain):
@@ -316,7 +321,7 @@ class Service(service.RPCService, service.Service):
             self.central_api.update_status(
                     context, domain.id, ERROR_STATUS, domain.serial)
 
-            return
+            return False
 
         # Send a NOTIFY to each also-notifies
         for also_notify in self.pool.also_notifies:
@@ -334,6 +339,8 @@ class Service(service.RPCService, service.Service):
                 self.cache.store(context, update_status)
 
             self._update_domain_on_nameserver(context, nameserver, domain)
+
+        return True
 
     def _update_domain_on_target(self, context, target, domain):
         """
