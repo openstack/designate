@@ -13,9 +13,12 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import uuid
+
 import oslo_messaging as messaging
 from oslo_config import cfg
 from mock import call
+from mock import Mock
 from mock import patch
 
 from designate import exceptions
@@ -101,9 +104,10 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
         self.cache = self.service.cache
 
     @staticmethod
-    def _build_domain(name, action, status):
+    def _build_domain(name, action, status, id=None):
+        zid = id or '75ea1626-eea7-46b5-acb7-41e5897c2d40'
         values = {
-            'id': '75ea1626-eea7-46b5-acb7-41e5897c2d40',
+            'id': zid,
             'name': name,
             'pool_id': '794ccc2c-d751-44fe-b57f-8894c9f5c842',
             'action': action,
@@ -111,6 +115,13 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
             'status': status
         }
         return objects.Domain.from_dict(values)
+
+    def _build_domains(self, n, action, status):
+        return [
+            self._build_domain("zone%02X.example" % cnt, action,
+                             status, id=str(uuid.uuid4()))
+            for cnt in range(n)
+        ]
 
     @patch.object(mdns_rpcapi.MdnsAPI, 'get_serial_number',
                   side_effect=messaging.MessagingException)
@@ -417,3 +428,92 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
 
         mock_update_status.assert_called_once_with(
             self.admin_context, domain.id, 'ERROR', 0)
+
+    @patch.object(central_rpcapi.CentralAPI, 'find_domains')
+    def test_periodic_sync_not_leader(self, mock_find_domains):
+        self.service._update_domain_on_target = Mock(return_value=False)
+        self.service._pool_election = Mock()
+        self.service._pool_election.is_leader = False
+        self.service.update_domain = Mock()
+
+        self.service.periodic_sync()
+        self.assertFalse(mock_find_domains.called)
+
+    @patch.object(central_rpcapi.CentralAPI, 'update_status')
+    def test_update_domain_no_consensus(self, mock_cent_update_status):
+        zone = self._build_domain('example.org.', 'UPDATE', 'PENDING')
+        self.service._update_domain_on_target = Mock(return_value=True)
+        self.service._exceed_or_meet_threshold = Mock(return_value=False)
+
+        ret = self.service.update_domain(self.admin_context, zone)
+        self.assertFalse(ret)
+
+        self.assertEqual(2, self.service._update_domain_on_target.call_count)
+        self.assertEqual(1, mock_cent_update_status.call_count)
+
+    @patch.object(mdns_rpcapi.MdnsAPI, 'poll_for_serial_number')
+    def test_update_domain(self, mock_mdns_poll):
+        zone = self._build_domain('example.org.', 'UPDATE', 'PENDING')
+        self.service._update_domain_on_target = Mock(return_value=True)
+        self.service._update_domain_on_also_notify = Mock()
+        self.service.pool.also_notifies = ['bogus']
+        self.service._exceed_or_meet_threshold = Mock(return_value=True)
+
+        # cache.retrieve will throw exceptions.PoolManagerStatusNotFound
+        # mdns_api.poll_for_serial_number will be called twice
+        ret = self.service.update_domain(self.admin_context, zone)
+        self.assertTrue(ret)
+
+        self.assertEqual(2, self.service._update_domain_on_target.call_count)
+        self.assertEqual(1, self.service._update_domain_on_also_notify.call_count)  # noqa
+        self.assertEqual(2, mock_mdns_poll.call_count)
+
+    @patch.object(mdns_rpcapi.MdnsAPI, 'notify_zone_changed')
+    @patch.object(central_rpcapi.CentralAPI, 'update_status')
+    @patch.object(central_rpcapi.CentralAPI, 'find_domains')
+    def test_periodic_sync(self, mock_find_domains,
+                           mock_cent_update_status, *a):
+        self.service.update_domain = Mock()
+        mock_find_domains.return_value = self._build_domains(2, 'UPDATE',
+                                                         'PENDING')
+        self.service.periodic_sync()
+
+        self.assertEqual(1, mock_find_domains.call_count)
+        criterion = mock_find_domains.call_args_list[0][0][1]
+        self.assertEqual('!ERROR', criterion['status'])
+        self.assertEqual(2, self.service.update_domain.call_count)
+        self.assertEqual(0, mock_cent_update_status.call_count)
+
+    @patch.object(mdns_rpcapi.MdnsAPI, 'notify_zone_changed')
+    @patch.object(central_rpcapi.CentralAPI, 'update_status')
+    @patch.object(central_rpcapi.CentralAPI, 'find_domains')
+    def test_periodic_sync_with_failing_update(self, mock_find_domains,
+                                               mock_cent_update_status, *a):
+        self.service.update_domain = Mock(return_value=False)  # fail update
+        mock_find_domains.return_value = self._build_domains(3, 'UPDATE',
+                                                         'PENDING')
+        self.service.periodic_sync()
+
+        self.assertEqual(1, mock_find_domains.call_count)
+        criterion = mock_find_domains.call_args_list[0][0][1]
+        self.assertEqual('!ERROR', criterion['status'])
+        # all zones are now in ERROR status
+        self.assertEqual(3, self.service.update_domain.call_count)
+        self.assertEqual(3, mock_cent_update_status.call_count)
+
+    @patch.object(mdns_rpcapi.MdnsAPI, 'notify_zone_changed')
+    @patch.object(central_rpcapi.CentralAPI, 'update_status')
+    @patch.object(central_rpcapi.CentralAPI, 'find_domains')
+    def test_periodic_sync_with_failing_update_with_exception(
+            self, mock_find_domains, mock_cent_update_status, *a):
+        self.service.update_domain = Mock(side_effect=Exception)
+        mock_find_domains.return_value = self._build_domains(3, 'UPDATE',
+                                                         'PENDING')
+        self.service.periodic_sync()
+
+        self.assertEqual(1, mock_find_domains.call_count)
+        criterion = mock_find_domains.call_args_list[0][0][1]
+        self.assertEqual('!ERROR', criterion['status'])
+        # the first updated zone is now in ERROR status
+        self.assertEqual(1, self.service.update_domain.call_count)
+        self.assertEqual(1, mock_cent_update_status.call_count)
