@@ -16,9 +16,11 @@
 How To Create and Manage Domains
 ================================
 
-.. note::
-   In this how to, we assume you have the Designate CLI installed. TODO: Add
-   link to Client Install guide.
+Install Client
+--------------
+
+To install Designate client, see `OpenStack Command-Line Interface Reference
+<http://docs.openstack.org/cli-reference/content/install_clients.html>`_.
 
 Create and View Domains
 -----------------------
