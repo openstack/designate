@@ -110,8 +110,8 @@ class NeutronNetworkAPI(NetworkAPI):
 
         def _call(endpoint, region, *args, **kw):
             client = get_client(context, endpoint=endpoint)
-            LOG.debug("Attempting to fetch FloatingIPs from %s @ %s" %
-                      (endpoint, region))
+            LOG.debug("Attempting to fetch FloatingIPs from %s @ %s",
+                      endpoint, region)
             try:
                 fips = client.list_floatingips(*args, **kw)
             except neutron_exceptions.Unauthorized as e:
@@ -124,7 +124,7 @@ class NeutronNetworkAPI(NetworkAPI):
                 return
             except Exception as e:
                 LOG.error(_LE('Failed calling Neutron '
-                              '%(region)s - %(endpoint)s') %
+                              '%(region)s - %(endpoint)s'),
                           {'region': region, 'endpoint': endpoint})
                 LOG.exception(e)
                 failed.append((e, endpoint, region))
@@ -137,8 +137,8 @@ class NeutronNetworkAPI(NetworkAPI):
                     'region': region
                 })
 
-            LOG.debug("Added %i FloatingIPs from %s @ %s" %
-                      (len(data), endpoint, region))
+            LOG.debug("Added %i FloatingIPs from %s @ %s",
+                      len(data), endpoint, region)
 
         for endpoint, region in endpoints:
             tg.add_thread(_call, endpoint, region,

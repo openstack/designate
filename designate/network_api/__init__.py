@@ -28,7 +28,7 @@ cfg.CONF.register_opts([
 
 
 def get_network_api(network_api_driver):
-    LOG.debug("Loading network_api driver: %s" % network_api_driver)
+    LOG.debug("Loading network_api driver: %s", network_api_driver)
 
     cls = NetworkAPI.get_driver(network_api_driver)
 
