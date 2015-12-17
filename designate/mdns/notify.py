@@ -66,7 +66,9 @@ class NotifyEndpoint(base.BaseEndpoint):
 
     def poll_for_serial_number(self, context, zone, nameserver, timeout,
                                retry_interval, max_retries, delay):
-        """
+        """Get the serial number of a zone on a resolver, then call update_status
+        on Pool Manager to update the zone status.
+
         :param context: The user context.
         :param zone: The designate zone object.  This contains the zone
             name. zone.serial = expected_serial
@@ -78,7 +80,7 @@ class NotifyEndpoint(base.BaseEndpoint):
             an expected serial number. After this many retries, mindns returns
             an ERROR.
         :param delay: The time to wait before sending the first request.
-        :return: The pool manager is informed of the status with update_status.
+        :return: None
         """
         (status, actual_serial, retries) = self.get_serial_number(
             context, zone, nameserver.host, nameserver.port, timeout,

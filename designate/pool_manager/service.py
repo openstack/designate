@@ -247,7 +247,11 @@ class Service(service.RPCService, coordination.CoordinationMixin,
     # Standard Create/Update/Delete Methods
 
     def create_zone(self, context, zone):
-        """
+        """Called by Central or by periodic_recovery, instruct the backends to
+        create a zone, then poll for consensus.
+        On success, send NOTIFY to also_notifies and nameservers
+        Finally, poll for zone serial number on nameservers.
+
         :param context: Security context information.
         :param zone: Zone to be created
         :return: None
@@ -291,7 +295,8 @@ class Service(service.RPCService, coordination.CoordinationMixin,
                 self.retry_interval, self.max_retries, self.delay)
 
     def _create_zone_on_target(self, context, target, zone):
-        """
+        """Called by create_zone, run create_zone on backends
+
         :param context: Security context information.
         :param target: Target to create Zone on
         :param zone: Zone to be created
@@ -354,8 +359,8 @@ class Service(service.RPCService, coordination.CoordinationMixin,
         for nameserver in self.pool.nameservers:
             # See if there is already another update in progress
             try:
-                update_status = self.cache.retrieve(
-                    context, nameserver.id, zone.id, UPDATE_ACTION)
+                self.cache.retrieve(context, nameserver.id, zone.id,
+                                    UPDATE_ACTION)
             except exceptions.PoolManagerStatusNotFound:
                 update_status = self._build_status_object(
                     nameserver, zone, UPDATE_ACTION)

@@ -2265,6 +2265,8 @@ class Service(service.RPCService, service.Service):
         return pool
 
     # Pool Manager Integration
+    @notification('dns.domain.update')
+    @notification('dns.zone.update')
     @transaction
     def update_status(self, context, zone_id, status, serial):
         """
@@ -2272,14 +2274,19 @@ class Service(service.RPCService, service.Service):
         :param zone_id: The ID of the designate zone.
         :param status: The status, 'SUCCESS' or 'ERROR'.
         :param serial: The consensus serial number for the zone.
-        :return: None
+        :return: updated zone
         """
         # TODO(kiall): If the status is SUCCESS and the zone is already ACTIVE,
         #              we likely don't need to do anything.
         self._update_record_status(context, zone_id, status, serial)
-        self._update_zone_status(context, zone_id, status, serial)
+        zone = self._update_zone_status(context, zone_id, status, serial)
+        return zone
 
     def _update_zone_status(self, context, zone_id, status, serial):
+        """Update zone status in storage
+
+        :return: updated zone
+        """
         zone = self.storage.get_zone(context, zone_id)
 
         zone, deleted = self._update_zone_or_record_status(
@@ -2298,7 +2305,12 @@ class Service(service.RPCService, service.Service):
             # that the action, status and serial are updated correctly.
             self.storage.delete_zone(context, zone.id)
 
+        return zone
+
     def _update_record_status(self, context, zone_id, status, serial):
+        """Update status on every record in a zone based on `serial`
+        :returns: updated records
+        """
         criterion = {
             'zone_id': zone_id
         }
@@ -2346,6 +2358,8 @@ class Service(service.RPCService, service.Service):
                     context, record.recordset_id)
                 if len(recordset.records) == 0:
                     self.storage.delete_recordset(context, recordset.id)
+
+        return records
 
     @staticmethod
     def _update_zone_or_record_status(zone_or_record, status, serial):
