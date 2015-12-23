@@ -285,6 +285,11 @@ debug = False
 # Zones Updated within last N seconds will be syncd. Use None to sync all zones
 #periodic_sync_seconds = None
 
+# Perform multiple update attempts during periodic_sync
+#periodic_sync_max_attempts = 3
+#periodic_sync_retry_interval = 30
+
+
 # The cache driver to use
 #cache_driver = memcache
 

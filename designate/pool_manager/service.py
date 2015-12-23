@@ -13,6 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import time
 from contextlib import contextmanager
 from decimal import Decimal
 
@@ -61,6 +62,20 @@ def wrap_backend_call():
         raise exceptions.Backend('Unknown backend failure: %r' % e)
 
 
+def _constant_retries(num_attempts, sleep_interval):
+    """Generate a sequence of False terminated by a True
+    Sleep `sleep_interval` between cycles but not at the end.
+    """
+    for cnt in range(num_attempts):
+        if cnt != 0:
+            LOG.debug(_LI("Executing retry n. %d"), cnt)
+        if cnt < num_attempts - 1:
+            yield False
+            time.sleep(sleep_interval)
+        else:
+            yield True
+
+
 class Service(service.RPCService, coordination.CoordinationMixin,
               service.Service):
     """
@@ -91,6 +106,10 @@ class Service(service.RPCService, coordination.CoordinationMixin,
         self.retry_interval = CONF['service:pool_manager'].poll_retry_interval
         self.max_retries = CONF['service:pool_manager'].poll_max_retries
         self.delay = CONF['service:pool_manager'].poll_delay
+        self._periodic_sync_max_attempts = \
+            CONF['service:pool_manager'].periodic_sync_max_attempts
+        self._periodic_sync_retry_interval = \
+            CONF['service:pool_manager'].periodic_sync_retry_interval
 
         # Create the necessary Backend instances for each target
         self._setup_target_backends()
@@ -200,18 +219,10 @@ class Service(service.RPCService, coordination.CoordinationMixin,
             LOG.exception(_LE('An unhandled exception in periodic '
                               'recovery occurred'))
 
-    def periodic_sync(self):
-        """Periodically sync all the zones that are not in ERROR status
-        Runs only on the pool leader
-        :return: None
+    def _fetch_healthy_zones(self, context):
+        """Fetch all zones not in error
+        :return: :class:`ZoneList` zones
         """
-        if not self._pool_election.is_leader:
-            return
-
-        context = DesignateContext.get_admin_context(all_tenants=True)
-
-        LOG.debug("Starting Periodic Synchronization")
-
         criterion = {
             'pool_id': CONF['service:pool_manager'].pool_id,
             'status': '!%s' % ERROR_STATUS
@@ -225,23 +236,51 @@ class Service(service.RPCService, coordination.CoordinationMixin,
             current = utils.increment_serial()
             criterion['serial'] = ">%s" % (current - periodic_sync_seconds)
 
-        domains = self.central_api.find_domains(context, criterion)
+        zones = self.central_api.find_domains(context, criterion)
+        return zones
 
-        try:
-            for domain in domains:
-                # TODO(kiall): If the zone was created within the last
-                #              periodic_sync_seconds, attempt to recreate
-                #              to fill in targets which may have failed.
-                success = self.update_domain(context, domain)
-                if not success:
-                    self.central_api.update_status(
-                        context, domain.id, ERROR_STATUS, domain.serial)
+    def periodic_sync(self):
+        """Periodically sync all the zones that are not in ERROR status
+        Runs only on the pool leader
+        :return: None
+        """
+        if not self._pool_election.is_leader:
+            return
 
-        except Exception:
-            LOG.exception(_LE('An unhandled exception in periodic '
-                              'synchronization occurred.'))
-            self.central_api.update_status(context, domain.id, ERROR_STATUS,
-                                           domain.serial)
+        context = DesignateContext.get_admin_context(all_tenants=True)
+
+        LOG.debug("Starting Periodic Synchronization")
+        context = DesignateContext.get_admin_context(all_tenants=True)
+        zones = self._fetch_healthy_zones(context)
+        zones = set(zones)
+
+        # TODO(kiall): If the zone was created within the last
+        #              periodic_sync_seconds, attempt to recreate
+        #              to fill in targets which may have failed.
+        retry_gen = _constant_retries(
+            self._periodic_sync_max_attempts,
+            self._periodic_sync_retry_interval
+        )
+        for is_last_cycle in retry_gen:
+            zones_in_error = []
+            for zone in zones:
+                try:
+                    success = self.update_domain(context, zone)
+                    if not success:
+                        zones_in_error.append(zone)
+                except Exception:
+                    LOG.exception(_LE('An unhandled exception in periodic '
+                                      'synchronization occurred.'))
+                    zones_in_error.append(zone)
+
+            if not zones_in_error:
+                return
+
+            zones = zones_in_error
+
+        for zone in zones_in_error:
+            self.central_api.update_status(context, zone.id, ERROR_STATUS,
+                                           zone.serial)
 
     # Standard Create/Update/Delete Methods
 
