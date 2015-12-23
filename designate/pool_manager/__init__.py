@@ -54,6 +54,10 @@ OPTS = [
     cfg.IntOpt('periodic-sync-seconds', default=21600,
                help='Zones Updated within last N seconds will be syncd.'
                     'Use an empty value to sync all zones.'),
+    cfg.IntOpt('periodic-sync-max-attempts', default=3,
+               help='Number of attempts to update a zone during sync'),
+    cfg.IntOpt('periodic-sync-retry-interval', default=30,
+               help='Interval between zone update attempts during sync'),
     cfg.StrOpt('cache-driver', default='memcache',
                help='The cache driver to use'),
 ]

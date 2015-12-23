@@ -63,6 +63,17 @@ class PoolManagerInitTest(test.BaseTestCase):
             self.assertEqual(1800, call2[0])
             self.assertEqual(1800, call2[-1])
 
+    def test_constant_retries(self):
+        with patch.object(pm_module.time, 'sleep') as mock_zzz:
+            gen = pm_module._constant_retries(5, 2)
+            out = list(gen)
+            self.assertEqual(
+                [False, False, False, False, True],
+                out
+            )
+            self.assertEqual(4, mock_zzz.call_count)
+            mock_zzz.assert_called_with(2)
+
 
 class PoolManagerTest(test.BaseTestCase):
 
