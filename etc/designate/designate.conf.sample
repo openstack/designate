@@ -34,7 +34,10 @@ debug = False
 # Which networking API to use, Defaults to neutron
 #network_api = neutron
 
+#-----------------------
 # RabbitMQ Config
+#-----------------------
+[oslo_messaging_rabbit]
 #rabbit_userid = guest
 #rabbit_password = guest
 #rabbit_virtual_host = /
