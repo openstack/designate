@@ -74,7 +74,7 @@ class CoordinationMixin(object):
             msg = _LW("No coordination backend configured, distributed "
                       "coordination functionality will be disabled. "
                       "Please configure a coordination backend.")
-            LOG.warn(msg)
+            LOG.warning(msg)
 
         super(CoordinationMixin, self).start()
 

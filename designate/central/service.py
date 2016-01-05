@@ -65,7 +65,7 @@ def _retry_on_deadlock(exc):
     # TODO(kiall): This is a total leak of the SQLA Driver, we'll need a better
     #              way to handle this.
     if isinstance(exc, db_exception.DBDeadlock):
-        LOG.warn(_LW("Deadlock detected. Retrying..."))
+        LOG.warning(_LW("Deadlock detected. Retrying..."))
         return True
     return False
 
@@ -294,7 +294,7 @@ class Service(service.RPCService, service.Service):
         if (cfg.CONF['service:central'].managed_resource_tenant_id ==
                 "00000000-0000-0000-0000-000000000000"):
             msg = _LW("Managed Resource Tenant ID is not properly configured")
-            LOG.warn(msg)
+            LOG.warning(msg)
 
         super(Service, self).start()
 

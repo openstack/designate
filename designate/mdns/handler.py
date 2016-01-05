@@ -132,7 +132,7 @@ class RequestHandler(xfr.XFRMixin):
         if not master_addr:
             msg = _LW("NOTIFY for %(name)s from non-master server "
                       "%(addr)s, ignoring.")
-            LOG.warn(msg % {"name": zone.name, "addr": notify_addr})
+            LOG.warning(msg % {"name": zone.name, "addr": notify_addr})
             response.set_rcode(dns.rcode.REFUSED)
             yield response
             raise StopIteration

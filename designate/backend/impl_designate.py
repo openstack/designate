@@ -103,4 +103,4 @@ class DesignateBackend(base.Backend):
             self.client.zones.delete(zone.name)
         except exceptions.NotFound:
             msg = _LW("Zone %s not found on remote Designate, Ignoring")
-            LOG.warn(msg, zone.id)
+            LOG.warning(msg, zone.id)

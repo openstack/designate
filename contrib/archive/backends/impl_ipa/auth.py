@@ -38,7 +38,7 @@ class IPAAuth(auth.AuthBase):
         if self.keytab:
             os.environ['KRB5_CLIENT_KTNAME'] = self.keytab
         else:
-            LOG.warn(_LW('No IPA client kerberos keytab file given'))
+            LOG.warning(_LW('No IPA client kerberos keytab file given'))
 
     def __call__(self, request):
         if not self.token:

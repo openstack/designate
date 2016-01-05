@@ -49,7 +49,7 @@ class Service(service.Service):
             enabled_notification_handlers)
 
         if len(notification_handlers) == 0:
-            LOG.warn(_LW('No designate-sink handlers enabled or loaded'))
+            LOG.warning(_LW('No designate-sink handlers enabled or loaded'))
 
         return notification_handlers
 

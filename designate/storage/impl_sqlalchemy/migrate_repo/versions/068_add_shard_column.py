@@ -90,7 +90,7 @@ def upgrade(migrate_engine):
             # try again
             msg = i18n._LW(
                 "Updating migration for sharding failed, retrying.")
-            LOG.warn(msg)
+            LOG.warning(msg)
             if i >= 4:
                 # Raise if we've reached max attempts causing migration to
                 # fail

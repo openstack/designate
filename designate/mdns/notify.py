@@ -132,7 +132,7 @@ class NotifyEndpoint(base.BaseEndpoint):
             if actual_serial is None or actual_serial < zone.serial:
                 # TODO(vinod): Account for serial number wrap around.
                 retries = retries - retry
-                LOG.warn(_LW("Got lower serial for '%(zone)s' to '%(host)s:"
+                LOG.warning(_LW("Got lower serial for '%(zone)s' to '%(host)s:"
                              "%(port)s'. Expected:'%(es)d'. Got:'%(as)s'."
                              "Retries left='%(retries)d'") %
                          {'zone': zone.name, 'host': host,
@@ -186,25 +186,27 @@ class NotifyEndpoint(base.BaseEndpoint):
                 dns_message, host, port, timeout)
 
             if isinstance(response, dns.exception.Timeout):
-                LOG.warn(_LW("Got Timeout while trying to send '%(msg)s' for "
-                             "'%(zone)s' to '%(server)s:%(port)d'. Timeout="
-                             "'%(timeout)d' seconds. Retry='%(retry)d'") %
-                         {'msg': 'NOTIFY' if notify else 'SOA',
-                          'zone': zone.name, 'server': host,
-                          'port': port, 'timeout': timeout,
-                          'retry': retry})
+                LOG.warning(
+                    _LW("Got Timeout while trying to send '%(msg)s' for "
+                        "'%(zone)s' to '%(server)s:%(port)d'. Timeout="
+                        "'%(timeout)d' seconds. Retry='%(retry)d'") %
+                    {'msg': 'NOTIFY' if notify else 'SOA',
+                     'zone': zone.name, 'server': host,
+                     'port': port, 'timeout': timeout,
+                     'retry': retry})
                 response = None
                 # retry sending the message if we get a Timeout.
                 time.sleep(retry_interval)
                 continue
             elif isinstance(response, dns_query.BadResponse):
-                LOG.warn(_LW("Got BadResponse while trying to send '%(msg)s' "
-                             "for '%(zone)s' to '%(server)s:%(port)d'. Timeout"
-                             "='%(timeout)d' seconds. Retry='%(retry)d'") %
-                         {'msg': 'NOTIFY' if notify else 'SOA',
-                          'zone': zone.name, 'server': host,
-                          'port': port, 'timeout': timeout,
-                          'retry': retry})
+                LOG.warning(
+                    _LW("Got BadResponse while trying to send '%(msg)s' "
+                        "for '%(zone)s' to '%(server)s:%(port)d'. Timeout"
+                        "='%(timeout)d' seconds. Retry='%(retry)d'") %
+                    {'msg': 'NOTIFY' if notify else 'SOA',
+                     'zone': zone.name, 'server': host,
+                     'port': port, 'timeout': timeout,
+                     'retry': retry})
                 response = None
                 break
             # Check that we actually got a NOERROR in the rcode and and an
@@ -217,12 +219,13 @@ class NotifyEndpoint(base.BaseEndpoint):
                 break
             elif not (response.flags & dns.flags.AA) or dns.rcode.from_flags(
                     response.flags, response.ednsflags) != dns.rcode.NOERROR:
-                LOG.warn(_LW("Failed to get expected response while trying to "
-                             "send '%(msg)s' for '%(zone)s' to '%(server)s:"
-                             "%(port)d'.\nResponse message:\n%(resp)s\n") %
-                         {'msg': 'NOTIFY' if notify else 'SOA',
-                          'zone': zone.name, 'server': host,
-                          'port': port, 'resp': str(response)})
+                LOG.warning(
+                    _LW("Failed to get expected response while trying to "
+                        "send '%(msg)s' for '%(zone)s' to '%(server)s:"
+                        "%(port)d'.\nResponse message:\n%(resp)s\n") %
+                    {'msg': 'NOTIFY' if notify else 'SOA',
+                     'zone': zone.name, 'server': host,
+                     'port': port, 'resp': str(response)})
                 response = None
                 break
             else:

@@ -29,7 +29,7 @@ meta = MetaData()
 def upgrade(migrate_engine):
     meta.bind = migrate_engine
 
-    LOG.warn(_LW('It will not be possible to downgrade from schema #11'))
+    LOG.warning(_LW('It will not be possible to downgrade from schema #11'))
 
     records_table = Table('records', meta, autoload=True)
     records_table.c.designate_id.drop()
