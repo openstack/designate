@@ -138,9 +138,9 @@ class DesignateAdminClient(BaseDesignateClient):
 
     def _get_keystone_auth_provider(self, with_token=True):
         creds = KeystoneV2Credentials(
-            username=cfg.CONF.identity.admin_username,
-            password=cfg.CONF.identity.admin_password,
-            tenant_name=cfg.CONF.identity.admin_tenant_name,
+            username=cfg.CONF.auth.admin_username,
+            password=cfg.CONF.auth.admin_password,
+            tenant_name=cfg.CONF.auth.admin_tenant_name,
         )
         return self._create_keystone_auth_provider(creds, with_token)
 

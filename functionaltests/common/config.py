@@ -19,7 +19,11 @@ import os
 from oslo_config import cfg
 
 cfg.CONF.register_group(cfg.OptGroup(
-    name='identity', title="Configuration for Keystone auth"
+    name='identity', title="Configuration for Keystone identity"
+))
+
+cfg.CONF.register_group(cfg.OptGroup(
+    name='auth', title="Configuration for Keystone auth"
 ))
 
 cfg.CONF.register_group(cfg.OptGroup(
@@ -49,11 +53,15 @@ cfg.CONF.register_opts([
     cfg.StrOpt('alt_password', secret=True),
     cfg.StrOpt('alt_domain_name'),
 
+
+], group='identity')
+
+cfg.CONF.register_opts([
     cfg.StrOpt('admin_username'),
     cfg.StrOpt('admin_tenant_name'),
     cfg.StrOpt('admin_password', secret=True),
     cfg.StrOpt('admin_domain_name'),
-], group='identity')
+], group="auth")
 
 cfg.CONF.register_opts([
     cfg.StrOpt('designate_endpoint', help="The Designate API endpoint"),
