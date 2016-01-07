@@ -1971,6 +1971,36 @@ class StorageTestCase(object):
             uuid = '203ca44f-c7e7-4337-9a02-0d735833e6aa'
             self.storage.delete_pool(self.admin_context, uuid)
 
+    def test_create_pool_ns_record_duplicate(self):
+        # Create a pool
+        pool = self.create_pool(name='test1')
+
+        ns = objects.PoolNsRecord(priority=1, hostname="ns.example.io.")
+        self.storage.create_pool_ns_record(
+            self.admin_context, pool.id, ns)
+
+        ns2 = objects.PoolNsRecord(priority=2, hostname="ns.example.io.")
+        with testtools.ExpectedException(exceptions.DuplicatePoolNsRecord):
+            self.storage.create_pool_ns_record(
+                self.admin_context, pool.id, ns2)
+
+    def test_update_pool_ns_record_duplicate(self):
+        # Create a pool
+        pool = self.create_pool(name='test1')
+
+        ns1 = objects.PoolNsRecord(priority=1, hostname="ns1.example.io.")
+        self.storage.create_pool_ns_record(
+            self.admin_context, pool.id, ns1)
+
+        ns2 = objects.PoolNsRecord(priority=2, hostname="ns2.example.io.")
+        self.storage.create_pool_ns_record(
+            self.admin_context, pool.id, ns2)
+
+        with testtools.ExpectedException(exceptions.DuplicatePoolNsRecord):
+            ns2.hostname = ns1.hostname
+            self.storage.update_pool_ns_record(
+                self.admin_context, ns2)
+
     def test_create_zone_transfer_request(self):
         zone = self.create_zone()
 

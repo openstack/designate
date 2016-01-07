@@ -62,7 +62,9 @@ class ApiV1ServersTest(ApiV1Test):
 
     def test_create_server(self):
         # Create a server
-        fixture = self.get_server_fixture(0)
+        # In a base somewhere, we create the default / 0 server fixture
+        # automatically, so this would trigger a duplicate otherwise.
+        fixture = self.get_server_fixture(1)
 
         response = self.post('servers', data=fixture)
 
