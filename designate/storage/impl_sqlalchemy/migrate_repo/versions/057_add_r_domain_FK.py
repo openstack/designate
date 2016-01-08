@@ -21,10 +21,26 @@
 # See https://blueprints.launchpad.net/nova/+spec/backportable-db-migrations
 # http://lists.openstack.org/pipermail/openstack-dev/2013-March/006827.html
 
+from migrate.changeset.constraint import ForeignKeyConstraint
+from sqlalchemy.schema import MetaData, Table
+
+# This migration adds back the FKs removed in migration 80, as sqlalchemy
+# migrate seems to need to wait to add FKs to renamed tables.
+
+meta = MetaData()
+
 
 def upgrade(migrate_engine):
-    pass
+    meta.bind = migrate_engine
 
+    domains_table = Table('domains', meta, autoload=True)
+    recordsets_table = Table('recordsets', meta, autoload=True)
+    records_table = Table('records', meta, autoload=True)
 
-def downgrade(migration_engine):
-    pass
+    fks = []
+    fks.append(ForeignKeyConstraint([recordsets_table.c.domain_id],
+                                    [domains_table.c.id], ondelete='CASCADE'))
+    fks.append(ForeignKeyConstraint([records_table.c.domain_id],
+                                    [domains_table.c.id], ondelete='CASCADE'))
+    for fk in fks:
+        fk.create()
