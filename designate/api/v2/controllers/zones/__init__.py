@@ -83,9 +83,6 @@ class ZonesController(rest.RestController):
 
         zone = request.body_dict
 
-        # We need to check the zone type before validating the schema since if
-        # it's the type is SECONDARY we need to set the email to the mgmt email
-
         if isinstance(zone, dict):
             if 'type' not in zone:
                 zone['type'] = 'PRIMARY'
