@@ -215,7 +215,7 @@ class MaintenanceMiddleware(base.Middleware):
         # If the caller has the bypass role, let them through
         if ('context' in request.environ
                 and self.role in request.environ['context'].roles):
-            LOG.warn(_LW('Request authorized to bypass maintenance mode'))
+            LOG.warning(_LW('Request authorized to bypass maintenance mode'))
             return None
 
         # Otherwise, reject the request with a 503 Service Unavailable

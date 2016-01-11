@@ -117,7 +117,7 @@ class RequestHandler(object):
         serial = self.backend.find_zone_serial(zone_name)
 
         if serial is not None:
-            LOG.warn(_LW("Not creating %(name)s, zone already exists") %
+            LOG.warning(_LW("Not creating %(name)s, zone already exists") %
                  {'name': zone_name})
             # Provide an authoritative answer
             response.flags |= dns.flags.AA
@@ -161,7 +161,7 @@ class RequestHandler(object):
         serial = self.backend.find_zone_serial(zone_name)
 
         if serial is None:
-            LOG.warn(_LW("Refusing NOTIFY for %(name)s, doesn't exist") %
+            LOG.warning(_LW("Refusing NOTIFY for %(name)s, doesn't exist") %
                  {'name': zone_name})
             response.set_rcode(dns.rcode.from_text("REFUSED"))
             return response
@@ -212,7 +212,7 @@ class RequestHandler(object):
         serial = self.backend.find_zone_serial(zone_name)
 
         if serial is None:
-            LOG.warn(_LW("Not deleting %(name)s, zone doesn't exist") %
+            LOG.warning(_LW("Not deleting %(name)s, zone doesn't exist") %
                  {'name': zone_name})
             # Provide an authoritative answer
             response.flags |= dns.flags.AA
@@ -239,7 +239,7 @@ class RequestHandler(object):
             return True
 
         if requester not in self.allow_notify:
-            LOG.warn(_LW("%(verb)s for %(name)s from %(server)s refused") %
+            LOG.warning(_LW("%(verb)s for %(name)s from %(server)s refused") %
                      {'verb': op, 'name': zone_name, 'server': requester})
             return False
 

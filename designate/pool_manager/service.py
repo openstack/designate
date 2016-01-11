@@ -272,7 +272,7 @@ class Service(service.RPCService, coordination.CoordinationMixin,
 
         else:
 
-            LOG.warn(_LW('Consensus not reached for creating zone %(zone)s'
+            LOG.warning(_LW('Consensus not reached for creating zone %(zone)s'
                          ' on pool targets') % {'zone': zone.name})
 
             self.central_api.update_status(
@@ -342,7 +342,7 @@ class Service(service.RPCService, coordination.CoordinationMixin,
                 success_count += 1
 
         if not self._exceed_or_meet_threshold(success_count):
-            LOG.warn(_LW('Consensus not reached for updating zone %(zone)s'
+            LOG.warning(_LW('Consensus not reached for updating zone %(zone)s'
                          ' on pool targets') % {'zone': zone.name})
             self.central_api.update_status(context, zone.id, ERROR_STATUS,
                                            zone.serial)
@@ -430,7 +430,7 @@ class Service(service.RPCService, coordination.CoordinationMixin,
                     context, zone.id, SUCCESS_STATUS, zone.serial)
 
         else:
-            LOG.warn(_LW('Consensus not reached for deleting zone %(zone)s'
+            LOG.warning(_LW('Consensus not reached for deleting zone %(zone)s'
                          ' on pool targets') % {'zone': zone.name})
 
             self.central_api.update_status(
@@ -524,7 +524,7 @@ class Service(service.RPCService, coordination.CoordinationMixin,
                 error_serial = self._get_error_serial(
                     context, zone, consensus_serial)
                 if error_serial > consensus_serial or error_serial == 0:
-                    LOG.warn(_LW('For zone %(zone)s '
+                    LOG.warning(_LW('For zone %(zone)s '
                                  'the error serial is %(error_serial)s.') %
                              {'zone': zone.name,
                               'error_serial': error_serial})
@@ -532,7 +532,7 @@ class Service(service.RPCService, coordination.CoordinationMixin,
                         context, zone.id, ERROR_STATUS, error_serial)
 
             if status == NO_ZONE_STATUS and action != DELETE_ACTION:
-                LOG.warn(_LW('Zone %(zone)s is not present in some '
+                LOG.warning(_LW('Zone %(zone)s is not present in some '
                              'targets') % {'zone': zone.name})
                 self.central_api.update_status(
                     context, zone.id, NO_ZONE_STATUS, 0)

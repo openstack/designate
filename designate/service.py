@@ -267,17 +267,18 @@ class DNSService(object):
             except socket.error as e:
                 client.close()
                 errname = errno.errorcode[e.args[0]]
-                LOG.warn(_LW("Socket error %(err)s from: %(host)s:%(port)d") %
-                         {'host': addr[0], 'port': addr[1], 'err': errname})
+                LOG.warning(
+                    _LW("Socket error %(err)s from: %(host)s:%(port)d") %
+                    {'host': addr[0], 'port': addr[1], 'err': errname})
 
             except socket.timeout:
                 client.close()
-                LOG.warn(_LW("TCP Timeout from: %(host)s:%(port)d") %
+                LOG.warning(_LW("TCP Timeout from: %(host)s:%(port)d") %
                          {'host': addr[0], 'port': addr[1]})
 
             except struct.error:
                 client.close()
-                LOG.warn(_LW("Invalid packet from: %(host)s:%(port)d") %
+                LOG.warning(_LW("Invalid packet from: %(host)s:%(port)d") %
                          {'host': addr[0], 'port': addr[1]})
 
             except Exception:
@@ -308,8 +309,9 @@ class DNSService(object):
 
             except socket.error as e:
                 errname = errno.errorcode[e.args[0]]
-                LOG.warn(_LW("Socket error %(err)s from: %(host)s:%(port)d") %
-                         {'host': addr[0], 'port': addr[1], 'err': errname})
+                LOG.warning(
+                    _LW("Socket error %(err)s from: %(host)s:%(port)d") %
+                    {'host': addr[0], 'port': addr[1], 'err': errname})
 
             except Exception:
                 LOG.exception(_LE("Unknown exception handling UDP request "

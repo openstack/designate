@@ -386,7 +386,7 @@ class DynECTBackend(base.Backend):
             client.delete(url)
         except DynClientError as e:
             if e.http_status == 404:
-                LOG.warn(_LW("Attempt to delete %(d_id)s / %(d_name)s "
+                LOG.warning(_LW("Attempt to delete %(d_id)s / %(d_name)s "
                              "caused 404, ignoring.") %
                          {'d_id': zone['id'], 'd_name': zone['name']})
                 pass

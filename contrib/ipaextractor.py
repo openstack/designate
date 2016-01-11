@@ -177,7 +177,7 @@ def syncipaservers2des(servers, designatereq, designateurl):
         for srec in resp.json()['servers']:
             dservers[srec['name']] = srec['id']
     else:
-        LOG.warn(_LW("No servers in designate"))
+        LOG.warning(_LW("No servers in designate"))
 
     # first - add servers from ipa not already in designate
     for server in servers:

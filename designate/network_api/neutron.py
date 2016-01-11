@@ -118,7 +118,7 @@ class NeutronNetworkAPI(NetworkAPI):
                 # NOTE: 401 might be that the user doesn't have neutron
                 # activated in a particular region, we'll just log the failure
                 # and go on with our lives.
-                LOG.warn(_LW("Calling Neutron resulted in a 401, "
+                LOG.warning(_LW("Calling Neutron resulted in a 401, "
                              "please investigate."))
                 LOG.exception(e)
                 return
