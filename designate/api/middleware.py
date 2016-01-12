@@ -272,6 +272,9 @@ class FaultWrapperMiddleware(base.Middleware):
             # Handle all other exception types
             return self._handle_exception(request, e)
 
+    def _format_error(self, data):
+        pass
+
     def _handle_exception(self, request, e, status=500, response=None):
 
         response = response or {}
@@ -292,6 +295,8 @@ class FaultWrapperMiddleware(base.Middleware):
         if 'type' not in response:
             response['type'] = 'unknown'
 
+        self._format_error(response)
+
         # Return the new response
         if 'context' in request.environ:
             response['request_id'] = request.environ['context'].request_id
@@ -305,6 +310,17 @@ class FaultWrapperMiddleware(base.Middleware):
 
         return flask.Response(status=status, headers=headers,
                               response=json.dumps(response))
+
+
+class FaultWrapperMiddlewareV1(FaultWrapperMiddleware):
+    def _format_error(self, data):
+        replace_map = [
+            ("zone", "domain",)
+        ]
+
+        for i in replace_map:
+            data["type"] = data["type"].replace(i[0], i[1])
+        print(data)
 
 
 class ValidationErrorMiddleware(base.Middleware):
