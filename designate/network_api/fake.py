@@ -30,7 +30,7 @@ ALLOCATIONS = {}
 
 def _format_floatingip(id_, address):
     return {
-        'region': 'RegionOne',
+        'region': u'RegionOne',
         'address': address,
         'id': id_
     }
