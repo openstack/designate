@@ -102,6 +102,18 @@ def is_hostname(instance):
     return True
 
 
+@draft4_format_checker.checks("ns-hostname")
+def is_ns_hostname(instance):
+    if not isinstance(instance, compat.str_types):
+        return True
+
+    # BIND doesn't like *.host.com. see bug #1533299
+    if not re.match(RE_DOMAINNAME, instance):
+        return False
+
+    return True
+
+
 @draft3_format_checker.checks("ip-or-host")
 @draft4_format_checker.checks("ip-or-host")
 def is_ip_or_host(instance):

@@ -213,3 +213,9 @@ def random_sshfp_recordset(zone_name, algorithm_number=None,
 def random_txt_recordset(zone_name, data=None, **kwargs):
     data = data or "v=spf1 +all"
     return random_recordset_data('TXT', zone_name, records=[data], **kwargs)
+
+
+def wildcard_ns_recordset(zone_name):
+    name = "*.{0}".format(zone_name)
+    records = ["ns.example.com."]
+    return random_recordset_data('NS', zone_name, name, records)

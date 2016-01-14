@@ -182,6 +182,14 @@ class RecordsetTest(DesignateV2Test):
         for m in verify_models:
             self.assert_dns(m)
 
+    def test_create_wildcard_NS(self):
+        client = RecordsetClient.as_user('default')
+
+        model = datagen.wildcard_ns_recordset(self.zone.name)
+        self._assert_exception(
+            exceptions.BadRequest, 'invalid_object', 400,
+            client.post_recordset, self.zone.id, model)
+
     def test_cname_recordsets_cannot_have_more_than_one_record(self):
         post_model = datagen.random_cname_recordset(zone_name=self.zone.name)
         post_model.records = [

@@ -149,6 +149,76 @@ class SchemaFormatTest(TestCase):
         for hostname in invalid_hostnames:
             self.assertFalse(format.is_hostname(hostname))
 
+    def test_is_ns_hostname(self):
+        valid_ns_hostnames = [
+            'example.com.',
+            'www.example.com.',
+            '12345.example.com.',
+            '192-0-2-1.example.com.',
+            'ip192-0-2-1.example.com.',
+            'www.ip192-0-2-1.example.com.',
+            'ip192-0-2-1.www.example.com.',
+            'abc-123.example.com.',
+            '_tcp.example.com.',
+            '_service._tcp.example.com.',
+            ('1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.8.b.d.0.1.0.0.2'
+             '.ip6.arpa.'),
+            '1.1.1.1.in-addr.arpa.',
+            'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk.',
+            ('abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk.'
+             'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk.'
+             'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk.'
+             'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghi.'),
+        ]
+
+        invalid_ns_hostnames = [
+            # Wildcard NS hostname, bug #1533299
+            '*.example.com.',
+            '**.example.com.',
+            '*.*.example.org.',
+            'a.*.example.org.',
+            # Exceeds single lable length limit
+            ('abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijkL'
+             '.'),
+            ('abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk.'
+             'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk.'
+             'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk.'
+             'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijkL'
+             '.'),
+            # Exceeds total length limit
+            ('abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk.'
+             'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk.'
+             'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk.'
+             'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk.'
+             'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopq.'),
+            # Empty label part
+            'abc..def.',
+            '..',
+            # Invalid character
+            'abc$.def.',
+            'abc.def$.',
+            # Labels must not start with a -
+            '-abc.',
+            'abc.-def.',
+            'abc.-def.ghi.',
+            # Labels must not end with a -
+            'abc-.',
+            'abc.def-.',
+            'abc.def-.ghi.',
+            # Labels must not start or end with a -
+            '-abc-.',
+            'abc.-def-.',
+            'abc.-def-.ghi.',
+            # Trailing newline - Bug 1471158
+            "www.example.com.\n",
+        ]
+
+        for hostname in valid_ns_hostnames:
+            self.assertTrue(format.is_ns_hostname(hostname))
+
+        for hostname in invalid_ns_hostnames:
+            self.assertFalse(format.is_ns_hostname(hostname))
+
     def test_is_domainname(self):
         valid_domainnames = [
             'example.com.',
