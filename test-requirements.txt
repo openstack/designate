@@ -19,3 +19,6 @@ testscenarios>=0.4
 WebTest>=2.0
 tempest-lib>=0.13.0
 reno>=0.1.1 # Apache2
+# Bandit security code scanner
+bandit>=0.13.2
+
