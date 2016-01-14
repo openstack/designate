@@ -16,6 +16,7 @@
 # under the License.
 from __future__ import absolute_import
 
+import os
 import shutil
 import tempfile
 
@@ -100,8 +101,21 @@ class DatabaseFixture(fixtures.Fixture):
         return DatabaseFixture.fixtures[repo_path]
 
     def _mktemp(self):
+        """Create temporary database file
+        """
+        tmpfs_path = "/dev/shm"
+        if os.path.isdir(tmpfs_path):
+            tmp_dir = os.path.join(tmpfs_path, 'designate')
+            if not os.path.isdir(tmp_dir):
+                os.mkdir(tmp_dir)
+            LOG.debug("Using %s as database tmp dir" % tmp_dir)
+        else:
+            tmp_dir = "/tmp"
+            LOG.warning("Using %s as database tmp dir. Tests might be slow" %
+                        tmp_dir)
+
         _, path = tempfile.mkstemp(prefix='designate-', suffix='.sqlite',
-                                   dir='/tmp')
+                                   dir=tmp_dir)
         return path
 
     def __init__(self, repo_path, init_version=None):
@@ -123,6 +137,12 @@ class DatabaseFixture(fixtures.Fixture):
     def setUp(self):
         super(DatabaseFixture, self).setUp()
         shutil.copyfile(self.golden_db, self.working_copy)
+
+    def tearDown(self):
+        # This is currently unused
+        super(DatabaseFixture, self).tearDown()
+        LOG.debug("Deleting %s" % self.working_copy)
+        os.unlink(self.working_copy)
 
 
 class NetworkAPIFixture(fixtures.Fixture):
