@@ -32,6 +32,16 @@ class NS(Record):
         }
     }
 
+    @classmethod
+    def get_recordset_schema_changes(cls):
+        return {
+            'name': {
+                'schema': {
+                    'format': 'ns-hostname',
+                },
+            },
+        }
+
     def _to_string(self):
         return self.nsdname
 
