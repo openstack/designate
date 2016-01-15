@@ -59,7 +59,7 @@ git-review
 
 ## Testing
 
-Execute a single test using py27 (test is CentralServiceTest.test_count_domains)
+Execute a single test using py27 (test is CentralServiceTest.test_count_zones)
 ````
-tox -e py27 -- designate/tests/test_central/test_service.py:CentralServiceTest.test_count_domains
+tox -e py27 -- designate.tests.test_central.test_service.CentralServiceTest.test_count_zones
 ````
