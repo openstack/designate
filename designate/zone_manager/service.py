@@ -69,7 +69,7 @@ class Service(service.RPCService, coordination.CoordinationMixin,
 
         enabled = CONF['service:zone_manager'].enabled_tasks
         for task in tasks.PeriodicTask.get_extensions(enabled):
-            LOG.debug("Registering task %s" % task)
+            LOG.debug("Registering task %s", task)
 
             # Instantiate the task
             task = task()
