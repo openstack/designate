@@ -157,6 +157,7 @@ debug = False
 #admin_tenant_name = service
 #admin_user = designate
 #admin_password = designate
+#memcached_servers = localhost:11211
 
 #-----------------------
 # Sink Service
