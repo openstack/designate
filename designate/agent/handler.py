@@ -123,8 +123,8 @@ class RequestHandler(object):
             response.flags |= dns.flags.AA
             return response
 
-        LOG.debug("Received %(verb)s for %(name)s from %(host)s" %
-                 {'verb': "CREATE", 'name': zone_name, 'host': requester})
+        LOG.debug("Received %(verb)s for %(name)s from %(host)s",
+                  {'verb': "CREATE", 'name': zone_name, 'host': requester})
 
         try:
             zone = dnsutils.do_axfr(zone_name, self.masters,
@@ -166,8 +166,8 @@ class RequestHandler(object):
             response.set_rcode(dns.rcode.from_text("REFUSED"))
             return response
 
-        LOG.debug("Received %(verb)s for %(name)s from %(host)s" %
-                 {'verb': "NOTIFY", 'name': zone_name, 'host': requester})
+        LOG.debug("Received %(verb)s for %(name)s from %(host)s",
+                  {'verb': "NOTIFY", 'name': zone_name, 'host': requester})
 
         # According to RFC we should query the server that sent the NOTIFY
         # TODO(Tim): Reenable this when it makes more sense
@@ -218,8 +218,8 @@ class RequestHandler(object):
             response.flags |= dns.flags.AA
             return response
 
-        LOG.debug("Received DELETE for %(name)s from %(host)s" %
-                 {'name': zone_name, 'host': requester})
+        LOG.debug("Received DELETE for %(name)s from %(host)s",
+                  {'name': zone_name, 'host': requester})
 
         # Provide an authoritative answer
         response.flags |= dns.flags.AA

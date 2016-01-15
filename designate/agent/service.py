@@ -14,7 +14,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from oslo_config import cfg
-from oslo_log import log as logging
 
 from designate import utils
 from designate import dnsutils
@@ -23,7 +22,6 @@ from designate.agent import handler
 from designate.backend import agent_backend
 
 
-LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
 
 
