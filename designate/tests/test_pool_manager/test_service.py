@@ -494,11 +494,12 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
         self.assertEqual(2, self.service.update_zone.call_count)
         self.assertEqual(0, mock_cent_update_status.call_count)
 
+    @patch.object(pm_module.time, 'sleep')
     @patch.object(mdns_rpcapi.MdnsAPI, 'notify_zone_changed')
     @patch.object(central_rpcapi.CentralAPI, 'update_status')
     @patch.object(central_rpcapi.CentralAPI, 'find_zones')
-    def test_periodic_sync_with_failing_update(self, mock_find_zones,
-                                               mock_cent_update_status, *a):
+    def test_periodic_sync_with_failing_update(
+            self, mock_find_zones, mock_cent_update_status, *mocks):
         self.service.update_zone = Mock(return_value=False)  # fail update
         mock_find_zones.return_value = self._build_zones(3, 'UPDATE',
                                                          'PENDING')
@@ -507,15 +508,19 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
         self.assertEqual(1, mock_find_zones.call_count)
         criterion = mock_find_zones.call_args_list[0][0][1]
         self.assertEqual('!ERROR', criterion['status'])
-        # all zones are now in ERROR status
-        self.assertEqual(3, self.service.update_zone.call_count)
+
+        # 3 zones, all failing, with 3 attempts: 9 calls
+        self.assertEqual(9, self.service.update_zone.call_count)
+
+        # the zones have been put in ERROR status
         self.assertEqual(3, mock_cent_update_status.call_count)
 
+    @patch.object(pm_module.time, 'sleep')
     @patch.object(mdns_rpcapi.MdnsAPI, 'notify_zone_changed')
     @patch.object(central_rpcapi.CentralAPI, 'update_status')
     @patch.object(central_rpcapi.CentralAPI, 'find_zones')
     def test_periodic_sync_with_failing_update_with_exception(
-            self, mock_find_zones, mock_cent_update_status, *a):
+            self, mock_find_zones, mock_cent_update_status, *mocks):
         self.service.update_zone = Mock(side_effect=Exception)
         mock_find_zones.return_value = self._build_zones(3, 'UPDATE',
                                                          'PENDING')
@@ -524,16 +529,20 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
         self.assertEqual(1, mock_find_zones.call_count)
         criterion = mock_find_zones.call_args_list[0][0][1]
         self.assertEqual('!ERROR', criterion['status'])
-        # the first updated zone is now in ERROR status
-        self.assertEqual(1, self.service.update_zone.call_count)
-        self.assertEqual(1, mock_cent_update_status.call_count)
+
+        # 3 zones, all failing, with 3 attempts: 9 calls
+        self.assertEqual(9, self.service.update_zone.call_count)
+
+        # the zones have been put in ERROR status
+        self.assertEqual(3, mock_cent_update_status.call_count)
 
     # Periodic recovery
 
+    @patch.object(pm_module.time, 'sleep')
     @patch.object(mdns_rpcapi.MdnsAPI, 'notify_zone_changed')
     @patch.object(central_rpcapi.CentralAPI, 'update_status')
     def test_periodic_recovery(self, mock_find_zones,
-                               mock_cent_update_status, *a):
+                               mock_cent_update_status, *mocks):
 
         def mock_get_failed_zones(ctx, action):
             if action == pm_module.DELETE_ACTION:
@@ -614,6 +623,7 @@ class PoolManagerServiceEndToEndTest(PoolManagerServiceNoopTest):
     def test_periodic_sync_and_recovery(
             self, mock_cent_update_status, *a):
         # Periodic sync + recovery
+        self.service._periodic_sync_retry_interval = 0
 
         # Create healthy zones, run a periodic sync that will fail
         self.create_zone(name='created.example.com.')
