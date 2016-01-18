@@ -15,23 +15,18 @@
 # under the License.
 
 from mock import Mock
-from mock import MagicMock
 from mock import patch
 from oslotest import base as test
 
-from designate import exceptions
 from designate import objects
 from designate.pool_manager.service import Service
+import designate.pool_manager.service as pm_module
+from designate.tests.unit import RoObject
 
 
-class PoolManagerTest(test.BaseTestCase):
+class PoolManagerInitTest(test.BaseTestCase):
     def __setUp(self):
         super(PoolManagerTest, self).setUp()
-
-    def test_init_no_pool_targets(self):
-        with patch.object(objects.Pool, 'from_config',
-                          return_value=MagicMock()):
-            self.assertRaises(exceptions.NoPoolTargetsConfigured, Service)
 
     def test_init(self):
         with patch.object(objects.Pool, 'from_config',
@@ -56,3 +51,90 @@ class PoolManagerTest(test.BaseTestCase):
             call2 = pm.tg.add_timer.call_args_list[1][0]
             self.assertEqual(1800, call2[0])
             self.assertEqual(1800, call2[-1])
+
+    def test_constant_retries(self):
+        with patch.object(pm_module.time, 'sleep') as mock_zzz:
+            gen = pm_module._constant_retries(5, 2)
+            out = list(gen)
+            self.assertEqual(
+                [False, False, False, False, True],
+                out
+            )
+            self.assertEqual(4, mock_zzz.call_count)
+            mock_zzz.assert_called_with(2)
+
+
+class PoolManagerTest(test.BaseTestCase):
+
+    @patch.object(pm_module.DesignateContext, 'get_admin_context')
+    @patch.object(pm_module.central_api.CentralAPI, 'get_instance')
+    @patch.object(objects.Pool, 'from_config')
+    @patch.object(Service, '_setup_target_backends')
+    def setUp(self, *mocks):
+        super(PoolManagerTest, self).setUp()
+        self.pm = Service()
+        self.pm.pool.targets = ()
+        self.pm.tg.add_timer = Mock()
+        self.pm._pool_election = Mock()
+        self.pm.target_backends = {}
+
+    def test_get_failed_domains(self, *mocks):
+        with patch.object(self.pm.central_api, 'find_domains') as \
+                mock_find_domains:
+            self.pm._get_failed_domains('ctx', pm_module.DELETE_ACTION)
+
+            mock_find_domains.assert_called_once_with(
+                'ctx', {'action': 'DELETE', 'status': 'ERROR', 'pool_id':
+                        '794ccc2c-d751-44fe-b57f-8894c9f5c842'})
+
+    @patch.object(pm_module.DesignateContext, 'get_admin_context')
+    def test_periodic_recover(self, mock_get_ctx, *mocks):
+        z = RoObject(name='a_domain')
+
+        def mock_get_failed_domains(ctx, action):
+            if action == pm_module.DELETE_ACTION:
+                return [z] * 3
+            if action == pm_module.CREATE_ACTION:
+                return [z] * 4
+            if action == pm_module.UPDATE_ACTION:
+                return [z] * 5
+
+        self.pm._get_failed_domains = mock_get_failed_domains
+        self.pm.delete_domain = Mock()
+        self.pm.create_domain = Mock()
+        self.pm.update_domain = Mock()
+        mock_ctx = mock_get_ctx.return_value
+
+        self.pm.periodic_recovery()
+
+        self.pm.delete_domain.assert_called_with(mock_ctx, z)
+        self.assertEqual(3, self.pm.delete_domain.call_count)
+        self.pm.create_domain.assert_called_with(mock_ctx, z)
+        self.assertEqual(4, self.pm.create_domain.call_count)
+        self.pm.update_domain.assert_called_with(mock_ctx, z)
+        self.assertEqual(5, self.pm.update_domain.call_count)
+
+    @patch.object(pm_module.DesignateContext, 'get_admin_context')
+    def test_periodic_recover_exception(self, mock_get_ctx, *mocks):
+        z = RoObject(name='a_domain')
+        # Raise an exception half through the recovery
+
+        def mock_get_failed_domains(ctx, action):
+            if action == pm_module.DELETE_ACTION:
+                return [z] * 3
+            if action == pm_module.CREATE_ACTION:
+                return [z] * 4
+
+        self.pm._get_failed_domains = mock_get_failed_domains
+        self.pm.delete_domain = Mock()
+        self.pm.create_domain = Mock(side_effect=Exception('oops'))
+        self.pm.update_domain = Mock()
+        mock_ctx = mock_get_ctx.return_value
+
+        self.pm.periodic_recovery()
+
+        self.pm.delete_domain.assert_called_with(mock_ctx, z)
+        self.assertEqual(3, self.pm.delete_domain.call_count)
+        self.pm.create_domain.assert_called_with(mock_ctx, z)
+        self.assertEqual(1, self.pm.create_domain.call_count)
+        self.assertEqual(0, self.pm.update_domain.call_count)
