@@ -97,6 +97,43 @@ class Service(service.Service):
 
         super(Service, self).stop()
 
+    def _get_listen_on_addresses(self, default_port):
+        """
+        Helper Method to handle migration from singular host/port to
+        multiple binds
+        """
+        try:
+            # The API service uses "api_host", and "api_port", others use
+            # just host and port.
+            host = self._service_config.api_host
+            port = self._service_config.api_port
+
+        except cfg.NoSuchOptError:
+            host = self._service_config.host
+            port = self._service_config.port
+
+        if host or port:
+            LOG.warning(_LW("host and port config options used, the 'listen' "
+                            "option has been ignored"))
+
+            host = host or "0.0.0.0"
+            port = port or default_port
+
+            return [(host, port)]
+
+        else:
+            def _split_host_port(l):
+                try:
+                    host, port = l.split(':', 1)
+                    return host, int(port)
+                except ValueError:
+                    LOG.exception(_LE('Invalid ip:port pair: %s'), l)
+                    raise
+
+            # Convert listen pair list to a set, to remove accidental
+            # duplicates.
+            return map(_split_host_port, set(self._service_config.listen))
+
 
 class RPCService(object):
     """
@@ -180,6 +217,8 @@ class WSGIService(object):
     def __init__(self, *args, **kwargs):
         super(WSGIService, self).__init__(*args, **kwargs)
 
+        self._wsgi_socks = []
+
     @abc.abstractproperty
     def _wsgi_application(self):
         pass
@@ -187,23 +226,28 @@ class WSGIService(object):
     def start(self):
         super(WSGIService, self).start()
 
-        self._wsgi_sock = utils.bind_tcp(
-            self._service_config.api_host,
-            self._service_config.api_port,
-            CONF.backlog,
-            CONF.tcp_keepidle)
+        addresses = self._get_listen_on_addresses(9001)
+
+        for address in addresses:
+            self._start(address[0], address[1])
+
+    def _start(self, host, port):
+        wsgi_sock = utils.bind_tcp(
+            host, port, CONF.backlog, CONF.tcp_keepidle)
 
         if sslutils.is_enabled(CONF):
-            self._wsgi_sock = sslutils.wrap(CONF, self._wsgi_sock)
+            wsgi_sock = sslutils.wrap(CONF, wsgi_sock)
 
-        self.tg.add_thread(self._wsgi_handle)
+        self._wsgi_socks.append(wsgi_sock)
 
-    def _wsgi_handle(self):
+        self.tg.add_thread(self._wsgi_handle, wsgi_sock)
+
+    def _wsgi_handle(self, wsgi_sock):
         logger = logging.getLogger('eventlet.wsgi')
         # Adjust wsgi MAX_HEADER_LINE to accept large tokens.
         eventlet.wsgi.MAX_HEADER_LINE = self._service_config.max_header_line
 
-        eventlet.wsgi.server(self._wsgi_sock,
+        eventlet.wsgi.server(wsgi_sock,
                              self._wsgi_application,
                              custom_pool=self.tg.pool,
                              log=logger)
@@ -221,6 +265,9 @@ class DNSService(object):
         # reading/writing to the UDP socket at once. Disable this warning.
         eventlet.debug.hub_prevent_multiple_readers(False)
 
+        self._dns_socks_tcp = []
+        self._dns_socks_udp = []
+
     @abc.abstractproperty
     def _dns_application(self):
         pass
@@ -228,17 +275,23 @@ class DNSService(object):
     def start(self):
         super(DNSService, self).start()
 
-        self._dns_sock_tcp = utils.bind_tcp(
-            self._service_config.host,
-            self._service_config.port,
-            self._service_config.tcp_backlog)
+        addresses = self._get_listen_on_addresses(self._dns_default_port)
 
-        self._dns_sock_udp = utils.bind_udp(
-            self._service_config.host,
-            self._service_config.port)
+        for address in addresses:
+            self._start(address[0], address[1])
 
-        self.tg.add_thread(self._dns_handle_tcp)
-        self.tg.add_thread(self._dns_handle_udp)
+    def _start(self, host, port):
+        sock_tcp = utils.bind_tcp(
+            host, port, self._service_config.tcp_backlog)
+
+        sock_udp = utils.bind_udp(
+            host, port)
+
+        self._dns_socks_tcp.append(sock_tcp)
+        self._dns_socks_udp.append(sock_udp)
+
+        self.tg.add_thread(self._dns_handle_tcp, sock_tcp)
+        self.tg.add_thread(self._dns_handle_udp, sock_udp)
 
     def wait(self):
         super(DNSService, self).wait()
@@ -248,18 +301,18 @@ class DNSService(object):
         # _handle_udp are stopped too.
         super(DNSService, self).stop()
 
-        if hasattr(self, '_dns_sock_tcp'):
-            self._dns_sock_tcp.close()
+        for sock_tcp in self._dns_socks_tcp:
+            sock_tcp.close()
 
-        if hasattr(self, '_dns_sock_udp'):
-            self._dns_sock_udp.close()
+        for sock_udp in self._dns_socks_udp:
+            sock_udp.close()
 
-    def _dns_handle_tcp(self):
+    def _dns_handle_tcp(self, sock_tcp):
         LOG.info(_LI("_handle_tcp thread started"))
 
         while True:
             try:
-                client, addr = self._dns_sock_tcp.accept()
+                client, addr = sock_tcp.accept()
 
                 if self._service_config.tcp_recv_timeout:
                     client.settimeout(self._service_config.tcp_recv_timeout)
@@ -312,20 +365,21 @@ class DNSService(object):
                 self.tg.add_thread(self._dns_handle, addr, payload,
                                    client=client)
 
-    def _dns_handle_udp(self):
+    def _dns_handle_udp(self, sock_udp):
         LOG.info(_LI("_handle_udp thread started"))
 
         while True:
             try:
                 # TODO(kiall): Determine the appropriate default value for
                 #              UDP recvfrom.
-                payload, addr = self._dns_sock_udp.recvfrom(8192)
+                payload, addr = sock_udp.recvfrom(8192)
 
                 LOG.debug("Handling UDP Request from: %(host)s:%(port)d" %
                          {'host': addr[0], 'port': addr[1]})
 
                 # Dispatch a thread to handle the query
-                self.tg.add_thread(self._dns_handle, addr, payload)
+                self.tg.add_thread(self._dns_handle, addr, payload,
+                                   sock_udp=sock_udp)
 
             except socket.error as e:
                 errname = errno.errorcode[e.args[0]]
@@ -338,7 +392,7 @@ class DNSService(object):
                                   "from: %(host)s:%(port)d") %
                               {'host': addr[0], 'port': addr[1]})
 
-    def _dns_handle(self, addr, payload, client=None):
+    def _dns_handle(self, addr, payload, client=None, sock_udp=None):
         """
         Handle a DNS Query
 
@@ -360,7 +414,7 @@ class DNSService(object):
                         client.sendall(tcp_response)
                     else:
                         # Handle UDP Responses
-                        self._dns_sock_udp.sendto(response, addr)
+                        sock_udp.sendto(response, addr)
 
         except Exception:
             LOG.exception(_LE("Unhandled exception while processing request "

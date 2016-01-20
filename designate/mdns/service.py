@@ -29,6 +29,7 @@ CONF = cfg.CONF
 
 
 class Service(service.DNSService, service.RPCService, service.Service):
+    _dns_default_port = 5354
 
     @property
     def storage(self):

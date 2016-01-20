@@ -37,6 +37,7 @@ CONF = cfg.CONF
 
 
 class Service(service.DNSService, service.Service):
+    _dns_default_port = 5358
 
     def __init__(self, threads=None):
         super(Service, self).__init__(threads=threads)
