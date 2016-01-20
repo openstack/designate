@@ -52,8 +52,8 @@ OPTS = [
     cfg.IntOpt('periodic-sync-interval', default=1800,
                help='The time between synchronizing the servers with storage'),
     cfg.IntOpt('periodic-sync-seconds', default=21600,
-               help='Zones Updated within last N seconds will be syncd. Use '
-                    'None to sync all zones.'),
+               help='Zones Updated within last N seconds will be syncd.'
+                    'Use an empty value to sync all zones.'),
     cfg.IntOpt('periodic-sync-max-attempts', default=3,
                help='Number of attempts to update a zone during sync'),
     cfg.IntOpt('periodic-sync-retry-interval', default=30,
