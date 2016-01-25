@@ -28,6 +28,7 @@ from designate import exceptions
 from designate import objects
 from designate import utils
 from designate.central import rpcapi as central_api
+from designate.pool_manager import rpcapi as pool_manager_rpcapi
 from designate.mdns import rpcapi as mdns_api
 from designate import service
 from designate.context import DesignateContext
@@ -41,6 +42,7 @@ LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
 
 SUCCESS_STATUS = 'SUCCESS'
+PENDING_STATUS = 'PENDING'
 ERROR_STATUS = 'ERROR'
 NO_ZONE_STATUS = 'NO_ZONE'
 CREATE_ACTION = 'CREATE'
@@ -110,6 +112,11 @@ class Service(service.RPCService, coordination.CoordinationMixin,
             CONF['service:pool_manager'].periodic_sync_max_attempts
         self._periodic_sync_retry_interval = \
             CONF['service:pool_manager'].periodic_sync_retry_interval
+
+        # Compute a time (seconds) by which things should have propagated
+        self.max_prop_time = (self.timeout * self.max_retries +
+                             self.max_retries * self.retry_interval +
+                             self.delay)
 
         # Create the necessary Backend instances for each target
         self._setup_target_backends()
@@ -183,6 +190,10 @@ class Service(service.RPCService, coordination.CoordinationMixin,
     def mdns_api(self):
         return mdns_api.MdnsAPI.get_instance()
 
+    @property
+    def pool_manager_api(self):
+        return pool_manager_rpcapi.PoolManagerAPI.get_instance()
+
     def _get_admin_context_all_tenants(self):
         return DesignateContext.get_admin_context(all_tenants=True)
 
@@ -196,7 +207,7 @@ class Service(service.RPCService, coordination.CoordinationMixin,
             return
 
         context = self._get_admin_context_all_tenants()
-        LOG.debug("Starting Periodic Recovery")
+        LOG.info(_LI("Starting Periodic Recovery"))
 
         try:
             # Handle Deletion Failures
@@ -204,21 +215,21 @@ class Service(service.RPCService, coordination.CoordinationMixin,
             LOG.info(_LI("periodic_recovery:delete_zone needed on %d zones"),
                      len(zones))
             for zone in zones:
-                self.delete_zone(context, zone)
+                self.pool_manager_api.delete_zone(context, zone)
 
             # Handle Creation Failures
             zones = self._get_failed_zones(context, CREATE_ACTION)
             LOG.info(_LI("periodic_recovery:create_zone needed on %d zones"),
                      len(zones))
             for zone in zones:
-                self.create_zone(context, zone)
+                self.pool_manager_api.create_zone(context, zone)
 
             # Handle Update Failures
             zones = self._get_failed_zones(context, UPDATE_ACTION)
             LOG.info(_LI("periodic_recovery:update_zone needed on %d zones"),
                      len(zones))
             for zone in zones:
-                self.update_zone(context, zone)
+                self.pool_manager_api.update_zone(context, zone)
 
         except Exception:
             LOG.exception(_LE('An unhandled exception in periodic '
@@ -232,7 +243,7 @@ class Service(service.RPCService, coordination.CoordinationMixin,
         if not self._pool_election.is_leader:
             return
 
-        LOG.debug("Starting Periodic Synchronization")
+        LOG.info(_LI("Starting Periodic Synchronization"))
         context = self._get_admin_context_all_tenants()
         zones = self._fetch_healthy_zones(context)
         zones = set(zones)
@@ -570,12 +581,46 @@ class Service(service.RPCService, coordination.CoordinationMixin,
 
     # Utility Methods
     def _get_failed_zones(self, context, action):
+        """
+        Fetch zones that are in ERROR status or have been PENDING for a long
+        time. Used by periodic recovery.
+        After a certain time changes either should have successfully
+        propagated or gone to an ERROR state.
+        However, random failures and undiscovered bugs leave zones hanging out
+        in PENDING state forever. By treating those "stale" zones as failed,
+        periodic recovery will attempt to restore them.
+        :return: :class:`ZoneList` zones
+        """
         criterion = {
             'pool_id': CONF['service:pool_manager'].pool_id,
             'action': action,
             'status': ERROR_STATUS
         }
-        return self.central_api.find_zones(context, criterion)
+        error_zones = self.central_api.find_zones(context, criterion)
+
+        # Include things that have been hanging out in PENDING
+        # status for longer than they should
+        # Generate the current serial, will provide a UTC Unix TS.
+        current = utils.increment_serial()
+        stale_criterion = {
+            'pool_id': CONF['service:pool_manager'].pool_id,
+            'action': action,
+            'status': PENDING_STATUS,
+            'serial': "<%s" % (current - self.max_prop_time)
+        }
+        LOG.debug('Including zones with action %(action)s and %(status)s '
+                  'older than %(seconds)ds' % {'action': action,
+                                               'status': PENDING_STATUS,
+                                               'seconds': self.max_prop_time})
+
+        stale_zones = self.central_api.find_zones(context, stale_criterion)
+        if stale_zones:
+            LOG.warn(_LW('Found %(len)d zones PENDING for more than %(sec)d '
+                         'seconds'), {'len': len(stale_zones),
+                                      'sec': self.max_prop_time})
+            error_zones.extend(stale_zones)
+
+        return error_zones
 
     def _fetch_healthy_zones(self, context):
         """Fetch all zones not in error
