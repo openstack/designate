@@ -72,6 +72,7 @@ class TaskTest(test.BaseTestCase):
 
         self.opts = opts
         self.opts_patcher = mock.patch('oslo_config.cfg.CONF')
+        self.addCleanup(self.opts_patcher.stop)
 
         self.opts_mock = self.opts_patcher.start()
         self.opts_mock.__getitem__.side_effect = lambda n: opts[n]
@@ -156,12 +157,14 @@ class PeriodicExistsTest(TaskTest):
         self.ctxt = mock.Mock()
         get_admin_ctxt_patcher = mock.patch.object(context.DesignateContext,
                                             'get_admin_context')
+        self.addCleanup(get_admin_ctxt_patcher.stop)
         get_admin_context = get_admin_ctxt_patcher.start()
         get_admin_context.return_value = self.ctxt
 
         # Patch get_notifier so that it returns a mock..
         get_notifier_patcher = mock.patch.object(rpc, 'get_notifier')
         get_notifier = get_notifier_patcher.start()
+        self.addCleanup(get_notifier_patcher.stop)
         self.mock_notifier = mock.Mock()
         get_notifier.return_value = self.mock_notifier
 
@@ -177,6 +180,7 @@ class PeriodicExistsTest(TaskTest):
         }
         get_period_patcher = mock.patch.object(
             tasks.PeriodicExistsTask, '_get_period')
+        self.addCleanup(get_period_patcher.stop)
         self.get_period = get_period_patcher.start()
         self.get_period.return_value = self.period
 
@@ -229,6 +233,7 @@ class PeriodicSecondaryRefreshTest(TaskTest):
         self.ctxt = mock.Mock()
         get_admin_ctxt_patcher = mock.patch.object(context.DesignateContext,
                                                    'get_admin_context')
+        self.addCleanup(get_admin_ctxt_patcher.stop)
         get_admin_context = get_admin_ctxt_patcher.start()
         get_admin_context.return_value = self.ctxt
 
@@ -236,6 +241,7 @@ class PeriodicSecondaryRefreshTest(TaskTest):
         self.central = mock.Mock()
         get_central_patcher = mock.patch.object(central_api.CentralAPI,
                                         'get_instance')
+        self.addCleanup(get_central_patcher.stop)
         get_central = get_central_patcher.start()
         get_central.return_value = self.central
 

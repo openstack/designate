@@ -49,6 +49,7 @@ class KeystoneContextMiddlewareTest(oslotest.base.BaseTestCase):
         ctxt_patcher = mock.patch(
             'designate.context.DesignateContext',
             return_value=self.ctxt)
+        self.addCleanup(ctxt_patcher.stop)
         ctxt_patcher.start()
 
     def test_sudo_by_project_id(self):
