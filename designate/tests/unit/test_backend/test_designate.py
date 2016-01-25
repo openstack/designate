@@ -72,6 +72,7 @@ class DesignateBackendTest(oslotest.base.BaseTestCase):
         self.admin_context = Mock()
         get_context_patcher = patch(
             'designate.context.DesignateContext.get_admin_context')
+        self.addCleanup(get_context_patcher.stop)
         get_context = get_context_patcher.start()
         get_context.return_value = self.admin_context
 
