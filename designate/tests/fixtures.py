@@ -105,10 +105,8 @@ class DatabaseFixture(fixtures.Fixture):
         """
         tmpfs_path = "/dev/shm"
         if os.path.isdir(tmpfs_path):
-            tmp_dir = os.path.join(tmpfs_path, 'designate')
-            if not os.path.isdir(tmp_dir):
-                os.mkdir(tmp_dir)
-            LOG.debug("Using %s as database tmp dir" % tmp_dir)
+            tmp_dir = tmpfs_path
+            LOG.debug("Using tmpfs on %s as database tmp dir" % tmp_dir)
         else:
             tmp_dir = "/tmp"
             LOG.warning("Using %s as database tmp dir. Tests might be slow" %
