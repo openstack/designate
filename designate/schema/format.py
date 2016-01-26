@@ -49,7 +49,7 @@ RE_FIP_ID = r'^(?P<region>[A-Za-z0-9\.\-_]{1,100}):' \
             r'(?P<id>[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-' \
             r'[0-9a-fA-F]{4}-[0-9a-fA-F]{12})\Z'
 
-RE_SSHFP = r'^[0-9A-Fa-f]{40}\Z'
+RE_SSHFP_FINGERPRINT = r'^[0-9A-Fa-f]{40}\Z'
 
 
 draft3_format_checker = jsonschema.draft3_format_checker
@@ -151,6 +151,17 @@ def is_srv_hostname(instance):
     return True
 
 
+@draft4_format_checker.checks("txt-data")
+def is_txt_data(instance):
+    if not isinstance(instance, compat.str_types):
+        return True
+
+    if instance.endswith('\\'):
+        return False
+
+    return True
+
+
 @draft3_format_checker.checks("tld-name")
 @draft4_format_checker.checks("tldname")
 def is_tldname(instance):
@@ -182,14 +193,11 @@ def is_email(instance):
 
 
 @draft4_format_checker.checks("sshfp")
-def is_sshfp(instance):
-    # TODO(kiall): This isn't actually validating an SSH FP, It's trying to
-    #              validate *part* of a SSHFP, we should either rename this
-    #              or actually validate a SSHFP rdata in it's entireity.
+def is_sshfp_fingerprint(instance):
     if not isinstance(instance, compat.str_types):
         return True
 
-    if not re.match(RE_SSHFP, instance):
+    if not re.match(RE_SSHFP_FINGERPRINT, instance):
         return False
 
     return True

@@ -402,11 +402,11 @@ class SchemaFormatTest(TestCase):
         ]
 
         for sshfp in valid_sshfps:
-            self.assertTrue(format.is_sshfp(sshfp),
+            self.assertTrue(format.is_sshfp_fingerprint(sshfp),
                             'Expected Valid: %s' % sshfp)
 
         for sshfp in invalid_sshfps:
-            self.assertFalse(format.is_sshfp(sshfp),
+            self.assertFalse(format.is_sshfp_fingerprint(sshfp),
                              'Expected Invalid: %s' % sshfp)
 
     def test_is_uuid(self):
