@@ -294,11 +294,11 @@ function stop_designate {
 if is_service_enabled designate; then
 
     if [[ "$1" == "stack" && "$2" == "install" ]]; then
-        echo_summary "Installing Designate"
-        install_designate
-
         echo_summary "Installing Designate client"
         install_designateclient
+
+        echo_summary "Installing Designate"
+        install_designate
 
         if is_service_enabled horizon; then
             echo_summary "Installing Designate dashboard"
