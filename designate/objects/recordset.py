@@ -16,6 +16,7 @@
 import logging
 from copy import deepcopy
 
+from oslo_config import cfg
 import six
 
 from designate import exceptions
@@ -26,6 +27,8 @@ from designate.objects.validation_error import ValidationErrorList
 
 
 LOG = logging.getLogger(__name__)
+
+cfg.CONF.import_opt('supported_record_type', 'designate')
 
 
 class RecordSet(base.DictObjectMixin, base.PersistentObjectMixin,
@@ -105,8 +108,6 @@ class RecordSet(base.DictObjectMixin, base.PersistentObjectMixin,
             'schema': {
                 'type': 'string',
                 'description': 'RecordSet type (TODO: Make types extensible)',
-                'enum': ['A', 'AAAA', 'CNAME', 'MX', 'SRV', 'TXT', 'SPF', 'NS',
-                         'PTR', 'SSHFP', 'SOA']
             },
             'required': True,
             'immutable': True
@@ -137,6 +138,18 @@ class RecordSet(base.DictObjectMixin, base.PersistentObjectMixin,
         # },
     }
 
+    def _validate_fail(self, errors, msg):
+        e = ValidationError()
+        e.path = ['recordset', 'type']
+        e.validator = 'value'
+        e.validator_value = [self.type]
+        e.message = msg
+        # Add it to the list for later
+        errors.append(e)
+        raise exceptions.InvalidObject(
+            "Provided object does not match "
+            "schema", errors=errors, object=self)
+
     def validate(self):
 
         LOG.debug("Validating '%(name)s' object with values: %(values)r", {
@@ -151,17 +164,14 @@ class RecordSet(base.DictObjectMixin, base.PersistentObjectMixin,
             record_list_cls = self.obj_cls_from_name('%sList' % self.type)
             record_cls = self.obj_cls_from_name(self.type)
         except KeyError as e:
-            e = ValidationError()
-            e.path = ['recordset', 'type']
-            e.validator = 'value'
-            e.validator_value = [self.type]
-            e.message = ("'%(type)s' is not a supported Record type"
-                         % {'type': self.type})
-            # Add it to the list for later
-            errors.append(e)
-            raise exceptions.InvalidObject(
-                "Provided object does not match "
-                "schema", errors=errors, object=self)
+            err_msg = ("'%(type)s' is not a valid record type"
+                       % {'type': self.type})
+            self._validate_fail(errors, err_msg)
+
+        if self.type not in cfg.CONF.supported_record_type:
+            err_msg = ("'%(type)s' is not a supported record type"
+                       % {'type': self.type})
+            self._validate_fail(errors, err_msg)
 
         # Get any rules that the record type imposes on the record
         changes = record_cls.get_recordset_schema_changes()

@@ -58,6 +58,11 @@ cfg.CONF.register_opts([
     cfg.IntOpt('default-soa-retry', default=600),
     cfg.IntOpt('default-soa-expire', default=86400),
     cfg.IntOpt('default-soa-minimum', default=3600),
+
+    # Supported record types
+    cfg.ListOpt('supported-record-type', help='Supported record types',
+                default=['A', 'AAAA', 'CNAME', 'MX', 'SRV', 'TXT', 'SPF', 'NS',
+                         'PTR', 'SSHFP', 'SOA']),
 ])
 
 # Set some Oslo Log defaults

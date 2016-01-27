@@ -34,6 +34,9 @@ debug = False
 # Which networking API to use, Defaults to neutron
 #network_api = neutron
 
+# Supported record types
+#supported_record_type = A, AAAA, CNAME, MX, SRV, TXT, SPF, NS, PTR, SSHFP, SOA
+
 #-----------------------
 # RabbitMQ Config
 #-----------------------
