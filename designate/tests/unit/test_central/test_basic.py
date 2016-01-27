@@ -20,6 +20,7 @@ from mock import Mock
 from mock import patch
 from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
+from oslo_log import log as logging
 from oslotest import base
 import fixtures
 import mock
@@ -29,6 +30,7 @@ from designate import exceptions
 from designate.central.service import Service
 import designate.central.service
 
+LOG = logging.getLogger(__name__)
 
 # FIXME: create mock, do not use cfg
 cfg.CONF.import_opt('storage_driver', 'designate.central',
@@ -44,7 +46,8 @@ def unwrap(f):
     for _ in range(42):
         try:
             uf = getattr(f, '__wrapped_function')
-            print("Unwrapping %s from %s" % (f.func_name, f.__wrapper_name))
+            LOG.debug("Unwrapping %s from %s" %
+                      (f.func_name, f.__wrapper_name))
             f = uf
         except AttributeError:
             return f
@@ -1771,12 +1774,12 @@ class IsSubzoneTestCase(CentralBasic):
         super(IsSubzoneTestCase, self).setUp()
 
         def find_zone(ctx, criterion):
-            print("Calling find_zone on %r" % criterion)
+            LOG.debug("Calling find_zone on %r" % criterion)
             if criterion['name'] == 'example.com.':
-                print("Returning %r" % criterion['name'])
+                LOG.debug("Returning %r" % criterion['name'])
                 return criterion['name']
 
-            print("Not found")
+            LOG.debug("Not found")
             raise exceptions.ZoneNotFound
 
         self.service.storage.find_zone = find_zone

@@ -14,6 +14,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+"""
+Test API middleware
+"""
+
+import fixtures
 import oslotest.base
 import mock
 
@@ -46,11 +51,10 @@ class KeystoneContextMiddlewareTest(oslotest.base.BaseTestCase):
 
         # Replace the DesignateContext class..
         self.ctxt = mock.Mock()
-        ctxt_patcher = mock.patch(
+        self.useFixture(fixtures.MockPatch(
             'designate.context.DesignateContext',
-            return_value=self.ctxt)
-        self.addCleanup(ctxt_patcher.stop)
-        ctxt_patcher.start()
+            return_value=self.ctxt
+        ))
 
     def test_sudo_by_project_id(self):
         self.request.headers.update({
