@@ -80,7 +80,7 @@
     "get_blacklist": "rule:admin",
     "update_blacklist": "rule:admin",
     "delete_blacklist": "rule:admin",
-    "use_blacklisted_domain": "rule:admin",
+    "use_blacklisted_zone": "rule:admin",
 
     "create_pool": "rule:admin",
     "find_pools": "rule:admin",
@@ -90,8 +90,8 @@
     "delete_pool": "rule:admin",
 
     "diagnostics_ping": "rule:admin",
-    "diagnostics_sync_domains": "rule:admin",
-    "diagnostics_sync_domain": "rule:admin",
+    "diagnostics_sync_zones": "rule:admin",
+    "diagnostics_sync_zone": "rule:admin",
     "diagnostics_sync_record": "rule:admin",
 
     "create_zone_transfer_request": "rule:admin_or_owner",
