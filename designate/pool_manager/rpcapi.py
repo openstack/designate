@@ -36,15 +36,16 @@ class PoolManagerAPI(object):
 
         1.0 - Initial version
         2.0 - Rename domains to zones
+        2.1 - Add target_sync
     """
-    RPC_API_VERSION = '2.0'
+    RPC_API_VERSION = '2.1'
 
     def __init__(self, topic=None):
         self.topic = topic if topic else cfg.CONF.pool_manager_topic
 
         target = messaging.Target(topic=self.topic,
                                   version=self.RPC_API_VERSION)
-        self.client = rpc.get_client(target, version_cap='2.0')
+        self.client = rpc.get_client(target, version_cap='2.1')
 
     @classmethod
     def get_instance(cls):
@@ -59,6 +60,18 @@ class PoolManagerAPI(object):
         if not MNGR_API:
             MNGR_API = cls()
         return MNGR_API
+
+    def target_sync(self, context, pool_id, target_id, timestamp):
+        LOG.info(_LI("target_sync: Syncing target %(target) since "
+                     "%(timestamp)d."),
+            {'target': target_id, 'timestamp': timestamp})
+
+        # Modifying the topic so it is pool manager instance specific.
+        topic = '%s.%s' % (self.topic, pool_id)
+        cctxt = self.client.prepare(topic=topic)
+        return cctxt.call(
+            context, 'target_sync', pool_id=pool_id, target_id=target_id,
+            timestamp=timestamp)
 
     def create_zone(self, context, zone):
         LOG.info(_LI("create_zone: Calling pool manager for %(zone)s, "

@@ -16,6 +16,7 @@
 from contextlib import contextmanager
 from decimal import Decimal
 import time
+from datetime import datetime
 
 from oslo_config import cfg
 import oslo_messaging as messaging
@@ -86,8 +87,10 @@ class Service(service.RPCService, coordination.CoordinationMixin,
     API version history:
 
         1.0 - Initial version
+        2.0 - The Big Rename
+        2.1 - Add target_sync
     """
-    RPC_API_VERSION = '2.0'
+    RPC_API_VERSION = '2.1'
 
     target = messaging.Target(version=RPC_API_VERSION)
 
@@ -275,6 +278,79 @@ class Service(service.RPCService, coordination.CoordinationMixin,
         for zone in zones_in_error:
             self.central_api.update_status(context, zone.id, ERROR_STATUS,
                                            zone.serial)
+
+    def target_sync(self, context, pool_id, target_id, timestamp):
+        """
+        Replay all the events that we can since a certain timestamp
+        """
+        context = self._get_admin_context_all_tenants()
+        context.show_deleted = True
+
+        target = None
+        for tar in self.pool.targets:
+            if tar.id == target_id:
+                target = tar
+        if target is None:
+            raise exceptions.BadRequest('Please supply a valid target id.')
+
+        LOG.info(_LI('Starting Target Sync'))
+
+        criterion = {
+            'pool_id': pool_id,
+            'updated_at': '>%s' % datetime.fromtimestamp(timestamp).
+            isoformat(),
+        }
+
+        zones = self.central_api.find_zones(context, criterion=criterion,
+            sort_key='updated_at', sort_dir='asc')
+
+        self.tg.add_thread(self._target_sync,
+            context, zones, target, timestamp)
+
+        return 'Syncing %(len)s zones on %(target)s' % {'len': len(zones),
+                                                        'target': target_id}
+
+    def _target_sync(self, context, zones, target, timestamp):
+        zone_ops = []
+        timestamp_dt = datetime.fromtimestamp(timestamp)
+
+        for zone in zones:
+            if zone.status == 'DELETED':
+                # Remove any other ops for this zone
+                for zone_op in zone_ops:
+                    if zone.name == zone_op[0].name:
+                        zone_ops.remove(zone_op)
+                # If the zone was created before the timestamp delete it,
+                # otherwise, it will just never be created
+                if (datetime.strptime(zone.created_at, "%Y-%m-%dT%H:%M:%S.%f")
+                        <= timestamp_dt):
+                    zone_ops.append((zone, 'DELETE'))
+            elif (datetime.strptime(zone.created_at, "%Y-%m-%dT%H:%M:%S.%f") >
+                  timestamp_dt):
+                # If the zone was created after the timestamp
+                for zone_op in zone_ops:
+                    if (
+                        zone.name == zone_op[0].name and
+                        zone_op[1] == 'DELETE'
+                    ):
+                        zone_ops.remove(zone_op)
+
+                zone_ops.append((zone, 'CREATE'))
+            else:
+                zone_ops.append((zone, 'UPDATE'))
+
+        for zone, action in zone_ops:
+            if action == 'CREATE':
+                self._create_zone_on_target(context, target, zone)
+            elif action == 'UPDATE':
+                self._update_zone_on_target(context, target, zone)
+            elif action == 'DELETE':
+                self._delete_zone_on_target(context, target, zone)
+                zone.serial = 0
+            for nameserver in self.pool.nameservers:
+                self.mdns_api.poll_for_serial_number(
+                    context, zone, nameserver, self.timeout,
+                    self.retry_interval, self.max_retries, self.delay)
 
     # Standard Create/Update/Delete Methods
 
