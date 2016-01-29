@@ -55,3 +55,38 @@ class RoObject(object):
 
     def to_dict(self):
         return self.__dict__
+
+
+class RwObject(object):
+    """Object mock: raise exception on __setitem__ or __setattr__
+    on any item/attr created after initialization.
+    Allows updating existing items/attrs
+    """
+    def __init__(self, d=None, **kw):
+        if d:
+            kw.update(d)
+        self.__dict__.update(kw)
+
+    def __getitem__(self, k):
+        try:
+            return self.__dict__[k]
+        except KeyError:
+            cn = self.__class__.__name__
+            raise NotImplementedError(
+                "Attempt to perform __getitem__"
+                " %r on %s %r" % (cn, k, self.__dict__)
+            )
+
+    def __setitem__(self, k, v):
+        if k in self.__dict__:
+            self.__dict__.update({k: v})
+            return
+
+        cn = self.__class__.__name__
+        raise NotImplementedError(
+            "Attempt to perform __setitem__ or __setattr__"
+            " %r on %s %r" % (cn, k, self.__dict__)
+        )
+
+    def __setattr__(self, k, v):
+        self.__setitem__(k, v)

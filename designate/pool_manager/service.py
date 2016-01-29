@@ -197,7 +197,7 @@ class Service(service.RPCService, coordination.CoordinationMixin,
     def _get_admin_context_all_tenants(self):
         return DesignateContext.get_admin_context(all_tenants=True)
 
-    # Periodioc Tasks
+    # Periodic Tasks
     def periodic_recovery(self):
         """
         Runs only on the pool leader
@@ -317,7 +317,7 @@ class Service(service.RPCService, coordination.CoordinationMixin,
         for also_notify in self.pool.also_notifies:
             self._update_zone_on_also_notify(context, also_notify, zone)
 
-        # Send a NOTIFY to each nameserver
+        # Ensure the change has propagated to each nameserver
         for nameserver in self.pool.nameservers:
             create_status = self._build_status_object(
                 nameserver, zone, CREATE_ACTION)
@@ -391,7 +391,7 @@ class Service(service.RPCService, coordination.CoordinationMixin,
         for also_notify in self.pool.also_notifies:
             self._update_zone_on_also_notify(context, also_notify, zone)
 
-        # Ensure the change has propogated to each nameserver
+        # Ensure the change has propagated to each nameserver
         for nameserver in self.pool.nameservers:
             # See if there is already another update in progress
             try:
@@ -453,24 +453,28 @@ class Service(service.RPCService, coordination.CoordinationMixin,
             results.append(
                 self._delete_zone_on_target(context, target, zone))
 
-        # TODO(kiall): We should monitor that the Zone is actually deleted
-        #              correctly on each of the nameservers, rather than
-        #              assuming a successful delete-on-target is OK as we have
-        #              in the past.
-        if self._exceed_or_meet_threshold(
+        if not self._exceed_or_meet_threshold(
                 results.count(True), MAXIMUM_THRESHOLD):
-            LOG.debug('Consensus reached for deleting zone %(zone)s '
-                      'on pool targets' % {'zone': zone.name})
-
-            self.central_api.update_status(
-                context, zone.id, SUCCESS_STATUS, zone.serial)
-
-        else:
             LOG.warning(_LW('Consensus not reached for deleting zone %(zone)s'
-                         ' on pool targets') % {'zone': zone.name})
-
+                            ' on pool targets') % {'zone': zone.name})
             self.central_api.update_status(
                 context, zone.id, ERROR_STATUS, zone.serial)
+
+        zone.serial = 0
+        # Ensure the change has propagated to each nameserver
+        for nameserver in self.pool.nameservers:
+            # See if there is already another update in progress
+            try:
+                self.cache.retrieve(context, nameserver.id, zone.id,
+                                    DELETE_ACTION)
+            except exceptions.PoolManagerStatusNotFound:
+                update_status = self._build_status_object(
+                    nameserver, zone, DELETE_ACTION)
+                self.cache.store(context, update_status)
+
+            self.mdns_api.poll_for_serial_number(
+                context, zone, nameserver, self.timeout,
+                self.retry_interval, self.max_retries, self.delay)
 
     def _delete_zone_on_target(self, context, target, zone):
         """
@@ -542,7 +546,11 @@ class Service(service.RPCService, coordination.CoordinationMixin,
                 current_status.serial_number = actual_serial
                 self.cache.store(context, current_status)
 
+            LOG.debug('Attempting to get consensus serial for %s' %
+                      zone.name)
             consensus_serial = self._get_consensus_serial(context, zone)
+            LOG.debug('Consensus serial for %s is %s' %
+                      (zone.name, consensus_serial))
 
             # If there is a valid consensus serial we can still send a success
             # for that serial.
@@ -568,11 +576,15 @@ class Service(service.RPCService, coordination.CoordinationMixin,
                     self.central_api.update_status(
                         context, zone.id, ERROR_STATUS, error_serial)
 
-            if status == NO_ZONE_STATUS and action != DELETE_ACTION:
-                LOG.warning(_LW('Zone %(zone)s is not present in some '
-                             'targets') % {'zone': zone.name})
-                self.central_api.update_status(
-                    context, zone.id, NO_ZONE_STATUS, 0)
+            if status == NO_ZONE_STATUS:
+                if action == DELETE_ACTION:
+                    self.central_api.update_status(
+                        context, zone.id, NO_ZONE_STATUS, 0)
+                else:
+                    LOG.warning(_LW('Zone %(zone)s is not present in some '
+                                 'targets') % {'zone': zone.name})
+                    self.central_api.update_status(
+                        context, zone.id, NO_ZONE_STATUS, 0)
 
             if consensus_serial == zone.serial and self._is_consensus(
                     context, zone, action, SUCCESS_STATUS,

@@ -118,9 +118,14 @@ class NotifyEndpoint(base.BaseEndpoint):
         while (True):
             (response, retry) = self._make_and_send_dns_message(
                 zone, host, port, timeout, retry_interval, retries)
-            if response and response.rcode() in (
-                    dns.rcode.NXDOMAIN, dns.rcode.REFUSED, dns.rcode.SERVFAIL):
+
+            if response and (response.rcode() in (
+                    dns.rcode.NXDOMAIN, dns.rcode.REFUSED, dns.rcode.SERVFAIL)
+                    or not bool(response.answer)):
                 status = 'NO_ZONE'
+                if zone.serial == 0 and zone.action in ['DELETE', 'NONE']:
+                    return (status, 0, retries)
+
             elif response and len(response.answer) == 1 \
                     and str(response.answer[0].name) == str(zone.name) \
                     and response.answer[0].rdclass == dns.rdataclass.IN \
@@ -138,12 +143,14 @@ class NotifyEndpoint(base.BaseEndpoint):
                          {'zone': zone.name, 'host': host,
                           'port': port, 'es': zone.serial,
                           'as': actual_serial, 'retries': retries})
+
                 if retries > 0:
                     # retry again
                     time.sleep(retry_interval)
                     continue
                 else:
                     break
+
             else:
                 # Everything looks good at this point. Return SUCCESS.
                 status = 'SUCCESS'
@@ -211,8 +218,11 @@ class NotifyEndpoint(base.BaseEndpoint):
                 break
             # Check that we actually got a NOERROR in the rcode and and an
             # authoritative answer
-            elif response.rcode() in (dns.rcode.NXDOMAIN, dns.rcode.REFUSED,
-                                      dns.rcode.SERVFAIL):
+            elif (response.rcode() in
+                    (dns.rcode.NXDOMAIN, dns.rcode.REFUSED,
+                     dns.rcode.SERVFAIL)) or \
+                    (response.rcode() == dns.rcode.NOERROR and
+                     not bool(response.answer)):
                 LOG.info(_LI("%(zone)s not found on %(server)s:%(port)d"),
                          {'zone': zone.name, 'server': host,
                          'port': port})

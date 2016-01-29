@@ -29,4 +29,4 @@ TEMPEST_DIR=${TEMPEST_DIR:-/opt/stack/new/tempest}
 
 pushd $DESIGNATE_DIR
 export TEMPEST_CONFIG=$TEMPEST_DIR/etc/tempest.conf
-tox -e functional
+tox -e functional -- --concurrency 4

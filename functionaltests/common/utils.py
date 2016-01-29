@@ -87,7 +87,7 @@ def parameterized(data):
     return wrapped
 
 
-def wait_for_condition(condition, interval=1, timeout=40):
+def wait_for_condition(condition, interval=5, timeout=45):
     end_time = time.time() + timeout
     while time.time() < end_time:
         result = condition()

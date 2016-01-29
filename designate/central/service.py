@@ -2292,17 +2292,13 @@ class Service(service.RPCService, service.Service):
         zone, deleted = self._update_zone_or_record_status(
             zone, status, serial)
 
-        LOG.debug('Setting zone %s, serial %s: action %s, status %s'
-                  % (zone.id, zone.serial, zone.action, zone.status))
-        self.storage.update_zone(context, zone)
+        if zone.status != 'DELETED':
+            LOG.debug('Setting zone %s, serial %s: action %s, status %s'
+                      % (zone.id, zone.serial, zone.action, zone.status))
+            self.storage.update_zone(context, zone)
 
-        # TODO(Ron): Including this to retain the current logic.
-        # We should NOT be deleting zones.  The zone status should be
-        # used to indicate the zone has been deleted and not the deleted
-        # column.  The deleted column is needed for unique constraints.
         if deleted:
-            # TODO(vinod): Pass a zone to delete_zone rather than id so
-            # that the action, status and serial are updated correctly.
+            LOG.debug('update_status: deleting %s' % zone.name)
             self.storage.delete_zone(context, zone.id)
 
         return zone
