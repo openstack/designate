@@ -46,6 +46,9 @@ class MX(Record):
     def _from_string(self, value):
         priority, exchange = value.split(' ')
 
+        if repr(int(priority)) != priority:
+            raise ValueError('Value is not an integer')
+
         self.priority = int(priority)
         self.exchange = exchange
 

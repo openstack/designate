@@ -53,6 +53,10 @@ class SSHFP(Record):
     def _from_string(self, value):
         algorithm, fp_type, fingerprint = value.split(' ')
 
+        for value in {algorithm, fp_type}:
+            if repr(int(value)) != value:
+                raise ValueError('Value is not an integer')
+
         self.algorithm = int(algorithm)
         self.fp_type = int(fp_type)
         self.fingerprint = fingerprint
