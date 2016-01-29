@@ -21,16 +21,14 @@ from functionaltests.common.client import ClientMixin
 
 class TLDClient(ClientMixin):
 
-    @classmethod
-    def tlds_uri(cls):
-        return "/v2/tlds"
+    def tlds_uri(self, filters=None):
+        return self.create_uri("/tlds", filters=filters)
 
-    @classmethod
-    def tld_uri(cls, tld_id):
-        return "{0}/{1}".format(cls.tlds_uri(), tld_id)
+    def tld_uri(self, tld_id):
+        return "{0}/{1}".format(self.tlds_uri(), tld_id)
 
-    def list_tlds(self, **kwargs):
-        resp, body = self.client.get(self.tlds_uri(), **kwargs)
+    def list_tlds(self, filters=None, **kwargs):
+        resp, body = self.client.get(self.tlds_uri(filters), **kwargs)
         return self.deserialize(resp, body, TLDListModel)
 
     def get_tld(self, tld_id, **kwargs):
