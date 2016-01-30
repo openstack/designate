@@ -519,6 +519,85 @@ View a Transfer Request
         }
 
 
+Update a Transfer Request
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. http: patch:: /zones/tasks/transfer_requests/(uuid:id)
+
+    Update a transfer request.
+
+    This allows a user to update a transfer request before accepting it.
+
+    **Example Request**
+
+    .. sourcecode:: http
+
+       PATCH v2/zones/tasks/transfer_requests/b853202b-22f9-49c1-893d-49cbbf6830bb HTTP/1.1
+       Host: 127.0.0.1:9001
+       Accept: application/json
+       Content: application/json
+
+       {
+         "description": "demo_transfer"
+       }
+
+    **Example Response**
+
+    ..sourcecode:: http
+
+      HTTP/1.1 200 OK
+      Content-Length: 476
+      Content-Type: application/json
+      charset=UTF-8
+
+      {
+          "status": "ACTIVE",
+          "target_project_id": dc685ea10a3a4ddfb9bc2deeca66f131,
+          "zone_id": "08615081-cbfd-445e-9d35-15fccf2be4be",
+          "links": {
+               "self": "http://127.0.0.1:9001/v2/zones/tasks/transfer_requests/b853202b-22f9-49c1-893d-49cbbf6830bb"
+          },
+          "created_at": "2016-01-28T04:43:00.000000",
+          "updated_at": "2016-01-28T04:45:17.000000",
+          "key": "XWUR5VFL",
+          "zone_name": "example.com.",
+          "project_id": "dc685ea10a3a4ddfb9bc2deeca66f131",
+          "id": "b853202b-22f9-49c1-893d-49cbbf6830bb",
+          "description": "demo_transfer"
+    }
+
+    :statuscode 200: Success
+    :statuscode 202: Accepted
+    :statuscode 401: Access Denied
+
+    :form description: UTF-8 text field
+
+
+Delete a transfer request
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. http: delete:: /zones/tasks/transfer_requests/(uuid:id)
+
+    Delete a zone transfer request with the specified id.
+
+    **Example Request**
+
+    .. sourcecode:: http
+
+       DELETE  /v2/zones/tasks/transfer_requests/"b853202b-22f9-49c1-893d-49cbbf6830bb HTTP/1.1
+       Host: 127.0.0.1:9001
+       Accept: application/json
+       Content: application/json
+
+    **Example Response**
+
+    .. sourcecode:: http
+
+       HTTP/1.1 204 No Content
+
+    :statuscode 204: No Content
+
+
 Accept a Transfer Request
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
