@@ -13,12 +13,17 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
+"""
+Unit test Zone Manager tasks
+"""
 import datetime
 import uuid
 
-import mock
-from oslotest import base as test
 from oslo_utils import timeutils
+from oslotest import base as test
+import fixtures
+import mock
 import six
 import testtools
 
@@ -155,18 +160,17 @@ class PeriodicExistsTest(TaskTest):
 
         # Mock a ctxt...
         self.ctxt = mock.Mock()
-        get_admin_ctxt_patcher = mock.patch.object(context.DesignateContext,
-                                            'get_admin_context')
-        self.addCleanup(get_admin_ctxt_patcher.stop)
-        get_admin_context = get_admin_ctxt_patcher.start()
-        get_admin_context.return_value = self.ctxt
+        self.useFixture(fixtures.MockPatchObject(
+            context.DesignateContext, 'get_admin_context',
+            return_value=self.ctxt
+        ))
 
         # Patch get_notifier so that it returns a mock..
-        get_notifier_patcher = mock.patch.object(rpc, 'get_notifier')
-        get_notifier = get_notifier_patcher.start()
-        self.addCleanup(get_notifier_patcher.stop)
         self.mock_notifier = mock.Mock()
-        get_notifier.return_value = self.mock_notifier
+        self.useFixture(fixtures.MockPatchObject(
+            rpc, 'get_notifier',
+            return_value=self.mock_notifier
+        ))
 
         self.task = tasks.PeriodicExistsTask()
         self.task.my_partitions = range(0, 10)
@@ -178,11 +182,10 @@ class PeriodicExistsTest(TaskTest):
             "audit_period_beginning": str(self.period[0]),
             "audit_period_ending": str(self.period[1])
         }
-        get_period_patcher = mock.patch.object(
-            tasks.PeriodicExistsTask, '_get_period')
-        self.addCleanup(get_period_patcher.stop)
-        self.get_period = get_period_patcher.start()
-        self.get_period.return_value = self.period
+        self.useFixture(fixtures.MockPatchObject(
+            tasks.PeriodicExistsTask, '_get_period',
+            return_value=self.period
+        ))
 
     def test_emit_exists(self):
         zone = RoObject(
@@ -231,19 +234,17 @@ class PeriodicSecondaryRefreshTest(TaskTest):
 
         # Mock a ctxt...
         self.ctxt = mock.Mock()
-        get_admin_ctxt_patcher = mock.patch.object(context.DesignateContext,
-                                                   'get_admin_context')
-        self.addCleanup(get_admin_ctxt_patcher.stop)
-        get_admin_context = get_admin_ctxt_patcher.start()
-        get_admin_context.return_value = self.ctxt
+        self.useFixture(fixtures.MockPatchObject(
+            context.DesignateContext, 'get_admin_context',
+            return_value=self.ctxt
+        ))
 
         # Mock a central...
         self.central = mock.Mock()
-        get_central_patcher = mock.patch.object(central_api.CentralAPI,
-                                        'get_instance')
-        self.addCleanup(get_central_patcher.stop)
-        get_central = get_central_patcher.start()
-        get_central.return_value = self.central
+        self.useFixture(fixtures.MockPatchObject(
+            central_api.CentralAPI, 'get_instance',
+            return_value=self.central
+        ))
 
         self.task = tasks.PeriodicSecondaryRefreshTask()
         self.task.my_partitions = 0, 9

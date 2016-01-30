@@ -439,8 +439,6 @@ class MdnsRequestHandlerTest(MdnsTestCase):
         request = dns.message.from_wire(binascii.a2b_hex(payload))
         request.environ = {'addr': self.addr, 'context': self.context}
         response = next(self.handler(request)).to_wire()
-        print("response:", dns.message.from_wire(response))
-        print(''.join("%02x" % ord(i) for i in response))
         self.assertEqual(expected_response, binascii.b2a_hex(response))
 
     def test_dispatch_opcode_query_TXT_quoted_strings(self):
@@ -472,8 +470,6 @@ class MdnsRequestHandlerTest(MdnsTestCase):
         request = dns.message.from_wire(binascii.a2b_hex(payload))
         request.environ = {'addr': self.addr, 'context': self.context}
         response = next(self.handler(request)).to_wire()
-        print("response:", dns.message.from_wire(response))
-        print(''.join("%02x" % ord(i) for i in response))
         self.assertEqual(expected_response, binascii.b2a_hex(response))
 
     def test_dispatch_opcode_query_MX(self):

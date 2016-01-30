@@ -13,14 +13,18 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import uuid
 
+"""
+Unit test Backend
+"""
+import uuid
 
 from designateclient import exceptions
 from mock import patch
 from mock import NonCallableMagicMock
 from mock import Mock
 from oslo_log import log as logging
+import fixtures
 import oslotest.base
 import testtools
 
@@ -70,11 +74,10 @@ class DesignateBackendTest(oslotest.base.BaseTestCase):
         # Backends blow up when trying to self.admin_context = ... due to
         # policy not being initialized
         self.admin_context = Mock()
-        get_context_patcher = patch(
-            'designate.context.DesignateContext.get_admin_context')
-        self.addCleanup(get_context_patcher.stop)
-        get_context = get_context_patcher.start()
-        get_context.return_value = self.admin_context
+        self.useFixture(fixtures.MockPatch(
+            'designate.context.DesignateContext.get_admin_context',
+            return_value=self.admin_context
+        ))
 
         self.backend = impl_designate.DesignateBackend(self.target)
 
