@@ -221,3 +221,9 @@ def random_tld_data():
         "name": random_string(prefix='tld')
     }
     return TLDModel.from_dict(data)
+
+
+def wildcard_ns_recordset(zone_name):
+    name = "*.{0}".format(zone_name)
+    records = ["ns.example.com."]
+    return random_recordset_data('NS', zone_name, name, records)
