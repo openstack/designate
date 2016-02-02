@@ -20,7 +20,7 @@ Install Client
 --------------
 
 To install Designate client, see `OpenStack Command-Line Interface Reference
-<http://docs.openstack.org/cli-reference/content/install_clients.html>`_.
+<http://docs.openstack.org/cli-reference/overview.html>`_.
 
 Create and View Domains
 -----------------------
