@@ -29,7 +29,7 @@ metadata = MetaData()
 pool_manager_statuses = Table(
     'pool_manager_statuses', metadata,
     Column('id', UUID, default=utils.generate_uuid, primary_key=True),
-    Column('version', Integer(), default=1, nullable=False),
+    Column('version', Integer, default=1, nullable=False),
     Column('created_at', DateTime, default=lambda: timeutils.utcnow()),
     Column('updated_at', DateTime, onupdate=lambda: timeutils.utcnow()),
     Column('nameserver_id', UUID, nullable=False),
