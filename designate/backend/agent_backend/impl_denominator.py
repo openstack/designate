@@ -69,7 +69,7 @@ class Denominator(object):
     def _base(self):
         call = ['denominator', '-q', '-n', self.config.name]
 
-        # NOTE: When path to denominator configuration file is ommited,
+        # NOTE: When path to denominator configuration file is ommitted,
         #       ~/.denominatorconfig file will be used by default.
         if self.config.config_file:
             call.extend(['-C', self.config.config_file])
