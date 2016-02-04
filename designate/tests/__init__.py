@@ -197,7 +197,7 @@ class TestCase(base.BaseTestCase):
 
     blacklist_fixtures = [{
         'pattern': 'blacklisted.com.',
-        'description': 'This is a comment',
+        'description': u'This is a comment',
     }, {
         'pattern': 'blacklisted.net.'
     }, {
@@ -206,13 +206,13 @@ class TestCase(base.BaseTestCase):
 
     pool_fixtures = [
         {'name': 'Pool-One',
-         'description': 'Pool-One description',
+         'description': u'Pool-One description',
          'attributes': [{'key': 'scope', 'value': 'public'}],
          'ns_records': [{'priority': 1, 'hostname': 'ns1.example.org.'},
                         {'priority': 2, 'hostname': 'ns2.example.org.'}]},
 
         {'name': 'Pool-Two',
-         'description': 'Pool-Two description',
+         'description': u'Pool-Two description',
          'attributes': [{'key': 'scope', 'value': 'public'}],
          'ns_records': [{'priority': 1, 'hostname': 'ns1.example.org.'}]},
     ]

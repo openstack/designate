@@ -1509,7 +1509,7 @@ class StorageTestCase(object):
     def test_create_tld(self):
         values = {
             'name': 'com',
-            'description': 'This is a comment.'
+            'description': u'This is a comment.'
         }
 
         result = self.storage.create_tld(
@@ -1664,7 +1664,7 @@ class StorageTestCase(object):
     def test_create_blacklist(self):
         values = {
             'pattern': "^([A-Za-z0-9_\\-]+\\.)*example\\.com\\.$",
-            'description': "This is a comment."
+            'description': u"This is a comment."
         }
 
         result = self.storage.create_blacklist(
