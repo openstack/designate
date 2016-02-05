@@ -79,6 +79,8 @@ cfg.CONF.register_opts([
 
 
 cfg.CONF.register_opts([
+    cfg.ListOpt('hooks', default=[],
+                help="The list of request hook class names to enable"),
     cfg.StrOpt('v2_path_pattern', default='/v2/{path}',
                help="Specifies how to build the path for the request"),
     cfg.BoolOpt('no_admin_setup', default=False,

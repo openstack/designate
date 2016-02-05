@@ -15,6 +15,7 @@ limitations under the License.
 """
 
 import abc
+import logging
 
 from config import cfg
 from noauth import NoAuthAuthProvider
@@ -25,6 +26,9 @@ from tempest_lib.auth import KeystoneV2Credentials
 from tempest_lib.auth import KeystoneV2AuthProvider
 
 from functionaltests.common.utils import memoized
+from functionaltests.common import hooks
+
+LOG = logging.getLogger(__name__)
 
 
 class KeystoneV2AuthProviderWithOverridableUrl(KeystoneV2AuthProvider):
@@ -59,6 +63,9 @@ class BaseDesignateClient(RestClient):
         if not interface.endswith('URL'):
             interface += "URL"
 
+        self.hooks = []
+        self._populate_hooks()
+
         super(BaseDesignateClient, self).__init__(
             auth_provider=self.get_auth_provider(with_token),
             service=cfg.CONF.designate.service,
@@ -66,6 +73,32 @@ class BaseDesignateClient(RestClient):
             disable_ssl_certificate_validation=no_cert_check,
             endpoint_type=interface
         )
+
+    def _populate_hooks(self):
+        for name in cfg.CONF.testconfig.hooks:
+            LOG.debug("Loading request hook '%s' from config", name)
+            try:
+                cls = hooks.get_class(name)
+                if not cls:
+                    LOG.debug("'%s' not found. Call register_hook", name)
+                else:
+                    self.hooks.append(cls)
+            except Exception as e:
+                LOG.exception(e)
+
+    def request(self, *args, **kwargs):
+        req_hooks = [hook_class() for hook_class in self.hooks]
+        try:
+            for hook in req_hooks:
+                hook.before(args, kwargs)
+            r, b = super(BaseDesignateClient, self).request(*args, **kwargs)
+            for hook in req_hooks:
+                hook.after(r, b)
+            return r, b
+        except Exception as e:
+            for hook in req_hooks:
+                hook.on_exception(e)
+            raise
 
     def get_auth_provider(self, with_token=True):
         if cfg.CONF.noauth.use_noauth:
