@@ -15,9 +15,13 @@ limitations under the License.
 """
 
 from __future__ import absolute_import
+from __future__ import print_function
+import sys
+import traceback
 
 import fixtures
 from tempest_lib.exceptions import NotFound
+from testtools.runtest import MultipleExceptions
 
 from functionaltests.api.v2.clients.blacklist_client import BlacklistClient
 from functionaltests.api.v2.clients.pool_client import PoolClient
@@ -31,7 +35,24 @@ from functionaltests.api.v2.clients.transfer_requests_client import \
 from functionaltests.common import datagen
 
 
-class ZoneFixture(fixtures.Fixture):
+class BaseFixture(fixtures.Fixture):
+
+    def setUp(self):
+        # Sometimes, exceptions are raised in _setUp methods on fixtures.
+        # testtools pushes the exception into a MultipleExceptions object along
+        # with an artificial SetupError, which produces bad error messages.
+        # This just logs those stack traces to stderr for easier debugging.
+        try:
+            super(BaseFixture, self).setUp()
+        except MultipleExceptions as e:
+            for i, exc_info in enumerate(e.args):
+                print('--- printing MultipleExceptions traceback {} of {} ---'
+                      .format(i + 1, len(e.args)), file=sys.stderr)
+                traceback.print_exception(*exc_info)
+            raise
+
+
+class ZoneFixture(BaseFixture):
 
     def __init__(self, post_model=None, user='default'):
         super(ZoneFixture, self).__init__()
@@ -57,7 +78,7 @@ class ZoneFixture(fixtures.Fixture):
             pass
 
 
-class ZoneImportFixture(fixtures.Fixture):
+class ZoneImportFixture(BaseFixture):
 
     def __init__(self, post_model=None, user='default'):
         super(ZoneImportFixture, self).__init__()
@@ -84,7 +105,7 @@ class ZoneImportFixture(fixtures.Fixture):
             pass
 
 
-class ZoneExportFixture(fixtures.Fixture):
+class ZoneExportFixture(BaseFixture):
 
     def __init__(self, zone_id, user='default'):
         super(ZoneExportFixture, self).__init__()
@@ -111,7 +132,7 @@ class ZoneExportFixture(fixtures.Fixture):
             pass
 
 
-class RecordsetFixture(fixtures.Fixture):
+class RecordsetFixture(BaseFixture):
 
     def __init__(self, zone_id, post_model, user='default'):
         super(RecordsetFixture, self).__init__()
@@ -147,7 +168,7 @@ class RecordsetFixture(fixtures.Fixture):
             pass
 
 
-class PoolFixture(fixtures.Fixture):
+class PoolFixture(BaseFixture):
 
     def __init__(self, post_model=None, user='admin'):
         super(PoolFixture, self).__init__()
@@ -172,7 +193,7 @@ class PoolFixture(fixtures.Fixture):
             pass
 
 
-class TransferRequestFixture(fixtures.Fixture):
+class TransferRequestFixture(BaseFixture):
 
     def __init__(self, zone, post_model=None, user='default',
                  target_user='alt'):
@@ -209,7 +230,7 @@ class TransferRequestFixture(fixtures.Fixture):
             pass
 
 
-class BlacklistFixture(fixtures.Fixture):
+class BlacklistFixture(BaseFixture):
 
     def __init__(self, post_model=None, user='admin'):
         super(BlacklistFixture, self).__init__()
@@ -236,7 +257,7 @@ class BlacklistFixture(fixtures.Fixture):
             pass
 
 
-class TLDFixture(fixtures.Fixture):
+class TLDFixture(BaseFixture):
 
     def __init__(self, post_model=None, user='admin'):
         super(TLDFixture, self).__init__()
