@@ -67,6 +67,8 @@ class NeutronFloatingHandler(BaseAddressHandler):
                     'version': 4,
                     'address': payload['floatingip']['floating_ip_address']
                 }
+                payload['floatingip']['project'] = getattr(
+                    context, 'tenant', None)
                 self._create(addresses=[address],
                              extra=payload['floatingip'],
                              zone_id=zone_id,
