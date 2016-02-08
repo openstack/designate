@@ -183,7 +183,7 @@ class RecordsetTest(DesignateV2Test):
         for m in verify_models:
             self.assert_dns(m)
 
-    def test_create_wildcard_NS(self):
+    def test_cannot_create_wildcard_NS_recordset(self):
         client = RecordsetClient.as_user('default')
 
         model = datagen.wildcard_ns_recordset(self.zone.name)
