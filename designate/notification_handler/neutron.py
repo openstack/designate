@@ -72,7 +72,7 @@ class NeutronFloatingHandler(BaseAddressHandler):
                              zone_id=zone_id,
                              resource_id=payload['floatingip']['id'],
                              resource_type='floatingip')
-            elif not payload['floatingip']['fixed_ip_address']:
+            else:
                 self._delete(zone_id=zone_id,
                              resource_id=payload['floatingip']['id'],
                              resource_type='floatingip')
