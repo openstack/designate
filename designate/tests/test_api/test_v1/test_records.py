@@ -169,7 +169,8 @@ class ApiV1RecordsTest(ApiV1Test):
                   status_code=400)
 
     def test_create_wildcard_record_after_named(self):
-        # We want to test that a wildcard record rs doesnt use the previous one
+        # We want to test that a wildcard record rs does not use the
+        # previous one
         # https://bugs.launchpad.net/designate/+bug/1391426
 
         name = "foo.%s" % self.zone.name

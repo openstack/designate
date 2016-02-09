@@ -8,8 +8,8 @@ Guide <http://docs.openstack.org/#install-guides>`_.
 This section assumes the Identity service runs on the host
 ``controller``.
 
-Install and configure Basic Enviroment
-======================================
+Install and configure Basic Environment
+=======================================
 
 Enable OpenStack repository
 ---------------------------

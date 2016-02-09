@@ -26,7 +26,7 @@ Instructions
 
 .. note::
 
-    If you want to use local sources for development then you should concider
+    If you want to use local sources for development then you should consider
     using the contrib/vagrant folder in the
     `repository <https://git.openstack.org/openstack/designate>`_.
 

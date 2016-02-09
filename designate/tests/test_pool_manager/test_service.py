@@ -188,7 +188,7 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
         self.assertFalse(mock_notify_zone_changed.called)
         self.assertFalse(mock_poll_for_serial_number.called)
 
-        # Since consensus is not reached this early, we immediatly call
+        # Since consensus is not reached this early, we immediately call
         # central's update_status.
         self.assertTrue(mock_update_status.called)
 
@@ -212,7 +212,7 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
             self.admin_context, zone, 'CREATE')
         self.assertEqual(0, len(create_statuses))
 
-        # Since consensus is not reached this early, we immediatly call
+        # Since consensus is not reached this early, we immediately call
         # central's update_status.
         self.assertTrue(mock_update_status.called)
 

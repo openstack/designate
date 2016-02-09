@@ -90,7 +90,7 @@ class InfobloxCannotUpdateObject(InfobloxException):
 
 
 class InfobloxFuncException(InfobloxException):
-    message = _("Error occured during function's '%(func_name)s' call: "
+    message = _("Error occurred during function's '%(func_name)s' call: "
                 "ref %(ref)s: %(content)s [code %(code)s]")
 
 

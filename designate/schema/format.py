@@ -220,7 +220,7 @@ def is_uuid(instance):
 @draft3_format_checker.checks("floating-ip-id")
 @draft4_format_checker.checks("floating-ip-id")
 def is_floating_ip_id(instance):
-    # TODO(kiall): Apparantly, this is used in exactly zero places outside the
+    # TODO(kiall): Apparently, this is used in exactly zero places outside the
     #              tests. Determine if we should remove this code...
     if not isinstance(instance, compat.str_types):
         return True
