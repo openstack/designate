@@ -17,8 +17,6 @@ import pecan.deploy
 from oslo_config import cfg
 from oslo_log import log as logging
 
-from designate.api.v2 import patches  # flake8: noqa
-
 
 LOG = logging.getLogger(__name__)
 
@@ -33,6 +31,7 @@ OPTS = [
 ]
 
 cfg.CONF.register_opts(OPTS, group='service:api')
+
 
 def factory(global_config, **local_conf):
     if not cfg.CONF['service:api'].enable_api_v2:
@@ -50,7 +49,7 @@ def factory(global_config, **local_conf):
             'errors': {
                 404: '/errors/not_found',
                 405: '/errors/method_not_allowed',
-                '__force_dict__' : True
+                '__force_dict__': True
             }
         }
     }
