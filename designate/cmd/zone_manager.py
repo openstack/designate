@@ -19,16 +19,19 @@ from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_reports import guru_meditation_report as gmr
 
+from designate.i18n import _LE
+from designate.i18n import _LW
 from designate import service
 from designate import utils
 from designate import version
-from designate.zone_manager import service as zone_manager_service
+from designate.producer import service as producer_service
 
 
+LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
-CONF.import_opt('workers', 'designate.zone_manager',
+CONF.import_opt('workers', 'designate.producer',
                 group='service:zone_manager')
-CONF.import_opt('threads', 'designate.zone_manager',
+CONF.import_opt('threads', 'designate.producer',
                 group='service:zone_manager')
 
 
@@ -37,7 +40,20 @@ def main():
     logging.setup(CONF, 'designate')
     gmr.TextGuruMeditation.setup_autorun(version)
 
-    server = zone_manager_service.Service(
+    # NOTE(timsim): This is to ensure people don't start the wrong
+    #               services when the worker model is enabled.
+    if cfg.CONF['service:worker'].enabled:
+        LOG.error(_LE('You have designate-worker enabled, starting '
+                      'designate-zone-manager is incompatible with '
+                      'designate-worker. You need to start '
+                      'designate-producer instead.'))
+        sys.exit(1)
+
+    LOG.warning(_LW('designate-zone-manager is DEPRECATED in favor of '
+                    'designate-producer, starting designate-producer '
+                    'under the zone-manager name'))
+
+    server = producer_service.Service(
         threads=CONF['service:zone_manager'].threads)
     service.serve(server, workers=CONF['service:zone_manager'].workers)
     service.wait()

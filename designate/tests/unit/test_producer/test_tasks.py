@@ -15,7 +15,7 @@
 # under the License.
 
 """
-Unit test Zone Manager tasks
+Unit test Producer tasks
 """
 import datetime
 import uuid
@@ -29,7 +29,7 @@ import testtools
 from designate.central import rpcapi as central_api
 from designate import context
 from designate import rpc
-from designate.zone_manager import tasks
+from designate.producer import tasks
 from designate.tests.unit import RoObject
 
 
@@ -55,7 +55,7 @@ class PeriodicTest(TaskTest):
         super(PeriodicTest, self).setUp()
 
         opts = {
-            "zone_manager_task:dummy": RoObject({
+            "producer_task:dummy": RoObject({
                 "per_page": 100,
             })
         }
@@ -118,7 +118,7 @@ class PeriodicExistsTest(TaskTest):
         super(PeriodicExistsTest, self).setUp()
 
         opts = {
-            "zone_manager_task:periodic_exists": RoObject({
+            "producer_task:periodic_exists": RoObject({
                 "per_page": 100,
                 "interval": 5
             })
@@ -204,7 +204,7 @@ class PeriodicSecondaryRefreshTest(TaskTest):
         super(PeriodicSecondaryRefreshTest, self).setUp()
 
         opts = {
-            "zone_manager_task:periodic_secondary_refresh": RoObject({
+            "producer_task:periodic_secondary_refresh": RoObject({
                 "per_page": 100
             })
         }

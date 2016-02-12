@@ -66,38 +66,29 @@ class PowerDNSBackend(base.Backend):
 
         self.connection = self.options.get('connection', default_connection)
 
-    @property
-    def session(self):
-        # NOTE: This uses a thread local store, allowing each greenthread to
-        #       have it's own session stored correctly. Without this, each
-        #       greenthread may end up using a single global session, which
-        #       leads to bad things happening.
-        if not hasattr(self.local_store, 'session'):
-            self.local_store.session = session.get_session(
-                self.name, self.connection, self.target.id)
+    def get_session(self):
+        return session.get_session(self.name, self.connection, self.target.id)
 
-        return self.local_store.session
-
-    def _create(self, table, values):
+    def _create(self, sess, table, values):
         query = table.insert()
 
-        resultproxy = self.session.execute(query, values)
+        resultproxy = sess.execute(query, values)
 
         # Refetch the row, for generated columns etc
         query = select([table])\
             .where(table.c.id == resultproxy.inserted_primary_key[0])
-        resultproxy = self.session.execute(query)
+        resultproxy = sess.execute(query)
 
         return _map_col(query.columns.keys(), resultproxy.fetchone())
 
-    def _get(self, table, id_, exc_notfound, id_col=None):
+    def _get(self, sess, table, id_, exc_notfound, id_col=None):
         if id_col is None:
             id_col = table.c.id
 
         query = select([table])\
             .where(id_col == id_)
 
-        resultproxy = self.session.execute(query)
+        resultproxy = sess.execute(query)
 
         results = resultproxy.fetchall()
 
@@ -107,22 +98,25 @@ class PowerDNSBackend(base.Backend):
         # Map col keys to values in result
         return _map_col(query.columns.keys(), results[0])
 
-    def _delete(self, table, id_, exc_notfound, id_col=None):
+    def _delete(self, sess, table, id_, exc_notfound, id_col=None):
         if id_col is None:
             id_col = table.c.id
 
         query = table.delete()\
             .where(id_col == id_)
 
-        resultproxy = self.session.execute(query)
+        resultproxy = sess.execute(query)
 
         if resultproxy.rowcount != 1:
             raise exc_notfound()
 
     # Zone Methods
     def create_zone(self, context, zone):
+        # Get a new session
+        sess = self.get_session()
+
         try:
-            self.session.begin()
+            sess.begin()
 
             def _parse_master(master):
                 return '%s:%d' % (master.host, master.port)
@@ -136,7 +130,7 @@ class PowerDNSBackend(base.Backend):
                 'account': context.tenant
             }
 
-            self._create(tables.domains, domain_values)
+            self._create(sess, tables.domains, domain_values)
         except DBDuplicateEntry:
             LOG.debug('Successful create of %s in pdns, zone already exists'
                       % zone['name'])
@@ -144,20 +138,28 @@ class PowerDNSBackend(base.Backend):
             pass
         except Exception:
             with excutils.save_and_reraise_exception():
-                self.session.rollback()
+                sess.rollback()
         else:
-            self.session.commit()
+            sess.commit()
 
         self.mdns_api.notify_zone_changed(
             context, zone, self.host, self.port, self.timeout,
             self.retry_interval, self.max_retries, self.delay)
 
     def delete_zone(self, context, zone):
-        # TODO(kiall): We should make this match create_zone with regard to
-        #              transactions.
+        # Get a new session
+        sess = self.get_session()
+
         try:
-            self._get(tables.domains, zone['id'], exceptions.ZoneNotFound,
+            sess.begin()
+
+            self._get(sess, tables.domains, zone['id'],
+                      exceptions.ZoneNotFound,
                       id_col=tables.domains.c.designate_id)
+
+            self._delete(sess, tables.domains, zone['id'],
+                         exceptions.ZoneNotFound,
+                         id_col=tables.domains.c.designate_id)
         except exceptions.ZoneNotFound:
             # If the Zone is already gone, that's ok. We're deleting it
             # anyway, so just log and continue.
@@ -165,7 +167,8 @@ class PowerDNSBackend(base.Backend):
                              'not present in the backend. ID: %s') %
                          zone['id'])
             return
-
-        self._delete(tables.domains, zone['id'],
-                     exceptions.ZoneNotFound,
-                     id_col=tables.domains.c.designate_id)
+        except Exception:
+            with excutils.save_and_reraise_exception():
+                sess.rollback()
+        else:
+            sess.commit()

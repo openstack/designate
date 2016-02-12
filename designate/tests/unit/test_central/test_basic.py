@@ -1912,16 +1912,18 @@ class CentralZoneExportTests(CentralBasic):
         )
 
         self.service.storage.create_zone_export = Mock(
-            return_value=RoObject(
+            return_value=RwObject(
+                id='1',
                 zone_id='123',
                 task_type='EXPORT',
                 status='PENDING',
                 message=None,
-                tenant_id='t'
+                tenant_id='t',
+                location=None,
             )
         )
 
-        self.service.zone_manager_api.start_zone_export = Mock()
+        self.service.worker_api.start_zone_export = Mock()
 
         out = self.service.create_zone_export(
             self.context,

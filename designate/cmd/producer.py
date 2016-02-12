@@ -1,6 +1,6 @@
-# Copyright 2014 eBay Inc.
+# Copyright 2016 Rackspace Inc.
 #
-# Author: Ron Rickard <rrickard@ebaysf.com>
+# Author: Tim Simmons <tim.simmons@rackspace.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -20,46 +20,34 @@ from oslo_log import log as logging
 from oslo_reports import guru_meditation_report as gmr
 
 from designate.i18n import _LE
-from designate.i18n import _LW
+from designate import hookpoints
 from designate import service
 from designate import utils
 from designate import version
-from designate import hookpoints
-from designate.pool_manager import service as pool_manager_service
+from designate.producer import service as producer_service
 
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
-CONF.import_opt('workers', 'designate.pool_manager',
-                group='service:pool_manager')
-CONF.import_opt('threads', 'designate.pool_manager',
-                group='service:pool_manager')
+CONF.import_opt('workers', 'designate.producer', group='service:producer')
+CONF.import_opt('threads', 'designate.producer', group='service:producer')
 
 
 def main():
     utils.read_config('designate', sys.argv)
-
     logging.setup(CONF, 'designate')
     gmr.TextGuruMeditation.setup_autorun(version)
 
     # NOTE(timsim): This is to ensure people don't start the wrong
     #               services when the worker model is enabled.
-    if cfg.CONF['service:worker'].enabled:
-        LOG.error(_LE('You have designate-worker enabled, starting '
-                      'designate-pool-manager is incompatible with '
-                      'designate-worker. You need to start '
-                      'designate-worker instead.'))
+    if not cfg.CONF['service:worker'].enabled:
+        LOG.error(_LE('You do not have designate-worker enabled, starting '
+                      'designate-producer is not allowed. '
+                      'You need to start designate-zone-manager instead.'))
         sys.exit(1)
-
-    LOG.warning(_LW('designate-pool-manager is DEPRECATED in favor of '
-                    'designate-worker and will be removed during the Ocata '
-                    'cycle'))
-
-    server = pool_manager_service.Service(
-        threads=CONF['service:pool_manager'].threads
-    )
 
     hookpoints.log_hook_setup()
 
-    service.serve(server, workers=CONF['service:pool_manager'].workers)
+    server = producer_service.Service(threads=CONF['service:producer'].threads)
+    service.serve(server, workers=CONF['service:producer'].workers)
     service.wait()

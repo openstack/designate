@@ -19,8 +19,9 @@ from designate import context
 from designate import plugin
 from designate import rpc
 from designate.central import rpcapi
+from designate.worker import rpcapi as worker_rpcapi
+from designate.pool_manager import rpcapi as pool_manager_rpcapi
 from designate.i18n import _LI
-from designate.pool_manager.rpcapi import PoolManagerAPI
 
 from oslo_config import cfg
 from oslo_log import log as logging
@@ -30,10 +31,10 @@ LOG = logging.getLogger(__name__)
 
 
 class PeriodicTask(plugin.ExtensionPlugin):
-    """Abstract Zone Manager periodic task
+    """Abstract Producer periodic task
     """
-    __plugin_ns__ = 'designate.zone_manager_tasks'
-    __plugin_type__ = 'zone_manager_task'
+    __plugin_ns__ = 'designate.producer_tasks'
+    __plugin_type__ = 'producer_task'
     __interval__ = None
 
     def __init__(self):
@@ -55,6 +56,21 @@ class PeriodicTask(plugin.ExtensionPlugin):
     @property
     def central_api(self):
         return rpcapi.CentralAPI.get_instance()
+
+    @property
+    def worker_api(self):
+        return worker_rpcapi.WorkerAPI.get_instance()
+
+    @property
+    def pool_manager_api(self):
+        return pool_manager_rpcapi.PoolManagerAPI.get_instance()
+
+    @property
+    def zone_api(self):
+        # TODO(timsim): Remove this when pool_manager_api is gone
+        if cfg.CONF['service:worker'].enabled:
+                return self.worker_api
+        return self.pool_manager_api
 
     def on_partition_change(self, my_partitions, members, event):
         """Refresh partitions attribute
@@ -153,7 +169,7 @@ class PeriodicExistsTask(PeriodicTask):
 
     def __init__(self):
         super(PeriodicExistsTask, self).__init__()
-        self.notifier = rpc.get_notifier('zone_manager')
+        self.notifier = rpc.get_notifier('producer')
 
     @classmethod
     def get_cfg_opts(cls):
@@ -211,7 +227,7 @@ class PeriodicSecondaryRefreshTask(PeriodicTask):
 
     def __call__(self):
         pstart, pend = self._my_range()
-        msg = _LI("Refreshing zones between for %(start)s to %(end)s")
+        msg = _LI("Refreshing zones for shards %(start)s to %(end)s")
         LOG.info(msg, {"start": pstart, "end": pend})
 
         ctxt = context.DesignateContext.get_admin_context()
@@ -269,7 +285,7 @@ class PeriodicGenerateDelayedNotifyTask(PeriodicTask):
     def __call__(self):
         """Fetch a list of zones with the delayed_notify flag set up to
         "batch_size"
-        Call Pool Manager to emit NOTIFY transactions,
+        Call Worker to emit NOTIFY transactions,
         Reset the flag.
         """
         pstart, pend = self._my_range()
@@ -293,8 +309,38 @@ class PeriodicGenerateDelayedNotifyTask(PeriodicTask):
         msg = _LI("Performing delayed NOTIFY for %(start)s to %(end)s: %(n)d")
         LOG.debug(msg % dict(start=pstart, end=pend, n=len(zones)))
 
-        pm_api = PoolManagerAPI.get_instance()
         for z in zones:
-            pm_api.update_zone(ctxt, z)
+            self.zone_api.update_zone(ctxt, z)
             z.delayed_notify = False
             self.central_api.update_zone(ctxt, z)
+
+
+class WorkerPeriodicRecovery(PeriodicTask):
+    __plugin_name__ = 'worker_periodic_recovery'
+    __interval__ = 120
+
+    @classmethod
+    def get_cfg_opts(cls):
+        group = cfg.OptGroup(cls.get_canonical_name())
+        options = cls.get_base_opts() + [
+            cfg.IntOpt(
+                'interval',
+                default=cls.__interval__,
+                help='Run interval in seconds'
+            ),
+        ]
+        return [(group, options)]
+
+    def __call__(self):
+        # TODO(timsim): Remove this when worker is always on
+        if not cfg.CONF['service:worker'].enabled:
+                return
+
+        pstart, pend = self._my_range()
+        msg = _LI("Recovering zones for shards %(start)s to %(end)s")
+        LOG.info(msg, {"start": pstart, "end": pend})
+
+        ctxt = context.DesignateContext.get_admin_context()
+        ctxt.all_tenants = True
+
+        self.worker_api.recover_shard(ctxt, pstart, pend)

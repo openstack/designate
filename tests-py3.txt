@@ -18,5 +18,5 @@ designate.tests.unit.test_api.test_api_v2
 designate.tests.unit.test_backend.test_designate
 designate.tests.unit.test_central.test_basic
 designate.tests.unit.test_pool
-designate.tests.unit.test_zone_manager.test_tasks
+designate.tests.unit.test_producer.test_tasks
 

@@ -16,17 +16,13 @@
 
 import datetime
 
-from mock import MagicMock
 from oslo_log import log as logging
 from oslo_utils import timeutils
 
-from designate.pool_manager.rpcapi import PoolManagerAPI
 from designate.storage.impl_sqlalchemy import tables
 from designate.tests import TestCase
 from designate.tests import fixtures
-from designate.zone_manager import tasks
-
-from fixtures import MockPatch
+from designate.producer import tasks
 
 
 LOG = logging.getLogger(__name__)
@@ -39,7 +35,7 @@ class TaskTest(TestCase):
     def _enable_tasks(self, tasks):
         self.config(
             enabled_tasks=tasks,
-            group="service:zone_manager")
+            group="service:producer")
 
 
 class DeletedzonePurgeTest(TaskTest):
@@ -50,7 +46,7 @@ class DeletedzonePurgeTest(TaskTest):
             interval=3600,
             time_threshold=604800,
             batch_size=100,
-            group="zone_manager_task:zone_purge"
+            group="producer_task:zone_purge"
         )
 
         self.purge_task_fixture = self.useFixture(
@@ -99,7 +95,7 @@ class DeletedzonePurgeTest(TaskTest):
         return zones
 
     def test_purge_zones(self):
-        # Create 18 zones, run zone_manager, check if 7 zones are remaining
+        # Create 18 zones, run producer, check if 7 zones are remaining
         self.config(quota_zones=1000)
         self._create_deleted_zones()
 
@@ -110,14 +106,6 @@ class DeletedzonePurgeTest(TaskTest):
         self.assertEqual(7, len(zones))
 
 
-fx_pool_manager = MockPatch(
-    'designate.zone_manager.tasks.PoolManagerAPI.get_instance',
-    MagicMock(spec_set=[
-        'update_zone',
-    ])
-)
-
-
 class PeriodicGenerateDelayedNotifyTaskTest(TaskTest):
 
     def setUp(self):
@@ -126,7 +114,7 @@ class PeriodicGenerateDelayedNotifyTaskTest(TaskTest):
         self.config(
             interval=5,
             batch_size=100,
-            group="zone_manager_task:delayed_notify"
+            group="producer_task:delayed_notify"
         )
 
         self.generate_delayed_notify_task_fixture = self.useFixture(
@@ -158,31 +146,21 @@ class PeriodicGenerateDelayedNotifyTaskTest(TaskTest):
         self.config(
             interval=1,
             batch_size=5,
-            group="zone_manager_task:delayed_notify"
+            group="producer_task:delayed_notify"
         )
         self._create_zones()
         zones = self._fetch_zones(tables.zones.select().where(
             tables.zones.c.delayed_notify == True))  # nopep8
         self.assertEqual(10, len(zones))
 
-        # Run the task and check if it reset the delayed_notify flag
-        with fx_pool_manager:
-            pm_api = PoolManagerAPI.get_instance()
-            pm_api.update_zone.reset_mock()
-
-            self.generate_delayed_notify_task_fixture.task()
-
-            self.assertEqual(10, pm_api.update_zone.call_count)
+        self.generate_delayed_notify_task_fixture.task()
 
         zones = self._fetch_zones(tables.zones.select().where(
             tables.zones.c.delayed_notify == True))  # nopep8
         self.assertEqual(5, len(zones))
 
         # Run the task and check if it reset the delayed_notify flag
-        with fx_pool_manager:
-            self.generate_delayed_notify_task_fixture.task()
-            pm_api = PoolManagerAPI.get_instance()
-            self.assertEqual(20, pm_api.update_zone.call_count)
+        self.generate_delayed_notify_task_fixture.task()
 
         zones = self._fetch_zones(tables.zones.select().where(
             tables.zones.c.delayed_notify == True))  # nopep8

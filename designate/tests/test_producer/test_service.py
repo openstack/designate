@@ -20,8 +20,8 @@ from designate.tests import TestCase
 LOG = logging.getLogger(__name__)
 
 
-class ZoneManagerServiceTest(TestCase):
+class ProducerServiceTest(TestCase):
     def test_stop(self):
         # Test stopping the service
-        service = self.start_service("zone_manager")
+        service = self.start_service("producer")
         service.stop()

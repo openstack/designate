@@ -52,7 +52,7 @@ from designate import storage
 from designate.mdns import rpcapi as mdns_rpcapi
 from designate.pool_manager import rpcapi as pool_manager_rpcapi
 from designate.storage import transaction
-from designate.zone_manager import rpcapi as zone_manager_rpcapi
+from designate.worker import rpcapi as worker_rpcapi
 
 
 LOG = logging.getLogger(__name__)
@@ -253,8 +253,15 @@ class Service(service.RPCService, service.Service):
         return pool_manager_rpcapi.PoolManagerAPI.get_instance()
 
     @property
-    def zone_manager_api(self):
-        return zone_manager_rpcapi.ZoneManagerAPI.get_instance()
+    def worker_api(self):
+        return worker_rpcapi.WorkerAPI.get_instance()
+
+    @property
+    def zone_api(self):
+        # TODO(timsim): Remove this when pool_manager_api is gone
+        if cfg.CONF['service:worker'].enabled:
+                return self.worker_api
+        return self.pool_manager_api
 
     def _is_valid_zone_name(self, context, zone_name):
         # Validate zone name length
@@ -898,7 +905,7 @@ class Service(service.RPCService, service.Service):
 
         zone = self._create_zone_in_storage(context, zone)
 
-        self.pool_manager_api.create_zone(context, zone)
+        self.zone_api.create_zone(context, zone)
 
         if zone.type == 'SECONDARY':
             self.mdns_api.perform_zone_xfr(context, zone)
@@ -1038,7 +1045,7 @@ class Service(service.RPCService, service.Service):
         if 'masters' in changes:
             self.mdns_api.perform_zone_xfr(context, zone)
 
-        self.pool_manager_api.update_zone(context, zone)
+        self.zone_api.update_zone(context, zone)
 
         return zone
 
@@ -1093,7 +1100,7 @@ class Service(service.RPCService, service.Service):
             zone = self.storage.delete_zone(context, zone.id)
         else:
             zone = self._delete_zone_in_storage(context, zone)
-            self.pool_manager_api.delete_zone(context, zone)
+            self.zone_api.delete_zone(context, zone)
 
         return zone
 
@@ -1208,7 +1215,7 @@ class Service(service.RPCService, service.Service):
 
         self._touch_zone_in_storage(context, zone)
 
-        self.pool_manager_api.update_zone(context, zone)
+        self.zone_api.update_zone(context, zone)
 
         return zone
 
@@ -1243,7 +1250,7 @@ class Service(service.RPCService, service.Service):
         recordset, zone = self._create_recordset_in_storage(
             context, zone, recordset, increment_serial=increment_serial)
 
-        self.pool_manager_api.update_zone(context, zone)
+        self.zone_api.update_zone(context, zone)
 
         recordset.zone_name = zone.name
         recordset.obj_reset_changes(['zone_name'])
@@ -1405,7 +1412,7 @@ class Service(service.RPCService, service.Service):
         recordset, zone = self._update_recordset_in_storage(
             context, zone, recordset, increment_serial=increment_serial)
 
-        self.pool_manager_api.update_zone(context, zone)
+        self.zone_api.update_zone(context, zone)
 
         return recordset
 
@@ -1468,7 +1475,7 @@ class Service(service.RPCService, service.Service):
         recordset, zone = self._delete_recordset_in_storage(
             context, zone, recordset, increment_serial=increment_serial)
 
-        self.pool_manager_api.update_zone(context, zone)
+        self.zone_api.update_zone(context, zone)
 
         recordset.zone_name = zone.name
         recordset.obj_reset_changes(['zone_name'])
@@ -1536,7 +1543,7 @@ class Service(service.RPCService, service.Service):
             context, zone, recordset, record,
             increment_serial=increment_serial)
 
-        self.pool_manager_api.update_zone(context, zone)
+        self.zone_api.update_zone(context, zone)
 
         return record
 
@@ -1647,7 +1654,7 @@ class Service(service.RPCService, service.Service):
         record, zone = self._update_record_in_storage(
             context, zone, record, increment_serial=increment_serial)
 
-        self.pool_manager_api.update_zone(context, zone)
+        self.zone_api.update_zone(context, zone)
 
         return record
 
@@ -1708,7 +1715,7 @@ class Service(service.RPCService, service.Service):
         record, zone = self._delete_record_in_storage(
             context, zone, record, increment_serial=increment_serial)
 
-        self.pool_manager_api.update_zone(context, zone)
+        self.zone_api.update_zone(context, zone)
 
         return record
 
@@ -1786,7 +1793,7 @@ class Service(service.RPCService, service.Service):
 
         policy.check('diagnostics_sync_record', context, target)
 
-        self.pool_manager_api.update_zone(context, zone)
+        self.zone_api.update_zone(context, zone)
 
     def ping(self, context):
         policy.check('diagnostics_ping', context)
@@ -2769,9 +2776,40 @@ class Service(service.RPCService, service.Service):
 
         created_zone_export = self.storage.create_zone_export(context,
                                                               zone_export)
+        if not cfg.CONF['service:worker'].enabled:
+            # So that we can maintain asynch behavior during the time that this
+            # lives in central, we'll return the 'PENDING' object, and then the
+            # 'COMPLETE'/'ERROR' status will be available on the first poll.
+            export = copy.deepcopy(created_zone_export)
 
-        self.zone_manager_api.start_zone_export(context, zone,
-                                                created_zone_export)
+            synchronous = cfg.CONF['service:zone_manager'].export_synchronous
+            criterion = {'zone_id': zone_id}
+            count = self.storage.count_recordsets(context, criterion)
+
+            if synchronous:
+                try:
+                    self.quota.limit_check(
+                            context, context.tenant, api_export_size=count)
+                except exceptions.OverQuota:
+                    LOG.debug('Zone Export too large to perform synchronously')
+                    export.status = 'ERROR'
+                    export.message = 'Zone is too large to export'
+                    return export
+
+                export.location = \
+                    "designate://v2/zones/tasks/exports/%(eid)s/export" % \
+                    {'eid': export.id}
+
+                export.status = 'COMPLETE'
+            else:
+                LOG.debug('No method found to export zone')
+                export.status = 'ERROR'
+                export.message = 'No suitable method for export'
+
+            self.update_zone_export(context, export)
+        else:
+            export = copy.deepcopy(created_zone_export)
+            self.worker_api.start_zone_export(context, zone, export)
 
         return created_zone_export
 

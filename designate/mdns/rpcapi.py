@@ -20,6 +20,7 @@ from designate.i18n import _LI
 from designate import rpc
 from designate.loggingutils import rpc_logging
 
+CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
 
 MDNS_API = None
@@ -77,6 +78,10 @@ class MdnsAPI(object):
 
     def notify_zone_changed(self, context, zone, host, port, timeout,
                             retry_interval, max_retries, delay):
+        if CONF['service:worker'].notify and CONF['service:worker'].enabled:
+            LOG.debug('Letting worker send NOTIFYs instead')
+            return True
+
         LOG.info(_LI("notify_zone_changed: Calling mdns for zone '%(zone)s', "
                      "serial '%(serial)s' to nameserver '%(host)s:%(port)s'"),
                  {'zone': zone.name, 'serial': zone.serial,
