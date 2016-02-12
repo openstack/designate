@@ -250,8 +250,18 @@ function install_designateclient {
 function install_designatedashboard {
     git_clone $DESIGNATEDASHBOARD_REPO $DESIGNATEDASHBOARD_DIR $DESIGNATEDASHBOARD_BRANCH
     setup_develop $DESIGNATEDASHBOARD_DIR
-    ln -fs $DESIGNATEDASHBOARD_DIR/designatedashboard/enabled/_70_dns_add_group.py $HORIZON_DIR/openstack_dashboard/local/enabled/70_dns_add_group.py
-    ln -fs $DESIGNATEDASHBOARD_DIR/designatedashboard/enabled/_71_dns_project.py $HORIZON_DIR/openstack_dashboard/local/enabled/71_dns_project.py
+
+    # Just in case the old files are still here during trasition
+    if [ -f "$DESIGNATEDASHBOARD_DIR/designatedashboard/enabled/_70_dns_add_group.py" ]; then
+      ln -fs $DESIGNATEDASHBOARD_DIR/designatedashboard/enabled/_70_dns_add_group.py $HORIZON_DIR/openstack_dashboard/local/enabled/_1710_project_dns_panel_group.py
+    else
+      ln -fs $DESIGNATEDASHBOARD_DIR/designatedashboard/enabled/_1710_project_dns_panel_group.py $HORIZON_DIR/openstack_dashboard/local/enabled/_1710_project_dns_panel_group.py
+    fi
+    if [ -f "$DESIGNATEDASHBOARD_DIR/designatedashboard/enabled/_71_dns_project.py" ]; then
+      ln -fs $DESIGNATEDASHBOARD_DIR/designatedashboard/enabled/_71_dns_project.py $HORIZON_DIR/openstack_dashboard/local/enabled/_1720_project_dns_panel.py
+    else
+      ln -fs $DESIGNATEDASHBOARD_DIR/designatedashboard/enabled/_1720_project_dns_panel.py $HORIZON_DIR/openstack_dashboard/local/enabled/_1720_project_dns_panel.py
+    fi
 }
 
 # start_designate - Start running processes, including screen
