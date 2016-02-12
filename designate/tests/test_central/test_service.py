@@ -517,6 +517,11 @@ class CentralServiceTest(CentralTestCase):
         with testtools.ExpectedException(exceptions.OverQuota):
             self.create_zone()
 
+    def test_create_zone_with_refresh_time_dispersion(self):
+        random.seed(42)
+        zone = self.create_zone()
+        self.assertEqual(3563, zone['refresh'])
+
     def test_create_subzone(self):
         # Create the Parent Zone using fixture 0
         parent_zone = self.create_zone(fixture=0)

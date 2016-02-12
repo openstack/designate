@@ -44,6 +44,10 @@ ZONE_TASK_TYPES = ['IMPORT', 'EXPORT']
 
 metadata = MetaData()
 
+# TODO(Federico) some default column values are not needed because we
+# explicitely set the value on record insertion. Having default values could
+# hide bugs.
+
 
 def default_shard(context, id_col):
     return int(context.current_parameters[id_col][0:3], 16)
@@ -96,7 +100,8 @@ zones = Table('zones', metadata,
     Column('transferred_at', DateTime, default=None),
     Column('ttl', Integer, default=CONF.default_ttl, nullable=False),
     Column('serial', Integer, default=timeutils.utcnow_ts, nullable=False),
-    Column('refresh', Integer, default=CONF.default_soa_refresh,
+    # The refresh interval is randomized by _generate_soa_refresh_interval
+    Column('refresh', Integer, default=CONF.default_soa_refresh_min,
            nullable=False),
     Column('retry', Integer, default=CONF.default_soa_retry, nullable=False),
     Column('expire', Integer, default=CONF.default_soa_expire, nullable=False),

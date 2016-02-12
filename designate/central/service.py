@@ -843,6 +843,20 @@ class Service(service.RPCService, service.Service):
         return self.storage.count_tenants(context)
 
     # Zone Methods
+
+    def _generate_soa_refresh_interval(self):
+        """Generate a random refresh interval to stagger AXFRs across multiple
+        zones and resolvers
+        maximum val: default_soa_refresh_min
+        minimum val: default_soa_refresh_max
+        """
+        assert cfg.CONF.default_soa_refresh_min is not None
+        assert cfg.CONF.default_soa_refresh_max is not None
+        dispersion = (cfg.CONF.default_soa_refresh_max -
+                      cfg.CONF.default_soa_refresh_min) * random.random()
+        refresh_time = cfg.CONF.default_soa_refresh_min + dispersion
+        return int(refresh_time)
+
     @notification('dns.domain.create')
     @notification('dns.zone.create')
     @synchronized_zone(new_zone=True)
@@ -913,6 +927,9 @@ class Service(service.RPCService, service.Service):
 
         if zone.type == 'SECONDARY' and zone.serial is None:
             zone.serial = 1
+
+        # randomize the zone refresh time
+        zone.refresh = self._generate_soa_refresh_interval()
 
         zone = self._create_zone_in_storage(context, zone)
 

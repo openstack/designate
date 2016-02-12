@@ -54,7 +54,9 @@ cfg.CONF.register_opts([
     cfg.IntOpt('default-ttl', default=3600),
 
     # Default SOA Values
-    cfg.IntOpt('default-soa-refresh', default=3600),
+    cfg.IntOpt('default-soa-refresh-min', default=3500,
+               deprecated_name='default-soa-refresh'),
+    cfg.IntOpt('default-soa-refresh-max', default=3600),
     cfg.IntOpt('default-soa-retry', default=600),
     cfg.IntOpt('default-soa-expire', default=86400),
     cfg.IntOpt('default-soa-minimum', default=3600),
