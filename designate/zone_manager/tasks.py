@@ -168,7 +168,8 @@ class PeriodicExistsTask(PeriodicTask):
 
     def __call__(self):
         pstart, pend = self._my_range()
-        msg = _LI("Emitting zone exist events for %(start)s to %(end)s")
+
+        msg = _LI("Emitting zone exist events for shards %(start)s to %(end)s")
         LOG.info(msg % {"start": pstart, "end": pend})
 
         ctxt = context.DesignateContext.get_admin_context()
@@ -176,17 +177,24 @@ class PeriodicExistsTask(PeriodicTask):
 
         start, end = self._get_period(self.options.interval)
 
-        data = {
-            "audit_period_beginning": str(start),
-            "audit_period_ending": str(end)
+        extra_data = {
+            "audit_period_beginning": start,
+            "audit_period_ending": end
         }
 
+        counter = 0
+
         for zone in self._iter_zones(ctxt):
-            zone_data = dict(zone)
-            zone_data.update(data)
+            counter += 1
+
+            zone_data = zone.to_dict()
+            zone_data.update(extra_data)
+
             self.notifier.info(ctxt, 'dns.domain.exists', zone_data)
 
-        LOG.info(_LI("Finished emitting events."))
+        LOG.info(_LI("Finished emitting %(counter)d events for shards "
+                     "%(start)s to %(end)s"),
+                 {"start": pstart, "end": pend, "counter": counter})
 
 
 class PeriodicSecondaryRefreshTask(PeriodicTask):

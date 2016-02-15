@@ -52,3 +52,6 @@ class RoObject(object):
     def __iter__(self):
         for k in six.iterkeys(self.__dict__):
             yield k, self.__dict__[k]
+
+    def to_dict(self):
+        return self.__dict__

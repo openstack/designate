@@ -19,46 +19,13 @@ import uuid
 import mock
 from oslotest import base as test
 from oslo_utils import timeutils
-import six
 import testtools
 
 from designate.central import rpcapi as central_api
 from designate import context
 from designate import rpc
 from designate.zone_manager import tasks
-
-
-class RoObject(object):
-    """Read-only object: raise exception on unexpected
-    __setitem__ or __setattr__
-    """
-    def __init__(self, d=None, **kw):
-        if d:
-            kw.update(d)
-
-        self.__dict__.update(kw)
-
-    def __getitem__(self, k):
-        try:
-            return self.__dict__[k]
-        except KeyError:
-            raise NotImplementedError(
-                "Attempt to perform __getitem__"
-                " %r on RoObject %r" % (k, self.__dict__)
-            )
-
-    def __setitem__(self, k, v):
-        raise NotImplementedError(
-            "Attempt to perform __setitem__ or __setattr__"
-            " %r on RoObject %r" % (k, self.__dict__)
-        )
-
-    def __setattr__(self, k, v):
-        self.__setitem__(k, v)
-
-    def __iter__(self):
-        for k in six.iterkeys(self.__dict__):
-            yield k, self.__dict__[k]
+from designate.tests.unit import RoObject
 
 
 class DummyTask(tasks.PeriodicTask):
@@ -175,8 +142,8 @@ class PeriodicExistsTest(TaskTest):
         # correct below
         self.period = tasks.PeriodicExistsTask._get_period(2)
         self.period_data = {
-            "audit_period_beginning": str(self.period[0]),
-            "audit_period_ending": str(self.period[1])
+            "audit_period_beginning": self.period[0],
+            "audit_period_ending": self.period[1]
         }
         get_period_patcher = mock.patch.object(
             tasks.PeriodicExistsTask, '_get_period')
