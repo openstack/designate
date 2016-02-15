@@ -192,6 +192,7 @@ class PeriodicExistsTask(PeriodicTask):
             zone_data.update(extra_data)
 
             self.notifier.info(ctxt, 'dns.domain.exists', zone_data)
+            self.notifier.info(ctxt, 'dns.zone.exists', zone_data)
 
         LOG.info(_LI("Finished emitting %(counter)d events for shards "
                      "%(start)s to %(end)s"),
