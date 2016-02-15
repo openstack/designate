@@ -165,8 +165,13 @@ class PeriodicExistsTest(TaskTest):
         data = dict(zone)
         data.update(self.period_data)
 
-        self.mock_notifier.info.assert_called_with(
+        # Ensure both the old (domain) and new (zone) events are fired
+        # until the old is fully deprecated.
+        self.mock_notifier.info.assert_any_call(
             self.ctxt, "dns.domain.exists", data)
+
+        self.mock_notifier.info.assert_any_call(
+            self.ctxt, "dns.zone.exists", data)
 
     def test_emit_exists_no_zones(self):
         with mock.patch.object(self.task, '_iter_zones') as iter_:
@@ -184,8 +189,14 @@ class PeriodicExistsTest(TaskTest):
         for z in zones:
             data = dict(z)
             data.update(self.period_data)
-            self.mock_notifier.info.assert_called_with(
+
+            # Ensure both the old (domain) and new (zone) events are fired
+            # until the old is fully deprecated.
+            self.mock_notifier.info.assert_any_call(
                 self.ctxt, "dns.domain.exists", data)
+
+            self.mock_notifier.info.assert_any_call(
+                self.ctxt, "dns.zone.exists", data)
 
 
 class PeriodicSecondaryRefreshTest(TaskTest):
