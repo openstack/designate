@@ -93,6 +93,7 @@ V2 API
        rest/v2/pools
        rest/v2/limits
        rest/v2/reverse
+       rest/v2/service_status
        rest/v2/tsigkeys
 
 Admin API

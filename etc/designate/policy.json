@@ -122,5 +122,8 @@
     "find_zone_exports": "rule:admin_or_owner",
     "get_zone_export": "rule:admin_or_owner",
     "update_zone_export": "rule:admin_or_owner",
-    "delete_zone_export": "rule:admin_or_owner"
+
+    "find_service_status": "rule:admin",
+    "find_service_statuses": "rule:admin",
+    "update_service_service_status": "rule:admin"
 }

@@ -766,3 +766,37 @@ class Storage(DriverPlugin):
         return {
             'status': None
         }
+
+    @abc.abstractmethod
+    def find_service_statuses(self, context, criterion=None, marker=None,
+                            limit=None, sort_key=None, sort_dir=None):
+        """
+        Retrieve status for services
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        :param marker: Resource ID from which after the requested page will
+                       start after
+        :param limit: Integer limit of objects of the page size after the
+                      marker
+        :param sort_key: Key from which to sort after.
+        :param sort_dir: Direction to sort after using sort_key.
+        """
+
+    @abc.abstractmethod
+    def find_service_status(self, context, criterion):
+        """
+        Find a single Service Status.
+
+        :param context: RPC Context.
+        :param criterion: Criteria to filter by.
+        """
+
+    @abc.abstractmethod
+    def update_service_status(self, context, service_status):
+        """
+        Update the Service status for a service.
+
+        :param context: RPC Context.
+        :param service_status: Set the status for a service.
+        """

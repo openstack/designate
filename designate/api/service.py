@@ -21,6 +21,7 @@ from designate.i18n import _LI
 from designate import exceptions
 from designate import utils
 from designate import service
+from designate import service_status
 
 
 LOG = logging.getLogger(__name__)
@@ -29,6 +30,23 @@ LOG = logging.getLogger(__name__)
 class Service(service.WSGIService, service.Service):
     def __init__(self, threads=None):
         super(Service, self).__init__(threads=threads)
+
+        emitter_cls = service_status.HeartBeatEmitter.get_driver(
+            cfg.CONF.heartbeat_emitter.emitter_type
+        )
+        self.heartbeat_emitter = emitter_cls(
+            self.service_name, self.tg, status_factory=self._get_status
+        )
+
+    def start(self):
+        super(Service, self).start()
+        self.heartbeat_emitter.start()
+
+    def _get_status(self):
+        status = "UP"
+        stats = {}
+        capabilities = {}
+        return status, stats, capabilities
 
     @property
     def service_name(self):

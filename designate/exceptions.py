@@ -247,6 +247,10 @@ class Duplicate(Base):
     error_type = 'duplicate'
 
 
+class DuplicateServiceStatus(Duplicate):
+    error_type = 'duplicate_service_status'
+
+
 class DuplicateQuota(Duplicate):
     error_type = 'duplicate_quota'
 
@@ -349,6 +353,10 @@ class NotFound(Base):
     expected = True
     error_code = 404
     error_type = 'not_found'
+
+
+class ServiceStatusNotFound(NotFound):
+    error_type = 'service_status_not_found'
 
 
 class QuotaNotFound(NotFound):

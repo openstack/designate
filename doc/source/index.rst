@@ -68,6 +68,7 @@ Reference Documentation
    support-matrix
    pools
    memory-caching
+   service_status
 
 Source Documentation
 ====================

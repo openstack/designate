@@ -263,7 +263,7 @@ def notification(notification_type):
 
 
 class Service(service.RPCService, service.Service):
-    RPC_API_VERSION = '6.0'
+    RPC_API_VERSION = '6.1'
 
     target = messaging.Target(version=RPC_API_VERSION)
 
@@ -271,6 +271,10 @@ class Service(service.RPCService, service.Service):
         super(Service, self).__init__(threads=threads)
 
         self.network_api = network_api.get_network_api(cfg.CONF.network_api)
+
+        # update_service_status needs is called by the emitter so we pass
+        # ourselves as the rpc_api.
+        self.heartbeat_emitter.rpc_api = self
 
     @property
     def scheduler(self):
@@ -2880,3 +2884,38 @@ class Service(service.RPCService, service.Service):
         zone_export = self.storage.delete_zone_export(context, zone_export_id)
 
         return zone_export
+
+    def find_service_statuses(self, context, criterion=None, marker=None,
+                              limit=None, sort_key=None, sort_dir=None):
+        """List service statuses.
+        """
+        policy.check('find_service_statuses', context)
+
+        return self.storage.find_service_statuses(
+            context, criterion, marker, limit, sort_key, sort_dir)
+
+    def find_service_status(self, context, criterion=None):
+        policy.check('find_service_status', context)
+
+        return self.storage.find_service_status(context, criterion)
+
+    def update_service_status(self, context, service_status):
+        policy.check('update_service_status', context)
+
+        criterion = {
+            "service_name": service_status.service_name,
+            "hostname": service_status.hostname
+        }
+
+        if service_status.obj_attr_is_set('id'):
+            criterion["id"] = service_status.id
+
+        try:
+            db_status = self.storage.find_service_status(
+                context, criterion)
+            db_status.update(dict(service_status))
+
+            return self.storage.update_service_status(context, db_status)
+        except exceptions.ServiceStatusNotFound:
+            return self.storage.create_service_status(
+                context, service_status)

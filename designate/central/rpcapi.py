@@ -54,14 +54,15 @@ class CentralAPI(object):
         5.5 - Add deleted zone purging task
         5.6 - Changed 'purge_zones' function args
         6.0 - Renamed domains to zones
+        6.1 - Add ServiceStatus methods
     """
-    RPC_API_VERSION = '6.0'
+    RPC_API_VERSION = '6.1'
 
     def __init__(self, topic=None):
         topic = topic if topic else cfg.CONF.central_topic
 
         target = messaging.Target(topic=topic, version=self.RPC_API_VERSION)
-        self.client = rpc.get_client(target, version_cap='6.0')
+        self.client = rpc.get_client(target, version_cap='6.1')
 
     @classmethod
     def get_instance(cls):
@@ -578,3 +579,24 @@ class CentralAPI(object):
                      "delete_zone_export."))
         return self.client.call(context, 'delete_zone_export',
                                 zone_export_id=zone_export_id)
+
+    def find_service_status(self, context, criterion=None):
+        LOG.info(_LI("find_service_status: Calling central's "
+                     "find_service_status."))
+        return self.client.call(context, 'find_service_status',
+                                criterion=criterion)
+
+    def find_service_statuses(self, context, criterion=None, marker=None,
+                              limit=None, sort_key=None, sort_dir=None):
+        LOG.info(_LI("find_service_statuses: Calling central's "
+                     "find_service_statuses."))
+        return self.client.call(context, 'find_service_statuses',
+                                criterion=criterion, marker=marker,
+                                limit=limit, sort_key=sort_key,
+                                sort_dir=sort_dir)
+
+    def update_service_status(self, context, service_status):
+        LOG.info(_LI("update_service_status: Calling central's "
+                     "update_service_status."))
+        self.client.cast(context, 'update_service_status',
+                         service_status=service_status)
