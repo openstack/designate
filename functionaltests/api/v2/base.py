@@ -53,3 +53,5 @@ class DesignateV2Test(BaseDesignateTest):
         except exc as e:
             self.assertEqual(status, e.resp_body['code'])
             self.assertEqual(type_, e.resp_body['type'])
+        else:
+            raise self.failureException("Test failed due to no exception.")
