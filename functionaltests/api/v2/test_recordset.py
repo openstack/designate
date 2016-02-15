@@ -139,35 +139,6 @@ class RecordsetTest(DesignateV2Test):
         RecordsetClient.as_user('default').wait_for_404(
             self.zone.id, recordset_id)
 
-    @utils.parameterized(RECORDSETS_DATASET)
-    def test_create_invalid(self, make_recordset, data=None):
-        data = data or ["b0rk"]
-
-        client = RecordsetClient.as_user('default')
-
-        for i in data:
-            model = make_recordset(self.zone)
-            model.data = i
-            self._assert_exception(
-                exceptions.BadRequest, 'invalid_object', 400,
-                client.post_recordset, self.zone.id, model)
-
-    @utils.parameterized(RECORDSETS_DATASET)
-    def test_update_invalid(self, make_recordset, data=None):
-        data = data or ["b0rk"]
-
-        post_model = make_recordset(self.zone)
-        fixture = self.useFixture(RecordsetFixture(self.zone.id, post_model))
-        recordset_id = fixture.created_recordset.id
-
-        client = RecordsetClient.as_user('default')
-        for i in data:
-            model = make_recordset(self.zone)
-            model.data = i
-            self._assert_exception(
-                exceptions.BadRequest, 'invalid_object', 400,
-                client.put_recordset, self.zone.id, recordset_id, model)
-
     @utils.parameterized(WILDCARD_RECORDSETS_DATASET)
     def test_can_create_and_query_wildcard_recordset(self, make_recordset):
         post_model = make_recordset(self.zone)
@@ -182,25 +153,6 @@ class RecordsetTest(DesignateV2Test):
 
         for m in verify_models:
             self.assert_dns(m)
-
-    def test_cannot_create_wildcard_NS_recordset(self):
-        client = RecordsetClient.as_user('default')
-
-        model = datagen.wildcard_ns_recordset(self.zone.name)
-        self._assert_exception(
-            exceptions.BadRequest, 'invalid_object', 400,
-            client.post_recordset, self.zone.id, model)
-
-    def test_cname_recordsets_cannot_have_more_than_one_record(self):
-        post_model = datagen.random_cname_recordset(zone_name=self.zone.name)
-        post_model.records = [
-            "a.{0}".format(self.zone.name),
-            "b.{0}".format(self.zone.name),
-        ]
-
-        client = RecordsetClient.as_user('default')
-        self.assertRaises(exceptions.BadRequest,
-            client.post_recordset, self.zone.id, post_model)
 
 
 class RecordsetOwnershipTest(DesignateV2Test):
