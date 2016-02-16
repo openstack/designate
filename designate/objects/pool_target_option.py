@@ -24,12 +24,6 @@ class PoolTargetOption(base.DictObjectMixin, base.PersistentObjectMixin,
     }
 
 
-class PoolTargetOptionList(base.ListObjectMixin, base.DesignateObject):
+class PoolTargetOptionList(base.AttributeListObjectMixin,
+                           base.DesignateObject):
     LIST_ITEM_TYPE = PoolTargetOption
-
-    def get(self, key, default=None):
-        for obj in self.objects:
-            if obj.key == key:
-                return obj.value
-
-        return default

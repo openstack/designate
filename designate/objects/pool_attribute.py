@@ -46,5 +46,5 @@ class PoolAttribute(base.DictObjectMixin, base.PersistentObjectMixin,
     ]
 
 
-class PoolAttributeList(base.ListObjectMixin, base.DesignateObject):
+class PoolAttributeList(base.AttributeListObjectMixin, base.DesignateObject):
     LIST_ITEM_TYPE = PoolAttribute
