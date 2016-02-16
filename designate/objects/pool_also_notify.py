@@ -15,7 +15,7 @@
 from designate.objects import base
 
 
-class PoolAlsoNotifies(base.DictObjectMixin, base.PersistentObjectMixin,
+class PoolAlsoNotify(base.DictObjectMixin, base.PersistentObjectMixin,
                      base.DesignateObject):
     FIELDS = {
         'pool_id': {},
@@ -24,5 +24,5 @@ class PoolAlsoNotifies(base.DictObjectMixin, base.PersistentObjectMixin,
     }
 
 
-class PoolAlsoNotifiesList(base.ListObjectMixin, base.DesignateObject):
-    LIST_ITEM_TYPE = PoolAlsoNotifies
+class PoolAlsoNotifyList(base.ListObjectMixin, base.DesignateObject):
+    LIST_ITEM_TYPE = PoolAlsoNotify
