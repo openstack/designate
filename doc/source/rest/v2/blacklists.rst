@@ -40,7 +40,7 @@ Any valid regular expression may be added to the blacklists table. Here are some
     This will block the "example.com." domain, but will not block any sub-domains, e.g. "my.example.com." or anything
     else containing example.com, such as, "myexample.com."
 
-#. ``^([A-Za-z0-9_\-]+\\.)*example\\.com\\.$``
+#. ``^([A-Za-z0-9_\\-]+\\.)*example\\.com\\.$``
     This will block "example.com." and all sub-domains, e.g. "my.example.com.", but anything else containing
     example.com, will not be blocked, such as, "myexample.com."
 
