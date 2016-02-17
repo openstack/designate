@@ -28,12 +28,12 @@ domains = Table(
     'domains', metadata,
     Column('id', Integer, primary_key=True, autoincrement=True),
 
-    Column('designate_id', UUID(), nullable=False),
+    Column('designate_id', UUID, nullable=False),
     Column('name', String(255), nullable=False, unique=True),
     Column('master', String(255), nullable=True),
-    Column('last_check', Integer(), default=None, nullable=True),
+    Column('last_check', Integer, default=None, nullable=True),
     Column('type', String(6), nullable=False),
-    Column('notified_serial', Integer(), default=None, nullable=True),
+    Column('notified_serial', Integer, default=None, nullable=True),
     Column('account', String(40), default=None, nullable=True),
     mysql_engine='InnoDB',
     mysql_charset='utf8')
