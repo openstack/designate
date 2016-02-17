@@ -1,4 +1,3 @@
-# flake8: noqa
 # Copyright 2012 Managed I.T.
 #
 # Author: Kiall Mac Innes <kiall@managedit.ie>
@@ -37,13 +36,13 @@ def upgrade(migrate_engine):
     # join from powerdns.records -> powerdns.domains -> designate.domains, so
     # we can't perform the second half here.
     query = records_table.update().values(inherit_ttl=False)
-    query = query.where(records_table.c.ttl != None)
+    query = query.where(records_table.c.ttl is not None)
     query.execute()
 
     # If there are records without an explicity configured TTL, we'll need
     # a manual post-migration step.
     query = records_table.select()
-    query = query.where(records_table.c.ttl == None)
+    query = query.where(records_table.c.ttl is None)
     c = query.count()
 
     if c > 0:
@@ -54,7 +53,7 @@ def upgrade(migrate_engine):
                '.inherit_ttl = 1;')
 
         LOG.warning(_LW('**** A manual post-migration step is required ****'))
-        LOG.warning(_LW('Please issue this query: %s' % pmq))
+        LOG.warning(_LW('Please issue this query: %s') % pmq)
 
 
 def downgrade(migrate_engine):
