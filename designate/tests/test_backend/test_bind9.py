@@ -18,6 +18,8 @@ from designate import objects
 from designate.tests.test_backend import BackendTestCase
 from designate.backend.impl_bind9 import Bind9Backend
 
+# TODO(Federico): test execute() calls
+
 
 class Bind9BackendTestCase(BackendTestCase):
 

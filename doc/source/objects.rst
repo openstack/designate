@@ -20,9 +20,9 @@ Objects Backlist
     :show-inheritance:
 
 
-Objects Domain
-==============
-.. automodule:: designate.objects.domain
+Objects Zone
+============
+.. automodule:: designate.objects.zone
     :members:
     :undoc-members:
     :show-inheritance:
