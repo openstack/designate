@@ -444,7 +444,7 @@ Create SPF Record Set
 
 .. http:post:: /zones/(uuid:id)/recordsets
 
-    Creates a new SPF record set. SPF record set data formatting follows standard spf record syntax.
+    Creates a new SPF record set. SPF record set data formatting follows standard SPF record syntax.
 
     **Example request:**
 

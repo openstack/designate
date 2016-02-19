@@ -17,7 +17,7 @@ within Designate. There are several ways this can occur:
    legitimate owner can.
 
 2. The squatter creates "foo.example.com." as a zone in Designate, preventing
-   the creation of any parant zones (example.com., com.) by any other tenant.
+   the creation of any parent zones (example.com., com.) by any other tenant.
 
 3. The squatter creates "com." as a zone in Designate, preventing the creation
    of any zones ending in "com." by any other tenant.

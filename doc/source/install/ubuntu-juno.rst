@@ -104,7 +104,7 @@ Settings::
 
 Delete a couple unnecessary files::
 
-    $ rm  /etc/powerdns/bindbackend.conf
+    $ rm /etc/powerdns/bindbackend.conf
     $ rm /etc/powerdns/pdns.d/pdns.simplebind.conf
 
 .. _install-ubuntu-source:

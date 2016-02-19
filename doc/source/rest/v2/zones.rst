@@ -382,7 +382,7 @@ Create Zone Transfer Request
     A non-targeted request will not show in a list operation, apart from the owning projects request.
     An targeted request will only show in the targets and owners lists.
 
-    An un-targeted request can be viewed by any authenticated user.
+    An untargeted request can be viewed by any authenticated user.
 
     **Example Request**
 

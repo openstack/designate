@@ -240,7 +240,7 @@ Remove Tsigkey
 
 .. http:delete:: /tsigkeys/(uuid:id)
 
-   Remove a Tsigkey with the spefied tsigkey's id.
+   Remove a Tsigkey with the specified tsigkey's id.
 
    **Example request**:
 
