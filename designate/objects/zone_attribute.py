@@ -19,9 +19,27 @@ from designate.objects import base
 class ZoneAttribute(base.DictObjectMixin, base.PersistentObjectMixin,
                     base.DesignateObject):
     FIELDS = {
-        'zone_id': {},
-        'key': {},
-        'value': {}
+        'zone_id': {
+            'schema': {
+                'type': 'string',
+                'description': 'Zone identifier',
+                'format': 'uuid',
+            },
+        },
+        'key': {
+            'schema': {
+                'type': 'string',
+                'maxLength': 50,
+            },
+            'required': True,
+        },
+        'value': {
+            'schema': {
+                'type': 'string',
+                'maxLength': 50,
+            },
+            'required': True
+        }
     }
 
     STRING_KEYS = [

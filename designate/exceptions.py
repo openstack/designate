@@ -91,6 +91,11 @@ class NeutronCommunicationFailure(CommunicationFailure):
     error_type = 'neutron_communication_failure'
 
 
+class NoFiltersConfigured(ConfigurationError):
+    error_code = 500
+    error_type = 'no_filters_configured'
+
+
 class NoServersConfigured(ConfigurationError):
     error_code = 500
     error_type = 'no_servers_configured'

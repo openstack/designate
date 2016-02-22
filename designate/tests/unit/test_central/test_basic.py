@@ -27,6 +27,7 @@ import mock
 import testtools
 
 from designate import exceptions
+from designate import objects
 from designate.central.service import Service
 from designate.tests.fixtures import random_seed
 import designate.central.service
@@ -200,7 +201,6 @@ class MockRecord(object):
 class MockPool(object):
     ns_records = [MockRecord(), ]
 
-
 # Fixtures
 
 fx_mdns_api = fixtures.MockPatch('designate.central.service.mdns_rpcapi')
@@ -236,41 +236,26 @@ class CentralBasic(base.BaseTestCase):
         super(CentralBasic, self).setUp()
         self.CONF = self.useFixture(cfg_fixture.Config(cfg.CONF)).conf
 
-        mock_storage = mock.NonCallableMagicMock(spec_set=[
-            'count_zones', 'count_records', 'count_recordsets',
-            'count_tenants', 'create_blacklist', 'create_zone',
-            'create_pool', 'create_pool_attribute', 'create_quota',
-            'create_record', 'create_recordset', 'create_tld',
-            'create_tsigkey',
-            'create_zone_task', 'delete_blacklist', 'delete_zone',
-            'delete_pool', 'delete_pool_attribute', 'delete_quota',
-            'delete_record', 'delete_recordset', 'delete_tld',
-            'delete_tsigkey', 'delete_zone_task', 'find_blacklist',
-            'find_blacklists', 'find_zone', 'find_zones', 'find_pool',
-            'find_pool_attribute', 'find_pool_attributes', 'find_pools',
-            'find_quota', 'find_quotas', 'find_record', 'find_records',
-            'find_recordset', 'find_recordsets', 'find_recordsets_axfr',
-            'find_tenants', 'find_tld', 'find_tlds', 'find_tsigkeys',
-            'find_zone_task', 'find_zone_tasks', 'get_blacklist',
-            'get_canonical_name', 'get_cfg_opts', 'get_zone', 'get_driver',
-            'get_extra_cfg_opts', 'get_plugin_name', 'get_plugin_type',
-            'get_pool', 'get_pool_attribute', 'get_quota', 'get_record',
-            'get_recordset', 'get_tenant', 'get_tld', 'get_tsigkey',
-            'get_zone_task', 'ping', 'register_cfg_opts',
-            'register_extra_cfg_opts', 'update_blacklist', 'update_zone',
-            'update_pool', 'update_pool_attribute', 'update_quota',
-            'update_record', 'update_recordset', 'update_tld',
-            'update_tsigkey', 'update_zone_task', 'commit', 'begin',
-            'rollback', ])
+        mock_storage = mock.Mock(spec=designate.storage.base.Storage)
+
+        pool_list = objects.PoolList.from_list(
+            [
+                {'id': '794ccc2c-d751-44fe-b57f-8894c9f5c842'}
+            ]
+        )
+
         attrs = {
             'count_zones.return_value': 0,
             'find_zone.return_value': Mockzone(),
             'get_pool.return_value': MockPool(),
-            'begin.return_value': None,
+            'find_pools.return_value': pool_list,
         }
         mock_storage.configure_mock(**attrs)
-        designate.central.service.storage.get_storage.return_value = \
-            mock_storage
+
+        self.useFixture(fixtures.MockPatchObject(
+            designate.central.service.storage, 'get_storage',
+            return_value=mock_storage)
+        )
 
         designate.central.service.policy = mock.NonCallableMock(spec_set=[
             'reset',
@@ -292,6 +277,7 @@ class CentralBasic(base.BaseTestCase):
             'elevated',
             'sudo',
             'abandon',
+            'all_tenants',
         ])
 
         self.service = Service()
@@ -818,17 +804,29 @@ class CentralZoneTestCase(CentralBasic):
             ns_records=[]
         )
 
+        self.useFixture(
+            fixtures.MockPatchObject(
+                self.service.storage,
+                'find_pools',
+                return_value=objects.PoolList.from_list(
+                    [
+                        {'id': '94ccc2c-d751-44fe-b57f-8894c9f5c842'}
+                    ]
+                )
+            )
+        )
+
         with testtools.ExpectedException(exceptions.NoServersConfigured):
             self.service.create_zone(
                 self.context,
-                RoObject(tenant_id='1', name='example.com.', ttl=60,
-                         pool_id='2')
+                objects.Zone(tenant_id='1', name='example.com.', ttl=60,
+                             pool_id='2')
             )
 
     def test_create_zone(self):
         self.service._enforce_zone_quota = Mock()
         self.service._create_zone_in_storage = Mock(
-            return_value=RoObject(
+            return_value=objects.Zone(
                 name='example.com.',
                 type='PRIMARY',
             )
@@ -844,11 +842,23 @@ class CentralZoneTestCase(CentralBasic):
         self.service.storage.get_pool.return_value = RoObject(
             ns_records=[RoObject()]
         )
+        self.useFixture(
+            fixtures.MockPatchObject(
+                self.service.storage,
+                'find_pools',
+                return_value=objects.PoolList.from_list(
+                    [
+                        {'id': '94ccc2c-d751-44fe-b57f-8894c9f5c842'}
+                    ]
+                )
+            )
+        )
+
         # self.service.create_zone = unwrap(self.service.create_zone)
 
         out = self.service.create_zone(
             self.context,
-            RwObject(
+            objects.Zone(
                 tenant_id='1',
                 name='example.com.',
                 ttl=60,

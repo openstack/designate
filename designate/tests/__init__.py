@@ -318,6 +318,10 @@ class TestCase(base.BaseTestCase):
 
         self.config(network_api='fake')
 
+        self.config(
+            scheduler_filters=['pool_id_attribute', 'random'],
+            group='service:central')
+
         # "Read" Configuration
         self.CONF([], project='designate')
         utils.register_plugin_opts()

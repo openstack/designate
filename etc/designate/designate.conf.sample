@@ -80,6 +80,10 @@ debug = False
 # Tenant ID to own all managed resources - like auto-created records etc.
 #managed_resource_tenant_id = 123456
 
+# What filters to use. They are applied in order listed in the option, from
+# left to right
+#scheduler_filters = default_pool
+
 #-----------------------
 # API Service
 #-----------------------
