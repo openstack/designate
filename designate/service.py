@@ -28,7 +28,6 @@ import eventlet.debug
 import oslo_messaging as messaging
 from oslo_config import cfg
 from oslo_log import log as logging
-from oslo_log import loggers
 from oslo_service import service
 from oslo_service import sslutils
 
@@ -189,7 +188,7 @@ class WSGIService(object):
         eventlet.wsgi.server(self._wsgi_sock,
                              self._wsgi_application,
                              custom_pool=self.tg.pool,
-                             log=loggers.WritableLogger(logger))
+                             log=logger)
 
 
 @six.add_metaclass(abc.ABCMeta)
