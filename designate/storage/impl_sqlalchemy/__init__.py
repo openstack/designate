@@ -553,31 +553,16 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
                            marker=None, limit=None, sort_key=None,
                            sort_dir=None):
 
-        criterion['key'] = 'master'
-
-        attribs = self._find(context, tables.zone_attributes,
-                             objects.ZoneAttribute,
-                             objects.ZoneAttributeList,
-                             exceptions.ZoneMasterNotFound,
-                             criterion, one,
-                             marker, limit, sort_key, sort_dir)
-
-        masters = objects.ZoneMasterList()
-
-        for attrib in attribs:
-            masters.append(objects.ZoneMaster().from_data(attrib.value))
-
-        return masters
+        return self._find(context, tables.zone_attributes,
+                          objects.ZoneMaster, objects.ZoneMasterList,
+                          exceptions.ZoneMasterNotFound, criterion, one,
+                          marker, limit, sort_key, sort_dir)
 
     def create_zone_master(self, context, zone_id, zone_master):
 
-        zone_attribute = objects.ZoneAttribute()
-        zone_attribute.zone_id = zone_id
-        zone_attribute.key = 'master'
-        zone_attribute.value = zone_master.to_data()
-
-        return self._create(tables.zone_attributes, zone_attribute,
-                            exceptions.DuplicateZoneAttribute)
+        zone_master.zone_id = zone_id
+        return self._create(tables.zone_masters, zone_master,
+                            exceptions.DuplicateZoneMaster)
 
     def get_zone_masters(self, context, zone_attribute_id):
         return self._find_zone_masters(
@@ -594,24 +579,19 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
 
     def update_zone_master(self, context, zone_master):
 
-        zone_attribute = objects.ZoneAttribute()
-        zone_attribute.zone_id = zone_master.zone_id
-        zone_attribute.key = 'master'
-        zone_attribute.value = zone_master.to_data()
-
-        return self._update(context, tables.zone_attributes,
-                            zone_attribute,
-                            exceptions.DuplicateZoneAttribute,
-                            exceptions.ZoneAttributeNotFound)
+        return self._update(context, tables.zone_masters,
+                            zone_master,
+                            exceptions.DuplicateZoneMaster,
+                            exceptions.ZoneMasterNotFound)
 
     def delete_zone_master(self, context, zone_master_id):
-        zone_attribute = self._find_zone_attributes(
+        zone_master = self._find_zone_masters(
             context, {'id': zone_master_id}, one=True)
-        deleted_zone_attribute = self._delete(
-            context, tables.zone_attributes, zone_attribute,
-            exceptions.ZoneAttributeNotFound)
+        deleted_zone_master = self._delete(
+            context, tables.zone_masters, zone_master,
+            exceptions.ZoneMasterNotFound)
 
-        return deleted_zone_attribute
+        return deleted_zone_master
 
     # RecordSet Methods
     def _find_recordsets(self, context, criterion, one=False, marker=None,

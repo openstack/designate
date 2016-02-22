@@ -96,6 +96,11 @@ class NoServersConfigured(ConfigurationError):
     error_type = 'no_servers_configured'
 
 
+class MultiplePoolsFound(ConfigurationError):
+    error_code = 500
+    error_type = 'multiple_pools_found'
+
+
 class NoPoolTargetsConfigured(ConfigurationError):
     error_code = 500
     error_type = 'no_pool_targets_configured'
@@ -285,6 +290,10 @@ class DuplicateZoneAttribute(Duplicate):
     error_type = 'duplicate_zone_attribute'
 
 
+class DuplicateZoneMaster(Duplicate):
+    error_type = 'duplicate_zone_attribute'
+
+
 class DuplicatePoolNsRecord(Duplicate):
     error_type = 'duplicate_pool_ns_record'
 
@@ -367,6 +376,10 @@ class PoolManagerStatusNotFound(NotFound):
 
 class PoolNotFound(NotFound):
     error_type = 'pool_not_found'
+
+
+class NoValidPoolFound(NotFound):
+    error_type = 'no_valid_pool_found'
 
 
 class PoolAttributeNotFound(NotFound):
