@@ -252,65 +252,6 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
 
         self.assertFalse(mock_update_status.called)
 
-    @patch.object(impl_fake.FakeBackend, 'delete_zone',
-                  side_effect=exceptions.Backend)
-    @patch.object(central_rpcapi.CentralAPI, 'update_status')
-    def test_delete_zone(self, mock_update_status, _):
-        zone = self._build_zone('example.org.', 'DELETE', 'PENDING')
-
-        self.service.delete_zone(self.admin_context, zone)
-
-        mock_update_status.assert_called_once_with(
-            self.admin_context, zone.id, 'ERROR', zone.serial)
-
-    @patch.object(impl_fake.FakeBackend, 'delete_zone')
-    @patch.object(central_rpcapi.CentralAPI, 'update_status')
-    def test_delete_zone_target_both_failure(
-            self, mock_update_status, mock_delete_zone):
-
-        zone = self._build_zone('example.org.', 'DELETE', 'PENDING')
-
-        mock_delete_zone.side_effect = exceptions.Backend
-
-        self.service.delete_zone(self.admin_context, zone)
-
-        mock_update_status.assert_called_once_with(
-            self.admin_context, zone.id, 'ERROR', zone.serial)
-
-    @patch.object(impl_fake.FakeBackend, 'delete_zone')
-    @patch.object(central_rpcapi.CentralAPI, 'update_status')
-    def test_delete_zone_target_one_failure(
-            self, mock_update_status, mock_delete_zone):
-
-        zone = self._build_zone('example.org.', 'DELETE', 'PENDING')
-
-        mock_delete_zone.side_effect = [None, exceptions.Backend]
-
-        self.service.delete_zone(self.admin_context, zone)
-
-        mock_update_status.assert_called_once_with(
-            self.admin_context, zone.id, 'ERROR', zone.serial)
-
-    @patch.object(impl_fake.FakeBackend, 'delete_zone')
-    @patch.object(central_rpcapi.CentralAPI, 'update_status')
-    def test_delete_zone_target_one_failure_consensus(
-            self, mock_update_status, mock_delete_zone):
-
-        self.service.stop()
-        self.config(
-            threshold_percentage=50,
-            group='service:pool_manager')
-        self.service = self.start_service('pool_manager')
-
-        zone = self._build_zone('example.org.', 'DELETE', 'PENDING')
-
-        mock_delete_zone.side_effect = [None, exceptions.Backend]
-
-        self.service.delete_zone(self.admin_context, zone)
-
-        mock_update_status.assert_called_once_with(
-            self.admin_context, zone.id, 'ERROR', zone.serial)
-
     @patch.object(mdns_rpcapi.MdnsAPI, 'get_serial_number',
                   side_effect=messaging.MessagingException)
     @patch.object(central_rpcapi.CentralAPI, 'update_status')

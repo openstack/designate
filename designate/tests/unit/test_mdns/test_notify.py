@@ -161,6 +161,7 @@ class MdnsNotifyTest(base.BaseTestCase):
             rcode=Mock(return_value=dns.rcode.NOERROR),
             # rcode is NOERROR but (flags & dns.flags.AA) gives 0
             flags=0,
+            answer=['answer'],
         )
         self.notify._send_dns_message = Mock(return_value=response)
 
@@ -176,7 +177,8 @@ class MdnsNotifyTest(base.BaseTestCase):
             rcode=Mock(return_value=dns.rcode.NOERROR),
             # rcode is NOERROR but flags are not NOERROR
             flags=123,
-            ednsflags=321
+            ednsflags=321,
+            answer=['answer'],
         )
         self.notify._send_dns_message = Mock(return_value=response)
 

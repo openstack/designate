@@ -29,6 +29,7 @@ from designate import exceptions
 from designate import objects
 from designate.pool_manager.service import Service
 from designate.tests.unit import RoObject
+from designate.tests.unit import RwObject
 import designate.pool_manager.service as pm_module
 
 
@@ -180,3 +181,30 @@ class PoolManagerTest(test.BaseTestCase):
         self.pm.periodic_sync()
 
         self.assertEqual(3, self.pm.update_zone.call_count)
+
+    @patch.object(pm_module.DesignateContext, 'get_admin_context')
+    def test_create_zone(self, mock_get_ctx, *mocks):
+        z = RwObject(name='a_zone', serial=1)
+
+        mock_ctx = mock_get_ctx.return_value
+        self.pm._exceed_or_meet_threshold = Mock(return_value=True)
+
+        self.pm.create_zone(mock_ctx, z)
+
+    @patch.object(pm_module.DesignateContext, 'get_admin_context')
+    def test_update_zone(self, mock_get_ctx, *mocks):
+        z = RwObject(name='a_zone', serial=1)
+
+        mock_ctx = mock_get_ctx.return_value
+        self.pm._exceed_or_meet_threshold = Mock(return_value=True)
+
+        self.pm.update_zone(mock_ctx, z)
+
+    @patch.object(pm_module.DesignateContext, 'get_admin_context')
+    def test_delete_zone(self, mock_get_ctx, *mocks):
+        z = RwObject(name='a_zone', serial=1)
+
+        mock_ctx = mock_get_ctx.return_value
+        self.pm._exceed_or_meet_threshold = Mock(return_value=True)
+
+        self.pm.delete_zone(mock_ctx, z)
