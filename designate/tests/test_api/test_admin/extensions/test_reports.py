@@ -75,6 +75,28 @@ class AdminApiReportsTest(AdminApiTestCase):
 
         self.assertEqual(2, response.json['counts'][0]['zones'])
 
+    def test_get_counts_zones_delayed_notify(self):
+        # Count zones that are pending a NOTIFY transaction
+        self.policy({'count_zones_delayed_notify': '@'})
+        response = self.client.get('/reports/counts/zones_delayed_notify')
+
+        self.assertEqual(200, response.status_int)
+        self.assertEqual('application/json', response.content_type)
+        self.assertIn('counts', response.json)
+        self.assertIn('zones_delayed_notify', response.json['counts'][0])
+        self.assertEqual(0, response.json['counts'][0]['zones_delayed_notify'])
+
+        # Create 2 zones in pending notify and 1 with delayed_notify=False
+        self.create_zone(fixture=0, delayed_notify=True)
+        self.create_zone(fixture=1, delayed_notify=True)
+        self.create_zone(fixture=2)
+
+        response = self.client.get('/reports/counts/zones')
+        self.assertEqual(3, response.json['counts'][0]['zones'])
+
+        response = self.client.get('/reports/counts/zones_delayed_notify')
+        self.assertEqual(2, response.json['counts'][0]['zones_delayed_notify'])
+
     def test_get_counts_records(self):
         self.policy({'count_records': '@'})
         response = self.client.get('/reports/counts/records')

@@ -16,13 +16,18 @@
 
 import datetime
 
+from mock import MagicMock
 from oslo_log import log as logging
 from oslo_utils import timeutils
 
-from designate.zone_manager import tasks
-from designate.tests import TestCase
+from designate.pool_manager.rpcapi import PoolManagerAPI
 from designate.storage.impl_sqlalchemy import tables
+from designate.tests import TestCase
 from designate.tests import fixtures
+from designate.zone_manager import tasks
+
+from fixtures import MockPatch
+
 
 LOG = logging.getLogger(__name__)
 
@@ -59,8 +64,7 @@ class DeletedzonePurgeTest(TaskTest):
         return zone
 
     def _fetch_all_zones(self):
-        """Fetch all zones including deleted ones
-        """
+        # Fetch all zones including deleted ones
         query = tables.zones.select()
         return self.central_service.storage.session.execute(query).fetchall()
 
@@ -95,8 +99,7 @@ class DeletedzonePurgeTest(TaskTest):
         return zones
 
     def test_purge_zones(self):
-        """Create 18 zones, run zone_manager, check if 7 zones are remaining
-        """
+        # Create 18 zones, run zone_manager, check if 7 zones are remaining
         self.config(quota_zones=1000)
         self._create_deleted_zones()
 
@@ -105,3 +108,82 @@ class DeletedzonePurgeTest(TaskTest):
         zones = self._fetch_all_zones()
         LOG.info("Number of zones: %d", len(zones))
         self.assertEqual(7, len(zones))
+
+
+fx_pool_manager = MockPatch(
+    'designate.zone_manager.tasks.PoolManagerAPI.get_instance',
+    MagicMock(spec_set=[
+        'update_zone',
+    ])
+)
+
+
+class PeriodicGenerateDelayedNotifyTaskTest(TaskTest):
+
+    def setUp(self):
+        super(PeriodicGenerateDelayedNotifyTaskTest, self).setUp()
+
+        self.config(
+            interval=5,
+            batch_size=100,
+            group="zone_manager_task:delayed_notify"
+        )
+
+        self.generate_delayed_notify_task_fixture = self.useFixture(
+            fixtures.ZoneManagerTaskFixture(
+                tasks.PeriodicGenerateDelayedNotifyTask
+            )
+        )
+
+    def _fetch_zones(self, query=None):
+        # Fetch zones including deleted ones
+        if query is None:
+            query = tables.zones.select()
+        return self.central_service.storage.session.execute(query).fetchall()
+
+    def _create_zones(self):
+        # Create a number of zones; half of them with delayed_notify set
+        for age in range(20):
+            name = "example%d.org." % age
+            delayed_notify = (age % 2 == 0)
+            self.create_zone(
+                name=name,
+                delayed_notify=delayed_notify,
+            )
+
+    def test_generate_delayed_notify_zones(self):
+        # Create zones and set some of them as pending update.
+        self.generate_delayed_notify_task_fixture.task()
+        self.config(quota_zones=1000)
+        self.config(
+            interval=1,
+            batch_size=5,
+            group="zone_manager_task:delayed_notify"
+        )
+        self._create_zones()
+        zones = self._fetch_zones(tables.zones.select().where(
+            tables.zones.c.delayed_notify == True))  # nopep8
+        self.assertEqual(10, len(zones))
+
+        # Run the task and check if it reset the delayed_notify flag
+        with fx_pool_manager:
+            pm_api = PoolManagerAPI.get_instance()
+            pm_api.update_zone.reset_mock()
+
+            self.generate_delayed_notify_task_fixture.task()
+
+            self.assertEqual(10, pm_api.update_zone.call_count)
+
+        zones = self._fetch_zones(tables.zones.select().where(
+            tables.zones.c.delayed_notify == True))  # nopep8
+        self.assertEqual(5, len(zones))
+
+        # Run the task and check if it reset the delayed_notify flag
+        with fx_pool_manager:
+            self.generate_delayed_notify_task_fixture.task()
+            pm_api = PoolManagerAPI.get_instance()
+            self.assertEqual(20, pm_api.update_zone.call_count)
+
+        zones = self._fetch_zones(tables.zones.select().where(
+            tables.zones.c.delayed_notify == True))  # nopep8
+        self.assertEqual(0, len(zones))

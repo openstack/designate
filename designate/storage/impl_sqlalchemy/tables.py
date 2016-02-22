@@ -109,6 +109,7 @@ zones = Table('zones', metadata,
            default='CREATE', server_default='CREATE', nullable=False),
     Column('pool_id', UUID, default=None, nullable=True),
     Column('reverse_name', String(255), nullable=False),
+    Column('delayed_notify', Boolean, default=False),
 
     UniqueConstraint('name', 'deleted', 'pool_id', name='unique_zone_name'),
     ForeignKeyConstraint(['parent_zone_id'],
