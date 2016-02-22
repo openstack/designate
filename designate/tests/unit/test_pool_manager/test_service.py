@@ -19,6 +19,7 @@ Unit tests
 """
 import unittest
 
+from mock import call
 from mock import Mock
 from mock import MagicMock
 from mock import patch
@@ -94,11 +95,22 @@ class PoolManagerTest(test.BaseTestCase):
     def test_get_failed_zones(self, *mocks):
         with patch.object(self.pm.central_api, 'find_zones') as \
                 mock_find_zones:
-            self.pm._get_failed_zones('ctx', pm_module.DELETE_ACTION)
 
-            mock_find_zones.assert_called_once_with(
-                'ctx', {'action': 'DELETE', 'status': 'ERROR', 'pool_id':
-                        '794ccc2c-d751-44fe-b57f-8894c9f5c842'})
+            with patch.object(pm_module.utils, 'increment_serial',
+                              return_value=1453758656):
+                self.pm._get_failed_zones('ctx', pm_module.DELETE_ACTION)
+
+            call_one = call('ctx', {'action': 'DELETE', 'status': 'ERROR',
+                                    'pool_id':
+                                    '794ccc2c-d751-44fe-b57f-8894c9f5c842'})
+            call_two = call('ctx', {'action': 'DELETE', 'status': 'PENDING',
+                                    'serial': '<1453758201',  # 1453758656-455
+                                    'pool_id':
+                                    '794ccc2c-d751-44fe-b57f-8894c9f5c842'})
+
+            # any_order because Mock adds some random calls in
+            mock_find_zones.assert_has_calls([call_one, call_two],
+                any_order=True)
 
     @patch.object(pm_module.DesignateContext, 'get_admin_context')
     def test_periodic_recover(self, mock_get_ctx, *mocks):
@@ -113,19 +125,19 @@ class PoolManagerTest(test.BaseTestCase):
                 return [z] * 5
 
         self.pm._get_failed_zones = mock_get_failed_zones
-        self.pm.delete_zone = Mock()
-        self.pm.create_zone = Mock()
-        self.pm.update_zone = Mock()
+        self.pm.pool_manager_api.delete_zone = Mock()
+        self.pm.pool_manager_api.create_zone = Mock()
+        self.pm.pool_manager_api.update_zone = Mock()
         mock_ctx = mock_get_ctx.return_value
 
         self.pm.periodic_recovery()
 
-        self.pm.delete_zone.assert_called_with(mock_ctx, z)
-        self.assertEqual(3, self.pm.delete_zone.call_count)
-        self.pm.create_zone.assert_called_with(mock_ctx, z)
-        self.assertEqual(4, self.pm.create_zone.call_count)
-        self.pm.update_zone.assert_called_with(mock_ctx, z)
-        self.assertEqual(5, self.pm.update_zone.call_count)
+        self.pm.pool_manager_api.delete_zone.assert_called_with(mock_ctx, z)
+        self.assertEqual(3, self.pm.pool_manager_api.delete_zone.call_count)
+        self.pm.pool_manager_api.create_zone.assert_called_with(mock_ctx, z)
+        self.assertEqual(4, self.pm.pool_manager_api.create_zone.call_count)
+        self.pm.pool_manager_api.update_zone.assert_called_with(mock_ctx, z)
+        self.assertEqual(5, self.pm.pool_manager_api.update_zone.call_count)
 
     @patch.object(pm_module.DesignateContext, 'get_admin_context')
     def test_periodic_recover_exception(self, mock_get_ctx, *mocks):
@@ -139,15 +151,32 @@ class PoolManagerTest(test.BaseTestCase):
                 return [z] * 4
 
         self.pm._get_failed_zones = mock_get_failed_zones
-        self.pm.delete_zone = Mock()
-        self.pm.create_zone = Mock(side_effect=Exception('oops'))
-        self.pm.update_zone = Mock()
+        self.pm.pool_manager_api.delete_zone = Mock()
+        self.pm.pool_manager_api.create_zone = Mock(
+                side_effect=Exception('oops'))
+        self.pm.pool_manager_api.update_zone = Mock()
         mock_ctx = mock_get_ctx.return_value
 
         self.pm.periodic_recovery()
 
-        self.pm.delete_zone.assert_called_with(mock_ctx, z)
-        self.assertEqual(3, self.pm.delete_zone.call_count)
-        self.pm.create_zone.assert_called_with(mock_ctx, z)
-        self.assertEqual(1, self.pm.create_zone.call_count)
-        self.assertEqual(0, self.pm.update_zone.call_count)
+        self.pm.pool_manager_api.delete_zone.assert_called_with(mock_ctx, z)
+        self.assertEqual(3, self.pm.pool_manager_api.delete_zone.call_count)
+        self.pm.pool_manager_api.create_zone.assert_called_with(mock_ctx, z)
+        self.assertEqual(1, self.pm.pool_manager_api.create_zone.call_count)
+        self.assertEqual(0, self.pm.pool_manager_api.update_zone.call_count)
+
+    def test_periodic_sync(self, *mocks):
+        def mock_fetch_healthy_zones(ctx):
+            return [
+                       RoObject(name='a_zone'),
+                       RoObject(name='b_zone'),
+                       RoObject(name='c_zone'),
+                   ]
+
+        self.pm._fetch_healthy_zones = mock_fetch_healthy_zones
+        self.pm.update_zone = Mock()
+        self.pm._exceed_or_meet_threshold = Mock(return_value=True)
+
+        self.pm.periodic_sync()
+
+        self.assertEqual(3, self.pm.update_zone.call_count)
