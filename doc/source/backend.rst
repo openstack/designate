@@ -12,7 +12,31 @@ Backend Base
     :undoc-members:
     :show-inheritance:
 
-Backend Dynect 
+Backend Akamai
+==============
+
+.. automodule:: designate.backend.impl_akamai
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Backend Bind9
+=============
+
+.. automodule:: designate.backend.impl_bind9
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Backend Designate
+=================
+
+.. automodule:: designate.backend.impl_designate
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Backend Dynect
 ==============
 
 .. automodule:: designate.backend.impl_dynect
@@ -20,10 +44,18 @@ Backend Dynect
     :undoc-members:
     :show-inheritance:
 
-Backend Multi
-=============
+Backend Infoblox
+================
 
-.. automodule:: designate.backend.impl_multi
+.. automodule:: designate.backend.impl_infoblox
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Backend Nsd4
+============
+
+.. automodule:: designate.backend.impl_nsd4
     :members:
     :undoc-members:
     :show-inheritance:
@@ -36,4 +68,10 @@ Backend Fake
     :undoc-members:
     :show-inheritance:
 
+Backend Powerdns
+================
 
+.. automodule:: designate.backend.impl_powerdns
+    :members:
+    :undoc-members:
+    :show-inheritance:

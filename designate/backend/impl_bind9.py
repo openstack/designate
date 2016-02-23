@@ -13,6 +13,11 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
+"""
+Bind 9 backend. Create and delete zones by executing rndc
+"""
+
 import random
 
 import six
@@ -36,6 +41,7 @@ class Bind9Backend(base.Backend):
     def __init__(self, target):
         super(Bind9Backend, self).__init__(target)
 
+        # TODO(Federico): make attributes private, run _rndc_base at init time
         self.host = self.options.get('host', '127.0.0.1')
         self.port = int(self.options.get('port', 53))
         self.rndc_host = self.options.get('rndc_host', '127.0.0.1')
@@ -49,6 +55,9 @@ class Bind9Backend(base.Backend):
                                   self.options.get('clean_zonefile', 'false'))
 
     def create_zone(self, context, zone):
+        """Create a new Zone by executin rndc, then notify mDNS
+        Do not raise exceptions if the zone already exists.
+        """
         LOG.debug('Create Zone')
         masters = []
         for master in self.masters:
@@ -78,6 +87,9 @@ class Bind9Backend(base.Backend):
             self.retry_interval, self.max_retries, self.delay)
 
     def delete_zone(self, context, zone):
+        """Delete a new Zone by executin rndc
+        Do not raise exceptions if the zone does not exist.
+        """
         LOG.debug('Delete Zone')
         rndc_op = [
             'delzone',

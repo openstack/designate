@@ -167,6 +167,8 @@ def render_template_to_file(template_name, output_path, makedirs=True,
 
 
 def execute(*cmd, **kw):
+    """Execute a command in a subprocess, blocking.
+    """
     root_helper = kw.pop('root_helper', cfg.CONF.root_helper)
     run_as_root = kw.pop('run_as_root', True)
     return processutils.execute(*cmd, run_as_root=run_as_root,

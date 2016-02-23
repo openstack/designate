@@ -13,44 +13,40 @@
     License for the specific language governing permissions and limitations
     under the License.
 
-BIND9 Backend
+Bind9 Backend
 =============
 
-.. note::
-   The BIND9 backend, while functional, is lacking a solid process for
-   distributing zone files among multiple DNS servers. The soon to be introduced
-   concept of "Pools" will provide a foundation to fix this.
+This page documents using the Pool Manager Bind 9 backend.
+The backend uses the rndc utility to create and delete zones remotely.
+
+The traffic between rndc and Bind is authenticated with a key.
 
 Designate Configuration
 -----------------------
 
-Configuration Options required for BIND9 operation::
+Example configuration required for Bind9 operation. One section for each pool target::
 
-    [service:central]
-    state-path = /var/lib/designate
-    backend_driver = bind9
+    [pool_target:f26e0b32-736f-4f0a-831b-039a415c481e]
+    options = rndc_host: 192.168.27.100, rndc_port: 953, rndc_config_file: /etc/bind/rndc.conf, rndc_key_file: /etc/bind/rndc.key, port: 53, host: 192.168.27.100, clean_zonefile: false
+    masters = 192.168.27.100:5354
+    type = bind9
 
-    [backend:bind9]
-    rndc-host = 127.0.0.1
-    rndc-port = 953
-    rndc-config-file = /etc/bind9/rndc.conf  # If required by BIND9
-    rndc-key-file = /etc/bind/rndc.key
+The key and config files are relative to the host running Pool Manager (and can
+be different from the hosts running Bind)
 
-BIND9 Configuration
+Bind9 Configuration
 -------------------
 
-Include the Designate generated configuration in /etc/bind/named.conf.local::
+Ensure Bind can access the /etc/bind/rndc.conf and /etc/bind/rndc.key files and
+receive rndc traffic from Pool Manager.
 
-    include "/var/lib/designate/bind9/zones.config";
-
-Ensure BIND9 can access the above config, one way to achieve this is by
-disabling AppArmor::
-
-    $ touch /etc/apparmor.d/disable/usr.sbin.named
-    $ service apparmor reload
-    $ service bind9 restart
-
-To ensure rndc addzone/delzone functionality edit named.conf.options, or
-named.conf and add this line under options::
+Enable rndc addzone/delzone functionality by editing named.conf.options or named.conf and add this line under options::
 
     allow-new-zones yes;
+
+Example configuration of /etc/bind/rndc.key::
+
+    key "rndc-key" {
+        algorithm hmac-md5;
+        secret "<b64-encoded string>";
+    };

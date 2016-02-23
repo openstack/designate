@@ -4,21 +4,19 @@
 MDNS
 ****
 
+MDNS Base
+=========
+.. automodule:: designate.mdns.base
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 MDNS Handler
 ============
 .. automodule:: designate.mdns.handler
     :members:
     :undoc-members:
     :show-inheritance:
-
-
-MDNS Middleware
-===============
-.. automodule:: designate.mdns.middleware
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 
 MDNS Notify
 ===========
@@ -27,7 +25,6 @@ MDNS Notify
     :undoc-members:
     :show-inheritance:
 
-
 MDNS RPC API
 ============
 .. automodule:: designate.mdns.rpcapi
@@ -35,11 +32,16 @@ MDNS RPC API
     :undoc-members:
     :show-inheritance:
 
-
 MDNS Service
-===============
+============
 .. automodule:: designate.mdns.service
     :members:
     :undoc-members:
     :show-inheritance:
 
+MDNS XFR
+========
+.. automodule:: designate.mdns.xfr
+    :members:
+    :undoc-members:
+    :show-inheritance:
