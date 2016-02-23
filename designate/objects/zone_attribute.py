@@ -29,5 +29,5 @@ class ZoneAttribute(base.DictObjectMixin, base.PersistentObjectMixin,
     ]
 
 
-class ZoneAttributeList(base.ListObjectMixin, base.DesignateObject):
+class ZoneAttributeList(base.AttributeListObjectMixin, base.DesignateObject):
     LIST_ITEM_TYPE = ZoneAttribute
