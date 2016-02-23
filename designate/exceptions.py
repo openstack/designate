@@ -291,16 +291,28 @@ class DuplicatePoolAttribute(Duplicate):
     error_type = 'duplicate_pool_attribute'
 
 
-class DuplicateZoneAttribute(Duplicate):
-    error_type = 'duplicate_zone_attribute'
-
-
-class DuplicateZoneMaster(Duplicate):
-    error_type = 'duplicate_zone_attribute'
-
-
 class DuplicatePoolNsRecord(Duplicate):
     error_type = 'duplicate_pool_ns_record'
+
+
+class DuplicatePoolNameserver(Duplicate):
+    error_type = 'duplicate_pool_nameserver'
+
+
+class DuplicatePoolTarget(Duplicate):
+    error_type = 'duplicate_pool_target'
+
+
+class DuplicatePoolTargetOption(Duplicate):
+    error_type = 'duplicate_pool_target_option'
+
+
+class DuplicatePoolTargetMaster(Duplicate):
+    error_type = 'duplicate_pool_target_master'
+
+
+class DuplicatePoolAlsoNotify(Duplicate):
+    error_type = 'duplicate_pool_also_notify'
 
 
 class DuplicateZoneImport(Duplicate):
@@ -323,6 +335,14 @@ class DuplicateZoneTransferRequest(Duplicate):
 
 class DuplicateZoneTransferAccept(Duplicate):
     error_type = 'duplicate_zone_transfer_accept'
+
+
+class DuplicateZoneAttribute(Duplicate):
+    error_type = 'duplicate_zone_attribute'
+
+
+class DuplicateZoneMaster(Duplicate):
+    error_type = 'duplicate_zone_attribute'
 
 
 class NotFound(Base):
@@ -393,6 +413,26 @@ class PoolAttributeNotFound(NotFound):
 
 class PoolNsRecordNotFound(NotFound):
     error_type = 'pool_ns_record_not_found'
+
+
+class PoolNameserverNotFound(NotFound):
+    error_type = 'pool_nameserver_not_found'
+
+
+class PoolTargetNotFound(NotFound):
+    error_type = 'pool_target_not_found'
+
+
+class PoolTargetOptionNotFound(NotFound):
+    error_type = 'pool_target_option_not_found'
+
+
+class PoolTargetMasterNotFound(NotFound):
+    error_type = 'pool_target_master_not_found'
+
+
+class PoolAlsoNotifyNotFound(NotFound):
+    error_type = 'pool_also_notify_not_found'
 
 
 class ZoneTransferRequestNotFound(NotFound):

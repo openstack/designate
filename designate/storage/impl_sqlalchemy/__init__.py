@@ -922,7 +922,17 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             pool.ns_records = self._find_pool_ns_records(
                 context, {'pool_id': pool.id})
 
-            pool.obj_reset_changes(['attributes', 'ns_records'])
+            pool.nameservers = self._find_pool_nameservers(
+                context, {'pool_id': pool.id})
+
+            pool.targets = self._find_pool_targets(
+                context, {'pool_id': pool.id})
+
+            pool.also_notifies = self._find_pool_also_notifies(
+                context, {'pool_id': pool.id})
+
+            pool.obj_reset_changes(['attributes', 'ns_records', 'nameservers',
+                                    'targets', 'also_notifies'])
 
         if one:
             _load_relations(pools)
@@ -935,7 +945,8 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
     def create_pool(self, context, pool):
         pool = self._create(
             tables.pools, pool, exceptions.DuplicatePool,
-            ['attributes', 'ns_records'])
+            ['attributes', 'ns_records', 'nameservers', 'targets',
+             'also_notifies'])
 
         if pool.obj_attr_is_set('attributes'):
             for pool_attribute in pool.attributes:
@@ -949,7 +960,26 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
         else:
             pool.ns_records = objects.PoolNsRecordList()
 
-        pool.obj_reset_changes(['attributes', 'ns_records'])
+        if pool.obj_attr_is_set('nameservers'):
+            for nameserver in pool.nameservers:
+                self.create_pool_nameserver(context, pool.id, nameserver)
+        else:
+            pool.nameservers = objects.PoolNameserverList()
+
+        if pool.obj_attr_is_set('targets'):
+            for target in pool.targets:
+                self.create_pool_target(context, pool.id, target)
+        else:
+            pool.targets = objects.PoolTargetList()
+
+        if pool.obj_attr_is_set('also_notifies'):
+            for also_notify in pool.also_notifies:
+                self.create_pool_also_notify(context, pool.id, also_notify)
+        else:
+            pool.also_notifies = objects.PoolAlsoNotifyList()
+
+        pool.obj_reset_changes(['attributes', 'ns_records', 'nameservers',
+                                'targets', 'also_notifies'])
 
         return pool
 
@@ -968,9 +998,10 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
     def update_pool(self, context, pool):
         pool = self._update(context, tables.pools, pool,
                             exceptions.DuplicatePool, exceptions.PoolNotFound,
-                            ['attributes', 'ns_records'])
+                            ['attributes', 'ns_records', 'nameservers',
+                             'targets', 'also_notifies'])
 
-        # TODO(kiall): These two sections below are near identical, we should
+        # TODO(kiall): The sections below are near identical, we should
         #              refactor into a single reusable method.
         if pool.obj_attr_is_set('attributes'):
             # Gather the pool ID's we have
@@ -1058,6 +1089,136 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
                 self.create_pool_ns_record(
                     context, pool.id, ns_record)
 
+        if pool.obj_attr_is_set('nameservers'):
+            # Gather the pool ID's we have
+            have_nameservers = set([r.id for r in self._find_pool_nameservers(
+                context, {'pool_id': pool.id})])
+
+            # Prep some lists of changes
+            keep_nameservers = set([])
+            create_nameservers = []
+            update_nameservers = []
+
+            nameservers = []
+            if pool.obj_attr_is_set('nameservers'):
+                for r in pool.nameservers.objects:
+                    nameservers.append(r)
+
+            # Determine what to change
+            for nameserver in nameservers:
+                keep_nameservers.add(nameserver.id)
+                try:
+                    nameserver.obj_get_original_value('id')
+                except KeyError:
+                    create_nameservers.append(nameserver)
+                else:
+                    update_nameservers.append(nameserver)
+
+            # NOTE: Since we're dealing with mutable objects, the return value
+            #       of create/update/delete nameserver is not needed. The
+            #       original item will be mutated in place on the input
+            #       "pool.nameservers" list.
+
+            # Delete nameservers
+            for nameserver_id in have_nameservers - keep_nameservers:
+                self.delete_pool_nameserver(context, nameserver_id)
+
+            # Update nameservers
+            for nameserver in update_nameservers:
+                self.update_pool_nameserver(context, nameserver)
+
+            # Create nameservers
+            for nameserver in create_nameservers:
+                self.create_pool_nameserver(
+                    context, pool.id, nameserver)
+
+        if pool.obj_attr_is_set('targets'):
+            # Gather the pool ID's we have
+            have_targets = set([r.id for r in self._find_pool_targets(
+                context, {'pool_id': pool.id})])
+
+            # Prep some lists of changes
+            keep_targets = set([])
+            create_targets = []
+            update_targets = []
+
+            targets = []
+            if pool.obj_attr_is_set('targets'):
+                for r in pool.targets.objects:
+                    targets.append(r)
+
+            # Determine what to change
+            for target in targets:
+                keep_targets.add(target.id)
+                try:
+                    target.obj_get_original_value('id')
+                except KeyError:
+                    create_targets.append(target)
+                else:
+                    update_targets.append(target)
+
+            # NOTE: Since we're dealing with mutable objects, the return value
+            #       of create/update/delete target is not needed. The
+            #       original item will be mutated in place on the input
+            #       "pool.targets" list.
+
+            # Delete targets
+            for target_id in have_targets - keep_targets:
+                self.delete_pool_target(context, target_id)
+
+            # Update targets
+            for target in update_targets:
+                self.update_pool_target(context, target)
+
+            # Create targets
+            for target in create_targets:
+                self.create_pool_target(
+                    context, pool.id, target)
+
+        if pool.obj_attr_is_set('also_notifies'):
+            # Gather the pool ID's we have
+            have_also_notifies = set(
+                [r.id for r in self._find_pool_also_notifies(
+                 context, {'pool_id': pool.id})])
+
+            # Prep some lists of changes
+            keep_also_notifies = set([])
+            create_also_notifies = []
+            update_also_notifies = []
+
+            also_notifies = []
+            if pool.obj_attr_is_set('also_notifies'):
+                for r in pool.also_notifies.objects:
+                    also_notifies.append(r)
+
+            # Determine what to change
+            for also_notify in also_notifies:
+                keep_also_notifies.add(also_notify.id)
+                try:
+                    also_notify.obj_get_original_value('id')
+                except KeyError:
+                    create_also_notifies.append(also_notify)
+                else:
+                    update_also_notifies.append(also_notify)
+
+            # NOTE: Since we're dealing with mutable objects, the return value
+            #       of create/update/delete also_notify is not needed. The
+            #       original item will be mutated in place on the input
+            #       "pool.also_notifies" list.
+
+            # Delete also_notifies
+            for also_notify_id in have_also_notifies - keep_also_notifies:
+                self.delete_pool_also_notify(context, also_notify_id)
+
+            # Update also_notifies
+            for also_notify in update_also_notifies:
+                self.update_pool_also_notify(context, also_notify)
+
+            # Create also_notifies
+            for also_notify in create_also_notifies:
+                self.create_pool_also_notify(
+                    context, pool.id, also_notify)
+
         # Call get_pool to get the ids of all the attributes/ns_records
         # refreshed in the pool object
         updated_pool = self.get_pool(context, pool.id)
@@ -1072,7 +1233,7 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
 
     # Pool attribute methods
     def _find_pool_attributes(self, context, criterion, one=False, marker=None,
-                    limit=None, sort_key=None, sort_dir=None):
+                              limit=None, sort_key=None, sort_dir=None):
         return self._find(context, tables.pool_attributes,
                           objects.PoolAttribute, objects.PoolAttributeList,
                           exceptions.PoolAttributeNotFound, criterion, one,
@@ -1089,7 +1250,7 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             context, {'id': pool_attribute_id}, one=True)
 
     def find_pool_attributes(self, context, criterion=None, marker=None,
-                   limit=None, sort_key=None, sort_dir=None):
+                             limit=None, sort_key=None, sort_dir=None):
         return self._find_pool_attributes(context, criterion, marker=marker,
                                           limit=limit, sort_key=sort_key,
                                           sort_dir=sort_dir)
@@ -1113,7 +1274,7 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
 
     # Pool ns_record methods
     def _find_pool_ns_records(self, context, criterion, one=False, marker=None,
-                    limit=None, sort_key=None, sort_dir=None):
+                              limit=None, sort_key=None, sort_dir=None):
         return self._find(context, tables.pool_ns_records,
                           objects.PoolNsRecord, objects.PoolNsRecordList,
                           exceptions.PoolNsRecordNotFound, criterion, one,
@@ -1130,7 +1291,7 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             context, {'id': pool_ns_record_id}, one=True)
 
     def find_pool_ns_records(self, context, criterion=None, marker=None,
-                   limit=None, sort_key=None, sort_dir=None):
+                             limit=None, sort_key=None, sort_dir=None):
         return self._find_pool_ns_records(context, criterion, marker=marker,
                                           limit=limit, sort_key=sort_key,
                                           sort_dir=sort_dir)
@@ -1151,6 +1312,353 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             exceptions.PoolNsRecordNotFound)
 
         return deleted_pool_ns_record
+
+    # PoolNameserver methods
+    def _find_pool_nameservers(self, context, criterion, one=False,
+                               marker=None, limit=None, sort_key=None,
+                               sort_dir=None):
+        return self._find(context, tables.pool_nameservers,
+                          objects.PoolNameserver, objects.PoolNameserverList,
+                          exceptions.PoolNameserverNotFound, criterion, one,
+                          marker, limit, sort_key, sort_dir)
+
+    def create_pool_nameserver(self, context, pool_id, pool_nameserver):
+        pool_nameserver.pool_id = pool_id
+
+        return self._create(tables.pool_nameservers, pool_nameserver,
+                            exceptions.DuplicatePoolNameserver)
+
+    def get_pool_nameserver(self, context, pool_nameserver_id):
+        return self._find_pool_nameservers(
+            context, {'id': pool_nameserver_id}, one=True)
+
+    def find_pool_nameservers(self, context, criterion=None, marker=None,
+                   limit=None, sort_key=None, sort_dir=None):
+        return self._find_pool_nameservers(context, criterion, marker=marker,
+                                          limit=limit, sort_key=sort_key,
+                                          sort_dir=sort_dir)
+
+    def find_pool_nameserver(self, context, criterion):
+        return self._find_pool_nameservers(context, criterion, one=True)
+
+    def update_pool_nameserver(self, context, pool_nameserver):
+        return self._update(context, tables.pool_nameservers, pool_nameserver,
+                            exceptions.DuplicatePoolNameserver,
+                            exceptions.PoolNameserverNotFound)
+
+    def delete_pool_nameserver(self, context, pool_nameserver_id):
+        pool_nameserver = self._find_pool_nameservers(
+            context, {'id': pool_nameserver_id}, one=True)
+        deleted_pool_nameserver = self._delete(
+            context, tables.pool_nameservers, pool_nameserver,
+            exceptions.PoolNameserverNotFound)
+
+        return deleted_pool_nameserver
+
+    # PoolTarget methods
+    def _find_pool_targets(self, context, criterion, one=False, marker=None,
+                           limit=None, sort_key=None, sort_dir=None):
+        pool_targets = self._find(
+            context, tables.pool_targets, objects.PoolTarget,
+            objects.PoolTargetList, exceptions.PoolTargetNotFound,
+            criterion, one, marker, limit, sort_key,
+            sort_dir)
+
+        # Load Relations
+        def _load_relations(pool_target):
+            pool_target.options = self._find_pool_target_options(
+                context, {'pool_target_id': pool_target.id})
+
+            pool_target.masters = self._find_pool_target_masters(
+                context, {'pool_target_id': pool_target.id})
+
+            pool_target.obj_reset_changes(['options', 'masters'])
+
+        if one:
+            _load_relations(pool_targets)
+        else:
+            for pool_target in pool_targets:
+                _load_relations(pool_target)
+
+        return pool_targets
+
+    def create_pool_target(self, context, pool_id, pool_target):
+        pool_target.pool_id = pool_id
+
+        pool_target = self._create(
+            tables.pool_targets, pool_target, exceptions.DuplicatePoolTarget,
+            ['options', 'masters'])
+
+        if pool_target.obj_attr_is_set('options'):
+            for pool_target_option in pool_target.options:
+                self.create_pool_target_option(
+                    context, pool_target.id, pool_target_option)
+        else:
+            pool_target.options = objects.PoolTargetOptionList()
+
+        if pool_target.obj_attr_is_set('masters'):
+            for pool_target_master in pool_target.masters:
+                self.create_pool_target_master(
+                    context, pool_target.id, pool_target_master)
+        else:
+            pool_target.masters = objects.PoolTargetMasterList()
+
+        pool_target.obj_reset_changes(['options', 'masters'])
+
+        return pool_target
+
+    def get_pool_target(self, context, pool_target_id):
+        return self._find_pool_targets(
+            context, {'id': pool_target_id}, one=True)
+
+    def find_pool_targets(self, context, criterion=None, marker=None,
+                          limit=None, sort_key=None, sort_dir=None):
+        return self._find_pool_targets(context, criterion, marker=marker,
+                                limit=limit, sort_key=sort_key,
+                                sort_dir=sort_dir)
+
+    def find_pool_target(self, context, criterion):
+        return self._find_pool_targets(context, criterion, one=True)
+
+    def update_pool_target(self, context, pool_target):
+        pool_target = self._update(
+            context, tables.pool_targets, pool_target,
+            exceptions.DuplicatePoolTarget, exceptions.PoolTargetNotFound,
+            ['options', 'masters'])
+
+        # TODO(kiall): The sections below are near identical, we should
+        #              refactor into a single reusable method.
+        if pool_target.obj_attr_is_set('options'):
+            # Gather the pool ID's we have
+            have_options = set([r.id for r in self._find_pool_target_options(
+                context, {'pool_target_id': pool_target.id})])
+
+            # Prep some lists of changes
+            keep_options = set([])
+            create_options = []
+            update_options = []
+
+            options = []
+            if pool_target.obj_attr_is_set('options'):
+                for r in pool_target.options.objects:
+                    options.append(r)
+
+            # Determine what to change
+            for option in options:
+                keep_options.add(option.id)
+                try:
+                    option.obj_get_original_value('id')
+                except KeyError:
+                    create_options.append(option)
+                else:
+                    update_options.append(option)
+
+            # NOTE: Since we're dealing with mutable objects, the return value
+            #       of create/update/delete option is not needed. The
+            #       original item will be mutated in place on the input
+            #       "pool.options" list.
+
+            # Delete options
+            for option_id in have_options - keep_options:
+                self.delete_pool_target_option(context, option_id)
+
+            # Update options
+            for option in update_options:
+                self.update_pool_target_option(context, option)
+
+            # Create options
+            for option in create_options:
+                self.create_pool_target_option(
+                    context, pool_target.id, option)
+
+        if pool_target.obj_attr_is_set('masters'):
+            # Gather the pool ID's we have
+            have_masters = set([r.id for r in self._find_pool_target_masters(
+                context, {'pool_target_id': pool_target.id})])
+
+            # Prep some lists of changes
+            keep_masters = set([])
+            create_masters = []
+            update_masters = []
+
+            masters = []
+            if pool_target.obj_attr_is_set('masters'):
+                for r in pool_target.masters.objects:
+                    masters.append(r)
+
+            # Determine what to change
+            for master in masters:
+                keep_masters.add(master.id)
+                try:
+                    master.obj_get_original_value('id')
+                except KeyError:
+                    create_masters.append(master)
+                else:
+                    update_masters.append(master)
+
+            # NOTE: Since we're dealing with mutable objects, the return value
+            #       of create/update/delete master is not needed. The
+            #       original item will be mutated in place on the input
+            #       "pool.masters" list.
+
+            # Delete masters
+            for master_id in have_masters - keep_masters:
+                self.delete_pool_target_master(context, master_id)
+
+            # Update masters
+            for master in update_masters:
+                self.update_pool_target_master(context, master)
+
+            # Create masters
+            for master in create_masters:
+                self.create_pool_target_master(
+                    context, pool_target.id, master)
+
+        # Call get_pool to get the ids of all the attributes/ns_records
+        # refreshed in the pool object
+        updated_pool_target = self.get_pool_target(context, pool_target.id)
+
+        return updated_pool_target
+
+    def delete_pool_target(self, context, pool_target_id):
+        pool_target = self._find_pool_targets(
+            context, {'id': pool_target_id}, one=True)
+
+        return self._delete(context, tables.pool_targets, pool_target,
+                            exceptions.PoolTargetNotFound)
+
+    # PoolTargetOption methods
+    def _find_pool_target_options(self, context, criterion, one=False,
+                                  marker=None, limit=None, sort_key=None,
+                                  sort_dir=None):
+        return self._find(
+            context, tables.pool_target_options,
+            objects.PoolTargetOption, objects.PoolTargetOptionList,
+            exceptions.PoolTargetOptionNotFound, criterion, one,
+            marker, limit, sort_key, sort_dir)
+
+    def create_pool_target_option(self, context, pool_target_id,
+                                  pool_target_option):
+        pool_target_option.pool_target_id = pool_target_id
+
+        return self._create(tables.pool_target_options, pool_target_option,
+                            exceptions.DuplicatePoolTargetOption)
+
+    def get_pool_target_option(self, context, pool_target_option_id):
+        return self._find_pool_target_options(
+            context, {'id': pool_target_option_id}, one=True)
+
+    def find_pool_target_options(self, context, criterion=None, marker=None,
+                                 limit=None, sort_key=None, sort_dir=None):
+        return self._find_pool_target_options(
+            context, criterion, marker=marker, limit=limit, sort_key=sort_key,
+            sort_dir=sort_dir)
+
+    def find_pool_target_option(self, context, criterion):
+        return self._find_pool_target_options(context, criterion, one=True)
+
+    def update_pool_target_option(self, context, pool_target_option):
+        return self._update(
+            context, tables.pool_target_options, pool_target_option,
+            exceptions.DuplicatePoolTargetOption,
+            exceptions.PoolTargetOptionNotFound)
+
+    def delete_pool_target_option(self, context, pool_target_option_id):
+        pool_target_option = self._find_pool_target_options(
+            context, {'id': pool_target_option_id}, one=True)
+        deleted_pool_target_option = self._delete(
+            context, tables.pool_target_options, pool_target_option,
+            exceptions.PoolTargetOptionNotFound)
+
+        return deleted_pool_target_option
+
+    # PoolTargetMaster methods
+    def _find_pool_target_masters(self, context, criterion, one=False,
+                                  marker=None, limit=None, sort_key=None,
+                                  sort_dir=None):
+        return self._find(
+            context, tables.pool_target_masters,
+            objects.PoolTargetMaster, objects.PoolTargetMasterList,
+            exceptions.PoolTargetMasterNotFound, criterion, one,
+            marker, limit, sort_key, sort_dir)
+
+    def create_pool_target_master(self, context, pool_target_id,
+                                  pool_target_master):
+        pool_target_master.pool_target_id = pool_target_id
+
+        return self._create(tables.pool_target_masters, pool_target_master,
+                            exceptions.DuplicatePoolTargetMaster)
+
+    def get_pool_target_master(self, context, pool_target_master_id):
+        return self._find_pool_target_masters(
+            context, {'id': pool_target_master_id}, one=True)
+
+    def find_pool_target_masters(self, context, criterion=None, marker=None,
+                                 limit=None, sort_key=None, sort_dir=None):
+        return self._find_pool_target_masters(
+            context, criterion, marker=marker, limit=limit, sort_key=sort_key,
+            sort_dir=sort_dir)
+
+    def find_pool_target_master(self, context, criterion):
+        return self._find_pool_target_masters(context, criterion, one=True)
+
+    def update_pool_target_master(self, context, pool_target_master):
+        return self._update(
+            context, tables.pool_target_masters, pool_target_master,
+            exceptions.DuplicatePoolTargetMaster,
+            exceptions.PoolTargetMasterNotFound)
+
+    def delete_pool_target_master(self, context, pool_target_master_id):
+        pool_target_master = self._find_pool_target_masters(
+            context, {'id': pool_target_master_id}, one=True)
+        deleted_pool_target_master = self._delete(
+            context, tables.pool_target_masters, pool_target_master,
+            exceptions.PoolTargetMasterNotFound)
+
+        return deleted_pool_target_master
+
+    # PoolAlsoNotify methods
+    def _find_pool_also_notifies(self, context, criterion, one=False,
+                                 marker=None, limit=None, sort_key=None,
+                                 sort_dir=None):
+        return self._find(context, tables.pool_also_notifies,
+                          objects.PoolAlsoNotify, objects.PoolAlsoNotifyList,
+                          exceptions.PoolAlsoNotifyNotFound, criterion, one,
+                          marker, limit, sort_key, sort_dir)
+
+    def create_pool_also_notify(self, context, pool_id, pool_also_notify):
+        pool_also_notify.pool_id = pool_id
+
+        return self._create(tables.pool_also_notifies, pool_also_notify,
+                            exceptions.DuplicatePoolAlsoNotify)
+
+    def get_pool_also_notify(self, context, pool_also_notify_id):
+        return self._find_pool_also_notifies(
+            context, {'id': pool_also_notify_id}, one=True)
+
+    def find_pool_also_notifies(self, context, criterion=None, marker=None,
+                                limit=None, sort_key=None, sort_dir=None):
+        return self._find_pool_also_notifies(context, criterion, marker=marker,
+                                          limit=limit, sort_key=sort_key,
+                                          sort_dir=sort_dir)
+
+    def find_pool_also_notify(self, context, criterion):
+        return self._find_pool_also_notifies(context, criterion, one=True)
+
+    def update_pool_also_notify(self, context, pool_also_notify):
+        return self._update(
+            context, tables.pool_also_notifies, pool_also_notify,
+            exceptions.DuplicatePoolAlsoNotify,
+            exceptions.PoolAlsoNotifyNotFound)
+
+    def delete_pool_also_notify(self, context, pool_also_notify_id):
+        pool_also_notify = self._find_pool_also_notifies(
+            context, {'id': pool_also_notify_id}, one=True)
+        deleted_pool_also_notify = self._delete(
+            context, tables.pool_also_notifies, pool_also_notify,
+            exceptions.PoolAlsoNotifyNotFound)
+
+        return deleted_pool_also_notify
 
     # Zone Transfer Methods
     def _find_zone_transfer_requests(self, context, criterion, one=False,
