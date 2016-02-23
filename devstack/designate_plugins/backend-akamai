@@ -29,7 +29,7 @@ DESIGNATE_AKAMAI_USERNAME=${DESIGNATE_AKAMAI_USERNAME:-username}
 DESIGNATE_AKAMAI_PASSWORD=${DESIGNATE_AKAMAI_PASSWORD:-password}
 DESIGNATE_AKAMAI_MASTERS=${DESIGNATE_AKAMAI_MASTERS:-"$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT_MDNS"}
 DESIGNATE_AKAMAI_NAMESERVERS=${DESIGNATE_AKAMAI_NAMESERVERS:-""}
-DESIGNATE_AKAMAI_ALSO_NOTIFIES=${DESIGNATE_AKAMAI_ALSO_NOTIFIES:-"193.108.155.34:53,23.73.134.141:53,80.67.64.148:53,23.73.134.237:53,23.73.133.141:53,23.73.133.237:53,80.67.64.10:53,72.246.0.10:53,72.247.45.157:53,72.246.192.168:53,193.108.152.143:53,60.254.128.45:53,72.247.45.110:53,72.247.45.65:53,72.247.45.25:53"}
+DESIGNATE_AKAMAI_ALSO_NOTIFIES=${DESIGNATE_AKAMAI_ALSO_NOTIFIES:-"193.108.155.34,23.73.134.141,80.67.64.148,23.73.134.237,23.73.133.141,23.73.133.237,80.67.64.10,72.246.0.10,72.247.45.157,72.246.192.168,193.108.152.143,60.254.128.45,72.247.45.110,72.247.45.65,72.247.45.25"}
 
 # Pull in DESIGNATE_3RDPARTY_CREDS user/pass if set
 if [ -n "$DESIGNATE_3RDPARTY_CREDS" ]; then
@@ -57,38 +57,72 @@ function install_designate_backend {
 
 # configure_designate_backend - make configuration changes, including those to other services
 function configure_designate_backend {
-    iniset $DESIGNATE_CONF pool_target:$DESIGNATE_TARGET_ID type akamai
-    iniset $DESIGNATE_CONF pool_target:$DESIGNATE_TARGET_ID masters $DESIGNATE_AKAMAI_MASTERS
-    iniset $DESIGNATE_CONF pool_target:$DESIGNATE_TARGET_ID options "username: $DESIGNATE_AKAMAI_USERNAME, password: $DESIGNATE_AKAMAI_PASSWORD"
+    # Generate Designate pool.yaml file
+    sudo tee $DESIGNATE_CONF_DIR/pools.yaml > /dev/null <<EOF
+---
+- name: default
+  description: DevStack Akamai Pool
+  attributes: {}
 
-    # Create a Pool Nameserver for each of the Akamai nameservers
-    local nameserver_ids=""
-    IFS=',' read -a nameservers <<< "$DESIGNATE_AKAMAI_NAMESERVERS"
+  targets:
+    - type: akamai
+      description: Akamai API
 
-    for nameserver in "${nameservers[@]}"; do
-        local nameserver_id=`uuidgen`
-        iniset $DESIGNATE_CONF pool_nameserver:$nameserver_id host $(dig +short A $nameserver | head -n 1)
-        iniset $DESIGNATE_CONF pool_nameserver:$nameserver_id port 53
+      options:
+        username: $DESIGNATE_AKAMAI_USERNAME
+        password: $DESIGNATE_AKAMAI_PASSWORD
 
-        # Append the Nameserver ID to the list
-        nameserver_ids+=${nameserver_id},
+      masters:
+EOF
+
+    # Create a Pool Master for each of the Akamai Masters
+    IFS=',' read -a masters <<< "$DESIGNATE_AKAMAI_MASTERS"
+
+    for master in "${masters[@]}"; do
+        sudo tee -a $DESIGNATE_CONF_DIR/pools.yaml > /dev/null <<EOF
+        - host: $master
+          port: 53
+EOF
     done
 
-    # Configure the Pool for the set of nameserver IDs, minus the trailing comma
-    iniset $DESIGNATE_CONF pool:$DESIGNATE_POOL_ID nameservers "${nameserver_ids:0:-1}"
+    # Create a Pool NS Record for each of the Akamai Nameservers
+    IFS=',' read -a nameservers <<< "$DESIGNATE_AKAMAI_NAMESERVERS"
 
-    # Configure the Pool to Notify Akamai's Transfer Agents
-    iniset $DESIGNATE_CONF pool:$DESIGNATE_POOL_ID also_notifies "$DESIGNATE_AKAMAI_ALSO_NOTIFIES"
-}
+    sudo tee -a $DESIGNATE_CONF_DIR/pools.yaml > /dev/null <<EOF
+  ns_records:
+EOF
 
-# create_designate_ns_records - Create Pool NS Records
-function create_designate_ns_records_backend {
-    # Build an array of the Akamai nameservers.
-    IFS=',' read -a ns_records <<< "$DESIGNATE_AKAMAI_NAMESERVERS"
+    for nameserver in "${nameservers[@]}"; do
+        sudo tee -a $DESIGNATE_CONF_DIR/pools.yaml > /dev/null <<EOF
+    - hostname: $nameserver
+      priority: 1
+EOF
+    done
 
-    # Create a NS Record for each of the Akamai nameservers
-    for ns_record in "${ns_records[@]}"; do
-        designate server-create --name "${ns_record%%.}."
+    # Create a Pool Nameserver for each of the Akamai Nameservers
+    sudo tee -a $DESIGNATE_CONF_DIR/pools.yaml > /dev/null <<EOF
+  nameservers:
+EOF
+
+    for nameserver in "${nameservers[@]}"; do
+        sudo tee -a $DESIGNATE_CONF_DIR/pools.yaml > /dev/null <<EOF
+    - host: `dig +short A $nameserver | head -n 1`
+      port: 53
+EOF
+    done
+
+    # Create a Pool Also Notifies for each of the Akamai Also Notifies
+    IFS=',' read -a also_notifies <<< "$DESIGNATE_AKAMAI_ALSO_NOTIFIES"
+
+    sudo tee -a $DESIGNATE_CONF_DIR/pools.yaml > /dev/null <<EOF
+  also_notifies:
+EOF
+
+    for also_notify in "${also_notifies[@]}"; do
+        sudo tee -a $DESIGNATE_CONF_DIR/pools.yaml > /dev/null <<EOF
+    - host: $also_notify
+      port: 53
+EOF
     done
 }
 

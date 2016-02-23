@@ -18,7 +18,6 @@ import logging
 import uuid
 
 import oslo_messaging as messaging
-from oslo_config import cfg
 from mock import call
 from mock import Mock
 from mock import patch
@@ -30,6 +29,7 @@ from designate.central import rpcapi as central_rpcapi
 from designate.mdns import rpcapi as mdns_rpcapi
 from designate.storage.impl_sqlalchemy import tables
 from designate.tests.test_pool_manager import PoolManagerTestCase
+from designate.tests.test_pool_manager import POOL_DICT
 import designate.pool_manager.service as pm_module
 
 LOG = logging.getLogger(__name__)
@@ -55,61 +55,13 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
             pool_id='794ccc2c-d751-44fe-b57f-8894c9f5c842',
             group='service:pool_manager')
 
-        # Configure the Pool
-        section_name = 'pool:794ccc2c-d751-44fe-b57f-8894c9f5c842'
-        section_opts = [
-            cfg.ListOpt('targets', default=[
-                'f278782a-07dc-4502-9177-b5d85c5f7c7e',
-                'a38703f2-b71e-4e5b-ab22-30caaed61dfd',
-            ]),
-            cfg.ListOpt('nameservers', default=[
-                'c5d64303-4cba-425a-9f3c-5d708584dde4',
-                'c67cdc95-9a9e-4d2a-98ed-dc78cbd85234',
-            ]),
-            cfg.ListOpt('also_notifies', default=[]),
-        ]
-        cfg.CONF.register_group(cfg.OptGroup(name=section_name))
-        cfg.CONF.register_opts(section_opts, group=section_name)
-
-        # Configure the Pool Targets
-        section_name = 'pool_target:f278782a-07dc-4502-9177-b5d85c5f7c7e'
-        section_opts = [
-            cfg.StrOpt('type', default='fake'),
-            cfg.ListOpt('masters', default=['127.0.0.1:5354']),
-            cfg.DictOpt('options', default={})
-        ]
-        cfg.CONF.register_group(cfg.OptGroup(name=section_name))
-        cfg.CONF.register_opts(section_opts, group=section_name)
-
-        section_name = 'pool_target:a38703f2-b71e-4e5b-ab22-30caaed61dfd'
-        section_opts = [
-            cfg.StrOpt('type', default='fake'),
-            cfg.ListOpt('masters', default=['127.0.0.1:5354']),
-            cfg.DictOpt('options', default={})
-        ]
-        cfg.CONF.register_group(cfg.OptGroup(name=section_name))
-        cfg.CONF.register_opts(section_opts, group=section_name)
-
-        # Configure the Pool Nameservers
-        section_name = 'pool_nameserver:c5d64303-4cba-425a-9f3c-5d708584dde4'
-        section_opts = [
-            cfg.StrOpt('host', default='127.0.0.1'),
-            cfg.StrOpt('port', default=5355),
-        ]
-        cfg.CONF.register_group(cfg.OptGroup(name=section_name))
-        cfg.CONF.register_opts(section_opts, group=section_name)
-
-        section_name = 'pool_nameserver:c67cdc95-9a9e-4d2a-98ed-dc78cbd85234'
-        section_opts = [
-            cfg.StrOpt('host', default='127.0.0.1'),
-            cfg.StrOpt('port', default=5356),
-        ]
-        cfg.CONF.register_group(cfg.OptGroup(name=section_name))
-        cfg.CONF.register_opts(section_opts, group=section_name)
-
         # Start the Service
-        self.service = self.start_service('pool_manager')
-        self.cache = self.service.cache
+        with patch.object(
+                        central_rpcapi.CentralAPI,
+                        'get_pool',
+                        return_value=objects.Pool.from_dict(POOL_DICT)):
+            self.service = self.start_service('pool_manager')
+            self.cache = self.service.cache
 
     @staticmethod
     def _build_zone(name, action, status, id=None):
@@ -230,7 +182,11 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
         self.config(
             threshold_percentage=50,
             group='service:pool_manager')
-        self.service = self.start_service('pool_manager')
+        with patch.object(
+                        central_rpcapi.CentralAPI,
+                        'get_pool',
+                        return_value=objects.Pool.from_dict(POOL_DICT)):
+            self.service = self.start_service('pool_manager')
 
         zone = self._build_zone('example.org.', 'CREATE', 'PENDING')
 
@@ -349,7 +305,11 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
         self.config(
             threshold_percentage=50,
             group='service:pool_manager')
-        self.service = self.start_service('pool_manager')
+        with patch.object(
+                        central_rpcapi.CentralAPI,
+                        'get_pool',
+                        return_value=objects.Pool.from_dict(POOL_DICT)):
+            self.service = self.start_service('pool_manager')
 
         zone = self._build_zone('example.org.', 'UPDATE', 'PENDING')
 

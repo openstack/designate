@@ -74,15 +74,37 @@ EOF
 
 # configure_designate_backend - make configuration changes, including those to other services
 function configure_designate_backend {
-    iniset $DESIGNATE_CONF pool_target:$DESIGNATE_TARGET_ID type bind9
-    iniset $DESIGNATE_CONF pool_target:$DESIGNATE_TARGET_ID masters $DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT_MDNS
-    iniset $DESIGNATE_CONF pool_target:$DESIGNATE_TARGET_ID options "rndc_host: $DESIGNATE_SERVICE_HOST, rndc_port: $DESIGNATE_SERVICE_PORT_RNDC, rndc_config_file: $BIND_CFG_DIR/rndc.conf, rndc_key_file: $BIND_CFG_DIR/rndc.key, host: $DESIGNATE_SERVICE_HOST, port: $DESIGNATE_SERVICE_PORT_DNS"
+    # Generate Designate pool.yaml file
+    sudo tee $DESIGNATE_CONF_DIR/pools.yaml > /dev/null <<EOF
+---
+- name: default
+  description: DevStack BIND Pool
+  attributes: {}
 
-    # DevStack Managed BIND NameServer
-    local nameserver_id=`uuidgen`
-    iniset $DESIGNATE_CONF pool:$DESIGNATE_POOL_ID nameservers $nameserver_id
-    iniset $DESIGNATE_CONF pool_nameserver:$nameserver_id host $DESIGNATE_SERVICE_HOST
-    iniset $DESIGNATE_CONF pool_nameserver:$nameserver_id port $DESIGNATE_SERVICE_PORT_DNS
+  ns_records:
+    - hostname: $DESIGNATE_DEFAULT_NS_RECORD
+      priority: 1
+
+  nameservers:
+    - host: $DESIGNATE_SERVICE_HOST
+      port: $DESIGNATE_SERVICE_PORT_DNS
+
+  targets:
+    - type: bind9
+      description: BIND Instance
+
+      masters:
+        - host: $DESIGNATE_SERVICE_HOST
+          port: $DESIGNATE_SERVICE_PORT_MDNS
+
+      options:
+        host: $DESIGNATE_SERVICE_HOST
+        port: $DESIGNATE_SERVICE_PORT_DNS
+        rndc_host: $DESIGNATE_SERVICE_HOST
+        rndc_port: $DESIGNATE_SERVICE_PORT_RNDC
+        rndc_config_file: $BIND_CFG_DIR/rndc.conf
+        rndc_key_file: $BIND_CFG_DIR/rndc.key
+EOF
 
     sudo chown $STACK_USER $BIND_CFG_DIR
 

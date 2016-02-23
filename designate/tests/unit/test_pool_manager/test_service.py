@@ -33,6 +33,55 @@ from designate.tests.unit import RwObject
 import designate.pool_manager.service as pm_module
 
 
+POOL_DICT = {
+    'also_notifies': [
+        {
+            'host': u'192.0.2.4',
+            'pool_id': u'cf2e8eab-76cd-4162-bf76-8aeee3556de0',
+            'port': 53,
+        }
+    ],
+    'attributes': [],
+    'description': u'Default PowerDNS Pool',
+    'id': u'cf2e8eab-76cd-4162-bf76-8aeee3556de0',
+    'name': u'default',
+    'nameservers': [
+        {
+            'host': u'192.0.2.2',
+            'pool_id': u'cf2e8eab-76cd-4162-bf76-8aeee3556de0',
+            'port': 53,
+        },
+        {
+            'host': u'192.0.2.3',
+            'pool_id': u'cf2e8eab-76cd-4162-bf76-8aeee3556de0',
+            'port': 53,
+        }
+    ],
+    'ns_records': [
+        {
+            'hostname': u'ns1-1.example.org.',
+            'pool_id': u'cf2e8eab-76cd-4162-bf76-8aeee3556de0',
+            'priority': 1,
+        },
+        {
+            'hostname': u'ns1-2.example.org.',
+            'pool_id': u'cf2e8eab-76cd-4162-bf76-8aeee3556de0',
+            'priority': 2,
+        }
+    ],
+    'provisioner': u'UNMANAGED',
+    'targets': [
+        {
+            'description': u'PowerDNS Database Cluster',
+            'masters': [],
+            'options': [],
+            'type': 'fake',
+            'pool_id': u'cf2e8eab-76cd-4162-bf76-8aeee3556de0',
+        }
+    ]
+}
+
+
 class PoolManagerInitTest(test.BaseTestCase):
     def __setUp(self):
         super(PoolManagerTest, self).setUp()
@@ -44,21 +93,20 @@ class PoolManagerInitTest(test.BaseTestCase):
             self.assertRaises(exceptions.NoPoolTargetsConfigured, Service)
 
     def test_init(self):
-        with patch.object(objects.Pool, 'from_config',
-                          return_value=Mock()):
-            Service._setup_target_backends = Mock()
             Service()
 
     def test_start(self):
         with patch.object(objects.Pool, 'from_config',
                           return_value=Mock()):
-            Service._setup_target_backends = Mock()
             pm = Service()
-            pm.pool.targets = ()
             pm.tg.add_timer = Mock()
             pm._pool_election = Mock()
             with patch("designate.service.RPCService.start"):
-                pm.start()
+                with patch.object(
+                        pm.central_api,
+                        'get_pool',
+                        return_value=objects.Pool.from_dict(POOL_DICT)):
+                    pm.start()
 
             call1 = pm.tg.add_timer.call_args_list[0][0]
             self.assertEqual(120, call1[0])
@@ -88,8 +136,11 @@ class PoolManagerTest(test.BaseTestCase):
     def setUp(self, *mocks):
         super(PoolManagerTest, self).setUp()
         self.pm = Service()
-        self.pm.pool.targets = ()
         self.pm.tg.add_timer = Mock()
+        self.pm.pool = Mock()
+        setattr(self.pm.pool, 'targets', ())
+        setattr(self.pm.pool, 'also_notifies', ())
+        setattr(self.pm.pool, 'nameservers', ())
         self.pm._pool_election = Mock()
         self.pm.target_backends = {}
 

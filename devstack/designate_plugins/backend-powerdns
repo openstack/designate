@@ -53,16 +53,36 @@ function install_designate_backend {
 
 # configure_designate_backend - make configuration changes, including those to other services
 function configure_designate_backend {
-    iniset $DESIGNATE_CONF pool_target:$DESIGNATE_TARGET_ID type powerdns
-    iniset $DESIGNATE_CONF pool_target:$DESIGNATE_TARGET_ID masters $DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT_MDNS
-    iniset $DESIGNATE_CONF pool_target:$DESIGNATE_TARGET_ID options "connection: `database_connection_url designate_pdns`, host: $DESIGNATE_SERVICE_HOST, port: $DESIGNATE_SERVICE_PORT_DNS"
+    # Generate Designate pool.yaml file
+    sudo tee $DESIGNATE_CONF_DIR/pools.yaml > /dev/null <<EOF
+---
+- name: default
+  description: DevStack PowerDNS Pool
+  attributes: {}
 
-    # DevStack Managed PDNS NameServer
-    local nameserver_id=`uuidgen`
-    iniset $DESIGNATE_CONF pool:$DESIGNATE_POOL_ID nameservers $nameserver_id
-    iniset $DESIGNATE_CONF pool_nameserver:$nameserver_id host $DESIGNATE_SERVICE_HOST
-    iniset $DESIGNATE_CONF pool_nameserver:$nameserver_id port $DESIGNATE_SERVICE_PORT_DNS
+  ns_records:
+    - hostname: $DESIGNATE_DEFAULT_NS_RECORD
+      priority: 1
 
+  nameservers:
+    - host: $DESIGNATE_SERVICE_HOST
+      port: $DESIGNATE_SERVICE_PORT_DNS
+
+  targets:
+    - type: powerdns
+      description: PowerDNS Database Cluster
+
+      masters:
+        - host: $DESIGNATE_SERVICE_HOST
+          port: $DESIGNATE_SERVICE_PORT_MDNS
+
+      options:
+        host: $DESIGNATE_SERVICE_HOST
+        port: $DESIGNATE_SERVICE_PORT_DNS
+        connection: '`database_connection_url designate_pdns`'
+EOF
+
+    # Generate PowerDNS pdns.conf file
     sudo tee $POWERDNS_CFG_DIR/pdns.conf > /dev/null <<EOF
 # General Config
 setgid=pdns
@@ -123,15 +143,19 @@ function init_designate_backend {
 
     # (Re)create designate_pdns database
     recreate_database designate_pdns utf8
+}
 
+# create_designate_pool_configuration_backend - Perform post-pool config tasks
+function create_designate_pool_configuration_backend {
     # Init and migrate designate_pdns database
-    designate-manage powerdns sync $DESIGNATE_TARGET_ID
+    designate-manage powerdns sync $DESIGNATE_POOL_ID
 }
 
 # start_designate_backend - start any external services
 function start_designate_backend {
     start_service pdns
 }
+
 
 # stop_designate_backend - stop any external services
 function stop_designate_backend {

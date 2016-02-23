@@ -18,10 +18,32 @@ from designate.objects import base
 class PoolTargetOption(base.DictObjectMixin, base.PersistentObjectMixin,
                        base.DesignateObject):
     FIELDS = {
-        'pool_target_id': {},
-        'key': {},
-        'value': {},
+        'pool_target_id': {
+            'schema': {
+                'type': 'string',
+                'description': 'Pool Target identifier',
+                'format': 'uuid',
+            },
+        },
+        'key': {
+            'schema': {
+                'type': 'string',
+                'maxLength': 255,
+            },
+            'required': True,
+        },
+        'value': {
+            'schema': {
+                'type': 'string',
+                'maxLength': 255,
+            },
+            'required': True
+        }
     }
+
+    STRING_KEYS = [
+        'id', 'key', 'value', 'pool_target_id'
+    ]
 
 
 class PoolTargetOptionList(base.AttributeListObjectMixin,

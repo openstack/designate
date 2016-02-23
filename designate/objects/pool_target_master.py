@@ -18,10 +18,33 @@ from designate.objects import base
 class PoolTargetMaster(base.DictObjectMixin, base.PersistentObjectMixin,
                        base.DesignateObject):
     FIELDS = {
-        'pool_target_id': {},
-        'host': {},
-        'port': {}
+        'pool_target_id': {
+            'schema': {
+                'type': 'string',
+                'description': 'Pool Target identifier',
+                'format': 'uuid',
+            },
+        },
+        'host': {
+            'schema': {
+                'type': 'string',
+                'format': 'ip-or-host',
+                'required': True,
+            },
+        },
+        'port': {
+            'schema': {
+                'type': 'integer',
+                'minimum': 1,
+                'maximum': 65535,
+                'required': True,
+            },
+        }
     }
+
+    STRING_KEYS = [
+        'id', 'host', 'port', 'pool_target_id'
+    ]
 
 
 class PoolTargetMasterList(base.ListObjectMixin, base.DesignateObject):

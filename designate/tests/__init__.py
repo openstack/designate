@@ -382,9 +382,14 @@ class TestCase(base.BaseTestCase):
         # Fetch the default pool
         pool = self.storage.get_pool(self.admin_context, default_pool_id)
 
-        # Add a NS record to it
-        pool.ns_records.append(
-            objects.PoolNsRecord(priority=0, hostname='ns1.example.org.'))
+        # Fill out the necessary pool details
+        pool.ns_records = objects.PoolNsRecordList.from_list([
+            {'hostname': 'ns1.example.org.', 'priority': 0}
+        ])
+
+        pool.targets = objects.PoolTargetList.from_list([
+            {'type': 'fake', u'description': "Fake PoolTarget for Tests"}
+        ])
 
         # Save the default pool
         self.storage.update_pool(self.admin_context, pool)

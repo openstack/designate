@@ -53,15 +53,6 @@ function install_designate_backend {
 
 # configure_designate_backend - make configuration changes, including those to other services
 function configure_designate_backend {
-    iniset $DESIGNATE_CONF pool_target:$DESIGNATE_TARGET_ID type infoblox
-    iniset $DESIGNATE_CONF pool_target:$DESIGNATE_TARGET_ID masters $DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT_MDNS
-    iniset $DESIGNATE_CONF pool_target:$DESIGNATE_TARGET_ID options "host: $DESIGNATE_INFOBLOX_NAMESERVER_IP, port: $DESIGNATE_SERVICE_PORT_DNS"
-
-    local nameserver_id=`uuidgen`
-    iniset $DESIGNATE_CONF pool:$DESIGNATE_POOL_ID nameservers $nameserver_id
-    iniset $DESIGNATE_CONF pool_nameserver:$nameserver_id host $DESIGNATE_INFOBLOX_NAMESERVER_IP
-    iniset $DESIGNATE_CONF pool_nameserver:$nameserver_id port $DESIGNATE_SERVICE_PORT_DNS
-
     iniset $DESIGNATE_CONF backend:infoblox wapi_url $DESIGNATE_INFOBLOX_WAPI_URL
     iniset $DESIGNATE_CONF backend:infoblox username $DESIGNATE_INFOBLOX_USERNAME
     iniset $DESIGNATE_CONF backend:infoblox password $DESIGNATE_INFOBLOX_PASSWORD
@@ -72,6 +63,34 @@ function configure_designate_backend {
     iniset $DESIGNATE_CONF backend:infoblox dns_view $DESIGNATE_INFOBLOX_DNS_VIEW
     iniset $DESIGNATE_CONF backend:infoblox net_view $DESIGNATE_INFOBLOX_NET_VIEW
     iniset $DESIGNATE_CONF backend:infoblox ns_group $DESIGNATE_INFOBLOX_NS_GROUP
+
+    # Generate Designate pool.yaml file
+    sudo tee $DESIGNATE_CONF_DIR/pools.yaml > /dev/null <<EOF
+---
+- name: default
+  description: DevStack InfoBlox Pool
+  attributes: {}
+
+  ns_records:
+    - hostname: $DESIGNATE_DEFAULT_NS_RECORD
+      priority: 1
+
+  nameservers:
+    - host: $DESIGNATE_INFOBLOX_NAMESERVER_IP
+      port: $DESIGNATE_SERVICE_PORT_DNS
+
+  targets:
+    - type: powerdns
+      description: InfoBlox Cluster API
+
+      masters:
+        - host: $DESIGNATE_SERVICE_HOST
+          port: $DESIGNATE_SERVICE_PORT_MDNS
+
+      options:
+        host: $DESIGNATE_INFOBLOX_NAMESERVER_IP
+        port: $DESIGNATE_SERVICE_PORT_DNS
+EOF
 }
 
 # init_designate_backend - initialize databases, etc.

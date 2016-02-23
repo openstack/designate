@@ -31,7 +31,21 @@ function install_designate_backend {
 
 # configure_designate_backend - make configuration changes, including those to other services
 function configure_designate_backend {
-    :
+    # Generate Designate pool.yaml file
+    sudo tee $DESIGNATE_CONF_DIR/pools.yaml > /dev/null <<EOF
+---
+- name: default
+  description: DevStack Fake Pool
+  attributes: {}
+
+  ns_records:
+    - hostname: $DESIGNATE_DEFAULT_NS_RECORD
+      priority: 1
+
+  targets:
+    - type: fake
+      description: Fake Backend
+EOF
 }
 
 # init_designate_backend - initialize databases, etc.

@@ -1,0 +1,63 @@
+---
+- name: pool-1
+  description: Default PowerDNS Pool
+  attributes:
+    internal: true
+  ns_records:
+    - hostname: ns1-1.example.org.
+      priority: 1
+    - hostname: ns1-2.example.org.
+      priority: 2
+  nameservers:
+    - host: 192.0.2.2
+      port: 53
+    - host: 192.0.2.3
+      port: 53
+  targets:
+    - type: powerdns
+      description: PowerDNS Database Cluster
+      masters:
+        - host: 192.0.2.1
+          port: 5354
+      options:
+        connection: 'mysql+pymysql://designate:password@127.0.0.1/designate_pdns?charset=utf8'
+  also_notifies:
+   - host: 192.0.2.4
+     port: 53
+
+- name: pool-2
+  id: cf2e8eab-76cd-4162-bf76-8aeee3556de0
+  description: Default PowerDNS Pool
+
+  attributes:
+    external: true
+  ns_records:
+    - hostname: ns1-1.example.org.
+      priority: 1
+    - hostname: ns1-2.example.org.
+      priority: 2
+  nameservers:
+    - host: 192.0.2.2
+      port: 53
+    - host: 192.0.2.3
+      port: 53
+
+  targets:
+    - type: bind
+      description: BIND9 Server 1
+      masters:
+        - host: 192.0.2.1
+          port: 5354
+      options:
+        rndc_host: 192.0.2.2
+        rndc_port: 953
+        rndc_key_file: /etc/designate/rndc.key
+    - type: bind
+      description: BIND9 Server 2
+      masters:
+        - host: 192.0.2.1
+          port: 5354
+      options:
+        rndc_host: 192.0.2.3
+        rndc_port: 953
+        rndc_key_file: /etc/designate/rndc.key
