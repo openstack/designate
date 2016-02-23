@@ -1,0 +1,8 @@
+---
+features:
+  - Randomize SOA refresh interval to stagger AXFRs across multiple zones and
+    resolvers.
+    Introduce the new configuration parameters default-soa-refresh-min and
+    default-soa-refresh-max
+deprecations:
+  - default-soa-refresh configuration option
