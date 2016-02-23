@@ -96,7 +96,7 @@ def make_class_validator(obj):
     if isinstance(obj, ListObjectMixin):
 
         schema['type'] = 'array',
-        schema['items'] = make_class_validator(obj.LIST_ITEM_TYPE)
+        schema['items'] = make_class_validator(obj.LIST_ITEM_TYPE())
 
     else:
         schema['type'] = 'object'
