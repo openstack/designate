@@ -69,7 +69,7 @@ Designate Backend Configuration
 
 *Example Designate Configuration*
 
-::
+.. code-block:: ini
 
  [pool:794ccc2c-d751-44fe-b57f-8894c9f5c842]
  #Specify the API service points for each grid
@@ -87,7 +87,6 @@ Designate Backend Configuration
  [pool_nameserver:ffedb95e-edc1-11e4-9ae6-000c29db281b]
  host=172.16.98.200
  port=53
-
 
  [backend:infoblox]
  # The values below will be used for all targets unless overridden

@@ -45,9 +45,13 @@ You need to configure PowerDNS to use the MySQL backend.
 
 1. First enable the MySQL backend:
 
+.. code-block:: ini
+
     launch = gmysql
 
 2. Configure the MySQL database settings::
+
+.. code-block:: ini
 
     gmysql-host=<host>
     gmysql-port=
@@ -60,14 +64,16 @@ You need to configure PowerDNS to use the MySQL backend.
 .. note::
    PowerDNS can connect via socket or host/port.
 
-3. Configure the options for designate-central - specifically "connection" to point to your MySQL database::
+3. Configure the options for designate-central - specifically "connection" to point to your MySQL database
+
+.. code-block:: ini
 
     [backend:powerdns]
     connection = mysql+pymysql://<username>:<password>@<host>:<port>/<dbname>
 
 4. Setup the database schema.
 
-::
+.. code-block:: console
 
     $ designate-manage powerdns init
     $ designate-manage powerdns sync
@@ -80,7 +86,9 @@ PowerDNS deployment as hidden Master
 
 One deployment scenario can be that the PowerDNS backend will be used as a "hidden" Master DNS for other DNS servers to consume via AXFR.
 
-Say you have 10.0.0.1 and 10.0.0.2 as slaves then configure the backend as follows in addition to other options::
+Say you have 10.0.0.1 and 10.0.0.2 as slaves then configure the backend as follows in addition to other options
+
+.. code-block:: ini
 
     [backend:powernds]
     domain_type = MASTER

@@ -24,7 +24,9 @@ The traffic between rndc and Bind is authenticated with a key.
 Designate Configuration
 -----------------------
 
-Example configuration required for Bind9 operation. One section for each pool target::
+Example configuration required for Bind9 operation. One section for each pool target
+
+.. code-block:: ini
 
     [pool_target:f26e0b32-736f-4f0a-831b-039a415c481e]
     options = rndc_host: 192.168.27.100, rndc_port: 953, rndc_config_file: /etc/bind/rndc.conf, rndc_key_file: /etc/bind/rndc.key, port: 53, host: 192.168.27.100, clean_zonefile: false
@@ -40,11 +42,15 @@ Bind9 Configuration
 Ensure Bind can access the /etc/bind/rndc.conf and /etc/bind/rndc.key files and
 receive rndc traffic from Pool Manager.
 
-Enable rndc addzone/delzone functionality by editing named.conf.options or named.conf and add this line under options::
+Enable rndc addzone/delzone functionality by editing named.conf.options or named.conf and add this line under options
+
+.. code-block:: c
 
     allow-new-zones yes;
 
-Example configuration of /etc/bind/rndc.key::
+Example configuration of /etc/bind/rndc.key
+
+.. code-block:: c
 
     key "rndc-key" {
         algorithm hmac-md5;
