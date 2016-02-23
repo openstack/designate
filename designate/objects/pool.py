@@ -70,7 +70,7 @@ class Pool(base.DictObjectMixin, base.PersistentObjectMixin,
         },
         'also_notifies': {
             'relation': True,
-            'relation_cls': 'PoolAlsoNotifiesList'
+            'relation_cls': 'PoolAlsoNotifyList'
         },
     }
 
