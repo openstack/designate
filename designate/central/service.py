@@ -1275,6 +1275,35 @@ class Service(service.RPCService, service.Service):
 
         return recordset
 
+    def _validate_recordset(self, context, zone, recordset):
+
+        # See if we're validating an existing or new recordset
+        recordset_id = None
+        if hasattr(recordset, 'id'):
+            recordset_id = recordset.id
+
+        # Ensure TTL is above the minimum
+        if not recordset_id:
+            ttl = getattr(recordset, 'ttl', None)
+        else:
+            changes = recordset.obj_get_changes()
+            ttl = changes.get('ttl', None)
+
+        if ttl is not None:
+            self._is_valid_ttl(context, ttl)
+
+        # Ensure the recordset name and placement is valid
+        self._is_valid_recordset_name(context, zone, recordset.name)
+
+        self._is_valid_recordset_placement(
+            context, zone, recordset.name, recordset.type, recordset_id)
+
+        self._is_valid_recordset_placement_subzone(
+            context, zone, recordset.name)
+
+        # Validate the records
+        self._is_valid_recordset_records(recordset)
+
     @transaction
     def _create_recordset_in_storage(self, context, zone, recordset,
                                      increment_serial=True):
@@ -1282,18 +1311,7 @@ class Service(service.RPCService, service.Service):
         # Ensure the tenant has enough quota to continue
         self._enforce_recordset_quota(context, zone)
 
-        # Ensure TTL is above the minimum
-        ttl = getattr(recordset, 'ttl', None)
-        if ttl is not None:
-            self._is_valid_ttl(context, ttl)
-
-        # Ensure the recordset name and placement is valid
-        self._is_valid_recordset_name(context, zone, recordset.name)
-        self._is_valid_recordset_placement(context, zone, recordset.name,
-                                           recordset.type)
-        self._is_valid_recordset_placement_subzone(
-            context, zone, recordset.name)
-        self._is_valid_recordset_records(recordset)
+        self._validate_recordset(context, zone, recordset)
 
         if recordset.obj_attr_is_set('records') and len(recordset.records) > 0:
             if increment_serial:
@@ -1410,20 +1428,7 @@ class Service(service.RPCService, service.Service):
     def _update_recordset_in_storage(self, context, zone, recordset,
             increment_serial=True, set_delayed_notify=False):
 
-        changes = recordset.obj_get_changes()
-
-        # Ensure the record name is valid
-        self._is_valid_recordset_name(context, zone, recordset.name)
-        self._is_valid_recordset_placement(context, zone, recordset.name,
-                                           recordset.type, recordset.id)
-        self._is_valid_recordset_placement_subzone(
-            context, zone, recordset.name)
-        self._is_valid_recordset_records(recordset)
-
-        # Ensure TTL is above the minimum
-        ttl = changes.get('ttl', None)
-        if ttl is not None:
-            self._is_valid_ttl(context, ttl)
+        self._validate_recordset(context, zone, recordset)
 
         if increment_serial:
             # update the zone's status and increment the serial
