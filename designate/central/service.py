@@ -670,19 +670,37 @@ class Service(service.RPCService, service.Service):
             context, zone.tenant_id, zone_recordsets=count)
 
     def _enforce_record_quota(self, context, zone, recordset):
+        # Quotas don't apply to managed records.
+        if recordset.managed:
+            return
+
         # Ensure the records per zone quota is OK
-        criterion = {'zone_id': zone.id}
-        count = self.storage.count_records(context, criterion)
+        zone_criterion = {
+            'zone_id': zone.id,
+            'managed': False,  # only include non-managed records
+        }
+
+        zone_records = self.storage.count_records(context, zone_criterion)
+
+        recordset_criterion = {
+            'recordset_id': recordset.id,
+            'managed': False,  # only include non-managed records
+        }
+        recordset_records = self.storage.count_records(
+            context, recordset_criterion)
+
+        # We need to check the current number of zones + the
+        # changes that add, so lets get +/- from our recordset
+        # records based on the action
+        adjusted_zone_records = (
+            zone_records - recordset_records + len(recordset.records))
 
         self.quota.limit_check(context, zone.tenant_id,
-                               zone_records=count)
+                               zone_records=adjusted_zone_records)
 
         # Ensure the records per recordset quota is OK
-        criterion = {'recordset_id': recordset.id}
-        count = self.storage.count_records(context, criterion)
-
         self.quota.limit_check(context, zone.tenant_id,
-                               recordset_records=count)
+                               recordset_records=recordset_records)
 
     # Misc Methods
     def get_absolute_limits(self, context):
@@ -1296,6 +1314,11 @@ class Service(service.RPCService, service.Service):
         self._is_valid_recordset_records(recordset)
 
         if recordset.obj_attr_is_set('records') and len(recordset.records) > 0:
+
+            # Ensure the tenant has enough zone record quotas to
+            # create new records
+            self._enforce_record_quota(context, zone, recordset)
+
             if increment_serial:
                 # update the zone's status and increment the serial
                 zone = self._update_zone_in_storage(
@@ -1437,6 +1460,10 @@ class Service(service.RPCService, service.Service):
                     record.action = 'UPDATE'
                     record.status = 'PENDING'
                     record.serial = zone.serial
+
+            # Ensure the tenant has enough zone record quotas to
+            # create new records
+            self._enforce_record_quota(context, zone, recordset)
 
         # Update the recordset
         recordset = self.storage.update_recordset(context, recordset)
