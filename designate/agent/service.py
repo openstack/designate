@@ -26,6 +26,7 @@ CONF = cfg.CONF
 
 
 class Service(service.DNSService, service.Service):
+
     def __init__(self, threads=None):
         super(Service, self).__init__(threads=threads)
 

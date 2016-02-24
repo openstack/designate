@@ -40,14 +40,19 @@ class Service(service.RPCService, coordination.CoordinationMixin,
 
     target = messaging.Target(version=RPC_API_VERSION)
 
-    def __init__(self, threads=None):
-        super(Service, self).__init__(threads=threads)
+    @property
+    def storage(self):
+        if not hasattr(self, '_storage'):
+            storage_driver = cfg.CONF['service:zone_manager'].storage_driver
+            self._storage = storage.get_storage(storage_driver)
+        return self._storage
 
-        storage_driver = cfg.CONF['service:zone_manager'].storage_driver
-        self.storage = storage.get_storage(storage_driver)
-
-        # Get a quota manager instance
-        self.quota = quota.get_quota()
+    @property
+    def quota(self):
+        if not hasattr(self, '_quota'):
+            # Get a quota manager instance
+            self._quota = quota.get_quota()
+        return self._quota
 
     @property
     def service_name(self):

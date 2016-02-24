@@ -1,4 +1,3 @@
-
 # Copyright 2015 Hewlett-Packard Development Company, L.P.
 #
 # Author: Federico Ceratto <federico.ceratto@hpe.com>
@@ -28,8 +27,7 @@ import designate.zone_manager.service as zms
 @mock.patch.object(zms.rpcapi.CentralAPI, 'get_instance')
 class ZoneManagerTest(test.BaseTestCase):
 
-    @mock.patch.object(zms.storage, 'get_storage')
-    def setUp(self, mock_get_storage):
+    def setUp(self):
         zms.CONF = RoObject({
             'service:zone_manager': RoObject({
                 'enabled_tasks': None,  # enable all tasks
@@ -39,9 +37,9 @@ class ZoneManagerTest(test.BaseTestCase):
         })
         super(ZoneManagerTest, self).setUp()
         self.tm = zms.Service()
-        assert mock_get_storage.called
+        self.tm._storage = mock.Mock()
         self.tm._rpc_server = mock.Mock()
-        self.tm.quota = mock.Mock()
+        self.tm._quota = mock.Mock()
         self.tm.quota.limit_check = mock.Mock()
 
     def test_service_name(self, _):

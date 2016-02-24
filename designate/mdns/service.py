@@ -29,11 +29,15 @@ CONF = cfg.CONF
 
 
 class Service(service.DNSService, service.RPCService, service.Service):
-    def __init__(self, threads=None):
-        super(Service, self).__init__(threads=threads)
 
-        # Get a storage connection
-        self.storage = storage.get_storage(CONF['service:mdns'].storage_driver)
+    @property
+    def storage(self):
+        if not hasattr(self, '_storage'):
+            # Get a storage connection
+            self._storage = storage.get_storage(
+                CONF['service:mdns'].storage_driver
+            )
+        return self._storage
 
     @property
     def service_name(self):
