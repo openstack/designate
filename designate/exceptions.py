@@ -188,11 +188,13 @@ class InvalidZoneName(Base):
 class InvalidRecordSetName(Base):
     error_code = 400
     error_type = 'invalid_recordset_name'
+    expected = True
 
 
 class InvalidRecordSetLocation(Base):
     error_code = 400
     error_type = 'invalid_recordset_location'
+    expected = True
 
 
 class InvaildZoneTransfer(Base):
