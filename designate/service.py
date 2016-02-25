@@ -290,16 +290,19 @@ class DNSService(object):
                         break
                     payload += data
 
+            # NOTE: Any uncaught exceptions will result in the main loop
+            # ending unexpectedly. Ensure proper ordering of blocks, and
+            # ensure no exceptions are generated from within.
+            except socket.timeout:
+                client.close()
+                LOG.warn(_LW("TCP Timeout from: %(host)s:%(port)d") %
+                         {'host': addr[0], 'port': addr[1]})
+
             except socket.error as e:
                 client.close()
                 errname = errno.errorcode[e.args[0]]
                 LOG.warn(_LW("Socket error %(err)s from: %(host)s:%(port)d") %
                          {'host': addr[0], 'port': addr[1], 'err': errname})
-
-            except socket.timeout:
-                client.close()
-                LOG.warn(_LW("TCP Timeout from: %(host)s:%(port)d") %
-                         {'host': addr[0], 'port': addr[1]})
 
             except struct.error:
                 client.close()
