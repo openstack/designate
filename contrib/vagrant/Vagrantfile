@@ -84,7 +84,7 @@ ln -s /opt/stack/designate/rally-scenarios/plugins /home/vagrant/.rally/plugins
 
 SCRIPT
 
-  config.vm.define "ubuntu" do |ubuntu|
+  config.vm.define "ubuntu", primary: true do |ubuntu|
     ubuntu.vm.box = "ubuntu/trusty64"
 
     ubuntu.vm.network :private_network, ip: "192.168.27.100"
@@ -95,7 +95,7 @@ SCRIPT
     ubuntu.vm.provision :shell, :privileged => false, :inline => $script
   end
 
-  config.vm.define "fedora" do |fedora|
+  config.vm.define "fedora", autostart: false do |fedora|
     fedora.vm.box = "box-cutter/fedora20"
 
     fedora.vm.network :private_network, ip: "192.168.27.101"
