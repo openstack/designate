@@ -134,7 +134,7 @@ debug = False
 #enable_api_admin = False
 
 # Enabled Admin API extensions
-# Can be one or more of : reports, quotas, counts, tenants, zones
+# Can be one or more of : reports, quotas, counts, tenants, target_sync
 # zone export is in zones extension
 #enabled_extensions_admin =
 

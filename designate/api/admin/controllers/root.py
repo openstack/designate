@@ -16,6 +16,7 @@ from oslo_config import cfg
 from oslo_log import log as logging
 from stevedore import named
 
+from designate.i18n import _LI
 from designate.api.v2.controllers import errors
 
 
@@ -38,6 +39,7 @@ class RootController(object):
             for ext in self._mgr:
                 controller = self
                 path = ext.obj.get_path()
+                LOG.info(_LI("Registering an API extension at path %s"), path)
                 for p in path.split('.')[:-1]:
                     if p != '':
                         controller = getattr(controller, p)
