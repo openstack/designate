@@ -31,7 +31,7 @@ class Request(pecan.core.Request):
     @property
     def body_dict(self):
         """
-        Returns the body content as a dictonary, deserializing per the
+        Returns the body content as a dictionary, deserializing per the
         Content-Type header.
 
         We add this method to ease future XML support, so the main code
