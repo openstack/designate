@@ -313,7 +313,18 @@ class CentralServiceTestCase(CentralBasic):
 
     def test_init(self):
         self.assertTrue(self.service.check_for_tlds)
+
+        # Ensure these attributes are lazy
+        self.assertFalse(designate.central.service.storage.get_storage.called)
+        self.assertFalse(designate.central.service.quota.get_quota.called)
+
+    def test_storage_loads_lazily(self):
+        assert self.service.storage
         self.assertTrue(designate.central.service.storage.get_storage.called)
+
+    def test_quota_loads_lazily(self):
+        assert self.service.quota
+        self.assertTrue(designate.central.service.quota.get_quota.called)
 
     def test__is_valid_ttl(self):
         self.CONF.set_override('min_ttl', 10, 'service:central',

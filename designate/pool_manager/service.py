@@ -187,15 +187,22 @@ class Service(service.RPCService, coordination.CoordinationMixin,
 
     @property
     def central_api(self):
-        return central_api.CentralAPI.get_instance()
+        if not hasattr(self, '_central_api'):
+            self._central_api = central_api.CentralAPI.get_instance()
+        return self._central_api
 
     @property
     def mdns_api(self):
-        return mdns_api.MdnsAPI.get_instance()
+        if not hasattr(self, '_mdns_adpi'):
+            self._mdns_api = mdns_api.MdnsAPI.get_instance()
+        return self._mdns_api
 
     @property
     def pool_manager_api(self):
-        return pool_manager_rpcapi.PoolManagerAPI.get_instance()
+        if not hasattr(self, '_pool_manager_api'):
+            pool_mgr_api = pool_manager_rpcapi.PoolManagerAPI
+            self._pool_manager_api = pool_mgr_api.get_instance()
+        return self._pool_manager_api
 
     def _get_admin_context_all_tenants(self):
         return DesignateContext.get_admin_context(all_tenants=True)

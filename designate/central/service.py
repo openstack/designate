@@ -268,14 +268,22 @@ class Service(service.RPCService, service.Service):
     def __init__(self, threads=None):
         super(Service, self).__init__(threads=threads)
 
-        # Get a storage connection
-        storage_driver = cfg.CONF['service:central'].storage_driver
-        self.storage = storage.get_storage(storage_driver)
-
-        # Get a quota manager instance
-        self.quota = quota.get_quota()
-
         self.network_api = network_api.get_network_api(cfg.CONF.network_api)
+
+    @property
+    def quota(self):
+        if not hasattr(self, '_quota'):
+            # Get a quota manager instance
+            self._quota = quota.get_quota()
+        return self._quota
+
+    @property
+    def storage(self):
+        if not hasattr(self, '_storage'):
+            # Get a storage connection
+            storage_driver = cfg.CONF['service:central'].storage_driver
+            self._storage = storage.get_storage(storage_driver)
+        return self._storage
 
     @property
     def service_name(self):
