@@ -810,7 +810,7 @@ class CentralServiceTest(CentralTestCase):
         servers = self.central_service.get_zone_ns_records(
             self.admin_context, zone['id'])
 
-        self.assertTrue(len(servers) > 0)
+        self.assertGreater(len(servers), 0)
 
     def test_find_zone(self):
         # Create a zone
@@ -848,7 +848,7 @@ class CentralServiceTest(CentralTestCase):
             self.admin_context, zone.id)
 
         # Ensure the zone was updated correctly
-        self.assertTrue(zone.serial > original_serial)
+        self.assertGreater(zone.serial, original_serial)
         self.assertEqual('info@example.net', zone.email)
 
         self.assertEqual(2, mock_notifier.call_count)
@@ -930,7 +930,7 @@ class CentralServiceTest(CentralTestCase):
         self.assertTrue(i[0])
 
         # Ensure the zone was updated correctly
-        self.assertTrue(zone.serial > original_serial)
+        self.assertGreater(zone.serial, original_serial)
         self.assertEqual('info@example.net', zone.email)
 
     @mock.patch.object(notifier.Notifier, "info")
@@ -1290,7 +1290,7 @@ class CentralServiceTest(CentralTestCase):
             self.admin_context, expected_zone['id'])
 
         # Ensure the serial was incremented
-        self.assertTrue(zone['serial'] > expected_zone['serial'])
+        self.assertGreater(zone['serial'], expected_zone['serial'])
 
     def test_xfr_zone(self):
         # Create a zone
