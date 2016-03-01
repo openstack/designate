@@ -482,6 +482,10 @@ def bind_tcp(host, port, tcp_backlog, tcp_keepidle=None):
 
     sock_tcp.setblocking(True)
     sock_tcp.bind((host, port))
+    if port == 0:
+        newport = sock_tcp.getsockname()[1]
+        LOG.info(_LI('Listening on TCP port %(port)d'), {'port': newport})
+
     sock_tcp.listen(tcp_backlog)
 
     return sock_tcp
@@ -502,5 +506,8 @@ def bind_udp(host, port):
 
     sock_udp.setblocking(True)
     sock_udp.bind((host, port))
+    if port == 0:
+        newport = sock_udp.getsockname()[1]
+        LOG.info(_LI('Listening on UDP port %(port)d'), {'port': newport})
 
     return sock_udp

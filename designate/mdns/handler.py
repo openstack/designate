@@ -64,6 +64,7 @@ class RequestHandler(xfr.XFRMixin):
             # TSIG places the pseudo records into the additional section.
             if (len(request.question) != 1 or
                     request.question[0].rdclass != dns.rdataclass.IN):
+                LOG.debug("Refusing due to numbers of questions or rdclass")
                 yield self._handle_query_error(request, dns.rcode.REFUSED)
                 raise StopIteration
 
@@ -88,6 +89,7 @@ class RequestHandler(xfr.XFRMixin):
 
         else:
             # Unhandled OpCode's include STATUS, IQUERY, UPDATE
+            LOG.debug("Refusing unhandled opcode")
             yield self._handle_query_error(request, dns.rcode.REFUSED)
             raise StopIteration
 
@@ -131,7 +133,7 @@ class RequestHandler(xfr.XFRMixin):
         master_addr = zone.get_master_by_ip(notify_addr)
         if not master_addr:
             msg = _LW("NOTIFY for %(name)s from non-master server "
-                      "%(addr)s, ignoring.")
+                      "%(addr)s, refusing.")
             LOG.warning(msg % {"name": zone.name, "addr": notify_addr})
             response.set_rcode(dns.rcode.REFUSED)
             yield response
@@ -200,18 +202,13 @@ class RequestHandler(xfr.XFRMixin):
 
     def _convert_to_rrset(self, zone, recordset):
         # Fetch the zone or the config ttl if the recordset ttl is null
-        if recordset.ttl:
-            ttl = recordset.ttl
-        else:
-            ttl = zone.ttl
+        ttl = recordset.ttl or zone.ttl
 
         # construct rdata from all the records
-        rdata = []
-        for record in recordset.records:
-            # TODO(Ron): this should be handled in the Storage query where we
-            # find the recordsets.
-            if record.action != 'DELETE':
-                rdata.append(str(record.data))
+        # TODO(Ron): this should be handled in the Storage query where we
+        # find the recordsets.
+        rdata = [str(record.data) for record in recordset.records
+                 if record.action != 'DELETE']
 
         # Now put the records into dnspython's RRsets
         # answer section has 1 RR set.  If the RR set has multiple
@@ -219,12 +216,9 @@ class RequestHandler(xfr.XFRMixin):
         # section.
         # RRSet has name, ttl, class, type  and rdata
         # The rdata has one or more records
-        r_rrset = None
         if rdata:
-            r_rrset = dns.rrset.from_text_list(
+            return dns.rrset.from_text_list(
                 recordset.name, ttl, dns.rdataclass.IN, recordset.type, rdata)
-
-        return r_rrset
 
     def _handle_axfr(self, request):
         context = request.environ['context']
@@ -361,31 +355,6 @@ class RequestHandler(xfr.XFRMixin):
             }
             recordset = self.storage.find_recordset(context, criterion)
 
-            try:
-                criterion = self._zone_criterion_from_request(
-                    request, {'id': recordset.zone_id})
-                zone = self.storage.find_zone(context, criterion)
-
-            except exceptions.ZoneNotFound:
-                LOG.warning(_LW("ZoneNotFound while handling query request"
-                                ". Question was %(qr)s") % {'qr': q_rrset})
-
-                yield self._handle_query_error(request, dns.rcode.REFUSED)
-                raise StopIteration
-
-            except exceptions.Forbidden:
-                LOG.warning(_LW("Forbidden while handling query request. "
-                                "Question was %(qr)s") % {'qr': q_rrset})
-
-                yield self._handle_query_error(request, dns.rcode.REFUSED)
-                raise StopIteration
-
-            r_rrset = self._convert_to_rrset(zone, recordset)
-            response.set_rcode(dns.rcode.NOERROR)
-            response.answer = [r_rrset]
-            # For all the data stored in designate mdns is Authoritative
-            response.flags |= dns.flags.AA
-
         except exceptions.NotFound:
             # If an FQDN exists, like www.rackspace.com, but the specific
             # record type doesn't exist, like type SPF, then the return code
@@ -403,9 +372,37 @@ class RequestHandler(xfr.XFRMixin):
             #
             # To simply things currently this returns a REFUSED in all cases.
             # If zone transfers needs different errors, we could revisit this.
-            response.set_rcode(dns.rcode.REFUSED)
+            LOG.info(_LI("NotFound, refusing. Question was %(qr)s"),
+                     {'qr': q_rrset})
+            yield self._handle_query_error(request, dns.rcode.REFUSED)
+            raise StopIteration
 
         except exceptions.Forbidden:
-            response.set_rcode(dns.rcode.REFUSED)
+            LOG.info(_LI("Forbidden, refusing. Question was %(qr)s"),
+                     {'qr': q_rrset})
+            yield self._handle_query_error(request, dns.rcode.REFUSED)
+            raise StopIteration
 
+        try:
+            criterion = self._zone_criterion_from_request(
+                request, {'id': recordset.zone_id})
+            zone = self.storage.find_zone(context, criterion)
+
+        except exceptions.ZoneNotFound:
+            LOG.warning(_LW("ZoneNotFound while handling query request"
+                            ". Question was %(qr)s") % {'qr': q_rrset})
+            yield self._handle_query_error(request, dns.rcode.REFUSED)
+            raise StopIteration
+
+        except exceptions.Forbidden:
+            LOG.warning(_LW("Forbidden while handling query request. "
+                            "Question was %(qr)s") % {'qr': q_rrset})
+            yield self._handle_query_error(request, dns.rcode.REFUSED)
+            raise StopIteration
+
+        r_rrset = self._convert_to_rrset(zone, recordset)
+        response.answer = [r_rrset] if r_rrset else []
+        response.set_rcode(dns.rcode.NOERROR)
+        # For all the data stored in designate mdns is Authoritative
+        response.flags |= dns.flags.AA
         yield response
