@@ -384,14 +384,46 @@ class CentralServiceTestCase(CentralBasic):
             self.context, {'a': 1}
         )
 
-    def test_create_recordset_in_storage(self):
-        self.service._enforce_recordset_quota = mock.Mock()
-        self.service._is_valid_ttl = mock.Mock()
+    def test_validate_new_recordset(self):
         self.service._is_valid_recordset_name = mock.Mock()
         self.service._is_valid_recordset_placement = mock.Mock()
         self.service._is_valid_recordset_placement_subzone = mock.Mock()
-        self.service.storage.create_recordset = mock.Mock(return_value='rs')
-        self.service._update_zone_in_storage = mock.Mock()
+        self.service._is_valid_ttl = mock.Mock()
+
+        MockRecordSet.id = None
+
+        self.service._validate_recordset(
+            self.context, Mockzone, MockRecordSet
+        )
+
+        assert self.service._is_valid_recordset_name.called
+        assert self.service._is_valid_recordset_placement.called
+        assert self.service._is_valid_recordset_placement_subzone.called
+        assert self.service._is_valid_ttl.called
+
+    def test_validate_existing_recordset(self):
+        self.service._is_valid_recordset_name = mock.Mock()
+        self.service._is_valid_recordset_placement = mock.Mock()
+        self.service._is_valid_recordset_placement_subzone = mock.Mock()
+        self.service._is_valid_ttl = mock.Mock()
+
+        MockRecordSet.obj_get_changes = Mock(return_value={'ttl': 3600})
+
+        self.service._validate_recordset(
+            self.context, Mockzone, MockRecordSet
+        )
+
+        assert self.service._is_valid_recordset_name.called
+        assert self.service._is_valid_recordset_placement.called
+        assert self.service._is_valid_recordset_placement_subzone.called
+        assert self.service._is_valid_ttl.called
+
+    def test_create_recordset_in_storage(self):
+        self.service._enforce_recordset_quota = Mock()
+        self.service._validate_recordset = mock.Mock()
+
+        self.service.storage.create_recordset = Mock(return_value='rs')
+        self.service._update_zone_in_storage = Mock()
 
         rs, zone = self.service._create_recordset_in_storage(
             self.context, Mockzone(), MockRecordSet()
@@ -1166,6 +1198,7 @@ class CentralzoneTestCase(CentralBasic):
         recordset.type = 't'
         recordset.id = 'i'
         recordset.obj_get_changes.return_value = {'ttl': 90}
+        recordset.ttl = 90
         recordset.records = []
         self.service._is_valid_recordset_name = Mock()
         self.service._is_valid_recordset_placement = Mock()
@@ -1204,6 +1237,7 @@ class CentralzoneTestCase(CentralBasic):
         recordset.name = 'n'
         recordset.type = 't'
         recordset.id = 'i'
+        recordset.ttl = None
         recordset.obj_get_changes.return_value = {'ttl': None}
         recordset.records = [RwObject(
             action='a',
