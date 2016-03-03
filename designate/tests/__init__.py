@@ -13,10 +13,11 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
 import copy
 import functools
-import os
 import inspect
+import os
 import time
 
 from testtools import testcase

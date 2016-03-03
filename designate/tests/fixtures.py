@@ -17,8 +17,10 @@
 from __future__ import absolute_import
 
 import os
+import random
 import shutil
 import tempfile
+from contextlib import contextmanager
 
 import fixtures
 from oslo_log import log as logging
@@ -32,6 +34,8 @@ from designate import rpc
 from designate.network_api import fake as fake_network_api
 from designate.sqlalchemy import utils as sqlalchemy_utils
 
+"""Test fixtures
+"""
 
 LOG = logging.getLogger(__name__)
 
@@ -160,3 +164,13 @@ class ZoneManagerTaskFixture(fixtures.Fixture):
         super(ZoneManagerTaskFixture, self).setUp()
         self.task = self._task_cls()
         self.task.on_partition_change(range(0, 4095), None, None)
+
+
+@contextmanager
+def random_seed(seed):
+    """Context manager to set random.seed() temporarily
+    """
+    state = random.getstate()
+    random.seed(seed)
+    yield
+    random.setstate(state)

@@ -28,6 +28,7 @@ import testtools
 
 from designate import exceptions
 from designate.central.service import Service
+from designate.tests.fixtures import random_seed
 import designate.central.service
 
 LOG = logging.getLogger(__name__)
@@ -516,9 +517,9 @@ class CentralServiceTestCase(CentralBasic):
         assert parent_zone
 
 
-class CentralzoneTestCase(CentralBasic):
+class CentralZoneTestCase(CentralBasic):
     def setUp(self):
-        super(CentralzoneTestCase, self).setUp()
+        super(CentralZoneTestCase, self).setUp()
 
         def storage_find_tld(c, d):
             if d['name'] not in ('org',):
@@ -1837,6 +1838,11 @@ class CentralzoneTestCase(CentralBasic):
         self.assertEqual(1, len(invalid))
         self.assertEqual(1, invalid[0].managed_tenant_id)
         self.assertEqual(data['k'], ({'address': 1}, None))
+
+    def test__generate_soa_refresh_interval(self):
+        with random_seed(42):
+            refresh_time = self.service._generate_soa_refresh_interval()
+            self.assertEqual(3563, refresh_time)
 
 
 class IsSubzoneTestCase(CentralBasic):
