@@ -1620,9 +1620,9 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(record['data'], values['data'])
         self.assertIn('status', record)
 
-    def test_create_record_over_domain_quota(self):
+    def test_create_record_and_update_over_zone_quota(self):
         # SOA and NS Records exist
-        self.config(quota_domain_records=3)
+        self.config(quota_domain_records=1)
 
         # Creating the domain automatically creates SOA & NS records
         domain = self.create_domain()
@@ -1632,6 +1632,26 @@ class CentralServiceTest(CentralTestCase):
 
         with testtools.ExpectedException(exceptions.OverQuota):
             self.create_record(domain, recordset)
+
+    def test_create_record_over_zone_quota(self):
+        self.config(quota_domain_records=1)
+
+        # Creating the domain automatically creates SOA & NS records
+        domain = self.create_domain()
+
+        recordset = objects.RecordSet(
+            name='www.%s' % domain.name,
+            type='A',
+            records=objects.RecordList(objects=[
+                objects.Record(data='192.3.3.15'),
+                objects.Record(data='192.3.3.16'),
+            ])
+        )
+
+        with testtools.ExpectedException(exceptions.OverQuota):
+            # Persist the Object
+            recordset = self.central_service.create_recordset(
+                self.admin_context, domain.id, recordset=recordset)
 
     def test_create_record_over_recordset_quota(self):
         self.config(quota_recordset_records=1)
