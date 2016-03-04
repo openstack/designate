@@ -1,0 +1,10 @@
+---
+issues:
+  - The fix for minidns's issues TCP can cause minidns to fail to send some messages.
+    This manifests itself with eventlet not being able to send all the data
+    before socket is closed.
+critical:
+  - Previous versions of eventlet changed the behaviour of socket.send() to
+    match socket.sendall(). in eventlet 0.18.0 this changed and it reverted
+    to the traditional behaviour. MiniDNS has been updated to allow minidns to
+    push large zone transfers over long range network connections
