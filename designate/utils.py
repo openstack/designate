@@ -29,6 +29,7 @@ from oslo_concurrency import processutils
 from oslo_log import log as logging
 from oslo_utils import timeutils
 
+from designate.common import config
 from designate import exceptions
 from designate.i18n import _
 from designate.i18n import _LI
@@ -94,6 +95,7 @@ def read_config(prog, argv):
     config_files = find_config('%s.conf' % prog)
     cfg.CONF(argv[1:], project='designate', prog=prog,
              default_config_files=config_files)
+    config.set_defaults()
 
     register_plugin_opts()
 
