@@ -75,3 +75,8 @@ class ZoneClient(ClientMixin):
         except NotFound:
             return True
         return False
+
+    def zones_dot_json(self, filters=None, **kwargs):
+        uri = self.create_uri("/zones.json", filters=filters)
+        resp, body = self.client.get(uri, **kwargs)
+        return self.deserialize(resp, body, ZoneListModel)
