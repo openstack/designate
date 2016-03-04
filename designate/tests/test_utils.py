@@ -94,7 +94,7 @@ class TestUtils(TestCase):
 
     def test_increment_serial(self):
         ret_serial = utils.increment_serial(serial=20)
-        self.assertTrue(ret_serial > 20)
+        self.assertGreater(ret_serial, 20)
 
     def test_is_uuid_like(self):
         uuid_str = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'

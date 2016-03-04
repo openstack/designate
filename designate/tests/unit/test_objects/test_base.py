@@ -570,7 +570,7 @@ class DesignateObjectTest(oslotest.base.BaseTestCase):
         obj_two.name = 'Other Name'
 
         # Ensure they do not evaluate to equal
-        self.assertTrue(obj_one != obj_two)
+        self.assertNotEqual(obj_one, obj_two)
 
 
 class DictObjectMixinTest(oslotest.base.BaseTestCase):
