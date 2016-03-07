@@ -339,7 +339,7 @@ class DNSService(object):
                         # Handle TCP Responses
                         msg_length = len(response)
                         tcp_response = struct.pack("!H", msg_length) + response
-                        client.send(tcp_response)
+                        client.sendall(tcp_response)
                     else:
                         # Handle UDP Responses
                         self._dns_sock_udp.sendto(response, addr)
