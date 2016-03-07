@@ -384,6 +384,30 @@ class CentralServiceTestCase(CentralBasic):
         self.assertEqual(rs, 'rs')
         self.assertFalse(self.service._update_domain_in_storage.called)
 
+    def test_create_recordset_with_records_in_storage(self):
+        self.service._enforce_recordset_quota = mock.Mock()
+        self.service._enforce_record_quota = mock.Mock()
+        self.service._is_valid_recordset_name = mock.Mock()
+        self.service._is_valid_recordset_placement = mock.Mock()
+        self.service._is_valid_recordset_placement_subzone = mock.Mock()
+        self.service._is_valid_ttl = mock.Mock()
+
+        self.service.storage.create_recordset = mock.Mock(return_value='rs')
+
+        self.service.storage.find_domains = mock.Mock(return_value=[])
+        self.service._update_domain_in_storage = mock.Mock()
+
+        recordset = Mock()
+        recordset.obj_attr_is_set.return_value = True
+        recordset.records = [MockRecord()]
+
+        rs, zone = self.service._create_recordset_in_storage(
+            self.context, MockDomain(), recordset
+        )
+
+        assert self.service._enforce_record_quota.called
+        assert self.service._update_domain_in_storage.called
+
     def test__create_soa(self):
         self.service._create_recordset_in_storage = Mock(
             return_value=(None, None)
@@ -1179,6 +1203,7 @@ class CentralDomainTestCase(CentralBasic):
         self.service._is_valid_recordset_placement_subdomain = Mock()
         self.service._is_valid_ttl = Mock()
         self.service._update_domain_in_storage = Mock()
+        self.service._enforce_record_quota = mock.Mock()
 
         self.service._update_recordset_in_storage(
             self.context,
@@ -1203,6 +1228,7 @@ class CentralDomainTestCase(CentralBasic):
         assert not self.service._is_valid_ttl.called
         assert not self.service._update_domain_in_storage.called
         assert self.service.storage.update_recordset.called
+        assert self.service._enforce_record_quota.called
 
     def test_delete_recordset_not_found(self):
         self.service.storage.get_domain.return_value = RoObject(
@@ -1927,3 +1953,40 @@ class CentralStatusTests(CentralBasic):
 
         self.assertEqual(dom.action, 'CREATE')
         self.assertEqual(dom.status, 'ERROR')
+
+
+class CentralQuotaTest(unittest.TestCase):
+
+    def setUp(self):
+        self.context = mock.Mock()
+        self.domain = mock.Mock()
+
+    @patch('designate.central.service.storage')
+    @patch('designate.central.service.quota')
+    def test_domain_record_quota_allows_lowering_value(self, quota, storage):
+        service = Service()
+        service.storage.count_records.return_value = 10
+
+        recordset = mock.Mock()
+        recordset.managed = False
+        recordset.records = ['1.1.1.%i' % (i + 1) for i in range(5)]
+
+        service._enforce_record_quota(
+            self.context, self.domain, recordset
+        )
+
+        # Ensure we check against the number of records that will
+        # result in the API call. The 5 value is as if there were 10
+        # unmanaged records unders a single recordset. We find 10
+        # total - 10 for the recordset being passed in and add the 5
+        # from the new recordset.
+        check_domain_records = mock.call(
+            self.context, self.domain.tenant_id, domain_records=10 - 10 + 5
+        )
+        assert check_domain_records in service.quota.limit_check.mock_calls
+
+        # Check the recordset limit as well
+        check_recordset_records = mock.call(
+            self.context, self.domain.tenant_id, recordset_records=10
+        )
+        assert check_recordset_records in service.quota.limit_check.mock_calls
