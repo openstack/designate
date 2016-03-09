@@ -104,6 +104,7 @@ class NoPoolTargetsConfigured(ConfigurationError):
 class OverQuota(Base):
     error_code = 413
     error_type = 'over_quota'
+    expected = True
 
 
 class QuotaResourceUnknown(Base):
