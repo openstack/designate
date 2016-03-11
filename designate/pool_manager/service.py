@@ -710,9 +710,10 @@ class Service(service.RPCService, coordination.CoordinationMixin,
 
         stale_zones = self.central_api.find_zones(context, stale_criterion)
         if stale_zones:
-            LOG.warn(_LW('Found %(len)d zones PENDING for more than %(sec)d '
-                         'seconds'), {'len': len(stale_zones),
-                                      'sec': self.max_prop_time})
+            LOG.warning(
+                _LW('Found %(len)d zones PENDING for more than %(sec)d '
+                    'seconds'), {'len': len(stale_zones),
+                                 'sec': self.max_prop_time})
             error_zones.extend(stale_zones)
 
         return error_zones
