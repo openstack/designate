@@ -88,7 +88,7 @@ class CoordinationMixin(object):
                     self._coordination_started = True
 
                 except Exception:
-                    LOG.warn(_LW("Failed to start Coordinator:"),
+                    LOG.warning(_LW("Failed to start Coordinator:"),
                              exc_info=True)
                     time.sleep(15)
 
