@@ -36,8 +36,6 @@ TSIG_SCOPES = ['POOL', 'ZONE']
 POOL_PROVISIONERS = ['UNMANAGED']
 ACTIONS = ['CREATE', 'DELETE', 'UPDATE', 'NONE']
 
-ZONE_ATTRIBUTE_KEYS = ('master',)
-
 ZONE_TYPES = ('PRIMARY', 'SECONDARY',)
 ZONE_TASK_TYPES = ['IMPORT', 'EXPORT']
 
@@ -131,11 +129,28 @@ zone_attributes = Table('zone_attributes', metadata,
     Column('created_at', DateTime, default=lambda: timeutils.utcnow()),
     Column('updated_at', DateTime, onupdate=lambda: timeutils.utcnow()),
 
-    Column('key', Enum(name='key', *ZONE_ATTRIBUTE_KEYS)),
+    Column('key', String(50)),
     Column('value', String(255), nullable=False),
     Column('zone_id', UUID, nullable=False),
 
     UniqueConstraint('key', 'value', 'zone_id', name='unique_attributes'),
+    ForeignKeyConstraint(['zone_id'], ['zones.id'], ondelete='CASCADE'),
+
+    mysql_engine='InnoDB',
+    mysql_charset='utf8'
+)
+
+zone_masters = Table('zone_masters', metadata,
+    Column('id', UUID(), default=utils.generate_uuid, primary_key=True),
+    Column('version', Integer(), default=1, nullable=False),
+    Column('created_at', DateTime, default=lambda: timeutils.utcnow()),
+    Column('updated_at', DateTime, onupdate=lambda: timeutils.utcnow()),
+
+    Column('host', String(32), nullable=False),
+    Column('port', Integer(), nullable=False),
+    Column('zone_id', UUID(), nullable=False),
+
+    UniqueConstraint('host', 'port', 'zone_id', name='unique_masters'),
     ForeignKeyConstraint(['zone_id'], ['zones.id'], ondelete='CASCADE'),
 
     mysql_engine='InnoDB',

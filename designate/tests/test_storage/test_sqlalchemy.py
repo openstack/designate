@@ -41,8 +41,9 @@ class SqlalchemyStorageTest(StorageTestCase, TestCase):
         table_names = [
             u'blacklists', u'migrate_version', u'pool_attributes',
             u'pool_ns_records', u'pools', u'quotas', u'records', u'recordsets',
-            u'tlds', u'tsigkeys', u'zone_attributes', u'zone_tasks',
-            u'zone_transfer_accepts', u'zone_transfer_requests', u'zones'
+            u'tlds', u'tsigkeys', u'zone_attributes', u'zone_masters',
+            u'zone_tasks', u'zone_transfer_accepts', u'zone_transfer_requests',
+            u'zones'
         ]
         self.assertEqual(table_names, self.storage.engine.table_names())
 
