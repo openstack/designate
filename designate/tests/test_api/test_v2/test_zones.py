@@ -558,7 +558,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
         # Create a zone
         fixture = self.get_zone_fixture('SECONDARY', 0)
         fixture['email'] = cfg.CONF['service:central'].managed_resource_email
-        fixture['attributes'] = [{"key": "master", "value": "10.0.0.10"}]
+        fixture['masters'] = [{"host": "10.0.0.10", "port": 53}]
 
         # Create a zone
         zone = self.create_zone(**fixture)
