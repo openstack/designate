@@ -72,7 +72,7 @@ class NSD4Backend(base.Backend):
         except (ssl.SSLError, socket.error) as e:
             LOG.debug('NSD4 control call failure: %s' % e)
             raise exceptions.Backend(e)
-        if result != 'ok':
+        if result.rstrip("\n") != 'ok':
             raise exceptions.Backend(result)
 
     def create_zone(self, context, zone):
