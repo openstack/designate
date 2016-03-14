@@ -32,17 +32,21 @@ Configuring Neutron
 
 Configuring the FloatingIP feature is really simple:
 
-[network_api:neutron]
-# endpoints = RegionOne|http://localhost:9696
-# endpoint_type = publicURL
-# timeout = 30
-# admin_username = designate
-# admin_password = designate
-# admin_tenant_name = designate
-# auth_url = http://localhost:35357/v2.0
-# insecure = False
-# auth_strategy = keystone
-# ca_certificates_file = /etc/path/to/ca.pem
+.. code-block:: ini
+
+    [network_api:neutron]
+    endpoints = RegionOne|http://localhost:9696
+    endpoint_type = publicURL
+    timeout = 30
+    # This is optional - if these credentials are not provided designate will
+    # use the users context and auth token to query neutron
+    #admin_username = designate
+    #admin_password = designate
+    #admin_tenant_name = designate
+    auth_url = http://localhost:35357/v2.0
+    insecure = False
+    auth_strategy = keystone
+    ca_certificates_file = /etc/path/to/ca.pem
 
 Note that using admin_user, admin_password and admin_tenant_name is optional,
 if not present we'll piggyback on the context.auth_token passed in by the API.
