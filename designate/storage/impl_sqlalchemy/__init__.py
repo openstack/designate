@@ -553,7 +553,7 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
                            marker=None, limit=None, sort_key=None,
                            sort_dir=None):
 
-        return self._find(context, tables.zone_attributes,
+        return self._find(context, tables.zone_masters,
                           objects.ZoneMaster, objects.ZoneMasterList,
                           exceptions.ZoneMasterNotFound, criterion, one,
                           marker, limit, sort_key, sort_dir)
