@@ -69,6 +69,10 @@ class ZoneTest(DesignateV2Test):
         self.assertEqual(202, resp.status)
         client.wait_for_zone_404(model.id)
 
+    def test_list_zones_dot_json_fails(self):
+        self.assertRaises(NotFound,
+            lambda: ZoneClient.as_user('default').zones_dot_json())
+
 
 class ZoneOwnershipTest(DesignateV2Test):
 

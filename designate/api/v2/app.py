@@ -40,7 +40,8 @@ def setup_app(pecan_config):
         pecan_config.app.root,
         debug=getattr(pecan_config.app, 'debug', False),
         force_canonical=getattr(pecan_config.app, 'force_canonical', True),
-        request_cls=patches.Request
+        request_cls=patches.Request,
+        guess_content_type_from_ext=False
     )
 
     return app
