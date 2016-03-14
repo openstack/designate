@@ -28,6 +28,14 @@ Objects Zone
     :show-inheritance:
 
 
+Objects Pool
+============
+.. automodule:: designate.objects.pool
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
 Objects Quota
 =============
 .. automodule:: designate.objects.quota
@@ -76,7 +84,7 @@ Objects TLD
     :show-inheritance:
 
 
-Objects TSigKey 
+Objects TSigKey
 ===============
 .. automodule:: designate.objects.tsigkey
     :members:
@@ -142,7 +150,7 @@ Objects SOA Record
 
 Objects SPF Record
 ==================
-.. automodule:: designate.objects.rrdata_spf 
+.. automodule:: designate.objects.rrdata_spf
     :members:
     :undoc-members:
     :show-inheritance:

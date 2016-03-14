@@ -89,6 +89,7 @@
     "get_pool": "rule:admin",
     "update_pool": "rule:admin",
     "delete_pool": "rule:admin",
+    "zone_create_forced_pool": "rule:admin",
 
     "diagnostics_ping": "rule:admin",
     "diagnostics_sync_zones": "rule:admin",

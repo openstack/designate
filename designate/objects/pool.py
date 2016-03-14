@@ -146,3 +146,9 @@ class Pool(base.DictObjectMixin, base.PersistentObjectMixin,
 
 class PoolList(base.ListObjectMixin, base.DesignateObject):
     LIST_ITEM_TYPE = Pool
+
+    def __contains__(self, pool):
+        for p in self.objects:
+            if p.id == pool.id:
+                return True
+        return False

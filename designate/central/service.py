@@ -47,6 +47,7 @@ from designate import objects
 from designate import policy
 from designate import quota
 from designate import service
+from designate import scheduler
 from designate import utils
 from designate import storage
 from designate.mdns import rpcapi as mdns_rpcapi
@@ -269,6 +270,13 @@ class Service(service.RPCService, service.Service):
         super(Service, self).__init__(threads=threads)
 
         self.network_api = network_api.get_network_api(cfg.CONF.network_api)
+
+    @property
+    def scheduler(self):
+        if not hasattr(self, '_scheduler'):
+            # Get a scheduler instance
+            self._scheduler = scheduler.get_scheduler(storage=self.storage)
+        return self._scheduler
 
     @property
     def quota(self):
@@ -909,10 +917,8 @@ class Service(service.RPCService, service.Service):
         if zone.ttl is not None:
             self._is_valid_ttl(context, zone.ttl)
 
-        # Get the default pool_id
-        default_pool_id = cfg.CONF['service:central'].default_pool_id
-        if zone.pool_id is None:
-            zone.pool_id = default_pool_id
+        # Get a pool id
+        zone.pool_id = self.scheduler.schedule_zone(context, zone)
 
         # Handle sub-zones appropriately
         parent_zone = self._is_subzone(

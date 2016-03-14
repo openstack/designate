@@ -46,8 +46,11 @@ class ZoneAPIv2Adapter(base.APIv2Adapter):
             "status": {},
             "action": {},
             "version": {},
+            "attributes": {
+                "immutable": True
+            },
             "type": {
-                'immutable': True
+                "immutable": True
             },
             "masters": {},
             "created_at": {},
@@ -73,6 +76,16 @@ class ZoneAPIv2Adapter(base.APIv2Adapter):
                 *args, **kwargs)
 
             del values['masters']
+
+        if 'attributes' in values:
+
+            object.attributes = objects.adapters.DesignateAdapter.parse(
+                cls.ADAPTER_FORMAT,
+                values['attributes'],
+                objects.ZoneAttributeList(),
+                *args, **kwargs)
+
+            del values['attributes']
 
         return super(ZoneAPIv2Adapter, cls)._parse_object(
             values, object, *args, **kwargs)

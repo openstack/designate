@@ -63,6 +63,7 @@ Reference Documentation
    functional-tests
    gmr
    support-matrix
+   pools
 
 Source Documentation
 ====================

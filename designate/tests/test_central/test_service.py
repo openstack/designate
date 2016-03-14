@@ -480,7 +480,8 @@ class CentralServiceTest(CentralTestCase):
 
         # Create a secondary pool
         second_pool = self.create_pool()
-        fixture["pool_id"] = second_pool.id
+        fixture["attributes"] = {}
+        fixture["attributes"]["pool_id"] = second_pool.id
 
         self.create_zone(**fixture)
 
@@ -537,15 +538,19 @@ class CentralServiceTest(CentralTestCase):
         fixture = self.get_zone_fixture()
 
         # Create first zone that's placed in default pool
-        self.create_zone(**fixture)
+        zone = self.create_zone(**fixture)
 
         # Create a secondary pool
         second_pool = self.create_pool()
-        fixture["pool_id"] = second_pool.id
+        fixture["attributes"] = {}
+        fixture["attributes"]["pool_id"] = second_pool.id
         fixture["name"] = "sub.%s" % fixture["name"]
-
         subzone = self.create_zone(**fixture)
-        self.assertIsNone(subzone.parent_zone_id)
+
+        if subzone.pool_id is not zone.pool_id:
+            self.assertIsNone(subzone.parent_zone_id)
+        else:
+            raise Exception("Foo")
 
     def test_create_superzone(self):
         # Prepare values for the zone and subzone
@@ -2903,9 +2908,14 @@ class CentralServiceTest(CentralTestCase):
     def test_update_pool_add_ns_record(self):
         # Create a server pool and 3 zones
         pool = self.create_pool(fixture=0)
-        zone = self.create_zone(pool_id=pool.id)
-        self.create_zone(fixture=1, pool_id=pool.id)
-        self.create_zone(fixture=2, pool_id=pool.id)
+        zone = self.create_zone(
+            attributes=[{'key': 'pool_id', 'value': pool.id}])
+        self.create_zone(
+            fixture=1,
+            attributes=[{'key': 'pool_id', 'value': pool.id}])
+        self.create_zone(
+            fixture=2,
+            attributes=[{'key': 'pool_id', 'value': pool.id}])
 
         ns_record_count = len(pool.ns_records)
         new_ns_record = objects.PoolNsRecord(
@@ -2952,7 +2962,8 @@ class CentralServiceTest(CentralTestCase):
     def test_update_pool_remove_ns_record(self):
         # Create a server pool and zone
         pool = self.create_pool(fixture=0)
-        zone = self.create_zone(pool_id=pool.id)
+        zone = self.create_zone(
+            attributes=[{'key': 'pool_id', 'value': pool.id}])
 
         ns_record_count = len(pool.ns_records)
 
