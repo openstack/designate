@@ -12,7 +12,9 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+
 import time
+import socket
 
 import eventlet
 import dns
@@ -187,16 +189,34 @@ class NotifyEndpoint(base.BaseEndpoint):
         response = None
 
         while retry < max_retries:
-            retry = retry + 1
+            retry += 1
             LOG.info(_LI("Sending '%(msg)s' for '%(zone)s' to '%(server)s:"
                          "%(port)d'."),
                      {'msg': 'NOTIFY' if notify else 'SOA',
                       'zone': zone.name, 'server': host,
                       'port': port})
-            response = self._send_dns_message(
-                dns_message, host, port, timeout)
+            try:
+                response = self._send_dns_message(dns_message, host, port,
+                                                  timeout)
 
-            if isinstance(response, dns.exception.Timeout):
+            except socket.error as e:
+                if e.errno != socket.errno.EAGAIN:
+                    raise  # unknown error, let it traceback
+
+                # Initial workaround for bug #1558096
+                LOG.info(
+                    _LW("Got EAGAIN while trying to send '%(msg)s' for "
+                        "'%(zone)s' to '%(server)s:%(port)d'. Timeout="
+                        "'%(timeout)d' seconds. Retry='%(retry)d'") %
+                    {'msg': 'NOTIFY' if notify else 'SOA',
+                     'zone': zone.name, 'server': host,
+                     'port': port, 'timeout': timeout,
+                     'retry': retry})
+                # retry sending the message
+                time.sleep(retry_interval)
+                continue
+
+            except dns.exception.Timeout:
                 LOG.warning(
                     _LW("Got Timeout while trying to send '%(msg)s' for "
                         "'%(zone)s' to '%(server)s:%(port)d'. Timeout="
@@ -205,11 +225,11 @@ class NotifyEndpoint(base.BaseEndpoint):
                      'zone': zone.name, 'server': host,
                      'port': port, 'timeout': timeout,
                      'retry': retry})
-                response = None
                 # retry sending the message if we get a Timeout.
                 time.sleep(retry_interval)
                 continue
-            elif isinstance(response, dns_query.BadResponse):
+
+            except dns_query.BadResponse:
                 LOG.warning(
                     _LW("Got BadResponse while trying to send '%(msg)s' "
                         "for '%(zone)s' to '%(server)s:%(port)d'. Timeout"
@@ -218,34 +238,37 @@ class NotifyEndpoint(base.BaseEndpoint):
                      'zone': zone.name, 'server': host,
                      'port': port, 'timeout': timeout,
                      'retry': retry})
-                response = None
-                break
-            # Check that we actually got a NOERROR in the rcode and and an
-            # authoritative answer
-            elif (response.rcode() in
-                    (dns.rcode.NXDOMAIN, dns.rcode.REFUSED,
-                     dns.rcode.SERVFAIL)) or \
-                    (response.rcode() == dns.rcode.NOERROR and
-                     not bool(response.answer)):
-                LOG.info(_LI("%(zone)s not found on %(server)s:%(port)d"),
-                         {'zone': zone.name, 'server': host,
-                         'port': port})
-                break
-            elif not (response.flags & dns.flags.AA) or dns.rcode.from_flags(
-                    response.flags, response.ednsflags) != dns.rcode.NOERROR:
-                LOG.warning(
-                    _LW("Failed to get expected response while trying to "
-                        "send '%(msg)s' for '%(zone)s' to '%(server)s:"
-                        "%(port)d'.\nResponse message:\n%(resp)s\n") %
-                    {'msg': 'NOTIFY' if notify else 'SOA',
-                     'zone': zone.name, 'server': host,
-                     'port': port, 'resp': str(response)})
-                response = None
-                break
-            else:
-                break
+                break  # no retries after BadResponse
 
-        return (response, retry)
+            # either we have a good response or an error that we don't want to
+            # recover by retrying
+            break
+
+        # Check that we actually got a NOERROR in the rcode and and an
+        # authoritative answer
+        if response is None:
+            pass
+
+        elif (response.rcode() in
+                (dns.rcode.NXDOMAIN, dns.rcode.REFUSED,
+                    dns.rcode.SERVFAIL)) or \
+                (response.rcode() == dns.rcode.NOERROR and
+                    not bool(response.answer)):
+            LOG.info(_LI("%(zone)s not found on %(server)s:%(port)d") %
+                     {'zone': zone.name, 'server': host, 'port': port})
+
+        elif not (response.flags & dns.flags.AA) or dns.rcode.from_flags(
+                response.flags, response.ednsflags) != dns.rcode.NOERROR:
+            LOG.warning(
+                _LW("Failed to get expected response while trying to "
+                    "send '%(msg)s' for '%(zone)s' to '%(server)s:"
+                    "%(port)d'.\nResponse message:\n%(resp)s\n") %
+                {'msg': 'NOTIFY' if notify else 'SOA',
+                    'zone': zone.name, 'server': host,
+                    'port': port, 'resp': str(response)})
+            response = None
+
+        return response, retry
 
     def _make_dns_message(self, zone_name, notify=False):
         """
@@ -274,17 +297,12 @@ class NotifyEndpoint(base.BaseEndpoint):
         :param host: The destination ip of dns_message.
         :param port: The destination port of dns_message.
         :param timeout: The timeout in seconds to wait for a response.
-        :return: response or dns.exception.Timeout or dns_query.BadResponse
+        :return: response
         """
-        try:
-            if not CONF['service:mdns'].all_tcp:
-                response = dns_query.udp(
-                    dns_message, host, port=port, timeout=timeout)
-            else:
-                response = dns_query.tcp(
-                    dns_message, host, port=port, timeout=timeout)
-            return response
-        except dns.exception.Timeout as timeout:
-            return timeout
-        except dns_query.BadResponse as badResponse:
-            return badResponse
+        if not CONF['service:mdns'].all_tcp:
+            response = dns_query.udp(
+                dns_message, host, port=port, timeout=timeout)
+        else:
+            response = dns_query.tcp(
+                dns_message, host, port=port, timeout=timeout)
+        return response
