@@ -168,61 +168,69 @@ List Record Sets
         {
             "recordsets": [
                 {
+                    "status": "ACTIVE",
                     "description": null,
                     "links": {
-                        "self": "https://127.0.0.1:9001/v2/zones/2150b1bf-dee2-4221-9d85-11f7886fb15f/recordsets/65ee6b49-bb4c-4e52-9799-31330c94161f"
+                        "self": "http://127.0.0.1:9001/v2/zones/c991f02b-ae05-4570-bf75-73def68fe700/recordsets/29c5420e-8acb-4ef9-9aca-709a196c22dc"
                     },
-                    "updated_at": null,
+                    "created_at": "2016-03-15T05:41:45.000000",
+                    "updated_at": "2016-03-15T07:34:02.000000",
                     "records": [
-                        "ns2.example.com."
+                        "ns1.example.com. abc.example.com. 1458027242 3586 600 86400 3600"
                     ],
+                    "zone_id": "c991f02b-ae05-4570-bf75-73def68fe700",
+                    "version": 2,
                     "ttl": null,
-                    "id": "65ee6b49-bb4c-4e52-9799-31330c94161f",
-                    "name": "example.org.",
-                    "zone_id": "2150b1bf-dee2-4221-9d85-11f7886fb15f",
-                    "created_at": "2014-10-24T19:59:11.000000",
-                    "version": 1,
-                    "type": "NS"
+                    "action": "NONE",
+                    "type": "SOA",
+                    "id": "29c5420e-8acb-4ef9-9aca-709a196c22dc",
+                    "name": "example.org."
                 },
                 {
-                    "description": null,
-                    "links": {
-                        "self": "https://127.0.0.1:9001/v2/zones/2150b1bf-dee2-4221-9d85-11f7886fb15f/recordsets/14500cf9-bdff-48f6-b06b-5fc7491ffd9e"
-                    },
-                    "updated_at": "2014-10-24T19:59:46.000000",
-                    "records": [
-                        "ns2.example.com. joe.example.org. 1414180785 3600 600 86400 3600"
-                    ],
-                    "ttl": null,
-                    "id": "14500cf9-bdff-48f6-b06b-5fc7491ffd9e",
-                    "name": "example.org.",
-                    "zone_id": "2150b1bf-dee2-4221-9d85-11f7886fb15f",
-                    "created_at": "2014-10-24T19:59:12.000000",
-                    "version": 1,
-                    "type": "SOA"
+                   "status": "ACTIVE",
+                   "description": null,
+                   "links": {
+                      "self": "http://127.0.0.1:9001/v2/zones/c991f02b-ae05-4570-bf75-73def68fe700/recordsets/7d80c4c6-e416-41d3-a29b-f408b9f51b8e"
+                   },
+                   "created_at": "2016-03-15T05:41:45.000000",
+                   "updated_at": null,
+                   "records": [
+                       "ns1.example.com."
+                   ],
+                   "zone_id": "c991f02b-ae05-4570-bf75-73def68fe700",
+                   "version": 1,
+                   "ttl": null,
+                   "action": "NONE",
+                   "type": "NS",
+                   "id": "7d80c4c6-e416-41d3-a29b-f408b9f51b8e",
+                   "name": "example.org."
                 },
                 {
-                    "description": "This is an example recordset.",
-                    "links": {
-                        "self": "https://127.0.0.1:9001/v2/zones/2150b1bf-dee2-4221-9d85-11f7886fb15f/recordsets/f7b10e9b-0cae-4a91-b162-562bc6096648"
-                    },
-                    "updated_at": null,
-                    "records": [
-                        "10.1.0.2"
-                    ],
-                    "ttl": 3600,
-                    "id": "f7b10e9b-0cae-4a91-b162-562bc6096648",
-                    "name": "example.org.",
-                    "zone_id": "2150b1bf-dee2-4221-9d85-11f7886fb15f",
-                    "created_at": "2014-10-24T19:59:44.000000",
-                    "version": 1,
-                    "type": "A"
+                   "status": "ACTIVE",
+                   "description": "this is  an  example recordset",
+                   "links": {
+                       "self": "http://127.0.0.1:9001/v2/zones/c991f02b-ae05-4570-bf75-73def68fe700/recordsets/345e779d-90a4-4245-a460-42721a750e8c"
+                   },
+                   "created_at": "2016-03-15T07:34:02.000000",
+                   "updated_at": null,
+                   "records": ["10.1.0.2"],
+                   "zone_id": "c991f02b-ae05-4570-bf75-73def68fe700",
+                   "version": 1,
+                   "ttl": null,
+                   "action": "NONE",
+                   "type": "A",
+                   "id": "345e779d-90a4-4245-a460-42721a750e8c",
+                   "name": "example.org."
                 }
             ],
             "links": {
-                "self": "https://127.0.0.1:9001/v2/zones/2150b1bf-dee2-4221-9d85-11f7886fb15f/recordsets"
+                "self": "http://127.0.0.1:9001/v2/zones/c991f02b-ae05-4570-bf75-73def68fe700/recordsets"
+            },
+            "metadata": {
+                "total_count": 3
             }
         }
+
 
     :statuscode 200: Success
     :statuscode 401: Access Denied
