@@ -65,6 +65,7 @@ class MdnsNotifyTest(base.BaseTestCase):
             'c', 'z', ns, 'status', 99)
 
     def test_get_serial_number_nxdomain(self, *mocks):
+        # The zone is not found but it was supposed to be there
         response = RoObject(
             answer=[RoObject(
                 rdclass=dns.rdataclass.IN,
@@ -80,6 +81,24 @@ class MdnsNotifyTest(base.BaseTestCase):
         out = self.notify.get_serial_number('c', zone, 'h', 1234, 1, 2, 3, 4)
 
         self.assertEqual(('NO_ZONE', None, 0), out)
+
+    def test_get_serial_number_nxdomain_deleted_zone(self, *mocks):
+        # The zone is not found and it's not was supposed be there
+        response = RoObject(
+            answer=[RoObject(
+                rdclass=dns.rdataclass.IN,
+                rdtype=dns.rdatatype.SOA
+            )],
+            rcode=Mock(return_value=dns.rcode.NXDOMAIN)
+        )
+        zone = RoObject(name='zn', serial=0, action='DELETE')
+        self.notify._make_and_send_dns_message = Mock(
+            return_value=(response, 1)
+        )
+
+        out = self.notify.get_serial_number('c', zone, 'h', 1234, 1, 2, 3, 4)
+
+        self.assertEqual(('NO_ZONE', 0, 3), out)
 
     def test_get_serial_number_ok(self, *mocks):
         zone = RoObject(name='zn', serial=314)

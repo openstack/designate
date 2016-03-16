@@ -113,18 +113,19 @@ class NotifyEndpoint(base.BaseEndpoint):
         """
         actual_serial = None
         status = 'ERROR'
-        retries = max_retries
+        retries_left = max_retries
         time.sleep(delay)
-        while (True):
-            (response, retry) = self._make_and_send_dns_message(
-                zone, host, port, timeout, retry_interval, retries)
+        while True:
+            response, retry_cnt = self._make_and_send_dns_message(
+                zone, host, port, timeout, retry_interval, retries_left)
 
             if response and (response.rcode() in (
                     dns.rcode.NXDOMAIN, dns.rcode.REFUSED, dns.rcode.SERVFAIL)
                     or not bool(response.answer)):
                 status = 'NO_ZONE'
-                if zone.serial == 0 and zone.action in ['DELETE', 'NONE']:
-                    return (status, 0, retries)
+                if zone.serial == 0 and zone.action in ('DELETE', 'NONE'):
+                    actual_serial = 0
+                    break  # Zone not expected to exist
 
             elif response and len(response.answer) == 1 \
                     and str(response.answer[0].name) == str(zone.name) \
@@ -134,30 +135,33 @@ class NotifyEndpoint(base.BaseEndpoint):
                 rrset = response.answer[0]
                 actual_serial = rrset.to_rdataset().items[0].serial
 
-            if actual_serial is None or actual_serial < zone.serial:
-                # TODO(vinod): Account for serial number wrap around.
-                retries = retries - retry
-                LOG.warning(_LW("Got lower serial for '%(zone)s' to '%(host)s:"
-                             "%(port)s'. Expected:'%(es)d'. Got:'%(as)s'."
-                             "Retries left='%(retries)d'") %
-                         {'zone': zone.name, 'host': host,
-                          'port': port, 'es': zone.serial,
-                          'as': actual_serial, 'retries': retries})
-
-                if retries > 0:
-                    # retry again
-                    time.sleep(retry_interval)
-                    continue
-                else:
-                    break
-
-            else:
+            # TODO(vinod): Account for serial number wrap around. Unix
+            # timestamps are used where Designate is primary, but secondary
+            # zones use different values.
+            if actual_serial is not None and actual_serial >= zone.serial:
                 # Everything looks good at this point. Return SUCCESS.
                 status = 'SUCCESS'
                 break
 
-        # Return retries for testing purposes.
-        return (status, actual_serial, retries)
+            retries_left -= retry_cnt
+            msg = _LW("Got lower serial for '%(zone)s' to '%(host)s:"
+                      "%(port)s'. Expected:'%(es)d'. Got:'%(as)s'."
+                      "Retries left='%(retries)d'") % {
+                          'zone': zone.name, 'host': host, 'port': port,
+                          'es': zone.serial, 'as': actual_serial,
+                          'retries': retries_left}
+
+            if not retries_left:
+                # return with error
+                LOG.warning(msg)
+                break
+
+            LOG.debug(msg)
+            # retry again
+            time.sleep(retry_interval)
+
+        # Return retries_left for testing purposes.
+        return status, actual_serial, retries_left
 
     def _make_and_send_dns_message(self, zone, host, port, timeout,
                                    retry_interval, max_retries, notify=False):
