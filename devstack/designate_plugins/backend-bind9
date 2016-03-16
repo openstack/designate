@@ -68,7 +68,7 @@ function install_designate_backend {
         sudo tee /etc/apparmor.d/local/usr.sbin.named > /dev/null << EOF
 $DESIGNATE_STATE_PATH/bind9/** rw,
 EOF
-        restart_service apparmor
+        restart_service apparmor || :
     fi
 }
 
