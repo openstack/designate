@@ -290,6 +290,8 @@ function init_designate {
 
 # install_designate - Collect source and prepare
 function install_designate {
+    install_package libcap2-bin
+
     if is_fedora; then
         # This package provides `dig`
         install_package bind-utils
