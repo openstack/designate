@@ -30,6 +30,24 @@ LOG = logging.getLogger(__name__)
 
 
 class StorageTestCase(object):
+    # TODO(kiall): Someone, Somewhere, could probably make use of a
+    #              assertNestedDictContainsSubset(), cleanup and put somewhere
+    #              better.
+    def assertNestedDictContainsSubset(self, expected, actual):
+        for key, value in expected.items():
+            if isinstance(value, dict):
+                self.assertNestedDictContainsSubset(value, actual.get(key, {}))
+
+            elif isinstance(value, list):
+                self.assertEqual(len(value), len(actual[key]))
+
+                for index, item in enumerate(value):
+                    self.assertNestedDictContainsSubset(
+                        item, actual[key][index])
+
+            else:
+                self.assertEqual(value, actual[key])
+
     def create_quota(self, **kwargs):
         """
         This create method has been kept in the StorageTestCase class as quotas
@@ -45,6 +63,57 @@ class StorageTestCase(object):
             values['tenant_id'] = context.tenant
 
         return self.storage.create_quota(context, values)
+
+    def create_pool_nameserver(self, pool, **kwargs):
+        # NOTE(kiall): We add this method here, rather than in the base test
+        #              case, as the base methods expect to make a central API
+        #              call. If a central API method is exposed for this, we
+        #              should remove this and add to the base.
+        context = kwargs.pop('context', self.admin_context)
+        fixture = kwargs.pop('fixture', 0)
+
+        values = self.get_pool_nameserver_fixture(
+            fixture=fixture, values=kwargs)
+
+        if 'pool_id' not in values:
+            values['pool_id'] = pool.id
+
+        return self.storage.create_pool_nameserver(
+            context, pool.id, objects.PoolNameserver.from_dict(values))
+
+    def create_pool_target(self, pool, **kwargs):
+        # NOTE(kiall): We add this method here, rather than in the base test
+        #              case, as the base methods expect to make a central API
+        #              call. If a central API method is exposed for this, we
+        #              should remove this and add to the base.
+        context = kwargs.pop('context', self.admin_context)
+        fixture = kwargs.pop('fixture', 0)
+
+        values = self.get_pool_target_fixture(
+            fixture=fixture, values=kwargs)
+
+        if 'pool_id' not in values:
+            values['pool_id'] = pool.id
+
+        return self.storage.create_pool_target(
+            context, pool.id, objects.PoolTarget.from_dict(values))
+
+    def create_pool_also_notify(self, pool, **kwargs):
+        # NOTE(kiall): We add this method here, rather than in the base test
+        #              case, as the base methods expect to make a central API
+        #              call. If a central API method is exposed for this, we
+        #              should remove this and add to the base.
+        context = kwargs.pop('context', self.admin_context)
+        fixture = kwargs.pop('fixture', 0)
+
+        values = self.get_pool_also_notify_fixture(
+            fixture=fixture, values=kwargs)
+
+        if 'pool_id' not in values:
+            values['pool_id'] = pool.id
+
+        return self.storage.create_pool_also_notify(
+            context, pool.id, objects.PoolAlsoNotify.from_dict(values))
 
     # Paging Tests
     def _ensure_paging(self, data, method):
@@ -1827,6 +1896,31 @@ class StorageTestCase(object):
         self.assertEqual(values['tenant_id'], result['tenant_id'])
         self.assertEqual(values['provisioner'], result['provisioner'])
 
+    def test_create_pool_with_all_relations(self):
+        values = {
+            'name': u'Pool',
+            'description': u'Pool description',
+            'attributes': [{'key': 'scope', 'value': 'public'}],
+            'ns_records': [{'priority': 1, 'hostname': 'ns1.example.org.'}],
+            'nameservers': [{'host': "192.0.2.1", 'port': 53}],
+            'targets': [{
+                'type': "fake",
+                'description': u"FooBar",
+                'masters': [{'host': "192.0.2.2", 'port': 5354}],
+                'options': [{'key': 'fake_option', 'value': 'fake_value'}],
+            }],
+            'also_notifies': [{'host': "192.0.2.3", 'port': 53}]
+        }
+
+        # Create the Pool, and check all values are OK
+        result = self.storage.create_pool(
+            self.admin_context, objects.Pool.from_dict(values))
+        self.assertNestedDictContainsSubset(values, result.to_dict())
+
+        # Re-Fetch the pool, and check everything is still OK
+        result = self.storage.get_pool(self.admin_context, result.id)
+        self.assertNestedDictContainsSubset(values, result.to_dict())
+
     def test_create_pool_duplicate(self):
         # Create the first pool
         self.create_pool(fixture=0)
@@ -1958,6 +2052,60 @@ class StorageTestCase(object):
         with testtools.ExpectedException(exceptions.PoolNotFound):
             self.storage.update_pool(self.admin_context, pool)
 
+    def test_update_pool_with_all_relations(self):
+        values = {
+            'name': u'Pool-A',
+            'description': u'Pool-A description',
+            'attributes': [{'key': 'scope', 'value': 'public'}],
+            'ns_records': [{'priority': 1, 'hostname': 'ns1.example.org.'}],
+            'nameservers': [{'host': "192.0.2.1", 'port': 53}],
+            'targets': [{
+                'type': "fake",
+                'description': u"FooBar",
+                'masters': [{'host': "192.0.2.2", 'port': 5354}],
+                'options': [{'key': 'fake_option', 'value': 'fake_value'}],
+            }],
+            'also_notifies': [{'host': "192.0.2.3", 'port': 53}]
+        }
+
+        # Create the Pool
+        result = self.storage.create_pool(
+            self.admin_context, objects.Pool.from_dict(values))
+
+        created_pool_id = result.id
+
+        # Prepare a new set of data for the Pool, copying over the ID so
+        # we trigger an update rather than a create.
+        values = {
+            'id': created_pool_id,
+            'name': u'Pool-B',
+            'description': u'Pool-B description',
+            'attributes': [{'key': 'scope', 'value': 'private'}],
+            'ns_records': [{'priority': 1, 'hostname': 'ns2.example.org.'}],
+            'nameservers': [{'host': "192.0.2.5", 'port': 53}],
+            'targets': [{
+                'type': "fake",
+                'description': u"NewFooBar",
+                'masters': [{'host': "192.0.2.2", 'port': 5354}],
+                'options': [{'key': 'fake_option', 'value': 'fake_value'}],
+            }, {
+                'type': "fake",
+                'description': u"FooBar2",
+                'masters': [{'host': "192.0.2.7", 'port': 5355}],
+                'options': [{'key': 'fake_option', 'value': 'new_fake_value'}],
+            }],
+            'also_notifies': []
+        }
+
+        # Update the pool, and check everything is OK
+        result = self.storage.update_pool(
+            self.admin_context, objects.Pool.from_dict(values))
+        self.assertNestedDictContainsSubset(values, result.to_dict())
+
+        # Re-Fetch the pool, and check everything is still OK
+        result = self.storage.get_pool(self.admin_context, created_pool_id)
+        self.assertNestedDictContainsSubset(values, result.to_dict())
+
     def test_delete_pool(self):
         pool = self.create_pool()
 
@@ -2000,217 +2148,6 @@ class StorageTestCase(object):
             ns2.hostname = ns1.hostname
             self.storage.update_pool_ns_record(
                 self.admin_context, ns2)
-
-    def test_create_zone_transfer_request(self):
-        zone = self.create_zone()
-
-        values = {
-            'tenant_id': self.admin_context.tenant,
-            'zone_id': zone.id,
-            'key': 'qwertyuiop'
-        }
-
-        result = self.storage.create_zone_transfer_request(
-            self.admin_context, objects.ZoneTransferRequest.from_dict(values))
-
-        self.assertEqual(self.admin_context.tenant, result['tenant_id'])
-        self.assertIn('status', result)
-
-    def test_create_zone_transfer_request_scoped(self):
-        zone = self.create_zone()
-        tenant_2_context = self.get_context(tenant='2')
-        tenant_3_context = self.get_context(tenant='3')
-
-        values = {
-            'tenant_id': self.admin_context.tenant,
-            'zone_id': zone.id,
-            'key': 'qwertyuiop',
-            'target_tenant_id': tenant_2_context.tenant,
-        }
-
-        result = self.storage.create_zone_transfer_request(
-            self.admin_context, objects.ZoneTransferRequest.from_dict(values))
-
-        self.assertIsNotNone(result['id'])
-        self.assertIsNotNone(result['created_at'])
-        self.assertIsNone(result['updated_at'])
-
-        self.assertEqual(self.admin_context.tenant, result['tenant_id'])
-        self.assertEqual(tenant_2_context.tenant, result['target_tenant_id'])
-        self.assertIn('status', result)
-
-        stored_ztr = self.storage.get_zone_transfer_request(
-            tenant_2_context, result.id)
-
-        self.assertEqual(self.admin_context.tenant, stored_ztr['tenant_id'])
-        self.assertEqual(stored_ztr['id'], result['id'])
-
-        with testtools.ExpectedException(
-                exceptions.ZoneTransferRequestNotFound):
-            self.storage.get_zone_transfer_request(
-                tenant_3_context, result.id)
-
-    def test_find_zone_transfer_requests(self):
-        zone = self.create_zone()
-
-        values = {
-            'tenant_id': self.admin_context.tenant,
-            'zone_id': zone.id,
-            'key': 'qwertyuiop'
-        }
-
-        self.storage.create_zone_transfer_request(
-            self.admin_context, objects.ZoneTransferRequest.from_dict(values))
-
-        requests = self.storage.find_zone_transfer_requests(
-            self.admin_context, {"tenant_id": self.admin_context.tenant})
-        self.assertEqual(1, len(requests))
-
-    def test_delete_zone_transfer_request(self):
-        zone = self.create_zone()
-        zt_request = self.create_zone_transfer_request(zone)
-
-        self.storage.delete_zone_transfer_request(
-            self.admin_context, zt_request.id)
-
-        with testtools.ExpectedException(
-                exceptions.ZoneTransferRequestNotFound):
-            self.storage.get_zone_transfer_request(
-                self.admin_context, zt_request.id)
-
-    def test_update_zone_transfer_request(self):
-        zone = self.create_zone()
-        zt_request = self.create_zone_transfer_request(zone)
-
-        zt_request.description = 'New description'
-        result = self.storage.update_zone_transfer_request(
-            self.admin_context, zt_request)
-        self.assertEqual('New description', result.description)
-
-    def test_get_zone_transfer_request(self):
-        zone = self.create_zone()
-        zt_request = self.create_zone_transfer_request(zone)
-
-        result = self.storage.get_zone_transfer_request(
-            self.admin_context, zt_request.id)
-        self.assertEqual(zt_request.id, result.id)
-        self.assertEqual(zt_request.zone_id, result.zone_id)
-
-    def test_create_zone_transfer_accept(self):
-        zone = self.create_zone()
-        zt_request = self.create_zone_transfer_request(zone)
-        values = {
-            'tenant_id': self.admin_context.tenant,
-            'zone_transfer_request_id': zt_request.id,
-            'zone_id': zone.id,
-            'key': zt_request.key
-        }
-
-        result = self.storage.create_zone_transfer_accept(
-            self.admin_context, objects.ZoneTransferAccept.from_dict(values))
-
-        self.assertIsNotNone(result['id'])
-        self.assertIsNotNone(result['created_at'])
-        self.assertIsNone(result['updated_at'])
-
-        self.assertEqual(self.admin_context.tenant, result['tenant_id'])
-        self.assertIn('status', result)
-
-    def test_find_zone_transfer_accepts(self):
-        zone = self.create_zone()
-        zt_request = self.create_zone_transfer_request(zone)
-        values = {
-            'tenant_id': self.admin_context.tenant,
-            'zone_transfer_request_id': zt_request.id,
-            'zone_id': zone.id,
-            'key': zt_request.key
-        }
-
-        self.storage.create_zone_transfer_accept(
-            self.admin_context, objects.ZoneTransferAccept.from_dict(values))
-
-        accepts = self.storage.find_zone_transfer_accepts(
-            self.admin_context, {"tenant_id": self.admin_context.tenant})
-        self.assertEqual(1, len(accepts))
-
-    def test_find_zone_transfer_accept(self):
-        zone = self.create_zone()
-        zt_request = self.create_zone_transfer_request(zone)
-        values = {
-            'tenant_id': self.admin_context.tenant,
-            'zone_transfer_request_id': zt_request.id,
-            'zone_id': zone.id,
-            'key': zt_request.key
-        }
-
-        result = self.storage.create_zone_transfer_accept(
-            self.admin_context, objects.ZoneTransferAccept.from_dict(values))
-
-        accept = self.storage.find_zone_transfer_accept(
-            self.admin_context, {"id": result.id})
-        self.assertEqual(result.id, accept.id)
-
-    def test_transfer_zone_ownership(self):
-        tenant_1_context = self.get_context(tenant='1')
-        tenant_2_context = self.get_context(tenant='2')
-        admin_context = self.get_admin_context()
-        admin_context.all_tenants = True
-
-        zone = self.create_zone(context=tenant_1_context)
-        recordset = self.create_recordset(zone, context=tenant_1_context)
-        record = self.create_record(
-            zone, recordset, context=tenant_1_context)
-
-        updated_zone = zone
-
-        updated_zone.tenant_id = tenant_2_context.tenant
-
-        self.storage.update_zone(
-            admin_context, updated_zone)
-
-        saved_zone = self.storage.get_zone(
-            admin_context, zone.id)
-        saved_recordset = self.storage.get_recordset(
-            admin_context, recordset.id)
-        saved_record = self.storage.get_record(
-            admin_context, record.id)
-
-        self.assertEqual(tenant_2_context.tenant, saved_zone.tenant_id)
-        self.assertEqual(tenant_2_context.tenant, saved_recordset.tenant_id)
-        self.assertEqual(tenant_2_context.tenant, saved_record.tenant_id)
-
-    def test_delete_zone_transfer_accept(self):
-        zone = self.create_zone()
-        zt_request = self.create_zone_transfer_request(zone)
-        zt_accept = self.create_zone_transfer_accept(zt_request)
-
-        self.storage.delete_zone_transfer_accept(
-            self.admin_context, zt_accept.id)
-
-        with testtools.ExpectedException(
-                exceptions.ZoneTransferAcceptNotFound):
-            self.storage.get_zone_transfer_accept(
-                self.admin_context, zt_accept.id)
-
-    def test_update_zone_transfer_accept(self):
-        zone = self.create_zone()
-        zt_request = self.create_zone_transfer_request(zone)
-        zt_accept = self.create_zone_transfer_accept(zt_request)
-
-        zt_accept.status = 'COMPLETE'
-        result = self.storage.update_zone_transfer_accept(
-            self.admin_context, zt_accept)
-        self.assertEqual('COMPLETE', result.status)
-
-    def test_get_zone_transfer_accept(self):
-        zone = self.create_zone()
-        zt_request = self.create_zone_transfer_request(zone)
-        zt_accept = self.create_zone_transfer_accept(zt_request)
-
-        result = self.storage.get_zone_transfer_accept(
-            self.admin_context, zt_accept.id)
-        self.assertEqual(zt_accept.id, result.id)
-        self.assertEqual(zt_accept.zone_id, result.zone_id)
 
     # PoolAttribute tests
     def test_create_pool_attribute(self):
@@ -2383,6 +2320,764 @@ class StorageTestCase(object):
 
         with testtools.ExpectedException(exceptions.DuplicatePoolAttribute):
             self.create_pool_attribute(fixture=0)
+
+    # PoolNameserver tests
+    def test_create_pool_nameserver(self):
+        pool = self.create_pool(fixture=0)
+
+        values = {
+            'pool_id': pool.id,
+            'host': "192.0.2.1",
+            'port': 53
+        }
+
+        result = self.storage.create_pool_nameserver(
+            self.admin_context,
+            pool.id,
+            objects.PoolNameserver.from_dict(values))
+
+        self.assertIsNotNone(result['id'])
+        self.assertIsNotNone(result['created_at'])
+        self.assertIsNotNone(result['version'])
+        self.assertIsNone(result['updated_at'])
+
+        self.assertEqual(values['pool_id'], result['pool_id'])
+        self.assertEqual(values['host'], result['host'])
+        self.assertEqual(values['port'], result['port'])
+
+    def test_create_pool_nameserver_duplicate(self):
+        pool = self.create_pool(fixture=0)
+
+        # Create the initial PoolNameserver
+        self.create_pool_nameserver(pool, fixture=0)
+
+        with testtools.ExpectedException(exceptions.DuplicatePoolNameserver):
+            self.create_pool_nameserver(pool, fixture=0)
+
+    def test_find_pool_nameservers(self):
+        pool = self.create_pool(fixture=0)
+
+        # Verify that there are no pool_nameservers created
+        actual = self.storage.find_pool_nameservers(self.admin_context)
+        self.assertEqual(0, len(actual))
+
+        # Create a PoolNameserver
+        pool_nameserver = self.create_pool_nameserver(pool, fixture=0)
+
+        # Fetch the PoolNameservers and ensure only 1 exists
+        actual = self.storage.find_pool_nameservers(self.admin_context)
+        self.assertEqual(1, len(actual))
+
+        self.assertEqual(pool_nameserver['pool_id'], actual[0]['pool_id'])
+        self.assertEqual(pool_nameserver['host'], actual[0]['host'])
+        self.assertEqual(pool_nameserver['port'], actual[0]['port'])
+
+    def test_find_pool_nameservers_paging(self):
+        pool = self.create_pool(fixture=0)
+
+        # Create 10 PoolNameservers
+        created = [self.create_pool_nameserver(pool, host='192.0.2.%d' % i)
+                   for i in range(10)]
+
+        # Ensure we can page through the results.
+        self._ensure_paging(created, self.storage.find_pool_nameservers)
+
+    def test_find_pool_nameservers_with_criterion(self):
+        pool = self.create_pool(fixture=0)
+
+        # Create two pool_nameservers
+        pool_nameserver_one = self.create_pool_nameserver(pool, fixture=0)
+        pool_nameserver_two = self.create_pool_nameserver(pool, fixture=1)
+
+        # Verify pool_nameserver_one
+        criterion = dict(host=pool_nameserver_one['host'])
+
+        results = self.storage.find_pool_nameservers(
+            self.admin_context, criterion)
+
+        self.assertEqual(1, len(results))
+        self.assertEqual(pool_nameserver_one['host'], results[0]['host'])
+
+        # Verify pool_nameserver_two
+        criterion = dict(host=pool_nameserver_two['host'])
+
+        results = self.storage.find_pool_nameservers(self.admin_context,
+                                               criterion)
+        self.assertEqual(1, len(results))
+        self.assertEqual(pool_nameserver_two['host'], results[0]['host'])
+
+    def test_get_pool_nameserver(self):
+        pool = self.create_pool(fixture=0)
+
+        expected = self.create_pool_nameserver(pool, fixture=0)
+        actual = self.storage.get_pool_nameserver(
+            self.admin_context, expected['id'])
+
+        self.assertEqual(expected['host'], actual['host'])
+
+    def test_get_pool_nameserver_missing(self):
+        with testtools.ExpectedException(exceptions.PoolNameserverNotFound):
+            uuid = '2c102ffd-7146-4b4e-ad62-b530ee0873fb'
+            self.storage.get_pool_nameserver(self.admin_context, uuid)
+
+    def test_find_pool_nameserver_criterion(self):
+        pool = self.create_pool(fixture=0)
+
+        # Create two pool_nameservers
+        pool_nameserver_one = self.create_pool_nameserver(pool, fixture=0)
+        pool_nameserver_two = self.create_pool_nameserver(pool, fixture=1)
+
+        # Verify pool_nameserver_one
+        criterion = dict(host=pool_nameserver_one['host'])
+
+        result = self.storage.find_pool_nameserver(
+            self.admin_context, criterion)
+
+        self.assertEqual(pool_nameserver_one['host'], result['host'])
+
+        # Verify pool_nameserver_two
+        criterion = dict(host=pool_nameserver_two['host'])
+
+        result = self.storage.find_pool_nameserver(
+            self.admin_context, criterion)
+
+        self.assertEqual(pool_nameserver_two['host'], result['host'])
+
+    def test_find_pool_nameserver_criterion_missing(self):
+        pool = self.create_pool(fixture=0)
+
+        expected = self.create_pool_nameserver(pool, fixture=0)
+
+        criterion = dict(host=expected['host'] + "NOT FOUND")
+
+        with testtools.ExpectedException(exceptions.PoolNameserverNotFound):
+            self.storage.find_pool_nameserver(self.admin_context, criterion)
+
+    def test_update_pool_nameserver(self):
+        pool = self.create_pool(fixture=0)
+
+        pool_nameserver = self.create_pool_nameserver(pool, host='192.0.2.1')
+
+        # Update the pool_nameserver
+        pool_nameserver.host = '192.0.2.2'
+
+        pool_nameserver = self.storage.update_pool_nameserver(
+            self.admin_context, pool_nameserver)
+
+        # Verify the new values
+        self.assertEqual('192.0.2.2', pool_nameserver.host)
+
+        # Ensure the version column was incremented
+        self.assertEqual(2, pool_nameserver.version)
+
+    def test_update_pool_nameserver_duplicate(self):
+        pool = self.create_pool(fixture=0)
+
+        # Create two pool_nameservers
+        pool_nameserver_one = self.create_pool_nameserver(
+            pool, fixture=0, host='192.0.2.1')
+        pool_nameserver_two = self.create_pool_nameserver(
+            pool, fixture=0, host='192.0.2.2')
+
+        # Update the second one to be a duplicate of the first
+        pool_nameserver_two.host = pool_nameserver_one.host
+
+        with testtools.ExpectedException(exceptions.DuplicatePoolNameserver):
+            self.storage.update_pool_nameserver(
+                self.admin_context, pool_nameserver_two)
+
+    def test_update_pool_nameserver_missing(self):
+        pool_nameserver = objects.PoolNameserver(
+            id='e8cee063-3a26-42d6-b181-bdbdc2c99d08')
+
+        with testtools.ExpectedException(exceptions.PoolNameserverNotFound):
+            self.storage.update_pool_nameserver(
+                self.admin_context, pool_nameserver)
+
+    def test_delete_pool_nameserver(self):
+        pool = self.create_pool(fixture=0)
+        pool_nameserver = self.create_pool_nameserver(pool, fixture=0)
+
+        self.storage.delete_pool_nameserver(
+            self.admin_context, pool_nameserver['id'])
+
+        with testtools.ExpectedException(exceptions.PoolNameserverNotFound):
+            self.storage.get_pool_nameserver(
+                self.admin_context, pool_nameserver['id'])
+
+    def test_delete_pool_nameserver_missing(self):
+        with testtools.ExpectedException(exceptions.PoolNameserverNotFound):
+            uuid = '97f57960-f41b-4e93-8e22-8fd6c7e2c183'
+            self.storage.delete_pool_nameserver(self.admin_context, uuid)
+
+    # PoolTarget tests
+    def test_create_pool_target(self):
+        pool = self.create_pool(fixture=0)
+
+        values = {
+            'pool_id': pool.id,
+            'type': "fake"
+        }
+
+        result = self.storage.create_pool_target(
+            self.admin_context,
+            pool.id,
+            objects.PoolTarget.from_dict(values))
+
+        self.assertIsNotNone(result['id'])
+        self.assertIsNotNone(result['created_at'])
+        self.assertIsNotNone(result['version'])
+        self.assertIsNone(result['updated_at'])
+
+        self.assertEqual(values['pool_id'], result['pool_id'])
+        self.assertEqual(values['type'], result['type'])
+
+    def test_find_pool_targets(self):
+        pool = self.create_pool(fixture=0)
+
+        # Verify that there are no pool_targets created
+        actual = self.storage.find_pool_targets(self.admin_context)
+        self.assertEqual(0, len(actual))
+
+        # Create a PoolTarget
+        pool_target = self.create_pool_target(pool, fixture=0)
+
+        # Fetch the PoolTargets and ensure only 1 exists
+        actual = self.storage.find_pool_targets(self.admin_context)
+        self.assertEqual(1, len(actual))
+
+        self.assertEqual(pool_target['pool_id'], actual[0]['pool_id'])
+        self.assertEqual(pool_target['type'], actual[0]['type'])
+
+    def test_find_pool_targets_paging(self):
+        pool = self.create_pool(fixture=0)
+
+        # Create 10 PoolTargets
+        created = [self.create_pool_target(pool, description=u'Target %d' % i)
+                   for i in range(10)]
+
+        # Ensure we can page through the results.
+        self._ensure_paging(created, self.storage.find_pool_targets)
+
+    def test_find_pool_targets_with_criterion(self):
+        pool = self.create_pool(fixture=0)
+
+        # Create two pool_targets
+        pool_target_one = self.create_pool_target(
+            pool, fixture=0, description=u'One')
+        pool_target_two = self.create_pool_target(
+            pool, fixture=1, description=u'Two')
+
+        # Verify pool_target_one
+        criterion = dict(description=pool_target_one['description'])
+
+        results = self.storage.find_pool_targets(
+            self.admin_context, criterion)
+
+        self.assertEqual(1, len(results))
+        self.assertEqual(
+            pool_target_one['description'], results[0]['description'])
+
+        # Verify pool_target_two
+        criterion = dict(description=pool_target_two['description'])
+
+        results = self.storage.find_pool_targets(self.admin_context,
+                                               criterion)
+        self.assertEqual(1, len(results))
+        self.assertEqual(
+            pool_target_two['description'], results[0]['description'])
+
+    def test_get_pool_target(self):
+        pool = self.create_pool(fixture=0)
+
+        expected = self.create_pool_target(pool, fixture=0)
+        actual = self.storage.get_pool_target(
+            self.admin_context, expected['id'])
+
+        self.assertEqual(expected['type'], actual['type'])
+
+    def test_get_pool_target_missing(self):
+        with testtools.ExpectedException(exceptions.PoolTargetNotFound):
+            uuid = '2c102ffd-7146-4b4e-ad62-b530ee0873fb'
+            self.storage.get_pool_target(self.admin_context, uuid)
+
+    def test_find_pool_target_criterion(self):
+        pool = self.create_pool(fixture=0)
+
+        # Create two pool_targets
+        pool_target_one = self.create_pool_target(
+            pool, fixture=0, description=u'One')
+        pool_target_two = self.create_pool_target(
+            pool, fixture=1, description=u'Two')
+
+        # Verify pool_target_one
+        criterion = dict(description=pool_target_one['description'])
+
+        result = self.storage.find_pool_target(
+            self.admin_context, criterion)
+
+        self.assertEqual(pool_target_one['description'], result['description'])
+
+        # Verify pool_target_two
+        criterion = dict(description=pool_target_two['description'])
+
+        result = self.storage.find_pool_target(
+            self.admin_context, criterion)
+
+        self.assertEqual(pool_target_two['description'], result['description'])
+
+    def test_find_pool_target_criterion_missing(self):
+        pool = self.create_pool(fixture=0)
+
+        expected = self.create_pool_target(pool, fixture=0)
+
+        criterion = dict(description=expected['description'] + u"NOT FOUND")
+
+        with testtools.ExpectedException(exceptions.PoolTargetNotFound):
+            self.storage.find_pool_target(self.admin_context, criterion)
+
+    def test_update_pool_target(self):
+        pool = self.create_pool(fixture=0)
+
+        pool_target = self.create_pool_target(pool, description=u'One')
+
+        # Update the pool_target
+        pool_target.description = u'Two'
+
+        pool_target = self.storage.update_pool_target(
+            self.admin_context, pool_target)
+
+        # Verify the new values
+        self.assertEqual(u'Two', pool_target.description)
+
+        # Ensure the version column was incremented
+        self.assertEqual(2, pool_target.version)
+
+    def test_update_pool_target_missing(self):
+        pool_target = objects.PoolTarget(
+            id='e8cee063-3a26-42d6-b181-bdbdc2c99d08')
+
+        with testtools.ExpectedException(exceptions.PoolTargetNotFound):
+            self.storage.update_pool_target(
+                self.admin_context, pool_target)
+
+    def test_delete_pool_target(self):
+        pool = self.create_pool(fixture=0)
+        pool_target = self.create_pool_target(pool, fixture=0)
+
+        self.storage.delete_pool_target(
+            self.admin_context, pool_target['id'])
+
+        with testtools.ExpectedException(exceptions.PoolTargetNotFound):
+            self.storage.get_pool_target(
+                self.admin_context, pool_target['id'])
+
+    def test_delete_pool_target_missing(self):
+        with testtools.ExpectedException(exceptions.PoolTargetNotFound):
+            uuid = '97f57960-f41b-4e93-8e22-8fd6c7e2c183'
+            self.storage.delete_pool_target(self.admin_context, uuid)
+
+    # PoolAlsoNotify tests
+    def test_create_pool_also_notify(self):
+        pool = self.create_pool(fixture=0)
+
+        values = {
+            'pool_id': pool.id,
+            'host': "192.0.2.1",
+            'port': 53
+        }
+
+        result = self.storage.create_pool_also_notify(
+            self.admin_context,
+            pool.id,
+            objects.PoolAlsoNotify.from_dict(values))
+
+        self.assertIsNotNone(result['id'])
+        self.assertIsNotNone(result['created_at'])
+        self.assertIsNotNone(result['version'])
+        self.assertIsNone(result['updated_at'])
+
+        self.assertEqual(values['pool_id'], result['pool_id'])
+        self.assertEqual(values['host'], result['host'])
+        self.assertEqual(values['port'], result['port'])
+
+    def test_create_pool_also_notify_duplicate(self):
+        pool = self.create_pool(fixture=0)
+
+        # Create the initial PoolAlsoNotify
+        self.create_pool_also_notify(pool, fixture=0)
+
+        with testtools.ExpectedException(exceptions.DuplicatePoolAlsoNotify):
+            self.create_pool_also_notify(pool, fixture=0)
+
+    def test_find_pool_also_notifies(self):
+        pool = self.create_pool(fixture=0)
+
+        # Verify that there are no pool_also_notifies created
+        actual = self.storage.find_pool_also_notifies(self.admin_context)
+        self.assertEqual(0, len(actual))
+
+        # Create a PoolAlsoNotify
+        pool_also_notify = self.create_pool_also_notify(pool, fixture=0)
+
+        # Fetch the PoolAlsoNotifies and ensure only 1 exists
+        actual = self.storage.find_pool_also_notifies(self.admin_context)
+        self.assertEqual(1, len(actual))
+
+        self.assertEqual(pool_also_notify['pool_id'], actual[0]['pool_id'])
+        self.assertEqual(pool_also_notify['host'], actual[0]['host'])
+        self.assertEqual(pool_also_notify['port'], actual[0]['port'])
+
+    def test_find_pool_also_notifies_paging(self):
+        pool = self.create_pool(fixture=0)
+
+        # Create 10 PoolAlsoNotifies
+        created = [self.create_pool_also_notify(pool, host='192.0.2.%d' % i)
+                   for i in range(10)]
+
+        # Ensure we can page through the results.
+        self._ensure_paging(created, self.storage.find_pool_also_notifies)
+
+    def test_find_pool_also_notifies_with_criterion(self):
+        pool = self.create_pool(fixture=0)
+
+        # Create two pool_also_notifies
+        pool_also_notify_one = self.create_pool_also_notify(pool, fixture=0)
+        pool_also_notify_two = self.create_pool_also_notify(pool, fixture=1)
+
+        # Verify pool_also_notify_one
+        criterion = dict(host=pool_also_notify_one['host'])
+
+        results = self.storage.find_pool_also_notifies(
+            self.admin_context, criterion)
+
+        self.assertEqual(1, len(results))
+        self.assertEqual(pool_also_notify_one['host'], results[0]['host'])
+
+        # Verify pool_also_notify_two
+        criterion = dict(host=pool_also_notify_two['host'])
+
+        results = self.storage.find_pool_also_notifies(self.admin_context,
+                                               criterion)
+        self.assertEqual(1, len(results))
+        self.assertEqual(pool_also_notify_two['host'], results[0]['host'])
+
+    def test_get_pool_also_notify(self):
+        pool = self.create_pool(fixture=0)
+
+        expected = self.create_pool_also_notify(pool, fixture=0)
+        actual = self.storage.get_pool_also_notify(
+            self.admin_context, expected['id'])
+
+        self.assertEqual(expected['host'], actual['host'])
+
+    def test_get_pool_also_notify_missing(self):
+        with testtools.ExpectedException(exceptions.PoolAlsoNotifyNotFound):
+            uuid = '2c102ffd-7146-4b4e-ad62-b530ee0873fb'
+            self.storage.get_pool_also_notify(self.admin_context, uuid)
+
+    def test_find_pool_also_notify_criterion(self):
+        pool = self.create_pool(fixture=0)
+
+        # Create two pool_also_notifies
+        pool_also_notify_one = self.create_pool_also_notify(pool, fixture=0)
+        pool_also_notify_two = self.create_pool_also_notify(pool, fixture=1)
+
+        # Verify pool_also_notify_one
+        criterion = dict(host=pool_also_notify_one['host'])
+
+        result = self.storage.find_pool_also_notify(
+            self.admin_context, criterion)
+
+        self.assertEqual(pool_also_notify_one['host'], result['host'])
+
+        # Verify pool_also_notify_two
+        criterion = dict(host=pool_also_notify_two['host'])
+
+        result = self.storage.find_pool_also_notify(
+            self.admin_context, criterion)
+
+        self.assertEqual(pool_also_notify_two['host'], result['host'])
+
+    def test_find_pool_also_notify_criterion_missing(self):
+        pool = self.create_pool(fixture=0)
+
+        expected = self.create_pool_also_notify(pool, fixture=0)
+
+        criterion = dict(host=expected['host'] + "NOT FOUND")
+
+        with testtools.ExpectedException(exceptions.PoolAlsoNotifyNotFound):
+            self.storage.find_pool_also_notify(self.admin_context, criterion)
+
+    def test_update_pool_also_notify(self):
+        pool = self.create_pool(fixture=0)
+
+        pool_also_notify = self.create_pool_also_notify(pool, host='192.0.2.1')
+
+        # Update the pool_also_notify
+        pool_also_notify.host = '192.0.2.2'
+
+        pool_also_notify = self.storage.update_pool_also_notify(
+            self.admin_context, pool_also_notify)
+
+        # Verify the new values
+        self.assertEqual('192.0.2.2', pool_also_notify.host)
+
+        # Ensure the version column was incremented
+        self.assertEqual(2, pool_also_notify.version)
+
+    def test_update_pool_also_notify_duplicate(self):
+        pool = self.create_pool(fixture=0)
+
+        # Create two pool_also_notifies
+        pool_also_notify_one = self.create_pool_also_notify(
+            pool, fixture=0, host='192.0.2.1')
+        pool_also_notify_two = self.create_pool_also_notify(
+            pool, fixture=0, host='192.0.2.2')
+
+        # Update the second one to be a duplicate of the first
+        pool_also_notify_two.host = pool_also_notify_one.host
+
+        with testtools.ExpectedException(exceptions.DuplicatePoolAlsoNotify):
+            self.storage.update_pool_also_notify(
+                self.admin_context, pool_also_notify_two)
+
+    def test_update_pool_also_notify_missing(self):
+        pool_also_notify = objects.PoolAlsoNotify(
+            id='e8cee063-3a26-42d6-b181-bdbdc2c99d08')
+
+        with testtools.ExpectedException(exceptions.PoolAlsoNotifyNotFound):
+            self.storage.update_pool_also_notify(
+                self.admin_context, pool_also_notify)
+
+    def test_delete_pool_also_notify(self):
+        pool = self.create_pool(fixture=0)
+        pool_also_notify = self.create_pool_also_notify(pool, fixture=0)
+
+        self.storage.delete_pool_also_notify(
+            self.admin_context, pool_also_notify['id'])
+
+        with testtools.ExpectedException(exceptions.PoolAlsoNotifyNotFound):
+            self.storage.get_pool_also_notify(
+                self.admin_context, pool_also_notify['id'])
+
+    def test_delete_pool_also_notify_missing(self):
+        with testtools.ExpectedException(exceptions.PoolAlsoNotifyNotFound):
+            uuid = '97f57960-f41b-4e93-8e22-8fd6c7e2c183'
+            self.storage.delete_pool_also_notify(self.admin_context, uuid)
+
+    # Zone Transfer Accept tests
+    def test_create_zone_transfer_request(self):
+        zone = self.create_zone()
+
+        values = {
+            'tenant_id': self.admin_context.tenant,
+            'zone_id': zone.id,
+            'key': 'qwertyuiop'
+        }
+
+        result = self.storage.create_zone_transfer_request(
+            self.admin_context, objects.ZoneTransferRequest.from_dict(values))
+
+        self.assertEqual(self.admin_context.tenant, result['tenant_id'])
+        self.assertIn('status', result)
+
+    def test_create_zone_transfer_request_scoped(self):
+        zone = self.create_zone()
+        tenant_2_context = self.get_context(tenant='2')
+        tenant_3_context = self.get_context(tenant='3')
+
+        values = {
+            'tenant_id': self.admin_context.tenant,
+            'zone_id': zone.id,
+            'key': 'qwertyuiop',
+            'target_tenant_id': tenant_2_context.tenant,
+        }
+
+        result = self.storage.create_zone_transfer_request(
+            self.admin_context, objects.ZoneTransferRequest.from_dict(values))
+
+        self.assertIsNotNone(result['id'])
+        self.assertIsNotNone(result['created_at'])
+        self.assertIsNone(result['updated_at'])
+
+        self.assertEqual(self.admin_context.tenant, result['tenant_id'])
+        self.assertEqual(tenant_2_context.tenant, result['target_tenant_id'])
+        self.assertIn('status', result)
+
+        stored_ztr = self.storage.get_zone_transfer_request(
+            tenant_2_context, result.id)
+
+        self.assertEqual(self.admin_context.tenant, stored_ztr['tenant_id'])
+        self.assertEqual(stored_ztr['id'], result['id'])
+
+        with testtools.ExpectedException(
+                exceptions.ZoneTransferRequestNotFound):
+            self.storage.get_zone_transfer_request(
+                tenant_3_context, result.id)
+
+    def test_find_zone_transfer_requests(self):
+        zone = self.create_zone()
+
+        values = {
+            'tenant_id': self.admin_context.tenant,
+            'zone_id': zone.id,
+            'key': 'qwertyuiop'
+        }
+
+        self.storage.create_zone_transfer_request(
+            self.admin_context, objects.ZoneTransferRequest.from_dict(values))
+
+        requests = self.storage.find_zone_transfer_requests(
+            self.admin_context, {"tenant_id": self.admin_context.tenant})
+        self.assertEqual(1, len(requests))
+
+    def test_delete_zone_transfer_request(self):
+        zone = self.create_zone()
+        zt_request = self.create_zone_transfer_request(zone)
+
+        self.storage.delete_zone_transfer_request(
+            self.admin_context, zt_request.id)
+
+        with testtools.ExpectedException(
+                exceptions.ZoneTransferRequestNotFound):
+            self.storage.get_zone_transfer_request(
+                self.admin_context, zt_request.id)
+
+    def test_update_zone_transfer_request(self):
+        zone = self.create_zone()
+        zt_request = self.create_zone_transfer_request(zone)
+
+        zt_request.description = 'New description'
+        result = self.storage.update_zone_transfer_request(
+            self.admin_context, zt_request)
+        self.assertEqual('New description', result.description)
+
+    def test_get_zone_transfer_request(self):
+        zone = self.create_zone()
+        zt_request = self.create_zone_transfer_request(zone)
+
+        result = self.storage.get_zone_transfer_request(
+            self.admin_context, zt_request.id)
+        self.assertEqual(zt_request.id, result.id)
+        self.assertEqual(zt_request.zone_id, result.zone_id)
+
+    # Zone Transfer Accept tests
+    def test_create_zone_transfer_accept(self):
+        zone = self.create_zone()
+        zt_request = self.create_zone_transfer_request(zone)
+        values = {
+            'tenant_id': self.admin_context.tenant,
+            'zone_transfer_request_id': zt_request.id,
+            'zone_id': zone.id,
+            'key': zt_request.key
+        }
+
+        result = self.storage.create_zone_transfer_accept(
+            self.admin_context, objects.ZoneTransferAccept.from_dict(values))
+
+        self.assertIsNotNone(result['id'])
+        self.assertIsNotNone(result['created_at'])
+        self.assertIsNone(result['updated_at'])
+
+        self.assertEqual(self.admin_context.tenant, result['tenant_id'])
+        self.assertIn('status', result)
+
+    def test_find_zone_transfer_accepts(self):
+        zone = self.create_zone()
+        zt_request = self.create_zone_transfer_request(zone)
+        values = {
+            'tenant_id': self.admin_context.tenant,
+            'zone_transfer_request_id': zt_request.id,
+            'zone_id': zone.id,
+            'key': zt_request.key
+        }
+
+        self.storage.create_zone_transfer_accept(
+            self.admin_context, objects.ZoneTransferAccept.from_dict(values))
+
+        accepts = self.storage.find_zone_transfer_accepts(
+            self.admin_context, {"tenant_id": self.admin_context.tenant})
+        self.assertEqual(1, len(accepts))
+
+    def test_find_zone_transfer_accept(self):
+        zone = self.create_zone()
+        zt_request = self.create_zone_transfer_request(zone)
+        values = {
+            'tenant_id': self.admin_context.tenant,
+            'zone_transfer_request_id': zt_request.id,
+            'zone_id': zone.id,
+            'key': zt_request.key
+        }
+
+        result = self.storage.create_zone_transfer_accept(
+            self.admin_context, objects.ZoneTransferAccept.from_dict(values))
+
+        accept = self.storage.find_zone_transfer_accept(
+            self.admin_context, {"id": result.id})
+        self.assertEqual(result.id, accept.id)
+
+    def test_transfer_zone_ownership(self):
+        tenant_1_context = self.get_context(tenant='1')
+        tenant_2_context = self.get_context(tenant='2')
+        admin_context = self.get_admin_context()
+        admin_context.all_tenants = True
+
+        zone = self.create_zone(context=tenant_1_context)
+        recordset = self.create_recordset(zone, context=tenant_1_context)
+        record = self.create_record(
+            zone, recordset, context=tenant_1_context)
+
+        updated_zone = zone
+
+        updated_zone.tenant_id = tenant_2_context.tenant
+
+        self.storage.update_zone(
+            admin_context, updated_zone)
+
+        saved_zone = self.storage.get_zone(
+            admin_context, zone.id)
+        saved_recordset = self.storage.get_recordset(
+            admin_context, recordset.id)
+        saved_record = self.storage.get_record(
+            admin_context, record.id)
+
+        self.assertEqual(tenant_2_context.tenant, saved_zone.tenant_id)
+        self.assertEqual(tenant_2_context.tenant, saved_recordset.tenant_id)
+        self.assertEqual(tenant_2_context.tenant, saved_record.tenant_id)
+
+    def test_delete_zone_transfer_accept(self):
+        zone = self.create_zone()
+        zt_request = self.create_zone_transfer_request(zone)
+        zt_accept = self.create_zone_transfer_accept(zt_request)
+
+        self.storage.delete_zone_transfer_accept(
+            self.admin_context, zt_accept.id)
+
+        with testtools.ExpectedException(
+                exceptions.ZoneTransferAcceptNotFound):
+            self.storage.get_zone_transfer_accept(
+                self.admin_context, zt_accept.id)
+
+    def test_update_zone_transfer_accept(self):
+        zone = self.create_zone()
+        zt_request = self.create_zone_transfer_request(zone)
+        zt_accept = self.create_zone_transfer_accept(zt_request)
+
+        zt_accept.status = 'COMPLETE'
+        result = self.storage.update_zone_transfer_accept(
+            self.admin_context, zt_accept)
+        self.assertEqual('COMPLETE', result.status)
+
+    def test_get_zone_transfer_accept(self):
+        zone = self.create_zone()
+        zt_request = self.create_zone_transfer_request(zone)
+        zt_accept = self.create_zone_transfer_accept(zt_request)
+
+        result = self.storage.get_zone_transfer_accept(
+            self.admin_context, zt_accept.id)
+        self.assertEqual(zt_accept.id, result.id)
+        self.assertEqual(zt_accept.zone_id, result.zone_id)
 
     # Zone Import Tests
     def test_create_zone_import(self):
