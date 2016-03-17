@@ -25,11 +25,12 @@ The quotas extension can be used to retrieve a tenant's absolute limits.
 
 *Note*: Quotas is an extension and needs to be enabled before it can be used.
 If Designate returns a 404 error, ensure that the following line has been
-added to the designate.conf file::
+added to the designate.conf file under "[service:api]" section ::
 
+    enable_api_admin = True
     enabled_extensions_admin = quotas
 
-Once this line has been added, restart the designate-central and designate-api
+Once these lines have been added, restart the designate-central and designate-api
 services.
 
 Get Quotas
