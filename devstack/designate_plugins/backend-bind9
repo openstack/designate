@@ -45,7 +45,7 @@ function install_designate_backend {
     if is_ubuntu; then
         install_package bind9
     elif is_fedora; then
-        install_package named
+        install_package bind
     fi
 
     # The user that designate runs as needs to be member of **$BIND_GROUP** group.
@@ -156,12 +156,12 @@ function init_designate_backend {
 
 # start_designate_backend - start any external services
 function start_designate_backend {
-    start_service bind9
+    start_service $BIND_SERVICE_NAME
 }
 
 # stop_designate_backend - stop any external services
 function stop_designate_backend {
-    stop_service bind9
+    stop_service $BIND_SERVICE_NAME
 }
 
 # cleanup_designate_backend - remove transient data and cache
