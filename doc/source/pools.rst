@@ -62,3 +62,64 @@ but it will **not** trigger zones to be moved from one pool to another.
     As more filters are merged there will be support for dynamic filters.
 
 
+Managing Pools
+==============
+
+In mitaka we moved the method of updating pools to a CLI in `designate-manage`
+
+There is a YAML file that defines the pool, and is used to load this information into the database.
+
+
+.. literalinclude:: ../../etc/designate/pools.yaml.sample
+       :language: yaml
+
+Designate Manage Pools Command Reference
+----------------------------------------
+
+Update Pools Information
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: language
+
+  designate-manage pool update [options]
+
+Options:
+""""""""
+
+  --file        Input file (Default: ``/etc/designate/pools.yaml``)
+  --dry_run     Simulate an update. (Default: False)
+  --delete      Delete Pools that are not in the input file (Defaults: False)
+
+.. warning::
+
+  | Running with ``--delete True`` can be **extremely** dangerous.
+  | It will delete any pools that are not in the supplied YAML file, and any
+  | zones that are in that Pool.
+  | Before running with ``--delete True`` we recommend operators run with
+  | ``--delete True --dry_run True`` to view the outcome.
+
+
+
+Generate YAML File
+^^^^^^^^^^^^^^^^^^
+
+.. code-block:: language
+
+    designate-manage pool generate_file [options]
+
+Options:
+""""""""
+
+  --file        YAML file output too (Default: ``/etc/designate/pools.yaml``)
+
+Generate YAML File from Liberty Config
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: language
+
+    designate-manage pool export_from_config [options]
+
+Options:
+""""""""
+
+  --file        YAML file output too (Default: ``/etc/designate/pools.yaml``)

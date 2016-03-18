@@ -1,0 +1,14 @@
+---
+features:
+  - New method of updating Pools.
+    We have a new sub command on the ``designate-manage`` utility.
+upgrade:
+  - Upgrade from Liberty to Mitaka *will* require downtime due to migration
+    of Pool Configuration data from config files, to the database.
+    See the Upgrade Documentation for full details.
+  - Pool Names are now required to be unique. If there is 2 pools with the same
+    name - this will need to be changed before the upgrade is performed.
+deprecations:
+  - Create / Update / Delete API methods on /v2/pools/
+    Using these messages **will** cause unforseen issues with pools. We highly recommend
+    that the policy file be updated to restrict create / update / delete from all users

@@ -15,6 +15,49 @@
 # under the License.
 from designate.tests import TestCase
 
+POOL_DICT = {
+    'id': u'794ccc2c-d751-44fe-b57f-8894c9f5c842',
+    'name': u'default',
+    'targets': [
+        {
+            'id': 'f278782a-07dc-4502-9177-b5d85c5f7c7e',
+            'type': 'fake',
+            'masters': [
+                {
+                    'host': '127.0.0.1',
+                    'port': 5354
+                }
+            ],
+            'options': {}
+        },
+        {
+            'id': 'a38703f2-b71e-4e5b-ab22-30caaed61dfd',
+            'type': 'fake',
+            'masters': [
+                {
+                    'host': '127.0.0.1',
+                    'port': 5354
+                }
+            ],
+            'options': {}
+        },
+    ],
+    'nameservers': [
+        {
+            'id': 'c5d64303-4cba-425a-9f3c-5d708584dde4',
+            'host': '127.0.0.1',
+            'port': 5355
+
+        },
+        {
+            'id': 'c67cdc95-9a9e-4d2a-98ed-dc78cbd85234',
+            'host': '127.0.0.1',
+            'port': 5356
+        },
+    ],
+    'also_notifies': [],
+}
+
 
 class PoolManagerTestCase(TestCase):
     pass

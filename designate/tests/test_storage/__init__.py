@@ -116,7 +116,7 @@ class StorageTestCase(object):
             context, pool.id, objects.PoolAlsoNotify.from_dict(values))
 
     # Paging Tests
-    def _ensure_paging(self, data, method):
+    def _ensure_paging(self, data, method, criterion=None):
         """
         Given an array of created items we iterate through them making sure
         they match up to things returned by paged results.
@@ -124,20 +124,27 @@ class StorageTestCase(object):
         results = None
         item_number = 0
 
+        criterion = criterion or {}
+
         for current_page in range(0, int(math.ceil(float(len(data)) / 2))):
-            LOG.debug('Validating results on page %d', current_page)
+            LOG.critical('Validating results on page %d', current_page)
 
             if results is not None:
                 results = method(
-                    self.admin_context, limit=2, marker=results[-1]['id'])
+                    self.admin_context,
+                    limit=2,
+                    marker=results[-1]['id'],
+                    criterion=criterion
+                )
             else:
-                results = method(self.admin_context, limit=2)
+                results = method(self.admin_context, limit=2,
+                                 criterion=criterion)
 
             LOG.critical('Results: %d', len(results))
 
             for result_number, result in enumerate(results):
-                LOG.debug('Validating result %d on page %d', result_number,
-                          current_page)
+                LOG.critical('Validating result %d on page %d', result_number,
+                             current_page)
                 self.assertEqual(
                     data[item_number]['id'], results[result_number]['id'])
 
@@ -2402,7 +2409,7 @@ class StorageTestCase(object):
         criterion = dict(host=pool_nameserver_two['host'])
 
         results = self.storage.find_pool_nameservers(self.admin_context,
-                                               criterion)
+                                                     criterion)
         self.assertEqual(1, len(results))
         self.assertEqual(pool_nameserver_two['host'], results[0]['host'])
 
@@ -2535,15 +2542,19 @@ class StorageTestCase(object):
     def test_find_pool_targets(self):
         pool = self.create_pool(fixture=0)
 
-        # Verify that there are no pool_targets created
-        actual = self.storage.find_pool_targets(self.admin_context)
+        # Verify that there are no new pool_targets created
+        actual = self.storage.find_pool_targets(
+            self.admin_context,
+            criterion={'pool_id': pool.id})
         self.assertEqual(0, len(actual))
 
         # Create a PoolTarget
         pool_target = self.create_pool_target(pool, fixture=0)
 
-        # Fetch the PoolTargets and ensure only 1 exists
-        actual = self.storage.find_pool_targets(self.admin_context)
+        # Fetch the PoolTargets and ensure only 2 exist
+        actual = self.storage.find_pool_targets(
+            self.admin_context,
+            criterion={'pool_id': pool.id})
         self.assertEqual(1, len(actual))
 
         self.assertEqual(pool_target['pool_id'], actual[0]['pool_id'])
@@ -2557,7 +2568,8 @@ class StorageTestCase(object):
                    for i in range(10)]
 
         # Ensure we can page through the results.
-        self._ensure_paging(created, self.storage.find_pool_targets)
+        self._ensure_paging(created, self.storage.find_pool_targets,
+                            criterion={'pool_id': pool.id})
 
     def test_find_pool_targets_with_criterion(self):
         pool = self.create_pool(fixture=0)
@@ -2582,7 +2594,7 @@ class StorageTestCase(object):
         criterion = dict(description=pool_target_two['description'])
 
         results = self.storage.find_pool_targets(self.admin_context,
-                                               criterion)
+                                                 criterion)
         self.assertEqual(1, len(results))
         self.assertEqual(
             pool_target_two['description'], results[0]['description'])

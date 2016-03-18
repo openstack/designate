@@ -49,6 +49,7 @@ function configure_designate {
 
     # General Configuration
     iniset_rpc_backend designate $DESIGNATE_CONF DEFAULT
+    iniset $DESIGNATE_CONF DEFAULT rpc_response_timeout 5
 
     iniset $DESIGNATE_CONF DEFAULT debug $ENABLE_DEBUG_LOG_LEVEL
     iniset $DESIGNATE_CONF DEFAULT verbose True
@@ -75,9 +76,6 @@ function configure_designate {
     if [ "$DESIGNATE_POOL_MANAGER_CACHE_DRIVER" == "sqlalchemy" ]; then
         iniset $DESIGNATE_CONF pool_manager_cache:sqlalchemy connection `database_connection_url designate_pool_manager`
     fi
-
-    # Pool Options
-    iniset $DESIGNATE_CONF pool:$DESIGNATE_POOL_ID targets $DESIGNATE_TARGET_ID
 
     # API Configuration
     sudo cp $DESIGNATE_DIR/etc/designate/api-paste.ini $DESIGNATE_APIPASTE_CONF
@@ -185,13 +183,14 @@ function create_designate_accounts {
     fi
 }
 
-# create_designate_ns_records - Create Pool NS Records
-function create_designate_ns_records {
-    # Allow Backends to install their own NS Records rather than the default
-    if function_exists create_designate_ns_records_backend; then
-        create_designate_ns_records_backend
-    else
-        designate server-create --name $DESIGNATE_DEFAULT_NS_RECORD
+# create_designate_pool_configuration - Create Pool Configuration
+function create_designate_pool_configuration {
+    # Sync Pools Config
+    designate-manage pool update --file $DESIGNATE_CONF_DIR/pools.yaml
+
+    # Allow Backends to do backend specific tasks
+    if function_exists create_designate_pool_configuration_backend; then
+        create_designate_pool_configuration_backend
     fi
 }
 
@@ -320,14 +319,14 @@ if is_service_enabled designate; then
         echo_summary "Initializing Designate"
         init_designate
 
-        echo "Configuring Tempest options for Designate"
+        echo_summary "Configuring Tempest options for Designate"
         configure_designate_tempest
 
         echo_summary "Starting Designate"
         start_designate
 
-        echo_summary "Creating pool NS records"
-        create_designate_ns_records
+        echo_summary "Creating Pool Configuration"
+        create_designate_pool_configuration
     fi
 
     if [[ "$1" == "unstack" ]]; then

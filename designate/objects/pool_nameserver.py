@@ -18,10 +18,33 @@ from designate.objects import base
 class PoolNameserver(base.DictObjectMixin, base.PersistentObjectMixin,
                      base.DesignateObject):
     FIELDS = {
-        'pool_id': {},
-        'host': {},
-        'port': {},
+        'pool_id': {
+            'schema': {
+                'type': 'string',
+                'description': 'Pool identifier',
+                'format': 'uuid',
+            },
+        },
+        'host': {
+            'schema': {
+                'type': 'string',
+                'format': 'ip-or-host',
+                'required': True,
+            },
+        },
+        'port': {
+            'schema': {
+                'type': 'integer',
+                'minimum': 1,
+                'maximum': 65535,
+                'required': True,
+            },
+        }
     }
+
+    STRING_KEYS = [
+        'id', 'host', 'port', 'pool_id'
+    ]
 
 
 class PoolNameserverList(base.ListObjectMixin, base.DesignateObject):

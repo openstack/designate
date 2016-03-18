@@ -1,0 +1,54 @@
+---
+
+- name: default
+  # The name is immutable. There will be no option to change the name after
+  # creation and the only way will to change it will be to delete it
+  # (and all zones associated with it) and recreate it.
+  description: Default PowerDNS Pool
+
+
+  # Attributes are Key:Value pairs that describe the pool. for example the level
+  # of service (i.e. service_tier:GOLD), capabilities (i.e. anycast: true) or
+  # other metadata. Users can use this infomation to point their zones to the
+  # correct pool
+  attributes: {}
+
+  # List out the NS records for zones hosted within this pool
+  ns_records:
+    - hostname: ns1-1.example.org.
+      priority: 1
+    - hostname: ns1-2.example.org.
+      priority: 2
+
+  # List out the nameservers for this pool. These are the actual PowerDNS
+  # servers. We use these to verify changes have propagated to all nameservers.
+  nameservers:
+    - host: 192.0.2.2
+      port: 53
+    - host: 192.0.2.3
+      port: 53
+
+  # List out the targets for this pool. For PowerDNS, this is the database
+  # (or databases, if you deploy a separate DB for each PowerDNS server)
+  targets:
+    - type: powerdns
+      description: PowerDNS Database Cluster
+
+      # List out the designate-mdns servers from which PowerDNS servers should
+      # request zone transfers (AXFRs) from.
+      masters:
+        - host: 192.0.2.1
+          port: 5354
+
+      # PowerDNS Configuration options
+      options:
+        host: 192.0.2.1
+        port: 53
+        connection: 'mysql+pymysql://designate:password@127.0.0.1/designate_pdns?charset=utf8'
+
+  # Optional list of additional IP/Port's for which designate-mdns will send
+  # DNS NOTIFY packets to
+  also_notifies:
+   - host: 192.0.2.4
+     port: 53
+

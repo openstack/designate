@@ -16,6 +16,7 @@ import pecan
 from oslo_log import log as logging
 
 from designate import utils
+from designate.i18n import _LW
 from designate.api.v2.controllers import rest
 from designate.objects import Pool
 from designate.objects.adapters import DesignateAdapter
@@ -63,6 +64,11 @@ class PoolsController(rest.RestController):
     @pecan.expose(template='json:', content_type='application/json')
     def post_all(self):
         """Create a Pool"""
+
+        LOG.warning(_LW("Use of this API Method is DEPRICATED. This will have "
+                        "unforseen side affects when used with the "
+                        "designate-manage pool commands"))
+
         request = pecan.request
         response = pecan.response
         context = request.environ['context']
@@ -86,6 +92,11 @@ class PoolsController(rest.RestController):
     @utils.validate_uuid('pool_id')
     def patch_one(self, pool_id):
         """Update the specific pool"""
+
+        LOG.warning(_LW("Use of this API Method is DEPRICATED. This will have "
+                        "unforseen side affects when used with the "
+                        "designate-manage pool commands"))
+
         request = pecan.request
         context = request.environ['context']
         body = request.body_dict
@@ -111,6 +122,11 @@ class PoolsController(rest.RestController):
     @utils.validate_uuid('pool_id')
     def delete_one(self, pool_id):
         """Delete the specific pool"""
+
+        LOG.warning(_LW("Use of this API Method is DEPRICATED. This will have "
+                        "unforseen side affects when used with the "
+                        "designate-manage pool commands"))
+
         request = pecan.request
         response = pecan.response
         context = request.environ['context']

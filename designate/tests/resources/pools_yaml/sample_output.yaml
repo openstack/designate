@@ -1,0 +1,25 @@
+- also_notifies:
+  - host: 192.0.2.4
+    port: 53
+  attributes: {}
+  description: Default PowerDNS Pool
+  id: cf2e8eab-76cd-4162-bf76-8aeee3556de0
+  name: default
+  nameservers:
+  - host: 192.0.2.2
+    port: 53
+  - host: 192.0.2.3
+    port: 53
+  ns_records:
+  - hostname: ns1-1.example.org.
+    priority: 1
+  - hostname: ns1-2.example.org.
+    priority: 2
+  targets:
+  - description: PowerDNS Database Cluster
+    masters:
+    - host: 192.0.2.1
+      port: 5354
+    options:
+      connection: mysql+pymysql://designate:password@127.0.0.1/designate_pdns?charset=utf8
+    type: powerdns

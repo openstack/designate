@@ -33,7 +33,7 @@ DESIGNATE_DYNECT_JOB_TIMEOUT=${DESIGNATE_DYNECT_JOB_TIMEOUT:-}
 DESIGNATE_DYNECT_TIMEOUT=${DESIGNATE_DYNECT_TIMEOUT:-}
 DESIGNATE_DYNECT_MASTERS=${DESIGNATE_DYNECT_MASTERS:-"$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT_MDNS"}
 DESIGNATE_DYNECT_NAMESERVERS=${DESIGNATE_DYNECT_NAMESERVERS:-""}
-DESIGNATE_DYNECT_ALSO_NOTIFIES=${DESIGNATE_DYNECT_ALSO_NOTIFIES:-"204.13.249.65:53,208.78.68.65:53"}
+DESIGNATE_DYNECT_ALSO_NOTIFIES=${DESIGNATE_DYNECT_ALSO_NOTIFIES:-"204.13.249.65,208.78.68.65"}
 
 # Pull in DESIGNATE_3RDPARTY_CREDS user/pass if set
 if [ -n "$DESIGNATE_3RDPARTY_CREDS" ]; then
@@ -62,47 +62,73 @@ function install_designate_backend {
 
 # configure_designate_backend - make configuration changes, including those to other services
 function configure_designate_backend {
-    iniset $DESIGNATE_CONF pool_target:$DESIGNATE_TARGET_ID type dynect
-    iniset $DESIGNATE_CONF pool_target:$DESIGNATE_TARGET_ID masters $DESIGNATE_DYNECT_MASTERS
-    iniset $DESIGNATE_CONF pool_target:$DESIGNATE_TARGET_ID options "customer_name: $DESIGNATE_DYNECT_CUSTOMER, username: $DESIGNATE_DYNECT_USERNAME, password: $DESIGNATE_DYNECT_PASSWORD"
+    # Generate Designate pool.yaml file
+    sudo tee $DESIGNATE_CONF_DIR/pools.yaml > /dev/null <<EOF
+---
+- name: default
+  description: DevStack DynECT Pool
+  attributes: {}
 
-    # Create a Pool Nameserver for each of the DynECT nameservers
-    local nameserver_ids=""
-    IFS=',' read -a nameservers <<< "$DESIGNATE_DYNECT_NAMESERVERS"
+  targets:
+    - type: dynect
+      description: DynECT API
 
-    for nameserver in "${nameservers[@]}"; do
-        local nameserver_id=`uuidgen`
-        iniset $DESIGNATE_CONF pool_nameserver:$nameserver_id host $(dig +short A $nameserver | head -n 1)
-        iniset $DESIGNATE_CONF pool_nameserver:$nameserver_id port 53
+      options:
+        customer_name: $DESIGNATE_DYNECT_CUSTOMER
+        username: $DESIGNATE_DYNECT_USERNAME
+        password: $DESIGNATE_DYNECT_PASSWORD
 
-        # Append the Nameserver ID to the list
-        nameserver_ids+=${nameserver_id},
+      masters:
+EOF
+
+    # Create a Pool Master for each of the DynECT Masters
+    IFS=',' read -a masters <<< "$DESIGNATE_DYNECT_MASTERS"
+
+    for master in "${masters[@]}"; do
+        sudo tee -a $DESIGNATE_CONF_DIR/pools.yaml > /dev/null <<EOF
+        - host: $master
+          port: 53
+EOF
     done
 
-    # Configure the Pool for the set of nameserver IDs, minus the trailing comma
-    iniset $DESIGNATE_CONF pool:$DESIGNATE_POOL_ID nameservers "${nameserver_ids:0:-1}"
+    # Create a Pool NS Record for each of the DynECT Nameservers
+    IFS=',' read -a nameservers <<< "$DESIGNATE_DYNECT_NAMESERVERS"
 
-    # Configure the Pool to Notify DynECT's Transfer Agents
-    iniset $DESIGNATE_CONF pool:$DESIGNATE_POOL_ID also_notifies "$DESIGNATE_DYNECT_ALSO_NOTIFIES"
+    sudo tee -a $DESIGNATE_CONF_DIR/pools.yaml > /dev/null <<EOF
+  ns_records:
+EOF
 
-    # Global DynECT Backend Settings
-    if [ ! -z $DESIGNATE_DYNECT_JOB_TIMEOUT ]; then
-        iniset $DESIGNATE_CONF backend:dynect job_timeout "$DESIGNATE_DYNECT_JOB_TIMEOUT"
-    fi
+    for nameserver in "${nameservers[@]}"; do
+        sudo tee -a $DESIGNATE_CONF_DIR/pools.yaml > /dev/null <<EOF
+    - hostname: $nameserver
+      priority: 1
+EOF
+    done
 
-    if [ ! -z $DESIGNATE_DYNECT_TIMEOUT ]; then
-        iniset $DESIGNATE_CONF backend:dynect timeout "$DESIGNATE_DYNECT_TIMEOUT"
-    fi
-}
+    # Create a Pool Nameserver for each of the DynECT Nameservers
+    sudo tee -a $DESIGNATE_CONF_DIR/pools.yaml > /dev/null <<EOF
+  nameservers:
+EOF
 
-# create_designate_ns_records - Create Pool NS Records
-function create_designate_ns_records_backend {
-    # Build an array of the DynECT nameservers.
-    IFS=',' read -a ns_records <<< "$DESIGNATE_DYNECT_NAMESERVERS"
+    for nameserver in "${nameservers[@]}"; do
+        sudo tee -a $DESIGNATE_CONF_DIR/pools.yaml > /dev/null <<EOF
+    - host: `dig +short A $nameserver | head -n 1`
+      port: 53
+EOF
+    done
 
-    # Create a NS Record for each of the DynECT nameservers
-    for ns_record in "${ns_records[@]}"; do
-        designate server-create --name "${ns_record%%.}."
+    # Create a Pool Also Notifies for each of the DynECT Also Notifies
+    IFS=',' read -a also_notifies <<< "$DESIGNATE_DYNECT_ALSO_NOTIFIES"
+
+    sudo tee -a $DESIGNATE_CONF_DIR/pools.yaml > /dev/null <<EOF
+  also_notifies:
+EOF
+
+    for also_notify in "${also_notifies[@]}"; do
+        sudo tee -a $DESIGNATE_CONF_DIR/pools.yaml > /dev/null <<EOF
+    - host: $also_notify
+      port: 53
+EOF
     done
 }
 

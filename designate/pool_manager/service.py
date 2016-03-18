@@ -97,10 +97,6 @@ class Service(service.RPCService, coordination.CoordinationMixin,
     def __init__(self, threads=None):
         super(Service, self).__init__(threads=threads)
 
-        # Build the Pool (and related) Object from Config
-        self.pool = objects.Pool.from_config(
-            CONF, CONF['service:pool_manager'].pool_id)
-
         # Get a pool manager cache connection.
         self.cache = cache.get_pool_manager_cache(
             CONF['service:pool_manager'].cache_driver)
@@ -118,11 +114,8 @@ class Service(service.RPCService, coordination.CoordinationMixin,
 
         # Compute a time (seconds) by which things should have propagated
         self.max_prop_time = (self.timeout * self.max_retries +
-                             self.max_retries * self.retry_interval +
-                             self.delay)
-
-        # Create the necessary Backend instances for each target
-        self._setup_target_backends()
+                              self.max_retries * self.retry_interval +
+                              self.delay)
 
     def _setup_target_backends(self):
         self.target_backends = {}
@@ -154,6 +147,34 @@ class Service(service.RPCService, coordination.CoordinationMixin,
         return topic
 
     def start(self):
+
+        # Build the Pool (and related) Object from Config
+        context = DesignateContext.get_admin_context()
+        pool_id = CONF['service:pool_manager'].pool_id
+
+        has_targets = False
+
+        while not has_targets:
+            try:
+                self.pool = self.central_api.get_pool(context, pool_id)
+
+                if len(self.pool.targets) > 0:
+                    has_targets = True
+                else:
+                    LOG.error(_LE("No targets for %s found."), self.pool)
+                    time.sleep(5)
+
+            # Pool data may not have migrated to the DB yet
+            except exceptions.PoolNotFound:
+                LOG.error(_LE("Pool ID %s not found."), pool_id)
+                time.sleep(5)
+            # designate-central service may not have started yet
+            except messaging.exceptions.MessagingTimeout:
+                time.sleep(0.2)
+
+        # Create the necessary Backend instances for each target
+        self._setup_target_backends()
+
         for target in self.pool.targets:
             self.target_backends[target.id].start()
 

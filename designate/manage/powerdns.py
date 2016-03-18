@@ -21,7 +21,9 @@ from oslo_db.sqlalchemy.migration_cli import manager as migration_manager
 from oslo_log import log as logging
 
 from designate.manage import base
+from designate import rpc
 from designate import utils
+from designate.central import rpcapi as central_rpcapi
 
 LOG = logging.getLogger(__name__)
 
@@ -32,33 +34,50 @@ CONF = cfg.CONF
 utils.register_plugin_opts()
 
 
-def get_manager(pool_target_id):
-    pool_target_options = CONF['pool_target:%s' % pool_target_id].options
-    connection = pool_target_options['connection']
+def get_manager(pool_target):
+    connection = pool_target.options.get('connection', None)
 
     migration_config = {
         'migration_repo_path': REPOSITORY,
         'db_url': connection}
+
     return migration_manager.MigrationManager(migration_config)
 
 
 class DatabaseCommands(base.Commands):
-    @base.args('pool-target-id', help="Pool Target to Migrate", type=str)
-    def version(self, pool_target_id):
-        current = get_manager(pool_target_id).version()
-        latest = versioning_api.version(repository=REPOSITORY).value
-        print("Current: %s Latest: %s" % (current, latest))
+    def __init__(self):
+        super(DatabaseCommands, self).__init__()
+        rpc.init(cfg.CONF)
+        self.central_api = central_rpcapi.CentralAPI()
 
-    @base.args('pool-target-id', help="Pool Target to Migrate", type=str)
-    def sync(self, pool_target_id):
-        get_manager(pool_target_id).upgrade(None)
+    @base.args('pool-id', help="Pool to Migrate", type=str)
+    def version(self, pool_id):
+        pool = self.central_api.find_pool(self.context, {"id": pool_id})
 
-    @base.args('pool-target-id', help="Pool Target to Migrate", type=str)
+        for pool_target in pool.targets:
+            current = get_manager(pool_target).version()
+            latest = versioning_api.version(repository=REPOSITORY).value
+            print("Current: %s Latest: %s" % (current, latest))
+
+    @base.args('pool-id', help="Pool to Migrate", type=str)
+    def sync(self, pool_id):
+        pool = self.central_api.find_pool(self.context, {"id": pool_id})
+
+        for pool_target in pool.targets:
+            get_manager(pool_target).upgrade(None)
+
+    @base.args('pool-id', help="Pool to Migrate", type=str)
     @base.args('revision', nargs='?')
-    def upgrade(self, pool_target_id, revision):
-        get_manager(pool_target_id).upgrade(revision)
+    def upgrade(self, pool_id, revision):
+        pool = self.central_api.find_pool(self.context, {"id": pool_id})
 
-    @base.args('pool-target-id', help="Pool Target to Migrate", type=str)
+        for pool_target in pool.targets:
+            get_manager(pool_target).upgrade(revision)
+
+    @base.args('pool-id', help="Pool to Migrate", type=str)
     @base.args('revision', nargs='?')
-    def downgrade(self, pool_target_id, revision):
-        get_manager(pool_target_id).downgrade(revision)
+    def downgrade(self, pool_id, revision):
+        pool = self.central_api.find_pool(self.context, {"id": pool_id})
+
+        for pool_target in pool.targets:
+            get_manager(pool_target).downgrade(revision)

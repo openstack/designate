@@ -18,11 +18,28 @@ from designate.objects import base
 class PoolTarget(base.DictObjectMixin, base.PersistentObjectMixin,
                  base.DesignateObject):
     FIELDS = {
-        'pool_id': {},
+        'pool_id': {
+            'schema': {
+                'type': 'string',
+                'description': 'Pool identifier',
+                'format': 'uuid',
+            },
+        },
         'type': {},
-        'tsigkey_id': {},
-        'description': {},
-
+        'tsigkey_id': {
+            'schema': {
+                'type': ['string', 'null'],
+                'description': 'TSIG identifier',
+                'format': 'uuid',
+            },
+        },
+        'description': {
+            'schema': {
+                'type': ['string', 'null'],
+                'description': 'Description for the pool',
+                'maxLength': 160
+            }
+        },
         'masters': {
             'relation': True,
             'relation_cls': 'PoolTargetMasterList'
@@ -32,6 +49,10 @@ class PoolTarget(base.DictObjectMixin, base.PersistentObjectMixin,
             'relation_cls': 'PoolTargetOptionList'
         },
     }
+
+    STRING_KEYS = [
+        'id', 'type', 'pool_id'
+    ]
 
 
 class PoolTargetList(base.ListObjectMixin, base.DesignateObject):
