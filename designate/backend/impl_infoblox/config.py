@@ -25,16 +25,62 @@ cfg.CONF.register_group(cfg.OptGroup(
 ))
 
 OPTS = [
-    cfg.StrOpt('wapi_url'),
-    cfg.StrOpt('username'),
-    cfg.StrOpt('password'),
-    cfg.BoolOpt('sslverify', default=False),
-    cfg.BoolOpt('multi_tenant', default=False),
-    cfg.IntOpt('http_pool_connections', default=100),
-    cfg.IntOpt('http_pool_maxsize', default=100),
-    cfg.StrOpt('dns_view', default='default'),
-    cfg.StrOpt('network_view', default='default'),
-    cfg.StrOpt('ns_group')
+    cfg.StrOpt(
+        'wapi_url',
+        deprecated_for_removal=True,
+        deprecated_reason="All backend options have been migrated to options "
+        "in the pools.yaml file"),
+    cfg.StrOpt(
+        'username',
+        deprecated_for_removal=True,
+        deprecated_reason="All backend options have been migrated to options "
+        "in the pools.yaml file"),
+    cfg.StrOpt(
+        'password',
+        deprecated_for_removal=True,
+        deprecated_reason="All backend options have been migrated to options "
+        "in the pools.yaml file"),
+    cfg.BoolOpt(
+        'sslverify',
+        default=False,
+        deprecated_for_removal=True,
+        deprecated_reason="All backend options have been migrated to options "
+        "in the pools.yaml file"),
+    cfg.BoolOpt(
+        'multi_tenant',
+        default=False,
+        deprecated_for_removal=True,
+        deprecated_reason="All backend options have been migrated to options "
+        "in the pools.yaml file"),
+    cfg.IntOpt(
+        'http_pool_connections',
+        default=100,
+        deprecated_for_removal=True,
+        deprecated_reason="All backend options have been migrated to options "
+        "in the pools.yaml file"),
+    cfg.IntOpt(
+        'http_pool_maxsize',
+        default=100,
+        deprecated_for_removal=True,
+        deprecated_reason="All backend options have been migrated to options "
+        "in the pools.yaml file"),
+    cfg.StrOpt(
+        'dns_view',
+        default='default',
+        deprecated_for_removal=True,
+        deprecated_reason="All backend options have been migrated to options "
+        "in the pools.yaml file"),
+    cfg.StrOpt(
+        'network_view',
+        default='default',
+        deprecated_for_removal=True,
+        deprecated_reason="All backend options have been migrated to options "
+        "in the pools.yaml file"),
+    cfg.StrOpt(
+        'ns_group',
+        deprecated_for_removal=True,
+        deprecated_reason="All backend options have been migrated to options "
+        "in the pools.yaml file")
 ]
 
 cfg.CONF.register_opts(OPTS, group='backend:infoblox')

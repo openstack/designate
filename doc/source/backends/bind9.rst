@@ -26,15 +26,18 @@ Designate Configuration
 
 Example configuration required for Bind9 operation. One section for each pool target
 
-.. code-block:: ini
-
-    [pool_target:f26e0b32-736f-4f0a-831b-039a415c481e]
-    options = rndc_host: 192.168.27.100, rndc_port: 953, rndc_config_file: /etc/bind/rndc.conf, rndc_key_file: /etc/bind/rndc.key, port: 53, host: 192.168.27.100, clean_zonefile: false
-    masters = 192.168.27.100:5354
-    type = bind9
+   .. literalinclude:: sample_yaml_snippets/bind.yaml
+       :language: yaml
 
 The key and config files are relative to the host running Pool Manager (and can
 be different from the hosts running Bind)
+
+Then update the pools in designate - see :ref:`designate_manage_pool` for further details on
+the ``designate-manage pool`` command
+
+.. code-block:: console
+
+    $ designate-manage pool update
 
 Bind9 Configuration
 -------------------

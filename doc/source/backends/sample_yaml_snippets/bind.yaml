@@ -1,0 +1,17 @@
+  targets:
+    - type: bind
+      description: BIND9 Server 1
+
+      # List out the designate-mdns servers from which BIND servers should
+      # request zone transfers (AXFRs) from.
+      masters:
+        - host: 192.0.2.1
+          port: 5354
+
+      # BIND Configuration options
+      options:
+        host: 192.0.2.2
+        port: 53
+        rndc_host: 192.0.2.2
+        rndc_port: 953
+        rndc_key_file: /etc/designate/rndc.key
