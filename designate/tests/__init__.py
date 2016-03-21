@@ -368,7 +368,7 @@ class TestCase(base.BaseTestCase):
         db_fixture = self.useFixture(
             fixtures.DatabaseFixture.get_fixture(repository))
 
-        if os.getenv('DESIGNATE_SQL_DEBUG', "True").lower() in _TRUE_VALUES:
+        if os.getenv('DESIGNATE_SQL_DEBUG', "False").lower() in _TRUE_VALUES:
             connection_debug = 50
         else:
             connection_debug = 0
