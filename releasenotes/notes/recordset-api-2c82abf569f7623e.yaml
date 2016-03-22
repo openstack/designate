@@ -1,0 +1,5 @@
+---
+features:
+  - A new recordset api ``/v2/recordsets`` is exposed with GET method
+    allowed only. The api can be used for retrieving recordsets across all the
+    zones under a tenant. Filtering on certain fields is supported as well.

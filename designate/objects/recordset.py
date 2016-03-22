@@ -94,10 +94,19 @@ class RecordSet(base.DictObjectMixin, base.PersistentObjectMixin,
                 'format': 'uuid'
             },
         },
-        'name': {
+        'zone_name': {
             'schema': {
                 'type': 'string',
                 'description': 'Zone name',
+                'format': 'domainname',
+                'maxLength': 255,
+            },
+            'read_only': True
+        },
+        'name': {
+            'schema': {
+                'type': 'string',
+                'description': 'Recordset name',
                 'format': 'hostname',
                 'maxLength': 255,
             },

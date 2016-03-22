@@ -84,7 +84,7 @@ class ZoneTransferRequestAPIv2Adapter(base.APIv2Adapter):
         return obj
 
     @classmethod
-    def _get_path(cls, request):
+    def _get_path(cls, request, *args):
         return '/v2/zones/tasks/transfer_requests'
 
 

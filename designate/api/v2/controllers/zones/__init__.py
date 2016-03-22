@@ -20,7 +20,7 @@ from oslo_log import log as logging
 from designate import exceptions
 from designate import utils
 from designate.api.v2.controllers import rest
-from designate.api.v2.controllers import recordsets
+from designate.api.v2.controllers.zones import recordsets
 from designate.api.v2.controllers.zones import tasks
 from designate.api.v2.controllers.zones import nameservers
 from designate import objects

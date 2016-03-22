@@ -78,7 +78,7 @@ class APIv2Adapter(base.DesignateAdapter):
     #####################
 
     @classmethod
-    def _get_resource_links(cls, object, request):
+    def _get_resource_links(cls, obj, request):
         if cfg.CONF['service:api'].enable_host_header:
             try:
                 base_uri = request.host_url
@@ -87,11 +87,11 @@ class APIv2Adapter(base.DesignateAdapter):
         else:
             base_uri = cls.BASE_URI
 
-        return {'self': '%s%s/%s' %
-                (base_uri, cls._get_path(request), object.id)}
+        path = cls._get_path(request, obj)
+        return {'self': '%s%s/%s' % (base_uri, path, obj.id)}
 
     @classmethod
-    def _get_path(cls, request):
+    def _get_path(cls, request, *args):
         path = request.path.lstrip('/').split('/')
         item_path = ''
         for part in path:

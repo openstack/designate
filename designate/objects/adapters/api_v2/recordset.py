@@ -32,6 +32,9 @@ class RecordSetAPIv2Adapter(base.APIv2Adapter):
             "name": {
                 'immutable': True
             },
+            "zone_name": {
+                'read_only': True,
+            },
             "type": {
                 'rename': 'type',
                 'immutable': True
@@ -111,6 +114,27 @@ class RecordSetAPIv2Adapter(base.APIv2Adapter):
 
         return super(RecordSetAPIv2Adapter, cls)._parse_object(
             new_recordset, recordset, *args, **kwargs)
+
+    @classmethod
+    def _get_path(cls, request, obj):
+        ori_path = request.path
+        path = ori_path.lstrip('/').split('/')
+        insert_zones = False
+        to_insert = ''
+        if 'zones' not in path and obj is not None:
+            insert_zones = True
+            to_insert = 'zones/{0}'.format(obj.zone_id)
+
+        item_path = ''
+        for part in path:
+            if part == cls.MODIFICATIONS['options']['collection_name']:
+                item_path += '/' + part
+                return item_path
+            elif insert_zones and to_insert and part == 'v2':
+                item_path += '/v2/{0}'.format(to_insert)
+                insert_zones = False  # make sure only insert once if needed
+            else:
+                item_path += '/' + part
 
 
 class RecordSetListAPIv2Adapter(base.APIv2Adapter):

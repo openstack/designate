@@ -1095,14 +1095,15 @@ class CentralZoneTestCase(CentralBasic):
             name='example.org.',
             tenant_id='2',
         )
-        self.service.storage.get_recordset.return_value = RoObject(
+        self.service.storage.get_recordset.return_value = objects.RecordSet(
             zone_id='2',
+            zone_name='example.org.',
             id='3'
         )
         self.service.get_recordset(
             self.context,
-            '1',
             '2',
+            '3',
         )
         self.assertEqual(
             'get_recordset',
@@ -1111,7 +1112,7 @@ class CentralZoneTestCase(CentralBasic):
         t, ctx, target = designate.central.service.policy.check.call_args[0]
         self.assertEqual('get_recordset', t)
         self.assertEqual({
-            'zone_id': '1',
+            'zone_id': '2',
             'zone_name': 'example.org.',
             'recordset_id': '3',
             'tenant_id': '2'}, target)
@@ -1342,22 +1343,26 @@ class CentralZoneTestCase(CentralBasic):
             self.service.delete_recordset(self.context, 'd', 'r')
 
     def test_delete_recordset(self):
-        self.service.storage.get_zone.return_value = RoObject(
+        mock_zone = RoObject(
             action='foo',
             id=4,
             name='example.org.',
             tenant_id='2',
             type='foo',
         )
-        self.service.storage.get_recordset.return_value = RoObject(
+        mock_rs = objects.RecordSet(
             zone_id=4,
+            zone_name='example.org.',
             id='i',
-            managed=False,
+            records=[],
         )
+
+        self.service.storage.get_zone.return_value = mock_zone
+        self.service.storage.get_recordset.return_value = mock_rs
         self.context = Mock()
         self.context.edit_managed_records = False
         self.service._delete_recordset_in_storage = Mock(
-            return_value=('', '')
+            return_value=(mock_rs, mock_zone)
         )
         with fx_pool_manager:
             self.service.delete_recordset(self.context, 'd', 'r')
