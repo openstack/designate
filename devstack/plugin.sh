@@ -139,6 +139,13 @@ function configure_designate {
     configure_designate_backend
 }
 
+function configure_designatedashboard {
+    # Compile message catalogs
+    if [ -d ${DESIGNATEDASHBOARD_DIR}/designatedashboard/locale ]; then
+        (cd ${DESIGNATEDASHBOARD_DIR}/designatedashboard; DJANGO_SETTINGS_MODULE=openstack_dashboard.settings ../manage.py compilemessages)
+    fi
+}
+
 # Configure the needed tempest options
 function configure_designate_tempest() {
     if is_service_enabled tempest; then
@@ -309,6 +316,7 @@ if is_service_enabled designate; then
     elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
         echo_summary "Configuring Designate"
         configure_designate
+        configure_designatedashboard
 
         if is_service_enabled key; then
             echo_summary "Creating Designate Keystone accounts"
