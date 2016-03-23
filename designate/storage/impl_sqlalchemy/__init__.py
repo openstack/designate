@@ -247,6 +247,9 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
 
             zone.obj_reset_changes(['masters', 'attributes'])
 
+        # TODO(Federico) refactor part of _find_zones into _find_zone, move
+        # _load_relations out
+
         if one:
             _load_relations(zones)
         else:
@@ -254,6 +257,8 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             for d in zones:
                 _load_relations(d)
 
+        if one:
+            LOG.debug("Fetched zone %s", zones)
         return zones
 
     def create_zone(self, context, zone):
@@ -301,6 +306,7 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             tenant_id_changed = True
 
         # Don't handle recordsets for now
+        LOG.debug("Updating zone %s", zone)
         updated_zone = self._update(
             context, tables.zones, zone, exceptions.DuplicateZone,
             exceptions.ZoneNotFound,
