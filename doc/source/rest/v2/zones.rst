@@ -199,47 +199,55 @@ List Zones
 
         {
           "zones": [{
-            "id": "a86dba58-0043-4cc6-a1bb-69d5e86f3ca3",
-            "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2",
-            "project_id": "4335d1f0-f793-11e2-b778-0800200c9a66",
+            "status": "ACTIVE",
+            "masters": [],
             "name": "example.org.",
-            "email": "joe@example.org.",
-            "ttl": 7200,
-            "serial": 1404757531,
-            "status": "ACTIVE",
-            "description": "This is an example zone.",
-            "masters": [],
-            "type": "PRIMARY",
-            "transferred_at": null,
-            "version": 1,
-            "created_at": "2014-07-07T18:25:31.275934",
-            "updated_at": null,
             "links": {
-              "self": "https://127.0.0.1:9001/v2/zones/a86dba58-0043-4cc6-a1bb-69d5e86f3ca3"
-            }
-          }, {
-            "id": "fdd7b0dc-52a3-491e-829f-41d18e1d3ada",
-            "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2",
-            "project_id": "4335d1f0-f793-11e2-b778-0800200c9a66",
-            "name": "example.net.",
-            "email": "joe@example.net.",
-            "ttl": 7200,
-            "serial": 1404756682,
-            "status": "ACTIVE",
-            "description": "This is another example zone.",
-            "masters": [],
-            "type": "PRIMARY",
+              "self": "http://127.0.0.1:9001/v2/zones/c991f02b-ae05-4570-bf75-73def68fe700"
+            },
             "transferred_at": null,
-            "version": 1,
-            "created_at": "2014-07-07T18:22:08.287743",
-            "updated_at": null,
+            "created_at": "2016-03-15T05:41:45.000000",
+            "pool_id": "794ccc2c-d751-44fe-b57f-8894c9f5c842",
+            "updated_at": "2016-03-15T05:41:50.000000",
+            "version": 2,
+            "id": "c991f02b-ae05-4570-bf75-73def68fe700",
+            "ttl": 3600,
+            "action": "NONE",
+            "attributes": {},
+            "serial": 1458020505,
+            "project_id": "6b89012cdb2640c3a80b8d777d9bac16",
+            "type": "PRIMARY",
+            "email": "abc@example.com",
+            "description": null
+          },
+          {
+            "status": "ACTIVE",
+            "masters": [],
+            "name": "example1.org.",
             "links": {
-              "self": "https://127.0.0.1:9001/v2/zones/fdd7b0dc-52a3-491e-829f-41d18e1d3ada"
-            }
+              "self": "http://127.0.0.1:9001/v2/zones/0d35ce4e-f3b4-4ba7-9b94-4f9eba49018a"
+            },
+            "transferred_at": null,
+            "created_at": "2016-03-15T05:54:24.000000",
+            "pool_id": "794ccc2c-d751-44fe-b57f-8894c9f5c842",
+            "updated_at": "2016-03-15T05:54:44.000000",
+            "version": 2,
+            "id": "0d35ce4e-f3b4-4ba7-9b94-4f9eba49018a",
+            "ttl": 3600,
+            "action": "NONE",
+            "attributes": {},
+            "serial": 1458021264,
+            "project_id": "6b89012cdb2640c3a80b8d777d9bac16",
+            "type": "PRIMARY",
+            "email": "abc@example.com",
+            "description": null
           }],
           "links": {
-            "self": "https://127.0.0.1:9001/v2/zones"
-          }
+            "self": "http://127.0.0.1:9001/v2/zones"
+            },
+          "metadata": {
+            "total_count": 2
+            }
         }
 
     :statuscode 200: Success

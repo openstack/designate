@@ -46,42 +46,54 @@ Links
         {
           "zones": [{
             "status": "ACTIVE",
-            "description": null,
-            "updated_at": "2014-07-08T20:28:31.000000",
-            "ttl": 86400,
-            "serial": 1404851315,
-            "id": "a4e29ed3-d7a4-4e4d-945d-ce64678d3b94",
-            "name": "example.com.",
-            "created_at": "2014-07-08T20:28:19.000000",
-            "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2",
-            "version": 1,
-            "project_id": "noauth-project",
-            "email": "hostmaster@example.com",
+            "masters": [],
+            "name": "example1.org.",
             "links": {
-              "self": "http://dns.provider.com/v2/zones/a4e29ed3-d7a4-4e4d-945d-ce64678d3b94"
-            }
-          },
-          {
-            "status": "ACTIVE",
-            "description": null,
-            "updated_at": null,
+              "self": "http://dns.provider.com:9001/v2/zones/bd1b954e-69cd-4a91-99b4-0bcc08533123"
+            },
+            "transferred_at": null,
+            "created_at": "2016-03-14T05:41:49.000000",
+            "pool_id": "794ccc2c-d751-44fe-b57f-8894c9f5c842",
+            "updated_at": "2016-03-14T07:33:49.000000",
+            "version": 10,
+            "id": "bd1b954e-69cd-4a91-99b4-0bcc08533123",
             "ttl": 3600,
-            "serial": 1405435099,
-            "id": "13db810b-917d-4898-bc28-4d4ee370d20d",
-            "name": "abc.example.com.",
-            "created_at": "2014-07-15T14:38:19.000000",
-            "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2",
-            "version": 1,
-            "project_id": "noauth-project",
+            "action": "NONE",
+            "attributes": {},
+            "serial": 1457940809,
+            "project_id": "54c3cc0b8e21491f820fc701b83cb7fb",
+            "type": "PRIMARY",
             "email": "hostmaster@example.com",
+            "description": null
+          },
+          { "status": "ACTIVE",
+            "masters": [],
+            "name": "example.com.",
             "links": {
-              "self": "http://dns.provider.com/v2/zones/13db810b-917d-4898-bc28-4d4ee370d20d"
-            }
-          }],
-          "links": {
-            "self": "https://dns.provider.com/v2/zones?limit=2",
-            "next": "https://dns.provider.com/v2/zones?limit=2&marker=13db810b-917d-4898-bc28-4d4ee370d20d"
-          }
+              "self": "http://dns.provider.com:9001/v2/zones/45fd892d-7a67-4f65-9df0-87273f228d6c"
+            },
+            "transferred_at": null,
+            "created_at": "2016-03-14T07:50:38.000000",
+            "pool_id": "794ccc2c-d751-44fe-b57f-8894c9f5c842",
+            "updated_at": "2016-03-14T07:50:43.000000",
+            "version": 2,
+            "id": "45fd892d-7a67-4f65-9df0-87273f228d6c",
+            "ttl": 3600,
+            "action": "NONE",
+            "attributes": {},
+            "serial": 1457941838,
+            "project_id": "54c3cc0b8e21491f820fc701b83cb7fb",
+            "type": "PRIMARY",
+            "email": "hostmaster@example.com",
+            "description": null
+        }],
+        "links": {
+          "self": "http://dns.provider.com:9001/v2/zones?limit=2",
+          "next": "http://dns.provider.com:9001/v2/zones?limit=2&marker=45fd892d-7a67-4f65-9df0-87273f228d6c"
+            },
+        "metadata": {
+           "total_count": 2
+           }
         }
 
 Pagination and Sorting
@@ -304,26 +316,33 @@ Filtering
         {
           "zones": [{
             "status": "ACTIVE",
-            "description": null,
-            "updated_at": "2014-07-08T20:28:31.000000",
-            "ttl": 86400,
-            "serial": 1404851315,
-            "id": "a4e29ed3-d7a4-4e4d-945d-ce64678d3b94",
+            "masters": [],
             "name": "example.com.",
-            "created_at": "2014-07-08T20:28:19.000000",
-            "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2",
-            "version": 1,
-            "project_id": "noauth-project",
-            "email": "hostmaster@example.com",
             "links": {
-              "self": "http://dns.provider.com/v2/zones/a4e29ed3-d7a4-4e4d-945d-ce64678d3b94"
-            }
+               "self": "http://dns.provider.com:9001/v2/zones/45fd892d-7a67-4f65-9df0-87273f228d6c"
+            },
+            "transferred_at": null,
+            "created_at": "2016-03-14T07:50:38.000000",
+            "pool_id": "794ccc2c-d751-44fe-b57f-8894c9f5c842",
+            "updated_at": "2016-03-14T07:50:43.000000",
+            "version": 2,
+            "id": "45fd892d-7a67-4f65-9df0-87273f228d6c",
+            "ttl": 3600,
+            "action": "NONE",
+            "attributes": {},
+            "serial": 1457941838,
+            "project_id": "54c3cc0b8e21491f820fc701b83cb7fb",
+            "type": "PRIMARY",
+            "email": "hostmaster@example.com",
+            "description": null
           }],
           "links": {
-            "self": "https://dns.provider.com/v2/zones?name=example.com."
-          }
+            "self": "http://dns.provider.com:9001/v2/zones?name=example.com."
+            },
+          "metadata": {
+            "total_count": 1
+            }
         }
-
 
     Wildcards can be placed anywhere within the query. The following example
     demonstrates the use of wildcards on the right side of a query:
@@ -347,41 +366,54 @@ Filtering
         {
           "zones": [{
             "status": "ACTIVE",
-            "description": null,
-            "updated_at": "2014-07-08T20:28:31.000000",
-            "ttl": 86400,
-            "serial": 1404851315,
-            "id": "a4e29ed3-d7a4-4e4d-945d-ce64678d3b94",
-            "name": "example.com.",
-            "created_at": "2014-07-08T20:28:19.000000",
-            "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2",
-            "version": 1,
-            "project_id": "noauth-project",
-            "email": "hostmaster@example.com",
+            "masters": [],
+            "name": "example1.org.",
             "links": {
-              "self": "http://dns.provider.com/v2/zones/a4e29ed3-d7a4-4e4d-945d-ce64678d3b94"
-            }
+              "self": "http://dns.provider.com:9001/v2/zones/bd1b954e-69cd-4a91-99b4-0bcc08533123"
+            },
+            "transferred_at": null,
+            "created_at": "2016-03-14T05:41:49.000000",
+            "pool_id": "794ccc2c-d751-44fe-b57f-8894c9f5c842",
+            "updated_at": "2016-03-14T07:33:49.000000",
+            "version": 10,
+            "id": "bd1b954e-69cd-4a91-99b4-0bcc08533123",
+            "ttl": 3600,
+            "action": "NONE",
+            "attributes": {},
+            "serial": 1457940809,
+            "project_id": "54c3cc0b8e21491f820fc701b83cb7fb",
+            "type": "PRIMARY",
+            "email": "hostmaster@example.com",
+            "description": null
           },
           {
             "status": "ACTIVE",
-            "description": null,
-            "updated_at": null,
-            "ttl": 3600,
-            "serial": 1405435142,
-            "id": "38dbf635-45cb-4873-8300-6c273f0283c7",
-            "name": "example.org.",
-            "created_at": "2014-07-15T14:39:02.000000",
-            "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2",
-            "version": 1,
-            "project_id": "noauth-project",
-            "email": "hostmaster@example.org",
+            "masters": [],
+            "name": "example.com.",
             "links": {
-              "self": "http://dns.provider.com/v2/zones/38dbf635-45cb-4873-8300-6c273f0283c7"
-            }
+             "self": "http://dns.provider.com:9001/v2/zones/45fd892d-7a67-4f65-9df0-87273f228d6c"
+            },
+            "transferred_at": null,
+            "created_at": "2016-03-14T07:50:38.000000",
+            "pool_id": "794ccc2c-d751-44fe-b57f-8894c9f5c842",
+            "updated_at": "2016-03-14T07:50:43.000000",
+            "version": 2,
+            "id": "45fd892d-7a67-4f65-9df0-87273f228d6c",
+            "ttl": 3600,
+            "action": "NONE",
+            "attributes": {},
+            "serial": 1457941838,
+            "project_id": "54c3cc0b8e21491f820fc701b83cb7fb",
+            "type": "PRIMARY",
+            "email": "hostmaster@example.com",
+            "description": null
           }],
           "links": {
-            "self": "https://dns.provider.com/v2/zones?name=example*"
-          }
+            "self": "http://dns.provider.com:9001/v2/zones?name=example%2A"
+            },
+          "metadata": {
+            "total_count": 2
+            }
         }
 
     This example demonstrates the use of multiple wildcards:
@@ -405,77 +437,99 @@ Filtering
         {
           "zones": [{
             "status": "ACTIVE",
-            "description": null,
-            "updated_at": "2014-07-08T20:28:31.000000",
-            "ttl": 86400,
-            "serial": 1404851315,
-            "id": "a4e29ed3-d7a4-4e4d-945d-ce64678d3b94",
-            "name": "example.com.",
-            "created_at": "2014-07-08T20:28:19.000000",
-            "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2",
-            "version": 1,
-            "project_id": "noauth-project",
-            "email": "hostmaster@example.com",
-            "links": {
-              "self": "http://dns.provider.com/v2/zones/a4e29ed3-d7a4-4e4d-945d-ce64678d3b94"
-            }
-          },
-          {
-            "status": "ACTIVE",
-            "description": null,
-            "updated_at": null,
-            "ttl": 3600,
-            "serial": 1405435099,
-            "id": "13db810b-917d-4898-bc28-4d4ee370d20d",
-            "name": "abc.example.com.",
-            "created_at": "2014-07-15T14:38:19.000000",
-            "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2",
-            "version": 1,
-            "project_id": "noauth-project",
-            "email": "hostmaster@example.com",
-            "links": {
-              "self": "http://dns.provider.com/v2/zones/13db810b-917d-4898-bc28-4d4ee370d20d"
-            }
-          },
-          {
-            "status": "ACTIVE",
-            "description": null,
-            "updated_at": null,
-            "ttl": 3600,
-            "serial": 1405435142,
-            "id": "38dbf635-45cb-4873-8300-6c273f0283c7",
+            "masters": [],
             "name": "example.org.",
-            "created_at": "2014-07-15T14:39:02.000000",
-            "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2",
-            "version": 1,
-            "project_id": "noauth-project",
-            "email": "hostmaster@example.org",
             "links": {
-              "self": "http://dns.provider.com/v2/zones/38dbf635-45cb-4873-8300-6c273f0283c7"
-            }
+              "self": "http://dns.provider.com:9001/v2/zones/c991f02b-ae05-4570-bf75-73def68fe700"
+            },
+            "transferred_at": null,
+            "created_at": "2016-03-15T05:41:45.000000",
+            "pool_id": "794ccc2c-d751-44fe-b57f-8894c9f5c842",
+            "updated_at": "2016-03-15T05:41:50.000000",
+            "version": 2,
+            "id": "c991f02b-ae05-4570-bf75-73def68fe700",
+            "ttl": 3600,
+            "action": "NONE",
+            "attributes": {},
+            "serial": 1458020505,
+            "project_id": "6b89012cdb2640c3a80b8d777d9bac16",
+            "type": "PRIMARY",
+            "email": "hostmaster@example.com",
+            "description": null
           },
           {
             "status": "ACTIVE",
-            "description": null,
-            "updated_at": null,
-            "ttl": 3600,
-            "serial": 1405435156,
-            "id": "c316def0-8599-4030-9dcd-2ce566348115",
-            "name": "abc.example.net.",
-            "created_at": "2014-07-15T14:39:16.000000",
-            "pool_id": "572ba08c-d929-4c70-8e42-03824bb24ca2",
-            "version": 1,
-            "project_id": "noauth-project",
-            "email": "hostmaster@example.net",
+            "masters": [],
+            "name": "example1.org.",
             "links": {
-              "self": "http://dns.provider.com/v2/zones/c316def0-8599-4030-9dcd-2ce566348115"
-            }
+              "self": "http://dns.provider.com:9001/v2/zones/0d35ce4e-f3b4-4ba7-9b94-4f9eba49018a"
+            },
+            "transferred_at": null,
+            "created_at": "2016-03-15T05:54:24.000000",
+            "pool_id": "794ccc2c-d751-44fe-b57f-8894c9f5c842",
+            "updated_at": "2016-03-15T05:54:44.000000",
+            "version": 2,
+            "id": "0d35ce4e-f3b4-4ba7-9b94-4f9eba49018a",
+            "ttl": 3600,
+            "action": "NONE",
+            "attributes": {},
+            "serial": 1458021264,
+            "project_id": "6b89012cdb2640c3a80b8d777d9bac16",
+            "type": "PRIMARY",
+            "email": "hostmaster@example.com",
+            "description": null
+          },
+          {
+            "status": "ACTIVE",
+            "masters": [],
+            "name": "example.com.",
+            "links": {
+              "self": "http://dns.provider.com:9001/v2/zones/a18eed67-806f-418c-883c-b7a8001a9fb6"
+            },
+            "transferred_at": null,
+            "created_at": "2016-03-15T06:51:47.000000",
+            "pool_id": "794ccc2c-d751-44fe-b57f-8894c9f5c842",
+            "updated_at": "2016-03-15T06:51:52.000000",
+            "version": 2,
+            "id": "a18eed67-806f-418c-883c-b7a8001a9fb6",
+            "ttl": 3600,
+            "action": "NONE",
+            "attributes": {},
+            "serial": 1458024707,
+            "project_id": "6b89012cdb2640c3a80b8d777d9bac16",
+            "type": "PRIMARY",
+            "email": "hostmaster@example.com",
+            "description": null
+          },
+          {
+            "status": "ACTIVE",
+            "masters": [],
+            "name": "abc.example.org.",
+            "links": {
+              "self": "http://dns.provider.com:9001/v2/zones/c3cf2487-6c3e-44cd-a305-d52ccb7aaebd"
+            },
+            "transferred_at": null,
+            "created_at": "2016-03-15T06:53:13.000000",
+            "pool_id": "794ccc2c-d751-44fe-b57f-8894c9f5c842",
+            "updated_at": "2016-03-15T06:53:18.000000",
+            "version": 2,
+            "id": "c3cf2487-6c3e-44cd-a305-d52ccb7aaebd",
+            "ttl": 3600,
+            "action": "NONE",
+            "attributes": {},
+            "serial": 1458024793,
+            "project_id": "6b89012cdb2640c3a80b8d777d9bac16",
+            "type": "PRIMARY",
+            "email": "hostmaster@example.com",
+            "description": null
           }],
           "links": {
-            "self": "https://dns.provider.com/v2/zones?name=*example*"
-          }
+            "self": "http://dns.provider.com:9001/v2/zones?name=%2Aexample%2A"
+            },
+          "metadata": {
+            "total_count": 4
+            }
         }
-
 
 Nested Collections
 ------------------
