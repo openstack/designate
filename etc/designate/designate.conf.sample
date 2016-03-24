@@ -160,11 +160,15 @@ debug = False
 [keystone_authtoken]
 #auth_host = 127.0.0.1
 #auth_port = 35357
+#auth_version = 3
 #auth_protocol = http
-#admin_tenant_name = service
-#admin_user = designate
-#admin_password = designate
+#project_name = service
+#username = designate
+#password = designate
+#project_domain_id = default
+#user_domain_id = default
 #memcached_servers = localhost:11211
+#auth_type = password
 
 #-----------------------
 # CORS Middleware

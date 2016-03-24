@@ -45,7 +45,7 @@ The config file should look like the following:
     # Replace these with values that represent your identity configuration
     uri = http://localhost:5000/v2.0
     uri_v3 = http://localhost:5000/v3
-    auth_version = v2
+    auth_version = 3
     region = RegionOne
 
     username = demo
