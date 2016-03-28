@@ -34,4 +34,17 @@ iniset $TEMPEST_CONFIG validation ssh_timeout $BUILD_TIMEOUT
 iniset $TEMPEST_CONFIG validation network_for_ssh ${PRIVATE_NETWORK_NAME:-"private"}
 
 # Run the Designate Tempest tests
-sudo ./run_tempest_tests.sh
+sudo BASE=$BASE ./run_tempest_tests.sh
+
+# TODO(pglass) - update cli tests to look in the [auth] section for admin creds
+iniset $TEMPEST_CONFIG identity admin_username ${ADMIN_USERNAME:-"admin"}
+iniset $TEMPEST_CONFIG identity admin_password $ADMIN_PASSWORD
+iniset $TEMPEST_CONFIG identity admin_tenant_name $ADMIN_TENANT_NAME
+iniset $TEMPEST_CONFIG identity admin_domain_name ${ADMIN_DOMAIN_NAME:-"Default"}
+
+# must match the dir where `openstack` is installed
+DESIGNATE_CLI_DIR=${DESIGNATE_CLI_DIR:-"$BASE/new/python-designateclient"}
+iniset $TEMPEST_CONFIG designateclient directory "$DESIGNATE_CLI_DIR/.venv/bin"
+
+# Run the python-designateclient functional tests
+sudo BASE=$BASE ./run_cli_tests.sh

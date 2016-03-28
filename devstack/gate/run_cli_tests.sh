@@ -12,21 +12,17 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-# How many seconds to wait for the API to be responding before giving up
-API_RESPONDING_TIMEOUT=20
-
-if ! timeout ${API_RESPONDING_TIMEOUT} sh -c "while ! curl -s http://127.0.0.1:9001/ 2>/dev/null | grep -q 'v1' ; do sleep 1; done"; then
-    echo "The Designate API failed to respond within ${API_RESPONDING_TIMEOUT} seconds"
-    exit 1
-fi
-
-echo "Successfully contacted the Designate API"
-
-# Where Designate and Tempest code lives
-DESIGNATE_DIR=${DESIGNATE_DIR:-"$BASE/new/designate"}
+DESIGNATE_CLI_DIR=${DESIGNATE_CLI_DIR:-"$BASE/new/python-designateclient"}
 TEMPEST_DIR=${TEMPEST_DIR:-"$BASE/new/tempest"}
-
-pushd $DESIGNATE_DIR
 export TEMPEST_CONFIG=$TEMPEST_DIR/etc/tempest.conf
+
+pushd $DESIGNATE_CLI_DIR
+
+# we need the actual openstack executable which is not installed by tox
+virtualenv "$DESIGNATE_CLI_DIR/.venv"
+source "$DESIGNATE_CLI_DIR/.venv/bin/activate"
+pip install python-openstackclient
+pip install .
+
 tox -e functional -- --concurrency 4
 popd
