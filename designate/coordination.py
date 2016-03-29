@@ -22,6 +22,7 @@ import uuid
 
 from oslo_config import cfg
 from oslo_log import log
+import retrying
 import tooz.coordination
 
 from designate.i18n import _LI
@@ -49,6 +50,11 @@ OPTS = [
 cfg.CONF.register_opts(OPTS, group='coordination')
 
 CONF = cfg.CONF
+
+
+def _retry_if_tooz_error(exception):
+    """Return True if we should retry, False otherwise"""
+    return isinstance(exception, tooz.coordination.ToozError)
 
 
 class CoordinationMixin(object):
@@ -147,6 +153,8 @@ class Partitioner(object):
                         'the only worker. Please configure a coordination '
                         'backend'))
 
+    @retrying.retry(stop_max_attempt_number=5, wait_random_max=2000,
+                    retry_on_exception=_retry_if_tooz_error)
     def _get_members(self, group_id):
         get_members_req = self._coordinator.get_members(group_id)
         try:
@@ -155,6 +163,11 @@ class Partitioner(object):
         except tooz.coordination.GroupNotCreated:
             LOG.error(_LE('Attempting to partition over a non-existent group: '
                           '%s'), self._group_id)
+
+            raise
+        except tooz.coordination.ToozError:
+            LOG.error(_LE('Error getting group membership info from '
+                          'coordination backend.'))
             raise
 
     def _on_group_change(self, event):
