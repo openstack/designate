@@ -44,6 +44,7 @@ class Bind9Backend(base.Backend):
         # TODO(Federico): make attributes private, run _rndc_base at init time
         self.host = self.options.get('host', '127.0.0.1')
         self.port = int(self.options.get('port', 53))
+        self.view = self.options.get('view')
         self.rndc_host = self.options.get('rndc_host', '127.0.0.1')
         self.rndc_port = int(self.options.get('rndc_port', 953))
         self.rndc_config_file = self.options.get('rndc_config_file')
@@ -68,10 +69,15 @@ class Bind9Backend(base.Backend):
         # Ensure different MiniDNS instances are targeted for AXFRs
         random.shuffle(masters)
 
+        if self.view:
+            view = 'in %s' % self.view
+        else:
+            view = ''
+
         rndc_op = [
             'addzone',
-            '%s { type slave; masters { %s;}; file "slave.%s%s"; };' %
-            (zone['name'].rstrip('.'), '; '.join(masters), zone['name'],
+            '%s %s { type slave; masters { %s;}; file "slave.%s%s"; };' %
+            (zone['name'].rstrip('.'), view, '; '.join(masters), zone['name'],
              zone['id']),
         ]
 
@@ -91,9 +97,15 @@ class Bind9Backend(base.Backend):
         Do not raise exceptions if the zone does not exist.
         """
         LOG.debug('Delete Zone')
+
+        if self.view:
+            view = 'in %s' % self.view
+        else:
+            view = ''
+
         rndc_op = [
             'delzone',
-            '%s' % zone['name'].rstrip('.'),
+            '%s %s' % (zone['name'].rstrip('.'), view),
         ]
         if self.clean_zonefile:
             rndc_op.insert(1, '-clean')
