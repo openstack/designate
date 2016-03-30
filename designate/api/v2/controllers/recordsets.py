@@ -20,7 +20,6 @@ from designate import exceptions
 from designate import utils
 from designate.api.v2.controllers import rest
 from designate.objects import RecordSet
-from designate.objects import RecordSetList
 from designate.objects.adapters import DesignateAdapter
 from designate.i18n import _LI
 
@@ -68,39 +67,8 @@ class RecordSetsController(rest.RestController):
 
         criterion['zone_id'] = zone_id
 
-        # Data must be filtered separately, through the Records table
-        data = criterion.pop('data', None)
-        status = criterion.pop('status', None)
-
-        # Retrieve recordsets
         recordsets = self.central_api.find_recordsets(
             context, criterion, marker, limit, sort_key, sort_dir)
-
-        # 'data' filter param: only return recordsets with matching data
-        if data:
-            records = self.central_api.find_records(
-                context, criterion={'data': data, 'zone_id': zone_id})
-            recordset_with_data_ids = set(record.recordset_id
-                                          for record in records)
-
-            new_rsets = RecordSetList()
-
-            for recordset in recordsets:
-                if recordset.id in recordset_with_data_ids:
-                    new_rsets.append(recordset)
-
-            recordsets = new_rsets
-            recordsets.total_count = len(recordset_with_data_ids)
-
-        # 'status' filter param: only return recordsets with matching status
-        if status:
-            new_rsets = RecordSetList()
-
-            for recordset in recordsets:
-                if recordset.status == status:
-                    new_rsets.append(recordset)
-
-            recordsets = new_rsets
 
         LOG.info(_LI("Retrieved %(recordsets)s"), {'recordsets': recordsets})
 

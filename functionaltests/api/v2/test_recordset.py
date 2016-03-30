@@ -86,6 +86,25 @@ class RecordsetTest(DesignateV2Test):
         self.assertEqual(200, resp.status)
         self.assertGreater(len(model.recordsets), 0)
 
+    def test_list_recordsets_with_filtering(self):
+        # This test ensures the behavior in bug #1561746 won't happen
+        post_model = datagen.random_a_recordset(self.zone.name,
+                                                ip='192.168.1.2')
+        self.useFixture(RecordsetFixture(self.zone.id, post_model))
+        for i in range(1, 3):
+            post_model = datagen.random_a_recordset(self.zone.name,
+                                                    ip='10.0.1.{}'.format(i))
+            self.useFixture(RecordsetFixture(self.zone.id, post_model))
+
+        # Add limit in filter to make response paginated
+        filters = {"data": "10.*", "limit": 2}
+        resp, model = RecordsetClient.as_user('default') \
+            .list_recordsets(self.zone.id, filters=filters)
+        self.assertEqual(200, resp.status)
+        self.assertEqual(2, model.metadata.total_count)
+        self.assertEqual(len(model.recordsets), 2)
+        self.assertIsNotNone(model.links.next)
+
     def assert_dns(self, model):
         results = dnsclient.query_servers(model.name, model.type)
 
