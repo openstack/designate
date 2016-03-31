@@ -140,8 +140,11 @@ class Partitioner(object):
         get_members_req = self._coordinator.get_members(group_id)
         try:
             return get_members_req.get()
-        except tooz.ToozError:
-            self.join_group(group_id)
+
+        except tooz.coordination.GroupNotCreated:
+            LOG.error(_LE('Attempting to partition over a non-existent group: '
+                          '%s'), self._group_id)
+            raise
 
     def _on_group_change(self, event):
         LOG.debug("Received member change %s" % event)
