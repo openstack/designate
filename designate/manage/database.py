@@ -36,7 +36,7 @@ cfg.CONF.import_opt('connection',
                     group='pool_manager_cache:sqlalchemy')
 
 CONF = cfg.CONF
-INIT_VERSION = 37
+INIT_VERSION = 69
 
 
 def get_manager():
