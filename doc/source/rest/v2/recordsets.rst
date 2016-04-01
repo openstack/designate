@@ -23,6 +23,7 @@ A record set groups together a list of related records. It is the essential cont
 The following illustrates a record set in the BIND file format:
 
 .. sourcecode:: none
+
     example.org.    86400   MX  10 mail1.example.org.
                                 20 mail2.example.org.
                                 30 mail3.example.org.
