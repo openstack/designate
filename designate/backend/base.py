@@ -36,6 +36,8 @@ class Backend(DriverPlugin):
     __plugin_type__ = 'backend'
     __plugin_ns__ = 'designate.backend'
 
+    __backend_status__ = 'untested'
+
     def __init__(self, target):
         super(Backend, self).__init__()
 

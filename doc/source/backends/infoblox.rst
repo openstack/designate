@@ -67,39 +67,6 @@ Designate Backend Configuration
   the domain. So, if you wish for any Infoblox nameservers to be listed in NS
   records, they must be added via Designate.
 
-*Example Designate Configuration*
-
-.. code-block:: ini
-
- [pool:794ccc2c-d751-44fe-b57f-8894c9f5c842]
- #Specify the API service points for each grid
- targets = f26e0b32-736f-4f0a-831b-039a415c481e
- # Specify the lead secondary servers configured in the NS groups
- # for each target.
- nameservers = ffedb95e-edc1-11e4-9ae6-000c29db281b
-
- [pool_target:f26e0b32-736f-4f0a-831b-039a415c481e]
- type = infoblox
- # wapi_url, username, password can all be overridden from the defaults
- # allowing targets to point to different grids
- options = dns_view: default, ns_group: Designate
-
- [pool_nameserver:ffedb95e-edc1-11e4-9ae6-000c29db281b]
- host=172.16.98.200
- port=53
-
- [backend:infoblox]
- # The values below will be used for all targets unless overridden
- # in the target configuration. http_* options may only be set here,
- # not at the target level.
- http_pool_maxsize = 100
- http_pool_connections = 100
- wapi_url = https://172.16.98.200/wapi/v2.1/
- sslverify = False
- password = infoblox
- username = admin
- multi_tenant = False
-
 Multi-tenant Configuration
 --------------------------
 

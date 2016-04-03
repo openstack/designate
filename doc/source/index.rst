@@ -1,3 +1,4 @@
+===========================================
 Designate, a DNSaaS component for OpenStack
 ===========================================
 
@@ -54,6 +55,7 @@ Reference Documentation
    production-guidelines
    production-architecture
    configuration
+   designate-manage
    rest
    devstack
    related

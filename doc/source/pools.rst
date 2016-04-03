@@ -79,7 +79,7 @@ Designate Manage Pools Command Reference
 Update Pools Information
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. code-block:: language
+.. code-block:: console
 
   designate-manage pool update [options]
 
@@ -103,7 +103,7 @@ Options:
 Generate YAML File
 ^^^^^^^^^^^^^^^^^^
 
-.. code-block:: language
+.. code-block:: console
 
     designate-manage pool generate_file [options]
 
@@ -115,7 +115,7 @@ Options:
 Generate YAML File from Liberty Config
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. code-block:: language
+.. code-block:: console
 
     designate-manage pool export_from_config [options]
 

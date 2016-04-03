@@ -1,0 +1,15 @@
+  targets:
+    - type: powerdns
+      description: PowerDNS Database Cluster
+
+      # List out the designate-mdns servers from which PowerDNS servers should
+      # request zone transfers (AXFRs) from.
+      masters:
+        - host: 192.0.2.1
+          port: 5354
+
+      # PowerDNS Configuration options
+      options:
+        host: 192.0.2.1
+        port: 53
+        connection: 'mysql+pymysql://designate:password@127.0.0.1/designate_pdns?charset=utf8'

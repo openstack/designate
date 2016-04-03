@@ -40,6 +40,7 @@ class SupportMatrix(object):
         self.grades = []
 
         self.grade_names = {}
+        self.grade_classes = {}
 
         # Dict of (name, SupportMatrixTarget) enumerating
         # all the hypervisor drivers that have data recorded
@@ -50,11 +51,12 @@ class SupportMatrix(object):
 
 class SupportMatrixGrade(object):
 
-    def __init__(self, key, title, notes, in_tree):
+    def __init__(self, key, title, notes, in_tree, css_class):
         self.key = key
         self.title = title
         self.notes = notes
         self.in_tree = in_tree
+        self.css_class = css_class
 
 
 class SupportMatrixBackend(object):
@@ -156,11 +158,13 @@ class SupportMatrixDirective(rst.Directive):
             title = cfg.get("grades.%s" % grade, "title")
             notes = cfg.get("grades.%s" % grade, "notes")
             in_tree = cfg.get("grades.%s" % grade, "in-tree")
+            css_class = cfg.get("grades.%s" % grade, "css-class")
 
             matrix.grade_names[grade] = title
+            matrix.grade_classes[grade] = css_class
 
             grade = SupportMatrixGrade(
-                grade, title, notes, in_tree)
+                grade, title, notes, in_tree, css_class)
 
             matrix.grades.append(grade)
 
@@ -178,31 +182,27 @@ class SupportMatrixDirective(rst.Directive):
     def _build_backend_detail_table(self, backend, matrix):
 
         table = nodes.table()
+        table.set_class("table")
+        table.set_class("table-condensed")
         tgroup = nodes.tgroup(cols=2)
-        thead = nodes.thead()
         tbody = nodes.tbody()
 
         for i in range(2):
             tgroup.append(nodes.colspec(colwidth=1))
 
-        tgroup.append(thead)
         tgroup.append(tbody)
         table.append(tgroup)
-
-        header = nodes.row()
-        blank = nodes.entry()
-        blank.append(nodes.emphasis(text=backend.title))
-        header.append(blank)
-        blank = nodes.entry()
-        header.append(blank)
-        thead.append(header)
 
         graderow = nodes.row()
         gradetitle = nodes.entry()
         gradetitle.append(nodes.strong(text="Grade"))
         gradetext = nodes.entry()
-        gradetext.append(nodes.paragraph(
-            text=matrix.grade_names[backend.status]))
+        class_name = "label-%s" % matrix.grade_classes[backend.status]
+        status_text = nodes.paragraph(
+            text=matrix.grade_names[backend.status])
+        status_text.set_class(class_name)
+        status_text.set_class("label")
+        gradetext.append(status_text)
         graderow.append(gradetitle)
         graderow.append(gradetext)
         tbody.append(graderow)
@@ -212,10 +212,18 @@ class SupportMatrixDirective(rst.Directive):
         treetitle.append(nodes.strong(text="In Tree"))
         if bool(backend.in_tree):
             status = u"\u2714"
+            intree = nodes.paragraph(text=status)
+            intree.set_class("label")
+            intree.set_class("label-success")
+
         else:
             status = u"\u2716"
+            intree = nodes.paragraph(text=status)
+            intree.set_class("label")
+            intree.set_class("label-danger")
+            status = u"\u2714"
         treetext = nodes.entry()
-        treetext.append(nodes.paragraph(text=status))
+        treetext.append(intree)
         treerow.append(treetitle)
         treerow.append(treetext)
         tbody.append(treerow)
@@ -258,6 +266,8 @@ class SupportMatrixDirective(rst.Directive):
         for key in six.iterkeys(matrix.backends):
 
             content.append(
+                nodes.subtitle(text=matrix.backends[key].title))
+            content.append(
                 self._build_backend_detail_table(
                     matrix.backends[key],
                     matrix))
@@ -268,9 +278,12 @@ class SupportMatrixDirective(rst.Directive):
 
     def _build_grade_listing(self, matrix, content):
 
-        summarytitle = nodes.title(text="Grades")
+        summarytitle = nodes.subtitle(text="Grades")
+        content.append(nodes.raw(text="Grades", attributes={'tagname': 'h2'}))
         content.append(summarytitle)
         table = nodes.table()
+        table.set_class("table")
+        table.set_class("table-condensed")
         grades = matrix.grades
 
         tablegroup = nodes.tgroup(cols=2)
@@ -298,7 +311,11 @@ class SupportMatrixDirective(rst.Directive):
         for grade in grades:
             item = nodes.row()
             namecol = nodes.entry()
-            namecol.append(nodes.paragraph(text=grade.title))
+            class_name = "label-%s" % grade.css_class
+            status_text = nodes.paragraph(text=grade.title)
+            status_text.set_class(class_name)
+            status_text.set_class("label")
+            namecol.append(status_text)
             item.append(namecol)
 
             notescol = nodes.entry()
@@ -311,8 +328,10 @@ class SupportMatrixDirective(rst.Directive):
 
     def _build_grade_table(self, matrix, content):
 
-        summarytitle = nodes.title(text="Backends -  Summary")
+        summarytitle = nodes.subtitle(text="Backends -  Summary")
         summary = nodes.table()
+        summary.set_class("table")
+        summary.set_class("table-condensed")
         cols = len(list(six.iterkeys(matrix.backends)))
         cols += 2
         summarygroup = nodes.tgroup(cols=cols)
@@ -362,21 +381,35 @@ class SupportMatrixDirective(rst.Directive):
                     item.append(namecol)
 
                     statuscol = nodes.entry()
-                    statuscol.append(nodes.paragraph(text=grade.title))
+                    class_name = "label-%s" % grade.css_class
+                    status_text = nodes.paragraph(text=grade.title)
+                    status_text.set_class(class_name)
+                    status_text.set_class("label")
+                    statuscol.append(status_text)
                     item.append(statuscol)
 
                     typecol = nodes.entry()
-                    typecol.append(nodes.paragraph(
-                        text=matrix.backends[backend].type))
+                    type_text = nodes.paragraph(
+                        text=matrix.backends[backend].type)
+                    type_text.set_class("label")
+                    type_text.set_class("label-info")
+                    typecol.append(type_text)
                     item.append(typecol)
 
                     if bool(matrix.backends[backend].in_tree):
                         status = u"\u2714"
+                        intree = nodes.paragraph(text=status)
+                        intree.set_class("label")
+                        intree.set_class("label-success")
+
                     else:
                         status = u"\u2716"
+                        intree = nodes.paragraph(text=status)
+                        intree.set_class("label")
+                        intree.set_class("label-danger")
 
                     intreecol = nodes.entry()
-                    intreecol.append(nodes.paragraph(text=status))
+                    intreecol.append(intree)
                     item.append(intreecol)
 
                     notescol = nodes.entry()
@@ -390,5 +423,5 @@ class SupportMatrixDirective(rst.Directive):
 
 
 def setup(app):
-    app.add_directive('support_matrix', SupportMatrixDirective)
     app.add_stylesheet('support-matrix.css')
+    app.add_directive('support_matrix', SupportMatrixDirective)
