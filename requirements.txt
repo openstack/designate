@@ -41,7 +41,7 @@ dnspython>=1.12.0;python_version<'3.0' # http://www.dnspython.org/LICENSE
 dnspython3>=1.12.0;python_version>='3.0' # http://www.dnspython.org/LICENSE
 oslo.db>=4.1.0 # Apache-2.0
 oslo.i18n>=2.1.0 # Apache-2.0
-oslo.context>=0.2.0 # Apache-2.0
+oslo.context>=2.2.0 # Apache-2.0
 oslo.policy>=0.5.0 # Apache-2.0
 Werkzeug>=0.7 # BSD License
 python-memcached>=1.56 # PSF
