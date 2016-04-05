@@ -83,8 +83,18 @@ class CoordinationMixin(object):
             while not self._coordination_started:
                 try:
                     self._coordinator.start()
-                    self._coordinator.create_group(self.service_name)
-                    self._coordinator.join_group(self.service_name)
+
+                    try:
+                        create_group_req = self._coordinator.create_group(
+                            self.service_name)
+                        create_group_req.get()
+                    except tooz.coordination.GroupAlreadyExist:
+                        pass
+
+                    join_group_req = self._coordinator.join_group(
+                        self.service_name)
+                    join_group_req.get()
+
                     self._coordination_started = True
 
                 except Exception:
@@ -96,7 +106,8 @@ class CoordinationMixin(object):
         if self._coordinator is not None:
             self._coordination_started = False
 
-            self._coordinator.leave_group(self.service_name)
+            leave_group_req = self._coordinator.leave_group(self.service_name)
+            leave_group_req.get()
             self._coordinator.stop()
 
         super(CoordinationMixin, self).stop()
