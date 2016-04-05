@@ -389,28 +389,6 @@ debug = False
 #memcached_servers = None
 #expiration = 3600
 
-#####################
-## Pool Configuration
-#####################
-
-# This section does not have the defaults filled in but demonstrates an
-# example pool / server set up. Different backends will have different options.
-
-#[pool:794ccc2c-d751-44fe-b57f-8894c9f5c842]
-#nameservers = 0f66b842-96c2-4189-93fc-1dc95a08b012
-#targets = f26e0b32-736f-4f0a-831b-039a415c481e
-#also_notifies = 192.0.2.1:53, 192.0.2.2:53
-
-#[pool_nameserver:0f66b842-96c2-4189-93fc-1dc95a08b012]
-#port = 53
-#host = 192.168.27.100
-
-#[pool_target:f26e0b32-736f-4f0a-831b-039a415c481e]
-#options = rndc_host: 192.168.27.100, rndc_port: 953, rndc_config_file: /etc/bind/rndc.conf, rndc_key_file: /etc/bind/rndc.key, port: 53, host: 192.168.27.100, clean_zonefile: false
-#masters = 192.168.27.100:5354
-#type = bind9
-
-
 ##############
 ## Network API
 ##############
