@@ -1823,10 +1823,16 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
         if not criterion:
             criterion = {}
         criterion['task_type'] = 'IMPORT'
-        return self._find(
+        zone_imports = self._find(
             context, tables.zone_tasks, objects.ZoneImport,
             objects.ZoneImportList, exceptions.ZoneImportNotFound, criterion,
             one, marker, limit, sort_key, sort_dir)
+
+        if not one:
+            zone_imports.total_count = self.count_zone_tasks(
+                context, criterion)
+
+        return zone_imports
 
     def create_zone_import(self, context, zone_import):
         return self._create(
@@ -1863,10 +1869,15 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
         if not criterion:
             criterion = {}
         criterion['task_type'] = 'EXPORT'
-        return self._find(
+        zone_exports = self._find(
             context, tables.zone_tasks, objects.ZoneExport,
             objects.ZoneExportList, exceptions.ZoneExportNotFound, criterion,
             one, marker, limit, sort_key, sort_dir)
+        if not one:
+            zone_exports.total_count = self.count_zone_tasks(
+                context, criterion)
+
+        return zone_exports
 
     def create_zone_export(self, context, zone_export):
         return self._create(
@@ -1896,6 +1907,20 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
                                 one=True)
         return self._delete(context, tables.zone_tasks, zone_export,
                     exceptions.ZoneExportNotFound)
+
+    def count_zone_tasks(self, context, criterion=None):
+        query = select([func.count(tables.zone_tasks.c.id)])
+        query = self._apply_criterion(tables.zone_tasks, query, criterion)
+        query = self._apply_tenant_criteria(context, tables.zone_tasks, query)
+        query = self._apply_deleted_criteria(context, tables.zone_tasks, query)
+
+        resultproxy = self.session.execute(query)
+        result = resultproxy.fetchone()
+
+        if result is None:
+            return 0
+
+        return result[0]
 
     # diagnostics
     def ping(self, context):

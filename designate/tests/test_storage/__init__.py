@@ -3091,6 +3091,33 @@ class StorageTestCase(object):
         self.assertEqual(zt_accept.id, result.id)
         self.assertEqual(zt_accept.zone_id, result.zone_id)
 
+    def test_count_zone_tasks(self):
+        # in the beginning, there should be nothing
+        zones = self.storage.count_zone_tasks(self.admin_context)
+        self.assertEqual(0, zones)
+
+        values = {
+            'status': 'PENDING',
+            'task_type': 'IMPORT'
+        }
+
+        self.storage.create_zone_import(
+            self.admin_context, objects.ZoneImport.from_dict(values))
+
+        # count imported zones
+        zones = self.storage.count_zone_tasks(self.admin_context)
+
+        # well, did we get 1?
+        self.assertEqual(1, zones)
+
+    def test_count_zone_tasks_none_result(self):
+        rp = mock.Mock()
+        rp.fetchone.return_value = None
+        with mock.patch.object(self.storage.session, 'execute',
+                               return_value=rp):
+            zones = self.storage.count_zone_tasks(self.admin_context)
+            self.assertEqual(0, zones)
+
     # Zone Import Tests
     def test_create_zone_import(self):
         values = {
