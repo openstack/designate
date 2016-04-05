@@ -66,6 +66,7 @@ Reference Documentation
    gmr
    support-matrix
    pools
+   memory-caching
 
 Source Documentation
 ====================

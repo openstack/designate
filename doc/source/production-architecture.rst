@@ -30,6 +30,7 @@ A Designate deploy breaks down into several key roles:
 - `Designate Pool Manager`_
 - `Message Queue`_
 - `Database`_ (MySQL or derivative)
+- `Memory caching`_
 - `DNS Backend`_
 
 Designate API
@@ -63,6 +64,10 @@ Database
 Designate needs a SQLAlchemy supported :ref:`database` engine for the persistent storage of data, the recommended driver is MySQL.
 
 In a Multi-AZ environment, a MySQL Galera Cluster, built using Percona's MySQL packages has performed well.
+
+Memory Caching
+~~~~~~~~~~~~~~
+Designate optionally uses :ref:`memory-caching-summary` usually through a Memcached instance to speed up Pool Manager operations.
 
 DNS Backend
 ~~~~~~~~~~~
