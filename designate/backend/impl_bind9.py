@@ -28,6 +28,7 @@ from designate import exceptions
 from designate import utils
 from designate.backend import base
 from designate.utils import DEFAULT_MDNS_PORT
+from designate.i18n import _LI
 
 
 LOG = logging.getLogger(__name__)
@@ -42,19 +43,33 @@ class Bind9Backend(base.Backend):
     def __init__(self, target):
         super(Bind9Backend, self).__init__(target)
 
-        # TODO(Federico): make attributes private, run _rndc_base at init time
-        self.host = self.options.get('host', '127.0.0.1')
-        self.port = int(self.options.get('port', 53))
-        self.view = self.options.get('view')
-        self.rndc_host = self.options.get('rndc_host', '127.0.0.1')
-        self.rndc_port = int(self.options.get('rndc_port', 953))
-        self.rndc_config_file = self.options.get('rndc_config_file')
-        self.rndc_key_file = self.options.get('rndc_key_file')
+        self._host = self.options.get('host', '127.0.0.1')
+        self._port = int(self.options.get('port', 53))
+        self._view = self.options.get('view')
 
         # Removes zone files when a zone is deleted.
         # This option will take effect on bind>=9.10.0.
-        self.clean_zonefile = strutils.bool_from_string(
+        self._clean_zonefile = strutils.bool_from_string(
                                   self.options.get('clean_zonefile', 'false'))
+
+        self._rndc_call_base = self._generate_rndc_base_call()
+
+    def _generate_rndc_base_call(self):
+        """Generate argument list to execute rndc"""
+        rndc_host = self.options.get('rndc_host', '127.0.0.1')
+        rndc_port = int(self.options.get('rndc_port', 953))
+        rndc_bin_path = self.options.get('rndc_bin_path', 'rndc')
+        rndc_config_file = self.options.get('rndc_config_file')
+        rndc_key_file = self.options.get('rndc_key_file')
+        rndc_call = [rndc_bin_path, '-s', rndc_host, '-p', str(rndc_port)]
+
+        if rndc_config_file:
+            rndc_call.extend(['-c', rndc_config_file])
+
+        if rndc_key_file:
+            rndc_call.extend(['-k', rndc_key_file])
+
+        return rndc_call
 
     def create_zone(self, context, zone):
         """Create a new Zone by executin rndc, then notify mDNS
@@ -70,10 +85,7 @@ class Bind9Backend(base.Backend):
         # Ensure different MiniDNS instances are targeted for AXFRs
         random.shuffle(masters)
 
-        if self.view:
-            view = 'in %s' % self.view
-        else:
-            view = ''
+        view = 'in %s' % self._view if self._view else ''
 
         rndc_op = [
             'addzone',
@@ -90,7 +102,7 @@ class Bind9Backend(base.Backend):
                 raise
 
         self.mdns_api.notify_zone_changed(
-            context, zone, self.host, self.port, self.timeout,
+            context, zone, self._host, self._port, self.timeout,
             self.retry_interval, self.max_retries, self.delay)
 
     def delete_zone(self, context, zone):
@@ -99,16 +111,13 @@ class Bind9Backend(base.Backend):
         """
         LOG.debug('Delete Zone')
 
-        if self.view:
-            view = 'in %s' % self.view
-        else:
-            view = ''
+        view = 'in %s' % self._view if self._view else ''
 
         rndc_op = [
             'delzone',
             '%s %s' % (zone['name'].rstrip('.'), view),
         ]
-        if self.clean_zonefile:
+        if self._clean_zonefile:
             rndc_op.insert(1, '-clean')
 
         try:
@@ -118,29 +127,18 @@ class Bind9Backend(base.Backend):
             if "not found" not in six.text_type(e):
                 raise
 
-    def _rndc_base(self):
-        rndc_call = [
-            'rndc',
-            '-s', self.rndc_host,
-            '-p', str(self.rndc_port),
-        ]
-
-        if self.rndc_config_file:
-            rndc_call.extend(
-                ['-c', self.rndc_config_file])
-
-        if self.rndc_key_file:
-            rndc_call.extend(
-                ['-k', self.rndc_key_file])
-
-        return rndc_call
-
     def _execute_rndc(self, rndc_op):
+        """Execute rndc
+
+        :param rndc_op: rndc arguments
+        :type rndc_op: list
+        :returns: None
+        :raises: exceptions.Backend
+        """
         try:
-            rndc_call = self._rndc_base()
-            rndc_call.extend(rndc_op)
-            LOG.debug('Executing RNDC call: %s' % " ".join(rndc_call))
+            rndc_call = self._rndc_call_base + rndc_op
+            LOG.debug('Executing RNDC call: %r', rndc_call)
             utils.execute(*rndc_call)
         except utils.processutils.ProcessExecutionError as e:
-            LOG.debug('RNDC call failure: %s' % e)
+            LOG.info(_LI('RNDC call failure: %s'), e)
             raise exceptions.Backend(e)
