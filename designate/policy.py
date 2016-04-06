@@ -97,9 +97,9 @@ def check(rule, ctxt, target=None, do_raise=True, exc=exceptions.Forbidden):
         extra = {'policy': {'rule': rule, 'target': target}}
 
         if result:
-            LOG.info(_("Policy check succeeded for rule '%(rule)s' "
-                       "on target %(target)s"),
-                     {'rule': rule, 'target': repr(target)}, extra=extra)
+            LOG.trace(_("Policy check succeeded for rule '%(rule)s' "
+                        "on target %(target)s"),
+                      {'rule': rule, 'target': repr(target)}, extra=extra)
         else:
             LOG.info(_("Policy check failed for rule '%(rule)s' "
                        "on target %(target)s"),
