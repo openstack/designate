@@ -20,6 +20,7 @@
 import mock
 from oslotest import base as test
 
+from designate import exceptions
 from designate.tests.unit import RoObject
 import designate.zone_manager.service as zms
 
@@ -76,6 +77,25 @@ class ZoneManagerTest(test.BaseTestCase):
             {
                 'status': 'COMPLETE', 'id': 4,
                 'location': 'designate://v2/zones/tasks/exports/4/export'
+            },
+            out
+        )
+
+    def test_exceed_size_quota(self, _):
+        context = mock.Mock()
+        export = dict(location=None, id=4)
+        size = 9999999999
+
+        self.tm.quota.limit_check.side_effect = exceptions.OverQuota()
+        out = self.tm._determine_export_method(context, export, size)
+        self.tm.quota.limit_check.side_effect = None
+
+        self.assertDictEqual(
+            {
+                'status': 'ERROR',
+                'id': 4,
+                'location': None,
+                'message': 'Zone is too large to export'
             },
             out
         )
