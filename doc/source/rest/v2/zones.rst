@@ -772,39 +772,44 @@ List Zone Imports
         Content-Type: application/json
 
         {
-            "imports": [
-                {
+             "imports": [
+                 {
                     "status": "COMPLETE",
-                    "zone_id": "ea2fd415-dc6d-401c-a8af-90a89d7efcf9",
+                    "zone_id": 047888ee-e9dd-4c08-8b44-ab2e879e01bd,
                     "links": {
-                        "self": "http://127.0.0.1:9001/v2/zones/tasks/imports/fb47a23e-eb97-4c86-a3d4-f3e1a4ca9f5e",
-                        "href": "http://127.0.0.1:9001/v2/zones/ea2fd415-dc6d-401c-a8af-90a89d7efcf9"
+                        "self": "http://127.0.0.1:9001/v2/zones/tasks/imports/0436a86e-ffc1-4d38-82a7-d75170fcd2a9"
+,
+                        "href": "http://127.0.0.1:9001/v2/zones/047888ee-e9dd-4c08-8b44-ab2e879e01bd"
                     },
-                    "created_at": "2015-05-08T15:22:50.000000",
-                    "updated_at": "2015-05-08T15:22:50.000000",
+                    "created_at": "2016-04-05T06:03:06.000000",
+                    "updated_at": "2016-04-05T06:03:06.000000",
                     "version": 2,
                     "message": "example.com. imported",
-                    "project_id": "noauth-project",
-                    "id": "fb47a23e-eb97-4c86-a3d4-f3e1a4ca9f5e"
+                    "project_id": "1de6e2fdc22342d3bef6340c7b70f497",
+                    "id": "0436a86e-ffc1-4d38-82a7-d75170fcd2a9"
                 },
                 {
                     "status": "COMPLETE",
-                    "zone_id": "6625198b-d67d-47dc-8d29-f90bd60f3ac4",
+                    "zone_id": 68a17870-7f81-470a-b5e9-2753460fd6dc,
                     "links": {
-                        "self": "http://127.0.0.1:9001/v2/zones/tasks/imports/074e805e-fe87-4cbb-b10b-21a06e215d41",
-                        "href": "http://127.0.0.1:9001/v2/zones/6625198b-d67d-47dc-8d29-f90bd60f3ac4"
+                        "self": "http://127.0.0.1:9001/v2/zones/tasks/imports/f0aa4ac1-f975-46a4-b417-339acd1ea8e3"
+,
+                        "href": "http://127.0.0.1:9001/v2/zones/68a17870-7f81-470a-b5e9-2753460fd6dc"
                     },
-                    "created_at": "2015-05-08T15:43:42.000000",
-                    "updated_at": "2015-05-08T15:43:42.000000",
+                    "created_at": "2016-04-05T06:06:26.000000",
+                    "updated_at": "2016-04-05T06:06:26.000000",
                     "version": 2,
-                    "message": "example.com. imported",
-                    "project_id": "noauth-project",
-                    "id": "074e805e-fe87-4cbb-b10b-21a06e215d41"
+                    "message": "temp.org. imported",
+                    "project_id": "1de6e2fdc22342d3bef6340c7b70f497",
+                    "id": "f0aa4ac1-f975-46a4-b417-339acd1ea8e3"
                 }
-            ],
-            "links": {
-                "self": "http://127.0.0.1:9001/v2/zones/tasks/imports"
-            }
+             ],
+             "links": {
+                 "self": "http://127.0.0.1:9001/v2/zones/tasks/imports"
+             },
+             "metadata": {
+                 "total_count": 2
+             }
         }
 
     :statuscode 200: Success
@@ -998,40 +1003,29 @@ List Zone Exports
         Content-Type: application/json
 
         {
+
             "exports": [
                 {
                     "status": "COMPLETE",
-                    "zone_id": "30ea7692-7f9e-4195-889e-0ba11620b491",
+                    "zone_id": "17a8d6b3-6ace-4857-b113-a707c5f975b1",
                     "links": {
-                        "self": "http://127.0.0.1:9001/v2/zones/tasks/exports/d2f36aa6-2da4-4b22-a2a9-9cdf19a2f248",
-                        "export": "http://127.0.0.1:9001/v2/zones/30ea7692-7f9e-4195-889e-0ba11620b491/tasks/exports/d2f36aa6-2da4-4b22-a2a9-9cdf19a2f248/export"
+                        "self": "http://127.0.0.1:9001/v2/zones/tasks/exports/204be410-0a9c-44b8-839e-bc4df3bb0d9a",
+                        "export": "http://127.0.0.1:9001/v2/zones/tasks/exports/204be410-0a9c-44b8-839e-bc4df3bb0d9a/export"
                     },
-                    "created_at": "2015-08-24T19:46:50.000000",
-                    "updated_at": "2015-08-24T19:46:50.000000",
+                    "created_at": "2016-04-04T01:53:29.000000",
+                    "updated_at": "2016-04-04T01:53:29.000000",
                     "version": 2,
-                    "location": "designate://v2/zones/30ea7692-7f9e-4195-889e-0ba11620b491/tasks/exports/d2f36aa6-2da4-4b22-a2a9-9cdf19a2f248/export",
+                    "location": "designate://v2/zones/tasks/exports/204be410-0a9c-44b8-839e-bc4df3bb0d9a/export",
                     "message": null,
-                    "project_id": "noauth-project",
-                    "id": "d2f36aa6-2da4-4b22-a2a9-9cdf19a2f248"
-                },
-                {
-                    "status": "COMPLETE",
-                    "zone_id": "0503f9fd-3938-47a4-bbf3-df99b088abfc",
-                    "links": {
-                        "self": "http://127.0.0.1:9001/v2/zones/tasks/exports/3d7d07a5-2ce3-458e-b3dd-6a29906234d8",
-                        "export": "http://127.0.0.1:9001/v2/zones/tasks/exports/3d7d07a5-2ce3-458e-b3dd-6a29906234d8/export"
-                    },
-                    "created_at": "2015-08-25T15:16:10.000000",
-                    "updated_at": "2015-08-25T15:16:10.000000",
-                    "version": 2,
-                    "location": "designate://v2/zones/tasks/exports/3d7d07a5-2ce3-458e-b3dd-6a29906234d8/export",
-                    "message": null,
-                    "project_id": "noauth-project",
-                    "id": "3d7d07a5-2ce3-458e-b3dd-6a29906234d8"
-                },
+                    "project_id": "1de6e2fdc22342d3bef6340c7b70f497",
+                    "id": "204be410-0a9c-44b8-839e-bc4df3bb0d9a"
+                }
             ],
             "links": {
                 "self": "http://127.0.0.1:9001/v2/zones/tasks/exports"
+            },
+            "metadata": {
+                "total_count": 1
             }
         }
 
