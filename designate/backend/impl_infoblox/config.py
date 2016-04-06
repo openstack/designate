@@ -38,6 +38,7 @@ OPTS = [
     cfg.StrOpt(
         'password',
         deprecated_for_removal=True,
+        secret=True,
         deprecated_reason="All backend options have been migrated to options "
         "in the pools.yaml file"),
     cfg.BoolOpt(
