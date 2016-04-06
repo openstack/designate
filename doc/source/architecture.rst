@@ -79,3 +79,10 @@ Designate uses oslo.rpc for messaging between components, therefore it inherits 
 Database/Storage
 -----------------------
 Storage drivers are drivers for a particular SQL/NoSQL server. Designate needs a SQLAlchemy-supported storage engine for the persistent storage of data. The recommended driver is MySQL.
+
+.. _memory-caching-summary:
+
+Memory caching
+-----------------------
+Designate also uses an in-memory caching system, currently implemented with Memcached, as an optional cache for Pool Manager.
+See :ref:`memory-caching-details`
