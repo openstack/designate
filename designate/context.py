@@ -54,9 +54,9 @@ class DesignateContext(context.RequestContext):
             show_deleted=show_deleted,
             request_id=request_id,
             resource_uuid=resource_uuid,
-            overwrite=overwrite)
+            overwrite=overwrite,
+            roles=roles)
 
-        self.roles = roles or []
         self.service_catalog = service_catalog
         self.tsigkey_id = tsigkey_id
 
@@ -93,7 +93,6 @@ class DesignateContext(context.RequestContext):
         d.update({
             'user_identity': user_idt,
             'original_tenant': self.original_tenant,
-            'roles': self.roles,
             'service_catalog': self.service_catalog,
             'all_tenants': self.all_tenants,
             'abandon': self.abandon,
