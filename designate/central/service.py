@@ -38,6 +38,7 @@ from oslo_db import exception as db_exception
 
 from designate.i18n import _LI
 from designate.i18n import _LC
+from designate.i18n import _LE
 from designate.i18n import _LW
 from designate import context as dcontext
 from designate import exceptions
@@ -2740,8 +2741,11 @@ class Service(service.RPCService, service.Service):
             except exceptions.BadRequest:
                 zone_import.message = 'An SOA record is required.'
                 zone_import.status = 'ERROR'
-            except Exception:
-                zone_import.message = 'An undefined error occurred.'
+            except Exception as e:
+                msg = _LE('An undefined error occured during zone import')
+                LOG.exception(msg)
+                msg = 'An undefined error occurred. %s' % e.message[:130]
+                zone_import.message = msg
                 zone_import.status = 'ERROR'
 
             return zone, zone_import
@@ -2764,8 +2768,12 @@ class Service(service.RPCService, service.Service):
             except exceptions.InvalidTTL as e:
                 zone_import.status = 'ERROR'
                 zone_import.message = e.message
-            except Exception:
-                zone_import.message = 'An undefined error occurred.'
+            except Exception as e:
+                msg = _LE('An undefined error occured during zone '
+                          'import creation')
+                LOG.exception(msg)
+                msg = 'An undefined error occurred. %s' % e.message[:130]
+                zone_import.message = msg
                 zone_import.status = 'ERROR'
 
         self.update_zone_import(context, zone_import)
