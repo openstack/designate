@@ -42,6 +42,10 @@ DESIGNATEDASHBOARD_REPO=${DESIGNATEDASHBOARD_REPO:-${GIT_BASE}/openstack/designa
 DESIGNATEDASHBOARD_BRANCH=${DESIGNATEDASHBOARD_BRANCH:-master}
 GITDIR["python-designateclient"]=$DEST/python-designateclient
 
+GITREPO["designate-tempest-plugin"]=${DESIGNATETEMPEST_REPO:-${GIT_BASE}/openstack/designate-tempest-plugin.git}
+GITBRANCH["designate-tempest-plugin"]=${DESIGNATETEMPEST_BRANCH:-master}
+GITDIR["designate-tempest-plugin"]=$DEST/designate-tempest-plugin
+
 # Tell Tempest this project is present
 TEMPEST_SERVICES+=,designate
 
