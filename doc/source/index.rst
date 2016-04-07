@@ -58,6 +58,7 @@ Reference Documentation
    designate-manage
    rest
    devstack
+   tempest
    related
    glossary
    backends
