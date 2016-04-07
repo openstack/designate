@@ -262,6 +262,12 @@ function install_designatedashboard {
     ln -fs $DESIGNATEDASHBOARD_DIR/designatedashboard/enabled/_1720_project_dns_panel.py $HORIZON_DIR/openstack_dashboard/local/enabled/_1720_project_dns_panel.py
 }
 
+# install_designatetempest - Collect source and prepare
+function install_designatetempest {
+    git_clone_by_name "designate-tempest-plugin"
+    setup_dev_lib "designate-tempest-plugin"
+}
+
 # start_designate - Start running processes, including screen
 function start_designate {
     start_designate_backend
@@ -311,6 +317,11 @@ if is_service_enabled designate; then
         if is_service_enabled horizon; then
             echo_summary "Installing Designate dashboard"
             install_designatedashboard
+        fi
+
+        if is_service_enabled tempest; then
+            echo_summary "Installing Designate Tempest Plugin"
+            install_designatetempest
         fi
 
     elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
