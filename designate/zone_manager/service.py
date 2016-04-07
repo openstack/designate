@@ -125,7 +125,7 @@ class Service(service.RPCService, coordination.CoordinationMixin,
             try:
                 self.quota.limit_check(
                         context, context.tenant, api_export_size=size)
-            except exceptions.OverQuota():
+            except exceptions.OverQuota:
                 LOG.debug('Zone Export too large to perform synchronously')
                 export['status'] = 'ERROR'
                 export['message'] = 'Zone is too large to export'
