@@ -107,8 +107,11 @@ class DesignateContext(context.RequestContext):
     def from_dict(cls, values):
         return cls(**values)
 
-    def elevated(self, show_deleted=None):
-        """Return a version of this context with admin flag set."""
+    def elevated(self, show_deleted=None, all_tenants=False,
+                 edit_managed_records=False):
+        """Return a version of this context with admin flag set.
+        Optionally set all_tenants and edit_managed_records
+        """
         context = self.deepcopy()
         context.is_admin = True
 
@@ -117,6 +120,12 @@ class DesignateContext(context.RequestContext):
 
         if show_deleted is not None:
             context.show_deleted = show_deleted
+
+        if all_tenants:
+            context.all_tenants = True
+
+        if edit_managed_records:
+            context.edit_managed_records = True
 
         return context
 
