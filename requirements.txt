@@ -11,7 +11,7 @@ jsonschema!=2.5.0,<3.0.0,>=2.0.0 # MIT
 keystoneauth1>=2.1.0 # Apache-2.0
 keystonemiddleware!=4.1.0,>=4.0.0 # Apache-2.0
 netaddr!=0.7.16,>=0.7.12 # BSD
-oslo.config>=3.7.0 # Apache-2.0
+oslo.config>=3.9.0 # Apache-2.0
 oslo.concurrency>=3.5.0 # Apache-2.0
 oslo.messaging>=4.5.0 # Apache-2.0
 oslo.middleware>=3.0.0 # Apache-2.0
@@ -26,9 +26,9 @@ PasteDeploy>=1.5.0 # MIT
 pbr>=1.6 # Apache-2.0
 pecan>=1.0.0 # BSD
 python-designateclient>=1.5.0 # Apache-2.0
-python-neutronclient!=4.1.0,>=2.6.0 # Apache-2.0
-Routes!=2.0,!=2.1,>=1.12.3;python_version=='2.7' # MIT
-Routes!=2.0,>=1.12.3;python_version!='2.7' # MIT
+python-neutronclient>=4.1.1 # Apache-2.0
+Routes!=2.0,!=2.1,!=2.3.0,>=1.12.3;python_version=='2.7' # MIT
+Routes!=2.0,!=2.3.0,>=1.12.3;python_version!='2.7' # MIT
 requests!=2.9.0,>=2.8.1 # Apache-2.0
 six>=1.9.0 # MIT
 SQLAlchemy<1.1.0,>=1.0.10 # MIT
