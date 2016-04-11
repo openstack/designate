@@ -261,16 +261,9 @@ class LeaderElection(object):
             LOG.info(_LI('Stopping leader election for group %(group)s'),
                      {'group': self._group_id})
 
-            try:
-                # Remove the elected_as_leader callback
-                self._coordinator.unwatch_elected_as_leader(
-                    self._group_id, self._on_elected_leader)
-
-            except AttributeError:
-                # TODO(kiall): Remove when tooz bug #1467907 is fixed +
-                #              released, and is in our requirements.
-                if not self._coordinator._hooks_elected_leader[self._group_id]:
-                    del self._coordinator._hooks_elected_leader[self._group_id]
+            # Remove the elected_as_leader callback
+            self._coordinator.unwatch_elected_as_leader(
+                self._group_id, self._on_elected_leader)
 
             if self._leader:
                 # Tell Tooz we no longer wish to be the leader
