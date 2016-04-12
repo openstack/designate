@@ -21,6 +21,7 @@ from designate import exceptions
 from designate import objects
 from designate import schema
 from designate import utils
+from designate.i18n import _LI
 
 
 LOG = logging.getLogger(__name__)
@@ -128,6 +129,7 @@ def create_record(domain_id):
     record = central_api.create_record(context, domain_id,
                                        recordset['id'],
                                        record)
+    LOG.info(_LI("Created %(record)s"), {'record': record})
 
     record = _format_record_v1(record, recordset)
 
@@ -150,6 +152,7 @@ def get_records(domain_id):
     central_api.get_zone(context, domain_id)
 
     recordsets = central_api.find_recordsets(context, {'zone_id': domain_id})
+    LOG.info(_LI("Retrieved %(recordsets)s"), {'recordsets': recordsets})
 
     records = []
 
@@ -175,6 +178,8 @@ def get_record(domain_id, record_id):
 
     recordset = central_api.get_recordset(
         context, domain_id, record['recordset_id'])
+
+    LOG.info(_LI("Retrieved %(recordset)s"), {'recordset': recordset})
 
     record = _format_record_v1(record, recordset)
 
@@ -223,6 +228,7 @@ def update_record(domain_id, record_id):
     recordset.update(_extract_recordset_values(values))
     if len(recordset.obj_what_changed()) > 0:
         recordset = central_api.update_recordset(context, recordset)
+        LOG.info(_LI("Updated %(recordset)s"), {'recordset': recordset})
 
     # Format and return the response
     record = _format_record_v1(record, recordset)
@@ -238,7 +244,9 @@ def _delete_recordset_if_empty(context, domain_id, recordset_id):
     })
     # Make sure it's the right recordset
     if len(recordset.records) == 0:
-        central_api.delete_recordset(context, domain_id, recordset_id)
+        recordset = central_api.delete_recordset(
+            context, domain_id, recordset_id)
+        LOG.info(_LI("Deleted %(recordset)s"), {'recordset': recordset})
 
 
 @blueprint.route('/domains/<uuid:domain_id>/records/<uuid:record_id>',
@@ -257,8 +265,13 @@ def delete_record(domain_id, record_id):
     criterion = {'zone_id': domain_id, 'id': record_id}
     record = central_api.find_record(context, criterion)
 
-    central_api.delete_record(
+    # Cannot delete a managed record via the API.
+    if record['managed'] is True:
+        raise exceptions.BadRequest('Managed records may not be deleted')
+
+    record = central_api.delete_record(
         context, domain_id, record['recordset_id'], record_id)
+    LOG.info(_LI("Deleted %(record)s"), {'record': record})
 
     _delete_recordset_if_empty(context, domain_id, record['recordset_id'])
     return flask.Response(status=200)

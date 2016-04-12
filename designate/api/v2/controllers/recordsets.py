@@ -22,6 +22,7 @@ from designate.api.v2.controllers import rest
 from designate.objects import RecordSet
 from designate.objects import RecordSetList
 from designate.objects.adapters import DesignateAdapter
+from designate.i18n import _LI
 
 LOG = logging.getLogger(__name__)
 
@@ -37,11 +38,12 @@ class RecordSetsController(rest.RestController):
         request = pecan.request
         context = request.environ['context']
 
-        return DesignateAdapter.render(
-            'API_v2',
-            self.central_api.get_recordset(
-                context, zone_id, recordset_id),
-            request=request)
+        recordset = self.central_api.get_recordset(context, zone_id,
+                                                   recordset_id)
+
+        LOG.info(_LI("Retrieved %(recordset)s"), {'recordset': recordset})
+
+        return DesignateAdapter.render('API_v2', recordset, request=request)
 
     @pecan.expose(template='json:', content_type='application/json')
     @utils.validate_uuid('zone_id')
@@ -100,6 +102,8 @@ class RecordSetsController(rest.RestController):
 
             recordsets = new_rsets
 
+        LOG.info(_LI("Retrieved %(recordsets)s"), {'recordsets': recordsets})
+
         return DesignateAdapter.render('API_v2', recordsets, request=request)
 
     @pecan.expose(template='json:', content_type='application/json')
@@ -130,6 +134,8 @@ class RecordSetsController(rest.RestController):
             response.status_int = 202
         else:
             response.status_int = 201
+
+        LOG.info(_LI("Created %(recordset)s"), {'recordset': recordset})
 
         recordset = DesignateAdapter.render(
             'API_v2', recordset, request=request)
@@ -177,6 +183,8 @@ class RecordSetsController(rest.RestController):
         # Persist the resource
         recordset = self.central_api.update_recordset(context, recordset)
 
+        LOG.info(_LI("Updated %(recordset)s"), {'recordset': recordset})
+
         if recordset['status'] == 'PENDING':
             response.status_int = 202
         else:
@@ -201,6 +209,9 @@ class RecordSetsController(rest.RestController):
 
         recordset = self.central_api.delete_recordset(
             context, zone_id, recordset_id)
+
+        LOG.info(_LI("Deleted %(recordset)s"), {'recordset': recordset})
+
         response.status_int = 202
 
         return DesignateAdapter.render('API_v2', recordset, request=request)

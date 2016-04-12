@@ -20,8 +20,8 @@ from designate import exceptions
 from designate import policy
 from designate import utils
 from designate.api.v2.controllers import rest
-from designate.objects.adapters.api_v2.zone_export \
-    import ZoneExportAPIv2Adapter
+from designate.objects.adapters import DesignateAdapter
+from designate.i18n import _LI
 
 
 LOG = logging.getLogger(__name__)
@@ -61,7 +61,9 @@ class ZoneExportCreateController(rest.RestController):
             context, zone_id)
         response.status_int = 202
 
-        zone_export = ZoneExportAPIv2Adapter.render(
+        LOG.info(_LI("Created %(zone_export)s"), {'zone_export': zone_export})
+
+        zone_export = DesignateAdapter.render(
             'API_v2', zone_export, request=request)
 
         response.headers['Location'] = zone_export['links']['self']
@@ -82,10 +84,13 @@ class ZoneExportsController(rest.RestController):
         request = pecan.request
         context = request.environ['context']
 
-        return ZoneExportAPIv2Adapter.render(
+        zone_export = self.central_api.get_zone_export(context, export_id)
+
+        LOG.info(_LI("Retrived %(zone_export)s"), {'zone_export': zone_export})
+
+        return DesignateAdapter.render(
             'API_v2',
-            self.central_api.get_zone_export(
-                context, export_id),
+            zone_export,
             request=request)
 
     @pecan.expose(template='json:', content_type='application/json')
@@ -102,10 +107,15 @@ class ZoneExportsController(rest.RestController):
         criterion = self._apply_filter_params(
             params, accepted_filters, {})
 
-        return ZoneExportAPIv2Adapter.render(
+        zone_exports = self.central_api.find_zone_exports(
+            context, criterion, marker, limit, sort_key, sort_dir)
+
+        LOG.info(_LI("Retrived %(zone_exports)s"),
+                 {'zone_exports': zone_exports})
+
+        return DesignateAdapter.render(
             'API_v2',
-            self.central_api.find_zone_exports(
-                context, criterion, marker, limit, sort_key, sort_dir),
+            zone_exports,
             request=request)
 
     @pecan.expose(template='json:', content_type='application/json')
@@ -116,7 +126,11 @@ class ZoneExportsController(rest.RestController):
         response = pecan.response
         context = request.environ['context']
 
-        self.central_api.delete_zone_export(context, zone_export_id)
+        zone_export = self.central_api.delete_zone_export(
+            context, zone_export_id)
+
+        LOG.info(_LI("Deleted %(zone_export)s"), {'zone_export': zone_export})
+
         response.status_int = 204
 
         return ''

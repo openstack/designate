@@ -20,9 +20,8 @@ from oslo_log import log as logging
 from designate import exceptions
 from designate import utils
 from designate.api.v2.controllers import rest
-from designate.objects.adapters.api_v2.zone_import \
-    import ZoneImportAPIv2Adapter
-
+from designate.objects.adapters import DesignateAdapter
+from designate.i18n import _LI
 
 LOG = logging.getLogger(__name__)
 
@@ -39,10 +38,14 @@ class ZoneImportController(rest.RestController):
         request = pecan.request
         context = request.environ['context']
 
-        return ZoneImportAPIv2Adapter.render(
+        zone_import = self.central_api.get_zone_import(
+            context, import_id)
+
+        LOG.info(_LI("Retrived %(zone_import)s"), {'zone_import': zone_import})
+
+        return DesignateAdapter.render(
             'API_v2',
-            self.central_api.get_zone_import(
-                context, import_id),
+            zone_import,
             request=request)
 
     @pecan.expose(template='json:', content_type='application/json')
@@ -59,10 +62,15 @@ class ZoneImportController(rest.RestController):
         criterion = self._apply_filter_params(
             params, accepted_filters, {})
 
-        return ZoneImportAPIv2Adapter.render(
+        zone_imports = self.central_api.find_zone_imports(
+            context, criterion, marker, limit, sort_key, sort_dir)
+
+        LOG.info(_LI("Retrived %(zone_imports)s"),
+                 {'zone_imports': zone_imports})
+
+        return DesignateAdapter.render(
             'API_v2',
-            self.central_api.find_zone_imports(
-                context, criterion, marker, limit, sort_key, sort_dir),
+            zone_imports,
             request=request)
 
     @pecan.expose(template='json:', content_type='application/json')
@@ -85,7 +93,9 @@ class ZoneImportController(rest.RestController):
             context, body)
         response.status_int = 202
 
-        zone_import = ZoneImportAPIv2Adapter.render(
+        LOG.info(_LI("Created %(zone_import)s"), {'zone_import': zone_import})
+
+        zone_import = DesignateAdapter.render(
             'API_v2', zone_import, request=request)
 
         response.headers['Location'] = zone_import['links']['self']
@@ -100,7 +110,11 @@ class ZoneImportController(rest.RestController):
         response = pecan.response
         context = request.environ['context']
 
-        self.central_api.delete_zone_import(context, zone_import_id)
+        zone_import = self.central_api.delete_zone_import(
+            context, zone_import_id)
+
+        LOG.info(_LI("Deleted %(zone_import)s"), {'zone_import': zone_import})
+
         response.status_int = 204
 
         return ''

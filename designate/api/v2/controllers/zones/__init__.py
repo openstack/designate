@@ -15,6 +15,7 @@
 # under the License.
 import pecan
 from oslo_config import cfg
+from oslo_log import log as logging
 
 from designate import exceptions
 from designate import utils
@@ -24,9 +25,13 @@ from designate.api.v2.controllers.zones import tasks
 from designate.api.v2.controllers.zones import nameservers
 from designate import objects
 from designate.objects.adapters import DesignateAdapter
+from designate.i18n import _LI
 
 
 CONF = cfg.CONF
+
+
+LOG = logging.getLogger(__name__)
 
 
 class ZonesController(rest.RestController):
@@ -47,9 +52,13 @@ class ZonesController(rest.RestController):
         request = pecan.request
         context = request.environ['context']
 
+        zone = self.central_api.get_zone(context, zone_id)
+
+        LOG.info(_LI("Retrieved %(zone)s"), {'zone': zone})
+
         return DesignateAdapter.render(
             'API_v2',
-            self.central_api.get_zone(context, zone_id),
+            zone,
             request=request)
 
     @pecan.expose(template='json:', content_type='application/json')
@@ -68,11 +77,12 @@ class ZonesController(rest.RestController):
         criterion = self._apply_filter_params(
             params, accepted_filters, {})
 
-        return DesignateAdapter.render(
-            'API_v2',
-            self.central_api.find_zones(
-                context, criterion, marker, limit, sort_key, sort_dir),
-            request=request)
+        zones = self.central_api.find_zones(
+            context, criterion, marker, limit, sort_key, sort_dir)
+
+        LOG.info(_LI("Retrieved %(zones)s"), {'zones': zones})
+
+        return DesignateAdapter.render('API_v2', zones, request=request)
 
     @pecan.expose(template='json:', content_type='application/json')
     def post_all(self):
@@ -96,6 +106,8 @@ class ZonesController(rest.RestController):
 
         # Create the zone
         zone = self.central_api.create_zone(context, zone)
+
+        LOG.info(_LI("Created %(zone)s"), {'zone': zone})
 
         # Prepare the response headers
         # If the zone has been created asynchronously
@@ -166,6 +178,8 @@ class ZonesController(rest.RestController):
             zone = self.central_api.update_zone(
                 context, zone, increment_serial=increment_serial)
 
+        LOG.info(_LI("Updated %(zone)s"), {'zone': zone})
+
         if zone.status == 'PENDING':
             response.status_int = 202
         else:
@@ -183,5 +197,7 @@ class ZonesController(rest.RestController):
 
         zone = self.central_api.delete_zone(context, zone_id)
         response.status_int = 202
+
+        LOG.info(_LI("Deleted %(zone)s"), {'zone': zone})
 
         return DesignateAdapter.render('API_v2', zone, request=request)

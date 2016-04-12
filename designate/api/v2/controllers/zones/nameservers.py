@@ -15,12 +15,16 @@
 # under the License.
 import pecan
 from oslo_config import cfg
+from oslo_log import log as logging
 
 from designate.api.v2.controllers import rest
 from designate.objects.adapters import DesignateAdapter
+from designate.i18n import _LI
 
 
 CONF = cfg.CONF
+
+LOG = logging.getLogger(__name__)
 
 
 class NameServersController(rest.RestController):
@@ -34,8 +38,12 @@ class NameServersController(rest.RestController):
         # This is a work around to overcome the fact that pool ns_records list
         # object have 2 different representations in the v2 API
 
+        ns_records = self.central_api.get_zone_ns_records(context, zone_id)
+
+        LOG.info(_LI("Created %(ns_records)s"), {'ns_records': ns_records})
+
         return {
             "nameservers": DesignateAdapter.render(
                 'API_v2',
-                self.central_api.get_zone_ns_records(context, zone_id),
+                ns_records,
                 request=request)}

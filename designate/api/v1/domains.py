@@ -19,6 +19,7 @@ from oslo_log import log as logging
 from designate import schema
 from designate.api.v1 import load_values
 from designate.central import rpcapi as central_rpcapi
+from designate.i18n import _LI
 from designate import objects
 
 
@@ -67,6 +68,8 @@ def create_domain():
 
     domain = central_api.create_zone(context, objects.Zone(**values))
 
+    LOG.info(_LI("Created %(zone)s"), {'zone': domain})
+
     response = flask.jsonify(domain_schema.filter(domain))
     response.status_int = 201
     response.location = flask.url_for('.get_domain', domain_id=domain['id'])
@@ -85,6 +88,8 @@ def get_domains():
     domains = central_api.find_zones(context, criterion={"type": "PRIMARY",
                                                          "action": "!DELETE"})
 
+    LOG.info(_LI("Retrieved %(zones)s"), {'zones': domains})
+
     return flask.jsonify(domains_schema.filter({'domains': domains}))
 
 
@@ -98,6 +103,8 @@ def get_domain(domain_id):
 
     criterion = {"id": domain_id, "type": "PRIMARY", "action": "!DELETE"}
     domain = central_api.find_zone(context, criterion=criterion)
+
+    LOG.info(_LI("Retrieved %(zone)s"), {'zone': domain})
 
     return flask.jsonify(domain_schema.filter(domain))
 
@@ -124,6 +131,8 @@ def update_domain(domain_id):
     domain.update(values)
     domain = central_api.update_zone(context, domain)
 
+    LOG.info(_LI("Updated %(zone)s"), {'zone': domain})
+
     return flask.jsonify(domain_schema.filter(domain))
 
 
@@ -137,7 +146,9 @@ def delete_domain(domain_id):
     criterion = {"id": domain_id, "type": "PRIMARY", "action": "!DELETE"}
     central_api.find_zone(context, criterion=criterion)
 
-    central_api.delete_zone(context, domain_id)
+    domain = central_api.delete_zone(context, domain_id)
+
+    LOG.info(_LI("Deleted %(zone)s"), {'zone': domain})
 
     return flask.Response(status=200)
 

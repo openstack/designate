@@ -21,6 +21,8 @@ from designate import utils
 from designate.api.v2.controllers import rest
 from designate.objects import TsigKey
 from designate.objects.adapters import DesignateAdapter
+from designate.i18n import _LI
+
 
 LOG = logging.getLogger(__name__)
 
@@ -36,10 +38,11 @@ class TsigKeysController(rest.RestController):
         request = pecan.request
         context = request.environ['context']
 
-        return DesignateAdapter.render(
-            'API_v2',
-            self.central_api.get_tsigkey(context, tsigkey_id),
-            request=request)
+        tsigkey = self.central_api.get_tsigkey(context, tsigkey_id)
+
+        LOG.info(_LI("Retrieved %(tsigkey)s"), {'tsigkey': tsigkey})
+
+        return DesignateAdapter.render('API_v2', tsigkey, request=request)
 
     @pecan.expose(template='json:', content_type='application/json')
     def get_all(self, **params):
@@ -53,14 +56,15 @@ class TsigKeysController(rest.RestController):
 
         # Extract any filter params
         accepted_filters = ('name', 'algorithm', 'scope')
+
         criterion = self._apply_filter_params(
             params, accepted_filters, {})
+        tsigkeys = self.central_api.find_tsigkeys(
+            context, criterion, marker, limit, sort_key, sort_dir)
 
-        return DesignateAdapter.render(
-            'API_v2',
-            self.central_api.find_tsigkeys(
-                context, criterion, marker, limit, sort_key, sort_dir),
-            request=request)
+        LOG.info(_LI("Retrieved %(tsigkeys)s"), {'tsigkeys': tsigkeys})
+
+        return DesignateAdapter.render('API_v2', tsigkeys, request=request)
 
     @pecan.expose(template='json:', content_type='application/json')
     def post_all(self):
@@ -77,6 +81,8 @@ class TsigKeysController(rest.RestController):
         # Create the tsigkey
         tsigkey = self.central_api.create_tsigkey(
             context, tsigkey)
+
+        LOG.info(_LI("Created %(tsigkey)s"), {'tsigkey': tsigkey})
 
         tsigkey = DesignateAdapter.render('API_v2', tsigkey, request=request)
 
@@ -109,6 +115,8 @@ class TsigKeysController(rest.RestController):
         # Update and persist the resource
         tsigkey = self.central_api.update_tsigkey(context, tsigkey)
 
+        LOG.info(_LI("Updated %(tsigkey)s"), {'tsigkey': tsigkey})
+
         response.status_int = 200
 
         return DesignateAdapter.render('API_v2', tsigkey, request=request)
@@ -121,7 +129,9 @@ class TsigKeysController(rest.RestController):
         response = pecan.response
         context = request.environ['context']
 
-        self.central_api.delete_tsigkey(context, tsigkey_id)
+        tsigkey = self.central_api.delete_tsigkey(context, tsigkey_id)
+
+        LOG.info(_LI("Deleted %(tsigkey)s"), {'tsigkey': tsigkey})
 
         response.status_int = 204
 

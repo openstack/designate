@@ -19,6 +19,7 @@ from designate import utils
 from designate.api.v2.controllers import rest
 from designate.objects import Tld
 from designate.objects.adapters import DesignateAdapter
+from designate.i18n import _LI
 
 
 LOG = logging.getLogger(__name__)
@@ -35,10 +36,11 @@ class TldsController(rest.RestController):
         request = pecan.request
         context = request.environ['context']
 
-        return DesignateAdapter.render(
-            'API_v2',
-            self.central_api.get_tld(context, tld_id),
-            request=request)
+        tld = self.central_api.get_tld(context, tld_id)
+
+        LOG.info(_LI("Retrieved %(tld)s"), {'tld': tld})
+
+        return DesignateAdapter.render('API_v2', tld, request=request)
 
     @pecan.expose(template='json:', content_type='application/json')
     def get_all(self, **params):
@@ -55,11 +57,12 @@ class TldsController(rest.RestController):
         criterion = self._apply_filter_params(
             params, accepted_filters, {})
 
-        return DesignateAdapter.render(
-            'API_v2',
-            self.central_api.find_tlds(
-                context, criterion, marker, limit, sort_key, sort_dir),
-            request=request)
+        tlds = self.central_api.find_tlds(
+            context, criterion, marker, limit, sort_key, sort_dir)
+
+        LOG.info(_LI("Retrieved %(tlds)s"), {'tlds': tlds})
+
+        return DesignateAdapter.render('API_v2', tlds, request=request)
 
     @pecan.expose(template='json:', content_type='application/json')
     def post_all(self):
@@ -75,11 +78,15 @@ class TldsController(rest.RestController):
 
         # Create the tld
         tld = self.central_api.create_tld(context, tld)
+
+        LOG.info(_LI("Created %(tld)s"), {'tld': tld})
+
         response.status_int = 201
 
         tld = DesignateAdapter.render('API_v2', tld, request=request)
 
         response.headers['Location'] = tld['links']['self']
+
         # Prepare and return the response body
         return tld
 
@@ -104,6 +111,8 @@ class TldsController(rest.RestController):
 
         tld = self.central_api.update_tld(context, tld)
 
+        LOG.info(_LI("Updated %(tld)s"), {'tld': tld})
+
         response.status_int = 200
 
         return DesignateAdapter.render('API_v2', tld, request=request)
@@ -116,7 +125,9 @@ class TldsController(rest.RestController):
         response = pecan.response
         context = request.environ['context']
 
-        self.central_api.delete_tld(context, tld_id)
+        tld = self.central_api.delete_tld(context, tld_id)
+
+        LOG.info(_LI("Deleted %(tld)s"), {'tld': tld})
 
         response.status_int = 204
 

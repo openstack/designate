@@ -16,12 +16,15 @@
 import re
 
 import pecan
+from oslo_log import log as logging
 
 from designate import exceptions
 from designate import objects
 from designate.objects.adapters import DesignateAdapter
 from designate.api.v2.controllers import rest
+from designate.i18n import _LI
 
+LOG = logging.getLogger(__name__)
 
 FIP_REGEX = '^(?P<region>[A-Za-z0-9\\.\\-_]{1,100}):' \
             '(?P<id>[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-' \
@@ -47,10 +50,11 @@ class FloatingIPController(rest.RestController):
         request = pecan.request
         context = request.environ['context']
 
-        return DesignateAdapter.render(
-            'API_v2',
-            self.central_api.list_floatingips(context),
-            request=request)
+        fips = self.central_api.list_floatingips(context)
+
+        LOG.info(_LI("Retrieved %(fips)s"), {'fips': fips})
+
+        return DesignateAdapter.render('API_v2', fips, request=request)
 
     @pecan.expose(template='json:', content_type='application/json')
     def patch_one(self, fip_key):
@@ -76,6 +80,8 @@ class FloatingIPController(rest.RestController):
 
         fip.validate()
 
+        LOG.info(_LI("Updated %(fip)s"), {'fip': fip})
+
         fip = self.central_api.update_floatingip(context, region, id_, fip)
 
         response.status_int = 202
@@ -93,7 +99,8 @@ class FloatingIPController(rest.RestController):
 
         region, id_ = fip_key_to_data(fip_key)
 
-        return DesignateAdapter.render(
-            'API_v2',
-            self.central_api.get_floatingip(context, region, id_),
-            request=request)
+        fip = self.central_api.get_floatingip(context, region, id_)
+
+        LOG.info(_LI("Retrieved %(fip)s"), {'fip': fip})
+
+        return DesignateAdapter.render('API_v2', fip, request=request)

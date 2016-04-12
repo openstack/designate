@@ -21,6 +21,7 @@ from designate import utils
 from designate.api.v2.controllers import rest
 from designate.objects import Blacklist
 from designate.objects.adapters import DesignateAdapter
+from designate.i18n import _LI
 
 
 LOG = logging.getLogger(__name__)
@@ -37,10 +38,11 @@ class BlacklistsController(rest.RestController):
         request = pecan.request
         context = request.environ['context']
 
-        return DesignateAdapter.render(
-            'API_v2',
-            self.central_api.get_blacklist(context, blacklist_id),
-            request=request)
+        blacklist = self.central_api.get_blacklist(context, blacklist_id)
+
+        LOG.info(_LI("Retrieved %(blacklist)s"), {'blacklist': blacklist})
+
+        return DesignateAdapter.render('API_v2', blacklist, request=request)
 
     @pecan.expose(template='json:', content_type='application/json')
     def get_all(self, **params):
@@ -57,11 +59,12 @@ class BlacklistsController(rest.RestController):
         criterion = self._apply_filter_params(
             params, accepted_filters, {})
 
-        return DesignateAdapter.render(
-            'API_v2',
-            self.central_api.find_blacklists(
-                context, criterion, marker, limit, sort_key, sort_dir),
-            request=request)
+        blacklists = self.central_api.find_blacklists(
+            context, criterion, marker, limit, sort_key, sort_dir)
+
+        LOG.info(_LI("Retrieved %(blacklists)s"), {'blacklists': blacklists})
+
+        return DesignateAdapter.render('API_v2', blacklists, request=request)
 
     @pecan.expose(template='json:', content_type='application/json')
     def post_all(self):
@@ -78,6 +81,8 @@ class BlacklistsController(rest.RestController):
         # Create the blacklist
         blacklist = self.central_api.create_blacklist(
             context, blacklist)
+
+        LOG.info(_LI("Created %(blacklist)s"), {'blacklist': blacklist})
 
         response.status_int = 201
 
@@ -111,6 +116,8 @@ class BlacklistsController(rest.RestController):
 
         blacklist = self.central_api.update_blacklist(context, blacklist)
 
+        LOG.info(_LI("Updated %(blacklist)s"), {'blacklist': blacklist})
+
         response.status_int = 200
 
         return DesignateAdapter.render('API_v2', blacklist, request=request)
@@ -123,7 +130,9 @@ class BlacklistsController(rest.RestController):
         response = pecan.response
         context = request.environ['context']
 
-        self.central_api.delete_blacklist(context, blacklist_id)
+        blacklist = self.central_api.delete_blacklist(context, blacklist_id)
+
+        LOG.info(_LI("Deleted %(blacklist)s"), {'blacklist': blacklist})
 
         response.status_int = 204
 
