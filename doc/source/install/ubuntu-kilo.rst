@@ -17,8 +17,6 @@
 Installing Kilo on Ubuntu
 *************************
 
-.. _Development Environment:
-
 Development Environment
 +++++++++++++++++++++++
 

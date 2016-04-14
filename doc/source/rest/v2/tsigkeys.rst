@@ -164,6 +164,8 @@ Get Tsigkey
 
     **Example response:**
 
+    .. sourcecode:: http
+
        Content-Length: 350
        Content-Type: application/json; charset=UTF-8
        X-Openstack-Request-Id: req-d8cd7f24-a735-400b-9a4b-79e175efc923
