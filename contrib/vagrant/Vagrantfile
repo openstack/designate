@@ -30,8 +30,16 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       override.vm.synced_folder "../../../designate-tempest-plugin", "/opt/stack/designate-tempest-plugin"
     end
 
-    if File.directory?("../../../../openstack/rally")
-      override.vm.synced_folder "../../../../openstack/rally", "/opt/stack/rally"
+    if File.directory?("../../../devstack")
+      override.vm.synced_folder "../../../devstack", "/home/vagrant/devstack"
+    end
+
+    if File.directory?("../../../tempest")
+      override.vm.synced_folder "../../../tempest", "/opt/stack/tempest"
+    end
+
+    if File.directory?("../../../rally")
+      override.vm.synced_folder "../../../rally", "/opt/stack/rally"
     end
   end
 
@@ -58,8 +66,16 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       override.vm.synced_folder "../../../designate-tempest-plugin", "/opt/stack/designate-tempest-plugin", type: "nfs"
     end
 
-    if File.directory?("../../../../openstack/rally")
-      override.vm.synced_folder "../../../../openstack/rally", "/opt/stack/rally", type: "nfs"
+    if File.directory?("../../../devstack")
+      override.vm.synced_folder "../../../devstack", "/home/vagrant/devstack", type: "nfs"
+    end
+
+    if File.directory?("../../../tempest")
+      override.vm.synced_folder "../../../tempest", "/opt/stack/tempest", type: "nfs"
+    end
+
+    if File.directory?("../../../rally")
+      override.vm.synced_folder "../../../rally", "/opt/stack/rally", type: "nfs"
     end
   end
 
