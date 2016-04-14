@@ -1,0 +1,11 @@
+---
+features:
+  - All designate services will now report to designate-central when they
+    are running. This is implmented as a heartbeat reporting system.
+
+    There is also a new API endpoint in the v2 API -
+    $API_BASE/v2/service_status.
+
+    This will show the list of services running, and when they last reported
+    as running. Currently the "stats" and "capabilities" values will be
+    blank, but will be updated in the future as services implement them.
