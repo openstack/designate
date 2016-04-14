@@ -18,6 +18,7 @@ import six
 from six.moves.urllib import parse
 import jsonschema
 from oslo_log import log as logging
+from oslo_utils import timeutils
 
 from designate import exceptions
 from designate.schema import validators
@@ -179,6 +180,11 @@ class DesignateObject(object):
             if isinstance(value, dict) and 'designate_object.name' in value:
                 setattr(instance, field, DesignateObject.from_primitive(value))
             else:
+                # data typically doesn't have a schema..
+                schema = cls.FIELDS[field].get("schema", None)
+                if schema is not None and value is not None:
+                    if "format" in schema and schema["format"] == "date-time":
+                        value = timeutils.parse_strtime(value)
                 setattr(instance, field, value)
 
         instance._obj_changes = set(primitive['designate_object.changes'])

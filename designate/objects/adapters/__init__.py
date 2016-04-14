@@ -27,6 +27,7 @@ from designate.objects.adapters.api_v2.pool_ns_record import PoolNsRecordAPIv2Ad
 from designate.objects.adapters.api_v2.tld import TldAPIv2Adapter, TldListAPIv2Adapter  # noqa
 from designate.objects.adapters.api_v2.tsigkey import TsigKeyAPIv2Adapter, TsigKeyListAPIv2Adapter  # noqa
 from designate.objects.adapters.api_v2.quota import QuotaAPIv2Adapter, QuotaListAPIv2Adapter  # noqa
+from designate.objects.adapters.api_v2.service_status import ServiceStatusAPIv2Adapter, ServiceStatusListAPIv2Adapter  # noqa
 from designate.objects.adapters.api_v2.zone_transfer_accept import ZoneTransferAcceptAPIv2Adapter, ZoneTransferAcceptListAPIv2Adapter  # noqa
 from designate.objects.adapters.api_v2.zone_transfer_request import ZoneTransferRequestAPIv2Adapter, ZoneTransferRequestListAPIv2Adapter  # noqa
 from designate.objects.adapters.api_v2.validation_error import ValidationErrorAPIv2Adapter, ValidationErrorListAPIv2Adapter  # noqa

@@ -35,10 +35,12 @@ from designate.i18n import _
 from designate.i18n import _LE
 from designate.i18n import _LI
 from designate.i18n import _LW
-from designate import rpc
 from designate import policy
+from designate import rpc
+from designate import service_status
 from designate import version
 from designate import utils
+
 
 # TODO(kiall): These options have been cut+paste from the old WSGI code, and
 #              should be moved into service:api etc..
@@ -108,6 +110,19 @@ class RPCService(object):
             messaging.Target(topic=self._rpc_topic, server=self._host),
             self._rpc_endpoints)
 
+        emitter_cls = service_status.HeartBeatEmitter.get_driver(
+            cfg.CONF.heartbeat_emitter.emitter_type
+        )
+        self.heartbeat_emitter = emitter_cls(
+            self.service_name, self.tg, status_factory=self._get_status
+        )
+
+    def _get_status(self):
+        status = "UP"
+        stats = {}
+        capabilities = {}
+        return status, stats, capabilities
+
     @property
     def _rpc_endpoints(self):
         return [self]
@@ -130,8 +145,11 @@ class RPCService(object):
             if e != self and hasattr(e, 'start'):
                 e.start()
 
+        self.heartbeat_emitter.start()
+
     def stop(self):
         LOG.debug("Stopping RPC server on topic '%s'" % self._rpc_topic)
+        self.heartbeat_emitter.stop()
 
         for e in self._rpc_endpoints:
             if e != self and hasattr(e, 'stop'):

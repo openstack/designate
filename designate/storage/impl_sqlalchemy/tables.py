@@ -18,6 +18,7 @@ from sqlalchemy import (Table, MetaData, Column, String, Text, Integer,
                         UniqueConstraint, ForeignKeyConstraint)
 
 from oslo_config import cfg
+from oslo_db.sqlalchemy import types
 from oslo_utils import timeutils
 
 from designate import utils
@@ -39,6 +40,9 @@ ACTIONS = ['CREATE', 'DELETE', 'UPDATE', 'NONE']
 ZONE_TYPES = ('PRIMARY', 'SECONDARY',)
 ZONE_TASK_TYPES = ['IMPORT', 'EXPORT']
 
+SERVICE_STATES = [
+    "UP", "DOWN", "WARNING"
+]
 
 metadata = MetaData()
 
@@ -49,6 +53,25 @@ metadata = MetaData()
 
 def default_shard(context, id_col):
     return int(context.current_parameters[id_col][0:3], 16)
+
+
+service_status = Table("service_statuses", metadata,
+    Column('id', UUID, default=utils.generate_uuid, primary_key=True),
+    Column('created_at', DateTime, default=lambda: timeutils.utcnow()),
+    Column('updated_at', DateTime, onupdate=lambda: timeutils.utcnow()),
+
+    Column('service_name', String(40), nullable=False),
+    Column('hostname', String(255), nullable=False),
+    Column('heartbeated_at', DateTime, nullable=True),
+
+    Column('status', Enum(name='service_statuses', *SERVICE_STATES),
+           nullable=False),
+    Column('stats', types.JsonEncodedDict, nullable=False),
+    Column('capabilities', types.JsonEncodedDict, nullable=False),
+
+    mysql_engine='InnoDB',
+    mysql_charset='utf8',
+)
 
 
 quotas = Table('quotas', metadata,

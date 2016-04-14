@@ -1922,6 +1922,35 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
 
         return result[0]
 
+    # Service Status Methods
+    def _find_service_statuses(self, context, criterion, one=False,
+                               marker=None, limit=None, sort_key=None,
+                               sort_dir=None):
+        return self._find(
+            context, tables.service_status, objects.ServiceStatus,
+            objects.ServiceStatusList, exceptions.ServiceStatusNotFound,
+            criterion, one, marker, limit, sort_key, sort_dir)
+
+    def find_service_status(self, context, criterion):
+        return self._find_service_statuses(context, criterion, one=True)
+
+    def find_service_statuses(self, context, criterion=None, marker=None,
+                              limit=None, sort_key=None, sort_dir=None):
+        return self._find_service_statuses(context, criterion, marker=marker,
+                                           limit=limit, sort_key=sort_key,
+                                           sort_dir=sort_dir)
+
+    def create_service_status(self, context, service_status):
+        return self._create(
+            tables.service_status, service_status,
+            exceptions.DuplicateServiceStatus)
+
+    def update_service_status(self, context, service_status):
+        return self._update(
+            context, tables.service_status, service_status,
+            exceptions.DuplicateServiceStatus,
+            exceptions.ServiceStatusNotFound)
+
     # diagnostics
     def ping(self, context):
         start_time = time.time()

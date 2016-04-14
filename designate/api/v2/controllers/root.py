@@ -23,6 +23,7 @@ from designate.api.v2.controllers import tlds
 from designate.api.v2.controllers import blacklists
 from designate.api.v2.controllers import errors
 from designate.api.v2.controllers import pools
+from designate.api.v2.controllers import service_status
 from designate.api.v2.controllers import zones
 from designate.api.v2.controllers import tsigkeys
 
@@ -57,4 +58,5 @@ class RootController(object):
     blacklists = blacklists.BlacklistsController()
     errors = errors.ErrorsController()
     pools = pools.PoolsController()
+    service_statuses = service_status.ServiceStatusController()
     tsigkeys = tsigkeys.TsigKeysController()
