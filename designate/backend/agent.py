@@ -58,7 +58,7 @@ class AgentPoolBackend(base.Backend):
     def __init__(self, target):
         super(AgentPoolBackend, self).__init__(target)
         self.host = self.options.get('host', '127.0.0.1')
-        self.port = int(self.options.get('port', 53))
+        self.port = int(self.options.get('port', 5358))
         self.timeout = CONF['service:pool_manager'].poll_timeout
         self.retry_interval = CONF['service:pool_manager'].poll_retry_interval
         self.max_retries = CONF['service:pool_manager'].poll_max_retries

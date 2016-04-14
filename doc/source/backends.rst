@@ -22,6 +22,4 @@ Contents:
    :maxdepth: 2
    :glob:
 
-   backends/bind9
-   backends/powerdns
-   backends/infoblox
+   backends/*

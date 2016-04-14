@@ -1,0 +1,55 @@
+# Configure the fake agent backend
+
+# Enable with:
+# DESIGNATE_BACKEND_DRIVER=agent
+# DESIGNATE_AGENT_BACKEND_DRIVER=fake
+
+# install_designate_agent_backend - install any external requirements
+# configure_designate_agent_backend - make configuration changes, including those to other services
+# init_designate_agent_backend - initialize databases, etc.
+# start_designate_agent_backend - start any external services
+# stop_designate_agent_backend - stop any external services
+# cleanup_designate_agent_backend - remove transient data and cache
+
+# Save trace setting
+DP_AGENT_FAKE_XTRACE=$(set +o | grep xtrace)
+set +o xtrace
+
+# Defaults
+# --------
+
+# Entry Points
+# ------------
+
+# install_designate_agent_backend - install any external requirements
+function install_designate_agent_backend {
+    :
+}
+
+# configure_designate_agent_backend - make configuration changes, including those to other services
+function configure_designate_agent_backend {
+    :
+}
+
+# init_designate_agent_backend - initialize databases, etc.
+function init_designate_agent_backend {
+    :
+}
+
+# start_designate_agent_backend - start any external services
+function start_designate_agent_backend {
+    :
+}
+
+# stop_designate_agent_backend - stop any external services
+function stop_designate_agent_backend {
+    :
+}
+
+# cleanup_designate_agent_backend - remove transient data and cache
+function cleanup_designate_agent_backend {
+    :
+}
+
+# Restore xtrace
+$DP_AGENT_FAKE_XTRACE
