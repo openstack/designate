@@ -1007,223 +1007,10 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
                             ['attributes', 'ns_records', 'nameservers',
                              'targets', 'also_notifies'])
 
-        # TODO(kiall): The sections below are near identical, we should
-        #              refactor into a single reusable method.
-        if pool.obj_attr_is_set('attributes'):
-            # Gather the pool ID's we have
-            have_attributes = set([r.id for r in self._find_pool_attributes(
-                context, {'pool_id': pool.id})])
-
-            # Prep some lists of changes
-            keep_attributes = set([])
-            create_attributes = []
-            update_attributes = []
-
-            attributes = []
-            if pool.obj_attr_is_set('attributes'):
-                for r in pool.attributes.objects:
-                    attributes.append(r)
-
-            # Determine what to change
-            for attribute in attributes:
-                keep_attributes.add(attribute.id)
-                try:
-                    attribute.obj_get_original_value('id')
-                except KeyError:
-                    create_attributes.append(attribute)
-                else:
-                    update_attributes.append(attribute)
-
-            # NOTE: Since we're dealing with mutable objects, the return value
-            #       of create/update/delete attribute is not needed. The
-            #       original item will be mutated in place on the input
-            #       "pool.attributes" list.
-
-            # Delete attributes
-            for attribute_id in have_attributes - keep_attributes:
-                self.delete_pool_attribute(context, attribute_id)
-
-            # Update attributes
-            for attribute in update_attributes:
-                self.update_pool_attribute(context, attribute)
-
-            # Create attributes
-            for attribute in create_attributes:
-                self.create_pool_attribute(
-                    context, pool.id, attribute)
-
-        if pool.obj_attr_is_set('ns_records'):
-            # Gather the pool ID's we have
-            have_ns_records = set([r.id for r in self._find_pool_ns_records(
-                context, {'pool_id': pool.id})])
-
-            # Prep some lists of changes
-            keep_ns_records = set([])
-            create_ns_records = []
-            update_ns_records = []
-
-            ns_records = []
-            if pool.obj_attr_is_set('ns_records'):
-                for r in pool.ns_records.objects:
-                    ns_records.append(r)
-
-            # Determine what to change
-            for ns_record in ns_records:
-                keep_ns_records.add(ns_record.id)
-                try:
-                    ns_record.obj_get_original_value('id')
-                except KeyError:
-                    create_ns_records.append(ns_record)
-                else:
-                    update_ns_records.append(ns_record)
-
-            # NOTE: Since we're dealing with mutable objects, the return value
-            #       of create/update/delete ns_record is not needed. The
-            #       original item will be mutated in place on the input
-            #       "pool.ns_records" list.
-
-            # Delete ns_records
-            for ns_record_id in have_ns_records - keep_ns_records:
-                self.delete_pool_ns_record(context, ns_record_id)
-
-            # Update ns_records
-            for ns_record in update_ns_records:
-                self.update_pool_ns_record(context, ns_record)
-
-            # Create ns_records
-            for ns_record in create_ns_records:
-                self.create_pool_ns_record(
-                    context, pool.id, ns_record)
-
-        if pool.obj_attr_is_set('nameservers'):
-            # Gather the pool ID's we have
-            have_nameservers = set([r.id for r in self._find_pool_nameservers(
-                context, {'pool_id': pool.id})])
-
-            # Prep some lists of changes
-            keep_nameservers = set([])
-            create_nameservers = []
-            update_nameservers = []
-
-            nameservers = []
-            if pool.obj_attr_is_set('nameservers'):
-                for r in pool.nameservers.objects:
-                    nameservers.append(r)
-
-            # Determine what to change
-            for nameserver in nameservers:
-                keep_nameservers.add(nameserver.id)
-                try:
-                    nameserver.obj_get_original_value('id')
-                except KeyError:
-                    create_nameservers.append(nameserver)
-                else:
-                    update_nameservers.append(nameserver)
-
-            # NOTE: Since we're dealing with mutable objects, the return value
-            #       of create/update/delete nameserver is not needed. The
-            #       original item will be mutated in place on the input
-            #       "pool.nameservers" list.
-
-            # Delete nameservers
-            for nameserver_id in have_nameservers - keep_nameservers:
-                self.delete_pool_nameserver(context, nameserver_id)
-
-            # Update nameservers
-            for nameserver in update_nameservers:
-                self.update_pool_nameserver(context, nameserver)
-
-            # Create nameservers
-            for nameserver in create_nameservers:
-                self.create_pool_nameserver(
-                    context, pool.id, nameserver)
-
-        if pool.obj_attr_is_set('targets'):
-            # Gather the pool ID's we have
-            have_targets = set([r.id for r in self._find_pool_targets(
-                context, {'pool_id': pool.id})])
-
-            # Prep some lists of changes
-            keep_targets = set([])
-            create_targets = []
-            update_targets = []
-
-            targets = []
-            if pool.obj_attr_is_set('targets'):
-                for r in pool.targets.objects:
-                    targets.append(r)
-
-            # Determine what to change
-            for target in targets:
-                keep_targets.add(target.id)
-                try:
-                    target.obj_get_original_value('id')
-                except KeyError:
-                    create_targets.append(target)
-                else:
-                    update_targets.append(target)
-
-            # NOTE: Since we're dealing with mutable objects, the return value
-            #       of create/update/delete target is not needed. The
-            #       original item will be mutated in place on the input
-            #       "pool.targets" list.
-
-            # Delete targets
-            for target_id in have_targets - keep_targets:
-                self.delete_pool_target(context, target_id)
-
-            # Update targets
-            for target in update_targets:
-                self.update_pool_target(context, target)
-
-            # Create targets
-            for target in create_targets:
-                self.create_pool_target(
-                    context, pool.id, target)
-
-        if pool.obj_attr_is_set('also_notifies'):
-            # Gather the pool ID's we have
-            have_also_notifies = set(
-                [r.id for r in self._find_pool_also_notifies(
-                 context, {'pool_id': pool.id})])
-
-            # Prep some lists of changes
-            keep_also_notifies = set([])
-            create_also_notifies = []
-            update_also_notifies = []
-
-            also_notifies = []
-            if pool.obj_attr_is_set('also_notifies'):
-                for r in pool.also_notifies.objects:
-                    also_notifies.append(r)
-
-            # Determine what to change
-            for also_notify in also_notifies:
-                keep_also_notifies.add(also_notify.id)
-                try:
-                    also_notify.obj_get_original_value('id')
-                except KeyError:
-                    create_also_notifies.append(also_notify)
-                else:
-                    update_also_notifies.append(also_notify)
-
-            # NOTE: Since we're dealing with mutable objects, the return value
-            #       of create/update/delete also_notify is not needed. The
-            #       original item will be mutated in place on the input
-            #       "pool.also_notifies" list.
-
-            # Delete also_notifies
-            for also_notify_id in have_also_notifies - keep_also_notifies:
-                self.delete_pool_also_notify(context, also_notify_id)
-
-            # Update also_notifies
-            for also_notify in update_also_notifies:
-                self.update_pool_also_notify(context, also_notify)
-
-            # Create also_notifies
-            for also_notify in create_also_notifies:
-                self.create_pool_also_notify(
-                    context, pool.id, also_notify)
+        for attribute_name in ('attributes', 'ns_records', 'nameservers',
+                               'targets', 'also_notifies'):
+            if pool.obj_attr_is_set(attribute_name):
+                self._update_pool_items(context, pool, attribute_name)
 
         # Call get_pool to get the ids of all the attributes/ns_records
         # refreshed in the pool object
@@ -1426,99 +1213,128 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
     def find_pool_target(self, context, criterion):
         return self._find_pool_targets(context, criterion, one=True)
 
+    def _update_pool_items(self, context, pool, attribute_name):
+        """Update attributes beloging to a pool
+        """
+        assert attribute_name in ('attributes', 'ns_records', 'nameservers',
+                                  'targets', 'also_notifies')
+
+        # Gather the pool ID's we have
+        finder = getattr(self, "_find_pool_%s" % attribute_name)
+        have_items = set()
+        for r in finder(context, {'pool_id': pool.id}):
+            have_items.add(r.id)
+
+        # Prep some lists of changes
+        keep_items = set([])
+        create_items = []
+        update_items = []
+
+        items = []
+        if pool.obj_attr_is_set(attribute_name):
+            for r in getattr(pool, attribute_name).objects:
+                items.append(r)
+
+        # Determine what to change
+        for item in items:
+            keep_items.add(item.id)
+            try:
+                item.obj_get_original_value('id')
+            except KeyError:
+                create_items.append(item)
+            else:
+                update_items.append(item)
+
+        # NOTE: Since we're dealing with mutable objects, the return value
+        #       of create/update/delete option is not needed. The
+        #       original item will be mutated in place on the input
+        #       "pool.options" list.
+
+        # singular: attributes -> attribute, 'notify' is as a corner case
+        if attribute_name == 'also_notifies':
+            singular = 'also_notify'
+        else:
+            singular = attribute_name[:-1]
+
+        # Delete items
+        fn = getattr(self, "delete_pool_%s" % singular)
+        for item_id in have_items - keep_items:
+            fn(context, item_id)
+
+        # Update items
+        fn = getattr(self, "update_pool_%s" % singular)
+        for item in update_items:
+            fn(context, item)
+
+        # Create items
+        fn = getattr(self, "create_pool_%s" % singular)
+        for item in create_items:
+            fn(context, pool.id, item)
+
+    def _update_pool_target_items(self, context, pool_target, attribute_name):
+        """Update attributes beloging to a pool target
+        """
+        assert attribute_name in ('options', 'masters')
+
+        # Gather the pool ID's we have
+        finder = getattr(self, "_find_pool_target_%s" % attribute_name)
+        have_items = set()
+        for r in finder(context, {'pool_target_id': pool_target.id}):
+            have_items.add(r.id)
+
+        # Prep some lists of changes
+        keep_items = set([])
+        create_items = []
+        update_items = []
+
+        items = []
+        if pool_target.obj_attr_is_set(attribute_name):
+            for r in getattr(pool_target, attribute_name).objects:
+                items.append(r)
+
+        # Determine what to change
+        for item in items:
+            keep_items.add(item.id)
+            try:
+                item.obj_get_original_value('id')
+            except KeyError:
+                create_items.append(item)
+            else:
+                update_items.append(item)
+
+        # NOTE: Since we're dealing with mutable objects, the return value
+        #       of create/update/delete option is not needed. The
+        #       original item will be mutated in place on the input
+        #       "pool.options" list.
+
+        # singular: options -> option
+        singular = attribute_name[:-1]
+
+        # Delete items
+        fn = getattr(self, "delete_pool_target_%s" % singular)
+        for item_id in have_items - keep_items:
+            fn(context, item_id)
+
+        # Update items
+        fn = getattr(self, "update_pool_target_%s" % singular)
+        for item in update_items:
+            fn(context, item)
+
+        # Create items
+        fn = getattr(self, "create_pool_target_%s" % singular)
+        for item in create_items:
+            fn(context, pool_target.id, item)
+
     def update_pool_target(self, context, pool_target):
         pool_target = self._update(
             context, tables.pool_targets, pool_target,
             exceptions.DuplicatePoolTarget, exceptions.PoolTargetNotFound,
             ['options', 'masters'])
 
-        # TODO(kiall): The sections below are near identical, we should
-        #              refactor into a single reusable method.
-        if pool_target.obj_attr_is_set('options'):
-            # Gather the pool ID's we have
-            have_options = set([r.id for r in self._find_pool_target_options(
-                context, {'pool_target_id': pool_target.id})])
-
-            # Prep some lists of changes
-            keep_options = set([])
-            create_options = []
-            update_options = []
-
-            options = []
-            if pool_target.obj_attr_is_set('options'):
-                for r in pool_target.options.objects:
-                    options.append(r)
-
-            # Determine what to change
-            for option in options:
-                keep_options.add(option.id)
-                try:
-                    option.obj_get_original_value('id')
-                except KeyError:
-                    create_options.append(option)
-                else:
-                    update_options.append(option)
-
-            # NOTE: Since we're dealing with mutable objects, the return value
-            #       of create/update/delete option is not needed. The
-            #       original item will be mutated in place on the input
-            #       "pool.options" list.
-
-            # Delete options
-            for option_id in have_options - keep_options:
-                self.delete_pool_target_option(context, option_id)
-
-            # Update options
-            for option in update_options:
-                self.update_pool_target_option(context, option)
-
-            # Create options
-            for option in create_options:
-                self.create_pool_target_option(
-                    context, pool_target.id, option)
-
-        if pool_target.obj_attr_is_set('masters'):
-            # Gather the pool ID's we have
-            have_masters = set([r.id for r in self._find_pool_target_masters(
-                context, {'pool_target_id': pool_target.id})])
-
-            # Prep some lists of changes
-            keep_masters = set([])
-            create_masters = []
-            update_masters = []
-
-            masters = []
-            if pool_target.obj_attr_is_set('masters'):
-                for r in pool_target.masters.objects:
-                    masters.append(r)
-
-            # Determine what to change
-            for master in masters:
-                keep_masters.add(master.id)
-                try:
-                    master.obj_get_original_value('id')
-                except KeyError:
-                    create_masters.append(master)
-                else:
-                    update_masters.append(master)
-
-            # NOTE: Since we're dealing with mutable objects, the return value
-            #       of create/update/delete master is not needed. The
-            #       original item will be mutated in place on the input
-            #       "pool.masters" list.
-
-            # Delete masters
-            for master_id in have_masters - keep_masters:
-                self.delete_pool_target_master(context, master_id)
-
-            # Update masters
-            for master in update_masters:
-                self.update_pool_target_master(context, master)
-
-            # Create masters
-            for master in create_masters:
-                self.create_pool_target_master(
-                    context, pool_target.id, master)
+        for attribute_name in ('options', 'masters'):
+            if pool_target.obj_attr_is_set(attribute_name):
+                self._update_pool_target_items(context, pool_target,
+                                               attribute_name)
 
         # Call get_pool to get the ids of all the attributes/ns_records
         # refreshed in the pool object
