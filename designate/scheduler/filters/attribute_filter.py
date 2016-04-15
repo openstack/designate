@@ -11,15 +11,18 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import six
 from oslo_log import log as logging
+from oslo_utils.strutils import bool_from_string
 
+from designate.objects import PoolAttributeList
 from designate.scheduler.filters.base import Filter
 
 LOG = logging.getLogger(__name__)
 
 
 class AttributeFilter(Filter):
-    """This allows users top choose the pool by supplying hints to this filter.
+    """This allows users to choose the pool by supplying hints to this filter.
     These are provided as attributes as part of the zone object provided at
     zone create time.
 
@@ -29,7 +32,7 @@ class AttributeFilter(Filter):
         {
             "attributes": {
                 "pool_level": "gold",
-                "fast_ttl": True,
+                "fast_ttl": "true",
                 "pops": "global",
             },
             "email": "user@example.com",
@@ -38,11 +41,6 @@ class AttributeFilter(Filter):
 
     The zone attributes are matched against the potential pool candiates, and
     any pools that do not match **all** hints are removed.
-
-    .. warning::
-
-        This filter is disabled currently, and should not be used.
-        It will be enabled at a later date.
 
     .. warning::
 
@@ -58,5 +56,57 @@ class AttributeFilter(Filter):
     """
 
     def filter(self, context, pools, zone):
-        # FIXME (graham) actually filter on attributes
+
+        zone_attributes = zone.attributes.to_dict()
+
+        def evaluate_pool(pool):
+
+            pool_attributes = pool.attributes.to_dict()
+
+            # Check if the keys requested exist in this pool
+            if not {key for key in six.iterkeys(pool_attributes)}.issuperset(
+                    zone_attributes):
+                msg = "%(pool)s did not match list of requested attribute "\
+                      "keys - removing from list. Requested: %(r_key)s. Pool:"\
+                      "%(p_key)s"
+
+                LOG.debug(
+                    msg,
+                    {
+                        'pool': pool,
+                        'r_key': zone_attributes,
+                        'p_key': pool_attributes
+                    }
+                )
+                # Missing required keys - remove from the list
+                return False
+
+            for key in six.iterkeys(zone_attributes):
+                LOG.debug("Checking value of %s for %s", key, pool)
+
+                pool_attr = bool_from_string(pool_attributes[key],
+                                             default=pool_attributes[key])
+                zone_attr = bool_from_string(zone_attributes[key],
+                                             default=zone_attributes[key])
+
+                if not pool_attr == zone_attr:
+                    LOG.debug(
+                        "%(pool)s did not match requested value of %(key)s. "
+                        "Requested: %(r_val)s. Pool: %(p_val)s",
+                        {
+                            'pool': pool,
+                            'key': key,
+                            'r_val': zone_attr,
+                            'p_val': pool_attr
+                        })
+                    # Value didn't match - remove from the list
+                    return False
+
+            # Pool matches list of attributes - keep
+            return True
+
+        pool_list = [pool for pool in pools if evaluate_pool(pool)]
+
+        pools = PoolAttributeList(objects=pool_list)
+
         return pools

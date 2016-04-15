@@ -22,6 +22,7 @@ from oslotest import base as test
 from designate.scheduler.filters import default_pool_filter
 from designate.scheduler.filters import fallback_filter
 from designate.scheduler.filters import pool_id_attribute_filter
+from designate.scheduler.filters import attribute_filter
 from designate import objects
 from designate import context
 from designate import policy
@@ -202,3 +203,221 @@ class SchedulerPoolIDAttributeFilterTest(SchedulerFilterTest):
             'zone_create_forced_pool',
             self.context,
             pools[0])
+
+
+class SchedulerAttributeFilterTest(SchedulerFilterTest):
+
+    FILTER = attribute_filter.AttributeFilter
+
+    def setUp(self):
+        super(SchedulerAttributeFilterTest, self).setUp()
+
+        self.zone = objects.Zone(
+            name="example.com.",
+            type="PRIMARY",
+            email="hostmaster@example.com",
+            attributes=objects.ZoneAttributeList.from_list(
+                [
+                    {
+                        "key": "attribute_one",
+                        "value": "True"
+                    },
+                    {
+                        "key": "attribute_two",
+                        "value": "False"
+                    },
+                    {
+                        "key": "attribute_three",
+                        "value": "foo"
+                    }
+                ]
+            )
+        )
+
+    def test_default_operation(self):
+        pools = objects.PoolList.from_list(
+            [
+                {
+                    "id": "6c346011-e581-429b-a7a2-6cdf0aba91c3",
+                }
+            ]
+        )
+
+        pools[0].attributes = objects.PoolAttributeList.from_list(
+            [
+                {
+                    "key": "attribute_one",
+                    "value": "True"
+                },
+                {
+                    "key": "attribute_two",
+                    "value": "False"
+                },
+                {
+                    "key": "attribute_three",
+                    "value": "foo"
+                }
+            ])
+
+        pools = self.test_filter.filter(self.context, pools, self.zone)
+
+        self.assertEqual("6c346011-e581-429b-a7a2-6cdf0aba91c3", pools[0].id)
+
+    def test_multiple_pools_all_match(self):
+        pools = objects.PoolList.from_list(
+            [
+                {"id": "6c346011-e581-429b-a7a2-6cdf0aba91c3"},
+                {"id": "5fabcd37-262c-4cf3-8625-7f419434b6df"}
+            ]
+
+        )
+
+        attributes = objects.PoolAttributeList.from_list(
+            [
+                {
+                    "key": "attribute_one",
+                    "value": "True"
+                },
+                {
+                    "key": "attribute_two",
+                    "value": "False"
+                },
+                {
+                    "key": "attribute_three",
+                    "value": "foo"
+                }
+            ])
+
+        pools[0].attributes = attributes
+        pools[1].attributes = attributes
+
+        pools = self.test_filter.filter(self.context, pools, self.zone)
+
+        self.assertEqual(2, len(pools))
+
+    def test_multiple_pools_one_match(self):
+        pools = objects.PoolList.from_list(
+            [
+                {"id": "6c346011-e581-429b-a7a2-6cdf0aba91c3"},
+                {"id": "5fabcd37-262c-4cf3-8625-7f419434b6df"}
+            ]
+
+        )
+
+        pool_0_attributes = objects.PoolAttributeList.from_list(
+            [
+                {
+                    "key": "attribute_one",
+                    "value": "True"
+                },
+                {
+                    "key": "attribute_two",
+                    "value": "False"
+                },
+                {
+                    "key": "attribute_three",
+                    "value": "foo"
+                }
+            ])
+
+        pool_1_attributes = objects.PoolAttributeList.from_list(
+            [
+                {
+                    "key": "attribute_four",
+                    "value": "True"
+                },
+                {
+                    "key": "attribute_five",
+                    "value": "False"
+                },
+                {
+                    "key": "attribute_three",
+                    "value": "foo"
+                }
+            ])
+
+        pools[0].attributes = pool_0_attributes
+        pools[1].attributes = pool_1_attributes
+
+        pools = self.test_filter.filter(self.context, pools, self.zone)
+
+        self.assertEqual(1, len(pools))
+        self.assertEqual("6c346011-e581-429b-a7a2-6cdf0aba91c3", pools[0].id)
+
+    def test_multiple_pools_no_match(self):
+        pools = objects.PoolList.from_list(
+            [
+                {"id": "6c346011-e581-429b-a7a2-6cdf0aba91c3"},
+                {"id": "5fabcd37-262c-4cf3-8625-7f419434b6df"}
+            ]
+
+        )
+
+        pool_0_attributes = objects.PoolAttributeList.from_list(
+            [
+                {
+                    "key": "attribute_six",
+                    "value": "True"
+                },
+                {
+                    "key": "attribute_two",
+                    "value": "False"
+                },
+                {
+                    "key": "attribute_seven",
+                    "value": "foo"
+                }
+            ])
+
+        pool_1_attributes = objects.PoolAttributeList.from_list(
+            [
+                {
+                    "key": "attribute_four",
+                    "value": "True"
+                },
+                {
+                    "key": "attribute_five",
+                    "value": "False"
+                },
+                {
+                    "key": "attribute_three",
+                    "value": "foo"
+                }
+            ])
+
+        pools[0].attributes = pool_0_attributes
+        pools[1].attributes = pool_1_attributes
+
+        pools = self.test_filter.filter(self.context, pools, self.zone)
+
+        self.assertEqual(0, len(pools))
+
+    def test_no_match_non_bool(self):
+        pools = objects.PoolList.from_list(
+            [
+                {"id": "6c346011-e581-429b-a7a2-6cdf0aba91c3"},
+            ]
+
+        )
+
+        pool_0_attributes = objects.PoolAttributeList.from_list(
+            [
+                {
+                    "key": "attribute_one",
+                    "value": "True"
+                },
+                {
+                    "key": "attribute_two",
+                    "value": "False"
+                },
+                {
+                    "key": "attribute_three",
+                    "value": "bar"
+                }
+            ])
+
+        pools[0].attributes = pool_0_attributes
+
+        pools = self.test_filter.filter(self.context, pools, self.zone)
+
+        self.assertEqual(0, len(pools))

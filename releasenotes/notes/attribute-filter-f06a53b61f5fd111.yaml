@@ -1,0 +1,5 @@
+---
+features:
+  - Addition of the "attribute" filter for scheduling zones across pools.
+    This can be enabled in the ``[service:central]`` section of the config
+    by adding ``attribute`` to the list of values in the ``filters`` option.
