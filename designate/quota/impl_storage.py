@@ -20,8 +20,8 @@ from oslo_log import log as logging
 from designate import exceptions
 from designate import storage
 from designate import objects
-from designate.central import service as central_service
 from designate.quota.base import Quota
+from designate.storage import transaction
 
 
 LOG = logging.getLogger(__name__)
@@ -55,7 +55,7 @@ class StorageQuota(Quota):
 
         return {resource: quota['hard_limit']}
 
-    @central_service.transaction
+    @transaction
     def set_quota(self, context, tenant_id, resource, hard_limit):
         context = context.deepcopy()
         context.all_tenants = True
@@ -87,7 +87,7 @@ class StorageQuota(Quota):
 
         return {resource: hard_limit}
 
-    @central_service.transaction
+    @transaction
     def reset_quotas(self, context, tenant_id):
         context = context.deepcopy()
         context.all_tenants = True
