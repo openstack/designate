@@ -132,6 +132,19 @@ Designate's tests can be found in:
    │       ├── test_recordsets.py
    │       └── test_zones.py
    └── scenario
+       └── v2
+           ├── test_recordsets.py
+           └── test_zones.py
+
+There are two groupings of tests here "api" and "scenario". **API tests**
+should be quick, and simple. Testing as small a surface area of the API as is
+possible while still getting the job done. Additionally, API tests should avoid
+waiting for resources to become ACTIVE etc, as this typically pushes test time
+out significantly, and would only duplicate scenario tests. **Scenario tests**
+should cover common real world uses cases. For example, creating a zone,
+waiting for it to become ACTIVE, adding some records, waiting for ACTIVE,
+querying the DNS servers themselves, and finally deleting the zone and waiting
+for it to 404.
 
 An example test, in this case for a subset of /v2/zones functionality is
 included below:
@@ -155,12 +168,6 @@ included below:
            LOG.info('Ensure we respond with CREATE+PENDING')
            self.assertEqual('CREATE', zone['action'])
            self.assertEqual('PENDING', zone['status'])
-
-           waiters.wait_for_zone_status(
-               self.client, zone['id'], 'ACTIVE')
-
-           LOG.info('Re-Fetch the zone')
-           _, body = self.client.show_zone(zone['id'])
 
            LOG.info('Ensure the fetched response matches the created zone')
            self._assertExpected(zone, body)
@@ -234,7 +241,8 @@ The `attr` decorator is used to set test attributes, this is most commonly used
 to set the test type. Currently, we use one test type "smoke", which should be
 applied to any tests which test the most basic functionaility Designate
 provides, allowing for the core functionaility to be tested quickly, without
-having to run the entire suite.
+having to run the entire suite. Another type we use is "slow", which should be
+applied to tests which take on average 5 seconds or more.
 
 Example:
 
@@ -243,6 +251,28 @@ Example:
    class ZonesTest(BaseZonesTest):
        @test.attr(type='smoke')
        def test_create_zone(self):
+           pass
+
+       @test.attr(type='slow')
+       def test_something_else(self):
+           pass
+
+@test.services
+~~~~~~~~~~~~~~
+
+The `services` decorator is used to indicate which services are exercised by
+a given test. The `services` decorator may only be used on scenario tests, and
+(for now) should not include "dns" itself. For example, given a scenario test
+that interactions with Designate's Reverse DNS APIs, which in turn talk to
+Neutron, we would use something like the below:
+
+Example:
+
+.. code-block:: python
+
+   class ReverseTest(BaseDnsTest):
+       @test.services('network')
+       def test_reverse_dns_for_fips(self):
            pass
 
 
