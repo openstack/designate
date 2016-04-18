@@ -1,0 +1,44 @@
+- name: default
+  # The name is immutable. There will be no option to change the name after
+  # creation and the only way will to change it will be to delete it
+  # (and all zones associated with it) and recreate it.
+  description: Default BIND9 Pool
+
+  attributes: {}
+
+  # List out the NS records for zones hosted within this pool
+  ns_records:
+    - hostname: ns1-1.example.org.
+      priority: 1
+
+  # List out the nameservers for this pool. These are the actual BIND servers.
+  # We use these to verify changes have propagated to all nameservers.
+  nameservers:
+    - host: 127.0.0.1
+      port: 53
+
+  # List out the targets for this pool. For BIND, most often, there will be one
+  # entry for each BIND server.
+  targets:
+    - type: bind9
+      description: BIND9 Server 1
+
+      # List out the designate-mdns servers from which BIND servers should
+      # request zone transfers (AXFRs) from.
+      masters:
+        - host: 127.0.0.1
+          port: 5354
+
+      # BIND Configuration options
+      options:
+        host: 127.0.0.1
+        port: 53
+        rndc_host: 127.0.0.1
+        rndc_port: 953
+        rndc_key_file: /etc/bind/rndc.key
+
+  # Optional list of additional IP/Port's for which designate-mdns will send
+  # DNS NOTIFY packets to
+  # also_notifies:
+  #  - host: 192.0.2.4
+  #    port: 53

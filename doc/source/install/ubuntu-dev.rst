@@ -48,9 +48,9 @@ Installing Designate
 
 ::
 
-   $ apt-get update
-   $ apt-get install python-pip python-virtualenv git
-   $ apt-get build-dep python-lxml
+   $ sudo apt-get update
+   $ sudo apt-get install python-pip python-virtualenv git
+   $ sudo apt-get build-dep python-lxml
 
 2. Clone the Designate repo from GitHub
 
@@ -100,7 +100,7 @@ Installing Designate
 
 ::
 
-   $ ls *.sample | while read f; do cp $f $(echo $f | sed "s/.sample$//g"); done
+   $ cp -a rootwrap.conf.sample rootwrap.conf
 
 
 7. Make the directory for Designate’s log files
@@ -124,7 +124,7 @@ Configuring Designate
 .. index::
     double: configure; designate
 
-Open the designate.conf file for editing
+Create the designate.conf file
 
 ::
 
@@ -140,21 +140,17 @@ Copy or mirror the configuration from this sample file here:
 Installing RabbitMQ
 ===================
 
-.. note::
-
-    Do the following commands as "root" or via sudo <command>
-
 Install the RabbitMQ package
 
 ::
 
-    $ apt-get install rabbitmq-server
+    $ sudo apt-get install rabbitmq-server
 
 Create a user:
 
 ::
 
-    $ rabbitmqctl add_user designate designate
+    $ sudo rabbitmqctl add_user designate designate
 
 Give the user access to the / vhost:
 
@@ -173,7 +169,7 @@ Install the MySQL server package
 
 ::
 
-    $ apt-get install mysql-server-5.5
+    $ sudo apt-get install mysql-server-5.5
 
 
 If you do not have MySQL previously installed, you will be prompted to change the root password.
@@ -204,7 +200,7 @@ Install additional packages
 
 ::
 
-    $ apt-get install libmysqlclient-dev
+    $ sudo apt-get install libmysqlclient-dev
     $ pip install pymysql
 
 
@@ -218,29 +214,63 @@ Install the DNS server, BIND9
 
 ::
 
-      $ apt-get install bind9
+    $ sudo apt-get install bind9
 
-      # Update the BIND9 Configuration
-      $ editor /etc/bind/named.conf.options
+Update the BIND9 Configuration
 
-      # Change the corresponding lines in the config file:
-      options {
-        directory "/var/cache/bind";
-        dnssec-validation auto;
-        auth-nxdomain no; # conform to RFC1035
-        listen-on-v6 { any; };
-        allow-new-zones yes;
-        request-ixfr no;
-        recursion no;
-      };
+::
 
-      # Disable AppArmor for BIND9
-      $ touch /etc/apparmor.d/disable/usr.sbin.named
-      $ service apparmor reload
+    $ sudo editor /etc/bind/named.conf.options
 
-      # Restart BIND9:
-      $ service bind9 restart
+Change the corresponding lines in the config file:
 
+::
+
+    options {
+      directory "/var/cache/bind";
+      dnssec-validation auto;
+      auth-nxdomain no; # conform to RFC1035
+      listen-on-v6 { any; };
+      allow-new-zones yes;
+      request-ixfr no;
+      recursion no;
+    };
+
+Disable AppArmor for BIND9
+
+::
+
+    $ sudo touch /etc/apparmor.d/disable/usr.sbin.named
+    $ sudo service apparmor reload
+
+Restart BIND9:
+
+::
+
+    $ sudo service bind9 restart
+
+Create and Import pools.yml File
+================================
+
+.. index::
+   double: install; pools
+
+Create the pools.yaml file
+
+::
+
+  $ editor pools.yaml
+
+Copy or mirror the configuration from this sample file here:
+
+.. literalinclude:: ../examples/basic-pools-sample.yaml
+    :language: yaml
+
+Import the pools.yaml file into Designate
+
+::
+
+   $ designate-manage pool update --file pools.yaml
 
 Initialize & Start the Central Service
 ======================================
@@ -276,10 +306,18 @@ Open up a new ssh window and log in to your server (or however you’re communic
 
    $ cd openstack/designate
 
-   # Make sure your virtualenv is sourced
+::
+
+If Designate was installed into a virtualenv, make sure your virtualenv is sourced
+
+::
+
    $ source .venv/bin/activate
 
-   # Start the API Service
+Start the API Service
+
+::
+
    $ designate-api
 
 You’ll now be seeing the log from the API service.
@@ -295,10 +333,24 @@ Open up a new ssh window and log in to your server (or however you’re communic
 
 ::
 
-   # Sync the Pool Manager's cache:
+   $ cd openstack/designate
+
+If Designate was installed into a virtualenv, make sure your virtualenv is sourced
+
+::
+
+   $ source .venv/bin/activate
+
+Sync the Pool Manager's cache:
+
+::
+
    $ designate-manage pool-manager-cache sync
 
-   # Start the pool manager service:
+Start the pool manager service:
+
+::
+
    $ designate-pool-manager
 
 
@@ -306,7 +358,7 @@ You'll now be seeing the log from the Pool Manager service.
 
 
 Initialize & Start the MiniDNS Service
-===========================================
+======================================
 
 .. index::
    double: install; minidns
@@ -315,7 +367,18 @@ Open up a new ssh window and log in to your server (or however you’re communic
 
 ::
 
-   # Start the minidns service:
+   $ cd openstack/designate
+
+If Designate was installed into a virtualenv, make sure your virtualenv is sourced
+
+::
+
+   $ source .venv/bin/activate
+
+Start the minidns service:
+
+::
+
    $ designate-mdns
 
 
