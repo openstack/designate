@@ -43,7 +43,7 @@ OPTS = [
         "in the pools.yaml file"),
     cfg.BoolOpt(
         'sslverify',
-        default=False,
+        default=True,
         deprecated_for_removal=True,
         deprecated_reason="All backend options have been migrated to options "
         "in the pools.yaml file"),
