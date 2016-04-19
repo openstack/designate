@@ -1,0 +1,15 @@
+  targets:
+    - type: agent
+      description: Agent Server 1
+
+      # List out the designate-mdns servers from which Agent servers should
+      # request zone transfers (AXFRs) from.
+      masters:
+        - host: 192.0.2.1
+          port: 5354
+
+      # Agent Configuration options, this should be this targets
+      # designate-agent service's host and port.
+      options:
+        host: 192.0.2.2
+        port: 5358

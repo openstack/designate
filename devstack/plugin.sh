@@ -5,7 +5,7 @@ XTRACE=$(set +o | grep xtrace)
 set +o xtrace
 
 # Get backend configuration
-# ----------------------------
+# -------------------------
 if is_service_enabled designate && [[ -r $DESIGNATE_PLUGINS/backend-$DESIGNATE_BACKEND_DRIVER ]]; then
     # Load plugin
     source $DESIGNATE_PLUGINS/backend-$DESIGNATE_BACKEND_DRIVER
@@ -150,6 +150,7 @@ function configure_designatedashboard {
 function configure_designate_tempest() {
     if is_service_enabled tempest; then
         nameservers=$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT_DNS
+        # TODO(kiall): Remove hardcoded list of plugins
         case $DESIGNATE_BACKEND_DRIVER in
             bind9|powerdns)
                 nameservers="$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT_DNS"
@@ -306,6 +307,11 @@ function stop_designate {
 
 # This is the main for plugin.sh
 if is_service_enabled designate; then
+    # Sanify check for agent backend
+    # ------------------------------
+    if ! is_service_enabled designate-agent && [ "$DESIGNATE_BACKEND_DRIVER" == "agent" ]; then
+        die $LINENO "To use the agent backend, you must enable the designate-agent service"
+    fi
 
     if [[ "$1" == "stack" && "$2" == "install" ]]; then
         echo_summary "Installing Designate client"

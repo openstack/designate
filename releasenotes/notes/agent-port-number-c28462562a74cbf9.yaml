@@ -1,0 +1,5 @@
+---
+upgrade:
+  - The default port which the designate-agent service listens on has changed
+    from 53 to 5358. This matches the port we have always used in the sample
+    configuration, and the port used in the agent backend class.
