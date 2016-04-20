@@ -630,15 +630,12 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             recordsets.obj_reset_changes(['records'])
 
         else:
-            recordsets = self._find_recordsets_with_records(
-                context, tables.recordsets, objects.RecordSet,
-                objects.RecordSetList, exceptions.RecordSetNotFound, criterion,
-                load_relations=True, relation_table=tables.records,
-                relation_cls=objects.Record,
-                relation_list_cls=objects.RecordList, limit=limit,
-                marker=marker, sort_key=sort_key, sort_dir=sort_dir)
+            tc, recordsets = self._find_recordsets_with_records(
+                    context, criterion, tables.zones, tables.recordsets,
+                    tables.records, limit=limit, marker=marker,
+                    sort_key=sort_key, sort_dir=sort_dir)
 
-            recordsets.total_count = self.count_recordsets(context, criterion)
+            recordsets.total_count = tc
 
         return recordsets
 
