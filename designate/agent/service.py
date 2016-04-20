@@ -13,6 +13,17 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
+"""
+    agent.service
+    ~~~~~~~~~~~~~
+    Typically runs on the resolver hosts. Listen for incoming DNS requests
+    on a port different than 53 and execute create_zone/delete_zone on the
+    backend adaptor (e.g. Bind9)
+
+    Configured in [service:agent]
+"""
+
 from oslo_config import cfg
 
 from designate import utils

@@ -13,6 +13,17 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
+"""
+    backend.agent
+    ~~~~~~~~~~~~~
+    Agent backend for Pool Manager.
+    Sends DNS requests to a remote agent using private OPCODEs to trigger
+    creation / deletion / update of zones.
+
+    Configured in the [service:pool_manager] section
+"""
+
 import eventlet
 import dns
 import dns.rdataclass
@@ -46,10 +57,13 @@ class AgentPoolBackend(base.Backend):
     def __init__(self, target):
         super(AgentPoolBackend, self).__init__(target)
         self.host = self.options.get('host', '127.0.0.1')
+        # TODO(Federico): move all port defaults into a defaults module
         self.port = int(self.options.get('port', 5358))
         self.timeout = CONF['service:pool_manager'].poll_timeout
         self.retry_interval = CONF['service:pool_manager'].poll_retry_interval
         self.max_retries = CONF['service:pool_manager'].poll_max_retries
+
+        # FIXME: the agent retries creating zones without any interval
 
     @property
     def mdns_api(self):
