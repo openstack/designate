@@ -256,13 +256,19 @@ debug = False
 #-----------------------
 # Agent Service
 #-----------------------
+# The agent runs on the resolver hosts
 [service:agent]
 #workers = None
 #listen = 0.0.0.0:5358
 #tcp_backlog = 100
 #allow_notify = 127.0.0.1
+
+# MiniDNS IP address and port
 #masters = 127.0.0.1:5354
+
+# Set to "fake", "bind9" or "knot2"
 #backend_driver = fake
+
 #transfer_source = None
 #notify_delay = 0
 
@@ -441,9 +447,12 @@ debug = False
 #format = '%(hostname)s.%(project)s.%(domain)s'
 #format = '%(hostname)s.%(domain)s'
 
-#############################
+##############################
 ## Agent Backend Configuration
-#############################
+##############################
+
+# Set backend_driver in the [service:agent] section
+
 [backend:agent:bind9]
 #rndc_host = 127.0.0.1
 #rndc_port = 953
@@ -451,7 +460,12 @@ debug = False
 #rndc_key_file = /etc/rndc.key
 #zone_file_path = $state_path/zones
 #query_destination = 127.0.0.1
-#
+
+[backend:agent:knot2]
+# knotc command name when rootwrap is used. Location of the knotc executable
+# on the resolver host if rootwrap is not used
+#knotc_cmd_name = /usr/sbin/knotc
+
 [backend:agent:denominator]
 #name = dynect
 #config_file = /etc/denominator.conf

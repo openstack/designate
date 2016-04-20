@@ -1,0 +1,3 @@
+# cmd-name: filter-name, raw-command, user, args
+[Filters]
+knotc: CommandFilter, /usr/sbin/knotc, root

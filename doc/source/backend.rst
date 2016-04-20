@@ -76,3 +76,14 @@ Backend Powerdns
     :members:
     :undoc-members:
     :show-inheritance:
+
+Agent Backend KnotDNS
+=====================
+
+.. automodule:: designate.backend.agent_backend.impl_knot2
+    :members:
+    :special-members:
+    :private-members:
+    :undoc-members:
+    :show-inheritance:
+

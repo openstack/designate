@@ -47,12 +47,12 @@ OPTS = [
     cfg.ListOpt('masters', default=[],
                 help='List of masters for the Agent, format ip:port'),
     cfg.StrOpt('backend-driver', default='bind9',
-               help='The backend driver to use'),
+               help='The backend driver to use: bind9 or knot2'),
     cfg.StrOpt('transfer-source',
                help='An IP address to be used to fetch zones transferred in'),
     cfg.FloatOpt('notify-delay', default=0.0,
-               help='Delay after a NOTIFY arrives for a zone that the Agent '
-               'will pause and drop subsequent NOTIFYs for that zone'),
+                 help='Delay after a NOTIFY arrives for a zone that the Agent '
+                 'will pause and drop subsequent NOTIFYs for that zone'),
 ]
 
 cfg.CONF.register_opts(OPTS, group='service:agent')
