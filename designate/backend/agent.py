@@ -30,24 +30,12 @@ from designate.i18n import _LW
 from designate.backend import base
 from designate import exceptions
 from designate.mdns import rpcapi as mdns_api
-
+import designate.backend.private_codes as pcodes
 
 dns_query = eventlet.import_patched('dns.query')
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
-
-# Command and Control OPCODE
-CC = 14
-
-# Private DNS CLASS Uses
-CLASSCC = 65280
-
-# Private RR Code Uses
-SUCCESS = 65280
-FAILURE = 65281
-CREATE = 65282
-DELETE = 65283
 
 
 class AgentPoolBackend(base.Backend):
@@ -72,9 +60,9 @@ class AgentPoolBackend(base.Backend):
         response, retry = self._make_and_send_dns_message(
             zone.name,
             self.timeout,
-            CC,
-            CREATE,
-            CLASSCC,
+            pcodes.CC,
+            pcodes.CREATE,
+            pcodes.CLASSCC,
             self.host,
             self.port
         )
@@ -100,9 +88,9 @@ class AgentPoolBackend(base.Backend):
         response, retry = self._make_and_send_dns_message(
             zone.name,
             self.timeout,
-            CC,
-            DELETE,
-            CLASSCC,
+            pcodes.CC,
+            pcodes.DELETE,
+            pcodes.CLASSCC,
             self.host,
             self.port
         )
