@@ -40,6 +40,13 @@
                     "minimum": 0,
                     "maximum": 2147483647,
                     "default": 20
+                },
+                "api_export_size": {
+                    "type": "integer",
+                    "description": "Number of zone records allowed",
+                    "minimum": 0,
+                    "maximum": 2147483647,
+                    "default": 500
                 }
             }
         }
