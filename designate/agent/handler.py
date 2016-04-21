@@ -13,6 +13,17 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
+"""
+    agent.handler
+    ~~~~~~~~~~~~~
+    Typically runs on the resolver hosts. Listen for incoming DNS requests
+    on a port different than 53 and execute create_zone/delete_zone on the
+    backend adaptor (e.g. Bind9)
+
+    Configured in [service:agent]
+"""
+
 import dns
 import dns.opcode
 import dns.rcode
@@ -26,6 +37,7 @@ from designate import utils
 from designate import dnsutils
 from designate.backend import agent_backend
 from designate.i18n import _LW
+from designate.i18n import _LE
 from designate.i18n import _LI
 import designate.backend.private_codes as pcodes
 
@@ -105,8 +117,11 @@ class RequestHandler(object):
         serial = self.backend.find_zone_serial(zone_name)
 
         if serial is not None:
-            LOG.warning(_LW("Not creating %(name)s, zone already exists") %
-                 {'name': zone_name})
+            # Does this warrant a warning?
+            # There is a race condition between checking if the zone exists
+            # and creating it.
+            LOG.warning(_LW("Not creating %(name)s, zone already exists"),
+                        {'name': zone_name})
             # Provide an authoritative answer
             response.flags |= dns.flags.AA
             return response
@@ -115,10 +130,14 @@ class RequestHandler(object):
                   {'verb': "CREATE", 'name': zone_name, 'host': requester})
 
         try:
+            # Receive an AXFR from MiniDNS to populate the zone
             zone = dnsutils.do_axfr(zone_name, self.masters,
-                source=self.transfer_source)
+                                    source=self.transfer_source)
             self.backend.create_zone(zone)
-        except Exception:
+        except Exception as e:
+            # TODO(Federico) unknown exceptions should be logged with a full
+            # traceback. Same in the other methods.
+            LOG.error(_LE("Exception while creating zone %r"), e)
             response.set_rcode(dns.rcode.from_text("SERVFAIL"))
             return response
 
