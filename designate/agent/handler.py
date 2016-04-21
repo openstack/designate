@@ -27,22 +27,10 @@ from designate import dnsutils
 from designate.backend import agent_backend
 from designate.i18n import _LW
 from designate.i18n import _LI
-
+import designate.backend.private_codes as pcodes
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
-
-# Command and Control OPCODE
-CC = 14
-
-# Private DNS CLASS Uses
-ClassCC = 65280
-
-# Private RR Code Uses
-SUCCESS = 65280
-FAILURE = 65281
-CREATE = 65282
-DELETE = 65283
 
 
 class RequestHandler(object):
@@ -72,11 +60,11 @@ class RequestHandler(object):
         opcode = request.opcode()
         if opcode == dns.opcode.NOTIFY:
             response = self._handle_notify(request)
-        elif opcode == CC:
-            if rdclass == ClassCC:
-                if rdtype == CREATE:
+        elif opcode == pcodes.CC:
+            if rdclass == pcodes.CLASSCC:
+                if rdtype == pcodes.CREATE:
                     response = self._handle_create(request)
-                elif rdtype == DELETE:
+                elif rdtype == pcodes.DELETE:
                     response = self._handle_delete(request)
                 else:
                     response = self._handle_query_error(request,
