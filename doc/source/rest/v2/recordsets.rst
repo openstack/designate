@@ -93,6 +93,7 @@ The following format can be used for common record set types including A, AAAA, 
     :form records: a list of record values
 
     :statuscode 201: Created
+    :statuscode 202: Accepted
     :statuscode 401: Access Denied
 
 Get Record Set
@@ -294,6 +295,7 @@ Update Record Set
     :form records: a list of data records
 
     :statuscode 200: Success
+    :statuscode 202: Accepted
     :statuscode 401: Access Denied
 
 Delete Record Set
@@ -316,9 +318,9 @@ Delete Record Set
 
     .. sourcecode:: http
 
-        HTTP/1.1 204 No Content
+        HTTP/1.1 202 Accepted
 
-    :statuscode 204: No content
+    :statuscode: 202 Accepted
 
 Create MX Record Set
 --------------------
