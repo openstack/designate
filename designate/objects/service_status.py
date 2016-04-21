@@ -52,7 +52,7 @@ class ServiceStatus(base.PersistentObjectMixin,
         }
     }
 
-    STRING_FIELDS = [
+    STRING_KEYS = [
         'service_name', 'hostname', 'status'
     ]
 
