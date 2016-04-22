@@ -67,7 +67,7 @@ class AgentPoolBackend(base.Backend):
             self.port
         )
         if response is None:
-            raise exceptions.Backend()
+            raise exceptions.Backend("create_zone() failed")
 
     def update_zone(self, context, zone):
         LOG.debug('Update Zone')
@@ -95,7 +95,7 @@ class AgentPoolBackend(base.Backend):
             self.port
         )
         if response is None:
-            raise exceptions.Backend()
+            raise exceptions.Backend("failed delete_zone()")
 
     def _make_and_send_dns_message(self, zone_name, timeout, opcode,
                                    rdatatype, rdclass, dest_ip,
@@ -117,7 +117,7 @@ class AgentPoolBackend(base.Backend):
         if isinstance(response, dns.exception.Timeout):
             LOG.warning(_LW("Got Timeout while trying to send '%(msg)s' for "
                          "'%(zone)s' to '%(server)s:%(port)d'. Timeout="
-                         "'%(timeout)d' seconds. Retry='%(retry)d'") %
+                         "'%(timeout)d' seconds. Retry='%(retry)d'"),
                      {'msg': str(opcode),
                       'zone': zone_name, 'server': dest_ip,
                       'port': dest_port, 'timeout': timeout,
@@ -126,7 +126,7 @@ class AgentPoolBackend(base.Backend):
         elif isinstance(response, dns_query.BadResponse):
             LOG.warning(_LW("Got BadResponse while trying to send '%(msg)s' "
                          "for '%(zone)s' to '%(server)s:%(port)d'. Timeout"
-                         "='%(timeout)d' seconds. Retry='%(retry)d'") %
+                         "='%(timeout)d' seconds. Retry='%(retry)d'"),
                      {'msg': str(opcode),
                       'zone': zone_name, 'server': dest_ip,
                       'port': dest_port, 'timeout': timeout,
@@ -139,7 +139,7 @@ class AgentPoolBackend(base.Backend):
                 response.flags, response.ednsflags) != dns.rcode.NOERROR:
             LOG.warning(_LW("Failed to get expected response while trying to "
                          "send '%(msg)s' for '%(zone)s' to '%(server)s:"
-                         "%(port)d'. Response message: %(resp)s") %
+                         "%(port)d'. Response message: %(resp)s"),
                      {'msg': str(opcode),
                       'zone': zone_name, 'server': dest_ip,
                       'port': dest_port, 'resp': str(response)})
