@@ -15,13 +15,14 @@
 
 
 import gettext
-import logging
+
+from oslo_log import log
 
 from designate.backend.impl_infoblox import ibexceptions as exc
 
 _ = gettext.gettext
 
-LOG = logging.getLogger(__name__)
+LOG = log.getLogger(__name__)
 
 
 class InfobloxObjectManipulator(object):

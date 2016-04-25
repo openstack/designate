@@ -16,8 +16,8 @@
 #    under the License.
 
 import json as jsonutils
-import logging
 
+from oslo_log import log
 from six.moves.urllib import parse
 import requests
 
@@ -25,7 +25,7 @@ from designate.backend.impl_infoblox.config import cfg
 from designate.backend.impl_infoblox import ibexceptions as exc
 
 
-LOG = logging.getLogger(__name__)
+LOG = log.getLogger(__name__)
 
 
 class Infoblox(object):

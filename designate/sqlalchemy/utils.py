@@ -15,7 +15,6 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-import logging
 
 import six
 import sqlalchemy
@@ -24,13 +23,14 @@ from sqlalchemy import select
 from oslo_db.sqlalchemy import utils
 from oslo_db import exception as oslo_db_exception
 from oslo_db.sqlalchemy.migration_cli import manager
+from oslo_log import log
 
 from designate.i18n import _
 from designate.i18n import _LW
 from designate import exceptions
 
 
-LOG = logging.getLogger(__name__)
+LOG = log.getLogger(__name__)
 
 
 def get_migration_manager(repo_path, url, init_version=None):

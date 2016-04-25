@@ -14,9 +14,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import logging
 import uuid
 
+from oslo_log import log
 import oslo_messaging as messaging
 from mock import call
 from mock import Mock
@@ -32,7 +32,7 @@ from designate.tests.test_pool_manager import PoolManagerTestCase
 from designate.tests.test_pool_manager import POOL_DICT
 import designate.pool_manager.service as pm_module
 
-LOG = logging.getLogger(__name__)
+LOG = log.getLogger(__name__)
 
 
 class PoolManagerServiceNoopTest(PoolManagerTestCase):

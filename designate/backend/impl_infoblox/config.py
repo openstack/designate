@@ -13,11 +13,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import logging
-
 from oslo_config import cfg
+from oslo_log import log
 
-LOG = logging.getLogger(__name__)
+LOG = log.getLogger(__name__)
 
 
 cfg.CONF.register_group(cfg.OptGroup(

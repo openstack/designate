@@ -13,14 +13,14 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import logging
 
 from oslo_config import cfg
+from oslo_log import log
 
 from designate.network_api.base import NetworkAPI
 
 
-LOG = logging.getLogger(__name__)
+LOG = log.getLogger(__name__)
 
 cfg.CONF.register_opts([
     cfg.StrOpt('network_api', default='neutron', help='Which API to use.')
