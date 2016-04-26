@@ -13,12 +13,13 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import logging
+
+from oslo_log import log
 
 from designate.notification_handler.base import NotificationHandler
 
 
-LOG = logging.getLogger(__name__)
+LOG = log.getLogger(__name__)
 
 
 def get_notification_handlers(enabled_extensions):

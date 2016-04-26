@@ -15,11 +15,10 @@
 # under the License.
 import sys
 import functools
-import logging as logmodule
 
 import pkg_resources
 from oslo_config import cfg
-from oslo_log import log as logging
+from oslo_log import log
 from stevedore import hook
 
 
@@ -28,19 +27,19 @@ class HookLog(object):
     messages for later use.
     """
     LVLS = dict(
-        debug=logmodule.DEBUG,
-        info=logmodule.INFO,
-        warning=logmodule.WARNING,
-        error=logmodule.ERROR,
-        critical=logmodule.CRITICAL,
-        exception=logmodule.ERROR,
+        debug=log.DEBUG,
+        info=log.INFO,
+        warning=log.WARNING,
+        error=log.ERROR,
+        critical=log.CRITICAL,
+        exception=log.ERROR,
     )
 
     def __init__(self):
         self.messages = []
 
     def log(self, logger=None):
-        logger = logging.getLogger(__name__)
+        logger = log.getLogger(__name__)
         for level, msg, args, kw in self.messages:
             logger.log(level, msg, *args, **kw)
 
@@ -95,7 +94,7 @@ class BaseHook(object):
 
 class hook_point(object):
     NAMESPACE = 'designate.hook_point'
-    LOG_LEVEL = logmodule.INFO
+    LOG_LEVEL = log.INFO
 
     def __init__(self, name=None):
         self._name = name

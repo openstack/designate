@@ -13,10 +13,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import logging
 from copy import deepcopy
 
 from oslo_config import cfg
+from oslo_log import log
 import six
 
 from designate import exceptions
@@ -26,7 +26,7 @@ from designate.objects.validation_error import ValidationError
 from designate.objects.validation_error import ValidationErrorList
 
 
-LOG = logging.getLogger(__name__)
+LOG = log.getLogger(__name__)
 
 cfg.CONF.import_opt('supported_record_type', 'designate')
 
