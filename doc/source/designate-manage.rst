@@ -180,7 +180,7 @@ designate-manage pool update
                                         [--dry_run DRY_RUN]
 
 
-Export a YAML copy of the current running pool config
+Update the running pool config from a YAML file
 
 **Optional arguments:**
 
