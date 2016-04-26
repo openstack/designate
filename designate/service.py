@@ -259,6 +259,9 @@ class DNSService(object):
     """
     DNS Service mixin used by all Designate DNS Services
     """
+
+    _TCP_RECV_MAX_SIZE = 65535
+
     def __init__(self, *args, **kwargs):
         super(DNSService, self).__init__(*args, **kwargs)
 
@@ -313,6 +316,7 @@ class DNSService(object):
 
         while True:
             try:
+                # handle a new TCP connection
                 client, addr = sock_tcp.accept()
 
                 if self._service_config.tcp_recv_timeout:
@@ -321,19 +325,8 @@ class DNSService(object):
                 LOG.debug("Handling TCP Request from: %(host)s:%(port)d" %
                           {'host': addr[0], 'port': addr[1]})
 
-                # Prepare a variable for the payload to be buffered
-                payload = ""
-
-                # Receive the first 2 bytes containing the payload length
-                expected_length_raw = client.recv(2)
-                (expected_length, ) = struct.unpack('!H', expected_length_raw)
-
-                # Keep receiving data until we've got all the data we expect
-                while len(payload) < expected_length:
-                    data = client.recv(65535)
-                    if not data:
-                        break
-                    payload += data
+                # Dispatch a thread to handle the connection
+                self.tg.add_thread(self._dns_handle_tcp_conn, addr, client)
 
             # NOTE: Any uncaught exceptions will result in the main loop
             # ending unexpectedly. Ensure proper ordering of blocks, and
@@ -350,21 +343,81 @@ class DNSService(object):
                     _LW("Socket error %(err)s from: %(host)s:%(port)d") %
                     {'host': addr[0], 'port': addr[1], 'err': errname})
 
-            except struct.error:
-                client.close()
-                LOG.warning(_LW("Invalid packet from: %(host)s:%(port)d") %
-                         {'host': addr[0], 'port': addr[1]})
-
             except Exception:
                 client.close()
                 LOG.exception(_LE("Unknown exception handling TCP request "
                                   "from: %(host)s:%(port)d") %
                               {'host': addr[0], 'port': addr[1]})
 
-            else:
-                # Dispatch a thread to handle the query
-                self.tg.add_thread(self._dns_handle, addr, payload,
-                                   client=client)
+    def _dns_handle_tcp_conn(self, addr, client):
+        """
+        Handle a DNS Query over TCP. Multiple queries can be pipelined
+        though the same TCP connection but they will be processed
+        sequentially.
+        See https://tools.ietf.org/html/draft-ietf-dnsop-5966bis-03
+        Raises no exception: it's to be run in an eventlet green thread
+
+        :param addr: Tuple of the client's (IP addr, Port)
+        :type addr: tupple
+        :param client: Client socket
+        :type client: socket
+        :raises: None
+        """
+        host, port = addr
+        try:
+            # The whole loop lives in a try/except block. On exceptions, the
+            # connection is closed: there would be little chance to save save
+            # the connection after a struct error, a socket error.
+            while True:
+                # Decode the first 2 bytes containing the query length
+                expected_length_raw = client.recv(2)
+                (expected_length, ) = struct.unpack('!H', expected_length_raw)
+
+                # Keep receiving data until we've got all the data we expect
+                # The buffer contains only one query at a time
+                buf = b''
+                while len(buf) < expected_length:
+                    recv_size = min(expected_length - len(buf),
+                                    self._TCP_RECV_MAX_SIZE)
+                    data = client.recv(recv_size)
+                    if not data:
+                        break
+                    buf += data
+
+                query = buf
+
+                # Call into the DNS Application itself with payload and addr
+                for response in self._dns_application(
+                        {'payload': query, 'addr': addr}):
+
+                    # Send back a response only if present
+                    if response is None:
+                        continue
+
+                    # Handle TCP Responses
+                    msg_length = len(response)
+                    tcp_response = struct.pack("!H", msg_length) + response
+                    client.sendall(tcp_response)
+
+        except socket.timeout:
+            LOG.info(_LI("TCP Timeout from: %(host)s:%(port)d"),
+                     {'host': host, 'port': port})
+
+        except socket.error as e:
+            errname = errno.errorcode[e.args[0]]
+            LOG.warning(_LW("Socket error %(err)s from: %(host)s:%(port)d"),
+                        {'host': host, 'port': port, 'err': errname})
+
+        except struct.error:
+            LOG.warning(_LW("Invalid packet from: %(host)s:%(port)d"),
+                        {'host': host, 'port': port})
+
+        except Exception:
+            LOG.exception(_LE("Unknown exception handling TCP request "
+                              "from: %(host)s:%(port)d"),
+                          {'host': host, 'port': port})
+        finally:
+            client.close()
 
     def _dns_handle_udp(self, sock_udp):
         LOG.info(_LI("_handle_udp thread started"))
