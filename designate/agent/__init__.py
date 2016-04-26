@@ -47,7 +47,7 @@ OPTS = [
     cfg.ListOpt('masters', default=[],
                 help='List of masters for the Agent, format ip:port'),
     cfg.StrOpt('backend-driver', default='bind9',
-               help='The backend driver to use: bind9 or knot2'),
+               help='The backend driver to use, e.g. bind9, djbdns, knot2'),
     cfg.StrOpt('transfer-source',
                help='An IP address to be used to fetch zones transferred in'),
     cfg.FloatOpt('notify-delay', default=0.0,

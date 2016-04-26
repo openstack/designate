@@ -87,3 +87,12 @@ Agent Backend KnotDNS
     :undoc-members:
     :show-inheritance:
 
+Agent Backend Djbdns
+====================
+
+.. automodule:: designate.backend.agent_backend.impl_djbdns
+    :members:
+    :special-members:
+    :private-members:
+    :undoc-members:
+    :show-inheritance:

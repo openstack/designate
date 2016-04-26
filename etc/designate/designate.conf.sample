@@ -465,6 +465,15 @@ debug = False
 # knotc command name when rootwrap is used. Location of the knotc executable
 # on the resolver host if rootwrap is not used
 #knotc_cmd_name = /usr/sbin/knotc
+#
+[backend:agent:djbdns]
+# Command names when rootwrap is used or location of the executables
+# on the resolver host when rootwrap is not used
+# tcpclient_cmd_name =
+# axfr_get_cmd_name =
+# tinydns_data_cmd_name =
+# tinydns_datadir =
+#query_destination = 127.0.0.1
 
 [backend:agent:denominator]
 #name = dynect
