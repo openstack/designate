@@ -13,8 +13,10 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
 import os
 import tempfile
+import unittest
 
 import testtools
 from jinja2 import Template
@@ -128,3 +130,13 @@ class TestUtils(TestCase):
     def test_get_paging_params_invalid_sort_key(self):
         with testtools.ExpectedException(exceptions.InvalidSortKey):
             utils.get_paging_params({'sort_key': "dsc"}, ['asc', 'desc'])
+
+
+class SocketListenTest(unittest.TestCase):
+
+    def test_listen_tcp(self):
+        # Test listening on TCP on IPv4 and IPv6 addrs
+        # bug 1566036
+        for addr in ('', '0.0.0.0', '127.0.0.1', '::', '::1'):
+            s = utils.bind_tcp(addr, 0, 1)
+            s.close()

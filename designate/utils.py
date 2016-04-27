@@ -28,6 +28,7 @@ from oslo_config import cfg
 from oslo_concurrency import processutils
 from oslo_log import log as logging
 from oslo_utils import timeutils
+from oslo_utils.netutils import is_valid_ipv6
 
 from designate.common import config
 from designate import exceptions
@@ -461,10 +462,23 @@ def get_paging_params(params, sort_keys):
 
 
 def bind_tcp(host, port, tcp_backlog, tcp_keepidle=None):
-    # Bind to the TCP port
+    """Bind to a TCP port and listen.
+    Use reuseaddr, reuseport if available, keepalive if specified
+
+    :param host: IPv4/v6 address or "". "" binds to every IPv4 interface.
+    :type host: str
+    :param port: TCP port
+    :type port: int
+    :param tcp_backlog: TCP listen backlog
+    :type tcp_backlog: int
+    :param tcp_keepidle: TCP keepalive interval
+    :type tcp_keepidle: int
+    :returns: socket
+    """
     LOG.info(_LI('Opening TCP Listening Socket on %(host)s:%(port)d'),
              {'host': host, 'port': port})
-    sock_tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    family = socket.AF_INET6 if is_valid_ipv6(host) else socket.AF_INET
+    sock_tcp = socket.socket(family, socket.SOCK_STREAM)
     sock_tcp.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     sock_tcp.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
 
@@ -472,7 +486,7 @@ def bind_tcp(host, port, tcp_backlog, tcp_keepidle=None):
     try:
         sock_tcp.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
     except Exception:
-        pass
+        LOG.info(_LI('SO_REUSEPORT not available, ignoring.'))
 
     # This option isn't available in the OS X version of eventlet
     if tcp_keepidle and hasattr(socket, 'TCP_KEEPIDLE'):
