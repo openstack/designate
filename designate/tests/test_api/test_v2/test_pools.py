@@ -12,6 +12,8 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import unittest
+
 import six
 from oslo_config import cfg
 from oslo_log import log as logging
@@ -37,6 +39,7 @@ class ApiV2PoolsTest(ApiV2TestCase):
         # Override to policy to make everyone an admin.
         self.policy({'admin': '@'})
 
+    @unittest.skip("Flakey Test, See bug 1570859")
     def test_create_pool(self):
         # Prepare a Pool fixture
         fixture = self.get_pool_fixture(fixture=0)
@@ -65,6 +68,7 @@ class ApiV2PoolsTest(ApiV2TestCase):
         self.assertEqual(
             fixture['ns_records'], response.json['ns_records'])
 
+    @unittest.skip("Flakey Test, See bug 1570859")
     def test_create_pool_validation(self):
         # NOTE: The schemas should be tested separatly to the API. So we
         #       don't need to test every variation via the API itself.
@@ -91,6 +95,7 @@ class ApiV2PoolsTest(ApiV2TestCase):
         self._assert_exception(
             'invalid_object', 400, self.client.post_json, '/pools', body)
 
+    @unittest.skip("Flakey Test, See bug 1570859")
     def test_create_pool_name_missing(self):
         fixture = self.get_pool_fixture(fixture=0)
         fixture['attributes'] = self.get_pool_attribute_fixture(fixture=0)
@@ -99,6 +104,7 @@ class ApiV2PoolsTest(ApiV2TestCase):
         self._assert_exception(
             'invalid_object', 400, self.client.post_json, '/pools', body)
 
+    @unittest.skip("Flakey Test, See bug 1570859")
     def test_create_pool_name_too_long(self):
         fixture = self.get_pool_fixture(fixture=0)
         fixture['attributes'] = self.get_pool_attribute_fixture(fixture=0)
@@ -107,6 +113,7 @@ class ApiV2PoolsTest(ApiV2TestCase):
         self._assert_exception(
             'invalid_object', 400, self.client.post_json, '/pools', body)
 
+    @unittest.skip("Flakey Test, See bug 1570859")
     def test_create_pool_description_too_long(self):
         fixture = self.get_pool_fixture(fixture=0)
         fixture['attributes'] = self.get_pool_attribute_fixture(fixture=0)
@@ -115,6 +122,7 @@ class ApiV2PoolsTest(ApiV2TestCase):
         self._assert_exception(
             'invalid_object', 400, self.client.post_json, '/pools', body)
 
+    @unittest.skip("Flakey Test, See bug 1570859")
     def test_create_pool_provisioner_too_long(self):
         fixture = self.get_pool_fixture(fixture=0)
         fixture['attributes'] = self.get_pool_attribute_fixture(fixture=0)
@@ -123,6 +131,7 @@ class ApiV2PoolsTest(ApiV2TestCase):
         self._assert_exception(
             'invalid_object', 400, self.client.post_json, '/pools', body)
 
+    @unittest.skip("Flakey Test, See bug 1570859")
     def test_create_pool_tenant_id_too_long(self):
         fixture = self.get_pool_fixture(fixture=0)
         fixture['attributes'] = self.get_pool_attribute_fixture(fixture=0)
@@ -131,6 +140,7 @@ class ApiV2PoolsTest(ApiV2TestCase):
         self._assert_exception(
             'invalid_object', 400, self.client.post_json, '/pools', body)
 
+    @unittest.skip("Flakey Test, See bug 1570859")
     def test_create_pool_duplicate(self):
         # Prepare a Pool fixture
         fixture = self.get_pool_fixture(fixture=0)
@@ -145,6 +155,7 @@ class ApiV2PoolsTest(ApiV2TestCase):
         self._assert_exception('duplicate_pool', 409,
                                self.client.post_json, '/pools', body)
 
+    @unittest.skip("Flakey Test, See bug 1570859")
     def test_get_pools(self):
         response = self.client.get('/pools')
 
@@ -174,6 +185,7 @@ class ApiV2PoolsTest(ApiV2TestCase):
         self._assert_paging(data, '/pools', key='pools')
         self._assert_invalid_paging(data, '/pools', key='pools')
 
+    @unittest.skip("Flakey Test, See bug 1570859")
     def test_get_pools_filter(self):
         fixtures = [self.get_pool_fixture(fixture=0),
                     self.get_pool_fixture(fixture=1)]
@@ -201,11 +213,13 @@ class ApiV2PoolsTest(ApiV2TestCase):
             # Check that the correct number of pools match
             self.assertEqual(correct_result, len(response.json['pools']))
 
+    @unittest.skip("Flakey Test, See bug 1570859")
     def test_get_pools_invalid_filter(self):
         invalid_url = '/pools?description=test'
         self._assert_exception(
             'bad_request', 400, self.client.get, invalid_url)
 
+    @unittest.skip("Flakey Test, See bug 1570859")
     def test_get_pool(self):
         # Create a pool
         pool = self.create_pool()
@@ -242,6 +256,7 @@ class ApiV2PoolsTest(ApiV2TestCase):
             [n.hostname for n in pool['ns_records']],
             [n['hostname'] for n in response.json['ns_records']])
 
+    @unittest.skip("Flakey Test, See bug 1570859")
     def test_update_pool(self):
         # Create a pool
         pool = self.create_pool()
@@ -280,6 +295,7 @@ class ApiV2PoolsTest(ApiV2TestCase):
             [n.hostname for n in pool['ns_records']],
             [n['hostname'] for n in response.json['ns_records']])
 
+    @unittest.skip("Flakey Test, See bug 1570859")
     def test_update_pool_ns_records(self):
         # Create a pool
         pool = self.create_pool()
@@ -307,6 +323,7 @@ class ApiV2PoolsTest(ApiV2TestCase):
                          [n['hostname'] for n in
                           response.json['ns_records']])
 
+    @unittest.skip("Flakey Test, See bug 1570859")
     def test_update_pool_ns_records_without_priority(self):
         pool = self.create_pool()
         body = {'ns_records': [
@@ -319,6 +336,7 @@ class ApiV2PoolsTest(ApiV2TestCase):
         errmsg = response.json['errors']['errors'][0]['message']
         self.assertEqual("'priority' is a required property", errmsg)
 
+    @unittest.skip("Flakey Test, See bug 1570859")
     def test_update_pool_attributes(self):
         # Create a pool
         pool = self.create_pool()
@@ -338,6 +356,7 @@ class ApiV2PoolsTest(ApiV2TestCase):
         self.assertEqual('private',
                          response.json['attributes']['scope'])
 
+    @unittest.skip("Flakey Test, See bug 1570859")
     def test_update_pool_name_too_long(self):
         pool = self.create_pool()
         body = {"attributes": {"scope": "private"}}
@@ -346,6 +365,7 @@ class ApiV2PoolsTest(ApiV2TestCase):
         self._assert_exception(
             'invalid_object', 400, self.client.patch_json, url, body)
 
+    @unittest.skip("Flakey Test, See bug 1570859")
     def test_update_pool_description_too_long(self):
         pool = self.create_pool()
         body = {"attributes": {"scope": "private"}}
@@ -354,6 +374,7 @@ class ApiV2PoolsTest(ApiV2TestCase):
         self._assert_exception(
             'invalid_object', 400, self.client.patch_json, url, body)
 
+    @unittest.skip("Flakey Test, See bug 1570859")
     def test_update_pool_provisioner_too_long(self):
         pool = self.create_pool()
         body = {"attributes": {"scope": "private"}}
@@ -362,6 +383,7 @@ class ApiV2PoolsTest(ApiV2TestCase):
         self._assert_exception(
             'invalid_object', 400, self.client.patch_json, url, body)
 
+    @unittest.skip("Flakey Test, See bug 1570859")
     def test_delete_pool(self):
         pool = self.create_pool()
         url = '/pools/%s' % pool['id']
