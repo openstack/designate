@@ -67,7 +67,7 @@ class HeartBeatEmitter(plugin.DriverPlugin):
         if not self._running:
             return
 
-        LOG.debug("Emitting heartbeat...")
+        LOG.trace("Emitting heartbeat...")
 
         status, stats, capabilities = self._get_status()
 
