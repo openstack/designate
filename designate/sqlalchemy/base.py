@@ -339,6 +339,8 @@ class SQLAlchemy(object):
 
         inner_rproxy = self.session.execute(inner_q)
         ids = inner_rproxy.fetchall()
+        if len(ids) == 0:
+            return 0, objects.RecordSetList()
 
         resultproxy = self.session.execute(count_q)
         result = resultproxy.fetchone()
@@ -385,13 +387,11 @@ class SQLAlchemy(object):
                 records_table.c.status,                    # 26 - R Status
                 records_table.c.action,                    # 27 - R Action
                 records_table.c.serial                     # 28 - R Serial
-            ]).\
-            select_from(
-                rjoin
-                       ).\
-            where(
-                recordsets_table.c.id.in_(formatted_ids)
-                 )
+            ]).select_from(rjoin)
+
+        query = query.where(
+            recordsets_table.c.id.in_(formatted_ids)
+        )
 
         # These make looking up indexes for the Raw Rows much easier,
         # and maintainable

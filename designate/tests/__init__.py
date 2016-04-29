@@ -418,7 +418,7 @@ class TestCase(base.BaseTestCase):
         ])
 
         pool.targets = objects.PoolTargetList.from_list([
-            {'type': 'fake', u'description': "Fake PoolTarget for Tests"}
+            {'type': 'fake', u'description': u"Fake PoolTarget for Tests"}
         ])
 
         # Save the default pool
