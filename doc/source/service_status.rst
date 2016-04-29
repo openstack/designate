@@ -15,15 +15,15 @@
        under the License.
 
 
- Service Statuses
- ================
+Service Statuses
+================
 
- Overview
- -----------------------
- The Service Status entries are used to track the health state of the services
- in the Designate system. Each service will report in it's health via RPC or
- using HTTP.
+Overview
+--------
 
+The Service Status entries are used to track the health state of the services
+in the Designate system. Each service will report in it's health via RPC or
+using HTTP.
 
 Explanation
 -----------
