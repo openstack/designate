@@ -420,6 +420,12 @@ class DNSService(object):
             client.close()
 
     def _dns_handle_udp(self, sock_udp):
+        """Handle a DNS Query over UDP in a dedicated thread
+
+        :param sock_udp: UDP socket
+        :type sock_udp: socket
+        :raises: None
+        """
         LOG.info(_LI("_handle_udp thread started"))
 
         while True:
@@ -432,8 +438,8 @@ class DNSService(object):
                          {'host': addr[0], 'port': addr[1]})
 
                 # Dispatch a thread to handle the query
-                self.tg.add_thread(self._dns_handle, addr, payload,
-                                   sock_udp=sock_udp)
+                self.tg.add_thread(self._dns_handle_udp_query, sock_udp, addr,
+                                   payload)
 
             except socket.error as e:
                 errname = errno.errorcode[e.args[0]]
@@ -446,13 +452,17 @@ class DNSService(object):
                                   "from: %(host)s:%(port)d") %
                               {'host': addr[0], 'port': addr[1]})
 
-    def _dns_handle(self, addr, payload, client=None, sock_udp=None):
+    def _dns_handle_udp_query(self, sock, addr, payload):
         """
-        Handle a DNS Query
+        Handle a DNS Query over UDP
 
+        :param sock: UDP socket
+        :type sock: socket
         :param addr: Tuple of the client's (IP, Port)
+        :type addr: tuple
         :param payload: Raw DNS query payload
-        :param client: Client socket (for TCP only)
+        :type payload: string
+        :raises: None
         """
         try:
             # Call into the DNS Application itself with the payload and addr
@@ -461,23 +471,12 @@ class DNSService(object):
 
                 # Send back a response only if present
                 if response is not None:
-                    if client:
-                        # Handle TCP Responses
-                        msg_length = len(response)
-                        tcp_response = struct.pack("!H", msg_length) + response
-                        client.sendall(tcp_response)
-                    else:
-                        # Handle UDP Responses
-                        sock_udp.sendto(response, addr)
+                    sock.sendto(response, addr)
 
         except Exception:
             LOG.exception(_LE("Unhandled exception while processing request "
                               "from %(host)s:%(port)d") %
                           {'host': addr[0], 'port': addr[1]})
-
-        # Close the TCP connection if we have one.
-        if client:
-            client.close()
 
 
 _launcher = None
