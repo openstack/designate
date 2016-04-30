@@ -1,0 +1,61 @@
+#!/bin/bash
+#
+# Setup a Designate devstack based on Ubuntu Trusty using libvirt
+# and run a quick CLI test and the functional tests
+#
+# To be run from <Designate repo>/contrib/vagrant
+#
+
+set -eu
+
+test -f Vagrantfile
+
+if vagrant global-status | grep ' ubuntu ' | grep -q 'contrib/vagrant'; then
+    echo "A devstack VM seems to be already running, see vagrant global-status"
+    exit 1
+fi
+
+if vagrant plugin list | grep -q ^vagrant-mutate; then
+    echo "Skip installing vagrant-mutate"
+else
+    echo "Install vagrant-mutate"
+    vagrant plugin install vagrant-mutate
+fi
+
+if vagrant box list | grep -q ^ubuntu/trusty64; then
+    echo "Skip downloading Vagrant box"
+else
+    echo "Download and convert box"
+    vagrant box add --provider virtualbox ubuntu/trusty64
+    vagrant mutate ubuntu/trusty64 libvirt
+fi
+
+echo "Check running pool"
+virsh pool-info default | grep ^State | grep -q running
+
+# Workaround for https://github.com/fog/fog-libvirt/issues/16
+# vagrant plugin install fog-libvirt --plugin-version 0.0.3 --verbose
+
+vagrant up ubuntu
+
+vmrun() {
+    vagrant ssh ubuntu -c "$@"
+}
+
+vmrun "sudo apt-get update"
+vmrun "sudo apt-get install httpie -y"
+
+vmrun "echo export LC_ALL=en_US.UTF-8 >> .bashrc"
+vmrun "echo export LC_CTYPE=en_US.UTF-8 >> .bashrc"
+vmrun "sudo dpkg-reconfigure locales"
+
+vmrun "cd devstack && ./stack.sh"
+
+echo -e "\nstack.sh run completed. Showing server-list:\n"
+vmrun "cd devstack && source openrc admin demo && designate server-list"
+
+echo -e "\nRunning functional tests\n"
+
+vmrun "cd /opt/stack/designate && tox -e functional -v"
+
+echo "Done. Run   vagrant ssh ubuntu   to log in"
