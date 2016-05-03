@@ -84,9 +84,9 @@ function configure_designate {
     iniset $DESIGNATE_CONF service:api enabled_extensions_admin $DESIGNATE_ENABLED_EXTENSIONS_ADMIN
     iniset $DESIGNATE_CONF service:api api_host $DESIGNATE_SERVICE_HOST
     iniset $DESIGNATE_CONF service:api api_base_uri $DESIGNATE_SERVICE_PROTOCOL://$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT/
-    iniset $DESIGNATE_CONF service:api enable_api_v1 True
-    iniset $DESIGNATE_CONF service:api enable_api_v2 True
-    iniset $DESIGNATE_CONF service:api enable_api_admin True
+    iniset $DESIGNATE_CONF service:api enable_api_v1 $DESIGNATE_ENABLE_API_V1
+    iniset $DESIGNATE_CONF service:api enable_api_v2 $DESIGNATE_ENABLE_API_V2
+    iniset $DESIGNATE_CONF service:api enable_api_admin $DESIGNATE_ENABLE_API_ADMIN
 
     # mDNS Configuration
     iniset $DESIGNATE_CONF service:mdns host $DESIGNATE_SERVICE_HOST
@@ -149,6 +149,15 @@ function configure_designatedashboard {
 # Configure the needed tempest options
 function configure_designate_tempest() {
     if is_service_enabled tempest; then
+        # Tell tempest we're available
+        iniset $TEMPEST_CONFIG service_available designate True
+
+        # Tell tempest which APIs are available
+        iniset $TEMPEST_CONFIG dns_feature_enabled api_v1 $DESIGNATE_ENABLE_API_V1
+        iniset $TEMPEST_CONFIG dns_feature_enabled api_v2 $DESIGNATE_ENABLE_API_V2
+        iniset $TEMPEST_CONFIG dns_feature_enabled api_admin $DESIGNATE_ENABLE_API_ADMIN
+
+        # Tell tempest where are nameservers are.
         nameservers=$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT_DNS
         case $DESIGNATE_BACKEND_DRIVER in
             bind9|powerdns)
