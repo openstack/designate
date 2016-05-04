@@ -60,6 +60,8 @@ class MdnsServiceTest(MdnsTestCase):
         expected_response = (b"271289050001000000000000076578616d706c6503636f6"
                              b"d0000010001")
 
-        self.service._dns_handle(self.addr, binascii.a2b_hex(payload))
+        sock_udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.service._dns_handle(self.addr, binascii.a2b_hex(payload),
+                                 sock_udp=sock_udp)
         sendto_mock.assert_called_once_with(
             binascii.a2b_hex(expected_response), self.addr)

@@ -82,15 +82,13 @@ function configure_designate {
     iniset $DESIGNATE_CONF service:api enabled_extensions_v1 $DESIGNATE_ENABLED_EXTENSIONS_V1
     iniset $DESIGNATE_CONF service:api enabled_extensions_v2 $DESIGNATE_ENABLED_EXTENSIONS_V2
     iniset $DESIGNATE_CONF service:api enabled_extensions_admin $DESIGNATE_ENABLED_EXTENSIONS_ADMIN
-    iniset $DESIGNATE_CONF service:api api_host $DESIGNATE_SERVICE_HOST
     iniset $DESIGNATE_CONF service:api api_base_uri $DESIGNATE_SERVICE_PROTOCOL://$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT/
     iniset $DESIGNATE_CONF service:api enable_api_v1 $DESIGNATE_ENABLE_API_V1
     iniset $DESIGNATE_CONF service:api enable_api_v2 $DESIGNATE_ENABLE_API_V2
     iniset $DESIGNATE_CONF service:api enable_api_admin $DESIGNATE_ENABLE_API_ADMIN
 
     # mDNS Configuration
-    iniset $DESIGNATE_CONF service:mdns host $DESIGNATE_SERVICE_HOST
-    iniset $DESIGNATE_CONF service:mdns port $DESIGNATE_SERVICE_PORT_MDNS
+    iniset $DESIGNATE_CONF service:mdns listen ${DESIGNATE_SERVICE_HOST}:${DESIGNATE_SERVICE_PORT_MDNS}
 
     # Set up Notifications/Ceilometer Integration
     iniset $DESIGNATE_CONF DEFAULT notification_driver "$DESIGNATE_NOTIFICATION_DRIVER"
@@ -114,9 +112,9 @@ function configure_designate {
     # TLS Proxy Configuration
     if is_service_enabled tls-proxy; then
         # Set the service port for a proxy to take the original
-        iniset $DESIGNATE_CONF service:api api_port $DESIGNATE_SERVICE_PORT_INT
+        iniset $DESIGNATE_CONF service:api listen ${DESIGNATE_SERVICE_HOST}:${DESIGNATE_SERVICE_PORT_INT}
     else
-        iniset $DESIGNATE_CONF service:api api_port $DESIGNATE_SERVICE_PORT
+        iniset $DESIGNATE_CONF service:api listen ${DESIGNATE_SERVICE_HOST}:${DESIGNATE_SERVICE_PORT}
     fi
 
     # Setup the Keystone Integration
