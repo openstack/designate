@@ -41,6 +41,7 @@ from designate.i18n import _LW
 from designate.backend import base
 from designate import exceptions
 from designate.mdns import rpcapi as mdns_api
+from designate.utils import DEFAULT_AGENT_PORT
 import designate.backend.private_codes as pcodes
 
 dns_query = eventlet.import_patched('dns.query')
@@ -57,8 +58,7 @@ class AgentPoolBackend(base.Backend):
     def __init__(self, target):
         super(AgentPoolBackend, self).__init__(target)
         self.host = self.options.get('host', '127.0.0.1')
-        # TODO(Federico): move all port defaults into a defaults module
-        self.port = int(self.options.get('port', 5358))
+        self.port = int(self.options.get('port', DEFAULT_AGENT_PORT))
         self.timeout = CONF['service:pool_manager'].poll_timeout
         self.retry_interval = CONF['service:pool_manager'].poll_retry_interval
         self.max_retries = CONF['service:pool_manager'].poll_max_retries

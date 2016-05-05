@@ -27,10 +27,11 @@ from oslo_utils import strutils
 from designate import exceptions
 from designate import utils
 from designate.backend import base
+from designate.utils import DEFAULT_MDNS_PORT
 
 
 LOG = logging.getLogger(__name__)
-DEFAULT_MASTER_PORT = 5354
+DEFAULT_MASTER_PORT = DEFAULT_MDNS_PORT
 
 
 class Bind9Backend(base.Backend):

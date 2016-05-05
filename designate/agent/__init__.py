@@ -13,7 +13,10 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
 from oslo_config import cfg
+
+from designate.utils import DEFAULT_AGENT_PORT
 
 cfg.CONF.register_group(cfg.OptGroup(
     name='service:agent', title="Configuration for the Agent Service"
@@ -33,7 +36,7 @@ OPTS = [
                 deprecated_reason="Replaced by 'listen' option",
                 help='Agent Port Number'),
     cfg.ListOpt('listen',
-                default=['0.0.0.0:5358'],
+                default=['0.0.0.0:%d' % DEFAULT_AGENT_PORT],
                 help='Agent host:port pairs to listen on'),
     cfg.IntOpt('tcp-backlog', default=100,
                help='The Agent TCP Backlog'),

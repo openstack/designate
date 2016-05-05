@@ -31,13 +31,14 @@ from designate import dnsutils
 from designate import service
 from designate.agent import handler
 from designate.backend import agent_backend
+from designate.utils import DEFAULT_AGENT_PORT
 
 
 CONF = cfg.CONF
 
 
 class Service(service.DNSService, service.Service):
-    _dns_default_port = 5358
+    _dns_default_port = DEFAULT_AGENT_PORT
 
     def __init__(self, threads=None):
         super(Service, self).__init__(threads=threads)

@@ -23,13 +23,14 @@ from designate import dnsutils
 from designate.mdns import handler
 from designate.mdns import notify
 from designate.mdns import xfr
+from designate.utils import DEFAULT_MDNS_PORT
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
 
 
 class Service(service.DNSService, service.RPCService, service.Service):
-    _dns_default_port = 5354
+    _dns_default_port = DEFAULT_MDNS_PORT
 
     @property
     def storage(self):
