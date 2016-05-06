@@ -16,8 +16,8 @@ limitations under the License.
 import collections
 import functools
 import time
-import types
 
+import six
 import netaddr
 
 
@@ -59,7 +59,7 @@ def parameterized_class(cls):
 
             # To add a method to a class, available for all instances:
             #   MyClass.method = types.MethodType(f, None, MyClass)
-            setattr(cls, new_name, types.MethodType(new_method, None, cls))
+            setattr(cls, new_name, six.create_unbound_method(new_method, cls))
     return cls
 
 
