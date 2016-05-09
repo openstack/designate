@@ -112,12 +112,13 @@ class Service(service.Service):
             host = self._service_config.host
             port = self._service_config.port
 
-        if host or port:
+        if host or port is not None:
             LOG.warning(_LW("host and port config options used, the 'listen' "
                             "option has been ignored"))
 
             host = host or "0.0.0.0"
-            port = port or default_port
+            # "port" might be 0 to pick a free port, usually during testing
+            port = default_port if port is None else port
 
             return [(host, port)]
 
