@@ -51,7 +51,7 @@
   # The name is immutable. There will be no option to change the name after
   # creation and the only way will to change it will be to delete it
   # (and all zones associated with it) and recreate it.
-  description: Default PowerDNS Pool
+  description: Default BIND Pool
 
   attributes:
     external: true
