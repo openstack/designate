@@ -67,8 +67,6 @@ class HeartBeatEmitter(plugin.DriverPlugin):
         if not self._running:
             return
 
-        LOG.trace("Emitting heartbeat...")
-
         status, stats, capabilities = self._get_status()
 
         service_status = objects.ServiceStatus(
@@ -79,6 +77,8 @@ class HeartBeatEmitter(plugin.DriverPlugin):
             capabilities=capabilities,
             heartbeated_at=timeutils.utcnow()
         )
+
+        LOG.trace("Emitting %s", service_status)
 
         self._transmit(service_status)
 
