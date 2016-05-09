@@ -13,9 +13,11 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
 from oslo_config import cfg
 
 from designate import dnsutils
+from designate.utils import DEFAULT_MDNS_PORT
 
 
 cfg.CONF.register_group(cfg.OptGroup(
@@ -36,7 +38,7 @@ OPTS = [
                 deprecated_reason="Replaced by 'listen' option",
                 help='mDNS Port Number'),
     cfg.ListOpt('listen',
-                default=['0.0.0.0:5354'],
+                default=['0.0.0.0:%d' % DEFAULT_MDNS_PORT],
                 help='mDNS host:port pairs to listen on'),
     cfg.IntOpt('tcp-backlog', default=100,
                help='mDNS TCP Backlog'),

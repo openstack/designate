@@ -13,7 +13,9 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
 from designate.tests import TestCase
+from designate.utils import DEFAULT_MDNS_PORT
 
 POOL_DICT = {
     'id': u'794ccc2c-d751-44fe-b57f-8894c9f5c842',
@@ -25,7 +27,7 @@ POOL_DICT = {
             'masters': [
                 {
                     'host': '127.0.0.1',
-                    'port': 5354
+                    'port': DEFAULT_MDNS_PORT
                 }
             ],
             'options': {}
@@ -36,7 +38,7 @@ POOL_DICT = {
             'masters': [
                 {
                     'host': '127.0.0.1',
-                    'port': 5354
+                    'port': DEFAULT_MDNS_PORT
                 }
             ],
             'options': {}

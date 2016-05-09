@@ -24,6 +24,7 @@ from oslo_log import log as logging
 from designate import exceptions
 from designate import objects
 from designate.storage.base import Storage as StorageBase
+from designate.utils import DEFAULT_MDNS_PORT
 
 
 LOG = logging.getLogger(__name__)
@@ -1913,7 +1914,8 @@ class StorageTestCase(object):
             'targets': [{
                 'type': "fake",
                 'description': u"FooBar",
-                'masters': [{'host': "192.0.2.2", 'port': 5354}],
+                'masters': [{'host': "192.0.2.2",
+                             'port': DEFAULT_MDNS_PORT}],
                 'options': [{'key': 'fake_option', 'value': 'fake_value'}],
             }],
             'also_notifies': [{'host': "192.0.2.3", 'port': 53}]
@@ -2069,7 +2071,8 @@ class StorageTestCase(object):
             'targets': [{
                 'type': "fake",
                 'description': u"FooBar",
-                'masters': [{'host': "192.0.2.2", 'port': 5354}],
+                'masters': [{'host': "192.0.2.2",
+                             'port': DEFAULT_MDNS_PORT}],
                 'options': [{'key': 'fake_option', 'value': 'fake_value'}],
             }],
             'also_notifies': [{'host': "192.0.2.3", 'port': 53}]
@@ -2093,7 +2096,8 @@ class StorageTestCase(object):
             'targets': [{
                 'type': "fake",
                 'description': u"NewFooBar",
-                'masters': [{'host': "192.0.2.2", 'port': 5354}],
+                'masters': [{'host': "192.0.2.2",
+                             'port': DEFAULT_MDNS_PORT}],
                 'options': [{'key': 'fake_option', 'value': 'fake_value'}],
             }, {
                 'type': "fake",

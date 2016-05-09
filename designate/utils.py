@@ -61,6 +61,11 @@ proxy_opts = [
 
 cfg.CONF.register_opts(proxy_opts, group='proxy')
 
+# Default TCP/UDP ports
+
+DEFAULT_AGENT_PORT = 5358
+DEFAULT_MDNS_PORT = 5354
+
 
 def find_config(config_path):
     """
