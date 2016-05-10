@@ -60,8 +60,8 @@ debug = False
 # Number of central greenthreads to spawn
 #threads = 1000
 
-# Maximum domain name length
-#max_domain_name_len = 255
+# Maximum zone name length
+#max_zone_name_len = 255
 
 # Maximum recordset name length
 #max_recordset_name_len = 255
