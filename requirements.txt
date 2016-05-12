@@ -2,7 +2,7 @@
 # of appearance. Changing the order has an impact on the overall integration
 # process, which may cause wedges in the gate later.
 
-Babel!=2.3.0,!=2.3.1,!=2.3.2,!=2.3.3,>=1.3 # BSD
+Babel>=2.3.4 # BSD
 eventlet!=0.18.3,>=0.18.2 # MIT
 Flask<1.0,>=0.10 # BSD
 greenlet>=0.3.2 # MIT
@@ -33,11 +33,11 @@ requests!=2.9.0,>=2.8.1 # Apache-2.0
 six>=1.9.0 # MIT
 SQLAlchemy<1.1.0,>=1.0.10 # MIT
 sqlalchemy-migrate>=0.9.6 # Apache-2.0
-stevedore>=1.9.0 # Apache-2.0
+stevedore>=1.10.0 # Apache-2.0
 suds-jurko>=0.6 # LGPL
 setuptools>=16.0 # PSF/ZPL
 WebOb>=1.2.3 # MIT
-dnspython>=1.12.0;python_version<'3.0' # http://www.dnspython.org/LICENSE
+dnspython!=1.13.0,>=1.12.0;python_version<'3.0' # http://www.dnspython.org/LICENSE
 dnspython3>=1.12.0;python_version>='3.0' # http://www.dnspython.org/LICENSE
 oslo.db>=4.1.0 # Apache-2.0
 oslo.i18n>=2.1.0 # Apache-2.0
