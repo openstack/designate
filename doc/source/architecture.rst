@@ -25,7 +25,7 @@ Architecture
 High Level Topology
 -----------------------
 
-.. image:: images/Designate-Simple.svg
+.. image:: images/Designate-Arch.png
 
 .. _designate-api:
 
@@ -52,6 +52,14 @@ designate-mdns is the service that sends DNS NOTIFY and answers zone transfer (A
 Designate Pool Manager
 -----------------------
 designate-pool-manager is a service that manages the states of the DNS servers Designate manages. The Pool Manager is configured to know which DNS servers Designate manages, and their type of backend (PowerDNS, BIND9, etc). It can also divide those servers into 'Pools' so that zones within Designate can be split across different sets of backend servers. The Pool Manager is also responsible for making sure that backend DNS servers are in sync with the Designate database.
+
+.. _designate-zone-manager:
+
+Designate Zone Manager
+-----------------------
+designate-zone-manager is a service that handle all periodic tasks relating to the zone shard it is responsible for. A zone shard is a collection of zones allocated based on first three characters of zone UUID.
+
+The current implemented periodic tasks in zone manager include emitting dns.zone.exists events for Ceilometer, purging deleted zones from database, polling secondary zones at their refresh intervals, and generating delayed NOTIFY transactions. 
 
 .. _designate-sink:
 
