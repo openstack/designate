@@ -24,20 +24,27 @@ from functionaltests.common import utils
 
 class RecordsetClient(ClientMixin):
 
-    def recordsets_uri(self, zone_id, filters=None):
-        return self.create_uri("/zones/{0}/recordsets".format(zone_id),
-                               filters=filters)
+    def recordsets_uri(self, zone_id, cross_zone=False, filters=None):
+        if cross_zone:
+            uri = self.create_uri("/recordsets", filters=filters)
+        else:
+            uri = self.create_uri("/zones/{0}/recordsets".format(zone_id),
+                                  filters=filters)
+        return uri
 
-    def recordset_uri(self, zone_id, recordset_id):
-        return "{0}/{1}".format(self.recordsets_uri(zone_id), recordset_id)
+    def recordset_uri(self, zone_id, recordset_id, cross_zone=False):
+        return "{0}/{1}".format(self.recordsets_uri(zone_id, cross_zone),
+                                recordset_id)
 
-    def list_recordsets(self, zone_id, filters=None, **kwargs):
+    def list_recordsets(self, zone_id, cross_zone=False, filters=None,
+                        **kwargs):
         resp, body = self.client.get(
-            self.recordsets_uri(zone_id, filters), **kwargs)
+            self.recordsets_uri(zone_id, cross_zone, filters), **kwargs)
         return self.deserialize(resp, body, RecordsetListModel)
 
-    def get_recordset(self, zone_id, recordset_id, **kwargs):
-        resp, body = self.client.get(self.recordset_uri(zone_id, recordset_id),
+    def get_recordset(self, zone_id, recordset_id, cross_zone=False, **kwargs):
+        resp, body = self.client.get(self.recordset_uri(zone_id, recordset_id,
+                                                        cross_zone),
                                      **kwargs)
         return self.deserialize(resp, body, RecordsetModel)
 

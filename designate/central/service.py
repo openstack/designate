@@ -1243,6 +1243,9 @@ class Service(service.RPCService, service.Service):
 
         self.pool_manager_api.update_zone(context, zone)
 
+        recordset.zone_name = zone.name
+        recordset.obj_reset_changes(['zone_name'])
+
         return recordset
 
     def _validate_recordset(self, context, zone, recordset):
@@ -1306,15 +1309,18 @@ class Service(service.RPCService, service.Service):
         return (recordset, zone)
 
     def get_recordset(self, context, zone_id, recordset_id):
-        zone = self.storage.get_zone(context, zone_id)
         recordset = self.storage.get_recordset(context, recordset_id)
 
-        # Ensure the zone_id matches the record's zone_id
-        if zone.id != recordset.zone_id:
-            raise exceptions.RecordSetNotFound()
+        if zone_id:
+            zone = self.storage.get_zone(context, zone_id)
+            # Ensure the zone_id matches the record's zone_id
+            if zone.id != recordset.zone_id:
+                raise exceptions.RecordSetNotFound()
+        else:
+            zone = self.storage.get_zone(context, recordset.zone_id)
 
         target = {
-            'zone_id': zone_id,
+            'zone_id': zone.id,
             'zone_name': zone.name,
             'recordset_id': recordset.id,
             'tenant_id': zone.tenant_id,
@@ -1322,6 +1328,8 @@ class Service(service.RPCService, service.Service):
 
         policy.check('get_recordset', context, target)
 
+        recordset.zone_name = zone.name
+        recordset.obj_reset_changes(['zone_name'])
         recordset = recordset
 
         return recordset
@@ -1367,7 +1375,7 @@ class Service(service.RPCService, service.Service):
             raise exceptions.BadRequest('Moving a recordset between tenants '
                                         'is not allowed')
 
-        if 'zone_id' in changes:
+        if 'zone_id' in changes or 'zone_name' in changes:
             raise exceptions.BadRequest('Moving a recordset between zones '
                                         'is not allowed')
 
@@ -1459,6 +1467,9 @@ class Service(service.RPCService, service.Service):
             context, zone, recordset, increment_serial=increment_serial)
 
         self.pool_manager_api.update_zone(context, zone)
+
+        recordset.zone_name = zone.name
+        recordset.obj_reset_changes(['zone_name'])
 
         return recordset
 

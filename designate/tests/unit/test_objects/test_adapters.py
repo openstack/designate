@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from mock import Mock
 from oslo_log import log as logging
 import oslotest.base
 
@@ -41,3 +42,15 @@ class DesignateAdapterTest(oslotest.base.BaseTestCase):
 
     def test_object_render(self):
         adapters.DesignateAdapter.render('TEST_API', objects.DesignateObject())
+
+
+class RecordSetAPIv2AdapterTest(oslotest.base.BaseTestCase):
+    def test_get_path(self):
+        request = Mock()
+        request.path = '/v2/recordsets'
+        recordset = Mock()
+        recordset.zone_id = 'a-b-c-d'
+        expected_path = '/v2/zones/a-b-c-d/recordsets'
+
+        path = adapters.RecordSetAPIv2Adapter._get_path(request, recordset)
+        self.assertEqual(expected_path, path)

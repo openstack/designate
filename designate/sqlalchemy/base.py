@@ -287,7 +287,9 @@ class SQLAlchemy(object):
                     records_table,
                     recordsets_table.c.id == records_table.c.recordset_id)
 
-        inner_q = select([recordsets_table.c.id]).select_from(rzjoin).\
+        inner_q = select([recordsets_table.c.id,      # 0 - RS ID
+                          zones_table.c.name]         # 1 - ZONE NAME
+                         ).select_from(rzjoin).\
             where(zones_table.c.deleted == '0')
         count_q = select([func.count(distinct(recordsets_table.c.id))]).\
             select_from(rzjoin).where(zones_table.c.deleted == '0')
@@ -338,16 +340,17 @@ class SQLAlchemy(object):
         # http://dev.mysql.com/doc/mysql-reslimits-excerpt/5.6/en/subquery-restrictions.html  # noqa
 
         inner_rproxy = self.session.execute(inner_q)
-        ids = inner_rproxy.fetchall()
-        if len(ids) == 0:
+        rows = inner_rproxy.fetchall()
+        if len(rows) == 0:
             return 0, objects.RecordSetList()
+        id_zname_map = {}
+        for r in rows:
+            id_zname_map[r[0]] = r[1]
+        formatted_ids = six.moves.map(operator.itemgetter(0), rows)
 
         resultproxy = self.session.execute(count_q)
         result = resultproxy.fetchone()
         total_count = 0 if result is None else result[0]
-
-        # formatted_ids = [id[0] for id in ids]
-        formatted_ids = six.moves.map(operator.itemgetter(0), ids)
 
         # Join the 2 required tables
         rjoin = recordsets_table.outerjoin(
@@ -464,6 +467,9 @@ class SQLAlchemy(object):
 
                 for key, value in rs_map.items():
                     setattr(current_rrset, key, record[value])
+
+                current_rrset.zone_name = id_zname_map[current_rrset.id]
+                current_rrset.obj_reset_changes(['zone_name'])
 
                 current_rrset.records = objects.RecordList()
 

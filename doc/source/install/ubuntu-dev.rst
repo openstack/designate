@@ -306,8 +306,6 @@ Open up a new ssh window and log in to your server (or however you’re communic
 
    $ cd openstack/designate
 
-::
-
 If Designate was installed into a virtualenv, make sure your virtualenv is sourced
 
 ::

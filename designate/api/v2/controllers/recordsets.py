@@ -16,170 +16,43 @@
 import pecan
 from oslo_log import log as logging
 
-from designate import exceptions
 from designate import utils
+from designate.api.v2.controllers import common
 from designate.api.v2.controllers import rest
-from designate.objects import RecordSet
 from designate.objects.adapters import DesignateAdapter
 from designate.i18n import _LI
 
 LOG = logging.getLogger(__name__)
 
 
-class RecordSetsController(rest.RestController):
+class RecordSetsViewController(rest.RestController):
     SORT_KEYS = ['created_at', 'id', 'updated_at', 'zone_id', 'tenant_id',
                  'name', 'type', 'ttl', 'records']
 
     @pecan.expose(template='json:', content_type='application/json')
-    @utils.validate_uuid('zone_id', 'recordset_id')
-    def get_one(self, zone_id, recordset_id):
+    @utils.validate_uuid('recordset_id')
+    def get_one(self, recordset_id):
         """Get RecordSet"""
         request = pecan.request
         context = request.environ['context']
 
-        recordset = self.central_api.get_recordset(context, zone_id,
-                                                   recordset_id)
+        rrset = self.central_api.get_recordset(context, None, recordset_id)
 
-        LOG.info(_LI("Retrieved %(recordset)s"), {'recordset': recordset})
+        LOG.info(_LI("Retrieved %(recordset)s"), {'recordset': rrset})
 
-        return DesignateAdapter.render('API_v2', recordset, request=request)
+        canonical_loc = common.get_rrset_canonical_location(request,
+                                                            rrset.zone_id,
+                                                            recordset_id)
+        pecan.core.redirect(location=canonical_loc, code=301)
 
     @pecan.expose(template='json:', content_type='application/json')
-    @utils.validate_uuid('zone_id')
-    def get_all(self, zone_id, **params):
+    def get_all(self, **params):
         """List RecordSets"""
         request = pecan.request
         context = request.environ['context']
-
-        # NOTE: We need to ensure the zone actually exists, otherwise we may
-        #       return deleted recordsets instead of a zone not found
-        self.central_api.get_zone(context, zone_id)
-
-        # Extract the pagination params
-        marker, limit, sort_key, sort_dir = utils.get_paging_params(
-            params, self.SORT_KEYS)
-
-        # Extract any filter params.
-        accepted_filters = (
-            'name', 'type', 'ttl', 'data', 'status', 'description', )
-        criterion = self._apply_filter_params(
-            params, accepted_filters, {})
-
-        criterion['zone_id'] = zone_id
-
-        recordsets = self.central_api.find_recordsets(
-            context, criterion, marker, limit, sort_key, sort_dir)
+        recordsets = common.retrieve_matched_rrsets(context, self, None,
+                                                    **params)
 
         LOG.info(_LI("Retrieved %(recordsets)s"), {'recordsets': recordsets})
 
         return DesignateAdapter.render('API_v2', recordsets, request=request)
-
-    @pecan.expose(template='json:', content_type='application/json')
-    @utils.validate_uuid('zone_id')
-    def post_all(self, zone_id):
-        """Create RecordSet"""
-        request = pecan.request
-        response = pecan.response
-        context = request.environ['context']
-
-        body = request.body_dict
-
-        recordset = DesignateAdapter.parse('API_v2', body, RecordSet())
-
-        recordset.validate()
-
-        # SOA recordsets cannot be created manually
-        if recordset.type == 'SOA':
-            raise exceptions.BadRequest(
-                "Creating a SOA recordset is not allowed")
-
-        # Create the recordset
-        recordset = self.central_api.create_recordset(
-            context, zone_id, recordset)
-
-        # Prepare the response headers
-        if recordset['status'] == 'PENDING':
-            response.status_int = 202
-        else:
-            response.status_int = 201
-
-        LOG.info(_LI("Created %(recordset)s"), {'recordset': recordset})
-
-        recordset = DesignateAdapter.render(
-            'API_v2', recordset, request=request)
-
-        response.headers['Location'] = recordset['links']['self']
-
-        # Prepare and return the response body
-        return recordset
-
-    @pecan.expose(template='json:', content_type='application/json')
-    @utils.validate_uuid('zone_id', 'recordset_id')
-    def put_one(self, zone_id, recordset_id):
-        """Update RecordSet"""
-        request = pecan.request
-        context = request.environ['context']
-        body = request.body_dict
-        response = pecan.response
-
-        # Fetch the existing recordset
-        recordset = self.central_api.get_recordset(context, zone_id,
-                                                   recordset_id)
-
-        # TODO(graham): Move this further down the stack
-        if recordset.managed and not context.edit_managed_records:
-            raise exceptions.BadRequest('Managed records may not be updated')
-
-        # SOA recordsets cannot be updated manually
-        if recordset['type'] == 'SOA':
-            raise exceptions.BadRequest(
-                'Updating SOA recordsets is not allowed')
-
-        # NS recordsets at the zone root cannot be manually updated
-        if recordset['type'] == 'NS':
-            zone = self.central_api.get_zone(context, zone_id)
-            if recordset['name'] == zone['name']:
-                raise exceptions.BadRequest(
-                    'Updating a root zone NS record is not allowed')
-
-        # Convert to APIv2 Format
-
-        recordset = DesignateAdapter.parse('API_v2', body, recordset)
-
-        recordset.validate()
-
-        # Persist the resource
-        recordset = self.central_api.update_recordset(context, recordset)
-
-        LOG.info(_LI("Updated %(recordset)s"), {'recordset': recordset})
-
-        if recordset['status'] == 'PENDING':
-            response.status_int = 202
-        else:
-            response.status_int = 200
-
-        return DesignateAdapter.render('API_v2', recordset, request=request)
-
-    @pecan.expose(template='json:', content_type='application/json')
-    @utils.validate_uuid('zone_id', 'recordset_id')
-    def delete_one(self, zone_id, recordset_id):
-        """Delete RecordSet"""
-        request = pecan.request
-        response = pecan.response
-        context = request.environ['context']
-
-        # Fetch the existing recordset
-        recordset = self.central_api.get_recordset(context, zone_id,
-                                                   recordset_id)
-        if recordset['type'] == 'SOA':
-            raise exceptions.BadRequest(
-                'Deleting a SOA recordset is not allowed')
-
-        recordset = self.central_api.delete_recordset(
-            context, zone_id, recordset_id)
-
-        LOG.info(_LI("Deleted %(recordset)s"), {'recordset': recordset})
-
-        response.status_int = 202
-
-        return DesignateAdapter.render('API_v2', recordset, request=request)

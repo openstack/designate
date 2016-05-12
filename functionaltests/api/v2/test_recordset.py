@@ -222,3 +222,65 @@ class RecordsetOwnershipTest(DesignateV2Test):
         self.assertRaises(exceptions.RestClientException,
             lambda: RecordsetClient.as_user('alt')
                     .post_recordset(alt_zone.id, recordset))
+
+
+@utils.parameterized_class
+class RecordsetCrossZoneTest(DesignateV2Test):
+
+    def setUp(self):
+        super(RecordsetCrossZoneTest, self).setUp()
+        self.increase_quotas(user='default')
+        self.ensure_tld_exists('com')
+        self.zone = self.useFixture(ZoneFixture()).created_zone
+        self.alt_zone = self.useFixture(ZoneFixture()).created_zone
+
+    def test_get_single_recordset(self):
+        post_model = datagen.random_a_recordset(self.zone.name)
+        _, resp_model = RecordsetClient.as_user('default').post_recordset(
+                self.zone.id, post_model)
+        rrset_id = resp_model.id
+
+        resp, model = RecordsetClient.as_user('default').get_recordset(
+                self.zone.id, rrset_id, cross_zone=True)
+        self.assertEqual(200, resp.status)
+
+        # clean up
+        RecordsetClient.as_user('default').delete_recordset(self.zone.id,
+                                                            rrset_id)
+
+    def test_list_recordsets(self):
+        post_model = datagen.random_a_recordset(self.zone.name)
+        self.useFixture(RecordsetFixture(self.zone.id, post_model))
+        post_model = datagen.random_a_recordset(self.alt_zone.name)
+        self.useFixture(RecordsetFixture(self.alt_zone.id, post_model))
+
+        resp, model = RecordsetClient.as_user('default').list_recordsets(
+                'zone_id', cross_zone=True)
+        self.assertEqual(200, resp.status)
+        zone_names = set()
+        for r in model.recordsets:
+            zone_names.add(r.zone_name)
+        self.assertGreaterEqual(len(zone_names), 2)
+
+    def test_filter_recordsets(self):
+        # create one A recordset in 'zone'
+        post_model = datagen.random_a_recordset(self.zone.name,
+                                                ip='123.201.99.1')
+        self.useFixture(RecordsetFixture(self.zone.id, post_model))
+
+        # create two A recordsets in 'alt_zone'
+        post_model = datagen.random_a_recordset(self.alt_zone.name,
+                                                ip='10.0.1.1')
+        self.useFixture(RecordsetFixture(self.alt_zone.id, post_model))
+        post_model = datagen.random_a_recordset(self.alt_zone.name,
+                                                ip='123.201.99.2')
+        self.useFixture(RecordsetFixture(self.alt_zone.id, post_model))
+
+        # Add limit in filter to make response paginated
+        filters = {"data": "123.201.99.*", "limit": 2}
+        resp, model = RecordsetClient.as_user('default') \
+            .list_recordsets('zone_id', cross_zone=True, filters=filters)
+        self.assertEqual(200, resp.status)
+        self.assertEqual(2, model.metadata.total_count)
+        self.assertEqual(len(model.recordsets), 2)
+        self.assertIsNotNone(model.links.next)
