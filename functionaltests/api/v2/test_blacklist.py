@@ -21,41 +21,9 @@ from tempest_lib import exceptions
 from functionaltests.common import datagen
 from functionaltests.api.v2.base import DesignateV2Test
 from functionaltests.api.v2.clients.blacklist_client import BlacklistClient
-from functionaltests.api.v2.fixtures import BlacklistFixture
 
 
 class BlacklistTest(DesignateV2Test):
-
-    def test_list_blacklists(self):
-        self.useFixture(BlacklistFixture())
-        resp, model = BlacklistClient.as_user('admin').list_blacklists()
-        self.assertEqual(200, resp.status)
-        self.assertGreater(len(model.blacklists), 0)
-
-    def test_create_blacklist(self):
-        fixture = self.useFixture(BlacklistFixture())
-        self.assertEqual(fixture.post_model.pattern,
-                         fixture.created_blacklist.pattern)
-
-    def test_update_blacklist(self):
-        old_model = self.useFixture(BlacklistFixture()).created_blacklist
-
-        patch_model = datagen.random_blacklist_data()
-        resp, new_model = BlacklistClient.as_user('admin').patch_blacklist(
-            old_model.id, patch_model)
-        self.assertEqual(200, resp.status)
-
-        resp, model = BlacklistClient.as_user('admin').get_blacklist(
-            new_model.id)
-        self.assertEqual(200, resp.status)
-        self.assertEqual(old_model.id, new_model.id)
-        self.assertEqual(model.pattern, new_model.pattern)
-
-    def test_delete_blacklist(self):
-        fixture = self.useFixture(BlacklistFixture())
-        resp, model = BlacklistClient.as_user('admin').delete_blacklist(
-            fixture.created_blacklist.id)
-        self.assertEqual(204, resp.status)
 
     def test_get_blacklist_404(self):
         client = BlacklistClient.as_user('admin')
