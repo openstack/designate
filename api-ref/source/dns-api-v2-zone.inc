@@ -95,6 +95,12 @@ Request
    - marker: marker
    - sort_dir: sort_dir
    - sort_key: sort_key
+   - name: zone_name_filter
+   - type: zone_type_filter
+   - email: zone_email_filter
+   - status: zone_status_filter
+   - description: zone_description_filter
+   - ttl: zone_ttl_filter
 
 
 Response Parameters
@@ -120,7 +126,7 @@ Response Parameters
    - created_at: created_at
    - updated_at: updated_at
    - links: links
-
+   - metadata: metadata
 
 
 Response Example
@@ -150,7 +156,8 @@ Request
    - x-auth-token: x-auth-token
    - x-auth-all-projects: x-auth-all-projects
    - x-auth-sudo-project-id: x-auth-sudo-project-id
-   - zone_id: zone_id
+   - zone_id: path_zone_id
+
 
 
 Response Parameters
@@ -206,7 +213,7 @@ Request
    - x-auth-token: x-auth-token
    - x-auth-all-projects: x-auth-all-projects
    - x-auth-sudo-project-id: x-auth-sudo-project-id
-   - zone_id: zone_id
+   - zone_id: path_zone_id
    - email: zone_email_update
    - ttl: zone_ttl
    - description: zone_description
@@ -272,7 +279,7 @@ Request
    - x-auth-token: x-auth-token
    - x-auth-all-projects: x-auth-all-projects
    - x-auth-sudo-project-id: x-auth-sudo-project-id
-   - zone_id: zone_id
+   - zone_id: path_zone_id
 
 
 Response Parameters

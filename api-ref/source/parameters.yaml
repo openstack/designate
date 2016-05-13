@@ -43,6 +43,19 @@ x-openstack-request-id:
 # Path Variables
 #################
 
+path_zone_id:
+  description: |
+    ID for the zone
+  in: path
+  required: true
+  type: uuid
+
+path_recordset_id:
+  description: |
+    ID for the recordset
+  in: path
+  required: true
+  type: uuid
 
 # Query Variables
 ##################
@@ -154,7 +167,16 @@ action:
 
 links:
   description: |
-    Links to the resource, and other related resources
+    Links to the resource, and other related resources.
+    When a response has been broken into pages, we will include
+    a ``next`` link that should be followed to retrive all results
+  in: body
+  required: true
+  type: object
+
+metadata:
+  description: |
+    Returns the ``total_count`` of resources matching this filter
   in: body
   required: true
   type: object
@@ -170,16 +192,53 @@ links:
 # Path Variables
 #################
 
-zone_id:
-  description: |
-    ID for the zone
-  in: path
-  required: true
-  type: string
-
-
 # Query Variables
 ##################
+
+# Filters
+# 'name', 'type', 'email', 'status', 'description', 'ttl'
+
+zone_name_filter:
+  description: |
+    Filter results to only show zones that have a name matching the filter
+  in: query
+  required: false
+  type: string
+
+zone_type_filter:
+  description: |
+    Filter results to only show zones that have a type matching the filter
+  in: query
+  required: false
+  type: string
+
+zone_email_filter:
+  description: |
+    Filter results to only show zones that have an email matching the filter
+  in: query
+  required: false
+  type: string
+
+zone_status_filter:
+  description: |
+    Filter results to only show zones that have a status matching the filter
+  in: query
+  required: false
+  type: string
+
+zone_description_filter:
+  description: |
+    Filter results to only show zones that have a description matching the filter
+  in: query
+  required: false
+  type: string
+
+zone_ttl_filter:
+  description: |
+    Filter results to only show zones that have a ttl matching the filter
+  in: query
+  required: false
+  type: integer
 
 # Body Variables
 #################
@@ -263,6 +322,118 @@ zone_transfered_at:
   type: enum
 
 
+#############################
+#    Recordset Variables    #
+#############################
+
+
+# Header Variables
+###################
+
+# Path Variables
+#################
+
+# Query Variables
+##################
+
+# Filters
+# 'name', 'type', 'ttl', 'data', 'status', 'description'
+
+recordset_name_filter:
+  description: |
+    Filter results to only show recordsets that have a name matching the filter
+  in: query
+  required: false
+  type: string
+
+recordset_type_filter:
+  description: |
+    Filter results to only show recordsets that have a type matching the filter
+  in: query
+  required: false
+  type: string
+
+recordset_ttl_filter:
+  description: |
+    Filter results to only show recordsets that have a ttl matching the filter
+  in: query
+  required: false
+  type: string
+
+recordset_data_filter:
+  description: |
+    Filter results to only show recordsets that have a record with data matching the filter
+  in: query
+  required: false
+  type: string
+
+recordset_status_filter:
+  description: |
+    Filter results to only show recordsets that have a status matching the filter
+  in: query
+  required: false
+  type: string
+
+recordset_description_filter:
+  description: |
+    Filter results to only show recordsets that have a description matching the filter
+  in: query
+  required: false
+  type: string
+
+# Body Variables
+#################
+
+recordset_name:
+  description: |
+    DNS Name for the recordset
+  in: body
+  required: true
+  type: hostname
+
+recordset_zone_id:
+  description: |
+    ID for the zone that contains this recordset
+  in: body
+  required: true
+  type: uuid
+
+recordset_zone_name:
+  description: |
+    The name of the zone that contains this recordset
+  in: body
+  required: true
+  type: string
+
+recordset_ttl:
+  description: |
+    TTL (Time to Live) for the recordset.
+  in: body
+  required: false
+  type: integer
+
+recordset_type:
+  description: |
+    They RRTYPE of the recordset.
+  in: body
+  required: true
+  type: string
+
+recordset_records:
+  description: |
+    A list of data for this recordset. Each item will be a separate record in Designate
+    These items should conform to the DNS spec for the record type - e.g. A records
+    must be IPv4 addresses, CNAME records must be a hostname.
+  in: body
+  required: true
+  type: string
+
+recordset_description:
+  description: |
+    Description for this recordset
+  in: body
+  required: false
+  type: string
 
 #############################
 #      <ITEM> Variables       #

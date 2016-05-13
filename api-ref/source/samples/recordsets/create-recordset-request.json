@@ -1,0 +1,9 @@
+{
+  "name" : "example.org.",
+  "description" : "This is an example record set.",
+  "type" : "A",
+  "ttl" : 3600,
+  "records" : [
+      "10.1.0.2"
+  ]
+}
