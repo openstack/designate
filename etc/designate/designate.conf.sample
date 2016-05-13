@@ -356,7 +356,6 @@ debug = False
 #periodic_sync_max_attempts = 3
 #periodic_sync_retry_interval = 30
 
-
 # The cache driver to use
 #cache_driver = memcache
 

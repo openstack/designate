@@ -45,7 +45,7 @@ cfg.CONF.register_opts([
                help='The strategy to use for auth. Supports noauth or '
                     'keystone'),
     cfg.BoolOpt('enable-api-v1', default=True),
-    cfg.BoolOpt('enable-api-v2', default=False),
+    cfg.BoolOpt('enable-api-v2', default=True),
     cfg.BoolOpt('enable-api-admin', default=False),
     cfg.IntOpt('max_header_line', default=16384,
                help="Maximum line size of message headers to be accepted. "
