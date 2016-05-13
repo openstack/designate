@@ -3,6 +3,8 @@ GITCONFIG = `cat $HOME/.gitconfig`
 
 Vagrant.require_version ">= 1.5"
 
+VM_RAM_SIZE = "8192"
+
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.ssh.forward_agent = true
 
@@ -10,7 +12,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.network "forwarded_port", guest: 5354, host: 5354, protocol: "udp"
 
   config.vm.provider "virtualbox" do |vb, override|
-    vb.customize ["modifyvm", :id, "--memory", "2048"]
+    vb.customize ["modifyvm", :id, "--memory", VM_RAM_SIZE]
     if not RUBY_PLATFORM.downcase.include?("mswin")
       vb.customize ["modifyvm", :id, "--cpus", `awk "/^processor/ {++n} END {print n}" /proc/cpuinfo 2> /dev/null || sh -c 'sysctl hw.logicalcpu 2> /dev/null || echo ": 2"' | awk \'{print \$2}\' `.chomp ]
     end
@@ -34,6 +36,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       override.vm.synced_folder "../../../devstack", "/home/vagrant/devstack"
     end
 
+    if File.directory?("../../../grenade")
+      override.vm.synced_folder "../../../grenade", "/opt/stack/grenade"
+    end
+
     if File.directory?("../../../tempest")
       override.vm.synced_folder "../../../tempest", "/opt/stack/tempest"
     end
@@ -46,7 +52,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.provider :libvirt do |lv, override|
     lv.graphics_ip = '0.0.0.0'
     lv.nested = true
-    lv.memory = 8192
+    lv.memory = Integer(VM_RAM_SIZE)
     if not RUBY_PLATFORM.downcase.include?("mswin")
       lv.cpus = `awk "/^processor/ {++n} END {print n}" /proc/cpuinfo 2> /dev/null || sh -c 'sysctl hw.logicalcpu 2> /dev/null || echo ": 2"' | awk \'{print \$2}\' `.chomp
     end
@@ -64,6 +70,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
     if File.directory?("../../../designate-tempest-plugin")
       override.vm.synced_folder "../../../designate-tempest-plugin", "/opt/stack/designate-tempest-plugin", type: "nfs"
+    end
+
+    if File.directory?("../../../grenade")
+      override.vm.synced_folder "../../../grenade", "/opt/stack/grenade", type: "nfs"
     end
 
     if File.directory?("../../../devstack")
