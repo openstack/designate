@@ -52,7 +52,6 @@ function configure_designate {
     iniset $DESIGNATE_CONF DEFAULT rpc_response_timeout 5
 
     iniset $DESIGNATE_CONF DEFAULT debug $ENABLE_DEBUG_LOG_LEVEL
-    iniset $DESIGNATE_CONF DEFAULT verbose True
     iniset $DESIGNATE_CONF DEFAULT state_path $DESIGNATE_STATE_PATH
     iniset $DESIGNATE_CONF DEFAULT root-helper sudo designate-rootwrap $DESIGNATE_ROOTWRAP_CONF
     iniset $DESIGNATE_CONF storage:sqlalchemy connection `database_connection_url designate`
