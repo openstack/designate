@@ -343,6 +343,15 @@ class Service(service.RPCService, coordination.CoordinationMixin,
         timestamp_dt = datetime.fromtimestamp(timestamp)
 
         for zone in zones:
+            if isinstance(zone.created_at, datetime):
+                zone_created_at = zone.created_at
+            elif isinstance(zone.created_at, str):
+                zone_created_at = datetime.strptime(zone.created_at,
+                                                    "%Y-%m-%dT%H:%M:%S.%f")
+            else:
+                raise Exception("zone.created_at is of type %s" %
+                    str(type(zone.created_at)))
+
             if zone.status == 'DELETED':
                 # Remove any other ops for this zone
                 for zone_op in zone_ops:
@@ -350,11 +359,9 @@ class Service(service.RPCService, coordination.CoordinationMixin,
                         zone_ops.remove(zone_op)
                 # If the zone was created before the timestamp delete it,
                 # otherwise, it will just never be created
-                if (datetime.strptime(zone.created_at, "%Y-%m-%dT%H:%M:%S.%f")
-                        <= timestamp_dt):
+                if (zone_created_at <= timestamp_dt):
                     zone_ops.append((zone, 'DELETE'))
-            elif (datetime.strptime(zone.created_at, "%Y-%m-%dT%H:%M:%S.%f") >
-                  timestamp_dt):
+            elif (zone_created_at > timestamp_dt):
                 # If the zone was created after the timestamp
                 for zone_op in zone_ops:
                     if (

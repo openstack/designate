@@ -18,6 +18,7 @@
 Unit tests
 """
 import unittest
+from datetime import datetime
 
 from mock import call
 from mock import Mock
@@ -232,6 +233,32 @@ class PoolManagerTest(test.BaseTestCase):
         self.pm.periodic_sync()
 
         self.assertEqual(3, self.pm.update_zone.call_count)
+
+    @patch.object(pm_module.DesignateContext, 'get_admin_context')
+    def test_target_sync(self, mock_get_ctx, *mocks):
+        mock_ctx = mock_get_ctx.return_value
+        date = 1463154200
+        older_date = datetime.fromtimestamp(1463154000)
+        newer_date = datetime.fromtimestamp(1463154300)
+
+        zones = [
+            RwObject(name='a_zone', status='ACTIVE', created_at=older_date),
+            RwObject(name='b_zone', status='ACTIVE', created_at=newer_date),
+            RwObject(name='c_zone', status='DELETED', created_at=older_date,
+                     serial=1),
+        ]
+
+        self.pm._delete_zone_on_target = Mock()
+        self.pm._create_zone_on_target = Mock()
+        self.pm._update_zone_on_target = Mock()
+        self.pm.mdns_api.poll_for_serial_number = Mock()
+        target = Mock()
+
+        self.pm._target_sync(mock_ctx, zones, target, date)
+
+        self.assertEqual(1, self.pm._delete_zone_on_target.call_count)
+        self.assertEqual(1, self.pm._create_zone_on_target.call_count)
+        self.assertEqual(1, self.pm._update_zone_on_target.call_count)
 
     @patch.object(pm_module.DesignateContext, 'get_admin_context')
     def test_create_zone(self, mock_get_ctx, *mocks):
