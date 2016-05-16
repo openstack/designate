@@ -69,6 +69,9 @@ EOF
 # Clone DevStack
 if [ ! -d "/home/vagrant/devstack" ]; then
     git clone https://git.openstack.org/openstack-dev/devstack.git /home/vagrant/devstack
+    pushd /home/vagrant/devstack
+    git checkout -b stable/mitaka origin/stable/mitaka
+    popd
 fi
 
 # Install Vagrant local.conf sample
