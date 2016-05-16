@@ -26,6 +26,11 @@ LOG = logging.getLogger(__name__)
 CENTRAL_API = None
 
 
+def reset():
+    global CENTRAL_API
+    CENTRAL_API = None
+
+
 @rpc_logging(LOG, 'central')
 class CentralAPI(object):
     """

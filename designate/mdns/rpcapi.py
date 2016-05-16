@@ -25,6 +25,11 @@ LOG = logging.getLogger(__name__)
 MDNS_API = None
 
 
+def reset():
+    global MDNS_API
+    MDNS_API = None
+
+
 @rpc_logging(LOG, 'mdns')
 class MdnsAPI(object):
 

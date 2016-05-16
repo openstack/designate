@@ -28,6 +28,11 @@ LOG = logging.getLogger(__name__)
 MNGR_API = None
 
 
+def reset():
+    global MNGR_API
+    MNGR_API = None
+
+
 @rpc_logging(LOG, 'pool_manager')
 class PoolManagerAPI(object):
     """

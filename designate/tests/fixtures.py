@@ -74,17 +74,31 @@ class ServiceFixture(fixtures.Fixture):
         cls = importutils.import_class(
             'designate.%s.service.Service' % svc_name)
         self.svc = cls()
+        self.svc_name = svc_name
 
     def setUp(self):
         super(ServiceFixture, self).setUp()
+        LOG.info('Starting service %s (%s)', self.svc_name, id(self.svc))
         self.svc.start()
-        self.addCleanup(self.kill)
+        self.addCleanup(self.stop)
 
-    def kill(self):
+    def stop(self):
+        LOG.info('Stopping service %s (%s)', self.svc_name, id(self.svc))
+
         try:
-            self.svc.kill()
+            self.svc.stop()
+
         except Exception:
-            pass
+            LOG.error('Failed to stop service %s (%s)',
+                      self.svc_name, id(self.svc))
+            raise
+
+        finally:
+            # Always try reset the service's RPCAPI
+            mod = importutils.try_import('designate.%s.rpcapi' % self.svc_name)
+            if hasattr(mod, 'reset'):
+                LOG.info('Resetting service %s RPCAPI', self.svc_name)
+                mod.reset()
 
 
 class PolicyFixture(fixtures.Fixture):

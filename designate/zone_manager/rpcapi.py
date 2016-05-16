@@ -26,6 +26,11 @@ LOG = logging.getLogger(__name__)
 ZONE_MANAGER_API = None
 
 
+def reset():
+    global ZONE_MANAGER_API
+    ZONE_MANAGER_API = None
+
+
 @rpc_logging(LOG, 'zone_manager')
 class ZoneManagerAPI(object):
     """
