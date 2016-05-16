@@ -11,6 +11,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import unittest
+
 import six
 from dns import zone as dnszone
 from webtest import TestApp
@@ -149,6 +151,7 @@ class APIV2ZoneImportExportTest(ApiV2TestCase):
         self.assertIn('metadata', response.json)
         self.assertIn('total_count', response.json['metadata'])
 
+    @unittest.skip("See bug 1582241 and 1570859")
     def test_total_count_imports(self):
         response = self.client.get('/zones/tasks/imports')
 
