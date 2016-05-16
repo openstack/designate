@@ -13,12 +13,18 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
 import unittest
 
-import dns
 from mock import Mock
+from oslo_log import log as logging
+import dns
 
+from designate import exceptions
+from designate import objects
 from designate.mdns import handler
+
+LOG = logging.getLogger(__name__)
 
 
 class TestRequestHandlerCall(unittest.TestCase):
@@ -42,7 +48,6 @@ class TestRequestHandlerCall(unittest.TestCase):
         self.handler._handle_query_error.assert_called_with(
             request, error_type
         )
-        return True
 
     def test_central_api_property(self):
         self.handler._central_api = 'foo'
@@ -104,3 +109,99 @@ class TestRequestHandlerCall(unittest.TestCase):
         request = Mock()
         request.opcode.return_value = dns.opcode.NOTIFY
         assert list(self.handler(request)) == ['Notify']
+
+    def test__convert_to_rrset_no_records(self):
+        zone = objects.Zone.from_dict({'ttl': 1234})
+        recordset = objects.RecordSet(
+            name='www.example.org.',
+            type='A',
+            records=objects.RecordList(objects=[
+            ])
+        )
+
+        r_rrset = self.handler._convert_to_rrset(zone, recordset)
+        self.assertEqual(None, r_rrset)
+
+    def test__convert_to_rrset(self):
+        zone = objects.Zone.from_dict({'ttl': 1234})
+        recordset = objects.RecordSet(
+            name='www.example.org.',
+            type='A',
+            records=objects.RecordList(objects=[
+                objects.Record(data='192.0.2.1'),
+                objects.Record(data='192.0.2.2'),
+            ])
+        )
+
+        r_rrset = self.handler._convert_to_rrset(zone, recordset)
+        self.assertEqual(2, len(r_rrset))
+
+
+class HandleRecordQueryTest(unittest.TestCase):
+
+    def setUp(self):
+        self.storage = Mock()
+        self.tg = Mock()
+        self.handler = handler.RequestHandler(self.storage, self.tg)
+
+    def test__handle_record_query_empty_recordlist(self):
+        # bug #1550441
+        self.storage.find_recordset.return_value = objects.RecordSet(
+            name='www.example.org.',
+            type='A',
+            records=objects.RecordList(objects=[
+            ])
+        )
+        request = dns.message.make_query('www.example.org.', dns.rdatatype.A)
+        request.environ = dict(context='ctx')
+        response_gen = self.handler._handle_record_query(request)
+        for r in response_gen:
+            # This was raising an exception due to bug #1550441
+            out = r.to_wire(max_size=65535)
+            self.assertEqual(33, len(out))
+
+    def test__handle_record_query_zone_not_found(self):
+        self.storage.find_recordset.return_value = objects.RecordSet(
+            name='www.example.org.',
+            type='A',
+            records=objects.RecordList(objects=[
+                objects.Record(data='192.0.2.2'),
+            ])
+        )
+        self.storage.find_zone.side_effect = exceptions.ZoneNotFound
+        request = dns.message.make_query('www.example.org.', dns.rdatatype.A)
+        request.environ = dict(context='ctx')
+        response = tuple(self.handler._handle_record_query(request))
+        self.assertEqual(1, len(response))
+        self.assertEqual(dns.rcode.REFUSED, response[0].rcode())
+
+    def test__handle_record_query_forbidden(self):
+        self.storage.find_recordset.return_value = objects.RecordSet(
+            name='www.example.org.',
+            type='A',
+            records=objects.RecordList(objects=[
+                objects.Record(data='192.0.2.2'),
+            ])
+        )
+        self.storage.find_zone.side_effect = exceptions.Forbidden
+        request = dns.message.make_query('www.example.org.', dns.rdatatype.A)
+        request.environ = dict(context='ctx')
+        response = tuple(self.handler._handle_record_query(request))
+        self.assertEqual(1, len(response))
+        self.assertEqual(dns.rcode.REFUSED, response[0].rcode())
+
+    def test__handle_record_query_find_recordsed_forbidden(self):
+        self.storage.find_recordset.side_effect = exceptions.Forbidden
+        request = dns.message.make_query('www.example.org.', dns.rdatatype.A)
+        request.environ = dict(context='ctx')
+        response = tuple(self.handler._handle_record_query(request))
+        self.assertEqual(1, len(response))
+        self.assertEqual(dns.rcode.REFUSED, response[0].rcode())
+
+    def test__handle_record_query_find_recordsed_not_found(self):
+        self.storage.find_recordset.side_effect = exceptions.NotFound
+        request = dns.message.make_query('www.example.org.', dns.rdatatype.A)
+        request.environ = dict(context='ctx')
+        response = tuple(self.handler._handle_record_query(request))
+        self.assertEqual(1, len(response))
+        self.assertEqual(dns.rcode.REFUSED, response[0].rcode())

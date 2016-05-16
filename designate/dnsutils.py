@@ -142,6 +142,10 @@ class SerializationMiddleware(DNSMiddleware):
                 elif isinstance(response, dns.renderer.Renderer):
                     yield response.get_wire()
 
+                else:
+                    LOG.error(_LE("Unexpected response %(resp)s") %
+                              repr(response))
+
 
 class TsigInfoMiddleware(DNSMiddleware):
     """Middleware which looks up the information available for a TsigKey"""

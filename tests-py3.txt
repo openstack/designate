@@ -8,6 +8,7 @@ designate.tests.test_backend.test_nsd4
 designate.tests.test_central.test_service
 designate.tests.test_dnsutils
 designate.tests.test_mdns.test_handler
+designate.tests.test_mdns.test_service.MdnsServiceTest.test_query
 designate.tests.test_notification_handler.test_neutron
 designate.tests.test_notification_handler.test_nova
 designate.tests.test_pool_manager.test_service
