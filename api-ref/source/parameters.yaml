@@ -738,6 +738,80 @@ zone_transfer_request_zone_name:
   required: true
   type: string
 
+
+#############################
+#     Limits Variables      #
+#############################
+
+
+# Header Variables
+###################
+
+# Path Variables
+#################
+
+# Query Variables
+##################
+
+# Body Variables
+#################
+
+max_page_limit:
+  description: |
+    The max amount of items allowed per page
+  in: body
+  required: true
+  type: integer
+
+max_recordset_name_length:
+  description: |
+    The max length of a recordset name
+  in: body
+  required: true
+  type: integer
+
+max_recordset_records:
+  description: |
+    The max amount of records contained in a recordset
+  in: body
+  required: true
+  type: integer
+
+max_zone_name_length:
+  description: |
+    The max length of a zone name
+  in: body
+  required: true
+  type: integer
+
+max_zone_records:
+  description: |
+    The max amount of records in a zone
+  in: body
+  required: true
+  type: integer
+
+max_zone_recordsets:
+  description: |
+    The max amount of recordsets per zone
+  in: body
+  required: true
+  type: integer
+
+max_zones:
+  description: |
+    The max amount of zones for this project
+  in: body
+  required: true
+  type: integer
+
+min_ttl:
+  description: |
+    The lowest ttl allowed on this system
+  in: body
+  required: true
+  type: integer
+
 #############################
 #      <ITEM> Variables       #
 #############################

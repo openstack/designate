@@ -1,0 +1,10 @@
+{
+  "max_page_limit": 1000,
+  "max_recordset_name_length": 255,
+  "max_recordset_records": 20,
+  "max_zone_name_length": 255,
+  "max_zone_records": 500,
+  "max_zone_recordsets": 500,
+  "max_zones": 10,
+  "min_ttl": null
+}
