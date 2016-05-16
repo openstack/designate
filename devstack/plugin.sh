@@ -264,8 +264,9 @@ function install_designateclient {
 
 # install_designatedashboard - Collect source and prepare
 function install_designatedashboard {
-    git_clone $DESIGNATEDASHBOARD_REPO $DESIGNATEDASHBOARD_DIR $DESIGNATEDASHBOARD_BRANCH
-    setup_develop $DESIGNATEDASHBOARD_DIR
+    git_clone_by_name "designate-dashboard"
+    setup_dev_lib "designate-dashboard"
+
     ln -fs $DESIGNATEDASHBOARD_DIR/designatedashboard/enabled/_1710_project_dns_panel_group.py $HORIZON_DIR/openstack_dashboard/local/enabled/_1710_project_dns_panel_group.py
     ln -fs $DESIGNATEDASHBOARD_DIR/designatedashboard/enabled/_1720_project_dns_panel.py $HORIZON_DIR/openstack_dashboard/local/enabled/_1720_project_dns_panel.py
 }
