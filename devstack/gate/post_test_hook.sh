@@ -8,10 +8,6 @@ $BASE/new/designate/devstack/exercise.sh
 # Import functions needed for the below workaround
 source $BASE/new/devstack/functions
 
-# Run the new style tempest plugin first, so the workaround below is not
-# applied.
-sudo BASE=$BASE ./run_tempest_plugin.sh
-
 # Workaround for Tempest architectural changes
 # See bugs:
 # 1) https://bugs.launchpad.net/manila/+bug/1531049
