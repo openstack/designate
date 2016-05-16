@@ -1,0 +1,8 @@
+{
+    "nameservers": [
+        {
+            "hostname": "ns1.example.com.",
+            "priority": 10
+        }
+    ]
+}

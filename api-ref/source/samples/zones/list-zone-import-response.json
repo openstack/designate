@@ -1,0 +1,38 @@
+{
+     "imports": [
+         {
+            "status": "COMPLETE",
+            "zone_id": "047888ee-e9dd-4c08-8b44-ab2e879e01bd",
+            "links": {
+                "self": "http://127.0.0.1:9001/v2/zones/tasks/imports/0436a86e-ffc1-4d38-82a7-d75170fcd2a9",
+                "href": "http://127.0.0.1:9001/v2/zones/047888ee-e9dd-4c08-8b44-ab2e879e01bd"
+            },
+            "created_at": "2016-04-05T06:03:06.000000",
+            "updated_at": "2016-04-05T06:03:06.000000",
+            "version": 2,
+            "message": "example.com. imported",
+            "project_id": "1de6e2fdc22342d3bef6340c7b70f497",
+            "id": "0436a86e-ffc1-4d38-82a7-d75170fcd2a9"
+        },
+        {
+            "status": "COMPLETE",
+            "zone_id": "68a17870-7f81-470a-b5e9-2753460fd6dc",
+            "links": {
+                "self": "http://127.0.0.1:9001/v2/zones/tasks/imports/f0aa4ac1-f975-46a4-b417-339acd1ea8e3",
+                "href": "http://127.0.0.1:9001/v2/zones/68a17870-7f81-470a-b5e9-2753460fd6dc"
+            },
+            "created_at": "2016-04-05T06:06:26.000000",
+            "updated_at": "2016-04-05T06:06:26.000000",
+            "version": 2,
+            "message": "temp.org. imported",
+            "project_id": "1de6e2fdc22342d3bef6340c7b70f497",
+            "id": "f0aa4ac1-f975-46a4-b417-339acd1ea8e3"
+        }
+     ],
+     "links": {
+         "self": "http://127.0.0.1:9001/v2/zones/tasks/imports"
+     },
+     "metadata": {
+         "total_count": 2
+     }
+}

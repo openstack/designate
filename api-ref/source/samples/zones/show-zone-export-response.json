@@ -1,0 +1,15 @@
+{
+    "status": "COMPLETE",
+    "zone_id": "6625198b-d67d-47dc-8d29-f90bd60f3ac4",
+    "links": {
+        "self": "http://127.0.0.1:9001/v2/zones/tasks/exports/8ec17fe1-d1f9-41b4-aa98-4eeb4c27b720",
+        "export": "http://127.0.0.1:9001/v2/zones/tasks/exports/8ec17fe1-d1f9-41b4-aa98-4eeb4c27b720/export"
+    },
+    "created_at": "2015-08-27T20:57:03.000000",
+    "updated_at": "2015-08-27T20:57:03.000000",
+    "version": 2,
+    "location": "designate://v2/zones/tasks/exports/8ec17fe1-d1f9-41b4-aa98-4eeb4c27b720/export",
+    "message": null,
+    "project_id": "noauth-project",
+    "id": "8ec17fe1-d1f9-41b4-aa98-4eeb4c27b720"
+}

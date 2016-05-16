@@ -1,0 +1,14 @@
+{
+    "status": "COMPLETE",
+    "zone_id": "6625198b-d67d-47dc-8d29-f90bd60f3ac4",
+    "links": {
+        "self": "http://127.0.0.1:9001/v2/zones/tasks/imports/074e805e-fe87-4cbb-b10b-21a06e215d41",
+        "href": "http://127.0.0.1:9001/v2/zones/6625198b-d67d-47dc-8d29-f90bd60f3ac4"
+    },
+    "created_at": "2015-05-08T15:43:42.000000",
+    "updated_at": "2015-05-08T15:43:42.000000",
+    "version": 2,
+    "message": "example.com. imported",
+    "project_id": "noauth-project",
+    "id": "074e805e-fe87-4cbb-b10b-21a06e215d41"
+}

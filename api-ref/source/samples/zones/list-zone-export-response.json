@@ -1,0 +1,26 @@
+{
+
+    "exports": [
+        {
+            "status": "COMPLETE",
+            "zone_id": "17a8d6b3-6ace-4857-b113-a707c5f975b1",
+            "links": {
+                "self": "http://127.0.0.1:9001/v2/zones/tasks/exports/204be410-0a9c-44b8-839e-bc4df3bb0d9a",
+                "export": "http://127.0.0.1:9001/v2/zones/tasks/exports/204be410-0a9c-44b8-839e-bc4df3bb0d9a/export"
+            },
+            "created_at": "2016-04-04T01:53:29.000000",
+            "updated_at": "2016-04-04T01:53:29.000000",
+            "version": 2,
+            "location": "designate://v2/zones/tasks/exports/204be410-0a9c-44b8-839e-bc4df3bb0d9a/export",
+            "message": null,
+            "project_id": "1de6e2fdc22342d3bef6340c7b70f497",
+            "id": "204be410-0a9c-44b8-839e-bc4df3bb0d9a"
+        }
+    ],
+    "links": {
+        "self": "http://127.0.0.1:9001/v2/zones/tasks/exports"
+    },
+    "metadata": {
+        "total_count": 1
+    }
+}

@@ -71,6 +71,7 @@ Response Example
    :language: javascript
 
 
+
 List Zones
 ==========
 
@@ -191,6 +192,48 @@ Response Example
 
 .. literalinclude:: samples/zones/zone-response.json
    :language: javascript
+
+
+Get the Name Servers for a Zone
+===============================
+
+.. rest_method:: GET /v2/zones/{zone_id}/nameservers
+
+Show the nameservers for a zone
+
+Normal response codes: 200
+Error response codes:405,404,403,401,400,503,
+
+
+Request
+-------
+
+.. rest_parameters:: parameters.yaml
+
+   - x-auth-token: x-auth-token
+   - x-auth-all-projects: x-auth-all-projects
+   - x-auth-sudo-project-id: x-auth-sudo-project-id
+   - zone_id: path_zone_id
+
+
+Response Parameters
+-------------------
+
+.. rest_parameters:: parameters.yaml
+
+   - x-openstack-request-id: x-openstack-request-id
+   - hostname: zone_nameserver_hostname
+   - priority: zone_nameserver_priority
+
+
+
+Response Example
+----------------
+
+.. literalinclude:: samples/zones/show-zone-nameservers-response.json
+   :language: javascript
+
+
 
 
 Update a Zone
