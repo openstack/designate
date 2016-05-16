@@ -1,0 +1,8 @@
+{
+    "id": "581891d5-99f5-49e1-86c3-eec0f44d66fd",
+    "links": {
+        "self": "http://127.0.0.1:9001/v2/zones/tasks/transfer_accepts/581891d5-99f5-49e1-86c3-eec0f44d66fd",
+        "zone": "http://127.0.0.1:9001/v2/zones/6b78734a-aef1-45cd-9708-8eb3c2d26ff8"
+    },
+    "status": "COMPLETE"
+}
