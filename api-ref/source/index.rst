@@ -13,4 +13,5 @@
 .. include:: dns-api-v2-zone-ownership-transfer-request.inc
 .. include:: dns-api-v2-zone-ownership-transfer-accept.inc
 .. include:: dns-api-v2-recordset.inc
+.. include:: dns-api-v2-pool.inc
 .. include:: dns-api-v2-limits.inc

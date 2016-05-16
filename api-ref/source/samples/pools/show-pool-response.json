@@ -1,0 +1,18 @@
+{
+  "description": null,
+  "id": "d1716333-8c16-490f-85ee-29af36907605",
+  "project_id": "noauth-project",
+  "created_at": "2015-02-23T21:56:33.000000",
+  "attributes": null,
+  "ns_records": [
+    {
+      "hostname": "ns2.example.org.",
+      "priority": 1
+    }
+  ],
+  "links": {
+    "self": "http://127.0.0.1:9001/v2/pools/d1716333-8c16-490f-85ee-29af36907605"
+  },
+  "name": "example_pool",
+  "updated_at": null
+}
