@@ -21,5 +21,12 @@
               "self": "https://127.0.0.1:9001/v2/zones/a86dba58-0043-4cc6-a1bb-69d5e86f3ca3"
             }
         }
-    ]
+    ],
+    "links": {
+        "self": "http://127.0.0.1:9001/v2/zones?limit=1",
+        "next": "http://127.0.0.1:9001/v2/zones?limit=1&marker=45fd892d-7a67-4f65-9df0-87273f228d6c"
+    },
+    "metadata": {
+        "total_count": 2
+    }
 }

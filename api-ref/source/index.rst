@@ -7,3 +7,4 @@
 .. rest_expand_all::
 
 .. include:: dns-api-v2-zone.inc
+.. include:: dns-api-v2-recordset.inc
