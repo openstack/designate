@@ -321,6 +321,23 @@ zone_transfered_at:
   required: true
   type: enum
 
+zone_nameserver_hostname:
+  description: |
+    The hostname of the nameserver that the zone should be delegated to
+  in: body
+  required: true
+  type: hostname
+
+
+zone_nameserver_priority:
+  description: |
+    The priority of the nameserver. This is used to determine the order of the
+    the nameserver listings, and which server is used in the SOA record for the
+    zone.
+  in: body
+  required: true
+  type: hostname
+
 
 #############################
 #    Recordset Variables    #
@@ -434,6 +451,193 @@ recordset_description:
   in: body
   required: false
   type: string
+
+#############################
+#   Zone Import Variables   #
+#############################
+
+
+# Header Variables
+###################
+
+# Path Variables
+#################
+
+path_zone_import_id:
+  description: |
+    ID for this zone import
+  in: path
+  required: true
+  type: uuid
+
+# Query Variables
+##################
+
+# Filters
+# 'status', 'message', 'zone_id'
+
+zone_import_zone_id_filter:
+  description: |
+    Filter results to only show zone_imports that have a ``zone_id`` matching the filter
+  in: query
+  required: false
+  type: uuid
+
+zone_import_status_filter:
+  description: |
+    Filter results to only show zone_imports that have a ``status`` matching the filter
+  in: query
+  required: false
+  type: string
+
+zone_import_message_filter:
+  description: |
+    Filter results to only show zone_imports that have a ``message`` matching the filter
+  in: query
+  required: false
+  type: string
+
+
+
+# Body Variables
+#################
+
+zone_import_id:
+  description: |
+    ID for this zone import
+  in: body
+  required: true
+  type: uuid
+
+zone_import_zone_id:
+  description: |
+    ID for the zone that was created by this import
+  in: body
+  required: false
+  type: uuid
+
+zone_import_status:
+  description: |
+    Current status of the zone import
+  in: body
+  required: true
+  type: uuid
+
+zone_import_message:
+  description: |
+    Message about the current status of the import
+  in: body
+  required: false
+  type: uuid
+
+#############################
+#   Zone Export Variables   #
+#############################
+
+
+# Header Variables
+###################
+
+zone_export_accepts:
+  description: >
+    Content-Type that will be accepted by the client.
+    This endpoint will send a response with a ``text/dns`` content-type.
+    If the client does not include a ``Accepts: text/dns`` header
+  in: header
+  required: true
+  type: string
+
+
+# Path Variables
+#################
+
+path_zone_export_id:
+  description: |
+    ID for this zone export
+  in: path
+  required: true
+  type: uuid
+
+# Query Variables
+##################
+
+# Filters
+# 'status', 'message', 'zone_id'
+
+zone_export_zone_id_filter:
+  description: |
+    Filter results to only show ``zone_exports`` that have a ``zone_id`` matching the filter
+  in: query
+  required: false
+  type: uuid
+
+zone_export_status_filter:
+  description: |
+    Filter results to only show ``zone_exports`` that have a ``status`` matching the filter
+  in: query
+  required: false
+  type: string
+
+zone_export_message_filter:
+  description: |
+    Filter results to only show ``zone_exports`` that have a ``message`` matching the filter
+  in: query
+  required: false
+  type: string
+
+
+
+# Body Variables
+#################
+
+zone_export_id:
+  description: |
+    ID for this zone export
+  in: body
+  required: true
+  type: uuid
+
+zone_export_zone_id:
+  description: |
+    ID for the zone that is being exported
+  in: body
+  required: false
+  type: uuid
+
+zone_export_status:
+  description: |
+    Current status of the zone export
+  in: body
+  required: true
+  type: uuid
+
+zone_export_message:
+  description: |
+    Message about the current status of the export
+  in: body
+  required: false
+  type: uuid
+
+zone_export_location:
+  description: >
+    Where the exported zone is published to.
+    There are currently one placement option available - designate.
+
+    This will be shown by ``designate://<url>``.
+
+    As more drivers are added, this will expand to include swift - this will be
+    indicated by location being set to ``swift://<region>/<container>/<file>``
+
+    This is also allowed be a webserver if the operator implements a different
+    data store, and will be indicted by ``http://<url>``
+
+    When a zone export is complete, the location will be updated, and
+    the exported zone file will be available at the location specified.
+
+  in: body
+  required: false
+  type: string
+
 
 #############################
 #      <ITEM> Variables       #

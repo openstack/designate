@@ -1,0 +1,18 @@
+$ORIGIN example.com.
+$TTL 42
+
+example.com. IN SOA ns.designate.com. nsadmin.example.com. (
+    1394213803 ; serial
+    3600 ; refresh
+    600 ; retry
+    86400 ; expire
+    3600 ; minimum
+)
+
+
+example.com. IN NS ns.designate.com.
+
+
+example.com.  IN MX 10 mail.example.com.
+ns.example.com.  IN A  10.0.0.1
+mail.example.com.  IN A  10.0.0.2
