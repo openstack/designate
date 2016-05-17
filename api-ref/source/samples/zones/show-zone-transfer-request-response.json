@@ -1,0 +1,10 @@
+{
+    "description": "This is scoped to the requesting project",
+    "id": "efd2d720-b0c4-43d4-99f7-d9b53e08860d",
+    "zone_id": "2c4d5e37-f823-4bee-9859-031cb44f80e7",
+    "zone_name": "subdomain.example.com.",
+    "status": "ACTIVE",
+    "links": {
+        "self": "http://127.0.0.1:9001/v2/zones/tasks/transfer_requests/efd2d720-b0c4-43d4-99f7-d9b53e08860d"
+    }
+}

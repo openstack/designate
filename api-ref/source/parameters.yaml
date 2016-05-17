@@ -148,7 +148,7 @@ updated_at:
   description: |
     Date / Time when resource last updated
   in: body
-  required: true
+  required: false
   type: datestamp
 
 status:
@@ -609,7 +609,7 @@ zone_export_status:
     Current status of the zone export
   in: body
   required: true
-  type: uuid
+  type: string
 
 zone_export_message:
   description: |
@@ -638,6 +638,105 @@ zone_export_location:
   required: false
   type: string
 
+
+
+#################################
+#    Zone Transfer Variables    #
+#################################
+
+
+# Header Variables
+###################
+
+# Path Variables
+#################
+
+path_zone_transfer_request_id:
+  description: |
+    ID for this zone transfer request
+  in: path
+  required: true
+  type: uuid
+
+path_zone_accept_request_id:
+  description: |
+    ID for this zone transfer accept
+  in: path
+  required: true
+  type: uuid
+
+# Query Variables
+##################
+
+# Filters
+# 'status'
+
+zone_transfer_request_status_filter:
+  description: |
+    Filter results to only show ``zone_transfer_requests`` that have a ``status`` matching the filter
+  in: query
+  required: false
+  type: string
+
+# Body Variables
+#################
+zone_transfer_request_id:
+  description: |
+    ID for this zone transfer request
+  in: path
+  required: true
+  type: uuid
+
+zone_transfer_accept_id:
+  description: |
+    ID for this zone transfer accept
+  in: path
+  required: true
+  type: uuid
+
+zone_transfer_request_target_project_id:
+  description: >
+    A project ID that the request will be limited to.
+    No other project will be allowed to accept this request.
+  in: body
+  required: false
+  type: string
+
+zone_transfer_request_status:
+  description: |
+    Current status of the zone transfer request
+  in: body
+  required: true
+  type: string
+
+zone_transfer_accept_status:
+  description: |
+    Current status of the zone transfer request
+  in: body
+  required: true
+  type: string
+
+zone_transfer_request_key:
+  description: >
+    Key that is used as part of the zone transfer accept process. This is only
+    shown to the creator, and must be communicated out of band.
+  in: body
+  required: true
+  type: string
+
+zone_transfer_request_zone_id:
+  description: |
+    ID for the zone that is being exported
+  in: body
+  required: true
+  type: uuid
+
+zone_transfer_request_zone_name:
+  description: |
+    the name of the zone that is being exported
+  in: body
+  required: true
+  type: string
 
 #############################
 #      <ITEM> Variables       #

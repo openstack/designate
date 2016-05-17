@@ -1,0 +1,15 @@
+{
+    "created_at": "2014-07-17T20:34:40.882579",
+    "description": null,
+    "id": "f2ad17b5-807a-423f-a991-e06236c247be",
+    "key": "9Z2R50Y0",
+    "project_id": "1",
+    "status": "ACTIVE",
+    "target_project_id": "123456",
+    "updated_at": null,
+    "zone_id": "6b78734a-aef1-45cd-9708-8eb3c2d26ff8",
+    "zone_name": "qa.dev.example.com.",
+    "links": {
+        "self": "http://127.0.0.1:9001/v2/zones/tasks/transfer_requests/f2ad17b5-807a-423f-a991-e06236c247be"
+    }
+}
