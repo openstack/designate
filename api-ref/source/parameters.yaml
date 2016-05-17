@@ -658,7 +658,7 @@ path_zone_transfer_request_id:
   required: true
   type: uuid
 
-path_zone_accept_request_id:
+path_zone_transfer_accept_id:
   description: |
     ID for this zone transfer accept
   in: path
@@ -811,6 +811,58 @@ min_ttl:
   in: body
   required: true
   type: integer
+
+
+#############################
+#      Pool Variables       #
+#############################
+
+
+# Header Variables
+###################
+
+# Path Variables
+#################
+
+path_pool_id:
+  description: |
+    ID for this pool
+  in: path
+  required: true
+  type: uuid
+
+# Query Variables
+##################
+
+# Body Variables
+#################
+pool_id:
+  description: |
+    ID for this pool
+  in: path
+  required: true
+  type: uuid
+
+pool_name:
+  description: |
+    Name for this pool
+  in: path
+  required: true
+  type: string
+
+pool_ns_records:
+  description: |
+    Name Servers for this pool. Any zones hosted by this pool should be delegated to these DNS servers
+  in: path
+  required: true
+  type: string
+
+pool_attributes:
+  description: >
+    Key:Value pairs of information about this pool. This information can be used by the scheduler to place zones on the correct pools
+  in: path
+  required: true
+  type: object
 
 #############################
 #      <ITEM> Variables       #
