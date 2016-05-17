@@ -174,6 +174,9 @@ function configure_designate_tempest() {
             nameservers=$DESIGNATE_NAMESERVERS
         fi
 
+        iniset $TEMPEST_CONFIG dns nameservers $nameservers
+
+        # For legacy functionaltests
         iniset $TEMPEST_CONFIG designate nameservers $nameservers
     fi
 }
