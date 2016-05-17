@@ -6,6 +6,7 @@
 
 .. rest_expand_all::
 
+.. include:: dns-api-v2-version.inc
 .. include:: dns-api-v2-zone.inc
 .. include:: dns-api-v2-zone-import.inc
 .. include:: dns-api-v2-zone-export.inc
