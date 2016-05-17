@@ -28,8 +28,6 @@ from functionaltests.api.v2.clients.pool_client import PoolClient
 from functionaltests.api.v2.clients.recordset_client import RecordsetClient
 from functionaltests.api.v2.clients.tld_client import TLDClient
 from functionaltests.api.v2.clients.zone_client import ZoneClient
-from functionaltests.api.v2.clients.zone_import_client import ZoneImportClient
-from functionaltests.api.v2.clients.zone_export_client import ZoneExportClient
 from functionaltests.api.v2.clients.transfer_requests_client import \
     TransferRequestClient
 from functionaltests.common import datagen
@@ -74,60 +72,6 @@ class ZoneFixture(BaseFixture):
     def cleanup_zone(cls, client, zone_id):
         try:
             client.delete_zone(zone_id)
-        except NotFound:
-            pass
-
-
-class ZoneImportFixture(BaseFixture):
-
-    def __init__(self, post_model=None, user='default'):
-        super(ZoneImportFixture, self).__init__()
-        self.post_model = post_model or datagen.random_zonefile_data()
-        self.user = user
-
-    def _setUp(self):
-        super(ZoneImportFixture, self)._setUp()
-        self._import_zone()
-
-    def _import_zone(self):
-        client = ZoneImportClient.as_user(self.user)
-        self.post_resp, self.zone_import = client.post_zone_import(
-            self.post_model)
-        assert self.post_resp.status == 202
-        self.addCleanup(self.cleanup_zone_import, client, self.zone_import.id)
-        client.wait_for_zone_import(self.zone_import.id)
-
-    @classmethod
-    def cleanup_zone_import(cls, client, import_id):
-        try:
-            client.delete_zone_import(import_id)
-        except NotFound:
-            pass
-
-
-class ZoneExportFixture(BaseFixture):
-
-    def __init__(self, zone_id, user='default'):
-        super(ZoneExportFixture, self).__init__()
-        self.zone_id = zone_id
-        self.user = user
-
-    def _setUp(self):
-        super(ZoneExportFixture, self)._setUp()
-        self._export_zone()
-
-    def _export_zone(self):
-        client = ZoneExportClient.as_user(self.user)
-        self.post_resp, self.zone_export = client.post_zone_export(
-            self.zone_id)
-        assert self.post_resp.status == 202
-        self.addCleanup(self.cleanup_zone_export, client, self.zone_export.id)
-        client.wait_for_zone_export(self.zone_export.id)
-
-    @classmethod
-    def cleanup_zone_export(cls, client, export_id):
-        try:
-            client.delete_zone_export(export_id)
         except NotFound:
             pass
 
