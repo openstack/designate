@@ -1,0 +1,282 @@
+#############################
+#     Common Variables      #
+#############################
+
+# Header Variables
+###################
+
+x-auth-token:
+  description: |
+    Token used to identify the user from keystone
+  in: header
+  required: false
+  type: string
+
+x-auth-all-projects:
+  description: |
+    If enabled this will show results from all projects in Designate
+  in: header
+  required: false
+  type: bool
+
+x-auth-sudo-project-id:
+  description: |
+    This allows a user to impersonate another project
+  in: header
+  required: false
+  type: string
+
+x-designate-edit-managed-records:
+  description: |
+    If enabled this will all users to edit records flagged as managed
+  in: header
+  required: false
+  type: bool
+
+x-openstack-request-id:
+  description: |
+    ID of the request
+  in: header
+  required: false
+  type: string
+
+# Path Variables
+#################
+
+
+# Query Variables
+##################
+
+limit:
+  description: |
+    Requests a page size of items. Returns a number
+    of items up to a limit value. Use the ``limit`` parameter to make
+    an initial limited request and use the ID of the last-seen item
+    from the response as the ``marker`` parameter value in a
+    subsequent limited request.
+  in: query
+  required: false
+  type: integer
+marker:
+  description: |
+    The ID of the last-seen item. Use the ``limit``
+    parameter to make an initial limited request and use the ID of the
+    last-seen item from the response as the ``marker`` parameter value
+    in a subsequent limited request.
+  in: query
+  required: false
+  type: string
+sort_dir:
+  description: |
+    Sorts the response by the requested sort
+    direction. A valid value is ``asc`` (ascending) or ``desc``
+    (descending). Default is ``asc``. You can specify multiple pairs
+    of sort key and sort direction query parameters. If you omit the
+    sort direction in a pair, the API uses the natural sorting
+    direction of the server attribute that is provided as the
+    ``sort_key``.
+  in: query
+  required: false
+  type: string
+sort_key:
+  description: |
+    Sorts the response by the this attribute value.
+    Default is ``id``. You can specify multiple pairs of sort key and
+    sort direction query parameters. If you omit the sort direction in
+    a pair, the API uses the natural sorting direction of the server
+    attribute that is provided as the ``sort_key``.
+  in: query
+  required: false
+  type: string
+
+# Body Variables
+#################
+
+
+id:
+  description: |
+    ID for the resource
+  in: body
+  required: true
+  type: uuid
+
+
+project_id:
+  description: |
+    ID for the project that owns the resource
+  in: body
+  required: true
+  type: uuid
+
+
+description:
+  description: |
+    Description for the resource. Only showen in API / Horizon
+  in: body
+  required: true
+  type: string
+
+version:
+  description: |
+    Version of the resource
+  in: body
+  required: true
+  type: integer
+
+
+created_at:
+  description: |
+    Date / Time when resource was created
+  in: body
+  required: true
+  type: datestamp
+
+updated_at:
+  description: |
+    Date / Time when resource last updated
+  in: body
+  required: true
+  type: datestamp
+
+status:
+  description: |
+    status of the resource
+  in: body
+  required: true
+  type: enum
+
+action:
+  description: |
+    current action in progress on the resource
+  in: body
+  required: true
+  type: enum
+
+links:
+  description: |
+    Links to the resource, and other related resources
+  in: body
+  required: true
+  type: object
+
+#############################
+#      Zone Variables       #
+#############################
+
+
+# Header Variables
+###################
+
+# Path Variables
+#################
+
+zone_id:
+  description: |
+    ID for the zone
+  in: path
+  required: true
+  type: string
+
+
+# Query Variables
+##################
+
+# Body Variables
+#################
+
+
+zone_name:
+  description: |
+    DNS Name for the zone
+  in: body
+  required: true
+  type: domainname
+
+zone_email:
+  description: |
+    e-mail for the zone. Used in SOA records for the zone
+  in: body
+  required: true
+  type: string
+
+zone_email_update:
+  description: |
+    e-mail for the zone. Used in SOA records for the zone
+  in: body
+  required: false
+  type: string
+
+zone_ttl:
+  description: |
+    TTL (Time to Live) for the zone.
+  in: body
+  required: false
+  type: integer
+
+zone_description:
+  description: |
+    Description for this zone
+  in: body
+  required: false
+  type: string
+
+zone_pool_id:
+  description: |
+    ID for the pool hosting this zone
+  in: body
+  required: true
+  type: uuid
+
+zone_serial:
+  description: |
+    current serial number for the zone
+  in: body
+  required: true
+  type: integer
+
+zone_serial:
+  description: |
+    current serial number for the zone
+  in: body
+  required: true
+  type: integer
+
+zone_type:
+  description: |
+    Type of zone. PRIMARY is controlled by Designate, SECONDARY zones are slaved from another DNS Server. Defaults to PRIMARY
+  in: body
+  required: false
+  type: enum
+
+zone_masters:
+  description: |
+    For secondary zones. The servers to slave from to get DNS information
+  in: body
+  required: true
+  type: enum
+
+zone_transfered_at:
+  description: |
+    For secondary zones. The last time an update was retrived from the master servers
+  in: body
+  required: true
+  type: enum
+
+
+
+#############################
+#      <ITEM> Variables       #
+#############################
+
+
+# Header Variables
+###################
+
+# Path Variables
+#################
+
+# Query Variables
+##################
+
+# Body Variables
+#################
