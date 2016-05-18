@@ -13,7 +13,7 @@ Create Zone
 Create a zone
 
 
-Normal response codes: 201
+Normal response codes: 202
 Error response codes:405,404,403,401,400,503,
 
 
@@ -77,7 +77,7 @@ List Zones
 
 .. rest_method::  GET /v2/zones
 
-Show a zone
+List all zones
 
 
 Normal response codes: 200
@@ -241,10 +241,10 @@ Update a Zone
 
 .. rest_method::  PATCH /v2/zones/{zone_id}
 
-Show a zone
+Update the attribute(s) for an existing zone.
 
 
-Normal response codes: 201
+Normal response codes: 202
 Error response codes:405,404,403,401,400,503,
 
 
@@ -307,10 +307,10 @@ Delete a Zone
 
 .. rest_method::  DELETE /v2/zones/{zone_id}
 
-Show a zone
+Delete a zone
 
 
-Normal response codes: 201
+Normal response codes: 202
 Error response codes:405,404,403,401,400,503,
 
 

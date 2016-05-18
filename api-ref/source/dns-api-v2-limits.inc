@@ -10,7 +10,7 @@ Get Project Limits
 
 .. rest_method::  GET /v2/limits
 
-Create a zone
+List project limits
 
 
 Normal response codes: 200

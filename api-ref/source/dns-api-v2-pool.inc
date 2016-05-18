@@ -10,7 +10,7 @@ List all Pools
 
 .. rest_method::  GET /v2/pools
 
-Create a zone
+Get the list of Pools.
 
 
 Normal response codes: 200
@@ -58,7 +58,7 @@ Show a Pool
 
 .. rest_method::  GET /v2/pools/{pool_id}
 
-Create a zone
+Get a specific Pool
 
 
 Normal response codes: 200

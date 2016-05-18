@@ -13,7 +13,7 @@ Create Recordset
 Create a recordset in a zone
 
 
-Normal response codes: 200
+Normal response codes: 202
 Error response codes:405,404,403,401,400,503,
 
 
@@ -252,7 +252,7 @@ Update a Recordset
 
 Update a recordset
 
-Normal response codes: 201
+Normal response codes: 202
 Error response codes:405,404,403,401,400,503,
 
 
@@ -312,7 +312,7 @@ Delete a Recordset
 
 Delete a recordset
 
-Normal response codes: 201
+Normal response codes: 202
 Error response codes:405,404,403,401,400,503,
 
 
