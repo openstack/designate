@@ -864,6 +864,55 @@ pool_attributes:
   required: true
   type: object
 
+
+#############################
+#      Tld Variables       #
+#############################
+
+
+# Header Variables
+###################
+
+# Path Variables
+#################
+
+tld_id:
+  description: |
+    ID for this tld
+  in: path
+  required: true
+  type: uuid
+
+# Query Variables
+##################
+
+# Filters
+
+tld_name_filter:
+  description: |
+    Filter results to only show tlds that have a name matching the filter
+  in: query
+  required: false
+  type: string
+
+
+# Body Variables
+#################
+
+tld_name:
+  description: |
+    Name for this tld
+  in: body
+  required: true
+  type: string
+
+tld_description:
+  description: |
+    Description for this tld
+  in: body
+  required: false
+  type: string
+
 #############################
 #      <ITEM> Variables       #
 #############################

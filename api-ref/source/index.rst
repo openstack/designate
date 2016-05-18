@@ -16,3 +16,4 @@
 .. include:: dns-api-v2-recordset.inc
 .. include:: dns-api-v2-pool.inc
 .. include:: dns-api-v2-limits.inc
+.. include:: dns-api-v2-tld.inc
