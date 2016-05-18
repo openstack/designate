@@ -22,7 +22,7 @@ supplied.
 .. note:: This POST can have no body.
 
 
-Normal response codes: 200
+Normal response codes: 201
 Error response codes:405,404,403,401,400,503,
 
 
