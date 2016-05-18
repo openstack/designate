@@ -23,6 +23,7 @@ from migrate.changeset.constraint import UniqueConstraint
 from oslo_log import log as logging
 from sqlalchemy.schema import MetaData, Table
 from sqlalchemy import exc
+from sqlalchemy.engine.reflection import Inspector
 
 LOG = logging.getLogger()
 
@@ -44,9 +45,11 @@ def upgrade(migrate_engine):
     pool_ns_records_table = Table('pool_ns_records', meta, autoload=True)
 
     # Only apply it if it's not there (It's been backported to L)
-    constraints = [i.name for i in pool_ns_records_table.constraints]
+    insp = Inspector.from_engine(migrate_engine)
+    unique_constraints = insp.get_unique_constraints('pool_ns_records')
+    unique_constraint_names = [i['name'] for i in unique_constraints]
 
-    if CONSTRAINT_NAME not in constraints:
+    if CONSTRAINT_NAME not in unique_constraint_names:
         # We define the constraint here if not it shows in the list above.
         constraint = UniqueConstraint('pool_id', 'hostname',
                                       name=CONSTRAINT_NAME,
