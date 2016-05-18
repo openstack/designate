@@ -37,47 +37,6 @@ class TransferZoneOwnerShipTest(DesignateV2Test):
         self.ensure_tld_exists('com')
         self.zone = self.useFixture(ZoneFixture()).created_zone
 
-    def test_list_transfer_requests(self):
-        self.useFixture(TransferRequestFixture(
-            zone=self.zone,
-            post_model=datagen.random_transfer_request_data(),
-        ))
-        resp, model = TransferRequestClient.as_user('default') \
-            .list_transfer_requests()
-        self.assertEqual(200, resp.status)
-        self.assertGreater(len(model.transfer_requests), 0)
-
-    def test_create_zone_transfer_request(self):
-        fixture = self.useFixture(TransferRequestFixture(
-            zone=self.zone,
-            post_model=datagen.random_transfer_request_data(),
-        ))
-        self.assertEqual(201, fixture.post_resp.status)
-        self.assertEqual(self.zone.id, fixture.transfer_request.zone_id)
-        # todo: this fails. the zone_name is null in the POST's response, but
-        #       it's filled in on a subsequent get
-        # self.assertEqual(self.zone.name, fixture.transfer_request.zone_name)
-        self.assertEqual(TransferRequestClient.as_user(fixture.user).tenant_id,
-                         fixture.transfer_request.project_id)
-        self.assertIsNone(fixture.transfer_request.target_project_id)
-
-        # check that the zone_name is filled in
-        resp, transfer_request = TransferRequestClient.as_user(fixture.user) \
-            .get_transfer_request(fixture.transfer_request.id)
-        self.assertEqual(self.zone.name, transfer_request.zone_name)
-
-    def test_view_zone_transfer_request(self):
-        fixture = self.useFixture(TransferRequestFixture(
-            zone=self.zone,
-            post_model=datagen.random_transfer_request_data(),
-        ))
-
-        resp, transfer_request = TransferRequestClient.as_user('alt')\
-            .get_transfer_request(fixture.transfer_request.id)
-
-        self.assertEqual(resp.status, 200)
-        self.assertIsNone(getattr(transfer_request, 'key', None))
-
     def test_create_zone_transfer_request_scoped(self):
         target_project_id = TransferRequestClient.as_user('alt').tenant_id
         post_model = datagen.random_transfer_request_data(
@@ -136,23 +95,6 @@ class TransferZoneOwnerShipTest(DesignateV2Test):
         self.assertEqual(201, resp.status)
         self.addCleanup(TransferRequestFixture.cleanup_transfer_request,
                         client, transfer_request.id)
-
-    def test_do_zone_transfer(self):
-        fixture = self.useFixture(TransferRequestFixture(
-            zone=self.zone,
-            post_model=datagen.random_transfer_request_data(),
-            user='default',
-            target_user='alt',
-        ))
-        transfer_request = fixture.transfer_request
-
-        resp, transfer_accept = TransferAcceptClient.as_user('alt')\
-            .post_transfer_accept(
-                datagen.random_transfer_accept_data(
-                    key=transfer_request.key,
-                    zone_transfer_request_id=transfer_request.id
-                ))
-        self.assertEqual(201, resp.status)
 
     def test_do_zone_transfer_scoped(self):
         target_project_id = TransferRequestClient.as_user('alt').tenant_id
