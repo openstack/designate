@@ -620,14 +620,14 @@ Accept a Transfer Request
 
     .. sourcecode:: http
 
-        POST /v2/zones/tasks/transfer_accept HTTP/1.1
+        POST /v2/zones/tasks/transfer_accepts HTTP/1.1
         Host: 127.0.0.1:9001
         Accept: application/json
         Content-Type: application/json
 
         {
-            "key":"9Z2R50Y0",
-            "zone_transfer_request_id":"f2ad17b5-807a-423f-a991-e06236c247be"
+            "key":"J6JCET2C",
+            "zone_transfer_request_id":"98ba1d22-c092-4603-891f-8a0ab04f7e57"
         }
 
     **Example Response**
@@ -635,15 +635,61 @@ Accept a Transfer Request
     .. sourcecode:: http
 
         HTTP/1.1 201 Created
+        Content-Length: 532
         Content-Type: application/json
+        charset=UTF-8
 
         {
-            "id": "581891d5-99f5-49e1-86c3-eec0f44d66fd",
+            "status": "COMPLETE",
+            "zone_id": "53cdcf82-9e32-4a00-a90d-32d6ec5db7e9",
             "links": {
-                "self": "http://127.0.0.1:9001/v2/zones/tasks/transfer_accepts/581891d5-99f5-49e1-86c3-eec0f44d66fd",
-                "zone": "http://127.0.0.1:9001/v2/zones/6b78734a-aef1-45cd-9708-8eb3c2d26ff8"
+                "self": "http://127.0.0.1:9001/v2/zones/tasks/transfer_accepts/46b04776-a7c9-45b4-812e-b8e615d1d73b",
+                "zone": "http://127.0.0.1:9001/v2/zones/53cdcf82-9e32-4a00-a90d-32d6ec5db7e9"
             },
-            "status": "COMPLETE"
+            "created_at": "2016-05-13 08:01:16",
+            "updated_at": "2016-05-13 08:01:16",
+            "key": "J6JCET2C",
+            "project_id": "10457ad1fe074f4a89bb1e4c0cd83d40",
+            "id": "46b04776-a7c9-45b4-812e-b8e615d1d73b",
+            "zone_transfer_request_id": "98ba1d22-c092-4603-891f-8a0ab04f7e57"
+        }
+
+
+View a Transfer Accept
+^^^^^^^^^^^^^^^^^^^^^^
+
+.. http:get:: /zones/tasks/transfer_accepts/(uuid:id)
+
+    **Example Request**
+
+    .. sourcecode:: http
+
+        GET /v2/zones/tasks/transfer_accepts/46b04776-a7c9-45b4-812e-b8e615d1d73b HTTP/1.1
+        Host: 127.0.0.1:9001
+        Accept: application/json
+
+    **Example Response**
+
+    .. sourcecode:: http
+
+        HTTP/1.1 200 OK
+        Content-Length: 526
+        Content-Type: application/json
+        charset=UTF-8
+
+        {
+            "status": "COMPLETE",
+            "zone_id": "53cdcf82-9e32-4a00-a90d-32d6ec5db7e9",
+            "links": {
+                "self": "http://127.0.0.1:9001/v2/zones/tasks/transfer_accepts/46b04776-a7c9-45b4-812e-b8e615d1d73b",
+                "zone": "http://127.0.0.1:9001/v2/zones/53cdcf82-9e32-4a00-a90d-32d6ec5db7e9"
+            },
+            "created_at": "2016-05-13 08:01:16",
+            "updated_at": "2016-05-13 08:01:16",
+            "key": null,
+            "project_id": "10457ad1fe074f4a89bb1e4c0cd83d40",
+            "id": "46b04776-a7c9-45b4-812e-b8e615d1d73b",
+            "zone_transfer_request_id": "98ba1d22-c092-4603-891f-8a0ab04f7e57"
         }
 
 
