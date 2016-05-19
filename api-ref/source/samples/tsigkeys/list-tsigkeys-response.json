@@ -1,0 +1,45 @@
+{
+    "tsigkeys": [
+        {
+            "links": {
+              "self": "http://192.168.11.182:9001/v2/tsigkeys/f94d03ca-bd55-4321-8e93-8d363737ab5c"
+            },
+            "name": "Example key",
+            "algorithm": "hmac-sha256",
+            "resource_id": "5866274f-ee8d-42ee-94f9-29000f040949",
+            "created_at": "2016-04-19 18:52:54",
+            "updated_at": null,
+            "secret": "some secret key",
+            "scope": "POOL",
+            "id": "f94d03ca-bd55-4321-8e93-8d363737ab5c"
+        },
+        {
+            "links": {
+              "self": "http://192.168.11.182:9001/v2/tsigkeys/6bba6f00-dc33-4665-bb37-15f6188bb305"
+            },
+            "name": "Example key2",
+            "algorithm": "hmac-sha256",
+            "resource_id": "8a5ba22a-347e-4e92-9747-d2c3e67fbb45",
+            "created_at": "2016-05-19 02:17:54",
+            "updated_at": null,
+            "secret": "SomeSecretKey",
+            "scope": "POOL",
+            "id": "6bba6f00-dc33-4665-bb37-15f6188bb305"
+        },
+        {
+            "links": {
+              "self": "http://192.168.11.182:9001/v2/tsigkeys/c429b860-9f68-4e5f-a2ff-65760a64ceaa"
+            },
+            "name": "Example key3",
+            "algorithm": "hmac-sha256",
+            "resource_id": "d96851d0-765c-4ee9-bbdf-153345270bd3",
+            "created_at": "2016-05-19 05:52:45",
+            "updated_at": null,
+            "secret": "SomeSecretKey", "scope": "POOL",
+            "id": "c429b860-9f68-4e5f-a2ff-65760a64ceaa"
+        }
+    ],
+    "links": {
+        "self": "http://192.168.11.182:9001/v2/tsigkeys"
+    }
+}

@@ -913,6 +913,92 @@ tld_description:
   required: false
   type: string
 
+
+#############################
+#      Tsigkey Variables       #
+#############################
+
+
+# Header Variables
+###################
+
+# Path Variables
+#################
+
+tsigkey_id:
+  description: |
+    ID for this tsigkey
+  in: path
+  required: true
+  type: uuid
+
+
+# Query Variables
+##################
+
+#Filters
+
+tsigkey_name_filter:
+  description: |
+    Filter results to only show tsigkeys that have a name matching the filter
+  in: query
+  required: false
+  type: string
+
+tsigkey_algorithm_filter:
+  description: |
+    Filter results to only show tsigkeys that have an algorithm matching the filter
+  in: query
+  required: false
+  type: string
+
+tsigkey_scope_filter:
+  description: |
+    Filter results to only show tsigkeys that have a scope matching the filter
+  in: query
+  required: false
+  type: string
+
+
+# Body Variables
+#################
+
+tsigkey_name:
+  description: |
+    Name for this tsigkey
+  in: body
+  required: true
+  type: string
+
+tsigkey_algorithm:
+  description: |
+    The encryption algorithm for this tsigkey
+  in: body
+  required: true
+  type: string
+
+tsigkey_secret:
+  description: |
+    The actual key to be used
+  in: body
+  required: true
+  type: string
+
+tsigkey_scope:
+  description: |
+    scope for this tsigkey which can be either ZONE or POOL scope
+  in: body
+  required: true
+  type: string
+
+resource_id:
+  description: |
+    resource id for this tsigkey which can be either zone or pool id
+  in: body
+  required: true
+  type: string
+
+
 #############################
 #      <ITEM> Variables       #
 #############################

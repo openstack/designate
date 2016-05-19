@@ -1,0 +1,7 @@
+{
+    "name": "Example key",
+    "algorithm": "hmac-sha256",
+    "secret": "SomeSecretKey",
+    "scope": "POOL",
+    "resource_id": "d96851d0-765c-4ee9-bbdf-153345270bd3"
+}
