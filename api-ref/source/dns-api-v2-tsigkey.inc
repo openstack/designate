@@ -14,7 +14,8 @@ Create Tsigkeys
 Create a new Tsigkey
 
 Normal response codes: 201
-Error response codes:409, 405,404,403,401,400,503,
+
+Error response codes: 409, 405,404,403,401,400,503
 
 
 Request
@@ -72,7 +73,8 @@ List all tsigkeys
 
 
 Normal response codes: 200
-Error response codes:405,404,403,401,400,503,
+
+Error response codes: 405,404,403,401,400,503
 
 
 Request Parameters
@@ -126,7 +128,8 @@ Show a tsigkey
 
 
 Normal response codes: 200
-Error response codes:405,404,403,401,400,503,
+
+Error response codes: 405,404,403,401,400,503
 
 
 Request
@@ -174,7 +177,8 @@ Update the attribute(s) of an existing tsigkey
 
 
 Normal response codes: 200
-Error response codes:405,404,403,401,400,503,
+
+Error response codes: 405,404,403,401,400,503
 
 
 Request Parameters
@@ -233,7 +237,8 @@ Delete a tsigkey
 
 
 Normal response codes: 204
-Error response codes:405,404,403,401,400,503
+
+Error response codes: 405,404,403,401,400,503
 
 
 Request

@@ -16,7 +16,8 @@ Export a zone.
 .. note:: This POST should have no body
 
 Normal response codes: 202
-Error response codes:405,404,403,401,400,503,
+
+Error response codes: 405,404,403,401,400,503
 
 
 Request
@@ -61,7 +62,8 @@ List all Zone Exports
 
 
 Normal response codes: 200
-Error response codes:405,404,403,401,400,503,
+
+Error response codes: 405,404,403,401,400,503
 
 
 Request
@@ -110,7 +112,7 @@ Show a Zone Export Information
 
 Normal response codes: 200
 
-Error response codes:405,404,403,401,400,503,
+Error response codes: 405,404,403,401,400,503
 
 
 Request
@@ -155,7 +157,8 @@ Retrive a Zone Export from the Designate Datastore
 
 
 Normal response codes: 200
-Error response codes:405,404,403,401,400,503,
+
+Error response codes: 405,404,403,401,400,503
 
 .. note::
     This endpoint will send a response with a ``text/dns`` content-type.

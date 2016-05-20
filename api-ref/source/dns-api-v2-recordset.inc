@@ -14,7 +14,8 @@ Create a recordset in a zone
 
 
 Normal response codes: 202
-Error response codes:405,404,403,401,400,503,
+
+Error response codes: 405,404,403,401,400,503
 
 
 Request
@@ -76,7 +77,8 @@ This lists all recordsets in a zone
 
 
 Normal response codes: 200
-Error response codes:405,404,403,401,400,503,
+
+Error response codes: 405,404,403,401,400,503
 
 
 Request
@@ -139,7 +141,8 @@ List all Recordsets owned by project
 This lists all recordsets owned by a project in Designate
 
 Normal response codes: 200
-Error response codes:405,404,403,401,400,503,
+
+Error response codes: 405,404,403,401,400,503
 
 
 Request
@@ -201,7 +204,8 @@ Show a Recordset
 Show an single recordset
 
 Normal response codes: 200
-Error response codes:405,404,403,401,400,503,
+
+Error response codes: 405,404,403,401,400,503
 
 
 Request
@@ -253,7 +257,8 @@ Update a Recordset
 Update a recordset
 
 Normal response codes: 202
-Error response codes:405,404,403,401,400,503,
+
+Error response codes: 405,404,403,401,400,503
 
 
 Request
@@ -313,7 +318,8 @@ Delete a Recordset
 Delete a recordset
 
 Normal response codes: 202
-Error response codes:405,404,403,401,400,503,
+
+Error response codes: 405,404,403,401,400,503
 
 
 Request

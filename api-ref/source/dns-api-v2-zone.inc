@@ -14,7 +14,8 @@ Create a zone
 
 
 Normal response codes: 202
-Error response codes:405,404,403,401,400,503,
+
+Error response codes: 405,404,403,401,400,503
 
 
 Request
@@ -81,7 +82,8 @@ List all zones
 
 
 Normal response codes: 200
-Error response codes:405,404,403,401,400,503,
+
+Error response codes: 405,404,403,401,400,503
 
 
 Request
@@ -146,7 +148,8 @@ Show a zone
 
 
 Normal response codes: 200
-Error response codes:405,404,403,401,400,503,
+
+Error response codes: 405,404,403,401,400,503
 
 
 Request
@@ -202,7 +205,8 @@ Get the Name Servers for a Zone
 Show the nameservers for a zone
 
 Normal response codes: 200
-Error response codes:405,404,403,401,400,503,
+
+Error response codes: 405,404,403,401,400,503
 
 
 Request
@@ -245,7 +249,8 @@ Update the attribute(s) for an existing zone.
 
 
 Normal response codes: 202
-Error response codes:405,404,403,401,400,503,
+
+Error response codes: 405,404,403,401,400,503
 
 
 Request
@@ -311,7 +316,8 @@ Delete a zone
 
 
 Normal response codes: 202
-Error response codes:405,404,403,401,400,503,
+
+Error response codes: 405,404,403,401,400,503
 
 
 Request

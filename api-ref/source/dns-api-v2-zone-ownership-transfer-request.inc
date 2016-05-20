@@ -23,7 +23,8 @@ supplied.
 
 
 Normal response codes: 201
-Error response codes:405,404,403,401,400,503,
+
+Error response codes: 405,404,403,401,400,503
 
 
 Request
@@ -79,7 +80,8 @@ This will list all your outgoing requests, and any incoming requests that
 have been scoped to your project.
 
 Normal response codes: 200
-Error response codes:405,404,403,401,400,503,
+
+Error response codes: 405,404,403,401,400,503
 
 
 Request
@@ -126,7 +128,8 @@ Show a Zone Transfer Request
 
 
 Normal response codes: 200
-Error response codes:405,404,403,401,400,503,
+
+Error response codes: 405,404,403,401,400,503
 
 
 Request
@@ -172,7 +175,8 @@ Update a Zone Transfer Request
 
 
 Normal response codes: 200
-Error response codes:405,404,403,401,400,503,
+
+Error response codes: 405,404,403,401,400,503
 
 
 Request
@@ -226,7 +230,8 @@ Delete a Zone Transfer Request
 
 
 Normal response codes: 204
-Error response codes:405,404,403,401,400,503,
+
+Error response codes: 405,404,403,401,400,503
 
 
 Request

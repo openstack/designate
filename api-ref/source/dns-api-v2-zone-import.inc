@@ -16,7 +16,8 @@ Import a zone.
 .. note:: This POST should have no body, and the content-type should be text/dns
 
 Normal response codes: 202
-Error response codes:405,404,403,401,400,503,
+
+Error response codes: 405,404,403,401,400,503
 
 
 Request
@@ -59,7 +60,8 @@ List all Zone Imports
 
 
 Normal response codes: 200
-Error response codes:405,404,403,401,400,503,
+
+Error response codes: 405,404,403,401,400,503
 
 
 Request
@@ -105,7 +107,8 @@ Show a Zone Import
 
 
 Normal response codes: 200
-Error response codes:405,404,403,401,400,503,
+
+Error response codes: 405,404,403,401,400,503
 
 
 Request
@@ -152,7 +155,8 @@ The zone will have to be deleted from the zone delete API
 
 
 Normal response codes: 204
-Error response codes:405,404,403,401,400,503,
+
+Error response codes: 405,404,403,401,400,503
 
 
 Request

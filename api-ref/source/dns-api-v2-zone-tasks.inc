@@ -21,7 +21,8 @@ from the backends.
   This is a protentially dangerous operation, and should only be used if required
 
 Normal response codes: 204
-Error response codes:405,404,403,401,400,503,
+
+Error response codes: 405,404,403,401,400,503
 
 
 Request
@@ -61,7 +62,8 @@ This is useful if an upstream server failed to send a notify to Designate
 .. important:: This is only useful on SECONDARY zones.
 
 Normal response codes: 202
-Error response codes:405,404,403,401,400,503,
+
+Error response codes: 405,404,403,401,400,503
 
 
 Request
