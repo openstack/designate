@@ -316,7 +316,7 @@ zone_masters:
 
 zone_transfered_at:
   description: |
-    For secondary zones. The last time an update was retrived from the master servers
+    For secondary zones. The last time an update was retrieved from the master servers
   in: body
   required: true
   type: enum
