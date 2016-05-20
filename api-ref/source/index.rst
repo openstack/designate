@@ -18,3 +18,4 @@
 .. include:: dns-api-v2-limits.inc
 .. include:: dns-api-v2-tld.inc
 .. include:: dns-api-v2-tsigkey.inc
+.. include:: dns-api-v2-blacklist.inc

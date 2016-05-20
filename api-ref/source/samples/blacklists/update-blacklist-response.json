@@ -1,0 +1,10 @@
+{
+    "description": "Updated the description",
+    "links": {
+      "self": "http://127.0.0.1:9001/v2/blacklists/f26e22f8-619f-4738-9077-0586e7cb76bd"
+    },
+    "pattern": "^examples\\.com\\.$",
+    "created_at": "2016-05-20 06:22:12",
+    "updated_at": "2016-05-20 06:41:34",
+    "id": "f26e22f8-619f-4738-9077-0586e7cb76bd"
+}
