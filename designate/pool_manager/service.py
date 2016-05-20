@@ -154,6 +154,9 @@ class Service(service.RPCService, coordination.CoordinationMixin,
 
         has_targets = False
 
+        # TODO(kiall): This block of code should be replaced with a cleaner,
+        #              limited version. e.g. should retry for X minutes, and
+        #              backoff rather than fixed retry intervals.
         while not has_targets:
             try:
                 self.pool = self.central_api.get_pool(context, pool_id)
@@ -171,6 +174,12 @@ class Service(service.RPCService, coordination.CoordinationMixin,
             # designate-central service may not have started yet
             except messaging.exceptions.MessagingTimeout:
                 time.sleep(0.2)
+            # designate-central failed in an unknown way, don't allow another
+            # failing / not started service to cause pool-manager to crash.
+            except Exception:
+                LOG.exception(_LE("An unknown exception occurred while "
+                                  "fetching pool details"))
+                time.sleep(5)
 
         # Create the necessary Backend instances for each target
         self._setup_target_backends()
