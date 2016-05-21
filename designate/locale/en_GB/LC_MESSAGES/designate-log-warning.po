@@ -1,0 +1,233 @@
+# Andi Chandler <andi@gowling.com>, 2016. #zanata
+# Andreas Jaeger <jaegerandi@gmail.com>, 2016. #zanata
+msgid ""
+msgstr ""
+"Project-Id-Version: designate 2.0.1.dev188\n"
+"Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
+"POT-Creation-Date: 2016-05-20 16:05+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2016-05-20 11:02+0000\n"
+"Last-Translator: Andi Chandler <andi@gowling.com>\n"
+"Language-Team: English (United Kingdom)\n"
+"Language: en-GB\n"
+"X-Generator: Zanata 3.7.3\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+
+#, python-format
+msgid "%(verb)s for %(name)s from %(server)s refused"
+msgstr "%(verb)s for %(name)s from %(server)s refused"
+
+msgid "**** A manual post-migration step is required ****"
+msgstr "**** A manual post-migration step is required ****"
+
+#, python-format
+msgid "Abandoning zone '%(zone)s'"
+msgstr "Abandoning zone '%(zone)s'"
+
+#, python-format
+msgid ""
+"Aborted AXFR of %(zone)s, a single RR (%(rrset_type)s %(rrset_name)s) "
+"exceeded the max message size."
+msgstr ""
+"Aborted AXFR of %(zone)s, a single RR (%(rrset_type)s %(rrset_name)s) "
+"exceeded the max message size."
+
+#, python-format
+msgid "Attempt to delete %(d_id)s / %(d_name)s caused 404, ignoring."
+msgstr "Attempt to delete %(d_id)s / %(d_name)s caused 404, ignoring."
+
+msgid "Calling Neutron resulted in a 401, please investigate."
+msgstr "Calling Neutron resulted in a 401, please investigate."
+
+#, python-format
+msgid "Consensus not reached for creating zone %(zone)s on pool targets"
+msgstr "Consensus not reached for creating zone %(zone)s on pool targets"
+
+#, python-format
+msgid "Consensus not reached for deleting zone %(zone)s on pool targets"
+msgstr "Consensus not reached for deleting zone %(zone)s on pool targets"
+
+#, python-format
+msgid "Consensus not reached for updating zone %(zone)s on pool targets"
+msgstr "Consensus not reached for updating zone %(zone)s on pool targets"
+
+msgid "Deadlock detected. Retrying..."
+msgstr "Deadlock detected. Retrying..."
+
+msgid ""
+"Deprecation notice: Unmanaged designate-sink records are being deprecated "
+"please update the call to remove managed=False"
+msgstr ""
+"Deprecation notice: Unmanaged designate-sink records are being deprecated "
+"please update the call to remove managed=False"
+
+#, python-format
+msgid ""
+"Failed to get expected response while trying to send '%(msg)s' for "
+"'%(zone)s' to '%(server)s:%(port)d'.\n"
+"Response message:\n"
+"%(resp)s\n"
+msgstr ""
+"Failed to get expected response while trying to send '%(msg)s' for "
+"'%(zone)s' to '%(server)s:%(port)d'.\n"
+"Response message:\n"
+"%(resp)s\n"
+
+#, python-format
+msgid ""
+"Failed to get expected response while trying to send '%(msg)s' for "
+"'%(zone)s' to '%(server)s:%(port)d'. Response message: %(resp)s"
+msgstr ""
+"Failed to get expected response while trying to send '%(msg)s' for "
+"'%(zone)s' to '%(server)s:%(port)d'. Response message: %(resp)s"
+
+msgid "Failed to start Coordinator:"
+msgstr "Failed to start Coordinator:"
+
+#, python-format
+msgid "For zone %(zone)s the error serial is %(error_serial)s."
+msgstr "For zone %(zone)s the error serial is %(error_serial)s."
+
+#, python-format
+msgid "Forbidden while handling axfr request. Question was %(qr)s"
+msgstr "Forbidden while handling axfr request. Question was %(qr)s"
+
+#, python-format
+msgid "Forbidden while handling query request. Question was %(qr)s"
+msgstr "Forbidden while handling query request. Question was %(qr)s"
+
+#, python-format
+msgid "Found %(len)d zones PENDING for more than %(sec)d seconds"
+msgstr "Found %(len)d zones PENDING for more than %(sec)d seconds"
+
+#, python-format
+msgid ""
+"Got BadResponse while trying to send '%(msg)s' for '%(zone)s' to '%(server)s:"
+"%(port)d'. Timeout='%(timeout)d' seconds. Retry='%(retry)d'"
+msgstr ""
+"Got BadResponse while trying to send '%(msg)s' for '%(zone)s' to '%(server)s:"
+"%(port)d'. Timeout='%(timeout)d' seconds. Retry='%(retry)d'"
+
+#, python-format
+msgid ""
+"Got EAGAIN while trying to send '%(msg)s' for '%(zone)s' to '%(server)s:"
+"%(port)d'. Timeout='%(timeout)d' seconds. Retry='%(retry)d'"
+msgstr ""
+"Got EAGAIN while trying to send '%(msg)s' for '%(zone)s' to '%(server)s:"
+"%(port)d'. Timeout='%(timeout)d' seconds. Retry='%(retry)d'"
+
+#, python-format
+msgid ""
+"Got Timeout while trying to send '%(msg)s' for '%(zone)s' to '%(server)s:"
+"%(port)d'. Timeout='%(timeout)d' seconds. Retry='%(retry)d'"
+msgstr ""
+"Got Timeout while trying to send '%(msg)s' for '%(zone)s' to '%(server)s:"
+"%(port)d'. Timeout='%(timeout)d' seconds. Retry='%(retry)d'"
+
+#, python-format
+msgid ""
+"Got lower serial for '%(zone)s' to '%(host)s:%(port)s'. Expected:'%(es)d'. "
+"Got:'%(as)s'.Retries left='%(retries)d'"
+msgstr ""
+"Got lower serial for '%(zone)s' to '%(host)s:%(port)s'. Expected:'%(es)d'. "
+"Got:'%(as)s'.Retries left='%(retries)d'"
+
+msgid "Id not in sort_keys; is sort_keys unique?"
+msgstr "Id not in sort_keys; is sort_keys unique?"
+
+#, python-format
+msgid "Invalid packet from: %(host)s:%(port)d"
+msgstr "Invalid packet from: %(host)s:%(port)d"
+
+msgid "It will not be possible to downgrade from schema #11"
+msgstr "It will not be possible to downgrade from schema #11"
+
+msgid "MDNS max message size must not be greater than 65535"
+msgstr "MDNS max message size must not be greater than 65535"
+
+msgid "Managed Resource Tenant ID is not properly configured"
+msgstr "Managed Resource Tenant ID is not properly configured"
+
+#, python-format
+msgid "NOTIFY for %(name)s from non-master server %(addr)s, refusing."
+msgstr "NOTIFY for %(name)s from non-master server %(addr)s, refusing."
+
+msgid ""
+"No coordination backend configured, assuming we are the leader. Please "
+"configure a coordination backend"
+msgstr ""
+"No coordination backend configured, assuming we are the leader. Please "
+"configure a coordination backend"
+
+msgid ""
+"No coordination backend configured, assuming we are the only worker. Please "
+"configure a coordination backend"
+msgstr ""
+"No coordination backend configured, assuming we are the only worker. Please "
+"configure a coordination backend"
+
+msgid ""
+"No coordination backend configured, distributed coordination functionality "
+"will be disabled. Please configure a coordination backend."
+msgstr ""
+"No coordination backend configured, distributed coordination functionality "
+"will be disabled. Please configure a coordination backend."
+
+msgid "No designate-sink handlers enabled or loaded"
+msgstr "No designate-sink handlers enabled or loaded"
+
+#, python-format
+msgid "Not creating %(name)s, zone already exists"
+msgstr "Not creating %(name)s, zone already exists"
+
+#, python-format
+msgid "Not deleting %(name)s, zone doesn't exist"
+msgstr "Not deleting %(name)s, zone doesn't exist"
+
+#, python-format
+msgid "Please issue this query: %s"
+msgstr "Please issue this query: %s"
+
+#, python-format
+msgid "Refusing NOTIFY for %(name)s, doesn't exist"
+msgstr "Refusing NOTIFY for %(name)s, doesn't exist"
+
+msgid "Request authorized to bypass maintenance mode"
+msgstr "Request authorised to bypass maintenance mode"
+
+#, python-format
+msgid "Socket error %(err)s from: %(host)s:%(port)d"
+msgstr "Socket error %(err)s from: %(host)s:%(port)d"
+
+#, python-format
+msgid "TCP Timeout from: %(host)s:%(port)d"
+msgstr "TCP Timeout from: %(host)s:%(port)d"
+
+msgid ""
+"Use of this API Method is DEPRICATED. This will have unforseen side affects "
+"when used with the designate-manage pool commands"
+msgstr ""
+"Use of this API Method is DEPRICATED. This will have unforeseen side affects "
+"when used with the designate-manage pool commands"
+
+#, python-format
+msgid "Zone %(zone)s is not present in some targets"
+msgstr "Zone %(zone)s is not present in some targets"
+
+#, python-format
+msgid "Zone %s not found on remote Designate, Ignoring"
+msgstr "Zone %s not found on remote Designate, Ignoring"
+
+#, python-format
+msgid "ZoneNotFound while handling axfr request. Question was %(qr)s"
+msgstr "ZoneNotFound while handling axfr request. Question was %(qr)s"
+
+#, python-format
+msgid "ZoneNotFound while handling query request. Question was %(qr)s"
+msgstr "ZoneNotFound while handling query request. Question was %(qr)s"
+
+msgid "host and port config options used, the 'listen' option has been ignored"
+msgstr ""
+"host and port config options used, the 'listen' option has been ignored"
