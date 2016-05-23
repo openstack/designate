@@ -57,6 +57,13 @@ function configure_designate {
     iniset $DESIGNATE_CONF DEFAULT root-helper sudo designate-rootwrap $DESIGNATE_ROOTWRAP_CONF
     iniset $DESIGNATE_CONF storage:sqlalchemy connection `database_connection_url designate`
 
+    # Quota Configuration
+    iniset $DESIGNATE_CONF DEFAULT quota_zones $DESIGNATE_QUOTA_ZONES
+    iniset $DESIGNATE_CONF DEFAULT quota_zone_recordsets $DESIGNATE_QUOTA_ZONE_RECORDSETS
+    iniset $DESIGNATE_CONF DEFAULT quota_zone_records $DESIGNATE_QUOTA_ZONE_RECORDS
+    iniset $DESIGNATE_CONF DEFAULT quota_recordset_records $DESIGNATE_QUOTA_RECORDSET_RECORDS
+    iniset $DESIGNATE_CONF DEFAULT quota_api_export_size $DESIGNATE_QUOTA_API_EXPORT_SIZE
+
     # Coordination Configuration
     if [[ -n "$DESIGNATE_COORDINATION_URL" ]]; then
         iniset $DESIGNATE_CONF coordination backend_url $DESIGNATE_COORDINATION_URL
