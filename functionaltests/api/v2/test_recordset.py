@@ -78,14 +78,6 @@ class RecordsetTest(DesignateV2Test):
         self.ensure_tld_exists('com')
         self.zone = self.useFixture(ZoneFixture()).created_zone
 
-    def test_list_recordsets(self):
-        post_model = datagen.random_a_recordset(self.zone.name)
-        self.useFixture(RecordsetFixture(self.zone.id, post_model))
-        resp, model = RecordsetClient.as_user('default') \
-            .list_recordsets(self.zone.id)
-        self.assertEqual(200, resp.status)
-        self.assertGreater(len(model.recordsets), 0)
-
     def test_list_recordsets_with_filtering(self):
         # This test ensures the behavior in bug #1561746 won't happen
         post_model = datagen.random_a_recordset(self.zone.name,
@@ -127,36 +119,6 @@ class RecordsetTest(DesignateV2Test):
                 data['ttl'] = answer.rrset.ttl
 
             self.assertEqual(model_data, data)
-
-    @utils.parameterized(RECORDSETS_DATASET)
-    def test_crud_recordset(self, make_recordset):
-        post_model = make_recordset(self.zone)
-        fixture = self.useFixture(RecordsetFixture(self.zone.id, post_model))
-        recordset_id = fixture.created_recordset.id
-
-        self.assert_dns(fixture.post_model)
-
-        put_model = make_recordset(self.zone)
-        del put_model.name  # don't try to update the name
-        resp, put_resp_model = RecordsetClient.as_user('default') \
-            .put_recordset(self.zone.id, recordset_id, put_model)
-        self.assertEqual(202, resp.status, "on put response")
-        self.assertEqual("PENDING", put_resp_model.status)
-        self.assertEqual(post_model.name, put_resp_model.name)
-        self.assertEqual(put_model.records, put_resp_model.records)
-        self.assertEqual(put_model.ttl, put_resp_model.ttl)
-
-        RecordsetClient.as_user('default').wait_for_recordset(
-            self.zone.id, recordset_id)
-
-        put_model.name = post_model.name
-        self.assert_dns(put_model)
-
-        resp, delete_resp_model = RecordsetClient.as_user('default') \
-            .delete_recordset(self.zone.id, recordset_id)
-        self.assertEqual(202, resp.status, "on delete response")
-        RecordsetClient.as_user('default').wait_for_404(
-            self.zone.id, recordset_id)
 
     @utils.parameterized(WILDCARD_RECORDSETS_DATASET)
     def test_can_create_and_query_wildcard_recordset(self, make_recordset):
