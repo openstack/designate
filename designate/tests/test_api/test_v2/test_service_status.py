@@ -77,7 +77,7 @@ class ApiV2ServiceStatusTest(ApiV2TestCase):
                         response.json['capabilities'])
         self.assertEqual(fixture['stats'], response.json['stats'])
         self.assertEqual(fixture['status'], response.json['status'])
-        self.assertEqual(None, response.json['heartbeated_at'])
+        self.assertIsNone(response.json['heartbeated_at'])
 
     def test_get_service_status_invalid_id(self):
         self.policy({'find_service_status': '@'})
