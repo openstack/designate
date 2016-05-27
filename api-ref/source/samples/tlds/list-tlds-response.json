@@ -3,7 +3,7 @@
    {
      "name": "edu",
      "links": {
-       "self": "http://192.168.11.182:9001/v2/tlds/a7bba387-712b-4b42-9368-4508642c6113"
+       "self": "http://127.0.0.1:9001/v2/tlds/a7bba387-712b-4b42-9368-4508642c6113"
      },
      "created_at": "2016-05-10 05:21:40",
      "updated_at": null,
@@ -13,7 +13,7 @@
    {
      "name": "com",
      "links": {
-       "self": "http://192.168.11.182:9001/v2/tlds/cfee7486-7ce4-4851-9c38-7b0fe3d42ee9"
+       "self": "http://127.0.0.1:9001/v2/tlds/cfee7486-7ce4-4851-9c38-7b0fe3d42ee9"
      },
      "created_at": "2016-05-18 05:07:58",
      "updated_at": null,
@@ -21,6 +21,6 @@
      "description": "tld description"
    }
  ],
- "links": {"self": "http://192.168.11.182:9001/v2/tlds"
+ "links": {"self": "http://127.0.0.1:9001/v2/tlds"
  }
 }
