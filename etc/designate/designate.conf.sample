@@ -568,3 +568,14 @@ debug = False
 #   name = '%s.%s' % (func.__module__, func.__name__)
 
 # [hook_point:designate.api.v2.controllers.zones.get_one]
+
+##################
+## Monasca Statsd
+##################
+[monasca:statsd]
+# Disabled by default
+# enabled = False
+# Statsd server hostname
+# hostname = 127.0.0.1
+# Statsd server UDP port
+# port = 8125

@@ -28,9 +28,10 @@ import dns.opcode
 from oslo_config import cfg
 from oslo_log import log as logging
 
-from designate.mdns import base
 from designate.i18n import _LI
 from designate.i18n import _LW
+from designate.mdns import base
+from designate.metrics import metrics
 
 dns_query = eventlet.import_patched('dns.query')
 
@@ -42,6 +43,7 @@ class NotifyEndpoint(base.BaseEndpoint):
     RPC_API_VERSION = '2.0'
     RPC_API_NAMESPACE = 'notify'
 
+    @metrics.timed('mdns.notify_zone_changed')
     def notify_zone_changed(self, context, zone, host, port, timeout,
                             retry_interval, max_retries, delay):
         """
