@@ -49,7 +49,7 @@ Installing Designate
 ::
 
    $ sudo apt-get update
-   $ sudo apt-get install python-pip python-virtualenv git
+   $ sudo apt-get install python-pip python-virtualenv libssl-dev libffi-dev git
    $ sudo apt-get build-dep python-lxml
 
 2. Clone the Designate repo from GitHub
@@ -65,17 +65,24 @@ Installing Designate
 3. Setup a virtualenv
 
 .. note::
-   This is an optional step, but will allow Designate's dependencies
-   to be installed in a contained environment that can be easily deleted
-   if you choose to start over or uninstall Designate.
+   This step is necessary to allow the installation of an up-to-date
+   pip, independent of the version packaged for Ubuntu. it is 
+   also useful in isolating the remainder of Designate's dependencies
+   from the rest of the system.
 
 ::
 
-   $ virtualenv --no-site-packages .venv
+   $ virtualenv .venv
    $ . .venv/bin/activate
 
+4. Install an up-to-date pip
 
-4. Install Designate and its dependencies
+::
+
+   $ pip install -U pip
+
+
+5. Install Designate and its dependencies
 
 .. note::
    If you run into the error: Installed distribution pbr 1.1.1 conflicts with requirement pbr>=0.6,!=0.7,<1.0, try doing pip install pbr==0.11.0
@@ -86,7 +93,7 @@ Installing Designate
    $ python setup.py develop
 
 
-5. Change directories to the etc/designate folder.
+6. Change directories to the etc/designate folder.
 
 .. note::
     Everything from here on out should take place in or below your designate/etc folder
@@ -96,21 +103,21 @@ Installing Designate
    $ cd etc/designate
 
 
-6. Create Designate's config files by copying the sample config files
+7. Create Designate's config files by copying the sample config files
 
 ::
 
    $ cp -a rootwrap.conf.sample rootwrap.conf
 
 
-7. Make the directory for Designate’s log files
+8. Make the directory for Designate’s log files
 
 ::
 
    $ mkdir -p ../../log
 
 
-8. Make the directory for Designate’s state files
+9. Make the directory for Designate’s state files
 
 ::
 
