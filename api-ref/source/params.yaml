@@ -64,16 +64,16 @@ path_recordset_id:
   required: true
   type: uuid
 
-path_zone_export_id:
+path_zone_id:
   description: |
-    ID for this zone export
+    ID for the zone
   in: path
   required: true
   type: uuid
 
-path_zone_id:
+path_zone_export_id:
   description: |
-    ID for the zone
+    ID for this zone export
   in: path
   required: true
   type: uuid
@@ -428,40 +428,41 @@ min_ttl:
   required: true
   type: integer
 
-pool_attributes:
-  description: >
-    Key:Value pairs of information about this pool. This information can be used by the scheduler to place zones on the correct pools
-  in: body
-  required: true
-  type: object
-
-pool_id:
-  description: |
-    ID for this pool
-  in: body
-  required: true
-  type: uuid
-
-pool_name:
-  description: |
-    Name for this pool
-  in: body
-  required: true
-  type: string
-
-pool_ns_records:
-  description: |
-    Name Servers for this pool. Any zones hosted by this pool should be delegated to these DNS servers
-  in: body
-  required: true
-  type: string
-
 project_id:
   description: |
     ID for the project that owns the resource
   in: body
   required: true
   type: uuid
+
+pool_attributes:
+  description: >
+    Key:Value pairs of information about this pool. This information can be used by the scheduler to place zones on the correct pools
+  in: path
+  required: true
+  type: object
+
+pool_id:
+  description: |
+    ID for this pool
+  in: path
+  required: true
+  type: uuid
+
+pool_name:
+  description: |
+    Name for this pool
+  in: path
+  required: true
+  type: string
+
+pool_ns_records:
+  description: |
+    Name Servers for this pool. Any zones hosted by this pool should be delegated to these DNS servers
+  in: path
+  required: true
+  type: string
+
 
 recordset_description:
   description: |
@@ -477,15 +478,6 @@ recordset_name:
   required: true
   type: hostname
 
-recordset_records:
-  description: |
-    A list of data for this recordset. Each item will be a separate record in Designate
-    These items should conform to the DNS spec for the record type - e.g. A records
-    must be IPv4 addresses, CNAME records must be a hostname.
-  in: body
-  required: true
-  type: string
-
 recordset_ttl:
   description: |
     TTL (Time to Live) for the recordset.
@@ -496,6 +488,15 @@ recordset_ttl:
 recordset_type:
   description: |
     They RRTYPE of the recordset.
+  in: body
+  required: true
+  type: string
+
+recordset_records:
+  description: |
+    A list of data for this recordset. Each item will be a separate record in Designate
+    These items should conform to the DNS spec for the record type - e.g. A records
+    must be IPv4 addresses, CNAME records must be a hostname.
   in: body
   required: true
   type: string
@@ -528,6 +529,13 @@ status:
   required: true
   type: enum
 
+tsigkey_algorithm:
+  description: |
+    The encryption algorithm for this tsigkey
+  in: body
+  required: true
+  type: string
+
 tld_description:
   description: |
     Description for this tld
@@ -538,13 +546,6 @@ tld_description:
 tld_name:
   description: |
     Name for this tld
-  in: body
-  required: true
-  type: string
-
-tsigkey_algorithm:
-  description: |
-    The encryption algorithm for this tsigkey
   in: body
   required: true
   type: string
@@ -688,13 +689,6 @@ zone_masters:
   required: true
   type: enum
 
-zone_name:
-  description: |
-    DNS Name for the zone
-  in: body
-  required: true
-  type: domainname
-
 zone_nameserver_hostname:
   description: |
     The hostname of the nameserver that the zone should be delegated to
@@ -711,6 +705,13 @@ zone_nameserver_priority:
   required: true
   type: integer
 
+zone_name:
+  description: |
+    DNS Name for the zone
+  in: body
+  required: true
+  type: domainname
+
 zone_pool_id:
   description: |
     ID for the pool hosting this zone
@@ -725,10 +726,17 @@ zone_serial:
   required: true
   type: integer
 
+zone_transfered_at:
+  description: |
+    For secondary zones. The last time an update was retrieved from the master servers
+  in: body
+  required: true
+  type: enum
+
 zone_transfer_accept_id:
   description: |
     ID for this zone transfer accept
-  in: body
+  in: path
   required: true
   type: uuid
 
@@ -742,16 +750,16 @@ zone_transfer_accept_status:
 zone_transfer_request_id:
   description: |
     ID for this zone transfer request
-  in: body
+  in: path
   required: true
   type: uuid
 
-zone_transfer_request_key:
+zone_transfer_request_target_project_id:
   description: >
-    Key that is used as part of the zone transfer accept process. This is only
-    shown to the creator, and must be communicated out of band.
+    A project ID that the request will be limited to.
+    No other project will be allowed to accept this request.
   in: body
-  required: true
+  required: false
   type: string
 
 zone_transfer_request_status:
@@ -761,12 +769,12 @@ zone_transfer_request_status:
   required: true
   type: string
 
-zone_transfer_request_target_project_id:
+zone_transfer_request_key:
   description: >
-    A project ID that the request will be limited to.
-    No other project will be allowed to accept this request.
+    Key that is used as part of the zone transfer accept process. This is only
+    shown to the creator, and must be communicated out of band.
   in: body
-  required: false
+  required: true
   type: string
 
 zone_transfer_request_zone_id:
@@ -782,13 +790,6 @@ zone_transfer_request_zone_name:
   in: body
   required: true
   type: string
-
-zone_transfered_at:
-  description: |
-    For secondary zones. The last time an update was retrieved from the master servers
-  in: body
-  required: true
-  type: enum
 
 zone_ttl:
   description: |
