@@ -14,7 +14,8 @@ Create a tld
 
 
 Normal response codes: 201
-Error response codes:409,405,404,403,401,400,503,
+
+Error response codes: 409,405,404,403,401,400,503
 
 
 Request
@@ -66,7 +67,8 @@ Show a tld
 
 
 Normal response codes: 200
-Error response codes:405,404,403,401,400,503
+
+Error response codes: 405,404,403,401,400,503
 
 
 Request
@@ -112,7 +114,8 @@ List the tlds associated with the Project
 
 
 Normal response codes: 200
-Error response codes:405,403,401,400,503
+
+Error response codes: 405,403,401,400,503
 
 
 Request
@@ -160,7 +163,8 @@ Update a tld
 
 
 Normal response codes: 200
-Error response codes:405,404,403,401,400,503,
+
+Error response codes: 405,404,403,401,400,503
 
 
 Request
@@ -213,7 +217,8 @@ Delete Tld
 Delete a tld
 
 Normal response codes: 204
-Error response codes:405,404,403,401,400,503,
+
+Error response codes: 405,404,403,401,400,503
 
 
 Request
