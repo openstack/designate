@@ -2,7 +2,7 @@
     "tsigkeys": [
         {
             "links": {
-              "self": "http://192.168.11.182:9001/v2/tsigkeys/f94d03ca-bd55-4321-8e93-8d363737ab5c"
+              "self": "http://127.0.0.1:9001/v2/tsigkeys/f94d03ca-bd55-4321-8e93-8d363737ab5c"
             },
             "name": "Example key",
             "algorithm": "hmac-sha256",
@@ -15,7 +15,7 @@
         },
         {
             "links": {
-              "self": "http://192.168.11.182:9001/v2/tsigkeys/6bba6f00-dc33-4665-bb37-15f6188bb305"
+              "self": "http://127.0.0.1:9001/v2/tsigkeys/6bba6f00-dc33-4665-bb37-15f6188bb305"
             },
             "name": "Example key2",
             "algorithm": "hmac-sha256",
@@ -28,7 +28,7 @@
         },
         {
             "links": {
-              "self": "http://192.168.11.182:9001/v2/tsigkeys/c429b860-9f68-4e5f-a2ff-65760a64ceaa"
+              "self": "http://127.0.0.1:9001/v2/tsigkeys/c429b860-9f68-4e5f-a2ff-65760a64ceaa"
             },
             "name": "Example key3",
             "algorithm": "hmac-sha256",
@@ -40,6 +40,6 @@
         }
     ],
     "links": {
-        "self": "http://192.168.11.182:9001/v2/tsigkeys"
+        "self": "http://127.0.0.1:9001/v2/tsigkeys"
     }
 }

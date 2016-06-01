@@ -1,6 +1,6 @@
 {
     "links": {
-      "self": "http://192.168.11.182:9001/v2/tsigkeys/c429b860-9f68-4e5f-a2ff-65760a64ceaa"
+      "self": "http://127.0.0.1:9001/v2/tsigkeys/c429b860-9f68-4e5f-a2ff-65760a64ceaa"
     },
     "name": "Example key",
     "algorithm": "hmac-sha256",
