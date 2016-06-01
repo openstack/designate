@@ -29,6 +29,9 @@ class RecordSetAPIv2Adapter(base.APIv2Adapter):
             "zone_id": {
                 'rename': 'zone_id'
             },
+            "project_id": {
+                'rename': 'tenant_id'
+            },
             "name": {
                 'immutable': True
             },
