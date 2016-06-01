@@ -100,7 +100,7 @@ def factory(global_config, **local_conf):
         return response
 
     for code in six.iterkeys(wexceptions.default_exceptions):
-        app.error_handler_spec[None][code] = _json_error
+        app.register_error_handler(code, _json_error)
 
     # TODO(kiall): Ideally, we want to make use of the Plugin class here.
     #              This works for the moment though.
