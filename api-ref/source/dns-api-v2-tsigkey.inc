@@ -48,8 +48,8 @@ Response Parameters
    - id: id
    - resource_id: resource_id
    - name: tsigkey_name
-   - scope: tsigkey scope
-   - secret: tsigkey secret
+   - scope: tsigkey_scope
+   - secret: tsigkey_secret
    - algorithm: tsigkey_algorithm
    - created_at: created_at
    - updated_at: updated_at
@@ -103,8 +103,8 @@ Response Parameters
    - id: id
    - resource_id: resource_id
    - name: tsigkey_name
-   - scope: tsigkey scope
-   - secret: tsigkey secret
+   - scope: tsigkey_scope
+   - secret: tsigkey_secret
    - algorithm: tsigkey_algorithm
    - created_at: created_at
    - updated_at: updated_at
@@ -152,8 +152,8 @@ Response Parameters
    - id: id
    - resource_id: resource_id
    - name: tsigkey_name
-   - scope: tsigkey scope
-   - secret: tsigkey secret
+   - scope: tsigkey_scope
+   - secret: tsigkey_secret
    - algorithm: tsigkey_algorithm
    - created_at: created_at
    - updated_at: updated_at
@@ -212,8 +212,8 @@ Response Parameters
    - id: id
    - resource_id: resource_id
    - name: tsigkey_name
-   - scope: tsigkey scope
-   - secret: tsigkey secret
+   - scope: tsigkey_scope
+   - secret: tsigkey_secret
    - algorithm: tsigkey_algorithm
    - created_at: created_at
    - updated_at: updated_at
