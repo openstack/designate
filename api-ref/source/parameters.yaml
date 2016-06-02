@@ -34,7 +34,7 @@ x-openstack-request-id:
   description: |
     ID of the request
   in: header
-  required: false
+  required: true
   type: string
 
 zone_export_accepts:
