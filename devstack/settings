@@ -50,8 +50,13 @@ DESIGNATE_PLUGINS=$DESIGNATE_DIR/devstack/designate_plugins
 # Default repositories
 DESIGNATE_REPO=${DESIGNATE_REPO:-${GIT_BASE}/openstack/designate.git}
 DESIGNATE_BRANCH=${DESIGNATE_BRANCH:-master}
-DESIGNATEDASHBOARD_REPO=${DESIGNATEDASHBOARD_REPO:-${GIT_BASE}/openstack/designate-dashboard.git}
-DESIGNATEDASHBOARD_BRANCH=${DESIGNATEDASHBOARD_BRANCH:-master}
+
+GITREPO["designate-dashboard"]=${DESIGNATEDASHBOARD_REPO:-${GIT_BASE}/openstack/designate-dashboard.git}
+GITBRANCH["designate-dashboard"]=${DESIGNATEDASHBOARD_BRANCH:-master}
+GITDIR["designate-dashboard"]=$DEST/designate-dashboard
+
+GITREPO["python-designateclient"]=${DESIGNATECLIENT_REPO:-${GIT_BASE}/openstack/python-designateclient.git}
+GITBRANCH["python-designateclient"]=${DESIGNATECLIENT_BRANCH:-master}
 GITDIR["python-designateclient"]=$DEST/python-designateclient
 
 GITREPO["designate-tempest-plugin"]=${DESIGNATETEMPEST_REPO:-${GIT_BASE}/openstack/designate-tempest-plugin.git}
