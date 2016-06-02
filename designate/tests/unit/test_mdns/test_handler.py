@@ -120,7 +120,7 @@ class TestRequestHandlerCall(unittest.TestCase):
         )
 
         r_rrset = self.handler._convert_to_rrset(zone, recordset)
-        self.assertEqual(None, r_rrset)
+        self.assertIsNone(r_rrset)
 
     def test__convert_to_rrset(self):
         zone = objects.Zone.from_dict({'ttl': 1234})

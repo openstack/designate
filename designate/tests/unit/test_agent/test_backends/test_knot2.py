@@ -158,7 +158,7 @@ class Knot2AgentBackendUnitTestCase(TestCase):
         mock_exe.side_effect = ProcessExecutionError(
             "error: [example.com.] (no such zone found)")
         serial = self.kb.find_zone_serial('example.com')
-        self.assertEqual(None, serial)
+        self.assertIsNone(serial)
 
     @mock.patch('designate.backend.agent_backend.impl_knot2.execute')
     def test_find_zone_serial_unexpected_output(self, mock_exe):

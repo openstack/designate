@@ -65,7 +65,7 @@ class BackendAgentTest(base.BaseTestCase):
 
         self.agent._make_and_send_dns_message.assert_called_with(
             'zn', 1, 14, pcodes.CREATE, pcodes.SUCCESS, 2, 3)
-        self.assertEqual(None, out)
+        self.assertIsNone(out)
 
     def test_create_zone_exception(self, *mock):
         self.agent._make_and_send_dns_message = Mock(return_value=(None, 2))
@@ -84,7 +84,7 @@ class BackendAgentTest(base.BaseTestCase):
 
         self.agent.mdns_api.notify_zone_changed.assert_called_with(
             'ctx', zone, 2, 3, 1, 4, 5, 6)
-        self.assertEqual(None, out)
+        self.assertIsNone(out)
 
     def test_delete_zone(self, *mock):
         self.agent._make_and_send_dns_message = Mock(return_value=(1, 2))
@@ -93,7 +93,7 @@ class BackendAgentTest(base.BaseTestCase):
 
         self.agent._make_and_send_dns_message.assert_called_with(
             'zn', 1, 14, pcodes.DELETE, pcodes.SUCCESS, 2, 3)
-        self.assertEqual(None, out)
+        self.assertIsNone(out)
 
     def test_delete_zone_exception(self, *mock):
         self.agent._make_and_send_dns_message = Mock(return_value=(None, 2))
