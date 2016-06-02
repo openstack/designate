@@ -1,0 +1,4 @@
+---
+features:
+  - An experimental agent backend to support TinyDNS, the DNS resolver
+    from the djbdns tools.

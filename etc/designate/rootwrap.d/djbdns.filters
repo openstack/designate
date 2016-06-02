@@ -1,0 +1,4 @@
+[Filters]
+tcpclient: CommandFilter, /usr/bin/tcpclient, root
+axfr-get: CommandFilter, /usr/bin/axfr-get, root
+tinydns-data: CommandFilter, /usr/bin/tinydns-data, root
