@@ -344,7 +344,7 @@ created_at:
 
 description:
   description: |
-    Description for the resource. Only showen in API / Horizon
+    Description for the resource. Only shown in API / Horizon
   in: body
   required: true
   type: string
