@@ -30,7 +30,7 @@ addresses to a domain. For example,
    $ dig -x 192.0.2.5 +short
    example.org.
 
-The way this works in the DNS system it through the `in-addr.arpa.`
+The way this works in the DNS system is through the `in-addr.arpa.`
 zone. For example
 
 .. code-block:: bash
@@ -79,7 +79,7 @@ To create a `PTR` record in Designate, there are two requirements.
 Using the V2 API
 ----------------
 
-To begin lets create a zone that we want to return when we do our
+To begin let's create a zone that we want to return when we do our
 reverse lookup.
 
 .. code-block:: http
@@ -136,7 +136,7 @@ Now that we have a zone we'd like to use for our reverse DNS lookup,
 we need to add an `in-addr.arpa.` zone that includes the IP address
 we'll be looking up.
 
-Lets configure `192.0.2.11` to return our `example.org.` domain
+Let's configure `192.0.2.11` to return our `example.org.` domain
 name when we do a reverse look up.
 
 .. code-block:: http
@@ -246,7 +246,7 @@ that we can test.
    need to get admin rights in order to create the necessary
    subdomains.
 
-Lets test it out!
+Let's test it out!
 
 .. code-block:: bash
 
@@ -341,7 +341,7 @@ for more information.
 Using the V1 API
 ----------------
 
-Using the V1 REST interface lets start by creating a domain.
+Using the V1 REST interface let's start by creating a domain.
 
 .. code-block:: http
 
@@ -383,7 +383,7 @@ Now that we have a domain we want to return when we use our `PTR`
 record, we'll create the `in-addr.arpa.` domain that will be used when
 looking up the IP address.
 
-Lets configure `192.0.2.10` to return our `example.com.` domain
+Let's configure `192.0.2.10` to return our `example.com.` domain
 name when we do a reverse look up.
 
 .. code-block:: http
