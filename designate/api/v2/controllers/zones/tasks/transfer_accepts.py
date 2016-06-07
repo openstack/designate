@@ -48,6 +48,31 @@ class TransferAcceptsController(rest.RestController):
             'API_v2', transfer_accepts, request=request)
 
     @pecan.expose(template='json:', content_type='application/json')
+    def get_all(self, **params):
+        """List ZoneTransferAccepts"""
+        request = pecan.request
+        context = request.environ['context']
+
+        # Extract the pagination params
+        marker, limit, sort_key, sort_dir = utils.get_paging_params(
+            params, self.SORT_KEYS)
+
+        # Extract any filter params.
+        criterion = self._apply_filter_params(params, ('status',), {})
+
+        zone_transfer_accepts = self.central_api.find_zone_transfer_accepts(
+            context, criterion, marker, limit, sort_key, sort_dir)
+
+        LOG.info(_LI("Retrieved %(zone_transfer_accepts)s"),
+                 {'zone_transfer_accepts': zone_transfer_accepts})
+
+        return DesignateAdapter.render(
+            'API_v2',
+            zone_transfer_accepts,
+            request=request,
+            context=context)
+
+    @pecan.expose(template='json:', content_type='application/json')
     def post_all(self):
         """Create ZoneTransferAccept"""
         request = pecan.request

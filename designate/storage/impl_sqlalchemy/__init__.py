@@ -1571,16 +1571,37 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             zone_transfer_request,
             exceptions.ZoneTransferRequestNotFound)
 
+    def count_zone_transfer_accept(self, context, criterion=None):
+        query = select([func.count(tables.zone_transfer_accepts.c.id)])
+        query = self._apply_criterion(tables.zone_transfer_accepts,
+                    query, criterion)
+        query = self._apply_deleted_criteria(context,
+                    tables.zone_transfer_accepts, query)
+
+        resultproxy = self.session.execute(query)
+        result = resultproxy.fetchone()
+
+        if result is None:
+            return 0
+
+        return result[0]
+
     def _find_zone_transfer_accept(self, context, criterion, one=False,
                                    marker=None, limit=None, sort_key=None,
                                    sort_dir=None):
 
-            return self._find(
-                context, tables.zone_transfer_accepts,
-                objects.ZoneTransferAccept,
-                objects.ZoneTransferAcceptList,
-                exceptions.ZoneTransferAcceptNotFound, criterion,
-                one, marker, limit, sort_key, sort_dir)
+        zone_transfer_accept = self._find(
+            context, tables.zone_transfer_accepts,
+            objects.ZoneTransferAccept,
+            objects.ZoneTransferAcceptList,
+            exceptions.ZoneTransferAcceptNotFound, criterion,
+            one, marker, limit, sort_key, sort_dir)
+
+        if not one:
+            zone_transfer_accept.total_count = self.count_zone_transfer_accept(
+                context, criterion)
+
+        return zone_transfer_accept
 
     def create_zone_transfer_accept(self, context, zone_transfer_accept):
 
