@@ -1,0 +1,4 @@
+{
+  "pattern" : "^([A-Za-z0-9_\\-]+\\.)*example\\.com\\.$",
+  "description" : "This is a blacklisted domain."
+}

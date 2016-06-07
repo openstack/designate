@@ -1,0 +1,10 @@
+{
+    "description": "This is a blacklisted domain.",
+    "links": {
+      "self": "http://127.0.0.1:9001/v2/blacklists/af91edb5-ede8-453f-af13-feabdd088f9c"
+    },
+    "pattern": "^([A-Za-z0-9_\\-]+\\.)*example\\.com\\.$",
+    "created_at": "2016-05-20 06:15:42",
+    "updated_at": null,
+    "id": "af91edb5-ede8-453f-af13-feabdd088f9c"
+}

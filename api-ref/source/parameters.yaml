@@ -50,6 +50,13 @@ zone_export_accepts:
 #  Path Variables  #
 ####################
 
+blacklist_id:
+  description: |
+    ID for this blacklist
+  in: path
+  required: true
+  type: uuid
+
 path_pool_id:
   description: |
     ID for this pool
@@ -113,9 +120,17 @@ tsigkey_id:
   required: true
   type: uuid
 
+
 ####################
 # Query Variables  #
 ####################
+
+blacklist_pattern_filter:
+  description: |
+    Filter results to only show blacklists that have a pattern matching the filter
+  in: query
+  required: false
+  type: string
 
 limit:
   description: |
@@ -334,6 +349,20 @@ action:
   in: body
   required: true
   type: enum
+
+blacklist_description:
+  description: |
+    Description for this blacklist
+  in: body
+  required: false
+  type: string
+
+blacklist_pattern:
+  description: |
+    Pattern for this blacklist
+  in: body
+  required: true
+  type: string
 
 created_at:
   description: |
