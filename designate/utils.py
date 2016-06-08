@@ -415,7 +415,7 @@ def split_host_port(string, default_port=53):
     return (host, port)
 
 
-def get_paging_params(params, sort_keys):
+def get_paging_params(context, params, sort_keys):
     """
     Extract any paging parameters
     """
@@ -459,6 +459,8 @@ def get_paging_params(params, sort_keys):
     elif sort_key and sort_key not in sort_keys:
         msg = 'sort key must be one of %(keys)s' % {'keys': sort_keys}
         raise exceptions.InvalidSortKey(msg)
+    elif sort_key == 'tenant_id' and not context.all_tenants:
+        sort_key = None
 
     return marker, limit, sort_key, sort_dir
 

@@ -148,13 +148,18 @@ class SQLAlchemy(object):
 
         return query
 
-    def _apply_tenant_criteria(self, context, table, query):
+    def _apply_tenant_criteria(self, context, table, query,
+                               include_null_tenant=True):
         if hasattr(table.c, 'tenant_id'):
             if not context.all_tenants:
                 # NOTE: The query doesn't work with table.c.tenant_id is None,
                 # so I had to force flake8 to skip the check
-                query = query.where(or_(table.c.tenant_id == context.tenant,
-                                        table.c.tenant_id == None))  # NOQA
+                if include_null_tenant:
+                    query = query.where(or_(
+                            table.c.tenant_id == context.tenant,
+                            table.c.tenant_id == None))  # NOQA
+                else:
+                    query = query.where(table.c.tenant_id == context.tenant)
 
         return query
 
@@ -270,13 +275,18 @@ class SQLAlchemy(object):
                                       recordsets_table, records_table,
                                       one=False, marker=None, limit=None,
                                       sort_key=None, sort_dir=None, query=None,
-                                      apply_tenant_criteria=True):
+                                      apply_tenant_criteria=True,
+                                      force_index=False):
 
         sort_key = sort_key or 'created_at'
         sort_dir = sort_dir or 'asc'
         data = criterion.pop('data', None)
         status = criterion.pop('status', None)
         filtering_records = data or status
+
+        # sort key will be used for the ORDER BY key in query,
+        # needs to use the correct table index for different sort keys
+        index_hint = utils.get_rrset_index(sort_key) if force_index else None
 
         rzjoin = recordsets_table.join(
                 zones_table,
@@ -291,8 +301,12 @@ class SQLAlchemy(object):
                           zones_table.c.name]         # 1 - ZONE NAME
                          ).select_from(rzjoin).\
             where(zones_table.c.deleted == '0')
+
         count_q = select([func.count(distinct(recordsets_table.c.id))]).\
             select_from(rzjoin).where(zones_table.c.deleted == '0')
+
+        if index_hint:
+            inner_q = inner_q.with_hint(recordsets_table, index_hint)
 
         if marker is not None:
             marker = utils.check_marker(recordsets_table, marker,
@@ -314,10 +328,12 @@ class SQLAlchemy(object):
             raise exceptions.ValueError(six.text_type(value_error))
 
         if apply_tenant_criteria:
-            inner_q = self._apply_tenant_criteria(context, recordsets_table,
-                                                  inner_q)
+            inner_q = self._apply_tenant_criteria(
+                    context, recordsets_table, inner_q,
+                    include_null_tenant=False)
             count_q = self._apply_tenant_criteria(context, recordsets_table,
-                                                  count_q)
+                                                  count_q,
+                                                  include_null_tenant=False)
 
         inner_q = self._apply_criterion(recordsets_table, inner_q, criterion)
         count_q = self._apply_criterion(recordsets_table, count_q, criterion)
@@ -348,9 +364,14 @@ class SQLAlchemy(object):
             id_zname_map[r[0]] = r[1]
         formatted_ids = six.moves.map(operator.itemgetter(0), rows)
 
-        resultproxy = self.session.execute(count_q)
-        result = resultproxy.fetchone()
-        total_count = 0 if result is None else result[0]
+        # Count query does not scale well for large amount of recordsets,
+        # don't do it if the header 'OpenStack-DNS-Hide-Counts: True' exists
+        if context.hide_counts:
+            total_count = None
+        else:
+            resultproxy = self.session.execute(count_q)
+            result = resultproxy.fetchone()
+            total_count = 0 if result is None else result[0]
 
         # Join the 2 required tables
         rjoin = recordsets_table.outerjoin(

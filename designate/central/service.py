@@ -185,7 +185,7 @@ def notification(notification_type):
 
 
 class Service(service.RPCService, service.Service):
-    RPC_API_VERSION = '6.1'
+    RPC_API_VERSION = '6.2'
 
     target = messaging.Target(version=RPC_API_VERSION)
 
@@ -1337,12 +1337,13 @@ class Service(service.RPCService, service.Service):
         return recordset
 
     def find_recordsets(self, context, criterion=None, marker=None, limit=None,
-                        sort_key=None, sort_dir=None):
+                        sort_key=None, sort_dir=None, force_index=False):
         target = {'tenant_id': context.tenant}
         policy.check('find_recordsets', context, target)
 
         recordsets = self.storage.find_recordsets(context, criterion, marker,
-                                                  limit, sort_key, sort_dir)
+                                                  limit, sort_key, sort_dir,
+                                                  force_index)
 
         return recordsets
 

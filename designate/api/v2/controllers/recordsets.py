@@ -26,8 +26,8 @@ LOG = logging.getLogger(__name__)
 
 
 class RecordSetsViewController(rest.RestController):
-    SORT_KEYS = ['created_at', 'id', 'updated_at', 'zone_id', 'tenant_id',
-                 'name', 'type', 'ttl', 'records']
+    SORT_KEYS = ['created_at', 'updated_at', 'zone_id', 'tenant_id',
+                 'name', 'type', 'ttl']
 
     @pecan.expose(template='json:', content_type='application/json')
     @utils.validate_uuid('recordset_id')

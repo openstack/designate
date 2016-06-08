@@ -59,7 +59,7 @@ class TransferRequestsController(rest.RestController):
 
         # Extract the pagination params
         marker, limit, sort_key, sort_dir = utils.get_paging_params(
-            params, self.SORT_KEYS)
+                context, params, self.SORT_KEYS)
 
         # Extract any filter params.
         criterion = self._apply_filter_params(params, ('status',), {})

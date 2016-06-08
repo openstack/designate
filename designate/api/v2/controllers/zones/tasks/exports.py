@@ -99,7 +99,7 @@ class ZoneExportsController(rest.RestController):
         request = pecan.request
         context = request.environ['context']
         marker, limit, sort_key, sort_dir = utils.get_paging_params(
-            params, self.SORT_KEYS)
+                context, params, self.SORT_KEYS)
 
         # Extract any filter params.
         accepted_filters = ('status', 'message', 'zone_id', )
