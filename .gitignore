@@ -52,4 +52,5 @@ doc/build/*
 doc/source/api/*
 api-ref/build/*
 etc/designate/*.conf
+etc/designate/*.yaml
 var/*
