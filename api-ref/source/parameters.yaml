@@ -317,6 +317,13 @@ zone_status_filter:
   required: false
   type: string
 
+zone_transfer_accept_status_filter:
+  description: |
+    Filter results to only show ``zone_transfer_accepts`` that have a ``status`` matching the filter
+  in: query
+  required: false
+  type: string
+
 zone_transfer_request_status_filter:
   description: |
     Filter results to only show ``zone_transfer_requests`` that have a ``status`` matching the filter
