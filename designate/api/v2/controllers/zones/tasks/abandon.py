@@ -25,7 +25,9 @@ LOG = logging.getLogger(__name__)
 
 class AbandonController(rest.RestController):
 
-    @pecan.expose(template='json:', content_type='application/json')
+    # NOTE: template=None is important here, template='json:' manifests
+    #       in this bug: https://bugs.launchpad.net/designate/+bug/1592153
+    @pecan.expose(template=None, content_type='application/json')
     @utils.validate_uuid('zone_id')
     def post_all(self, zone_id):
         """Abandon a zone"""
@@ -42,7 +44,6 @@ class AbandonController(rest.RestController):
         else:
             response.status_int = 500
 
-        # NOTE: This is a hack and a half.. But Pecan needs it.
         return ''
 
     @pecan.expose(template='json:', content_type='application/json')

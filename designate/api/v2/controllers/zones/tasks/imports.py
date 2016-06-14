@@ -102,7 +102,9 @@ class ZoneImportController(rest.RestController):
         # Prepare and return the response body
         return zone_import
 
-    @pecan.expose(template='json:', content_type='application/json')
+    # NOTE: template=None is important here, template='json:' manifests
+    #       in this bug: https://bugs.launchpad.net/designate/+bug/1592153
+    @pecan.expose(template=None, content_type='application/json')
     @utils.validate_uuid('zone_import_id')
     def delete_one(self, zone_import_id):
         """Delete Zone Import"""

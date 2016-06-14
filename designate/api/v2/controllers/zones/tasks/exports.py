@@ -118,7 +118,9 @@ class ZoneExportsController(rest.RestController):
             zone_exports,
             request=request)
 
-    @pecan.expose(template='json:', content_type='application/json')
+    # NOTE: template=None is important here, template='json:' manifests
+    #       in this bug: https://bugs.launchpad.net/designate/+bug/1592153
+    @pecan.expose(template=None, content_type='application/json')
     @utils.validate_uuid('zone_export_id')
     def delete_one(self, zone_export_id):
         """Delete Zone Export"""
