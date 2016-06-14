@@ -151,15 +151,14 @@ SCRIPT
     ubuntu.vm.provision :shell, :privileged => false, :inline => $script
   end
 
+  config.vm.define "centos-7", autostart: false do |centos|
+    centos.vm.box = "centos/7"
 
-  config.vm.define "fedora", autostart: false do |fedora|
-    fedora.vm.box = "box-cutter/fedora20"
+    centos.vm.network :private_network, ip: "192.168.27.101"
 
-    fedora.vm.network :private_network, ip: "192.168.27.101"
+    centos.vm.provision :shell, :privileged => true, :inline => "yum update -y vim-minimal" # RH Bug 1066983
+    centos.vm.provision :shell, :privileged => true, :inline => "yum install -y git-core"
 
-    fedora.vm.provision :shell, :privileged => true, :inline => "yum update -y vim-minimal" # RH Bug 1066983
-    fedora.vm.provision :shell, :privileged => true, :inline => "yum install -y git-core"
-
-    fedora.vm.provision :shell, :privileged => false, :inline => $script
+    centos.vm.provision :shell, :privileged => false, :inline => $script
   end
 end

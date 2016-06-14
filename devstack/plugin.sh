@@ -249,11 +249,11 @@ function init_designate {
 
 # install_designate - Collect source and prepare
 function install_designate {
-    install_package libcap2-bin
-
-    if is_fedora; then
-        # This package provides `dig`
-        install_package bind-utils
+    if is_ubuntu; then
+        install_package libcap2-bin
+    elif is_fedora; then
+        # bind-utils package provides `dig`
+        install_package libcap bind-utils
     fi
 
     git_clone $DESIGNATE_REPO $DESIGNATE_DIR $DESIGNATE_BRANCH
