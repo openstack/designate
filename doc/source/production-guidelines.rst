@@ -41,7 +41,7 @@ Scenario #3 Mitigation
 This scenario can be mitigated by ensuring Designate has been configured, and
 is updated periodically, with the latest list of gTLD's published as the
 `IANA TLD list`_. These TLDs can be entered into Designate through the
-:doc:`TLD API </rest/v2/tlds>`.
+`TLD API`_
 
 Scenario #4 Mitigation
 ----------------------
@@ -54,7 +54,7 @@ up to fill this gap, crowdsourcing the list of "public suffixes", which
 includes both standard TLDs and public second level domains. We recommend
 configuring, and periodically updating, Designate with Mozilla's
 `Public Suffix list`_. These public suffixes can be entered into Designate
-through the :doc:`TLD API </rest/v2/tlds>`.
+through the `TLD API`_
 
 DNS Cache Poisoning
 ===================
@@ -107,3 +107,4 @@ In the main PowerDNS configuration file, include the following statement::
 .. _IANA TLD list: https://data.iana.org/TLD/tlds-alpha-by-domain.txt
 .. _Public Suffix list: https://publicsuffix.org/
 .. _Bug 1471159: https://bugs.launchpad.net/designate/+bug/1471159
+.. _TLD API: http://developer.openstack.org/api-ref/dns/#tld
