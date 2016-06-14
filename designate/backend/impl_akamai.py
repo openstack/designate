@@ -17,12 +17,23 @@ import os
 
 from oslo_log import log as logging
 from oslo_config import cfg
-from suds.client import Client as SudsClient
-from suds.transport.https import HttpAuthenticated
+from oslo_utils import importutils
 
 from designate import exceptions
 from designate import utils
 from designate.backend import base
+
+
+try:
+    SudsClient = importutils.import_class("suds.client.Client")
+    HttpAuthenticated = importutils.import_class(
+        "suds.transport.https.HttpAuthenticated")
+
+except ImportError:
+    SudsClient = None
+
+    class HttpAuthenticated(object):
+        pass
 
 
 LOG = logging.getLogger(__name__)
@@ -97,6 +108,11 @@ class EnhancedDNSClient(object):
     """EnhancedDNS SOAP API Client"""
 
     def __init__(self, username, password):
+        # Ensure Suds (or suds-jerko) have been installed
+        if SudsClient is None:
+            raise EnhancedDNSException(
+                "Dependancy missing, please install suds or suds-jurko")
+
         # Prepare a SUDS transport with the approperiate credentials
         transport = EnhancedDNSHttpAuthenticated(
             username=username,
