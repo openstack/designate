@@ -13,10 +13,12 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import datetime
 
 from mock import Mock
 from oslo_log import log as logging
 import oslotest.base
+from oslo_utils import timeutils
 
 from designate import objects
 from designate.objects import adapters
@@ -35,6 +37,25 @@ class DesignateTestAdapter(adapters.DesignateAdapter):
     }
 
 
+class DesignateTestPersistantObject(
+        objects.DesignateObject, objects.base.PersistentObjectMixin):
+    pass
+
+
+class DesignateDateTimeAdaptor(adapters.DesignateAdapter):
+    ADAPTER_OBJECT = DesignateTestPersistantObject
+    ADAPTER_FORMAT = 'TEST_API'
+
+    MODIFICATIONS = {
+        'fields': {
+            "id": {},
+            "created_at": {},
+            "updated_at": {},
+        },
+        'options': {}
+    }
+
+
 class DesignateAdapterTest(oslotest.base.BaseTestCase):
     def test_get_object_adapter(self):
         adapters.DesignateAdapter.get_object_adapter(
@@ -42,6 +63,16 @@ class DesignateAdapterTest(oslotest.base.BaseTestCase):
 
     def test_object_render(self):
         adapters.DesignateAdapter.render('TEST_API', objects.DesignateObject())
+
+    def test_datetime_format(self):
+        test_obj = DesignateTestPersistantObject()
+        test_obj.created_at = timeutils.utcnow()
+
+        test_dict = adapters.DesignateAdapter.render('TEST_API', test_obj)
+
+        datetime.datetime.strptime(
+            test_dict['created_at'],
+            '%Y-%m-%dT%H:%M:%S.%f')
 
 
 class RecordSetAPIv2AdapterTest(oslotest.base.BaseTestCase):

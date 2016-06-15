@@ -68,6 +68,11 @@ DEFAULT_AGENT_PORT = 5358
 DEFAULT_MDNS_PORT = 5354
 
 
+# Default datetime format
+
+DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%S.%f'
+
+
 def find_config(config_path):
     """
     Find a configuration file using the given hint.

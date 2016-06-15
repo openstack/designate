@@ -11,11 +11,13 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import datetime
 
 from oslo_log import log
 import six
 
 from designate import objects
+from designate import utils
 from designate import exceptions
 from designate.i18n import _LE
 from designate.i18n import _LI
@@ -91,6 +93,18 @@ class DesignateAdapter(object):
 
     @classmethod
     def _render_object(cls, object, *args, **kwargs):
+
+        # We need to findout the type of field sometimes - these are helper
+        # methods for that.
+
+        def _is_datetime_field(object, key):
+            field = object.FIELDS.get(key, {})
+            return field.get('schema', {}).get('format', '') == 'date-time'
+
+        def _format_datetime_field(obj):
+            return datetime.datetime.strftime(
+                    obj, utils.DATETIME_FORMAT)
+
         # The dict we will return to be rendered to JSON / output format
         r_obj = {}
         # Loop over all fields that are supposed to be output
@@ -116,6 +130,10 @@ class DesignateAdapter(object):
                     cls.ADAPTER_FORMAT,
                     object.FIELDS[obj_key].get('relation_cls')).render(
                         cls.ADAPTER_FORMAT, obj, *args, **kwargs)
+            elif _is_datetime_field(object, obj_key) and obj is not None:
+                # So, we now have a datetime object to render correctly
+                # see bug #1579844
+                r_obj[key] = _format_datetime_field(obj)
             else:
                 # Just attach the damn item if there is no weird edge cases
                 r_obj[key] = obj
