@@ -19,8 +19,8 @@ Knot DNS 2 Agent backend
 ************************
 
 
-User documentation
-==================
+Knot DNS 2 User documentation
+=============================
 
 This page documents the Agent backend for `Knot DNS <https://www.knot-dns.cz/>`_.
 
