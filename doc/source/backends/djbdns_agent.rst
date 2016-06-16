@@ -19,8 +19,8 @@ Djbdns Agent backend
 ********************
 
 
-User documentation
-==================
+Djbdns User documentation
+=========================
 
 This page documents the Agent backend for `djbdns <https://cr.yp.to/djbdns.html>`_.
 
