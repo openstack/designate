@@ -94,3 +94,51 @@ Response Example
 
 .. literalinclude:: samples/zones/create-zone-transfer-accept-response.json
    :language: javascript
+
+
+List Zone Transfer Accepts
+===========================
+
+.. rest_method::  GET /v2/zones/tasks/transfer_accepts
+
+This will list all your accepted ownership transfer.
+
+Normal response codes: 200
+
+Error response codes: 405,404,403,401,400,503
+
+
+Request
+-------
+
+.. rest_parameters:: parameters.yaml
+
+   - x-auth-token: x-auth-token
+   - x-auth-all-projects: x-auth-all-projects
+   - x-auth-sudo-project-id: x-auth-sudo-project-id
+   - status: zone_transfer_accept_status_filter
+
+
+Response Parameters
+-------------------
+
+.. rest_parameters:: parameters.yaml
+
+   - x-openstack-request-id: x-openstack-request-id
+   - id: zone_transfer_accept_id
+   - project_id: project_id
+   - status: zone_transfer_request_status
+   - zone_id: zone_transfer_request_id
+   - key: zone_transfer_request_key
+   - created_at: created_at
+   - updated_at: updated_at
+   - zone_transfer_request_id: zone_transfer_request_id
+   - links: links
+   - metadata: metadata
+
+
+Response Example
+----------------
+
+.. literalinclude:: samples/zones/list-zone-transfer-accept-response.json
+   :language: javascript
