@@ -23,6 +23,7 @@ class ApiV2ZoneTransfersTest(ApiV2TestCase):
         self.zone = self.create_zone()
         self.tenant_1_context = self.get_context(tenant=1)
         self.tenant_2_context = self.get_context(tenant=2)
+        self.policy({'admin': '@'})
 
     def test_create_zone_transfer_request(self):
         response = self.client.post_json(
@@ -96,6 +97,31 @@ class ApiV2ZoneTransfersTest(ApiV2TestCase):
             self.zone.id,
             response.json['zone_id'])
         self.assertIn('updated_at', response.json)
+
+    def test_get_zone_transfer_requests(self):
+        response = self.client.get(
+            '/zones/tasks/transfer_requests')
+
+        # Check the headers are what we expect
+        self.assertEqual(200, response.status_int)
+        self.assertEqual('application/json', response.content_type)
+
+        # Check the body structure is what we expect
+        self.assertIn('transfer_requests', response.json)
+        self.assertIn('links', response.json)
+        self.assertIn('self', response.json['links'])
+
+        # We should start with 0 transfer accepts
+        self.assertEqual(0, len(response.json['transfer_requests']))
+
+        self.client.post_json(
+            '/zones/%s/tasks/transfer_requests' % (self.zone.id),
+            {})
+
+        data = self.client.get(
+            '/zones/tasks/transfer_requests')
+
+        self.assertEqual(1, len(data.json['transfer_requests']))
 
     def test_update_zone_transfer_request(self):
         initial = self.client.post_json(
@@ -174,6 +200,39 @@ class ApiV2ZoneTransfersTest(ApiV2TestCase):
             'COMPLETE',
             new_ztr.json['status'])
 
+    def test_get_zone_transfer_accepts(self):
+        response = self.client.get(
+                       '/zones/tasks/transfer_accepts')
+
+        # Check the headers are what we expect
+        self.assertEqual(200, response.status_int)
+        self.assertEqual('application/json', response.content_type)
+
+        # Check the body structure is what we expect
+        self.assertIn('transfer_accepts', response.json)
+        self.assertIn('links', response.json)
+        self.assertIn('self', response.json['links'])
+        self.assertIn('metadata', response.json)
+
+        # We should start with 0 transfer accepts
+        self.assertEqual(0, len(response.json['transfer_accepts']))
+
+        initial = self.client.post_json(
+            '/zones/%s/tasks/transfer_requests' % (self.zone.id),
+            {})
+
+        self.client.post_json(
+            '/zones/tasks/transfer_accepts',
+            {
+                'zone_transfer_request_id':
+                    initial.json['id'],
+                'key': initial.json['key']
+            })
+
+        data = self.client.get(
+                       '/zones/tasks/transfer_accepts')
+        self.assertEqual(1, len(data.json['transfer_accepts']))
+
     def test_create_zone_transfer_request_deleting_zone(self):
         url = '/zones/%s/tasks/transfer_requests' % (self.zone.id)
         body = {}
@@ -187,3 +246,43 @@ class ApiV2ZoneTransfersTest(ApiV2TestCase):
         self.client.delete('/zones/%s' % self.zone['id'], status=202)
         self._assert_exception('bad_request', 400, self.client.post_json, url,
                                body)
+
+    # Metadata tests
+    def test_metadata_exists_zone_transfer_accepts(self):
+        initial = self.client.post_json(
+            '/zones/%s/tasks/transfer_requests' % (self.zone.id),
+            {})
+
+        self.client.post_json(
+            '/zones/tasks/transfer_accepts',
+            {
+                'zone_transfer_request_id':
+                    initial.json['id'],
+                'key': initial.json['key']
+            })
+
+        result = self.client.get(
+            '/zones/tasks/transfer_accepts')
+
+        # Make sure the fields exist
+        self.assertIn('metadata', result.json)
+        self.assertIn('total_count', result.json['metadata'])
+
+    def test_total_count_zone_transfer_accepts(self):
+        initial = self.client.post_json(
+            '/zones/%s/tasks/transfer_requests' % (self.zone.id),
+            {})
+
+        self.client.post_json(
+            '/zones/tasks/transfer_accepts',
+            {
+                'zone_transfer_request_id':
+                    initial.json['id'],
+                'key': initial.json['key']
+            })
+
+        result = self.client.get(
+            '/zones/tasks/transfer_accepts')
+
+        # Make sure total_count picked it up
+        self.assertEqual(1, result.json['metadata']['total_count'])
