@@ -19,6 +19,7 @@ import threading
 import six
 from oslo_config import cfg
 from oslo_db import options
+from oslo_db.exception import DBDuplicateEntry
 from oslo_log import log as logging
 from oslo_utils import excutils
 from sqlalchemy.sql import select
@@ -136,6 +137,11 @@ class PowerDNSBackend(base.Backend):
             }
 
             self._create(tables.domains, domain_values)
+        except DBDuplicateEntry:
+            LOG.debug('Successful create of %s in pdns, zone already exists'
+                      % zone['name'])
+            # If create fails because the zone exists, don't reraise
+            pass
         except Exception:
             with excutils.save_and_reraise_exception():
                 self.session.rollback()
