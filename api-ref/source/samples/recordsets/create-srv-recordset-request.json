@@ -1,0 +1,9 @@
+{
+   "name" : "_http._tcp.example.org.",
+   "description" : "An SRV recordset.",
+   "type" : "SRV",
+   "ttl" : 3600,
+   "records" : [
+        "10 0 5060 www.example.org."
+   ]
+}

@@ -1,0 +1,9 @@
+{
+  "name" : "foo.example.org.",
+  "description" : "An SSHFP recordset.",
+  "type" : "SSHFP",
+  "ttl" : 3600,
+  "records" : [
+    "1 2 6467a09c59607b01fef22ef6918c44a2eaaa14a5e055cfe91bf614b5796d2df0"
+  ]
+}

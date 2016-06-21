@@ -1,0 +1,12 @@
+{
+    "name" : "mail.example.org.",
+    "description" : "An MX recordset.",
+    "type" : "MX",
+    "ttl" : 3600,
+    "records" : [
+        "10 mail1.example.org.",
+        "20 mail2.example.org.",
+        "30 mail3.example.org.",
+        "40 mail4.example.org."
+    ]
+}

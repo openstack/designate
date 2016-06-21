@@ -1,0 +1,23 @@
+{
+    "status": "PENDING",
+    "description": "An MX recordset.",
+    "links": {
+        "self": "http://127.0.0.1:9001/v2/zones/f6b472ed-1be8-47e8-87a7-687169cacca8/recordsets/c3c1f506-adcf-4751-ae5b-1c5ff00d2e1a"
+    },
+    "created_at": "2016-06-21 06:34:36",
+    "updated_at": null,
+    "records": [
+        "10 mail1.example.org.",
+        "30 mail3.example.org.",
+        "20 mail2.example.org.",
+        "40 mail4.example.org."
+    ],
+    "zone_id": "f6b472ed-1be8-47e8-87a7-687169cacca8",
+    "version": 1,
+    "ttl": 3600,
+    "action": "CREATE",
+    "zone_name": "example.org.",
+    "type": "MX",
+    "id": "c3c1f506-adcf-4751-ae5b-1c5ff00d2e1a",
+    "name": "mail.example.org."
+}
