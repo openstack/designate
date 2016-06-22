@@ -492,6 +492,9 @@ debug = False
 #confdir_path = /etc/gdnsd
 #query_destination = 127.0.0.1
 
+[backend:agent:msdns]
+#query_destination = 127.0.0.1
+
 ########################
 ## Library Configuration
 ########################

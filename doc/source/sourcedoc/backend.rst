@@ -106,3 +106,13 @@ Agent Backend Djbdns
     :private-members:
     :undoc-members:
     :show-inheritance:
+
+Agent Backend MSDNS
+====================
+
+.. automodule:: designate.backend.agent_backend.impl_msdns
+    :members:
+    :special-members:
+    :private-members:
+    :undoc-members:
+    :show-inheritance:
