@@ -48,6 +48,12 @@ Response Parameters
    - x-openstack-request-id: x-openstack-request-id
    - id: zone_transfer_accept_id
    - status: zone_transfer_request_status
+   - project_id: project_id
+   - zone_id: zone_transfer_request_id
+   - key: zone_transfer_request_key
+   - created_at: created_at
+   - updated_at: updated_at
+   - zone_transfer_request_id: zone_transfer_request_id
    - links: links
 
 Response Example
@@ -87,6 +93,12 @@ Response Parameters
    - x-openstack-request-id: x-openstack-request-id
    - id: zone_transfer_accept_id
    - status: zone_transfer_request_status
+   - project_id: project_id
+   - zone_id: zone_transfer_request_id
+   - key: zone_transfer_request_key
+   - created_at: created_at
+   - updated_at: updated_at
+   - zone_transfer_request_id: zone_transfer_request_id
    - links: links
 
 Response Example
