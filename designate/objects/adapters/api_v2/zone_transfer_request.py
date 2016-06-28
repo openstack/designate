@@ -49,6 +49,7 @@ class ZoneTransferRequestAPIv2Adapter(base.APIv2Adapter):
                 'protected': False
             },
             "zone_name": {
+                'immutable': True,
                 'protected': False
             },
             "created_at": {},
