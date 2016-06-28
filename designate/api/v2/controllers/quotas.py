@@ -16,54 +16,53 @@
 import pecan
 from oslo_log import log as logging
 
-from designate import schema
 from designate.api.v2.controllers import rest
-from designate.api.admin.views.extensions import quotas as quotas_view
+from designate.objects.adapters import DesignateAdapter
+from designate.objects import QuotaList
 
 LOG = logging.getLogger(__name__)
 
 
 class QuotasController(rest.RestController):
-    _view = quotas_view.QuotasView()
-    _resource_schema = schema.Schema('admin', 'quota')
 
-    @staticmethod
-    def get_path():
-        return '.quotas'
+    @pecan.expose(template='json:', content_type='application/json')
+    def get_all(self):
+        context = pecan.request.environ['context']
+
+        quotas = self.central_api.get_quotas(context, context.tenant)
+
+        quotas = QuotaList.from_dict(quotas)
+
+        return DesignateAdapter.render('API_v2', quotas)
 
     @pecan.expose(template='json:', content_type='application/json')
     def get_one(self, tenant_id):
-        request = pecan.request
         context = pecan.request.environ['context']
-        context.all_tenants = True
 
         quotas = self.central_api.get_quotas(context, tenant_id)
 
-        return self._view.show(context, request, quotas)
+        quotas = QuotaList.from_dict(quotas)
+
+        return DesignateAdapter.render('API_v2', quotas)
 
     @pecan.expose(template='json:', content_type='application/json')
     def patch_one(self, tenant_id):
         """Modify a Quota"""
         request = pecan.request
-        response = pecan.response
         context = request.environ['context']
-        context.all_tenants = True
         body = request.body_dict
 
-        # Validate the request conforms to the schema
-        self._resource_schema.validate(body)
+        quotas = DesignateAdapter.parse('API_v2', body, QuotaList())
 
-        values = self._view.load(context, request, body)
-
-        for resource, hard_limit in values.items():
-            self.central_api.set_quota(context, tenant_id, resource,
-                                       hard_limit)
-
-        response.status_int = 200
+        for quota in quotas:
+            self.central_api.set_quota(context, tenant_id, quota.resource,
+                                       quota.hard_limit)
 
         quotas = self.central_api.get_quotas(context, tenant_id)
 
-        return self._view.show(context, request, quotas)
+        quotas = QuotaList.from_dict(quotas)
+
+        return DesignateAdapter.render('API_v2', quotas)
 
     @pecan.expose(template=None, content_type='application/json')
     def delete_one(self, tenant_id):
@@ -71,7 +70,6 @@ class QuotasController(rest.RestController):
         request = pecan.request
         response = pecan.response
         context = request.environ['context']
-        context.all_tenants = True
 
         self.central_api.reset_quotas(context, tenant_id)
 

@@ -36,7 +36,10 @@ class DesignateV2Test(BaseDesignateTest):
                     'zones': 9999999,
                     'recordset_records': 9999999,
                     'zone_records': 9999999,
-                    'zone_recordsets': 9999999}}))
+                    'zone_recordsets': 9999999
+                }
+            })
+        )
 
     def ensure_tld_exists(self, tld='com'):
         if cfg.CONF.testconfig.no_admin_setup:

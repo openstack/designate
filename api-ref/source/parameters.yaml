@@ -64,6 +64,13 @@ path_pool_id:
   required: true
   type: uuid
 
+path_project_id:
+  description: |
+    ID for the project
+  in: path
+  required: true
+  type: uuid
+
 path_recordset_id:
   description: |
     ID for the recordset

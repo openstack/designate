@@ -19,3 +19,4 @@
 .. include:: dns-api-v2-tld.inc
 .. include:: dns-api-v2-tsigkey.inc
 .. include:: dns-api-v2-blacklist.inc
+.. include:: dns-api-v2-quota.inc

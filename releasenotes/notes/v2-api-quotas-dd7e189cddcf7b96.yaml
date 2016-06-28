@@ -1,0 +1,15 @@
+---
+features:
+  - This adds the quotas api from /admin to /v2 with some changes.
+
+    All users can GET /v2/quotas/<project_id>
+
+    Users with "All-Projects" permission can view other projects
+    (by setting X-Auth-All-Projects:True in the HTTP Headers)
+
+    Users with "All-Projects" and "set-quotas" can set other
+    projects quotas
+
+    Moved the API rendering to Designate Object based rendering
+fixes:
+  - V1 API Users can now query v1/quotas/<project_id> for quotas
