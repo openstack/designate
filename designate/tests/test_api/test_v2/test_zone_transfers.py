@@ -42,6 +42,9 @@ class ApiV2ZoneTransfersTest(ApiV2TestCase):
         self.assertIn('created_at', response.json)
         self.assertEqual('ACTIVE', response.json['status'])
         self.assertEqual(
+            self.zone.name,
+            response.json['zone_name'])
+        self.assertEqual(
             self.zone.id,
             response.json['zone_id'])
         self.assertIsNone(response.json['updated_at'])

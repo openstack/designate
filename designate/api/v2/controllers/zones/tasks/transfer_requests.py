@@ -75,6 +75,8 @@ class TransferRequestsController(rest.RestController):
         except exceptions.EmptyRequestBody:
             body = dict()
 
+        zone = self.central_api.get_zone(context, zone_id)
+        body['zone_name'] = zone.name
         body['zone_id'] = zone_id
 
         zone_transfer_request = DesignateAdapter.parse(
