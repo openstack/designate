@@ -26,7 +26,7 @@ cfg.CONF.register_opts([
 
 
 class FallbackFilter(Filter):
-    """If there is no zones availible to schedule to, this filter will insert
+    """If there is no zones available to schedule to, this filter will insert
     the default_pool_id.
 
     .. note::
