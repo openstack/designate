@@ -145,7 +145,7 @@ Export a YAML copy of a Kilo/Liberty pool config.
   show this help message and exit
 
 ``--file FILE``
-  The path to the file the yaml output should be writen to
+  The path to the file the yaml output should be written to
   (Defaults to /etc/designate/pools.yaml)
 
 .. _designate_manage_pool_generate_file:
@@ -166,7 +166,7 @@ Export a YAML copy of the current running pool config
   show this help message and exit
 
 ``--file FILE``
-  The path to the file the yaml output should be writen to
+  The path to the file the yaml output should be written to
   (Defaults to /etc/designate/pools.yaml)
 
 .. _designate_manage_pool_update:
