@@ -2673,7 +2673,7 @@ class Service(service.RPCService, service.Service):
                 zone_import.message = 'An SOA record is required.'
                 zone_import.status = 'ERROR'
             except Exception as e:
-                msg = _LE('An undefined error occured during zone import')
+                msg = _LE('An undefined error occurred during zone import')
                 LOG.exception(msg)
                 msg = 'An undefined error occurred. %s' % e.message[:130]
                 zone_import.message = msg
@@ -2700,7 +2700,7 @@ class Service(service.RPCService, service.Service):
                 zone_import.status = 'ERROR'
                 zone_import.message = e.message
             except Exception as e:
-                msg = _LE('An undefined error occured during zone '
+                msg = _LE('An undefined error occurred during zone '
                           'import creation')
                 LOG.exception(msg)
                 msg = 'An undefined error occurred. %s' % e.message[:130]

@@ -46,7 +46,7 @@ class PoolCommands(base.Commands):
         try:
             pools = self.central_api.find_pools(self.context)
         except messaging.exceptions.MessagingTimeout:
-            LOG.critical(_LC("No response recieved from designate-central. "
+            LOG.critical(_LC("No response received from designate-central. "
                              "Check it is running, and retry"))
         with open(file, 'w') as stream:
             yaml.dump(
@@ -62,7 +62,7 @@ class PoolCommands(base.Commands):
         try:
             pools = self.central_api.find_pools(self.context)
         except messaging.exceptions.MessagingTimeout:
-            LOG.critical(_LC("No response recieved from designate-central. "
+            LOG.critical(_LC("No response received from designate-central. "
                              "Check it is running, and retry"))
         r_pools = objects.PoolList()
         for pool in pools:
@@ -91,7 +91,7 @@ class PoolCommands(base.Commands):
                   default_flow_style=False))
 
         except messaging.exceptions.MessagingTimeout:
-            LOG.critical(_LC("No response recieved from designate-central. "
+            LOG.critical(_LC("No response received from designate-central. "
                              "Check it is running, and retry"))
 
     @base.args('--file', help='The path to the yaml file describing the pools',
@@ -152,7 +152,7 @@ class PoolCommands(base.Commands):
                     LOG.info(_LI('Creating new pool: %s'), pool)
                     self.central_api.create_pool(self.context, pool)
             except messaging.exceptions.MessagingTimeout:
-                LOG.critical(_LC("No response recieved from designate-central."
+                LOG.critical(_LC("No response received from designate-central."
                                  " Check it is running, and retry"))
 
         if delete:
@@ -176,7 +176,7 @@ class PoolCommands(base.Commands):
                         self.central_api.delete_pool(self.context, p.id)
 
                 except messaging.exceptions.MessagingTimeout:
-                    LOG.critical(_LC("No response recieved from "
+                    LOG.critical(_LC("No response received from "
                                      "designate-central. "
                                      "Check it is running, and retry"))
 

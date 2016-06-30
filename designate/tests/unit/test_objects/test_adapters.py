@@ -37,13 +37,13 @@ class DesignateTestAdapter(adapters.DesignateAdapter):
     }
 
 
-class DesignateTestPersistantObject(
+class DesignateTestPersistentObject(
         objects.DesignateObject, objects.base.PersistentObjectMixin):
     pass
 
 
 class DesignateDateTimeAdaptor(adapters.DesignateAdapter):
-    ADAPTER_OBJECT = DesignateTestPersistantObject
+    ADAPTER_OBJECT = DesignateTestPersistentObject
     ADAPTER_FORMAT = 'TEST_API'
 
     MODIFICATIONS = {
@@ -65,7 +65,7 @@ class DesignateAdapterTest(oslotest.base.BaseTestCase):
         adapters.DesignateAdapter.render('TEST_API', objects.DesignateObject())
 
     def test_datetime_format(self):
-        test_obj = DesignateTestPersistantObject()
+        test_obj = DesignateTestPersistentObject()
         test_obj.created_at = timeutils.utcnow()
 
         test_dict = adapters.DesignateAdapter.render('TEST_API', test_obj)
