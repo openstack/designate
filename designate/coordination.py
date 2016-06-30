@@ -282,7 +282,7 @@ class LeaderElection(object):
         return self._leader
 
     def _on_elected_leader(self, event):
-        LOG.info(_LI('Sucessfully elected as leader of group %(group)s'),
+        LOG.info(_LI('Successfully elected as leader of group %(group)s'),
                  {'group': self._group_id})
         self._leader = True
 
