@@ -1,0 +1,3 @@
+---
+fixes:
+  - Added zone_name in zone trasfer request response. Closed bug#1580014
