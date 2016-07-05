@@ -1,0 +1,10 @@
+{
+  "name" : "foospf.example.org.",
+  "description" : "An SPF recordset.",
+  "type" : "SPF",
+  "ttl" : 3600,
+  "records" : [
+      "v=spf1 +all"
+  ]
+}
+

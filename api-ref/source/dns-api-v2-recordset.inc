@@ -362,3 +362,262 @@ Response Example
 .. literalinclude:: samples/recordsets/update-recordset-response.json
    :language: javascript
 
+
+Create a MX Recordset
+=====================
+
+.. rest_method::  POST /v2/zones/{zone_id}/recordsets
+
+Create a MX recordset in a zone
+
+
+Normal response codes: 202
+
+Error response codes: 405,404,403,401,400,503
+
+
+Request
+-------
+
+.. rest_parameters:: parameters.yaml
+
+   - x-auth-token: x-auth-token
+   - x-auth-all-projects: x-auth-all-projects
+   - x-auth-sudo-project-id: x-auth-sudo-project-id
+   - zone_id: path_zone_id
+   - name: recordset_name
+   - ttl: recordset_ttl
+   - description: recordset_description
+   - type: recordset_type
+   - records: recordset_records
+
+
+Request Example
+---------------
+
+.. literalinclude:: samples/recordsets/create-mx-recordset-request.json
+   :language: javascript
+
+
+Response Parameters
+-------------------
+
+.. rest_parameters:: parameters.yaml
+
+   - x-openstack-request-id: x-openstack-request-id
+   - id: id
+   - project_id: project_id
+   - name: recordset_name
+   - ttl: recordset_ttl
+   - status: status
+   - action: action
+   - zone_id: recordset_zone_id
+   - zone_name: recordset_zone_name
+   - description: recordset_description
+   - type: recordset_type
+   - version: version
+   - created_at: created_at
+   - updated_at: updated_at
+   - links: links
+
+
+Response Example
+----------------
+
+.. literalinclude:: samples/recordsets/create-mx-recordset-response.json
+   :language: javascript
+
+
+Create a SSHFP Recordset
+========================
+
+.. rest_method::  POST /v2/zones/{zone_id}/recordsets
+
+Create a MX recordset in a zone
+
+
+Normal response codes: 202
+
+Error response codes: 405,404,403,401,400,503
+
+
+Request
+-------
+
+.. rest_parameters:: parameters.yaml
+
+   - x-auth-token: x-auth-token
+   - x-auth-all-projects: x-auth-all-projects
+   - x-auth-sudo-project-id: x-auth-sudo-project-id
+   - zone_id: path_zone_id
+   - name: recordset_name
+   - ttl: recordset_ttl
+   - description: recordset_description
+   - type: recordset_type
+   - records: recordset_records
+
+
+Request Example
+---------------
+
+.. literalinclude:: samples/recordsets/create-sshfp-recordset-request.json
+   :language: javascript
+
+
+Response Parameters
+-------------------
+
+.. rest_parameters:: parameters.yaml
+
+   - x-openstack-request-id: x-openstack-request-id
+   - id: id
+   - project_id: project_id
+   - name: recordset_name
+   - ttl: recordset_ttl
+   - status: status
+   - action: action
+   - zone_id: recordset_zone_id
+   - zone_name: recordset_zone_name
+   - description: recordset_description
+   - type: recordset_type
+   - version: version
+   - created_at: created_at
+   - updated_at: updated_at
+   - links: links
+
+
+Response Example
+----------------
+
+.. literalinclude:: samples/recordsets/create-sshfp-recordset-response.json
+   :language: javascript
+
+
+Create a SPF Recordset
+======================
+
+.. rest_method::  POST /v2/zones/{zone_id}/recordsets
+
+Create a MX recordset in a zone
+
+
+Normal response codes: 202
+
+Error response codes: 405,404,403,401,400,503
+
+
+Request
+-------
+
+.. rest_parameters:: parameters.yaml
+
+   - x-auth-token: x-auth-token
+   - x-auth-all-projects: x-auth-all-projects
+   - x-auth-sudo-project-id: x-auth-sudo-project-id
+   - zone_id: path_zone_id
+   - name: recordset_name
+   - ttl: recordset_ttl
+   - description: recordset_description
+   - type: recordset_type
+   - records: recordset_records
+
+
+Request Example
+---------------
+
+.. literalinclude:: samples/recordsets/create-spf-recordset-request.json
+   :language: javascript
+
+
+Response Parameters
+-------------------
+
+.. rest_parameters:: parameters.yaml
+
+   - x-openstack-request-id: x-openstack-request-id
+   - id: id
+   - project_id: project_id
+   - name: recordset_name
+   - ttl: recordset_ttl
+   - status: status
+   - action: action
+   - zone_id: recordset_zone_id
+   - zone_name: recordset_zone_name
+   - description: recordset_description
+   - type: recordset_type
+   - version: version
+   - created_at: created_at
+   - updated_at: updated_at
+   - links: links
+
+
+Response Example
+----------------
+
+.. literalinclude:: samples/recordsets/create-spf-recordset-response.json
+   :language: javascript
+
+
+Create a SRV Recordset
+======================
+
+.. rest_method::  POST /v2/zones/{zone_id}/recordsets
+
+Create a MX recordset in a zone
+
+
+Normal response codes: 202
+
+Error response codes: 405,404,403,401,400,503
+
+
+Request
+-------
+
+.. rest_parameters:: parameters.yaml
+
+   - x-auth-token: x-auth-token
+   - x-auth-all-projects: x-auth-all-projects
+   - x-auth-sudo-project-id: x-auth-sudo-project-id
+   - zone_id: path_zone_id
+   - name: recordset_name
+   - ttl: recordset_ttl
+   - description: recordset_description
+   - type: recordset_type
+   - records: recordset_records
+
+
+Request Example
+---------------
+
+.. literalinclude:: samples/recordsets/create-srv-recordset-request.json
+   :language: javascript
+
+
+Response Parameters
+-------------------
+
+.. rest_parameters:: parameters.yaml
+
+   - x-openstack-request-id: x-openstack-request-id
+   - id: id
+   - project_id: project_id
+   - name: recordset_name
+   - ttl: recordset_ttl
+   - status: status
+   - action: action
+   - zone_id: recordset_zone_id
+   - zone_name: recordset_zone_name
+   - description: recordset_description
+   - type: recordset_type
+   - version: version
+   - created_at: created_at
+   - updated_at: updated_at
+   - links: links
+
+
+Response Example
+----------------
+
+.. literalinclude:: samples/recordsets/create-srv-recordset-response.json
+   :language: javascript
