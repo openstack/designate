@@ -90,6 +90,9 @@ class NotificationHandler(ExtensionPlugin):
 
 
 class BaseAddressHandler(NotificationHandler):
+    default_formatv4 = ('%(hostname)s.%(domain)s')
+    default_formatv6 = ('%(hostname)s.%(domain)s')
+
     def _get_ip_data(self, addr_dict):
         ip = addr_dict['address']
         version = addr_dict['version']
@@ -105,6 +108,16 @@ class BaseAddressHandler(NotificationHandler):
             for i in [0, 1, 2, 3]:
                 data["octet%s" % i] = ip_data[i]
         return data
+
+    def _get_formatv4(self):
+        return cfg.CONF[self.name].get('formatv4') or \
+                cfg.CONF[self.name].get('format') or \
+                self.default_formatv4
+
+    def _get_formatv6(self):
+        return cfg.CONF[self.name].get('formatv6') or \
+                cfg.CONF[self.name].get('format') or \
+                self.default_formatv6
 
     def _create(self, addresses, extra, zone_id, managed=True,
                 resource_type=None, resource_id=None):
@@ -139,7 +152,13 @@ class BaseAddressHandler(NotificationHandler):
             event_data = data.copy()
             event_data.update(self._get_ip_data(addr))
 
-            for fmt in cfg.CONF[self.name].get('format'):
+            formatv4 = self._get_formatv4()
+            formatv6 = self._get_formatv6()
+            if addr['version'] == 4:
+                format = formatv4
+            else:
+                format = formatv6
+            for fmt in format:
                 recordset_values = {
                     'zone_id': zone['id'],
                     'name': fmt % event_data,

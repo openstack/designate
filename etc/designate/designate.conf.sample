@@ -431,10 +431,16 @@ debug = False
 #domain_id =
 #notification_topics = notifications
 #control_exchange = 'nova'
-#format = '%(octet0)s-%(octet1)s-%(octet2)s-%(octet3)s.%(domain)s'
-#format = '%(hostname)s.%(project)s.%(domain)s'
-#format = '%(hostname)s.%(domain)s'
-
+#"format" has been depricated. Instead we now have two formaters
+#each for IPv4 and IPv6.
+#"formatv4" has been defined for IPv4 addresses.
+#"formatv6" is for IPv6 addresses.
+#
+#formatv4 = '%(octet0)s-%(octet1)s-%(octet2)s-%(octet3)s.%(domain)s'
+#formatv4 = '%(hostname)s.%(project)s.%(domain)s'
+#formatv4 = '%(hostname)s.%(domain)s'
+#formatv6 = '%(hostname)s.%(domain)s'
+#formatv6 = '%(hostname)s.%(project)s.%(domain)s'
 #------------------------
 # Neutron Floating Handler
 #------------------------
@@ -443,9 +449,11 @@ debug = False
 #domain_id =
 #notification_topics = notifications
 #control_exchange = 'neutron'
-#format = '%(octet0)s-%(octet1)s-%(octet2)s-%(octet3)s.%(domain)s'
-#format = '%(hostname)s.%(project)s.%(domain)s'
-#format = '%(hostname)s.%(domain)s'
+#formatv4 = '%(octet0)s-%(octet1)s-%(octet2)s-%(octet3)s.%(domain)s'
+#formatv4 = '%(hostname)s.%(project)s.%(domain)s'
+#formatv4 = '%(hostname)s.%(domain)s'
+#formatv6 = '%(hostname)s.%(project)s.%(domain)s'
+#formatv6 = '%(hostname)s.%(domain)s'
 
 ##############################
 ## Agent Backend Configuration
