@@ -81,20 +81,9 @@ V1 API
 
 V2 API
 ------
-    .. toctree::
-       :maxdepth: 2
-       :glob:
 
-       rest/v2/collections
-       rest/v2/zones
-       rest/v2/recordsets
-       rest/v2/tlds
-       rest/v2/blacklists
-       rest/v2/pools
-       rest/v2/limits
-       rest/v2/reverse
-       rest/v2/service_status
-       rest/v2/tsigkeys
+    The V2 API is documented on the OpenStack Developer `api site`_
+
 
 Admin API
 ---------
@@ -103,3 +92,5 @@ Admin API
        :glob:
 
        rest/admin/quotas
+
+.. _api site: http://developer.openstack.org/api-ref/dns/
