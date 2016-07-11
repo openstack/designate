@@ -372,7 +372,7 @@ class DynECTBackend(base.Backend):
                     client.put(url, data=data)
                     break
             else:
-                raise e
+                raise
 
         client.put(url, data={'activate': True})
         client.logout()

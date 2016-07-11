@@ -141,7 +141,7 @@ class Knot2Backend(base.AgentBackend):
             except Exception as e:
                 self._execute_knotc('conf-abort')
                 LOG.info(_LI("Zone change aborted: %r"), e)
-                raise e
+                raise
             else:
                 self._execute_knotc('conf-commit')
 
