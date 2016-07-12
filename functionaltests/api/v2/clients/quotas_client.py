@@ -32,8 +32,10 @@ class QuotasClient(ClientMixin):
         return self.deserialize(resp, body, QuotasModel)
 
     def patch_quotas(self, tenant_id, quotas_model, **kwargs):
-        resp, body = self.client.patch(self.quotas_uri(tenant_id),
-            body=quotas_model.to_json(), **kwargs)
+        resp, body = self.client.patch(
+            self.quotas_uri(tenant_id),
+            body=quotas_model.to_json(),
+            **kwargs)
         return self.deserialize(resp, body, QuotasModel)
 
     def delete_quotas(self, tenant_id, **kwargs):

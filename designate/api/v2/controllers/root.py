@@ -27,6 +27,7 @@ from designate.api.v2.controllers import service_status
 from designate.api.v2.controllers import zones
 from designate.api.v2.controllers import tsigkeys
 from designate.api.v2.controllers import recordsets
+from designate.api.v2.controllers import quotas
 
 LOG = logging.getLogger(__name__)
 
@@ -62,3 +63,4 @@ class RootController(object):
     service_statuses = service_status.ServiceStatusController()
     tsigkeys = tsigkeys.TsigKeysController()
     recordsets = recordsets.RecordSetsViewController()
+    quotas = quotas.QuotasController()

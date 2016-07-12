@@ -161,6 +161,8 @@ function configure_designate_tempest() {
         iniset $TEMPEST_CONFIG dns_feature_enabled api_v2 $DESIGNATE_ENABLE_API_V2
         iniset $TEMPEST_CONFIG dns_feature_enabled api_admin $DESIGNATE_ENABLE_API_ADMIN
         iniset $TEMPEST_CONFIG dns_feature_enabled api_v2_root_recordsets True
+        iniset $TEMPEST_CONFIG dns_feature_enabled api_v2_quotas True
+        iniset $TEMPEST_CONFIG dns_feature_enabled bug_1573141_fixed True
 
         # Tell tempest where are nameservers are.
         nameservers=$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT_DNS

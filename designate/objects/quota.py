@@ -24,9 +24,31 @@ class Quota(base.DictObjectMixin, base.PersistentObjectMixin,
     }
 
     STRING_KEYS = [
-        'id', 'resource', 'tenant_id', 'hard_limit'
+        'resource', 'tenant_id', 'hard_limit'
     ]
 
 
 class QuotaList(base.ListObjectMixin, base.DesignateObject):
     LIST_ITEM_TYPE = Quota
+
+    @classmethod
+    def from_dict(cls, _dict):
+
+        instance = cls()
+
+        for field, value in _dict.items():
+            item = cls.LIST_ITEM_TYPE()
+            item.resource = field
+            item.hard_limit = value
+            instance.append(item)
+
+        return instance
+
+    def to_dict(self):
+
+        _dict = {}
+
+        for quota in self.objects:
+            _dict[quota.resource] = quota.hard_limit
+
+        return _dict

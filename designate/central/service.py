@@ -643,8 +643,8 @@ class Service(service.RPCService, service.Service):
         target = {'tenant_id': tenant_id}
         policy.check('get_quotas', context, target)
 
-        # This allows admins to get quota information correctly for all tenants
-        context.all_tenants = True
+        if tenant_id != context.tenant and not context.all_tenants:
+            raise exceptions.Forbidden()
 
         return self.quota.get_quotas(context, tenant_id)
 
@@ -663,6 +663,8 @@ class Service(service.RPCService, service.Service):
         }
 
         policy.check('set_quota', context, target)
+        if tenant_id != context.tenant and not context.all_tenants:
+            raise exceptions.Forbidden()
 
         return self.quota.set_quota(context, tenant_id, resource, hard_limit)
 

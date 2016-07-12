@@ -24,22 +24,12 @@ class QuotaAPIv2Adapter(base.APIv2Adapter):
 
     MODIFICATIONS = {
         'fields': {
-            'zones': {
-                'rename': 'domains',
+            'resource': {
                 'read_only': False
             },
-            'zone_records': {
-                'rename': 'domain_records',
+            'hard_limit': {
                 'read_only': False
             },
-            'zone_recordsets': {
-                'rename': 'domain_recordsets',
-                'read_only': False
-            },
-            'recordset_records': {
-                'read_only': False
-            },
-
         },
         'options': {
             'links': True,
@@ -60,3 +50,30 @@ class QuotaListAPIv2Adapter(base.APIv2Adapter):
             'collection_name': 'quotas',
         }
     }
+
+    @classmethod
+    def _render_list(cls, list_object, *args, **kwargs):
+
+        r_list = {}
+
+        for object in list_object:
+            r_list[object.resource] = object.hard_limit
+
+        return r_list
+
+    @classmethod
+    def _parse_list(cls, values, output_object, *args, **kwargs):
+
+        for key, value in values.items():
+            # Add the object to the list
+            output_object.append(
+                cls.ADAPTER_OBJECT.LIST_ITEM_TYPE.from_dict(
+                    {
+                        'resource': key,
+                        'hard_limit': value,
+                    }
+                )
+            )
+
+        # Return the filled list
+        return output_object
