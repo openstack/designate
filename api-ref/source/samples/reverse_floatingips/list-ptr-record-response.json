@@ -1,0 +1,31 @@
+{
+    "links": {
+        "self": "http://127.0.0.1:9001/v2/reverse/floatingips"
+    },
+    "floatingips": [
+      {
+          "status": "ACTIVE",
+          "ptrdname": "smtp.example.com.",
+          "description": null,
+          "links": {
+              "self": "http://127.0.0.1:9001/v2/reverse/floatingips/RegionOne:c5742ac0-d0f3-4304-a039-9423f727eb96"
+          },
+          "ttl": 600,
+          "address": "172.24.4.10",
+          "action": "NONE",
+          "id": "RegionOne:c5742ac0-d0f3-4304-a039-9423f727eb96"
+      },
+      {
+          "status": "ACTIVE",
+          "ptrdname": "tftp.example.com.",
+          "description": null,
+          "links": {
+              "self": "http://127.0.0.1:9001/v2/reverse/floatingips/RegionOne:9860717d-3da6-43df-a0ec-fa8b0e71ea86"
+          },
+          "ttl": 600,
+          "address": "172.24.4.6",
+          "action": "NONE",
+          "id": "RegionOne:9860717d-3da6-43df-a0ec-fa8b0e71ea86"
+      }
+    ]
+}

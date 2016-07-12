@@ -57,6 +57,13 @@ blacklist_id:
   required: true
   type: uuid
 
+floatingip_id:
+  description: |
+    ID for the floatingip associated with the project
+  in: path
+  required: true
+  type: uuid
+
 path_pool_id:
   description: |
     ID for this pool
@@ -112,6 +119,13 @@ path_zone_transfer_request_id:
   in: path
   required: true
   type: uuid
+
+region:
+  description: |
+    Openstack region
+  in: path
+  required: true
+  type: string
 
 tld_id:
   description: |
@@ -388,6 +402,41 @@ created_at:
 description:
   description: |
     Description for the resource. Only shown in API / Horizon
+  in: body
+  required: true
+  type: string
+
+floatingip_address:
+  description: |
+    The floatingip address for this PTR record.
+  in: body
+  required: true
+  type: string
+
+fptr_description:
+  description: |
+    Description for this PTR record
+  in: body
+  required: true
+  type: string
+
+fptr_id:
+  description: |
+    ID for PTR record in the format of <region>:<floatingip_id>
+  in: body
+  required: true
+  type: string
+
+fptr_ttl:
+  description: |
+    Time to live for this PTR record
+  in: body
+  required: true
+  type: uuid
+
+fptrd_name:
+  description: |
+    Domain name for this PTR record
   in: body
   required: true
   type: string

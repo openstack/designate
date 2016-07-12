@@ -1,0 +1,13 @@
+{
+    "status": "PENDING",
+    "ptrdname": "smtp.example.com.",
+    "description": "This is a floating ip for 127.0.0.1"
+    "links": {
+        "self": "http://127.0.0.1:9001/v2/reverse/floatingips/RegionOne:c5742ac0-d0f3-4304-a039-9423f727eb96"
+    },
+    "ttl": 600,
+    "address": "172.24.4.10",
+    "action": "CREATE",
+    "id": "RegionOne:c5742ac0-d0f3-4304-a039-9423f727eb96"
+}
+

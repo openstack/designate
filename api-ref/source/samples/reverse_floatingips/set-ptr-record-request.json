@@ -1,0 +1,5 @@
+{
+  "ptrdname" : "smtp.example.com.",
+  "description" : "This is a floating ip for 10.0.0.8",
+  "ttl": 600
+}
