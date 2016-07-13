@@ -33,15 +33,25 @@ Upgrade Guides
 
     upgrade/*
 
-
-How To Guides
-=============
+User How To Guides
+==================
 
 .. toctree::
     :maxdepth: 1
-    :glob:
 
-    howtos/*
+    howtos/manage-domains
+
+Admin How To Guides
+===================
+
+.. toctree::
+    :maxdepth: 1
+
+    howtos/blacklists
+    howtos/manage-ptr-records
+    howtos/quotas
+    howtos/tlds
+    howtos/secondary-zones
 
 Reference Documentation
 =======================
