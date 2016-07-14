@@ -105,6 +105,11 @@ if [ ! -d "/home/vagrant/devstack" ]; then
     git clone https://git.openstack.org/openstack-dev/devstack.git /home/vagrant/devstack
 fi
 
+if [ -d "/opt/stack/grenade" ]; then
+    mkdir /opt/stack/plugins
+    ln -s /opt/stack/designate /opt/stack/plugins/designate
+fi
+
 # Install Vagrant local.conf sample
 cd /opt/stack/designate/contrib/vagrant
 
