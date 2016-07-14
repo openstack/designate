@@ -479,6 +479,11 @@ debug = False
 #name = dynect
 #config_file = /etc/denominator.conf
 
+[backend:agent:gdnsd]
+#gdnsd_cmd_name = gdnsd
+#confdir_path = /etc/gdnsd
+#query_destination = 127.0.0.1
+
 ########################
 ## Library Configuration
 ########################
