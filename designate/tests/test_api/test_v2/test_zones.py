@@ -17,16 +17,12 @@ import mock
 from mock import patch
 from oslo_config import cfg
 import oslo_messaging as messaging
-from oslo_log import log as logging
 
 from designate import exceptions
 from designate import objects
 from designate.central import service as central_service
 from designate.mdns import rpcapi as mdns_api
 from designate.tests.test_api.test_v2 import ApiV2TestCase
-
-
-LOG = logging.getLogger(__name__)
 
 
 class ApiV2ZonesTest(ApiV2TestCase):

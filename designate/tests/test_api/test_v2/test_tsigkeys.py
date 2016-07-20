@@ -15,14 +15,10 @@
 # under the License.
 from mock import patch
 import oslo_messaging as messaging
-from oslo_log import log as logging
 
 from designate import exceptions
 from designate.central import service as central_service
 from designate.tests.test_api.test_v2 import ApiV2TestCase
-
-
-LOG = logging.getLogger(__name__)
 
 
 class ApiV2TsigKeysTest(ApiV2TestCase):
