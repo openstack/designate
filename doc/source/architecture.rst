@@ -65,7 +65,7 @@ The current implemented periodic tasks in zone manager include emitting dns.zone
 
 Designate Sink
 -----------------------
-designate-sink is an optional service which listens for event notifications, such as compute.instance.create.end, handlers are available for Nova and Neutron. Notification events can then be used to trigger record creation & deletion.
+designate-sink is an optional service which listens for event :doc:`notifications`, such as compute.instance.create.end, handlers are available for Nova and Neutron. Notification events can then be used to trigger record creation & deletion.
 
 The current sink implementations generate simple forward lookup A records, using a format specified in handler-nova configuration.  Any field in the event notification can be used to generate a record.
 
