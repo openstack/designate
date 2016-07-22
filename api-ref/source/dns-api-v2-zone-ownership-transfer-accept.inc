@@ -11,7 +11,7 @@ the ``transfer_accepts`` API
 Create Zone Transfer Accept
 ============================
 
-.. rest_method::  POST /v2/zones/{zone_id}/tasks/transfer_accepts
+.. rest_method::  POST /v2/zones/tasks/transfer_accepts
 
 This accepts an offer of a ownership transfer
 
@@ -30,7 +30,7 @@ Request
    - x-auth-all-projects: x-auth-all-projects
    - x-auth-sudo-project-id: x-auth-sudo-project-id
    - key: zone_transfer_request_key
-   - zone_id: zone_transfer_request_id
+   - zone_transfer_request_id: zone_transfer_request_id
 
 
 Request Example

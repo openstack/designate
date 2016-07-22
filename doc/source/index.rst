@@ -56,7 +56,8 @@ Upgrade Guides
 .. toctree::
     :maxdepth: 1
 
-    upgrade/*
+    upgrade/kilo
+    upgrade/mitaka
 
 Designate in general
 --------------------
