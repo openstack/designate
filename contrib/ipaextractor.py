@@ -210,7 +210,7 @@ def main():
     # HACK HACK HACK - allow required config params to be passed
     # via the command line
     cfg.CONF['service:api']._group._opts['api_base_uri']['cli'] = True
-    for optdict in cfg.CONF['backend:ipa']._group._opts.itervalues():
+    for optdict in cfg.CONF['backend:ipa']._group._opts.values():
         if 'cli' in optdict:
             optdict['cli'] = True
     # HACK HACK HACK - allow api url to be passed in the usual way
