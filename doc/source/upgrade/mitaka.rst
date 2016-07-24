@@ -47,7 +47,7 @@ export it to the new YAML format.
 .. note::
 
     You will need to have at least one instance of central running, and machine
-    ``designate-manage`` is running on will need access to the messageing queue
+    ``designate-manage`` is running on will need access to the messaging queue
 
 .. code-block:: console
 
@@ -57,7 +57,7 @@ This will create a YAML file, with all the currently defined pools, and all of t
 
 We suggest this is then migrated into a config management system, or other document management system.
 
-From this point on all updated to pools should be one by updating this file, and
+From this point on all updates to pools should be done by updating this file, and
 running:
 
 .. code-block:: console
