@@ -1,0 +1,21 @@
+---
+features:
+  - Operators now have a choice in the type of notification payload
+    content that Designate can emit via oslo.messaging's Notifier.
+    
+    The default plugin is configured to emit the same information
+    that the notifications previous to this patch emitted. So there
+    is no functional change.
+
+    Operators can write their own notification plugins that exist
+    in designate/notifications.py.
+
+    An "audit" plugin is included. This plugin emits object changes,
+    if they exist, along with zone ids, zone/recordset names.
+
+    A plugin can define multiple payloads from a single notification
+    to be emitted at once, if desirable.
+
+    The selection of a plugin is defined by python entrypoints (for
+    driver availability) and the new "notification_plugin" option
+    in the "DEFAULT" config section.
