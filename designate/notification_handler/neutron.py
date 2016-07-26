@@ -30,8 +30,12 @@ cfg.CONF.register_opts([
     cfg.ListOpt('notification-topics', default=['notifications']),
     cfg.StrOpt('control-exchange', default='neutron'),
     cfg.StrOpt('zone-id'),
-    cfg.MultiStrOpt('format', default=[
-                    '%(octet0)s-%(octet1)s-%(octet2)s-%(octet3)s.%(zone)s'])
+    cfg.MultiStrOpt('formatv4', default=None),
+    cfg.MultiStrOpt('format', default=None,
+                    deprecated_for_removal=True,
+                    deprecated_reason="Replaced by 'formatv4/formatv6'",
+                    ),
+    cfg.MultiStrOpt('formatv6', default=None)
 ], group='handler:neutron_floatingip')
 
 

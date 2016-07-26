@@ -152,3 +152,37 @@ class NovaFixedHandlerTest(TestCase, NotificationHandlerMixin):
                     finder.assert_called_once_with(
                         mock.ANY, type='A', zone_id=self.zone_id,
                         name='private.example.com')
+
+    def test_formatv4_or_format(self):
+        event_type = 'compute.instance.create.end'
+        self.config(formatv4=['%(label)s-v4.example.com'],
+                    group='handler:nova_fixed')
+        fixture = self.get_notification_fixture('nova', event_type)
+        with mock.patch.object(self.plugin, '_find_or_create_recordset')\
+                as finder:
+                with mock.patch.object(self.plugin.central_api,
+                                       'create_record'):
+                    finder.return_value = {'id': 'fakeid'}
+                    self.plugin.process_notification(
+                        self.admin_context, event_type, fixture['payload'])
+                    finder.assert_called_once_with(
+                        mock.ANY, type='A', zone_id=self.zone_id,
+                        name='private-v4.example.com')
+
+    def test_formatv4_and_format(self):
+        event_type = 'compute.instance.create.end'
+        self.config(format=['%(label)s.example.com'],
+                    group='handler:nova_fixed')
+        self.config(formatv4=['%(label)s-v4.example.com'],
+                    group='handler:nova_fixed')
+        fixture = self.get_notification_fixture('nova', event_type)
+        with mock.patch.object(self.plugin, '_find_or_create_recordset')\
+                as finder:
+                with mock.patch.object(self.plugin.central_api,
+                                       'create_record'):
+                    finder.return_value = {'id': 'fakeid'}
+                    self.plugin.process_notification(
+                        self.admin_context, event_type, fixture['payload'])
+                    finder.assert_called_once_with(
+                        mock.ANY, type='A', zone_id=self.zone_id,
+                        name='private-v4.example.com')
