@@ -236,7 +236,7 @@ COMMIT
 COMMIT
 """
         marks = dict((k, "0x%d/0xffffffff" % v)
-                     for k, v in self.protocol_marks.iteritems())
+                     for k, v in self.protocol_marks.items())
         ipt_conf = ipt_conf % marks
         self._apply_iptables_conf(ipt_conf)
 
