@@ -47,9 +47,9 @@ To run all tempest tests including this plugin, run::
 Writing new tests
 =================
 
-Writing new tests is easy, and we encourage contributers to write tests for
+Writing new tests is easy, and we encourage contributors to write tests for
 any new or changed functionality. Most of the patterns you will find in the
-Designate tests will look familar if you have contributed to tempest, so rather
+Designate tests will look familiar if you have contributed to tempest, so rather
 than re-type all their docs here, please have a read of the `Tempest Docs`_.
 
 Test Clients
@@ -92,8 +92,8 @@ An example client, in this case for a subset of /v2/zones is included below:
            Default: Random Value
        :param description: A description of the zone.
            Default: Random Value
-       :param wait_until: Block until the zone reaches the desiered status
-       :param params: A Python dict that represents the query paramaters to
+       :param wait_until: Block until the zone reaches the desired status
+       :param params: A Python dict that represents the query parameters to
                       include in the request URI.
        :return: A tuple with the server response and the created zone.
        """
@@ -239,8 +239,8 @@ Example:
 
 The `attr` decorator is used to set test attributes, this is most commonly used
 to set the test type. Currently, we use one test type "smoke", which should be
-applied to any tests which test the most basic functionaility Designate
-provides, allowing for the core functionaility to be tested quickly, without
+applied to any tests which test the most basic functionality Designate
+provides, allowing for the core functionality to be tested quickly, without
 having to run the entire suite. Another type we use is "slow", which should be
 applied to tests which take on average 5 seconds or more.
 
