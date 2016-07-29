@@ -74,7 +74,7 @@
   # List out the targets for this pool. For BIND, most often, there will be one
   # entry for each BIND server.
   targets:
-    - type: bind
+    - type: bind9
       description: BIND9 Server 1
 
       # List out the designate-mdns servers from which BIND servers should
@@ -91,7 +91,7 @@
         rndc_port: 953
         rndc_key_file: /etc/designate/rndc.key
 
-    - type: bind
+    - type: bind9
       description: BIND9 Server 2
 
       # List out the designate-mdns servers from which BIND servers should
