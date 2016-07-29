@@ -43,7 +43,7 @@
       port: 53
 
   targets:
-    - type: bind
+    - type: bind9
       description: BIND9 Server 1
       masters:
         - host: 192.0.2.1
@@ -52,7 +52,7 @@
         rndc_host: 192.0.2.2
         rndc_port: 953
         rndc_key_file: /etc/designate/rndc.key
-    - type: bind
+    - type: bind9
       description: BIND9 Server 2
       masters:
         - host: 192.0.2.1

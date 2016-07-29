@@ -1,5 +1,5 @@
   targets:
-    - type: bind
+    - type: bind9
       description: BIND9 Server 1
 
       # List out the designate-mdns servers from which BIND servers should
