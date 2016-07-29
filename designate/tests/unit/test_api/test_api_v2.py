@@ -46,15 +46,15 @@ class TestAPIv2(TestCase):
         item_list = range(200)
         request = MockRequest(GET=dict(limit="max"))
         links = base.APIv2Adapter._get_collection_links(item_list, request)
-        self.assertDictEqual(links, dict(self=None))
+        self.assertEqual(links, dict(self=None))
 
         request = MockRequest(GET=dict(limit="MAX"))
         links = base.APIv2Adapter._get_collection_links(item_list, request)
-        self.assertDictEqual(links, dict(self=None))
+        self.assertEqual(links, dict(self=None))
 
         request = MockRequest(GET=dict(limit="200"))
         links = base.APIv2Adapter._get_collection_links(item_list, request)
-        self.assertDictEqual(links, dict(self=None, next=None))
+        self.assertEqual(links, dict(self=None, next=None))
 
         request = MockRequest(GET=dict(limit="BOGUS_STRING"))
         self.assertRaises(
