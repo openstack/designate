@@ -41,7 +41,7 @@ class ZoneImportController(rest.RestController):
         zone_import = self.central_api.get_zone_import(
             context, import_id)
 
-        LOG.info(_LI("Retrived %(zone_import)s"), {'zone_import': zone_import})
+        LOG.info(_LI("Retrieved %(import)s"), {'import': zone_import})
 
         return DesignateAdapter.render(
             'API_v2',
@@ -65,8 +65,8 @@ class ZoneImportController(rest.RestController):
         zone_imports = self.central_api.find_zone_imports(
             context, criterion, marker, limit, sort_key, sort_dir)
 
-        LOG.info(_LI("Retrived %(zone_imports)s"),
-                 {'zone_imports': zone_imports})
+        LOG.info(_LI("Retrieved %(imports)s"),
+                 {'imports': zone_imports})
 
         return DesignateAdapter.render(
             'API_v2',
