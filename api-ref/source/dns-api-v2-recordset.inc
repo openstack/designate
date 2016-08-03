@@ -199,7 +199,7 @@ Response Example
 Show a Recordset
 ================
 
-.. rest_method::  GET /v2/recordsets/{zone_id}/{recordset_id}
+.. rest_method::  GET /v2/zones/{zone_id}/recordsets/{recordset_id}
 
 Show an single recordset
 
@@ -252,7 +252,7 @@ Response Example
 Update a Recordset
 ==================
 
-.. rest_method::  PATCH /v2/zone/{zone_id}/recordsets/{recordset_id}
+.. rest_method::  PATCH /v2/zones/{zone_id}/recordsets/{recordset_id}
 
 Update a recordset
 
@@ -313,7 +313,7 @@ Response Example
 Delete a Recordset
 ==================
 
-.. rest_method::  DELETE /v2/zone/{zone_id}/recordsets/{recordset_id}
+.. rest_method::  DELETE /v2/zones/{zone_id}/recordsets/{recordset_id}
 
 Delete a recordset
 
