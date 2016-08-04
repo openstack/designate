@@ -26,7 +26,7 @@ class SSHFP(Record):
             'schema': {
                 'type': 'integer',
                 'minimum': 0,
-                'maximum': 2
+                'maximum': 4
             },
             'required': True
         },
@@ -34,7 +34,7 @@ class SSHFP(Record):
             'schema': {
                 'type': 'integer',
                 'minimum': 0,
-                'maximum': 1
+                'maximum': 2
             },
             'required': True
         },
