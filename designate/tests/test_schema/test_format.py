@@ -391,6 +391,7 @@ class SchemaFormatTest(TestCase):
     def test_is_sshfp(self):
         valid_sshfps = [
             '72d30d211ce8c464de2811e534de23b9be9b4dc4',
+            '7f3f61e323a7d75de08a2a6069b333e925cae260f4902017194002f226db8658',
         ]
 
         invalid_sshfps = [

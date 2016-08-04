@@ -49,7 +49,7 @@ RE_FIP_ID = r'^(?P<region>[A-Za-z0-9\.\-_]{1,100}):' \
             r'(?P<id>[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-' \
             r'[0-9a-fA-F]{4}-[0-9a-fA-F]{12})\Z'
 
-RE_SSHFP_FINGERPRINT = r'^[0-9A-Fa-f]{40}\Z'
+RE_SSHFP_FINGERPRINT = r'^([0-9A-Fa-f]{10,40}|[0-9A-Fa-f]{64})\Z'
 
 
 draft3_format_checker = jsonschema.draft3_format_checker
