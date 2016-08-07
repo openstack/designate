@@ -2,7 +2,7 @@
 Zone Exports
 ============
 
-Zone imports can be an asynchronous operation,
+Zone exports can be an asynchronous operation,
 and there are different endpoints to view the status and progress of an export
 
 
