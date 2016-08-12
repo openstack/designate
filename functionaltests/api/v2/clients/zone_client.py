@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from tempest_lib.exceptions import NotFound
+from tempest.lib.exceptions import NotFound
 
 from functionaltests.api.v2.models.zone_model import ZoneModel
 from functionaltests.api.v2.models.zone_model import ZoneListModel
@@ -70,7 +70,7 @@ class ZoneClient(ClientMixin):
 
     def is_zone_404(self, zone_id):
         try:
-            # tempest_lib rest client raises exceptions on bad status codes
+            # tempest.lib rest client raises exceptions on bad status codes
             resp, model = self.get_zone(zone_id)
         except NotFound:
             return True

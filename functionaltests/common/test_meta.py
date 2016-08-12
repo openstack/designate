@@ -18,10 +18,10 @@ from functionaltests.api.v2.models.recordset_model import RecordsetModel
 from functionaltests.common.models import ZoneFile
 from functionaltests.common.models import ZoneFileRecord
 
-import tempest_lib.base
+import tempest.lib.base
 
 
-class MetaTest(tempest_lib.base.BaseTestCase):
+class MetaTest(tempest.lib.base.BaseTestCase):
 
     def test_zone_file_model_meta_test(self):
         zone_file = ZoneFile.from_text(

@@ -21,9 +21,9 @@ from config import cfg
 from noauth import NoAuthAuthProvider
 from six import string_types
 from six.moves.urllib.parse import quote_plus
-from tempest_lib.common.rest_client import RestClient
-from tempest_lib.auth import KeystoneV2Credentials
-from tempest_lib.auth import KeystoneV2AuthProvider
+from tempest.lib.common.rest_client import RestClient
+from tempest.lib.auth import KeystoneV2Credentials
+from tempest.lib.auth import KeystoneV2AuthProvider
 
 from functionaltests.common.utils import memoized
 from functionaltests.common import hooks
