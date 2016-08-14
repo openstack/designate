@@ -27,7 +27,6 @@ from designate.objects import Record
 from designate.objects import RecordSet
 from designate.plugin import ExtensionPlugin
 
-
 LOG = logging.getLogger(__name__)
 
 
@@ -90,8 +89,8 @@ class NotificationHandler(ExtensionPlugin):
 
 
 class BaseAddressHandler(NotificationHandler):
-    default_formatv4 = ('%(hostname)s.%(domain)s')
-    default_formatv6 = ('%(hostname)s.%(domain)s')
+    default_formatv4 = ('%(hostname)s.%(domain)s',)
+    default_formatv6 = ('%(hostname)s.%(domain)s',)
 
     def _get_ip_data(self, addr_dict):
         ip = addr_dict['address']
@@ -110,14 +109,18 @@ class BaseAddressHandler(NotificationHandler):
         return data
 
     def _get_formatv4(self):
-        return cfg.CONF[self.name].get('formatv4') or \
-                cfg.CONF[self.name].get('format') or \
-                self.default_formatv4
+        return (
+            cfg.CONF[self.name].get('formatv4') or
+            cfg.CONF[self.name].get('format') or
+            self.default_formatv4
+        )
 
     def _get_formatv6(self):
-        return cfg.CONF[self.name].get('formatv6') or \
-                cfg.CONF[self.name].get('format') or \
-                self.default_formatv6
+        return (
+            cfg.CONF[self.name].get('formatv6') or
+            cfg.CONF[self.name].get('format') or
+            self.default_formatv6
+        )
 
     def _create(self, addresses, extra, zone_id, managed=True,
                 resource_type=None, resource_id=None):
@@ -127,6 +130,7 @@ class BaseAddressHandler(NotificationHandler):
         :param addresses: Address objects like
                           {'version': 4, 'ip': '10.0.0.1'}
         :param extra: Extra data to use when formatting the record
+        :param zone_id: The ID of the designate zone.
         :param managed: Is it a managed resource
         :param resource_type: The managed resource type
         :param resource_id: The managed resource ID
@@ -152,12 +156,11 @@ class BaseAddressHandler(NotificationHandler):
             event_data = data.copy()
             event_data.update(self._get_ip_data(addr))
 
-            formatv4 = self._get_formatv4()
-            formatv6 = self._get_formatv6()
             if addr['version'] == 4:
-                format = formatv4
+                format = self._get_formatv4()
             else:
-                format = formatv6
+                format = self._get_formatv6()
+
             for fmt in format:
                 recordset_values = {
                     'zone_id': zone['id'],
@@ -190,6 +193,10 @@ class BaseAddressHandler(NotificationHandler):
         """
         Handle a generic delete of a fixed ip within a zone
 
+        :param zone_id: The ID of the designate zone.
+        :param managed: Is it a managed resource
+        :param resource_id: The managed resource ID
+        :param resource_type: The managed resource type
         :param criterion: Criterion to search and destroy records
         """
         if not managed:
