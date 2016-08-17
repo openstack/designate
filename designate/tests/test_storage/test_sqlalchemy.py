@@ -79,13 +79,18 @@ class SqlalchemyStorageTest(StorageTestCase, TestCase):
             "records": {
                 "record_created_at": "CREATE INDEX record_created_at ON records (created_at)",  # noqa
                 "records_tenant": "CREATE INDEX records_tenant ON records (tenant_id)",  # noqa
-                "update_status_index": "CREATE INDEX update_status_index ON records (status, zone_id, tenant_id, created_at, serial)"  # noqa
+                "update_status_index": "CREATE INDEX update_status_index ON records (status, zone_id, tenant_id, created_at, serial)",  # noqa
             },
             "recordsets": {
                 "recordset_created_at": "CREATE INDEX recordset_created_at ON recordsets (created_at)",  # noqa
                 "recordset_type_name": "CREATE INDEX recordset_type_name ON recordsets (type, name)",  # noqa
                 "reverse_name_dom_id": "CREATE INDEX reverse_name_dom_id ON recordsets (reverse_name, zone_id)",  # noqa
-                "rrset_type_domainid": "CREATE INDEX rrset_type_domainid ON recordsets (type, zone_id)"  # noqa
+                "rrset_type_domainid": "CREATE INDEX rrset_type_domainid ON recordsets (type, zone_id)",  # noqa
+                "rrset_updated_at": "CREATE INDEX rrset_updated_at ON recordsets (updated_at)",  # noqa
+                "rrset_zoneid": "CREATE INDEX rrset_zoneid ON recordsets (zone_id)",  # noqa
+                "rrset_type": "CREATE INDEX rrset_type ON recordsets (type)",  # noqa
+                "rrset_ttl": "CREATE INDEX rrset_ttl ON recordsets (ttl)",  # noqa
+                "rrset_tenant_id": "CREATE INDEX rrset_tenant_id ON recordsets (tenant_id)",  # noqa
             },
             "zones": {
                 "delayed_notify": "CREATE INDEX delayed_notify ON zones (delayed_notify)",  # noqa

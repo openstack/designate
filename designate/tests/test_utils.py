@@ -19,6 +19,7 @@ import tempfile
 import unittest
 
 import testtools
+from mock import Mock
 from jinja2 import Template
 
 from designate.tests import TestCase
@@ -114,22 +115,27 @@ class TestUtils(TestCase):
         self.assertEqual((host, port), ("abc", 25))
 
     def test_get_paging_params_invalid_limit(self):
+        context = Mock()
         for value in [9223372036854775809, -1]:
             with testtools.ExpectedException(exceptions.InvalidLimit):
-                utils.get_paging_params({'limit': value}, [])
+                utils.get_paging_params(context, {'limit': value}, [])
 
     def test_get_paging_params_max_limit(self):
+        context = Mock()
         self.config(max_limit_v2=1000, group='service:api')
-        result = utils.get_paging_params({'limit': "max"}, [])
+        result = utils.get_paging_params(context, {'limit': "max"}, [])
         self.assertEqual(result[1], 1000)
 
     def test_get_paging_params_invalid_sort_dir(self):
+        context = Mock()
         with testtools.ExpectedException(exceptions.InvalidSortDir):
-            utils.get_paging_params({'sort_dir': "dsc"}, [])
+            utils.get_paging_params(context, {'sort_dir': "dsc"}, [])
 
     def test_get_paging_params_invalid_sort_key(self):
+        context = Mock()
         with testtools.ExpectedException(exceptions.InvalidSortKey):
-            utils.get_paging_params({'sort_key': "dsc"}, ['asc', 'desc'])
+            utils.get_paging_params(context, {'sort_key': "dsc"},
+                                    ['asc', 'desc'])
 
 
 class SocketListenTest(unittest.TestCase):

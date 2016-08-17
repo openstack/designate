@@ -32,7 +32,7 @@ class ServiceStatusController(rest.RestController):
         context = pecan.request.environ['context']
 
         marker, limit, sort_key, sort_dir = utils.get_paging_params(
-            params, self.SORT_KEYS)
+                context, params, self.SORT_KEYS)
 
         accepted_filters = ["hostname", "service_name", "status"]
         criterion = self._apply_filter_params(

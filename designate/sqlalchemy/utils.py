@@ -32,6 +32,16 @@ from designate import exceptions
 
 LOG = log.getLogger(__name__)
 
+RRSET_FILTERING_INDEX = {
+    'created_at': 'recordset_created_at',
+    'updated_at': 'rrset_updated_at',
+    'zone_id': 'rrset_zoneid',
+    'name': 'recordset_type_name',
+    'type': 'rrset_type',
+    'ttl': 'rrset_ttl',
+    'tenant_id': 'rrset_tenant_id',
+}
+
 
 def get_migration_manager(repo_path, url, init_version=None):
     migration_config = {
@@ -140,3 +150,13 @@ def check_marker(table, marker, session):
             raise
 
     return marker
+
+
+def get_rrset_index(sort_key):
+    rrset_index_hint = None
+    index = RRSET_FILTERING_INDEX.get(sort_key)
+
+    if index:
+        rrset_index_hint = 'USE INDEX (%s)' % index
+
+    return rrset_index_hint

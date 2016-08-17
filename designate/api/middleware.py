@@ -91,6 +91,12 @@ class ContextMiddleware(base.Middleware):
                 value = request.GET.pop(i)
                 ctxt.all_tenants = strutils.bool_from_string(value)
 
+    def _extract_dns_hide_counts(self, ctxt, request):
+        ctxt.hide_counts = False
+        value = request.headers.get('OpenStack-DNS-Hide-Counts')
+        if value:
+            ctxt.hide_counts = strutils.bool_from_string(value)
+
     def _extract_edit_managed_records(self, ctxt, request):
         ctxt.edit_managed_records = False
         if 'edit_managed_records' in request.GET:
@@ -111,6 +117,7 @@ class ContextMiddleware(base.Middleware):
             self._extract_sudo(ctxt, request)
             self._extract_all_projects(ctxt, request)
             self._extract_edit_managed_records(ctxt, request)
+            self._extract_dns_hide_counts(ctxt, request)
         finally:
             request.environ['context'] = ctxt
         return ctxt

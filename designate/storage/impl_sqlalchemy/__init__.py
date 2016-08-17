@@ -601,7 +601,8 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
 
     # RecordSet Methods
     def _find_recordsets(self, context, criterion, one=False, marker=None,
-                         limit=None, sort_key=None, sort_dir=None):
+                         limit=None, sort_key=None, sort_dir=None,
+                         force_index=False):
 
         # Check to see if the criterion can use the reverse_name column
         criterion = self._rname_check(criterion)
@@ -633,7 +634,8 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             tc, recordsets = self._find_recordsets_with_records(
                     context, criterion, tables.zones, tables.recordsets,
                     tables.records, limit=limit, marker=marker,
-                    sort_key=sort_key, sort_dir=sort_dir)
+                    sort_key=sort_key, sort_dir=sort_dir,
+                    force_index=force_index)
 
             recordsets.total_count = tc
 
@@ -710,10 +712,10 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
         return self._find_recordsets(context, {'id': recordset_id}, one=True)
 
     def find_recordsets(self, context, criterion=None, marker=None, limit=None,
-                        sort_key=None, sort_dir=None):
+                        sort_key=None, sort_dir=None, force_index=False):
         return self._find_recordsets(context, criterion, marker=marker,
-                                     limit=limit, sort_key=sort_key,
-                                     sort_dir=sort_dir)
+                                     sort_dir=sort_dir, sort_key=sort_key,
+                                     limit=limit, force_index=force_index)
 
     def find_recordset(self, context, criterion):
         return self._find_recordsets(context, criterion, one=True)

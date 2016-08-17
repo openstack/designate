@@ -28,13 +28,14 @@ LOG = logging.getLogger(__name__)
 class DesignateContext(context.RequestContext):
 
     _all_tenants = False
+    _hide_counts = False
     _abandon = None
     original_tenant = None
     _edit_managed_records = False
 
     def __init__(self, service_catalog=None, all_tenants=False, abandon=None,
                  tsigkey_id=None, user_identity=None, original_tenant=None,
-                 edit_managed_records=False, **kwargs):
+                 edit_managed_records=False, hide_counts=False, **kwargs):
 
         # NOTE: user_identity may be passed in, but will be silently dropped as
         #       it is a generated field based on several others.
@@ -48,6 +49,7 @@ class DesignateContext(context.RequestContext):
         self.all_tenants = all_tenants
         self.abandon = abandon
         self.edit_managed_records = edit_managed_records
+        self.hide_counts = hide_counts
 
     def deepcopy(self):
         d = self.to_dict()
@@ -80,7 +82,8 @@ class DesignateContext(context.RequestContext):
             'all_tenants': self.all_tenants,
             'abandon': self.abandon,
             'edit_managed_records': self.edit_managed_records,
-            'tsigkey_id': self.tsigkey_id
+            'tsigkey_id': self.tsigkey_id,
+            'hide_counts': self.hide_counts
         })
 
         return copy.deepcopy(d)
@@ -152,6 +155,14 @@ class DesignateContext(context.RequestContext):
         if value:
             policy.check('all_tenants', self)
         self._all_tenants = value
+
+    @property
+    def hide_counts(self):
+        return self._hide_counts
+
+    @hide_counts.setter
+    def hide_counts(self, value):
+        self._hide_counts = value
 
     @property
     def abandon(self):

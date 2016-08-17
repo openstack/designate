@@ -61,8 +61,9 @@ class CentralAPI(object):
         5.6 - Changed 'purge_zones' function args
         6.0 - Renamed domains to zones
         6.1 - Add ServiceStatus methods
+        6.2 - Changed 'find_recordsets' method args
     """
-    RPC_API_VERSION = '6.1'
+    RPC_API_VERSION = '6.2'
 
     # This allows us to mark some methods as not logged.
     # This can be for a few reasons - some methods my not actually call over
@@ -74,7 +75,7 @@ class CentralAPI(object):
         topic = topic if topic else cfg.CONF.central_topic
 
         target = messaging.Target(topic=topic, version=self.RPC_API_VERSION)
-        self.client = rpc.get_client(target, version_cap='6.1')
+        self.client = rpc.get_client(target, version_cap='6.2')
 
     @classmethod
     def get_instance(cls):
@@ -205,11 +206,11 @@ class CentralAPI(object):
                                 recordset_id=recordset_id)
 
     def find_recordsets(self, context, criterion=None, marker=None, limit=None,
-                        sort_key=None, sort_dir=None):
+                        sort_key=None, sort_dir=None, force_index=False):
         return self.client.call(context, 'find_recordsets',
                                 criterion=criterion, marker=marker,
                                 limit=limit, sort_key=sort_key,
-                                sort_dir=sort_dir)
+                                sort_dir=sort_dir, force_index=force_index)
 
     def find_recordset(self, context, criterion=None):
         return self.client.call(context, 'find_recordset', criterion=criterion)

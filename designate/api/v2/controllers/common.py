@@ -24,19 +24,22 @@ def retrieve_matched_rrsets(context, controller_obj, zone_id, **params):
 
     # Extract the pagination params
     marker, limit, sort_key, sort_dir = utils.get_paging_params(
-            params, controller_obj.SORT_KEYS)
+            context, params, controller_obj.SORT_KEYS)
 
     # Extract any filter params.
     accepted_filters = (
-        'name', 'type', 'ttl', 'data', 'status', 'description', )
+        'name', 'type', 'ttl', 'data', 'status', 'description',)
     criterion = controller_obj._apply_filter_params(
             params, accepted_filters, {})
 
+    # Use DB index for better performance in the case of cross zone search
+    force_index = True
     if zone_id:
         criterion['zone_id'] = zone_id
+        force_index = False
 
     recordsets = controller_obj.central_api.find_recordsets(
-            context, criterion, marker, limit, sort_key, sort_dir)
+            context, criterion, marker, limit, sort_key, sort_dir, force_index)
 
     return recordsets
 
