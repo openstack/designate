@@ -50,15 +50,15 @@ class TestAdminAPI(TestCase):
 
         request = MockRequest(GET=dict(limit="max"))
         links = bv._get_collection_links(request, item_list)
-        self.assertDictEqual(links, dict(self=None))
+        self.assertEqual(links, dict(self=None))
 
         request = MockRequest(GET=dict(limit="MAX"))
         links = bv._get_collection_links(request, item_list)
-        self.assertDictEqual(links, dict(self=None))
+        self.assertEqual(links, dict(self=None))
 
         request = MockRequest(GET=dict(limit="200"))
         links = bv._get_collection_links(request, item_list)
-        self.assertDictEqual(links, dict(self=None, next=None))
+        self.assertEqual(links, dict(self=None, next=None))
 
         request = MockRequest(GET=dict(limit="BOGUS_STRING"))
         self.assertRaises(
