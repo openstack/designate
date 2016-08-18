@@ -39,9 +39,9 @@ setuptools!=24.0.0,>=16.0 # PSF/ZPL
 WebOb>=1.2.3 # MIT
 dnspython>=1.14.0 # http://www.dnspython.org/LICENSE
 dnspython3>=1.12.0;python_version>='3.0' # http://www.dnspython.org/LICENSE
-oslo.db>=4.1.0 # Apache-2.0
+oslo.db>=4.10.0 # Apache-2.0
 oslo.i18n>=2.1.0 # Apache-2.0
-oslo.context!=2.6.0,>=2.4.0 # Apache-2.0
+oslo.context>=2.6.0 # Apache-2.0
 oslo.policy>=1.9.0 # Apache-2.0
 Werkzeug>=0.7 # BSD License
 python-memcached>=1.56 # PSF
