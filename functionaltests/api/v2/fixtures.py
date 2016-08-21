@@ -20,7 +20,7 @@ import sys
 import traceback
 
 import fixtures
-from tempest_lib.exceptions import NotFound
+from tempest.lib.exceptions import NotFound
 from testtools.runtest import MultipleExceptions
 
 from functionaltests.api.v2.clients.blacklist_client import BlacklistClient

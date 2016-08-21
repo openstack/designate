@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from tempest_lib import exceptions
+from tempest.lib import exceptions
 
 from functionaltests.common import datagen
 from functionaltests.common import utils

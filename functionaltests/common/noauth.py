@@ -18,7 +18,7 @@ import copy
 import re
 
 from six.moves.urllib import parse
-from tempest_lib.auth import AuthProvider
+from tempest.lib.auth import AuthProvider
 
 
 class NoAuthAuthProvider(AuthProvider):

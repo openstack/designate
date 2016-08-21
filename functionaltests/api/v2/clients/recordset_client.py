@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from tempest_lib.exceptions import NotFound
+from tempest.lib.exceptions import NotFound
 
 from functionaltests.api.v2.models.recordset_model import RecordsetModel
 from functionaltests.api.v2.models.recordset_model import RecordsetListModel

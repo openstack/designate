@@ -15,7 +15,7 @@ limitations under the License.
 """
 
 from oslo_config import cfg
-from tempest_lib import exceptions
+from tempest.lib import exceptions
 
 from functionaltests.api.v2.clients.quotas_client import QuotasClient
 from functionaltests.api.v2.clients.tld_client import TLDClient
