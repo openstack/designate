@@ -84,7 +84,7 @@ class NotifyEndpoint(base.BaseEndpoint):
         :param delay: The time to wait before sending the first request.
         :return: None
         """
-        (status, actual_serial, retries) = self.get_serial_number(
+        status, actual_serial, retries = self.get_serial_number(
             context, zone, nameserver.host, nameserver.port, timeout,
             retry_interval, max_retries, delay)
         self.pool_manager_api.update_status(
@@ -93,6 +93,8 @@ class NotifyEndpoint(base.BaseEndpoint):
     def get_serial_number(self, context, zone, host, port, timeout,
                           retry_interval, max_retries, delay):
         """
+        Get zone serial number from a resolver using retries.
+
         :param context: The user context.
         :param zone: The designate zone object.  This contains the zone
             name. zone.serial = expected_serial
@@ -168,6 +170,9 @@ class NotifyEndpoint(base.BaseEndpoint):
     def _make_and_send_dns_message(self, zone, host, port, timeout,
                                    retry_interval, max_retries, notify=False):
         """
+        Generate and send a DNS message over TCP or UDP using retries
+        and return response.
+
         :param zone: The designate zone object.  This contains the zone
             name.
         :param host: The destination host for the dns message.
@@ -293,16 +298,13 @@ class NotifyEndpoint(base.BaseEndpoint):
 
     def _send_dns_message(self, dns_message, host, port, timeout):
         """
+        Send DNS Message over TCP or UDP, return response.
+
         :param dns_message: The dns message that needs to be sent.
         :param host: The destination ip of dns_message.
         :param port: The destination port of dns_message.
         :param timeout: The timeout in seconds to wait for a response.
         :return: response
         """
-        if not CONF['service:mdns'].all_tcp:
-            response = dns_query.udp(
-                dns_message, host, port=port, timeout=timeout)
-        else:
-            response = dns_query.tcp(
-                dns_message, host, port=port, timeout=timeout)
-        return response
+        send = dns_query.tcp if CONF['service:mdns'].all_tcp else dns_query.udp
+        return send(dns_message, host, port=port, timeout=timeout)
