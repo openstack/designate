@@ -25,4 +25,4 @@ import dns.rdatatype
 unhexed = binascii.unhexlify(sys.argv[1])
 response = dns.message.from_wire(unhexed)
 
-print (response.to_text())
+print(response.to_text())
