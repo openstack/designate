@@ -63,7 +63,7 @@ pools. The idea is that we'll configure our pools to support different
 usage levels. We'll define a `gold` and `standard` level and put zones
 in each based on the tenant.
 
-Our `gold` leve will provide 6 nameservers that users have access to
+Our `gold` level will provide 6 nameservers that users have access to
 where our `standard` will only provide 2. Both pools will have one
 master target we write to.
 
