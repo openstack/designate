@@ -46,6 +46,7 @@ if getattr(os_api_ref, 'THEME', 'olsosphinx') == 'openstackdocstheme':
     html_theme_path = [openstackdocstheme.get_html_theme_path()]
     html_theme_options = {
         "sidebar_mode": "toc",
+        "sidebar_dropdown": "api_ref",
     }
 
 else:
