@@ -23,6 +23,7 @@ import oslotest.base
 import testtools
 
 from designate import exceptions
+from designate.objects.adapters import DesignateAdapter
 from designate import objects
 
 LOG = logging.getLogger(__name__)
@@ -192,3 +193,65 @@ class RecordSetTest(oslotest.base.BaseTestCase):
             with testtools.ExpectedException(exceptions.InvalidObject):
                 # TODO(Federico): check the attributes of the exception
                 rs.validate()
+
+    def test_parse_rrset_object_preserves_changes(self):
+        old_ip = '1.1.1.1'
+        new_ip = '8.8.8.8'
+        original_records = objects.RecordList(
+            objects=[
+                objects.Record(data=old_ip),
+            ]
+        )
+
+        rs = objects.RecordSet(
+                name='www.example.org.', type='A',
+                records=original_records
+        )
+
+        body = {
+            'records': [
+                new_ip
+            ]
+        }
+
+        rs = DesignateAdapter.parse('API_v2', body, rs)
+        self.assertIn('records', rs.obj_what_changed())
+
+        def get_data(record_list):
+            return set([r.data for r in record_list])
+
+        self.assertEqual(set([old_ip]),
+            get_data(rs.obj_get_original_value('records')))
+
+        self.assertEqual(set([new_ip]),
+            get_data(rs.obj_get_changes()['records']))
+
+    def test_parse_rrset_object_preserves_changes_multiple_rrs(self):
+        old_ips = ['1.1.1.1', '2.2.2.2']
+        new_ips = ['2.2.2.2', '8.8.8.8']
+        original_records = objects.RecordList(
+            objects=[
+                objects.Record(data=ip) for ip in old_ips
+            ]
+        )
+
+        rs = objects.RecordSet(
+                name='www.example.org.', type='A',
+                records=original_records
+        )
+
+        body = {
+            'records': new_ips
+        }
+
+        rs = DesignateAdapter.parse('API_v2', body, rs)
+        self.assertIn('records', rs.obj_what_changed())
+
+        def get_data(record_list):
+            return set([r.data for r in record_list])
+
+        self.assertEqual(set(old_ips),
+            get_data(rs.obj_get_original_value('records')))
+
+        self.assertEqual(set(new_ips),
+            get_data(rs.obj_get_changes()['records']))
