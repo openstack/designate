@@ -32,31 +32,15 @@ class DesignateContext(context.RequestContext):
     original_tenant = None
     _edit_managed_records = False
 
-    def __init__(self, auth_token=None, user=None, tenant=None, domain=None,
-                 user_domain=None, project_domain=None, is_admin=False,
-                 read_only=False, show_deleted=False, request_id=None,
-                 resource_uuid=None, overwrite=True, roles=None,
-                 service_catalog=None, all_tenants=False, abandon=None,
+    def __init__(self, service_catalog=None, all_tenants=False, abandon=None,
                  tsigkey_id=None, user_identity=None, original_tenant=None,
-                 edit_managed_records=False):
+                 edit_managed_records=False, **kwargs):
 
         # NOTE: user_identity may be passed in, but will be silently dropped as
         #       it is a generated field based on several others.
-        super(DesignateContext, self).__init__(
-            auth_token=auth_token,
-            user=user,
-            tenant=tenant,
-            domain=domain,
-            user_domain=user_domain,
-            project_domain=project_domain,
-            is_admin=is_admin,
-            read_only=read_only,
-            show_deleted=show_deleted,
-            request_id=request_id,
-            resource_uuid=resource_uuid,
-            overwrite=overwrite)
 
-        self.roles = roles or []
+        super(DesignateContext, self).__init__(**kwargs)
+
         self.service_catalog = service_catalog
         self.tsigkey_id = tsigkey_id
 
