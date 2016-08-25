@@ -96,6 +96,14 @@ function configure_designate {
     # mDNS Configuration
     iniset $DESIGNATE_CONF service:mdns listen ${DESIGNATE_SERVICE_HOST}:${DESIGNATE_SERVICE_PORT_MDNS}
 
+    # Worker Configuration
+    if is_service_enabled designate-worker; then
+        iniset $DESIGNATE_CONF service:worker enabled True
+        iniset $DESIGNATE_CONF service:worker notify True
+        iniset $DESIGNATE_CONF service:worker poll_max_retries $DESIGNATE_POLL_RETRIES
+        iniset $DESIGNATE_CONF service:worker poll_retry_interval $DESIGNATE_POLL_INTERVAL
+    fi
+
     # Set up Notifications/Ceilometer Integration
     iniset $DESIGNATE_CONF DEFAULT notification_driver "$DESIGNATE_NOTIFICATION_DRIVER"
     iniset $DESIGNATE_CONF DEFAULT notification_topics "$DESIGNATE_NOTIFICATION_TOPICS"
@@ -300,6 +308,9 @@ function start_designate {
     run_process designate-mdns "$DESIGNATE_BIN_DIR/designate-mdns --config-file $DESIGNATE_CONF"
     run_process designate-agent "$DESIGNATE_BIN_DIR/designate-agent --config-file $DESIGNATE_CONF"
     run_process designate-sink "$DESIGNATE_BIN_DIR/designate-sink --config-file $DESIGNATE_CONF"
+    run_process designate-worker "$DESIGNATE_BIN_DIR/designate-worker --config-file $DESIGNATE_CONF"
+    run_process designate-producer "$DESIGNATE_BIN_DIR/designate-producer --config-file $DESIGNATE_CONF"
+    
 
     # Start proxies if enabled
     if is_service_enabled designate-api && is_service_enabled tls-proxy; then
@@ -321,6 +332,8 @@ function stop_designate {
     stop_process designate-mdns
     stop_process designate-agent
     stop_process designate-sink
+    stop_process designate-worker
+    stop_process designate-producer
 
     stop_designate_backend
 }

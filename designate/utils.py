@@ -119,8 +119,9 @@ def register_plugin_opts():
     # Avoid circular dependency imports
     from designate import plugin
 
-    plugin.Plugin.register_cfg_opts('designate.zone_manager_tasks')
-    plugin.Plugin.register_extra_cfg_opts('designate.zone_manager_tasks')
+    # Register Producer Tasks
+    plugin.Plugin.register_cfg_opts('designate.producer_tasks')
+    plugin.Plugin.register_extra_cfg_opts('designate.producer_tasks')
 
     # Register Backend Plugin Config Options
     plugin.Plugin.register_cfg_opts('designate.backend')
@@ -538,3 +539,7 @@ def bind_udp(host, port):
         LOG.info(_LI('Listening on UDP port %(port)d'), {'port': newport})
 
     return sock_udp
+
+
+def max_prop_time(timeout, max_retries, retry_interval, delay):
+    return timeout * max_retries + max_retries * retry_interval + delay

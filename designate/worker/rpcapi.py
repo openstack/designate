@@ -1,4 +1,4 @@
-# Copyright 2015 Rackspace Inc.
+# Copyright 2016 Rackspace Inc.
 #
 # Author: Tim Simmons <tim.simmons@rackspace.com>
 #
@@ -20,21 +20,15 @@ import oslo_messaging as messaging
 from designate import rpc
 from designate.loggingutils import rpc_logging
 
-
 LOG = logging.getLogger(__name__)
 
-ZONE_MANAGER_API = None
+WORKER_API = None
 
 
-def reset():
-    global ZONE_MANAGER_API
-    ZONE_MANAGER_API = None
-
-
-@rpc_logging(LOG, 'zone_manager')
-class ZoneManagerAPI(object):
+@rpc_logging(LOG, 'worker')
+class WorkerAPI(object):
     """
-    Client side of the zone manager RPC API.
+    Client side of the worker RPC API.
 
     API version history:
 
@@ -43,7 +37,7 @@ class ZoneManagerAPI(object):
     RPC_API_VERSION = '1.0'
 
     def __init__(self, topic=None):
-        topic = topic if topic else cfg.CONF.zone_manager_topic
+        topic = topic if topic else cfg.CONF.worker_topic
 
         target = messaging.Target(topic=topic, version=self.RPC_API_VERSION)
         self.client = rpc.get_client(target, version_cap='1.0')
@@ -57,16 +51,27 @@ class ZoneManagerAPI(object):
 
         This fixes that by creating the rpcapi when demanded.
         """
-        global ZONE_MANAGER_API
-        if not ZONE_MANAGER_API:
-            ZONE_MANAGER_API = cls()
-        return ZONE_MANAGER_API
+        global WORKER_API
+        if not WORKER_API:
+            WORKER_API = cls()
+        return WORKER_API
 
-    # Zone Export
+    def create_zone(self, context, zone):
+        return self.client.cast(
+            context, 'create_zone', zone=zone)
+
+    def update_zone(self, context, zone):
+        return self.client.cast(
+            context, 'update_zone', zone=zone)
+
+    def delete_zone(self, context, zone):
+        return self.client.cast(
+            context, 'delete_zone', zone=zone)
+
+    def recover_shard(self, context, begin, end):
+        return self.client.cast(
+            context, 'recover_shard', begin=begin, end=end)
+
     def start_zone_export(self, context, zone, export):
-        return self.client.cast(context, 'start_zone_export', zone=zone,
-                                export=export)
-
-    def render_zone(self, context, zone_id):
-        return self.client.call(context, 'render_zone',
-                                zone_id=zone_id)
+        return self.client.cast(
+            context, 'start_zone_export', zone=zone, export=export)

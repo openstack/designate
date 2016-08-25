@@ -34,7 +34,6 @@ from oslo_log import log as logging
 from designate import exceptions
 from designate.central import rpcapi as central_rpcapi
 from designate.pool_manager import rpcapi as pool_mgr_rpcapi
-from designate.zone_manager import rpcapi as zone_manager_rpcapi
 from designate.i18n import _
 
 
@@ -59,10 +58,6 @@ class RestController(pecan.rest.RestController):
     @property
     def pool_mgr_api(self):
         return pool_mgr_rpcapi.PoolManagerAPI.get_instance()
-
-    @property
-    def zone_manager_api(self):
-        return zone_manager_rpcapi.ZoneManagerAPI.get_instance()
 
     def _apply_filter_params(self, params, accepted_filters, criterion):
         invalid=[]

@@ -48,6 +48,7 @@ class PoolTarget(base.DictObjectMixin, base.PersistentObjectMixin,
             'relation': True,
             'relation_cls': 'PoolTargetOptionList'
         },
+        'backend': {}
     }
 
     STRING_KEYS = [

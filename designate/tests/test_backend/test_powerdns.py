@@ -52,10 +52,12 @@ class PowerDNSBackendTestCase(BackendTestCase):
         self.assertEqual(commit, session_mock.commit.call_count)
         self.assertEqual(rollback, session_mock.rollback.call_count)
 
-    # Tests for Public Methpds
-    @mock.patch.object(impl_powerdns.PowerDNSBackend, 'session',
-                       new_callable=mock.MagicMock)
-    def test_create_zone(self, session_mock):
+    # Tests for Public Methods
+    @mock.patch.object(impl_powerdns.PowerDNSBackend, 'get_session')
+    def test_create_zone(self, get_session_mock):
+        session_mock = mock.MagicMock()
+        get_session_mock.return_value = session_mock
+
         context = self.get_context()
         self.backend.create_zone(context, self.zone)
 
@@ -80,11 +82,14 @@ class PowerDNSBackendTestCase(BackendTestCase):
             session_mock.execute.call_args_list[1][0][0],
             sqlalchemy.sql.selectable.Select)
 
-    @mock.patch.object(impl_powerdns.PowerDNSBackend, 'session',
-                       new_callable=mock.Mock)
+    @mock.patch.object(impl_powerdns.PowerDNSBackend, 'get_session')
     @mock.patch.object(impl_powerdns.PowerDNSBackend, '_create',
                        side_effect=Exception)
-    def test_create_zone_failure_on_create(self, create_mock, session_mock):
+    def test_create_zone_failure_on_create(self, create_mock,
+                                           get_session_mock):
+        session_mock = mock.MagicMock()
+        get_session_mock.return_value = session_mock
+
         with testtools.ExpectedException(Exception):
             self.backend.create_zone(self.get_context(), self.zone)
 
@@ -94,11 +99,14 @@ class PowerDNSBackendTestCase(BackendTestCase):
         # Ensure we called out into the _create method exactly once
         self.assertEqual(1, create_mock.call_count)
 
-    @mock.patch.object(impl_powerdns.PowerDNSBackend, 'session',
-                       new_callable=mock.Mock)
+    @mock.patch.object(impl_powerdns.PowerDNSBackend, 'get_session')
     @mock.patch.object(impl_powerdns.PowerDNSBackend, '_create',
                        return_value=None)
-    def test_create_zone_failure_on_commit(self, create_mock, session_mock):
+    def test_create_zone_failure_on_commit(self, create_mock,
+                                           get_session_mock):
+        session_mock = mock.MagicMock()
+        get_session_mock.return_value = session_mock
+
         # Configure the Session mocks's commit method to raise an exception
         session_mock.commit.side_effect = Exception
 
@@ -111,11 +119,13 @@ class PowerDNSBackendTestCase(BackendTestCase):
         # Ensure we called out into the _create method exactly once
         self.assertEqual(1, create_mock.call_count)
 
-    @mock.patch.object(impl_powerdns.PowerDNSBackend, 'session',
-                       new_callable=mock.Mock)
+    @mock.patch.object(impl_powerdns.PowerDNSBackend, 'get_session')
     @mock.patch.object(impl_powerdns.PowerDNSBackend, '_get',
                        return_value=None)
-    def test_delete_zone(self, get_mock, session_mock):
+    def test_delete_zone(self, get_mock, get_session_mock):
+        session_mock = mock.MagicMock()
+        get_session_mock.return_value = session_mock
+
         # Configure the Session mocks's execute method to return a fudged
         # resultproxy.
         rp_mock = mock.Mock()
@@ -128,8 +138,8 @@ class PowerDNSBackendTestCase(BackendTestCase):
 
         # Ensure the _get method was called with the correct arguments
         get_mock.assert_called_once_with(
-            tables.domains, self.zone.id, exceptions.ZoneNotFound,
-            id_col=tables.domains.c.designate_id)
+            session_mock, tables.domains, self.zone.id,
+            exceptions.ZoneNotFound, id_col=tables.domains.c.designate_id)
 
         # Ensure we have one query, a DELETE
         self.assertEqual(1, session_mock.execute.call_count)
@@ -140,21 +150,23 @@ class PowerDNSBackendTestCase(BackendTestCase):
 
         # TODO(kiall): Validate the ID being deleted
 
-    @mock.patch.object(impl_powerdns.PowerDNSBackend, 'session',
-                       new_callable=mock.Mock)
+    @mock.patch.object(impl_powerdns.PowerDNSBackend, 'get_session')
     @mock.patch.object(impl_powerdns.PowerDNSBackend, '_get',
                        side_effect=exceptions.ZoneNotFound)
     @mock.patch.object(impl_powerdns.PowerDNSBackend, '_delete',
                        return_value=None)
     def test_delete_zone_zone_not_found(self, delete_mock, get_mock,
-                                        session_mock):
+                                        get_session_mock):
+        session_mock = mock.MagicMock()
+        get_session_mock.return_value = session_mock
+
         context = self.get_context()
         self.backend.delete_zone(context, self.zone)
 
         # Ensure the _get method was called with the correct arguments
         get_mock.assert_called_once_with(
-            tables.domains, self.zone.id, exceptions.ZoneNotFound,
-            id_col=tables.domains.c.designate_id)
+            session_mock, tables.domains, self.zone.id,
+            exceptions.ZoneNotFound, id_col=tables.domains.c.designate_id)
 
         # Ensure the _delete method was not called
         self.assertFalse(delete_mock.called)

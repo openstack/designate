@@ -113,9 +113,8 @@ class Service(service.RPCService, coordination.CoordinationMixin,
             CONF['service:pool_manager'].periodic_sync_retry_interval
 
         # Compute a time (seconds) by which things should have propagated
-        self.max_prop_time = (self.timeout * self.max_retries +
-                              self.max_retries * self.retry_interval +
-                              self.delay)
+        self.max_prop_time = utils.max_prop_time(self.timeout,
+            self.max_retries, self.retry_interval, self.delay)
 
     def _setup_target_backends(self):
         self.target_backends = {}
@@ -147,7 +146,6 @@ class Service(service.RPCService, coordination.CoordinationMixin,
         return topic
 
     def start(self):
-
         # Build the Pool (and related) Object from Config
         context = DesignateContext.get_admin_context()
         pool_id = CONF['service:pool_manager'].pool_id
