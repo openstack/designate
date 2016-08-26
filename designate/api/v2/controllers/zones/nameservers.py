@@ -14,15 +14,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import pecan
-from oslo_config import cfg
 from oslo_log import log as logging
 
 from designate.api.v2.controllers import rest
 from designate.objects.adapters import DesignateAdapter
 from designate.i18n import _LI
 
-
-CONF = cfg.CONF
 
 LOG = logging.getLogger(__name__)
 

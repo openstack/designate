@@ -18,7 +18,6 @@ from designateclient import exceptions
 from keystoneauth1.identity import v2 as v2_auth
 from keystoneauth1.identity import v3 as v3_auth
 from keystoneauth1 import session as ks_session
-from oslo_config import cfg
 from oslo_log import log as logging
 
 from designate.backend import base
@@ -27,7 +26,6 @@ from designate.i18n import _LW
 
 
 LOG = logging.getLogger(__name__)
-CONF = cfg.CONF
 CFG_GROUP = 'backend:designate'
 
 

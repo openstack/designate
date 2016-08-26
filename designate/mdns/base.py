@@ -14,7 +14,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 import oslo_messaging as messaging
-from oslo_config import cfg
 from oslo_log import log as logging
 
 from designate.pool_manager import rpcapi as pool_mngr_api
@@ -22,7 +21,6 @@ from designate.central import rpcapi as central_api
 from designate.i18n import _LI
 
 LOG = logging.getLogger(__name__)
-CONF = cfg.CONF
 
 
 class BaseEndpoint(object):

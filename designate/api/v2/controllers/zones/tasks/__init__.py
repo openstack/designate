@@ -14,7 +14,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from oslo_log import log as logging
-from oslo_config import cfg
 
 from designate.api.v2.controllers.zones.tasks.transfer_requests \
     import TransferRequestsController as TRC
@@ -29,7 +28,6 @@ from designate.api.v2.controllers.zones.tasks.exports \
 from designate.api.v2.controllers.zones.tasks.exports \
     import ZoneExportCreateController
 
-CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
 
 
