@@ -15,12 +15,7 @@
 # under the License.
 import abc
 
-from oslo_log import log as logging
-
 from designate.plugin import DriverPlugin
-
-
-LOG = logging.getLogger(__name__)
 
 
 class AgentBackend(DriverPlugin):

@@ -14,12 +14,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from jsonschema import validators
-from oslo_log import log as logging
 
 from designate.schema import _validators
 
-
-LOG = logging.getLogger(__name__)
 
 Draft3Validator = validators.extend(
     validators.Draft3Validator,

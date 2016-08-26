@@ -18,10 +18,7 @@ import re
 import jsonschema
 from jsonschema import compat
 import netaddr
-from oslo_log import log as logging
 
-
-LOG = logging.getLogger(__name__)
 
 # NOTE(kiall): All of the below regular expressions are termined with
 #              "\Z", rather than simply "$" to ensure a string with a

@@ -15,11 +15,8 @@
 # under the License.
 
 from pecan import expose
-from oslo_log import log as logging
 
 from designate import exceptions
-
-LOG = logging.getLogger(__name__)
 
 
 class ErrorsController(object):

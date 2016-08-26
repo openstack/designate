@@ -18,14 +18,12 @@ import os
 from migrate.versioning import api as versioning_api
 from oslo_config import cfg
 from oslo_db.sqlalchemy.migration_cli import manager as migration_manager
-from oslo_log import log as logging
 
 from designate.manage import base
 from designate import rpc
 from designate import utils
 from designate.central import rpcapi as central_rpcapi
 
-LOG = logging.getLogger(__name__)
 
 REPOSITORY = os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
                                           'backend', 'impl_powerdns',

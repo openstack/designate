@@ -15,13 +15,11 @@
 # under the License.
 
 import pecan
-from oslo_log import log as logging
 from oslo_config import cfg
 
 from designate.api.v2.controllers import rest
 
 
-LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
 
 

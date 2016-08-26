@@ -13,11 +13,9 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from oslo_log import log as logging
 
 from designate.objects.adapters.api_v2 import base
 from designate import objects
-LOG = logging.getLogger(__name__)
 
 
 class ZoneExportAPIv2Adapter(base.APIv2Adapter):

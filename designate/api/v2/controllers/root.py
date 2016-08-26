@@ -14,7 +14,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from oslo_config import cfg
-from oslo_log import log as logging
 from stevedore import named
 
 from designate.api.v2.controllers import limits
@@ -28,8 +27,6 @@ from designate.api.v2.controllers import zones
 from designate.api.v2.controllers import tsigkeys
 from designate.api.v2.controllers import recordsets
 from designate.api.v2.controllers import quotas
-
-LOG = logging.getLogger(__name__)
 
 
 class RootController(object):
