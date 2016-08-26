@@ -13,7 +13,7 @@
 # under the License.
 from oslo_log import log as logging
 
-from designate.scheduler.filters.base import Filter
+from designate.scheduler.filters import base
 from designate import exceptions
 from designate import objects
 from designate import policy
@@ -21,7 +21,7 @@ from designate import policy
 LOG = logging.getLogger(__name__)
 
 
-class PoolIDAttributeFilter(Filter):
+class PoolIDAttributeFilter(base.Filter):
     """This allows users with the correct role to specify the exact pool_id
     to schedule the supplied zone to.
 
