@@ -8,7 +8,7 @@ associated to your project in Neutron.
 Set  FloatingIP's PTR record
 ============================
 
-.. rest_method::  POST /v2/reverse/floatingips/{region}:{floatingip_id}
+.. rest_method::  PATCH /v2/reverse/floatingips/{region}:{floatingip_id}
 
 Set a PTR record for the given FloatingIP. The domain if it does not exist
 will be provisioned automatically.
