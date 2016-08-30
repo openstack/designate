@@ -26,6 +26,7 @@ Request
    - x-auth-token: x-auth-token
    - x-auth-all-projects: x-auth-all-projects
    - x-auth-sudo-project-id: x-auth-sudo-project-id
+   - name: recordset_name
    - zone_id: path_zone_id
    - ttl: recordset_ttl
    - description: recordset_description
