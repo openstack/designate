@@ -252,7 +252,7 @@ Response Example
 Update a Recordset
 ==================
 
-.. rest_method::  PATCH /v2/zones/{zone_id}/recordsets/{recordset_id}
+.. rest_method::  PUT /v2/zones/{zone_id}/recordsets/{recordset_id}
 
 Update a recordset
 
