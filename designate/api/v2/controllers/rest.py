@@ -29,15 +29,11 @@ import inspect
 import pecan
 import pecan.rest
 import pecan.routing
-from oslo_log import log as logging
 
 from designate import exceptions
 from designate.central import rpcapi as central_rpcapi
 from designate.pool_manager import rpcapi as pool_mgr_rpcapi
 from designate.i18n import _
-
-
-LOG = logging.getLogger(__name__)
 
 
 class RestController(pecan.rest.RestController):

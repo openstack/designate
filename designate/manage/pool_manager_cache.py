@@ -18,14 +18,11 @@ import os
 
 from migrate.versioning import api as versioning_api
 from oslo_config import cfg
-from oslo_log import log as logging
 from oslo_db import exception
 
 from designate.manage import base
 from designate.sqlalchemy import utils
 
-
-LOG = logging.getLogger(__name__)
 
 REPOSITORY = os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
                                           'pool_manager',

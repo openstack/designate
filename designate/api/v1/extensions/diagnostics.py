@@ -15,12 +15,10 @@
 # under the License.
 import flask
 import oslo_messaging as messaging
-from oslo_log import log as logging
 
 from designate import rpc
 
 
-LOG = logging.getLogger(__name__)
 blueprint = flask.Blueprint('diagnostics', __name__)
 
 

@@ -14,13 +14,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import flask
-from oslo_log import log as logging
 
 from designate import schema
 from designate.central import rpcapi as central_rpcapi
 
 
-LOG = logging.getLogger(__name__)
 blueprint = flask.Blueprint('limits', __name__)
 limits_schema = schema.Schema('v1', 'limits')
 

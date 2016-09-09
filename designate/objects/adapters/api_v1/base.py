@@ -11,11 +11,8 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-from oslo_log import log as logging
 
 from designate.objects.adapters import base
-
-LOG = logging.getLogger(__name__)
 
 
 class APIv1Adapter(base.DesignateAdapter):

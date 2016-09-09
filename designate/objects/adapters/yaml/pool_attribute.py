@@ -12,11 +12,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 import six
-from oslo_log import log as logging
 
 from designate.objects.adapters.yaml import base
 from designate import objects
-LOG = logging.getLogger(__name__)
 
 
 class PoolAttributeYAMLAdapter(base.YAMLAdapter):

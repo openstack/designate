@@ -16,12 +16,9 @@
 import pecan
 import pecan.deploy
 from oslo_config import cfg
-from oslo_log import log as logging
 
 from designate.api.v2 import patches
 
-
-LOG = logging.getLogger(__name__)
 
 cfg.CONF.register_opts([
     cfg.BoolOpt('pecan_debug', default=False,

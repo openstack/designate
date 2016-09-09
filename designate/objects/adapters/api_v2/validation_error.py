@@ -13,11 +13,8 @@
 #    under the License.
 import re
 
-from oslo_log import log as logging
-
 from designate.objects.adapters.api_v2 import base
 from designate import objects
-LOG = logging.getLogger(__name__)
 
 
 class NotSpecifiedSential:

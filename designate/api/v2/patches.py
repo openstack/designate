@@ -18,13 +18,11 @@ from inspect import getargspec
 
 import six
 from oslo_serialization import jsonutils
-from oslo_log import log as logging
 import pecan.core
 
 from designate import exceptions
 
 JSON_TYPES = ('application/json', 'application/json-patch+json')
-LOG = logging.getLogger(__name__)
 
 
 class Request(pecan.core.Request):
