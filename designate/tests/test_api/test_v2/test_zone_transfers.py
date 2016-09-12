@@ -75,6 +75,16 @@ class ApiV2ZoneTransfersTest(ApiV2TestCase):
             response.json['zone_id'])
         self.assertIsNone(response.json['updated_at'])
 
+    def test_create_zone_transfer_request_empty_body(self):
+        # Send an empty ("None") body
+        response = self.client.post_json(
+            '/zones/%s/tasks/transfer_requests' % (self.zone.id),
+            None)
+
+        # Check the headers are what we expect
+        self.assertEqual(201, response.status_int)
+        self.assertEqual('application/json', response.content_type)
+
     def test_get_zone_transfer_request(self):
         initial = self.client.post_json(
             '/zones/%s/tasks/transfer_requests' % (self.zone.id),
