@@ -18,6 +18,7 @@
 import json as jsonutils
 
 from oslo_log import log
+from oslo_utils import strutils
 from six.moves.urllib import parse
 import requests
 
@@ -48,6 +49,18 @@ class Infoblox(object):
         other_opts = ['sslverify', 'network_view', 'dns_view', 'multi_tenant']
 
         for opt in reqd_opts + other_opts:
+            if opt == 'sslverify':
+                # NOTE(selvakumar): This check is for sslverify option.
+                # type of sslverify is unicode string from designate DB
+                # if the value is 0 getattr called for setting default values.
+                # to avoid setting default values we use oslo strutils
+                if not strutils.is_int_like(options.get(opt)):
+                    option_value = options.get(opt)
+                else:
+                    option_value = strutils.bool_from_string(options.get(opt),
+                                                             default=True)
+                setattr(self, opt, option_value)
+                continue
             setattr(self, opt, options.get(opt) or getattr(config, opt))
 
         for opt in reqd_opts:
