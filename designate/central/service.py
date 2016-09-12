@@ -1925,6 +1925,7 @@ class Service(service.RPCService, service.Service):
                     fip_ptr['ttl'] = zone['ttl']
 
                 fip_ptr['ptrdname'] = record['data']
+                fip_ptr['description'] = record['description']
             else:
                 LOG.debug("No record information found for %s" %
                           value[0]['id'])
