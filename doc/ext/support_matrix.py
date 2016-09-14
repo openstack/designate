@@ -23,6 +23,7 @@ It is used via a single directive in the .rst file
 """
 import six
 import six.moves.configparser as config_parser
+import sys
 
 from docutils import nodes
 from docutils.parsers import rst
@@ -90,7 +91,11 @@ class SupportMatrixDirective(rst.Directive):
         :returns: SupportMatrix instance
         """
 
-        cfg = config_parser.SafeConfigParser()
+        # SafeConfigParser was deprecated in Python 3.2
+        if sys.version_info >= (3, 2):
+            cfg = config_parser.ConfigParser()
+        else:
+            cfg = config_parser.SafeConfigParser()
         env = self.state.document.settings.env
         fname = self.options.get("support-matrix",
                                  "support-matrix.ini")
