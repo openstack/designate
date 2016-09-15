@@ -1,0 +1,19 @@
+---
+prelude: >
+    This release has started the migration of our services to a
+    ``worker`` and ``producer`` model. This has started by deprecating
+    ``designate-zone-manager`` and ``designate-pool-manager``.
+    We have also added support for new DNS Servers, and added scheduling
+    across pools.
+features:
+  - Added ``designate-worker`` and ``designate-producer``. This will allow for
+    better scaling across a designate system as we move forward.
+upgrade:
+  - To enable ``designate-worker`` and ``designate-producer`` add a section to
+    your ``designate.conf`` called ``[service:worker]`` and add an option
+    ``enabled = True``. Then stop ``designate-pool-manager`` and
+    ``designate-zone-manager``, and start ``designate-worker`` and
+    ``designate-producer``
+deprecations:
+  - Both ``designate-zone-manager`` and ``designate-pool-manager`` are now
+    deprecated and will be removed in a future release.
