@@ -15,13 +15,13 @@ import random
 
 from oslo_log import log as logging
 
-from designate.scheduler.filters.base import Filter
+from designate.scheduler.filters import base
 from designate.objects import PoolList
 
 LOG = logging.getLogger(__name__)
 
 
-class RandomFilter(Filter):
+class RandomFilter(base.Filter):
     """Randomly chooses one of the input pools if there is multiple supplied.
 
     .. note::

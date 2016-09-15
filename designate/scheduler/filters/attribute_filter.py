@@ -16,12 +16,12 @@ from oslo_log import log as logging
 from oslo_utils.strutils import bool_from_string
 
 from designate.objects import PoolAttributeList
-from designate.scheduler.filters.base import Filter
+from designate.scheduler.filters import base
 
 LOG = logging.getLogger(__name__)
 
 
-class AttributeFilter(Filter):
+class AttributeFilter(base.Filter):
     """This allows users to choose the pool by supplying hints to this filter.
     These are provided as attributes as part of the zone object provided at
     zone create time.

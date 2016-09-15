@@ -15,7 +15,7 @@
 from oslo_config import cfg
 from oslo_log import log as logging
 
-from designate.scheduler.base import Scheduler
+from designate.scheduler import base
 
 LOG = logging.getLogger(__name__)
 
@@ -29,4 +29,4 @@ cfg.CONF.register_opts([
 
 def get_scheduler(storage):
 
-    return Scheduler(storage=storage)
+    return base.Scheduler(storage=storage)

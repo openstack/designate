@@ -14,9 +14,8 @@
 
 from oslo_config import cfg
 
-from designate.scheduler.filters.base import Filter
-from designate.objects import Pool
-from designate.objects import PoolList
+from designate.scheduler.filters import base
+from designate import objects
 
 cfg.CONF.register_opts([
     cfg.StrOpt('default_pool_id',
@@ -25,7 +24,7 @@ cfg.CONF.register_opts([
 ], group='service:central')
 
 
-class FallbackFilter(Filter):
+class FallbackFilter(base.Filter):
     """If there is no zones available to schedule to, this filter will insert
     the default_pool_id.
 
@@ -42,8 +41,9 @@ class FallbackFilter(Filter):
 
     def filter(self, context, pools, zone):
         if len(pools) is 0:
-            pools = PoolList()
-            pools.append(Pool(id=cfg.CONF['service:central'].default_pool_id))
+            pools = objects.PoolList()
+            pools.append(
+                objects.Pool(id=cfg.CONF['service:central'].default_pool_id))
             return pools
         else:
             return pools
