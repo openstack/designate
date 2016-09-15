@@ -21,5 +21,5 @@ tempest>=12.1.0 # Apache-2.0
 reno>=1.8.0 # Apache2
 # Bandit security code scanner
 bandit>=1.1.0 # Apache-2.0
-os-api-ref>=0.4.0 # Apache-2.0
+os-api-ref>=1.0.0 # Apache-2.0
 zake>=0.1.6 # Apache-2.0
