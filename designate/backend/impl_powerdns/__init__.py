@@ -40,7 +40,7 @@ def _map_col(keys, col):
 class PowerDNSBackend(base.Backend):
     __plugin_name__ = 'powerdns'
 
-    __backend_status__ = 'integrated'
+    __backend_status__ = 'deprecated'
 
     @classmethod
     def get_cfg_opts(cls):
