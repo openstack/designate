@@ -16,6 +16,7 @@
 from oslo_config import cfg
 from oslo_log import log as logging
 
+from designate.context import DesignateContext
 from designate.objects import Record
 from designate.notification_handler.base import NotificationHandler
 
@@ -32,8 +33,8 @@ cfg.CONF.register_group(cfg.OptGroup(
 cfg.CONF.register_opts([
     cfg.StrOpt('control-exchange', default='nova'),
     cfg.ListOpt('notification-topics', default=['designate']),
-    cfg.StrOpt('domain-name', default='example.org.'),
-    cfg.StrOpt('domain-id', default='12345'),
+    cfg.StrOpt('zone-name', default='example.org.'),
+    cfg.StrOpt('zone-id', default='12345'),
 ], group='handler:sample')
 
 
@@ -46,12 +47,9 @@ class SampleHandler(NotificationHandler):
         Return a tuple of (exchange, [topics]) this handler wants to receive
         events from.
         """
-        exchange = cfg.CONF['handler:sample'].control_exchange
-
-        notification_topics = cfg.CONF['handler:sample'].notification_topics
-        notification_topics = [t + ".info" for t in notification_topics]
-
-        return (exchange, notification_topics)
+        exchange = cfg.CONF[self.name].control_exchange
+        topics = [topic for topic in cfg.CONF[self.name].notification_topics]
+        return exchange, topics
 
     def get_event_types(self):
         return [
@@ -60,24 +58,28 @@ class SampleHandler(NotificationHandler):
 
     def process_notification(self, context, event_type, payload):
         # Do something with the notification.. e.g:
-        domain_id = cfg.CONF['handler:sample'].domain_id
-        domain_name = cfg.CONF['handler:sample'].domain_name
+        zone_id = cfg.CONF[self.name].zone_id
+        zone_name = cfg.CONF[self.name].zone_name
 
-        hostname = '%s.%s' % (payload['instance_id'], domain_name)
+        record_name = '%s.%s' % (payload['instance_id'], zone_name)
+
+        context = DesignateContext().elevated()
+        context.all_tenants = True
+        # context.edit_managed_records = True
 
         for fixed_ip in payload['fixed_ips']:
-            if fixed_ip['version'] == 4:
-                values = dict(
-                    type='A',
-                    name=hostname,
-                    data=fixed_ip['address']
-                )
-                self.central_api.create_record(domain_id, Record(**values))
+            recordset_values = {
+                'zone_id': zone_id,
+                'name': record_name,
+                'type': 'A' if fixed_ip['version'] == 4 else 'AAAA'
+            }
 
-            elif fixed_ip['version'] == 6:
-                values = dict(
-                    type='AAAA',
-                    name=hostname,
-                    data=fixed_ip['address']
-                )
-                self.central_api.create_record(domain_id, Record(**values))
+            record_values = {
+                'data': fixed_ip['address'],
+            }
+
+            recordset = self._find_or_create_recordset(context,
+                                                       **recordset_values)
+
+            self.central_api.create_record(context, zone_id, recordset['id'],
+                                           Record(**record_values))
