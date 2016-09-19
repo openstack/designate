@@ -1,0 +1,181 @@
+# Configure the powerdns backend
+
+# Enable with:
+# DESIGNATE_BACKEND_DRIVER=powerdns
+
+# Dependencies:
+# ``functions`` file
+# ``designate`` configuration
+
+# install_designate_backend - install any external requirements
+# configure_designate_backend - make configuration changes, including those to other services
+# init_designate_backend - initialize databases, etc.
+# start_designate_backend - start any external services
+# stop_designate_backend - stop any external services
+# cleanup_designate_backend - remove transient data and cache
+
+# Save trace setting
+DP_PDNS_XTRACE=$(set +o | grep xtrace)
+set +o xtrace
+
+# Defaults
+# --------
+if is_fedora; then
+    POWERDNS_CFG_DIR=/etc/pdns
+else
+    POWERDNS_CFG_DIR=/etc/powerdns
+fi
+
+# Entry Points
+# ------------
+
+# install_designate_backend - install any external requirements
+function install_designate_backend {
+    if is_ubuntu; then
+        GetOSVersion
+        if  [ "$os_CODENAME" = "trusty" ]; then
+            sudo tee /etc/apt/sources.list.d/pdns.list > /dev/null <<EOF
+deb [arch=amd64] http://repo.powerdns.com/ubuntu trusty-auth-40 main
+EOF
+            sudo tee /etc/apt/preferences.d/pdns > /dev/null <<EOF
+Package: pdns-*
+Pin: origin repo.powerdns.com
+Pin-Priority: 600
+EOF
+            curl https://repo.powerdns.com/FD380FBB-pub.asc | sudo apt-key add - &&
+            sudo apt-get update
+        elif [ "$os_CODENAME" = "xenial" ]; then
+            echo "Use PDNS4 from apt repo"
+        else
+            die $LINENO "PDNS4 backend only supports trusty or xenial"
+        fi
+        PDNS=pdns-server
+    else
+        die $LINENO "PDNS4 Backend plugin backend only supports Ubuntu"
+    fi
+
+    if is_service_enabled mysql; then
+        PDNS+=" pdns-backend-mysql"
+    else
+        die $LINENO "PDNS4 backend only supports MySQL"
+    fi
+
+    install_package $PDNS
+    sudo rm -rf $POWERDNS_CFG_DIR/pdns.d
+}
+
+# configure_designate_backend - make configuration changes, including those to other services
+function configure_designate_backend {
+    # Generate Designate pool.yaml file
+    sudo tee $DESIGNATE_CONF_DIR/pools.yaml > /dev/null <<EOF
+---
+- name: default
+  description: DevStack PowerDNS Pool
+  attributes: {}
+
+  ns_records:
+    - hostname: $DESIGNATE_DEFAULT_NS_RECORD
+      priority: 1
+
+  nameservers:
+    - host: $DESIGNATE_SERVICE_HOST
+      port: $DESIGNATE_SERVICE_PORT_DNS
+
+  targets:
+    - type: pdns4
+      description: PowerDNS Database Cluster
+
+      masters:
+        - host: $DESIGNATE_SERVICE_HOST
+          port: $DESIGNATE_SERVICE_PORT_MDNS
+
+      options:
+        host: $DESIGNATE_SERVICE_HOST
+        port: $DESIGNATE_SERVICE_PORT_DNS
+        api_endpoint: http://$DESIGNATE_SERVICE_HOST:8081
+        api_token: changeme
+EOF
+
+    # Generate PowerDNS pdns.conf file
+    sudo tee $POWERDNS_CFG_DIR/pdns.conf > /dev/null <<EOF
+# General Config
+setgid=pdns
+setuid=pdns
+config-dir=$POWERDNS_CFG_DIR
+socket-dir=/var/run
+guardian=yes
+daemon=yes
+disable-axfr=no
+local-address=$DESIGNATE_SERVICE_HOST
+local-port=$DESIGNATE_SERVICE_PORT_DNS
+master=no
+slave=yes
+cache-ttl=0
+query-cache-ttl=0
+negquery-cache-ttl=0
+out-of-zone-additional-processing=no
+webserver=yes
+webserver-address=$DESIGNATE_SERVICE_HOST
+api=yes
+api-key=changeme
+EOF
+
+    if is_service_enabled mysql; then
+        sudo tee -a $POWERDNS_CFG_DIR/pdns.conf > /dev/null <<EOF
+# Launch gmysql backend
+launch=gmysql
+
+# gmysql parameters
+gmysql-host=$DATABASE_HOST
+gmysql-user=$DATABASE_USER
+gmysql-password=$DATABASE_PASSWORD
+gmysql-dbname=designate_pdns
+gmysql-dnssec=yes
+EOF
+    else
+        die $LINENO "PDNS4 backend only supports MySQL"
+    fi
+    restart_service pdns
+}
+
+# init_designate_backend - initialize databases, etc.
+function init_designate_backend {
+    # Stop pdns so that the migration succeeds, if not you get a error
+    # that the schema is still in use.
+    if is_service_enabled postgresql; then
+        stop_designate_backend
+    fi
+
+    # (Re)create designate_pdns database
+    recreate_database designate_pdns utf8
+    if is_service_enabled mysql; then
+            sudo mysql -u root designate_pdns < $DESIGNATE_PLUGINS/backend-pdns4-mysql-db.sql
+    else
+        die $LINENO "PDNS4 backend only supports MySQL"
+    fi
+}
+
+# create_designate_pool_configuration_backend - Perform post-pool config tasks
+function create_designate_pool_configuration_backend {
+    # Init and migrate designate_pdns database
+    :
+}
+
+# start_designate_backend - start any external services
+function start_designate_backend {
+    start_service pdns
+}
+
+
+# stop_designate_backend - stop any external services
+function stop_designate_backend {
+    stop_service pdns
+}
+
+# cleanup_designate_backend - remove transient data and cache
+function cleanup_designate_backend {
+    :
+}
+
+# Restore xtrace
+$DP_PDNS_XTRACE

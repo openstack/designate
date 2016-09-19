@@ -18,6 +18,9 @@
 PowerDNS Backend
 ================
 
+.. warning:: This backend will not work with PowerDNS version 4 or greater. Use the ``pdns4`` backend.
+
+
 
 PowerDNS Configuration
 ----------------------
