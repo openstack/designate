@@ -40,7 +40,7 @@ class PoolCommands(base.Commands):
         self.central_api = central_rpcapi.CentralAPI()
 
     @base.args('--file', help='The path to the file the yaml output should be '
-               'writen to',
+               'written to',
                default='/etc/designate/pools.yaml')
     def generate_file(self, file):
         try:
