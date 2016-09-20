@@ -36,7 +36,7 @@ LOG = logging.getLogger(__name__)
 neutron_opts = [
     cfg.ListOpt('endpoints',
                 help='URL to use if None in the ServiceCatalog that is '
-                'passed by the requrest context. Format: <region>|<url>'),
+                'passed by the request context. Format: <region>|<url>'),
     cfg.StrOpt('endpoint_type', default='publicURL',
                help="Endpoint type to use"),
     cfg.IntOpt('timeout',

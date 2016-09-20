@@ -223,7 +223,7 @@ class ZoneLock(object):
                 self.data[zone] = now
                 return True
 
-            LOG.debug('Lock for %(zone)s can\'t be releaesed for %(period)s'
+            LOG.debug('Lock for %(zone)s can\'t be released for %(period)s'
                       'seconds' % {'zone': zone,
                                    'period': str(self.delay - period)})
 
