@@ -77,7 +77,7 @@ Designate in general
    service_status
    notifications
    support-matrix
-
+   metrics
 
 Developer Documentation
 =======================

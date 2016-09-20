@@ -35,6 +35,7 @@ from designate.i18n import _
 from designate.i18n import _LE
 from designate.i18n import _LI
 from designate.i18n import _LW
+from designate.metrics import metrics
 from designate import policy
 from designate import rpc
 from designate import service_status
@@ -74,6 +75,7 @@ class Service(service.Service):
         self._service_config = CONF['service:%s' % self.service_name]
 
         policy.init()
+        metrics.init()
 
         # NOTE(kiall): All services need RPC initialized, as this is used
         #              for clients AND servers. Hence, this is common to
