@@ -10,7 +10,7 @@ Jinja2>=2.8 # BSD License (3 clause)
 jsonschema!=2.5.0,<3.0.0,>=2.0.0 # MIT
 keystoneauth1>=2.10.0 # Apache-2.0
 keystonemiddleware!=4.1.0,!=4.5.0,>=4.0.0 # Apache-2.0
-netaddr!=0.7.16,>=0.7.12 # BSD
+netaddr!=0.7.16,>=0.7.13 # BSD
 oslo.config>=3.14.0 # Apache-2.0
 oslo.concurrency>=3.8.0 # Apache-2.0
 oslo.messaging>=5.2.0 # Apache-2.0
@@ -39,7 +39,7 @@ setuptools!=24.0.0,>=16.0 # PSF/ZPL
 WebOb>=1.2.3 # MIT
 dnspython>=1.14.0 # http://www.dnspython.org/LICENSE
 dnspython3>=1.12.0;python_version>='3.0' # http://www.dnspython.org/LICENSE
-oslo.db>=4.10.0 # Apache-2.0
+oslo.db!=4.13.1,!=4.13.2,>=4.10.0 # Apache-2.0
 oslo.i18n>=2.1.0 # Apache-2.0
 oslo.context>=2.9.0 # Apache-2.0
 oslo.policy>=1.9.0 # Apache-2.0
