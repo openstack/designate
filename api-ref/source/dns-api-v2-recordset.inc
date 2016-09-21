@@ -270,6 +270,7 @@ Request
    - x-auth-token: x-auth-token
    - x-auth-all-projects: x-auth-all-projects
    - x-auth-sudo-project-id: x-auth-sudo-project-id
+   - x-designate-edit-managed-records: x-designate-edit-managed-records
    - zone_id: path_zone_id
    - recordset_id: path_recordset_id
    - ttl: recordset_ttl
@@ -331,6 +332,7 @@ Request
    - x-auth-token: x-auth-token
    - x-auth-all-projects: x-auth-all-projects
    - x-auth-sudo-project-id: x-auth-sudo-project-id
+   - x-designate-edit-managed-records: x-designate-edit-managed-records
    - zone_id: path_zone_id
    - recordset_id: path_recordset_id
 
@@ -385,6 +387,7 @@ Request
    - x-auth-token: x-auth-token
    - x-auth-all-projects: x-auth-all-projects
    - x-auth-sudo-project-id: x-auth-sudo-project-id
+   - x-designate-edit-managed-records: x-designate-edit-managed-records
    - zone_id: path_zone_id
    - name: recordset_name
    - ttl: recordset_ttl
