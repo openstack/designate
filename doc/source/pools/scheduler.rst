@@ -19,7 +19,7 @@
 Pool Scheduler
 ==============
 
-In designate we have a plugable scheduler filter interface.
+In designate we have a pluggable scheduler filter interface.
 
 You can set an ordered list of filters to run on each zone create api request.
 
