@@ -48,7 +48,7 @@ To help users create zones on the  correct pool we have a "scheduler" that is
 responsible for examining the zone being created and the pools that are
 availible for use, and matching the zone to a pool.
 
-The filters are plugable (i.e. operator replaceable) and all follow a simple
+The filters are pluggable (i.e. operator replaceable) and all follow a simple
 interface.
 
 The zones are matched using "zone attributes" and "pool attributes". These are

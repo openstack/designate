@@ -332,7 +332,7 @@ class ZonePoller(base.Task, ThresholdMixin):
     Orchestrate polling for a change across the nameservers in a pool
     and compute the proper zone status, and update it.
 
-    :return: Whether the change was succesfully polled for on a satisfactory
+    :return: Whether the change was successfully polled for on a satisfactory
              number of nameservers in the pool
     """
     def __init__(self, executor, context, pool, zone):
