@@ -41,8 +41,7 @@ class XFRMixin(object):
             LOG.warning(e.message)
             return
 
-        zone = dnsutils.from_dnspython_zone(dnspython_zone)
-        zone.update(zone)
+        zone.update(dnsutils.from_dnspython_zone(dnspython_zone))
 
         zone.transferred_at = timeutils.utcnow()
 
