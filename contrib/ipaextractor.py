@@ -362,4 +362,4 @@ def main():
                                           pprint.pformat(resp.json())))
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())

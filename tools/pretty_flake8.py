@@ -88,4 +88,4 @@ def format_dict(raw):
     return output
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())

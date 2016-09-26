@@ -19,6 +19,7 @@ Log to stdout or to a file.
 """
 
 from argparse import ArgumentParser
+import sys
 from time import gmtime
 from time import strftime
 import SocketServer
@@ -57,4 +58,4 @@ def main():
     server.serve_forever()
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
