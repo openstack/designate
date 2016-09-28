@@ -111,11 +111,17 @@ class InfobloxObjectManipulator(object):
 
     def create_zone_auth(self, fqdn, dns_view):
         try:
+            if fqdn.endswith("in-addr.arpa"):
+                zone_format = 'IPV4'
+            elif fqdn.endswith("ip6.arpa"):
+                zone_format = 'IPV6'
+            else:
+                zone_format = 'FORWARD'
             self._create_infoblox_object(
                 'zone_auth',
                 {'fqdn': fqdn, 'view': dns_view},
                 {'ns_group': self.connector.ns_group,
-                 'restart_if_needed': True},
+                 'restart_if_needed': True, 'zone_format': zone_format},
                 check_if_exists=True)
         except exc.InfobloxCannotCreateObject as e:
             LOG.warning(e)
