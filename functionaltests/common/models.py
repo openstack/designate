@@ -58,7 +58,7 @@ class CollectionModel(BaseModel):
     {
         'collection_name' : [ <models> ],
         'links': { <links> },
-        'metdata': { <metadata> },
+        'metadata': { <metadata> },
     }
     """
 

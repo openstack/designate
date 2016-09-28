@@ -9,7 +9,7 @@
 
   # Attributes are Key:Value pairs that describe the pool. for example the level
   # of service (i.e. service_tier:GOLD), capabilities (i.e. anycast: true) or
-  # other metadata. Users can use this infomation to point their zones to the
+  # other metadata. Users can use this information to point their zones to the
   # correct pool
   attributes: {}
 
