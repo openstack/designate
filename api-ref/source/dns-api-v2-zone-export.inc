@@ -192,3 +192,36 @@ Response Example
 .. literalinclude:: samples/zones/show-zone-export-content.txt
    :language: text
 
+
+Delete a Zone Export
+====================
+
+.. rest_method::  DELETE /v2/zones/tasks/exports/{zone_export_id}
+
+This will just delete the record of the zone export, not the exported zone.
+
+The zone will have to be deleted from the zone delete API
+
+
+Normal response codes: 204
+
+Error response codes: 405,404,403,401,400,503
+
+
+Request
+-------
+
+.. rest_parameters:: parameters.yaml
+
+   - x-auth-token: x-auth-token
+   - x-auth-all-projects: x-auth-all-projects
+   - x-auth-sudo-project-id: x-auth-sudo-project-id
+   - zone_export_id: path_zone_export_id
+
+
+Response Parameters
+-------------------
+
+.. rest_parameters:: parameters.yaml
+
+   - x-openstack-request-id: x-openstack-request-id
