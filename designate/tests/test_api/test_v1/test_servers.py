@@ -86,7 +86,7 @@ class ApiV1ServersTest(ApiV1Test):
         # Create a server
         fixture = self.get_server_fixture(0)
 
-        # Add a invalid name
+        # Add an invalid name
         fixture['name'] = '$#$%^^'
 
         # Ensure it fails with a 400

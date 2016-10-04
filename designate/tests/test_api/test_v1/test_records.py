@@ -164,7 +164,7 @@ class ApiV1RecordsTest(ApiV1Test):
         # Add a junk property
         fixture['junk'] = 'Junk Field'
 
-        # Create a record, Ensuring it fails with a 400
+        # Create a record, ensuring it fails with a 400
         self.post('domains/%s/records' % self.zone['id'], data=fixture,
                   status_code=400)
 
@@ -208,7 +208,7 @@ class ApiV1RecordsTest(ApiV1Test):
         fixture['description'] = "utf-8:2H₂+O₂⇌2H₂O,R=4.7kΩ,⌀200mm∮E⋅da=Q,n" \
                                  ",∑f(i)=∏g(i),∀x∈ℝ:⌈x⌉"
 
-        # Create a record, Ensuring it succeeds
+        # Create a record, ensuring it succeeds
         self.post('domains/%s/records' % self.zone['id'], data=fixture)
 
     def test_create_record_description_too_long(self):
@@ -221,7 +221,7 @@ class ApiV1RecordsTest(ApiV1Test):
         # Add a description that is too long
         fixture['description'] = "x" * 161
 
-        # Create a record, Ensuring it Fails with a 400
+        # Create a record, ensuring it fails with a 400
         self.post('domains/%s/records' % self.zone['id'], data=fixture,
                   status_code=400)
 
@@ -279,7 +279,7 @@ class ApiV1RecordsTest(ApiV1Test):
         # Set the TTL to a negative value
         fixture['ttl'] = -1
 
-        # Create a record, Ensuring it Fails with a 400
+        # Create a record, ensuring it fails with a 400
         self.post('domains/%s/records' % self.zone['id'], data=fixture,
                   status_code=400)
 
@@ -293,7 +293,7 @@ class ApiV1RecordsTest(ApiV1Test):
         # Set the TTL to a value zero
         fixture['ttl'] = 0
 
-        # Create a record, Ensuring it Fails with a 400
+        # Create a record, ensuring it fails with a 400
         self.post('domains/%s/records' % self.zone['id'], data=fixture,
                   status_code=400)
 
@@ -304,10 +304,10 @@ class ApiV1RecordsTest(ApiV1Test):
             'type': self.recordset['type'],
         })
 
-        # Set the TTL to a invalid value
+        # Set the TTL to an invalid value
         fixture['ttl'] = "$?!."
 
-        # Create a record, Ensuring it Fails with a 400
+        # Create a record, ensuring it fails with a 400
         self.post('domains/%s/records' % self.zone['id'], data=fixture,
                   status_code=400)
 
