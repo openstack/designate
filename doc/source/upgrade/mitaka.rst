@@ -89,6 +89,6 @@ Pools - Step by Step
 
    .. code-block:: console
 
-        designate-manage pool generate_file --file output.yml --delete True
+        designate-manage pool update --file output.yml --delete True
 
 10. Start the remaining designate services.
