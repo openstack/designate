@@ -2546,7 +2546,7 @@ class CentralServiceTest(CentralTestCase):
 
         fixture = self.get_ptr_fixture()
 
-        # Test that re-setting as tenant a an already set floatingip leaves
+        # Test that re-setting as tenant 'a' an already set floatingip leaves
         # only 1 record
         fip = self.network_api.fake.allocate_floatingip(context_a.tenant)
 
