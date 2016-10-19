@@ -46,6 +46,7 @@ import os
 import random
 import string
 import time
+import sys
 
 import dns
 import dns.resolver
@@ -660,4 +661,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())
