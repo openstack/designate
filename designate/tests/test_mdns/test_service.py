@@ -118,7 +118,7 @@ class MdnsServiceTest(MdnsTestCase):
         payload = self.query_payload
         mock_socket = mock.Mock()
         pay_len = struct.pack("!H", len(payload))
-        # Process 5 queries, than receive a misaligned query and close the
+        # Process 5 queries, then receive a misaligned query and close the
         # connection there
         mock_socket.recv.side_effect = [
             pay_len, payload,
@@ -140,7 +140,7 @@ class MdnsServiceTest(MdnsTestCase):
         payload = self.query_payload
         mock_socket = mock.Mock()
         pay_len = struct.pack("!H", len(payload))
-        # Process 5 queries, than receive a socket error and close the
+        # Process 5 queries, then receive a socket error and close the
         # connection there
         mock_socket.recv.side_effect = [
             pay_len, payload,
