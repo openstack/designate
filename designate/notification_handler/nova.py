@@ -30,12 +30,11 @@ cfg.CONF.register_opts([
     cfg.ListOpt('notification-topics', default=['notifications']),
     cfg.StrOpt('control-exchange', default='nova'),
     cfg.StrOpt('zone-id'),
-    cfg.MultiStrOpt('formatv4', default=None),
-    cfg.MultiStrOpt('format', default=None,
-                    deprecated_for_removal=True,
+    cfg.MultiStrOpt('formatv4'),
+    cfg.MultiStrOpt('format', deprecated_for_removal=True,
                     deprecated_reason="Replaced by 'formatv4/formatv6'",
                     ),
-    cfg.MultiStrOpt('formatv6', default=None)
+    cfg.MultiStrOpt('formatv6')
 ], group='handler:nova_fixed')
 
 
