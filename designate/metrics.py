@@ -37,7 +37,11 @@ Usage examples:
 
 """
 
-import monascastatsd
+try:
+    import monascastatsd as stats_client
+except Exception:
+    import designate.metrics_client.noop as stats_client
+
 from oslo_config import cfg
 from oslo_log import log as logging
 
@@ -67,7 +71,7 @@ class Metrics(object):
         """Initialize Monasca-Statsd client with its default configuration.
         Do not start sending metrics yet.
         """
-        self._client = monascastatsd.Client(dimensions={
+        self._client = stats_client.Client(dimensions={
             'service_name': 'dns'
         })
         # cfg.CONF is not available at this time

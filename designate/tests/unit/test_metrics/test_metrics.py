@@ -1,0 +1,45 @@
+#
+# Copyright (C) 2016 Red Hat, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+#
+
+import mock
+
+from designate.metrics import Metrics
+from designate.metrics_client import noop
+from designate.tests import TestCase
+
+from oslo_config import cfg
+from oslo_config import fixture as cfg_fixture
+
+
+class TestNoopMetrics(TestCase):
+
+    def setUp(self):
+        super(TestCase, self).setUp()
+        self.CONF = self.useFixture(cfg_fixture.Config(cfg.CONF)).conf
+        self.metrics = Metrics()
+        self.metrics._client = noop.Client()
+
+    def test_noop_metrics_enabled(self):
+        self.CONF.set_override('enabled', True, 'monasca:statsd')
+        with mock.patch('designate.metrics_client.noop.LOG') as log_mock:
+            self.metrics.init()
+            log_mock.error.assert_called_once_with(
+                "Using noop metrics client. Metrics will be ignored.")
+
+    def test_noop_metrics_disabled(self):
+        with mock.patch('designate.metrics_client.noop.LOG') as log_mock:
+            self.metrics.init()
+            log_mock.error.assert_not_called()
