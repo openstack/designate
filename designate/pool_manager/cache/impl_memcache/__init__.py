@@ -26,7 +26,7 @@ from oslo_config import cfg
 
 from designate import exceptions
 from designate import objects
-from designate.openstack.common import memorycache
+from designate.common import memorycache
 from designate.pool_manager.cache import base as cache_base
 
 cfg.CONF.register_group(cfg.OptGroup(
