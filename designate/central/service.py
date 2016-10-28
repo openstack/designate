@@ -225,14 +225,6 @@ class Service(service.RPCService, service.Service):
         return 'central'
 
     def start(self):
-        # Check to see if there are any TLDs in the database
-        tlds = self.storage.find_tlds({})
-        if tlds:
-            self.check_for_tlds = True
-            LOG.info(_LI("Checking for TLDs"))
-        else:
-            self.check_for_tlds = False
-            LOG.info(_LI("NOT checking for TLDs"))
 
         if (cfg.CONF['service:central'].managed_resource_tenant_id ==
                 "00000000-0000-0000-0000-000000000000"):
@@ -277,7 +269,8 @@ class Service(service.RPCService, service.Service):
                                              'required')
 
         # Check the TLD for validity if there are entries in the database
-        if self.check_for_tlds:
+        if self.storage.find_tlds({}):
+            LOG.info(_LI("Checking for TLDs"))
             try:
                 self.storage.find_tld(context, {'name': zone_labels[-1]})
             except exceptions.TldNotFound:
@@ -691,8 +684,6 @@ class Service(service.RPCService, service.Service):
         # The TLD is only created on central's storage and not on the backend.
         created_tld = self.storage.create_tld(context, tld)
 
-        # Set check for tlds to be true
-        self.check_for_tlds = True
         return created_tld
 
     def find_tlds(self, context, criterion=None, marker=None, limit=None,
@@ -725,11 +716,6 @@ class Service(service.RPCService, service.Service):
         policy.check('delete_tld', context, {'tld_id': tld_id})
 
         tld = self.storage.delete_tld(context, tld_id)
-
-        # We need to ensure that if there's no more TLD's we'll not break
-        # zone creation.
-        if not self.storage.find_tlds(context, limit=1):
-            self.check_for_tlds = False
 
         return tld
 

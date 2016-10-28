@@ -42,18 +42,6 @@ class CentralServiceTest(CentralTestCase):
         # Test stopping the service
         self.central_service.stop()
 
-    def test_start_with_tlds(self):
-        # Stop Service
-        self.central_service.stop()
-
-        list = objects.TldList()
-        list.append(objects.Tld(name='com.'))
-
-        with mock.patch.object(self.central_service.storage, 'find_tlds',
-                return_value=list):
-            self.central_service.start()
-            self.assertTrue(self.central_service.check_for_tlds)
-
     def test_is_valid_zone_name(self):
         self.config(max_zone_name_len=10,
                     group='service:central')
