@@ -55,7 +55,7 @@ class DjbdnsAgentBackendTestCase(TestCase):
 
     def setUp(self):
         super(DjbdnsAgentBackendTestCase, self).setUp()
-        self.CONF.set_override('masters', ('127.0.0.1:5354',), 'service:agent')
+        self.CONF.set_override('masters', ['127.0.0.1:5354'], 'service:agent')
         tmp_datafiles_dir = tempfile.mkdtemp()
         os.mkdir(os.path.join(tmp_datafiles_dir, 'datafiles'))
         self.CONF.set_override(

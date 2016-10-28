@@ -34,7 +34,7 @@ class MSDNSAgentBackendUnitTestCase(TestCase):
 
     def setUp(self):
         super(MSDNSAgentBackendUnitTestCase, self).setUp()
-        self.CONF.set_override('masters', ('127.0.0.1:5354',), 'service:agent')
+        self.CONF.set_override('masters', ['127.0.0.1:5354'], 'service:agent')
 
         patcher = mock.patch('os_win.utilsfactory.get_dnsutils')
         self._dnsutils = patcher.start().return_value
