@@ -20,7 +20,7 @@
 
 Designate supports "pools" of nameservers. A pool is a collection of
 nameservers and targets that Designate will write to and read from to
-confirm changes are successfull. In some cases you might have multiple
+confirm changes are successful. In some cases you might have multiple
 pools that you need to manage differently. For example, you might use
 separate pools to distribute tenants across some subset of your DNS
 infrastructure.
