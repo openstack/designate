@@ -37,15 +37,14 @@ Usage examples:
 
 """
 
-try:
-    import monascastatsd as stats_client
-except Exception:
-    import designate.metrics_client.noop as stats_client
-
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_utils import importutils
 
 from designate.i18n import _LI
+
+stats_client = importutils.import_any('monascastatsd',
+                                      'designate.metrics_client.noop')
 
 LOG = logging.getLogger(__name__)
 
