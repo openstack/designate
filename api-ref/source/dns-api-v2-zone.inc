@@ -30,6 +30,7 @@ Request
    - email: zone_email
    - ttl: zone_ttl
    - description: zone_description
+   - masters: zone_masters
    - type: zone_type
 
 
