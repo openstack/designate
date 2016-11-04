@@ -23,7 +23,7 @@ within Designate. There are several ways this can occur:
    of any zones ending in "com." by any other tenant.
 
 4. The squatter creates "co.uk." as a zone in Designate, preventing the
-   creation of any zones ending in "com." by any other tenant.
+   creation of any zones ending in "co.uk." by any other tenant.
 
 
 Scenario #1 and #2 Mitigation
