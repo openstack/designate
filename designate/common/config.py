@@ -12,28 +12,25 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from oslo_config import cfg
 from oslo_middleware import cors
 
 
 def set_defaults():
     """Override all default values from upstream packages"""
 
-    # CORS Middleware Defaults
-    # TODO(krotscheck): Update with https://review.openstack.org/#/c/285368/
-    cfg.set_defaults(cors.CORS_OPTS,
-                     allow_headers=['X-Auth-Token',
-                                    'X-Auth-Sudo-Tenant-ID',
-                                    'X-Auth-Sudo-Project-ID',
-                                    'X-Auth-All-Projects',
-                                    'X-Designate-Edit-Managed-Records',
-                                    'OpenStack-DNS-Hide-Counts'],
-                     expose_headers=['X-OpenStack-Request-ID',
-                                     'Host'],
-                     allow_methods=['GET',
-                                    'PUT',
-                                    'POST',
-                                    'DELETE',
-                                    'PATCH',
-                                    'HEAD']
-                     )
+    cors.set_defaults(
+        allow_headers=['X-Auth-Token',
+                       'X-Auth-Sudo-Tenant-ID',
+                       'X-Auth-Sudo-Project-ID',
+                       'X-Auth-All-Projects',
+                       'X-Designate-Edit-Managed-Records',
+                       'OpenStack-DNS-Hide-Counts'],
+        expose_headers=['X-OpenStack-Request-ID',
+                        'Host'],
+        allow_methods=['GET',
+                       'PUT',
+                       'POST',
+                       'DELETE',
+                       'PATCH',
+                       'HEAD']
+    )
