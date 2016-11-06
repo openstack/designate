@@ -26,11 +26,9 @@ __all__ = [
     'TRANSPORT_ALIASES',
 ]
 
-import inspect
 
 from oslo_config import cfg
 import oslo_messaging as messaging
-from oslo_messaging import server as msg_server
 from oslo_messaging.rpc import server as rpc_server
 from oslo_messaging.rpc import dispatcher as rpc_dispatcher
 from oslo_serialization import jsonutils
@@ -176,15 +174,6 @@ class RequestContextSerializer(messaging.Serializer):
 
 
 class RPCDispatcher(rpc_dispatcher.RPCDispatcher):
-    def _dispatch(self, *args, **kwds):
-        # TODO(kiall): Remove when oslo.messaging 5 is the min in requirements
-        try:
-            return super(RPCDispatcher, self)._dispatch(*args, **kwds)
-        except Exception as e:
-            if getattr(e, 'expected', False):
-                raise rpc_dispatcher.ExpectedException()
-            else:
-                raise
 
     def dispatch(self, *args, **kwds):
         try:
@@ -216,22 +205,9 @@ def get_server(target, endpoints, serializer=None):
     if serializer is None:
         serializer = DesignateObjectSerializer()
     serializer = RequestContextSerializer(serializer)
-
-    # TODO(kiall): Remove when oslo.messaging 5 is the min in requirements
-    argspec = inspect.getargspec(rpc_dispatcher.RPCDispatcher.__init__)
-    if 'target' in argspec.args:
-        # We're on oslo.messaging < 5
-        dispatcher = RPCDispatcher(target, endpoints, serializer)
-
-        return msg_server.MessageHandlingServer(
-            TRANSPORT, dispatcher, 'eventlet')
-
-    else:
-        # We're on oslo.messaging >= 5
-        dispatcher = RPCDispatcher(endpoints, serializer)
-
-        return rpc_server.RPCServer(
-            TRANSPORT, target, dispatcher, 'eventlet')
+    dispatcher = RPCDispatcher(endpoints, serializer)
+    return rpc_server.RPCServer(
+        TRANSPORT, target, dispatcher, 'eventlet')
 
 
 def get_listener(targets, endpoints, serializer=None):
