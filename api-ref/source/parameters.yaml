@@ -775,9 +775,9 @@ zone_import_zone_id:
 
 zone_masters:
   description: |
-    For secondary zones. The servers to slave from to get DNS information
+    Mandatory for secondary zones. The servers to slave from to get DNS information
   in: body
-  required: true
+  required: false
   type: enum
 
 zone_name:
