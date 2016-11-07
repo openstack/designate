@@ -56,7 +56,7 @@ class NoopCounter(object):
         pass
 
 
-class NoopGuage(object):
+class NoopGauge(object):
     def __init__(self):
         pass
 
@@ -75,16 +75,16 @@ class NoopTimer(object):
 class Client(object):
     def __init__(self, *a, **kw):
         self._counter = NoopCounter()
-        self._guage = NoopGuage()
+        self._gauge = NoopGauge()
         self._timer = NoopTimer()
         self.connection = NoopConnection()
         pass
 
     def get_counter(self, *a, **kw):
-        return None
+        return self._counter
 
-    def get_guage(self, *a, **kw):
-        return None
+    def get_gauge(self, *a, **kw):
+        return self._gauge
 
     def get_timer(self):
-        return None
+        return self._timer
