@@ -34,8 +34,9 @@ SERVICE_STATES = [
 def upgrade(migrate_engine):
     meta.bind = migrate_engine
 
-    status_enum = Enum(name='service_statuses', metadata=meta, *SERVICE_STATES)
-    status_enum.create()
+    status_enum = Enum(name='service_statuses_enum', metadata=meta,
+                       *SERVICE_STATES)
+    status_enum.create(checkfirst=True)
 
     service_status_table = Table('service_statuses', meta,
         Column('id', UUID(), default=utils.generate_uuid, primary_key=True),
@@ -49,4 +50,4 @@ def upgrade(migrate_engine):
         Column('stats', Text, nullable=False),
         Column('capabilities', Text, nullable=False),
     )
-    service_status_table.create()
+    service_status_table.create(checkfirst=True)

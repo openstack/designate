@@ -106,7 +106,8 @@ pool_also_notifies = Table('pool_also_notifies', meta,
     Column('port', Integer(), nullable=False),
 
     ForeignKeyConstraint(['pool_id'], ['pools.id'], ondelete='CASCADE'),
-    UniqueConstraint('pool_id', 'host', 'port', name='unique_pool_host_port'),
+    UniqueConstraint('pool_id', 'host', 'port',
+                     name='unique_pool_also_notifies_pool0host0port'),
 
     mysql_engine='InnoDB',
     mysql_charset='utf8',
@@ -119,8 +120,8 @@ def upgrade(migrate_engine):
     # Load the pool_attributes_table table schema for relations
     Table('pools', meta, autoload=True)
 
-    pool_nameservers.create()
-    pool_targets.create()
-    pool_target_options.create()
-    pool_target_masters.create()
-    pool_also_notifies.create()
+    pool_nameservers.create(checkfirst=True)
+    pool_targets.create(checkfirst=True)
+    pool_target_options.create(checkfirst=True)
+    pool_target_masters.create(checkfirst=True)
+    pool_also_notifies.create(checkfirst=True)

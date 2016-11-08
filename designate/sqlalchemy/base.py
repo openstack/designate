@@ -306,7 +306,8 @@ class SQLAlchemy(object):
             select_from(rzjoin).where(zones_table.c.deleted == '0')
 
         if index_hint:
-            inner_q = inner_q.with_hint(recordsets_table, index_hint)
+            inner_q = inner_q.with_hint(recordsets_table, index_hint,
+                                        dialect_name='mysql')
 
         if marker is not None:
             marker = utils.check_marker(recordsets_table, marker,
