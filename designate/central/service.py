@@ -1082,7 +1082,7 @@ class Service(service.RPCService, service.Service):
                                             'before deleting this zone')
 
         if hasattr(context, 'abandon') and context.abandon:
-            LOG.info(_LW("Abandoning zone '%(zone)s'"), {'zone': zone.name})
+            LOG.info(_LI("Abandoning zone '%(zone)s'"), {'zone': zone.name})
             zone = self.storage.delete_zone(context, zone.id)
         else:
             zone = self._delete_zone_in_storage(context, zone)
