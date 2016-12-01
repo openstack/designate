@@ -19,8 +19,7 @@ import six
 from designate import objects
 from designate import utils
 from designate import exceptions
-from designate.i18n import _LE
-from designate.i18n import _LI
+from designate.i18n import _LE, _LI
 
 LOG = log.getLogger(__name__)
 

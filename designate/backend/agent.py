@@ -36,8 +36,7 @@ import dns.opcode
 from oslo_config import cfg
 from oslo_log import log as logging
 
-from designate.i18n import _LI
-from designate.i18n import _LW
+from designate.i18n import _LI, _LW
 from designate.backend import base
 from designate import exceptions
 from designate.mdns import rpcapi as mdns_api
