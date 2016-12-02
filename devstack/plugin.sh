@@ -132,7 +132,7 @@ function configure_designate {
     fi
 
     # Setup the Keystone Integration
-    if is_service_enabled key; then
+    if is_service_enabled keystone; then
         iniset $DESIGNATE_CONF service:api auth_strategy keystone
         configure_auth_token_middleware $DESIGNATE_CONF designate $DESIGNATE_AUTH_CACHE_DIR
     fi
@@ -207,14 +207,12 @@ function create_designate_accounts {
     if is_service_enabled designate-api; then
         create_service_user "designate"
 
-        if [[ "$KEYSTONE_CATALOG_BACKEND" = 'sql' ]]; then
-            get_or_create_service "designate" "dns" "Designate DNS Service"
-            get_or_create_endpoint "dns" \
-                "$REGION_NAME" \
-                "$DESIGNATE_SERVICE_PROTOCOL://$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT/" \
-                "$DESIGNATE_SERVICE_PROTOCOL://$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT/" \
-                "$DESIGNATE_SERVICE_PROTOCOL://$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT/"
-        fi
+        get_or_create_service "designate" "dns" "Designate DNS Service"
+        get_or_create_endpoint "dns" \
+            "$REGION_NAME" \
+            "$DESIGNATE_SERVICE_PROTOCOL://$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT/" \
+            "$DESIGNATE_SERVICE_PROTOCOL://$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT/" \
+            "$DESIGNATE_SERVICE_PROTOCOL://$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT/"
     fi
 }
 
@@ -371,7 +369,7 @@ if is_service_enabled designate; then
             configure_designatedashboard
         fi
 
-        if is_service_enabled key; then
+        if is_service_enabled keystone; then
             echo_summary "Creating Designate Keystone accounts"
             create_designate_accounts
         fi
