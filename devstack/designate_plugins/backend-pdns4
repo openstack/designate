@@ -56,8 +56,10 @@ EOF
 
     if is_service_enabled mysql; then
         PDNS+=" pdns-backend-mysql"
+    elif is_service_enabled postgresql; then
+        PDNS+=" pdns-backend-pgsql"
     else
-        die $LINENO "PDNS4 backend only supports MySQL"
+        die $LINENO "PDNS4 backend only supports MySQL / pgSQL"
     fi
 
     install_package $PDNS
@@ -132,8 +134,20 @@ gmysql-password=$DATABASE_PASSWORD
 gmysql-dbname=designate_pdns
 gmysql-dnssec=yes
 EOF
+    elif is_service_enabled postgresql; then
+        sudo tee -a $POWERDNS_CFG_DIR/pdns.conf > /dev/null <<EOF
+# Launch gpgsql backend
+launch=gpgsql
+
+# gmysql parameters
+gpgsql-host=$DATABASE_HOST
+gpgsql-user=$DATABASE_USER
+gpgsql-password=$DATABASE_PASSWORD
+gpgsql-dbname=designate_pdns
+gpgsql-dnssec=yes
+EOF
     else
-        die $LINENO "PDNS4 backend only supports MySQL"
+        die $LINENO "PDNS4 backend only supports MySQL / pgSQL"
     fi
     restart_service pdns
 }
@@ -150,6 +164,8 @@ function init_designate_backend {
     recreate_database designate_pdns utf8
     if is_service_enabled mysql; then
             sudo mysql -u root designate_pdns < $DESIGNATE_PLUGINS/backend-pdns4-mysql-db.sql
+    elif is_service_enabled postgresql; then
+            sudo psql -U root -d designate_pdns -f $DESIGNATE_PLUGINS/backend-pdns4-pgsql-db.sql
     else
         die $LINENO "PDNS4 backend only supports MySQL"
     fi
