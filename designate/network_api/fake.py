@@ -18,7 +18,7 @@ import uuid
 import six
 from oslo_log import log as logging
 
-from designate.network_api.base import NetworkAPI
+from designate.network_api import base
 
 
 LOG = logging.getLogger(__name__)
@@ -70,7 +70,7 @@ def reset_floatingips():
             POOL[key] = allocated.pop(key)
 
 
-class FakeNetworkAPI(NetworkAPI):
+class FakeNetworkAPI(base.NetworkAPI):
     __plugin_name__ = 'fake'
 
     def list_floatingips(self, context, region=None):

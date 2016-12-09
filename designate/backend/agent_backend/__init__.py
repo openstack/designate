@@ -15,7 +15,7 @@
 # under the License.
 from oslo_log import log as logging
 
-from designate.backend.agent_backend.base import AgentBackend
+from designate.backend.agent_backend import base
 
 LOG = logging.getLogger(__name__)
 
@@ -23,6 +23,6 @@ LOG = logging.getLogger(__name__)
 def get_backend(backend_driver, agent_service):
     LOG.debug("Loading backend driver: %s" % backend_driver)
 
-    cls = AgentBackend.get_driver(backend_driver)
+    cls = base.AgentBackend.get_driver(backend_driver)
 
     return cls(agent_service)

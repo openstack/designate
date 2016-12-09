@@ -216,8 +216,8 @@ class DesignateObjectTest(oslotest.base.BaseTestCase):
 
     @unittest.expectedFailure  # bug
     def test__schema_ref_resolver(self):
-        from designate.objects.base import _schema_ref_resolver
-        _schema_ref_resolver(
+        from designate.objects import base
+        base._schema_ref_resolver(
             'obj://TestValidatableObject#/subpathA/subpathB')
 
     def test_init_invalid(self):

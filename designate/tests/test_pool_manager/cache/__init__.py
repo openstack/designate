@@ -17,7 +17,7 @@ import testtools
 
 from designate import exceptions
 from designate import objects
-from designate.pool_manager.cache.base import PoolManagerCache
+from designate.pool_manager.cache import base
 
 
 class PoolManagerCacheTestCase(object):
@@ -32,7 +32,7 @@ class PoolManagerCacheTestCase(object):
         return objects.PoolManagerStatus.from_dict(values)
 
     def test_interface(self):
-        self._ensure_interface(PoolManagerCache, self.cache.__class__)
+        self._ensure_interface(base.PoolManagerCache, self.cache.__class__)
 
     def test_store_and_clear_and_retrieve(self):
         expected = self.create_pool_manager_status()

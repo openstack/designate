@@ -16,7 +16,7 @@
 
 from oslo_log import log
 
-from designate.notification_handler.base import NotificationHandler
+from designate.notification_handler import base
 
 
 LOG = log.getLogger(__name__)
@@ -25,6 +25,6 @@ LOG = log.getLogger(__name__)
 def get_notification_handlers(enabled_extensions):
     LOG.debug("Loading notification handlers")
 
-    extensions = NotificationHandler.get_extensions(enabled_extensions)
+    extensions = base.NotificationHandler.get_extensions(enabled_extensions)
 
     return [e() for e in extensions]

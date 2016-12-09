@@ -15,13 +15,13 @@
 # under the License.
 from oslo_log import log as logging
 
-from designate.pool_manager.cache.base import PoolManagerCache
+from designate.pool_manager.cache import base
 
 LOG = logging.getLogger(__name__)
 
 
 def get_pool_manager_cache(cache_driver):
     """Return the engine class from the provided engine name"""
-    cls = PoolManagerCache.get_driver(cache_driver)
+    cls = base.PoolManagerCache.get_driver(cache_driver)
 
     return cls()

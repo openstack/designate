@@ -20,14 +20,14 @@ from oslo_log import log as logging
 from designate import exceptions
 from designate import storage
 from designate import objects
-from designate.quota.base import Quota
+from designate.quota import base
 from designate.storage import transaction
 
 
 LOG = logging.getLogger(__name__)
 
 
-class StorageQuota(Quota):
+class StorageQuota(base.Quota):
     __plugin_name__ = 'storage'
 
     def __init__(self):

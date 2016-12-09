@@ -15,12 +15,12 @@
 # under the License.
 from oslo_log import log as logging
 
-from designate.quota.base import Quota
+from designate.quota import base
 
 LOG = logging.getLogger(__name__)
 
 
-class NoopQuota(Quota):
+class NoopQuota(base.Quota):
     __plugin_name__ = 'noop'
 
     def _get_quotas(self, context, tenant_id):
