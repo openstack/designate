@@ -452,7 +452,7 @@ links:
   description: |
     Links to the resource, and other related resources.
     When a response has been broken into pages, we will include
-    a ``next`` link that should be followed to retrive all results
+    a ``next`` link that should be followed to retrieve all results
   in: body
   required: true
   type: object
