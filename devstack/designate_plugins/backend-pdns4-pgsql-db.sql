@@ -5,8 +5,7 @@ CREATE TABLE domains (
   last_check            INT DEFAULT NULL,
   type                  VARCHAR(6) NOT NULL,
   notified_serial       INT DEFAULT NULL,
-  account               VARCHAR(40) DEFAULT NULL,
-  CONSTRAINT c_lowercase_name CHECK (((name)::TEXT = LOWER((name)::TEXT)))
+  account               VARCHAR(40) DEFAULT NULL
 );
 
 CREATE UNIQUE INDEX name_index ON domains(name);
@@ -26,8 +25,7 @@ CREATE TABLE records (
   auth                  BOOL DEFAULT 't',
   CONSTRAINT domain_exists
   FOREIGN KEY(domain_id) REFERENCES domains(id)
-  ON DELETE CASCADE,
-  CONSTRAINT c_lowercase_name CHECK (((name)::TEXT = LOWER((name)::TEXT)))
+  ON DELETE CASCADE
 );
 
 CREATE INDEX rec_name_index ON records(name);
@@ -54,8 +52,7 @@ CREATE TABLE comments (
   comment               VARCHAR(65535) NOT NULL,
   CONSTRAINT domain_exists
   FOREIGN KEY(domain_id) REFERENCES domains(id)
-  ON DELETE CASCADE,
-  CONSTRAINT c_lowercase_name CHECK (((name)::TEXT = LOWER((name)::TEXT)))
+  ON DELETE CASCADE
 );
 
 CREATE INDEX comments_domain_id_idx ON comments (domain_id);
@@ -88,8 +85,7 @@ CREATE TABLE tsigkeys (
   id                    SERIAL PRIMARY KEY,
   name                  VARCHAR(255),
   algorithm             VARCHAR(50),
-  secret                VARCHAR(255),
-  CONSTRAINT c_lowercase_name CHECK (((name)::TEXT = LOWER((name)::TEXT)))
+  secret                VARCHAR(255)
 );
 
 CREATE UNIQUE INDEX namealgoindex ON tsigkeys(name, algorithm);
