@@ -221,7 +221,7 @@ def build_zone(client, target, zone):
             zone.name,
             masters,
             zone.id,
-            target.options["tsig_key_name"],
+            target.options.get("tsig_key_name", None),
             target.options.get("tsig_key_secret", None),
             target.options.get("tsig_key_algorithm", None))
     else:
