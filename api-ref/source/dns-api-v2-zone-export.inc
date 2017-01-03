@@ -9,7 +9,7 @@ and there are different endpoints to view the status and progress of an export
 Create a Zone Export
 ====================
 
-.. rest_method::  POST /v2/zones/{zone_id}/tasks/exports
+.. rest_method::  POST /v2/zones/{zone_id}/tasks/export
 
 Export a zone.
 
