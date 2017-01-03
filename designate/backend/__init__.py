@@ -15,7 +15,7 @@
 # under the License.
 from oslo_log import log as logging
 
-from designate.backend.base import Backend
+from designate.backend import base
 
 LOG = logging.getLogger(__name__)
 
@@ -24,6 +24,6 @@ def get_backend(type_, target):
     # TODO(kiall): Type is attached to the target, use it.
     LOG.debug("Loading backend driver: %s" % type_)
 
-    cls = Backend.get_driver(type_)
+    cls = base.Backend.get_driver(type_)
 
     return cls(target)

@@ -24,7 +24,7 @@ from oslo_service import threadgroup
 from designate import exceptions
 from designate.i18n import _LW
 from designate.i18n import _LE
-from designate.network_api.base import NetworkAPI
+from designate.network_api import base
 
 
 CONF = cfg.CONF
@@ -84,7 +84,7 @@ def get_client(context, endpoint):
     return clientv20.Client(**params)
 
 
-class NeutronNetworkAPI(NetworkAPI):
+class NeutronNetworkAPI(base.NetworkAPI):
     """
     Interact with the Neutron API
     """

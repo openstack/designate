@@ -23,7 +23,7 @@ from oslo_log import log as logging
 from oslo_db import exception as db_exception
 from oslo_utils import excutils
 
-from designate.storage.base import Storage
+from designate.storage import base
 from designate.i18n import _LW
 
 
@@ -33,7 +33,7 @@ RETRY_STATE = threading.local()
 
 def get_storage(storage_driver):
     """Return the engine class from the provided engine name"""
-    cls = Storage.get_driver(storage_driver)
+    cls = base.Storage.get_driver(storage_driver)
 
     return cls()
 

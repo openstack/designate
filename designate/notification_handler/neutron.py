@@ -16,7 +16,7 @@
 from oslo_config import cfg
 from oslo_log import log as logging
 
-from designate.notification_handler.base import BaseAddressHandler
+from designate.notification_handler import base
 
 
 LOG = logging.getLogger(__name__)
@@ -38,7 +38,7 @@ cfg.CONF.register_opts([
 ], group='handler:neutron_floatingip')
 
 
-class NeutronFloatingHandler(BaseAddressHandler):
+class NeutronFloatingHandler(base.BaseAddressHandler):
     """Handler for Neutron's notifications"""
     __plugin_name__ = 'neutron_floatingip'
 

@@ -16,7 +16,7 @@
 from oslo_config import cfg
 from oslo_log import log as logging
 
-from designate.quota.base import Quota
+from designate.quota import base
 
 
 LOG = logging.getLogger(__name__)
@@ -42,6 +42,6 @@ def get_quota():
 
     LOG.debug("Loading quota driver: %s" % quota_driver)
 
-    cls = Quota.get_driver(quota_driver)
+    cls = base.Quota.get_driver(quota_driver)
 
     return cls()

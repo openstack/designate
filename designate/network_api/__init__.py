@@ -17,7 +17,7 @@
 from oslo_config import cfg
 from oslo_log import log
 
-from designate.network_api.base import NetworkAPI
+from designate.network_api import base
 
 
 LOG = log.getLogger(__name__)
@@ -30,6 +30,6 @@ cfg.CONF.register_opts([
 def get_network_api(network_api_driver):
     LOG.debug("Loading network_api driver: %s", network_api_driver)
 
-    cls = NetworkAPI.get_driver(network_api_driver)
+    cls = base.NetworkAPI.get_driver(network_api_driver)
 
     return cls()
