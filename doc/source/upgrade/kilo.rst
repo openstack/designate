@@ -14,7 +14,7 @@
     under the License.
 
 ***************************
-Upgrading to Kilo form Juno
+Upgrading to Kilo from Juno
 ***************************
 
 .. note::
