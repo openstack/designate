@@ -408,7 +408,7 @@ class ZonePoller(base.Task, ThresholdMixin):
          - ERROR: the operation failed
          - NO_ZONE: the zone doesn't exist on enough name servers
 
-        :return: Whether the the polling was successful, and a status
+        :return: Whether the polling was successful, and a status
                  describing the state (bool, str)
         """
 
