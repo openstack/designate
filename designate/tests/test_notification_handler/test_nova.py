@@ -53,7 +53,7 @@ class NovaFixedHandlerTest(TestCase, NotificationHandlerMixin):
         self.assertEqual(2, len(records))
 
         self.plugin.process_notification(
-            self.admin_context, event_type, fixture['payload'])
+            self.admin_context.to_dict(), event_type, fixture['payload'])
 
         # Ensure we now have exactly 1 more record
         records = self.central_service.find_records(self.admin_context,
@@ -83,7 +83,7 @@ class NovaFixedHandlerTest(TestCase, NotificationHandlerMixin):
         self.assertEqual(2, len(recordsets))
 
         self.plugin.process_notification(
-            self.admin_context, event_type, fixture['payload'])
+            self.admin_context.to_dict(), event_type, fixture['payload'])
 
         # Ensure we now have exactly 1 more recordset
         recordsets = self.central_service.find_recordsets(
@@ -104,7 +104,7 @@ class NovaFixedHandlerTest(TestCase, NotificationHandlerMixin):
         start_event_type = 'compute.instance.create.end'
         start_fixture = self.get_notification_fixture('nova', start_event_type)
 
-        self.plugin.process_notification(self.admin_context,
+        self.plugin.process_notification(self.admin_context.to_dict(),
                                          start_event_type,
                                          start_fixture['payload'])
 
@@ -123,7 +123,7 @@ class NovaFixedHandlerTest(TestCase, NotificationHandlerMixin):
         self.assertEqual(4, len(records))
 
         self.plugin.process_notification(
-            self.admin_context, event_type, fixture['payload'])
+            self.admin_context.to_dict(), event_type, fixture['payload'])
 
         # Simulate the record having been deleted on the backend
         zone_serial = self.central_service.get_zone(
@@ -148,7 +148,8 @@ class NovaFixedHandlerTest(TestCase, NotificationHandlerMixin):
                                        'create_record'):
                     finder.return_value = {'id': 'fakeid'}
                     self.plugin.process_notification(
-                        self.admin_context, event_type, fixture['payload'])
+                        self.admin_context.to_dict(),
+                        event_type, fixture['payload'])
                     finder.assert_called_once_with(
                         mock.ANY, type='A', zone_id=self.zone_id,
                         name='private.example.com')
@@ -164,7 +165,8 @@ class NovaFixedHandlerTest(TestCase, NotificationHandlerMixin):
                                        'create_record'):
                     finder.return_value = {'id': 'fakeid'}
                     self.plugin.process_notification(
-                        self.admin_context, event_type, fixture['payload'])
+                        self.admin_context.to_dict(),
+                        event_type, fixture['payload'])
                     finder.assert_called_once_with(
                         mock.ANY, type='A', zone_id=self.zone_id,
                         name='private-v4.example.com')
@@ -182,7 +184,8 @@ class NovaFixedHandlerTest(TestCase, NotificationHandlerMixin):
                                        'create_record'):
                     finder.return_value = {'id': 'fakeid'}
                     self.plugin.process_notification(
-                        self.admin_context, event_type, fixture['payload'])
+                        self.admin_context.to_dict(),
+                        event_type, fixture['payload'])
                     finder.assert_called_once_with(
                         mock.ANY, type='A', zone_id=self.zone_id,
                         name='private-v4.example.com')
