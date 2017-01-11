@@ -81,7 +81,7 @@ Start new files with the following. Replace where needed:
     other components and caveats>
 
     <Optional links>
-    `Specs: Refer to to a spec document if relevant`_
+    `Specs: Refer to a spec document if relevant`_
 
     `User documentation <FILL_THIS.html>`_ <Refer to files under doc/>
     <This is useful to remind developers to keep the docs up to date>
