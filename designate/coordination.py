@@ -18,13 +18,13 @@
 
 import math
 import time
-import uuid
 
 from oslo_config import cfg
 from oslo_log import log
 import retrying
 import tooz.coordination
 
+from designate.utils import generate_uuid
 from designate.i18n import _LI
 from designate.i18n import _LW
 from designate.i18n import _LE
@@ -64,7 +64,7 @@ class CoordinationMixin(object):
         self._coordinator = None
 
     def start(self):
-        self._coordination_id = ":".join([CONF.host, str(uuid.uuid4())])
+        self._coordination_id = ":".join([CONF.host, generate_uuid()])
 
         if CONF.coordination.backend_url is not None:
             backend_url = cfg.CONF.coordination.backend_url
@@ -105,7 +105,7 @@ class CoordinationMixin(object):
 
                 except Exception:
                     LOG.warning(_LW("Failed to start Coordinator:"),
-                             exc_info=True)
+                                exc_info=True)
                     time.sleep(15)
 
     def stop(self):

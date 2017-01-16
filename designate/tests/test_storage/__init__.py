@@ -13,7 +13,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import uuid
 import math
 
 import mock
@@ -23,6 +22,7 @@ from oslo_log import log as logging
 
 from designate import exceptions
 from designate import objects
+from designate.utils import generate_uuid
 from designate.storage.base import Storage as StorageBase
 from designate.utils import DEFAULT_MDNS_PORT
 
@@ -154,7 +154,7 @@ class StorageTestCase(object):
     def test_paging_marker_not_found(self):
         with testtools.ExpectedException(exceptions.MarkerNotFound):
             self.storage.find_pool_attributes(
-                self.admin_context, marker=str(uuid.uuid4()), limit=5)
+                self.admin_context, marker=generate_uuid(), limit=5)
 
     def test_paging_marker_invalid(self):
         with testtools.ExpectedException(exceptions.InvalidMarker):

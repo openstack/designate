@@ -13,9 +13,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
-import uuid
-
 from oslo_log import log
 import oslo_messaging as messaging
 from mock import call
@@ -24,6 +21,7 @@ from mock import patch
 
 from designate import exceptions
 from designate import objects
+from designate.utils import generate_uuid
 from designate.backend import impl_fake
 from designate.central import rpcapi as central_rpcapi
 from designate.mdns import rpcapi as mdns_rpcapi
@@ -79,7 +77,7 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
     def _build_zones(self, n, action, status):
         return [
             self._build_zone("zone%02X.example" % cnt, action,
-                             status, id=str(uuid.uuid4()))
+                             status, id=generate_uuid())
             for cnt in range(n)
         ]
 

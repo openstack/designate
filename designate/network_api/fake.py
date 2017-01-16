@@ -13,17 +13,16 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import uuid
-
 import six
 from oslo_log import log as logging
 
+from designate.utils import generate_uuid
 from designate.network_api import base
 
 
 LOG = logging.getLogger(__name__)
 
-POOL = dict([(str(uuid.uuid4()), '192.168.2.%s' % i) for i in
+POOL = dict([(generate_uuid(), '192.168.2.%s' % i) for i in
              range(0, 254)])
 ALLOCATIONS = {}
 

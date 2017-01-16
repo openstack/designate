@@ -15,11 +15,11 @@
 # under the License.
 import os
 import logging
-import uuid
 
 from requests import auth
 import kerberos
 
+from designate.utils import generate_uuid
 from designate.backend.impl_ipa import IPAAuthError
 from designate.i18n import _LW
 from designate.i18n import _LE
@@ -31,7 +31,7 @@ LOG = logging.getLogger(__name__)
 class IPAAuth(auth.AuthBase):
     def __init__(self, keytab, hostname):
         # store the kerberos credentials in memory rather than on disk
-        os.environ['KRB5CCNAME'] = "MEMORY:" + str(uuid.uuid4())
+        os.environ['KRB5CCNAME'] = "MEMORY:" + generate_uuid()
         self.token = None
         self.keytab = keytab
         self.hostname = hostname

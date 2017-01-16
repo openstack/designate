@@ -16,11 +16,12 @@
 # under the License.
 import os
 import sys
-import uuid
 
 from designateclient import v1
 from oslo_config import cfg
 from oslo_log import log as logging
+
+from designate.utils import generate_uuid
 
 
 cfg.CONF.register_cli_opts([
@@ -51,6 +52,6 @@ if __name__ == '__main__':
     msg = "Creating %s records", cfg.CONF.records
     LOG.info(msg)
     for i in range(0, cfg.CONF.records):
-        name = '%s.%s' % (str(uuid.uuid4()), domain.name)
+        name = '%s.%s' % (generate_uuid(), domain.name)
         record = {"name": name, "type": "A", "data": "10.0.0.1"}
         client.records.create(domain, record)

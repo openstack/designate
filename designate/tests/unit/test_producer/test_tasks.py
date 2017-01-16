@@ -18,7 +18,6 @@
 Unit test Producer tasks
 """
 import datetime
-import uuid
 
 from oslo_utils import timeutils
 from oslotest import base as test
@@ -26,6 +25,7 @@ import fixtures
 import mock
 import testtools
 
+from designate.utils import generate_uuid
 from designate.central import rpcapi as central_api
 from designate import context
 from designate import rpc
@@ -87,7 +87,7 @@ class PeriodicTest(TaskTest):
         ctxt = mock.Mock()
         iterer = self.task._iter_zones(ctxt)
 
-        items = [RoObject(id=str(uuid.uuid4())) for i in range(0, 5)]
+        items = [RoObject(id=generate_uuid()) for i in range(0, 5)]
         central.find_zones.return_value = items
 
         # Iterate through the items causing the "paging" to be done.
@@ -156,7 +156,7 @@ class PeriodicExistsTest(TaskTest):
 
     def test_emit_exists(self):
         zone = RoObject(
-            id=str(uuid.uuid4()))
+            id=generate_uuid())
 
         with mock.patch.object(self.task, '_iter_zones') as iter_:
             iter_.return_value = [zone]
@@ -237,7 +237,7 @@ class PeriodicSecondaryRefreshTest(TaskTest):
     def test_refresh_zone(self):
         transferred = timeutils.utcnow(True) - datetime.timedelta(minutes=62)
         zone = RoObject(
-            id=str(uuid.uuid4()),
+            id=generate_uuid(),
             transferred_at=datetime.datetime.isoformat(transferred),
             refresh=3600)
 
@@ -251,7 +251,7 @@ class PeriodicSecondaryRefreshTest(TaskTest):
         # Dummy zone object
         transferred = timeutils.utcnow(True) - datetime.timedelta(minutes=50)
         zone = RoObject(
-            id=str(uuid.uuid4()),
+            id=generate_uuid(),
             transferred_at=datetime.datetime.isoformat(transferred),
             refresh=3600)
 

@@ -16,7 +16,6 @@
 
 import sys
 import logging
-import uuid
 import pprint
 import json
 import copy
@@ -264,7 +263,7 @@ def main():
     assert(zone)
 
     # create a fake subdomain of this zone
-    domname = "%s.%s" % (uuid.uuid4(), zone['idnsname'])
+    domname = "%s.%s" % (utils.generate_uuid(), zone['idnsname'])
     args = copy.copy(zone)
     del args['idnsname']
     args['version'] = version

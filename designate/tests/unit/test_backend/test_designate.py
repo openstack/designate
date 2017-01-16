@@ -17,8 +17,6 @@
 """
 Unit test Backend
 """
-import uuid
-
 from designateclient import exceptions
 from mock import patch
 from mock import NonCallableMagicMock
@@ -28,6 +26,7 @@ import fixtures
 import oslotest.base
 import testtools
 
+from designate.utils import generate_uuid
 from designate import objects
 from designate.backend import impl_designate
 
@@ -35,7 +34,7 @@ LOG = logging.getLogger(__name__)
 
 
 def create_zone():
-    id_ = str(uuid.uuid4())
+    id_ = generate_uuid()
     return objects.Zone(
         id=id_,
         name='%s-example.com.' % id_,
