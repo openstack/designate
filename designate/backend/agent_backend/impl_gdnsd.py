@@ -72,8 +72,8 @@ def filter_exceptions(fn):
         except exceptions.Backend as e:
             raise e
         except Exception as e:
-            LOG.error(_LE("Unhandled exception %s"), e.message, exc_info=True)
-            raise exceptions.Backend(e.message)
+            LOG.error(_LE("Unhandled exception %s"), e, exc_info=True)
+            raise exceptions.Backend(e)
 
     return wrapper
 
