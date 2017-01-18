@@ -30,6 +30,7 @@ from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_service import service
 from oslo_service import sslutils
+from oslo_utils import netutils
 
 from designate.i18n import _
 from designate.i18n import _LE
@@ -123,17 +124,11 @@ class Service(service.Service):
             return [(host, port)]
 
         else:
-            def _split_host_port(l):
-                try:
-                    host, port = l.split(':', 1)
-                    return host, int(port)
-                except ValueError:
-                    LOG.exception(_LE('Invalid ip:port pair: %s'), l)
-                    raise
 
-            # Convert listen pair list to a set, to remove accidental
-            # duplicates.
-            return map(_split_host_port, set(self._service_config.listen))
+            return map(
+                netutils.parse_host_port,
+                set(self._service_config.listen)
+            )
 
 
 class RPCService(object):
