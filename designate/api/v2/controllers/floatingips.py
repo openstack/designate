@@ -68,7 +68,7 @@ class FloatingIPController(rest.RestController):
         try:
             body = request.body_dict
         except Exception as e:
-            if e.message != 'TODO: Unsupported Content Type':
+            if str(e) != 'TODO: Unsupported Content Type':
                 raise
             else:
                 # Got a blank body
