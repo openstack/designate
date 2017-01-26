@@ -53,6 +53,15 @@ class TestNoopMetrics(TestCase):
         self.assertIsInstance(self.metrics.timer(), noop.NoopTimer)
         self.assertIsNotNone(self.metrics.timed.__self__)
 
+    def test_noop_metrics_client_timed(self):
+        timer = self.metrics._client.get_timer()
+
+        @timer.timed('timed.test')
+        def func(a):
+            return a
+        result = func(1)
+        self.assertEqual(result, 1)
+
 
 class TestMonascaMetrics(TestCase):
 
@@ -86,3 +95,12 @@ class TestMonascaMetrics(TestCase):
         self.assertIsInstance(self.metrics.timer(),
                               monascastatsd.timer.Timer)
         self.assertIsNotNone(self.metrics.timed.__self__)
+
+    def test_monasca_metrics_client_timed(self):
+        timer = self.metrics._client.get_timer()
+
+        @timer.timed('timed.test')
+        def func(a):
+            return a
+        result = func(1)
+        self.assertEqual(result, 1)

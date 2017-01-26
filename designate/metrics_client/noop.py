@@ -69,7 +69,9 @@ class NoopTimer(object):
         pass
 
     def timed(self, *a, **kw):
-        pass
+        def wrapper(func):
+            return func
+        return wrapper
 
 
 class Client(object):
