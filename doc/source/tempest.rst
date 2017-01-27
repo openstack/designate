@@ -159,7 +159,7 @@ included below:
            cls.client = cls.os.zones_client
 
        @test.attr(type='smoke')
-       @test.idempotent_id('fbabd6af-238a-462e-b923-de4d736b90a7')
+       @decorators.idempotent_id('fbabd6af-238a-462e-b923-de4d736b90a7')
        def test_create_zone(self):
            LOG.info('Create a zone')
            _, zone = self.client.create_zone()
@@ -193,7 +193,7 @@ credentials are available using the class level "credentials" property like so:
            cls.client = cls.os.zones_client
            cls.adm_client = cls.os_adm.zones_client
 
-       @test.idempotent_id('6477f92d-70ba-46eb-bd6c-fc50c405e222')
+       @decorators.idempotent_id('6477f92d-70ba-46eb-bd6c-fc50c405e222')
        def test_get_other_tenant_zone(self):
            LOG.info('Create a zone as a user')
            _, zone = self.client.create_zone()
@@ -214,7 +214,7 @@ Several different test decorators are used within the test cases, this attempts
 to explain their purpose and correct usage.
 
 
-@test.idempotent_id
+@decorators.idempotent_id
 ~~~~~~~~~~~~~~~~~~~
 
 The `idempotent_id` decorator allows for tracking of tests even after they have
@@ -229,7 +229,7 @@ Example:
 .. code-block:: python
 
    class ZonesTest(BaseZonesTest):
-       @test.idempotent_id('fbabd6af-238a-462e-b923-de4d736b90a7')
+       @decorators.idempotent_id('fbabd6af-238a-462e-b923-de4d736b90a7')
        def test_create_zone(self):
            pass
 
