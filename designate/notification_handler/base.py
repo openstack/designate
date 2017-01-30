@@ -19,6 +19,8 @@ import abc
 from oslo_config import cfg
 from oslo_log import log as logging
 
+import re
+
 from designate import exceptions
 from designate.central import rpcapi as central_rpcapi
 from designate.context import DesignateContext
@@ -100,11 +102,15 @@ class BaseAddressHandler(NotificationHandler):
             'ip_version': version,
         }
 
-        # TODO(endre): Add v6 support
         if version == 4:
             data['ip_address'] = ip.replace('.', '-')
             ip_data = ip.split(".")
             for i in [0, 1, 2, 3]:
+                data["octet%s" % i] = ip_data[i]
+        if version == 6:
+            data['ip_address'] = ip.replace(':', '-')
+            ip_data = re.split('::|:', ip)
+            for i in range(len(ip_data)):
                 data["octet%s" % i] = ip_data[i]
         return data
 
