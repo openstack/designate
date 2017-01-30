@@ -75,7 +75,7 @@ DNS view will be chosen as follows:
 
 * A search will be made for a network view with the EA "TenantID", with the
   value of the OpenStack tenant_id.
-* If found, then then DNS view used will be <dns_view>.<network_view>, where
+* If found, then DNS view used will be <dns_view>.<network_view>, where
   <dns_view> is the value specified in designate.conf, and <network_view> is
   the name of the view found in the search.
 * If no such network view is found, then a network view will be created with the
