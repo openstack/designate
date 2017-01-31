@@ -15,6 +15,7 @@ import six
 from oslo_log import log as logging
 from oslo_utils.strutils import bool_from_string
 
+from designate import exceptions
 from designate.objects import PoolAttributeList
 from designate.scheduler.filters import base
 
@@ -57,11 +58,16 @@ class AttributeFilter(base.Filter):
 
     def filter(self, context, pools, zone):
 
-        zone_attributes = zone.attributes.to_dict()
+        try:
+            zone_attributes = zone.attributes.to_dict()
+        except exceptions.RelationNotLoaded:
+            zone_attributes = {}
 
         def evaluate_pool(pool):
-
-            pool_attributes = pool.attributes.to_dict()
+            try:
+                pool_attributes = pool.attributes.to_dict()
+            except exceptions.RelationNotLoaded:
+                pool_attributes = {}
 
             # Check if the keys requested exist in this pool
             if not {key for key in six.iterkeys(pool_attributes)}.issuperset(
