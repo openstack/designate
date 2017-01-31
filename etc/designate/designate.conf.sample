@@ -466,8 +466,8 @@ debug = False
 # Nova Fixed Handler
 #-----------------------
 [handler:nova_fixed]
-# Domain ID of domain to create records in. Should be pre-created
-#domain_id =
+# Zone ID of zone to create records in. Should be pre-created
+#zone_id =
 #notification_topics = notifications
 #control_exchange = 'nova'
 #"format" has been depricated. Instead we now have two formaters
@@ -475,24 +475,24 @@ debug = False
 #"formatv4" has been defined for IPv4 addresses.
 #"formatv6" is for IPv6 addresses.
 #
-#formatv4 = '%(octet0)s-%(octet1)s-%(octet2)s-%(octet3)s.%(domain)s'
-#formatv4 = '%(hostname)s.%(project)s.%(domain)s'
-#formatv4 = '%(hostname)s.%(domain)s'
-#formatv6 = '%(hostname)s.%(domain)s'
-#formatv6 = '%(hostname)s.%(project)s.%(domain)s'
+#formatv4 = '%(octet0)s-%(octet1)s-%(octet2)s-%(octet3)s.%(zone)s'
+#formatv4 = '%(hostname)s.%(project)s.%(zone)s'
+#formatv4 = '%(hostname)s.%(zone)s'
+#formatv6 = '%(hostname)s.%(zone)s'
+#formatv6 = '%(hostname)s.%(project)s.%(zone)s'
 #------------------------
 # Neutron Floating Handler
 #------------------------
 [handler:neutron_floatingip]
-# Domain ID of domain to create records in. Should be pre-created
-#domain_id =
+# Zone ID of zone to create records in. Should be pre-created
+#zone_id =
 #notification_topics = notifications
 #control_exchange = 'neutron'
-#formatv4 = '%(octet0)s-%(octet1)s-%(octet2)s-%(octet3)s.%(domain)s'
-#formatv4 = '%(hostname)s.%(project)s.%(domain)s'
-#formatv4 = '%(hostname)s.%(domain)s'
-#formatv6 = '%(hostname)s.%(project)s.%(domain)s'
-#formatv6 = '%(hostname)s.%(domain)s'
+#formatv4 = '%(octet0)s-%(octet1)s-%(octet2)s-%(octet3)s.%(zone)s'
+#formatv4 = '%(hostname)s.%(project)s.%(zone)s'
+#formatv4 = '%(hostname)s.%(zone)s'
+#formatv6 = '%(hostname)s.%(project)s.%(zone)s'
+#formatv6 = '%(hostname)s.%(zone)s'
 
 ##############################
 ## Agent Backend Configuration
