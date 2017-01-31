@@ -142,6 +142,16 @@ class PoolCommands(base.Commands):
 
                 pool = DesignateAdapter.parse('YAML', xpool, pool)
 
+                # TODO(graham): We should be doing a full validation, but right
+                # now there is quirks validating through nested objects.
+
+                for ns_record in pool.ns_records:
+                    try:
+                        ns_record.validate()
+                    except exceptions.InvalidObject as e:
+                        LOG.error(e.errors.to_list()[0]['message'])
+                        sys.exit(1)
+
                 if dry_run:
                     output_msg.append("Update Pool: %s" % pool)
                 else:
@@ -149,7 +159,12 @@ class PoolCommands(base.Commands):
 
             except exceptions.PoolNotFound:
                 pool = DesignateAdapter.parse('YAML', xpool, objects.Pool())
-                # pool = objects.Pool.from_dict(xpool)
+                for ns_record in pool.ns_records:
+                    try:
+                        ns_record.validate()
+                    except exceptions.InvalidObject as e:
+                        LOG.error(e.errors.to_list()[0]['message'])
+                        sys.exit(1)
                 if dry_run:
                     output_msg.append("Create Pool: %s" % pool)
                 else:
