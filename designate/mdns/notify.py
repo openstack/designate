@@ -309,4 +309,9 @@ class NotifyEndpoint(base.BaseEndpoint):
         :return: response
         """
         send = dns_query.tcp if CONF['service:mdns'].all_tcp else dns_query.udp
-        return send(dns_message, host, port=port, timeout=timeout)
+        return send(
+            dns_message,
+            socket.gethostbyname(host),
+            port=port,
+            timeout=timeout
+        )
