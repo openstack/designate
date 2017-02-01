@@ -42,6 +42,7 @@ from designate import context as dcontext
 from designate import exceptions
 from designate import dnsutils
 from designate import network_api
+from designate import notifications
 from designate import objects
 from designate import policy
 from designate import quota
@@ -157,11 +158,17 @@ def notification(notification_type):
                 # Call the wrapped function
                 result = f(self, *args, **kwargs)
 
+                # Feed the args/result to a notification plugin
+                # to determine what is emitted
+                payloads = notifications.get_plugin().emit(
+                    notification_type, context, result, args, kwargs)
+
                 # Enqueue the notification
-                LOG.debug('Queueing notification for %(type)s ',
-                          {'type': notification_type})
-                NOTIFICATION_BUFFER.queue.appendleft(
-                    (context, notification_type, result,))
+                for payload in payloads:
+                    LOG.debug('Queueing notification for %(type)s ',
+                              {'type': notification_type})
+                    NOTIFICATION_BUFFER.queue.appendleft(
+                        (context, notification_type, payload,))
 
                 return result
 

@@ -107,6 +107,10 @@ class ContextMiddleware(base.Middleware):
                 strutils.bool_from_string(
                     request.headers.get('X-Designate-Edit-Managed-Records'))
 
+    def _extract_client_addr(self, ctxt, request):
+        if hasattr(request, 'client_addr'):
+            ctxt.client_addr = request.client_addr
+
     def make_context(self, request, *args, **kwargs):
         req_id = request.environ.get(request_id.ENV_REQUEST_ID)
         kwargs.setdefault('request_id', req_id)
@@ -118,6 +122,7 @@ class ContextMiddleware(base.Middleware):
             self._extract_all_projects(ctxt, request)
             self._extract_edit_managed_records(ctxt, request)
             self._extract_dns_hide_counts(ctxt, request)
+            self._extract_client_addr(ctxt, request)
         finally:
             request.environ['context'] = ctxt
         return ctxt

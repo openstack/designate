@@ -32,10 +32,12 @@ class DesignateContext(context.RequestContext):
     _abandon = None
     original_tenant = None
     _edit_managed_records = False
+    _client_addr = None
 
     def __init__(self, service_catalog=None, all_tenants=False, abandon=None,
                  tsigkey_id=None, user_identity=None, original_tenant=None,
-                 edit_managed_records=False, hide_counts=False, **kwargs):
+                 edit_managed_records=False, hide_counts=False,
+                 client_addr=None, **kwargs):
 
         # NOTE: user_identity may be passed in, but will be silently dropped as
         #       it is a generated field based on several others.
@@ -50,6 +52,7 @@ class DesignateContext(context.RequestContext):
         self.abandon = abandon
         self.edit_managed_records = edit_managed_records
         self.hide_counts = hide_counts
+        self.client_addr = client_addr
 
     def deepcopy(self):
         d = self.to_dict()
@@ -83,7 +86,8 @@ class DesignateContext(context.RequestContext):
             'abandon': self.abandon,
             'edit_managed_records': self.edit_managed_records,
             'tsigkey_id': self.tsigkey_id,
-            'hide_counts': self.hide_counts
+            'hide_counts': self.hide_counts,
+            'client_addr': self.client_addr,
         })
 
         return copy.deepcopy(d)
@@ -183,6 +187,14 @@ class DesignateContext(context.RequestContext):
         if value:
             policy.check('edit_managed_records', self)
         self._edit_managed_records = value
+
+    @property
+    def client_addr(self):
+        return self._client_addr
+
+    @client_addr.setter
+    def client_addr(self, value):
+        self._client_addr = value
 
 
 def get_current():
