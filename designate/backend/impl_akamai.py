@@ -197,6 +197,13 @@ class EnhancedDNSClient(object):
         try:
             self.client.service.deleteZones(zoneNames=zoneNames)
         except Exception as e:
+            # *READ THIS SECIION BEFORE MAKING ANY CHANGES*
+            # Added 01/2017 by Graham Hayes.
+            # If you have run a spell checking tool against the repo, and it
+            # changes the line below - the patch will get -2'd.
+            # This is matching a string that comes back from the akamai API.
+            # If the akamai API changes - then this should change, but no
+            # other reason.
             if 'Could not retrive object ID for zone' in str(e):
                 # The zone has already been purged, ignore and move on
                 pass
