@@ -266,9 +266,9 @@ class MdnsNotifyTest(base.BaseTestCase):
     @mock.patch.object(notify.dns_query, 'tcp')
     @mock.patch.object(notify.dns_query, 'udp')
     def test_send_dns_message(self, *mocks):
-        out = self.notify._send_dns_message('msg', 'host', 123, 1)
+        out = self.notify._send_dns_message('msg', '192.0.2.1', 1234, 1)
 
         assert not notify.dns_query.tcp.called
-        notify.dns_query.udp.assert_called_with('msg', 'host', port=123,
+        notify.dns_query.udp.assert_called_with('msg', '192.0.2.1', port=1234,
                                                 timeout=1)
         assert isinstance(out, Mock)
