@@ -21,7 +21,7 @@ import time
 
 from oslo_config import cfg
 from oslo_log import log
-import retrying
+import tenacity
 import tooz.coordination
 
 from designate.utils import generate_uuid
@@ -153,8 +153,10 @@ class Partitioner(object):
                         'the only worker. Please configure a coordination '
                         'backend'))
 
-    @retrying.retry(stop_max_attempt_number=5, wait_random_max=2000,
-                    retry_on_exception=_retry_if_tooz_error)
+    @tenacity.retry(stop=tenacity.stop_after_attempt(5),
+                    wait=tenacity.wait_random(max=2),
+                    retry=tenacity.retry_if_exception(_retry_if_tooz_error),
+                    reraise=True)
     def _get_members(self, group_id):
         get_members_req = self._coordinator.get_members(group_id)
         try:
