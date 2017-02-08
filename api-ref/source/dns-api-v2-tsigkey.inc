@@ -194,6 +194,7 @@ Request Parameters
    - secret: tsigkey_secret
    - scope: tsigkey_scope
    - resource_id: resource_id
+   - tsigkey_id: tsigkey_id
 
 
 Request Example
