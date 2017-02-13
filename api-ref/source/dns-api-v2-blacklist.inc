@@ -177,6 +177,7 @@ Request Parameters
    - x-auth-sudo-project-id: x-auth-sudo-project-id
    - pattern: blacklist_pattern
    - description: blacklist_description
+   - blacklist_id: blacklist_id
 
 
 Request Example
