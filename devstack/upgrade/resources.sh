@@ -34,16 +34,22 @@ function create {
         die $LINENO "Didn't create $DESIGNATE_PROJECT project"
     fi
     resource_save designate project_id $id
+    local project_id=$id
 
     # create the user, and set $id locally
     eval $(openstack user create $DESIGNATE_USER \
-        --project $id \
+        --project $project_id \
         --password $DESIGNATE_PASS \
         -f shell -c id)
     if [[ -z "$id" ]]; then
         die $LINENO "Didn't create $DESIGNATE_USER user"
     fi
     resource_save designate user_id $id
+
+    # BUG(sdague): this really shouldn't be required, in Keystone v2 a
+    # user created in a project was assigned to that project, in v3 it
+    # is not - https://bugs.launchpad.net/keystone/+bug/1662911
+    openstack role add Member --user $id --project $project_id
 
     _set_designate_user
 
