@@ -1,0 +1,5 @@
+---
+critical:
+  - The ``v1`` API is now off by default. To re-enable the V1 API
+    please set ``enable_api_v1 = True`` in the ``[service:api]`` section
+    of your designate config file.
