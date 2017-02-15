@@ -22,12 +22,12 @@ worker_group = cfg.OptGroup(
 )
 
 OPTS = [
-    cfg.BoolOpt('enabled', default=False,
+    cfg.BoolOpt('enabled', default=True,
                 help='Whether to send events to worker instead of '
                      'Pool Manager',
                 deprecated_for_removal=True,
-                deprecated_reason='In Rocky, this option will disappear '
-                                  'because worker will be enabled by default'),
+                deprecated_reason='In Train, this option will disappear'
+                                  'because pool manager will be removed'),
     cfg.IntOpt('workers',
                help='Number of Worker worker processes to spawn'),
     cfg.IntOpt('threads', default=200,

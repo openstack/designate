@@ -1,0 +1,6 @@
+---
+upgrade:
+  - New installs will now have pool manager disabled by
+    default and will use the worker and producer services.
+    To continue to use pool manager set ``enabled=False``
+    in the ``[service:worker]`` of your config.
