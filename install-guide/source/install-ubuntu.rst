@@ -204,7 +204,7 @@ Install and configure components
 
    .. code-block:: console
 
-        sudo su -s /bin/sh -c "designate-manage pools update" designate
+        sudo su -s /bin/sh -c "designate-manage pool update" designate
 
 
 #. Install Designate Worker, producer and mini-dns
