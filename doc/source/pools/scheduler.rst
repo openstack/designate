@@ -102,3 +102,10 @@ Default Pool Filter
 .. autoclass:: designate.scheduler.filters.default_pool_filter.DefaultPoolFilter
     :members: name
     :show-inheritance:
+
+In Doubt Default Pool Filter
+----------------------------
+
+.. autoclass:: designate.scheduler.filters.in_doubt_default_pool_filter.InDoubtDefaultPoolFilter
+    :members: name
+    :show-inheritance:
