@@ -206,7 +206,7 @@ For example, if we wanted to allow a user to select a specific pool by
 id or fallback to using a default, we could use the following
 configuration.
 
-.. code-block:: conf
+.. code-block:: ini
 
    [service:central]
    default_pool_id = 794ccc2c-d751-44fe-b57f-8894c9f5c842
@@ -224,7 +224,7 @@ Schedule by Tier Example
 In our tiered example, we'll use the `attribute` filter to select the
 correct pool.
 
-.. code-block:: conf
+.. code-block:: ini
 
    [service:central]
    default_pool_id = 794ccc2c-d751-44fe-b57f-8894c9f5c842  # the std pool

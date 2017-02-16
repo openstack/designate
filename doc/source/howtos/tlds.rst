@@ -56,7 +56,7 @@ Response:
    "updated_at": null,
    "id": "cfee7486-7ce4-4851-9c38-7b0fe3d42ee9",
    "description": "tld description"
-}
+  }
 
 
 Now, if someone were to try and create ``example.net.``, they would encounter

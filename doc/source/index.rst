@@ -92,6 +92,7 @@ Developer Documentation
     devstack
     functional-tests
     tempest
+    related
 
 Indices and tables
 ==================

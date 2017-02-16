@@ -215,7 +215,7 @@ to explain their purpose and correct usage.
 
 
 @decorators.idempotent_id
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The `idempotent_id` decorator allows for tracking of tests even after they have
 been renamed. The UUID should be randomly generated as the test is first
