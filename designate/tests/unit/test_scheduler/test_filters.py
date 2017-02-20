@@ -431,13 +431,14 @@ class SchedulerInDoubtDefaultPoolFilterTest(SchedulerFilterTest):
     def test_pools_with_default(self):
         pools = objects.PoolList.from_list(
             [
-                {"id": "794ccc2c-d751-44fe-b57f-8894c9f5c842"},
+                {"id": "6c346011-e581-429b-a7a2-6cdf0aba91c3"},
                 {"id": "5fabcd37-262c-4cf3-8625-7f419434b6df"}
             ]
         )
         pools = self.test_filter.filter(self.context, pools, self.zone)
 
-        self.assertEqual(pools[0].id, "794ccc2c-d751-44fe-b57f-8894c9f5c842")
+        self.assertEqual(1, len(pools))
+        self.assertEqual(pools[0].id, "6c346011-e581-429b-a7a2-6cdf0aba91c3")
 
     def test_pools_without_default(self):
         pools = objects.PoolList.from_list(
