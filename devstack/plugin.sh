@@ -378,14 +378,14 @@ if is_service_enabled designate; then
         echo_summary "Initializing Designate"
         init_designate
 
-        echo_summary "Configuring Tempest options for Designate"
-        configure_designate_tempest
-
         echo_summary "Starting Designate"
         start_designate
 
         echo_summary "Creating Pool Configuration"
         create_designate_pool_configuration
+    elif [[ "$1" == "stack" && "$2" == "test-config" ]]; then
+        echo_summary "Configuring Tempest options for Designate"
+        configure_designate_tempest
     fi
 
     if [[ "$1" == "unstack" ]]; then
