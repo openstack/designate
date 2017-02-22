@@ -59,7 +59,7 @@ Designate Zone Manager
 -----------------------
 designate-zone-manager is a service that handle all periodic tasks relating to the zone shard it is responsible for. A zone shard is a collection of zones allocated based on first three characters of zone UUID.
 
-The current implemented periodic tasks in zone manager include emitting dns.zone.exists events for Ceilometer, purging deleted zones from database, polling secondary zones at their refresh intervals, and generating delayed NOTIFY transactions. 
+The current implemented periodic tasks in zone manager include emitting dns.zone.exists events for Ceilometer, purging deleted zones from database, polling secondary zones at their refresh intervals, and generating delayed NOTIFY transactions.
 
 .. _designate-sink:
 
@@ -88,9 +88,3 @@ Database/Storage
 -----------------------
 Storage drivers are drivers for a particular SQL/NoSQL server. Designate needs a SQLAlchemy-supported storage engine for the persistent storage of data. The recommended driver is MySQL.
 
-.. _memory-caching-summary:
-
-Memory caching
------------------------
-Designate also uses an in-memory caching system, currently implemented with Memcached, as an optional cache for Pool Manager.
-See :ref:`memory-caching-details`
