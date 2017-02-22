@@ -1,6 +1,6 @@
-============
-Integrations
-============
+======================
+OpenStack Integrations
+======================
 
 This page overviews integrations with other services like Neutron and others to
 make use of Designate more convenient.
@@ -55,3 +55,19 @@ if not present we'll piggyback on the context.auth_token passed in by the API.
     If "endpoints" is not configured and there's no service catalog is present
     in the context passed by the API to Central the request will fail in
     a NoEndpoint exception.
+
+Neutron Designate direct integration
+====================================
+
+Neutron supports creating DNS Recordsets as neutron ports are created, and
+pushing that information into designate.
+
+The configuration for this is in the `Networking Guide <https://docs.openstack.org/ocata/networking-guide/config-dns-int.htmls>`_
+
+Designate Sink
+==============
+
+:ref:`designate-sink` is a componant of designate that can listen to the event
+stream of other openstack servies and perform actions based on them.
+
+
