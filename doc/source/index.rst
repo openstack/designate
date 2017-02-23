@@ -26,6 +26,7 @@ New to Designate? Start here:
    architecture
    production-architecture
    glossary
+   getting-involved
 
 
 User documentation
@@ -85,8 +86,6 @@ Developer Documentation
 .. toctree::
     :maxdepth: 1
 
-    getting-involved
-    developer-guidelines
     sourcedoc
     install/ubuntu-dev
     devstack
