@@ -31,7 +31,7 @@ This guide will walk you through setting up a typical development environment fo
 using BIND9 as the DNS backend and MySQL as the storage backend. For a more complete discussion on
 installation & configuration options, please see :ref:`architecture`.
 
-For this guide you will need access to an Ubuntu Server (14.04).
+For this guide you will need access to an Ubuntu Server (16.04).
 
 .. _Development Environment:
 
@@ -48,11 +48,11 @@ Installing Designate
 
 ::
 
-   $ sudo apt-get update
-   $ sudo apt-get install python-pip python-virtualenv libssl-dev libffi-dev git
-   $ sudo apt-get build-dep python-lxml
+   $ sudo apt update
+   $ sudo apt install -y python-pip python-virtualenv libssl-dev libffi-dev git
+   $ sudo apt build-dep -y python-lxml
 
-2. Clone the Designate repo from GitHub
+2. Clone the Designate repo
 
 ::
 
@@ -84,13 +84,9 @@ Installing Designate
 
 5. Install Designate and its dependencies
 
-.. note::
-   If you run into the error: Installed distribution pbr 1.1.1 conflicts with requirement pbr>=0.6,!=0.7,<1.0, try doing pip install pbr==0.11.0
-
 ::
 
-   $ pip install -r requirements.txt -r test-requirements.txt
-   $ python setup.py develop
+   $ pip install -e .
 
 
 6. Change directories to the etc/designate folder.
@@ -110,19 +106,11 @@ Installing Designate
    $ cp -a rootwrap.conf.sample rootwrap.conf
 
 
-8. Make the directory for Designate’s log files
-
-::
-
-   $ mkdir -p ../../log
-
-
-9. Make the directory for Designate’s state files
+8. Make the directory for Designate’s state files
 
 ::
 
    $ mkdir -p ../../state
-
 
 
 Configuring Designate
@@ -140,7 +128,7 @@ Create the designate.conf file
 
 Copy or mirror the configuration from this sample file here:
 
-.. literalinclude:: ../examples/basic-config-sample.conf
+.. literalinclude:: ./examples/basic-config-sample.conf
     :language: ini
 
 
@@ -151,7 +139,7 @@ Install the RabbitMQ package
 
 ::
 
-    $ sudo apt-get install rabbitmq-server
+    $ sudo apt install -y rabbitmq-server
 
 Create a user:
 
@@ -176,7 +164,7 @@ Install the MySQL server package
 
 ::
 
-    $ sudo apt-get install mysql-server-5.5
+    $ sudo apt install -y mysql-server
 
 
 If you do not have MySQL previously installed, you will be prompted to change the root password.
@@ -199,7 +187,6 @@ Create the Designate tables
     Enter password: <enter your password here>
 
     mysql> CREATE DATABASE `designate` CHARACTER SET utf8 COLLATE utf8_general_ci;
-    mysql> CREATE DATABASE `designate_pool_manager` CHARACTER SET utf8 COLLATE utf8_general_ci;
     mysql> exit;
 
 
@@ -207,7 +194,7 @@ Install additional packages
 
 ::
 
-    $ sudo apt-get install libmysqlclient-dev
+    $ sudo apt install -y libmysqlclient-dev
     $ pip install pymysql
 
 
@@ -221,7 +208,7 @@ Install the DNS server, BIND9
 
 ::
 
-    $ sudo apt-get install bind9
+    $ sudo apt install -y bind9
 
 Update the BIND9 Configuration
 
@@ -248,16 +235,16 @@ Disable AppArmor for BIND9
 ::
 
     $ sudo touch /etc/apparmor.d/disable/usr.sbin.named
-    $ sudo service apparmor reload
+    $ sudo systemctl reload apparmor
 
 Restart BIND9:
 
 ::
 
-    $ sudo service bind9 restart
+    $ sudo systemctl restart bind9
 
-Create and Import pools.yml File
-================================
+Create and Import pools.yaml File
+=================================
 
 .. index::
    double: install; pools
@@ -270,27 +257,27 @@ Create the pools.yaml file
 
 Copy or mirror the configuration from this sample file here:
 
-.. literalinclude:: ../examples/basic-pools-sample.yaml
+.. literalinclude:: ./examples/basic-pools-sample.yaml
     :language: yaml
 
-Import the pools.yaml file into Designate
-
-::
-
-   $ designate-manage pool update --file pools.yaml
-
-Initialize & Start the Central Service
-======================================
+Initialize the Database
+=======================
 
 .. index::
-   double: install; central
-
+   double: install; database
 
 Sync the Designate database.
 
 ::
 
    $ designate-manage database sync
+
+Start the Central Service
+=========================
+
+.. index::
+   double: install; central
+
 
 Start the central service.
 
@@ -301,93 +288,41 @@ Start the central service.
 
 You'll now be seeing the log from the central service.
 
-Initialize & Start the API Service
-==================================
+
+Initialize Pools Information
+============================
+
+Import the pools.yaml file into Designate. It is important that
+``designate-central`` is started before invoking this command
+
+::
+
+   $ designate-manage pool update --file pools.yaml
+
+
+Start the other Services
+========================
 
 .. index::
-   double: install; api
+   double: install; services
 
-Open up a new ssh window and log in to your server (or however you’re communicating with your server).
+Open up some new ssh windows and log in to your server (or open some new screen/tmux sessions).
 
 ::
 
    $ cd openstack/designate
-
-If Designate was installed into a virtualenv, make sure your virtualenv is sourced
-
-::
-
    $ source .venv/bin/activate
 
-Start the API Service
+Start the other services
 
 ::
 
    $ designate-api
-
-You’ll now be seeing the log from the API service.
-
-
-Initialize & Start the Pool Manager Service
-===========================================
-
-.. index::
-   double: install; pool-manager
-
-Open up a new ssh window and log in to your server (or however you’re communicating with your server).
-
-::
-
-   $ cd openstack/designate
-
-If Designate was installed into a virtualenv, make sure your virtualenv is sourced
-
-::
-
-   $ source .venv/bin/activate
-
-Sync the Pool Manager's cache:
-
-::
-
-   $ designate-manage pool-manager-cache sync
-
-Start the pool manager service:
-
-::
-
-   $ designate-pool-manager
-
-
-You'll now be seeing the log from the Pool Manager service.
-
-
-Initialize & Start the MiniDNS Service
-======================================
-
-.. index::
-   double: install; minidns
-
-Open up a new ssh window and log in to your server (or however you’re communicating with your server).
-
-::
-
-   $ cd openstack/designate
-
-If Designate was installed into a virtualenv, make sure your virtualenv is sourced
-
-::
-
-   $ source .venv/bin/activate
-
-Start the minidns service:
-
-::
-
    $ designate-mdns
+   $ designate-worker
+   $ designate-producer
 
-
-You'll now be seeing the log from the MiniDNS service.
+You’ll now be seeing the logs from the other services.
 
 Exercising the API
 ==================
@@ -395,19 +330,38 @@ Exercising the API
 .. note:: If you have a firewall enabled, make sure to open port 53, as well as Designate's default port (9001).
 
 Using a web browser, curl statement, or a REST client, calls can be made to the
-Designate API using the following format where "api_version" is either v1 or v2
-and "command" is any of the commands listed under the corresponding version at :ref:`rest`
+Designate API. You can find the various API calls on the api-ref_ document.
+
+For example:
 
 ::
 
-   http://IP.Address:9001/api_version/command
+   $ curl 127.0.0.1:9001/v2/zones -H 'Content-Type: application/json' --data '
+     {
+       "name": "example.com.",
+       "email": "example@example.com"
+     }'
+
+   {"status": "PENDING",.....
+   $ curl 127.0.0.1:9001/v2/zones
+   {"zones": [{"status": "ACTIVE",.....
+
+The ``ACTIVE`` status shows that the zone propagated. So you should be able to perform a DNS query and
+see it:
+
+::
+
+    $ dig @127.0.0.1 example.com SOA +short
+    ns1-1.example.org. example.example.com. 1487884120 3531 600 86400 3600
 
 You can find the IP Address of your server by running
 
 ::
 
-   curl -s checkip.dyndns.org | sed -e 's/.*Current IP Address: //' -e 's/<.*$//'
+   ip addr show eth0 | grep "inet\b" | awk '{print $2}' | cut -d/ -f1
 
-A couple of notes on the API:
+If you have Keystone set up, you can use it by configuring the ``[keystone_authtoken]`` section and changing
+the ``auth_strategy = keystone`` in the ``service:api`` section. This will make it easier to use clients
+like the ``openstack`` CLI that expect Keystone.
 
-- Before Domains are created, you must create a server (/v1/servers).
+.. _api-ref: https://developer.openstack.org/api-ref/dns/

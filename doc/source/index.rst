@@ -46,7 +46,6 @@ Install Guides
 
 Install Guides are on the main `OpenStack Install Guide Site <https://docs.openstack.org/project-install-guide/dns/ocata/>`_
 
-
 Upgrade Guides
 --------------
 
@@ -80,7 +79,7 @@ Developer Documentation
     :maxdepth: 1
 
     sourcedoc
-    install/ubuntu-dev
+    ubuntu-dev
     devstack
     tempest
     related
