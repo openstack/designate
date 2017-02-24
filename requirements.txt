@@ -34,7 +34,7 @@ SQLAlchemy<1.1.0,>=1.0.10 # MIT
 sqlalchemy-migrate>=0.9.6 # Apache-2.0
 stevedore>=1.17.1 # Apache-2.0
 suds-jurko>=0.6 # LGPLv3+
-setuptools!=24.0.0,>=16.0 # PSF/ZPL
+setuptools!=24.0.0,!=34.0.0,!=34.0.1,!=34.0.2,!=34.0.3,!=34.1.0,!=34.1.1,!=34.2.0,>=16.0 # PSF/ZPL
 WebOb>=1.6.0 # MIT
 dnspython>=1.14.0;python_version=='2.7' # http://www.dnspython.org/LICENSE
 dnspython3!=1.13.0,!=1.14.0,>=1.12.0;python_version>='3.0' # http://www.dnspython.org/LICENSE
