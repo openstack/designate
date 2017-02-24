@@ -24,7 +24,6 @@ New to Designate? Start here:
    :maxdepth: 1
 
    architecture
-   production-architecture
    glossary
    getting-involved
 
@@ -68,14 +67,11 @@ Designate in general
 
    ops/operations-faq
    backends
-   configuration
    designate-manage
    gmr
    integrations
-   memory-caching
    pools
    production-guidelines
-   service_status
    notifications
    support-matrix
    metrics
@@ -89,7 +85,6 @@ Developer Documentation
     sourcedoc
     install/ubuntu-dev
     devstack
-    functional-tests
     tempest
     related
 

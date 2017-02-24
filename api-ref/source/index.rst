@@ -20,4 +20,5 @@
 .. include:: dns-api-v2-tsigkey.inc
 .. include:: dns-api-v2-blacklist.inc
 .. include:: dns-api-v2-quota.inc
+.. include:: dns-api-v2-service-status.inc
 .. include:: dns-api-v2-reverse-floatingips.inc

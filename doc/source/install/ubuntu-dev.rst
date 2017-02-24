@@ -29,7 +29,7 @@ have a major impact on the installation process:
 
 This guide will walk you through setting up a typical development environment for Designate,
 using BIND9 as the DNS backend and MySQL as the storage backend. For a more complete discussion on
-installation & configuration options, please see :ref:`architecture` and :ref:`production-architecture`.
+installation & configuration options, please see :ref:`architecture`.
 
 For this guide you will need access to an Ubuntu Server (14.04).
 
@@ -66,7 +66,7 @@ Installing Designate
 
 .. note::
    This step is necessary to allow the installation of an up-to-date
-   pip, independent of the version packaged for Ubuntu. it is 
+   pip, independent of the version packaged for Ubuntu. it is
    also useful in isolating the remainder of Designate's dependencies
    from the rest of the system.
 
