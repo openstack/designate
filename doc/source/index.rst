@@ -44,11 +44,8 @@ Operations documentation
 Install Guides
 --------------
 
-.. toctree::
-    :maxdepth: 1
+Install Guides are on the main `OpenStack Install Guide Site <https://docs.openstack.org/project-install-guide/dns/ocata/>`_
 
-    install/ubuntu-kilo
-    install/ubuntu-liberty
 
 Upgrade Guides
 --------------
