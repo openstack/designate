@@ -36,6 +36,16 @@ and from the tempest repo, run::
 
     $ tox -e all-plugin -- designate
 
+If that doesn't run any tests, ensure that the designate-tempest-plugin is installed
+in the tox venv. Replace ``../designate-tempest-plugin/`` with the path to the plugin
+on your system. Then execute the above tox command again::
+
+    $ .tox/all-plugin/bin/pip install ../designate-tempest-plugin/
+    $ tox -e all-plugin -- designate
+
+.. note:: This is not necessary if ``designate-tempest-plugin`` is installed to
+          site-packages before the ``all-plugin`` tox venv is created.
+
 To run a single test case, run with the test case name, for example::
 
     $ tox -e all-plugin -- designate_tempest_plugin.tests.api.v2.test_zones.ZonesAdminTest.test_get_other_tenant_zone
