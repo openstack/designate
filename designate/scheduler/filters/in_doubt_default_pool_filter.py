@@ -45,9 +45,12 @@ class InDoubtDefaultPoolFilter(base.Filter):
     """
 
     def filter(self, context, pools, zone):
-        if len(pools):
+        if len(pools) > 1:
             default_pool_id = cfg.CONF['service:central'].default_pool_id
-            default_pool = objects.Pool(id=default_pool_id)
+            try:
+                default_pool = self.storage.get_pool(context, default_pool_id)
+            except Exception:
+                return pools
 
             if default_pool in pools:
                 pools = objects.PoolList()
