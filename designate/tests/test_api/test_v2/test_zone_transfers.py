@@ -13,6 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
 from designate.tests.test_api.test_v2 import ApiV2TestCase
 
 
@@ -212,6 +213,46 @@ class ApiV2ZoneTransfersTest(ApiV2TestCase):
         self.assertEqual(
             'COMPLETE',
             new_ztr.json['status'])
+
+    def test_get_zone_transfer_accept(self):
+        initial = self.client.post_json(
+            '/zones/%s/tasks/transfer_requests' % (self.zone.id),
+            {})
+
+        transfer_accept = self.client.post_json(
+            '/zones/tasks/transfer_accepts',
+            {
+                'zone_transfer_request_id':
+                    initial.json['id'],
+                'key': initial.json['key']
+            })
+        response = self.client.get(
+            '/zones/tasks/transfer_accepts/%s' %
+            (transfer_accept.json['id']))
+
+        # Check the headers are what we expect
+        self.assertEqual(200, response.status_int)
+        self.assertEqual('application/json', response.content_type)
+
+        # Check the body structure is what we expect
+        self.assertIn('links', response.json)
+        self.assertIn('self', response.json['links'])
+
+        # Check the values returned are what we expect
+        self.assertIn('id', response.json)
+        self.assertIn('created_at', response.json)
+        self.assertEqual('COMPLETE', response.json['status'])
+        self.assertEqual(
+            self.zone.id,
+            response.json['zone_id'])
+        self.assertIn('updated_at', response.json)
+        self.assertIn('key', response.json)
+        self.assertIn(initial.json['id'],
+                      response.json['zone_transfer_request_id'])
+
+    def test_get_zone_transfer_accept_invalid_id(self):
+        self._assert_invalid_uuid(self.client.get,
+            '/zones/tasks/transfer_accepts/%s')
 
     def test_get_zone_transfer_accepts(self):
         response = self.client.get(
