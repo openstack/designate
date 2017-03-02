@@ -1,21 +1,20 @@
-Operations FAQ
-==============
-
+Troubleshooting
+===============
 
 I have a broken zone
 --------------------
 
 A zone is considered broken when it is not receiving updates anymore. Its status can be "ERROR" if Designate detected the error condition or it can be stuck in "PENDING" for a long time.
 
-Review the logs from the API, Central, Zone Manager, Pool Manager and MiniDNS.
+Review the logs from the API, Central, Producer, Worker and MiniDNS.
 Identify the transaction ID of the last successful change and the first failing change. Using the ID, you can filter logs from the Designate components that are related to the same transaction.
 Look for log messages with ERROR level before and after the first failing update.
 
-Failures in updating a zone are usually related to problems in Zone Manager, Pool Manager, MiniDNS or the database.
+Failures in updating a zone are usually related to problems in Producer, Worker, MiniDNS or the database.
 
 Ensure the services are running and network connectivity is not impaired.
 
-Transient network issues can be the cause of a broken zone. Zone Manager and Pool Manager are stateful services and perform attempts at restoring failing zones over time. Restarting the services will trigger new attempts.
+Transient network issues can be the cause of a broken zone. Producer and Worker are stateful services and perform attempts at restoring failing zones over time. Restarting the services will trigger new attempts.
 
 
 I have a broken pool
@@ -77,17 +76,17 @@ Central, MiniDNS
 What needs access to RabbitMQ?
 ------------------------------
 
-The API, Central, Zone Manager, Pool Manager, MiniDNS
+The API, Central, Producer, Worker, MiniDNS
 
 What needs access to ZooKeeper?
 -------------------------------
 
-Pool and Zone Manager
+Pool and Producer
 
 What needs access to Memcached?
 -------------------------------
 
-API and Pool Manager
+API and Worker
 
 How do I monitor Designate?
 ---------------------------

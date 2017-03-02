@@ -1,4 +1,4 @@
-Source code documentation
+Source Code Documentation 
 -------------------------
 
 .. toctree::
