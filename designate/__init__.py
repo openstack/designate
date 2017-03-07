@@ -19,10 +19,6 @@ import os
 # the /etc/hosts file, causing problems for for installs.
 os.environ['EVENTLET_NO_GREENDNS'] = 'yes'
 
-import eventlet
-
-eventlet.monkey_patch()
-
 import socket
 
 from oslo_config import cfg

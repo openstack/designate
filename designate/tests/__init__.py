@@ -37,6 +37,10 @@ from designate.tests import fixtures
 from designate.tests import resources
 from designate.manage import database as manage_database
 
+import eventlet
+
+eventlet.monkey_patch(os=False)
+
 
 LOG = logging.getLogger(__name__)
 
