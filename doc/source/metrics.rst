@@ -1,8 +1,8 @@
 .. _metrics:
 
-*******
-metrics
-*******
+****************************
+Monasca-Statsd based Metrics
+****************************
 
 metrics Base
 ============

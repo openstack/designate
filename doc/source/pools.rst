@@ -15,18 +15,9 @@
 
 .. _pools:
 
-=====
-Pools
-=====
-
-Contents:
-
-.. toctree::
-   :maxdepth: 2
-   :glob:
-
-   pools/scheduler
-
+================
+DNS Server Pools
+================
 
 Overview
 ========
