@@ -192,7 +192,7 @@ Delete Server
 
   **Example response**
 
-  .. sourcecode:: http
+  .. sourcecode:: guess
 
       HTTP/1.1 200 OK
       Content-Type: text/html; charset=utf-8

@@ -12,11 +12,11 @@ example:
 
 .. code-block:: http
 
-   POST /v2/pools HTTP/1.1          # The HTTP Method, Path and HTTP Version
-   Accept: application/json         # Headers
+   POST /v2/pools HTTP/1.1
+   Accept: application/json
    Content-Type: application/json
 
-   {                                # The rest is the body of request
+   {
         "name": "Example Pool",
         "ns_records": [
             {

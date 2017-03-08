@@ -674,10 +674,11 @@ Update a record
 
    .. sourcecode:: http
 
-      PUT /domains/89acac79-38e7-497d-807c-a011e1310438/records/2e32e609-3a4f-45ba-bdef-e50eacd345ad
+      PUT /domains/89acac79-38e7-497d-807c-a011e1310438/records/2e32e609-3a4f-45ba-bdef-e50eacd345ad HTTP/1.1
       Host: example.com
       Accept: application/json
       Content-Type: application/json
+
       {
         "name": "www.example.com.",
         "type": "A",
@@ -763,7 +764,7 @@ List Records in a Domain
 
    **Example response**:
 
-   .. sourcecode:: http
+   .. sourcecode:: guess
 
       Content-Type: application/json
       Content-Length: 1209

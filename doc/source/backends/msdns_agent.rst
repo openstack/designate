@@ -53,7 +53,7 @@ Make sure that Python 2.7 or Python 3.4 is installed on the system already.
 To install Designate, clone the repository from https://github.com/openstack/designate
 and do a pip install. Example:
 
-.. code-block:: powershell
+.. code-block:: console
 
     git clone https://github.com/openstack/designate
     pip install .\\designate
@@ -66,7 +66,7 @@ Inside the configuration folder, make a copy of designate.conf.sample and rename
 the copy to designate.conf
 Example:
 
-.. code-block:: powershell
+.. code-block:: console
 
     copy C:\\etc\\designate\\designate.conf.sample C:\\etc\\designate\\designate.conf
 
@@ -91,13 +91,13 @@ Ensure that "policy_file" under the [default] section is set:
 
 Start the designate agent using (Python 2.7 was installed in the default location C:\\Python27):
 
-.. code-block:: powershell
+.. code-block:: console
 
     C:\\Python27\\Scripts\\designate-agent.exe --config-file 'C:\\etc\\designate\\designate.conf'
 
 You should see log messages similar to:
 
-.. code-block:: powershell
+.. code-block:: console
 
     2016-06-22 02:00:47.177 3436 INFO designate.backend.agent_backend.impl_msdns [-] Started msdns backend
     2016-06-22 02:00:47.177 3436 INFO designate.service [-] _handle_tcp thread started
