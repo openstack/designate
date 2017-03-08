@@ -19,7 +19,7 @@ import mock
 import testtools
 from oslo_config import cfg
 
-from functionaltests.common import utils
+import designate.tests.test_utils as utils
 from designate import exceptions
 from designate.worker.tasks import zone
 from designate.worker import processing
