@@ -3,7 +3,7 @@ Blacklists
 ==========
 
 The blacklist entries are used to manage blacklisted zones. If a zone
-is blacklisted, then it cannot be used tocreate a zone. By default,
+is blacklisted, then it cannot be used to create a zone. By default,
 only an admin can manage these entries. Blacklisted zones are stored
 as a regular expression (regex) pattern in the Database/Storage in
 the blacklists table.
