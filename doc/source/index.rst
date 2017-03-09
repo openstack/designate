@@ -39,7 +39,6 @@ User Guide
 
 .. toctree::
     :maxdepth: 1
-    :glob:
 
     howtos/manage-ptr-records
     howtos/secondary-zones
@@ -50,7 +49,6 @@ Administration Guide
 
 .. toctree::
     :maxdepth: 1
-    :glob:
 
     pools
     pool-scheduler
@@ -71,6 +69,8 @@ Upgrades
 
     upgrade/kilo
     upgrade/mitaka
+    upgrade/newton
+    upgrade/ocata
 
 Other Modules
 =============

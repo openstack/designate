@@ -17,8 +17,6 @@
 Upgrading to Mitaka from Liberty
 ********************************
 
-.. note:: This is a WIP - it will be updated as more items are added to Mitaka
-
 Pools Configuration
 ===================
 
