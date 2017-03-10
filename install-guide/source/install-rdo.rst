@@ -1,10 +1,10 @@
-.. _install-ubuntu:
+.. _install-rdo:
 
-Install and configure for Ubuntu
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Install and configure for Red Hat Enterprise Linux and CentOS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This section describes how to install and configure the DNS
-service for Ubuntu 14.04 (LTS).
+service for Red Hat Enterprise Linux 7 and CentOS 7.
 
 .. include:: common_prerequisites.rst
 
@@ -23,7 +23,7 @@ Install and configure components
 
    .. code-block:: console
 
-      # apt-get install designate
+      # yum install openstack-designate\*
 
 #. Create a ``designate`` database that is accessible by the ``designate``
    user. Replace ``DESIGNATE_DBPASS`` with a suitable password:
@@ -31,17 +31,17 @@ Install and configure components
    .. code-block:: console
 
       # mysql -u root -p
-      mysql> CREATE DATABASE designate;
-      mysql> GRANT ALL PRIVILEGES ON designate.* TO 'designate'@'localhost' \
+      MariaDB [(none)]> CREATE DATABASE designate;
+      MariaDB [(none)]> GRANT ALL PRIVILEGES ON designate.* TO 'designate'@'localhost' \
       IDENTIFIED BY 'DESIGNATE_DBPASS';
 
-#. Install the BIND9 packages:
+#. Install the BIND packages:
 
    .. code-block:: console
 
-      # apt-get install bind9
+      # yum install bind
 
-#. Add the following options in the ``/etc/bind/named.conf.options`` file:
+#. Add the following options in the ``/etc/named.conf`` file:
 
    .. code-block:: none
 
@@ -56,9 +56,9 @@ Install and configure components
 
    .. code-block:: console
 
-      # rndc-confgen -a -k designate -c /etc/designate/rndc.key
+      # rndc-confgen -a -k designate -c /etc/designate/rndc.key -r /dev/urandom
 
-#. Add the key to ``/etc/bind/named.conf``:
+#. Add the key to ``/etc/named.conf``:
 
    .. code-block:: none
 
@@ -75,11 +75,14 @@ Install and configure components
           allow { 127.0.0.1; } keys { "designate"; };
       };
 
-#. Restart the DNS service:
+
+#. Start the DNS service and configure it to start when the system boots:
 
    .. code-block:: console
 
-      # service bind9 restart
+      # systemctl enable named
+
+      # systemctl start named
 
 #. Edit the ``/etc/designate/designate.conf`` file and
    complete the following actions:
@@ -134,12 +137,14 @@ Install and configure components
 
         # su -s /bin/sh -c "designate-manage database sync" designate
 
-#. Restart the designate central and API services:
+#. Start the designate central and API services and configure them to start when
+   the system boots:
 
    .. code-block:: console
 
-      # service designate-central restart
-      # service designate-api restart
+      # systemctl enable designate-central designate-api
+
+      # systemctl start designate-central designate-api
 
 #. Create a pools.yaml file in ``/etc/designate/pools.yaml`` with the following
    contents:
@@ -196,18 +201,11 @@ Install and configure components
 
         # su -s /bin/sh -c "designate-manage pool update" designate
 
-#. Install Designate Worker, producer and mini-dns
+#. Start the designate and mDNS services and configure them to start when the
+   system boots:
 
    .. code-block:: console
 
-      # apt install designate-worker
-      # apt install designate-producer
-      # apt install designate-mdns
+      # systemctl enable designate-worker designate-producer designate-mdns
 
-#. Restart the designate and mDNS services:
-
-   .. code-block:: console
-
-      # service designate-worker restart
-      # service designate-producer restart
-      # service designate-mdns restart
+      # systemctl start designate-worker designate-producer designate-mdns

@@ -36,3 +36,5 @@ Verify operation of the DNS service.
       This output should indicate at least one of each of the ``central``,
       ``api``, ``zone_manager``, ``mdns`` and ``pool_manager`` components
       on the controller node.
+
+      This output may differ slightly depending on the distribution.
