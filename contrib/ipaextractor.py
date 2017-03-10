@@ -218,10 +218,8 @@ def main():
         raise CannotUseIPABackend(cuiberrorstr)
     if cfg.CONF.debug:
         LOG.setLevel(logging.DEBUG)
-    elif cfg.CONF.verbose:
-        LOG.setLevel(logging.INFO)
     else:
-        LOG.setLevel(logging.WARN)
+        LOG.setLevel(logging.INFO)
     ipabackend = impl_ipa.IPABackend(None)
     ipabackend.start()
     version = cfg.CONF['backend:ipa'].ipa_version
