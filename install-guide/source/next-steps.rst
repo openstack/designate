@@ -5,8 +5,8 @@ Next steps
 
 Your OpenStack environment now includes the designate service.
 
-To add additional services, see
-docs.openstack.org/install-guides/index.html .
+To add additional services, see the `additional OpenStack install documentation
+<http://docs.openstack.org/#install-guides>`_.
 
 To learn more about the designate service, read the `Designate developer documentation
-<http://docs.openstack.org/developer/designate/index.html>`__.
+<http://docs.openstack.org/developer/designate/index.html>`_.
