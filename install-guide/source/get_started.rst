@@ -37,7 +37,8 @@ The DNS service consists of the following components:
   Some DNS Servers requrire commands be run locally, and to do this we use
   this component.
 
-  .. note:: The majority of Designate installs will not need this component.
+  .. note:: The majority of the DNS service installs will not need this
+     component.
 
 ``Customer Facing DNS Servers``
   Serves DNS requests to end users. They are orchestreated by the

@@ -12,7 +12,7 @@ In environments that include the DNS service, you can create a DNS Zone.
 
       $ . demo-openrc
 
-#. Create a Zone called ``example.com.``:
+#. Create a DNS Zone called ``example.com.``:
 
    .. code-block:: console
 
@@ -39,7 +39,7 @@ In environments that include the DNS service, you can create a DNS Zone.
       | version        | 1                                    |
       +----------------+--------------------------------------+
 
-#. After a short time, verify successful creation of the zone
+#. After a short time, verify successful creation of the DNS Zone:
 
    .. code-block:: console
 
@@ -50,7 +50,7 @@ In environments that include the DNS service, you can create a DNS Zone.
       | 14093115-0f0f-497a-ac69-42235e46c26f | example.com. | PRIMARY | 1468421656 | ACTIVE | NONE   |
       +--------------------------------------+--------------+---------+------------+--------+--------+
 
-#. We can now create RecordSets in this zone
+#. You can now create RecordSets in this DNS Zone:
 
    .. code-block:: console
 
@@ -74,7 +74,7 @@ In environments that include the DNS service, you can create a DNS Zone.
       | zone_name   | example.com.                         |
       +-------------+--------------------------------------+
 
-#. Delete the zone.
+#. Delete the DNS Zone:
 
    .. code-block:: console
 
