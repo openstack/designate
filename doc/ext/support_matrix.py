@@ -21,6 +21,8 @@ It is used via a single directive in the .rst file
   .. support_matrix::
 
 """
+import os
+
 import six
 import six.moves.configparser as config_parser
 import sys
@@ -29,6 +31,7 @@ from docutils import nodes
 from docutils.parsers import rst
 from designate.backend.base import Backend
 from designate.backend.agent_backend.base import AgentBackend
+from sphinx.util.osutil import copyfile
 
 
 class SupportMatrix(object):
@@ -427,6 +430,29 @@ class SupportMatrixDirective(rst.Directive):
         return content
 
 
-def setup(app):
+def copy_assets(app, exception):
+    assets = ['support-matrix.css', 'support-matrix.js']
+    if app.builder.name != 'html' or exception:
+        return
+    app.info('Copying assets: %s' % ', '.join(assets))
+    for asset in assets:
+        dest = os.path.join(app.builder.outdir, '_static', asset)
+        source = os.path.abspath(os.path.dirname(__file__))
+        copyfile(os.path.join(source, 'assets', asset), dest)
+
+
+def add_assets(app):
     app.add_stylesheet('support-matrix.css')
+    app.add_javascript('support-matrix.js')
+
+
+def setup(app):
+
+    # Add all the static assets to our build during the early stage of building
+    app.connect('builder-inited', add_assets)
+
+    # This copies all the assets (css, js, fonts) over to the build
+    # _static directory during final build.
+    app.connect('build-finished', copy_assets)
+
     app.add_directive('support_matrix', SupportMatrixDirective)

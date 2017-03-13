@@ -12,6 +12,7 @@
 # serve to show the default.
 
 import sys, os
+import openstackdocstheme
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -30,8 +31,8 @@ sys.path.insert(0, os.path.abspath('./'))
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.viewcode',
               'sphinxcontrib.httpdomain',
-              'oslosphinx',
-              'ext.support_matrix']
+              'ext.support_matrix',
+              'ext.custom_css']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -98,12 +99,16 @@ modindex_common_prefix = ["designate."]
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'default'
+html_theme = 'openstackdocs'
+html_theme_path = [openstackdocstheme.get_html_theme_path()]
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-html_theme_options = {}
+html_theme_options = {
+    "sidebar_mode": "toc",
+    "display_toc": True
+}
 
 # Add any paths that contain custom themes here, relative to this directory.
 #html_theme_path = []
