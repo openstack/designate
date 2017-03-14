@@ -52,6 +52,29 @@ but it will **not** trigger zones to be moved from one pool to another.
     Currently the only zone attribute that is accepted is the `pool_id` attribute.
     As more filters are merged there will be support for dynamic filters.
 
+Target vs. Nameserver
+=====================
+
+One thing that can be confusing about pools is the differentiation
+between a target and a nameserver. The target is where Designate will
+try to write the change, while a namserver is where Designate checks
+that the change exists.
+
+A great example of this is `bind's stealth master system
+<http://www.zytrax.com/books/dns/ch4/#stealth>`_. In this
+configuration, there could be a stealth master that you configure as
+your target and a set of slaves pointed to that master as your
+nameservers. Designate will write to the master and then look for the
+changes on the slaves before considering the change active.
+
+Another example would be where Designate uses an API backend such as
+DynDNS or even another Designate instance. In this situation, you will
+typically have a single target with a set of nameservers to test that
+meet your requirements.
+
+Yet another example is when using a Designate agent. In this scenario
+your agent instances are the targets and the nameservers the agent
+updates would be checked for the correct information.
 
 Managing Pools
 ==============
