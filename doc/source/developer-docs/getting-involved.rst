@@ -2,6 +2,11 @@
 Getting Involved
 ================
 
+.. toctree::
+    :maxdepth: 1
+
+    devstack
+
 #openstack-dns
 --------------
 There is an active IRC channel at irc://freenode.net/#openstack-dns, where many of the designate contributors can be found, as
