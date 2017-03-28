@@ -37,7 +37,7 @@ class WorkerAPI(object):
     RPC_API_VERSION = '1.0'
 
     def __init__(self, topic=None):
-        topic = topic if topic else cfg.CONF.worker_topic
+        topic = topic if topic else cfg.CONF['service:worker'].worker_topic
 
         target = messaging.Target(topic=topic, version=self.RPC_API_VERSION)
         self.client = rpc.get_client(target, version_cap='1.0')

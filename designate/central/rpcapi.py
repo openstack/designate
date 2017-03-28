@@ -72,7 +72,7 @@ class CentralAPI(object):
     LOGGING_BLACKLIST = ['update_service_status']
 
     def __init__(self, topic=None):
-        topic = topic if topic else cfg.CONF.central_topic
+        topic = topic if topic else cfg.CONF['service:central'].central_topic
 
         target = messaging.Target(topic=topic, version=self.RPC_API_VERSION)
         self.client = rpc.get_client(target, version_cap='6.2')
