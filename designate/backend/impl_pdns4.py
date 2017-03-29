@@ -11,7 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import urlparse
+from six.moves import urllib
 
 import requests
 from oslo_log import log as logging
@@ -37,7 +37,7 @@ class PDNS4Backend(base.Backend):
         self.api_token = self.options.get('api_token')
 
     def _build_url(self, zone=''):
-        r_url = urlparse.urlparse(self.api_endpoint)
+        r_url = urllib.parse.urlparse(self.api_endpoint)
         return "%s://%s/api/v1/servers/localhost/zones%s%s" % (
             r_url.scheme, r_url.netloc, '/' if zone else '', zone)
 
