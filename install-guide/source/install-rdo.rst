@@ -175,7 +175,7 @@ Install and configure components
         # List out the targets for this pool. For BIND there will be one
         # entry for each BIND server, as we have to run rndc command on each server
         targets:
-          - type: bind
+          - type: bind9
             description: BIND9 Server 1
 
             # List out the designate-mdns servers from which BIND servers should
