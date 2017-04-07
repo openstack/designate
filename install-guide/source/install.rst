@@ -17,3 +17,4 @@ Note that installation and configuration vary by distribution.
 
    install-rdo.rst
    install-ubuntu.rst
+   install-obs.rst
