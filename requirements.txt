@@ -2,7 +2,7 @@
 # of appearance. Changing the order has an impact on the overall integration
 # process, which may cause wedges in the gate later.
 
-Babel>=2.3.4 # BSD
+Babel!=2.4.0,>=2.3.4 # BSD
 eventlet!=0.18.3,>=0.18.2 # MIT
 Flask!=0.11,<1.0,>=0.10 # BSD
 greenlet>=0.3.2 # MIT
@@ -11,11 +11,11 @@ jsonschema!=2.5.0,<3.0.0,>=2.0.0 # MIT
 keystoneauth1>=2.18.0 # Apache-2.0
 keystonemiddleware>=4.12.0 # Apache-2.0
 netaddr!=0.7.16,>=0.7.13 # BSD
-oslo.config!=3.18.0,>=3.14.0 # Apache-2.0
+oslo.config>=3.22.0 # Apache-2.0
 oslo.concurrency>=3.8.0 # Apache-2.0
-oslo.messaging>=5.14.0 # Apache-2.0
+oslo.messaging>=5.19.0 # Apache-2.0
 oslo.middleware>=3.10.0 # Apache-2.0
-oslo.log>=3.11.0 # Apache-2.0
+oslo.log>=3.22.0 # Apache-2.0
 oslo.reports>=0.6.0 # Apache-2.0
 oslo.rootwrap>=5.0.0 # Apache-2.0
 oslo.serialization>=1.10.0 # Apache-2.0
@@ -23,22 +23,22 @@ oslo.service>=1.10.0 # Apache-2.0
 oslo.utils>=3.20.0 # Apache-2.0
 Paste # MIT
 PasteDeploy>=1.5.0 # MIT
-pbr>=2.0.0 # Apache-2.0
+pbr!=2.1.0,>=2.0.0 # Apache-2.0
 pecan!=1.0.2,!=1.0.3,!=1.0.4,!=1.2,>=1.0.0 # BSD
 python-designateclient>=1.5.0 # Apache-2.0
 python-neutronclient>=5.1.0 # Apache-2.0
 requests!=2.12.2,!=2.13.0,>=2.10.0 # Apache-2.0
 tenacity>=3.2.1 # Apache-2.0
 six>=1.9.0 # MIT
-SQLAlchemy<1.1.0,>=1.0.10 # MIT
+SQLAlchemy!=1.1.5,!=1.1.6,!=1.1.7,!=1.1.8,>=1.0.10 # MIT
 sqlalchemy-migrate>=0.9.6 # Apache-2.0
 stevedore>=1.20.0 # Apache-2.0
 suds-jurko>=0.6 # LGPLv3+
-setuptools!=24.0.0,!=34.0.0,!=34.0.1,!=34.0.2,!=34.0.3,!=34.1.0,!=34.1.1,!=34.2.0,!=34.3.0,!=34.3.1,>=16.0 # PSF/ZPL
-WebOb>=1.6.0 # MIT
+setuptools!=24.0.0,!=34.0.0,!=34.0.1,!=34.0.2,!=34.0.3,!=34.1.0,!=34.1.1,!=34.2.0,!=34.3.0,!=34.3.1,!=34.3.2,>=16.0 # PSF/ZPL
+WebOb>=1.7.1 # MIT
 dnspython>=1.14.0;python_version=='2.7' # http://www.dnspython.org/LICENSE
 dnspython3!=1.13.0,!=1.14.0,>=1.12.0;python_version>='3.0' # http://www.dnspython.org/LICENSE
-oslo.db>=4.15.0 # Apache-2.0
+oslo.db>=4.19.0 # Apache-2.0
 oslo.i18n>=2.1.0 # Apache-2.0
 oslo.context>=2.12.0 # Apache-2.0
 oslo.policy>=1.17.0 # Apache-2.0
@@ -46,5 +46,5 @@ Werkzeug>=0.7 # BSD License
 python-memcached>=1.56 # PSF
 tooz>=1.47.0 # Apache-2.0
 debtcollector>=1.2.0 # Apache-2.0
-os-win>=1.4.0 # Apache-2.0
+os-win>=2.0.0 # Apache-2.0
 monasca-statsd>=1.1.0 # Apache-2.0
