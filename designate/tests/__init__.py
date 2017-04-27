@@ -55,6 +55,10 @@ cfg.CONF.import_opt('cache_driver', 'designate.pool_manager',
 cfg.CONF.import_opt('connection',
                     'designate.pool_manager.cache.impl_sqlalchemy',
                     group='pool_manager_cache:sqlalchemy')
+cfg.CONF.import_opt('emitter_type', 'designate.service_status',
+                    group="heartbeat_emitter")
+cfg.CONF.import_opt('scheduler_filters', 'designate.scheduler',
+                    group="service:central")
 default_pool_id = cfg.CONF['service:central'].default_pool_id
 
 _TRUE_VALUES = ('true', '1', 'yes', 'y')

@@ -20,3 +20,23 @@ designate.tests.unit.test_central.test_basic
 designate.tests.unit.test_pool
 designate.tests.unit.test_producer.test_tasks
 
+# Eventlet 0.20.1 in upper-constraint remove variable EVENTLET_GREEN_DNS
+# and cause below tests failure.
+# https://github.com/eventlet/eventlet/issues/390
+# We should blacklist theses tests until openstack upper-constraint upgrade
+# eventlet to 0.21.0.
+designate.tests.test_agent.test_backends.test_denominator.DenominatorAgentBackendTestCase.test_create_zone
+designate.tests.test_agent.test_backends.test_denominator.DenominatorAgentBackendTestCase.test_update_zone
+designate.tests.test_agent.test_backends.test_gdnsd.GdnsdAgentBackendTestCase.test_create_zone
+designate.tests.test_agent.test_backends.test_gdnsd.GdnsdAgentBackendTestCase.test_update_zone
+designate.tests.test_agent.test_handler.AgentRequestHandlerTest.test_transfer_source
+designate.tests.test_api.test_v2.test_import_export.APIV2ZoneImportExportTest.test_import_export
+designate.tests.unit.test_agent.test_backends.test_djbdns.DjbdnsAgentBackendUnitTestCase.test_create_zone
+designate.tests.unit.test_agent.test_backends.test_djbdns.DjbdnsAgentBackendUnitTestCase.test_update_zone
+designate.tests.unit.test_agent.test_backends.test_knot2.Knot2AgentBackendUnitTestCase.test_create_zone
+designate.tests.unit.test_agent.test_backends.test_knot2.Knot2AgentBackendUnitTestCase.test_create_zone_already_there
+designate.tests.unit.test_agent.test_backends.test_knot2.Knot2AgentBackendUnitTestCase.test_update_zone
+designate.tests.unit.test_agent.test_backends.test_msdns.MSDNSAgentBackendUnitTestCase.test_create_zone
+designate.tests.unit.test_agent.test_backends.test_msdns.MSDNSAgentBackendUnitTestCase.test_create_zone_already_existing_diff
+designate.tests.unit.test_agent.test_backends.test_msdns.MSDNSAgentBackendUnitTestCase.test_create_zone_already_existing_identical
+designate.tests.unit.test_agent.test_backends.test_msdns.MSDNSAgentBackendUnitTestCase.test_update_zone
