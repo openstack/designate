@@ -50,7 +50,7 @@ class MdnsAPI(object):
     RPC_XFR_API_VERSION = '1.0'
 
     def __init__(self, topic=None):
-        topic = topic if topic else cfg.CONF.mdns_topic
+        topic = topic if topic else cfg.CONF['service:mdns'].mdns_topic
 
         notify_target = messaging.Target(topic=topic,
                                          namespace='notify',

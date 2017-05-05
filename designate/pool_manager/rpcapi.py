@@ -49,7 +49,8 @@ class PoolManagerAPI(object):
     RPC_API_VERSION = '2.1'
 
     def __init__(self, topic=None):
-        self.topic = topic if topic else cfg.CONF.pool_manager_topic
+        self.topic = topic if topic \
+            else cfg.CONF['service:pool_manager'].pool_manager_topic
 
         target = messaging.Target(topic=self.topic,
                                   version=self.RPC_API_VERSION)

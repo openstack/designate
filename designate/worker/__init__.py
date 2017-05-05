@@ -54,7 +54,9 @@ OPTS = [
                 help='Whether to allow worker to send NOTIFYs, this will '
                      'noop NOTIFYs in mdns if true'),
     cfg.BoolOpt('export-synchronous', default=True,
-                help='Whether to allow synchronous zone exports')
+                help='Whether to allow synchronous zone exports'),
+    cfg.StrOpt('worker_topic', default='worker',
+               help='RPC topic for worker component')
 ]
 
 CONF.register_opts(OPTS, group='service:worker')

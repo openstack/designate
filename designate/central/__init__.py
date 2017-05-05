@@ -43,4 +43,7 @@ cfg.CONF.register_opts([
     cfg.StrOpt('default_pool_id',
                default='794ccc2c-d751-44fe-b57f-8894c9f5c842',
                help="The name of the default pool"),
+    cfg.StrOpt('central_topic',
+               default='central',
+               help="RPC topic name of central service."),
 ], group='service:central')

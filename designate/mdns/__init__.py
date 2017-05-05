@@ -53,6 +53,8 @@ OPTS = [
                help='The storage driver to use'),
     cfg.IntOpt('max-message-size', default=65535,
                help='Maximum message size to emit'),
+    cfg.StrOpt('mdns_topic', default='mdns',
+               help='RPC topic name for mini-DNS')
 ]
 
 cfg.CONF.register_opts(OPTS, group='service:mdns')

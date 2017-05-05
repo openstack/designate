@@ -229,7 +229,7 @@ class Service(service.RPCService, service.Service):
 
     @property
     def service_name(self):
-        return 'central'
+        return cfg.CONF['service:central'].central_topic
 
     def start(self):
 
