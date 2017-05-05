@@ -56,7 +56,7 @@ class RestController(pecan.rest.RestController):
         return pool_mgr_rpcapi.PoolManagerAPI.get_instance()
 
     def _apply_filter_params(self, params, accepted_filters, criterion):
-        invalid=[]
+        invalid = []
         for k in params:
             if k in accepted_filters:
                 criterion[k] = params[k].replace("*", "%")

@@ -355,7 +355,7 @@ class DNSService(object):
         Raises no exception: it's to be run in an eventlet green thread
 
         :param addr: Tuple of the client's (IP addr, Port)
-        :type addr: tupple
+        :type addr: tuple
         :param client: Client socket
         :type client: socket
         :raises: None

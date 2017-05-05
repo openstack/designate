@@ -117,7 +117,7 @@ class NeutronNetworkAPI(base.NetworkAPI):
                 # activated in a particular region, we'll just log the failure
                 # and go on with our lives.
                 LOG.warning(_LW("Calling Neutron resulted in a 401, "
-                             "please investigate."))
+                                "please investigate."))
                 LOG.exception(e)
                 return
             except Exception as e:
@@ -145,7 +145,7 @@ class NeutronNetworkAPI(base.NetworkAPI):
 
         # NOTE: Sadly tg code doesn't give us a good way to handle failures.
         if failed:
-            msg = 'Failed retrieving FLoatingIPs from Neutron in %s' % \
+            msg = 'Failed retrieving FloatingIPs from Neutron in %s' % \
                 ", ".join(['%s - %s' % (i[1], i[2]) for i in failed])
             raise exceptions.NeutronCommunicationFailure(msg)
         return data

@@ -626,7 +626,7 @@ class AttributeListObjectMixin(ListObjectMixin):
     """
     Mixin class for "Attribute" objects.
 
-    Attribute objects are ListObjects, who's memebers have a "key" and "value"
+    Attribute objects are ListObjects, who's members have a "key" and "value"
     property, which should be exposed on the list itself as list.<key>.
     """
     @classmethod

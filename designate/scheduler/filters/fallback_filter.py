@@ -31,7 +31,7 @@ class FallbackFilter(base.Filter):
     .. note::
 
         This should be used as one of the last filters, if you want to preserve
-        behavoir from before the scheduler existed.
+        behavior from before the scheduler existed.
     """
 
     name = 'fallback'

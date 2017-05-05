@@ -58,5 +58,5 @@ def upgrade(migrate_engine):
             constraint.create()
         except exc.IntegrityError as e:
             LOG.error(explanation, e)
-            # Use sys.exit so we dont blow up with a huge trace
+            # Use sys.exit so we don't blow up with a huge trace
             sys.exit(1)

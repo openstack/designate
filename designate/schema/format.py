@@ -20,7 +20,7 @@ from jsonschema import compat
 import netaddr
 
 
-# NOTE(kiall): All of the below regular expressions are termined with
+# NOTE(kiall): All of the below regular expressions are terminated with
 #              "\Z", rather than simply "$" to ensure a string with a
 #              trailing newline is NOT matched. See bug #1471158.
 

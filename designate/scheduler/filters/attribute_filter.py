@@ -40,7 +40,7 @@ class AttributeFilter(base.Filter):
             "name": "example.com."
         }
 
-    The zone attributes are matched against the potential pool candiates, and
+    The zone attributes are matched against the potential pool candidates, and
     any pools that do not match **all** hints are removed.
 
     .. warning::
