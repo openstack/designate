@@ -117,7 +117,7 @@ class DesignateCLI(object):
         """Run a openstack client command using JSON output
 
         :returns: dict
-        :raises: CalledProcessError
+        :raises CalledProcessError:
         """
         cmd = "%s %s -f json" % (openstack_cli, cmd)
         log.debug("  running %s" % cmd)
