@@ -103,8 +103,6 @@ class zoneTest(oslotest.base.BaseTestCase):
             zone.validate()
 
     def test_validate_primary_no_email(self):
-        masters = objects.ZoneMasterList()
-        masters.append(objects.ZoneMaster.from_data("10.0.0.1:53"))
         zone = objects.Zone(
             name='example.com.',
             type='PRIMARY',
