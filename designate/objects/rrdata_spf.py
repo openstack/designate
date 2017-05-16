@@ -14,20 +14,18 @@
 #    under the License.
 from designate.objects.record import Record
 from designate.objects.record import RecordList
+from designate.objects import ovo_base as base
+from designate.objects import fields
 
 
+@base.DesignateRegistry.register
 class SPF(Record):
     """
     SPF Resource Record Type
     Defined in: RFC4408
     """
-    FIELDS = {
-        'txt_data': {
-            'schema': {
-                'type': 'string',
-            },
-            'required': True
-        }
+    fields = {
+        'txt_data': fields.StringFields()
     }
 
     def _to_string(self):
@@ -41,6 +39,10 @@ class SPF(Record):
     RECORD_TYPE = 99
 
 
+@base.DesignateRegistry.register
 class SPFList(RecordList):
 
     LIST_ITEM_TYPE = SPF
+    fields = {
+        'objects': fields.ListOfObjectsField('SPF'),
+    }

@@ -14,56 +14,27 @@
 #    under the License.
 from designate.objects.record import Record
 from designate.objects.record import RecordList
+from designate.objects import ovo_base as base
+from designate.objects import fields
 
 
+@base.DesignateRegistry.register
 class SRV(Record):
     """
     SRV Resource Record Type
     Defined in: RFC2782
     """
-    FIELDS = {
-        'priority': {
-            'schema': {
-                'type': 'integer',
-                'minimum': 0,
-                'maximum': 65535
-            },
-            'required': True
-        },
-        'weight': {
-            'schema': {
-                'type': 'integer',
-                'minimum': 0,
-                'maximum': 65535
-            },
-            'required': True
-        },
-        'port': {
-            'schema': {
-                'type': 'integer',
-                'minimum': 0,
-                'maximum': 65535
-            },
-            'required': True
-        },
-        'target': {
-            'schema': {
-                'type': 'string',
-                'format': 'domainname',
-                'maxLength': 255,
-            },
-            'required': True
-        }
+    fields = {
+        'priority': fields.IntegerFields(minimum=0, maximum=65535),
+        'weight': fields.IntegerFields(minimum=0, maximum=65535),
+        'port': fields.IntegerFields(minimum=0, maximum=65535),
+        'target': fields.DomainField(maxLength=255),
     }
 
     @classmethod
     def get_recordset_schema_changes(cls):
         return {
-            'name': {
-                'schema': {
-                    'format': 'srv-hostname',
-                },
-            },
+            'name': fields.SRVField(maxLength=255, nullable=True)
         }
 
     def _to_string(self):
@@ -81,6 +52,10 @@ class SRV(Record):
     RECORD_TYPE = 33
 
 
+@base.DesignateRegistry.register
 class SRVList(RecordList):
 
     LIST_ITEM_TYPE = SRV
+    fields = {
+        'objects': fields.ListOfObjectsField('SRV'),
+    }

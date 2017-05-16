@@ -14,21 +14,18 @@
 #    under the License.
 from designate.objects.record import Record
 from designate.objects.record import RecordList
+from designate.objects import ovo_base as base
+from designate.objects import fields
 
 
+@base.DesignateRegistry.register
 class A(Record):
     """
     A Resource Record Type
     Defined in: RFC1035
     """
-    FIELDS = {
-        'address': {
-            'schema': {
-                'type': 'string',
-                'format': 'ipv4',
-            },
-            'required': True
-        }
+    fields = {
+        'address': fields.IPV4AddressField()
     }
 
     def _to_string(self):
@@ -42,6 +39,11 @@ class A(Record):
     RECORD_TYPE = 1
 
 
+@base.DesignateRegistry.register
 class AList(RecordList):
 
     LIST_ITEM_TYPE = A
+
+    fields = {
+        'objects': fields.ListOfObjectsField('A'),
+    }

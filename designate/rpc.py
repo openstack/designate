@@ -131,7 +131,10 @@ class DesignateObjectSerializer(messaging.NoOpSerializer):
 
     def deserialize_entity(self, context, entity):
         if isinstance(entity, dict) and 'designate_object.name' in entity:
-            entity = objects.DesignateObject.from_primitive(entity)
+            if 'designate_object.version' in entity:
+                entity = objects.OVODesignateObject.from_primitive(entity)
+            else:
+                entity = objects.DesignateObject.from_primitive(entity)
         elif isinstance(entity, (tuple, list, set)):
             entity = self._process_iterable(context, self.deserialize_entity,
                                             entity)

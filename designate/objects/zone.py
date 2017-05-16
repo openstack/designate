@@ -14,159 +14,57 @@
 #    under the License.
 from designate import utils
 from designate import exceptions
-from designate.objects import base
 from designate.objects.validation_error import ValidationError
 from designate.objects.validation_error import ValidationErrorList
+from designate.objects import ovo_base as base
+from designate.objects import fields
 
 
-class Zone(base.DictObjectMixin, base.SoftDeleteObjectMixin,
-           base.PersistentObjectMixin, base.DesignateObject):
-    FIELDS = {
-        'shard': {
-            'schema': {
-                'type': 'integer',
-                'minimum': 0,
-                'maximum': 4095
-            }
-        },
-        'tenant_id': {
-            'schema': {
-                'type': 'string',
-            },
-            'immutable': True
-        },
-        'name': {
-            'schema': {
-                'type': 'string',
-                'description': 'Zone name',
-                'format': 'domainname',
-                'maxLength': 255,
-            },
-            'immutable': True,
-            'required': True
-        },
-        'email': {
-            'schema': {
-                'type': 'string',
-                'description': 'Hostmaster email address',
-                'format': 'email',
-                'maxLength': 255
-            },
-            'required': False
-        },
-        'ttl': {
-            'schema': {
-                'type': ['integer', 'null'],
-                'minimum': 1,
-                'maximum': 2147483647
-            },
-        },
-        'refresh': {
-            'schema': {
-                'type': 'integer',
-                'minimum': 0,
-                'maximum': 2147483647
-            },
-            'read_only': True
-        },
-        'retry': {
-            'schema': {
-                'type': 'integer',
-                'minimum': 0,
-                'maximum': 2147483647
-            },
-            'read_only': True
-        },
-        'expire': {
-            'schema': {
-                'type': 'integer',
-                'minimum': 0,
-                'maximum': 2147483647
-            },
-            'read_only': True
-        },
-        'minimum': {
-            'schema': {
-                'type': 'integer',
-                'minimum': 0,
-                'maximum': 2147483647
-            },
-            'read_only': True
-        },
-        'parent_zone_id': {
-            'schema': {
-                'type': ['string', 'null'],
-                'format': 'uuid'
-            },
-            'read_only': True
-        },
-        'serial': {
-            'schema': {
-                'type': 'integer',
-                'minimum': 1,
-                'maximum': 4294967295,
-            },
-            'read_only': True
-        },
-        'description': {
-            'schema': {
-                'type': ['string', 'null'],
-                'maxLength': 160
-            },
-        },
-        'status': {
-            'schema': {
-                'type': 'string',
-                'enum': ['ACTIVE', 'PENDING', 'ERROR',
-                        'DELETED', 'SUCCESS', 'NO_ZONE']
-            },
-            'read_only': True,
-        },
-        'action': {
-            'schema': {
-                'type': 'string',
-                'enum': ['CREATE', 'DELETE', 'UPDATE', 'NONE'],
-            },
-            'read_only': True
-        },
-        'pool_id': {
-            'schema': {
-                'type': 'string',
-                'format': 'uuid',
-            },
-            'immutable': True,
-        },
-        'recordsets': {
-            'relation': True,
-            'relation_cls': 'RecordSetList'
-        },
-        'attributes': {
-            'relation': True,
-            'relation_cls': 'ZoneAttributeList'
-        },
-        'masters': {
-            'relation': True,
-            'relation_cls': 'ZoneMasterList'
-        },
-        'type': {
-            'schema': {
-                'type': 'string',
-                'enum': ['SECONDARY', 'PRIMARY'],
-            },
-            'immutable': True
-        },
-        'transferred_at': {
-            'schema': {
-                'type': ['string', 'null'],
-                'format': 'date-time',
-            },
-            'read_only': True
-        },
-        'delayed_notify': {
-            'schema': {
-                'type': 'boolean',
-            },
-        },
+@base.DesignateRegistry.register
+class Zone(base.DesignateObject, base.DictObjectMixin,
+           base.PersistentObjectMixin, base.SoftDeleteObjectMixin):
+    def __init__(self, *args, **kwargs):
+        super(Zone, self).__init__(*args, **kwargs)
+
+    fields = {
+        'shard': fields.IntegerFields(nullable=True, minimum=0, maximum=4095),
+        'tenant_id': fields.StringFields(nullable=True, read_only=False),
+        'name': fields.DomainField(maxLength=255),
+        'email': fields.EmailField(maxLength=255, nullable=True),
+        'ttl': fields.IntegerFields(nullable=True, minimum=1,
+                                    maximum=2147483647),
+        'refresh': fields.IntegerFields(nullable=True, minimum=0,
+                                        maximum=2147483647, read_only=False),
+        'retry': fields.IntegerFields(nullable=True, minimum=0,
+                                      maximum=2147483647, read_only=False),
+        'expire': fields.IntegerFields(nullable=True, minimum=0,
+                                       maximum=2147483647, read_only=False),
+        'minimum': fields.IntegerFields(nullable=True, minimum=0,
+                                        maximum=2147483647, read_only=False),
+        'parent_zone_id': fields.UUIDFields(nullable=True, read_only=False),
+        'serial': fields.IntegerFields(nullable=True, minimum=0,
+                                       maximum=4294967295, read_only=False),
+        'description': fields.StringFields(nullable=True, maxLength=160),
+        'status': fields.EnumField(nullable=True, read_only=False,
+                                   valid_values=[
+                                       'ACTIVE', 'PENDING', 'ERROR',
+                                       'DELETED', 'SUCCESS', 'NO_ZONE']
+
+                                   ),
+        'action': fields.EnumField(nullable=True,
+                                   valid_values=[
+                                       'CREATE', 'DELETE', 'UPDATE', 'NONE']
+                                   ),
+        'pool_id': fields.UUIDFields(nullable=True, read_only=False),
+        'recordsets': fields.ObjectField('RecordSetList', nullable=True),
+        'attributes': fields.ObjectField('ZoneAttributeList', nullable=True),
+        'masters': fields.ObjectField('ZoneMasterList', nullable=True),
+        'type': fields.EnumField(nullable=True,
+                                 valid_values=['SECONDARY', 'PRIMARY'],
+                                 read_only=False
+                                 ),
+        'transferred_at': fields.DateTimeField(nullable=True, read_only=False),
+        'delayed_notify': fields.BooleanField(nullable=True),
     }
 
     STRING_KEYS = [
@@ -229,7 +127,7 @@ class Zone(base.DictObjectMixin, base.SoftDeleteObjectMixin,
                         e.validator = 'not_allowed'
                         e.validator_value = i
                         e.message = "'%s' can't be specified when type is " \
-                            "SECONDARY" % i
+                                    "SECONDARY" % i
                         errors.append(e)
                 self._raise(errors)
 
@@ -245,6 +143,11 @@ class Zone(base.DictObjectMixin, base.SoftDeleteObjectMixin,
             self._raise(errors)
 
 
+@base.DesignateRegistry.register
 class ZoneList(base.ListObjectMixin, base.DesignateObject,
                base.PagedListObjectMixin):
     LIST_ITEM_TYPE = Zone
+
+    fields = {
+        'objects': fields.ListOfObjectsField('Zone'),
+    }

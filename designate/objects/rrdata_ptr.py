@@ -14,22 +14,18 @@
 #    under the License.
 from designate.objects.record import Record
 from designate.objects.record import RecordList
+from designate.objects import ovo_base as base
+from designate.objects import fields
 
 
+@base.DesignateRegistry.register
 class PTR(Record):
     """
     PTR Resource Record Type
     Defined in: RFC1035
     """
-    FIELDS = {
-        'ptrdname': {
-            'schema': {
-                'type': 'string',
-                'format': 'domainname',
-                'maxLength': 255,
-            },
-            'required': True
-        }
+    fields = {
+        'ptrdname': fields.DomainField(maxLength=255)
     }
 
     def _to_string(self):
@@ -43,6 +39,11 @@ class PTR(Record):
     RECORD_TYPE = 12
 
 
+@base.DesignateRegistry.register
 class PTRList(RecordList):
 
     LIST_ITEM_TYPE = PTR
+
+    fields = {
+        'objects': fields.ListOfObjectsField('PTR'),
+    }

@@ -13,33 +13,17 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from designate.objects import base
+from designate.objects import ovo_base as base
+from designate.objects import fields
 
 
+@base.DesignateRegistry.register
 class ZoneAttribute(base.DictObjectMixin, base.PersistentObjectMixin,
                     base.DesignateObject):
-    FIELDS = {
-        'zone_id': {
-            'schema': {
-                'type': 'string',
-                'description': 'Zone identifier',
-                'format': 'uuid',
-            },
-        },
-        'key': {
-            'schema': {
-                'type': 'string',
-                'maxLength': 50,
-            },
-            'required': True,
-        },
-        'value': {
-            'schema': {
-                'type': 'string',
-                'maxLength': 50,
-            },
-            'required': True
-        }
+    fields = {
+        'zone_id': fields.UUIDFields(nullable=True),
+        'key': fields.StringFields(maxLength=50, nullable=False),
+        'value': fields.StringFields(maxLength=50, nullable=False)
     }
 
     STRING_KEYS = [
@@ -47,5 +31,10 @@ class ZoneAttribute(base.DictObjectMixin, base.PersistentObjectMixin,
     ]
 
 
+@base.DesignateRegistry.register
 class ZoneAttributeList(base.AttributeListObjectMixin, base.DesignateObject):
     LIST_ITEM_TYPE = ZoneAttribute
+
+    fields = {
+        'objects': fields.ListOfObjectsField('ZoneAttribute'),
+    }

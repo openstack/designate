@@ -14,22 +14,18 @@
 #    under the License.
 from designate.objects.record import Record
 from designate.objects.record import RecordList
+from designate.objects import ovo_base as base
+from designate.objects import fields
 
 
+@base.DesignateRegistry.register
 class CNAME(Record):
     """
     CNAME Resource Record Type
     Defined in: RFC1035
     """
-    FIELDS = {
-        'cname': {
-            'schema': {
-                'type': 'string',
-                'format': 'domainname',
-                'maxLength': 255,
-            },
-            'required': True
-        }
+    fields = {
+        'cname': fields.DomainField(maxLength=255)
     }
 
     def _to_string(self):
@@ -43,6 +39,11 @@ class CNAME(Record):
     RECORD_TYPE = 5
 
 
+@base.DesignateRegistry.register
 class CNAMEList(RecordList):
 
     LIST_ITEM_TYPE = CNAME
+
+    fields = {
+        'objects': fields.ListOfObjectsField('CNAME'),
+    }

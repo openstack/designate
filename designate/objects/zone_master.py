@@ -13,45 +13,69 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from designate.objects import base
+from oslo_versionedobjects import base as ovoo_base
+
 from designate import utils
+from designate.objects import ovo_base as base
+from designate.objects import fields
 
 
-class ZoneMaster(base.DictObjectMixin, base.PersistentObjectMixin,
-                 base.DesignateObject):
-    FIELDS = {
-        'zone_id': {},
-        'host': {
-            'schema': {
-                'type': 'string',
-                'format': 'ip-or-host',
-                'required': True,
-            },
-        },
-        'port': {
-            'schema': {
-                'type': 'integer',
-                'minimum': 1,
-                'maximum': 65535,
-                'required': True,
-            },
-        }
+@base.DesignateRegistry.register
+class ZoneMaster(base.DesignateObject,
+                 base.DictObjectMixin,
+                 base.PersistentObjectMixin,
+                 base.SoftDeleteObjectMixin):
+    def __init__(self, *args, **kwargs):
+        super(ZoneMaster, self).__init__(*args, **kwargs)
+
+    fields = {
+        'zone_id': fields.UUIDFields(nullable=True),
+        'host': fields.StringFields(),
+        'port': fields.IntegerFields(minimum=1, maximum=65535)
     }
 
     def to_data(self):
-        return "%(host)s:%(port)d" % self.to_dict()
+        return "{}:{}".format(self.host, self.port)
 
     @classmethod
     def from_data(cls, data):
         host, port = utils.split_host_port(data)
-        return cls.from_dict({"host": host, "port": port})
+        dict_data = {"host": host, "port": port}
+        return cls(**dict_data)
 
 
+@base.DesignateRegistry.register
 class ZoneMasterList(base.ListObjectMixin, base.DesignateObject):
     LIST_ITEM_TYPE = ZoneMaster
+    fields = {
+        'objects': fields.ListOfObjectsField('ZoneMaster'),
+    }
+
+    @classmethod
+    def from_list(cls, _list):
+        instance = cls()
+
+        for item in _list:
+            instance.append(cls.LIST_ITEM_TYPE.from_dict(item))
+
+        return instance
+
+    def to_list(self):
+
+        list_ = []
+
+        for item in self.objects:
+            if isinstance(item, ovoo_base.ObjectListBase):
+                list_.append(item.to_list())
+            elif isinstance(item, base.DesignateObject):
+                list_.append(item.to_dict())
+            else:
+                list_.append(item)
+
+        return list_
 
     def to_data(self):
-        rlist = []
+        zone_master_list = []
         for item in self.objects:
-            rlist.append(item.to_data())
-        return rlist
+            zone_master_list.append(item.to_data())
+        return zone_master_list

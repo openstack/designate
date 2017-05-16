@@ -14,21 +14,18 @@
 #    under the License.
 from designate.objects.record import Record
 from designate.objects.record import RecordList
+from designate.objects import ovo_base as base
+from designate.objects import fields
 
 
+@base.DesignateRegistry.register
 class AAAA(Record):
     """
     AAAA Resource Record Type
     Defined in: RFC3596
     """
-    FIELDS = {
-        'address': {
-            'schema': {
-                'type': 'string',
-                'format': 'ipv6',
-            },
-            'required': True
-        }
+    fields = {
+        'address': fields.IPV6AddressField()
     }
 
     def _to_string(self):
@@ -42,6 +39,11 @@ class AAAA(Record):
     RECORD_TYPE = 28
 
 
+@base.DesignateRegistry.register
 class AAAAList(RecordList):
 
     LIST_ITEM_TYPE = AAAA
+
+    fields = {
+        'objects': fields.ListOfObjectsField('AAAA'),
+    }

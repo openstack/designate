@@ -14,22 +14,18 @@
 #    under the License.
 from designate.objects.record import Record
 from designate.objects.record import RecordList
+from designate.objects import ovo_base as base
+from designate.objects import fields
 
 
+@base.DesignateRegistry.register
 class TXT(Record):
     """
     TXT Resource Record Type
     Defined in: RFC1035
     """
-    FIELDS = {
-        'txt_data': {
-            'schema': {
-                'type': 'string',
-                'format': 'txt-data',
-                'maxLength': 255,
-            },
-            'required': True
-        }
+    fields = {
+        'txt_data': fields.TxtField(maxLength=255)
     }
 
     def _to_string(self):
@@ -43,6 +39,10 @@ class TXT(Record):
     RECORD_TYPE = 16
 
 
+@base.DesignateRegistry.register
 class TXTList(RecordList):
 
     LIST_ITEM_TYPE = TXT
+    fields = {
+        'objects': fields.ListOfObjectsField('TXT'),
+    }

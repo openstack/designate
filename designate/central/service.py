@@ -265,6 +265,9 @@ class Service(service.RPCService, service.Service):
 
     def _is_valid_zone_name(self, context, zone_name):
         # Validate zone name length
+        if zone_name is None:
+            raise exceptions.InvalidObject
+
         if len(zone_name) > cfg.CONF['service:central'].max_zone_name_len:
             raise exceptions.InvalidZoneName('Name too long')
 
@@ -311,6 +314,9 @@ class Service(service.RPCService, service.Service):
         return True
 
     def _is_valid_recordset_name(self, context, zone, recordset_name):
+        if recordset_name is None:
+            raise exceptions.InvalidObject
+
         if not recordset_name.endswith('.'):
             raise ValueError('Please supply a FQDN')
 
