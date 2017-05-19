@@ -15,14 +15,14 @@
 
 .. _devstack:
 
-========
-DevStack
-========
+================================
+How to install DNS with DevStack
+================================
 
 The Designate team maintains a fork of devstack with Designate integration.
 
 Instructions
-++++++++++++
+~~~~~~~~~~~~
 
 .. note::
 
