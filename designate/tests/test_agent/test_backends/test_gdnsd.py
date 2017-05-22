@@ -62,10 +62,8 @@ class GdnsdAgentBackendTestCase(TestCase):
         self.zones_dir_path = os.path.join(self.conf_dir_path, 'zones')
         os.mkdir(self.zones_dir_path)
         self.CONF = self.useFixture(cfg_fixture.Config(cfg.CONF)).conf
-        cfg.CONF.set_override('confdir_path', self.conf_dir_path,
-                              CFG_GROUP, enforce_type=True)
-        cfg.CONF.set_override('gdnsd_cmd_name', GDNSD_BIN_PATH,
-                              CFG_GROUP, enforce_type=True)
+        cfg.CONF.set_override('confdir_path', self.conf_dir_path, CFG_GROUP)
+        cfg.CONF.set_override('gdnsd_cmd_name', GDNSD_BIN_PATH, CFG_GROUP)
 
         self.backend = GdnsdBackend('foo')
 
