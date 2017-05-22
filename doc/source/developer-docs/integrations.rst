@@ -67,7 +67,7 @@ The configuration for this is in the `Networking Guide <https://docs.openstack.o
 Designate Sink
 ==============
 
-:ref:`designate-sink` is a componant of designate that can listen to the event
-stream of other openstack servies and perform actions based on them.
+:ref:`designate-sink` is a component of designate that can listen to the event
+stream of other openstack services and perform actions based on them.
 
 

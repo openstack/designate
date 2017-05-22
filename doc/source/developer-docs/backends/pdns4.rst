@@ -25,7 +25,7 @@ The version PowerDNS in Ubuntu Xenial is pdns4.
 This has a different DB schema, and is incompatible with the legacy PowerDNS
 driver. In PDNS 4 the API was marked stable, and this is what we will use.
 
-You will need to configure PowerDNS, and its database before perfoming these
+You will need to configure PowerDNS, and its database before performing these
 steps.
 
 You will need to use a database backend for PowerDNS's API to function.
