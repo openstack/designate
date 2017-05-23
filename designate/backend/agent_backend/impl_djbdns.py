@@ -301,7 +301,7 @@ class DjbdnsBackend(base.AgentBackend):
         :type zone: raw pythondns Zone
         :raises: exceptions.Backend on error
         """
-        zone_name = zone.origin.to_text().rstrip('.')
+        zone_name = zone.origin.to_text(omit_final_dot=True).decode('utf-8')
         LOG.debug("Creating %s", zone_name)
         # The zone might be already in place due to a race condition between
         # checking if the zone is there and creating it across different
@@ -320,7 +320,7 @@ class DjbdnsBackend(base.AgentBackend):
         :type zone: raw pythondns Zone
         :raises: exceptions.Backend on error
         """
-        zone_name = zone.origin.to_text().rstrip('.')
+        zone_name = zone.origin.to_text(omit_final_dot=True).decode('utf-8')
         LOG.debug("Triggering AXFR from MiniDNS to Djbdns for %s", zone_name)
         self._perform_axfr_from_minidns(zone_name)
         self._rebuild_data_cdb()

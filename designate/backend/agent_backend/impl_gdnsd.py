@@ -178,7 +178,7 @@ class GdnsdBackend(base.AgentBackend):
         """Create or update a zone file atomically.
         The zone file is written to a unique temp file and then renamed
         """
-        zone_name = zone.origin.to_text().rstrip('.')
+        zone_name = zone.origin.to_text(omit_final_dot=True).decode('utf-8')
         zone_base_fname = self._generate_zone_filename(zone_name)
         zone_fname = os.path.join(self._zonedir_path, zone_base_fname)
         try:

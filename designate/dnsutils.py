@@ -160,7 +160,7 @@ class TsigInfoMiddleware(DNSMiddleware):
             return None
 
         try:
-            criterion = {'name': request.keyname.to_text(True)}
+            criterion = {'name': request.keyname.to_text(True).decode('utf-8')}
             tsigkey = self.storage.find_tsigkey(
                     context.get_current(), criterion)
 
@@ -186,7 +186,7 @@ class TsigKeyring(object):
 
     def get(self, key, default=None):
         try:
-            criterion = {'name': key.to_text(True)}
+            criterion = {'name': key.to_text(True).decode('utf-8')}
             tsigkey = self.storage.find_tsigkey(
                 context.get_current(), criterion)
 
@@ -253,7 +253,7 @@ class LimitNotifyMiddleware(DNSMiddleware):
         if opcode != dns.opcode.NOTIFY:
             return None
 
-        zone_name = request.question[0].name.to_text()
+        zone_name = request.question[0].name.to_text().decode('utf-8')
 
         if self.locker.acquire(zone_name):
             time.sleep(self.delay)
@@ -274,10 +274,10 @@ def from_dnspython_zone(dnspython_zone):
     soa = dnspython_zone.get_rdataset(dnspython_zone.origin, 'SOA')
     if soa is None:
         raise exceptions.BadRequest('An SOA record is required')
-    email = soa[0].rname.to_text().rstrip('.')
+    email = soa[0].rname.to_text(omit_final_dot=True).decode('utf-8')
     email = email.replace('.', '@', 1)
     values = {
-        'name': dnspython_zone.origin.to_text(),
+        'name': dnspython_zone.origin.to_text().decode('utf-8'),
         'email': email,
         'ttl': soa.ttl,
         'serial': soa[0].serial,
@@ -311,7 +311,7 @@ def dnspythonrecord_to_recordset(rname, rdataset):
 
     # Create the other recordsets
     values = {
-        'name': rname.to_text(),
+        'name': rname.to_text().decode('utf-8'),
         'type': record_type
     }
 

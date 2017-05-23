@@ -75,7 +75,7 @@ class MSDNSBackend(base.AgentBackend):
 
     def create_zone(self, zone):
         """Create a new DNS Zone"""
-        zone_name = zone.origin.to_text(omit_final_dot=True)
+        zone_name = zone.origin.to_text(omit_final_dot=True).decode('utf-8')
         LOG.debug("Creating zone: %s" % zone_name)
         try:
             self._dnsutils.zone_create(
@@ -100,7 +100,7 @@ class MSDNSBackend(base.AgentBackend):
     def update_zone(self, zone):
         """Instruct MSDNS to request an AXFR from MiniDNS.
         """
-        zone_name = zone.origin.to_text(omit_final_dot=True)
+        zone_name = zone.origin.to_text(omit_final_dot=True).decode('utf-8')
         LOG.debug("Updating zone: %s" % zone_name)
         self._dnsutils.zone_update(zone_name)
 
