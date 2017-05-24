@@ -76,7 +76,7 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
 
     def _build_zones(self, n, action, status):
         return [
-            self._build_zone("zone%02X.example" % cnt, action,
+            self._build_zone("zone%02X.example." % cnt, action,
                              status, id=generate_uuid())
             for cnt in range(n)
         ]
