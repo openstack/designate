@@ -293,7 +293,7 @@ def from_dnspython_zone(dnspython_zone):
 
 
 def dnspyrecords_to_recordsetlist(dnspython_records):
-    rrsets = objects.RecordList()
+    rrsets = objects.RecordSetList()
 
     for rname in six.iterkeys(dnspython_records):
         for rdataset in dnspython_records[rname]:
