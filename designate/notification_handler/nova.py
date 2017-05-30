@@ -65,7 +65,7 @@ class NovaFixedHandler(BaseAddressHandler):
 
         zone_id = cfg.CONF[self.name].zone_id
         if event_type == 'compute.instance.create.end':
-            payload['project'] = getattr(context, 'tenant', None)
+            payload['project'] = context.get("project_name", None)
             self._create(addresses=payload['fixed_ips'],
                          extra=payload,
                          zone_id=zone_id,
