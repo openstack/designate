@@ -188,6 +188,9 @@ class Zone(base.DictObjectMixin, base.SoftDeleteObjectMixin,
                 "Provided object does not match "
                 "schema", errors=errors, object=self)
 
+    def __hash__(self):
+        return hash(self.id)
+
     def validate(self):
         errors = ValidationErrorList()
 
