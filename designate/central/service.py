@@ -379,7 +379,11 @@ class Service(service.RPCService, service.Service):
         Check to make sure that the records in the recordset
         follow the rules, and won't blow up on the nameserver.
         """
-        if hasattr(recordset, 'records'):
+        try:
+            recordset.records
+        except (AttributeError, exceptions.RelationNotLoaded):
+            pass
+        else:
             if len(recordset.records) > 1 and recordset.type == 'CNAME':
                 raise exceptions.BadRequest(
                     'CNAME recordsets may not have more than 1 record'

@@ -113,7 +113,7 @@ class RequestHandler(xfr.XFRMixin):
             question = request.question[0]
 
         criterion = {
-            'name': question.name.to_text(),
+            'name': question.name.to_text().decode('utf-8'),
             'type': 'SECONDARY',
             'deleted': False
         }
@@ -349,7 +349,7 @@ class RequestHandler(xfr.XFRMixin):
             # TODO(vinod) once validation is separated from the api,
             # validate the parameters
             criterion = {
-                'name': q_rrset.name.to_text(),
+                'name': q_rrset.name.to_text().decode('utf-8'),
                 'type': dns.rdatatype.to_text(q_rrset.rdtype),
                 'zones_deleted': False
             }
