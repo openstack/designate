@@ -107,7 +107,7 @@ class Bind9Backend(base.AgentBackend):
 
         # NOTE: Different versions of BIND9 behave differently with a trailing
         #       dot, so we're just going to take it off.
-        zone_name = zone.origin.to_text().rstrip('.')
+        zone_name = zone.origin.to_text(omit_final_dot=True).decode('utf-8')
 
         # NOTE: Only one thread should be working with the Zonefile at a given
         #       time. The sleep(1) below introduces a not insignificant risk

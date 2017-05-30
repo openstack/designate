@@ -137,7 +137,7 @@ class DenominatorBackend(base.AgentBackend):
 
     def create_zone(self, zone):
         LOG.debug("Creating %s" % zone.origin.to_text())
-        zone_name = zone.origin.to_text(omit_final_dot=True)
+        zone_name = zone.origin.to_text(omit_final_dot=True).decode('utf-8')
 
         # Use SOA TTL as zone default TTL
         soa_record = zone.find_rrset(zone.origin, dns.rdatatype.SOA)
@@ -169,7 +169,7 @@ class DenominatorBackend(base.AgentBackend):
 
     def update_zone(self, zone):
         LOG.debug("Updating %s" % zone.origin)
-        zone_name = zone.origin.to_text(omit_final_dot=True)
+        zone_name = zone.origin.to_text(omit_final_dot=True).decode('utf-8')
 
         soa_record = zone.find_rrset(zone.origin, dns.rdatatype.SOA)
         rname = soa_record.items[0].rname.derelativize(origin=zone.origin)
@@ -237,7 +237,7 @@ class DenominatorBackend(base.AgentBackend):
     def _iterate_records(self, zone):
         for rname, ttl, rdata in zone.iterate_rdatas():
             name = rname.derelativize(origin=zone.origin)
-            name = name.to_text(omit_final_dot=True)
+            name = name.to_text(omit_final_dot=True).decode('utf-8')
 
             data = rdata.to_text(origin=zone.origin, relativize=False)
             yield name, ttl, dns.rdatatype.to_text(rdata.rdtype), data
