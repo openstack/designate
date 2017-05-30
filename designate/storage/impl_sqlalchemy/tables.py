@@ -47,7 +47,7 @@ SERVICE_STATES = [
 metadata = MetaData()
 
 # TODO(Federico) some default column values are not needed because we
-# explicitely set the value on record insertion. Having default values could
+# explicitly set the value on record insertion. Having default values could
 # hide bugs.
 
 

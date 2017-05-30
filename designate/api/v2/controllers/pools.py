@@ -68,8 +68,8 @@ class PoolsController(rest.RestController):
     def post_all(self):
         """Create a Pool"""
 
-        LOG.warning(_LW("Use of this API Method is DEPRICATED. This will have "
-                        "unforseen side affects when used with the "
+        LOG.warning(_LW("Use of this API Method is DEPRECATED. This will have "
+                        "unforeseen side affects when used with the "
                         "designate-manage pool commands"))
 
         request = pecan.request
@@ -100,8 +100,8 @@ class PoolsController(rest.RestController):
     def patch_one(self, pool_id):
         """Update the specific pool"""
 
-        LOG.warning(_LW("Use of this API Method is DEPRICATED. This will have "
-                        "unforseen side affects when used with the "
+        LOG.warning(_LW("Use of this API Method is DEPRECATED. This will have "
+                        "unforeseen side affects when used with the "
                         "designate-manage pool commands"))
 
         request = pecan.request
@@ -132,8 +132,8 @@ class PoolsController(rest.RestController):
     def delete_one(self, pool_id):
         """Delete the specific pool"""
 
-        LOG.warning(_LW("Use of this API Method is DEPRICATED. This will have "
-                        "unforseen side affects when used with the "
+        LOG.warning(_LW("Use of this API Method is DEPRECATED. This will have "
+                        "unforeseen side affects when used with the "
                         "designate-manage pool commands"))
 
         request = pecan.request

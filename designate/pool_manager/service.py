@@ -503,7 +503,7 @@ class Service(service.RPCService, coordination.CoordinationMixin,
         LOG.debug('Consensus reached for updating zone %(zone)s '
                   'on pool targets' % {'zone': zone.name})
 
-        # The zone status will be updated asyncronously by MiniDNS
+        # The zone status will be updated asynchronously by MiniDNS
 
         # Send a NOTIFY to each also-notifies
         for also_notify in self.pool.also_notifies:

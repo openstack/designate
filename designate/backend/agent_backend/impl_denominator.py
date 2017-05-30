@@ -155,7 +155,7 @@ class DenominatorBackend(base.AgentBackend):
 
             # Add records one by one.
             for name, ttl, rtype, data in self._iterate_records(zone):
-                # Some providers do not support creationg of SOA record.
+                # Some providers do not support creation of SOA record.
                 rdatatype = dns.rdatatype.from_text(rtype)
                 if rdatatype == dns.rdatatype.SOA:
                     continue

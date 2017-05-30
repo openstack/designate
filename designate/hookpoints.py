@@ -120,7 +120,7 @@ class hook_point(object):
 
     def find_name(self, func=None):
         """Derive the hook target path from the function name, unless
-        a name has been passed in with the constuctor.
+        a name has been passed in with the constructor.
         """
         if self._name:
             return self._name

@@ -111,9 +111,9 @@ class EnhancedDNSClient(object):
         # Ensure Suds (or suds-jerko) have been installed
         if SudsClient is None:
             raise EnhancedDNSException(
-                "Dependancy missing, please install suds or suds-jurko")
+                "Dependency missing, please install suds or suds-jurko")
 
-        # Prepare a SUDS transport with the approperiate credentials
+        # Prepare a SUDS transport with the appropriate credentials
         transport = EnhancedDNSHttpAuthenticated(
             username=username,
             password=password,
@@ -197,7 +197,7 @@ class EnhancedDNSClient(object):
         try:
             self.client.service.deleteZones(zoneNames=zoneNames)
         except Exception as e:
-            # *READ THIS SECIION BEFORE MAKING ANY CHANGES*
+            # *READ THIS SECTION BEFORE MAKING ANY CHANGES*
             # Added 01/2017 by Graham Hayes.
             # If you have run a spell checking tool against the repo, and it
             # changes the line below - the patch will get -2'd.

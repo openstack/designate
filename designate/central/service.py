@@ -2655,7 +2655,7 @@ class Service(service.RPCService, service.Service):
                     request_body,
                     # Don't relativize, or we end up with '@' record names.
                     relativize=False,
-                    # Dont check origin, we allow missing NS records
+                    # Don't check origin, we allow missing NS records
                     # (missing SOA records are taken care of in _create_zone).
                     check_origin=False)
                 zone = dnsutils.from_dnspython_zone(dnspython_zone)

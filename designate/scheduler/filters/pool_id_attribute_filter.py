@@ -53,7 +53,7 @@ class PoolIDAttributeFilter(base.Filter):
     """
 
     def filter(self, context, pools, zone):
-        """Attempt to load and set the pool to the one provied in the
+        """Attempt to load and set the pool to the one provided in the
         Zone attributes.
 
         :param context: :class:`designate.context.DesignateContext` - Context
