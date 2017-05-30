@@ -314,8 +314,7 @@ class CentralServiceTestCase(CentralBasic):
         self.assertTrue(designate.central.service.quota.get_quota.called)
 
     def test__is_valid_ttl(self):
-        self.CONF.set_override('min_ttl', 10, 'service:central',
-                               enforce_type=True)
+        self.CONF.set_override('min_ttl', 10, 'service:central')
         self.service._is_valid_ttl(self.context, 20)
 
         # policy.check() not to raise: the user is allowed to create low TTLs

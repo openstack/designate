@@ -98,8 +98,7 @@ class SchedulerTest(test.BaseTestCase):
         cfg.CONF.set_override(
             'scheduler_filters',
             ['random'],
-            'service:central',
-            enforce_type=True)
+            'service:central')
 
         test_scheduler = scheduler.get_scheduler(storage=mock_storage)
 
@@ -109,7 +108,7 @@ class SchedulerTest(test.BaseTestCase):
     def test_no_filters_enabled(self):
 
         cfg.CONF.set_override(
-            'scheduler_filters', [], 'service:central', enforce_type=True)
+            'scheduler_filters', [], 'service:central')
 
         attrs = {
             'find_pools.return_value': objects.PoolList()
