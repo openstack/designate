@@ -108,4 +108,4 @@ class NetworkAPI(DriverPlugin):
         """
         Get the name for the address
         """
-        return reversename.from_address(address).to_text()
+        return reversename.from_address(address).to_text().decode('utf-8')

@@ -573,7 +573,7 @@ class ApiV2ZonesTest(ApiV2TestCase):
         # Check the headers are what we expect
         self.assertEqual(202, response.status_int)
         self.assertEqual('application/json', response.content_type)
-        self.assertEqual('""', response.body)
+        self.assertEqual(b'""', response.body)
 
     def test_invalid_xfr_request(self):
         # Create a zone
