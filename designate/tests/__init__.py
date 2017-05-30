@@ -327,7 +327,7 @@ class TestCase(base.BaseTestCase):
         self.messaging_conf.response_timeout = 5
         self.useFixture(self.messaging_conf)
 
-        self.config(notification_driver='test')
+        self.config(notification_driver=['test'])
 
         self.useFixture(fixtures.RPCFixture(cfg.CONF))
 
