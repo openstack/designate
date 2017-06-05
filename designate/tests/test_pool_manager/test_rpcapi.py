@@ -91,7 +91,7 @@ class PoolManagerAPITest(PoolManagerTestCase):
         zone = objects.Zone.from_dict(values)
         values = {
             'host': '127.0.0.1',
-            'port': '53'
+            'port': 53
         }
         nameserver = objects.PoolNameserver.from_dict(values)
         PoolManagerAPI.get_instance().update_status(
