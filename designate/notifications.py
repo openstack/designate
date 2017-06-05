@@ -19,6 +19,7 @@ import abc
 
 from oslo_config import cfg
 from oslo_log import log as logging
+import six
 
 from designate.i18n import _LW
 from designate.plugin import DriverPlugin
@@ -159,8 +160,9 @@ class Audit(NotificationPlugin):
                         new_value = getattr(arg, change)
 
                         # Just in case something odd makes it here
-                        if any(type(val) not in
-                               (int, float, bool, str, type(None))
+                        if any(not isinstance(val,
+                                              (int, float, bool,
+                                               six.string_types, type(None)))
                                for val in (old_value, new_value)):
                             old_value, new_value = None, None
                             msg = _LW("Nulling notification values after "
