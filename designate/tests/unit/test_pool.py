@@ -42,25 +42,27 @@ class RoObject(dict):
 
 mock_conf = RoObject(**{
     'host': 'foohost',
-    'pool:1': RoObject(
-        targets=['t1', 't2'],
-        nameservers=['pt1', 'pt2'],
+    'pool:769ca3fc-5924-4a44-8c1f-7efbe52fbd59': RoObject(
+        targets=['1588652b-50e7-46b9-b688-a9bad40a873e',
+                 '2588652b-50e7-46b9-b688-a9bad40a873e'],
+        nameservers=['169ca3fc-5924-4a44-8c1f-7efbe52fbd59',
+                     '269ca3fc-5924-4a44-8c1f-7efbe52fbd59'],
         also_notifies=['1.0.0.0:1', '2.0.0.0:2']
     ),
-    'pool_nameserver:pt1': RoObject(
+    'pool_nameserver:169ca3fc-5924-4a44-8c1f-7efbe52fbd59': RoObject(
         host='pool_host_1',
         port=123
     ),
-    'pool_nameserver:pt2': RoObject(
+    'pool_nameserver:269ca3fc-5924-4a44-8c1f-7efbe52fbd59': RoObject(
         host='pool_host_2',
         port=456
     ),
-    'pool_target:t1': RoObject(
+    'pool_target:1588652b-50e7-46b9-b688-a9bad40a873e': RoObject(
         type='t1',
         masters=[],
-        options=dict(a=1, b=2),
+        options=dict(a='1', b='2'),
     ),
-    'pool_target:t2': RoObject(
+    'pool_target:2588652b-50e7-46b9-b688-a9bad40a873e': RoObject(
         type='t2',
         masters=['1.1.1.1:11'],
         options={},
@@ -83,23 +85,24 @@ def deep_sort_lists(obj):
 class poolTest(oslotest.base.BaseTestCase):
 
     def test_init_from_config(self):
-        pool = objects.Pool.from_config(mock_conf, '1')
+        pool = objects.Pool.from_config(mock_conf,
+                                        '769ca3fc-5924-4a44-8c1f-7efbe52fbd59')
         expected = {'also_notifies': [{'host': '1.0.0.0', 'port': 1},
                                       {'host': '2.0.0.0', 'port': 2}],
                     'description': 'Pool built from configuration on foohost',
-                    'id': '1',
+                    'id': '769ca3fc-5924-4a44-8c1f-7efbe52fbd59',
                     'nameservers': [{'host': 'pool_host_1',
-                                     'id': 'pt1',
+                                     'id': '169ca3fc-5924-4a44-8c1f-7efbe52fbd59',  # noqa
                                      'port': 123},
                                     {'host': 'pool_host_2',
-                                     'id': 'pt2',
+                                     'id': '269ca3fc-5924-4a44-8c1f-7efbe52fbd59',  # noqa
                                      'port': 456}],
-                    'targets': [{'id': 't1',
+                    'targets': [{'id': '1588652b-50e7-46b9-b688-a9bad40a873e',
                                  'masters': [],
-                                 'options': [{'key': 'a', 'value': 1},
-                                             {'key': 'b', 'value': 2}],
+                                 'options': [{'key': 'a', 'value': '1'},
+                                             {'key': 'b', 'value': '2'}],
                                  'type': 't1'},
-                                {'id': 't2',
+                                {'id': '2588652b-50e7-46b9-b688-a9bad40a873e',
                                  'masters': [{'host': '1.1.1.1', 'port': 11}],
                                  'options': [],
                                  'type': 't2'}]}
