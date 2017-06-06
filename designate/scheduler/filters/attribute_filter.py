@@ -16,7 +16,7 @@ from oslo_log import log as logging
 from oslo_utils.strutils import bool_from_string
 
 from designate import exceptions
-from designate.objects import PoolAttributeList
+from designate.objects import PoolList
 from designate.scheduler.filters import base
 
 LOG = logging.getLogger(__name__)
@@ -113,6 +113,6 @@ class AttributeFilter(base.Filter):
 
         pool_list = [pool for pool in pools if evaluate_pool(pool)]
 
-        pools = PoolAttributeList(objects=pool_list)
+        pools = PoolList(objects=pool_list)
 
         return pools
