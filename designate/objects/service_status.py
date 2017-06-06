@@ -11,45 +11,26 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from designate.objects import base
+from designate.objects import ovo_base as base
+from designate.objects import fields
 
 
-class ServiceStatus(base.PersistentObjectMixin,
-                    base.DictObjectMixin,
-                    base.DesignateObject):
-    FIELDS = {
-        "service_name": {
-            "schema": {
-                "type": "string"
-            }
-        },
-        "hostname": {
-            "schema": {
-                "type": "string"
-            }
-        },
-        "heartbeated_at": {
-            "schema": {
-                'type': ['string', 'null'],
-                'format': 'date-time'
-            }
-        },
-        "status": {
-            "schema": {
-                "type": "string",
-                "enum": ["UP", "DOWN", "WARNING"]
-            }
-        },
-        "stats": {
-            "schema": {
-                "type": "object",
-            }
-        },
-        "capabilities": {
-            "schema": {
-                "type": "object"
-            }
-        }
+@base.DesignateRegistry.register
+class ServiceStatus(base.DesignateObject, base.DictObjectMixin,
+                    base.PersistentObjectMixin):
+
+    def __init__(self, *args, **kwargs):
+        super(ServiceStatus, self).__init__(*args, **kwargs)
+
+    fields = {
+        "service_name": fields.StringFields(),
+        "hostname": fields.StringFields(nullable=True),
+        "heartbeated_at": fields.DateTimeField(nullable=True),
+        "status": fields.EnumField(nullable=True, valid_values=[
+            "UP", "DOWN", "WARNING"
+        ]),
+        "stats": fields.BaseObjectField(nullable=True),
+        "capabilities": fields.BaseObjectField(nullable=True),
     }
 
     STRING_KEYS = [
@@ -57,5 +38,10 @@ class ServiceStatus(base.PersistentObjectMixin,
     ]
 
 
+@base.DesignateRegistry.register
 class ServiceStatusList(base.ListObjectMixin, base.DesignateObject):
     LIST_ITEM_TYPE = ServiceStatus
+
+    fields = {
+        'objects': fields.ListOfObjectsField('ServiceStatus'),
+    }

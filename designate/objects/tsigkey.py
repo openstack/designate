@@ -12,56 +12,33 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-from designate.objects import base
+from designate.objects import ovo_base as base
+from designate.objects import fields
 
 
+@base.DesignateRegistry.register
 class TsigKey(base.DictObjectMixin, base.PersistentObjectMixin,
               base.DesignateObject):
-    FIELDS = {
-        'name': {
-            'schema': {
-                'type': 'string',
-                'maxLength': 160,
-                'format': 'domainnamne'
-            },
-            'required': True
-        },
-        'algorithm': {
-            'schema': {
-                'type': 'string',
-                'enum': [
-                        'hmac-md5',
-                        'hmac-sha1',
-                        'hmac-sha224',
-                        'hmac-sha256',
-                        'hmac-sha384',
-                        'hmac-sha512'
-                ]
-            },
-            'required': True
-        },
-        'secret': {
-            'schema': {
-                'type': 'string',
-                'maxLength': 160
-            },
-            'required': True
-        },
-        'scope': {
-            'schema': {
-                'type': 'string',
-                'enum': ['POOL', 'ZONE'],
-            },
-            'required': True
-        },
-        'resource_id': {
-            'schema': {
-                'type': 'string',
-                'format': 'uuid'
-            },
-            'read_only': True,
-            'required': True
-        },
+    def __init__(self, *args, **kwargs):
+        super(TsigKey, self).__init__(*args, **kwargs)
+
+    fields = {
+        'name': fields.StringFields(nullable=False, maxLength=160),
+        'algorithm': fields.EnumField(nullable=False,
+            valid_values=[
+                'hmac-md5',
+                'hmac-sha1',
+                'hmac-sha224',
+                'hmac-sha256',
+                'hmac-sha384',
+                'hmac-sha512'
+            ]
+        ),
+        'secret': fields.StringFields(maxLength=160),
+        'scope': fields.EnumField(nullable=False,
+            valid_values=['POOL', 'ZONE']
+        ),
+        'resource_id': fields.UUIDFields(nullable=False)
     }
 
     STRING_KEYS = [
@@ -69,5 +46,10 @@ class TsigKey(base.DictObjectMixin, base.PersistentObjectMixin,
     ]
 
 
+@base.DesignateRegistry.register
 class TsigKeyList(base.ListObjectMixin, base.DesignateObject):
     LIST_ITEM_TYPE = TsigKey
+
+    fields = {
+        'objects': fields.ListOfObjectsField('TsigKey'),
+    }

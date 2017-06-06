@@ -12,14 +12,19 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-from designate.objects import base
+from designate.objects import ovo_base as base
+from designate.objects import fields
 
 
-class Tenant(base.DictObjectMixin, base.DesignateObject):
-    FIELDS = {
-        'id': {},
-        'zone_count': {},
-        'zones': {}
+@base.DesignateRegistry.register
+class Tenant(base.DesignateObject, base.DictObjectMixin):
+    def __init__(self, *args, **kwargs):
+        super(Tenant, self).__init__(*args, **kwargs)
+
+    fields = {
+        'id': fields.AnyField(nullable=True),
+        'zone_count': fields.AnyField(nullable=True),
+        'zones': fields.AnyField(nullable=True)
     }
 
     STRING_KEYS = [
@@ -27,5 +32,10 @@ class Tenant(base.DictObjectMixin, base.DesignateObject):
     ]
 
 
+@base.DesignateRegistry.register
 class TenantList(base.ListObjectMixin, base.DesignateObject):
     LIST_ITEM_TYPE = Tenant
+
+    fields = {
+        'objects': fields.ListOfObjectsField('Tenant'),
+    }
