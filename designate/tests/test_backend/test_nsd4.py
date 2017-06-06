@@ -33,6 +33,9 @@ class NSD4BackendTestCase(BackendTestCase):
         super(NSD4BackendTestCase, self).setUp()
 
         # NOTE(hieulq): we mock out NSD4 back-end with random port
+
+        keyfile = mock.sentinel.key
+        certfile = mock.sentinel.cert
         self.port = 6969
         self.target = objects.PoolTarget.from_dict({
             'id': '4588652b-50e7-46b9-b688-a9bad40a873e',
@@ -40,10 +43,10 @@ class NSD4BackendTestCase(BackendTestCase):
             'masters': [{'host': '192.0.2.1', 'port': 53},
                         {'host': '192.0.2.2', 'port': 35}],
             'options': [
-                {'key': 'keyfile', 'value': mock.sentinel.key},
-                {'key': 'certfile', 'value': mock.sentinel.cert},
+                {'key': 'keyfile', 'value': keyfile.name},
+                {'key': 'certfile', 'value': certfile.name},
                 {'key': 'pattern', 'value': 'test-pattern'},
-                {'key': 'port', 'value': self.port}
+                {'key': 'port', 'value': str(self.port)}
             ],
         })
         self.backend = impl_nsd4.NSD4Backend(self.target)
@@ -78,8 +81,8 @@ class NSD4BackendTestCase(BackendTestCase):
 
         stream.write.assert_called_once_with(command)
         mock_ssl.assert_called_once_with(mock.sentinel.client,
-                                         certfile=mock.sentinel.cert,
-                                         keyfile=mock.sentinel.key)
+                                         certfile=mock.sentinel.cert.name,
+                                         keyfile=mock.sentinel.key.name)
         mock_connect.assert_called_once_with(('127.0.0.1', self.port))
         sock.makefile.assert_called_once_with()
         sock.close.assert_called_once_with()
