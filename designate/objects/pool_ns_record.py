@@ -12,38 +12,18 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-from designate.objects import base
+from designate.objects import ovo_base as base
+from designate.objects import fields
 
 
+@base.DesignateRegistry.register
 class PoolNsRecord(base.DictObjectMixin, base.PersistentObjectMixin,
                    base.DesignateObject):
-    FIELDS = {
-        'pool_id': {
-            'schema': {
-                'type': 'string',
-                'description': 'Pool identifier',
-                'format': 'uuid',
-            },
-        },
-        'priority': {
-            'schema': {
-                'type': 'integer',
-                'description': 'NS Record Priority Order',
-                'minimum': 1,
-                'maximum': 10000
-            },
-            'required': True
-        },
-        'hostname': {
-            'schema': {
-                'type': 'string',
-                'description': 'NS Record Hostname',
-                'format': 'domainname',
-                'maxLength': 255,
-            },
-            'immutable': True,
-            'required': True
-        }
+    fields = {
+        'pool_id': fields.UUIDFields(nullable=True),
+        'priority': fields.IntegerFields(minimum=1, maximum=10000),
+        'hostname': fields.DomainField(maxLength=255),
+
     }
 
     STRING_KEYS = [
@@ -51,5 +31,9 @@ class PoolNsRecord(base.DictObjectMixin, base.PersistentObjectMixin,
     ]
 
 
+@base.DesignateRegistry.register
 class PoolNsRecordList(base.ListObjectMixin, base.DesignateObject):
     LIST_ITEM_TYPE = PoolNsRecord
+    fields = {
+        'objects': fields.ListOfObjectsField('PoolNsRecord'),
+    }

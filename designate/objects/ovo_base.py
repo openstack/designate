@@ -22,6 +22,8 @@ from oslo_versionedobjects.base import VersionedObjectDictCompat as DictObjectMi
 from designate.i18n import _
 from designate.i18n import _LE
 from designate.objects import fields
+from designate.objects.validation_error import ValidationError
+from designate.objects.validation_error import ValidationErrorList
 from designate import exceptions
 
 LOG = logging.getLogger(__name__)
@@ -209,20 +211,31 @@ class DesignateObject(base.VersionedObject):
 
     def validate(self):
         self.fields = self.FIELDS
-        try:
-            for name in self.fields:
-                field = self.fields[name]
-                if self.obj_attr_is_set(name):
-                    value = getattr(self, name)  # Check relation
-                    field.coerce(self, name, value)  # Check value
-                    if isinstance(value, base.ObjectListBase):
-                        for obj in value:
-                            obj.validate()
-                elif not field.nullable:
-                    # Check required is True ~ nullable is False
-                    raise exceptions.InvalidObject
-        except Exception:
-            raise exceptions.InvalidObject
+        for name in self.fields:
+            field = self.fields[name]
+            if self.obj_attr_is_set(name):
+                value = getattr(self, name)  # Check relation
+                if isinstance(value, ListObjectMixin):
+                    for obj in value.objects:
+                        obj.validate()
+                else:
+                    try:
+                        field.coerce(self, name, value)  # Check value
+                    except Exception as e:
+                        raise exceptions.InvalidObject(
+                            "{} is invalid".format(name))
+            elif not field.nullable:
+                # Check required is True ~ nullable is False
+                errors = ValidationErrorList()
+                e = ValidationError()
+                e.path = ['records', 0]
+                e.validator = 'required'
+                e.validator_value = [name]
+                e.message = "'%s' is a required property" % name
+                errors.append(e)
+                raise exceptions.InvalidObject(
+                    "Provided object does not match "
+                    "schema", errors=errors, object=self)
 
 
 class ListObjectMixin(base.ObjectListBase):

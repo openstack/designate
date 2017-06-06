@@ -51,16 +51,16 @@ class YAMLAdapter(base.DesignateAdapter):
                 obj_key = key
             # Check if this item is a relation (another DesignateObject that
             # will need to be converted itself
-            if object.FIELDS.get(obj_key, {}).get('relation'):
+            if hasattr(object.FIELDS.get(obj_key, {}), 'objname'):
                 # Get a adapter for the nested object
                 # Get the class the object is and get its adapter, then set
                 # the item in the dict to the output
                 r_obj[key] = cls.get_object_adapter(
                     cls.ADAPTER_FORMAT,
-                    object.FIELDS[obj_key].get('relation_cls')).render(
-                        cls.ADAPTER_FORMAT, obj, *args, **kwargs)
-            elif object.FIELDS.get(
-                    obj_key, {}).get('schema', {}).get('type') == 'integer':
+                    object.FIELDS[obj_key].objname).render(
+                    cls.ADAPTER_FORMAT, obj, *args, **kwargs)
+            elif all(hasattr(object.FIELDS.get(obj_key, {}), attr)
+                     for attr in ['min', 'max']):
                 r_obj[key] = int(obj)
             elif obj is not None:
                 # Just attach the damn item if there is no weird edge cases

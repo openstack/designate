@@ -12,33 +12,18 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-from designate.objects import base
+from designate.objects import ovo_base as base
+from designate.objects import fields
 
 
+@base.DesignateRegistry.register
 class PoolAttribute(base.DictObjectMixin, base.PersistentObjectMixin,
                     base.DesignateObject):
-    FIELDS = {
-        'pool_id': {
-            'schema': {
-                'type': 'string',
-                'description': 'Pool identifier',
-                'format': 'uuid',
-            },
-        },
-        'key': {
-            'schema': {
-                'type': 'string',
-                'maxLength': 50,
-            },
-            'required': True,
-        },
-        'value': {
-            'schema': {
-                'type': 'string',
-                'maxLength': 50,
-            },
-            'required': True
-        }
+    fields = {
+        'pool_id': fields.UUIDFields(nullable=True),
+        'key': fields.StringFields(maxLength=50),
+        'value': fields.StringFields(maxLength=50)
+
     }
 
     STRING_KEYS = [
@@ -46,5 +31,9 @@ class PoolAttribute(base.DictObjectMixin, base.PersistentObjectMixin,
     ]
 
 
+@base.DesignateRegistry.register
 class PoolAttributeList(base.AttributeListObjectMixin, base.DesignateObject):
     LIST_ITEM_TYPE = PoolAttribute
+    fields = {
+        'objects': fields.ListOfObjectsField('PoolAttribute'),
+    }

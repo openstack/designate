@@ -50,11 +50,11 @@ mock_conf = RoObject(**{
         also_notifies=['1.0.0.0:1', '2.0.0.0:2']
     ),
     'pool_nameserver:169ca3fc-5924-4a44-8c1f-7efbe52fbd59': RoObject(
-        host='pool_host_1',
+        host='pool_host_1.example.',
         port=123
     ),
     'pool_nameserver:269ca3fc-5924-4a44-8c1f-7efbe52fbd59': RoObject(
-        host='pool_host_2',
+        host='pool_host_2.example.',
         port=456
     ),
     'pool_target:1588652b-50e7-46b9-b688-a9bad40a873e': RoObject(
@@ -91,10 +91,10 @@ class poolTest(oslotest.base.BaseTestCase):
                                       [('host', '2.0.0.0'), ('port', 2)]]),
                     ('description', 'Pool built from configuration on foohost'),  # noqa
                     ('id', '769ca3fc-5924-4a44-8c1f-7efbe52fbd59'),
-                    ('nameservers', [[('host', 'pool_host_1'),
+                    ('nameservers', [[('host', 'pool_host_1.example.'),
                                      ('id', '169ca3fc-5924-4a44-8c1f-7efbe52fbd59'),  # noqa
                                      ('port', 123)],
-                                    [('host', 'pool_host_2'),
+                                    [('host', 'pool_host_2.example.'),
                                      ('id', '269ca3fc-5924-4a44-8c1f-7efbe52fbd59'),  # noqa
                                      ('port', 456)]]),
                     ('targets', [[('id', '1588652b-50e7-46b9-b688-a9bad40a873e'),  # noqa

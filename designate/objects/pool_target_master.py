@@ -12,34 +12,17 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-from designate.objects import base
+from designate.objects import ovo_base as base
+from designate.objects import fields
 
 
+@base.DesignateRegistry.register
 class PoolTargetMaster(base.DictObjectMixin, base.PersistentObjectMixin,
                        base.DesignateObject):
-    FIELDS = {
-        'pool_target_id': {
-            'schema': {
-                'type': 'string',
-                'description': 'Pool Target identifier',
-                'format': 'uuid',
-            },
-        },
-        'host': {
-            'schema': {
-                'type': 'string',
-                'format': 'ip-or-host',
-                'required': True,
-            },
-        },
-        'port': {
-            'schema': {
-                'type': 'integer',
-                'minimum': 1,
-                'maximum': 65535,
-                'required': True,
-            },
-        }
+    fields = {
+        'pool_target_id': fields.UUIDFields(nullable=True),
+        'host': fields.IPOrHost(),
+        'port': fields.IntegerFields(minimum=1, maximum=65535)
     }
 
     STRING_KEYS = [
@@ -47,5 +30,9 @@ class PoolTargetMaster(base.DictObjectMixin, base.PersistentObjectMixin,
     ]
 
 
+@base.DesignateRegistry.register
 class PoolTargetMasterList(base.ListObjectMixin, base.DesignateObject):
     LIST_ITEM_TYPE = PoolTargetMaster
+    fields = {
+        'objects': fields.ListOfObjectsField('PoolTargetMaster'),
+    }

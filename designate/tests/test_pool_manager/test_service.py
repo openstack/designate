@@ -350,7 +350,9 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
         zone = self._build_zone('example.org.', 'UPDATE', 'PENDING')
         self.service._update_zone_on_target = Mock(return_value=True)
         self.service._update_zone_on_also_notify = Mock()
-        self.service.pool.also_notifies = ['bogus']
+        self.service.pool.also_notifies = objects.PoolAlsoNotifyList(
+            objects=[objects.PoolAlsoNotify(host='1.0.0.0', port=1)]
+        )
         self.service._exceed_or_meet_threshold = Mock(return_value=True)
 
         # cache.retrieve will throw exceptions.PoolManagerStatusNotFound
