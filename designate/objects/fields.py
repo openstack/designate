@@ -175,6 +175,8 @@ class DomainField(StringFields):
 
     def coerce(self, obj, attr, value):
         value = super(DomainField, self).coerce(obj, attr, value)
+        if value is None:
+            return
         domain = value.split('.')
         for host in domain:
             if len(host) > 63:
@@ -206,6 +208,8 @@ class HostField(StringFields):
 
     def coerce(self, obj, attr, value):
         value = super(HostField, self).coerce(obj, attr, value)
+        if value is None:
+            return
         hostname = value.split('.')
         for host in hostname:
             if len(host) > 63:
@@ -223,6 +227,8 @@ class SRVField(StringFields):
 
     def coerce(self, obj, attr, value):
         value = super(SRVField, self).coerce(obj, attr, value)
+        if value is None:
+            return
         srvtype = value.split('.')
         for host in srvtype:
             if len(host) > 63:
@@ -302,6 +308,4 @@ class IPOrHost(IPV4AndV6AddressField):
         except ValueError:
             if not re.match(StringFields.RE_ZONENAME, value):
                 raise ValueError("%s is not IP address or host name" % value)
-        # we use this field as a string, not need a netaddr.IPAdress
-        # as oslo.versionedobjects is using
-        return str(value)
+        return value
