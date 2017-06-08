@@ -13,13 +13,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 from designate.objects.base import DesignateObject  # noqa
-from designate.objects.ovo_base import DesignateObject as OVODesignateObject  # noqa
 from designate.objects.base import ListObjectMixin  # noqa
-from designate.objects.ovo_base import ListObjectMixin as OVOListObjectMixin  # noqa
 from designate.objects.base import DictObjectMixin  # noqa
-from designate.objects.ovo_base import DictObjectMixin as OVODictObjectMixin  # noqa
 from designate.objects.base import PagedListObjectMixin  # noqa
-from designate.objects.ovo_base import PagedListObjectMixin as OVOPagedListObjectMixin  # noqa
 from designate.objects.blacklist import Blacklist, BlacklistList  # noqa
 from designate.objects.zone import Zone, ZoneList  # noqa
 from designate.objects.zone_attribute import ZoneAttribute, ZoneAttributeList  # noqa

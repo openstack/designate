@@ -165,8 +165,18 @@ class IPV4AndV6AddressField(ovoo_fields.IPV4AndV6AddressField):
         return str(value)
 
 
-class EnumField(ovoo_fields.EnumField):
-    pass
+class Enum(ovoo_fields.Enum):
+    def get_schema(self):
+        return {
+            'enum': self._valid_values,
+            'type': 'any'
+        }
+
+
+class EnumField(ovoo_fields.BaseEnumField):
+    def __init__(self, valid_values, **kwargs):
+        self.AUTO_TYPE = Enum(valid_values=valid_values)
+        super(EnumField, self).__init__(**kwargs)
 
 
 class DomainField(StringFields):

@@ -16,7 +16,7 @@ from designate import utils
 from designate import exceptions
 from designate.objects.validation_error import ValidationError
 from designate.objects.validation_error import ValidationErrorList
-from designate.objects import ovo_base as base
+from designate.objects import base
 from designate.objects import fields
 
 

@@ -16,7 +16,6 @@
 
 from operator import attrgetter
 import copy
-import unittest
 
 from oslo_log import log as logging
 import mock
@@ -26,49 +25,42 @@ import testtools
 
 from designate import exceptions
 from designate import objects
+from designate.objects import base
+from designate.objects import fields
 
 LOG = logging.getLogger(__name__)
 
 
+@base.DesignateRegistry.register
 class TestObject(objects.DesignateObject):
-    FIELDS = {
-        'id': {},
-        'name': {},
-        'nested': {
-            'relation': True,
-            'relation_cls': 'TestObject',
-        },
-        'nested_list': {
-            'relation': True,
-            'relation_cls': 'TestObjectList',
-        },
+    fields = {
+        'id': fields.AnyField(nullable=True),
+        'name': fields.AnyField(nullable=True),
+        'nested': fields.ObjectFields('TestObject', nullable=True),
+        'nested_list': fields.ObjectFields('TestObjectList', nullable=True),
     }
 
 
-class TestObjectDict(objects.DictObjectMixin, TestObject):
+@base.DesignateRegistry.register
+class TestObjectDict(TestObject, objects.DictObjectMixin):
     pass
 
 
+@base.DesignateRegistry.register
 class TestObjectList(objects.ListObjectMixin, objects.DesignateObject):
     LIST_ITEM_TYPE = TestObject
 
+    fields = {
+        'objects': fields.ListOfObjectsField('TestObject'),
+    }
 
+
+@base.DesignateRegistry.register
 class TestValidatableObject(objects.DesignateObject):
-    FIELDS = {
-        'id': {
-            'schema': {
-                'type': 'string',
-                'format': 'uuid',
-            },
-            'required': True,
-        },
-        'nested': {
-            'relation': True,
-            'relation_cls': 'TestValidatableObject',
-            'schema': {
-                '$ref': 'obj://TestValidatableObject#/'
-            }
-        }
+    fields = {
+        'id': fields.UUIDFields(),
+        'nested': fields.ObjectFields('TestValidatableObject',
+                                      nullable=True),
     }
 
 
@@ -87,16 +79,17 @@ class DesignateObjectTest(oslotest.base.BaseTestCase):
         primitive = {
             'designate_object.name': 'TestObject',
             'designate_object.data': {
-                'id': 'MyID',
+                'id': 1,
             },
             'designate_object.changes': [],
-            'designate_object.original_values': {},
+            'designate_object.namespace': 'designate',
+            'designate_object.version': '1.0',
         }
 
         obj = objects.DesignateObject.from_primitive(primitive)
 
         # Validate it has been thawed correctly
-        self.assertEqual('MyID', obj.id)
+        self.assertEqual(1, obj.id)
 
         # Ensure the ID field has a value
         self.assertTrue(obj.obj_attr_is_set('id'))
@@ -111,33 +104,35 @@ class DesignateObjectTest(oslotest.base.BaseTestCase):
         primitive = {
             'designate_object.name': 'TestObject',
             'designate_object.data': {
-                'id': 'MyID',
+                'id': 1,
                 'nested': {
                     'designate_object.name': 'TestObject',
                     'designate_object.data': {
-                        'id': 'MyID-Nested',
+                        'id': 2,
                     },
                     'designate_object.changes': [],
-                    'designate_object.original_values': {},
+                    'designate_object.namespace': 'designate',
+                    'designate_object.version': '1.0',
                 }
             },
             'designate_object.changes': [],
-            'designate_object.original_values': {},
+            'designate_object.namespace': 'designate',
+            'designate_object.version': '1.0',
         }
 
         obj = objects.DesignateObject.from_primitive(primitive)
 
         # Validate it has been thawed correctly
-        self.assertEqual('MyID', obj.id)
-        self.assertEqual('MyID-Nested', obj.nested.id)
+        self.assertEqual(1, obj.id)
+        self.assertEqual(2, obj.nested.id)
 
     def test_from_dict(self):
         obj = TestObject.from_dict({
-            'id': 'MyID',
+            'id': 1,
         })
 
         # Validate it has been thawed correctly
-        self.assertEqual('MyID', obj.id)
+        self.assertEqual(1, obj.id)
 
         # Ensure the ID field has a value
         self.assertTrue(obj.obj_attr_is_set('id'))
@@ -150,15 +145,15 @@ class DesignateObjectTest(oslotest.base.BaseTestCase):
 
     def test_from_dict_recursive(self):
         obj = TestObject.from_dict({
-            'id': 'MyID',
+            'id': 1,
             'nested': {
-                'id': 'MyID-Nested',
+                'id': 2,
             },
         })
 
         # Validate it has been thawed correctly
-        self.assertEqual('MyID', obj.id)
-        self.assertEqual('MyID-Nested', obj.nested.id)
+        self.assertEqual(1, obj.id)
+        self.assertEqual(2, obj.nested.id)
 
         # Ensure the changes list has two entries, one for the id field and the
         # other for the nested field
@@ -169,18 +164,18 @@ class DesignateObjectTest(oslotest.base.BaseTestCase):
 
     def test_from_dict_nested_list(self):
         obj = TestObject.from_dict({
-            'id': 'MyID',
+            'id': 1,
             'nested_list': [{
-                'id': 'MyID-Nested1',
+                'id': 2,
             }, {
-                'id': 'MyID-Nested2',
+                'id': 3,
             }],
         })
 
         # Validate it has been thawed correctly
-        self.assertEqual('MyID', obj.id)
-        self.assertEqual('MyID-Nested1', obj.nested_list[0].id)
-        self.assertEqual('MyID-Nested2', obj.nested_list[1].id)
+        self.assertEqual(1, obj.id)
+        self.assertEqual(2, obj.nested_list[0].id)
+        self.assertEqual(3, obj.nested_list[1].id)
 
         # Ensure the changes list has two entries, one for the id field and the
         # other for the nested field
@@ -189,36 +184,6 @@ class DesignateObjectTest(oslotest.base.BaseTestCase):
     def test_from_list(self):
         with testtools.ExpectedException(NotImplementedError):
             TestObject.from_list([])
-
-    def test_get_schema(self):
-        obj = TestValidatableObject()
-        obj.id = 'ffded5c4-e4f6-4e02-a175-48e13c5c12a0'
-        obj.validate()
-        self.assertTrue(hasattr(obj, '_obj_validator'))
-
-        expected = {
-            'description': 'Designate TestValidatableObject Object',
-            'title': 'TestValidatableObject', 'required': ['id'],
-            'additionalProperties': False,
-            '$schema': 'http://json-schema.org/draft-04/hyper-schema',
-            'type': 'object',
-            'properties': {
-                'id': {
-                    'type': 'string', 'format': 'uuid'
-                }
-            }
-        }
-        schema = obj._obj_validator.schema
-        self.assertEqual(expected, schema)
-
-        with testtools.ExpectedException(AttributeError):  # bug
-            schema = obj.obj_get_schema()
-
-    @unittest.expectedFailure  # bug
-    def test__schema_ref_resolver(self):
-        from designate.objects import base
-        base._schema_ref_resolver(
-            'obj://TestValidatableObject#/subpathA/subpathB')
 
     def test_init_invalid(self):
         with testtools.ExpectedException(TypeError):
@@ -242,8 +207,8 @@ class DesignateObjectTest(oslotest.base.BaseTestCase):
     def test_setattr(self):
         obj = TestObject()
 
-        obj.id = 'MyID'
-        self.assertEqual('MyID', obj.id)
+        obj.id = 1
+        self.assertEqual(1, obj.id)
         self.assertEqual(1, len(obj.obj_what_changed()))
 
         obj.name = 'MyName'
@@ -257,17 +222,18 @@ class DesignateObjectTest(oslotest.base.BaseTestCase):
             obj.badthing = 'demons'
 
     def test_to_primitive(self):
-        obj = TestObject(id='MyID')
+        obj = TestObject(id=1)
 
         # Ensure only the id attribute is returned
         primitive = obj.to_primitive()
         expected = {
             'designate_object.name': 'TestObject',
             'designate_object.data': {
-                'id': 'MyID',
+                'id': 1,
             },
             'designate_object.changes': ['id'],
-            'designate_object.original_values': {},
+            'designate_object.namespace': 'designate',
+            'designate_object.version': '1.0',
         }
         self.assertEqual(expected, primitive)
 
@@ -279,44 +245,47 @@ class DesignateObjectTest(oslotest.base.BaseTestCase):
         expected = {
             'designate_object.name': 'TestObject',
             'designate_object.data': {
-                'id': 'MyID',
+                'id': 1,
                 'name': None,
             },
             'designate_object.changes': ['id', 'name'],
-            'designate_object.original_values': {},
+            'designate_object.namespace': 'designate',
+            'designate_object.version': '1.0',
         }
         self.assertEqual(expected, primitive)
 
     def test_to_primitive_recursive(self):
-        obj = TestObject(id='MyID', nested=TestObject(id='MyID-Nested'))
+        obj = TestObject(id=1, nested=TestObject(id=2))
 
         # Ensure only the id attribute is returned
         primitive = obj.to_primitive()
         expected = {
             'designate_object.name': 'TestObject',
             'designate_object.data': {
-                'id': 'MyID',
+                'id': 1,
                 'nested': {
                     'designate_object.name': 'TestObject',
                     'designate_object.data': {
-                        'id': 'MyID-Nested',
+                        'id': 2,
                     },
                     'designate_object.changes': ['id'],
-                    'designate_object.original_values': {},
+                    'designate_object.namespace': 'designate',
+                    'designate_object.version': '1.0',
                 }
             },
             'designate_object.changes': ['id', 'nested'],
-            'designate_object.original_values': {},
+            'designate_object.namespace': 'designate',
+            'designate_object.version': '1.0',
         }
         self.assertEqual(expected, primitive)
 
     def test_to_dict(self):
-        obj = TestObject(id='MyID')
+        obj = TestObject(id=1)
 
         # Ensure only the id attribute is returned
         dict_ = obj.to_dict()
         expected = {
-            'id': 'MyID',
+            'id': 1,
         }
         self.assertEqual(expected, dict_)
 
@@ -326,67 +295,35 @@ class DesignateObjectTest(oslotest.base.BaseTestCase):
         # Ensure both the id and name attributes are returned
         dict_ = obj.to_dict()
         expected = {
-            'id': 'MyID',
+            'id': 1,
             'name': None,
         }
         self.assertEqual(expected, dict_)
 
     def test_to_dict_recursive(self):
-        obj = TestObject(id='MyID', nested=TestObject(id='MyID-Nested'))
+        obj = TestObject(id=1, nested=TestObject(id=2))
 
         # Ensure only the id attribute is returned
         dict_ = obj.to_dict()
         expected = {
-            'id': 'MyID',
+            'id': 1,
             'nested': {
-                'id': 'MyID-Nested',
+                'id': 2,
             },
         }
 
         self.assertEqual(expected, dict_)
 
     def test_update(self):
-        obj = TestObject(id='MyID', name='test')
+        obj = TestObject(id=1, name='test')
         obj.update({'id': 'new_id', 'name': 'new_name'})
         self.assertEqual('new_id', obj.id)
         self.assertEqual('new_name', obj.name)
 
     def test_update_unexpected_attribute(self):
-        obj = TestObject(id='MyID', name='test')
+        obj = TestObject(id=1, name='test')
         with testtools.ExpectedException(AttributeError):
             obj.update({'id': 'new_id', 'new_key': 3})
-
-    def test_is_valid(self):
-        obj = TestValidatableObject(id='MyID')
-
-        # ID should be a UUID, So - Not Valid.
-        self.assertFalse(obj.is_valid)
-
-        # Correct the ID field
-        obj.id = 'ffded5c4-e4f6-4e02-a175-48e13c5c12a0'
-
-        # ID is now a UUID, So - Valid.
-        self.assertTrue(obj.is_valid)
-
-    def test_is_valid_recursive(self):
-        obj = TestValidatableObject(
-            id='MyID',
-            nested=TestValidatableObject(id='MyID'))
-
-        # ID should be a UUID, So - Not Valid.
-        self.assertFalse(obj.is_valid)
-
-        # Correct the outer objects ID field
-        obj.id = 'ffded5c4-e4f6-4e02-a175-48e13c5c12a0'
-
-        # Outer ID is now a UUID, Nested ID is Not. So - Invalid.
-        self.assertFalse(obj.is_valid)
-
-        # Correct the nested objects ID field
-        obj.nested.id = 'ffded5c4-e4f6-4e02-a175-48e13c5c12a0'
-
-        # Outer and Nested IDs are now UUIDs. So - Valid.
-        self.assertTrue(obj.is_valid)
 
     def test_validate(self):
         obj = TestValidatableObject()
@@ -395,45 +332,29 @@ class DesignateObjectTest(oslotest.base.BaseTestCase):
         with testtools.ExpectedException(exceptions.InvalidObject):
             obj.validate()
 
-        # Set the ID field to an invalid value
-        obj.id = 'MyID'
-
-        # ID is now set, but to an invalid value, still invalid
-        with testtools.ExpectedException(exceptions.InvalidObject):
-            obj.validate()
+        with testtools.ExpectedException(ValueError):
+            obj.id = 'MyID'
 
         # Set the ID field to a valid value
         obj.id = 'ffded5c4-e4f6-4e02-a175-48e13c5c12a0'
         obj.validate()
 
     def test_validate_recursive(self):
+        with testtools.ExpectedException(ValueError):
+            TestValidatableObject(
+                id='MyID',
+                nested=TestValidatableObject(id='MyID'))
+
+        with testtools.ExpectedException(ValueError):
+            TestValidatableObject(
+                id='ffded5c4-e4f6-4e02-a175-48e13c5c12a0',
+                nested=TestValidatableObject(
+                    id='MyID'))
+
         obj = TestValidatableObject(
-            id='MyID',
-            nested=TestValidatableObject(id='MyID'))
-
-        # ID should be a UUID, So - Invalid.
-        with testtools.ExpectedException(exceptions.InvalidObject):
-            obj.validate()
-
-        # Correct the outer objects ID field
-        obj.id = 'ffded5c4-e4f6-4e02-a175-48e13c5c12a0'
-
-        # Outer ID is now set, Inner ID is not, still invalid.
-        e = self.assertRaises(exceptions.InvalidObject, obj.validate)
-
-        # Ensure we have exactly one error and fetch it
-        self.assertEqual(1, len(e.errors))
-        error = e.errors.pop(0)
-
-        # Ensure the format validator has triggered the failure.
-        self.assertEqual('format', error.validator)
-
-        # Ensure the nested ID field has triggered the failure.
-        # For some reason testtools turns lists into deques :/
-        self.assertEqual(error.path, ['nested', 'id'])
-
-        # Set the Nested ID field to a valid value
-        obj.nested.id = 'ffded5c4-e4f6-4e02-a175-48e13c5c12a0'
+            id='ffded5c4-e4f6-4e02-a175-48e13c5c12a0',
+            nested=TestValidatableObject(
+                id='ffded5c4-e4f6-4e02-a175-48e13c5c12a0'))
         obj.validate()
 
     def test_obj_attr_is_set(self):
@@ -577,11 +498,11 @@ class DictObjectMixinTest(oslotest.base.BaseTestCase):
     def test_cast_to_dict(self):
         # Create an object
         obj = TestObjectDict()
-        obj.id = "My ID"
+        obj.id = 1
         obj.name = "My Name"
 
         expected = {
-            'id': 'My ID',
+            'id': 1,
             'name': 'My Name',
         }
 
@@ -613,7 +534,7 @@ class DictObjectMixinTest(oslotest.base.BaseTestCase):
 
     def test_get_default(self):
         obj = TestObjectDict(name='n')
-        v = obj.get('name', default='default')
+        v = obj.get('name', value='default')
         self.assertEqual('n', v)
 
     def test_get_default_with_patch(self):
@@ -621,7 +542,7 @@ class DictObjectMixinTest(oslotest.base.BaseTestCase):
         fname = 'designate.objects.base.DesignateObject.obj_attr_is_set'
         with mock.patch(fname) as attr_is_set:
             attr_is_set.return_value = False
-            v = obj.get('name', default='default')
+            v = obj.get('name', value='default')
             self.assertEqual('default', v)
 
     def test_iteritems(self):
@@ -648,15 +569,18 @@ class ListObjectMixinTest(oslotest.base.BaseTestCase):
                     {'designate_object.changes': ['id'],
                      'designate_object.data': {'id': 'One'},
                      'designate_object.name': 'TestObject',
-                     'designate_object.original_values': {}},
+                     'designate_object.namespace': 'designate',
+                     'designate_object.version': '1.0'},
                     {'designate_object.changes': ['id'],
                      'designate_object.data': {'id': 'Two'},
                      'designate_object.name': 'TestObject',
-                     'designate_object.original_values': {}},
+                     'designate_object.namespace': 'designate',
+                     'designate_object.version': '1.0'},
                 ],
             },
             'designate_object.changes': ['objects'],
-            'designate_object.original_values': {},
+            'designate_object.namespace': 'designate',
+            'designate_object.version': '1.0',
         }
 
         obj = objects.DesignateObject.from_primitive(primitive)
@@ -701,15 +625,18 @@ class ListObjectMixinTest(oslotest.base.BaseTestCase):
                     {'designate_object.changes': ['id'],
                      'designate_object.data': {'id': 'One'},
                      'designate_object.name': 'TestObject',
-                     'designate_object.original_values': {}},
+                     'designate_object.namespace': 'designate',
+                     'designate_object.version': '1.0'},
                     {'designate_object.changes': ['id'],
                      'designate_object.data': {'id': 'Two'},
                      'designate_object.name': 'TestObject',
-                     'designate_object.original_values': {}},
+                     'designate_object.namespace': 'designate',
+                     'designate_object.version': '1.0'},
                 ],
             },
             'designate_object.changes': ['objects'],
-            'designate_object.original_values': {},
+            'designate_object.namespace': 'designate',
+            'designate_object.version': '1.0'
         }
         self.assertEqual(expected, primitive)
 
@@ -718,7 +645,7 @@ class ListObjectMixinTest(oslotest.base.BaseTestCase):
         obj_one = TestObject()
         obj_two = TestObject()
         obj_two.id = "Two"
-        obj_one.id = obj_two
+        obj_one.nested = obj_two
 
         # Create a ListObject
         obj = TestObjectList(objects=[obj_one, obj_two])
@@ -729,19 +656,26 @@ class ListObjectMixinTest(oslotest.base.BaseTestCase):
             'designate_object.changes': ['objects'],
             'designate_object.data': {
                 'objects': [
-                    {'designate_object.changes': ['id'],
-                     'designate_object.data': {'id':
-                        {'designate_object.changes': ['id'],
-                         'designate_object.data': {'id': 'Two'},
-                         'designate_object.name': 'TestObject',
-                         'designate_object.original_values': {}}},
+                    {'designate_object.changes': ['nested'],
+                     'designate_object.data': {'nested':
+                         {
+                             'designate_object.changes': [
+                                 'id'],
+                             'designate_object.data': {
+                                 'id': 'Two'},
+                             'designate_object.name': 'TestObject',
+                             'designate_object.namespace': 'designate',
+                             'designate_object.version': '1.0'}},
                      'designate_object.name': 'TestObject',
-                    'designate_object.original_values': {}},
+                     'designate_object.namespace': 'designate',
+                     'designate_object.version': '1.0'},
                     {'designate_object.changes': ['id'],
                      'designate_object.data': {'id': 'Two'},
                      'designate_object.name': 'TestObject',
-                     'designate_object.original_values': {}}]},
-            'designate_object.original_values': {}}
+                     'designate_object.namespace': 'designate',
+                     'designate_object.version': '1.0'}]},
+            'designate_object.namespace': 'designate',
+            'designate_object.version': '1.0'}
 
         self.assertEqual(expected, primitive)
 
@@ -879,21 +813,12 @@ class ListObjectMixinTest(oslotest.base.BaseTestCase):
 
         self.assertEqual([obj_one, obj_two, obj_three], obj.objects)
 
-    def test_to_dict(self):
-        # Create a ListObject containing a DesignateObject
-        obj_one = objects.DesignateObject()
-        obj = TestObjectList(objects=obj_one)
-
-        dict_ = obj.to_dict()
-        expected = {'objects': {}}
-        self.assertEqual(expected, dict_)
-
     def test_to_dict_list_mixin(self):
         # Create a ListObject containing an ObjectList
-        obj = TestObjectList(objects=TestObjectList())
+        obj = TestObjectList(objects=[TestObject()])
 
         dict_ = obj.to_dict()
-        expected = {'objects': []}
+        expected = {'objects': [{}]}
         self.assertEqual(expected, dict_)
 
     def test_to_list(self):

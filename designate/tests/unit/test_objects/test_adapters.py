@@ -21,6 +21,7 @@ import oslotest.base
 from oslo_utils import timeutils
 
 from designate import objects
+from designate.objects import base
 from designate.objects import adapters
 
 
@@ -37,6 +38,7 @@ class DesignateTestAdapter(adapters.DesignateAdapter):
     }
 
 
+@base.DesignateRegistry.register
 class DesignateTestPersistentObject(
         objects.DesignateObject, objects.base.PersistentObjectMixin):
     pass

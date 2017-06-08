@@ -14,7 +14,7 @@
 #    under the License.
 from designate.objects.record import Record
 from designate.objects.record import RecordList
-from designate.objects import ovo_base as base
+from designate.objects import base
 from designate.objects import fields
 
 

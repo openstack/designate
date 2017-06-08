@@ -78,8 +78,7 @@ class ValidationErrorAPIv2Adapter(base.APIv2Adapter):
 
         # Check if the object is a list - lists will just have an index as a
         # value, ands this can't be renamed
-        if issubclass(obj_adapter.ADAPTER_OBJECT,
-                      (objects.ListObjectMixin, objects.OVOListObjectMixin)):
+        if issubclass(obj_adapter.ADAPTER_OBJECT, objects.ListObjectMixin):
             obj_adapter = cls.get_object_adapter(
                 cls.ADAPTER_FORMAT,
                 obj_adapter.ADAPTER_OBJECT.LIST_ITEM_TYPE.obj_name())
@@ -110,7 +109,7 @@ class ValidationErrorAPIv2Adapter(base.APIv2Adapter):
                 obj_adapter = cls.get_object_adapter(
                     cls.ADAPTER_FORMAT, obj_cls)
 
-                object = objects.OVODesignateObject.obj_cls_from_name(obj_cls)()  # noqa
+                object = objects.DesignateObject.obj_cls_from_name(obj_cls)()  # noqa
                 # Recurse down into this object
                 path_segment, obj_adapter = cls._rename_path_segment(
                     obj_adapter, object, path_segment)

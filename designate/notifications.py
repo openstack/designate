@@ -152,8 +152,7 @@ class Audit(NotificationPlugin):
         changes = []
 
         for arg in arglist:
-            if isinstance(arg, (objects.DesignateObject,
-                                objects.OVODesignateObject)):
+            if isinstance(arg, objects.DesignateObject):
                 for change in arg.obj_what_changed():
                     if change != 'records':
                         old_value = arg.obj_get_original_value(change)
