@@ -287,9 +287,6 @@ class CentralBasic(base.BaseTestCase):
 
 class CentralServiceTestCase(CentralBasic):
 
-    def setUp(self):
-        super(CentralServiceTestCase, self).setUp()
-
     def test_mdns_api_patch(self):
         with fx_mdns_api:
             q = self.service.mdns_api
