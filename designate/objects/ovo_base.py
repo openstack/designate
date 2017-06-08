@@ -22,8 +22,6 @@ from oslo_versionedobjects.base import VersionedObjectDictCompat as DictObjectMi
 from designate.i18n import _
 from designate.i18n import _LE
 from designate.objects import fields
-from designate.objects.validation_error import ValidationError
-from designate.objects.validation_error import ValidationErrorList
 from designate import exceptions
 
 LOG = logging.getLogger(__name__)
@@ -210,6 +208,10 @@ class DesignateObject(base.VersionedObject):
         return self._context
 
     def validate(self):
+        # NOTE(kiall, daidv): We make use of the Object registry here
+        # in order to avoid an impossible circular import.
+        ValidationErrorList = self.obj_cls_from_name('ValidationErrorList')
+        ValidationError = self.obj_cls_from_name('ValidationError')
         self.fields = self.FIELDS
         for name in self.fields:
             field = self.fields[name]
