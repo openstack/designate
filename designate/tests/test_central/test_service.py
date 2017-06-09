@@ -297,10 +297,10 @@ class CentralServiceTest(CentralTestCase):
 
     def test_update_tld(self):
         # Create a tld
-        tld = self.create_tld(name='org.')
+        tld = self.create_tld(name='org')
 
         # Update the Object
-        tld.name = 'net.'
+        tld.name = 'net'
 
         # Perform the update
         self.central_service.update_tld(self.admin_context, tld)
@@ -309,7 +309,7 @@ class CentralServiceTest(CentralTestCase):
         tld = self.central_service.get_tld(self.admin_context, tld.id)
 
         # Ensure the tld was updated correctly
-        self.assertEqual('net.', tld.name)
+        self.assertEqual('net', tld.name)
 
     def test_delete_tld(self):
         # Create a tld

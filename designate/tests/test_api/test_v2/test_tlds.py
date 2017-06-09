@@ -85,7 +85,7 @@ class ApiV2TldsTest(ApiV2TestCase):
         # We should start with 0 tlds
         self.assertEqual(0, len(response.json['tlds']))
 
-        data = [self.create_tld(name='tld%s.' % i) for i in 'abcdefghijklmn']
+        data = [self.create_tld(name='tld%s' % i) for i in 'abcdefghijklmn']
         self._assert_paging(data, '/tlds', key='tlds')
 
     def test_get_tld(self):
