@@ -422,7 +422,7 @@ class TestCase(base.BaseTestCase):
 
         # Fill out the necessary pool details
         pool.ns_records = objects.PoolNsRecordList.from_list([
-            {'hostname': 'ns1.example.org.', 'priority': 0}
+            {'hostname': 'ns1.example.org.', 'priority': 1}
         ])
 
         pool.targets = objects.PoolTargetList.from_list([

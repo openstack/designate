@@ -130,7 +130,7 @@ class ApiV1ServersTest(ApiV1Test):
 
         # Add a new NS record to the pool
         pool.ns_records.append(
-            objects.PoolNsRecord(priority=0, hostname='new-ns1.example.org.'))
+            objects.PoolNsRecord(priority=1, hostname='new-ns1.example.org.'))
 
         # Save the pool to add a new nameserver
         self.storage.update_pool(self.admin_context, pool)
@@ -143,7 +143,7 @@ class ApiV1ServersTest(ApiV1Test):
 
         # Add a new NS record to the pool
         pool.ns_records.append(
-            objects.PoolNsRecord(priority=0, hostname='new-ns2.example.org.'))
+            objects.PoolNsRecord(priority=1, hostname='new-ns2.example.org.'))
 
         # Save the pool to add a new nameserver
         self.storage.update_pool(self.admin_context, pool)
@@ -221,7 +221,7 @@ class ApiV1ServersTest(ApiV1Test):
         # because the last remaining server is not allowed to be deleted
         # Add a new NS record to the pool
         pool.ns_records.append(
-            objects.PoolNsRecord(priority=0, hostname='new-ns2.example.org.'))
+            objects.PoolNsRecord(priority=1, hostname='new-ns2.example.org.'))
 
         # Save the pool to add a new nameserver
         self.storage.update_pool(self.admin_context, pool)
