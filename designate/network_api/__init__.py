@@ -22,9 +22,11 @@ from designate.network_api import base
 
 LOG = log.getLogger(__name__)
 
-cfg.CONF.register_opts([
+neutron_opts = [
     cfg.StrOpt('network_api', default='neutron', help='Which API to use.')
-])
+]
+
+cfg.CONF.register_opts(neutron_opts)
 
 
 def get_network_api(network_api_driver):

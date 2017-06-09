@@ -17,9 +17,9 @@ from oslo_config import cfg
 
 CONF = cfg.CONF
 
-CONF.register_group(cfg.OptGroup(
+pool_manager_group = cfg.OptGroup(
     name='service:pool_manager', title="Configuration for Pool Manager Service"
-))
+)
 
 OPTS = [
     cfg.IntOpt('workers',
@@ -74,8 +74,6 @@ OPTS = [
                help='RPC topic name for pool-manager')
 ]
 
-CONF.register_opts(OPTS, group='service:pool_manager')
-
 
 def register_dynamic_pool_options():
     # Pool Options Registration Pass One
@@ -128,3 +126,11 @@ def register_dynamic_pool_options():
 
         CONF.register_group(pool_nameserver_group)
         CONF.register_opts(pool_nameserver_opts, group=pool_nameserver_group)
+
+
+cfg.CONF.register_group(pool_manager_group)
+cfg.CONF.register_opts(OPTS, group=pool_manager_group)
+
+
+def list_opts():
+    yield pool_manager_group, OPTS

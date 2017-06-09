@@ -57,6 +57,7 @@ from designate.i18n import _LI
 from designate.i18n import _LE
 from designate.utils import execute
 
+
 LOG = logging.getLogger(__name__)
 CFG_GROUP = 'backend:agent:djbdns'
 # rootwrap requires a command name instead of full path
@@ -66,6 +67,39 @@ TINYDNS_DATA_DEFAULT_PATH = 'tinydns-data'
 
 TINYDNS_DATADIR_DEFAULT_PATH = '/var/lib/djbdns'
 SOA_QUERY_TIMEOUT = 1
+
+"""GROUP = backend:agent:djbdns"""
+djbdns_group = cfg.OptGroup(
+            name='backend:agent:djbdns',
+            title="Configuration for Djbdns backend"
+        )
+djbdns_opts = [
+    cfg.StrOpt(
+        'tcpclient-cmd-name',
+        help='tcpclient executable path or rootwrap command name',
+        default='tcpclient'
+    ),
+    cfg.StrOpt(
+        'axfr-get-cmd-name',
+        help='axfr-get executable path or rootwrap command name',
+        default='axfr-get'
+    ),
+    cfg.StrOpt(
+        'tinydns-data-cmd-name',
+        help='tinydns-data executable path or rootwrap command name',
+        default='tinydns-data'
+    ),
+    cfg.StrOpt(
+        'tinydns-datadir',
+        help='TinyDNS data directory',
+        default='/var/lib/djbdns'
+    ),
+    cfg.StrOpt('query-destination', default='127.0.0.1',
+               help='Host to query when finding zones')
+]
+
+cfg.CONF.register_group(djbdns_group)
+cfg.CONF.register_opts(djbdns_opts, group=djbdns_group)
 
 
 # TODO(Federico) on zone creation and update, agent.handler unnecessarily
@@ -94,35 +128,7 @@ class DjbdnsBackend(base.AgentBackend):
 
     @classmethod
     def get_cfg_opts(cls):
-        group = cfg.OptGroup(
-            name='backend:agent:djbdns',
-            title="Configuration for Djbdns backend"
-        )
-        opts = [
-            cfg.StrOpt(
-                'tcpclient-cmd-name',
-                help='tcpclient executable path or rootwrap command name',
-                default=TCPCLIENT_DEFAULT_PATH
-            ),
-            cfg.StrOpt(
-                'axfr-get-cmd-name',
-                help='axfr-get executable path or rootwrap command name',
-                default=AXFR_GET_DEFAULT_PATH
-            ),
-            cfg.StrOpt(
-                'tinydns-data-cmd-name',
-                help='tinydns-data executable path or rootwrap command name',
-                default=TINYDNS_DATA_DEFAULT_PATH
-            ),
-            cfg.StrOpt(
-                'tinydns-datadir',
-                help='TinyDNS data directory',
-                default=TINYDNS_DATADIR_DEFAULT_PATH
-            ),
-            cfg.StrOpt('query-destination', default='127.0.0.1',
-                       help='Host to query when finding zones')
-        ]
-        return [(group, opts)]
+        return [(djbdns_group, djbdns_opts)]
 
     def __init__(self, *a, **kw):
         """Configure the backend"""

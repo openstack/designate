@@ -16,17 +16,20 @@ from oslo_config import cfg
 from oslo_log import log as logging
 
 from designate.scheduler import base
+from designate import central
 
 LOG = logging.getLogger(__name__)
 
-cfg.CONF.register_opts([
+scheduler_opts = [
     cfg.ListOpt(
         'scheduler_filters',
         default=['default_pool'],
         help='Enabled Pool Scheduling filters'),
-], group='service:central')
+]
+
+cfg.CONF.register_group(central.central_group)
+cfg.CONF.register_opts(scheduler_opts, group=central.central_group)
 
 
 def get_scheduler(storage):
-
     return base.Scheduler(storage=storage)

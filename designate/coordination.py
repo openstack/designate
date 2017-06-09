@@ -32,7 +32,11 @@ from designate.i18n import _LE
 
 LOG = log.getLogger(__name__)
 
-OPTS = [
+coordination_group = cfg.OptGroup(
+    name='coordination', title="Configuration for coordination"
+)
+
+coordination_opts = [
     cfg.StrOpt('backend_url',
                help='The backend URL to use for distributed coordination. If '
                     'unset services that need coordination will function as '
@@ -47,7 +51,8 @@ OPTS = [
                       'membership has changed')
 
 ]
-cfg.CONF.register_opts(OPTS, group='coordination')
+cfg.CONF.register_group(coordination_group)
+cfg.CONF.register_opts(coordination_opts, group=coordination_group)
 
 CONF = cfg.CONF
 

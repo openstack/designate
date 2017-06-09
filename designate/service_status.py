@@ -22,6 +22,11 @@ from designate import objects
 from designate import plugin
 from designate.central import rpcapi as central_rpcapi
 
+heartbeat_group = cfg.OptGroup(
+            name='heartbeat_emitter',
+            title="Configuration for heartbeat_emitter"
+        )
+
 heartbeat_opts = [
     cfg.FloatOpt('heartbeat_interval',
                  default=5.0,
@@ -31,7 +36,8 @@ heartbeat_opts = [
 ]
 
 CONF = cfg.CONF
-CONF.register_opts(heartbeat_opts, group="heartbeat_emitter")
+CONF.register_group(heartbeat_group)
+CONF.register_opts(heartbeat_opts, group=heartbeat_group)
 
 LOG = logging.getLogger(__name__)
 

@@ -31,6 +31,10 @@ CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
 
 
+neutron_group = cfg.OptGroup(
+            name='network_api:neutron', title="Configuration network api"
+        )
+
 neutron_opts = [
     cfg.ListOpt('endpoints',
                 help='URL to use if None in the ServiceCatalog that is '
@@ -61,7 +65,8 @@ neutron_opts = [
                     'neutron client requests.'),
 ]
 
-cfg.CONF.register_opts(neutron_opts, group='network_api:neutron')
+cfg.CONF.register_group(neutron_group)
+cfg.CONF.register_opts(neutron_opts, group=neutron_group)
 
 
 def get_client(context, endpoint):

@@ -15,15 +15,23 @@
 # under the License.
 from oslo_config import cfg
 
-cfg.CONF.register_group(cfg.OptGroup(
+sink_group = cfg.OptGroup(
     name='service:sink', title="Configuration for Sink Service"
-))
+)
 
-cfg.CONF.register_opts([
+OPTS = [
     cfg.IntOpt('workers',
                help='Number of sink worker processes to spawn'),
     cfg.IntOpt('threads', default=1000,
                help='Number of sink greenthreads to spawn'),
     cfg.ListOpt('enabled-notification-handlers', default=[],
                 help='Enabled Notification Handlers'),
-], group='service:sink')
+]
+
+
+cfg.CONF.register_group(sink_group)
+cfg.CONF.register_opts(OPTS, group=sink_group)
+
+
+def list_opts():
+    yield sink_group, OPTS

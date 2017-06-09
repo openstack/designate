@@ -41,6 +41,8 @@ util_opts = [
     cfg.IntOpt('xfr_timeout', help="Timeout in seconds for XFR's.", default=10)
 ]
 
+cfg.CONF.register_opts(util_opts)
+
 
 class DNSMiddleware(object):
     """Base DNS Middleware class with some utility methods"""

@@ -31,11 +31,6 @@ from designate import utils
 
 LOG = logging.getLogger(__name__)
 
-cfg.CONF.register_opts([
-    cfg.ListOpt('enabled-extensions-v1', default=[],
-                help='Enabled API Extensions'),
-], group='service:api')
-
 
 class DesignateRequest(flask.Request, wrappers.AcceptMixin,
                        wrappers.CommonRequestDescriptorsMixin):

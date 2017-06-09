@@ -26,13 +26,10 @@ from designate.pool_manager.cache.impl_sqlalchemy import tables
 
 LOG = logging.getLogger(__name__)
 
-cfg.CONF.register_group(cfg.OptGroup(
+sqlalchemy_group = cfg.OptGroup(
     name='pool_manager_cache:sqlalchemy',
     title="Configuration for SQLAlchemy Pool Manager Cache"
-))
-
-cfg.CONF.register_opts(options.database_opts,
-                       group='pool_manager_cache:sqlalchemy')
+)
 
 
 class SQLAlchemyPoolManagerCache(sqlalchemy_base.SQLAlchemy,
@@ -76,3 +73,6 @@ class SQLAlchemyPoolManagerCache(sqlalchemy_base.SQLAlchemy,
             context, tables.pool_manager_statuses, objects.PoolManagerStatus,
             objects.PoolManagerStatusList,
             exceptions.PoolManagerStatusNotFound, criterion, one=True)
+
+cfg.CONF.register_group(sqlalchemy_group)
+cfg.CONF.register_opts(options.database_opts, group=sqlalchemy_group)

@@ -54,6 +54,7 @@ from designate.backend.agent_backend import base
 from designate.i18n import _LI
 from designate.i18n import _LE
 
+
 LOG = logging.getLogger(__name__)
 CFG_GROUP = 'backend:agent:gdnsd'
 # rootwrap requires a command name instead of full path
@@ -61,6 +62,25 @@ GDNSD_DEFAULT_PATH = 'gdnsd'
 CONFDIR_PATH = '/etc/gdnsd'
 SOA_QUERY_TIMEOUT = 1
 ZONE_FILE_PERMISSIONS = 0o0644
+
+
+"""GROUP = backend:agent:gdnsd"""
+gdnsd_group = cfg.OptGroup(
+            name='backend:agent:gdnsd', title="Configuration for gdnsd backend"
+        )
+gdnsd_opts = [
+    cfg.StrOpt('gdnsd-cmd-name',
+               help='gdnsd executable path or rootwrap command name',
+               default='gdnsd'),
+    cfg.StrOpt('confdir-path',
+               help='gdnsd configuration directory path',
+               default='/etc/gdnsd'),
+    cfg.StrOpt('query-destination', default='127.0.0.1',
+               help='Host to query when finding zones')
+]
+
+cfg.CONF.register_group(gdnsd_group)
+cfg.CONF.register_opts(gdnsd_opts, group=gdnsd_group)
 
 
 def filter_exceptions(fn):
@@ -84,20 +104,7 @@ class GdnsdBackend(base.AgentBackend):
 
     @classmethod
     def get_cfg_opts(cls):
-        group = cfg.OptGroup(
-            name=CFG_GROUP, title="Configuration for gdnsd backend"
-        )
-        opts = [
-            cfg.StrOpt('gdnsd-cmd-name',
-                       help='gdnsd executable path or rootwrap command name',
-                       default=GDNSD_DEFAULT_PATH),
-            cfg.StrOpt('confdir-path',
-                       help='gdnsd configuration directory path',
-                       default=CONFDIR_PATH),
-            cfg.StrOpt('query-destination', default='127.0.0.1',
-                       help='Host to query when finding zones')
-        ]
-        return [(group, opts)]
+        return [(gdnsd_group, gdnsd_opts)]
 
     def __init__(self, *a, **kw):
         """Configure the backend"""

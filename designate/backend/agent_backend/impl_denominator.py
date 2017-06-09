@@ -31,6 +31,22 @@ from designate.i18n import _LI
 LOG = logging.getLogger(__name__)
 CFG_GROUP = 'backend:agent:denominator'
 
+"""GROUP = backend:agent:denominator"""
+denominator_group = cfg.OptGroup(
+            name='backend:agent:denominator',
+            title='Backend options for Denominator',
+        )
+
+denominator_opts = [
+    cfg.StrOpt('name', default='fake',
+               help='Name of the affected provider'),
+    cfg.StrOpt('config_file', default='/etc/denominator.conf',
+               help='Path to Denominator configuration file')
+]
+
+cfg.CONF.register_group(denominator_group)
+cfg.CONF.register_opts(denominator_opts, group=denominator_group)
+
 
 class Denominator(object):
 
@@ -98,19 +114,7 @@ class DenominatorBackend(base.AgentBackend):
 
     @classmethod
     def get_cfg_opts(cls):
-        group = cfg.OptGroup(
-            name=CFG_GROUP,
-            title='Backend options for Denominator',
-        )
-
-        opts = [
-            cfg.StrOpt('name', default='fake',
-                help='Name of the affected provider'),
-            cfg.StrOpt('config_file', default='/etc/denominator.conf',
-                help='Path to Denominator configuration file')
-        ]
-
-        return [(group, opts)]
+        return [(denominator_group, denominator_opts)]
 
     def start(self):
         LOG.info(_LI("Started Denominator backend"))

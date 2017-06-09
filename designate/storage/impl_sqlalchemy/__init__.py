@@ -34,11 +34,12 @@ LOG = logging.getLogger(__name__)
 
 MAXIMUM_SUBZONE_DEPTH = 128
 
-cfg.CONF.register_group(cfg.OptGroup(
+storage_group = cfg.OptGroup(
     name='storage:sqlalchemy', title="Configuration for SQLAlchemy Storage"
-))
+)
 
-cfg.CONF.register_opts(options.database_opts, group='storage:sqlalchemy')
+cfg.CONF.register_group(storage_group)
+cfg.CONF.register_opts(options.database_opts, group=storage_group)
 
 
 class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):

@@ -49,6 +49,7 @@ from designate.i18n import _LI
 from designate.i18n import _LE
 from designate.utils import execute
 
+
 LOG = logging.getLogger(__name__)
 CFG_GROUP = 'backend:agent:knot2'
 # rootwrap requires a command name instead of full path
@@ -58,6 +59,30 @@ KNOTC_DEFAULT_PATH = 'knotc'
 # perfors AXFR from MiniDNS to the Agent to populate the `zone` argument
 # (needed by the Bind backend)
 
+"""GROUP = backend:agent:knot2"""
+knot2_group = cfg.OptGroup(
+            name='backend:agent:knot2', title="Configuration for Knot2 backend"
+        )
+knot2_opts = [
+    cfg.StrOpt('knotc-cmd-name',
+               help='knotc executable path or rootwrap command name',
+               default='knotc'),
+    cfg.StrOpt('query-destination', default='127.0.0.1',
+               help='Host to query when finding zones')
+]
+
+"""GROUP = backend:agent:msdns"""
+msdns_group = cfg.OptGroup(
+    name='backend:agent:msdns',
+    title="Configuration for Microsoft DNS Server"
+)
+msdns_opts = [
+
+]
+
+cfg.CONF.register_group(knot2_group)
+cfg.CONF.register_opts(knot2_opts, group=knot2_group)
+
 
 class Knot2Backend(base.AgentBackend):
     __plugin_name__ = 'knot2'
@@ -66,17 +91,7 @@ class Knot2Backend(base.AgentBackend):
 
     @classmethod
     def get_cfg_opts(cls):
-        group = cfg.OptGroup(
-            name='backend:agent:knot2', title="Configuration for Knot2 backend"
-        )
-        opts = [
-            cfg.StrOpt('knotc-cmd-name',
-                       help='knotc executable path or rootwrap command name',
-                       default=KNOTC_DEFAULT_PATH),
-            cfg.StrOpt('query-destination', default='127.0.0.1',
-                       help='Host to query when finding zones')
-        ]
-        return [(group, opts)]
+        return [(knot2_group, knot2_opts)]
 
     def __init__(self, *a, **kw):
         """Configure the backend"""

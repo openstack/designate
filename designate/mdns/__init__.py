@@ -20,9 +20,9 @@ from designate import dnsutils
 from designate.utils import DEFAULT_MDNS_PORT
 
 
-cfg.CONF.register_group(cfg.OptGroup(
+mdns_group = cfg.OptGroup(
     name='service:mdns', title="Configuration for mDNS Service"
-))
+)
 
 OPTS = [
     cfg.IntOpt('workers',
@@ -57,5 +57,11 @@ OPTS = [
                help='RPC topic name for mini-DNS')
 ]
 
-cfg.CONF.register_opts(OPTS, group='service:mdns')
-cfg.CONF.register_opts(dnsutils.util_opts, group='service:mdns')
+
+cfg.CONF.register_group(mdns_group)
+cfg.CONF.register_opts(OPTS, group=mdns_group)
+cfg.CONF.register_opts(dnsutils.util_opts, group=mdns_group)
+
+
+def list_opts():
+    yield mdns_group, OPTS

@@ -17,12 +17,19 @@
 from oslo_config import cfg
 
 from designate.utils import DEFAULT_AGENT_PORT
+from designate.backend.agent_backend import impl_bind9
+from designate.backend.agent_backend import impl_denominator
+from designate.backend.agent_backend import impl_djbdns
+from designate.backend.agent_backend import impl_gdnsd
+from designate.backend.agent_backend import impl_knot2
+from designate.backend.agent_backend import impl_msdns
 
-cfg.CONF.register_group(cfg.OptGroup(
+
+agent_group = cfg.OptGroup(
     name='service:agent', title="Configuration for the Agent Service"
-))
+)
 
-OPTS = [
+agent_opts = [
     cfg.IntOpt('workers',
                help='Number of agent worker processes to spawn'),
     cfg.IntOpt('threads', default=1000,
@@ -55,4 +62,15 @@ OPTS = [
                  'will pause and drop subsequent NOTIFYs for that zone'),
 ]
 
-cfg.CONF.register_opts(OPTS, group='service:agent')
+cfg.CONF.register_group(agent_group)
+cfg.CONF.register_opts(agent_opts, group=agent_group)
+
+
+def list_opts():
+    yield agent_group, agent_opts
+    yield impl_bind9.bind9_group, impl_bind9.bind9_opts
+    yield impl_denominator.denominator_group, impl_denominator.denominator_opts
+    yield impl_djbdns.djbdns_group, impl_djbdns.djbdns_opts
+    yield impl_gdnsd.gdnsd_group, impl_gdnsd.gdnsd_opts
+    yield impl_knot2.knot2_group, impl_knot2.knot2_opts
+    yield impl_msdns.msdns_group, impl_msdns.msdns_opts
