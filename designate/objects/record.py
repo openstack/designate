@@ -78,7 +78,8 @@ class Record(base.DictObjectMixin, base.PersistentObjectMixin,
         'status': {
             'schema': {
                 'type': 'string',
-                'enum': ['ACTIVE', 'PENDING', 'ERROR'],
+                'enum': ['ACTIVE', 'PENDING', 'ERROR',
+                        'DELETED', 'SUCCESS', 'NO_ZONE']
             },
         },
         'tenant_id': {

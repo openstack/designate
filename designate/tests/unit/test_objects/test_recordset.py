@@ -181,6 +181,15 @@ class RecordSetTest(oslotest.base.BaseTestCase):
         )
         self.assertEqual('ACTIVE', rs.status)
 
+    def test_status_deleted(self):
+        rs = objects.RecordSet(
+            name='www.example.org.', type='A',
+            records=objects.RecordList(objects=[
+                objects.Record(data='192.0.2.2', status='DELETED'),
+            ])
+        )
+        self.assertEqual('DELETED', rs.status)
+
     def test_validate(self):
         rs = create_test_recordset()
         rs.validate()

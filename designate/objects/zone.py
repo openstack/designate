@@ -117,7 +117,8 @@ class Zone(base.DictObjectMixin, base.SoftDeleteObjectMixin,
         'status': {
             'schema': {
                 'type': 'string',
-                'enum': ['ACTIVE', 'PENDING', 'ERROR'],
+                'enum': ['ACTIVE', 'PENDING', 'ERROR',
+                        'DELETED', 'SUCCESS', 'NO_ZONE']
             },
             'read_only': True,
         },
