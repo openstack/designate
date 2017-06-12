@@ -65,7 +65,7 @@ Format
 
 An example notification from Neutron:
 
-.. literalinclude:: ../../designate/tests/resources/sample_notifications/neutron/port.delete.start.json
+.. literalinclude:: ../../../designate/tests/resources/sample_notifications/neutron/port.delete.start.json
 
 More examples can be found at :file:`designate/tests/resources/sample_notifications`
 

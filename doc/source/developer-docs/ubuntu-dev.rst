@@ -128,7 +128,7 @@ Create the designate.conf file
 
 Copy or mirror the configuration from this sample file here:
 
-.. literalinclude:: ./examples/basic-config-sample.conf
+.. literalinclude:: ../examples/basic-config-sample.conf
     :language: ini
 
 
@@ -257,7 +257,7 @@ Create the pools.yaml file
 
 Copy or mirror the configuration from this sample file here:
 
-.. literalinclude:: ./examples/basic-pools-sample.yaml
+.. literalinclude:: ../examples/basic-pools-sample.yaml
     :language: yaml
 
 Initialize the Database
