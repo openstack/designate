@@ -73,6 +73,7 @@ log.set_defaults(default_log_levels=[
     'keystone=INFO',
     'keystonemiddleware.auth_token=INFO',
     'oslo_messaging=WARN',
+    'oslo.messaging=INFO',
     'oslo_service.loopingcall=WARN',
     'sqlalchemy=WARN',
     'stevedore=WARN',
