@@ -2683,7 +2683,8 @@ class Service(service.RPCService, service.Service):
             except Exception as e:
                 msg = _LE('An undefined error occurred during zone import')
                 LOG.exception(msg)
-                msg = 'An undefined error occurred. %s' % e.message[:130]
+                msg = 'An undefined error occurred. %s'\
+                      % six.text_type(e)[:130]
                 zone_import.message = msg
                 zone_import.status = 'ERROR'
 
@@ -2706,12 +2707,13 @@ class Service(service.RPCService, service.Service):
                 zone_import.message = 'Duplicate zone.'
             except exceptions.InvalidTTL as e:
                 zone_import.status = 'ERROR'
-                zone_import.message = e.message
+                zone_import.message = six.text_type(e)
             except Exception as e:
                 msg = _LE('An undefined error occurred during zone '
                           'import creation')
                 LOG.exception(msg)
-                msg = 'An undefined error occurred. %s' % e.message[:130]
+                msg = 'An undefined error occurred. %s'\
+                      % six.text_type(e)[:130]
                 zone_import.message = msg
                 zone_import.status = 'ERROR'
 

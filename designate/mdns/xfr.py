@@ -40,7 +40,7 @@ class XFRMixin(object):
             dnspython_zone = dnsutils.do_axfr(zone.name, servers,
                                               timeout=timeout)
         except exceptions.XFRFailure as e:
-            LOG.warning(e.message)
+            LOG.warning(e)
             return
 
         zone.update(dnsutils.from_dnspython_zone(dnspython_zone))
