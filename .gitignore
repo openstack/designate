@@ -2,10 +2,8 @@
 # Python related files
 
 *.dat
-*.egg
-*.egg-info
+*.egg*
 *.pyc
-.eggs
 TAGS
 build
 

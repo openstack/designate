@@ -1,8 +1,7 @@
 *.pyc
 *.dat
 TAGS
-*.egg
-*.egg-info
+*.egg*
 build
 .coverage
 .tox
