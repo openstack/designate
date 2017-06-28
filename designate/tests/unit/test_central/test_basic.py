@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import six
 import unittest
 
 from mock import Mock
@@ -585,7 +586,7 @@ class CentralZoneTestCase(CentralBasic):
         with testtools.ExpectedException(exceptions.InvalidRecordSetName) as e:
             self.service._is_valid_recordset_name(self.context, zone,
                                                   rs_name)
-            self.assertEqual(e.message, 'Name too long')
+            self.assertEqual(six.text_type(e), 'Name too long')
 
     def test__is_valid_recordset_name_wrong_zone(self):
         zone = RoObject(name='example.org.')
@@ -605,8 +606,7 @@ class CentralZoneTestCase(CentralBasic):
             )
             self.assertEqual(
                 'CNAME recordsets may not be created at the zone apex',
-                e.message
-            )
+                six.text_type(e))
 
     def test_is_valid_recordset_placement_failing(self):
         zone = RoObject(name='example.org.', id=CentralZoneTestCase.zone__id)
@@ -623,8 +623,7 @@ class CentralZoneTestCase(CentralBasic):
             )
             self.assertEqual(
                 'CNAME recordsets may not share a name with any other records',
-                e.message
-            )
+                six.text_type(e))
 
     def test_is_valid_recordset_placement_failing_2(self):
         zone = RoObject(name='example.org.', id=CentralZoneTestCase.zone__id)
@@ -642,8 +641,7 @@ class CentralZoneTestCase(CentralBasic):
             )
             self.assertEqual(
                 'CNAME recordsets may not share a name with any other records',
-                e.message
-            )
+                six.text_type(e))
 
     def test_is_valid_recordset_placement(self):
         zone = RoObject(name='example.org.', id=CentralZoneTestCase.zone__id)
