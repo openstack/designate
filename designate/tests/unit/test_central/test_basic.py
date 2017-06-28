@@ -503,6 +503,17 @@ class CentralServiceTestCase(CentralBasic):
 
 
 class CentralZoneTestCase(CentralBasic):
+
+    zone__id = '1c85d9b0-1e9d-4e99-aede-a06664f1af2e'
+    zone__id_2 = '7c85d9b0-1e9d-4e99-aede-a06664f1af2e'
+    record__id = 'b81ebcfb-6236-4424-b77f-2dd0179fa041'
+    record__id_2 = 'c81ebcfb-6236-4424-b77f-2dd0179fa041'
+    pool__id = '769ca3fc-5924-4a44-8c1f-7efbe52fbd59'
+    recordset__id = '9c85d9b0-1e9d-4e99-aede-a06664f1af2e'
+    recordset__id_2 = 'dc85d9b0-1e9d-4e99-aede-a06664f1af2e'
+    recordset__id_3 = '121s-de21s-4e99-aede-a06664f1af2e'
+    zone_export__id = 'de21s-4e99-4424-b77f-2dd0179fa041'
+
     def setUp(self):
         super(CentralZoneTestCase, self).setUp()
 
@@ -601,9 +612,9 @@ class CentralZoneTestCase(CentralBasic):
             )
 
     def test_is_valid_recordset_placement_failing(self):
-        zone = RoObject(name='example.org.', id='1')
+        zone = RoObject(name='example.org.', id=CentralZoneTestCase.zone__id)
         self.service.storage.find_recordsets.return_value = [
-            RoObject(id='2')
+            RoObject(id=CentralZoneTestCase.recordset__id)
         ]
         with testtools.ExpectedException(exceptions.InvalidRecordSetLocation) \
                 as e:
@@ -619,7 +630,7 @@ class CentralZoneTestCase(CentralBasic):
             )
 
     def test_is_valid_recordset_placement_failing_2(self):
-        zone = RoObject(name='example.org.', id='1')
+        zone = RoObject(name='example.org.', id=CentralZoneTestCase.zone__id)
         self.service.storage.find_recordsets.return_value = [
             RoObject(),
             RoObject()
@@ -638,7 +649,7 @@ class CentralZoneTestCase(CentralBasic):
             )
 
     def test_is_valid_recordset_placement(self):
-        zone = RoObject(name='example.org.', id='1')
+        zone = RoObject(name='example.org.', id=CentralZoneTestCase.zone__id)
         self.service.storage.find_recordsets.return_value = []
         ret = self.service._is_valid_recordset_placement(
             self.context,
@@ -649,7 +660,7 @@ class CentralZoneTestCase(CentralBasic):
         self.assertTrue(ret)
 
     def test__is_valid_recordset_placement_subzone(self):
-        zone = RoObject(name='example.org.', id='1')
+        zone = RoObject(name='example.org.', id=CentralZoneTestCase.zone__id)
         self.service._is_valid_recordset_placement_subzone(
             self.context,
             zone,
@@ -657,7 +668,7 @@ class CentralZoneTestCase(CentralBasic):
         )
 
     def test__is_valid_recordset_placement_subzone_2(self):
-        zone = RoObject(name='example.org.', id='1')
+        zone = RoObject(name='example.org.', id=CentralZoneTestCase.zone__id)
         self.service._is_valid_recordset_name = Mock(side_effect=Exception)
         self.service.storage.find_zones.return_value = [
             RoObject(name='foo.example.org.')
@@ -669,7 +680,7 @@ class CentralZoneTestCase(CentralBasic):
         )
 
     def test__is_valid_recordset_placement_subzone_failing(self):
-        zone = RoObject(name='example.org.', id='1')
+        zone = RoObject(name='example.org.', id=CentralZoneTestCase.zone__id)
         self.service._is_valid_recordset_name = Mock()
         self.service.storage.find_zones.return_value = [
             RoObject(name='foo.example.org.')
@@ -739,7 +750,7 @@ class CentralZoneTestCase(CentralBasic):
 
         self.service._add_ns(
             self.context,
-            RoObject(id='1'),
+            RoObject(id=CentralZoneTestCase.zone__id),
             RoObject(name='bar')
         )
         ctx, zone, records = self.service._create_ns.call_args[0]
@@ -749,7 +760,7 @@ class CentralZoneTestCase(CentralBasic):
         self.service._update_recordset_in_storage = Mock()
 
         recordsets = [
-            RoObject(records=[], managed=True)
+            RoObject(records=objects.RecordList.from_list([]), managed=True)
         ]
         self.service.find_recordsets = Mock(
             return_value=recordsets
@@ -757,7 +768,7 @@ class CentralZoneTestCase(CentralBasic):
 
         self.service._add_ns(
             self.context,
-            RoObject(id='1'),
+            RoObject(id=CentralZoneTestCase.zone__id),
             RoObject(name='bar')
         )
         ctx, zone, rset = \
@@ -770,8 +781,8 @@ class CentralZoneTestCase(CentralBasic):
         self.service._update_recordset_in_storage = Mock()
 
         recordsets = [
-            RoObject(records=[], managed=True),
-            RoObject(records=[], managed=False)
+            RoObject(records=objects.RecordList.from_list([]), managed=True),
+            RoObject(records=objects.RecordList.from_list([]), managed=False)
         ]
 
         self.service.find_recordsets = Mock(
@@ -780,7 +791,7 @@ class CentralZoneTestCase(CentralBasic):
 
         self.service._add_ns(
             self.context,
-            RoObject(id='1'),
+            RoObject(id=CentralZoneTestCase.zone__id),
             RoObject(name='bar')
         )
         ctx, zone, rset = \
@@ -809,7 +820,7 @@ class CentralZoneTestCase(CentralBasic):
                 'find_pools',
                 return_value=objects.PoolList.from_list(
                     [
-                        {'id': '94ccc2c-d751-44fe-b57f-8894c9f5c842'}
+                        {'id': '94ccc2c1-d751-44fe-b57f-8894c9f5c842'}
                     ]
                 )
             )
@@ -819,7 +830,7 @@ class CentralZoneTestCase(CentralBasic):
             self.service.create_zone(
                 self.context,
                 objects.Zone(tenant_id='1', name='example.com.', ttl=60,
-                             pool_id='2')
+                             pool_id=CentralZoneTestCase.pool__id)
             )
 
     def test_create_zone(self):
@@ -847,7 +858,7 @@ class CentralZoneTestCase(CentralBasic):
                 'find_pools',
                 return_value=objects.PoolList.from_list(
                     [
-                        {'id': '94ccc2c-d751-44fe-b57f-8894c9f5c842'}
+                        {'id': '94ccc2c1-d751-44fe-b57f-8894c9f5c842'}
                     ]
                 )
             )
@@ -861,7 +872,7 @@ class CentralZoneTestCase(CentralBasic):
                 tenant_id='1',
                 name='example.com.',
                 ttl=60,
-                pool_id='2',
+                pool_id=CentralZoneTestCase.pool__id,
                 refresh=0,
                 type='PRIMARY'
             )
@@ -873,9 +884,9 @@ class CentralZoneTestCase(CentralBasic):
             name='foo',
             tenant_id='2',
         )
-        self.service.get_zone(self.context, '1')
+        self.service.get_zone(self.context, CentralZoneTestCase.zone__id)
         n, ctx, target = designate.central.service.policy.check.call_args[0]
-        self.assertEqual('1', target['zone_id'])
+        self.assertEqual(CentralZoneTestCase.zone__id, target['zone_id'])
         self.assertEqual('foo', target['zone_name'])
         self.assertEqual('2', target['tenant_id'])
 
@@ -883,16 +894,16 @@ class CentralZoneTestCase(CentralBasic):
         self.service.storage.get_zone.return_value = RoObject(
             name='foo',
             tenant_id='2',
-            pool_id='3',
+            pool_id=CentralZoneTestCase.pool__id,
         )
 
         self.service.get_zone_ns_records(
             self.context,
-            zone_id='1'
+            zone_id=CentralZoneTestCase.zone__id
         )
 
         ctx, pool_id = self.service.storage.get_pool.call_args[0]
-        self.assertEqual('3', pool_id)
+        self.assertEqual(CentralZoneTestCase.pool__id, pool_id)
 
     def test_find_zones(self):
         self.context = RoObject(tenant='t')
@@ -920,7 +931,8 @@ class CentralZoneTestCase(CentralBasic):
         )
         self.service.storage.count_zones.return_value = 2
         with testtools.ExpectedException(exceptions.ZoneHasSubZone):
-            self.service.delete_zone(self.context, '1')
+            self.service.delete_zone(self.context,
+                                     CentralZoneTestCase.zone__id)
 
         pcheck, ctx, target = \
             designate.central.service.policy.check.call_args[0]
@@ -930,7 +942,7 @@ class CentralZoneTestCase(CentralBasic):
         self.service.storage.get_zone.return_value = RoObject(
             name='foo',
             tenant_id='2',
-            id='9'
+            id=CentralZoneTestCase.zone__id_2
         )
         designate.central.service.policy = mock.NonCallableMock(spec_set=[
             'reset',
@@ -940,7 +952,7 @@ class CentralZoneTestCase(CentralBasic):
         ])
         self.context.abandon = True
         self.service.storage.count_zones.return_value = 0
-        self.service.delete_zone(self.context, '1')
+        self.service.delete_zone(self.context, CentralZoneTestCase.zone__id)
         assert self.service.storage.delete_zone.called
         assert not self.service.pool_manager_api.delete_zone.called
         pcheck, ctx, target = \
@@ -959,7 +971,8 @@ class CentralZoneTestCase(CentralBasic):
             )
         )
         self.service.storage.count_zones.return_value = 0
-        out = self.service.delete_zone(self.context, '1')
+        out = self.service.delete_zone(self.context,
+                                       CentralZoneTestCase.zone__id)
         assert not self.service.storage.delete_zone.called
         assert self.service.pool_manager_api.delete_zone.called
         assert designate.central.service.policy.check.called
@@ -991,7 +1004,7 @@ class CentralZoneTestCase(CentralBasic):
         with fx_mdns_api:
             self.service.mdns_api.get_serial_number.return_value = \
                 "SUCCESS", 2, 1
-            self.service.xfr_zone(self.context, '1')
+            self.service.xfr_zone(self.context, CentralZoneTestCase.zone__id)
             assert self.service.mdns_api.perform_zone_xfr.called
 
         assert designate.central.service.policy.check.called
@@ -1007,7 +1020,7 @@ class CentralZoneTestCase(CentralBasic):
             type='PRIMARY'
         )
         with testtools.ExpectedException(exceptions.BadRequest):
-            self.service.xfr_zone(self.context, '1')
+            self.service.xfr_zone(self.context, CentralZoneTestCase.zone__id)
 
     def test_count_report(self):
         self.service.count_zones = Mock(return_value=1)
@@ -1066,7 +1079,7 @@ class CentralZoneTestCase(CentralBasic):
             tenant_id='2',
         )
         with fx_pool_manager:
-            self.service.touch_zone(self.context, '1')
+            self.service.touch_zone(self.context, CentralZoneTestCase.zone__id)
 
         assert designate.central.service.policy.check.called
         self.assertEqual(
@@ -1076,33 +1089,33 @@ class CentralZoneTestCase(CentralBasic):
 
     def test_get_recordset_not_found(self):
         self.service.storage.get_zone.return_value = RoObject(
-            id='2',
+            id=CentralZoneTestCase.zone__id,
         )
         self.service.storage.get_recordset.return_value = RoObject(
-            zone_id='3'
+            zone_id=CentralZoneTestCase.zone__id_2
         )
         with testtools.ExpectedException(exceptions.RecordSetNotFound):
             self.service.get_recordset(
                 self.context,
-                '1',
-                '2'
+                CentralZoneTestCase.zone__id,
+                CentralZoneTestCase.recordset__id
             )
 
     def test_get_recordset(self):
         self.service.storage.get_zone.return_value = RoObject(
-            id='2',
+            id=CentralZoneTestCase.zone__id_2,
             name='example.org.',
             tenant_id='2',
         )
         self.service.storage.get_recordset.return_value = objects.RecordSet(
-            zone_id='2',
+            zone_id=CentralZoneTestCase.zone__id_2,
             zone_name='example.org.',
-            id='3'
+            id=CentralZoneTestCase.recordset__id
         )
         self.service.get_recordset(
             self.context,
-            '2',
-            '3',
+            CentralZoneTestCase.zone__id_2,
+            CentralZoneTestCase.recordset__id,
         )
         self.assertEqual(
             'get_recordset',
@@ -1111,9 +1124,9 @@ class CentralZoneTestCase(CentralBasic):
         t, ctx, target = designate.central.service.policy.check.call_args[0]
         self.assertEqual('get_recordset', t)
         self.assertEqual({
-            'zone_id': '2',
+            'zone_id': CentralZoneTestCase.zone__id_2,
             'zone_name': 'example.org.',
-            'recordset_id': '3',
+            'recordset_id': CentralZoneTestCase.recordset__id,
             'tenant_id': '2'}, target)
 
     def test_find_recordsets(self):
@@ -1184,7 +1197,8 @@ class CentralZoneTestCase(CentralBasic):
         )
         recordset = Mock()
         recordset.obj_get_changes.return_value = ['foo']
-        recordset.obj_get_original_value.return_value = '1'
+        recordset.obj_get_original_value.return_value =\
+            '9c85d9b0-1e9d-4e99-aede-a06664f1af2e'
         recordset.managed = False
         self.service._update_recordset_in_storage = Mock(
             return_value=('x', 'y')
@@ -1197,17 +1211,17 @@ class CentralZoneTestCase(CentralBasic):
         n, ctx, target = designate.central.service.policy.check.call_args[0]
         self.assertEqual('update_recordset', n)
         self.assertEqual({
-            'zone_id': '1',
+            'zone_id': '9c85d9b0-1e9d-4e99-aede-a06664f1af2e',
             'zone_name': 'example.org.',
             'zone_type': 'foo',
-            'recordset_id': '1',
+            'recordset_id': '9c85d9b0-1e9d-4e99-aede-a06664f1af2e',
             'tenant_id': '2'}, target)
 
     def test__update_recordset_in_storage(self):
         recordset = Mock()
         recordset.name = 'n'
         recordset.type = 't'
-        recordset.id = 'i'
+        recordset.id = CentralZoneTestCase.recordset__id
         recordset.obj_get_changes.return_value = {'ttl': 90}
         recordset.ttl = 90
         recordset.records = []
@@ -1228,7 +1242,7 @@ class CentralZoneTestCase(CentralBasic):
             self.service._is_valid_recordset_name.call_args[0][2]
         )
         self.assertEqual(
-            ('n', 't', 'i'),
+            ('n', 't', CentralZoneTestCase.recordset__id),
             self.service._is_valid_recordset_placement.call_args[0][2:]
         )
         self.assertEqual(
@@ -1247,7 +1261,7 @@ class CentralZoneTestCase(CentralBasic):
         recordset = Mock()
         recordset.name = 'n'
         recordset.type = 't'
-        recordset.id = 'i'
+        recordset.id = CentralZoneTestCase.recordset__id
         recordset.ttl = None
         recordset.obj_get_changes.return_value = {'ttl': None}
         recordset.records = [RwObject(
@@ -1274,7 +1288,7 @@ class CentralZoneTestCase(CentralBasic):
             self.service._is_valid_recordset_name.call_args[0][2]
         )
         self.assertEqual(
-            ('n', 't', 'i'),
+            ('n', 't', CentralZoneTestCase.recordset__id),
             self.service._is_valid_recordset_placement.call_args[0][2:]
         )
         self.assertEqual(
@@ -1290,70 +1304,76 @@ class CentralZoneTestCase(CentralBasic):
     def test_delete_recordset_not_found(self):
         self.service.storage.get_zone.return_value = RoObject(
             action='bogus',
-            id=4,
+            id=CentralZoneTestCase.zone__id_2,
             name='example.org.',
             tenant_id='2',
             type='foo',
         )
         self.service.storage.get_recordset.return_value = RoObject(
-            zone_id='d',
-            id='i',
+            zone_id=CentralZoneTestCase.zone__id,
+            id=CentralZoneTestCase.recordset__id,
             managed=False,
         )
         self.context = Mock()
         self.context.edit_managed_records = False
         with testtools.ExpectedException(exceptions.RecordSetNotFound):
-            self.service.delete_recordset(self.context, 'd', 'r')
+            self.service.delete_recordset(self.context,
+                                          CentralZoneTestCase.zone__id_2,
+                                          CentralZoneTestCase.recordset__id)
 
     def test_delete_recordset_action_delete(self):
         self.service.storage.get_zone.return_value = RoObject(
             action='DELETE',
-            id=4,
+            id=CentralZoneTestCase.zone__id_2,
             name='example.org.',
             tenant_id='2',
             type='foo',
         )
         self.service.storage.get_recordset.return_value = RoObject(
-            zone_id=4,
-            id='i',
+            zone_id=CentralZoneTestCase.zone__id_2,
+            id=CentralZoneTestCase.recordset__id,
             managed=False,
         )
         self.context = Mock()
         self.context.edit_managed_records = False
         with testtools.ExpectedException(exceptions.BadRequest):
-            self.service.delete_recordset(self.context, 'd', 'r')
+            self.service.delete_recordset(self.context,
+                                          CentralZoneTestCase.zone__id_2,
+                                          CentralZoneTestCase.recordset__id)
 
     def test_delete_recordset_managed(self):
         self.service.storage.get_zone.return_value = RoObject(
             action='foo',
-            id=4,
+            id=CentralZoneTestCase.zone__id_2,
             name='example.org.',
             tenant_id='2',
             type='foo',
         )
         self.service.storage.get_recordset.return_value = RoObject(
-            zone_id=4,
-            id='i',
+            zone_id=CentralZoneTestCase.zone__id_2,
+            id=CentralZoneTestCase.recordset__id,
             managed=True,
         )
         self.context = Mock()
         self.context.edit_managed_records = False
         with testtools.ExpectedException(exceptions.BadRequest):
-            self.service.delete_recordset(self.context, 'd', 'r')
+            self.service.delete_recordset(self.context,
+                                          CentralZoneTestCase.zone__id_2,
+                                          CentralZoneTestCase.recordset__id)
 
     def test_delete_recordset(self):
         mock_zone = RoObject(
             action='foo',
-            id=4,
+            id=CentralZoneTestCase.zone__id_2,
             name='example.org.',
             tenant_id='2',
             type='foo',
         )
         mock_rs = objects.RecordSet(
-            zone_id=4,
+            zone_id=CentralZoneTestCase.zone__id_2,
             zone_name='example.org.',
-            id='i',
-            records=[],
+            id=CentralZoneTestCase.recordset__id,
+            records=objects.RecordList.from_list([]),
         )
 
         self.service.storage.get_zone.return_value = mock_zone
@@ -1364,7 +1384,9 @@ class CentralZoneTestCase(CentralBasic):
             return_value=(mock_rs, mock_zone)
         )
         with fx_pool_manager:
-            self.service.delete_recordset(self.context, 'd', 'r')
+            self.service.delete_recordset(self.context,
+                                          CentralZoneTestCase.zone__id_2,
+                                          CentralZoneTestCase.recordset__id)
             assert self.service.pool_manager_api.update_zone.called
 
         assert self.service._delete_recordset_in_storage.called
@@ -1423,7 +1445,7 @@ class CentralZoneTestCase(CentralBasic):
     def test_create_record_fail_on_delete(self):
         self.service.storage.get_zone.return_value = RoObject(
             action='DELETE',
-            id=4,
+            id=CentralZoneTestCase.zone__id_2,
             name='example.org.',
             tenant_id='2',
             type='foo',
@@ -1431,8 +1453,8 @@ class CentralZoneTestCase(CentralBasic):
         with testtools.ExpectedException(exceptions.BadRequest):
             self.service.create_record(
                 self.context,
-                1,
-                2,
+                CentralZoneTestCase.zone__id,
+                CentralZoneTestCase.recordset__id,
                 RoObject(),
             )
 
@@ -1442,7 +1464,7 @@ class CentralZoneTestCase(CentralBasic):
         )
         self.service.storage.get_zone.return_value = RoObject(
             action='a',
-            id=4,
+            id=CentralZoneTestCase.zone__id_2,
             name='example.org.',
             tenant_id='2',
             type='foo',
@@ -1453,8 +1475,8 @@ class CentralZoneTestCase(CentralBasic):
         with fx_pool_manager:
             self.service.create_record(
                 self.context,
-                1,
-                2,
+                CentralZoneTestCase.zone__id,
+                CentralZoneTestCase.recordset__id,
                 RoObject(),
             )
             assert self.service.pool_manager_api.update_zone.called
@@ -1462,10 +1484,10 @@ class CentralZoneTestCase(CentralBasic):
         n, ctx, target = designate.central.service.policy.check.call_args[0]
         self.assertEqual('create_record', n)
         self.assertEqual({
-            'zone_id': 1,
+            'zone_id': CentralZoneTestCase.zone__id,
             'zone_name': 'example.org.',
             'zone_type': 'foo',
-            'recordset_id': 2,
+            'recordset_id': CentralZoneTestCase.recordset__id,
             'recordset_name': 'rs',
             'tenant_id': '2'}, target)
 
@@ -1473,8 +1495,8 @@ class CentralZoneTestCase(CentralBasic):
         self.service._enforce_record_quota = Mock()
         self.service._create_record_in_storage(
             self.context,
-            RoObject(id=1, serial=4),
-            RoObject(id=2),
+            RoObject(id=CentralZoneTestCase.zone__id, serial=4),
+            RoObject(id=CentralZoneTestCase.recordset__id),
             RwObject(
                 action='',
                 status='',
@@ -1483,58 +1505,67 @@ class CentralZoneTestCase(CentralBasic):
             increment_serial=False
         )
         ctx, did, rid, record = self.service.storage.create_record.call_args[0]
-        self.assertEqual(1, did)
-        self.assertEqual(2, rid)
+        self.assertEqual(CentralZoneTestCase.zone__id, did)
+        self.assertEqual(CentralZoneTestCase.recordset__id, rid)
         self.assertEqual('CREATE', record.action)
         self.assertEqual('PENDING', record.status)
         self.assertEqual(4, record.serial)
 
     def test_get_record_not_found(self):
         self.service.storage.get_zone.return_value = RoObject(
-            id=2,
+            id=CentralZoneTestCase.zone__id_2,
         )
         self.service.storage.get_recordset.return_value = RoObject(
-            zone_id=3
+            zone_id=CentralZoneTestCase.recordset__id
         )
         with testtools.ExpectedException(exceptions.RecordNotFound):
-            self.service.get_record(self.context, 1, 2, 3)
+            self.service.get_record(self.context,
+                                    CentralZoneTestCase.zone__id_2,
+                                    CentralZoneTestCase.recordset__id,
+                                    CentralZoneTestCase.record__id)
 
     def test_get_record_not_found_2(self):
         self.service.storage.get_zone.return_value = RoObject(
-            id=2,
+            id=CentralZoneTestCase.zone__id_2,
             name='example.org.',
             tenant_id=2,
         )
         self.service.storage.get_recordset.return_value = RoObject(
-            zone_id=2,
+            zone_id=CentralZoneTestCase.zone__id_2,
             id=999,  # not matching record.recordset_id
             name='foo'
         )
         self.service.storage.get_record.return_value = RoObject(
-            id=5,
-            zone_id=2,
-            recordset_id=3
+            id=CentralZoneTestCase.record__id,
+            zone_id=CentralZoneTestCase.zone__id_2,
+            recordset_id=CentralZoneTestCase.recordset__id
         )
         with testtools.ExpectedException(exceptions.RecordNotFound):
-            self.service.get_record(self.context, 1, 2, 3)
+            self.service.get_record(self.context,
+                                    CentralZoneTestCase.zone__id_2,
+                                    CentralZoneTestCase.recordset__id,
+                                    CentralZoneTestCase.record__id)
 
     def test_get_record(self):
         self.service.storage.get_zone.return_value = RoObject(
-            id=2,
+            id=CentralZoneTestCase.zone__id,
             name='example.org.',
             tenant_id=2,
         )
         self.service.storage.get_recordset.return_value = RoObject(
-            zone_id=2,
-            id=3,
+            zone_id=CentralZoneTestCase.zone__id,
+            id=CentralZoneTestCase.recordset__id,
             name='foo'
         )
         self.service.storage.get_record.return_value = RoObject(
-            id=5,
-            zone_id=2,
-            recordset_id=3
+            id=CentralZoneTestCase.record__id,
+            zone_id=CentralZoneTestCase.zone__id,
+            recordset_id=CentralZoneTestCase.recordset__id
         )
-        self.service.get_record(self.context, 1, 2, 3)
+        self.service.get_record(self.context,
+                                CentralZoneTestCase.zone__id_2,
+                                CentralZoneTestCase.recordset__id_2,
+                                CentralZoneTestCase.record__id_2)
         self.assertEqual(
             'get_record',
             designate.central.service.policy.check.call_args[0][0]
@@ -1542,10 +1573,10 @@ class CentralZoneTestCase(CentralBasic):
         t, ctx, target = designate.central.service.policy.check.call_args[0]
         self.assertEqual('get_record', t)
         self.assertEqual({
-            'zone_id': 1,
+            'zone_id': CentralZoneTestCase.zone__id_2,
             'zone_name': 'example.org.',
-            'record_id': 5,
-            'recordset_id': 2,
+            'record_id': CentralZoneTestCase.record__id,
+            'recordset_id': CentralZoneTestCase.recordset__id_2,
             'recordset_name': 'foo',
             'tenant_id': 2}, target)
 
@@ -1610,7 +1641,8 @@ class CentralZoneTestCase(CentralBasic):
         )
         record = Mock()
         record.obj_get_changes.return_value = ['foo']
-        record.obj_get_original_value.return_value = '1'
+        record.obj_get_original_value.return_value =\
+            'abc12a-1e9d-4e99-aede-a06664f1af2e'
         record.managed = False
         self.service._update_record_in_storage = Mock(
             return_value=('x', 'y')
@@ -1623,11 +1655,11 @@ class CentralZoneTestCase(CentralBasic):
         n, ctx, target = designate.central.service.policy.check.call_args[0]
         self.assertEqual('update_record', n)
         self.assertEqual({
-            'zone_id': '1',
+            'zone_id': 'abc12a-1e9d-4e99-aede-a06664f1af2e',
             'zone_name': 'n',
             'zone_type': 't',
-            'record_id': '1',
-            'recordset_id': '1',
+            'record_id': 'abc12a-1e9d-4e99-aede-a06664f1af2e',
+            'recordset_id': 'abc12a-1e9d-4e99-aede-a06664f1af2e',
             'recordset_name': 'rsn',
             'tenant_id': 'tid'}, target)
 
@@ -1658,26 +1690,32 @@ class CentralZoneTestCase(CentralBasic):
     def test_delete_record_not_found(self):
         self.service.storage.get_zone.return_value = RoObject(
             action='a',
-            id=2
+            id=CentralZoneTestCase.zone__id
         )
         self.service.storage.get_record.return_value = RoObject(
-            zone_id=999,
+            zone_id=CentralZoneTestCase.record__id_2,
         )
         self.service.storage.get_recordset.return_value = RoObject(
-            id=888,
+            id=CentralZoneTestCase.recordset__id_2,
         )
         # zone.id != record.zone_id
         with testtools.ExpectedException(exceptions.RecordNotFound):
-            self.service.delete_record(self.context, 1, 2, 3)
+            self.service.delete_record(self.context,
+                                       CentralZoneTestCase.zone__id,
+                                       CentralZoneTestCase.recordset__id,
+                                       CentralZoneTestCase.record__id)
 
         self.service.storage.get_record.return_value = RoObject(
-            id=1,
-            zone_id=2,
-            recordset_id=7777,
+            id=CentralZoneTestCase.record__id,
+            zone_id=CentralZoneTestCase.zone__id,
+            recordset_id=CentralZoneTestCase.recordset__id_3,
         )
         #  recordset.id != record.recordset_id
         with testtools.ExpectedException(exceptions.RecordNotFound):
-            self.service.delete_record(self.context, 1, 2, 3)
+            self.service.delete_record(self.context,
+                                       CentralZoneTestCase.zone__id,
+                                       CentralZoneTestCase.recordset__id,
+                                       CentralZoneTestCase.record__id)
 
     def test_delete_record(self):
         self.service._delete_record_in_storage = Mock(
@@ -1685,33 +1723,36 @@ class CentralZoneTestCase(CentralBasic):
         )
         self.service.storage.get_zone.return_value = RoObject(
             action='a',
-            id=2,
+            id=CentralZoneTestCase.zone__id,
             name='dn',
             tenant_id='tid',
             type='t',
         )
         self.service.storage.get_record.return_value = RoObject(
-            id=4,
-            zone_id=2,
-            recordset_id=3,
+            id=CentralZoneTestCase.record__id_2,
+            zone_id=CentralZoneTestCase.zone__id,
+            recordset_id=CentralZoneTestCase.recordset__id,
         )
         self.service.storage.get_recordset.return_value = RoObject(
             name='rsn',
-            id=3,
+            id=CentralZoneTestCase.recordset__id,
             managed=False,
         )
 
         with fx_pool_manager:
-            self.service.delete_record(self.context, 1, 2, 3)
+            self.service.delete_record(self.context,
+                                       CentralZoneTestCase.zone__id_2,
+                                       CentralZoneTestCase.recordset__id_2,
+                                       CentralZoneTestCase.record__id)
 
         t, ctx, target = designate.central.service.policy.check.call_args[0]
         self.assertEqual('delete_record', t)
         self.assertEqual({
-            'zone_id': 1,
+            'zone_id': CentralZoneTestCase.zone__id_2,
             'zone_name': 'dn',
             'zone_type': 't',
-            'record_id': 4,
-            'recordset_id': 2,
+            'record_id': CentralZoneTestCase.record__id_2,
+            'recordset_id': CentralZoneTestCase.recordset__id_2,
             'recordset_name': 'rsn',
             'tenant_id': 'tid'}, target)
 
@@ -1721,19 +1762,19 @@ class CentralZoneTestCase(CentralBasic):
         )
         self.service.storage.get_zone.return_value = RoObject(
             action='a',
-            id=2,
+            id=CentralZoneTestCase.zone__id,
             name='dn',
             tenant_id='tid',
             type='t',
         )
         self.service.storage.get_record.return_value = RoObject(
-            id=4,
-            zone_id=2,
-            recordset_id=3,
+            id=CentralZoneTestCase.record__id,
+            zone_id=CentralZoneTestCase.zone__id,
+            recordset_id=CentralZoneTestCase.recordset__id,
         )
         self.service.storage.get_recordset.return_value = RoObject(
             name='rsn',
-            id=3,
+            id=CentralZoneTestCase.recordset__id,
             managed=True,
         )
         self.context = Mock()
@@ -1741,7 +1782,10 @@ class CentralZoneTestCase(CentralBasic):
 
         with fx_pool_manager:
             with testtools.ExpectedException(exceptions.BadRequest):
-                self.service.delete_record(self.context, 1, 2, 3)
+                self.service.delete_record(self.context,
+                                           CentralZoneTestCase.zone__id_2,
+                                           CentralZoneTestCase.recordset__id_2,
+                                           CentralZoneTestCase.record__id_2)
 
     def test__delete_record_in_storage(self):
         self.service._delete_record_in_storage(
@@ -1764,8 +1808,8 @@ class CentralZoneTestCase(CentralBasic):
     def test_sync_zones(self):
         self.service._sync_zone = Mock()
         self.service.storage.find_zones.return_value = [
-            RoObject(id=1),
-            RoObject(id=2)
+            RoObject(id=CentralZoneTestCase.zone__id),
+            RoObject(id=CentralZoneTestCase.zone__id_2)
         ]
 
         res = self.service.sync_zones(self.context)
@@ -1776,21 +1820,22 @@ class CentralZoneTestCase(CentralBasic):
     def test_sync_zone(self):
         self.service._sync_zone = Mock()
         self.service.storage.get_zone.return_value = RoObject(
-            id=1,
+            id=CentralZoneTestCase.zone__id,
             name='n',
             tenant_id='tid',
         )
 
-        self.service.sync_zone(self.context, 1)
+        self.service.sync_zone(self.context, CentralZoneTestCase.zone__id)
 
         t, ctx, target = designate.central.service.policy.check.call_args[0]
         self.assertEqual('diagnostics_sync_zone', t)
-        self.assertEqual({'tenant_id': 'tid', 'zone_id': 1,
+        self.assertEqual({'tenant_id': 'tid',
+                          'zone_id': CentralZoneTestCase.zone__id,
                           'zone_name': 'n'}, target)
 
     def test_sync_record(self):
         self.service.storage.get_zone.return_value = RoObject(
-            id=1,
+            id=CentralZoneTestCase.zone__id,
             name='n',
             tenant_id='tid',
         )
@@ -1798,15 +1843,17 @@ class CentralZoneTestCase(CentralBasic):
             name='n',
         )
 
-        self.service.sync_record(self.context, 1, 2, 3)
+        self.service.sync_record(self.context, CentralZoneTestCase.zone__id,
+                                 CentralZoneTestCase.recordset__id,
+                                 CentralZoneTestCase.record__id)
 
         t, ctx, target = designate.central.service.policy.check.call_args[0]
         self.assertEqual('diagnostics_sync_record', t)
         self.assertEqual({
-            'zone_id': 1,
+            'zone_id': CentralZoneTestCase.zone__id,
             'zone_name': 'n',
-            'record_id': 3,
-            'recordset_id': 2,
+            'record_id': CentralZoneTestCase.record__id,
+            'recordset_id': CentralZoneTestCase.recordset__id,
             'recordset_name': 'n',
             'tenant_id': 'tid'}, target)
 
@@ -1875,19 +1922,23 @@ class IsSubzoneTestCase(CentralBasic):
         self.service.storage.find_zone = find_zone
 
     def test__is_subzone_false(self):
-        r = self.service._is_subzone(self.context, 'com', '1')
+        r = self.service._is_subzone(self.context, 'com',
+                                     CentralZoneTestCase.pool__id)
         self.assertFalse(r)
 
     def FIXME_test__is_subzone_false2(self):
-        r = self.service._is_subzone(self.context, 'com.', '1')
+        r = self.service._is_subzone(self.context, 'com.',
+                                     CentralZoneTestCase.pool__id)
         self.assertEqual('com.', r)
 
     def FIXME_test__is_subzone_false3(self):
-        r = self.service._is_subzone(self.context, 'example.com.', '1')
+        r = self.service._is_subzone(self.context, 'example.com.',
+                                     CentralZoneTestCase.pool__id)
         self.assertEqual('example.com.', r)
 
     def test__is_subzone_false4(self):
-        r = self.service._is_subzone(self.context, 'foo.a.b.example.com.', '1')
+        r = self.service._is_subzone(self.context, 'foo.a.b.example.com.',
+                                     CentralZoneTestCase.pool__id)
         self.assertEqual('example.com.', r)
 
 
@@ -1907,13 +1958,13 @@ class CentralZoneExportTests(CentralBasic):
 
         self.service.storage.get_zone.return_value = RoObject(
             name='example.com.',
-            id='123'
+            id=CentralZoneTestCase.zone__id
         )
 
         self.service.storage.create_zone_export = Mock(
             return_value=RwObject(
-                id='1',
-                zone_id='123',
+                id=CentralZoneTestCase.zone_export__id,
+                zone_id=CentralZoneTestCase.zone__id,
                 task_type='EXPORT',
                 status='PENDING',
                 message=None,
@@ -1926,9 +1977,9 @@ class CentralZoneExportTests(CentralBasic):
 
         out = self.service.create_zone_export(
             self.context,
-            '123'
+            CentralZoneTestCase.zone_export__id
         )
-        self.assertEqual('123', out.zone_id)
+        self.assertEqual(CentralZoneTestCase.zone__id, out.zone_id)
         self.assertEqual('PENDING', out.status)
         self.assertEqual('EXPORT', out.task_type)
         self.assertIsNone(out.message)
@@ -1939,14 +1990,15 @@ class CentralZoneExportTests(CentralBasic):
         self.context.tenant = 't'
 
         self.service.storage.get_zone_export.return_value = RoObject(
-                zone_id='123',
+                zone_id=CentralZoneTestCase.zone__id,
                 task_type='EXPORT',
                 status='PENDING',
                 message=None,
                 tenant_id='t'
         )
 
-        out = self.service.get_zone_export(self.context, '1')
+        out = self.service.get_zone_export(self.context,
+                                           CentralZoneTestCase.zone_export__id)
 
         n, ctx, target = designate.central.service.policy.check.call_args[0]
 
@@ -1954,7 +2006,7 @@ class CentralZoneExportTests(CentralBasic):
         self.assertEqual('t', target['tenant_id'])
 
         # Check output
-        self.assertEqual('123', out.zone_id)
+        self.assertEqual(CentralZoneTestCase.zone__id, out.zone_id)
         self.assertEqual('PENDING', out.status)
         self.assertEqual('EXPORT', out.task_type)
         self.assertIsNone(out.message)
@@ -1978,7 +2030,7 @@ class CentralZoneExportTests(CentralBasic):
 
         self.service.storage.delete_zone_export = Mock(
             return_value=RoObject(
-                zone_id='123',
+                zone_id=CentralZoneTestCase.zone__id,
                 task_type='EXPORT',
                 status='PENDING',
                 message=None,
@@ -1986,11 +2038,12 @@ class CentralZoneExportTests(CentralBasic):
             )
         )
 
-        out = self.service.delete_zone_export(self.context, '1')
+        out = self.service.delete_zone_export(self.context,
+                        CentralZoneTestCase.zone_export__id)
 
         assert self.service.storage.delete_zone_export.called
 
-        self.assertEqual('123', out.zone_id)
+        self.assertEqual(CentralZoneTestCase.zone__id, out.zone_id)
         self.assertEqual('PENDING', out.status)
         self.assertEqual('EXPORT', out.task_type)
         self.assertIsNone(out.message)
