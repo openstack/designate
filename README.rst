@@ -2,8 +2,8 @@
 Team and repository tags
 ========================
 
-.. image:: http://governance.openstack.org/badges/designate.svg
-    :target: http://governance.openstack.org/reference/tags/index.html
+.. image:: https://governance.openstack.org/badges/designate.svg
+    :target: https://governance.openstack.org/reference/tags/index.html
 
 .. Change things from this point on
 
@@ -15,7 +15,7 @@ Designate is an OpenStack project, providing DNSaaS.
 
 IRC: #openstack-dns
 
-Installation: http://docs.openstack.org/developer/designate/getting-started.html
+Installation: https://docs.openstack.org/developer/designate/
 
 
 Development
@@ -87,10 +87,10 @@ Execute a single test using py27 (test is CentralServiceTest.test_count_domains)
 
 
 * Free software: Apache license
-* Documentation: http://docs.openstack.org/developer/designate
-* Source: http://git.openstack.org/cgit/openstack/designate
-* Bugs: http://bugs.launchpad.net/designate
+* Documentation: https://docs.openstack.org/developer/designate
+* Source: https://git.openstack.org/cgit/openstack/designate
+* Bugs: https://bugs.launchpad.net/designate
 
 
-.. _OpenStack Gerrit Workflow: http://docs.openstack.org/infra/manual/developers.html#development-workflow
-.. _docs.openstack.org: http://docs.openstack.org/developer/designate
+.. _OpenStack Gerrit Workflow: https://docs.openstack.org/infra/manual/developers.html#development-workflow
+.. _docs.openstack.org: https://docs.openstack.org/developer/designate
