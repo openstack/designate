@@ -84,7 +84,7 @@ In mitaka we moved the method of updating pools to a CLI in `designate-manage`
 There is a YAML file that defines the pool, and is used to load this information into the database.
 
 
-.. literalinclude:: ../../etc/designate/pools.yaml.sample
+.. literalinclude:: ../../../etc/designate/pools.yaml.sample
        :language: yaml
 
 Designate Manage Pools Command Reference

@@ -42,7 +42,7 @@ Instructions
 
 4. Create a `local.conf` config file:
 
-   .. literalinclude:: ../../contrib/vagrant/local.conf
+   .. literalinclude:: ../../../contrib/vagrant/local.conf
        :language: bash
 
 5. Run DevStack::
