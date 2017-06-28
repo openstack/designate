@@ -274,6 +274,8 @@ def from_dnspython_zone(dnspython_zone):
     soa = dnspython_zone.get_rdataset(dnspython_zone.origin, 'SOA')
     if soa is None:
         raise exceptions.BadRequest('An SOA record is required')
+    if soa.ttl == 0:
+        soa.ttl = cfg.CONF['service:central'].min_ttl
     email = soa[0].rname.to_text(omit_final_dot=True).decode('utf-8')
     email = email.replace('.', '@', 1)
     values = {
