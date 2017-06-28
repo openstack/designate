@@ -34,6 +34,8 @@ Install and configure components
       mysql> CREATE DATABASE designate;
       mysql> GRANT ALL PRIVILEGES ON designate.* TO 'designate'@'localhost' \
       IDENTIFIED BY 'DESIGNATE_DBPASS';
+      mysql> GRANT ALL PRIVILEGES ON designate.* TO 'designate'@'%' \
+      IDENTIFIED BY 'DESIGNATE_DBPASS';
 
 #. Install the BIND9 packages:
 
@@ -89,12 +91,13 @@ Install and configure components
      .. code-block:: ini
 
         [service:api]
-        api_host = 0.0.0.0
-        api_port = 9001
+        listen = 0.0.0.0:9001
         auth_strategy = keystone
         enable_api_v1 = True
+        api_base_uri = http://controller:9001/
         enabled_extensions_v1 = quotas, reports
         enable_api_v2 = True
+        enabled_extensions_v2 = quotas, reports
 
    * In the ``[keystone_authtoken]`` section, configure the following options:
 
