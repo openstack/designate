@@ -19,5 +19,6 @@ Contents:
    designate-manage
    notifications
    production-guidelines
+   upgrades/index
    troubleshooting
    

@@ -12,13 +12,14 @@ Contents:
 
    getting-involved
    support-matrix
-   backends
+   backends/index
    Designate Tempest Plugin <https://docs.openstack.org/developer/designate-tempest-plugin>
    architecture
    gmr
    metrics
-   sourcedoc
+   sourcedoc/index
    ubuntu-dev
+   integrations
 
 Other modules
 ~~~~~~~~~~~~~

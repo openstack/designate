@@ -36,7 +36,7 @@ the migration.
 To make the config syntax simpler we have a new YAML based config file that is
 used to load information into the database.
 
-.. literalinclude:: ../../../etc/designate/pools.yaml.sample
+.. literalinclude:: ../../../../etc/designate/pools.yaml.sample
        :language: yaml
 
 We have a command that will allow you to take your current running config, and
