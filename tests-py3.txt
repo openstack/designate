@@ -1,4 +1,3 @@
 # Blacklist of tests failing on Python 3
-designate.tests.unit.test_central.test_basic
 designate.tests.unit.test_pool
 designate.tests.unit.test_producer.test_tasks

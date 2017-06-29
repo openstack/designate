@@ -470,6 +470,8 @@ class Service(service.RPCService, service.Service):
         return subzones
 
     def _is_valid_ttl(self, context, ttl):
+        if ttl is None:
+            return
         min_ttl = cfg.CONF['service:central'].min_ttl
         if min_ttl is not None and ttl < int(min_ttl):
             try:
@@ -846,8 +848,7 @@ class Service(service.RPCService, service.Service):
         self._is_valid_zone_name(context, zone.name)
 
         # Ensure TTL is above the minimum
-        if zone.ttl is not None:
-            self._is_valid_ttl(context, zone.ttl)
+        self._is_valid_ttl(context, zone.ttl)
 
         # Get a pool id
         zone.pool_id = self.scheduler.schedule_zone(context, zone)
@@ -1026,9 +1027,8 @@ class Service(service.RPCService, service.Service):
             raise exceptions.BadRequest('Renaming a zone is not allowed')
 
         # Ensure TTL is above the minimum
-        ttl = changes.get('ttl', None)
-        if ttl is not None:
-            self._is_valid_ttl(context, ttl)
+        ttl = changes.get('ttl')
+        self._is_valid_ttl(context, ttl)
 
         return self._update_zone(context, zone, increment_serial, changes)
 
@@ -1268,8 +1268,7 @@ class Service(service.RPCService, service.Service):
             changes = recordset.obj_get_changes()
             ttl = changes.get('ttl', None)
 
-        if ttl is not None:
-            self._is_valid_ttl(context, ttl)
+        self._is_valid_ttl(context, ttl)
 
         # Ensure the recordset name and placement is valid
         self._is_valid_recordset_name(context, zone, recordset.name)

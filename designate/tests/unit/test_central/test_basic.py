@@ -1267,7 +1267,6 @@ class CentralZoneTestCase(CentralBasic):
         self.service._is_valid_recordset_name = Mock()
         self.service._is_valid_recordset_placement = Mock()
         self.service._is_valid_recordset_placement_subzone = Mock()
-        self.service._is_valid_ttl = Mock()
         self.service._update_zone_in_storage = Mock()
         self.service._enforce_record_quota = mock.Mock()
 
@@ -1291,7 +1290,6 @@ class CentralZoneTestCase(CentralBasic):
             self.service._is_valid_recordset_placement_subzone.
             call_args[0][2]
         )
-        assert not self.service._is_valid_ttl.called
         assert not self.service._update_zone_in_storage.called
         assert self.service.storage.update_recordset.called
         assert self.service._enforce_record_quota.called
