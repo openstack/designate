@@ -91,7 +91,7 @@ class PeriodicTest(TaskTest):
         central.find_zones.return_value = items
 
         # Iterate through the items causing the "paging" to be done.
-        map(lambda i: next(iterer), items)
+        list(map(lambda i: next(iterer), items))
         central.find_zones.assert_called_once_with(
             ctxt, {"shard": "BETWEEN 0,9"}, limit=100)
 
