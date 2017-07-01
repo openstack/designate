@@ -32,7 +32,7 @@ class NeutronFloatingHandlerTest(TestCase, NotificationHandlerMixin):
         self.config(zone_id=zone['id'], group='handler:neutron_floatingip')
         formats = ['%(octet0)s-%(octet1)s-%(octet2)s-%(octet3)s.%(zone)s',
                    '%(octet0)s-%(octet1)s-%(octet2)s-%(octet3)s.X.%(zone)s']
-        self.config(format=formats, group='handler:neutron_floatingip')
+        self.config(formatv4=formats, group='handler:neutron_floatingip')
 
         self.plugin = NeutronFloatingHandler()
 

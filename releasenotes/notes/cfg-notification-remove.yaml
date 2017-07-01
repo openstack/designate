@@ -1,0 +1,14 @@
+---
+critical:
+  - The `format` cfg in nova and neutron notification both will remove in the Pike.
+    Please set ``formatv4`` and ``formatv6`` in the ``[handler:nova_fixed]``
+    and ``[handler:neutron_floatingip]`` your designate config file.
+
+    ``formatv4 = '%(octet0)s-%(octet1)s-%(octet2)s-%(octet3)s.%(zone)s'``
+    ``formatv4 = '%(hostname)s.%(project)s.%(zone)s'``
+    ``formatv4 = '%(hostname)s.%(zone)s'``
+    ``formatv6 = '%(hostname)s.%(project)s.%(zone)s'``
+    ``formatv6 = '%(hostname)s.%(zone)s'``
+
+  - The above config which you need to put or uncomment them into/in
+    designate config file.
