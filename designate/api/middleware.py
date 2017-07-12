@@ -37,22 +37,6 @@ from designate.i18n import _LC
 
 LOG = logging.getLogger(__name__)
 
-cfg.CONF.register_opts([
-    cfg.BoolOpt('maintenance-mode', default=False,
-                help='Enable API Maintenance Mode'),
-    cfg.StrOpt('maintenance-mode-role', default='admin',
-               help='Role allowed to bypass maintaince mode'),
-    cfg.StrOpt('secure-proxy-ssl-header',
-               default='X-Forwarded-Proto',
-               help="The HTTP Header that will be used to determine which "
-                    "the original request protocol scheme was, even if it was "
-                    "removed by an SSL terminating proxy."),
-    cfg.StrOpt('override-proto',
-               help="A scheme that will be used to override "
-                    "the request protocol scheme, even if it was "
-                    "set by an SSL terminating proxy.")
-], group='service:api')
-
 
 def auth_pipeline_factory(loader, global_conf, **local_conf):
     """

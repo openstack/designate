@@ -29,11 +29,17 @@ from designate.i18n import _LI
 LOG = logging.getLogger(__name__)
 CFG_GROUP = 'backend:agent:msdns'
 
-GROUP = cfg.OptGroup(
-    name=CFG_GROUP,
+"""GROUP = backend:agent:msdns"""
+msdns_group = cfg.OptGroup(
+    name='backend:agent:msdns',
     title="Configuration for Microsoft DNS Server"
 )
-OPTS = []
+msdns_opts = [
+
+]
+
+cfg.CONF.register_group(msdns_group)
+cfg.CONF.register_opts(msdns_opts, group=msdns_group)
 
 
 class MSDNSBackend(base.AgentBackend):
@@ -57,7 +63,7 @@ class MSDNSBackend(base.AgentBackend):
 
     @classmethod
     def get_cfg_opts(cls):
-        return [(GROUP, OPTS)]
+        return [(msdns_group, msdns_opts)]
 
     def start(self):
         """Start the backend"""

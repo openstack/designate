@@ -39,17 +39,18 @@ from designate.i18n import _LI
 LOG = logging.getLogger(__name__)
 
 
-cfg.CONF.register_opts([
+helper_opts = [
     cfg.StrOpt('root-helper',
-               default='sudo designate-rootwrap /etc/designate/rootwrap.conf')
-])
+               default='sudo designate-rootwrap /etc/designate/rootwrap.conf',
+               help='designate-rootwrap configuration')
+]
 
 
 # Set some proxy options (Used for clients that need to communicate via a
 # proxy)
-cfg.CONF.register_group(cfg.OptGroup(
+proxy_group = cfg.OptGroup(
     name='proxy', title="Configuration for Client Proxy"
-))
+)
 
 proxy_opts = [
     cfg.StrOpt('http_proxy',
@@ -60,7 +61,10 @@ proxy_opts = [
                 help='These addresses should not be proxied')
 ]
 
-cfg.CONF.register_opts(proxy_opts, group='proxy')
+
+cfg.CONF.register_opts(helper_opts)
+cfg.CONF.register_group(proxy_group)
+cfg.CONF.register_opts(proxy_opts, proxy_group)
 
 # Default TCP/UDP ports
 

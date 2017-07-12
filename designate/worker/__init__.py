@@ -17,9 +17,9 @@ from oslo_config import cfg
 
 CONF = cfg.CONF
 
-CONF.register_group(cfg.OptGroup(
+worker_group = cfg.OptGroup(
     name='service:worker', title="Configuration for the Worker Service"
-))
+)
 
 OPTS = [
     cfg.BoolOpt('enabled', default=False,
@@ -59,4 +59,10 @@ OPTS = [
                help='RPC topic for worker component')
 ]
 
-CONF.register_opts(OPTS, group='service:worker')
+
+cfg.CONF.register_group(worker_group)
+cfg.CONF.register_opts(OPTS, group=worker_group)
+
+
+def list_opts():
+    yield worker_group, OPTS

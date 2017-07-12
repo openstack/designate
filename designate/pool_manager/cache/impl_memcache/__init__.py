@@ -29,10 +29,10 @@ from designate import objects
 from designate.common import memorycache
 from designate.pool_manager.cache import base as cache_base
 
-cfg.CONF.register_group(cfg.OptGroup(
+memcache_group = cfg.OptGroup(
     name='pool_manager_cache:memcache',
     title="Configuration for memcache Pool Manager Cache"
-))
+)
 
 
 OPTS = [
@@ -41,8 +41,6 @@ OPTS = [
 ]
 OPTS.extend(memorycache.memcache_opts)
 
-cfg.CONF.register_opts(OPTS,
-                       group='pool_manager_cache:memcache')
 
 DEFAULT_STATUS = 'NONE'
 
@@ -127,3 +125,6 @@ class MemcachePoolManagerCache(cache_base.PoolManagerCache):
 
     def _build_status_key(self, pool_manager_status):
         return self._status_key(pool_manager_status, 'status')
+
+cfg.CONF.register_group(memcache_group)
+cfg.CONF.register_opts(OPTS, group=memcache_group)

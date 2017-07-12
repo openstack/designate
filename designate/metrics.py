@@ -49,15 +49,18 @@ stats_client = importutils.import_any('monascastatsd',
 LOG = logging.getLogger(__name__)
 
 CFG_GROUP = 'monasca:statsd'
-cfg.CONF.register_group(cfg.OptGroup(
+metrics_group = cfg.OptGroup(
     name=CFG_GROUP, title="Configuration for Monasca Statsd"
-))
+)
 
-cfg.CONF.register_opts([
+metrics_opts = [
     cfg.BoolOpt('enabled', default=False, help='enable'),
     cfg.IntOpt('port', default=8125, help='UDP port'),
     cfg.StrOpt('hostname', default='127.0.0.1', help='hostname')
-], group=CFG_GROUP)
+]
+
+cfg.CONF.register_group(metrics_group)
+cfg.CONF.register_opts(metrics_opts, group=metrics_group)
 
 
 # Global metrics client to be imported by other modules

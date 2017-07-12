@@ -26,8 +26,30 @@ from designate import exceptions
 from designate import utils
 from designate.i18n import _LI
 
+
 LOG = logging.getLogger(__name__)
 CFG_GROUP = 'backend:agent:bind9'
+
+"""GROUP = backend:agent:bind9"""
+bind9_group = cfg.OptGroup(
+    name='backend:agent:bind9', title="Configuration for bind9 backend"
+)
+
+bind9_opts = [
+    cfg.StrOpt('rndc-host', default='127.0.0.1', help='RNDC Host'),
+    cfg.IntOpt('rndc-port', default=953, help='RNDC Port'),
+    cfg.StrOpt('rndc-config-file',
+               help='RNDC Config File'),
+    cfg.StrOpt('rndc-key-file', help='RNDC Key File'),
+    cfg.StrOpt('zone-file-path', default='$state_path/zones',
+               help='Path where zone files are stored'),
+    cfg.StrOpt('query-destination', default='127.0.0.1',
+               help='Host to query when finding zones')
+]
+
+
+cfg.CONF.register_group(bind9_group)
+cfg.CONF.register_opts(bind9_opts, group=bind9_group)
 
 
 class Bind9Backend(base.AgentBackend):
@@ -37,23 +59,7 @@ class Bind9Backend(base.AgentBackend):
 
     @classmethod
     def get_cfg_opts(cls):
-        group = cfg.OptGroup(
-            name='backend:agent:bind9', title="Configuration for bind9 backend"
-        )
-
-        opts = [
-            cfg.StrOpt('rndc-host', default='127.0.0.1', help='RNDC Host'),
-            cfg.IntOpt('rndc-port', default=953, help='RNDC Port'),
-            cfg.StrOpt('rndc-config-file',
-                       help='RNDC Config File'),
-            cfg.StrOpt('rndc-key-file', help='RNDC Key File'),
-            cfg.StrOpt('zone-file-path', default='$state_path/zones',
-                       help='Path where zone files are stored'),
-            cfg.StrOpt('query-destination', default='127.0.0.1',
-                       help='Host to query when finding zones')
-        ]
-
-        return [(group, opts)]
+        return [(bind9_group, bind9_opts)]
 
     def start(self):
         LOG.info(_LI("Started bind9 backend"))

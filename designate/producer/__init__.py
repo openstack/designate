@@ -17,9 +17,9 @@ from oslo_config import cfg
 
 CONF = cfg.CONF
 
-CONF.register_group(cfg.OptGroup(
+producer_group = cfg.OptGroup(
     name='service:producer', title="Configuration for Producer Service"
-))
+)
 
 OPTS = [
     cfg.IntOpt('workers',
@@ -36,12 +36,10 @@ OPTS = [
                 deprecated_reason='Migrated to designate-worker'),
 ]
 
-CONF.register_opts(OPTS, group='service:producer')
-
 # TODO(timsim): Remove these when zone-manager is removed
-CONF.register_group(cfg.OptGroup(
+zone_manager_group = cfg.OptGroup(
     name='service:zone_manager', title="Configuration for Zone Manager Service"
-))
+)
 
 ZONEMGROPTS = [
     cfg.IntOpt('workers',
@@ -66,4 +64,14 @@ ZONEMGROPTS = [
                 deprecated_reason='Migrated to designate-worker'),
 ]
 
-CONF.register_opts(ZONEMGROPTS, group='service:zone_manager')
+
+cfg.CONF.register_group(producer_group)
+cfg.CONF.register_opts(OPTS, group=producer_group)
+
+cfg.CONF.register_group(zone_manager_group)
+cfg.CONF.register_opts(ZONEMGROPTS, group=zone_manager_group)
+
+
+def list_opts():
+    yield producer_group, OPTS
+    yield zone_manager_group, ZONEMGROPTS
