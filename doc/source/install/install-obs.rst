@@ -31,7 +31,7 @@ Install and configure components
    .. code-block:: console
 
       # mysql -u root -p
-      MariaDB [(none)]> CREATE DATABASE designate;
+      MariaDB [(none)]> CREATE DATABASE designate CHARACTER SET utf8 COLLATE utf8_general_ci;
       MariaDB [(none)]> GRANT ALL PRIVILEGES ON designate.* TO 'designate'@'localhost' \
       IDENTIFIED BY 'DESIGNATE_DBPASS';
       MariaDB [(none)]> GRANT ALL PRIVILEGES ON designate.* TO 'designate'@'%' \
@@ -41,7 +41,7 @@ Install and configure components
 
    .. code-block:: console
 
-      # zypper install bind
+      # zypper install bind bind-utils
 
 #. Add the following options in the ``/etc/named.conf`` file:
 
@@ -51,7 +51,9 @@ Install and configure components
           ...
           allow-new-zones yes;
           request-ixfr no;
+          listen-on port 53 { 127.0.0.1; };
           recursion no;
+          allow-query { 127.0.0.1; };
       };
 
 #. Create an RNDC Key:
@@ -65,12 +67,7 @@ Install and configure components
    .. code-block:: none
 
       ...
-      # This should be the contents of ``/etc/designate/rndc.key``
-      key "designate" {
-        algorithm hmac-md5;
-        secret "OAkHNQy0m6UPcv55fiVAPw==";
-      };
-      # End of content from ``/etc/designate/rndc.key``
+      include "/etc/designate/rndc.key";
 
       controls {
         inet 127.0.0.1 port 953

@@ -20,21 +20,30 @@ Verify operation of the DNS service.
 
    .. code-block:: console
 
+      $ ps -aux | grep designate
+
+      ../usr/bin/python /usr/local/bin/designate-mdns --config-file /etc/designate/designate.conf
+      ../usr/bin/python /usr/local/bin/designate-central --config-file /etc/designate/designate.conf
+      ../usr/bin/python /usr/local/bin/designate-agent --config-file /etc/designate/designate.conf
+      ../usr/bin/python /usr/local/bin/designate-api --config-file /etc/designate/designate.conf
+      ../usr/bin/python /usr/local/bin/designate-worker --config-file /etc/designate/designate.conf
+      ../usr/bin/python /usr/local/bin/designate-producer --config-file /etc/designate/designate.conf
+
       $ openstack dns service list
       +--------------------------------------+--------------------------+--------------+--------+-------+--------------+
       | id                                   | hostname                 | service_name | status | stats | capabilities |
       +--------------------------------------+--------------------------+--------------+--------+-------+--------------+
-      | 14283849-ff64-4467-9cbb-d9050ffa08c0 | vagrant-ubuntu-trusty-64 | central      | UP     | -     | -            |
-      | eb7d938f-5b24-4c9b-b4f7-05b9a8ea45f2 | vagrant-ubuntu-trusty-64 | api          | UP     | -     | -            |
-      | 5dca293e-5fa2-4a3d-b486-4debad920da3 | vagrant-ubuntu-trusty-64 | zone_manager | UP     | -     | -            |
-      | 487e7215-6f61-495d-87b3-86be09406750 | vagrant-ubuntu-trusty-64 | mdns         | UP     | -     | -            |
-      | 6b1d1de6-c820-4843-993b-663fca73f905 | vagrant-ubuntu-trusty-64 | pool_manager | UP     | -     | -            |
+      | 918a8f6e-9e7e-453e-8583-cbefa7ae7f8f | vagrant-ubuntu-trusty-64 | central      | UP     | -     | -            |
+      | 982f78d5-525a-4c36-af26-a09aa39de5d7 | vagrant-ubuntu-trusty-64 | api          | UP     | -     | -            |
+      | eda2dc16-ad27-4ee1-b091-bb75b6ceaffe | vagrant-ubuntu-trusty-64 | mdns         | UP     | -     | -            |
+      | 00c5c372-e630-49b1-a6b6-17e3fa4544ea | vagrant-ubuntu-trusty-64 | worker       | UP     | -     | -            |
+      | 8cdaf2e9-accd-4665-8e9e-be26f1ccfe4a | vagrant-ubuntu-trusty-64 | producer     | UP     | -     | -            |
       +--------------------------------------+--------------------------+--------------+--------+-------+--------------+
 
    .. note::
 
       This output should indicate at least one of each of the ``central``,
-      ``api``, ``zone_manager``, ``mdns`` and ``pool_manager`` components
+      ``api``, ``producer``, ``mdns`` and ``worker`` components
       on the controller node.
 
       This output may differ slightly depending on the distribution.

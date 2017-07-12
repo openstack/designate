@@ -31,7 +31,7 @@ Install and configure components
    .. code-block:: console
 
       # mysql -u root -p
-      mysql> CREATE DATABASE designate;
+      mysql> CREATE DATABASE designate CHARACTER SET utf8 COLLATE utf8_general_ci;
       mysql> GRANT ALL PRIVILEGES ON designate.* TO 'designate'@'localhost' \
       IDENTIFIED BY 'DESIGNATE_DBPASS';
       mysql> GRANT ALL PRIVILEGES ON designate.* TO 'designate'@'%' \
@@ -41,18 +41,7 @@ Install and configure components
 
    .. code-block:: console
 
-      # apt-get install bind9
-
-#. Add the following options in the ``/etc/bind/named.conf.options`` file:
-
-   .. code-block:: none
-
-      options {
-          ...
-          allow-new-zones yes;
-          request-ixfr no;
-          recursion no;
-      };
+      # apt-get install bind9 bind9utils bind9-doc
 
 #. Create an RNDC Key:
 
@@ -60,17 +49,21 @@ Install and configure components
 
       # rndc-confgen -a -k designate -c /etc/designate/rndc.key
 
-#. Add the key to ``/etc/bind/named.conf``:
+#. Add the following options in the ``/etc/bind/named.conf.options`` file:
 
    .. code-block:: none
 
       ...
-      # This should be the contents of ``/etc/designate/rndc.key``
-      key "designate" {
-        algorithm hmac-md5;
-        secret "OAkHNQy0m6UPcv55fiVAPw==";
+      include "/etc/designate/rndc.key";
+
+      options {
+          ...
+          allow-new-zones yes;
+          request-ixfr no;
+          listen-on port 53 { 127.0.0.1; };
+          recursion no;
+          allow-query { 127.0.0.1; };
       };
-      # End of content from ``/etc/designate/rndc.key``
 
       controls {
         inet 127.0.0.1 port 953

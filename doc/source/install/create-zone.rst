@@ -79,3 +79,24 @@ In environments that include the DNS service, you can create a DNS Zone.
    .. code-block:: console
 
       $ openstack zone delete example.com.
+      +----------------+--------------------------------------+
+      | Field          | Value                                |
+      +----------------+--------------------------------------+
+      | action         | DELETE                               |
+      | attributes     |                                      |
+      | created_at     | 2017-07-12T03:26:25.000000           |
+      | description    | None                                 |
+      | email          | dnsmaster@example.com                |
+      | id             | 4a21a893-2c58-4797-82ed-19fcef7c418d |
+      | masters        |                                      |
+      | name           | example.com.                         |
+      | pool_id        | 794ccc2c-d751-44fe-b57f-8894c9f5c842 |
+      | project_id     | d53f80b5a22b4962a176935eea23f9c4     |
+      | serial         | 1499830029                           |
+      | status         | PENDING                              |
+      | transferred_at | None                                 |
+      | ttl            | 3600                                 |
+      | type           | PRIMARY                              |
+      | updated_at     | 2017-07-12T03:27:25.000000           |
+      | version        | 4                                    |
+      +----------------+--------------------------------------+
