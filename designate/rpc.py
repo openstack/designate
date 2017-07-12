@@ -40,7 +40,7 @@ from designate import objects
 CONF = cfg.CONF
 TRANSPORT = None
 NOTIFIER = None
-
+NOTIFICATION_TRANSPORT = None
 
 # NOTE: Additional entries to designate.exceptions goes here.
 CONF.register_opts([
@@ -58,22 +58,24 @@ EXTRA_EXMODS = []
 
 
 def init(conf):
-    global TRANSPORT, NOTIFIER
+    global TRANSPORT, NOTIFIER, NOTIFICATION_TRANSPORT
     exmods = get_allowed_exmods()
-    TRANSPORT = messaging.get_transport(conf,
-                                        allowed_remote_exmods=exmods)
-
+    TRANSPORT = create_transport(get_transport_url())
+    NOTIFICATION_TRANSPORT = messaging.get_notification_transport(
+        conf, allowed_remote_exmods=exmods)
     serializer = RequestContextSerializer(JsonPayloadSerializer())
-    NOTIFIER = messaging.Notifier(TRANSPORT, serializer=serializer)
+    NOTIFIER = messaging.Notifier(NOTIFICATION_TRANSPORT,
+                                  serializer=serializer)
 
 
 def initialized():
-    return None not in [TRANSPORT, NOTIFIER]
+    return None not in [TRANSPORT, NOTIFIER, NOTIFICATION_TRANSPORT]
 
 
 def cleanup():
-    global TRANSPORT, NOTIFIER
+    global TRANSPORT, NOTIFIER, NOTIFICATION_TRANSPORT
     assert TRANSPORT is not None
+    assert NOTIFICATION_TRANSPORT is not None
     assert NOTIFIER is not None
     TRANSPORT.cleanup()
     TRANSPORT = NOTIFIER = None
@@ -190,7 +192,8 @@ def get_server(target, endpoints, serializer=None):
     if serializer is None:
         serializer = DesignateObjectSerializer()
     serializer = RequestContextSerializer(serializer)
-    dispatcher = RPCDispatcher(endpoints, serializer)
+    access_policy = rpc_dispatcher.DefaultRPCAccessPolicy
+    dispatcher = RPCDispatcher(endpoints, serializer, access_policy)
     return rpc_server.RPCServer(
         TRANSPORT, target, dispatcher, 'eventlet')
 
@@ -211,3 +214,10 @@ def get_notifier(service=None, host=None, publisher_id=None):
     if not publisher_id:
         publisher_id = "%s.%s" % (service, host or CONF.host)
     return NOTIFIER.prepare(publisher_id=publisher_id)
+
+
+def create_transport(url):
+    exmods = get_allowed_exmods()
+    return messaging.get_rpc_transport(CONF,
+                                       url=url,
+                                       allowed_remote_exmods=exmods)
