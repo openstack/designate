@@ -45,5 +45,5 @@ The DNS service consists of the following components:
   ``designate-worker``, and the supported list is maintained `here`_
 
 
-  .. _here: http://docs.openstack.org/developer/designate/support-matrix.html
+  .. _here: https://docs.openstack.org/designate/latest/contributor/support-matrix.html
 

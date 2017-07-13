@@ -106,7 +106,7 @@ Several common reserved IP blocks:
 Style Guide
 '''''''''''
 
-Follow `OpenStack Style Guidelines <http://docs.openstack.org/developer/hacking/>`_
+Follow `OpenStack Style Guidelines <https://docs.openstack.org/hacking/latest/>`_
 
 File header
 ~~~~~~~~~~~
@@ -191,7 +191,7 @@ Use the Sphinx markup. Here is an example:
 Logging
 ~~~~~~~
 
-See http://docs.openstack.org/developer/oslo.i18n/guidelines.html
+See https://docs.openstack.org/oslo.i18n/latest/user/guidelines.html
 
 .. code-block:: python
 

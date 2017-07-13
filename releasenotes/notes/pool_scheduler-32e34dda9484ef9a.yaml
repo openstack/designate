@@ -1,6 +1,6 @@
 ---
 features:
-  - Schedule across pools. See http://docs.openstack.org/developer/designate/pools/scheduler.html#default-provided-filters for the built in filters
+  - Schedule across pools. See https://docs.openstack.org/designate/latest/admin/pool-scheduler.html#default-provided-filters for the built in filters
 upgrade:
   - The default option for the scheduler filters will be
     ``attribute, pool_id_attribute, random``.
