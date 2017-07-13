@@ -15,7 +15,7 @@ Designate is an OpenStack project, providing DNSaaS.
 
 IRC: #openstack-dns
 
-Installation: https://docs.openstack.org/developer/designate/
+Installation: https://docs.openstack.org/designate/latest/
 
 
 Development
@@ -87,10 +87,10 @@ Execute a single test using py27 (test is CentralServiceTest.test_count_domains)
 
 
 * Free software: Apache license
-* Documentation: https://docs.openstack.org/developer/designate
+* Documentation: https://docs.openstack.org/designate/latest/
 * Source: https://git.openstack.org/cgit/openstack/designate
 * Bugs: https://bugs.launchpad.net/designate
 
 
 .. _OpenStack Gerrit Workflow: https://docs.openstack.org/infra/manual/developers.html#development-workflow
-.. _docs.openstack.org: https://docs.openstack.org/developer/designate
+.. _docs.openstack.org: https://docs.openstack.org/designate/latest/

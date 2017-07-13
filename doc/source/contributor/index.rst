@@ -28,7 +28,7 @@ Other modules
     :maxdepth: 1
 
     python-designateclient <https://docs.openstack.org/developer/python-designateclient/>
-    designate-dashboard <https://docs.openstack.org/developer/designate-dashboard/>
+    designate-dashboard <https://docs.openstack.org/designate-dashboard/latest/>
     designate-tempest-plugin <https://docs.openstack.org/developer/designate-tempest-plugin/>
     designate-specs <https://docs.openstack.org/developer/designate-specs/>
     designate-msdnsagent <https://docs.openstack.org/developer/designate-msdnsagent/>
