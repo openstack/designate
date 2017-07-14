@@ -34,17 +34,17 @@ SQLAlchemy!=1.1.5,!=1.1.6,!=1.1.7,!=1.1.8,>=1.0.10 # MIT
 sqlalchemy-migrate>=0.11.0 # Apache-2.0
 stevedore>=1.20.0 # Apache-2.0
 suds-jurko>=0.6 # LGPLv3+
-setuptools!=24.0.0,!=34.0.0,!=34.0.1,!=34.0.2,!=34.0.3,!=34.1.0,!=34.1.1,!=34.2.0,!=34.3.0,!=34.3.1,!=34.3.2,>=16.0 # PSF/ZPL
+setuptools!=24.0.0,!=34.0.0,!=34.0.1,!=34.0.2,!=34.0.3,!=34.1.0,!=34.1.1,!=34.2.0,!=34.3.0,!=34.3.1,!=34.3.2,!=36.2.0,>=16.0 # PSF/ZPL
 WebOb>=1.7.1 # MIT
 dnspython>=1.14.0;python_version=='2.7' # http://www.dnspython.org/LICENSE
 dnspython3!=1.13.0,!=1.14.0,>=1.12.0;python_version>='3.0' # http://www.dnspython.org/LICENSE
-oslo.db>=4.23.0 # Apache-2.0
+oslo.db>=4.24.0 # Apache-2.0
 oslo.i18n!=3.15.2,>=2.1.0 # Apache-2.0
 oslo.context>=2.14.0 # Apache-2.0
 oslo.policy>=1.23.0 # Apache-2.0
 Werkzeug>=0.7 # BSD License
 python-memcached>=1.56 # PSF
-tooz>=1.47.0 # Apache-2.0
+tooz!=1.57.4,>=1.47.0 # Apache-2.0
 debtcollector>=1.2.0 # Apache-2.0
 os-win>=2.0.0 # Apache-2.0
 monasca-statsd>=1.1.0 # Apache-2.0
