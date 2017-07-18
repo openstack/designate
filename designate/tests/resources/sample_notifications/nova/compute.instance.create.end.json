@@ -135,5 +135,46 @@
         "architecture": null,
         "os_type": null
     },
+    "payload_v6": {
+        "state_description": "",
+        "availability_zone": null,
+        "ramdisk_id": "",
+        "instance_type_id": 2,
+        "deleted_at": "",
+        "fixed_ips": [{
+            "floating_ips": [],
+            "label": "private",
+            "version": 6,
+            "meta": {},
+            "address": "172.16.0.14",
+            "type": "fixed"
+        }],
+        "memory_mb": 512,
+        "user_id": "953f8394fa044302b7d42f47228e427d",
+        "reservation_id": "r-1ekblkfw",
+        "state": "active",
+        "launched_at": "2012-11-03 17:54:48.514631",
+        "metadata": [],
+        "ephemeral_gb": 0,
+        "access_ip_v6": null,
+        "disk_gb": 0,
+        "access_ip_v4": null,
+        "kernel_id": "",
+        "image_name": "ubuntu-precise",
+        "host": "stack01",
+        "display_name": "TestInstance",
+        "image_ref_url": "http://192.0.2.98:9292/images/e52f1321-fb9e-40fb-8057-555a850462e8",
+        "root_gb": 0,
+        "tenant_id": "33a88272e06a49c1a0f653abc374b56b",
+        "created_at": "2012-11-03 17:54:27",
+        "instance_id": "3e301a55-fbbe-478d-92d0-eefabf135c38",
+        "instance_type": "m1.tiny",
+        "vcpus": 1,
+        "image_meta": {
+            "base_image_ref": "e52f1321-fb9e-40fb-8057-555a850462e8"
+        },
+        "architecture": null,
+        "os_type": null
+    },
     "priority": "INFO"
 }

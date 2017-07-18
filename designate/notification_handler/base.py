@@ -117,14 +117,12 @@ class BaseAddressHandler(NotificationHandler):
     def _get_formatv4(self):
         return (
             cfg.CONF[self.name].get('formatv4') or
-            cfg.CONF[self.name].get('format') or
             self.default_formatv4
         )
 
     def _get_formatv6(self):
         return (
             cfg.CONF[self.name].get('formatv6') or
-            cfg.CONF[self.name].get('format') or
             self.default_formatv6
         )
 

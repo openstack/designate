@@ -32,8 +32,10 @@ class NovaFixedHandlerTest(TestCase, NotificationHandlerMixin):
         zone = self.create_zone()
         self.zone_id = zone['id']
         self.config(zone_id=zone['id'], group='handler:nova_fixed')
-        self.config(format=['%(host)s.%(zone)s',
-                            '%(host)s.foo.%(zone)s'],
+        self.config(formatv4=['%(host)s.%(zone)s',
+                              '%(host)s.foo.%(zone)s'],
+                    formatv6=['%(host)s.%(zone)s',
+                              '%(host)s.foo.%(zone)s'],
                     group='handler:nova_fixed')
 
         self.plugin = NovaFixedHandler()
@@ -62,7 +64,8 @@ class NovaFixedHandlerTest(TestCase, NotificationHandlerMixin):
         self.assertEqual(4, len(records))
 
     def test_instance_create_end_utf8(self):
-        self.config(format=['%(display_name)s.%(zone)s'],
+        self.config(formatv4=['%(display_name)s.%(zone)s'],
+                    formatv6=['%(display_name)s.%(zone)s'],
                     group='handler:nova_fixed')
 
         event_type = 'compute.instance.create.end'
@@ -137,9 +140,10 @@ class NovaFixedHandlerTest(TestCase, NotificationHandlerMixin):
 
         self.assertEqual(2, len(records))
 
-    def test_label_in_format(self):
+    def test_label_in_format_v4_v6(self):
         event_type = 'compute.instance.create.end'
-        self.config(format=['%(label)s.example.com'],
+        self.config(formatv4=['%(label)s.example.com.'],
+                    formatv6=['%(label)s.example.com.'],
                     group='handler:nova_fixed')
         fixture = self.get_notification_fixture('nova', event_type)
         with mock.patch.object(self.plugin, '_find_or_create_recordset')\
@@ -152,11 +156,11 @@ class NovaFixedHandlerTest(TestCase, NotificationHandlerMixin):
                         event_type, fixture['payload'])
                     finder.assert_called_once_with(
                         mock.ANY, type='A', zone_id=self.zone_id,
-                        name='private.example.com')
+                        name='private.example.com.')
 
-    def test_formatv4_or_format(self):
+    def test_formatv4(self):
         event_type = 'compute.instance.create.end'
-        self.config(formatv4=['%(label)s-v4.example.com'],
+        self.config(formatv4=['%(label)s-v4.example.com.'],
                     group='handler:nova_fixed')
         fixture = self.get_notification_fixture('nova', event_type)
         with mock.patch.object(self.plugin, '_find_or_create_recordset')\
@@ -169,13 +173,11 @@ class NovaFixedHandlerTest(TestCase, NotificationHandlerMixin):
                         event_type, fixture['payload'])
                     finder.assert_called_once_with(
                         mock.ANY, type='A', zone_id=self.zone_id,
-                        name='private-v4.example.com')
+                        name='private-v4.example.com.')
 
-    def test_formatv4_and_format(self):
+    def test_formatv6(self):
         event_type = 'compute.instance.create.end'
-        self.config(format=['%(label)s.example.com'],
-                    group='handler:nova_fixed')
-        self.config(formatv4=['%(label)s-v4.example.com'],
+        self.config(formatv6=['%(label)s-v6.example.com.'],
                     group='handler:nova_fixed')
         fixture = self.get_notification_fixture('nova', event_type)
         with mock.patch.object(self.plugin, '_find_or_create_recordset')\
@@ -185,7 +187,7 @@ class NovaFixedHandlerTest(TestCase, NotificationHandlerMixin):
                     finder.return_value = {'id': 'fakeid'}
                     self.plugin.process_notification(
                         self.admin_context.to_dict(),
-                        event_type, fixture['payload'])
+                        event_type, fixture['payload_v6'])
                     finder.assert_called_once_with(
-                        mock.ANY, type='A', zone_id=self.zone_id,
-                        name='private-v4.example.com')
+                        mock.ANY, type='AAAA', zone_id=self.zone_id,
+                        name='private-v6.example.com.')
