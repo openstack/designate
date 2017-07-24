@@ -229,7 +229,7 @@ class RequestHandler(xfr.XFRMixin):
         # validate the parameters
         try:
             criterion = self._zone_criterion_from_request(
-                request, {'name': q_rrset.name.to_text()})
+                request, {'name': q_rrset.name.to_text().decode('utf-8')})
             zone = self.storage.find_zone(context, criterion)
 
         except exceptions.ZoneNotFound:
