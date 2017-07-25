@@ -116,20 +116,7 @@ Installing Designate
 Configuring Designate
 ======================
 
-.. index::
-    double: configure; designate
-
-Create the designate.conf file
-
-::
-
-  $ editor designate.conf
-
-
-Copy or mirror the configuration from this sample file here:
-
-.. literalinclude:: ../examples/basic-config-sample.conf
-    :language: ini
+Refer to :ref:`configuration` for a sample configuration options.
 
 
 Installing RabbitMQ
