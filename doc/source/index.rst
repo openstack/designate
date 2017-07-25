@@ -8,7 +8,7 @@ auto-generate records based on Nova and Neutron actions. Designate supports
 a variety of DNS servers including Bind9 and PowerDNS.
 
 For information on how to install Designate, see the
-`Install Guide <https://docs.openstack.org/project-install-guide/dns/ocata/>`_.
+`Install Guide <https://docs.openstack.org/dns/latest/install/>`_.
 
 For information on the Designate API, see the
 `API Reference <https://developer.openstack.org/api-ref/dns/>`_.
@@ -19,6 +19,7 @@ Contents
 .. toctree::
     :maxdepth: 1
 
+    install/index
     contributor/index
     user/index
     admin/index
