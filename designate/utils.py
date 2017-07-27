@@ -18,7 +18,6 @@ import json
 import functools
 import inspect
 import os
-import uuid
 import socket
 
 import six
@@ -28,6 +27,7 @@ from oslo_config import cfg
 from oslo_concurrency import processutils
 from oslo_log import log as logging
 from oslo_utils import timeutils
+from oslo_utils import uuidutils
 from oslo_utils.netutils import is_valid_ipv6
 
 from designate.common import config
@@ -306,7 +306,7 @@ def deep_dict_merge(a, b):
 
 
 def generate_uuid():
-    return str(uuid.uuid4())
+    return uuidutils.generate_uuid(dashed=True)
 
 
 def is_uuid_like(val):
@@ -316,10 +316,7 @@ def is_uuid_like(val):
     aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
 
     """
-    try:
-        return str(uuid.UUID(val)) == val
-    except (TypeError, ValueError, AttributeError):
-        return False
+    return uuidutils.is_uuid_like(val)
 
 
 def validate_uuid(*check):
