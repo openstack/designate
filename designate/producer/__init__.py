@@ -15,6 +15,8 @@
 # under the License.
 from oslo_config import cfg
 
+from designate.producer import tasks
+
 CONF = cfg.CONF
 
 producer_group = cfg.OptGroup(
@@ -71,7 +73,49 @@ cfg.CONF.register_opts(OPTS, group=producer_group)
 cfg.CONF.register_group(zone_manager_group)
 cfg.CONF.register_opts(ZONEMGROPTS, group=zone_manager_group)
 
+# NOTE(trungnv): Get [producer_task:zone_purge] config
+zone_purge_opts = tasks.DeletedZonePurgeTask.get_cfg_opts()[0][1]
+zone_purge_old_group = tasks.DeletedZonePurgeTask.get_cfg_opts()[0][0].name
+zone_purge_group = cfg.OptGroup(zone_purge_old_group)
+cfg.CONF.register_group(zone_purge_group)
+cfg.CONF.register_opts(zone_purge_opts, group=zone_purge_group)
+
+# NOTE(trungnv): Get [producer_task:periodic_exists] config
+periodic_exists_opts = tasks.PeriodicExistsTask.get_cfg_opts()[0][1]
+periodic_exists_old_group = tasks.PeriodicExistsTask.get_cfg_opts()[0][0].name
+periodic_exists_group = cfg.OptGroup(periodic_exists_old_group)
+cfg.CONF.register_group(periodic_exists_group)
+cfg.CONF.register_opts(periodic_exists_opts, group=periodic_exists_group)
+
+# NOTE(trungnv): Get [producer_task:periodic_secondary_refresh] config
+psr_opts = tasks.PeriodicSecondaryRefreshTask.get_cfg_opts()[0][1]
+psr_old_group = tasks.PeriodicSecondaryRefreshTask.get_cfg_opts()[0][0].name
+psr_group = cfg.OptGroup(psr_old_group)
+cfg.CONF.register_group(psr_group)
+cfg.CONF.register_opts(psr_opts, group=psr_group)
+
+# NOTE(trungnv): Get [producer_task:delayed_notify] config
+delayed_notify_opts =\
+    tasks.PeriodicGenerateDelayedNotifyTask.get_cfg_opts()[0][1]
+delayed_notify_old_group =\
+    tasks.PeriodicGenerateDelayedNotifyTask.get_cfg_opts()[0][0].name
+delayed_notify_group = cfg.OptGroup(delayed_notify_old_group)
+cfg.CONF.register_group(delayed_notify_group)
+cfg.CONF.register_opts(delayed_notify_opts, group=delayed_notify_group)
+
+# NOTE(trungnv): Get [producer_task:worker_periodic_recovery] config
+wpr_opts = tasks.WorkerPeriodicRecovery.get_cfg_opts()[0][1]
+wpr_old_group = tasks.WorkerPeriodicRecovery.get_cfg_opts()[0][0].name
+wpr_group = cfg.OptGroup(wpr_old_group)
+cfg.CONF.register_group(wpr_group)
+cfg.CONF.register_opts(wpr_opts, group=wpr_group)
+
 
 def list_opts():
     yield producer_group, OPTS
     yield zone_manager_group, ZONEMGROPTS
+    yield zone_purge_group, zone_purge_opts
+    yield periodic_exists_group, periodic_exists_opts
+    yield psr_group, psr_opts
+    yield delayed_notify_group, delayed_notify_opts
+    yield wpr_group, wpr_opts
