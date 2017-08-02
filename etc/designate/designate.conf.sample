@@ -292,7 +292,7 @@ debug = False
 #------------------------
 # Deleted domains purging
 #------------------------
-[producer_task:domain_purge]
+[producer_task:zone_purge]
 # How frequently to purge deleted domains, in seconds
 #interval = 3600  # 1h
 
