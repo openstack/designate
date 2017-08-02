@@ -36,9 +36,8 @@ from designate import service
 from designate import service_status as stt
 
 
-# TODO(trungnv): create and genconfig for:
-# Deleted domains purging; Delayed zones NOTIFY; Worker Periodic Recovery
-# And Hook Points.
+# TODO(trungnv): creating and auto-genconfig for:
+# Hook Points.
 def list_opts():
     yield None, designate.designate_opts
     yield None, designate.network_api.neutron_opts

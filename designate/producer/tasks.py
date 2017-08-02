@@ -49,7 +49,8 @@ class PeriodicTask(plugin.ExtensionPlugin):
                 default=cls.__interval__,
                 help='Run interval in seconds'
             ),
-            cfg.IntOpt('per_page', default=100),
+            cfg.IntOpt('per_page', default=100,
+                help='Default amount of results returned per page'),
         ]
         return options
 
