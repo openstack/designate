@@ -32,13 +32,17 @@ extensions = ['sphinx.ext.autodoc',
               'sphinxcontrib.httpdomain',
               'ext.support_matrix',
               'ext.custom_css',
-              'openstackdocstheme']
+              'openstackdocstheme',
+              'oslo_config.sphinxconfiggen']
 
 # openstackdocstheme options
 repository_name = 'openstack/designate'
 bug_project = 'designate'
 bug_tag = ''
 html_last_updated_fmt = '%Y-%m-%d %H:%M'
+
+config_generator_config_file = '../../etc/designate/designate-config-generator.conf'
+sample_config_basename = '_static/designate'
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
