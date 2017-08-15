@@ -1,0 +1,106 @@
+# Akihiro Motoki <amotoki@gmail.com>, 2016. #zanata
+# KATO Tomoyuki <kato.tomoyuki@jp.fujitsu.com>, 2016. #zanata
+msgid ""
+msgstr ""
+"Project-Id-Version: Designate Release Notes 5.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-08-03 13:15+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2016-05-01 12:49+0000\n"
+"Last-Translator: KATO Tomoyuki <kato.tomoyuki@jp.fujitsu.com>\n"
+"Language-Team: Japanese\n"
+"Language: ja\n"
+"X-Generator: Zanata 3.9.6\n"
+"Plural-Forms: nplurals=1; plural=0\n"
+
+msgid "1.0.1"
+msgstr "1.0.1"
+
+msgid "1.0.2"
+msgstr "1.0.2"
+
+msgid "2.0.0"
+msgstr "2.0.0"
+
+msgid "ASync Export"
+msgstr "非同期エクスポート"
+
+msgid "ASync Import"
+msgstr "非同期インポート"
+
+msgid "Active / passive failover for designate-pool-manager periodic tasks"
+msgstr ""
+"designate-pool-manager 定期タスクのアクティブ / パッシブのフェイルオーバー"
+
+msgid "Added Designate Backend"
+msgstr "Designate Backend の追加"
+
+msgid "Added InfoBlox Backend"
+msgstr "InfoBlox Backend の追加"
+
+msgid "Bug Fixes"
+msgstr "バグ修正"
+
+msgid "Ceilometer \"exists\" periodic event per domain"
+msgstr "ドメインごとの Ceilometer \"exists\" 定期イベント"
+
+msgid "Critical Issues"
+msgstr "致命的な問題"
+
+msgid "Current Series Release Notes"
+msgstr "開発中バージョンのリリースノート"
+
+msgid "Deprecation Notes"
+msgstr "廃止予定の機能"
+
+msgid "Designate Release Notes"
+msgstr "Designate リリースノート"
+
+msgid ""
+"Import of release notes from https://wiki.openstack.org/wiki/ReleaseNotes/"
+"Liberty#OpenStack_DNS_.28Designate.29"
+msgstr ""
+"https://wiki.openstack.org/wiki/ReleaseNotes/"
+"Liberty#OpenStack_DNS_.28Designate.29 からのリリースノートのインポート"
+
+msgid "Known Issues"
+msgstr "既知の問題"
+
+msgid "Liberty Series Release Notes"
+msgstr "Liberty バージョンのリリースノート"
+
+msgid "Mitaka Series Release Notes"
+msgstr "Mitaka バージョンのリリースノート"
+
+msgid "New Features"
+msgstr "新機能"
+
+msgid "New service designate-zone-manager"
+msgstr "新サービス designate-zone-manager"
+
+msgid "OpenStack client integration"
+msgstr "OpenStack client 統合"
+
+msgid "Other Notes"
+msgstr "その他の注意点"
+
+msgid "Upgrade Notes"
+msgstr "アップグレード時の注意"
+
+msgid "default-soa-refresh configuration option"
+msgstr "default-soa-refresh 設定オプション"
+
+msgid ""
+"designate-zone-manager : It is recommended to use a supported tooz backend."
+msgstr ""
+"designate-zone-manager : サポートされる tooz バックエンドを使用するために推奨"
+"されます。"
+
+msgid ""
+"designate-zone-manager : ZooKeeper is recommended, or anything supported by "
+"tooz."
+msgstr ""
+"designate-zone-manager : ZooKeeper が推奨されます。または、tooz によりサポー"
+"トされるものすべて。"
