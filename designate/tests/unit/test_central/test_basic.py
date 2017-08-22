@@ -35,10 +35,6 @@ import designate.central.service
 
 LOG = logging.getLogger(__name__)
 
-# FIXME: create mock, do not use cfg
-cfg.CONF.import_opt('storage_driver', 'designate.central',
-                    group='service:central')
-
 
 # TODO(Federico): move this
 
@@ -509,8 +505,8 @@ class CentralZoneTestCase(CentralBasic):
     pool__id = '769ca3fc-5924-4a44-8c1f-7efbe52fbd59'
     recordset__id = '9c85d9b0-1e9d-4e99-aede-a06664f1af2e'
     recordset__id_2 = 'dc85d9b0-1e9d-4e99-aede-a06664f1af2e'
-    recordset__id_3 = '121s-de21s-4e99-aede-a06664f1af2e'
-    zone_export__id = 'de21s-4e99-4424-b77f-2dd0179fa041'
+    recordset__id_3 = '2a94a9fe-30d1-4a15-9071-0bb21996d971'
+    zone_export__id = 'e887597f-9697-47dd-a202-7a2711f8669c'
 
     def setUp(self):
         super(CentralZoneTestCase, self).setUp()
