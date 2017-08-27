@@ -49,8 +49,8 @@ Installing Designate
 ::
 
    $ sudo apt update
-   $ sudo apt install -y python-pip python-virtualenv libssl-dev libffi-dev git
-   $ sudo apt build-dep -y python-lxml
+   $ sudo apt install python-pip python-virtualenv libssl-dev libffi-dev git
+   $ sudo apt build-dep python-lxml
 
 2. Clone the Designate repo
 
@@ -126,7 +126,7 @@ Install the RabbitMQ package
 
 ::
 
-    $ sudo apt install -y rabbitmq-server
+    $ sudo apt install rabbitmq-server
 
 Create a user:
 
@@ -151,7 +151,7 @@ Install the MySQL server package
 
 ::
 
-    $ sudo apt install -y mysql-server
+    $ sudo apt install mysql-server
 
 
 If you do not have MySQL previously installed, you will be prompted to change the root password.
@@ -181,7 +181,7 @@ Install additional packages
 
 ::
 
-    $ sudo apt install -y libmysqlclient-dev
+    $ sudo apt install libmysqlclient-dev
     $ pip install pymysql
 
 
@@ -195,7 +195,7 @@ Install the DNS server, BIND9
 
 ::
 
-    $ sudo apt install -y bind9
+    $ sudo apt install bind9
 
 Update the BIND9 Configuration
 
