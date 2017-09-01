@@ -210,8 +210,6 @@ function create_designate_accounts {
         get_or_create_service "designate" "dns" "Designate DNS Service"
         get_or_create_endpoint "dns" \
             "$REGION_NAME" \
-            "$DESIGNATE_SERVICE_PROTOCOL://$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT/" \
-            "$DESIGNATE_SERVICE_PROTOCOL://$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT/" \
             "$DESIGNATE_SERVICE_PROTOCOL://$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT/"
     fi
 }
@@ -295,7 +293,7 @@ function install_designatetempest {
     setup_dev_lib "designate-tempest-plugin"
 }
 
-# start_designate - Start running processes, including screen
+# start_designate - Start running processes
 function start_designate {
     start_designate_backend
 
@@ -322,7 +320,6 @@ function start_designate {
 
 # stop_designate - Stop running processes
 function stop_designate {
-    # Kill the designate screen windows
     stop_process designate-central
     stop_process designate-api
     stop_process designate-pool-manager
