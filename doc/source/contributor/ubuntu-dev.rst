@@ -298,7 +298,7 @@ Open up some new ssh windows and log in to your server (or open some new screen/
 ::
 
    $ cd openstack/designate
-   $ source .venv/bin/activate
+   $ . .venv/bin/activate
 
 Start the other services
 
