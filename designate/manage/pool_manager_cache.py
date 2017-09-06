@@ -43,7 +43,7 @@ def get_manager():
     storage_db = CONF['storage:sqlalchemy'].connection
     pool_manager_cache_db = CONF['pool_manager_cache:sqlalchemy'].connection
     if storage_db == pool_manager_cache_db:
-        raise exception.DbMigrationError(
+        raise exception.DBMigrationError(
             message=(
                 "Pool Manager Cache requires its own database."
                 " Please check your config file."
