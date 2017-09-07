@@ -47,7 +47,7 @@ class Infoblox(object):
         other_opts = ['sslverify', 'network_view', 'dns_view', 'multi_tenant']
 
         for opt in reqd_opts + other_opts:
-            if opt == 'sslverify':
+            if opt == 'sslverify' or opt == 'multi_tenant':
                 # NOTE(selvakumar): This check is for sslverify option.
                 # type of sslverify is unicode string from designate DB
                 # if the value is 0 getattr called for setting default values.
