@@ -38,6 +38,10 @@ CONF = cfg.CONF
 class PoolCommands(base.Commands):
     def __init__(self):
         super(PoolCommands, self).__init__()
+
+    # NOTE(jh): Cannot do this earlier because we are still missing the config
+    # at that point, see bug #1651576
+    def _startup(self):
         rpc.init(cfg.CONF)
         self.central_api = central_rpcapi.CentralAPI()
 
@@ -45,6 +49,7 @@ class PoolCommands(base.Commands):
                'written to',
                default='/etc/designate/pools.yaml')
     def generate_file(self, file):
+        self._startup()
         try:
             pools = self.central_api.find_pools(self.context)
         except messaging.exceptions.MessagingTimeout:
@@ -62,6 +67,7 @@ class PoolCommands(base.Commands):
                'writen to',
                default='/etc/designate/pools.yaml')
     def export_from_config(self, file):
+        self._startup()
         try:
             pools = self.central_api.find_pools(self.context)
         except messaging.exceptions.MessagingTimeout:
@@ -85,6 +91,7 @@ class PoolCommands(base.Commands):
     @base.args('--pool_id', help='ID of the pool to be examined',
                default=CONF['service:central'].default_pool_id)
     def show_config(self, pool_id):
+        self._startup()
         try:
             pool = self.central_api.find_pool(self.context, {"id": pool_id})
 
@@ -111,6 +118,7 @@ class PoolCommands(base.Commands):
         help='This will simulate what will happen when you run this command',
         default=False)
     def update(self, file, delete, dry_run):
+        self._startup()
         print('Updating Pools Configuration')
         print('****************************')
         output_msg = ['']
