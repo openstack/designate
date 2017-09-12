@@ -33,8 +33,7 @@ New Features
   notifications have not changed. There is an ``audit`` plugin that can
   be used, if desired.
 
-- Scheduling zones across pools. See these
-  `docs <https://docs.openstack.org/developer/designate/pool-scheduler.html>`_
+- Scheduling zones across pools. See :doc:`/admin/pool-scheduler`
   for more details.
 
 Deprecation Notices

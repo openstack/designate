@@ -13,7 +13,7 @@ Contents:
    getting-involved
    support-matrix
    backends/index
-   Designate Tempest Plugin <https://docs.openstack.org/developer/designate-tempest-plugin>
+   Designate Tempest Plugin <https://docs.openstack.org/designate-tempest-plugin/latest>
    architecture
    gmr
    metrics
@@ -27,11 +27,10 @@ Other modules
 .. toctree::
     :maxdepth: 1
 
-    python-designateclient <https://docs.openstack.org/developer/python-designateclient/>
+    python-designateclient <https://docs.openstack.org/python-designateclient/latest/>
     designate-dashboard <https://docs.openstack.org/designate-dashboard/latest/>
-    designate-tempest-plugin <https://docs.openstack.org/developer/designate-tempest-plugin/>
-    designate-specs <https://docs.openstack.org/developer/designate-specs/>
-    designate-msdnsagent <https://docs.openstack.org/developer/designate-msdnsagent/>
+    designate-tempest-plugin <https://docs.openstack.org/designate-tempest-plugin/>
+    designate-specs <https://specs.openstack.org/openstack/designate-specs/>
 
 Other resources
 ~~~~~~~~~~~~~~~
