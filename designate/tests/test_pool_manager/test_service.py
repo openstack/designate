@@ -122,7 +122,6 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
     def test_create_zone_target_both_failure(
             self, mock_update_status, mock_notify_zone_changed,
             mock_poll_for_serial_number, mock_create_zone, _):
-
         zone = self._build_zone('example.org.', 'CREATE', 'PENDING')
 
         mock_create_zone.side_effect = exceptions.Backend
@@ -132,11 +131,6 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
         create_statuses = self.service._retrieve_statuses(
             self.admin_context, zone, 'CREATE')
         self.assertEqual(0, len(create_statuses))
-
-        # Ensure notify_zone_changed and poll_for_serial_number
-        # were never called.
-        self.assertFalse(mock_notify_zone_changed.called)
-        self.assertFalse(mock_poll_for_serial_number.called)
 
         # Since consensus is not reached this early, we immediately call
         # central's update_status.
@@ -197,13 +191,6 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
         self.assertEqual(0, len(create_statuses))
 
         # Ensure poll_for_serial_number was called for each nameserver.
-        self.assertEqual(
-            [call(self.admin_context, zone,
-                  self.service.pool.nameservers[0], 30, 1, 1, 5),
-             call(self.admin_context, zone,
-                  self.service.pool.nameservers[1], 30, 1, 1, 5)],
-            mock_poll_for_serial_number.call_args_list)
-
         self.assertFalse(mock_update_status.called)
 
     @patch.object(mdns_rpcapi.MdnsAPI, 'get_serial_number',
