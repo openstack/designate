@@ -92,7 +92,7 @@ Installing Designate
 6. Change directories to the etc/designate folder.
 
 .. note::
-    Everything from here on out should take place in or below your designate/etc folder
+    Everything from here on out should take place in or below your etc/designate folder
 
 ::
 
