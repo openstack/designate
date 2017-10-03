@@ -1,10 +1,4 @@
 {
-    "all_tenants": "rule:admin",
-
-    "edit_managed_records" : "rule:admin",
-
-    "use_low_ttl": "rule:admin",
-
     "get_quotas": "rule:admin_or_owner",
     "get_quota": "rule:admin_or_owner",
     "set_quota": "rule:admin",
@@ -58,29 +52,6 @@
     "update_record": "rule:admin_or_owner",
     "delete_record": "rule:admin_or_owner",
     "count_records": "rule:admin_or_owner",
-
-    "use_sudo": "rule:admin",
-
-    "create_blacklist": "rule:admin",
-    "find_blacklist": "rule:admin",
-    "find_blacklists": "rule:admin",
-    "get_blacklist": "rule:admin",
-    "update_blacklist": "rule:admin",
-    "delete_blacklist": "rule:admin",
-    "use_blacklisted_zone": "rule:admin",
-
-    "create_pool": "rule:admin",
-    "find_pools": "rule:admin",
-    "find_pool": "rule:admin",
-    "get_pool": "rule:admin",
-    "update_pool": "rule:admin",
-    "delete_pool": "rule:admin",
-    "zone_create_forced_pool": "rule:admin",
-
-    "diagnostics_ping": "rule:admin",
-    "diagnostics_sync_zones": "rule:admin",
-    "diagnostics_sync_zone": "rule:admin",
-    "diagnostics_sync_record": "rule:admin",
 
     "create_zone_transfer_request": "rule:admin_or_owner",
     "get_zone_transfer_request": "rule:admin_or_owner or tenant:%(target_tenant_id)s or None:%(target_tenant_id)s",
