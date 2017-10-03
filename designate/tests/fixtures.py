@@ -32,7 +32,6 @@ from designate import policy
 from designate import network_api
 from designate import rpc
 from designate.network_api import fake as fake_network_api
-from designate import utils
 from designate.sqlalchemy import utils as sqlalchemy_utils
 
 """Test fixtures
@@ -105,8 +104,6 @@ class ServiceFixture(fixtures.Fixture):
 class PolicyFixture(fixtures.Fixture):
     def setUp(self):
         super(PolicyFixture, self).setUp()
-        policy.init(policy_file=utils.find_config(
-            cfg.CONF.oslo_policy.policy_file)[0])
         self.addCleanup(policy.reset)
 
 

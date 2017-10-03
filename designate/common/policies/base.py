@@ -20,6 +20,8 @@ RULE_ADMIN_OR_OWNER = 'rule:admin_or_owner'
 RULE_ADMIN = 'rule:admin'
 RULE_ZONE_PRIMARY_OR_ADMIN = "('PRIMARY':%(zone_type)s and rule:admin_or_owner)\
                             OR ('SECONDARY':%(zone_type)s AND is_admin:True)"
+RULE_ZONE_TRANSFER = "rule:admin_or_owner or tenant:%(target_tenant_id)s \
+                            or None:%(target_tenant_id)s"
 RULE_ANY = "@"
 
 rules = [
