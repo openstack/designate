@@ -17,64 +17,59 @@ from oslo_policy import policy
 
 from designate.common.policies import base
 
-
 rules = [
-    policy.RuleDefault(
-        name="create_pool",
-        check_str=base.RULE_ADMIN,
-        description='Create pool.'
-    ),
     policy.DocumentedRuleDefault(
-        name="find_pools",
+        name="create_tld",
         check_str=base.RULE_ADMIN,
-        description='Find pool.',
+        description="Create Tld",
         operations=[
             {
-                'path': '/v2/pools',
-                'method': 'GET'
-            }
-        ]
-    ),
-    policy.DocumentedRuleDefault(
-        name="find_pool",
-        check_str=base.RULE_ADMIN,
-        description='Find pools.',
-        operations=[
-            {
-                'path': '/v2/pools',
-                'method': 'GET'
-            }
-        ]
-    ),
-    policy.DocumentedRuleDefault(
-        name="get_pool",
-        check_str=base.RULE_ADMIN,
-        description='Get pool.',
-        operations=[
-            {
-                'path': '/v2/pools/{pool_id}',
-                'method': 'GET'
-            }
-        ]
-    ),
-    policy.RuleDefault(
-        name="update_pool",
-        check_str=base.RULE_ADMIN,
-        description='Update pool.'
-    ),
-    policy.RuleDefault(
-        name="delete_pool",
-        check_str=base.RULE_ADMIN,
-        description='Delete pool.'
-    ),
-    policy.DocumentedRuleDefault(
-        name="zone_create_forced_pool",
-        check_str=base.RULE_ADMIN,
-        description='load and set the pool to the one provided in the Zone attributes.',  # noqa
-        operations=[
-            {
-                'path': '/v2/zones',
+                'path': '/v2/tlds',
                 'method': 'POST'
+            }
+        ]
+    ),
+    policy.DocumentedRuleDefault(
+        name="find_tlds",
+        check_str=base.RULE_ADMIN,
+        description="List Tlds",
+        operations=[
+            {
+                'path': '/v2/tlds',
+                'method': 'GET'
+            }
+        ]
+    ),
+    policy.DocumentedRuleDefault(
+        name="get_tld",
+        check_str=base.RULE_ADMIN,
+        description="Show Tld",
+        operations=[
+            {
+                'path': '/v2/tlds/{tld_id}',
+                'method': 'GET'
+            }
+        ]
+    ),
+    policy.DocumentedRuleDefault(
+        name="update_tld",
+        check_str=base.RULE_ADMIN,
+        description="Update Tld",
+        operations=[
+            {
+                'path': '/v2/tlds/{tld_id}',
+                'method': 'PATCH'
+            }
+        ]
+    ),
+    policy.DocumentedRuleDefault(
+        name="delete_tld",
+        check_str=base.RULE_ADMIN,
+        description="Delete Tld",
+        operations=[
+            {
+                'path': '/v2/tlds/{tld_id}',
+                'method': 'DELETE'
             }
         ]
     )

@@ -22,6 +22,13 @@ from designate.common.policies import blacklist
 from designate.common.policies import context
 from designate.common.policies import diagnostics
 from designate.common.policies import pool
+from designate.common.policies import quota
+from designate.common.policies import record
+from designate.common.policies import recordset
+from designate.common.policies import service_status
+from designate.common.policies import tenant
+from designate.common.policies import tld
+from designate.common.policies import tsigkey
 
 
 def list_rules():
@@ -30,5 +37,12 @@ def list_rules():
         blacklist.list_rules(),
         context.list_rules(),
         diagnostics.list_rules(),
-        pool.list_rules()
+        pool.list_rules(),
+        quota.list_rules(),
+        record.list_rules(),
+        recordset.list_rules(),
+        service_status.list_rules(),
+        tenant.list_rules(),
+        tld.list_rules(),
+        tsigkey.list_rules(),
     )

@@ -1,25 +1,4 @@
 {
-    "get_quotas": "rule:admin_or_owner",
-    "get_quota": "rule:admin_or_owner",
-    "set_quota": "rule:admin",
-    "reset_quotas": "rule:admin",
-
-    "create_tld": "rule:admin",
-    "find_tlds": "rule:admin",
-    "get_tld": "rule:admin",
-    "update_tld": "rule:admin",
-    "delete_tld": "rule:admin",
-
-    "create_tsigkey": "rule:admin",
-    "find_tsigkeys": "rule:admin",
-    "get_tsigkey": "rule:admin",
-    "update_tsigkey": "rule:admin",
-    "delete_tsigkey": "rule:admin",
-
-    "find_tenants": "rule:admin",
-    "get_tenant": "rule:admin",
-    "count_tenants": "rule:admin",
-
     "create_zone": "rule:admin_or_owner",
     "get_zones": "rule:admin_or_owner",
     "get_zone": "rule:admin_or_owner",
@@ -34,24 +13,6 @@
     "count_zones_pending_notify": "rule:admin_or_owner",
     "purge_zones": "rule:admin",
     "touch_zone": "rule:admin_or_owner",
-
-    "create_recordset": "rule:zone_primary_or_admin",
-    "get_recordsets": "rule:admin_or_owner",
-    "get_recordset": "rule:admin_or_owner",
-    "find_recordsets": "rule:admin_or_owner",
-    "find_recordset": "rule:admin_or_owner",
-    "update_recordset": "rule:zone_primary_or_admin",
-    "delete_recordset": "rule:zone_primary_or_admin",
-    "count_recordset": "rule:admin_or_owner",
-
-    "create_record": "rule:admin_or_owner",
-    "get_records": "rule:admin_or_owner",
-    "get_record": "rule:admin_or_owner",
-    "find_records": "rule:admin_or_owner",
-    "find_record": "rule:admin_or_owner",
-    "update_record": "rule:admin_or_owner",
-    "delete_record": "rule:admin_or_owner",
-    "count_records": "rule:admin_or_owner",
 
     "create_zone_transfer_request": "rule:admin_or_owner",
     "get_zone_transfer_request": "rule:admin_or_owner or tenant:%(target_tenant_id)s or None:%(target_tenant_id)s",
@@ -79,8 +40,4 @@
     "find_zone_exports": "rule:admin_or_owner",
     "get_zone_export": "rule:admin_or_owner",
     "update_zone_export": "rule:admin_or_owner",
-
-    "find_service_status": "rule:admin",
-    "find_service_statuses": "rule:admin",
-    "update_service_service_status": "rule:admin"
 }
