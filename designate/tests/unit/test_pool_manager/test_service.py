@@ -96,7 +96,8 @@ class PoolManagerInitTest(test.BaseTestCase):
     def test_init(self):
             Service()
 
-    def test_start(self):
+    @patch.object(pm_module.DesignateContext, 'get_admin_context')
+    def test_start(self, *mock):
         with patch.object(objects.Pool, 'from_config',
                           return_value=Mock()):
             pm = Service()
@@ -218,6 +219,7 @@ class PoolManagerTest(test.BaseTestCase):
         self.assertEqual(1, self.pm.pool_manager_api.create_zone.call_count)
         self.assertEqual(0, self.pm.pool_manager_api.update_zone.call_count)
 
+    @patch.object(pm_module.DesignateContext, 'get_admin_context')
     def test_periodic_sync(self, *mocks):
         def mock_fetch_healthy_zones(ctx):
             return [
