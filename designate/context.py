@@ -33,6 +33,10 @@ class DesignateContext(context.RequestContext):
     original_tenant = None
     _edit_managed_records = False
     _client_addr = None
+    FROM_DICT_EXTRA_KEYS = [
+        'original_tenant', 'service_catalog', 'all_tenants', 'abandon',
+        'edit_managed_records', 'tsigkey_id', 'hide_counts', 'client_addr',
+    ]
 
     def __init__(self, service_catalog=None, all_tenants=False, abandon=None,
                  tsigkey_id=None, original_tenant=None,
@@ -89,14 +93,6 @@ class DesignateContext(context.RequestContext):
         })
 
         return copy.deepcopy(d)
-
-    @classmethod
-    def from_dict(cls, values):
-        extra_keys = ['original_tenant', 'service_catalog', 'all_tenants',
-                      'abandon', 'edit_managed_records', 'tsigkey_id',
-                      'hide_counts', 'client_addr']
-        kwargs = {k: values[k] for k in extra_keys}
-        return super(DesignateContext, cls).from_dict(values, **kwargs)
 
     def elevated(self, show_deleted=None, all_tenants=False,
                  edit_managed_records=False):
