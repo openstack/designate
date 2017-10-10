@@ -35,12 +35,10 @@ class DesignateContext(context.RequestContext):
     _client_addr = None
 
     def __init__(self, service_catalog=None, all_tenants=False, abandon=None,
-                 tsigkey_id=None, user_identity=None, original_tenant=None,
+                 tsigkey_id=None, original_tenant=None,
                  edit_managed_records=False, hide_counts=False,
                  client_addr=None, **kwargs):
 
-        # NOTE: user_identity may be passed in, but will be silently dropped as
-        #       it is a generated field based on several others.
         super(DesignateContext, self).__init__(**kwargs)
 
         self.service_catalog = service_catalog
