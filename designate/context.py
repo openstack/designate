@@ -94,7 +94,11 @@ class DesignateContext(context.RequestContext):
 
     @classmethod
     def from_dict(cls, values):
-        return cls(**values)
+        extra_keys = ['original_tenant', 'service_catalog', 'all_tenants',
+                      'abandon', 'edit_managed_records', 'tsigkey_id',
+                      'hide_counts', 'client_addr']
+        kwargs = {k: values[k] for k in extra_keys}
+        return super(DesignateContext, cls).from_dict(values, **kwargs)
 
     def elevated(self, show_deleted=None, all_tenants=False,
                  edit_managed_records=False):
