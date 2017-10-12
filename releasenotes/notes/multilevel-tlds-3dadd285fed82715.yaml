@@ -1,0 +1,8 @@
+---
+fixes:
+  - |
+    Check for multi level tlds
+
+    Previously we only checked for the last label of a TLD
+    which does not work for `co.uk` or custom internal
+    TLDs that deployers may use

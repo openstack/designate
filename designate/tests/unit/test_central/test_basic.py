@@ -515,6 +515,12 @@ class CentralZoneTestCase(CentralBasic):
             if d['name'] not in ('org',):
                 raise exceptions.TldNotFound
 
+        def storage_find_tlds(c):
+            return objects.TldList.from_list(
+                [objects.Tld.from_dict({'name': 'org'})]
+            )
+
+        self.service.storage.find_tlds = storage_find_tlds
         self.service.storage.find_tld = storage_find_tld
 
     def test__is_valid_zone_name_valid(self):
