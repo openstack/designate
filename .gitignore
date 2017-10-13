@@ -38,6 +38,7 @@ releasenotes/build
 *.idea
 *.ipynb
 *.orig
+.stestr/
 *.sqlite
 *.sqlite3
 /.ipynb_checkpoints/*
