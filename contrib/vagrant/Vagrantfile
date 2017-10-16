@@ -123,30 +123,8 @@ ln -s /opt/stack/designate/rally-scenarios/plugins /home/vagrant/.rally/plugins
 
 SCRIPT
 
-  config.vm.define "ubuntu", primary: true do |ubuntu|
-    ubuntu.vm.box = "ubuntu/trusty64"
-
-    ubuntu.vm.network :private_network, ip: "192.168.27.100"
-
-    ubuntu.vm.provision :shell, :privileged => true, :inline => "DEBIAN_FRONTEND=noninteractive apt-get update"
-    ubuntu.vm.provision :shell, :privileged => true, :inline => "DEBIAN_FRONTEND=noninteractive apt-get install --yes git lvm2"
-
-    ubuntu.vm.provision :shell, :privileged => false, :inline => $script
-  end
-
-  config.vm.define "ubuntu-wily", autostart: false do |ubuntu|
-    ubuntu.vm.box = "ubuntu/wily64"
-
-    ubuntu.vm.network :private_network, ip: "192.168.27.100"
-
-    ubuntu.vm.provision :shell, :privileged => true, :inline => "DEBIAN_FRONTEND=noninteractive apt-get update"
-    ubuntu.vm.provision :shell, :privileged => true, :inline => "DEBIAN_FRONTEND=noninteractive apt-get install --yes git lvm2"
-
-    ubuntu.vm.provision :shell, :privileged => false, :inline => $script
-  end
-
-  config.vm.define "ubuntu-xenial", autostart: false do |ubuntu|
-    ubuntu.vm.box = "ubuntu/xenial64"
+  config.vm.define "ubuntu-xenial", primary: true do |ubuntu|
+    ubuntu.vm.box = "yk0/ubuntu-xenial"
 
     ubuntu.vm.network :private_network, ip: "192.168.27.100"
 
