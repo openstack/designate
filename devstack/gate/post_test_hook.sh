@@ -16,8 +16,8 @@ TEMPEST_CONFIG=$BASE/new/tempest/etc/tempest.conf
 ADMIN_TENANT_NAME=${ADMIN_TENANT_NAME:-"admin"}
 ADMIN_PASSWORD=${ADMIN_PASSWORD:-"secretadmin"}
 
-sudo chown -R jenkins:stack $BASE/new/tempest
-sudo chown -R jenkins:stack $BASE/data/tempest
+sudo chown -R $USER:stack $BASE/new/tempest
+sudo chown -R $USER:stack $BASE/data/tempest
 
 iniset $TEMPEST_CONFIG auth admin_username ${ADMIN_USERNAME:-"admin"}
 iniset $TEMPEST_CONFIG auth admin_password $ADMIN_PASSWORD
