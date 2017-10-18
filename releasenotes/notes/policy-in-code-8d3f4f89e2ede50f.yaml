@@ -1,0 +1,17 @@
+---
+features:
+  - |
+    Designate now support policy in code, which means if users don't want to
+    modify any of policy rules, they can remove or comment all of rules in
+    policy file or even not deploy it at all. Because from now, Designate keeps
+    all default policies under `designate/common/policies` module.
+    Users can modify/generate `policy.yaml` file which will override policy
+    rules in code if those rules show in `policy.yaml` file.
+    Users also still use `policy.json` file but oslo team recommend that we
+    should use the newer YAML format instead.
+
+other:
+  - |
+    Default `policy.json` file is now removed as Designate now generate the
+    default policies from code. Please be aware that when using that file in
+    your environment.
