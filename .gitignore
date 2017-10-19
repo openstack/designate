@@ -49,6 +49,7 @@ ChangeLog
 contrib/vagrant/.vagrant/
 designate/versioninfo
 dist
+doc/source/_static/*.sample
 doc/build/*
 doc/source/api/*
 api-ref/build/*
