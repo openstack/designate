@@ -15,7 +15,6 @@
 # under the License.
 #
 # Copied: designate
-import os
 import sys
 
 import eventlet
@@ -27,7 +26,6 @@ from stevedore.extension import ExtensionManager
 from designate import hookpoints
 from designate import utils
 from designate import version
-from designate.i18n import _
 
 eventlet.monkey_patch(os=False)
 
@@ -106,21 +104,8 @@ def fetch_func_args(func):
 def main():
     CONF.register_cli_opt(category_opt)
 
-    try:
-        utils.read_config('designate', sys.argv)
-        logging.setup(CONF, 'designate')
-    except cfg.ConfigFilesNotFoundError:
-        cfgfile = CONF.config_file[-1] if CONF.config_file else None
-        if cfgfile and not os.access(cfgfile, os.R_OK):
-            st = os.stat(cfgfile)
-            print(_("Could not read %s. Re-running with sudo") % cfgfile)
-            try:
-                os.execvp('sudo', ['sudo', '-u', '#%s' % st.st_uid] + sys.argv)
-            except Exception:
-                print(_('sudo failed, continuing as if nothing happened'))
-
-        print(_('Please re-run designate-manage as root.'))
-        sys.exit(2)
+    utils.read_config('designate', sys.argv)
+    logging.setup(CONF, 'designate')
 
     gmr.TextGuruMeditation.setup_autorun(version)
 
