@@ -283,8 +283,12 @@ function install_designatedashboard {
     git_clone_by_name "designate-dashboard"
     setup_dev_lib "designate-dashboard"
 
-    ln -fs $DESIGNATEDASHBOARD_DIR/designatedashboard/enabled/_1710_project_dns_panel_group.py $HORIZON_DIR/openstack_dashboard/local/enabled/_1710_project_dns_panel_group.py
-    ln -fs $DESIGNATEDASHBOARD_DIR/designatedashboard/enabled/_1720_project_dns_panel.py $HORIZON_DIR/openstack_dashboard/local/enabled/_1720_project_dns_panel.py
+    for panel in _1710_project_dns_panel_group.py \
+                 _1720_project_dns_panel.py \
+                 _1721_dns_zones_panel.py \
+                 _1722_dns_reversedns_panel.py; do
+        ln -fs $DESIGNATEDASHBOARD_DIR/designatedashboard/enabled/$panel $HORIZON_DIR/openstack_dashboard/local/enabled/$panel
+    done
 }
 
 # install_designatetempest - Collect source and prepare
