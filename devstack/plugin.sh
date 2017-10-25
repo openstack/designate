@@ -68,10 +68,6 @@ function configure_designate {
         iniset $DESIGNATE_CONF coordination backend_url $DESIGNATE_COORDINATION_URL
     fi
 
-    # Install the policy file for the API server
-    cp $DESIGNATE_DIR/etc/designate/policy.json $DESIGNATE_CONF_DIR/policy.json
-    iniset $DESIGNATE_CONF DEFAULT policy_file $DESIGNATE_CONF_DIR/policy.json
-
     # Pool Manager Configuration
     iniset $DESIGNATE_CONF service:pool_manager pool_id $DESIGNATE_POOL_ID
     iniset $DESIGNATE_CONF service:pool_manager cache_driver $DESIGNATE_POOL_MANAGER_CACHE_DRIVER

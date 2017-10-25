@@ -29,6 +29,11 @@ from designate.common.policies import service_status
 from designate.common.policies import tenant
 from designate.common.policies import tld
 from designate.common.policies import tsigkey
+from designate.common.policies import zone
+from designate.common.policies import zone_export
+from designate.common.policies import zone_import
+from designate.common.policies import zone_transfer_accept
+from designate.common.policies import zone_transfer_request
 
 
 def list_rules():
@@ -45,4 +50,9 @@ def list_rules():
         tenant.list_rules(),
         tld.list_rules(),
         tsigkey.list_rules(),
+        zone.list_rules(),
+        zone_export.list_rules(),
+        zone_import.list_rules(),
+        zone_transfer_accept.list_rules(),
+        zone_transfer_request.list_rules(),
     )

@@ -1,0 +1,413 @@
+#
+#"admin": "role:admin or is_admin:True"
+
+#
+#"primary_zone": "target.zone_type:SECONDARY"
+
+#
+#"owner": "tenant:%(tenant_id)s"
+
+#
+#"admin_or_owner": "rule:admin or rule:owner"
+
+#
+#"default": "rule:admin_or_owner"
+
+#
+#"target": "tenant:%(target_tenant_id)s"
+
+#
+#"owner_or_target": "rule:target or rule:owner"
+
+#
+#"admin_or_owner_or_target": "rule:owner_or_target or rule:admin"
+
+#
+#"admin_or_target": "rule:admin or rule:target"
+
+#
+#"zone_primary_or_admin": "('PRIMARY':%(zone_type)s and rule:admin_or_owner)                            OR ('SECONDARY':%(zone_type)s AND is_admin:True)"
+
+# Create blacklist.
+# POST  /v2/blacklists
+#"create_blacklist": "rule:admin"
+
+# Find blacklist.
+# GET  /v2/blacklists
+#"find_blacklist": "rule:admin"
+
+# Find blacklists.
+# GET  /v2/blacklists
+#"find_blacklists": "rule:admin"
+
+# Get blacklist.
+# GET  /v2/blacklists/{blacklist_id}
+#"get_blacklist": "rule:admin"
+
+# Update blacklist.
+# PATCH  /v2/blacklists/{blacklist_id}
+#"update_blacklist": "rule:admin"
+
+# Delete blacklist.
+# DELETE  /v2/blacklists/{blacklist_id}
+#"delete_blacklist": "rule:admin"
+
+# Allowed bypass the blacklist.
+# POST  /v2/zones
+#"use_blacklisted_zone": "rule:admin"
+
+# Action on all tenants.
+#"all_tenants": "rule:admin"
+
+# Edit managed records.
+#"edit_managed_records": "rule:admin"
+
+# Use low TTL.
+#"use_low_ttl": "rule:admin"
+
+# Accept sudo from user to tenant.
+#"use_sudo": "rule:admin"
+
+# Diagnose ping.
+#"diagnostics_ping": "rule:admin"
+
+# Diagnose sync zones.
+#"diagnostics_sync_zones": "rule:admin"
+
+# Diagnose sync zone.
+#"diagnostics_sync_zone": "rule:admin"
+
+# Diagnose sync record.
+#"diagnostics_sync_record": "rule:admin"
+
+# Create pool.
+#"create_pool": "rule:admin"
+
+# Find pool.
+# GET  /v2/pools
+#"find_pools": "rule:admin"
+
+# Find pools.
+# GET  /v2/pools
+#"find_pool": "rule:admin"
+
+# Get pool.
+# GET  /v2/pools/{pool_id}
+#"get_pool": "rule:admin"
+
+# Update pool.
+#"update_pool": "rule:admin"
+
+# Delete pool.
+#"delete_pool": "rule:admin"
+
+# load and set the pool to the one provided in the Zone attributes.
+# POST  /v2/zones
+#"zone_create_forced_pool": "rule:admin"
+
+# View Current Project's Quotas.
+# GET  /v2/quotas
+#"get_quotas": "rule:admin_or_owner"
+
+#
+#"get_quota": "rule:admin_or_owner"
+
+# Set Quotas.
+# PATCH  /v2/quotas/{project_id}
+#"set_quota": "rule:admin"
+
+# Reset Quotas.
+# DELETE  /v2/quotas/{project_id}
+#"reset_quotas": "rule:admin"
+
+# Create record.
+# POST  /v1/domains/<uuid:domain_id>/records
+#"create_record": "rule:admin_or_owner"
+
+# Get records.
+# GET  /v1/domains/<uuid:domain_id>/records
+#"get_records": "rule:admin_or_owner"
+
+# Get record.
+# GET  /v1/domains/<uuid:domain_id>/records/<uuid:record_id>
+#"get_record": "rule:admin_or_owner"
+
+# Find records.
+# GET  /v2/reverse/floatingips/{region}:{floatingip_id}
+# GET  /v2/reverse/floatingips
+#"find_records": "rule:admin_or_owner"
+
+# Find record.
+# GET  /v1/domains/<uuid:domain_id>/records/<uuid:record_id>
+# DELETE  /v1/domains/<uuid:domain_id>/records/<uuid:record_id>
+# PUT  /v1/domains/<uuid:domain_id>/records/<uuid:record_id>
+#"find_record": "rule:admin_or_owner"
+
+# Update record.
+# PUT  /v1/domains/<uuid:domain_id>/records/<uuid:record_id>
+#"update_record": "rule:admin_or_owner"
+
+# Delete record.
+# DELETE  /v1/domains/<uuid:domain_id>/records/<uuid:record_id>
+#"delete_record": "rule:admin_or_owner"
+
+#
+#"count_records": "rule:admin_or_owner"
+
+# Create Recordset
+# POST  /v2/zones/{zone_id}/recordsets
+# PATCH  /v2/reverse/floatingips/{region}:{floatingip_id}
+#"create_recordset": "('PRIMARY':%(zone_type)s and rule:admin_or_owner)                            OR ('SECONDARY':%(zone_type)s AND is_admin:True)"
+
+#
+#"get_recordsets": "rule:admin_or_owner"
+
+# Get recordset
+# GET  /v1/domains/<uuid:domain_id>/records/<uuid:record_id>
+# PUT  /v1/domains/<uuid:domain_id>/records/<uuid:record_id>
+# GET  /v2/zones/{zone_id}/recordsets/{recordset_id}
+# DELETE  /v2/zones/{zone_id}/recordsets/{recordset_id}
+# PUT  /v2/zones/{zone_id}/recordsets/{recordset_id}
+#"get_recordset": "rule:admin_or_owner"
+
+# Find recordsets
+# GET  /v1/domains/<uuid:domain_id>/records
+#"find_recordsets": "rule:admin_or_owner"
+
+# Find recordset
+# POST  /v1/domains/<uuid:domain_id>/records
+# DELETE  /v1/domains/<uuid:domain_id>/records/<uuid:record_id>
+#"find_recordset": "rule:admin_or_owner"
+
+# Update recordset
+# PUT  /v1/domains/<uuid:domain_id>/records/<uuid:record_id>
+# PUT  /v2/zones/{zone_id}/recordsets/{recordset_id}
+# PATCH  /v2/reverse/floatingips/{region}:{floatingip_id}
+#"update_recordset": "('PRIMARY':%(zone_type)s and rule:admin_or_owner)                            OR ('SECONDARY':%(zone_type)s AND is_admin:True)"
+
+# Delete RecordSet
+# DELETE  /v1/domains/<uuid:domain_id>/records/<uuid:record_id>
+# DELETE  /v2/zones/{zone_id}/recordsets/{recordset_id}
+#"delete_recordset": "('PRIMARY':%(zone_type)s and rule:admin_or_owner)                            OR ('SECONDARY':%(zone_type)s AND is_admin:True)"
+
+# Count recordsets
+#"count_recordset": "rule:admin_or_owner"
+
+# Find a single Service Status
+# GET  /v2/service_status/{service_id}
+#"find_service_status": "rule:admin"
+
+# List service statuses.
+# GET  /v2/service_status
+#"find_service_statuses": "rule:admin"
+
+#
+#"update_service_service_status": "rule:admin"
+
+# Find all Tenants.
+#"find_tenants": "rule:admin"
+
+# Get all Tenants.
+#"get_tenant": "rule:admin"
+
+# Count tenants
+#"count_tenants": "rule:admin"
+
+# Create Tld
+# POST  /v2/tlds
+#"create_tld": "rule:admin"
+
+# List Tlds
+# GET  /v2/tlds
+#"find_tlds": "rule:admin"
+
+# Show Tld
+# GET  /v2/tlds/{tld_id}
+#"get_tld": "rule:admin"
+
+# Update Tld
+# PATCH  /v2/tlds/{tld_id}
+#"update_tld": "rule:admin"
+
+# Delete Tld
+# DELETE  /v2/tlds/{tld_id}
+#"delete_tld": "rule:admin"
+
+# Create Tsigkey
+# POST  /v1/tsigkeys
+# POST  /v2/tsigkeys
+#"create_tsigkey": "rule:admin"
+
+# List Tsigkeys
+# GET  /v1/tsigkeys
+# GET  /v1/tsigkeys/<uuid:tsigkey_id>
+# DELETE  /v1/tsigkeys/<uuid:tsigkey_id>
+# GET  /v2/tsigkeys
+#"find_tsigkeys": "rule:admin"
+
+# Show a Tsigkey
+# PATCH  /v2/tsigkeys/{tsigkey_id}
+# GET  /v2/tsigkeys/{tsigkey_id}
+#"get_tsigkey": "rule:admin"
+
+# Update Tsigkey
+# PATCH  /v1/tsigkeys/{tsigkey_id}
+# PATCH  /v2/tsigkeys/{tsigkey_id}
+#"update_tsigkey": "rule:admin"
+
+# Delete a Tsigkey
+# DELETE  /v1/tsigkeys/{tsigkey_id}
+# DELETE  /v2/tsigkeys/{tsigkey_id}
+#"delete_tsigkey": "rule:admin"
+
+# Create Zone
+# POST  /v1//domains
+# POST  /v2/zones
+#"create_zone": "rule:admin_or_owner"
+
+#
+#"get_zones": "rule:admin_or_owner"
+
+# Get Zone
+# GET  /v1/domains/<uuid:domain_id>/records/<uuid:record_id>
+# GET  /v1/domains/<uuid:domain_id>/records
+# GET  /v2/zones/{zone_id}
+# PATCH  /v2/zones/{zone_id}
+# PUT  /v2/zones/{zone_id}/recordsets/{recordset_id}
+#"get_zone": "rule:admin_or_owner"
+
+#
+#"get_zone_servers": "rule:admin_or_owner"
+
+# List existing zones
+# GET  /v1/domains
+# GET  /v2/zones
+#"find_zones": "rule:admin_or_owner"
+
+# Find Zone
+# GET  /v1/domains/<uuid:domain_id>
+# GET  /v1/domains/<uuid:domain_id>/servers
+# PUT  /v1/domains/<uuid:domain_id>
+# DELETE  /v1/domains/<uuid:domain_id>
+#"find_zone": "rule:admin_or_owner"
+
+# Update Zone
+# PUT  /v1/domains/<uuid:domain_id>
+# PATCH  /v2/zones/{zone_id}
+#"update_zone": "rule:admin_or_owner"
+
+# Delete Zone
+# DELETE  /v1/domains/<uuid:domain_id>
+# DELETE  /v2/zones/{zone_id}
+#"delete_zone": "rule:admin_or_owner"
+
+# Manually Trigger an Update of a Secondary Zone
+# POST  /v2/zones/{zone_id}/tasks/xfr
+#"xfr_zone": "rule:admin_or_owner"
+
+# Abandon Zone
+# POST  /v2/zones/{zone_id}/tasks/abandon
+#"abandon_zone": "rule:admin"
+
+#
+#"count_zones": "rule:admin_or_owner"
+
+#
+#"count_zones_pending_notify": "rule:admin_or_owner"
+
+#
+#"purge_zones": "rule:admin"
+
+#
+#"touch_zone": "rule:admin_or_owner"
+
+# Retrive a Zone Export from the Designate Datastore
+# GET  /v2/zones/tasks/exports/{zone_export_id}/export
+#"zone_export": "rule:admin_or_owner"
+
+# Create Zone Export
+# POST  /v2/zones/{zone_id}/tasks/export
+#"create_zone_export": "rule:admin_or_owner"
+
+# List Zone Exports
+# GET  /v2/zones/tasks/exports
+#"find_zone_exports": "rule:admin_or_owner"
+
+# Get Zone Exports
+# GET  /v2/zones/tasks/exports/{zone_export_id}
+# GET  /v2/zones/tasks/exports/{zone_export_id}/export
+#"get_zone_export": "rule:admin_or_owner"
+
+# Update Zone Exports
+# POST  /v2/zones/{zone_id}/tasks/export
+#"update_zone_export": "rule:admin_or_owner"
+
+# Create Zone Import
+# POST  /v2/zones/tasks/imports
+#"create_zone_import": "rule:admin_or_owner"
+
+# List all Zone Imports
+# GET  /v2/zones/tasks/imports
+#"find_zone_imports": "rule:admin_or_owner"
+
+# Get Zone Imports
+# GET  /v2/zones/tasks/imports/{zone_import_id}
+#"get_zone_import": "rule:admin_or_owner"
+
+# Update Zone Imports
+# POST  /v2/zones/tasks/imports
+#"update_zone_import": "rule:admin_or_owner"
+
+# Delete a Zone Import
+# GET  /v2/zones/tasks/imports/{zone_import_id}
+#"delete_zone_import": "rule:admin_or_owner"
+
+# Create Zone Transfer Accept
+# POST  /v2/zones/tasks/transfer_accepts
+#"create_zone_transfer_accept": "rule:admin_or_owner or tenant:%(target_tenant_id)s                             or None:%(target_tenant_id)s"
+
+# Get Zone Transfer Accept
+# GET  /v2/zones/tasks/transfer_requests/{zone_transfer_accept_id}
+#"get_zone_transfer_accept": "rule:admin_or_owner"
+
+# List Zone Transfer Accepts
+# GET  /v2/zones/tasks/transfer_accepts
+#"find_zone_transfer_accepts": "rule:admin"
+
+#
+#"find_zone_transfer_accept": "rule:admin"
+
+# Update a Zone Transfer Accept
+# POST  /v2/zones/tasks/transfer_accepts
+#"update_zone_transfer_accept": "rule:admin"
+
+#
+#"delete_zone_transfer_accept": "rule:admin"
+
+# Create Zone Transfer Accept
+# POST  /v2/zones/{zone_id}/tasks/transfer_requests
+#"create_zone_transfer_request": "rule:admin_or_owner"
+
+# Show a Zone Transfer Request
+# GET  /v2/zones/tasks/transfer_requests/{zone_transfer_request_id}
+# PATCH  /v2/zones/tasks/transfer_requests/{zone_transfer_request_id}
+#"get_zone_transfer_request": "rule:admin_or_owner or tenant:%(target_tenant_id)s                             or None:%(target_tenant_id)s"
+
+#
+#"get_zone_transfer_request_detailed": "rule:admin_or_owner"
+
+# List Zone Transfer Requests
+# GET  /v2/zones/tasks/transfer_requests
+#"find_zone_transfer_requests": "@"
+
+#
+#"find_zone_transfer_request": "@"
+
+# Update a Zone Transfer Request
+# PATCH  /v2/zones/tasks/transfer_requests/{zone_transfer_request_id}
+#"update_zone_transfer_request": "rule:admin_or_owner"
+
+# Delete a Zone Transfer Request
+# DELETE  /v2/zones/tasks/transfer_requests/{zone_transfer_request_id}
+#"delete_zone_transfer_request": "rule:admin_or_owner"
+
