@@ -11,24 +11,32 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-#
-# Borrowed from Zun
 
 
-import itertools
+from oslo_policy import policy
 
 from designate.common.policies import base
-from designate.common.policies import blacklist
-from designate.common.policies import context
-from designate.common.policies import diagnostics
-from designate.common.policies import pool
+
+
+rules = [
+    policy.RuleDefault(
+        name="diagnostics_ping",
+        check_str=base.RULE_ADMIN,
+        description='Diagnose ping.'),
+    policy.RuleDefault(
+        name="diagnostics_sync_zones",
+        check_str=base.RULE_ADMIN,
+        description='Diagnose sync zones.'),
+    policy.RuleDefault(
+        name="diagnostics_sync_zone",
+        check_str=base.RULE_ADMIN,
+        description='Diagnose sync zone.'),
+    policy.RuleDefault(
+        name="diagnostics_sync_record",
+        check_str=base.RULE_ADMIN,
+        description='Diagnose sync record.')
+]
 
 
 def list_rules():
-    return itertools.chain(
-        base.list_rules(),
-        blacklist.list_rules(),
-        context.list_rules(),
-        diagnostics.list_rules(),
-        pool.list_rules()
-    )
+    return rules
