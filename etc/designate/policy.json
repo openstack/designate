@@ -1,18 +1,4 @@
 {
-    "admin": "role:admin or is_admin:True",
-    "primary_zone": "target.zone_type:SECONDARY",
-
-    "owner": "tenant:%(tenant_id)s",
-    "admin_or_owner": "rule:admin or rule:owner",
-    "target": "tenant:%(target_tenant_id)s",
-    "owner_or_target":"rule:target or rule:owner",
-    "admin_or_owner_or_target":"rule:owner_or_target or rule:admin",
-    "admin_or_target":"rule:admin or rule:target",
-
-    "zone_primary_or_admin": "('PRIMARY':%(zone_type)s and rule:admin_or_owner) OR ('SECONDARY':%(zone_type)s AND is_admin:True)",
-
-    "default": "rule:admin_or_owner",
-
     "all_tenants": "rule:admin",
 
     "edit_managed_records" : "rule:admin",

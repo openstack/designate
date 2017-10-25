@@ -19,9 +19,8 @@ from oslo_policy import policy
 from oslo_policy import opts
 
 from designate.i18n import _
-from designate.i18n import _LI
-from designate import utils
 from designate import exceptions
+from designate.common import policies
 
 
 CONF = cfg.CONF
@@ -62,25 +61,12 @@ def set_rules(data, default_rule=None, overwrite=True):
     _ENFORCER.set_rules(rules, overwrite=overwrite)
 
 
-def init(default_rule=None):
-    policy_files = utils.find_config(CONF['oslo_policy'].policy_file)
-
-    if len(policy_files) == 0:
-        msg = 'Unable to determine appropriate policy json file'
-        raise exceptions.ConfigurationError(msg)
-
-    LOG.info(_LI('Using policy_file found at: %s'), policy_files[0])
-
-    with open(policy_files[0]) as fh:
-        policy_string = fh.read()
-    rules = policy.Rules.load_json(policy_string, default_rule=default_rule)
-
+def init(default_rule=None, policy_file=None):
     global _ENFORCER
     if not _ENFORCER:
         LOG.debug("Enforcer is not present, recreating.")
-        _ENFORCER = policy.Enforcer(CONF)
-
-    _ENFORCER.set_rules(rules)
+        _ENFORCER = policy.Enforcer(CONF, policy_file=policy_file)
+        _ENFORCER.register_defaults(policies.list_rules())
 
 
 def check(rule, ctxt, target=None, do_raise=True, exc=exceptions.Forbidden):
