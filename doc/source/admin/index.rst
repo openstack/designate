@@ -17,8 +17,10 @@ Contents:
    blacklists
    quotas
    designate-manage
+   policy
    notifications
    production-guidelines
    upgrades/index
    troubleshooting
-   
+   samples/index
+
