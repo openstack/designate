@@ -13,6 +13,8 @@
     License for the specific language governing permissions and limitations
     under the License.
 
+.. _bind9_backend_docs:
+
 Bind9 Backend
 =============
 

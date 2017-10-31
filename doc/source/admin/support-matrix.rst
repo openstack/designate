@@ -1,4 +1,6 @@
 
+.. _driver_matrix:
+
 DNS Server Driver Support Matrix
 ================================
 

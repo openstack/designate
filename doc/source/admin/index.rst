@@ -8,9 +8,11 @@ and operating Designate.
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    tlds
+   backends/index
+   ha
    pools
    pool-scheduler
    multiple-pools
@@ -18,9 +20,11 @@ Contents:
    quotas
    designate-manage
    policy
+   config
    notifications
    production-guidelines
    upgrades/index
    troubleshooting
    samples/index
+   support-matrix
 

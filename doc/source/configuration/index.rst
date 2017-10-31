@@ -42,6 +42,3 @@ directory.
 #. You can generate full sample *designate.conf* (if it does not already exist)::
 
     $ oslo-config-generator --config-file etc/designate/designate-config-generator.conf --output-file /etc/designate/designate.conf
-
-.. literalinclude:: ../_static/designate.conf.sample
-    :language: ini

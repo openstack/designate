@@ -9,3 +9,4 @@ found below:
 .. toctree::
 
    policy-yaml.rst
+   config.rst

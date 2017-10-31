@@ -40,7 +40,8 @@ coordination_opts = [
     cfg.StrOpt('backend_url',
                help='The backend URL to use for distributed coordination. If '
                     'unset services that need coordination will function as '
-                    'a standalone service.'),
+                    'a standalone service. This is a `tooz` url - see '
+                    'https://docs.openstack.org/tooz/latest/user/compatibility.html'),  # noqa
     cfg.FloatOpt('heartbeat_interval',
                  default=1.0,
                  help='Number of seconds between heartbeats for distributed '
@@ -73,6 +74,7 @@ class CoordinationMixin(object):
 
         if CONF.coordination.backend_url is not None:
             backend_url = cfg.CONF.coordination.backend_url
+
             self._coordinator = tooz.coordination.get_coordinator(
                 backend_url, self._coordination_id)
             self._coordination_started = False
