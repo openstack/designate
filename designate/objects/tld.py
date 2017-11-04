@@ -42,3 +42,6 @@ class Tld(base.DictObjectMixin, base.PersistentObjectMixin,
 
 class TldList(base.ListObjectMixin, base.DesignateObject):
     LIST_ITEM_TYPE = Tld
+
+    def __contains__(self, key):
+        return bool(list(filter(lambda tld: tld.name == key, self.objects)))

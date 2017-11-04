@@ -59,6 +59,8 @@ class TLDCommands(base.Commands):
 
     def __init__(self):
         super(TLDCommands, self).__init__()
+
+    def _startup(self):
         rpc.init(cfg.CONF)
         self.central_api = central_rpcapi.CentralAPI()
 
@@ -108,6 +110,7 @@ class TLDCommands(base.Commands):
                help="delimiter between fields in the input file",
                default=',', type=str)
     def from_file(self, input_file=None, delimiter=None):
+        self._startup()
         input_file = str(input_file) if input_file is not None else None
 
         if not os.path.exists(input_file):

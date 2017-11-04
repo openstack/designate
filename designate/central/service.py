@@ -275,12 +275,17 @@ class Service(service.RPCService, service.Service):
             raise exceptions.InvalidZoneName('More than one label is '
                                              'required')
 
-        # Check the TLD for validity if there are entries in the database
-        if self.storage.find_tlds({}):
-            LOG.info(_LI("Checking for TLDs"))
-            try:
-                self.storage.find_tld(context, {'name': zone_labels[-1]})
-            except exceptions.TldNotFound:
+        tlds = self.storage.find_tlds(context)
+        if tlds:
+            LOG.debug("Checking if %s has a valid TLD", zone_name)
+            allowed = False
+            for i in range(-len(zone_labels), 0):
+                last_i_labels = zone_labels[i:]
+                LOG.debug("Checking %s against the TLD list", last_i_labels)
+                if ".".join(last_i_labels) in tlds:
+                    allowed = True
+                    break
+            if not allowed:
                 raise exceptions.InvalidZoneName('Invalid TLD')
 
             # Now check that the zone name is not the same as a TLD
@@ -290,7 +295,7 @@ class Service(service.RPCService, service.Service):
                     context,
                     {'name': stripped_zone_name})
             except exceptions.TldNotFound:
-                pass
+                LOG.debug("%s has a valid TLD", zone_name)
             else:
                 raise exceptions.InvalidZoneName(
                     'Zone name cannot be the same as a TLD')
