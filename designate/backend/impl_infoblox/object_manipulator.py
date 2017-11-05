@@ -195,7 +195,8 @@ class InfobloxObjectManipulator(object):
             ib_object_ref = self._get_infoblox_object_or_none(obj_type,
                                                               payload)
             if not ib_object_ref:
-                LOG.warning(warn_msg, obj_type, payload)
+                LOG.warning(warn_msg, {'obj_type': obj_type,
+                                       'payload': payload})
         except exc.InfobloxSearchError as e:
             LOG.warning(warn_msg, {'obj_type': obj_type, 'payload': payload})
             LOG.info(e)
