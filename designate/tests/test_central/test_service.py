@@ -2325,6 +2325,20 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(fip['address'], fip_ptr['address'])
         self.assertIsNone(fip_ptr['ptrdname'])
 
+    def test_get_floatingip_dual_no_record(self):
+        context = self.get_context(tenant='a')
+
+        self.network_api.fake.allocate_floatingip(context.tenant)
+        fip = self.network_api.fake.allocate_floatingip(context.tenant)
+
+        fip_ptr = self.central_service.get_floatingip(
+            context, fip['region'], fip['id'])
+
+        self.assertEqual(fip['region'], fip_ptr['region'])
+        self.assertEqual(fip['id'], fip_ptr['id'])
+        self.assertEqual(fip['address'], fip_ptr['address'])
+        self.assertIsNone(fip_ptr['ptrdname'])
+
     def test_get_floatingip_with_record(self):
         context = self.get_context(tenant='a')
 

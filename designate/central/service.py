@@ -1982,10 +1982,12 @@ class Service(service.RPCService, service.Service):
 
         tenant_fips = self._list_floatingips(context, region=region)
 
-        self._get_floatingip(context, region, floatingip_id, tenant_fips)
+        fip = self._get_floatingip(context, region, floatingip_id, tenant_fips)
+
+        result = self._list_to_dict([fip], keys=['region', 'id'])
 
         valid, invalid = self._determine_floatingips(
-            elevated_context, tenant_fips)
+            elevated_context, result)
 
         self._invalidate_floatingips(context, invalid)
 
