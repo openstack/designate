@@ -27,7 +27,7 @@
 
 - name: pool-2
   id: cf2e8eab-76cd-4162-bf76-8aeee3556de0
-  description: Default PowerDNS Pool
+  description: Default BIND9 Pool
 
   attributes:
     external: true
