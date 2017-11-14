@@ -27,7 +27,7 @@ addresses to a domain. For example,
 
 .. code-block:: bash
 
-   $ dig -x 192.0.2.5 +short
+   $ dig -x 192.0.2.12 +short
    example.org.
 
 The way this works in the DNS system is through the `in-addr.arpa.`
@@ -47,10 +47,10 @@ zone. For example
    ;; OPT PSEUDOSECTION:
    ; EDNS: version: 0, flags:; udp: 4000
    ;; QUESTION SECTION:
-   ;12.55.168.192.in-addr.arpa.   IN      PTR      example.org.
+   ;12.2.0.192.in-addr.arpa.   IN      PTR      example.org.
 
    ;; AUTHORITY SECTION:
-   12.55.168.192.in-addr.arpa. 3600 IN     NS      ns1.example.org.
+   12.2.0.192.in-addr.arpa. 3600 IN     NS      ns1.example.org.
 
    ;; Query time: 40 msec
    ;; SERVER: 127.0.0.1#53(127.0.0.1)
@@ -58,7 +58,7 @@ zone. For example
    ;; MSG SIZE  rcvd: 119
 
 In the question section we see the address being requested from the
-DNS system as `12.55.168.192.in-addr.arpa.`. As you can see, the IP
+DNS system as `12.2.0.192.in-addr.arpa.`. As you can see, the IP
 address has been reversed in order to function similarly to a domain
 name where the more specific elements come first. The reversed IP
 address is then added to the `in-addr.arpa.` domain, at which point
