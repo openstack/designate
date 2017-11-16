@@ -60,8 +60,9 @@ You need to configure PowerDNS to use the MySQL backend.
 
     $ designate-manage pool update
 
-See :ref:`designate_manage_pool` for further details on the ``designate-manage pool``
-command, and :ref:`pools` for information about the yaml file syntax
+See :ref:`designate_manage_pool` for further details on
+the ``designate-manage pool`` command, and :ref:`pools`
+for information about the yaml file syntax
 
 4. Setup the database schema.
 
@@ -69,7 +70,9 @@ command, and :ref:`pools` for information about the yaml file syntax
 
     $ designate-manage powerdns sync <pool_id>
 
-See :ref:`designate_manage_powerdns` for further details on the ``designate-manage powerdns`` command
+See :ref:`designate_manage_powerdns` for further details on
+the ``designate-manage powerdns`` command
 
-5. Restart PowerDNS and it should be ready to serve queries using the MySQL database as the backing store.
+5. Restart PowerDNS and it should be ready to serve queries
+   using the MySQL database as the backing store.
 

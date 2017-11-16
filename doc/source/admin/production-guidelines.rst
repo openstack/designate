@@ -65,15 +65,15 @@ both owning different zones, can under the right circumstances inject content
 into DNS responses for the other tenants zone. Let's consider an example:
 
 Tenant A owns "example.com.", and has created an additional NS record within
-their zone pointing to "ns.example.org." Tenant B, the attacker in this example,
-can now create the "example.org." zone within their tenant. Within this zone,
-they can legitimately create an A record with the name "ns.example.org.". Under
-default configurations, many DNS servers (e.g. BIND), will now include Tenant
-B's A record within responses for several queries for "example.com.". Should
-the recursive resolver used by the end-user not be configured to ignore
-out-of-bailiwick responses, this potentially invalid A record for
-"ns.example.org." will be injected into the resolvers cache, resulting in
-a cache poisoning attack.
+their zone pointing to "ns.example.org." Tenant B, the attacker in this
+example, can now create the "example.org." zone within their tenant. Within
+this zone, they can legitimately create an A record with the name
+"ns.example.org.". Under default configurations, many DNS servers (e.g. BIND),
+will now include Tenant B's A record within responses for several queries
+for "example.com.". Should the recursive resolver used by the end-user not be
+configured to ignore out-of-bailiwick responses, this potentially invalid
+A record for "ns.example.org." will be injected into the resolvers cache,
+resulting in a cache poisoning attack.
 
 This is an "interesting variation" of DNS cache poisoning, because the poison
 records are returned by the authoritative nameserver for a given zone, rather

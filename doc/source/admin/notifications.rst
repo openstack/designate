@@ -8,9 +8,11 @@ Notifications
     In this context, "notifications" are not related to the DNS NOTIFY message.
 
 
-Notifications are RPC calls that contain a JSON object. Designate both generates and receives notifications.
+Notifications are RPC calls that contain a JSON object.
+Designate both generates and receives notifications.
 
-The purpose of notifications in to inform unrelated OpenStack components of events in real time and trigger actions.
+The purpose of notifications in to inform unrelated OpenStack components
+of events in real time and trigger actions.
 
 Emitters
 --------
@@ -60,14 +62,18 @@ They are emitted by Central on the following events:
 Receivers
 ---------
 
-Notification from other OpenStack component outside of Designate are received by :ref:`designate-sink`.
+Notification from other OpenStack component outside of Designate are
+received by :ref:`designate-sink`.
 
 Format
 ------
 
 An example notification from Neutron:
 
-.. literalinclude:: ../../../designate/tests/resources/sample_notifications/neutron/port.delete.start.json
+.. code-block:: none
 
-More examples can be found at :file:`designate/tests/resources/sample_notifications`
+    .. literalinclude:: ../../../designate/tests/resources/sample_notifications/neutron/port.delete.start.json
+
+More examples can be found at
+:file:`designate/tests/resources/sample_notifications`
 

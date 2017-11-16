@@ -24,9 +24,9 @@ Overview
 
 In designate we support the concept of multiple "pools" of DNS Servers.
 
-This allows operators to scale out their DNS Service by adding more pools, avoiding
-the scalling problems that some DNS servers have for number of zones, and the total
-number of records hosted by a single server.
+This allows operators to scale out their DNS Service by adding more pools,
+avoiding the scalling problems that some DNS servers have for number of zones,
+and the total number of records hosted by a single server.
 
 This also allows providers to have tiers of service (i.e. the difference
 between GOLD vs SILVER tiers may be the number of DNS Servers, and how they
@@ -81,7 +81,8 @@ Managing Pools
 
 In mitaka we moved the method of updating pools to a CLI in `designate-manage`
 
-There is a YAML file that defines the pool, and is used to load this information into the database.
+There is a YAML file that defines the pool, and is used to load
+this information into the database.
 
 
 .. literalinclude:: ../../../etc/designate/pools.yaml.sample

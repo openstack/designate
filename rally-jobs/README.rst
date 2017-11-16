@@ -3,6 +3,7 @@ Rally job related files
 
 This directory contains rally tasks and plugins that are run by OpenStack CI.
 
+
 Structure:
 
 * designate-designate.yaml is rally task that will be run in gates

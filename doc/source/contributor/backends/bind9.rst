@@ -24,16 +24,17 @@ The traffic between rndc and Bind is authenticated with a key.
 Designate Configuration
 -----------------------
 
-Example configuration required for Bind9 operation. One section for each pool target
+Example configuration required for Bind9 operation.
+One section for each pool target
 
    .. literalinclude:: sample_yaml_snippets/bind.yaml
        :language: yaml
 
-The key and config files are relative to the host running Pool Manager (and can
-be different from the hosts running Bind)
+The key and config files are relative to the host running Pool Manager
+(and can be different from the hosts running Bind)
 
-Then update the pools in designate - see :ref:`designate_manage_pool` for further details on
-the ``designate-manage pool`` command
+Then update the pools in designate - see :ref:`designate_manage_pool`
+for further details on the ``designate-manage pool`` command
 
 .. code-block:: console
 
@@ -45,7 +46,8 @@ Bind9 Configuration
 Ensure Bind can access the /etc/bind/rndc.conf and /etc/bind/rndc.key files and
 receive rndc traffic from Pool Manager.
 
-Enable rndc addzone/delzone functionality by editing named.conf.options or named.conf and add this line under options
+Enable rndc addzone/delzone functionality by editing named.conf.options
+or named.conf and add this line under options
 
 .. code-block:: c
 

@@ -17,19 +17,21 @@
 Development Environment on Ubuntu
 *********************************
 
-Designate is comprised of four main components :ref:`designate-api`, :ref:`designate-central`,
-designate-mdns, and designate-pool-manager, supported by a few
-standard open source components. For more information see :ref:`architecture`.
+Designate is comprised of four main components :ref:`designate-api`,
+:ref:`designate-central`, designate-mdns, and designate-pool-manager,
+supported by a few standard open source components.
+For more information see :ref:`architecture`.
 
-There are many different options for customizing Designate, and two of these options
-have a major impact on the installation process:
+There are many different options for customizing Designate, and two of
+these options have a major impact on the installation process:
 
 * The storage backend used (SQLite or MySQL)
 * The DNS backend used (PowerDNS or BIND9)
 
-This guide will walk you through setting up a typical development environment for Designate,
-using BIND9 as the DNS backend and MySQL as the storage backend. For a more complete discussion on
-installation & configuration options, please see :ref:`architecture`.
+This guide will walk you through setting up a typical development environment
+for Designate, using BIND9 as the DNS backend and MySQL as the storage
+backend. For a more complete discussion on installation & configuration
+options, please see :ref:`architecture`.
 
 For this guide you will need access to an Ubuntu Server (16.04).
 
@@ -92,7 +94,8 @@ Installing Designate
 6. Change directories to the etc/designate folder.
 
 .. note::
-    Everything from here on out should take place in or below your etc/designate folder
+    Everything from here on out should take place in or below your
+    etc/designate folder
 
 ::
 
@@ -154,12 +157,15 @@ Install the MySQL server package
     $ sudo apt install mysql-server
 
 
-If you do not have MySQL previously installed, you will be prompted to change the root password.
-By default, the MySQL root password for Designate is "password". You can:
+If you do not have MySQL previously installed, you will be prompted to change
+the root password. By default, the MySQL root password for Designate
+is "password". You can:
 
 * Change the root password to "password"
-* If you want your own password, edit the designate.conf file and change any instance of
-   "mysql+pymysql://root:password@127.0.0.1/designate?charset=utf8" to "mysql+pymysql://root:YOUR_PASSWORD@127.0.0.1/designate?charset=utf8"
+* If you want your own password, edit the designate.conf file and change
+  any instance of
+  "mysql+pymysql://root:password@127.0.0.1/designate?charset=utf8"
+  to "mysql+pymysql://root:YOUR_PASSWORD@127.0.0.1/designate?charset=utf8"
 
 You can change your MySQL password anytime with the following command::
 
@@ -293,7 +299,8 @@ Start the other Services
 .. index::
    double: install; services
 
-Open up some new ssh windows and log in to your server (or open some new screen/tmux sessions).
+Open up some new ssh windows and log in to your server
+(or open some new screen/tmux sessions).
 
 ::
 
@@ -314,7 +321,8 @@ You’ll now be seeing the logs from the other services.
 Exercising the API
 ==================
 
-.. note:: If you have a firewall enabled, make sure to open port 53, as well as Designate's default port (9001).
+.. note:: If you have a firewall enabled, make sure to open port 53,
+          as well as Designate's default port (9001).
 
 Using a web browser, curl statement, or a REST client, calls can be made to the
 Designate API. You can find the various API calls on the api-ref_ document.
@@ -333,8 +341,8 @@ For example:
    $ curl 127.0.0.1:9001/v2/zones
    {"zones": [{"status": "ACTIVE",.....
 
-The ``ACTIVE`` status shows that the zone propagated. So you should be able to perform a DNS query and
-see it:
+The ``ACTIVE`` status shows that the zone propagated. So you should be able to
+perform a DNS query and see it:
 
 ::
 
@@ -347,8 +355,10 @@ You can find the IP Address of your server by running
 
    ip addr show eth0 | grep "inet\b" | awk '{print $2}' | cut -d/ -f1
 
-If you have Keystone set up, you can use it by configuring the ``[keystone_authtoken]`` section and changing
-the ``auth_strategy = keystone`` in the ``service:api`` section. This will make it easier to use clients
-like the ``openstack`` CLI that expect Keystone.
+If you have Keystone set up, you can use it by configuring
+the ``[keystone_authtoken]`` section and changing
+the ``auth_strategy = keystone`` in the ``service:api`` section.
+This will make it easier to use clients like the ``openstack``
+CLI that expect Keystone.
 
 .. _api-ref: https://developer.openstack.org/api-ref/dns/

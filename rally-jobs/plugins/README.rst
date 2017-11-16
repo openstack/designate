@@ -1,8 +1,9 @@
+
 Rally plugins
 =============
 
 
-All *.py modules from this directory will auto loaded by Rally and all
+All `*.py` modules from this directory will auto loaded by Rally and all
 plugins will be discoverable. There is no need in any extra configuration
 and there is no difference between writing them here and in rally code base.
 

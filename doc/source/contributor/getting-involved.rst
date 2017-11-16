@@ -9,22 +9,27 @@ Getting Involved
 
 #openstack-dns
 --------------
-There is an active IRC channel at irc://freenode.net/#openstack-dns, where many of the designate contributors can be found, as
+There is an active IRC channel at irc://freenode.net/#openstack-dns,
+where many of the designate contributors can be found, as
 well as users from various organisations.
 
 Weekly meetings
 ---------------
 There is a weekly irc meet. The agenda and other details are listed at
 `Designate meetings wiki page`_. Currently the meeting is
-held every Wednesday at 17:00 UTC on the IRC channel irc://freenode.net/#openstack-meeting-alt
+held every Wednesday at 17:00 UTC on the IRC channel
+irc://freenode.net/#openstack-meeting-alt
 
 Contributing
 ------------
-We welcome fixes, extensions, documentation, pretty much anything that helps improve Designate, contributing is easy & follows
-the standard OpenStack `Gerrit workflow`_, if you're looking for something to do, you could always checkout the blueprint_ & bug_
+We welcome fixes, extensions, documentation, pretty much anything that
+helps improve Designate, contributing is easy & follows
+the standard OpenStack `Gerrit workflow`_, if you're looking for
+something to do, you could always checkout the blueprint_ & bug_
 lists.
 
-Assuming you've already got a working :ref:`Development Environment`, here's a quick summary:
+Assuming you've already got a working :ref:`Development Environment`,
+here's a quick summary:
 
 Install the git-review package to make life easier
 
@@ -70,10 +75,11 @@ follow this guidance, for example, there is currently no reserved IDN domain
 name.
 
 We prefer to use these names and IP blocks to avoid causing any unexpected
-collateral damage to the rightful owners of the non-reserved names and IP space.
-For example, publishing an email address in our codebase will more than likely
-be picked up by spammers, while published URLs etc using non-reserved names or
-IP space will likely trigger search indexers etc to begin crawling.
+collateral damage to the rightful owners of the non-reserved names and
+IP space. For example, publishing an email address in our codebase will
+more than likely be picked up by spammers, while published URLs etc using
+non-reserved names or IP space will likely trigger search indexers etc
+to begin crawling.
 
 Reserved Domains
 ~~~~~~~~~~~~~~~~
@@ -156,7 +162,8 @@ Example:
 
     `User documentation <backend.html>`_
 
-When updating a module, please ensure that the related user documentation is updated as well.
+When updating a module, please ensure that the related user documentation is
+updated as well.
 
 Docstrings
 ~~~~~~~~~~

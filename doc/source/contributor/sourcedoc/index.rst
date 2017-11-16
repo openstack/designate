@@ -1,4 +1,4 @@
-Source Code Documentation 
+Source Code Documentation
 -------------------------
 
 .. toctree::
@@ -12,4 +12,3 @@ Source Code Documentation
     quota
     sink
     storage
-

@@ -78,7 +78,8 @@ Branch, work, & submit:
 Testing
 -------
 
-Execute a single test using py27 (test is CentralServiceTest.test_count_domains)
+Execute a single test using py27
+(test is CentralServiceTest.test_count_domains)
 
 .. code-block:: shell
 

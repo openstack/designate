@@ -24,8 +24,10 @@ Knot DNS 2 User documentation
 
 This page documents the Agent backend for `Knot DNS <https://www.knot-dns.cz/>`_.
 
-The agent runs on the same host as the resolver. It receives DNS messages from Mini DNS using private DNS OPCODEs and classes and creates or deletes zones on Knot using the knotc tool.
-It also instructs Knot to request AXFR from MiniDNS when a zone is created or updated.
+The agent runs on the same host as the resolver. It receives DNS messages from
+Mini DNS using private DNS OPCODEs and classes and creates or deletes zones
+on Knot using the knotc tool. It also instructs Knot to request AXFR
+from MiniDNS when a zone is created or updated.
 
 Support matrix:
 
@@ -133,7 +135,8 @@ If needed, create a rootwrap filter, as root:
     # Check the filter:
     sudo /usr/local/bin/designate-rootwrap /etc/designate/rootwrap.conf knotc status
 
-Configure the "service.agent" and "backend.agent.knot2" sections in /etc/designate/designate.conf
+Configure the "service.agent" and "backend.agent.knot2" sections
+in /etc/designate/designate.conf
 
 Look in designate.conf.example for examples
 

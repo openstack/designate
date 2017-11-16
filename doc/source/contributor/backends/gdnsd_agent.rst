@@ -24,7 +24,10 @@ User documentation
 
 This page documents the Agent backend for `gdnsd <http://gdnsd.org/>`_.
 
-The agent runs on the same host as the resolver. It receives DNS messages from Mini DNS using private DNS OPCODEs and classes and creates/updates/deletes zones on gdnsd using zone files under the gdnsd configuration directory.
+The agent runs on the same host as the resolver. It receives DNS messages
+from Mini DNS using private DNS OPCODEs and classes and
+creates/updates/deletes zones on gdnsd using zone files under
+the gdnsd configuration directory.
 
 The backend supports gdnsd from version 2.0
 
@@ -63,7 +66,8 @@ Assuming gdnsd has been freshly installed on the system, run as root:
     # Test the daemon: it should respond with "gdnsd"
     dig @127.0.0.1 CH TXT +short
 
-Configure the "service.agent" and "backend.agent.gdnsd" sections in /etc/designate/designate.conf
+Configure the "service.agent" and "backend.agent.gdnsd" sections
+in /etc/designate/designate.conf
 
 Look in designate.conf.example for more complete examples
 
@@ -79,7 +83,8 @@ Look in designate.conf.example for more complete examples
     #confdir_path = /etc/gdnsd
     #query_destination = 127.0.0.1
 
-Ensure that the "zones" directory under "confdir_path" (default /etc/gdnsd) is readable and writable by the system user running the Designate Agent
+Ensure that the "zones" directory under "confdir_path" (default /etc/gdnsd)
+is readable and writable by the system user running the Designate Agent
 
 Create an agent pool:
 

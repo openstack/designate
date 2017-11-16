@@ -44,7 +44,7 @@ Response:
 
 .. code-block:: http
 
-  HTTP/1.1 201 CREATED 
+  HTTP/1.1 201 CREATED
   Content-Type: application/json; charset=UTF-8
   X-Openstack-Request-Id: req-bfcd0723-624c-4ec2-bbd5-99e985efe8db
 
@@ -57,7 +57,7 @@ Response:
      "created_at": "2016-05-20 06:15:42",
      "updated_at": null,
      "id": "af91edb5-ede8-453f-af13-feabdd088f9c"
-  } 
+  }
 
 
 Now, if someone were to try and create ``foo.example.com.``,

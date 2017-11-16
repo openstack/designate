@@ -37,7 +37,7 @@ Response:
 
 .. code-block:: http
 
-  HTTP/1.1 200 OK 
+  HTTP/1.1 200 OK
   Content-Type: application/json; charset=UTF-8
   X-Openstack-Request-Id: req-bfcd0723-624c-4ec2-bbd5-99e985efe8db
 
@@ -46,7 +46,7 @@ Response:
     "recordset_records": 20,
     "zone_records": 500,
     "zone_recordsets": 500,
-    "zones": 500 
+    "zones": 500
   }
 
 Administrators with the ability to use the ``X-Auth-All-Projects`` header
@@ -68,15 +68,15 @@ Zones
 Recordsets/Records
 ^^^^^^^^^^^^^^^^^^
 
-+------------------+-------------------------------------------------+---------+
-| Quota            | Description                                     | Default |
-+------------------+-------------------------------------------------+---------+
-| zone_recordsets  | Number of recordsets allowed per zone           | 500     |
-+------------------+-------------------------------------------------+---------+
-| zone_records     | Number of records allowed per zone              | 500     |
-+------------------+-------------------------------------------------+---------+
-| recordset_records| Number of records allowed per recordset         | 20      |
-+------------------+-------------------------------------------------+---------+
++------------------+------------------------------------------+---------+
+| Quota            | Description                              | Default |
++------------------+------------------------------------------+---------+
+| zone_recordsets  | Number of recordsets allowed per zone    | 500     |
++------------------+------------------------------------------+---------+
+| zone_records     | Number of records allowed per zone       | 500     |
++------------------+------------------------------------------+---------+
+| recordset_records| Number of records allowed per recordset  | 20      |
++------------------+------------------------------------------+---------+
 
 
 Zone Exports
@@ -103,10 +103,10 @@ All of the quotas above can be set as a default for all users by editing the
     ########################
     ## General Configuration
     ########################
-    quota_zones = 500 
-    quota_zone_recordsets = 500 
-    quota_zone_records = 500 
-    quota_recordset_records = 20 
+    quota_zones = 500
+    quota_zone_recordsets = 500
+    quota_zone_records = 500
+    quota_recordset_records = 20
     quota_api_export_size = 1000
 
 Per-Tenant via API
@@ -133,7 +133,7 @@ The response would be:
 
 .. code-block:: http
 
-  HTTP/1.1 200 OK 
+  HTTP/1.1 200 OK
   Content-Type: application/json; charset=UTF-8
   X-Openstack-Request-Id: req-bfcd0723-624c-4ec2-bbd5-99e985efe8db
 
@@ -142,5 +142,5 @@ The response would be:
     "recordset_records": 20,
     "zone_records": 500,
     "zone_recordsets": 500,
-    "zones": 100 
-  } 
+    "zones": 100
+  }

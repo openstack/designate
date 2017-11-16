@@ -25,13 +25,13 @@ We have updated how the config data for pools is now stored.
 Previously there was a mix of content in the ``designate.conf`` file and in the
 designate database.
 
-We have moved all of the data to the database in Mitaka, to avoid confusion, and
-avoid the massive complexity that exists in the config file.
+We have moved all of the data to the database in Mitaka, to avoid confusion,
+and avoid the massive complexity that exists in the config file.
 
 .. warning:: This part of the upgrade **requires** downtime.
 
-We have 2 new commands in the ``designate-manage`` utility that are able to assist
-the migration.
+We have 2 new commands in the ``designate-manage`` utility that are
+able to assist the migration.
 
 To make the config syntax simpler we have a new YAML based config file that is
 used to load information into the database.
@@ -51,12 +51,14 @@ export it to the new YAML format.
 
     designate-manage pool generate_file --file output.yml
 
-This will create a YAML file, with all the currently defined pools, and all of their config.
+This will create a YAML file, with all the currently defined pools, and all
+of their config.
 
-We suggest this is then migrated into a config management system, or other document management system.
+We suggest this is then migrated into a config management system,
+or other document management system.
 
-From this point on all updates to pools should be done by updating this file, and
-running:
+From this point on all updates to pools should be done by updating this file,
+and running:
 
 .. code-block:: console
 
