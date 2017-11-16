@@ -30,7 +30,8 @@ Instructions
     using the contrib/vagrant folder in the
     `repository <https://git.openstack.org/openstack/designate>`_.
 
-1. Get a clean Ubuntu 14.04 VM. DevStack "takes over". Don't use your desktop!
+1. Get a clean Ubuntu 16.04 VM or newer. DevStack "takes over". Don't use
+   your desktop!
 
 2. Clone DevStack inside the VM::
 
@@ -49,66 +50,98 @@ Instructions
 
    $ ./stack.sh
 
-6. Enter the screen sessions "shell" window::
+6. See the status of all Designate processes ::
 
-   $ ./rejoin-stack.sh
+   $ sudo systemctl status devstack@designate-*.service
 
-   Then press Ctrl+A followed by 0
+   See the `Using Systemd in DevStack`_ home page for more options.
 
-7. Load credentials into the shell::
+.. _`Using Systemd in DevStack`: https://docs.openstack.org/devstack/latest/systemd.html
+
+7. Querying Logs ::
+
+   $ sudo journalctl -f --unit devstack@designate-*.service
+
+   See the `Querying Logs`_ home page for more options.
+
+.. _`Querying Logs`: https://docs.openstack.org/devstack/latest/systemd.html#querying-logs
+
+8. Load credentials into the shell::
 
    $ source openrc admin admin # For the admin user, admin tenant
    $ source openrc admin demo  # For the admin user, demo tenant
    $ source openrc demo demo   # For the demo user, demo tenant
 
-8. Try out the designate client::
+9. Try out the openstack client::
 
-       $ designate domain-create --name example.net. --email kiall@hp.com
-       +------------+--------------------------------------+
-       | Field      | Value                                |
-       +------------+--------------------------------------+
-       | name       | example.net.                         |
-       | created_at | 2013-07-12T13:36:03.110727           |
-       | updated_at | None                                 |
-       | id         | 1fb5d17c-efaf-4e3c-aac0-482875d24b3e |
-       | ttl        | 3600                                 |
-       | serial     | 1373636163                           |
-       | email      | kiall@hp.com                         |
-       +------------+--------------------------------------+
+       $ openstack zone create --email admin@example.net example.net.
+       +----------------+--------------------------------------+
+       | Field          | Value                                |
+       +----------------+--------------------------------------+
+       | action         | CREATE                               |
+       | attributes     |                                      |
+       | created_at     | 2017-11-15T04:48:40.000000           |
+       | description    | None                                 |
+       | email          | admin@example.net                    |
+       | id             | f34f835b-9acc-4930-b6dd-d045c15da78a |
+       | masters        |                                      |
+       | name           | example.net.                         |
+       | pool_id        | 794ccc2c-d751-44fe-b57f-8894c9f5c842 |
+       | project_id     | 9d0beaef253a4e14bd7025dc30c24f98     |
+       | serial         | 1510721320                           |
+       | status         | PENDING                              |
+       | transferred_at | None                                 |
+       | ttl            | 3600                                 |
+       | type           | PRIMARY                              |
+       | updated_at     | None                                 |
+       | version        | 1                                    |
+       +----------------+--------------------------------------+
 
-       $ designate record-create 1fb5d17c-efaf-4e3c-aac0-482875d24b3e --type A --name www.example.net. --data 127.0.0.1
-       +------------+--------------------------------------+
-       | Field      | Value                                |
-       +------------+--------------------------------------+
-       | name       | www.example.net.                     |
-       | data       | 127.0.0.1                            |
-       | created_at | 2013-07-12T13:39:51.236025           |
-       | updated_at | None                                 |
-       | id         | d50c21d0-a13c-48e2-889e-0b9852a05acb |
-       | priority   | None                                 |
-       | ttl        | None                                 |
-       | type       | A                                    |
-       | domain_id  | 1fb5d17c-efaf-4e3c-aac0-482875d24b3e |
-       +------------+--------------------------------------+
+       $ openstack recordset create --records '127.0.0.1'  --type A example.net. www
+       +-------------+--------------------------------------+
+       | Field       | Value                                |
+       +-------------+--------------------------------------+
+       | action      | CREATE                               |
+       | created_at  | 2017-11-15T04:51:27.000000           |
+       | description | None                                 |
+       | id          | 7861e600-8d9e-4e13-9ea2-9038a2719b41 |
+       | name        | www.example.net.                     |
+       | project_id  | 9d0beaef253a4e14bd7025dc30c24f98     |
+       | records     | 127.0.0.1                            |
+       | status      | PENDING                              |
+       | ttl         | None                                 |
+       | type        | A                                    |
+       | updated_at  | None                                 |
+       | version     | 1                                    |
+       | zone_id     | f34f835b-9acc-4930-b6dd-d045c15da78a |
+       | zone_name   | example.net.                         |
+       +-------------+--------------------------------------+
 
-       $ designate record-list 1fb5d17c-efaf-4e3c-aac0-482875d24b3e
-       +--------------------------------------+------+------------------+
-       | id                                   | type | name             |
-       +--------------------------------------+------+------------------+
-       | d50c21d0-a13c-48e2-889e-0b9852a05acb | A    | www.example.net. |
-       +--------------------------------------+------+------------------+
+       $ openstack recordset list f34f835b-9acc-4930-b6dd-d045c15da78a
+       +--------------------------------------+------------------+------+---------------------------------------------------------------------+--------+--------+
+       | id                                   | name             | type | records                                                             | status | action |
+       +--------------------------------------+------------------+------+---------------------------------------------------------------------+--------+--------+
+       | d0630d94-94d8-43fc-93e8-973fbec7531e | example.net.     | SOA  | ns1.devstack.org. admin.example.net. 1510721487 3510 600 86400 3600 | ACTIVE | NONE   |
+       | 31a313dc-c322-4dc0-ba53-79c039d7f09f | example.net.     | NS   | ns1.devstack.org.                                                   | ACTIVE | NONE   |
+       | 7861e600-8d9e-4e13-9ea2-9038a2719b41 | www.example.net. | A    | 127.0.0.1                                                           | ACTIVE | NONE   |
+       +--------------------------------------+------------------+------+---------------------------------------------------------------------+--------+--------+
 
-       $ designate record-get 1fb5d17c-efaf-4e3c-aac0-482875d24b3e d50c21d0-a13c-48e2-889e-0b9852a05acb
-       +------------+--------------------------------------+
-       | Field      | Value                                |
-       +------------+--------------------------------------+
-       | name       | www.example.net.                     |
-       | data       | 127.0.0.1                            |
-       | created_at | 2013-07-12T13:39:51.000000           |
-       | updated_at | None                                 |
-       | id         | d50c21d0-a13c-48e2-889e-0b9852a05acb |
-       | priority   | None                                 |
-       | ttl        | None                                 |
-       | type       | A                                    |
-       | domain_id  | 1fb5d17c-efaf-4e3c-aac0-482875d24b3e |
-       +------------+--------------------------------------+
+       $ openstack recordset show f34f835b-9acc-4930-b6dd-d045c15da78a 7861e600-8d9e-4e13-9ea2-9038a2719b41
+       +-------------+--------------------------------------+
+       | Field       | Value                                |
+       +-------------+--------------------------------------+
+       | action      | NONE                                 |
+       | created_at  | 2017-11-15T04:51:27.000000           |
+       | description | None                                 |
+       | id          | 7861e600-8d9e-4e13-9ea2-9038a2719b41 |
+       | name        | www.example.net.                     |
+       | project_id  | 9d0beaef253a4e14bd7025dc30c24f98     |
+       | records     | 127.0.0.1                            |
+       | status      | ACTIVE                               |
+       | ttl         | None                                 |
+       | type        | A                                    |
+       | updated_at  | None                                 |
+       | version     | 1                                    |
+       | zone_id     | f34f835b-9acc-4930-b6dd-d045c15da78a |
+       | zone_name   | example.net.                         |
+       +-------------+--------------------------------------+
