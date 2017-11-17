@@ -12,18 +12,13 @@ example:
 
 .. code-block:: http
 
-   POST /v2/pools HTTP/1.1
+   POST /v2/zones HTTP/1.1
    Accept: application/json
    Content-Type: application/json
 
    {
-        "name": "Example Pool",
-        "ns_records": [
-            {
-              "hostname": "ns1.example.org.",
-              "priority": 1
-            }
-        ]
+        "name": "example.org.",
+        "email": "hostmaster@example.org"
    }
 
 With this info we can make this request using the cURL_ tool. We'll
@@ -34,8 +29,8 @@ assume we are running Designate on `localhost`.
    curl -X POST -i \
         -H 'Accept: application/json' \
         -H 'Content-Type: application/json' \
-        -d '{"name": "ns1.example.org."}' \
-        http://localhost:9001/v1/servers
+        -d '{"name": "example.org.", "email": "hostmaster@example.org"}' \
+        http://localhost:9001/v2/zones
 
 The `-i` flag is used to dump the response headers as well as the
 response body.
@@ -63,24 +58,6 @@ These headers work for all APIs
 
 API Versions
 ============
-
-The API has 2 versions - V1 and V2.
-
-.. note:: V1 has been deprecated since the Kilo release.
-
-V1 API
-------
-    .. toctree::
-       :maxdepth: 2
-       :glob:
-
-       rest/v1/servers
-       rest/v1/domains
-       rest/v1/records
-       rest/v1/diagnostics
-       rest/v1/quotas
-       rest/v1/reports
-       rest/v1/sync
 
 V2 API
 ------

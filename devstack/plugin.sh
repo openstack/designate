@@ -83,11 +83,9 @@ function configure_designate {
 
     # API Configuration
     sudo cp $DESIGNATE_DIR/etc/designate/api-paste.ini $DESIGNATE_APIPASTE_CONF
-    iniset $DESIGNATE_CONF service:api enabled_extensions_v1 $DESIGNATE_ENABLED_EXTENSIONS_V1
     iniset $DESIGNATE_CONF service:api enabled_extensions_v2 $DESIGNATE_ENABLED_EXTENSIONS_V2
     iniset $DESIGNATE_CONF service:api enabled_extensions_admin $DESIGNATE_ENABLED_EXTENSIONS_ADMIN
     iniset $DESIGNATE_CONF service:api api_base_uri $DESIGNATE_SERVICE_PROTOCOL://$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT/
-    iniset $DESIGNATE_CONF service:api enable_api_v1 $DESIGNATE_ENABLE_API_V1
     iniset $DESIGNATE_CONF service:api enable_api_v2 $DESIGNATE_ENABLE_API_V2
     iniset $DESIGNATE_CONF service:api enable_api_admin $DESIGNATE_ENABLE_API_ADMIN
 
@@ -163,7 +161,6 @@ function configure_designate_tempest() {
         iniset $TEMPEST_CONFIG service_available designate True
 
         # Tell tempest which APIs are available
-        iniset $TEMPEST_CONFIG dns_feature_enabled api_v1 $DESIGNATE_ENABLE_API_V1
         iniset $TEMPEST_CONFIG dns_feature_enabled api_v2 $DESIGNATE_ENABLE_API_V2
         iniset $TEMPEST_CONFIG dns_feature_enabled api_admin $DESIGNATE_ENABLE_API_ADMIN
         iniset $TEMPEST_CONFIG dns_feature_enabled api_v2_root_recordsets True

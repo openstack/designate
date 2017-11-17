@@ -2,16 +2,6 @@
     "versions": {
         "values": [
             {
-                "id": "v1",
-                "links": [
-                    {
-                        "href": "http://127.0.0.1:9001/v1",
-                        "rel": "self"
-                    }
-                ],
-                "status": "DEPRECATED"
-            },
-            {
                 "id": "v2",
                 "links": [
                     {

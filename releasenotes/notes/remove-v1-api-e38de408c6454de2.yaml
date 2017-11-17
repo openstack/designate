@@ -1,0 +1,9 @@
+---
+prelude: >
+    V1 API removal is complete in this version of designate.
+upgrade:
+  - |
+    Any tooling using the V1 API needs to be reworked to use the v2 API
+critical:
+  - |
+    V1 API has been removed

@@ -24,9 +24,6 @@ rules = [
         description="Create Zone",
         operations=[
             {
-                'path': '/v1//domains',
-                'method': 'POST'
-            }, {
                 'path': '/v2/zones',
                 'method': 'POST'
             }
@@ -42,12 +39,6 @@ rules = [
         description="Get Zone",
         operations=[
             {
-                'path': '/v1/domains/<uuid:domain_id>/records/<uuid:record_id>',  # noqa
-                'method': 'GET'
-            }, {
-                'path': '/v1/domains/<uuid:domain_id>/records',
-                'method': 'GET'
-            }, {
                 'path': '/v2/zones/{zone_id}',
                 'method': 'GET'
             }, {
@@ -69,31 +60,8 @@ rules = [
         description="List existing zones",
         operations=[
             {
-                'path': '/v1/domains',
-                'method': 'GET'
-            }, {
                 'path': '/v2/zones',
                 'method': 'GET'
-            }
-        ]
-    ),
-    policy.DocumentedRuleDefault(
-        name="find_zone",
-        check_str=base.RULE_ADMIN_OR_OWNER,
-        description="Find Zone",
-        operations=[
-            {
-                'path': '/v1/domains/<uuid:domain_id>',
-                'method': 'GET'
-            }, {
-                'path': '/v1/domains/<uuid:domain_id>/servers',
-                'method': 'GET'
-            }, {
-                'path': '/v1/domains/<uuid:domain_id>',
-                'method': 'PUT'
-            }, {
-                'path': '/v1/domains/<uuid:domain_id>',
-                'method': 'DELETE'
             }
         ]
     ),
@@ -103,9 +71,6 @@ rules = [
         description="Update Zone",
         operations=[
             {
-                'path': '/v1/domains/<uuid:domain_id>',
-                'method': 'PUT'
-            }, {
                 'path': '/v2/zones/{zone_id}',
                 'method': 'PATCH'
             }
@@ -117,9 +82,6 @@ rules = [
         description="Delete Zone",
         operations=[
             {
-                'path': '/v1/domains/<uuid:domain_id>',
-                'method': 'DELETE'
-            }, {
                 'path': '/v2/zones/{zone_id}',
                 'method': 'DELETE'
             }

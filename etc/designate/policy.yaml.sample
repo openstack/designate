@@ -26,7 +26,7 @@
 #"admin_or_target": "rule:admin or rule:target"
 
 #
-#"zone_primary_or_admin": "('PRIMARY':%(zone_type)s and rule:admin_or_owner)                            OR ('SECONDARY':%(zone_type)s AND is_admin:True)"
+#"zone_primary_or_admin": "('PRIMARY':%(zone_type)s and rule:admin_or_owner) OR ('SECONDARY':%(zone_type)s AND is_admin:True)"
 
 # Create blacklist.
 # POST  /v2/blacklists
@@ -120,36 +120,10 @@
 # DELETE  /v2/quotas/{project_id}
 #"reset_quotas": "rule:admin"
 
-# Create record.
-# POST  /v1/domains/<uuid:domain_id>/records
-#"create_record": "rule:admin_or_owner"
-
-# Get records.
-# GET  /v1/domains/<uuid:domain_id>/records
-#"get_records": "rule:admin_or_owner"
-
-# Get record.
-# GET  /v1/domains/<uuid:domain_id>/records/<uuid:record_id>
-#"get_record": "rule:admin_or_owner"
-
 # Find records.
 # GET  /v2/reverse/floatingips/{region}:{floatingip_id}
 # GET  /v2/reverse/floatingips
 #"find_records": "rule:admin_or_owner"
-
-# Find record.
-# GET  /v1/domains/<uuid:domain_id>/records/<uuid:record_id>
-# DELETE  /v1/domains/<uuid:domain_id>/records/<uuid:record_id>
-# PUT  /v1/domains/<uuid:domain_id>/records/<uuid:record_id>
-#"find_record": "rule:admin_or_owner"
-
-# Update record.
-# PUT  /v1/domains/<uuid:domain_id>/records/<uuid:record_id>
-#"update_record": "rule:admin_or_owner"
-
-# Delete record.
-# DELETE  /v1/domains/<uuid:domain_id>/records/<uuid:record_id>
-#"delete_record": "rule:admin_or_owner"
 
 #
 #"count_records": "rule:admin_or_owner"
@@ -157,38 +131,25 @@
 # Create Recordset
 # POST  /v2/zones/{zone_id}/recordsets
 # PATCH  /v2/reverse/floatingips/{region}:{floatingip_id}
-#"create_recordset": "('PRIMARY':%(zone_type)s and rule:admin_or_owner)                            OR ('SECONDARY':%(zone_type)s AND is_admin:True)"
+#"create_recordset": "('PRIMARY':%(zone_type)s and rule:admin_or_owner) OR ('SECONDARY':%(zone_type)s AND is_admin:True)"
 
 #
 #"get_recordsets": "rule:admin_or_owner"
 
 # Get recordset
-# GET  /v1/domains/<uuid:domain_id>/records/<uuid:record_id>
-# PUT  /v1/domains/<uuid:domain_id>/records/<uuid:record_id>
 # GET  /v2/zones/{zone_id}/recordsets/{recordset_id}
 # DELETE  /v2/zones/{zone_id}/recordsets/{recordset_id}
 # PUT  /v2/zones/{zone_id}/recordsets/{recordset_id}
 #"get_recordset": "rule:admin_or_owner"
 
-# Find recordsets
-# GET  /v1/domains/<uuid:domain_id>/records
-#"find_recordsets": "rule:admin_or_owner"
-
-# Find recordset
-# POST  /v1/domains/<uuid:domain_id>/records
-# DELETE  /v1/domains/<uuid:domain_id>/records/<uuid:record_id>
-#"find_recordset": "rule:admin_or_owner"
-
 # Update recordset
-# PUT  /v1/domains/<uuid:domain_id>/records/<uuid:record_id>
 # PUT  /v2/zones/{zone_id}/recordsets/{recordset_id}
 # PATCH  /v2/reverse/floatingips/{region}:{floatingip_id}
-#"update_recordset": "('PRIMARY':%(zone_type)s and rule:admin_or_owner)                            OR ('SECONDARY':%(zone_type)s AND is_admin:True)"
+#"update_recordset": "('PRIMARY':%(zone_type)s and rule:admin_or_owner) OR ('SECONDARY':%(zone_type)s AND is_admin:True)"
 
 # Delete RecordSet
-# DELETE  /v1/domains/<uuid:domain_id>/records/<uuid:record_id>
 # DELETE  /v2/zones/{zone_id}/recordsets/{recordset_id}
-#"delete_recordset": "('PRIMARY':%(zone_type)s and rule:admin_or_owner)                            OR ('SECONDARY':%(zone_type)s AND is_admin:True)"
+#"delete_recordset": "('PRIMARY':%(zone_type)s and rule:admin_or_owner) OR ('SECONDARY':%(zone_type)s AND is_admin:True)"
 
 # Count recordsets
 #"count_recordset": "rule:admin_or_owner"
@@ -234,14 +195,10 @@
 #"delete_tld": "rule:admin"
 
 # Create Tsigkey
-# POST  /v1/tsigkeys
 # POST  /v2/tsigkeys
 #"create_tsigkey": "rule:admin"
 
 # List Tsigkeys
-# GET  /v1/tsigkeys
-# GET  /v1/tsigkeys/<uuid:tsigkey_id>
-# DELETE  /v1/tsigkeys/<uuid:tsigkey_id>
 # GET  /v2/tsigkeys
 #"find_tsigkeys": "rule:admin"
 
@@ -251,17 +208,14 @@
 #"get_tsigkey": "rule:admin"
 
 # Update Tsigkey
-# PATCH  /v1/tsigkeys/{tsigkey_id}
 # PATCH  /v2/tsigkeys/{tsigkey_id}
 #"update_tsigkey": "rule:admin"
 
 # Delete a Tsigkey
-# DELETE  /v1/tsigkeys/{tsigkey_id}
 # DELETE  /v2/tsigkeys/{tsigkey_id}
 #"delete_tsigkey": "rule:admin"
 
 # Create Zone
-# POST  /v1//domains
 # POST  /v2/zones
 #"create_zone": "rule:admin_or_owner"
 
@@ -269,8 +223,6 @@
 #"get_zones": "rule:admin_or_owner"
 
 # Get Zone
-# GET  /v1/domains/<uuid:domain_id>/records/<uuid:record_id>
-# GET  /v1/domains/<uuid:domain_id>/records
 # GET  /v2/zones/{zone_id}
 # PATCH  /v2/zones/{zone_id}
 # PUT  /v2/zones/{zone_id}/recordsets/{recordset_id}
@@ -280,24 +232,14 @@
 #"get_zone_servers": "rule:admin_or_owner"
 
 # List existing zones
-# GET  /v1/domains
 # GET  /v2/zones
 #"find_zones": "rule:admin_or_owner"
 
-# Find Zone
-# GET  /v1/domains/<uuid:domain_id>
-# GET  /v1/domains/<uuid:domain_id>/servers
-# PUT  /v1/domains/<uuid:domain_id>
-# DELETE  /v1/domains/<uuid:domain_id>
-#"find_zone": "rule:admin_or_owner"
-
 # Update Zone
-# PUT  /v1/domains/<uuid:domain_id>
 # PATCH  /v2/zones/{zone_id}
 #"update_zone": "rule:admin_or_owner"
 
 # Delete Zone
-# DELETE  /v1/domains/<uuid:domain_id>
 # DELETE  /v2/zones/{zone_id}
 #"delete_zone": "rule:admin_or_owner"
 
@@ -364,7 +306,7 @@
 
 # Create Zone Transfer Accept
 # POST  /v2/zones/tasks/transfer_accepts
-#"create_zone_transfer_accept": "rule:admin_or_owner or tenant:%(target_tenant_id)s                             or None:%(target_tenant_id)s"
+#"create_zone_transfer_accept": "rule:admin_or_owner OR tenant:%(target_tenant_id)s OR None:%(target_tenant_id)s"
 
 # Get Zone Transfer Accept
 # GET  /v2/zones/tasks/transfer_requests/{zone_transfer_accept_id}
@@ -391,7 +333,7 @@
 # Show a Zone Transfer Request
 # GET  /v2/zones/tasks/transfer_requests/{zone_transfer_request_id}
 # PATCH  /v2/zones/tasks/transfer_requests/{zone_transfer_request_id}
-#"get_zone_transfer_request": "rule:admin_or_owner or tenant:%(target_tenant_id)s                             or None:%(target_tenant_id)s"
+#"get_zone_transfer_request": "rule:admin_or_owner OR tenant:%(target_tenant_id)s OR None:%(target_tenant_id)s"
 
 #
 #"get_zone_transfer_request_detailed": "rule:admin_or_owner"

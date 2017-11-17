@@ -308,17 +308,6 @@ class FaultWrapperMiddleware(base.Middleware):
                               response=json.dumps(response))
 
 
-class FaultWrapperMiddlewareV1(FaultWrapperMiddleware):
-    def _format_error(self, data):
-        replace_map = [
-            ("zone", "domain",)
-        ]
-
-        for i in replace_map:
-            data["type"] = data["type"].replace(i[0], i[1])
-        print(data)
-
-
 class ValidationErrorMiddleware(base.Middleware):
 
     def __init__(self, application):
@@ -368,12 +357,6 @@ class ValidationErrorMiddleware(base.Middleware):
 
         return flask.Response(status=exception.error_code, headers=headers,
                               response=json.dumps(response))
-
-
-class APIv1ValidationErrorMiddleware(ValidationErrorMiddleware):
-    def __init__(self, application):
-        super(APIv1ValidationErrorMiddleware, self).__init__(application)
-        self.api_version = 'API_v1'
 
 
 class APIv2ValidationErrorMiddleware(ValidationErrorMiddleware):
