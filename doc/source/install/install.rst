@@ -19,9 +19,3 @@ Note that installation and configuration vary by distribution.
    install-ubuntu.rst
    install-obs.rst
 
-Quickstart with Kolla
-~~~~~~~~~~~~~~~~~~~~~
-
-Following the `Designate in Kolla
-<https://docs.openstack.org/kolla-ansible/latest/reference/designate-guide.html>`_
-to install and setup Designate.
