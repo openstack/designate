@@ -11,10 +11,10 @@
             http://www.apache.org/licenses/LICENSE-2.0
 
        Unless required by applicable law or agreed to in writing, software
-       distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-       WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-       License for the specific language governing permissions and limitations
-       under the License.
+       distributed under the License is distributed on an "AS IS" BASIS,
+       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+       See the License for the specific language governing permissions
+       and limitations under the License.
 
 Quotas
 ======
@@ -30,8 +30,8 @@ added to the designate.conf file under ``[service:api]`` section ::
     enable_api_admin = True
     enabled_extensions_admin = quotas
 
-Once these lines have been added, restart the designate-central and designate-api
-services.
+Once these lines have been added, restart the designate-central
+and designate-api services.
 
 Get Quotas
 ----------

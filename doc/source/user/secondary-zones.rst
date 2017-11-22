@@ -61,7 +61,9 @@ Skip this section if you have a master already to use.
 Install
 ^^^^^^^
 
-For some reason there's a bug with the nsd package so it doesn't create the user that it needs for the installation. So we'll create that before installing the package.
+For some reason there's a bug with the nsd package so it doesn't create
+the user that it needs for the installation.
+So we'll create that before installing the package.
 
 .. code-block:: bash
 
@@ -80,7 +82,8 @@ Add the following to /etc/nsd/nsd.conf
 
 .. note::
 
-    If you're wondering why we set notify to `192.168.27.100`:`5354` it's because MDNS runs on 5354 by default.
+    If you're wondering why we set notify to `192.168.27.100`:`5354`
+    it's because MDNS runs on 5354 by default.
 
 .. code-block:: bash
 
@@ -173,8 +176,8 @@ Creating the Zone
 When you create a domain in Designate there are two possible initial actions:
 
 -   Domain is created but transfer fails if it's not available yet in master,
-    then typically the initial transfer will be done once the master sends first
-    NOTIFY.
+    then typically the initial transfer will be done once the master sends
+    first NOTIFY.
 
 -   Domain is created and transfers straight away.
 

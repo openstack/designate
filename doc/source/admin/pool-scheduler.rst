@@ -26,18 +26,19 @@ You can set an ordered list of filters to run on each zone create api request.
 We provide a few basic filters below, and creating custom filters follows a
 similar pattern to schedulers.
 
-You can create your own by extending :class:`designate.scheduler.filters.base.Filter`
+You can create your own by extending
+:class:`designate.scheduler.filters.base.Filter`
 and registering a new entry point in the ``designate.scheduler.filters``
 namespace like so in your ``setup.cfg`` file:
 
 .. code-block:: ini
 
-    [entry_points]
-    designate.scheduler.filters =
-        my_custom_filter = my_extention.filters.my_custom_filter:MyCustomFilter
+   [entry_points]
+   designate.scheduler.filters =
+   my_custom_filter = my_extention.filters.my_custom_filter:MyCustomFilter
 
-The new filter can be added to the ``scheduler_filters`` list in the ``[service:central]``
-section like so:
+The new filter can be added to the
+``scheduler_filters`` list in the ``[service:central]`` section like so:
 
 .. code-block:: ini
 
@@ -53,7 +54,8 @@ The filters list is ran from left to right, so if the list is set to:
 
     scheduler_filters = attribute, random
 
-There will be two filters ran, the :class:`designate.scheduler.filters.attribute_filter.AttributeFilter`
+There will be two filters ran,
+the :class:`designate.scheduler.filters.attribute_filter.AttributeFilter`
 followed by :class:`designate.scheduler.filters.random_filter.RandomFilter`
 
 

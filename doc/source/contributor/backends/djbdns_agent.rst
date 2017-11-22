@@ -25,8 +25,9 @@ Djbdns User documentation
 This page documents the Agent backend for `djbdns <https://cr.yp.to/djbdns.html>`_.
 
 The agent runs on the same host as the `tinydns <https://cr.yp.to/djbdns/tinydns.html>`_ resolver.
-It receives DNS messages from Mini DNS using private DNS OPCODEs and classes and creates or deletes
-zones in the data.cdb file using `axfr-get <https://cr.yp.to/djbdns/axfr-get.html>`_ and
+It receives DNS messages from Mini DNS using private DNS OPCODEs
+and classes and creates or deletes zones in the data.cdb file using
+`axfr-get <https://cr.yp.to/djbdns/axfr-get.html>`_ and
 `tinydns-data <https://cr.yp.to/djbdns/tinydns-data.html>`_
 
 Setting up Djbdns on Ubuntu Trusty
@@ -79,7 +80,8 @@ If needed, create the rootwrap filters, as root:
     sudo /usr/local/bin/designate-rootwrap /etc/designate/rootwrap.conf tcpclient -h
     sudo /usr/local/bin/designate-rootwrap /etc/designate/rootwrap.conf axfr-get -h
 
-Configure the "service.agent" and "backend.agent.djbdns" sections in /etc/designate/designate.conf
+Configure the "service.agent" and "backend.agent.djbdns"
+sections in /etc/designate/designate.conf
 
 Look in designate.conf.example for examples.
 

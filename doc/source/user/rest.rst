@@ -52,11 +52,14 @@ HTTP Headers
 These headers work for all APIs
 
 * X-Designate-Edit-Managed-Records
-    - Allows admins (or users with the right role) to modify managed records (records created by designate-sink / reverse floating ip API)
+    - Allows admins (or users with the right role) to modify managed records
+      (records created by designate-sink / reverse floating ip API)
 * X-Auth-All-Projects
-    - Allows admins (or users with the right role) to view and edit zones / recordsets for all tenants
+    - Allows admins (or users with the right role) to view and edit
+      zones / recordsets for all tenants
 * X-Auth-Sudo-Tenant-ID / X-Auth-Sudo-Project-ID
-    - Allows admins (or users with the right role) to impersonate another tenant specified by this header
+    - Allows admins (or users with the right role) to impersonate another
+      tenant specified by this header
 
 API Versions
 ============

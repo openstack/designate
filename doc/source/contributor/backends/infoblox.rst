@@ -78,8 +78,9 @@ DNS view will be chosen as follows:
 * If found, then DNS view used will be <dns_view>.<network_view>, where
   <dns_view> is the value specified in designate.conf, and <network_view> is
   the name of the view found in the search.
-* If no such network view is found, then a network view will be created with the
-  name <network_view>.<tenant_id>, where <network_view> is the value specified
-  in designate.conf. This network view will be tagged with the TenantID EA.
+* If no such network view is found, then a network view will be created with
+  the name <network_view>.<tenant_id>, where <network_view> is the value
+  specified in designate.conf.
+  This network view will be tagged with the TenantID EA.
 * If the DNS view does not exist (in either case above), then it will be
   created.

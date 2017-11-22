@@ -51,7 +51,8 @@ See `PowerDNS Docs`_ for details.
 
     $ designate-manage pool update
 
-See :ref:`designate_manage_pool` for further details on the ``designate-manage pool``
-command, and :ref:`pools` for information about the yaml file syntax
+See :ref:`designate_manage_pool` for further details on
+the ``designate-manage pool`` command, and :ref:`pools`
+for information about the yaml file syntax
 
 .. _PowerDNS Docs: https://doc.powerdns.com/md/authoritative/installation/

@@ -58,12 +58,14 @@ and do a pip install. Example:
     git clone https://github.com/openstack/designate
     pip install .\\designate
 
-After that, we need to configure the Designate Agent. Inside the github repository,
-there is a folder named "etc/designate" which can be used as default configuration.
+After that, we need to configure the Designate Agent.
+Inside the github repository, there is a folder named "etc/designate"
+which can be used as default configuration.
 
-Copy the folder somewhere else, for this example we will copy it to C:\\etc\\designate
-Inside the configuration folder, make a copy of designate.conf.sample and rename
-the copy to designate.conf
+Copy the folder somewhere else, for this example we will copy it to
+C:\\etc\\designate
+Inside the configuration folder, make a copy of designate.conf.sample
+and rename the copy to designate.conf
 Example:
 
 .. code-block:: console
@@ -89,7 +91,8 @@ Ensure that "policy_file" under the [default] section is set:
 
     policy_file = C:\\etc\\designate\\policy.json
 
-Start the designate agent using (Python 2.7 was installed in the default location C:\\Python27):
+Start the designate agent using
+(Python 2.7 was installed in the default location C:\\Python27):
 
 .. code-block:: console
 

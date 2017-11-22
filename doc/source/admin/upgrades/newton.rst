@@ -27,9 +27,9 @@ configurations, as there is no breaking change from Mitaka.
 Breaking Changes
 ----------------
 
-The default port the ``designate-agent`` service listens on has changed from 53 to 5358.
-This matches the port we have always used in the sample configuration, and the port used
-in the agent backend class.
+The default port the ``designate-agent`` service listens on has changed
+from 53 to 5358. This matches the port we have always used in the sample
+configuration, and the port used in the agent backend class.
 
 Upgrading Code and Enabling Services
 ------------------------------------
@@ -73,8 +73,10 @@ be followed. This assumes you have all Mitaka Designate services running.
         [producer_task:worker_periodic_recovery]
         #interval = 120
 
-3. Stop the ``designate-pool-manager`` and ``designate-zone-manager`` processes.
-4. Restart the ``designate-api``, ``designate-central`` and ``designate-mdns`` services.
+3. Stop the ``designate-pool-manager`` and
+   ``designate-zone-manager`` processes.
+4. Restart the ``designate-api``, ``designate-central`` and
+   ``designate-mdns`` services.
 5. Start the ``designate-producer`` and ``designate-worker`` services.
 
 
@@ -85,8 +87,8 @@ New Features
   multiple host:port pairs via the new "listen" configuration arguments for
   each service.
 - New pool scheduler  "attribute" filter for scheduling zones across pools.
-  This can be enabled in the ``[service:central]`` section of the config by adding
-  ``attribute`` to the list of values in the ``filters`` option.
+  This can be enabled in the ``[service:central]`` section of the config by
+  adding ``attribute`` to the list of values in the ``filters`` option.
 - An experimental agent backend to support TinyDNS, the DNS resolver from the
   djbdns tools.
 - An experimental agent backend to support Knot DNS 2
@@ -102,8 +104,8 @@ Deprecation Notices
 
 - ``designate-api``'s api_host and api_port configuration options have been
   deprecated, please use the new combined "listen" argument in place of these.
-- ``designate-mdns``'s host and port configuration options have been deprecated,
-  please use the new combined "listen" argument in place of these.
+- ``designate-mdns``'s host and port configuration options have been
+  deprecated, please use the new combined "listen" argument in place of these.
 - ``designate-agents``'s host and port configuration options have been
   deprecated, please use the new combined "listen" argument in place of these.
 - ``designate-zone-manager`` and ``designate-pool-manager`` are now deprecated

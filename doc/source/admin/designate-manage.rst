@@ -266,7 +266,8 @@ Update the designate pool manager cache database schema
   show this help message and exit
 
 ``--revision REVISION``
-  The version that the designate pool manager cache database should be synced to.
+  The version that the designate pool manager cache database
+  should be synced to.
   (Defaults to latest version)
 
 
@@ -280,7 +281,8 @@ designate-manage pool_manager_cache version
     usage: designate-manage pool_manager_cache version [-h]
 
 
-Show what version of the pool manager cache database schema is currently in place
+Show what version of the pool manager cache database schema
+is currently in place
 
 **Optional arguments:**
 
@@ -314,7 +316,8 @@ Update the designate powerdns database schema
   show this help message and exit
 
 ``--revision REVISION``
-  The version that the designate pool manager cache database should be synced to.
+  The version that the designate pool manager cache database
+  should be synced to.
   (Defaults to latest version)
 
 

@@ -137,8 +137,8 @@ Install and configure components
 
         # su -s /bin/sh -c "designate-manage database sync" designate
 
-#. Start the designate central and API services and configure them to start when
-   the system boots:
+#. Start the designate central and API services and configure them
+   to start when the system boots:
 
    .. code-block:: console
 
