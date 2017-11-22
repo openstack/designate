@@ -13,9 +13,20 @@ Create Tsigkeys
 
 Create a new Tsigkey
 
-Normal response codes: 201
+.. rest_status_code:: success status.yaml
 
-Error response codes: 409, 405,404,403,401,400,503
+   - 201
+
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 403
+   - 404
+   - 405
+   - 409
+   - 503
 
 
 Request
@@ -72,9 +83,19 @@ List Tsigkeys
 List all tsigkeys
 
 
-Normal response codes: 200
+.. rest_status_code:: success status.yaml
 
-Error response codes: 405,404,403,401,400,503
+   - 200
+
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 403
+   - 404
+   - 405
+   - 503
 
 
 Request Parameters
@@ -127,9 +148,19 @@ Show a Tsigkey
 Show a tsigkey
 
 
-Normal response codes: 200
+.. rest_status_code:: success status.yaml
 
-Error response codes: 405,404,403,401,400,503
+   - 200
+
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 403
+   - 404
+   - 405
+   - 503
 
 
 Request
@@ -176,9 +207,19 @@ Update Tsigkey
 Update the attribute(s) of an existing tsigkey
 
 
-Normal response codes: 200
+.. rest_status_code:: success status.yaml
 
-Error response codes: 405,404,403,401,400,503
+   - 200
+
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 403
+   - 404
+   - 405
+   - 503
 
 
 Request Parameters
@@ -237,9 +278,19 @@ Delete a Tsigkey
 Delete a tsigkey
 
 
-Normal response codes: 204
+.. rest_status_code:: success status.yaml
 
-Error response codes: 405,404,403,401,400,503
+   - 204
+
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 403
+   - 404
+   - 405
+   - 503
 
 
 Request

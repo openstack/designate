@@ -13,9 +13,20 @@ Create Tld
 Create a tld
 
 
-Normal response codes: 201
+.. rest_status_code:: success status.yaml
 
-Error response codes: 409,405,404,403,401,400,503
+   - 201
+
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 403
+   - 404
+   - 405
+   - 409
+   - 503
 
 
 Request
@@ -66,9 +77,19 @@ Show Tld
 Show a tld
 
 
-Normal response codes: 200
+.. rest_status_code:: success status.yaml
 
-Error response codes: 405,404,403,401,400,503
+   - 200
+
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 403
+   - 404
+   - 405
+   - 503
 
 
 Request
@@ -113,9 +134,19 @@ List Tlds
 List the tlds associated with the Project
 
 
-Normal response codes: 200
+.. rest_status_code:: success status.yaml
 
-Error response codes: 405,403,401,400,503
+   - 200
+
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 403
+   - 404
+   - 405
+   - 503
 
 
 Request
@@ -162,9 +193,20 @@ Update Tld
 Update a tld
 
 
-Normal response codes: 200
+.. rest_status_code:: success status.yaml
 
-Error response codes: 405,404,403,401,400,503
+   - 200
+
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 403
+   - 404
+   - 405
+   - 409
+   - 503
 
 
 Request
@@ -216,9 +258,19 @@ Delete Tld
 
 Delete a tld
 
-Normal response codes: 204
+.. rest_status_code:: success status.yaml
 
-Error response codes: 405,404,403,401,400,503
+   - 204
+
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 403
+   - 404
+   - 405
+   - 503
 
 
 Request

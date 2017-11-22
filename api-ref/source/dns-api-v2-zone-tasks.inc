@@ -20,9 +20,19 @@ from the backends.
 .. warning::
   This is a protentially dangerous operation, and should only be used if required
 
-Normal response codes: 204
+.. rest_status_code:: success status.yaml
 
-Error response codes: 405,404,403,401,400,503
+   - 204
+
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 403
+   - 404
+   - 405
+   - 503
 
 
 Request
@@ -61,9 +71,19 @@ This is useful if an upstream server failed to send a notify to Designate
 
 .. important:: This is only useful on SECONDARY zones.
 
-Normal response codes: 202
+.. rest_status_code:: success status.yaml
 
-Error response codes: 405,404,403,401,400,503
+   - 202
+
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 403
+   - 404
+   - 405
+   - 503
 
 
 Request

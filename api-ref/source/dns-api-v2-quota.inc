@@ -23,9 +23,20 @@ This returns a key:value set of quotas on the system.
    They will need a role with the ``All-Projects`` permission to do this.
 
 
-Normal response codes: 200
+.. rest_status_code:: success status.yaml
 
-Error response codes: 409,405,404,403,401,400,503
+   - 200
+
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 403
+   - 404
+   - 405
+   - 409
+   - 503
 
 
 Request
@@ -63,9 +74,20 @@ View the quotas for the current project
 
 This returns a key:value set of quotas on the system.
 
-Normal response codes: 200
 
-Error response codes: 409,405,404,403,401,400,503
+.. rest_status_code:: success status.yaml
+
+   - 200
+
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 403
+   - 404
+   - 409
+   - 503
 
 
 Request
@@ -115,9 +137,21 @@ This returns a key:value set of quotas on the system.
    permission to do this.
 
 
-Normal response codes: 200
 
-Error response codes: 409,405,404,403,401,400,503
+.. rest_status_code:: success status.yaml
+
+   - 200
+
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 403
+   - 404
+   - 405
+   - 409
+   - 503
 
 
 Request Example
@@ -171,9 +205,21 @@ Reset all quotas for a project to default
    permission to do this.
 
 
-Normal response codes: 204
 
-Error response codes: 409,405,404,403,401,400,503
+.. rest_status_code:: success status.yaml
+
+   - 204
+
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 403
+   - 404
+   - 405
+   - 409
+   - 503
 
 
 Request

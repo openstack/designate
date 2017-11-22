@@ -15,9 +15,20 @@ Export a zone.
 
 .. note:: This POST should have no body
 
-Normal response codes: 202
+.. rest_status_code:: success status.yaml
 
-Error response codes: 405,404,403,401,400,503
+   - 202
+
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 403
+   - 404
+   - 405
+   - 409
+   - 503
 
 
 Request
@@ -61,9 +72,19 @@ List all Zone Exports
 .. rest_method::  GET /v2/zones/tasks/exports
 
 
-Normal response codes: 200
+.. rest_status_code:: success status.yaml
 
-Error response codes: 405,404,403,401,400,503
+   - 200
+
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 403
+   - 404
+   - 405
+   - 503
 
 
 Request
@@ -110,9 +131,19 @@ Show a Zone Export Information
 .. rest_method::  GET /v2/zones/tasks/exports/{zone_export_id}
 
 
-Normal response codes: 200
+.. rest_status_code:: success status.yaml
 
-Error response codes: 405,404,403,401,400,503
+   - 200
+
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 403
+   - 404
+   - 405
+   - 503
 
 
 Request
@@ -156,9 +187,19 @@ Retrive a Zone Export from the Designate Datastore
 .. rest_method::  GET /v2/zones/tasks/exports/{zone_export_id}/export
 
 
-Normal response codes: 200
+.. rest_status_code:: success status.yaml
 
-Error response codes: 405,404,403,401,400,503
+   - 200
+
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 403
+   - 404
+   - 405
+   - 503
 
 .. note::
     This endpoint will send a response with a ``text/dns`` content-type.
@@ -203,9 +244,19 @@ This will just delete the record of the zone export, not the exported zone.
 The zone will have to be deleted from the zone delete API
 
 
-Normal response codes: 204
+.. rest_status_code:: success status.yaml
 
-Error response codes: 405,404,403,401,400,503
+   - 204
+
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 403
+   - 404
+   - 405
+   - 503
 
 
 Request

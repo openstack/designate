@@ -16,9 +16,23 @@ Create Blacklist
 
 Create a Blacklist
 
-Normal response codes: 201
+Response codes
+--------------
 
-Error response codes: 409, 405,404,403,401,400,503
+.. rest_status_code:: success status.yaml
+
+   - 201
+
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 403
+   - 405
+   - 409
+   - 500
+   - 503
 
 
 Request Parameters
@@ -70,10 +84,19 @@ List Blacklists
 List all blacklists
 
 
-Normal response codes: 200
+.. rest_status_code:: success status.yaml
 
-Error response codes: 405,404,403,401,400,503
+   - 200
 
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 403
+   - 404
+   - 405
+   - 503
 
 Request Parameters
 ------------------
@@ -116,9 +139,21 @@ Show Blacklist
 Show a blacklist
 
 
-Normal response codes: 200
+.. rest_status_code:: success status.yaml
 
-Error response codes: 405,404,403,401,400,503
+   - 200
+
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 403
+   - 404
+   - 405
+   - 409
+   - 503
+
 
 
 Request
@@ -217,9 +252,20 @@ Delete a Blacklist
 Delete a blacklist
 
 
-Normal response codes: 204
+.. rest_status_code:: success status.yaml
 
-Error response codes: 405,404,403,401,400,503
+   - 204
+
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 403
+   - 404
+   - 405
+   - 409
+   - 503
 
 
 Request

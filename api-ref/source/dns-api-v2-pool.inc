@@ -13,10 +13,19 @@ List all Pools
 Get the list of Pools.
 
 
-Normal response codes: 200
+.. rest_status_code:: success status.yaml
 
-Error response codes: 405,404,403,401,400,503
+   - 200
 
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 403
+   - 404
+   - 405
+   - 503
 
 Request
 -------
@@ -65,6 +74,21 @@ Get a specific Pool
 Normal response codes: 200
 
 Error response codes: 405,404,403,401,400,503
+
+
+.. rest_status_code:: success status.yaml
+
+   - 200
+
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 403
+   - 404
+   - 405
+   - 503
 
 
 Request

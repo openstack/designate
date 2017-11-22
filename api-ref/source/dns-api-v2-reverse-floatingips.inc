@@ -13,9 +13,20 @@ Set  FloatingIP's PTR record
 Set a PTR record for the given FloatingIP. The domain if it does not exist
 will be provisioned automatically.
 
-Normal response codes: 202
+.. rest_status_code:: success status.yaml
 
-Error response codes: 405,404,403,401,400,503
+   - 202
+
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 403
+   - 404
+   - 405
+   - 409
+   - 503
 
 
 Request
@@ -69,9 +80,19 @@ Show FloatingIP's PTR record
 
 Shows a particular FloatingIP PTR
 
-Normal response codes: 200
+.. rest_status_code:: success status.yaml
 
-Error response codes: 405,404,403,401,400,503
+   - 200
+
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 403
+   - 404
+   - 405
+   - 503
 
 
 Request
@@ -115,9 +136,19 @@ List FloatingIP's PTR record
 
 List FloatingIP PTR records
 
-Normal response codes: 200
+.. rest_status_code:: success status.yaml
 
-Error response codes: 405,404,403,401,400,503
+   - 200
+
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 403
+   - 404
+   - 405
+   - 503
 
 
 Request
@@ -160,9 +191,19 @@ Unset FloatingIP's PTR record
 
 Unset the PTR record for a FloatingIP
 
-Normal response codes: 202
+.. rest_status_code:: success status.yaml
 
-Error response codes: 405,404,403,401,400,503
+   - 202
+
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 403
+   - 404
+   - 405
+   - 503
 
 
 Request
