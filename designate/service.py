@@ -321,6 +321,9 @@ class DNSService(object):
 
                 LOG.debug("Handling TCP Request from: %(host)s:%(port)d" %
                           {'host': addr[0], 'port': addr[1]})
+                if len(addr) == 4:
+                    LOG.debug("Flow info: %(host)s scope: %(port)d" %
+                              {'host': addr[2], 'port': addr[3]})
 
                 # Dispatch a thread to handle the connection
                 self.tg.add_thread(self._dns_handle_tcp_conn, addr, client)
@@ -349,25 +352,28 @@ class DNSService(object):
     def _dns_handle_tcp_conn(self, addr, client):
         """
         Handle a DNS Query over TCP. Multiple queries can be pipelined
-        though the same TCP connection but they will be processed
+        through the same TCP connection but they will be processed
         sequentially.
         See https://tools.ietf.org/html/draft-ietf-dnsop-5966bis-03
         Raises no exception: it's to be run in an eventlet green thread
 
-        :param addr: Tuple of the client's (IP addr, Port)
+        :param addr: Tuple of the client's (IPv4 addr, Port) or
+                     (IPv6 addr, Port, Flow info, Scope ID)
         :type addr: tuple
         :param client: Client socket
         :type client: socket
         :raises: None
         """
-        host, port = addr
+        host, port = addr[:2]
         try:
             # The whole loop lives in a try/except block. On exceptions, the
-            # connection is closed: there would be little chance to save save
+            # connection is closed: there would be little chance to save
             # the connection after a struct error, a socket error.
             while True:
                 # Decode the first 2 bytes containing the query length
                 expected_length_raw = client.recv(2)
+                if len(expected_length_raw) == 0:
+                    break
                 (expected_length, ) = struct.unpack('!H', expected_length_raw)
 
                 # Keep receiving data until we've got all the data we expect
