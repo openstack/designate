@@ -77,8 +77,8 @@ TEMPEST_SERVICES+=,designate
 enable_service designate
 enable_service designate-central
 enable_service designate-api
-enable_service designate-pool-manager
-enable_service designate-zone-manager
+enable_service designate-worker
+enable_service designate-producer
 enable_service designate-mdns
 enable_service designate-agent
 enable_service designate-sink

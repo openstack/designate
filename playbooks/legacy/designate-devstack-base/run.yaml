@@ -61,9 +61,9 @@
               export DEVSTACK_LOCAL_CONFIG+=$'\n'"ENABLE_IDENTITY_V2=False"
           fi
 
-          if [ "{{ worker_model }}" == "1" ] ; then
-              export DEVSTACK_LOCAL_CONFIG+=$'\n'"enable_service designate-worker designate-producer"
-              export DEVSTACK_LOCAL_CONFIG+=$'\n'"disable_service designate-pool-manager designate-zone-manager"
+          if [ "{{ worker_model }}" == "0" ] ; then
+              export DEVSTACK_LOCAL_CONFIG+=$'\n'"disable_service designate-worker designate-producer"
+              export DEVSTACK_LOCAL_CONFIG+=$'\n'"enable_service designate-pool-manager designate-zone-manager"
           fi
 
           export OVERRIDE_ENABLED_SERVICES=$services
