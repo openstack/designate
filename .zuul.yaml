@@ -117,6 +117,7 @@
         - grenade-devstack-designate-pdns4
     gate:
       queue: designate
+      jobs:
         - designate-devstack-bind9
         - designate-devstack-pdns4
         - designate-devstack-pdns4-postgres
