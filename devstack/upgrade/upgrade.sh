@@ -72,8 +72,8 @@ $DESIGNATE_BIN_DIR/designate-manage --config-file $DESIGNATE_CONF \
 # Start designate
 run_process designate-central "$DESIGNATE_BIN_DIR/designate-central --config-file $DESIGNATE_CONF"
 run_process designate-api "$DESIGNATE_BIN_DIR/designate-api --config-file $DESIGNATE_CONF"
-run_process designate-pool-manager "$DESIGNATE_BIN_DIR/designate-pool-manager --config-file $DESIGNATE_CONF"
-run_process designate-zone-manager "$DESIGNATE_BIN_DIR/designate-zone-manager --config-file $DESIGNATE_CONF"
+run_process designate-producer "$DESIGNATE_BIN_DIR/designate-producer --config-file $DESIGNATE_CONF"
+run_process designate-worker "$DESIGNATE_BIN_DIR/designate-worker --config-file $DESIGNATE_CONF"
 run_process designate-mdns "$DESIGNATE_BIN_DIR/designate-mdns --config-file $DESIGNATE_CONF"
 run_process designate-agent "$DESIGNATE_BIN_DIR/designate-agent --config-file $DESIGNATE_CONF"
 run_process designate-sink "$DESIGNATE_BIN_DIR/designate-sink --config-file $DESIGNATE_CONF"
@@ -88,7 +88,7 @@ if ! timeout $SERVICE_TIMEOUT sh -c "while ! wget --no-proxy -q -O- $DESIGNATE_S
 fi
 
 # Don't succeed unless the service come up
-ensure_services_started designate-api designate-central designate-pool-manager designate-zone-manager designate-mdns designate-agent designate-sink
+ensure_services_started designate-api designate-central designate-producer designate-worker designate-mdns designate-agent designate-sink
 
 set +o xtrace
 echo "*********************************************************************"

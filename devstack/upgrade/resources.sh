@@ -6,6 +6,7 @@ source $GRENADE_DIR/grenaderc
 source $GRENADE_DIR/functions
 
 source $TOP_DIR/openrc admin admin
+source $TOP_DIR/stackrc
 
 set -o xtrace
 
@@ -17,6 +18,9 @@ DESIGNATE_ZONE_EMAIL=hostmaster@example.com
 DESIGNATE_RRSET_NAME=www.example.com.
 DESIGNATE_RRSET_TYPE=A
 DESIGNATE_RRSET_RECORD=10.0.0.1
+# used with dig to look up in DNS
+DIG_FLAGS="-p $DESIGNATE_SERVICE_PORT_DNS @$SERVICE_HOST"
+DIG_TIMEOUT=30
 
 function _set_designate_user {
     OS_TENANT_NAME=$DESIGNATE_PROJECT
@@ -25,6 +29,25 @@ function _set_designate_user {
     OS_PASSWORD=$DESIGNATE_PASS
 }
 
+function _ensure_recordset_present {
+    local record_name=$1
+    local record_type=$2
+    local record_value=$3
+
+    if [ "$DESIGNATE_BACKEND_DRIVER" = "fake" ] ; then
+        # if the backend is fake, there will be no actual DNS records
+        return 0
+    fi
+
+    if ! timeout $DIG_TIMEOUT sh -c "while ! dig +short $DIG_FLAGS $record_name $record_type | grep \"$record_value\"; do sleep 1; done"; then
+        die $LINENO "Error: record $record_name ($record_type) not found in DNS"
+    fi
+
+    # Display for debugging
+    dig $DIG_FLAGS $record_name $record_type
+
+    return 0
+}
 
 function create {
 
@@ -121,7 +144,8 @@ function verify {
 }
 
 function verify_noapi {
-    :
+    env
+    _ensure_recordset_present $DESIGNATE_RRSET_NAME $DESIGNATE_RRSET_TYPE $DESIGNATE_RRSET_RECORD
 }
 
 function destroy {
