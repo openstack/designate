@@ -18,9 +18,9 @@ import sys
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_reports import guru_meditation_report as gmr
+import debtcollector
 
 from designate.i18n import _LE
-from designate.i18n import _LW
 from designate import service
 from designate import utils
 from designate import version
@@ -51,9 +51,9 @@ def main():
                       'designate-worker instead.'))
         sys.exit(1)
 
-    LOG.warning(_LW('designate-pool-manager is DEPRECATED in favor of '
-                    'designate-worker and will be removed during the Ocata '
-                    'cycle'))
+    debtcollector.deprecate('designate-pool-manager is deprecated in favor of '
+                            'designate-worker', version='newton',
+                            removal_version='rocky')
 
     server = pool_manager_service.Service(
         threads=CONF['service:pool_manager'].threads
