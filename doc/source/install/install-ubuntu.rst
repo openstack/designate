@@ -4,7 +4,7 @@ Install and configure for Ubuntu
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This section describes how to install and configure the DNS
-service for Ubuntu 14.04 (LTS).
+service for Ubuntu 16.04 (LTS).
 
 .. include:: common_prerequisites.rst
 
@@ -74,7 +74,7 @@ Install and configure components
 
    .. code-block:: console
 
-      # service bind9 restart
+      # systemctl restart bind9.service
 
 #. Edit the ``/etc/designate/designate.conf`` file and
    complete the following actions:
@@ -97,12 +97,14 @@ Install and configure components
      .. code-block:: ini
 
         [keystone_authtoken]
-        auth_host = controller
-        auth_port = 35357
-        auth_protocol = http
-        admin_tenant_name = service
-        admin_user = designate
-        admin_password = DESIGNATE_PASS
+        auth_type = password
+        username = designate
+        password = DESIGNATE_PASS
+        project_name = service
+        project_domain_name = Default
+        user_domain_name = Default
+        auth_uri = http://controller:5000/
+        auth_url = http://controller:5000/
 
      Replace ``DESIGNATE_PASS`` with the password you chose for the
      ``designate`` user in the Identity service.
@@ -130,12 +132,14 @@ Install and configure components
 
         # su -s /bin/sh -c "designate-manage database sync" designate
 
-#. Restart the designate central and API services:
+#. Restart the designate central and API services and configure them
+   to start when the system boots:
 
    .. code-block:: console
 
-      # service designate-central restart
-      # service designate-api restart
+      # systemctl restart openstack-designate-central openstack-designate-api
+
+      # systemctl enable openstack-designate-central openstack-designate-api
 
 #. Create a pools.yaml file in ``/etc/designate/pools.yaml`` with the following
    contents:
@@ -200,10 +204,11 @@ Install and configure components
       # apt install designate-producer
       # apt install designate-mdns
 
-#. Restart the designate and mDNS services:
+#. Start the designate and mDNS services and configure them to start when the
+   system boots:
 
    .. code-block:: console
 
-      # service designate-worker restart
-      # service designate-producer restart
-      # service designate-mdns restart
+      # systemctl start designate-worker designate-producer designate-mdns
+
+      # systemctl enable designate-worker designate-producer designate-mdns

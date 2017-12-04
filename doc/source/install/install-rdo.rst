@@ -104,12 +104,14 @@ Install and configure components
      .. code-block:: ini
 
         [keystone_authtoken]
-        auth_host = controller
-        auth_port = 35357
-        auth_protocol = http
-        admin_tenant_name = service
-        admin_user = designate
-        admin_password = DESIGNATE_PASS
+        auth_type = password
+        username = designate
+        password = DESIGNATE_PASS
+        project_name = service
+        project_domain_name = Default
+        user_domain_name = Default
+        auth_uri = http://controller:5000/
+        auth_url = http://controller:5000/
 
      Replace ``DESIGNATE_PASS`` with the password you chose for the
      ``designate`` user in the Identity service.
