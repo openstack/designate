@@ -22,9 +22,20 @@ supplied.
 .. note:: This POST can have no body.
 
 
-Normal response codes: 201
+.. rest_status_code:: success status.yaml
 
-Error response codes: 405,404,403,401,400,503
+   - 201
+
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 403
+   - 404
+   - 405
+   - 409
+   - 503
 
 
 Request
@@ -79,9 +90,19 @@ List Zone Transfer Requests
 This will list all your outgoing requests, and any incoming requests that
 have been scoped to your project.
 
-Normal response codes: 200
+.. rest_status_code:: success status.yaml
 
-Error response codes: 405,404,403,401,400,503
+   - 200
+
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 403
+   - 404
+   - 405
+   - 503
 
 
 Request
@@ -127,9 +148,19 @@ Show a Zone Transfer Request
 .. rest_method::  GET /v2/zones/tasks/transfer_requests/{zone_transfer_request_id}
 
 
-Normal response codes: 200
+.. rest_status_code:: success status.yaml
 
-Error response codes: 405,404,403,401,400,503
+   - 200
+
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 403
+   - 404
+   - 405
+   - 503
 
 
 Request
@@ -174,9 +205,19 @@ Update a Zone Transfer Request
 .. rest_method::  PATCH /v2/zones/tasks/transfer_requests/{zone_transfer_request_id}
 
 
-Normal response codes: 200
+.. rest_status_code:: success status.yaml
 
-Error response codes: 405,404,403,401,400,503
+   - 200
+
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 403
+   - 404
+   - 405
+   - 503
 
 
 Request
@@ -229,9 +270,19 @@ Delete a Zone Transfer Request
 .. rest_method::  DELETE /v2/zones/tasks/transfer_requests/{zone_transfer_request_id}
 
 
-Normal response codes: 204
+.. rest_status_code:: success status.yaml
 
-Error response codes: 405,404,403,401,400,503
+   - 204
+
+
+.. rest_status_code:: error status.yaml
+
+   - 400
+   - 401
+   - 403
+   - 404
+   - 405
+   - 503
 
 
 Request

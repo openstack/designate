@@ -1,8 +1,6 @@
     200:
       default: |
         Request was successful.
-      image-data-200: |
-        The service lists the image data in the response body.
     201:
       default: |
         Request has been fulfilled and new resource created.
