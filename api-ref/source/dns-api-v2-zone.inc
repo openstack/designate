@@ -43,6 +43,7 @@ Request
    - description: zone_description
    - masters: zone_masters
    - type: zone_type
+   - attributes: zone_attributes
 
 
 Request Example
@@ -73,6 +74,7 @@ Response Parameters
    - version: version
    - created_at: created_at
    - updated_at: updated_at
+   - attributes: zone_attributes
    - links: links
 
 
@@ -149,6 +151,7 @@ Response Parameters
    - version: version
    - created_at: created_at
    - updated_at: updated_at
+   - attributes: zone_attributes
    - links: links
    - metadata: metadata
 
@@ -217,6 +220,7 @@ Response Parameters
    - version: version
    - created_at: created_at
    - updated_at: updated_at
+   - attributes: zone_attributes
    - links: links
 
 
@@ -347,6 +351,7 @@ Response Parameters
    - version: version
    - created_at: created_at
    - updated_at: updated_at
+   - attributes: zone_attributes
    - links: links
 
 
@@ -414,6 +419,7 @@ Response Parameters
    - version: version
    - created_at: created_at
    - updated_at: updated_at
+   - attributes: zone_attributes
    - links: links
 
 
