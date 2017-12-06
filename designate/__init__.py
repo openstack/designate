@@ -29,6 +29,7 @@ import oslo_messaging as messaging
 
 designate_opts = [
     cfg.StrOpt('host', default=socket.gethostname(),
+               sample_default='current_hostname',
                help='Name of this node'),
     cfg.StrOpt(
         'pybasedir',
