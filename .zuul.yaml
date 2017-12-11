@@ -5,7 +5,7 @@
       database: mysql
       python_version: py27
       identity_v3_only: 0
-      worker_model: 0
+      manager_model: 0
       backend: pdns4
     required-projects:
       - openstack-infra/devstack-gate
@@ -17,6 +17,11 @@
     run: playbooks/legacy/designate-devstack-base/run.yaml
     post-run: playbooks/legacy/designate-devstack-base/post.yaml
     timeout: 4200
+    irrelevant-files:
+      - ^.*\.rst$
+      - ^api-ref/.*$
+      - ^doc/.*$
+      - ^etc/.*$
 
 - job:
     name: designate-devstack-agent-base
@@ -31,6 +36,11 @@
     run: playbooks/legacy/designate-devstack-agent-base/run.yaml
     post-run: playbooks/legacy/designate-devstack-agent-base/post.yaml
     timeout: 4200
+    irrelevant-files:
+      - ^.*\.rst$
+      - ^api-ref/.*$
+      - ^doc/.*$
+      - ^etc/.*$
 
 - job:
     name: grenade-devstack-designate-pdns4
@@ -77,13 +87,6 @@
       backend: pdns4
 
 - job:
-    name: designate-devstack-pdns4-identity-v3-only
-    parent: designate-devstack-base
-    vars:
-      backend: pdns4
-      identity_v3_only: 1
-
-- job:
     name: designate-devstack-pdns4-postgres
     parent: designate-devstack-base
     vars:
@@ -93,16 +96,15 @@
 - job:
     name: designate-devstack-pdns4-py35
     parent: designate-devstack-base
-    voting: false
     vars:
       backend: pdns4
       python_version: py35
 
 - job:
-    name: designate-devstack-pdns4-worker-model
+    name: designate-devstack-pdns4-manager-model
     parent: designate-devstack-base
     vars:
-      worker_model: 1
+      manager_model: 1
 
 - project-template:
     name: designate-devstack-jobs
@@ -111,8 +113,7 @@
         - designate-devstack-bind9
         - designate-devstack-pdns4
         - designate-devstack-pdns4-postgres
-        - designate-devstack-pdns4-worker-model
-        - designate-devstack-pdns4-identity-v3-only
+        - designate-devstack-pdns4-manager-model
         - designate-devstack-pdns4-py35
         - grenade-devstack-designate-pdns4
     gate:
@@ -121,8 +122,7 @@
         - designate-devstack-bind9
         - designate-devstack-pdns4
         - designate-devstack-pdns4-postgres
-        - designate-devstack-pdns4-worker-model
-        - designate-devstack-pdns4-identity-v3-only
+        - designate-devstack-pdns4-manager-model
         - grenade-devstack-designate-pdns4
     experimental:
       jobs:
