@@ -2815,12 +2815,11 @@ class Service(service.RPCService):
     # Zone Import Methods
     @rpc.expected_exceptions()
     @notification.notify_type('dns.zone_import.create')
-    def create_zone_import(self, context, request_body):
+    def create_zone_import(self, context, request_body, pool_id=''):
         if policy.enforce_new_defaults():
             target = {constants.RBAC_PROJECT_ID: context.project_id}
         else:
             target = {'tenant_id': context.project_id}
-
         policy.check('create_zone_import', context, target)
 
         self._is_valid_project_id(context.project_id)
@@ -2838,12 +2837,12 @@ class Service(service.RPCService):
                                                               zone_import)
 
         self.tg.add_thread(self._import_zone, context, created_zone_import,
-                           request_body)
+                           request_body, pool_id=pool_id)
 
         return created_zone_import
 
     @rpc.expected_exceptions()
-    def _import_zone(self, context, zone_import, request_body):
+    def _import_zone(self, context, zone_import, request_body, pool_id=''):
         zone = None
         try:
             dnspython_zone = dnszone.from_text(
@@ -2855,6 +2854,16 @@ class Service(service.RPCService):
                 check_origin=False)
             zone = dnsutils.from_dnspython_zone(dnspython_zone)
             zone.type = 'PRIMARY'
+
+            # Set pool id attribute if it was specified as request header:
+            if pool_id:
+                attr = objects.ZoneAttributeList.from_list([
+                    {"key": "pool_id",
+                     "value": pool_id}])
+                # We can set attributes freely as there are no attributes
+                # in zone import request body since it is text/dns
+                zone.__setattr__('attributes', attr)
+
             for rrset in list(zone.recordsets):
                 if rrset.type == 'SOA':
                     zone.recordsets.remove(rrset)

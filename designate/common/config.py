@@ -26,6 +26,7 @@ def set_defaults():
                        'X-Auth-Sudo-Tenant-ID',
                        'X-Auth-Sudo-Project-ID',
                        'X-Auth-All-Projects',
+                       'X-Designate-Pool-ID',
                        'X-Designate-Edit-Managed-Records',
                        'X-Designate-Hard-Delete',
                        'OpenStack-DNS-Hide-Counts'],

@@ -77,9 +77,12 @@ class ZoneImportController(rest.RestController):
                 'Content-type must be text/dns'
             )
 
+        # Use given 'pool_id' if it was specified in the headers
+        pool_id = request.headers.get('X-Designate-Pool-ID')
+
         # Create the zone_import
         zone_import = self.central_api.create_zone_import(
-            context, body)
+            context, body, pool_id)
         response.status_int = 202
 
         LOG.info("Created %(zone_import)s", {'zone_import': zone_import})

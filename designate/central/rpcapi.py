@@ -377,9 +377,9 @@ class CentralAPI:
         return self.client.call(context, 'xfr_zone', zone_id=zone_id)
 
     # Zone Import Methods
-    def create_zone_import(self, context, request_body):
+    def create_zone_import(self, context, request_body, pool_id=''):
         return self.client.call(context, 'create_zone_import',
-                                request_body=request_body)
+                                request_body=request_body, pool_id=pool_id)
 
     def find_zone_imports(self, context, criterion=None, marker=None,
                           limit=None, sort_key=None, sort_dir=None):

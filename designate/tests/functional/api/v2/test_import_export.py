@@ -130,6 +130,32 @@ class APIV2ZoneImportExportTest(v2.ApiV2TestCase):
         exported.delete_rdataset(exported.origin, 'NS')
         self.assertEqual(imported, exported)
 
+    def test_import_with_pool_id(self):
+        # Test that when pool_id is supplied as 'X-Designate-Pool-ID'
+        # header the zone will be scheduled to the desired pool.
+
+        self.policy({'admin': '@'})
+        pool = self.create_pool(fixture=2)
+
+        post_response = self.client.post('/zones/tasks/imports',
+                            self.get_zonefile_fixture(),
+                            headers=[('Content-type', 'text/dns'),
+                                     ('X-Designate-Pool-ID', pool.id)])
+
+        import_id = post_response.json_body['id']
+        self.wait_for_import(import_id)
+
+        url = '/zones/tasks/imports/%s' % import_id
+        response = self.client.get(url)
+
+        get_response = self.client.get('/zones/%s' %
+                                       response.json['zone_id'],
+                                       headers={'Accept': 'application/json'})
+
+        imported_pool_id = get_response.json_body['pool_id']
+
+        self.assertEqual(pool.id, imported_pool_id)
+
     def test_import_method_not_allowed(self):
         self._assert_exception(
             'unsupported_content_type', 415, self.client.post,
