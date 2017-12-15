@@ -144,7 +144,6 @@ function verify {
 }
 
 function verify_noapi {
-    env
     _ensure_recordset_present $DESIGNATE_RRSET_NAME $DESIGNATE_RRSET_TYPE $DESIGNATE_RRSET_RECORD
 }
 
