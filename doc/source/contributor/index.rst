@@ -11,8 +11,6 @@ Contents:
    :maxdepth: 2
 
    getting-involved
-   support-matrix
-   backends/index
    Designate Tempest Plugin <https://docs.openstack.org/designate-tempest-plugin/latest>
    architecture
    gmr

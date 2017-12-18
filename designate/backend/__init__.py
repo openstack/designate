@@ -19,11 +19,20 @@ from designate.backend import base
 
 LOG = logging.getLogger(__name__)
 
+GOOD_STATUSES = [
+    'integrated', 'grades.master-compatible', 'release-compatible'
+]
 
-def get_backend(type_, target):
-    # TODO(kiall): Type is attached to the target, use it.
-    LOG.debug("Loading backend driver: %s" % type_)
 
-    cls = base.Backend.get_driver(type_)
+def get_backend(target):
+    cls = base.Backend.get_driver(target.type)
+
+    msg = "Backend Driver '%s' loaded. Has status of '%s'" \
+          % (target.type, cls.__backend_status__)
+
+    if cls.__backend_status__ in GOOD_STATUSES:
+        LOG.info(msg)
+    else:
+        LOG.warning(msg)
 
     return cls(target)

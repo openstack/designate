@@ -19,7 +19,10 @@ DNS Server Plugin Documentation
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :glob:
 
    *
+
+For a list of drivers and the status of each drivers testing please go to
+:ref:`driver_matrix`

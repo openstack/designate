@@ -49,8 +49,7 @@ class Service(service.RPCService, service.Service):
     def _setup_target_backends(self, pool):
         for target in pool.targets:
             # Fetch an instance of the Backend class
-            target.backend = backend.get_backend(
-                    target.type, target)
+            target.backend = backend.get_backend(target)
 
         LOG.info(_LI('%d targets setup'), len(pool.targets))
 
