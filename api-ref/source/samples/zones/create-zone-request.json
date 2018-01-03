@@ -1,4 +1,7 @@
 {
+    "attributes": {
+        "tier": "gold", "ha": "true"
+    },
     "name": "example.org.",
     "email": "joe@example.org",
     "type": "PRIMARY",

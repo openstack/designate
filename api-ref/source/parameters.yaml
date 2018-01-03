@@ -676,6 +676,15 @@ version:
   required: true
   type: integer
 
+zone_attributes:
+  description: |
+    Key:Value pairs of information about this zone, and the pool the user
+    would like to place the zone in. This information can be used by the
+    scheduler to place zones on the correct pool.
+  in: body
+  required: false
+  type: dict
+
 zone_description:
   description: |
     Description for this zone
