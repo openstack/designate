@@ -26,7 +26,7 @@ OPTS = [
                 help='Whether to send events to worker instead of '
                      'Pool Manager',
                 deprecated_for_removal=True,
-                deprecated_reason='In Newton, this option will disappear'
+                deprecated_reason='In Rocky, this option will disappear '
                                   'because worker will be enabled by default'),
     cfg.IntOpt('workers',
                help='Number of Worker worker processes to spawn'),
