@@ -136,9 +136,13 @@
       - designate-devstack-jobs
     check:
       jobs:
+        - neutron-tempest-plugin-designate-scenario:
+            voting: false
         - requirements-check:
             voting: false
     gate:
       jobs:
+        - neutron-tempest-plugin-designate-scenario:
+            voting: false
         - requirements-check:
             voting: false
