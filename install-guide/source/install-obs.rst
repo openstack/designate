@@ -1,4 +1,4 @@
-.. _install-rdo:
+.. _install-obs:
 
 Install and configure for openSUSE and SUSE Linux Enterprise
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
