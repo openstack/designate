@@ -1,0 +1,44 @@
+- name: pool-1
+  # The name is immutable. There will be no option to change the name after
+  # creation and the only way will to change it will be to delete it
+  # (and all zones associated with it) and recreate it.
+  description: Default Infoblox Pool
+
+  attributes:
+    internal: true
+
+  # List out the NS records for zones hosted within this pool
+  ns_records:
+    - hostname: ns1-1.example.org.
+      priority: 1
+
+  # List out the nameservers for this pool. These are the actual Infoblox
+  # servers. We use these to verify changes have propagated to all nameservers.
+  nameservers:
+    - host: 192.0.2.2
+      port: 53
+
+  # List out the targets for this pool. For Infoblox, most often, there will be one
+  # entry for each Infoblox server.
+  targets:
+    - type: infoblox
+      description: Infoblox Server
+
+      # List out the designate-mdns servers from which Infoblox servers should
+      # request zone transfers (AXFRs) from.
+      masters:
+        - host: 192.0.2.1
+          port: 5354
+
+      # Infoblox Configuration options
+      options:
+        host: 192.0.2.2
+        port: 53
+        http_pool_maxsize: 100
+        http_pool_connections: 100
+        wapi_url: https://192.0.2.2/wapi/v2.1/
+        sslverify: false
+        password: infoblox
+        username: admin
+        multi_tenant: false
+        ns_group: openstack
