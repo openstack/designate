@@ -25,7 +25,7 @@ class TXT(Record):
     Defined in: RFC1035
     """
     fields = {
-        'txt_data': fields.TxtField(maxLength=255)
+        'txt_data': fields.TxtField(maxLength=65535)
     }
 
     def _to_string(self):
