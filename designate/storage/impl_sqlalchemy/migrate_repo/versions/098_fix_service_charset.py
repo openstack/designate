@@ -25,9 +25,10 @@ def upgrade(migrate_engine):
     if migrate_engine.name != "mysql":
         return
 
-    sql = """SET foreign_key_checks = 0;
-    ALTER TABLE service_statuses CONVERT TO CHARACTER SET utf8;
-    SET foreign_key_checks = 1;
-    ALTER DATABASE %s DEFAULT CHARACTER SET utf8;
-    """ % migrate_engine.url.database
-    migrate_engine.execute(sql)
+    migrate_engine.execute("SET foreign_key_checks = 0;")
+    migrate_engine.execute(
+        "ALTER TABLE service_statuses CONVERT TO CHARACTER SET utf8;")
+    migrate_engine.execute("SET foreign_key_checks = 1;")
+    migrate_engine.execute(
+        "ALTER DATABASE %s DEFAULT CHARACTER SET utf8;"
+        % migrate_engine.url.database)
