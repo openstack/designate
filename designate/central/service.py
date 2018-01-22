@@ -23,6 +23,7 @@ import itertools
 import string
 import signal
 import random
+from random import SystemRandom
 import time
 
 import six
@@ -2425,7 +2426,8 @@ class Service(service.RPCService, service.Service):
     # Zone Transfers
     def _transfer_key_generator(self, size=8):
         chars = string.ascii_uppercase + string.digits
-        return ''.join(random.choice(chars) for _ in range(size))
+        sysrand = SystemRandom()
+        return ''.join(sysrand.choice(chars) for _ in range(size))
 
     @notification('dns.zone_transfer_request.create')
     @transaction
