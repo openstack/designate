@@ -24,9 +24,6 @@ rules = [
         description="Create Tsigkey",
         operations=[
             {
-                'path': '/v1/tsigkeys',
-                'method': 'POST'
-            }, {
                 'path': '/v2/tsigkeys',
                 'method': 'POST'
             }
@@ -38,15 +35,6 @@ rules = [
         description="List Tsigkeys",
         operations=[
             {
-                'path': '/v1/tsigkeys',
-                'method': 'GET'
-            }, {
-                'path': '/v1/tsigkeys/<uuid:tsigkey_id>',
-                'method': 'GET'
-            }, {
-                'path': '/v1/tsigkeys/<uuid:tsigkey_id>',
-                'method': 'DELETE'
-            }, {
                 'path': '/v2/tsigkeys',
                 'method': 'GET'
             }
@@ -72,9 +60,6 @@ rules = [
         description="Update Tsigkey",
         operations=[
             {
-                'path': '/v1/tsigkeys/{tsigkey_id}',
-                'method': 'PATCH'
-            }, {
                 'path': '/v2/tsigkeys/{tsigkey_id}',
                 'method': 'PATCH'
             }
@@ -86,9 +71,6 @@ rules = [
         description="Delete a Tsigkey",
         operations=[
             {
-                'path': '/v1/tsigkeys/{tsigkey_id}',
-                'method': 'DELETE'
-            }, {
                 'path': '/v2/tsigkeys/{tsigkey_id}',
                 'method': 'DELETE'
             }

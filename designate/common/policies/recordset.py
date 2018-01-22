@@ -42,12 +42,6 @@ rules = [
         description="Get recordset",
         operations=[
             {
-                'path': '/v1/domains/<uuid:domain_id>/records/<uuid:record_id>',  # noqa
-                'method': 'GET'
-            }, {
-                'path': '/v1/domains/<uuid:domain_id>/records/<uuid:record_id>',  # noqa
-                'method': 'PUT'
-            }, {
                 'path': '/v2/zones/{zone_id}/recordsets/{recordset_id}',
                 'method': 'GET'
             }, {
@@ -56,31 +50,6 @@ rules = [
             }, {
                 'path': '/v2/zones/{zone_id}/recordsets/{recordset_id}',
                 'method': 'PUT'
-            }
-        ]
-    ),
-    policy.DocumentedRuleDefault(
-        name="find_recordsets",
-        check_str=base.RULE_ADMIN_OR_OWNER,
-        description="Find recordsets",
-        operations=[
-            {
-                'path': '/v1/domains/<uuid:domain_id>/records',
-                'method': 'GET'
-            }
-        ]
-    ),
-    policy.DocumentedRuleDefault(
-        name="find_recordset",
-        check_str=base.RULE_ADMIN_OR_OWNER,
-        description="Find recordset",
-        operations=[
-            {
-                'path': '/v1/domains/<uuid:domain_id>/records',
-                'method': 'POST'
-            }, {
-                'path': '/v1/domains/<uuid:domain_id>/records/<uuid:record_id>',  # noqa
-                'method': 'DELETE'
             }
         ]
     ),
@@ -90,9 +59,6 @@ rules = [
         description="Update recordset",
         operations=[
             {
-                'path': '/v1/domains/<uuid:domain_id>/records/<uuid:record_id>',  # noqa
-                'method': 'PUT'
-            }, {
                 'path': '/v2/zones/{zone_id}/recordsets/{recordset_id}',
                 'method': 'PUT'
             }, {
@@ -107,9 +73,6 @@ rules = [
         description="Delete RecordSet",
         operations=[
             {
-                'path': '/v1/domains/<uuid:domain_id>/records/<uuid:record_id>',  # noqa
-                'method': 'DELETE'
-            }, {
                 'path': '/v2/zones/{zone_id}/recordsets/{recordset_id}',
                 'method': 'DELETE'
             }

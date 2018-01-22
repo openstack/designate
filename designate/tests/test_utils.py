@@ -47,11 +47,6 @@ class TestUtils(TestCase):
         with testtools.ExpectedException(ValueError):
             utils.resource_string()
 
-    def test_load_schema(self):
-        schema = utils.load_schema('v1', 'domain')
-
-        self.assertIsInstance(schema, dict)
-
     def test_load_schema_missing(self):
         with testtools.ExpectedException(exceptions.ResourceNotFound):
             utils.load_schema('v1', 'missing')

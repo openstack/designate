@@ -28,17 +28,6 @@ directory.
 .. index::
     double: configure; designate
 
-#. Create the designate.conf file
-
-    ::
-
-      $ editor designate.conf
-
-#. Copy or mirror the configuration from this sample file here:
-
-    .. literalinclude:: ../examples/basic-config-sample.conf
-        :language: ini
-
 #. You can generate full sample *designate.conf* (if it does not already exist)::
 
     $ oslo-config-generator --config-file etc/designate/designate-config-generator.conf --output-file /etc/designate/designate.conf

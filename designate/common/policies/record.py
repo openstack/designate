@@ -19,39 +19,6 @@ from designate.common.policies import base
 
 rules = [
     policy.DocumentedRuleDefault(
-        name="create_record",
-        check_str=base.RULE_ADMIN_OR_OWNER,
-        description='Create record.',
-        operations=[
-            {
-                'path': '/v1/domains/<uuid:domain_id>/records',
-                'method': 'POST'
-            }
-        ]
-    ),
-    policy.DocumentedRuleDefault(
-        name="get_records",
-        check_str=base.RULE_ADMIN_OR_OWNER,
-        description='Get records.',
-        operations=[
-            {
-                'path': '/v1/domains/<uuid:domain_id>/records',
-                'method': 'GET'
-            }
-        ]
-    ),
-    policy.DocumentedRuleDefault(
-        name="get_record",
-        check_str=base.RULE_ADMIN_OR_OWNER,
-        description='Get record.',
-        operations=[
-            {
-                'path': '/v1/domains/<uuid:domain_id>/records/<uuid:record_id>',  # noqa
-                'method': 'GET'
-            }
-        ]
-    ),
-    policy.DocumentedRuleDefault(
         name="find_records",
         check_str=base.RULE_ADMIN_OR_OWNER,
         description='Find records.',
@@ -62,45 +29,6 @@ rules = [
             }, {
                 'path': '/v2/reverse/floatingips',
                 'method': 'GET'
-            }
-        ]
-    ),
-    policy.DocumentedRuleDefault(
-        name="find_record",
-        check_str=base.RULE_ADMIN_OR_OWNER,
-        description='Find record.',
-        operations=[
-            {
-                'path': '/v1/domains/<uuid:domain_id>/records/<uuid:record_id>',  # noqa
-                'method': 'GET'
-            }, {
-                'path': '/v1/domains/<uuid:domain_id>/records/<uuid:record_id>',  # noqa
-                'method': 'DELETE'
-            }, {
-                'path': '/v1/domains/<uuid:domain_id>/records/<uuid:record_id>',  # noqa
-                'method': 'PUT'
-            }
-        ]
-    ),
-    policy.DocumentedRuleDefault(
-        name="update_record",
-        check_str=base.RULE_ADMIN_OR_OWNER,
-        description='Update record.',
-        operations=[
-            {
-                'path': '/v1/domains/<uuid:domain_id>/records/<uuid:record_id>',  # noqa
-                'method': 'PUT'
-            }
-        ]
-    ),
-    policy.DocumentedRuleDefault(
-        name="delete_record",
-        check_str=base.RULE_ADMIN_OR_OWNER,
-        description='Delete record.',
-        operations=[
-            {
-                'path': '/v1/domains/<uuid:domain_id>/records/<uuid:record_id>',  # noqa
-                'method': 'DELETE'
             }
         ]
     ),

@@ -29,7 +29,6 @@ def factory(global_config, **local_conf):
     def _host_header_links():
         del versions[:]
         host_url = flask.request.host_url.rstrip('/')
-        _version('v1', 'DEPRECATED', host_url)
         _version('v2', 'CURRENT', host_url)
 
     def _version(version, status, base_uri):
@@ -41,9 +40,6 @@ def factory(global_config, **local_conf):
                 'rel': 'self'
             }]
         })
-
-    if cfg.CONF['service:api'].enable_api_v1:
-        _version('v1', 'DEPRECATED', base)
 
     if cfg.CONF['service:api'].enable_api_v2:
         _version('v2', 'CURRENT', base)

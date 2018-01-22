@@ -30,11 +30,7 @@ class Schema(object):
         self.resolver = resolvers.LocalResolver.from_schema(
             version, self.raw_schema)
 
-        if version == 'v1':
-            self.validator = validators.Draft3Validator(
-                self.raw_schema, resolver=self.resolver,
-                format_checker=format.draft3_format_checker)
-        elif version in ['v2', 'admin']:
+        if version in ['v2', 'admin']:
             self.validator = validators.Draft4Validator(
                 self.raw_schema, resolver=self.resolver,
                 format_checker=format.draft4_format_checker)

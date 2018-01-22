@@ -93,9 +93,7 @@ Install and configure components
         [service:api]
         listen = 0.0.0.0:9001
         auth_strategy = keystone
-        enable_api_v1 = True
         api_base_uri = http://controller:9001/
-        enabled_extensions_v1 = quotas, reports
         enable_api_v2 = True
         enabled_extensions_v2 = quotas, reports
 
