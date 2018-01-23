@@ -68,9 +68,6 @@ GITREPO["designate-tempest-plugin"]=${DESIGNATETEMPEST_REPO:-${GIT_BASE}/opensta
 GITBRANCH["designate-tempest-plugin"]=${DESIGNATETEMPEST_BRANCH:-master}
 GITDIR["designate-tempest-plugin"]=$DEST/designate-tempest-plugin
 
-# Tell Tempest this project is present
-TEMPEST_SERVICES+=,designate
-
 # Turn on all Designate services by default
 enable_service designate
 enable_service designate-central
