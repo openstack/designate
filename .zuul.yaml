@@ -131,7 +131,6 @@
         - designate-devstack-agent-gdnsd
 
 - project:
-    name: openstack/designate
     templates:
       - designate-devstack-jobs
     check:
