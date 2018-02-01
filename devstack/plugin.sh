@@ -20,10 +20,6 @@ function setup_colorized_logging_designate {
     local user_var=${4:-"user_name"}
 
     setup_colorized_logging $conf_file $conf_section $project_var $user_var
-
-    # Override the logging_context_format_string value chosen by
-    # setup_colorized_logging.
-    iniset $conf_file $conf_section logging_context_format_string "%(asctime)s.%(msecs)03d %(color)s%(levelname)s %(name)s [[01;36m%(request_id)s [00;36m%(user_identity)s%(color)s] [01;35m%(instance)s%(color)s%(message)s[00m"
 }
 
 # DevStack Plugin
@@ -134,12 +130,12 @@ function configure_designate {
     fi
 
     # Logging Configuration
-    if [ "$SYSLOG" != "False" ]; then
-        iniset $DESIGNATE_CONF DEFAULT use_syslog True
+    if [ "$USE_SYSTEMD" != "False" ]; then
+        setup_systemd_logging $DESIGNATE_CONF
     fi
 
     # Format logging
-    if [ "$LOG_COLOR" == "True" ] && [ "$SYSLOG" == "False" ]; then
+    if [ "$LOG_COLOR" == "True" ] && [ "$USE_SYSTEMD" == "False" ]; then
         setup_colorized_logging_designate $DESIGNATE_CONF DEFAULT "tenant" "user"
     fi
 
