@@ -33,6 +33,7 @@ designate_opts = [
                help='Name of this node'),
     cfg.StrOpt(
         'pybasedir',
+        sample_default='<Path>',
         default=os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              '../')),
         help='Directory where the designate python module is installed'
