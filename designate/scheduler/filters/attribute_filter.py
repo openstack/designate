@@ -14,6 +14,7 @@
 from oslo_log import log as logging
 from oslo_utils.strutils import bool_from_string
 
+from designate import policy
 from designate import exceptions
 from designate.objects import PoolList
 from designate.scheduler.filters import base
@@ -57,7 +58,21 @@ class AttributeFilter(base.Filter):
 
     def filter(self, context, pools, zone):
         try:
-            zone_attributes = zone.attributes.to_dict()
+            # if pool_id was given - schedule there
+            pool_id = zone.attributes.get('pool_id')
+            if pool_id:
+                try:
+                    pool = self.storage.get_pool(context, pool_id)
+                except Exception:
+                    return PoolList()
+                policy.check('zone_create_forced_pool', context, pool)
+                if pool in pools:
+                    pools = PoolList()
+                    pools.append(pool)
+                    return pools
+            else:
+                # otherwise - do attributes check as usual
+                zone_attributes = zone.attributes.to_dict()
         except exceptions.RelationNotLoaded:
             zone_attributes = {}
 
