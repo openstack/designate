@@ -80,7 +80,7 @@ class SupportMatrixBackend(object):
 class SupportMatrixDirective(rst.Directive):
 
     option_spec = {
-        'support-matrix': unicode,
+        'support-matrix': six.text_type,
     }
 
     def run(self):
