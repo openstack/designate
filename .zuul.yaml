@@ -55,6 +55,11 @@
     run: playbooks/legacy/grenade-devstack-designate-pdns4/run.yaml
     post-run: playbooks/legacy/grenade-devstack-designate-pdns4/post.yaml
     timeout: 10800
+    irrelevant-files:
+      - ^.*\.rst$
+      - ^api-ref/.*$
+      - ^doc/.*$
+      - ^etc/.*$
 
 - job:
     name: designate-devstack-agent-djbdns
