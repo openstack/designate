@@ -69,6 +69,17 @@ class AttributeFilter(base.Filter):
             except exceptions.RelationNotLoaded:
                 pool_attributes = {}
 
+            # Remove the "pool_id" attribute, that is used in
+            # PoolIDAttributeFilter. If the item is not in the dict, it is
+            # fine, we should just continue.
+            pool_attributes.pop('pool_id', None)
+
+            if pool_attributes == {}:
+                # If we did not send any attribute to filter on, we should
+                # not filter the pools based on an empty set, as this will
+                # return no pools.
+                return True
+
             # Check if the keys requested exist in this pool
             if not {key for key in six.iterkeys(pool_attributes)}.issuperset(
                     zone_attributes):
