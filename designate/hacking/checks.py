@@ -34,8 +34,6 @@ UNDERSCORE_IMPORT_FILES = []
 mutable_default_argument_check = re.compile(
     r"^\s*def .+\((.+=\{\}|.+=\[\])")
 string_translation = re.compile(r"[^_]*_\(\s*('|\")")
-log_translation = re.compile(
-    r"(.)*LOG\.(audit|error|info|warn|warning|critical|exception)\(\s*('|\")")
 translated_log = re.compile(
     r"(.)*LOG\.(audit|error|info|warn|warning|critical|exception)"
     "\(\s*_\(\s*('|\")")
@@ -54,17 +52,6 @@ def mutable_default_arguments(logical_line, physical_line, filename):
 
     if mutable_default_argument_check.match(logical_line):
         yield (0, "D701: Default parameter value is a mutable type")
-
-
-def validate_log_translations(logical_line, physical_line, filename):
-    # Translations are not required in the test directory
-    if "designate/tests" in filename:
-        return
-    if pep8.noqa(physical_line):
-        return
-    msg = "D702: Log messages require translation"
-    if log_translation.match(logical_line):
-        yield (0, msg)
 
 
 def no_translate_debug_logs(logical_line, filename):
@@ -160,7 +147,6 @@ def check_no_log_audit(logical_line):
 
 def factory(register):
     register(mutable_default_arguments)
-    register(validate_log_translations)
     register(no_translate_debug_logs)
     register(check_explicit_underscore_import)
     register(no_import_graduated_oslo_libraries)
