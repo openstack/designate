@@ -12,22 +12,18 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-from designate.objects import base
+from designate.objects import ovo_base as base
+from designate.objects import fields
 
 
+@base.DesignateRegistry.register
 class Server(base.DictObjectMixin, base.PersistentObjectMixin,
              base.DesignateObject):
-    FIELDS = {
-        'name': {
-            'schema': {
-                'type': 'string',
-                'description': 'Zone name',
-                'format': 'domainname',
-                'maxLength': 255,
-            },
-            'immutable': True,
-            'required': True
-        }
+    def __init__(self, *args, **kwargs):
+        super(Server, self).__init__(*args, **kwargs)
+
+    fields = {
+        'name': fields.DomainField(maxLength=255),
     }
 
     STRING_KEYS = [
@@ -35,5 +31,10 @@ class Server(base.DictObjectMixin, base.PersistentObjectMixin,
     ]
 
 
+@base.DesignateRegistry.register
 class ServerList(base.ListObjectMixin, base.DesignateObject):
     LIST_ITEM_TYPE = Server
+
+    fields = {
+        'objects': fields.ListOfObjectsField('Server'),
+    }
