@@ -14,32 +14,24 @@
 #    under the License.
 from designate.objects.record import Record
 from designate.objects.record import RecordList
+from designate.objects import ovo_base as base
+from designate.objects import fields
 
 
+@base.DesignateRegistry.register
 class NS(Record):
     """
     NS Resource Record Type
     Defined in: RFC1035
     """
-    FIELDS = {
-        'nsdname': {
-            'schema': {
-                'type': 'string',
-                'format': 'domainname',
-                'maxLength': 255,
-            },
-            'required': True
-        }
+    fields = {
+        'nsdname': fields.DomainField(maxLength=255)
     }
 
     @classmethod
     def get_recordset_schema_changes(cls):
         return {
-            'name': {
-                'schema': {
-                    'format': 'ns-hostname',
-                },
-            },
+            'name': fields.DomainField(),
         }
 
     def _to_string(self):
@@ -53,6 +45,11 @@ class NS(Record):
     RECORD_TYPE = 2
 
 
+@base.DesignateRegistry.register
 class NSList(RecordList):
 
     LIST_ITEM_TYPE = NS
+
+    fields = {
+        'objects': fields.ListOfObjectsField('NS'),
+    }

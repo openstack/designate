@@ -14,37 +14,20 @@
 #    under the License.
 from designate.objects.record import Record
 from designate.objects.record import RecordList
+from designate.objects import ovo_base as base
+from designate.objects import fields
 
 
+@base.DesignateRegistry.register
 class SSHFP(Record):
     """
     SSHFP Resource Record Type
     Defined in: RFC4255
     """
-    FIELDS = {
-        'algorithm': {
-            'schema': {
-                'type': 'integer',
-                'minimum': 0,
-                'maximum': 4
-            },
-            'required': True
-        },
-        'fp_type': {
-            'schema': {
-                'type': 'integer',
-                'minimum': 0,
-                'maximum': 2
-            },
-            'required': True
-        },
-        'fingerprint': {
-            'schema': {
-                'type': 'string',
-                'format': 'sshfp'
-            },
-            'required': True
-        }
+    fields = {
+        'algorithm': fields.IntegerFields(minimum=0, maximum=4),
+        'fp_type': fields.IntegerFields(minimum=0, maximum=2),
+        'fingerprint': fields.Sshfp(nullable=True),
     }
 
     def _to_string(self):
@@ -66,6 +49,10 @@ class SSHFP(Record):
     RECORD_TYPE = 44
 
 
+@base.DesignateRegistry.register
 class SSHFPList(RecordList):
 
     LIST_ITEM_TYPE = SSHFP
+    fields = {
+        'objects': fields.ListOfObjectsField('SSHFP'),
+    }

@@ -14,30 +14,19 @@
 #    under the License.
 from designate.objects.record import Record
 from designate.objects.record import RecordList
+from designate.objects import ovo_base as base
+from designate.objects import fields
 
 
+@base.DesignateRegistry.register
 class MX(Record):
     """
     MX Resource Record Type
     Defined in: RFC1035
     """
-    FIELDS = {
-        'priority': {
-            'schema': {
-                'type': 'integer',
-                'minimum': 0,
-                'maximum': 65535
-            },
-            'required': True
-        },
-        'exchange': {
-            'schema': {
-                'type': 'string',
-                'format': 'domainname',
-                'maxLength': 255,
-            },
-            'required': True
-        }
+    fields = {
+        'priority': fields.IntegerFields(minimum=0, maximum=65535),
+        'exchange': fields.StringFields(maxLength=255),
     }
 
     def _to_string(self):
@@ -57,6 +46,11 @@ class MX(Record):
     RECORD_TYPE = 15
 
 
+@base.DesignateRegistry.register
 class MXList(RecordList):
 
     LIST_ITEM_TYPE = MX
+
+    fields = {
+        'objects': fields.ListOfObjectsField('MX'),
+    }

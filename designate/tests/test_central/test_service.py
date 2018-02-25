@@ -26,6 +26,7 @@ from testtools.matchers import GreaterThan
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_db import exception as db_exception
+from oslo_versionedobjects import exception as ovo_exc
 from oslo_messaging.notify import notifier
 
 from designate import exceptions
@@ -694,7 +695,7 @@ class CentralServiceTest(CentralTestCase):
         values = self.get_zone_fixture(fixture=1)
         values['ttl'] = 0
 
-        with testtools.ExpectedException(exceptions.InvalidTTL):
+        with testtools.ExpectedException(ValueError):
                     self.central_service.create_zone(
                         context, objects.Zone.from_dict(values))
 
@@ -707,7 +708,7 @@ class CentralServiceTest(CentralTestCase):
         values = self.get_zone_fixture(fixture=1)
         values['ttl'] = -100
 
-        with testtools.ExpectedException(exceptions.InvalidTTL):
+        with testtools.ExpectedException(ValueError):
             self.central_service.create_zone(
                 context, objects.Zone.from_dict(values))
 
@@ -1801,14 +1802,8 @@ class CentralServiceTest(CentralTestCase):
         # Create a recordset
         recordset = self.create_recordset(zone)
 
-        # Update the recordset
-        recordset.ttl = 1800
-        recordset.zone_id = other_zone.id
-
-        # Ensure we get a BadRequest if we change the zone_id
-        with testtools.ExpectedException(exceptions.BadRequest):
-            self.central_service.update_recordset(
-                self.admin_context, recordset)
+        self.assertRaises(ovo_exc.ReadOnlyFieldError, setattr,
+                          recordset, 'zone_id', other_zone.id)
 
     def test_update_recordset_immutable_tenant_id(self):
         zone = self.create_zone()
@@ -1816,30 +1811,19 @@ class CentralServiceTest(CentralTestCase):
         # Create a recordset
         recordset = self.create_recordset(zone)
 
-        # Update the recordset
-        recordset.ttl = 1800
-        recordset.tenant_id = 'other-tenant'
-
-        # Ensure we get a BadRequest if we change the zone_id
-        with testtools.ExpectedException(exceptions.BadRequest):
-            self.central_service.update_recordset(
-                self.admin_context, recordset)
+        self.assertRaises(ovo_exc.ReadOnlyFieldError, setattr,
+                          recordset, 'tenant_id', 'other-tenant')
 
     def test_update_recordset_immutable_type(self):
         zone = self.create_zone()
-
+        # ['A', 'AAAA', 'CNAME', 'MX', 'SRV', 'TXT', 'SPF', 'NS', 'PTR',
+        #  'SSHFP', 'SOA']
         # Create a recordset
         recordset = self.create_recordset(zone)
         cname_recordset = self.create_recordset(zone, type='CNAME')
 
-        # Update the recordset
-        recordset.ttl = 1800
-        recordset.type = cname_recordset.type
-
-        # Ensure we get a BadRequest if we change the zone_id
-        with testtools.ExpectedException(exceptions.BadRequest):
-            self.central_service.update_recordset(
-                self.admin_context, recordset)
+        self.assertRaises(ovo_exc.ReadOnlyFieldError, setattr,
+                          recordset, 'type', cname_recordset.type)
 
     def test_delete_recordset(self):
         zone = self.create_zone()

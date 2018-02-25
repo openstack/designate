@@ -18,10 +18,12 @@ from copy import deepcopy
 from oslo_config import cfg
 from oslo_log import log
 import six
+from oslo_versionedobjects import exception as ovo_exc
 
 from designate import exceptions
 from designate import utils
-from designate.objects import base
+from designate.objects import ovo_base as base
+from designate.objects import fields
 from designate.objects.validation_error import ValidationError
 from designate.objects.validation_error import ValidationErrorList
 
@@ -31,8 +33,11 @@ LOG = log.getLogger(__name__)
 cfg.CONF.import_opt('supported_record_type', 'designate')
 
 
-class RecordSet(base.DictObjectMixin, base.PersistentObjectMixin,
-                base.DesignateObject):
+@base.DesignateRegistry.register
+class RecordSet(base.DesignateObject, base.DictObjectMixin,
+                base.PersistentObjectMixin):
+    def __init__(self, *args, **kwargs):
+        super(RecordSet, self).__init__(*args, **kwargs)
 
     @property
     def action(self):
@@ -44,13 +49,13 @@ class RecordSet(base.DictObjectMixin, base.PersistentObjectMixin,
             actions[record.action] += 1
 
         if actions['CREATE'] != 0 and actions['UPDATE'] == 0 and \
-                actions['DELETE'] == 0 and actions['NONE'] == 0:
+                        actions['DELETE'] == 0 and actions['NONE'] == 0:  # noqa
             action = 'CREATE'
         elif actions['DELETE'] != 0 and actions['UPDATE'] == 0 and \
-                actions['CREATE'] == 0 and actions['NONE'] == 0:
+                        actions['CREATE'] == 0 and actions['NONE'] == 0:  # noqa
             action = 'DELETE'
         elif actions['UPDATE'] != 0 or actions['CREATE'] != 0 or \
-                actions['DELETE'] != 0:
+                        actions['DELETE'] != 0:  # noqa
             action = 'UPDATE'
         return action
 
@@ -73,78 +78,17 @@ class RecordSet(base.DictObjectMixin, base.PersistentObjectMixin,
                 status = record.status
         return status
 
-    FIELDS = {
-        'shard': {
-            'schema': {
-                'type': 'integer',
-                'minimum': 0,
-                'maximum': 4095
-            }
-        },
-        'tenant_id': {
-            'schema': {
-                'type': 'string',
-            },
-            'read_only': True
-        },
-        'zone_id': {
-            'schema': {
-                'type': 'string',
-                'description': 'Zone identifier',
-                'format': 'uuid'
-            },
-        },
-        'zone_name': {
-            'schema': {
-                'type': 'string',
-                'description': 'Zone name',
-                'format': 'domainname',
-                'maxLength': 255,
-            },
-            'read_only': True
-        },
-        'name': {
-            'schema': {
-                'type': 'string',
-                'description': 'Recordset name',
-                'format': 'hostname',
-                'maxLength': 255,
-            },
-            'immutable': True,
-            'required': True
-        },
-        'type': {
-            'schema': {
-                'type': 'string',
-                'description': 'RecordSet type (TODO: Make types extensible)',
-            },
-            'required': True,
-            'immutable': True
-        },
-        'ttl': {
-            'schema': {
-                'type': ['integer', 'null'],
-                'description': 'Default time to live',
-                'minimum': 1,
-                'maximum': 2147483647
-            },
-        },
-        'description': {
-            'schema': {
-                'type': ['string', 'null'],
-                'maxLength': 160
-            },
-        },
-        'records': {
-            'relation': True,
-            'relation_cls': 'RecordList'
-        },
-        # TODO(graham): implement the polymorphic class relations
-        # 'records': {
-        #     'polymorphic': 'type',
-        #     'relation': True,
-        #     'relation_cls': lambda type_: '%sList' % type_
-        # },
+    fields = {
+        'shard': fields.IntegerFields(nullable=True, minimum=0, maximum=4095),
+        'tenant_id': fields.StringFields(nullable=True, read_only=True),
+        'zone_id': fields.UUIDFields(nullable=True, read_only=True),
+        'zone_name': fields.DomainField(nullable=True, maxLength=255),
+        'name': fields.HostField(maxLength=255, nullable=True),
+        'type': fields.StringFields(nullable=True, read_only=True),
+        'ttl': fields.IntegerFields(nullable=True,
+                                    minimum=1, maximum=2147483647),
+        'description': fields.StringFields(nullable=True, maxLength=160),
+        'records': fields.PolymorphicObjectField('RecordList', nullable=True),
     }
 
     def _validate_fail(self, errors, msg):
@@ -165,6 +109,7 @@ class RecordSet(base.DictObjectMixin, base.PersistentObjectMixin,
             'name': self.obj_name(),
             'values': self.to_dict(),
         })
+        LOG.debug(list(self.records))
 
         errors = ValidationErrorList()
 
@@ -172,7 +117,7 @@ class RecordSet(base.DictObjectMixin, base.PersistentObjectMixin,
         try:
             record_list_cls = self.obj_cls_from_name('%sList' % self.type)
             record_cls = self.obj_cls_from_name(self.type)
-        except KeyError as e:
+        except (KeyError, ovo_exc.UnsupportedObjectError) as e:
             err_msg = ("'%(type)s' is not a valid record type"
                        % {'type': self.type})
             self._validate_fail(errors, err_msg)
@@ -259,21 +204,6 @@ class RecordSet(base.DictObjectMixin, base.PersistentObjectMixin,
             super(RecordSet, self).validate()
 
         except exceptions.InvalidObject as e:
-            # Something is wrong according to JSONSchema - append our errors
-            increment = 0
-            # This code below is to make sure we have the index for the record
-            # list correct. JSONSchema may be missing some of the objects due
-            # to validation above, so this re - inserts them, and makes sure
-            # the index is right
-            for error in e.errors:
-                if len(error.path) > 1 and isinstance(error.path[1], int):
-                    error.path[1] += increment
-                    while error.path[1] in error_indexes:
-                        increment += 1
-                        error.path[1] += 1
-            # Add the list from above
-            e.errors.extend(errors)
-            # Raise the exception
             raise e
         else:
             # If JSONSchema passes, but we found parsing errors,
@@ -292,6 +222,7 @@ class RecordSet(base.DictObjectMixin, base.PersistentObjectMixin,
         finally:
             if old_fields:
                 self.FIELDS = old_fields
+
         # Send in the traditional Record objects to central / storage
         self.records = old_records
 
@@ -300,6 +231,11 @@ class RecordSet(base.DictObjectMixin, base.PersistentObjectMixin,
     ]
 
 
+@base.DesignateRegistry.register
 class RecordSetList(base.ListObjectMixin, base.DesignateObject,
                     base.PagedListObjectMixin):
     LIST_ITEM_TYPE = RecordSet
+
+    fields = {
+        'objects': fields.ListOfObjectsField('RecordSet'),
+    }

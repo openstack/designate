@@ -14,70 +14,25 @@
 #    under the License.
 from designate.objects.record import Record
 from designate.objects.record import RecordList
+from designate.objects import ovo_base as base
+from designate.objects import fields
 
 
+@base.DesignateRegistry.register
 class SOA(Record):
     """
     SOA Resource Record Type
     Defined in: RFC1035
     """
-    FIELDS = {
-        'mname': {
-            'schema': {
-                'type': 'string',
-                'format': 'domainname',
-                'maxLength': 255,
-            },
-            'required': True
-        },
-        'rname': {
-            'schema': {
-                'type': 'string',
-                'format': 'domainname',
-                'maxLength': 255,
-            },
-            'required': True
-        },
-        'serial': {
-            'schema': {
-                'type': 'integer',
-                'minimum': 1,
-                'maximum': 4294967295,
-            },
-            'required': True
-        },
-        'refresh': {
-            'schema': {
-                'type': 'integer',
-                'minimum': 0,
-                'maximum': 2147483647
-            },
-            'required': True
-        },
-        'retry': {
-            'schema': {
-                'type': 'integer',
-                'minimum': 0,
-                'maximum': 2147483647
-            },
-            'required': True
-        },
-        'expire': {
-            'schema': {
-                'type': 'integer',
-                'minimum': 0,
-                'maximum': 2147483647
-            },
-            'required': True
-        },
-        'minimum': {
-            'schema': {
-                'type': 'integer',
-                'minimum': 0,
-                'maximum': 2147483647
-            },
-            'required': True
-        },
+
+    fields = {
+        'mname': fields.DomainField(maxLength=255),
+        'rname': fields.DomainField(maxLength=255),
+        'serial': fields.IntegerFields(minimum=1, maximum=4294967295),
+        'refresh': fields.IntegerFields(minimum=0, maximum=2147483647),
+        'retry': fields.IntegerFields(minimum=0, maximum=2147483647),
+        'expire': fields.IntegerFields(minimum=0, maximum=2147483647),
+        'minimum': fields.IntegerFields(minimum=0, maximum=2147483647)
     }
 
     def _to_string(self):
@@ -99,6 +54,11 @@ class SOA(Record):
     RECORD_TYPE = 6
 
 
+@base.DesignateRegistry.register
 class SOAList(RecordList):
 
     LIST_ITEM_TYPE = SOA
+
+    fields = {
+        'objects': fields.ListOfObjectsField('SOA'),
+    }

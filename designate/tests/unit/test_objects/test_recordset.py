@@ -196,7 +196,8 @@ class RecordSetTest(oslotest.base.BaseTestCase):
 
     def test_validate_handle_exception(self):
         rs = create_test_recordset()
-        fn_name = 'designate.objects.DesignateObject.obj_cls_from_name'
+        rs_module = rs.__class__.__bases__[0].__module__
+        fn_name = '{}.DesignateObject.obj_cls_from_name'.format(rs_module)
         with mock.patch(fn_name) as patched:
             patched.side_effect = KeyError
             with testtools.ExpectedException(exceptions.InvalidObject):

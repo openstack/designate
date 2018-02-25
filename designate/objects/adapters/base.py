@@ -15,6 +15,7 @@ import datetime
 
 from oslo_log import log
 import six
+from oslo_versionedobjects import fields
 
 from designate import objects
 from designate import utils
@@ -25,7 +26,6 @@ LOG = log.getLogger(__name__)
 
 
 class DesignateObjectAdapterMetaclass(type):
-
     def __init__(cls, names, bases, dict_):
         if not hasattr(cls, '_adapter_classes'):
             cls._adapter_classes = {}
@@ -60,7 +60,8 @@ class DesignateAdapter(object):
 
     @classmethod
     def get_object_adapter(cls, format_, object):
-        if isinstance(object, objects.DesignateObject):
+        if isinstance(object, (objects.DesignateObject,
+                               objects.OVODesignateObject)):
             key = '%s:%s' % (format_, object.obj_name())
         else:
             key = '%s:%s' % (format_, object)
@@ -81,7 +82,8 @@ class DesignateAdapter(object):
     @classmethod
     def render(cls, format_, object, *args, **kwargs):
 
-        if isinstance(object, objects.ListObjectMixin):
+        if isinstance(object, (objects.ListObjectMixin,
+                               objects.OVOListObjectMixin)):
             # type_ = 'list'
             return cls.get_object_adapter(
                 format_, object)._render_list(object, *args, **kwargs)
@@ -98,11 +100,16 @@ class DesignateAdapter(object):
 
         def _is_datetime_field(object, key):
             field = object.FIELDS.get(key, {})
-            return field.get('schema', {}).get('format', '') == 'date-time'
+            if isinstance(field, fields.Field):
+                # TODO(daidv): If we change to use DateTimeField or STL
+                # we should change this to exact object
+                return isinstance(field, fields.DateTimeField)
+            else:
+                return field.get('schema', {}).get('format', '') == 'date-time'
 
         def _format_datetime_field(obj):
             return datetime.datetime.strftime(
-                    obj, utils.DATETIME_FORMAT)
+                obj, utils.DATETIME_FORMAT)
 
         # The dict we will return to be rendered to JSON / output format
         r_obj = {}
@@ -121,14 +128,21 @@ class DesignateAdapter(object):
                 obj_key = key
             # Check if this item is a relation (another DesignateObject that
             # will need to be converted itself
-            if object.FIELDS.get(obj_key, {}).get('relation'):
+            field = object.FIELDS.get(obj_key, {})
+            if isinstance(field, dict) and field.get('relation'):
                 # Get a adapter for the nested object
                 # Get the class the object is and get its adapter, then set
                 # the item in the dict to the output
                 r_obj[key] = cls.get_object_adapter(
                     cls.ADAPTER_FORMAT,
                     object.FIELDS[obj_key].get('relation_cls')).render(
-                        cls.ADAPTER_FORMAT, obj, *args, **kwargs)
+                    cls.ADAPTER_FORMAT, obj, *args, **kwargs)
+            elif hasattr(field, 'objname'):
+                # Add by daidv: Check if field is OVO field and have a relation
+                r_obj[key] = cls.get_object_adapter(
+                    cls.ADAPTER_FORMAT,
+                    field.objname).render(
+                    cls.ADAPTER_FORMAT, obj, *args, **kwargs)
             elif _is_datetime_field(object, obj_key) and obj is not None:
                 # So, we now have a datetime object to render correctly
                 # see bug #1579844
@@ -160,28 +174,30 @@ class DesignateAdapter(object):
 
         LOG.debug("Creating %s object with values %r" %
                   (output_object.obj_name(), values))
+        LOG.debug(output_object)
 
         try:
-            if isinstance(output_object, objects.ListObjectMixin):
+            if isinstance(output_object, (objects.ListObjectMixin,
+                                          objects.OVOListObjectMixin)):
                 # type_ = 'list'
                 return cls.get_object_adapter(
                     format_,
                     output_object)._parse_list(
-                        values, output_object, *args, **kwargs)
+                    values, output_object, *args, **kwargs)
             else:
                 # type_ = 'object'
                 return cls.get_object_adapter(
                     format_,
                     output_object)._parse_object(
-                        values, output_object, *args, **kwargs)
+                    values, output_object, *args, **kwargs)
 
         except TypeError as e:
             LOG.exception(_LE("TypeError creating %(name)s with values"
                               " %(values)r") %
                           {"name": output_object.obj_name(), "values": values})
             error_message = (u'Provided object is not valid. '
-                            u'Got a TypeError with message {}'.format(
-                                six.text_type(e)))
+                             u'Got a TypeError with message {}'.format(
+                                                            six.text_type(e)))
             raise exceptions.InvalidObject(error_message)
 
         except AttributeError as e:
@@ -189,8 +205,8 @@ class DesignateAdapter(object):
                               "with values %(values)r") %
                           {"name": output_object.obj_name(), "values": values})
             error_message = (u'Provided object is not valid. '
-                            u'Got an AttributeError with message {}'.format(
-                                six.text_type(e)))
+                             u'Got an AttributeError with message {}'.format(
+                                                            six.text_type(e)))
             raise exceptions.InvalidObject(error_message)
 
         except exceptions.InvalidObject:
@@ -204,8 +220,8 @@ class DesignateAdapter(object):
                               "values %(values)r") %
                           {"name": output_object.obj_name(), "values": values})
             error_message = (u'Provided object is not valid. '
-                            u'Got a {} error with message {}'.format(
-                                type(e).__name__, six.text_type(e)))
+                             u'Got a {} error with message {}'.format(
+                                        type(e).__name__, six.text_type(e)))
             raise exceptions.InvalidObject(error_message)
 
     @classmethod
@@ -229,7 +245,7 @@ class DesignateAdapter(object):
                 # initially set (eg zone name)
                 if cls.MODIFICATIONS['fields'][key].get('immutable', False):
                     if getattr(output_object, obj_key, False) and \
-                            getattr(output_object, obj_key) != value:
+                                    getattr(output_object, obj_key) != value:
                         error_keys.append(key)
                         break
                 # Is this field a read only field
@@ -239,8 +255,19 @@ class DesignateAdapter(object):
                     break
 
                 # Check if the key is a nested object
-                if output_object.FIELDS.get(obj_key, {}).get(
-                        'relation', False):
+                check_field = output_object.FIELDS.get(obj_key, {})
+                if isinstance(check_field, fields.Field) and hasattr(
+                        check_field, 'objname'):
+                    # (daidv): Check if field is OVO field and have a relation
+                    obj_class_name = output_object.FIELDS.get(obj_key).objname
+                    obj_class = objects.OVODesignateObject.obj_cls_from_name(
+                        obj_class_name)
+                    obj = cls.get_object_adapter(
+                        cls.ADAPTER_FORMAT, obj_class_name).parse(
+                        value, obj_class())
+                    setattr(output_object, obj_key, obj)
+                elif not isinstance(check_field, fields.Field)\
+                        and check_field.get('relation', False):
                     # Get the right class name
                     obj_class_name = output_object.FIELDS.get(
                         obj_key, {}).get('relation_cls')
@@ -252,7 +279,7 @@ class DesignateAdapter(object):
                     obj = \
                         cls.get_object_adapter(
                             cls.ADAPTER_FORMAT, obj_class_name).parse(
-                                value, obj_class())
+                            value, obj_class())
                     # Set the object on the main object
                     setattr(output_object, obj_key, obj)
                 else:
@@ -285,7 +312,7 @@ class DesignateAdapter(object):
                     # We need to do `get_object_adapter` as we need a new
                     # instance of the Adapter
                     output_object.LIST_ITEM_TYPE()).parse(
-                        item, output_object.LIST_ITEM_TYPE()))
+                    item, output_object.LIST_ITEM_TYPE()))
 
         # Return the filled list
         return output_object
