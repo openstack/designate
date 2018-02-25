@@ -13,61 +13,24 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from designate.objects import base
+from designate.objects import ovo_base as base
+from designate.objects import fields
 
 
+@base.DesignateRegistry.register
 class FloatingIP(base.DictObjectMixin, base.PersistentObjectMixin,
                  base.DesignateObject):
-    FIELDS = {
-        "address": {
-            'schema': {
-                'type': 'string',
-                'format': ['ipv4', 'ipv6']
-            },
-        },
-        "description": {
-            'schema': {
-                'type': ['string', 'null'],
-                'maxLength': 160
-            },
-        },
-        "id": {
-            'schema': {
-                'type': 'string',
-                'format': 'uuid'
-            }
-        },
-        "ptrdname": {
-            'schema': {
-                'type': ['string', 'null'],
-                'format': 'domainname'
-            }
-        },
-        "ttl": {
-            'schema': {
-                'type': ['integer', 'null'],
-                'minimum': 1,
-                'maximum': 2147483647
-            }
-        },
-        "region": {
-            'schema': {
-                'type': ['string', 'null'],
-            }
-        },
-        "action": {
-            'schema': {
-                'type': 'string',
-                'enum': ['CREATE', 'DELETE', 'UPDATE', 'NONE'],
-            }
-        },
-        "status": {
-            'schema': {
-                'type': 'string',
-                'enum': ['ACTIVE', 'PENDING', 'ERROR'],
-            }
-        }
-
+    fields = {
+        "address": fields.IPV4AddressField(nullable=True),
+        "description": fields.StringFields(nullable=True, maxLength=160),
+        "ptrdname": fields.DomainField(nullable=True),
+        "ttl": fields.IntegerFields(nullable=True,
+                                    minimum=1, maximum=2147483647),
+        "region": fields.StringFields(nullable=True),
+        "action": fields.EnumField(['CREATE', 'DELETE',
+                                    'UPDATE', 'NONE'], nullable=True),
+        "status": fields.EnumField(['ACTIVE',
+                                    'PENDING', 'ERROR'], nullable=True)
     }
 
     STRING_KEYS = [
@@ -79,5 +42,10 @@ class FloatingIP(base.DictObjectMixin, base.PersistentObjectMixin,
         return '%s:%s' % (self.region, self.id)
 
 
+@base.DesignateRegistry.register
 class FloatingIPList(base.ListObjectMixin, base.DesignateObject):
     LIST_ITEM_TYPE = FloatingIP
+
+    fields = {
+        'objects': fields.ListOfObjectsField('FloatingIP'),
+    }
