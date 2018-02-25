@@ -13,46 +13,21 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from designate.objects import base
+from designate.objects import ovo_base as base
+from designate.objects import fields
 
 
+@base.DesignateRegistry.register
 class ZoneTransferAccept(base.DictObjectMixin, base.PersistentObjectMixin,
                          base.DesignateObject):
-    FIELDS = {
-        'zone_transfer_request_id': {
-            'schema': {
-                "type": "string",
-                "format": "uuid"
-            },
-            "immutable": True
-        },
-        'tenant_id': {
-            'schema': {
-                'type': 'string',
-            },
-            'read_only': True
-        },
-        'status': {
-            'schema': {
-                "type": "string",
-                "enum": ["ACTIVE", "PENDING", "DELETED", "ERROR", "COMPLETE"],
-            },
-            'read_only': True
-        },
-        'key': {
-            'schema': {
-                "type": "string",
-                "maxLength": 160
-            },
-            'required': True
-        },
-        'zone_id': {
-            'schema': {
-                "type": "string",
-                "format": "uuid"
-            },
-            "immutable": True
-        },
+    fields = {
+        'zone_transfer_request_id': fields.UUIDFields(nullable=True),
+        'tenant_id': fields.StringFields(nullable=True),
+        'status': fields.EnumField(nullable=True, valid_values=[
+            "ACTIVE", "PENDING", "DELETED", "ERROR", "COMPLETE"
+        ]),
+        'key': fields.StringFields(maxLength=160),
+        'zone_id': fields.UUIDFields(nullable=True),
     }
 
     STRING_KEYS = [
@@ -60,6 +35,11 @@ class ZoneTransferAccept(base.DictObjectMixin, base.PersistentObjectMixin,
     ]
 
 
+@base.DesignateRegistry.register
 class ZoneTransferAcceptList(base.ListObjectMixin, base.DesignateObject,
                              base.PagedListObjectMixin):
     LIST_ITEM_TYPE = ZoneTransferAccept
+
+    fields = {
+        'objects': fields.ListOfObjectsField('ZoneTransferAccept'),
+    }

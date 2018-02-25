@@ -13,49 +13,32 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from designate.objects import base
+from designate.objects import ovo_base as base
+from designate.objects import fields
 
 
+@base.DesignateRegistry.register
 class ZoneImport(base.DictObjectMixin, base.PersistentObjectMixin,
                base.DesignateObject):
-    FIELDS = {
-        'status': {
-            'schema': {
-                "type": "string",
-                "enum": ["ACTIVE", "PENDING", "DELETED", "ERROR", "COMPLETE"],
-            },
-            'read_only': True
-        },
-        'task_type': {
-            'schema': {
-                "type": "string",
-                "enum": ["IMPORT"],
-            },
-            'read_only': True
-        },
-        'tenant_id': {
-            'schema': {
-                'type': 'string',
-            },
-            'read_only': True
-        },
-        'message': {
-            'schema': {
-                'type': ['string', 'null'],
-                'maxLength': 160
-            },
-            'read_only': True
-        },
-        'zone_id': {
-            'schema': {
-                "type": "string",
-                "format": "uuid"
-            },
-            'read_only': True
-        },
+    fields = {
+        'status': fields.EnumField(
+            valid_values=["ACTIVE", "PENDING",
+                          "DELETED", "ERROR", "COMPLETE"]
+        ),
+        'task_type': fields.EnumField(
+            valid_values=["IMPORT"]
+        ),
+        'tenant_id': fields.StringFields(nullable=True),
+        'message': fields.StringFields(nullable=True, maxLength=160),
+        'zone_id': fields.UUIDFields(nullable=True)
     }
 
 
+@base.DesignateRegistry.register
 class ZoneImportList(base.ListObjectMixin, base.DesignateObject,
                    base.PagedListObjectMixin):
     LIST_ITEM_TYPE = ZoneImport
+
+    fields = {
+        'objects': fields.ListOfObjectsField('ZoneImport'),
+    }

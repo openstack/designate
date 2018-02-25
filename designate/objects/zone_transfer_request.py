@@ -13,57 +13,22 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from designate.objects import base
+from designate.objects import ovo_base as base
+from designate.objects import fields
 
 
+@base.DesignateRegistry.register
 class ZoneTransferRequest(base.DictObjectMixin, base.PersistentObjectMixin,
-                          base.DesignateObject,):
-    FIELDS = {
-        'key': {
-            'schema': {
-                "type": "string",
-                "maxLength": 160
-            },
-        },
-        'zone_id': {
-            'schema': {
-                "type": "string",
-                "description": "Zone identifier",
-                "format": "uuid"
-            },
-            "immutable": True
-        },
-        'description': {
-            'schema': {
-                "type": ["string", "null"],
-                "maxLength": 160
-            }
-        },
-        'tenant_id': {
-            'schema': {
-                'type': 'string',
-            },
-            'read_only': True
-        },
-        'target_tenant_id': {
-            'schema': {
-                'type': ['string', 'null'],
-            },
-            'immutable': True
-        },
-        'status': {
-            'schema': {
-                "type": "string",
-                "enum": ["ACTIVE", "PENDING", "DELETED", "ERROR", "COMPLETE"],
-            }
-        },
-        'zone_name': {
-            'schema': {
-                "type": ["string", "null"],
-                "maxLength": 255,
-            },
-            'read_only': True
-        },
+                          base.DesignateObject, ):
+    fields = {
+        'key': fields.StringFields(nullable=True, maxLength=160),
+        'zone_id': fields.UUIDFields(nullable=True),
+        'description': fields.StringFields(nullable=True, maxLength=160),
+        'tenant_id': fields.StringFields(nullable=True),
+        'target_tenant_id': fields.StringFields(nullable=True),
+        'status': fields.EnumField(nullable=True, valid_values=[
+            "ACTIVE", "PENDING", "DELETED", "ERROR", "COMPLETE"]),
+        'zone_name': fields.StringFields(nullable=True, maxLength=255),
     }
 
     STRING_KEYS = [
@@ -71,5 +36,9 @@ class ZoneTransferRequest(base.DictObjectMixin, base.PersistentObjectMixin,
     ]
 
 
+@base.DesignateRegistry.register
 class ZoneTransferRequestList(base.ListObjectMixin, base.DesignateObject):
     LIST_ITEM_TYPE = ZoneTransferRequest
+    fields = {
+        'objects': fields.ListOfObjectsField('ZoneTransferRequest'),
+    }
