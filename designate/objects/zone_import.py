@@ -21,11 +21,11 @@ from designate.objects import fields
 class ZoneImport(base.DictObjectMixin, base.PersistentObjectMixin,
                base.DesignateObject):
     fields = {
-        'status': fields.EnumField(
+        'status': fields.EnumField(nullable=True,
             valid_values=["ACTIVE", "PENDING",
                           "DELETED", "ERROR", "COMPLETE"]
         ),
-        'task_type': fields.EnumField(
+        'task_type': fields.EnumField(nullable=True,
             valid_values=["IMPORT"]
         ),
         'tenant_id': fields.StringFields(nullable=True),

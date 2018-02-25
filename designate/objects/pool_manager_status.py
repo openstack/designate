@@ -13,44 +13,21 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from designate.objects import base
+from designate.objects import ovo_base as base
+from designate.objects import fields
 
 
+@base.DesignateRegistry.register
 class PoolManagerStatus(base.DictObjectMixin, base.PersistentObjectMixin,
                         base.DesignateObject):
-    FIELDS = {
-        'nameserver_id': {
-            'schema': {
-                'type': 'string',
-                'format': 'uuid',
-            },
-            'required': True
-        },
-        'zone_id': {
-            'schema': {
-                'type': 'string',
-                'format': 'uuid',
-            },
-            'required': True},
-        'status': {
-            'schema': {
-                'type': ['string', 'null'],
-                'enum': ['ACTIVE', 'PENDING', 'ERROR'],
-            },
-        },
-        'serial_number': {
-            'schema': {
-                'type': 'integer',
-                'minimum': 0,
-                'maximum': 4294967295,
-            },
-        },
-        'action': {
-            'schema': {
-                'type': 'string',
-                'enum': ['CREATE', 'DELETE', 'UPDATE', 'NONE'],
-            },
-        }
+    fields = {
+        'nameserver_id': fields.UUIDFields(),
+        'zone_id': fields.UUIDFields(),
+        'status': fields.EnumField(['ACTIVE', 'PENDING', 'ERROR',
+                                    'SUCCESS', 'COMPLETE'], nullable=True),
+        'serial_number': fields.IntegerFields(minimum=0, maximum=4294967295),
+        'action': fields.EnumField(['CREATE', 'DELETE',
+                                    'UPDATE', 'NONE'], nullable=True),
     }
 
     STRING_KEYS = [
@@ -58,5 +35,9 @@ class PoolManagerStatus(base.DictObjectMixin, base.PersistentObjectMixin,
     ]
 
 
+@base.DesignateRegistry.register
 class PoolManagerStatusList(base.ListObjectMixin, base.DesignateObject):
     LIST_ITEM_TYPE = PoolManagerStatus
+    fields = {
+        'objects': fields.ListOfObjectsField('PoolManagerStatus'),
+    }

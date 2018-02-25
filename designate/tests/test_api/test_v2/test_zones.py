@@ -519,9 +519,14 @@ class ApiV2ZonesTest(ApiV2TestCase):
 
     def test_update_secondary(self):
         # Create a zone
-        fixture = self.get_zone_fixture('SECONDARY', 0)
-
-        zone = objects.Zone(**fixture)
+        zone = objects.Zone(
+            name='example.com.',
+            type='SECONDARY',
+            masters=objects.ZoneMasterList.from_list([
+                {'host': '1.0.0.0', 'port': 69},
+                {'host': '2.0.0.0', 'port': 69}
+            ])
+        )
         zone.email = cfg.CONF['service:central'].managed_resource_email
 
         # Create a zone

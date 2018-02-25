@@ -12,43 +12,21 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-from designate.objects import base
+from designate.objects import ovo_base as base
+from designate.objects import fields
 
 
+@base.DesignateRegistry.register
 class PoolTarget(base.DictObjectMixin, base.PersistentObjectMixin,
                  base.DesignateObject):
-    FIELDS = {
-        'pool_id': {
-            'schema': {
-                'type': 'string',
-                'description': 'Pool identifier',
-                'format': 'uuid',
-            },
-        },
-        'type': {},
-        'tsigkey_id': {
-            'schema': {
-                'type': ['string', 'null'],
-                'description': 'TSIG identifier',
-                'format': 'uuid',
-            },
-        },
-        'description': {
-            'schema': {
-                'type': ['string', 'null'],
-                'description': 'Description for the pool',
-                'maxLength': 160
-            }
-        },
-        'masters': {
-            'relation': True,
-            'relation_cls': 'PoolTargetMasterList'
-        },
-        'options': {
-            'relation': True,
-            'relation_cls': 'PoolTargetOptionList'
-        },
-        'backend': {}
+    fields = {
+        'pool_id': fields.UUIDFields(nullable=True),
+        'type': fields.AnyField(nullable=True),
+        'tsigkey_id': fields.UUIDFields(nullable=True),
+        'description': fields.StringFields(maxLength=160, nullable=True),
+        'masters': fields.ObjectFields('PoolTargetMasterList'),
+        'options': fields.ObjectFields('PoolTargetOptionList'),
+        'backend': fields.AnyField(nullable=True),
     }
 
     STRING_KEYS = [
@@ -56,5 +34,9 @@ class PoolTarget(base.DictObjectMixin, base.PersistentObjectMixin,
     ]
 
 
+@base.DesignateRegistry.register
 class PoolTargetList(base.ListObjectMixin, base.DesignateObject):
     LIST_ITEM_TYPE = PoolTarget
+    fields = {
+        'objects': fields.ListOfObjectsField('PoolTarget'),
+    }

@@ -14,64 +14,25 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from designate import utils
-from designate.objects import base
+from designate.objects import ovo_base as base
+from designate.objects import fields
 
 
+@base.DesignateRegistry.register
 class Pool(base.DictObjectMixin, base.PersistentObjectMixin,
            base.DesignateObject):
-    FIELDS = {
-        'name': {
-            'schema': {
-                'type': 'string',
-                'description': 'Pool name',
-                'maxLength': 50,
-            },
-            'immutable': True,
-            'required': True
-        },
-        'description': {
-            'schema': {
-                'type': ['string', 'null'],
-                'description': 'Description for the pool',
-                'maxLength': 160
-            }
-        },
-        'tenant_id': {
-            'schema': {
-                'type': ['string', 'null'],
-                'description': 'Project identifier',
-                'maxLength': 36,
-            },
-            'immutable': True
-        },
-        'provisioner': {
-            'schema': {
-                'type': ['string', 'null'],
-                'description': 'Provisioner used for this pool',
-                'maxLength': 160
-            }
-        },
-        'attributes': {
-            'relation': True,
-            'relation_cls': 'PoolAttributeList',
-        },
-        'ns_records': {
-            'relation': True,
-            'relation_cls': 'PoolNsRecordList',
-            'required': True
-        },
-        'nameservers': {
-            'relation': True,
-            'relation_cls': 'PoolNameserverList'
-        },
-        'targets': {
-            'relation': True,
-            'relation_cls': 'PoolTargetList'
-        },
-        'also_notifies': {
-            'relation': True,
-            'relation_cls': 'PoolAlsoNotifyList'
-        },
+    fields = {
+        'name': fields.StringFields(maxLength=50),
+        'description': fields.StringFields(nullable=True, maxLength=160),
+        'tenant_id': fields.StringFields(maxLength=36, nullable=True),
+        'provisioner': fields.StringFields(nullable=True, maxLength=160),
+        'attributes': fields.ObjectFields('PoolAttributeList', nullable=True),
+        'ns_records': fields.ObjectFields('PoolNsRecordList', nullable=True),
+        'nameservers': fields.ObjectFields('PoolNameserverList',
+                                           nullable=True),
+        'targets': fields.ObjectFields('PoolTargetList', nullable=True),
+        'also_notifies': fields.ObjectFields('PoolAlsoNotifyList',
+                                             nullable=True),
     }
 
     @classmethod
@@ -144,8 +105,13 @@ class Pool(base.DictObjectMixin, base.PersistentObjectMixin,
     ]
 
 
+@base.DesignateRegistry.register
 class PoolList(base.ListObjectMixin, base.DesignateObject):
     LIST_ITEM_TYPE = Pool
+
+    fields = {
+        'objects': fields.ListOfObjectsField('Pool'),
+    }
 
     def __contains__(self, pool):
         for p in self.objects:

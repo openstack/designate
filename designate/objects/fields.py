@@ -288,3 +288,20 @@ class BaseObject(ovoo_fields.FieldType):
 
 class BaseObjectField(ovoo_fields.AutoTypedField):
     AUTO_TYPE = BaseObject()
+
+
+class IPOrHost(IPV4AndV6AddressField):
+    def __init__(self, nullable=False, read_only=False,
+                 default=ovoo_fields.UnspecifiedDefault):
+        super(IPOrHost, self).__init__(nullable=nullable,
+                                       default=default, read_only=read_only)
+
+    def coerce(self, obj, attr, value):
+        try:
+            value = super(IPOrHost, self).coerce(obj, attr, value)
+        except ValueError:
+            if not re.match(StringFields.RE_ZONENAME, value):
+                raise ValueError("%s is not IP address or host name" % value)
+        # we use this field as a string, not need a netaddr.IPAdress
+        # as oslo.versionedobjects is using
+        return str(value)
