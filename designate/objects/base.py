@@ -21,6 +21,7 @@ from oslo_log import log as logging
 from oslo_utils import timeutils
 
 from designate import exceptions
+from designate.objects import validation_error
 from designate.schema import validators
 from designate.schema import format
 from designate.i18n import _
@@ -311,10 +312,8 @@ class DesignateObject(object):
 
         make_class_validator(self)
 
-        # NOTE(kiall): We make use of the Object registry here in order to
-        #              avoid an impossible circular import.
-        ValidationErrorList = self.obj_cls_from_name('ValidationErrorList')
-        ValidationError = self.obj_cls_from_name('ValidationError')
+        ValidationErrorList = validation_error.ValidationErrorList
+        ValidationError = validation_error.ValidationError
 
         errors = ValidationErrorList()
 

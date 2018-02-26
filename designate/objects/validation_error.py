@@ -11,16 +11,19 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-from designate.objects import base
+from designate.objects import ovo_base as base
+from designate.objects import fields
 
 
+@base.DesignateRegistry.register
 class ValidationError(base.DesignateObject):
-    FIELDS = {
-        'path': {},
-        'message': {},
-        'validator': {},
-        'validator_value': {},
-        'raw': {},
+
+    fields = {
+        'path': fields.AnyField(nullable=True),
+        'message': fields.AnyField(nullable=True),
+        'validator': fields.AnyField(nullable=True),
+        'validator_value': fields.AnyField(nullable=True),
+        'raw': fields.AnyField(nullable=True),
     }
 
     @classmethod
@@ -40,5 +43,10 @@ class ValidationError(base.DesignateObject):
         return e
 
 
+@base.DesignateRegistry.register
 class ValidationErrorList(base.ListObjectMixin, base.DesignateObject):
     LIST_ITEM_TYPE = ValidationError
+
+    fields = {
+        'objects': fields.ListOfObjectsField('ValidationError'),
+    }
