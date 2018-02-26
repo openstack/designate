@@ -37,17 +37,6 @@ def debug(*a, **kw):
         LOG.debug("%s: %s", k, repr(kw[k]))
 
 
-class TestRecordSet(objects.RecordSet):
-    FIELDS = {
-        'id': {},
-        'name': {},
-        'records': {
-            'relation': True,
-            'relation_cls': 'RecordList',
-        },
-    }
-
-
 def create_test_recordset():
     rs = objects.RecordSet(
         name='www.example.org.',

@@ -15,8 +15,7 @@ from six.moves.urllib import parse
 from oslo_config import cfg
 
 from designate.objects.adapters import base
-from designate.objects import base as obj_base
-from designate.objects import ovo_base as ovoobj_base
+from designate.objects import base as ovoobj_base
 from designate import exceptions
 
 
@@ -45,8 +44,7 @@ class APIv2Adapter(base.DesignateAdapter):
             r_list['links'] = cls._get_collection_links(
                 list_object, kwargs['request'])
         # Check if we should include metadata
-        if isinstance(list_object, (obj_base.PagedListObjectMixin,
-                                    ovoobj_base.PagedListObjectMixin)):
+        if isinstance(list_object, ovoobj_base.PagedListObjectMixin):
             metadata = {}
             if list_object.total_count is not None:
                 metadata['total_count'] = list_object.total_count

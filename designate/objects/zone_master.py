@@ -16,7 +16,7 @@
 from oslo_versionedobjects import base as ovoo_base
 
 from designate import utils
-from designate.objects import ovo_base as base
+from designate.objects import base
 from designate.objects import fields
 
 

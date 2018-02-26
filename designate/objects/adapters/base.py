@@ -60,8 +60,7 @@ class DesignateAdapter(object):
 
     @classmethod
     def get_object_adapter(cls, format_, object):
-        if isinstance(object, (objects.DesignateObject,
-                               objects.OVODesignateObject)):
+        if isinstance(object, objects.DesignateObject):
             key = '%s:%s' % (format_, object.obj_name())
         else:
             key = '%s:%s' % (format_, object)
@@ -82,8 +81,7 @@ class DesignateAdapter(object):
     @classmethod
     def render(cls, format_, object, *args, **kwargs):
 
-        if isinstance(object, (objects.ListObjectMixin,
-                               objects.OVOListObjectMixin)):
+        if isinstance(object, objects.ListObjectMixin):
             # type_ = 'list'
             return cls.get_object_adapter(
                 format_, object)._render_list(object, *args, **kwargs)
@@ -177,8 +175,7 @@ class DesignateAdapter(object):
         LOG.debug(output_object)
 
         try:
-            if isinstance(output_object, (objects.ListObjectMixin,
-                                          objects.OVOListObjectMixin)):
+            if isinstance(output_object, objects.ListObjectMixin):
                 # type_ = 'list'
                 return cls.get_object_adapter(
                     format_,
@@ -260,7 +257,7 @@ class DesignateAdapter(object):
                         check_field, 'objname'):
                     # (daidv): Check if field is OVO field and have a relation
                     obj_class_name = output_object.FIELDS.get(obj_key).objname
-                    obj_class = objects.OVODesignateObject.obj_cls_from_name(
+                    obj_class = objects.DesignateObject.obj_cls_from_name(
                         obj_class_name)
                     obj = cls.get_object_adapter(
                         cls.ADAPTER_FORMAT, obj_class_name).parse(

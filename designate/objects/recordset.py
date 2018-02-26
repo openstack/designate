@@ -22,7 +22,7 @@ from oslo_versionedobjects import exception as ovo_exc
 
 from designate import exceptions
 from designate import utils
-from designate.objects import ovo_base as base
+from designate.objects import base
 from designate.objects import fields
 from designate.objects.validation_error import ValidationError
 from designate.objects.validation_error import ValidationErrorList
