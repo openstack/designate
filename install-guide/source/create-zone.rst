@@ -16,7 +16,7 @@ In environments that include the DNS service, you can create a DNS Zone.
 
    .. code-block:: console
 
-      $ openstack zone create --email dnsmaster@example.com. example.com.
+      $ openstack zone create --email dnsmaster@example.com example.com.
       +----------------+--------------------------------------+
       | Field          | Value                                |
       +----------------+--------------------------------------+
