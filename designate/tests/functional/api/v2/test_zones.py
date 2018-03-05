@@ -423,6 +423,33 @@ class ApiV2ZonesTest(v2.ApiV2TestCase):
         self.assertEqual('prefix-%s' % zone['email'],
                          response.json['email'])
 
+    def test_update_zone_serial(self):
+        # Create a zone
+        zone = self.create_zone()
+
+        new_serial = zone['serial'] + 10000
+
+        # Prepare an update body
+        body = {'serial': new_serial}
+
+        response = self.client.patch_json('/zones/%s' % zone['id'], body,
+                                          status=202,
+                                          headers={'X-Test-Role': 'member'})
+
+        # Check the headers are what we expect
+        self.assertEqual(202, response.status_int)
+        self.assertEqual('application/json', response.content_type)
+
+        # Check the body structure is what we expect
+        self.assertIn('links', response.json)
+        self.assertIn('self', response.json['links'])
+        self.assertIn('status', response.json)
+
+        # Check the values returned are what we expect
+        self.assertIn('id', response.json)
+        self.assertIsNotNone(response.json['updated_at'])
+        self.assertEqual(new_serial, response.json['serial'])
+
     def test_update_zone_invalid_id(self):
         self._assert_invalid_uuid(self.client.patch_json, '/zones/%s',
                                   headers={'X-Test-Role': 'member'})

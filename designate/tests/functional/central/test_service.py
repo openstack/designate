@@ -1037,6 +1037,23 @@ class CentralServiceTest(designate.tests.functional.TestCase):
         self.assertFalse(zone.increment_serial)
         self.assertEqual('info@example.net', zone.email)
 
+    def test_update_zone_serial(self):
+        # Create a zone
+        zone = self.create_zone(email='info@example.org')
+        new_serial = zone.serial + 10000
+
+        zone.serial = new_serial
+
+        # Perform the update
+        self.central_service.update_zone(
+            self.admin_context, zone, increment_serial=False)
+
+        # Fetch the zone again
+        zone = self.central_service.get_zone(self.admin_context, zone.id)
+
+        # Ensure the zone was updated correctly
+        self.assertEqual(new_serial, zone.serial)
+
     def test_update_zone_name_fail(self):
         # Create a zone
         zone = self.create_zone(name='example.org.')
