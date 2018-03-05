@@ -2680,7 +2680,10 @@ class Service(service.RPCService, service.Service):
                 zone.type = 'PRIMARY'
 
                 for rrset in list(zone.recordsets):
-                    if rrset.type in ('NS', 'SOA'):
+                    if rrset.type == 'SOA':
+                        zone.recordsets.remove(rrset)
+                    # subdomain NS records should be kept
+                    elif rrset.type == 'NS' and rrset.name == zone.name:
                         zone.recordsets.remove(rrset)
 
             except dnszone.UnknownOrigin:
