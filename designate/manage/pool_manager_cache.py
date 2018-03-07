@@ -64,7 +64,3 @@ class DatabaseCommands(base.Commands):
     @base.args('revision', nargs='?')
     def upgrade(self, revision):
         get_manager().upgrade(revision)
-
-    @base.args('revision', nargs='?')
-    def downgrade(self, revision):
-        get_manager().downgrade(revision)
