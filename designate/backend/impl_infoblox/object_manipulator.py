@@ -96,7 +96,8 @@ class InfobloxObjectManipulator(object):
         return dns_view
 
     def get_dns_view(self, tenant):
-        if not self.connector.multi_tenant:
+        if (not self.connector.multi_tenant or
+                self.connector.multi_tenant == '0'):
             return self.connector.dns_view
         else:
             # Look for the network view with the specified TenantID EA
