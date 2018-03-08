@@ -130,10 +130,9 @@ class APIV2ZoneImportExportTest(ApiV2TestCase):
         # and dnspython considers that to be not equal.
         imported.delete_rdataset(imported.origin, 'SOA')
         exported.delete_rdataset(exported.origin, 'SOA')
-        # Delete NS records, since they won't be the same
+        # Delete NS records, except for delegated subdomains
         imported.delete_rdataset(imported.origin, 'NS')
         exported.delete_rdataset(exported.origin, 'NS')
-        imported.delete_rdataset('delegation', 'NS')
         self.assertEqual(imported, exported)
 
     # Metadata tests
