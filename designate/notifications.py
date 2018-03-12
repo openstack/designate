@@ -21,7 +21,6 @@ from oslo_config import cfg
 from oslo_log import log as logging
 import six
 
-from designate.i18n import _LW
 from designate.plugin import DriverPlugin
 from designate import objects
 from designate import rpc
@@ -52,7 +51,7 @@ def send_api_fault(context, url, status, exception):
 
 
 def init_notification_plugin():
-    LOG.debug("Loading notification plugin: %s" % cfg.CONF.notification_plugin)
+    LOG.debug("Loading notification plugin: %s", cfg.CONF.notification_plugin)
     cls = NotificationPlugin.get_driver(cfg.CONF.notification_plugin)
 
     global NOTIFICATION_PLUGIN
@@ -163,10 +162,10 @@ class Audit(NotificationPlugin):
                                               (int, float, bool,
                                                six.string_types, type(None)))
                                for val in (old_value, new_value)):
+                            LOG.warning("Nulling notification values after "
+                                        "unexpected values (%s, %s)",
+                                        old_value, new_value)
                             old_value, new_value = None, None
-                            msg = _LW("Nulling notification values after "
-                                      "unexpected values %s")
-                            LOG.warning(msg, (old_value, new_value))
 
                         if old_value == new_value:
                             continue

@@ -19,6 +19,7 @@ import monascastatsd
 
 from designate.metrics import Metrics
 from designate.metrics_client import noop
+from designate.tests import fixtures
 from designate.tests import TestCase
 
 from oslo_config import cfg
@@ -29,16 +30,17 @@ class TestNoopMetrics(TestCase):
 
     def setUp(self):
         super(TestCase, self).setUp()
+        self.stdlog = fixtures.StandardLogging()
+        self.useFixture(self.stdlog)
         self.CONF = self.useFixture(cfg_fixture.Config(cfg.CONF)).conf
         self.metrics = Metrics()
         self.metrics._client = noop.Client()
 
     def test_noop_metrics_enabled(self):
         self.CONF.set_override('enabled', True, 'monasca:statsd')
-        with mock.patch('designate.metrics_client.noop.LOG') as log_mock:
-            self.metrics.init()
-            log_mock.error.assert_called_once_with(
-                "Using noop metrics client. Metrics will be ignored.")
+        self.metrics.init()
+        self.assertIn("Using noop metrics client. Metrics will be ignored.",
+                      self.stdlog.logger.output)
 
     def test_noop_metrics_disabled(self):
         with mock.patch('designate.metrics_client.noop.LOG') as log_mock:
@@ -67,21 +69,22 @@ class TestMonascaMetrics(TestCase):
 
     def setUp(self):
         super(TestCase, self).setUp()
+        self.stdlog = fixtures.StandardLogging()
+        self.useFixture(self.stdlog)
         self.CONF = self.useFixture(cfg_fixture.Config(cfg.CONF)).conf
         self.metrics = Metrics()
 
     def test_monasca_metrics_enabled(self):
         self.CONF.set_override('enabled', True, 'monasca:statsd')
-        with mock.patch('designate.metrics.LOG') as log_mock:
-            self.metrics.init()
-            log_mock.info.assert_called_once_with(
-                "Statsd reports to 127.0.0.1 8125")
+        self.metrics.init()
+        self.assertIn("Statsd reports to 127.0.0.1 8125",
+                      self.stdlog.logger.output)
 
     def test_monasca_metrics_disabled(self):
-        with mock.patch('designate.metrics.LOG') as log_mock:
-            self.metrics.init()
-            log_mock.info.assert_called_once_with(
-                "Statsd disabled")
+        self.metrics.init()
+        self.assertIn(
+            "Statsd disabled",
+            self.stdlog.logger.output)
 
     @mock.patch('socket.socket.connect')
     @mock.patch('socket.socket.send')

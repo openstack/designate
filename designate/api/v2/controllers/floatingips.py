@@ -22,7 +22,6 @@ from designate import exceptions
 from designate import objects
 from designate.objects.adapters import DesignateAdapter
 from designate.api.v2.controllers import rest
-from designate.i18n import _LI
 
 LOG = logging.getLogger(__name__)
 
@@ -52,7 +51,7 @@ class FloatingIPController(rest.RestController):
 
         fips = self.central_api.list_floatingips(context)
 
-        LOG.info(_LI("Retrieved %(fips)s"), {'fips': fips})
+        LOG.info("Retrieved %(fips)s", {'fips': fips})
 
         return DesignateAdapter.render('API_v2', fips, request=request)
 
@@ -80,7 +79,7 @@ class FloatingIPController(rest.RestController):
 
         fip.validate()
 
-        LOG.info(_LI("Updated %(fip)s"), {'fip': fip})
+        LOG.info("Updated %(fip)s", {'fip': fip})
 
         fip = self.central_api.update_floatingip(context, region, id_, fip)
 
@@ -101,6 +100,6 @@ class FloatingIPController(rest.RestController):
 
         fip = self.central_api.get_floatingip(context, region, id_)
 
-        LOG.info(_LI("Retrieved %(fip)s"), {'fip': fip})
+        LOG.info("Retrieved %(fip)s", {'fip': fip})
 
         return DesignateAdapter.render('API_v2', fip, request=request)

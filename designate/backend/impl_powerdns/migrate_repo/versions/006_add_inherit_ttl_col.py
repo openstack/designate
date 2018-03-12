@@ -16,8 +16,6 @@
 from oslo_log import log as logging
 from sqlalchemy import MetaData, Table, Column, Boolean
 
-from designate.i18n import _LW
-
 
 LOG = logging.getLogger(__name__)
 meta = MetaData()
@@ -52,8 +50,8 @@ def upgrade(migrate_engine):
                'dns.records.ttl = designate.domains.ttl WHERE powerdns.records'
                '.inherit_ttl = 1;')
 
-        LOG.warning(_LW('**** A manual post-migration step is required ****'))
-        LOG.warning(_LW('Please issue this query: %s') % pmq)
+        LOG.warning('**** A manual post-migration step is required ****')
+        LOG.warning('Please issue this query: %s', pmq)
 
 
 def downgrade(migrate_engine):

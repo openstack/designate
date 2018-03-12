@@ -21,7 +21,6 @@ from designate import exceptions
 from designate import utils
 from designate.api.v2.controllers import rest
 from designate.objects.adapters import DesignateAdapter
-from designate.i18n import _LI
 
 LOG = logging.getLogger(__name__)
 
@@ -41,7 +40,7 @@ class ZoneImportController(rest.RestController):
         zone_import = self.central_api.get_zone_import(
             context, import_id)
 
-        LOG.info(_LI("Retrieved %(import)s"), {'import': zone_import})
+        LOG.info("Retrieved %(import)s", {'import': zone_import})
 
         return DesignateAdapter.render(
             'API_v2',
@@ -65,8 +64,7 @@ class ZoneImportController(rest.RestController):
         zone_imports = self.central_api.find_zone_imports(
             context, criterion, marker, limit, sort_key, sort_dir)
 
-        LOG.info(_LI("Retrieved %(imports)s"),
-                 {'imports': zone_imports})
+        LOG.info("Retrieved %(imports)s", {'imports': zone_imports})
 
         return DesignateAdapter.render(
             'API_v2',
@@ -93,7 +91,7 @@ class ZoneImportController(rest.RestController):
             context, body)
         response.status_int = 202
 
-        LOG.info(_LI("Created %(zone_import)s"), {'zone_import': zone_import})
+        LOG.info("Created %(zone_import)s", {'zone_import': zone_import})
 
         zone_import = DesignateAdapter.render(
             'API_v2', zone_import, request=request)
@@ -115,7 +113,7 @@ class ZoneImportController(rest.RestController):
         zone_import = self.central_api.delete_zone_import(
             context, zone_import_id)
 
-        LOG.info(_LI("Deleted %(zone_import)s"), {'zone_import': zone_import})
+        LOG.info("Deleted %(zone_import)s", {'zone_import': zone_import})
 
         response.status_int = 204
 

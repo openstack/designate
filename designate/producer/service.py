@@ -17,7 +17,6 @@ from oslo_config import cfg
 from oslo_log import log as logging
 import oslo_messaging as messaging
 
-from designate.i18n import _LI
 from designate import coordination
 from designate import quota
 from designate import service
@@ -93,5 +92,5 @@ class Service(service.RPCService, coordination.CoordinationMixin,
             self.tg.add_timer(interval, task)
 
     def _rebalance(self, my_partitions, members, event):
-        LOG.info(_LI("Received rebalance event %s"), event)
+        LOG.info("Received rebalance event %s", event)
         self.partition_range = my_partitions

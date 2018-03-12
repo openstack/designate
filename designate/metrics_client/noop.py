@@ -13,9 +13,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 #
-
-from designate.i18n import _LE
-
 from oslo_log import log as logging
 
 LOG = logging.getLogger(__name__)
@@ -32,7 +29,7 @@ class NoopConnection(object):
         pass
 
     def connect(self, *a, **kw):
-        LOG.error(_LE('Using noop metrics client. Metrics will be ignored.'))
+        LOG.error('Using noop metrics client. Metrics will be ignored.')
         pass
 
     def open_buffer(self):

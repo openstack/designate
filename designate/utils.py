@@ -33,8 +33,6 @@ from oslo_utils.netutils import is_valid_ipv6
 from designate.common import config
 from designate import exceptions
 from designate.i18n import _
-from designate.i18n import _LI
-
 
 LOG = logging.getLogger(__name__)
 
@@ -481,7 +479,7 @@ def bind_tcp(host, port, tcp_backlog, tcp_keepidle=None):
     :type tcp_keepidle: int
     :returns: socket
     """
-    LOG.info(_LI('Opening TCP Listening Socket on %(host)s:%(port)d'),
+    LOG.info('Opening TCP Listening Socket on %(host)s:%(port)d',
              {'host': host, 'port': port})
     family = socket.AF_INET6 if is_valid_ipv6(host) else socket.AF_INET
     sock_tcp = socket.socket(family, socket.SOCK_STREAM)
@@ -492,7 +490,7 @@ def bind_tcp(host, port, tcp_backlog, tcp_keepidle=None):
     try:
         sock_tcp.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
     except Exception:
-        LOG.info(_LI('SO_REUSEPORT not available, ignoring.'))
+        LOG.info('SO_REUSEPORT not available, ignoring.')
 
     # This option isn't available in the OS X version of eventlet
     if tcp_keepidle and hasattr(socket, 'TCP_KEEPIDLE'):
@@ -504,7 +502,7 @@ def bind_tcp(host, port, tcp_backlog, tcp_keepidle=None):
     sock_tcp.bind((host, port))
     if port == 0:
         newport = sock_tcp.getsockname()[1]
-        LOG.info(_LI('Listening on TCP port %(port)d'), {'port': newport})
+        LOG.info('Listening on TCP port %(port)d'), {'port': newport}
 
     sock_tcp.listen(tcp_backlog)
 
@@ -521,7 +519,7 @@ def bind_udp(host, port):
     :type port: int
     :returns: socket
     """
-    LOG.info(_LI('Opening UDP Listening Socket on %(host)s:%(port)d'),
+    LOG.info('Opening UDP Listening Socket on %(host)s:%(port)d',
              {'host': host, 'port': port})
     family = socket.AF_INET6 if is_valid_ipv6(host) else socket.AF_INET
     sock_udp = socket.socket(family, socket.SOCK_DGRAM)
@@ -531,13 +529,13 @@ def bind_udp(host, port):
     try:
         sock_udp.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
     except Exception:
-        LOG.info(_LI('SO_REUSEPORT not available, ignoring.'))
+        LOG.info('SO_REUSEPORT not available, ignoring.')
 
     sock_udp.setblocking(True)
     sock_udp.bind((host, port))
     if port == 0:
         newport = sock_udp.getsockname()[1]
-        LOG.info(_LI('Listening on UDP port %(port)d'), {'port': newport})
+        LOG.info('Listening on UDP port %(port)d', {'port': newport})
 
     return sock_udp
 

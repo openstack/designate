@@ -42,7 +42,7 @@ cfg.CONF.register_opts(quota_opts)
 def get_quota():
     quota_driver = cfg.CONF.quota_driver
 
-    LOG.debug("Loading quota driver: %s" % quota_driver)
+    LOG.debug("Loading quota driver: %s", quota_driver)
 
     cls = base.Quota.get_driver(quota_driver)
 

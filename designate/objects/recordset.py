@@ -131,8 +131,8 @@ class RecordSet(base.DesignateObject, base.DictObjectMixin,
         changes = record_cls.get_recordset_schema_changes()
         old_fields = {}
         if changes:
-            LOG.debug("Record %s is overriding the RecordSet schema with: %s" %
-                      (record_cls.obj_name(), changes))
+            LOG.debug("Record %s is overriding the RecordSet schema with: %s",
+                      record_cls.obj_name(), changes)
             old_fields = deepcopy(self.FIELDS)
             self.FIELDS = utils.deep_dict_merge(self.FIELDS, changes)
 

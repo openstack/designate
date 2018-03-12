@@ -25,7 +25,6 @@ from oslo_utils import excutils
 from sqlalchemy.sql import select
 
 from designate import exceptions
-from designate.i18n import _LC
 from designate.backend import base
 from designate.backend.impl_powerdns import tables
 from designate.sqlalchemy import session
@@ -163,9 +162,8 @@ class PowerDNSBackend(base.Backend):
         except exceptions.ZoneNotFound:
             # If the Zone is already gone, that's ok. We're deleting it
             # anyway, so just log and continue.
-            LOG.critical(_LC('Attempted to delete a zone which is '
-                             'not present in the backend. ID: %s') %
-                         zone['id'])
+            LOG.critical('Attempted to delete a zone which is not present '
+                         'in the backend. ID: %s', zone['id'])
             return
         except Exception:
             with excutils.save_and_reraise_exception():

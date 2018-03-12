@@ -21,7 +21,7 @@ LOG = logging.getLogger(__name__)
 
 
 def get_backend(backend_driver, agent_service):
-    LOG.debug("Loading backend driver: %s" % backend_driver)
+    LOG.debug("Loading backend driver: %s", backend_driver)
 
     cls = base.AgentBackend.get_driver(backend_driver)
 

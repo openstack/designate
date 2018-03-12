@@ -24,7 +24,6 @@ from sqlalchemy.sql.expression import or_
 
 from designate import exceptions
 from designate import objects
-from designate.i18n import _LI
 from designate.sqlalchemy import base as sqlalchemy_base
 from designate.storage import base as storage_base
 from designate.storage.impl_sqlalchemy import tables
@@ -476,10 +475,10 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             limit=limit,
         )
         if not zones:
-            LOG.info(_LI("No zones to be purged"))
+            LOG.info("No zones to be purged")
             return
 
-        LOG.debug(_LI("Purging %d zones"), len(zones))
+        LOG.debug("Purging %d zones", len(zones))
 
         zones_by_id = {z.id: z for z in zones}
 
@@ -492,11 +491,11 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
                 values(parent_zone_id=surviving_parent_id)
 
             resultproxy = self.session.execute(query)
-            LOG.debug(_LI("%d child zones updated"), resultproxy.rowcount)
+            LOG.debug("%d child zones updated", resultproxy.rowcount)
 
             self.purge_zone(context, zone)
 
-        LOG.info(_LI("Purged %d zones"), len(zones))
+        LOG.info("Purged %d zones", len(zones))
         return len(zones)
 
     def count_zones(self, context, criterion=None):

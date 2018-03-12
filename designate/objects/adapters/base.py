@@ -20,7 +20,6 @@ from oslo_versionedobjects import fields
 from designate import objects
 from designate import utils
 from designate import exceptions
-from designate.i18n import _LE, _LI
 
 LOG = log.getLogger(__name__)
 
@@ -170,8 +169,8 @@ class DesignateAdapter(object):
     @classmethod
     def parse(cls, format_, values, output_object, *args, **kwargs):
 
-        LOG.debug("Creating %s object with values %r" %
-                  (output_object.obj_name(), values))
+        LOG.debug("Creating %s object with values %r",
+                  output_object.obj_name(), values)
         LOG.debug(output_object)
 
         try:
@@ -189,33 +188,45 @@ class DesignateAdapter(object):
                     values, output_object, *args, **kwargs)
 
         except TypeError as e:
-            LOG.exception(_LE("TypeError creating %(name)s with values"
-                              " %(values)r") %
-                          {"name": output_object.obj_name(), "values": values})
+            LOG.exception(
+                "TypeError creating %(name)s with values %(values)r",
+                {
+                    "name": output_object.obj_name(),
+                    "values": values
+                })
             error_message = (u'Provided object is not valid. '
                              u'Got a TypeError with message {}'.format(
                                                             six.text_type(e)))
             raise exceptions.InvalidObject(error_message)
 
         except AttributeError as e:
-            LOG.exception(_LE("AttributeError creating %(name)s "
-                              "with values %(values)r") %
-                          {"name": output_object.obj_name(), "values": values})
+            LOG.exception(
+                "AttributeError creating %(name)s with values %(values)r",
+                {
+                    "name": output_object.obj_name(),
+                    "values": values
+                })
             error_message = (u'Provided object is not valid. '
                              u'Got an AttributeError with message {}'.format(
                                                             six.text_type(e)))
             raise exceptions.InvalidObject(error_message)
 
         except exceptions.InvalidObject:
-            LOG.info(_LI("InvalidObject creating %(name)s with "
-                         "values %(values)r"),
-                     {"name": output_object.obj_name(), "values": values})
+            LOG.info(
+                "InvalidObject creating %(name)s with values %(values)r",
+                {
+                    "name": output_object.obj_name(),
+                    "values": values
+                })
             raise
 
         except Exception as e:
-            LOG.exception(_LE("Exception creating %(name)s with "
-                              "values %(values)r") %
-                          {"name": output_object.obj_name(), "values": values})
+            LOG.exception(
+                "Exception creating %(name)s with values %(values)r",
+                {
+                    "name": output_object.obj_name(),
+                    "values": values
+                })
             error_message = (u'Provided object is not valid. '
                              u'Got a {} error with message {}'.format(
                                         type(e).__name__, six.text_type(e)))

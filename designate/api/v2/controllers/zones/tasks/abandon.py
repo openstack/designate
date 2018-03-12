@@ -17,8 +17,6 @@ from oslo_log import log as logging
 
 from designate import utils
 from designate.api.v2.controllers import rest
-from designate.i18n import _LI
-
 
 LOG = logging.getLogger(__name__)
 
@@ -40,7 +38,7 @@ class AbandonController(rest.RestController):
         zone = self.central_api.delete_zone(context, zone_id)
         if zone.deleted_at:
             response.status_int = 204
-            LOG.info(_LI("Abandoned %(zone)s"), {'zone': zone})
+            LOG.info("Abandoned %(zone)s", {'zone': zone})
         else:
             response.status_int = 500
 

@@ -18,7 +18,6 @@ from oslo_log import log as logging
 
 from designate.pool_manager import rpcapi as pool_mngr_api
 from designate.central import rpcapi as central_api
-from designate.i18n import _LI
 
 LOG = logging.getLogger(__name__)
 
@@ -29,7 +28,7 @@ class BaseEndpoint(object):
     RPC_API_VERSION = None
 
     def __init__(self, tg):
-        LOG.info(_LI("Initialized mDNS %s endpoint"), self.RPC_API_NAMESPACE)
+        LOG.info("Initialized mDNS %s endpoint", self.RPC_API_NAMESPACE)
         self.tg = tg
         self.target = messaging.Target(
             namespace=self.RPC_API_NAMESPACE,

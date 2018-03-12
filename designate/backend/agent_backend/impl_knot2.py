@@ -45,8 +45,6 @@ from oslo_log import log as logging
 
 from designate import exceptions
 from designate.backend.agent_backend import base
-from designate.i18n import _LI
-from designate.i18n import _LE
 from designate.utils import execute
 
 
@@ -101,7 +99,7 @@ class Knot2Backend(base.AgentBackend):
 
     def start(self):
         """Start the backend"""
-        LOG.info(_LI("Started knot2 backend"))
+        LOG.info("Started knot2 backend")
 
     def _execute_knotc(self, *knotc_args, **kw):
         """Run the Knot client and check the output
@@ -121,17 +119,19 @@ class Knot2Backend(base.AgentBackend):
         try:
             out, err = execute(self._knotc_cmd_name, *knotc_args)
             out = out.rstrip()
-            LOG.debug("Command output: %r" % out)
+            LOG.debug("Command output: %r", out)
             if out != expected:
                 if expected_alt is not None and out == expected_alt:
-                    LOG.info(_LI("Ignoring error: %r"), out)
+                    LOG.info("Ignoring error: %r", out)
                 else:
                     raise ProcessExecutionError(stdout=out, stderr=err)
 
         except ProcessExecutionError as e:
-            LOG.error(_LE("Command output: %(out)r Stderr: %(err)r"), {
-                'out': e.stdout, 'err': e.stderr
-            })
+            LOG.error("Command output: %(out)r Stderr: %(err)r",
+                      {
+                          'out': e.stdout,
+                          'err': e.stderr
+                      })
             raise exceptions.Backend(e)
 
     def _start_minidns_to_knot_axfr(self, zone_name):
@@ -155,7 +155,7 @@ class Knot2Backend(base.AgentBackend):
                 # self._execute_knotc('conf-diff')
             except Exception as e:
                 self._execute_knotc('conf-abort')
-                LOG.info(_LI("Zone change aborted: %r"), e)
+                LOG.info("Zone change aborted: %r", e)
                 raise
             else:
                 self._execute_knotc('conf-commit')
@@ -178,16 +178,18 @@ class Knot2Backend(base.AgentBackend):
                 # Zone not found
                 return None
 
-            LOG.error(_LE("Command output: %(out)r Stderr: %(err)r"), {
-                'out': e.stdout, 'err': e.stderr
-            })
+            LOG.error("Command output: %(out)r Stderr: %(err)r",
+                      {
+                          'out': e.stdout,
+                          'err': e.stderr
+                      })
             raise exceptions.Backend(e)
 
         try:
             serial = out.split('|')[1].split()[1]
             return int(serial)
         except Exception as e:
-            LOG.error(_LE("Unable to parse knotc output: %r"), out)
+            LOG.error("Unable to parse knotc output: %r", out)
             raise exceptions.Backend("Unexpected knotc zone-status output")
 
     def create_zone(self, zone):

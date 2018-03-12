@@ -24,8 +24,6 @@ from oslo_db import exception as db_exception
 from oslo_utils import excutils
 
 from designate.storage import base
-from designate.i18n import _LW
-
 
 LOG = logging.getLogger(__name__)
 RETRY_STATE = threading.local()
@@ -43,7 +41,7 @@ def _retry_on_deadlock(exc):
     # TODO(kiall): This is a total leak of the SQLA Driver, we'll need a better
     #              way to handle this.
     if isinstance(exc, db_exception.DBDeadlock):
-        LOG.warning(_LW("Deadlock detected. Retrying..."))
+        LOG.warning("Deadlock detected. Retrying...")
         return True
     return False
 

@@ -33,9 +33,6 @@ from designate.pool_manager import rpcapi as pool_manager_rpcapi
 from designate.mdns import rpcapi as mdns_api
 from designate import service
 from designate.context import DesignateContext
-from designate.i18n import _LE
-from designate.i18n import _LI
-from designate.i18n import _LW
 from designate.pool_manager import cache
 
 
@@ -71,7 +68,7 @@ def _constant_retries(num_attempts, sleep_interval):
     """
     for cnt in range(num_attempts):
         if cnt != 0:
-            LOG.debug(_LI("Executing retry n. %d"), cnt)
+            LOG.debug("Executing retry n. %d", cnt)
         if cnt < num_attempts - 1:
             yield False
             time.sleep(sleep_interval)
@@ -124,7 +121,7 @@ class Service(service.RPCService, coordination.CoordinationMixin,
             # and masters
             self.target_backends[target.id] = backend.get_backend(target)
 
-        LOG.info(_LI('%d targets setup'), len(self.pool.targets))
+        LOG.info('%d targets setup', len(self.pool.targets))
 
         if not self.target_backends:
             raise exceptions.NoPoolTargetsConfigured()
@@ -139,7 +136,7 @@ class Service(service.RPCService, coordination.CoordinationMixin,
         topic = super(Service, self)._rpc_topic
 
         topic = '%s.%s' % (topic, CONF['service:pool_manager'].pool_id)
-        LOG.info(_LI('Using topic %(topic)s for this pool manager instance.'),
+        LOG.info('Using topic %(topic)s for this pool manager instance.',
                  {'topic': topic})
 
         return topic
@@ -161,12 +158,12 @@ class Service(service.RPCService, coordination.CoordinationMixin,
                 if len(self.pool.targets) > 0:
                     has_targets = True
                 else:
-                    LOG.error(_LE("No targets for %s found."), self.pool)
+                    LOG.error("No targets for %s found.", self.pool)
                     time.sleep(5)
 
             # Pool data may not have migrated to the DB yet
             except exceptions.PoolNotFound:
-                LOG.error(_LE("Pool ID %s not found."), pool_id)
+                LOG.error("Pool ID %s not found.", pool_id)
                 time.sleep(5)
             # designate-central service may not have started yet
             except messaging.exceptions.MessagingTimeout:
@@ -174,8 +171,8 @@ class Service(service.RPCService, coordination.CoordinationMixin,
             # designate-central failed in an unknown way, don't allow another
             # failing / not started service to cause pool-manager to crash.
             except Exception:
-                LOG.exception(_LE("An unknown exception occurred while "
-                                  "fetching pool details"))
+                LOG.exception("An unknown exception occurred while "
+                              "fetching pool details")
                 time.sleep(5)
 
         # Create the necessary Backend instances for each target
@@ -194,14 +191,14 @@ class Service(service.RPCService, coordination.CoordinationMixin,
 
         if CONF['service:pool_manager'].enable_recovery_timer:
             interval = CONF['service:pool_manager'].periodic_recovery_interval
-            LOG.info(_LI('Starting periodic recovery timer every'
-                         ' %(interval)s s') % {'interval': interval})
+            LOG.info('Starting periodic recovery timer every'
+                     ' %(interval)s s', {'interval': interval})
             self.tg.add_timer(interval, self.periodic_recovery, interval)
 
         if CONF['service:pool_manager'].enable_sync_timer:
             interval = CONF['service:pool_manager'].periodic_sync_interval
-            LOG.info(_LI('Starting periodic synchronization timer every'
-                         ' %(interval)s s') % {'interval': interval})
+            LOG.info('Starting periodic synchronization timer every'
+                     ' %(interval)s s', {'interval': interval})
             self.tg.add_timer(interval, self.periodic_sync, interval)
 
     def stop(self):
@@ -244,33 +241,33 @@ class Service(service.RPCService, coordination.CoordinationMixin,
             return
 
         context = self._get_admin_context_all_tenants()
-        LOG.info(_LI("Starting Periodic Recovery"))
+        LOG.info("Starting Periodic Recovery")
 
         try:
             # Handle Deletion Failures
             zones = self._get_failed_zones(context, DELETE_ACTION)
-            LOG.info(_LI("periodic_recovery:delete_zone needed on %d zones"),
+            LOG.info("periodic_recovery:delete_zone needed on %d zones",
                      len(zones))
             for zone in zones:
                 self.pool_manager_api.delete_zone(context, zone)
 
             # Handle Creation Failures
             zones = self._get_failed_zones(context, CREATE_ACTION)
-            LOG.info(_LI("periodic_recovery:create_zone needed on %d zones"),
+            LOG.info("periodic_recovery:create_zone needed on %d zones",
                      len(zones))
             for zone in zones:
                 self.pool_manager_api.create_zone(context, zone)
 
             # Handle Update Failures
             zones = self._get_failed_zones(context, UPDATE_ACTION)
-            LOG.info(_LI("periodic_recovery:update_zone needed on %d zones"),
+            LOG.info("periodic_recovery:update_zone needed on %d zones",
                      len(zones))
             for zone in zones:
                 self.pool_manager_api.update_zone(context, zone)
 
         except Exception:
-            LOG.exception(_LE('An unhandled exception in periodic '
-                              'recovery occurred'))
+            LOG.exception('An unhandled exception in periodic '
+                          'recovery occurred')
 
     def periodic_sync(self):
         """Periodically sync all the zones that are not in ERROR status
@@ -280,7 +277,7 @@ class Service(service.RPCService, coordination.CoordinationMixin,
         if not self._pool_election.is_leader:
             return
 
-        LOG.info(_LI("Starting Periodic Synchronization"))
+        LOG.info("Starting Periodic Synchronization")
         context = self._get_admin_context_all_tenants()
         zones = self._fetch_healthy_zones(context)
         zones = set(zones)
@@ -300,8 +297,8 @@ class Service(service.RPCService, coordination.CoordinationMixin,
                     if not success:
                         zones_in_error.append(zone)
                 except Exception:
-                    LOG.exception(_LE('An unhandled exception in periodic '
-                                      'synchronization occurred.'))
+                    LOG.exception('An unhandled exception in periodic '
+                                  'synchronization occurred.')
                     zones_in_error.append(zone)
 
             if not zones_in_error:
@@ -327,7 +324,7 @@ class Service(service.RPCService, coordination.CoordinationMixin,
         if target is None:
             raise exceptions.BadRequest('Please supply a valid target id.')
 
-        LOG.info(_LI('Starting Target Sync'))
+        LOG.info('Starting Target Sync')
 
         criterion = {
             'pool_id': pool_id,
@@ -405,7 +402,7 @@ class Service(service.RPCService, coordination.CoordinationMixin,
         :param zone: Zone to be created
         :return: None
         """
-        LOG.info(_LI("Creating new zone %s"), zone.name)
+        LOG.info("Creating new zone %s", zone.name)
 
         results = []
 
@@ -422,8 +419,8 @@ class Service(service.RPCService, coordination.CoordinationMixin,
 
         else:
 
-            LOG.warning(_LW('Consensus not reached for creating zone %(zone)s'
-                         ' on pool targets') % {'zone': zone.name})
+            LOG.warning('Consensus not reached for creating zone %(zone)s '
+                        'on pool targets', {'zone': zone.name})
 
             self.central_api.update_status(
                 context, zone.id, ERROR_STATUS, zone.serial)
@@ -464,9 +461,9 @@ class Service(service.RPCService, coordination.CoordinationMixin,
                 return True
             except Exception:
                 retries += 1
-                LOG.exception(_LE(
+                LOG.exception(
                     "Failed to create zone %(zone)s on "
-                    "target %(target)s on attempt %(attempt)d"),
+                    "target %(target)s on attempt %(attempt)d",
                         {
                             'zone': zone.name,
                             'target': target.id,
@@ -483,7 +480,7 @@ class Service(service.RPCService, coordination.CoordinationMixin,
         :param zone: Zone to be updated
         :return: consensus reached (bool)
         """
-        LOG.info(_LI("Updating zone %s"), zone.name)
+        LOG.info("Updating zone %s", zone.name)
 
         # Update the zone on each of the Pool Targets
         success_count = 0
@@ -493,14 +490,14 @@ class Service(service.RPCService, coordination.CoordinationMixin,
                 success_count += 1
 
         if not self._exceed_or_meet_threshold(success_count):
-            LOG.warning(_LW('Consensus not reached for updating zone %(zone)s'
-                         ' on pool targets') % {'zone': zone.name})
+            LOG.warning('Consensus not reached for updating zone %(zone)s '
+                        'on pool targets', {'zone': zone.name})
             self.central_api.update_status(context, zone.id, ERROR_STATUS,
                                            zone.serial)
             return False
 
         LOG.debug('Consensus reached for updating zone %(zone)s '
-                  'on pool targets' % {'zone': zone.name})
+                  'on pool targets', {'zone': zone.name})
 
         # The zone status will be updated asynchronously by MiniDNS
 
@@ -541,13 +538,13 @@ class Service(service.RPCService, coordination.CoordinationMixin,
 
             return True
         except Exception:
-            LOG.exception(_LE("Failed to update zone %(zone)s on target "
-                              "%(target)s"),
+            LOG.exception("Failed to update zone %(zone)s on target "
+                          "%(target)s",
                           {'zone': zone.name, 'target': target.id})
             return False
 
     def _update_zone_on_also_notify(self, context, also_notify, zone):
-        LOG.info(_LI('Updating zone %(zone)s on also_notify %(server)s.'),
+        LOG.info('Updating zone %(zone)s on also_notify %(server)s.',
                  {'zone': zone.name,
                   'server': self._get_destination(also_notify)})
 
@@ -561,7 +558,7 @@ class Service(service.RPCService, coordination.CoordinationMixin,
         :param zone: Zone to be deleted
         :return: None
         """
-        LOG.info(_LI("Deleting zone %s"), zone.name)
+        LOG.info("Deleting zone %s", zone.name)
 
         results = []
 
@@ -572,8 +569,8 @@ class Service(service.RPCService, coordination.CoordinationMixin,
 
         if not self._exceed_or_meet_threshold(
                 results.count(True), MAXIMUM_THRESHOLD):
-            LOG.warning(_LW('Consensus not reached for deleting zone %(zone)s'
-                            ' on pool targets') % {'zone': zone.name})
+            LOG.warning('Consensus not reached for deleting zone %(zone)s '
+                        'on pool targets', {'zone': zone.name})
             self.central_api.update_status(
                 context, zone.id, ERROR_STATUS, zone.serial)
 
@@ -612,14 +609,14 @@ class Service(service.RPCService, coordination.CoordinationMixin,
                 return True
             except Exception:
                 retries += 1
-                LOG.exception(_LE(
+                LOG.exception(
                     "Failed to delete zone %(zone)s on "
-                    "target %(target)s on attempt %(attempt)d"),
-                        {
-                            'zone': zone.name,
-                            'target': target.id,
-                            'attempt': retries
-                        })
+                    "target %(target)s on attempt %(attempt)d",
+                    {
+                        'zone': zone.name,
+                        'target': target.id,
+                        'attempt': retries
+                    })
                 time.sleep(self.retry_interval)
 
         return False
@@ -639,8 +636,8 @@ class Service(service.RPCService, coordination.CoordinationMixin,
                               server for the zone.
         :return: None
         """
-        LOG.debug("Calling update_status for %s : %s : %s : %s" %
-                  (zone.name, zone.action, status, actual_serial))
+        LOG.debug("Calling update_status for %s : %s : %s : %s",
+                  zone.name, zone.action, status, actual_serial)
         action = UPDATE_ACTION if zone.action == 'NONE' else zone.action
 
         with lockutils.lock('update-status-%s' % zone.id):
@@ -654,20 +651,19 @@ class Service(service.RPCService, coordination.CoordinationMixin,
             cache_serial = current_status.serial_number
 
             LOG.debug('For zone %s : %s on nameserver %s the cache serial '
-                      'is %s and the actual serial is %s.' %
-                      (zone.name, action,
-                       self._get_destination(nameserver),
-                       cache_serial, actual_serial))
+                      'is %s and the actual serial is %s.',
+                      zone.name, action, self._get_destination(nameserver),
+                      cache_serial, actual_serial)
             if actual_serial and cache_serial <= actual_serial:
                 current_status.status = status
                 current_status.serial_number = actual_serial
                 self.cache.store(context, current_status)
 
-            LOG.debug('Attempting to get consensus serial for %s' %
+            LOG.debug('Attempting to get consensus serial for %s',
                       zone.name)
             consensus_serial = self._get_consensus_serial(context, zone)
-            LOG.debug('Consensus serial for %s is %s' %
-                      (zone.name, consensus_serial))
+            LOG.debug('Consensus serial for %s is %s',
+                      zone.name, consensus_serial)
 
             # If there is a valid consensus serial we can still send a success
             # for that serial.
@@ -675,10 +671,12 @@ class Service(service.RPCService, coordination.CoordinationMixin,
             # the error serial.
             if consensus_serial != 0 and cache_serial <= consensus_serial \
                     and zone.status != 'ACTIVE':
-                LOG.info(_LI('For zone %(zone)s '
-                             'the consensus serial is %(consensus_serial)s.'),
-                         {'zone': zone.name,
-                          'consensus_serial': consensus_serial})
+                LOG.info('For zone %(zone)s the consensus serial is '
+                         '%(consensus_serial)s.',
+                         {
+                             'zone': zone.name,
+                             'consensus_serial': consensus_serial
+                         })
                 self.central_api.update_status(
                     context, zone.id, SUCCESS_STATUS, consensus_serial)
 
@@ -686,10 +684,12 @@ class Service(service.RPCService, coordination.CoordinationMixin,
                 error_serial = self._get_error_serial(
                     context, zone, consensus_serial)
                 if error_serial > consensus_serial or error_serial == 0:
-                    LOG.warning(_LW('For zone %(zone)s '
-                                 'the error serial is %(error_serial)s.') %
-                             {'zone': zone.name,
-                              'error_serial': error_serial})
+                    LOG.warning('For zone %(zone)s '
+                                'the error serial is %(error_serial)s.',
+                                {
+                                    'zone': zone.name,
+                                    'error_serial': error_serial
+                                })
                     self.central_api.update_status(
                         context, zone.id, ERROR_STATUS, error_serial)
 
@@ -698,8 +698,8 @@ class Service(service.RPCService, coordination.CoordinationMixin,
                     self.central_api.update_status(
                         context, zone.id, NO_ZONE_STATUS, 0)
                 else:
-                    LOG.warning(_LW('Zone %(zone)s is not present in some '
-                                 'targets') % {'zone': zone.name})
+                    LOG.warning('Zone %(zone)s is not present in some targets',
+                                {'zone': zone.name})
                     self.central_api.update_status(
                         context, zone.id, NO_ZONE_STATUS, 0)
 
@@ -745,9 +745,11 @@ class Service(service.RPCService, coordination.CoordinationMixin,
         stale_zones = self.central_api.find_zones(context, stale_criterion)
         if stale_zones:
             LOG.warning(
-                _LW('Found %(len)d zones PENDING for more than %(sec)d '
-                    'seconds'), {'len': len(stale_zones),
-                                 'sec': self.max_prop_time})
+                'Found %(len)d zones PENDING for more than %(sec)d seconds',
+                {
+                    'len': len(stale_zones),
+                    'sec': self.max_prop_time
+                })
             error_zones.extend(stale_zones)
 
         return error_zones
@@ -897,9 +899,9 @@ class Service(service.RPCService, coordination.CoordinationMixin,
                     self.delay)
         except messaging.MessagingException as msg_ex:
             LOG.debug('Could not retrieve status and serial for zone %s on '
-                      'nameserver %s with action %s (%s: %s)' %
-                      (zone.name, self._get_destination(nameserver), action,
-                       type(msg_ex), str(msg_ex)))
+                      'nameserver %s with action %s (%s: %s)',
+                      zone.name, self._get_destination(nameserver), action,
+                      type(msg_ex), str(msg_ex))
             return None
 
         pool_manager_status = self._build_status_object(
@@ -918,10 +920,10 @@ class Service(service.RPCService, coordination.CoordinationMixin,
 
         pool_manager_status.serial_number = actual_serial or 0
         LOG.debug('Retrieved status %s and serial %s for zone %s '
-                  'on nameserver %s with action %s from mdns.' %
-                  (pool_manager_status.status,
-                   pool_manager_status.serial_number,
-                   zone.name, self._get_destination(nameserver), action))
+                  'on nameserver %s with action %s from mdns.',
+                  pool_manager_status.status,
+                  pool_manager_status.serial_number,
+                  zone.name, self._get_destination(nameserver), action)
         self.cache.store(context, pool_manager_status)
 
         return pool_manager_status
@@ -939,18 +941,18 @@ class Service(service.RPCService, coordination.CoordinationMixin,
                     context, nameserver.id, zone.id, action)
                 LOG.debug('Cache hit! Retrieved status %s and serial %s '
                           'for zone %s on nameserver %s with action %s from '
-                          'the cache.' %
-                          (pool_manager_status.status,
-                           pool_manager_status.serial_number,
-                           zone.name,
-                           self._get_destination(nameserver), action))
+                          'the cache.',
+                          pool_manager_status.status,
+                          pool_manager_status.serial_number,
+                          zone.name,
+                          self._get_destination(nameserver), action)
             except exceptions.PoolManagerStatusNotFound:
                 LOG.debug('Cache miss! Did not retrieve status and serial '
                           'for zone %s on nameserver %s with action %s from '
-                          'the cache. Getting it from the server.' %
-                          (zone.name,
-                           self._get_destination(nameserver),
-                           action))
+                          'the cache. Getting it from the server.',
+                          zone.name,
+                          self._get_destination(nameserver),
+                          action)
                 pool_manager_status = self._retrieve_from_mdns(
                     context, nameserver, zone, action)
 

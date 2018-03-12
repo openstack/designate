@@ -51,9 +51,6 @@ from oslo_log import log as logging
 from designate import utils
 from designate import exceptions
 from designate.backend.agent_backend import base
-from designate.i18n import _LI
-from designate.i18n import _LE
-
 
 LOG = logging.getLogger(__name__)
 CFG_GROUP = 'backend:agent:gdnsd'
@@ -92,7 +89,7 @@ def filter_exceptions(fn):
         except exceptions.Backend as e:
             raise e
         except Exception as e:
-            LOG.error(_LE("Unhandled exception %s"), e, exc_info=True)
+            LOG.error("Unhandled exception %s", e, exc_info=True)
             raise exceptions.Backend(e)
 
     return wrapper
@@ -111,15 +108,15 @@ class GdnsdBackend(base.AgentBackend):
         super(GdnsdBackend, self).__init__(*a, **kw)
 
         self._gdnsd_cmd_name = cfg.CONF[CFG_GROUP].gdnsd_cmd_name
-        LOG.info(_LI("gdnsd command: %r"), self._gdnsd_cmd_name)
+        LOG.info("gdnsd command: %r", self._gdnsd_cmd_name)
         self._confdir_path = cfg.CONF[CFG_GROUP].confdir_path
         self._zonedir_path = os.path.join(self._confdir_path, 'zones')
-        LOG.info(_LI("gdnsd conf directory: %r"), self._confdir_path)
+        LOG.info("gdnsd conf directory: %r", self._confdir_path)
         self._resolver = dns.resolver.Resolver(configure=False)
         self._resolver.timeout = SOA_QUERY_TIMEOUT
         self._resolver.lifetime = SOA_QUERY_TIMEOUT
         self._resolver.nameservers = [cfg.CONF[CFG_GROUP].query_destination]
-        LOG.info(_LI("Resolvers: %r"), self._resolver.nameservers)
+        LOG.info("Resolvers: %r", self._resolver.nameservers)
         self._check_dirs(self._zonedir_path)
 
     def start(self):
@@ -127,7 +124,7 @@ class GdnsdBackend(base.AgentBackend):
 
         :raises: exception.Backend on invalid configuration
         """
-        LOG.info(_LI("Started gdnsd backend"))
+        LOG.info("Started gdnsd backend")
         self._check_conf()
 
     def _check_conf(self):
@@ -140,9 +137,11 @@ class GdnsdBackend(base.AgentBackend):
                 run_as_root=False,
             )
         except ProcessExecutionError as e:
-            LOG.error(_LE("Command output: %(out)r Stderr: %(err)r"), {
-                'out': e.stdout, 'err': e.stderr
-            })
+            LOG.error("Command output: %(out)r Stderr: %(err)r",
+                      {
+                          'out': e.stdout,
+                          'err': e.stderr
+                      })
             raise exceptions.Backend("Configuration check failed")
 
     def _check_dirs(self, *dirnames):
@@ -247,6 +246,6 @@ class GdnsdBackend(base.AgentBackend):
             LOG.debug('Deleted Zone: %s', zone_name)
         except OSError as e:
             if os.errno.ENOENT == e.errno:
-                LOG.info(_LI("Zone datafile %s was already deleted"), zone_fn)
+                LOG.info("Zone datafile %s was already deleted", zone_fn)
                 return
             raise

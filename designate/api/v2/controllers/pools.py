@@ -16,11 +16,9 @@ import pecan
 from oslo_log import log as logging
 
 from designate import utils
-from designate.i18n import _LW
 from designate.api.v2.controllers import rest
 from designate.objects import Pool
 from designate.objects.adapters import DesignateAdapter
-from designate.i18n import _LI
 
 
 LOG = logging.getLogger(__name__)
@@ -38,7 +36,7 @@ class PoolsController(rest.RestController):
 
         pool = self.central_api.get_pool(context, pool_id)
 
-        LOG.info(_LI("Retrieved %(pool)s"), {'pool': pool})
+        LOG.info("Retrieved %(pool)s", {'pool': pool})
 
         return DesignateAdapter.render('API_v2', pool, request=request)
 
@@ -60,7 +58,7 @@ class PoolsController(rest.RestController):
         pools = self.central_api.find_pools(
             context, criterion, marker, limit, sort_key, sort_dir)
 
-        LOG.info(_LI("Retrieved %(pools)s"), {'pools': pools})
+        LOG.info("Retrieved %(pools)s", {'pools': pools})
 
         return DesignateAdapter.render('API_v2', pools, request=request)
 
@@ -68,9 +66,9 @@ class PoolsController(rest.RestController):
     def post_all(self):
         """Create a Pool"""
 
-        LOG.warning(_LW("Use of this API Method is DEPRECATED. This will have "
-                        "unforeseen side affects when used with the "
-                        "designate-manage pool commands"))
+        LOG.warning("Use of this API Method is DEPRECATED. This will have "
+                    "unforeseen side affects when used with the "
+                    "designate-manage pool commands")
 
         request = pecan.request
         response = pecan.response
@@ -84,7 +82,7 @@ class PoolsController(rest.RestController):
         # Create the pool
         pool = self.central_api.create_pool(context, pool)
 
-        LOG.info(_LI("Created %(pool)s"), {'pool': pool})
+        LOG.info("Created %(pool)s", {'pool': pool})
 
         pool = DesignateAdapter.render('API_v2', pool, request=request)
         response.status_int = 201
@@ -100,9 +98,9 @@ class PoolsController(rest.RestController):
     def patch_one(self, pool_id):
         """Update the specific pool"""
 
-        LOG.warning(_LW("Use of this API Method is DEPRECATED. This will have "
-                        "unforeseen side affects when used with the "
-                        "designate-manage pool commands"))
+        LOG.warning("Use of this API Method is DEPRECATED. This will have "
+                    "unforeseen side affects when used with the "
+                    "designate-manage pool commands")
 
         request = pecan.request
         context = request.environ['context']
@@ -121,7 +119,7 @@ class PoolsController(rest.RestController):
 
         pool = self.central_api.update_pool(context, pool)
 
-        LOG.info(_LI("Updated %(pool)s"), {'pool': pool})
+        LOG.info("Updated %(pool)s", {'pool': pool})
 
         response.status_int = 202
 
@@ -132,9 +130,9 @@ class PoolsController(rest.RestController):
     def delete_one(self, pool_id):
         """Delete the specific pool"""
 
-        LOG.warning(_LW("Use of this API Method is DEPRECATED. This will have "
-                        "unforeseen side affects when used with the "
-                        "designate-manage pool commands"))
+        LOG.warning("Use of this API Method is DEPRECATED. This will have "
+                    "unforeseen side affects when used with the "
+                    "designate-manage pool commands")
 
         request = pecan.request
         response = pecan.response
@@ -142,7 +140,7 @@ class PoolsController(rest.RestController):
 
         pool = self.central_api.delete_pool(context, pool_id)
 
-        LOG.info(_LI("Deleted %(pool)s"), {'pool': pool})
+        LOG.info("Deleted %(pool)s", {'pool': pool})
 
         response.status_int = 204
 

@@ -25,8 +25,6 @@ from designate.api.v2.controllers.zones import tasks
 from designate.api.v2.controllers.zones import nameservers
 from designate import objects
 from designate.objects.adapters import DesignateAdapter
-from designate.i18n import _LI
-
 
 CONF = cfg.CONF
 
@@ -54,7 +52,7 @@ class ZonesController(rest.RestController):
 
         zone = self.central_api.get_zone(context, zone_id)
 
-        LOG.info(_LI("Retrieved %(zone)s"), {'zone': zone})
+        LOG.info("Retrieved %(zone)s", {'zone': zone})
 
         return DesignateAdapter.render(
             'API_v2',
@@ -80,7 +78,7 @@ class ZonesController(rest.RestController):
         zones = self.central_api.find_zones(
             context, criterion, marker, limit, sort_key, sort_dir)
 
-        LOG.info(_LI("Retrieved %(zones)s"), {'zones': zones})
+        LOG.info("Retrieved %(zones)s", {'zones': zones})
 
         return DesignateAdapter.render('API_v2', zones, request=request)
 
@@ -107,7 +105,7 @@ class ZonesController(rest.RestController):
         # Create the zone
         zone = self.central_api.create_zone(context, zone)
 
-        LOG.info(_LI("Created %(zone)s"), {'zone': zone})
+        LOG.info("Created %(zone)s", {'zone': zone})
 
         # Prepare the response headers
         # If the zone has been created asynchronously
@@ -178,7 +176,7 @@ class ZonesController(rest.RestController):
             zone = self.central_api.update_zone(
                 context, zone, increment_serial=increment_serial)
 
-        LOG.info(_LI("Updated %(zone)s"), {'zone': zone})
+        LOG.info("Updated %(zone)s", {'zone': zone})
 
         if zone.status == 'PENDING':
             response.status_int = 202
@@ -198,6 +196,6 @@ class ZonesController(rest.RestController):
         zone = self.central_api.delete_zone(context, zone_id)
         response.status_int = 202
 
-        LOG.info(_LI("Deleted %(zone)s"), {'zone': zone})
+        LOG.info("Deleted %(zone)s", {'zone': zone})
 
         return DesignateAdapter.render('API_v2', zone, request=request)

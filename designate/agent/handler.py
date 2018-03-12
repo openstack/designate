@@ -36,9 +36,6 @@ from oslo_log import log as logging
 from designate import utils
 from designate import dnsutils
 from designate.backend import agent_backend
-from designate.i18n import _LW
-from designate.i18n import _LE
-from designate.i18n import _LI
 import designate.backend.private_codes as pcodes
 
 LOG = logging.getLogger(__name__)
@@ -53,8 +50,7 @@ class RequestHandler(object):
             master = {'host': raw_server[0], 'port': int(raw_server[1])}
             self.masters.append(master)
 
-        LOG.info(_LI("Agent masters: %(masters)s"),
-                 {'masters': self.masters})
+        LOG.info("Agent masters: %(masters)s", {'masters': self.masters})
 
         self.allow_notify = CONF['service:agent'].allow_notify
         self.transfer_source = CONF['service:agent'].transfer_source
@@ -120,7 +116,7 @@ class RequestHandler(object):
             # Does this warrant a warning?
             # There is a race condition between checking if the zone exists
             # and creating it.
-            LOG.warning(_LW("Not creating %(name)s, zone already exists"),
+            LOG.warning("Not creating %(name)s, zone already exists",
                         {'name': zone_name})
             # Provide an authoritative answer
             response.flags |= dns.flags.AA
@@ -137,7 +133,7 @@ class RequestHandler(object):
         except Exception as e:
             # TODO(Federico) unknown exceptions should be logged with a full
             # traceback. Same in the other methods.
-            LOG.error(_LE("Exception while creating zone %r"), e)
+            LOG.error("Exception while creating zone %r", e)
             response.set_rcode(dns.rcode.from_text("SERVFAIL"))
             return response
 
@@ -168,8 +164,8 @@ class RequestHandler(object):
         serial = self.backend.find_zone_serial(zone_name)
 
         if serial is None:
-            LOG.warning(_LW("Refusing NOTIFY for %(name)s, doesn't exist") %
-                 {'name': zone_name})
+            LOG.warning("Refusing NOTIFY for %(name)s, doesn't exist",
+                        {'name': zone_name})
             response.set_rcode(dns.rcode.from_text("REFUSED"))
             return response
 
@@ -219,8 +215,8 @@ class RequestHandler(object):
         serial = self.backend.find_zone_serial(zone_name)
 
         if serial is None:
-            LOG.warning(_LW("Not deleting %(name)s, zone doesn't exist") %
-                 {'name': zone_name})
+            LOG.warning("Not deleting %(name)s, zone doesn't exist",
+                        {'name': zone_name})
             # Provide an authoritative answer
             response.flags |= dns.flags.AA
             return response
@@ -246,8 +242,8 @@ class RequestHandler(object):
             return True
 
         if requester not in self.allow_notify:
-            LOG.warning(_LW("%(verb)s for %(name)s from %(server)s refused") %
-                     {'verb': op, 'name': zone_name, 'server': requester})
+            LOG.warning("%(verb)s for %(name)s from %(server)s refused",
+                        {'verb': op, 'name': zone_name, 'server': requester})
             return False
 
         return True

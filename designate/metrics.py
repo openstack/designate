@@ -41,8 +41,6 @@ from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import importutils
 
-from designate.i18n import _LI
-
 stats_client = importutils.import_any('monascastatsd',
                                       'designate.metrics_client.noop')
 
@@ -88,15 +86,16 @@ class Metrics(object):
         """
         conf = cfg.CONF[CFG_GROUP]
         if conf.enabled:
-            LOG.info(_LI("Statsd reports to %(host)s %(port)d") % {
-                'host': conf.hostname,
-                'port': conf.port
-            })
+            LOG.info("Statsd reports to %(host)s %(port)d",
+                     {
+                         'host': conf.hostname,
+                         'port': conf.port
+                     })
             self._client.connection._flush_buffer()
             self._client.connection.close_buffer()
             self._client.connection.connect(conf.hostname, conf.port)
         else:
-            LOG.info(_LI("Statsd disabled"))
+            LOG.info("Statsd disabled")
             # The client cannot be disabled: mock out report()
             self._client.connection.report = lambda *a, **kw: None
             # There's no clean way to drain the outgoing buffer

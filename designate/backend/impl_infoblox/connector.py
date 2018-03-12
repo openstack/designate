@@ -62,7 +62,7 @@ class Infoblox(object):
             setattr(self, opt, options.get(opt) or getattr(config, opt))
 
         for opt in reqd_opts:
-            LOG.debug("self.%s = %s" % (opt, getattr(self, opt)))
+            LOG.debug("self.%s = %s", opt, getattr(self, opt))
             if not getattr(self, opt):
                 raise exc.InfobloxIsMisconfigured(option=opt)
 
@@ -90,7 +90,7 @@ class Infoblox(object):
         if extattrs:
             attrs_queries = []
             for key, value in extattrs.items():
-                LOG.debug("key: %s, value: %s" % (key, value))
+                LOG.debug("key: %s, value: %s", key, value)
                 attrs_queries.append('*' + key + '=' + value['value'])
             query += '&'.join(attrs_queries)
         if query_params:

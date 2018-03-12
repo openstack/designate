@@ -28,8 +28,6 @@ import dns.opcode
 from oslo_config import cfg
 from oslo_log import log as logging
 
-from designate.i18n import _LI
-from designate.i18n import _LW
 from designate.mdns import base
 from designate.metrics import metrics
 
@@ -150,12 +148,12 @@ class NotifyEndpoint(base.BaseEndpoint):
                 break
 
             retries_left -= retry_cnt
-            msg = _LW("Got lower serial for '%(zone)s' to '%(host)s:"
-                      "%(port)s'. Expected:'%(es)d'. Got:'%(as)s'."
-                      "Retries left='%(retries)d'") % {
-                          'zone': zone.name, 'host': host, 'port': port,
-                          'es': zone.serial, 'as': actual_serial,
-                          'retries': retries_left}
+            msg = ("Got lower serial for '%(zone)s' to '%(host)s:"
+                   "%(port)s'. Expected:'%(es)d'. Got:'%(as)s'."
+                   "Retries left='%(retries)d'") % {
+                      'zone': zone.name, 'host': host, 'port': port,
+                      'es': zone.serial, 'as': actual_serial,
+                      'retries': retries_left}
 
             if not retries_left:
                 # return with error
@@ -197,8 +195,8 @@ class NotifyEndpoint(base.BaseEndpoint):
 
         while retry < max_retries:
             retry += 1
-            LOG.info(_LI("Sending '%(msg)s' for '%(zone)s' to '%(server)s:"
-                         "%(port)d'."),
+            LOG.info("Sending '%(msg)s' for '%(zone)s' to '%(server)s:"
+                     "%(port)d'.",
                      {'msg': 'NOTIFY' if notify else 'SOA',
                       'zone': zone.name, 'server': host,
                       'port': port})
@@ -211,23 +209,22 @@ class NotifyEndpoint(base.BaseEndpoint):
                     raise  # unknown error, let it traceback
 
                 # Initial workaround for bug #1558096
-                LOG.info(
-                    _LW("Got EAGAIN while trying to send '%(msg)s' for "
-                        "'%(zone)s' to '%(server)s:%(port)d'. Timeout="
-                        "'%(timeout)d' seconds. Retry='%(retry)d'") %
-                    {'msg': 'NOTIFY' if notify else 'SOA',
-                     'zone': zone.name, 'server': host,
-                     'port': port, 'timeout': timeout,
-                     'retry': retry})
+                LOG.info("Got EAGAIN while trying to send '%(msg)s' for "
+                         "'%(zone)s' to '%(server)s:%(port)d'. "
+                         "Timeout='%(timeout)d' seconds. Retry='%(retry)d'",
+                         {'msg': 'NOTIFY' if notify else 'SOA',
+                          'zone': zone.name, 'server': host,
+                          'port': port, 'timeout': timeout,
+                          'retry': retry})
                 # retry sending the message
                 time.sleep(retry_interval)
                 continue
 
             except dns.exception.Timeout:
                 LOG.warning(
-                    _LW("Got Timeout while trying to send '%(msg)s' for "
-                        "'%(zone)s' to '%(server)s:%(port)d'. Timeout="
-                        "'%(timeout)d' seconds. Retry='%(retry)d'") %
+                    "Got Timeout while trying to send '%(msg)s' for "
+                    "'%(zone)s' to '%(server)s:%(port)d'. "
+                    "Timeout='%(timeout)d' seconds. Retry='%(retry)d'",
                     {'msg': 'NOTIFY' if notify else 'SOA',
                      'zone': zone.name, 'server': host,
                      'port': port, 'timeout': timeout,
@@ -237,14 +234,13 @@ class NotifyEndpoint(base.BaseEndpoint):
                 continue
 
             except dns_query.BadResponse:
-                LOG.warning(
-                    _LW("Got BadResponse while trying to send '%(msg)s' "
-                        "for '%(zone)s' to '%(server)s:%(port)d'. Timeout"
-                        "='%(timeout)d' seconds. Retry='%(retry)d'") %
-                    {'msg': 'NOTIFY' if notify else 'SOA',
-                     'zone': zone.name, 'server': host,
-                     'port': port, 'timeout': timeout,
-                     'retry': retry})
+                LOG.warning("Got BadResponse while trying to send '%(msg)s' "
+                            "for '%(zone)s' to '%(server)s:%(port)d'. "
+                            "Timeout='%(timeout)d' seconds. Retry='%(retry)d'",
+                            {'msg': 'NOTIFY' if notify else 'SOA',
+                             'zone': zone.name, 'server': host,
+                             'port': port, 'timeout': timeout,
+                             'retry': retry})
                 break  # no retries after BadResponse
 
             # either we have a good response or an error that we don't want to
@@ -261,18 +257,17 @@ class NotifyEndpoint(base.BaseEndpoint):
                     dns.rcode.SERVFAIL)) or \
                 (response.rcode() == dns.rcode.NOERROR and
                     not bool(response.answer)):
-            LOG.info(_LI("%(zone)s not found on %(server)s:%(port)d") %
+            LOG.info("%(zone)s not found on %(server)s:%(port)d",
                      {'zone': zone.name, 'server': host, 'port': port})
 
         elif not (response.flags & dns.flags.AA) or dns.rcode.from_flags(
                 response.flags, response.ednsflags) != dns.rcode.NOERROR:
-            LOG.warning(
-                _LW("Failed to get expected response while trying to "
-                    "send '%(msg)s' for '%(zone)s' to '%(server)s:"
-                    "%(port)d'.\nResponse message:\n%(resp)s\n") %
-                {'msg': 'NOTIFY' if notify else 'SOA',
-                    'zone': zone.name, 'server': host,
-                    'port': port, 'resp': str(response)})
+            LOG.warning("Failed to get expected response while trying to "
+                        "send '%(msg)s' for '%(zone)s' to '%(server)s:"
+                        "%(port)d'.\nResponse message:\n%(resp)s\n",
+                        {'msg': 'NOTIFY' if notify else 'SOA',
+                         'zone': zone.name, 'server': host,
+                         'port': port, 'resp': str(response)})
             response = None
 
         return response, retry

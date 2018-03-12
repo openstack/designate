@@ -18,11 +18,9 @@ import abc
 from oslo_config import cfg
 from oslo_log import log as logging
 
-from designate.i18n import _LI
 from designate.context import DesignateContext
 from designate.plugin import DriverPlugin
 from designate.mdns import rpcapi as mdns_api
-
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
@@ -58,10 +56,10 @@ class Backend(DriverPlugin):
         self.delay = CONF['service:pool_manager'].poll_delay
 
     def start(self):
-        LOG.info(_LI('Starting %s backend'), self.get_canonical_name())
+        LOG.info('Starting %s backend', self.get_canonical_name())
 
     def stop(self):
-        LOG.info(_LI('Stopped %s backend'), self.get_canonical_name())
+        LOG.info('Stopped %s backend', self.get_canonical_name())
 
     @property
     def mdns_api(self):

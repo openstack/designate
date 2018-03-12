@@ -20,7 +20,6 @@ from oslo_context import context
 from oslo_log import log as logging
 
 from designate import policy
-from designate.i18n import _LI
 
 LOG = logging.getLogger(__name__)
 
@@ -120,7 +119,7 @@ class DesignateContext(context.RequestContext):
 
         policy.check('use_sudo', self)
 
-        LOG.info(_LI('Accepted sudo from user %(user)s to tenant %(tenant)s'),
+        LOG.info('Accepted sudo from user %(user)s to tenant %(tenant)s',
                  {'user': self.user, 'tenant': tenant})
         self.original_tenant = self.tenant
         self.tenant = tenant

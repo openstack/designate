@@ -18,7 +18,6 @@ from oslo_config import cfg
 from oslo_log import log as logging
 import oslo_messaging as messaging
 
-from designate.i18n import _LW
 from designate import notification_handler
 from designate import rpc
 from designate import service
@@ -49,7 +48,7 @@ class Service(service.Service):
             enabled_notification_handlers)
 
         if len(notification_handlers) == 0:
-            LOG.warning(_LW('No designate-sink handlers enabled or loaded'))
+            LOG.warning('No designate-sink handlers enabled or loaded')
 
         return notification_handlers
 
@@ -112,5 +111,5 @@ class Service(service.Service):
         if event_type in self._get_handler_event_types():
             for handler in self.handlers:
                 if event_type in handler.get_event_types():
-                    LOG.debug('Found handler for: %s' % event_type)
+                    LOG.debug('Found handler for: %s', event_type)
                     handler.process_notification(context, event_type, payload)

@@ -21,7 +21,6 @@ from designate import utils
 from designate.api.v2.controllers import rest
 from designate.objects import Blacklist
 from designate.objects.adapters import DesignateAdapter
-from designate.i18n import _LI
 
 
 LOG = logging.getLogger(__name__)
@@ -40,7 +39,7 @@ class BlacklistsController(rest.RestController):
 
         blacklist = self.central_api.get_blacklist(context, blacklist_id)
 
-        LOG.info(_LI("Retrieved %(blacklist)s"), {'blacklist': blacklist})
+        LOG.info("Retrieved %(blacklist)s", {'blacklist': blacklist})
 
         return DesignateAdapter.render('API_v2', blacklist, request=request)
 
@@ -62,7 +61,7 @@ class BlacklistsController(rest.RestController):
         blacklists = self.central_api.find_blacklists(
             context, criterion, marker, limit, sort_key, sort_dir)
 
-        LOG.info(_LI("Retrieved %(blacklists)s"), {'blacklists': blacklists})
+        LOG.info("Retrieved %(blacklists)s", {'blacklists': blacklists})
 
         return DesignateAdapter.render('API_v2', blacklists, request=request)
 
@@ -82,7 +81,7 @@ class BlacklistsController(rest.RestController):
         blacklist = self.central_api.create_blacklist(
             context, blacklist)
 
-        LOG.info(_LI("Created %(blacklist)s"), {'blacklist': blacklist})
+        LOG.info("Created %(blacklist)s", {'blacklist': blacklist})
 
         response.status_int = 201
 
@@ -116,7 +115,7 @@ class BlacklistsController(rest.RestController):
 
         blacklist = self.central_api.update_blacklist(context, blacklist)
 
-        LOG.info(_LI("Updated %(blacklist)s"), {'blacklist': blacklist})
+        LOG.info("Updated %(blacklist)s", {'blacklist': blacklist})
 
         response.status_int = 200
 
@@ -132,7 +131,7 @@ class BlacklistsController(rest.RestController):
 
         blacklist = self.central_api.delete_blacklist(context, blacklist_id)
 
-        LOG.info(_LI("Deleted %(blacklist)s"), {'blacklist': blacklist})
+        LOG.info("Deleted %(blacklist)s", {'blacklist': blacklist})
 
         response.status_int = 204
 

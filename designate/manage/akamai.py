@@ -22,7 +22,6 @@ from designate import exceptions
 from designate import policy
 from designate import rpc
 from designate.i18n import _  # noqa
-from designate.i18n import _LI
 from designate.objects import pool as pool_object
 from designate.backend import impl_akamai
 from designate.central import rpcapi as central_rpcapi
@@ -79,7 +78,7 @@ class AkamaiCommands(base.Commands):
         client = impl_akamai.EnhancedDNSClient(
             target.options.get("username"), target.options.get("password"))
 
-        LOG.info(_LI("Doing batches of %i"), batch_size)
+        LOG.info("Doing batches of %i", batch_size)
 
         criterion = {"pool_id": pool_id}
         marker = None
@@ -94,7 +93,7 @@ class AkamaiCommands(base.Commands):
             update = []
 
             if len(zones) == 0:
-                LOG.info(_LI("Stopping as there are no more zones."))
+                LOG.info("Stopping as there are no more zones.")
                 break
             else:
                 marker = zones[-1]['id']
@@ -103,6 +102,6 @@ class AkamaiCommands(base.Commands):
                 z = impl_akamai.build_zone(client, target, zone)
                 update.append(z)
 
-            LOG.info(_LI('Uploading %d Zones'), len(update))
+            LOG.info('Uploading %d Zones', len(update))
 
             client.setZones(update)

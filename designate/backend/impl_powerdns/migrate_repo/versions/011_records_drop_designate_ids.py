@@ -18,9 +18,6 @@ import sys
 from oslo_log import log as logging
 from sqlalchemy import MetaData, Table
 
-from designate.i18n import _LW
-from designate.i18n import _LE
-
 
 LOG = logging.getLogger(__name__)
 meta = MetaData()
@@ -29,7 +26,7 @@ meta = MetaData()
 def upgrade(migrate_engine):
     meta.bind = migrate_engine
 
-    LOG.warning(_LW('It will not be possible to downgrade from schema #11'))
+    LOG.warning('It will not be possible to downgrade from schema #11')
 
     records_table = Table('records', meta, autoload=True)
     records_table.c.designate_id.drop()
@@ -37,5 +34,5 @@ def upgrade(migrate_engine):
 
 
 def downgrade(migrate_engine):
-    LOG.error(_LE('It is not possible to downgrade from schema #11'))
+    LOG.error('It is not possible to downgrade from schema #11')
     sys.exit(1)
