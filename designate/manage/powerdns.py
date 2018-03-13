@@ -71,11 +71,3 @@ class DatabaseCommands(base.Commands):
 
         for pool_target in pool.targets:
             get_manager(pool_target).upgrade(revision)
-
-    @base.args('pool-id', help="Pool to Migrate", type=str)
-    @base.args('revision', nargs='?')
-    def downgrade(self, pool_id, revision):
-        pool = self.central_api.find_pool(self.context, {"id": pool_id})
-
-        for pool_target in pool.targets:
-            get_manager(pool_target).downgrade(revision)
