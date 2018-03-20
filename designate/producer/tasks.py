@@ -21,7 +21,6 @@ from designate import rpc
 from designate.central import rpcapi
 from designate.worker import rpcapi as worker_rpcapi
 from designate.pool_manager import rpcapi as pool_manager_rpcapi
-from designate.i18n import _LI
 
 from oslo_config import cfg
 from oslo_log import log as logging
@@ -143,8 +142,12 @@ class DeletedZonePurgeTask(PeriodicTask):
         expiration time and sharding range.
         """
         pstart, pend = self._my_range()
-        msg = _LI("Performing deleted zone purging for %(start)s to %(end)s")
-        LOG.info(msg, {"start": pstart, "end": pend})
+        LOG.info(
+            "Performing deleted zone purging for %(start)s to %(end)s",
+            {
+                "start": pstart,
+                "end": pend
+            })
 
         delta = datetime.timedelta(seconds=self.options.time_threshold)
         time_threshold = timeutils.utcnow() - delta
@@ -187,8 +190,12 @@ class PeriodicExistsTask(PeriodicTask):
     def __call__(self):
         pstart, pend = self._my_range()
 
-        msg = _LI("Emitting zone exist events for shards %(start)s to %(end)s")
-        LOG.info(msg, {"start": pstart, "end": pend})
+        LOG.info(
+            "Emitting zone exist events for shards %(start)s to %(end)s",
+            {
+                "start": pstart,
+                "end": pend
+            })
 
         ctxt = context.DesignateContext.get_admin_context()
         ctxt.all_tenants = True
@@ -211,9 +218,14 @@ class PeriodicExistsTask(PeriodicTask):
             self.notifier.info(ctxt, 'dns.domain.exists', zone_data)
             self.notifier.info(ctxt, 'dns.zone.exists', zone_data)
 
-        LOG.info(_LI("Finished emitting %(counter)d events for shards "
-                     "%(start)s to %(end)s"),
-                 {"start": pstart, "end": pend, "counter": counter})
+        LOG.info(
+            "Finished emitting %(counter)d events for shards "
+            "%(start)s to %(end)s",
+            {
+                "start": pstart,
+                "end": pend,
+                "counter": counter
+            })
 
 
 class PeriodicSecondaryRefreshTask(PeriodicTask):
@@ -228,8 +240,12 @@ class PeriodicSecondaryRefreshTask(PeriodicTask):
 
     def __call__(self):
         pstart, pend = self._my_range()
-        msg = _LI("Refreshing zones for shards %(start)s to %(end)s")
-        LOG.info(msg, {"start": pstart, "end": pend})
+        LOG.info(
+            "Refreshing zones for shards %(start)s to %(end)s",
+            {
+                "start": pstart,
+                "end": pend
+            })
 
         ctxt = context.DesignateContext.get_admin_context()
         ctxt.all_tenants = True
@@ -307,8 +323,13 @@ class PeriodicGenerateDelayedNotifyTask(PeriodicTask):
             sort_dir='asc',
         )
 
-        msg = _LI("Performing delayed NOTIFY for %(start)s to %(end)s: %(n)d")
-        LOG.debug(msg % dict(start=pstart, end=pend, n=len(zones)))
+        LOG.debug(
+            "Performing delayed NOTIFY for %(start)s to %(end)s: %(n)d",
+            {
+                'start': pstart,
+                'end': pend,
+                'n': len(zones)
+            })
 
         for z in zones:
             self.zone_api.update_zone(ctxt, z)
@@ -338,8 +359,12 @@ class WorkerPeriodicRecovery(PeriodicTask):
                 return
 
         pstart, pend = self._my_range()
-        msg = _LI("Recovering zones for shards %(start)s to %(end)s")
-        LOG.info(msg, {"start": pstart, "end": pend})
+        LOG.info(
+            "Recovering zones for shards %(start)s to %(end)s",
+            {
+                "start": pstart,
+                "end": pend
+            })
 
         ctxt = context.DesignateContext.get_admin_context()
         ctxt.all_tenants = True

@@ -17,7 +17,6 @@ from oslo_log import log as logging
 from stevedore import named
 
 from designate import exceptions
-from designate.i18n import _LI
 
 LOG = logging.getLogger(__name__)
 
@@ -45,7 +44,7 @@ class Scheduler(object):
 
             self.filters = [x.plugin(storage=self.storage) for x in filters]
             for filter in self.filters:
-                LOG.info(_LI("Loaded Scheduler Filter: %s") % filter.name)
+                LOG.info("Loaded Scheduler Filter: %s", filter.name)
 
         else:
             raise exceptions.NoFiltersConfigured('There are no scheduling '

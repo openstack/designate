@@ -22,8 +22,6 @@ import oslo_messaging as messaging
 
 from designate import exceptions
 from designate import rpc
-from designate.i18n import _LI
-from designate.i18n import _LC
 from designate import objects
 from designate.central import rpcapi as central_rpcapi
 from designate.manage import base
@@ -53,8 +51,8 @@ class PoolCommands(base.Commands):
         try:
             pools = self.central_api.find_pools(self.context)
         except messaging.exceptions.MessagingTimeout:
-            LOG.critical(_LC("No response received from designate-central. "
-                             "Check it is running, and retry"))
+            LOG.critical("No response received from designate-central. "
+                         "Check it is running, and retry")
             sys.exit(1)
         with open(file, 'w') as stream:
             yaml.dump(
@@ -71,8 +69,8 @@ class PoolCommands(base.Commands):
         try:
             pools = self.central_api.find_pools(self.context)
         except messaging.exceptions.MessagingTimeout:
-            LOG.critical(_LC("No response received from designate-central. "
-                             "Check it is running, and retry"))
+            LOG.critical("No response received from designate-central. "
+                         "Check it is running, and retry")
             sys.exit(1)
         r_pools = objects.PoolList()
         for pool in pools:
@@ -102,8 +100,8 @@ class PoolCommands(base.Commands):
                   default_flow_style=False))
 
         except messaging.exceptions.MessagingTimeout:
-            LOG.critical(_LC("No response received from designate-central. "
-                             "Check it is running, and retry"))
+            LOG.critical("No response received from designate-central. "
+                         "Check it is running, and retry")
             sys.exit(1)
 
     @base.args('--file', help='The path to the yaml file describing the pools',
@@ -137,14 +135,14 @@ class PoolCommands(base.Commands):
                         pool = self.central_api.get_pool(
                             self.context, xpool['id'])
                     except Exception:
-                        LOG.critical(
-                            _LC("Bad ID Supplied for pool %s"), xpool['name'])
+                        LOG.critical("Bad ID Supplied for pool %s",
+                                     xpool['name'])
                         continue
                 else:
                     pool = self.central_api.find_pool(
                         self.context, {"name": xpool['name']})
 
-                LOG.info(_LI('Updating existing pool: %s'), pool)
+                LOG.info('Updating existing pool: %s', pool)
 
                 # TODO(kiall): Move the below into the pool object
 
@@ -176,11 +174,11 @@ class PoolCommands(base.Commands):
                 if dry_run:
                     output_msg.append("Create Pool: %s" % pool)
                 else:
-                    LOG.info(_LI('Creating new pool: %s'), pool)
+                    LOG.info('Creating new pool: %s', pool)
                     self.central_api.create_pool(self.context, pool)
             except messaging.exceptions.MessagingTimeout:
-                LOG.critical(_LC("No response received from designate-central."
-                                 " Check it is running, and retry"))
+                LOG.critical("No response received from designate-central. "
+                             "Check it is running, and retry")
                 sys.exit(1)
 
         if delete:
@@ -200,13 +198,13 @@ class PoolCommands(base.Commands):
                         output_msg.append("Delete Pool: %s" % p)
 
                     else:
-                        LOG.info(_LI('Deleting %s'), p)
+                        LOG.info('Deleting %s', p)
                         self.central_api.delete_pool(self.context, p.id)
 
                 except messaging.exceptions.MessagingTimeout:
-                    LOG.critical(_LC("No response received from "
-                                     "designate-central. "
-                                     "Check it is running, and retry"))
+                    LOG.critical(
+                        "No response received from designate-central. "
+                        "Check it is running, and retry")
                     sys.exit(1)
 
         for line in output_msg:

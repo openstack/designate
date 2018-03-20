@@ -27,13 +27,13 @@ LOG = logging.getLogger(__name__)
 
 def create_tables(tables):
     for table in tables:
-        LOG.debug("Creating table %s" % table)
+        LOG.debug("Creating table %s", table)
         table.create()
 
 
 def drop_tables(tables):
     for table in tables:
-        LOG.debug("Dropping table %s" % table)
+        LOG.debug("Dropping table %s", table)
         table.drop()
 
 

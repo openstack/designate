@@ -20,8 +20,6 @@ import dns
 from oslo_config import cfg
 from oslo_log import log as logging
 
-from designate.i18n import _LI
-from designate.i18n import _LW
 from designate.worker import utils as wutils
 from designate.worker.tasks import base
 from designate import exceptions
@@ -69,8 +67,11 @@ class ZoneActionOnTarget(base.Task):
 
     def __call__(self):
         LOG.debug("Attempting %(action)s zone %(zone)s on %(target)s",
-                  {'action': self.action, 'zone': self.zone.name,
-                   'target': self.target})
+                  {
+                      'action': self.action,
+                      'zone': self.zone.name,
+                      'target': self.target
+                  })
 
         for retry in range(0, self.max_retries):
             try:
@@ -87,11 +88,16 @@ class ZoneActionOnTarget(base.Task):
                           self.action, self.zone.name, self.target)
                 return True
             except Exception as e:
-                LOG.info(_LI('Failed to %(action)s zone %(zone)s on '
-                             'target %(target)s on attempt %(attempt)d, '
-                             'Error: %(error)s.'), {'action': self.action,
-                             'zone': self.zone.name, 'target': self.target.id,
-                             'attempt': retry + 1, 'error': str(e)})
+                LOG.info('Failed to %(action)s zone %(zone)s on '
+                         'target %(target)s on attempt %(attempt)d, '
+                         'Error: %(error)s.',
+                         {
+                             'action': self.action,
+                             'zone': self.zone.name,
+                             'target': self.target.id,
+                             'attempt': retry + 1,
+                             'error': str(e)
+                         })
                 time.sleep(self.retry_interval)
 
         return False
@@ -119,14 +125,20 @@ class SendNotify(base.Task):
 
         try:
             wutils.notify(self.zone.name, host, port=port)
-            LOG.debug('Sent NOTIFY to %(host)s:%(port)s for zone '
-                      '%(zone)s', {'host': host,
-                      'port': port, 'zone': self.zone.name})
+            LOG.debug('Sent NOTIFY to %(host)s:%(port)s for zone %(zone)s',
+                      {
+                          'host': host,
+                          'port': port,
+                          'zone': self.zone.name
+                      })
             return True
         except dns.exception.Timeout as e:
-            LOG.info(_LI('Timeout on NOTIFY to %(host)s:%(port)s for zone '
-                      '%(zone)s'), {'host': host,
-                      'port': port, 'zone': self.zone.name})
+            LOG.info('Timeout on NOTIFY to %(host)s:%(port)s for zone '
+                     '%(zone)s', {
+                         'host': host,
+                         'port': port,
+                         'zone': self.zone.name
+                     })
             raise e
 
         return False
@@ -169,9 +181,12 @@ class ZoneActor(base.Task, ThresholdMixin):
             results.count(True), len(results))
 
         if not met_action_threshold:
-            LOG.info(_LI('Could not %(action)s %(zone)s on enough targets. '
-                     'Updating status to ERROR'),
-                     {'action': self.zone.action, 'zone': self.zone.name})
+            LOG.info('Could not %(action)s %(zone)s on enough targets. '
+                     'Updating status to ERROR',
+                     {
+                         'action': self.zone.action,
+                         'zone': self.zone.name
+                     })
             self.zone.status = 'ERROR'
             self._update_status()
             return False
@@ -216,8 +231,8 @@ class ZoneAction(base.Task):
         return poller()
 
     def __call__(self):
-        LOG.info(_LI('Attempting %(action)s on zone %(name)s'),
-                {'action': self.action, 'name': self.zone.name})
+        LOG.info('Attempting %(action)s on zone %(name)s',
+                 {'action': self.action, 'name': self.zone.name})
 
         if not self._zone_action_on_targets():
             return False
@@ -304,25 +319,39 @@ class PollForZone(base.Task):
 
     def __call__(self):
         LOG.debug('Polling for zone %(zone)s serial %(serial)s on %(ns)s',
-                  {'zone': self.zone.name, 'serial': self.zone.serial,
-                  'ns': self.ns})
+                  {
+                      'zone': self.zone.name,
+                      'serial': self.zone.serial,
+                      'ns': self.ns
+                  })
 
         try:
             serial = self._get_serial()
-            LOG.debug('Found serial %(serial)d on %(host)s for zone '
-                      '%(zone)s', {'serial': serial, 'host': self.ns.host,
-                      'zone': self.zone.name})
+            LOG.debug('Found serial %(serial)d on %(host)s for zone %(zone)s',
+                      {
+                          'serial': serial,
+                          'host': self.ns.host,
+                          'zone': self.zone.name
+                      })
             return serial
             # TODO(timsim): cache if it's higher than cache
         except dns.exception.Timeout:
-            LOG.info(_LI('Timeout polling for serial %(serial)d '
-                '%(host)s for zone %(zone)s'), {'serial': self.zone.serial,
-                'host': self.ns.host, 'zone': self.zone.name})
+            LOG.info('Timeout polling for serial %(serial)d '
+                     '%(host)s for zone %(zone)s',
+                     {
+                         'serial': self.zone.serial,
+                         'host': self.ns.host,
+                         'zone': self.zone.name
+                     })
         except Exception as e:
-            LOG.warning(_LW('Unexpected failure polling for serial %(serial)d '
-                '%(host)s for zone %(zone)s. Error: %(error)s'),
-                {'serial': self.zone.serial, 'host': self.ns.host,
-                 'zone': self.zone.name, 'error': str(e)})
+            LOG.warning('Unexpected failure polling for serial %(serial)d '
+                        '%(host)s for zone %(zone)s. Error: %(error)s',
+                        {
+                            'serial': self.zone.serial,
+                            'host': self.ns.host,
+                            'zone': self.zone.name,
+                            'error': str(e)
+                        })
 
         return None
 
@@ -378,9 +407,12 @@ class ZonePoller(base.Task, ThresholdMixin):
         return query_result
 
     def _on_failure(self, error_status):
-        LOG.info(_LI('Could not find %(serial)s for %(zone)s on enough '
-                     'nameservers.'),
-                 {'serial': self.zone.serial, 'zone': self.zone.name})
+        LOG.info('Could not find %(serial)s for %(zone)s on enough '
+                 'nameservers.',
+                 {
+                     'serial': self.zone.serial,
+                     'zone': self.zone.name
+                 })
 
         self.zone.status = error_status
 
@@ -522,9 +554,11 @@ class RecoverShard(base.Task):
 
         stale_zones = self.storage.find_zones(self.context, stale_criterion)
         if stale_zones:
-            LOG.warn(_LW('Found %(len)d zones PENDING for more than %(sec)d '
-                         'seconds'), {'len': len(stale_zones),
-                                      'sec': self.max_prop_time})
+            LOG.warn('Found %(len)d zones PENDING for more than %(sec)d '
+                     'seconds', {
+                         'len': len(stale_zones),
+                         'sec': self.max_prop_time
+                     })
             error_zones.extend(stale_zones)
 
         return error_zones

@@ -15,7 +15,6 @@
 # under the License.
 from oslo_log import log as logging
 
-from designate.i18n import _LI
 from designate.backend import base
 
 
@@ -26,7 +25,7 @@ class FakeBackend(base.Backend):
     __plugin_name__ = 'fake'
 
     def create_zone(self, context, zone):
-        LOG.info(_LI('Create Zone %r'), zone)
+        LOG.info('Create Zone %r', zone)
 
     def delete_zone(self, context, zone):
-        LOG.info(_LI('Delete Zone %r'), zone)
+        LOG.info('Delete Zone %r', zone)

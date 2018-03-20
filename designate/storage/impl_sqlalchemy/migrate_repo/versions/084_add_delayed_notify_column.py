@@ -21,14 +21,12 @@ from oslo_log import log as logging
 from sqlalchemy import Boolean
 from sqlalchemy.schema import Column, MetaData, Table, Index
 
-from designate.i18n import _LI
-
 LOG = logging.getLogger(__name__)
 meta = MetaData()
 
 
 def upgrade(migrate_engine):
-    LOG.info(_LI("Adding boolean column delayed_notify to table 'zones'"))
+    LOG.info("Adding boolean column delayed_notify to table 'zones'")
     meta.bind = migrate_engine
     zones_table = Table('zones', meta, autoload=True)
     col = Column('delayed_notify', Boolean(), default=False)

@@ -24,8 +24,6 @@ from oslo_log import log as logging
 from designate.backend.agent_backend import base
 from designate import exceptions
 from designate import utils
-from designate.i18n import _LI
-
 
 LOG = logging.getLogger(__name__)
 CFG_GROUP = 'backend:agent:bind9'
@@ -62,10 +60,10 @@ class Bind9Backend(base.AgentBackend):
         return [(bind9_group, bind9_opts)]
 
     def start(self):
-        LOG.info(_LI("Started bind9 backend"))
+        LOG.info("Started bind9 backend")
 
     def find_zone_serial(self, zone_name):
-        LOG.debug("Finding %s" % zone_name)
+        LOG.debug("Finding %s", zone_name)
         resolver = dns.resolver.Resolver()
         resolver.nameservers = [cfg.CONF[CFG_GROUP].query_destination]
         try:
@@ -75,11 +73,11 @@ class Bind9Backend(base.AgentBackend):
         return rdata.serial
 
     def create_zone(self, zone):
-        LOG.debug("Creating %s" % zone.origin.to_text())
+        LOG.debug("Creating %s", zone.origin.to_text())
         self._sync_zone(zone, new_zone_flag=True)
 
     def update_zone(self, zone):
-        LOG.debug("Updating %s" % zone.origin.to_text())
+        LOG.debug("Updating %s", zone.origin.to_text())
         self._sync_zone(zone)
 
     def delete_zone(self, zone_name):

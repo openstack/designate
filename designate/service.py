@@ -33,9 +33,6 @@ from oslo_service import sslutils
 from oslo_utils import netutils
 
 from designate.i18n import _
-from designate.i18n import _LE
-from designate.i18n import _LI
-from designate.i18n import _LW
 from designate.metrics import metrics
 from designate import policy
 from designate import rpc
@@ -91,12 +88,14 @@ class Service(service.Service):
     def start(self):
         super(Service, self).start()
 
-        LOG.info(_('Starting %(name)s service (version: %(version)s)'),
-                 {'name': self.service_name,
-                  'version': version.version_info.version_string()})
+        LOG.info('Starting %(name)s service (version: %(version)s)',
+                 {
+                     'name': self.service_name,
+                     'version': version.version_info.version_string()
+                 })
 
     def stop(self):
-        LOG.info(_('Stopping %(name)s service'), {'name': self.service_name})
+        LOG.info('Stopping %(name)s service', {'name': self.service_name})
 
         super(Service, self).stop()
 
@@ -116,8 +115,8 @@ class Service(service.Service):
             port = self._service_config.port
 
         if host or port is not None:
-            LOG.warning(_LW("host and port config options used, the 'listen' "
-                            "option has been ignored"))
+            LOG.warning("host and port config options used, the 'listen' "
+                        "option has been ignored")
 
             host = host or "0.0.0.0"
             # "port" might be 0 to pick a free port, usually during testing
@@ -140,7 +139,7 @@ class RPCService(object):
     def __init__(self, *args, **kwargs):
         super(RPCService, self).__init__(*args, **kwargs)
 
-        LOG.debug("Creating RPC Server on topic '%s'" % self._rpc_topic)
+        LOG.debug("Creating RPC Server on topic '%s'", self._rpc_topic)
         self._rpc_server = rpc.get_server(
             messaging.Target(topic=self._rpc_topic, server=self._host),
             self._rpc_endpoints)
@@ -169,7 +168,7 @@ class RPCService(object):
     def start(self):
         super(RPCService, self).start()
 
-        LOG.debug("Starting RPC server on topic '%s'" % self._rpc_topic)
+        LOG.debug("Starting RPC server on topic '%s'", self._rpc_topic)
         self._rpc_server.start()
 
         # TODO(kiall): This probably belongs somewhere else, maybe the base
@@ -183,7 +182,7 @@ class RPCService(object):
         self.heartbeat_emitter.start()
 
     def stop(self):
-        LOG.debug("Stopping RPC server on topic '%s'" % self._rpc_topic)
+        LOG.debug("Stopping RPC server on topic '%s'", self._rpc_topic)
         self.heartbeat_emitter.stop()
 
         for e in self._rpc_endpoints:
@@ -309,7 +308,7 @@ class DNSService(object):
             sock_udp.close()
 
     def _dns_handle_tcp(self, sock_tcp):
-        LOG.info(_LI("_handle_tcp thread started"))
+        LOG.info("_handle_tcp thread started")
 
         while True:
             try:
@@ -319,10 +318,10 @@ class DNSService(object):
                 if self._service_config.tcp_recv_timeout:
                     client.settimeout(self._service_config.tcp_recv_timeout)
 
-                LOG.debug("Handling TCP Request from: %(host)s:%(port)d" %
+                LOG.debug("Handling TCP Request from: %(host)s:%(port)d",
                           {'host': addr[0], 'port': addr[1]})
                 if len(addr) == 4:
-                    LOG.debug("Flow info: %(host)s scope: %(port)d" %
+                    LOG.debug("Flow info: %(host)s scope: %(port)d",
                               {'host': addr[2], 'port': addr[3]})
 
                 # Dispatch a thread to handle the connection
@@ -333,20 +332,19 @@ class DNSService(object):
             # ensure no exceptions are generated from within.
             except socket.timeout:
                 client.close()
-                LOG.warning(_LW("TCP Timeout from: %(host)s:%(port)d") %
+                LOG.warning("TCP Timeout from: %(host)s:%(port)d",
                             {'host': addr[0], 'port': addr[1]})
 
             except socket.error as e:
                 client.close()
                 errname = errno.errorcode[e.args[0]]
-                LOG.warning(
-                    _LW("Socket error %(err)s from: %(host)s:%(port)d") %
-                    {'host': addr[0], 'port': addr[1], 'err': errname})
+                LOG.warning("Socket error %(err)s from: %(host)s:%(port)d",
+                            {'host': addr[0], 'port': addr[1], 'err': errname})
 
             except Exception:
                 client.close()
-                LOG.exception(_LE("Unknown exception handling TCP request "
-                                  "from: %(host)s:%(port)d") %
+                LOG.exception("Unknown exception handling TCP request from: "
+                              "%(host)s:%(port)d",
                               {'host': addr[0], 'port': addr[1]})
 
     def _dns_handle_tcp_conn(self, addr, client):
@@ -403,22 +401,21 @@ class DNSService(object):
                     client.sendall(tcp_response)
 
         except socket.timeout:
-            LOG.info(_LI("TCP Timeout from: %(host)s:%(port)d"),
+            LOG.info("TCP Timeout from: %(host)s:%(port)d",
                      {'host': host, 'port': port})
 
         except socket.error as e:
             errname = errno.errorcode[e.args[0]]
-            LOG.warning(_LW("Socket error %(err)s from: %(host)s:%(port)d"),
+            LOG.warning("Socket error %(err)s from: %(host)s:%(port)d",
                         {'host': host, 'port': port, 'err': errname})
 
         except struct.error:
-            LOG.warning(_LW("Invalid packet from: %(host)s:%(port)d"),
+            LOG.warning("Invalid packet from: %(host)s:%(port)d",
                         {'host': host, 'port': port})
 
         except Exception:
-            LOG.exception(_LE("Unknown exception handling TCP request "
-                              "from: %(host)s:%(port)d"),
-                          {'host': host, 'port': port})
+            LOG.exception("Unknown exception handling TCP request from: "
+                          "%(host)s:%(port)d", {'host': host, 'port': port})
         finally:
             client.close()
 
@@ -429,7 +426,7 @@ class DNSService(object):
         :type sock_udp: socket
         :raises: None
         """
-        LOG.info(_LI("_handle_udp thread started"))
+        LOG.info("_handle_udp thread started")
 
         while True:
             try:
@@ -437,7 +434,7 @@ class DNSService(object):
                 #              UDP recvfrom.
                 payload, addr = sock_udp.recvfrom(8192)
 
-                LOG.debug("Handling UDP Request from: %(host)s:%(port)d" %
+                LOG.debug("Handling UDP Request from: %(host)s:%(port)d",
                          {'host': addr[0], 'port': addr[1]})
 
                 # Dispatch a thread to handle the query
@@ -446,13 +443,12 @@ class DNSService(object):
 
             except socket.error as e:
                 errname = errno.errorcode[e.args[0]]
-                LOG.warning(
-                    _LW("Socket error %(err)s from: %(host)s:%(port)d") %
-                    {'host': addr[0], 'port': addr[1], 'err': errname})
+                LOG.warning("Socket error %(err)s from: %(host)s:%(port)d",
+                            {'host': addr[0], 'port': addr[1], 'err': errname})
 
             except Exception:
-                LOG.exception(_LE("Unknown exception handling UDP request "
-                                  "from: %(host)s:%(port)d") %
+                LOG.exception("Unknown exception handling UDP request from: "
+                              "%(host)s:%(port)d",
                               {'host': addr[0], 'port': addr[1]})
 
     def _dns_handle_udp_query(self, sock, addr, payload):
@@ -477,8 +473,8 @@ class DNSService(object):
                     sock.sendto(response, addr)
 
         except Exception:
-            LOG.exception(_LE("Unhandled exception while processing request "
-                              "from %(host)s:%(port)d") %
+            LOG.exception("Unhandled exception while processing request from "
+                          "%(host)s:%(port)d",
                           {'host': addr[0], 'port': addr[1]})
 
 

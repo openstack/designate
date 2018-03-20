@@ -36,7 +36,6 @@ import dns.opcode
 from oslo_config import cfg
 from oslo_log import log as logging
 
-from designate.i18n import _LI, _LW
 from designate.backend import base
 from designate import exceptions
 from designate.mdns import rpcapi as mdns_api
@@ -119,8 +118,7 @@ class AgentPoolBackend(base.Backend):
         retry = 0
         response = None
 
-        LOG.info(_LI("Sending '%(msg)s' for '%(zone)s' to '%(server)s:"
-                     "%(port)d'."),
+        LOG.info("Sending '%(msg)s' for '%(zone)s' to '%(server)s:%(port)d'.",
                  {'msg': str(opcode),
                   'zone': zone_name, 'server': dest_ip,
                   'port': dest_port})
@@ -128,18 +126,18 @@ class AgentPoolBackend(base.Backend):
             dns_message, dest_ip, dest_port, timeout)
 
         if isinstance(response, dns.exception.Timeout):
-            LOG.warning(_LW("Got Timeout while trying to send '%(msg)s' for "
-                         "'%(zone)s' to '%(server)s:%(port)d'. Timeout="
-                         "'%(timeout)d' seconds. Retry='%(retry)d'"),
+            LOG.warning("Got Timeout while trying to send '%(msg)s' for "
+                        "'%(zone)s' to '%(server)s:%(port)d'. "
+                        "Timeout='%(timeout)d' seconds. Retry='%(retry)d'",
                      {'msg': str(opcode),
                       'zone': zone_name, 'server': dest_ip,
                       'port': dest_port, 'timeout': timeout,
                       'retry': retry})
             response = None
         elif isinstance(response, dns_query.BadResponse):
-            LOG.warning(_LW("Got BadResponse while trying to send '%(msg)s' "
-                         "for '%(zone)s' to '%(server)s:%(port)d'. Timeout"
-                         "='%(timeout)d' seconds. Retry='%(retry)d'"),
+            LOG.warning("Got BadResponse while trying to send '%(msg)s' for "
+                        "'%(zone)s' to '%(server)s:%(port)d'. "
+                        "Timeout='%(timeout)d' seconds. Retry='%(retry)d'",
                      {'msg': str(opcode),
                       'zone': zone_name, 'server': dest_ip,
                       'port': dest_port, 'timeout': timeout,
@@ -150,9 +148,9 @@ class AgentPoolBackend(base.Backend):
         # authoritative answer
         elif not (response.flags & dns.flags.AA) or dns.rcode.from_flags(
                 response.flags, response.ednsflags) != dns.rcode.NOERROR:
-            LOG.warning(_LW("Failed to get expected response while trying to "
-                         "send '%(msg)s' for '%(zone)s' to '%(server)s:"
-                         "%(port)d'. Response message: %(resp)s"),
+            LOG.warning("Failed to get expected response while trying to "
+                        "send '%(msg)s' for '%(zone)s' to "
+                        "'%(server)s:%(port)d'. Response message: %(resp)s",
                      {'msg': str(opcode),
                       'zone': zone_name, 'server': dest_ip,
                       'port': dest_port, 'resp': str(response)})

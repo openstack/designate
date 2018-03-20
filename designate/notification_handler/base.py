@@ -24,7 +24,6 @@ import re
 from designate import exceptions
 from designate.central import rpcapi as central_rpcapi
 from designate.context import DesignateContext
-from designate.i18n import _LW
 from designate.objects import Record
 from designate.objects import RecordSet
 from designate.plugin import ExtensionPlugin
@@ -140,10 +139,10 @@ class BaseAddressHandler(NotificationHandler):
         :param resource_id: The managed resource ID
         """
         if not managed:
-            LOG.warning(_LW(
+            LOG.warning(
                 'Deprecation notice: Unmanaged designate-sink records are '
                 'being deprecated please update the call '
-                'to remove managed=False'))
+                'to remove managed=False')
         LOG.debug('Using Zone ID: %s', zone_id)
         zone = self.get_zone(zone_id)
         LOG.debug('Domain: %r', zone)
@@ -204,10 +203,10 @@ class BaseAddressHandler(NotificationHandler):
         :param criterion: Criterion to search and destroy records
         """
         if not managed:
-            LOG.warning(_LW(
+            LOG.warning(
                 'Deprecation notice: Unmanaged designate-sink records are '
                 'being deprecated please update the call '
-                'to remove managed=False'))
+                'to remove managed=False')
         criterion = criterion or {}
 
         context = DesignateContext().elevated()

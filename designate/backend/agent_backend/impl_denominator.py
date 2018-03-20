@@ -25,8 +25,6 @@ from oslo_log import log as logging
 from designate.backend.agent_backend import base
 from designate import exceptions
 from designate import utils
-from designate.i18n import _LI
-
 
 LOG = logging.getLogger(__name__)
 CFG_GROUP = 'backend:agent:denominator'
@@ -117,13 +115,13 @@ class DenominatorBackend(base.AgentBackend):
         return [(denominator_group, denominator_opts)]
 
     def start(self):
-        LOG.info(_LI("Started Denominator backend"))
+        LOG.info("Started Denominator backend")
 
     def stop(self):
-        LOG.info(_LI("Stopped Denominator backend"))
+        LOG.info("Stopped Denominator backend")
 
     def find_zone_serial(self, zone_name):
-        LOG.debug("Finding %s" % zone_name)
+        LOG.debug("Finding %s", zone_name)
 
         zone_name = zone_name.rstrip('.')
         output = self.denominator.get_record(
@@ -140,7 +138,7 @@ class DenominatorBackend(base.AgentBackend):
         return rdata.serial
 
     def create_zone(self, zone):
-        LOG.debug("Creating %s" % zone.origin.to_text())
+        LOG.debug("Creating %s", zone.origin.to_text())
         zone_name = zone.origin.to_text(omit_final_dot=True).decode('utf-8')
 
         # Use SOA TTL as zone default TTL
@@ -172,7 +170,7 @@ class DenominatorBackend(base.AgentBackend):
                     data=data)
 
     def update_zone(self, zone):
-        LOG.debug("Updating %s" % zone.origin)
+        LOG.debug("Updating %s", zone.origin)
         zone_name = zone.origin.to_text(omit_final_dot=True).decode('utf-8')
 
         soa_record = zone.find_rrset(zone.origin, dns.rdatatype.SOA)

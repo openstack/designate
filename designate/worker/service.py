@@ -19,8 +19,6 @@ from oslo_config import cfg
 from oslo_log import log as logging
 import oslo_messaging as messaging
 
-from designate.i18n import _LI
-from designate.i18n import _LE
 from designate import backend
 from designate import exceptions
 from designate import service
@@ -51,7 +49,7 @@ class Service(service.RPCService, service.Service):
             # Fetch an instance of the Backend class
             target.backend = backend.get_backend(target)
 
-        LOG.info(_LI('%d targets setup'), len(pool.targets))
+        LOG.info('%d targets setup', len(pool.targets))
 
         if len(pool.targets) == 0:
             raise exceptions.NoPoolTargetsConfigured()
@@ -72,12 +70,12 @@ class Service(service.RPCService, service.Service):
                 if len(pool.targets) > 0:
                     has_targets = True
                 else:
-                    LOG.error(_LE("No targets for %s found."), pool)
+                    LOG.error("No targets for %s found.", pool)
                     time.sleep(5)
 
             # Pool data may not have migrated to the DB yet
             except exceptions.PoolNotFound:
-                LOG.error(_LE("Pool ID %s not found."), pool_id)
+                LOG.error("Pool ID %s not found.", pool_id)
                 time.sleep(5)
             # designate-central service may not have started yet
             except messaging.exceptions.MessagingTimeout:
@@ -111,13 +109,13 @@ class Service(service.RPCService, service.Service):
 
     def get_pool(self, pool_id):
         if pool_id not in self.pools_map:
-            LOG.info(_LI("Lazily loading pool %s"), pool_id)
+            LOG.info("Lazily loading pool %s", pool_id)
             self.pools_map[pool_id] = self.load_pool(pool_id)
         return self.pools_map[pool_id]
 
     def start(self):
         super(Service, self).start()
-        LOG.info(_LI('Started worker'))
+        LOG.info('Started worker')
 
     def _do_zone_action(self, context, zone):
         pool = self.get_pool(zone.pool_id)

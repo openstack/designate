@@ -18,10 +18,8 @@ from oslo_config import cfg
 from oslo_log import log as logging
 import oslo_messaging as messaging
 
-from designate.i18n import _LI
 from designate import rpc
 from designate.loggingutils import rpc_logging
-
 
 LOG = logging.getLogger(__name__)
 
@@ -71,9 +69,12 @@ class PoolManagerAPI(object):
         return MNGR_API
 
     def target_sync(self, context, pool_id, target_id, timestamp):
-        LOG.info(_LI("target_sync: Syncing target %(target) since "
-                     "%(timestamp)d."),
-                 {'target': target_id, 'timestamp': timestamp})
+        LOG.info(
+            "target_sync: Syncing target %(target) since %(timestamp)d.",
+            {
+                'target': target_id,
+                'timestamp': timestamp
+            })
 
         # Modifying the topic so it is pool manager instance specific.
         topic = '%s.%s' % (self.topic, pool_id)

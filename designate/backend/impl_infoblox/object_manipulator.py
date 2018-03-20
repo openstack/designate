@@ -90,9 +90,9 @@ class InfobloxObjectManipulator(object):
                 net_view_name=net_view,
                 dns_view_name=dns_view)
         except exc.InfobloxException as e:
-            LOG.warning(_("Issue happens during views creating: %s"), e)
+            LOG.warning("Issue happens during views creating: %s", e)
 
-        LOG.debug("net_view: %s, dns_view: %s" % (net_view, dns_view))
+        LOG.debug("net_view: %s, dns_view: %s", net_view, dns_view)
         return dns_view
 
     def get_dns_view(self, tenant):
@@ -142,15 +142,15 @@ class InfobloxObjectManipulator(object):
         if check_if_exists:
             ib_object = self._get_infoblox_object_or_none(obj_type, payload)
             if ib_object:
-                LOG.info(_(
-                    "Infoblox %(obj_type)s already exists: %(ib_object)s"),
+                LOG.info(
+                    "Infoblox %(obj_type)s already exists: %(ib_object)s",
                     {'obj_type': obj_type, 'ib_object': ib_object})
 
         if not ib_object:
             payload.update(additional_create_kwargs)
             ib_object = self.connector.create_object(obj_type, payload,
                                                      return_fields)
-            LOG.info(_("Infoblox %(obj_type)s was created: %(ib_object)s"),
+            LOG.info("Infoblox %(obj_type)s was created: %(ib_object)s",
                      {'obj_type': obj_type, 'ib_object': ib_object})
 
         return ib_object
@@ -186,7 +186,7 @@ class InfobloxObjectManipulator(object):
 
     def _update_infoblox_object_by_ref(self, ref, update_kwargs):
         self.connector.update_object(ref, update_kwargs)
-        LOG.info(_('Infoblox object was updated: %s'), ref)
+        LOG.info('Infoblox object was updated: %s', ref)
 
     def _delete_infoblox_object(self, obj_type, payload):
         ib_object_ref = None
@@ -204,4 +204,4 @@ class InfobloxObjectManipulator(object):
 
         if ib_object_ref:
             self.connector.delete_object(ib_object_ref)
-            LOG.info(_('Infoblox object was deleted: %s'), ib_object_ref)
+            LOG.info('Infoblox object was deleted: %s', ib_object_ref)

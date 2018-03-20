@@ -17,7 +17,6 @@ from oslo_log import log as logging
 from oslo_versionedobjects import exception
 from oslo_utils import excutils
 from designate.i18n import _
-from designate.i18n import _LE
 from oslo_versionedobjects import base
 from oslo_versionedobjects.base import VersionedObjectDictCompat as DictObjectMixin  # noqa
 
@@ -517,7 +516,10 @@ class DesignateRegistry(base.VersionedObjectRegistry):
                 except Exception:
                     with excutils.save_and_reraise_exception():
                         LOG.exception(
-                            _LE('Error setting %{obj_name}s.%{field_name}s'),
-                            {"obj_name": self.obj_name(), "field_name": name})
+                            'Error setting %{obj_name}s.%{field_name}s',
+                            {
+                                "obj_name": self.obj_name(),
+                                "field_name": name
+                            })
 
             setattr(cls, name, property(getter, setter, attr.fdel))

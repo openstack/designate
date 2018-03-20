@@ -26,8 +26,6 @@ from oslo_log import log as logging
 from designate import exceptions
 from designate.mdns import xfr
 from designate.central import rpcapi as central_api
-from designate.i18n import _LI
-from designate.i18n import _LW
 
 
 LOG = logging.getLogger(__name__)
@@ -132,9 +130,8 @@ class RequestHandler(xfr.XFRMixin):
         # We'll reply but don't do anything with the NOTIFY.
         master_addr = zone.get_master_by_ip(notify_addr)
         if not master_addr:
-            msg = _LW("NOTIFY for %(name)s from non-master server "
-                      "%(addr)s, refusing.")
-            LOG.warning(msg % {"name": zone.name, "addr": notify_addr})
+            LOG.warning("NOTIFY for %(name)s from non-master server %(addr)s, "
+                        "refusing.", {"name": zone.name, "addr": notify_addr})
             response.set_rcode(dns.rcode.REFUSED)
             yield response
             raise StopIteration
@@ -146,13 +143,11 @@ class RequestHandler(xfr.XFRMixin):
         soa_answer = resolver.query(zone.name, 'SOA')
         soa_serial = soa_answer[0].serial
         if soa_serial == zone.serial:
-            msg = _LI("Serial %(serial)s is the same for master and us for "
-                      "%(zone_id)s")
-            LOG.info(msg, {"serial": soa_serial, "zone_id": zone.id})
+            LOG.info("Serial %(serial)s is the same for master and us for "
+                     "%(zone_id)s", {"serial": soa_serial, "zone_id": zone.id})
         else:
-            msg = _LI("Scheduling AXFR for %(zone_id)s from %(master_addr)s")
-            info = {"zone_id": zone.id, "master_addr": master_addr}
-            LOG.info(msg, info)
+            LOG.info("Scheduling AXFR for %(zone_id)s from %(master_addr)s",
+                     {"zone_id": zone.id, "master_addr": master_addr})
             self.tg.add_thread(self.zone_sync, context, zone,
                                [master_addr])
 
@@ -233,15 +228,15 @@ class RequestHandler(xfr.XFRMixin):
             zone = self.storage.find_zone(context, criterion)
 
         except exceptions.ZoneNotFound:
-            LOG.warning(_LW("ZoneNotFound while handling axfr request. "
-                            "Question was %(qr)s") % {'qr': q_rrset})
+            LOG.warning("ZoneNotFound while handling axfr request. "
+                        "Question was %(qr)s", {'qr': q_rrset})
 
             yield self._handle_query_error(request, dns.rcode.REFUSED)
             raise StopIteration
 
         except exceptions.Forbidden:
-            LOG.warning(_LW("Forbidden while handling axfr request. "
-                            "Question was %(qr)s") % {'qr': q_rrset})
+            LOG.warning("Forbidden while handling axfr request. "
+                        "Question was %(qr)s", {'qr': q_rrset})
 
             yield self._handle_query_error(request, dns.rcode.REFUSED)
             raise StopIteration
@@ -267,8 +262,7 @@ class RequestHandler(xfr.XFRMixin):
         max_message_size = CONF['service:mdns'].max_message_size
 
         if max_message_size > 65535:
-            LOG.warning(_LW('MDNS max message size must not be greater than '
-                            '65535'))
+            LOG.warning('MDNS max message size must not be greater than 65535')
             max_message_size = 65535
 
         if request.had_tsig:
@@ -304,9 +298,9 @@ class RequestHandler(xfr.XFRMixin):
                 if renderer.counts[dns.renderer.ANSWER] == 0:
                     # We've received a TooBig from the first attempted RRSet in
                     # this packet. Log a warning and abort the AXFR.
-                    LOG.warning(_LW('Aborted AXFR of %(zone)s, a single RR '
-                                    '(%(rrset_type)s %(rrset_name)s) '
-                                    'exceeded the max message size.'),
+                    LOG.warning('Aborted AXFR of %(zone)s, a single RR '
+                                '(%(rrset_type)s %(rrset_name)s) '
+                                'exceeded the max message size.',
                                 {'zone': zone.name,
                                  'rrset_type': record[1],
                                  'rrset_name': record[3]})
@@ -372,13 +366,13 @@ class RequestHandler(xfr.XFRMixin):
             #
             # To simply things currently this returns a REFUSED in all cases.
             # If zone transfers needs different errors, we could revisit this.
-            LOG.info(_LI("NotFound, refusing. Question was %(qr)s"),
+            LOG.info("NotFound, refusing. Question was %(qr)s",
                      {'qr': q_rrset})
             yield self._handle_query_error(request, dns.rcode.REFUSED)
             raise StopIteration
 
         except exceptions.Forbidden:
-            LOG.info(_LI("Forbidden, refusing. Question was %(qr)s"),
+            LOG.info("Forbidden, refusing. Question was %(qr)s",
                      {'qr': q_rrset})
             yield self._handle_query_error(request, dns.rcode.REFUSED)
             raise StopIteration
@@ -389,14 +383,14 @@ class RequestHandler(xfr.XFRMixin):
             zone = self.storage.find_zone(context, criterion)
 
         except exceptions.ZoneNotFound:
-            LOG.warning(_LW("ZoneNotFound while handling query request"
-                            ". Question was %(qr)s") % {'qr': q_rrset})
+            LOG.warning("ZoneNotFound while handling query request. "
+                        "Question was %(qr)s", {'qr': q_rrset})
             yield self._handle_query_error(request, dns.rcode.REFUSED)
             raise StopIteration
 
         except exceptions.Forbidden:
-            LOG.warning(_LW("Forbidden while handling query request. "
-                            "Question was %(qr)s") % {'qr': q_rrset})
+            LOG.warning("Forbidden while handling query request. "
+                        "Question was %(qr)s", {'qr': q_rrset})
             yield self._handle_query_error(request, dns.rcode.REFUSED)
             raise StopIteration
 

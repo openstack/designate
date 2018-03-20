@@ -16,7 +16,6 @@
 from oslo_log import log as logging
 
 from designate.backend.agent_backend import base
-from designate.i18n import _LI
 
 LOG = logging.getLogger(__name__)
 
@@ -25,20 +24,20 @@ class FakeBackend(base.AgentBackend):
     __plugin_name__ = 'fake'
 
     def start(self):
-        LOG.info(_LI("Started fake backend, Pool Manager will not work!"))
+        LOG.info("Started fake backend, Pool Manager will not work!")
 
     def stop(self):
-        LOG.info(_LI("Stopped fake backend"))
+        LOG.info("Stopped fake backend")
 
     def find_zone_serial(self, zone_name):
-        LOG.debug("Finding %s" % zone_name)
+        LOG.debug("Finding %s", zone_name)
         return 0
 
     def create_zone(self, zone):
-        LOG.debug("Creating %s" % zone.origin.to_text())
+        LOG.debug("Creating %s", zone.origin.to_text())
 
     def update_zone(self, zone):
-        LOG.debug("Updating %s" % zone.origin.to_text())
+        LOG.debug("Updating %s", zone.origin.to_text())
 
     def delete_zone(self, zone_name):
-        LOG.debug('Delete Zone: %s' % zone_name)
+        LOG.debug('Delete Zone: %s', zone_name)

@@ -21,8 +21,6 @@ from designate import utils
 from designate.api.v2.controllers import rest
 from designate.objects import TsigKey
 from designate.objects.adapters import DesignateAdapter
-from designate.i18n import _LI
-
 
 LOG = logging.getLogger(__name__)
 
@@ -40,7 +38,7 @@ class TsigKeysController(rest.RestController):
 
         tsigkey = self.central_api.get_tsigkey(context, tsigkey_id)
 
-        LOG.info(_LI("Retrieved %(tsigkey)s"), {'tsigkey': tsigkey})
+        LOG.info("Retrieved %(tsigkey)s", {'tsigkey': tsigkey})
 
         return DesignateAdapter.render('API_v2', tsigkey, request=request)
 
@@ -62,7 +60,7 @@ class TsigKeysController(rest.RestController):
         tsigkeys = self.central_api.find_tsigkeys(
             context, criterion, marker, limit, sort_key, sort_dir)
 
-        LOG.info(_LI("Retrieved %(tsigkeys)s"), {'tsigkeys': tsigkeys})
+        LOG.info("Retrieved %(tsigkeys)s", {'tsigkeys': tsigkeys})
 
         return DesignateAdapter.render('API_v2', tsigkeys, request=request)
 
@@ -82,7 +80,7 @@ class TsigKeysController(rest.RestController):
         tsigkey = self.central_api.create_tsigkey(
             context, tsigkey)
 
-        LOG.info(_LI("Created %(tsigkey)s"), {'tsigkey': tsigkey})
+        LOG.info("Created %(tsigkey)s", {'tsigkey': tsigkey})
 
         tsigkey = DesignateAdapter.render('API_v2', tsigkey, request=request)
 
@@ -115,7 +113,7 @@ class TsigKeysController(rest.RestController):
         # Update and persist the resource
         tsigkey = self.central_api.update_tsigkey(context, tsigkey)
 
-        LOG.info(_LI("Updated %(tsigkey)s"), {'tsigkey': tsigkey})
+        LOG.info("Updated %(tsigkey)s", {'tsigkey': tsigkey})
 
         response.status_int = 200
 
@@ -131,7 +129,7 @@ class TsigKeysController(rest.RestController):
 
         tsigkey = self.central_api.delete_tsigkey(context, tsigkey_id)
 
-        LOG.info(_LI("Deleted %(tsigkey)s"), {'tsigkey': tsigkey})
+        LOG.info("Deleted %(tsigkey)s", {'tsigkey': tsigkey})
 
         response.status_int = 204
 

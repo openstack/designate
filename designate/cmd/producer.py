@@ -19,13 +19,11 @@ from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_reports import guru_meditation_report as gmr
 
-from designate.i18n import _LE
 from designate import hookpoints
 from designate import service
 from designate import utils
 from designate import version
 from designate.producer import service as producer_service
-
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
@@ -41,9 +39,9 @@ def main():
     # NOTE(timsim): This is to ensure people don't start the wrong
     #               services when the worker model is enabled.
     if not cfg.CONF['service:worker'].enabled:
-        LOG.error(_LE('You do not have designate-worker enabled, starting '
-                      'designate-producer is not allowed. '
-                      'You need to start designate-zone-manager instead.'))
+        LOG.error('You do not have designate-worker enabled, starting '
+                  'designate-producer is not allowed. '
+                  'You need to start designate-zone-manager instead.')
         sys.exit(1)
 
     hookpoints.log_hook_setup()

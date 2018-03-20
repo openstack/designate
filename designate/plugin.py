@@ -36,7 +36,7 @@ class Plugin(object):
 
     def __init__(self):
         self.name = self.get_canonical_name()
-        LOG.debug("Loaded plugin %s" % self.name)
+        LOG.debug("Loaded plugin %s", self.name)
 
     @classmethod
     def get_canonical_name(cls):
@@ -112,7 +112,7 @@ class DriverPlugin(Plugin):
     def get_driver(cls, name):
         """Load a single driver"""
 
-        LOG.debug('Looking for driver %s in %s' % (name, cls.__plugin_ns__))
+        LOG.debug('Looking for driver %s in %s', name, cls.__plugin_ns__)
 
         mgr = driver.DriverManager(cls.__plugin_ns__, name)
 

@@ -20,8 +20,6 @@ from oslo_log import log as logging
 from oslo_reports import guru_meditation_report as gmr
 import debtcollector
 
-from designate.i18n import _LE
-from designate.i18n import _LW
 from designate import service
 from designate import utils
 from designate import version
@@ -45,10 +43,10 @@ def main():
     #               services when the worker model is enabled.
 
     if cfg.CONF['service:worker'].enabled:
-        LOG.error(_LE('You have designate-worker enabled, starting '
-                      'designate-zone-manager is incompatible with '
-                      'designate-worker. You need to start '
-                      'designate-producer instead.'))
+        LOG.error('You have designate-worker enabled, starting '
+                  'designate-zone-manager is incompatible with '
+                  'designate-worker. You need to start '
+                  'designate-producer instead.')
         sys.exit(1)
 
     debtcollector.deprecate('designate-zone-manager Is deprecated in '
@@ -56,7 +54,7 @@ def main():
                             version='newton',
                             removal_version='rocky')
 
-    LOG.warning(_LW('Starting designate-producer under the zone-manager name'))
+    LOG.warning('Starting designate-producer under the zone-manager name')
 
     server = producer_service.Service(
         threads=CONF['service:zone_manager'].threads)

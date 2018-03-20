@@ -20,7 +20,6 @@ from designate import utils
 from designate.api.v2.controllers import common
 from designate.api.v2.controllers import rest
 from designate.objects.adapters import DesignateAdapter
-from designate.i18n import _LI
 
 LOG = logging.getLogger(__name__)
 
@@ -38,7 +37,7 @@ class RecordSetsViewController(rest.RestController):
 
         rrset = self.central_api.get_recordset(context, None, recordset_id)
 
-        LOG.info(_LI("Retrieved %(recordset)s"), {'recordset': rrset})
+        LOG.info("Retrieved %(recordset)s", {'recordset': rrset})
 
         canonical_loc = common.get_rrset_canonical_location(request,
                                                             rrset.zone_id,
@@ -53,6 +52,6 @@ class RecordSetsViewController(rest.RestController):
         recordsets = common.retrieve_matched_rrsets(context, self, None,
                                                     **params)
 
-        LOG.info(_LI("Retrieved %(recordsets)s"), {'recordsets': recordsets})
+        LOG.info("Retrieved %(recordsets)s", {'recordsets': recordsets})
 
         return DesignateAdapter.render('API_v2', recordsets, request=request)

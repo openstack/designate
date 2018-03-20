@@ -25,10 +25,6 @@ import tenacity
 import tooz.coordination
 
 from designate.utils import generate_uuid
-from designate.i18n import _LI
-from designate.i18n import _LW
-from designate.i18n import _LE
-
 
 LOG = log.getLogger(__name__)
 
@@ -85,10 +81,9 @@ class CoordinationMixin(object):
                               self._coordinator_run_watchers)
 
         else:
-            msg = _LW("No coordination backend configured, distributed "
-                      "coordination functionality will be disabled. "
-                      "Please configure a coordination backend.")
-            LOG.warning(msg)
+            LOG.warning("No coordination backend configured, distributed "
+                        "coordination functionality will be disabled. "
+                        "Please configure a coordination backend.")
 
         super(CoordinationMixin, self).start()
 
@@ -111,8 +106,7 @@ class CoordinationMixin(object):
                     self._coordination_started = True
 
                 except Exception:
-                    LOG.warning(_LW("Failed to start Coordinator:"),
-                                exc_info=True)
+                    LOG.warning("Failed to start Coordinator:", exc_info=True)
                     time.sleep(15)
 
     def stop(self):
@@ -134,8 +128,7 @@ class CoordinationMixin(object):
         try:
             self._coordinator.heartbeat()
         except tooz.coordination.ToozError:
-            LOG.exception(_LE('Error sending a heartbeat to coordination '
-                          'backend.'))
+            LOG.exception('Error sending a heartbeat to coordination backend.')
 
     def _coordinator_run_watchers(self):
         if not self._coordination_started:
@@ -156,9 +149,9 @@ class Partitioner(object):
         self._callbacks = []
 
     def _warn_no_backend(self):
-        LOG.warning(_LW('No coordination backend configured, assuming we are '
-                        'the only worker. Please configure a coordination '
-                        'backend'))
+        LOG.warning('No coordination backend configured, assuming we are '
+                    'the only worker. Please configure a coordination '
+                    'backend')
 
     @tenacity.retry(stop=tenacity.stop_after_attempt(5),
                     wait=tenacity.wait_random(max=2),
@@ -170,17 +163,17 @@ class Partitioner(object):
             return get_members_req.get()
 
         except tooz.coordination.GroupNotCreated:
-            LOG.error(_LE('Attempting to partition over a non-existent group: '
-                          '%s'), self._group_id)
+            LOG.error('Attempting to partition over a non-existent group: %s',
+                      self._group_id)
 
             raise
         except tooz.coordination.ToozError:
-            LOG.error(_LE('Error getting group membership info from '
-                          'coordination backend.'))
+            LOG.error('Error getting group membership info from coordination '
+                      'backend.')
             raise
 
     def _on_group_change(self, event):
-        LOG.debug("Received member change %s" % event)
+        LOG.debug("Received member change %s", event)
         members, self._my_partitions = self._update_partitions()
 
         self._run_callbacks(members, event)
@@ -235,7 +228,7 @@ class Partitioner(object):
         self._started = True
 
     def watch_partition_change(self, callback):
-        LOG.debug("Watching for change %s" % self._group_id)
+        LOG.debug("Watching for change %s", self._group_id)
         self._callbacks.append(callback)
         if self._started:
             if not self._coordinator:
@@ -256,14 +249,14 @@ class LeaderElection(object):
         self._leader = False
 
     def _warn_no_backend(self):
-        LOG.warning(_LW('No coordination backend configured, assuming we are '
-                        'the leader. Please configure a coordination backend'))
+        LOG.warning('No coordination backend configured, assuming we are the '
+                    'leader. Please configure a coordination backend')
 
     def start(self):
         self._started = True
 
         if self._coordinator:
-            LOG.info(_LI('Starting leader election for group %(group)s'),
+            LOG.info('Starting leader election for group %(group)s',
                      {'group': self._group_id})
 
             # Nominate myself for election
@@ -280,7 +273,7 @@ class LeaderElection(object):
         self._started = False
 
         if self._coordinator:
-            LOG.info(_LI('Stopping leader election for group %(group)s'),
+            LOG.info('Stopping leader election for group %(group)s',
                      {'group': self._group_id})
 
             # Remove the elected_as_leader callback
@@ -289,14 +282,14 @@ class LeaderElection(object):
 
             if self._leader:
                 # Tell Tooz we no longer wish to be the leader
-                LOG.info(_LI('Standing down as leader candidate for group '
-                             '%(group)s'), {'group': self._group_id})
+                LOG.info('Standing down as leader candidate for group '
+                         '%(group)s', {'group': self._group_id})
                 self._leader = False
                 self._coordinator.stand_down_group_leader(self._group_id)
 
         elif self._leader:
-            LOG.info(_LI('Standing down as leader candidate for group '
-                         '%(group)s'), {'group': self._group_id})
+            LOG.info('Standing down as leader candidate for group %(group)s',
+                     {'group': self._group_id})
             self._leader = False
 
     @property
@@ -304,7 +297,7 @@ class LeaderElection(object):
         return self._leader
 
     def _on_elected_leader(self, event):
-        LOG.info(_LI('Successfully elected as leader of group %(group)s'),
+        LOG.info('Successfully elected as leader of group %(group)s',
                  {'group': self._group_id})
         self._leader = True
 

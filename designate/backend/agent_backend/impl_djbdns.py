@@ -53,8 +53,6 @@ from oslo_log import log as logging
 from designate import exceptions
 from designate import utils
 from designate.backend.agent_backend import base
-from designate.i18n import _LI
-from designate.i18n import _LE
 from designate.utils import execute
 
 
@@ -116,7 +114,7 @@ def filter_exceptions(fn):
         except exceptions.Backend:
             raise
         except Exception as e:
-            LOG.error(_LE("Unhandled exception %s"), str(e), exc_info=True)
+            LOG.error("Unhandled exception %s", e, exc_info=True)
             raise exceptions.Backend(str(e))
 
     return wrapper
@@ -140,8 +138,8 @@ class DjbdnsBackend(base.AgentBackend):
         self._resolver.nameservers = [cfg.CONF[CFG_GROUP].query_destination]
         self._masters = [utils.split_host_port(ns)
                          for ns in cfg.CONF['service:agent'].masters]
-        LOG.info(_LI("Resolvers: %r"), self._resolver.nameservers)
-        LOG.info(_LI("AXFR masters: %r"), self._masters)
+        LOG.info("Resolvers: %r", self._resolver.nameservers)
+        LOG.info("AXFR masters: %r", self._masters)
         if not self._masters:
             raise exceptions.Backend("Missing agent AXFR masters")
 
@@ -154,7 +152,7 @@ class DjbdnsBackend(base.AgentBackend):
 
         # Usually /var/lib/djbdns/root/data.cdb
         self._tinydns_cdb_filename = os.path.join(tinydns_root_dir, 'data.cdb')
-        LOG.info(_LI("data.cdb path: %r"), self._tinydns_cdb_filename)
+        LOG.info("data.cdb path: %r", self._tinydns_cdb_filename)
 
         # Where the agent puts the zone datafiles,
         # usually /var/lib/djbdns/datafiles
@@ -179,7 +177,7 @@ class DjbdnsBackend(base.AgentBackend):
 
     def start(self):
         """Start the backend"""
-        LOG.info(_LI("Started djbdns backend"))
+        LOG.info("Started djbdns backend")
 
     def find_zone_serial(self, zone_name):
         """Query the local resolver for a zone
@@ -204,7 +202,7 @@ class DjbdnsBackend(base.AgentBackend):
                 with open(zone_fn) as zf:
                     data_f.write(zf.read())
 
-        LOG.info(_LI("Loaded %d zone datafiles."), zone_cnt)
+        LOG.info("Loaded %d zone datafiles.", zone_cnt)
 
     def _rebuild_data_cdb(self):
         """Rebuild data.cdb file from zone datafiles
@@ -225,7 +223,7 @@ class DjbdnsBackend(base.AgentBackend):
             self._concatenate_zone_datafiles(data_fn,
                                              self._datafiles_path_glob)
             # Generate the data.cdb file
-            LOG.info(_LI("Updating data.cdb"))
+            LOG.info("Updating data.cdb")
             LOG.debug("Convert %s to %s", data_fn, tmp_cdb_fn)
             try:
                 out, err = execute(
@@ -233,10 +231,12 @@ class DjbdnsBackend(base.AgentBackend):
                     cwd=tmpdir
                 )
             except ProcessExecutionError as e:
-                LOG.error(_LE("Failed to generate data.cdb"))
-                LOG.error(_LE("Command output: %(out)r Stderr: %(err)r"), {
-                    'out': e.stdout, 'err': e.stderr
-                })
+                LOG.error("Failed to generate data.cdb")
+                LOG.error("Command output: %(out)r Stderr: %(err)r",
+                          {
+                              'out': e.stdout,
+                              'err': e.stderr
+                          })
                 raise exceptions.Backend("Failed to generate data.cdb")
 
             LOG.debug("Move %s to %s", tmp_cdb_fn, self._tinydns_cdb_filename)
@@ -244,7 +244,7 @@ class DjbdnsBackend(base.AgentBackend):
                 os.rename(tmp_cdb_fn, self._tinydns_cdb_filename)
             except OSError:
                 os.remove(tmp_cdb_fn)
-                LOG.error(_LE("Unable to move data.cdb to %s"),
+                LOG.error("Unable to move data.cdb to %s",
                           self._tinydns_cdb_filename)
                 raise exceptions.Backend("Unable to move data.cdb")
 
@@ -286,10 +286,12 @@ class DjbdnsBackend(base.AgentBackend):
             try:
                 out, err = execute(*cmd)
             except ProcessExecutionError as e:
-                LOG.error(_LE("Error executing AXFR as %r"), ' '.join(cmd))
-                LOG.error(_LE("Command output: %(out)r Stderr: %(err)r"), {
-                    'out': e.stdout, 'err': e.stderr
-                })
+                LOG.error("Error executing AXFR as %r", ' '.join(cmd))
+                LOG.error("Command output: %(out)r Stderr: %(err)r",
+                          {
+                              'out': e.stdout,
+                              'err': e.stderr
+                          })
                 raise exceptions.Backend(str(e))
 
             finally:
@@ -348,7 +350,7 @@ class DjbdnsBackend(base.AgentBackend):
             LOG.debug('Deleted Zone: %s', zone_name)
         except OSError as e:
             if os.errno.ENOENT == e.errno:
-                LOG.info(_LI("Zone datafile %s was already deleted"), zone_fn)
+                LOG.info("Zone datafile %s was already deleted", zone_fn)
                 return
 
             raise

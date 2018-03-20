@@ -17,7 +17,6 @@ from oslo_config import cfg
 from oslo_log import log as logging
 from paste import deploy
 
-from designate.i18n import _LI
 from designate import exceptions
 from designate import utils
 from designate import service
@@ -61,6 +60,6 @@ class Service(service.WSGIService, service.Service):
             msg = 'Unable to determine appropriate api-paste-config file'
             raise exceptions.ConfigurationError(msg)
 
-        LOG.info(_LI('Using api-paste-config found at: %s'), config_paths[0])
+        LOG.info('Using api-paste-config found at: %s', config_paths[0])
 
         return deploy.loadapp("config:%s" % config_paths[0], name='osapi_dns')

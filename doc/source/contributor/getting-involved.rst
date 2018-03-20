@@ -203,14 +203,13 @@ See https://docs.openstack.org/oslo.i18n/latest/user/guidelines.html
 .. code-block:: python
 
     # Do not use "%" string formatting
-    # No localization for debug
+    # No localization for log messages
     LOG.debug("... %s", variable)
-    LOG.info(_LI("... %s..."), variable)
     # Use named interpolation when more than one replacement is done
-    LOG.info(_LI("... %(key)s ..."), {'key': 'value', ...})
-    LOG.warn(_LW("... %(key)s"), {'key': 'value'})
-    LOG.error(_LE("... %(key)s"), {'key': 'value'})
-    LOG.critical(_LC("... %(key)s"), {'key': 'value'})
+    LOG.info("... %(key)s ...", {'key': 'value', ...})
+    LOG.warn("... %(key)s", {'key': 'value'})
+    LOG.error("... %(key)s", {'key': 'value'})
+    LOG.critical("... %(key)s", {'key': 'value'})
 
 .. _Gerrit workflow: http://docs.openstack.org/infra/manual/developers.html#development-workflow
 .. _blueprint: https://blueprints.launchpad.net/designate

@@ -144,13 +144,13 @@ class EnhancedDNSClient(object):
         return zone
 
     def getZone(self, zoneName):
-        LOG.debug("Performing getZone with zoneName: %s" % zoneName)
+        LOG.debug("Performing getZone with zoneName: %s", zoneName)
         zoneName = self._sanitizeZoneName(zoneName)
 
         try:
             return self.client.service.getZone(zoneName=zoneName)
         except Exception as e:
-            raise EnhancedDNSException('Akamai Communication Failure: %s' % e)
+            raise EnhancedDNSException('Akamai Communication Failure: %s', e)
 
     def setZones(self, zones):
         LOG.debug("Performing setZones")
@@ -169,7 +169,7 @@ class EnhancedDNSClient(object):
                                            % e)
 
     def setZone(self, zone):
-        LOG.debug("Performing setZone with zoneName: %s" % zone.zoneName)
+        LOG.debug("Performing setZone with zoneName: %s", zone.zoneName)
         try:
             self.client.service.setZone(zone=zone)
         except Exception as e:

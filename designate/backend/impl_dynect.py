@@ -25,9 +25,6 @@ from requests.adapters import HTTPAdapter
 from designate import exceptions
 from designate import utils
 from designate.backend import base
-from designate.i18n import _LI
-from designate.i18n import _LW
-
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
@@ -147,7 +144,7 @@ class DynClient(object):
             header = "-H '%s: %s'" % (element, kwargs['headers'][element])
             string_parts.append(header)
 
-        LOG.debug("REQ: %s" % " ".join(string_parts))
+        LOG.debug("REQ: %s", " ".join(string_parts))
         if 'data' in kwargs:
             LOG.debug("REQ BODY: %s\n" % (kwargs['data']))
 
@@ -214,7 +211,7 @@ class DynClient(object):
 
         if resp.status_code >= 400:
             LOG.debug(
-                "Request returned failure status: %s" %
+                "Request returned failure status: %s",
                 resp.status_code)
             raise DynClientError.from_response(resp)
         return resp
@@ -231,7 +228,7 @@ class DynClient(object):
             while status == 307:
                 time.sleep(1)
                 url = response.headers.get('Location')
-                LOG.debug("Polling %s" % url)
+                LOG.debug("Polling %s", url)
 
                 polled_response = self.get(url)
                 status = response.status
@@ -345,7 +342,7 @@ class DynECTBackend(base.Backend):
             timings=CONF[CFG_GROUP].timings)
 
     def create_zone(self, context, zone):
-        LOG.info(_LI('Creating zone %(d_id)s / %(d_name)s'),
+        LOG.info('Creating zone %(d_id)s / %(d_name)s',
                  {'d_id': zone['id'], 'd_name': zone['name']})
 
         url = '/Secondary/%s' % zone['name'].rstrip('.')
@@ -366,9 +363,8 @@ class DynECTBackend(base.Backend):
         except DynClientError as e:
             for emsg in e.msgs:
                 if emsg['ERR_CD'] == 'TARGET_EXISTS':
-                    msg = _LI("Zone already exists, updating existing "
-                              "zone instead %s")
-                    LOG.info(msg, zone['name'])
+                    LOG.info("Zone already exists, updating existing "
+                             "zone instead %s", zone['name'])
                     client.put(url, data=data)
                     break
             else:
@@ -378,7 +374,7 @@ class DynECTBackend(base.Backend):
         client.logout()
 
     def delete_zone(self, context, zone):
-        LOG.info(_LI('Deleting zone %(d_id)s / %(d_name)s'),
+        LOG.info('Deleting zone %(d_id)s / %(d_name)s',
                  {'d_id': zone['id'], 'd_name': zone['name']})
         url = '/Zone/%s' % zone['name'].rstrip('.')
         client = self.get_client()
@@ -386,9 +382,9 @@ class DynECTBackend(base.Backend):
             client.delete(url)
         except DynClientError as e:
             if e.http_status == 404:
-                LOG.warning(_LW("Attempt to delete %(d_id)s / %(d_name)s "
-                             "caused 404, ignoring.") %
-                         {'d_id': zone['id'], 'd_name': zone['name']})
+                LOG.warning("Attempt to delete %(d_id)s / %(d_name)s "
+                            "caused 404, ignoring.",
+                            {'d_id': zone['id'], 'd_name': zone['name']})
                 pass
             else:
                 raise

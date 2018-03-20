@@ -23,8 +23,6 @@ from os_win import exceptions as os_win_exc
 
 from designate.backend.agent_backend import base
 from designate import exceptions
-from designate.i18n import _LI
-
 
 LOG = logging.getLogger(__name__)
 CFG_GROUP = 'backend:agent:msdns'
@@ -59,7 +57,7 @@ class MSDNSBackend(base.AgentBackend):
         # Only ip addresses are needed
         self._masters = [ns.split(":")[0] for ns in masters]
 
-        LOG.info(_LI("AXFR masters: %r"), self._masters)
+        LOG.info("AXFR masters: %r", self._masters)
 
     @classmethod
     def get_cfg_opts(cls):
@@ -67,12 +65,12 @@ class MSDNSBackend(base.AgentBackend):
 
     def start(self):
         """Start the backend"""
-        LOG.info(_LI("Started msdns backend"))
+        LOG.info("Started msdns backend")
 
     def find_zone_serial(self, zone_name):
         """Return the zone's serial"""
         zone_name = zone_name.rstrip(".")
-        LOG.debug("Finding zone: %s" % zone_name)
+        LOG.debug("Finding zone: %s", zone_name)
         try:
             return self._dnsutils.get_zone_serial(zone_name)
         except os_win_exc.DNSZoneNotFound:
@@ -82,7 +80,7 @@ class MSDNSBackend(base.AgentBackend):
     def create_zone(self, zone):
         """Create a new DNS Zone"""
         zone_name = zone.origin.to_text(omit_final_dot=True).decode('utf-8')
-        LOG.debug("Creating zone: %s" % zone_name)
+        LOG.debug("Creating zone: %s", zone_name)
         try:
             self._dnsutils.zone_create(
                 zone_name=zone_name,
@@ -107,7 +105,7 @@ class MSDNSBackend(base.AgentBackend):
         """Instruct MSDNS to request an AXFR from MiniDNS.
         """
         zone_name = zone.origin.to_text(omit_final_dot=True).decode('utf-8')
-        LOG.debug("Updating zone: %s" % zone_name)
+        LOG.debug("Updating zone: %s", zone_name)
         self._dnsutils.zone_update(zone_name)
 
     def delete_zone(self, zone_name):

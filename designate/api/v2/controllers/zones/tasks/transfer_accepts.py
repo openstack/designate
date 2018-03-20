@@ -20,8 +20,6 @@ from designate import utils
 from designate.api.v2.controllers import rest
 from designate.objects import ZoneTransferAccept
 from designate.objects.adapters import DesignateAdapter
-from designate.i18n import _LI
-
 
 LOG = logging.getLogger(__name__)
 
@@ -41,7 +39,7 @@ class TransferAcceptsController(rest.RestController):
         transfer_accepts = self.central_api.get_zone_transfer_accept(
             context, transfer_accept_id)
 
-        LOG.info(_LI("Retrieved %(transfer_accepts)s"),
+        LOG.info("Retrieved %(transfer_accepts)s",
                  {'transfer_accepts': transfer_accepts})
 
         return DesignateAdapter.render(
@@ -63,7 +61,7 @@ class TransferAcceptsController(rest.RestController):
         zone_transfer_accepts = self.central_api.find_zone_transfer_accepts(
             context, criterion, marker, limit, sort_key, sort_dir)
 
-        LOG.info(_LI("Retrieved %(zone_transfer_accepts)s"),
+        LOG.info("Retrieved %(zone_transfer_accepts)s",
                  {'zone_transfer_accepts': zone_transfer_accepts})
 
         return DesignateAdapter.render(
@@ -90,7 +88,7 @@ class TransferAcceptsController(rest.RestController):
             context, zone_transfer_accept)
         response.status_int = 201
 
-        LOG.info(_LI("Created %(zone_transfer_accept)s"),
+        LOG.info("Created %(zone_transfer_accept)s",
                  {'zone_transfer_accept': zone_transfer_accept})
 
         zone_transfer_accept = DesignateAdapter.render(

@@ -31,8 +31,6 @@ from oslo_config import cfg
 from designate import context
 from designate import exceptions
 from designate import objects
-from designate.i18n import _LE
-from designate.i18n import _LI
 
 LOG = logging.getLogger(__name__)
 
@@ -106,29 +104,26 @@ class SerializationMiddleware(DNSMiddleware):
             }
 
         except dns.message.UnknownTSIGKey:
-            LOG.error(_LE("Unknown TSIG key from %(host)s:"
-                          "%(port)d") % {'host': request['addr'][0],
-                                         'port': request['addr'][1]})
+            LOG.error("Unknown TSIG key from %(host)s:%(port)d",
+                      {'host': request['addr'][0], 'port': request['addr'][1]})
 
             response = self._build_error_response()
 
         except dns.tsig.BadSignature:
-            LOG.error(_LE("Invalid TSIG signature from %(host)s:"
-                          "%(port)d") % {'host': request['addr'][0],
-                                         'port': request['addr'][1]})
+            LOG.error("Invalid TSIG signature from %(host)s:%(port)d",
+                      {'host': request['addr'][0], 'port': request['addr'][1]})
 
             response = self._build_error_response()
 
         except dns.exception.DNSException:
-            LOG.error(_LE("Failed to deserialize packet from %(host)s:"
-                          "%(port)d") % {'host': request['addr'][0],
-                                         'port': request['addr'][1]})
+            LOG.error("Failed to deserialize packet from %(host)s:%(port)d",
+                      {'host': request['addr'][0], 'port': request['addr'][1]})
 
             response = self._build_error_response()
 
         except Exception:
-            LOG.exception(_LE("Unknown exception deserializing packet "
-                          "from %(host)s %(port)d") %
+            LOG.exception("Unknown exception deserializing packet "
+                          "from %(host)s %(port)d",
                           {'host': request['addr'][0],
                            'port': request['addr'][1]})
 
@@ -145,8 +140,7 @@ class SerializationMiddleware(DNSMiddleware):
                     yield response.get_wire()
 
                 else:
-                    LOG.error(_LE("Unexpected response %(resp)s") %
-                              repr(response))
+                    LOG.error("Unexpected response %r", response)
 
 
 class TsigInfoMiddleware(DNSMiddleware):
@@ -346,7 +340,7 @@ def do_axfr(zone_name, servers, timeout=None, source=None):
         to = eventlet.Timeout(timeout)
         log_info = {'name': zone_name, 'host': srv}
         try:
-            LOG.info(_LI("Doing AXFR for %(name)s from %(host)s"), log_info)
+            LOG.info("Doing AXFR for %(name)s from %(host)s", log_info)
 
             xfr = dns.query.xfr(srv['host'], zone_name, relativize=False,
                                 timeout=1, port=srv['port'], source=source)
@@ -354,30 +348,26 @@ def do_axfr(zone_name, servers, timeout=None, source=None):
             break
         except eventlet.Timeout as t:
             if t == to:
-                msg = _LE("AXFR timed out for %(name)s from %(host)s")
-                LOG.error(msg % log_info)
+                LOG.error("AXFR timed out for %(name)s from %(host)s",
+                          log_info)
                 continue
         except dns.exception.FormError:
-            msg = _LE("Zone %(name)s is not present on %(host)s."
-                      "Trying next server.")
-            LOG.error(msg % log_info)
+            LOG.error("Zone %(name)s is not present on %(host)s."
+                      "Trying next server.", log_info)
         except socket.error:
-            msg = _LE("Connection error when doing AXFR for %(name)s from "
-                      "%(host)s")
-            LOG.error(msg % log_info)
+            LOG.error("Connection error when doing AXFR for %(name)s from "
+                      "%(host)s", log_info)
         except Exception:
-            msg = _LE("Problem doing AXFR %(name)s from %(host)s. "
-                      "Trying next server.")
-            LOG.exception(msg % log_info)
+            LOG.exception("Problem doing AXFR %(name)s from %(host)s. "
+                          "Trying next server.", log_info)
         finally:
             to.cancel()
         continue
     else:
-        msg = _LE("XFR failed for %(name)s. No servers in %(servers)s was "
-                  "reached.")
         raise exceptions.XFRFailure(
-            msg % {"name": zone_name, "servers": servers})
+            "XFR failed for %(name)s. No servers in %(servers)s was reached." %
+            {"name": zone_name, "servers": servers})
 
-    LOG.debug("AXFR Successful for %s" % raw_zone.origin.to_text())
+    LOG.debug("AXFR Successful for %s", raw_zone.origin.to_text())
 
     return raw_zone

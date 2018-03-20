@@ -18,7 +18,6 @@ from oslo_log import log as logging
 from oslo_policy import policy
 from oslo_policy import opts
 
-from designate.i18n import _
 from designate import exceptions
 from designate.common import policies
 
@@ -83,10 +82,10 @@ def check(rule, ctxt, target=None, do_raise=True, exc=exceptions.Forbidden):
         extra = {'policy': {'rule': rule, 'target': target}}
 
         if result:
-            LOG.trace(_("Policy check succeeded for rule '%(rule)s' "
-                        "on target %(target)s"),
+            LOG.trace("Policy check succeeded for rule '%(rule)s' "
+                      "on target %(target)s",
                       {'rule': rule, 'target': repr(target)}, extra=extra)
         else:
-            LOG.info(_("Policy check failed for rule '%(rule)s' "
-                       "on target %(target)s"),
+            LOG.info("Policy check failed for rule '%(rule)s' "
+                     "on target %(target)s",
                      {'rule': rule, 'target': repr(target)}, extra=extra)

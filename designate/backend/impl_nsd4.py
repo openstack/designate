@@ -66,8 +66,8 @@ class NSD4Backend(base.Backend):
 
     def _execute_nsd4(self, command):
         try:
-            LOG.debug('Executing NSD4 control call: %s on %s' % (command,
-                      self.host))
+            LOG.debug('Executing NSD4 control call: %s on %s',
+                      command, self.host)
             result = self._command(command)
         except (ssl.SSLError, socket.error) as e:
             LOG.debug('NSD4 control call failure: %s' % e)

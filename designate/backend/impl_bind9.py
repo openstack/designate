@@ -28,8 +28,6 @@ from designate import exceptions
 from designate import utils
 from designate.backend import base
 from designate.utils import DEFAULT_MDNS_PORT
-from designate.i18n import _LI
-
 
 LOG = logging.getLogger(__name__)
 DEFAULT_MASTER_PORT = DEFAULT_MDNS_PORT
@@ -140,5 +138,5 @@ class Bind9Backend(base.Backend):
             LOG.debug('Executing RNDC call: %r', rndc_call)
             utils.execute(*rndc_call)
         except utils.processutils.ProcessExecutionError as e:
-            LOG.info(_LI('RNDC call failure: %s'), e)
+            LOG.info('RNDC call failure: %s', e)
             raise exceptions.Backend(e)

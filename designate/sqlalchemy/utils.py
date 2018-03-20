@@ -26,7 +26,6 @@ from oslo_db.sqlalchemy.migration_cli import manager
 from oslo_log import log
 
 from designate.i18n import _
-from designate.i18n import _LW
 from designate import exceptions
 
 
@@ -97,7 +96,7 @@ def sort_query(query, table, sort_keys, sort_dir=None, sort_dirs=None):
     if 'id' not in sort_keys:
         # TODO(justinsb): If this ever gives a false-positive, check
         # the actual primary key, rather than assuming its id
-        LOG.warning(_LW('Id not in sort_keys; is sort_keys unique?'))
+        LOG.warning('Id not in sort_keys; is sort_keys unique?')
 
     assert(not (sort_dir and sort_dirs))
 

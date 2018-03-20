@@ -21,8 +21,6 @@ from keystoneauth1 import session as ks_session
 from oslo_log import log as logging
 
 from designate.backend import base
-from designate.i18n import _LI
-from designate.i18n import _LW
 
 
 LOG = logging.getLogger(__name__)
@@ -86,19 +84,19 @@ class DesignateBackend(base.Backend):
         return self._client
 
     def create_zone(self, context, zone):
-        msg = _LI('Creating zone %(d_id)s / %(d_name)s')
-        LOG.info(msg, {'d_id': zone['id'], 'd_name': zone['name']})
+        LOG.info('Creating zone %(d_id)s / %(d_name)s',
+                 {'d_id': zone['id'], 'd_name': zone['name']})
 
         masters = ["%s:%s" % (i.host, i.port) for i in self.masters]
         self.client.zones.create(
             zone.name, 'SECONDARY', masters=masters)
 
     def delete_zone(self, context, zone):
-        msg = _LI('Deleting zone %(d_id)s / %(d_name)s')
-        LOG.info(msg, {'d_id': zone['id'], 'd_name': zone['name']})
+        LOG.info('Deleting zone %(d_id)s / %(d_name)s',
+                 {'d_id': zone['id'], 'd_name': zone['name']})
 
         try:
             self.client.zones.delete(zone.name)
         except exceptions.NotFound:
-            msg = _LW("Zone %s not found on remote Designate, Ignoring")
-            LOG.warning(msg, zone.id)
+            LOG.warning("Zone %s not found on remote Designate, Ignoring",
+                        zone.id)
