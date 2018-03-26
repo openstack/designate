@@ -41,7 +41,7 @@ rules = [
         ]
     ),
     policy.RuleDefault(
-        "update_service_service_status",
+        "update_service_status",
         base.RULE_ADMIN)
 ]
 
