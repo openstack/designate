@@ -207,7 +207,7 @@ See https://docs.openstack.org/oslo.i18n/latest/user/guidelines.html
     LOG.debug("... %s", variable)
     # Use named interpolation when more than one replacement is done
     LOG.info("... %(key)s ...", {'key': 'value', ...})
-    LOG.warn("... %(key)s", {'key': 'value'})
+    LOG.warning("... %(key)s", {'key': 'value'})
     LOG.error("... %(key)s", {'key': 'value'})
     LOG.critical("... %(key)s", {'key': 'value'})
 

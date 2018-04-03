@@ -554,11 +554,11 @@ class RecoverShard(base.Task):
 
         stale_zones = self.storage.find_zones(self.context, stale_criterion)
         if stale_zones:
-            LOG.warn('Found %(len)d zones PENDING for more than %(sec)d '
-                     'seconds', {
-                         'len': len(stale_zones),
-                         'sec': self.max_prop_time
-                     })
+            LOG.warning('Found %(len)d zones PENDING for more than %(sec)d '
+                        'seconds', {
+                            'len': len(stale_zones),
+                            'sec': self.max_prop_time
+                        })
             error_zones.extend(stale_zones)
 
         return error_zones
