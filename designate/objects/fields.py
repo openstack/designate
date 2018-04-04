@@ -12,7 +12,8 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-
+from dns import ipv4
+import dns.exception
 import re
 import uuid
 
@@ -141,6 +142,11 @@ class ObjectField(ovoo_fields.ObjectField):
 class IPV4AddressField(ovoo_fields.IPV4AddressField):
 
     def coerce(self, obj, attr, value):
+        try:
+            # make sure that DNS Python agrees that it is a valid IP address
+            ipv4.inet_aton(str(value))
+        except dns.exception.SyntaxError:
+            raise ValueError()
         value = super(IPV4AddressField, self).coerce(obj, attr, value)
         # we use this field as a string, not need a netaddr.IPAdress
         # as oslo.versionedobjects is using
