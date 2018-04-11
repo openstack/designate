@@ -108,7 +108,7 @@ Install and configure components
         project_name = service
         project_domain_name = Default
         user_domain_name = Default
-        auth_uri = http://controller:5000/
+        www_authenticate_uri = http://controller:5000/
         auth_url = http://controller:5000/
 
      Replace ``DESIGNATE_PASS`` with the password you chose for the
