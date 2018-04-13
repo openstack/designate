@@ -1,0 +1,4 @@
+- hosts: all
+  become: True
+  roles:
+    - bind-logs-conf

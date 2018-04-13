@@ -1,0 +1,38 @@
+- name: Ensure target directory exists
+  file:
+    path: "{{ stage_dir }}/etc/bind"
+    state: directory
+
+- name: Find bind config files
+  find:
+    path: /etc/bind
+    file_type: any
+  register: bind_configs
+
+- name: Dereference bind configs
+  stat:
+    path: "{{ item.path }}"
+  with_items: "{{ bind_configs.files }}"
+  register: bind_configs_deref
+
+- name: Link configurations
+  file:
+    src: "{{ item.stat.lnk_source | default(item.stat.path) }}"
+    dest: "{{ stage_dir }}/etc/bind/{{ item.stat.path | basename }}"
+    state: hard
+  with_items: "{{ bind_configs_deref.results }}"
+  when: item.stat.isreg or item.stat.islnk
+
+# NOTE(frickler) Copied from devstack role export-devstack-journal
+- name: Ensure {{ stage_dir }}/logs exists
+  become: true
+  file:
+    path: "{{ stage_dir }}/logs"
+    state: directory
+    owner: "{{ ansible_user }}"
+
+- name: Collect bind journal
+  become: true
+  shell:
+    cmd: |
+      journalctl -o short-precise --unit bind9 | gzip - > {{ stage_dir }}/logs/bind9.txt.gz

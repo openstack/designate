@@ -46,8 +46,10 @@ EOF
             sudo apt-get update
         elif [ "$os_CODENAME" = "xenial" ]; then
             echo "Use PDNS4 from apt repo"
+        elif [ "$os_CODENAME" = "bionic" ]; then
+            echo "Use PDNS4 from apt repo"
         else
-            die $LINENO "PDNS4 backend only supports trusty or xenial"
+            die $LINENO "PDNS4 backend only supports bionic, trusty or xenial"
         fi
         PDNS=pdns-server
     else
