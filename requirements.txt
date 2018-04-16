@@ -3,7 +3,7 @@
 # process, which may cause wedges in the gate later.
 
 Babel!=2.4.0,>=2.3.4 # BSD
-eventlet!=0.18.3,!=0.20.1,<0.21.0,>=0.18.2 # MIT
+eventlet!=0.18.3,!=0.20.1,>=0.18.2 # MIT
 Flask!=0.11,<1.0,>=0.10 # BSD
 greenlet>=0.4.10 # MIT
 Jinja2>=2.10 # BSD License (3 clause)
@@ -35,7 +35,6 @@ SQLAlchemy!=1.1.5,!=1.1.6,!=1.1.7,!=1.1.8,>=1.0.10 # MIT
 sqlalchemy-migrate>=0.11.0 # Apache-2.0
 stevedore>=1.20.0 # Apache-2.0
 suds-jurko>=0.6 # LGPLv3+
-setuptools!=24.0.0,!=34.0.0,!=34.0.1,!=34.0.2,!=34.0.3,!=34.1.0,!=34.1.1,!=34.2.0,!=34.3.0,!=34.3.1,!=34.3.2,!=36.2.0,>=21.0.0 # PSF/ZPL
 WebOb>=1.7.1 # MIT
 dnspython>=1.14.0;python_version=='2.7' # http://www.dnspython.org/LICENSE
 dnspython3!=1.13.0,!=1.14.0,>=1.12.0;python_version>='3.0' # http://www.dnspython.org/LICENSE
