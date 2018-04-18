@@ -39,7 +39,7 @@ class Zone:
         self.to_file(sys.stdout)
 
     def to_file(self, f):
-        if type(f) is file:
+        if type(f) is 'file':
             fd = f
         elif type(f) is str:
             if os.path.isdir(f):
