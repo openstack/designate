@@ -35,7 +35,7 @@ namespace like so in your ``setup.cfg`` file:
 
    [entry_points]
    designate.scheduler.filters =
-   my_custom_filter = my_extention.filters.my_custom_filter:MyCustomFilter
+   my_custom_filter = my_extension.filters.my_custom_filter:MyCustomFilter
 
 The new filter can be added to the
 ``scheduler_filters`` list in the ``[service:central]`` section like so:
