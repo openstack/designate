@@ -89,6 +89,7 @@ Execute a single test using py27
 
 * Free software: Apache license
 * Documentation: https://docs.openstack.org/designate/latest/
+* Release notes: https://docs.openstack.org/releasenotes/designate/
 * Source: https://git.openstack.org/cgit/openstack/designate
 * Bugs: https://bugs.launchpad.net/designate
 
