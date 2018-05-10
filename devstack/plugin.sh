@@ -194,6 +194,8 @@ function create_designate_accounts {
         get_or_create_service "designate" "dns" "Designate DNS Service"
         get_or_create_endpoint "dns" \
             "$REGION_NAME" \
+            "$DESIGNATE_SERVICE_PROTOCOL://$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT/" \
+            "$DESIGNATE_SERVICE_PROTOCOL://$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT/" \
             "$DESIGNATE_SERVICE_PROTOCOL://$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT/"
     fi
 }
@@ -201,7 +203,7 @@ function create_designate_accounts {
 # create_designate_pool_configuration - Create Pool Configuration
 function create_designate_pool_configuration {
     # Sync Pools Config
-    designate-manage pool update --file $DESIGNATE_CONF_DIR/pools.yaml
+    $DESIGNATE_BIN_DIR/designate-manage pool update --file $DESIGNATE_CONF_DIR/pools.yaml
 
     # Allow Backends to do backend specific tasks
     if function_exists create_designate_pool_configuration_backend; then
@@ -224,14 +226,14 @@ function init_designate {
     recreate_database designate utf8
 
     # Init and migrate designate database
-    designate-manage database sync
+    $DESIGNATE_BIN_DIR/designate-manage database sync
 
     if [ "$DESIGNATE_POOL_MANAGER_CACHE_DRIVER" == "sqlalchemy" ]; then
         # (Re)create designate_pool_manager cache
         recreate_database designate_pool_manager utf8
 
         # Init and migrate designate pool-manager-cache
-        designate-manage pool-manager-cache sync
+        $DESIGNATE_BIN_DIR/designate-manage pool-manager-cache sync
     fi
 
     init_designate_backend
@@ -338,7 +340,7 @@ if is_service_enabled designate; then
         install_designateclient
 
         echo_summary "Installing Designate"
-        install_designate
+        stack_install_service designate
 
         if is_service_enabled horizon; then
             echo_summary "Installing Designate dashboard"

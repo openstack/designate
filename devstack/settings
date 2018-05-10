@@ -39,9 +39,16 @@ DESIGNATE_SERVICE_PORT_DNS=${DESIGNATE_SERVICE_PORT_DNS:-53}
 DESIGNATE_SERVICE_PORT_MDNS=${DESIGNATE_SERVICE_PORT_MDNS:-5354}
 DESIGNATE_SERVICE_PORT_AGENT=${DESIGNATE_SERVICE_PORT_AGENT:-5358}
 
-# Default directories
-DESIGNATE_BIN_DIR=$(get_python_exec_prefix)
 DESIGNATE_DIR=$DEST/designate
+# Default directories
+# Support potential entry-points console scripts in VENV or not
+if [[ ${USE_VENV} = True ]]; then
+    PROJECT_VENV["designate"]=${DESIGNATE_DIR}.venv
+    DESIGNATE_BIN_DIR=${PROJECT_VENV["designate"]}/bin
+else
+    DESIGNATE_BIN_DIR=$(get_python_exec_prefix)
+fi
+
 DESIGNATEDASHBOARD_DIR=$DEST/designate-dashboard
 DESIGNATE_CONF_DIR=/etc/designate
 DESIGNATE_STATE_PATH=${DESIGNATE_STATE_PATH:=$DATA_DIR/designate}

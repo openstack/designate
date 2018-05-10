@@ -148,7 +148,7 @@ function init_designate_backend {
 # create_designate_pool_configuration_backend - Perform post-pool config tasks
 function create_designate_pool_configuration_backend {
     # Init and migrate designate_pdns database
-    designate-manage powerdns sync $DESIGNATE_POOL_ID
+    $DESIGNATE_BIN_DIR/designate-manage powerdns sync $DESIGNATE_POOL_ID
 }
 
 # start_designate_backend - start any external services
