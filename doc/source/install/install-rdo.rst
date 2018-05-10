@@ -43,9 +43,7 @@ Install and configure components
 
       # yum install bind bind-utils
 
-#. Add the following options in the ``/etc/named.conf`` file:
-
-   .. code-block:: none
+#. Add the following options in the ``/etc/named.conf`` file::
 
       options {
           ...
@@ -62,9 +60,7 @@ Install and configure components
 
       # rndc-confgen -a -k designate -c /etc/designate/rndc.key -r /dev/urandom
 
-#. Add the key to ``/etc/named.conf``:
-
-   .. code-block:: none
+#. Add the key to ``/etc/named.conf``::
 
       ...
       include "/etc/designate/rndc.key";

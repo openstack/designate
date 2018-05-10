@@ -49,9 +49,7 @@ Install and configure components
 
       # rndc-confgen -a -k designate -c /etc/designate/rndc.key
 
-#. Add the following options in the ``/etc/bind/named.conf.options`` file:
-
-   .. code-block:: none
+#. Add the following options in the ``/etc/bind/named.conf.options`` file::
 
       ...
       include "/etc/designate/rndc.key";

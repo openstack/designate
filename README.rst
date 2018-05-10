@@ -28,9 +28,9 @@ Setup
 
 Setup a working environment:
 
-.. code-block:: shell
+.. code-block:: bash
 
-    git clone https://github.com/openstack/designate.git
+    git clone https://git.openstack.org/openstack/designate
     cd designate
     virtualenv .venv
     . .venv/bin/activate
@@ -42,7 +42,7 @@ Building Docs
 
 To build the documentation from the restructured text source, do the following:
 
-.. code-block:: shell
+.. code-block:: bash
 
     cd doc
     pip install -r requirements.txt
