@@ -2882,6 +2882,16 @@ class StorageTestCase(object):
             uuid = '97f57960-f41b-4e93-8e22-8fd6c7e2c183'
             self.storage.delete_pool_also_notify(self.admin_context, uuid)
 
+    def test_create_service_status_duplicate(self):
+        values = self.get_service_status_fixture(fixture=0)
+
+        self.storage.create_service_status(
+            self.admin_context, objects.ServiceStatus.from_dict(values))
+
+        with testtools.ExpectedException(exceptions.DuplicateServiceStatus):
+            self.storage.create_service_status(
+                self.admin_context, objects.ServiceStatus.from_dict(values))
+
     # Zone Transfer Accept tests
     def test_create_zone_transfer_request(self):
         zone = self.create_zone()

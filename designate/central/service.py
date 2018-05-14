@@ -2894,5 +2894,13 @@ class Service(service.RPCService, service.Service):
 
             return self.storage.update_service_status(context, db_status)
         except exceptions.ServiceStatusNotFound:
+            LOG.info(
+                "Creating new service status entry for %(service_name)s "
+                "at %(hostname)s",
+                {
+                    'service_name': service_status.service_name,
+                    'hostname': service_status.hostname
+                }
+            )
             return self.storage.create_service_status(
                 context, service_status)

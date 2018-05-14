@@ -32,6 +32,7 @@ from oslo_messaging.notify import notifier
 from designate import exceptions
 from designate import objects
 from designate.mdns import rpcapi as mdns_api
+from designate.tests import fixtures
 from designate.tests.test_central import CentralTestCase
 from designate.storage.impl_sqlalchemy import tables
 
@@ -39,6 +40,11 @@ LOG = logging.getLogger(__name__)
 
 
 class CentralServiceTest(CentralTestCase):
+    def setUp(self):
+        super(CentralServiceTest, self).setUp()
+        self.stdlog = fixtures.StandardLogging()
+        self.useFixture(self.stdlog)
+
     def test_stop(self):
         # Test stopping the service
         self.central_service.stop()
@@ -3118,6 +3124,48 @@ class CentralServiceTest(CentralTestCase):
             self.admin_context, zone['id']).serial
 
         self.assertEqual(zone_serial, new_zone_serial)
+
+    def test_create_new_service_status_entry(self):
+        values = self.get_service_status_fixture()
+
+        service_status = self.central_service.update_service_status(
+            self.admin_context, objects.ServiceStatus.from_dict(values))
+
+        self.assertIn("Creating new service status entry for foo at bar",
+                      self.stdlog.logger.output)
+
+        # Make sure this was never updated.
+        self.assertIsNone(service_status.updated_at)
+
+    def test_update_existing_service_status_entry(self):
+        values = self.get_service_status_fixture()
+
+        new_service_status = objects.ServiceStatus.from_dict(values)
+        self.storage.create_service_status(
+            self.admin_context, new_service_status)
+
+        service_status = self.central_service.update_service_status(
+            self.admin_context, objects.ServiceStatus.from_dict(values))
+
+        self.assertEqual(new_service_status.id, service_status.id)
+
+        # Make sure the entry was updated.
+        self.assertIsNotNone(service_status.updated_at)
+
+    def test_update_existing_service_status_entry_with_id_provided(self):
+        values = self.get_service_status_fixture(fixture=1)
+
+        self.storage.create_service_status(
+            self.admin_context, objects.ServiceStatus.from_dict(values))
+
+        service_status = self.central_service.update_service_status(
+            self.admin_context, objects.ServiceStatus.from_dict(values))
+
+        self.assertEqual('c326f735-eecc-4968-969f-355a43c4ae27',
+                         service_status.id)
+
+        # Make sure the entry was updated.
+        self.assertIsNotNone(service_status.updated_at)
 
     def test_create_zone_transfer_request(self):
         zone = self.create_zone()

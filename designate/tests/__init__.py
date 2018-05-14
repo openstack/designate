@@ -76,6 +76,13 @@ class TestCase(base.BaseTestCase):
         'status': "UP",
         'stats': {},
         'capabilities': {},
+    }, {
+        'id': 'c326f735-eecc-4968-969f-355a43c4ae27',
+        'service_name': 'baz',
+        'hostname': 'qux',
+        'status': "UP",
+        'stats': {},
+        'capabilities': {},
     }]
 
     quota_fixtures = [{
