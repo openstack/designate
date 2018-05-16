@@ -140,8 +140,7 @@
       - designate-devstack-jobs
     check:
       jobs:
-        - neutron-tempest-plugin-designate-scenario:
-            voting: false
+        - neutron-tempest-plugin-designate-scenario
         - openstack-tox-lower-constraints
     gate:
       jobs:
