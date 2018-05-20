@@ -109,7 +109,7 @@ Installing Designate
    $ cp -a rootwrap.conf.sample rootwrap.conf
 
 
-8. Make the directory for Designate’s state files
+8. Make the directory for Designate's state files
 
 ::
 
@@ -316,7 +316,7 @@ Start the other services
    $ designate-worker
    $ designate-producer
 
-You’ll now be seeing the logs from the other services.
+You'll now be seeing the logs from the other services.
 
 Exercising the API
 ==================
