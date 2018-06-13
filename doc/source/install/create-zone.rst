@@ -54,7 +54,7 @@ In environments that include the DNS service, you can create a DNS Zone.
 
    .. code-block:: console
 
-      $ openstack recordset create --records '10.0.0.1' --type A example.com. www
+      $ openstack recordset create --record '10.0.0.1' --type A example.com. www
       +-------------+--------------------------------------+
       | Field       | Value                                |
       +-------------+--------------------------------------+
