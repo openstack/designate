@@ -83,7 +83,7 @@ class RpcEmitterTest(oslotest.base.BaseTestCase):
 
         status_factory = mock.Mock(return_value=(status, stats, capabilities,))
         emitter = service_status.RpcEmitter("svc", self.mock_tg,
-                                           status_factory=status_factory)
+                                            status_factory=status_factory)
         emitter.start()
 
         central = mock.Mock()

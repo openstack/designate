@@ -1,0 +1,15 @@
+---
+upgrade:
+  - |
+    If there are duplicate service entries in the service_statuses table
+    and the db sync command fails, you may need to truncate the
+    service_statuses table.
+fixes:
+  - |
+    Fixed `bug 1768824`_ which could cause the service_statuses table
+    to be flooded with duplicate service entries.
+
+    We fixed this by introducing a new unique constraint to the
+    service_statuses table.
+
+    .. _Bug 1768824: https://bugs.launchpad.net/designate/+bug/1768824
