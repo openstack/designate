@@ -330,7 +330,7 @@ class TestCase(base.BaseTestCase):
         self.CONF = self.useFixture(cfg_fixture.Config(cfg.CONF)).conf
 
         self.messaging_conf = messaging_fixture.ConfFixture(cfg.CONF)
-        self.messaging_conf.transport_driver = 'fake'
+        self.messaging_conf.transport_url = 'fake:/'
         self.messaging_conf.response_timeout = 5
         self.useFixture(self.messaging_conf)
 
