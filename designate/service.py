@@ -214,6 +214,7 @@ class WSGIService(object):
     def __init__(self, *args, **kwargs):
         super(WSGIService, self).__init__(*args, **kwargs)
 
+        self._use_ssl = sslutils.is_enabled(CONF)
         self._wsgi_socks = []
 
     @abc.abstractproperty
@@ -232,7 +233,7 @@ class WSGIService(object):
         wsgi_sock = utils.bind_tcp(
             host, port, CONF.backlog, CONF.tcp_keepidle)
 
-        if sslutils.is_enabled(CONF):
+        if self._use_ssl:
             wsgi_sock = sslutils.wrap(CONF, wsgi_sock)
 
         self._wsgi_socks.append(wsgi_sock)

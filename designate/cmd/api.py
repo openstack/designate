@@ -29,6 +29,7 @@ from designate.api import service as api_service
 CONF = cfg.CONF
 CONF.import_opt('workers', 'designate.api', group='service:api')
 CONF.import_opt('threads', 'designate.api', group='service:api')
+cfg.CONF.import_group('keystone_authtoken', 'keystonemiddleware.auth_token')
 
 
 def main():
