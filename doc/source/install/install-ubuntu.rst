@@ -133,9 +133,9 @@ Install and configure components
 
    .. code-block:: console
 
-      # systemctl restart openstack-designate-central openstack-designate-api
+      # systemctl restart designate-central designate-api
 
-      # systemctl enable openstack-designate-central openstack-designate-api
+      # systemctl enable designate-central designate-api
 
 #. Create a pools.yaml file in ``/etc/designate/pools.yaml`` with the following
    contents:
