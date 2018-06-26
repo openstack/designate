@@ -198,7 +198,7 @@ def get_server(target, endpoints, serializer=None):
         TRANSPORT, target, dispatcher, 'eventlet')
 
 
-def get_listener(targets, endpoints, serializer=None):
+def get_listener(targets, endpoints, serializer=None, pool=None):
     assert TRANSPORT is not None
     if serializer is None:
         serializer = JsonPayloadSerializer()
@@ -206,6 +206,7 @@ def get_listener(targets, endpoints, serializer=None):
                                                targets,
                                                endpoints,
                                                executor='eventlet',
+                                               pool=pool,
                                                serializer=serializer)
 
 

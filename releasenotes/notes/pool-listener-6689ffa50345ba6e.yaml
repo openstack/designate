@@ -1,0 +1,15 @@
+---
+features:
+  - |
+    Designate-Sink service now supports notification listener pooling
+    for those oslo.messaging drivers that support this feature
+    (currently those are ``rabbit``/``kombu`` and ``kafka``).
+    `Listener pools <https://docs.openstack.org/oslo.messaging/latest/reference/notification_listener.html>`_
+    is an alternative to specifying several topics for notification consumers
+    in configuration of service that emits notifications.
+
+    To enable listener pooling, set the option
+    ``[service:sink]listener_pool_name`` to some string value, that must be the
+    same for all designate-sink service instances.
+    Default value of this option (``None``) disables notification listener
+    pooling.
