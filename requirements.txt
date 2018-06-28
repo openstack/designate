@@ -4,7 +4,7 @@
 
 Babel!=2.4.0,>=2.3.4 # BSD
 eventlet!=0.18.3,!=0.20.1,>=0.18.2 # MIT
-Flask!=0.11,<1.0,>=0.10 # BSD
+Flask!=0.11,>=0.10 # BSD
 greenlet>=0.4.10 # MIT
 Jinja2>=2.10 # BSD License (3 clause)
 jsonschema<3.0.0,>=2.6.0 # MIT
