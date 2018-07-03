@@ -17,6 +17,7 @@
 from oslo_db import options
 
 from designate import central
+from designate.common import keystone
 import designate
 import designate.network_api
 from designate.network_api import neutron
@@ -57,3 +58,4 @@ def list_opts():
     yield utils.proxy_group, utils.proxy_opts
     yield None, service.wsgi_socket_opts
     yield stt.heartbeat_group, stt.heartbeat_opts
+    yield keystone.keystone_group, keystone.list_opts()

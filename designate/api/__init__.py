@@ -68,6 +68,9 @@ api_v2_opts = [
                     'means show all results by default'),
     cfg.IntOpt('max-limit-v2', default=1000,
                help='Max per-page limit for the V2 API'),
+    cfg.BoolOpt('quotas-verify-project-id', default=False,
+                help='Verify that the requested Project ID for quota target '
+                'is a valid project in Keystone.'),
 ]
 
 api_admin_opts = [

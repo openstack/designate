@@ -84,6 +84,13 @@ class CommunicationFailure(Base):
     error_type = 'communication_failure'
 
 
+class KeystoneCommunicationFailure(CommunicationFailure):
+    """
+    Raised in case one of the alleged Keystone endpoints fails.
+    """
+    error_type = 'keystone_communication_failure'
+
+
 class NeutronCommunicationFailure(CommunicationFailure):
     """
     Raised in case one of the alleged Neutron endpoints fails.
@@ -136,6 +143,10 @@ class BadRequest(Base):
 class EmptyRequestBody(BadRequest):
     error_type = 'empty_request_body'
     expected = True
+
+
+class InvalidProject(BadRequest):
+    error_type = 'invalid_project'
 
 
 class InvalidUUID(BadRequest):

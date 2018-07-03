@@ -19,6 +19,7 @@ from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_reports import guru_meditation_report as gmr
 
+from designate.common import keystone
 from designate import hookpoints
 from designate import service
 from designate import utils
@@ -30,6 +31,7 @@ CONF = cfg.CONF
 CONF.import_opt('workers', 'designate.api', group='service:api')
 CONF.import_opt('threads', 'designate.api', group='service:api')
 cfg.CONF.import_group('keystone_authtoken', 'keystonemiddleware.auth_token')
+keystone.register_keystone_opts(CONF)
 
 
 def main():

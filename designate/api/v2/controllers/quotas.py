@@ -14,9 +14,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import pecan
+from oslo_config import cfg
 from oslo_log import log as logging
 
 from designate.api.v2.controllers import rest
+from designate.common import keystone
 from designate.objects.adapters import DesignateAdapter
 from designate.objects import QuotaList
 
@@ -51,6 +53,13 @@ class QuotasController(rest.RestController):
         request = pecan.request
         context = request.environ['context']
         body = request.body_dict
+
+        # NOTE(pas-ha) attempting to verify the validity of the project-id
+        # on a best effort basis
+        # this will raise only if KeystoneV3 endpoint is not found at all,
+        # or the creds are passing but the project is not found
+        if cfg.CONF['service:api'].quotas_verify_project_id:
+            keystone.verify_project_id(context, tenant_id)
 
         quotas = DesignateAdapter.parse('API_v2', body, QuotaList())
 
