@@ -26,6 +26,11 @@ OPTS = [
                help='Number of sink greenthreads to spawn'),
     cfg.ListOpt('enabled-notification-handlers', default=[],
                 help='Enabled Notification Handlers'),
+    cfg.StrOpt('listener-pool-name',
+               help='pool name to use for oslo.messaging '
+               'notification listener. '
+               'Note that listener pooling is not supported '
+               'by all oslo.messaging drivers.'),
 ]
 
 
