@@ -24,6 +24,7 @@
       - ^api-ref/.*$
       - ^doc/.*$
       - ^etc/.*$
+      - ^releasenotes/.*$
 
 - job:
     name: designate-bind9
