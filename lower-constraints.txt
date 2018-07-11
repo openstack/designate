@@ -149,7 +149,6 @@ suds-jurko==0.6
 tempest==17.1.0
 Tempita==0.5.2
 tenacity==4.4.0
-testrepository==0.0.18
 testresources==2.0.1
 testscenarios==0.4
 testtools==2.2.0
