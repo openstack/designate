@@ -38,6 +38,7 @@ Requires rootwrap (or equivalent sudo privileges) to execute:
 
 """
 
+import errno
 import glob
 import os
 import random
@@ -349,7 +350,7 @@ class DjbdnsBackend(base.AgentBackend):
             os.remove(zone_fn)
             LOG.debug('Deleted Zone: %s', zone_name)
         except OSError as e:
-            if os.errno.ENOENT == e.errno:
+            if errno.ENOENT == e.errno:
                 LOG.info("Zone datafile %s was already deleted", zone_fn)
                 return
 
