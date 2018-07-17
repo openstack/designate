@@ -94,7 +94,7 @@ class PeriodicTask(plugin.ExtensionPlugin):
 
             # Stop fetching if there's no more items
             if len(items) == 0:
-                raise StopIteration
+                return
             else:
                 kwargs["marker"] = items[-1].id
 
