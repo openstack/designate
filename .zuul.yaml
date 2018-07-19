@@ -159,7 +159,8 @@
         - designate-bind9
         - designate-bind9-manager-model
         - designate-bind9-py35
-        - designate-bind9-py36
+        - designate-bind9-py36:
+            voting: false
         - designate-devstack-pdns4
         - designate-devstack-pdns4-postgres
         - designate-grenade-pdns4
