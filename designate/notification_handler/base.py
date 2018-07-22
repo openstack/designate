@@ -125,8 +125,8 @@ class BaseAddressHandler(NotificationHandler):
             self.default_formatv6
         )
 
-    def _create(self, addresses, extra, zone_id, managed=True,
-                resource_type=None, resource_id=None):
+    def _create(self, addresses, extra, zone_id, resource_type=None,
+                resource_id=None):
         """
         Create a record from addresses
 
@@ -134,15 +134,9 @@ class BaseAddressHandler(NotificationHandler):
                           {'version': 4, 'ip': '10.0.0.1'}
         :param extra: Extra data to use when formatting the record
         :param zone_id: The ID of the designate zone.
-        :param managed: Is it a managed resource
         :param resource_type: The managed resource type
         :param resource_id: The managed resource ID
         """
-        if not managed:
-            LOG.warning(
-                'Deprecation notice: Unmanaged designate-sink records are '
-                'being deprecated please update the call '
-                'to remove managed=False')
         LOG.debug('Using Zone ID: %s', zone_id)
         zone = self.get_zone(zone_id)
         LOG.debug('Domain: %r', zone)
@@ -174,15 +168,13 @@ class BaseAddressHandler(NotificationHandler):
                     context, **recordset_values)
 
                 record_values = {
-                    'data': addr['address']}
-
-                if managed:
-                    record_values.update({
-                        'managed': managed,
-                        'managed_plugin_name': self.get_plugin_name(),
-                        'managed_plugin_type': self.get_plugin_type(),
-                        'managed_resource_type': resource_type,
-                        'managed_resource_id': resource_id})
+                    'data': addr['address'],
+                    'managed': True,
+                    'managed_plugin_name': self.get_plugin_name(),
+                    'managed_plugin_type': self.get_plugin_type(),
+                    'managed_resource_type': resource_type,
+                    'managed_resource_id': resource_id
+                }
 
                 LOG.debug('Creating record in %s / %s with values %r',
                           zone['id'], recordset['id'], record_values)
@@ -191,38 +183,30 @@ class BaseAddressHandler(NotificationHandler):
                                                recordset['id'],
                                                Record(**record_values))
 
-    def _delete(self, zone_id, managed=True, resource_id=None,
-                resource_type='instance', criterion=None):
+    def _delete(self, zone_id, resource_id=None, resource_type='instance',
+                criterion=None):
         """
         Handle a generic delete of a fixed ip within a zone
 
         :param zone_id: The ID of the designate zone.
-        :param managed: Is it a managed resource
         :param resource_id: The managed resource ID
         :param resource_type: The managed resource type
         :param criterion: Criterion to search and destroy records
         """
-        if not managed:
-            LOG.warning(
-                'Deprecation notice: Unmanaged designate-sink records are '
-                'being deprecated please update the call '
-                'to remove managed=False')
         criterion = criterion or {}
 
         context = DesignateContext().elevated()
         context.all_tenants = True
         context.edit_managed_records = True
 
-        criterion.update({'zone_id': zone_id})
-
-        if managed:
-            criterion.update({
-                'managed': managed,
-                'managed_plugin_name': self.get_plugin_name(),
-                'managed_plugin_type': self.get_plugin_type(),
-                'managed_resource_id': resource_id,
-                'managed_resource_type': resource_type
-            })
+        criterion.update({
+            'zone_id': zone_id,
+            'managed': True,
+            'managed_plugin_name': self.get_plugin_name(),
+            'managed_plugin_type': self.get_plugin_type(),
+            'managed_resource_id': resource_id,
+            'managed_resource_type': resource_type
+        })
 
         records = self.central_api.find_records(context, criterion)
 
