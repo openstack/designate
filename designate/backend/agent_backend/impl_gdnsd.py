@@ -38,6 +38,7 @@ Supported Knot versions: >= 2.1, < 3
 Configured in [service:agent:gdnsd]
 """
 
+import errno
 import os
 import tempfile
 import string
@@ -245,7 +246,7 @@ class GdnsdBackend(base.AgentBackend):
             os.remove(zone_fn)
             LOG.debug('Deleted Zone: %s', zone_name)
         except OSError as e:
-            if os.errno.ENOENT == e.errno:
+            if errno.ENOENT == e.errno:
                 LOG.info("Zone datafile %s was already deleted", zone_fn)
                 return
             raise
