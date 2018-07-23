@@ -159,8 +159,7 @@
         - designate-bind9
         - designate-bind9-manager-model
         - designate-bind9-py35
-        - designate-bind9-py36:
-            voting: false
+        - designate-bind9-py36
         - designate-devstack-pdns4
         - designate-devstack-pdns4-postgres
         - designate-grenade-pdns4
@@ -170,6 +169,7 @@
         - designate-bind9
         - designate-bind9-manager-model
         - designate-bind9-py35
+        - designate-bind9-py36
         - designate-devstack-pdns4
         - designate-devstack-pdns4-postgres
         - designate-grenade-pdns4
@@ -182,6 +182,7 @@
 - project:
     templates:
       - designate-devstack-jobs
+      - openstack-python36-jobs
     check:
       jobs:
         - neutron-tempest-plugin-designate-scenario
