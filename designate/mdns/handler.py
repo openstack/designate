@@ -64,7 +64,7 @@ class RequestHandler(xfr.XFRMixin):
                     request.question[0].rdclass != dns.rdataclass.IN):
                 LOG.debug("Refusing due to numbers of questions or rdclass")
                 yield self._handle_query_error(request, dns.rcode.REFUSED)
-                raise StopIteration
+                return
 
             q_rrset = request.question[0]
             # Handle AXFR and IXFR requests with an AXFR responses for now.
@@ -73,23 +73,23 @@ class RequestHandler(xfr.XFRMixin):
             if q_rrset.rdtype in (dns.rdatatype.AXFR, dns.rdatatype.IXFR):
                 for response in self._handle_axfr(request):
                     yield response
-                raise StopIteration
+                return
 
             else:
                 for response in self._handle_record_query(request):
                     yield response
-                raise StopIteration
+                return
 
         elif request.opcode() == dns.opcode.NOTIFY:
             for response in self._handle_notify(request):
                 yield response
-            raise StopIteration
+            return
 
         else:
             # Unhandled OpCode's include STATUS, IQUERY, UPDATE
             LOG.debug("Refusing unhandled opcode")
             yield self._handle_query_error(request, dns.rcode.REFUSED)
-            raise StopIteration
+            return
 
     def _handle_notify(self, request):
         """
@@ -106,7 +106,7 @@ class RequestHandler(xfr.XFRMixin):
         if len(request.question) != 1:
             response.set_rcode(dns.rcode.FORMERR)
             yield response
-            raise StopIteration
+            return
         else:
             question = request.question[0]
 
@@ -121,7 +121,7 @@ class RequestHandler(xfr.XFRMixin):
         except exceptions.ZoneNotFound:
             response.set_rcode(dns.rcode.NOTAUTH)
             yield response
-            raise StopIteration
+            return
 
         notify_addr = request.environ['addr'][0]
 
@@ -134,7 +134,7 @@ class RequestHandler(xfr.XFRMixin):
                         "refusing.", {"name": zone.name, "addr": notify_addr})
             response.set_rcode(dns.rcode.REFUSED)
             yield response
-            raise StopIteration
+            return
 
         resolver = dns.resolver.Resolver()
         # According to RFC we should query the server that sent the NOTIFY
@@ -154,7 +154,7 @@ class RequestHandler(xfr.XFRMixin):
         response.flags |= dns.flags.AA
 
         yield response
-        raise StopIteration
+        return
 
     def _handle_query_error(self, request, rcode):
         """
@@ -232,14 +232,14 @@ class RequestHandler(xfr.XFRMixin):
                         "Question was %(qr)s", {'qr': q_rrset})
 
             yield self._handle_query_error(request, dns.rcode.REFUSED)
-            raise StopIteration
+            return
 
         except exceptions.Forbidden:
             LOG.warning("Forbidden while handling axfr request. "
                         "Question was %(qr)s", {'qr': q_rrset})
 
             yield self._handle_query_error(request, dns.rcode.REFUSED)
-            raise StopIteration
+            return
 
         # The AXFR response needs to have a SOA at the beginning and end.
         criterion = {'zone_id': zone.id, 'type': 'SOA'}
@@ -306,7 +306,7 @@ class RequestHandler(xfr.XFRMixin):
                                  'rrset_name': record[3]})
 
                     yield self._handle_query_error(request, dns.rcode.SERVFAIL)
-                    raise StopIteration
+                    return
 
                 else:
                     yield self._finalize_packet(renderer, request)
@@ -315,7 +315,7 @@ class RequestHandler(xfr.XFRMixin):
         if renderer is not None:
             yield self._finalize_packet(renderer, request)
 
-        raise StopIteration
+        return
 
     def _finalize_packet(self, renderer, request):
         renderer.write_header()
@@ -369,13 +369,13 @@ class RequestHandler(xfr.XFRMixin):
             LOG.info("NotFound, refusing. Question was %(qr)s",
                      {'qr': q_rrset})
             yield self._handle_query_error(request, dns.rcode.REFUSED)
-            raise StopIteration
+            return
 
         except exceptions.Forbidden:
             LOG.info("Forbidden, refusing. Question was %(qr)s",
                      {'qr': q_rrset})
             yield self._handle_query_error(request, dns.rcode.REFUSED)
-            raise StopIteration
+            return
 
         try:
             criterion = self._zone_criterion_from_request(
@@ -386,13 +386,13 @@ class RequestHandler(xfr.XFRMixin):
             LOG.warning("ZoneNotFound while handling query request. "
                         "Question was %(qr)s", {'qr': q_rrset})
             yield self._handle_query_error(request, dns.rcode.REFUSED)
-            raise StopIteration
+            return
 
         except exceptions.Forbidden:
             LOG.warning("Forbidden while handling query request. "
                         "Question was %(qr)s", {'qr': q_rrset})
             yield self._handle_query_error(request, dns.rcode.REFUSED)
-            raise StopIteration
+            return
 
         r_rrset = self._convert_to_rrset(zone, recordset)
         response.answer = [r_rrset] if r_rrset else []

@@ -85,7 +85,7 @@ class RequestHandler(object):
 
         # TODO(Tim): Answer Type 65XXX queries
         yield response
-        raise StopIteration
+        return
 
     def _handle_query_error(self, request, rcode):
         """
