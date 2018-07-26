@@ -15,7 +15,7 @@
 # under the License.
 import time
 
-from concurrent import futures
+import futurist
 from oslo_log import log as logging
 from oslo_config import cfg
 
@@ -32,7 +32,10 @@ def default_executor():
     except Exception:
         pass
 
-    return futures.ThreadPoolExecutor(thread_count)
+    # TODO(mugsie): if (when) we move away from eventlet this may have to
+    # revert back to ThreadPoolExecutor - this is changing due to
+    # https://bugs.launchpad.net/bugs/1782647 (eventlet + py37 issues)
+    return futurist.GreenThreadPoolExecutor(thread_count)
 
 
 class Executor(object):
