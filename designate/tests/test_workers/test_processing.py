@@ -13,12 +13,17 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.mport threading
-from unittest import TestCase
-
+from designate import exceptions
+from designate.tests import TestCase
+from designate.tests import fixtures
 from designate.worker import processing
 
 
 class TestProcessingExecutor(TestCase):
+    def setUp(self):
+        super(TestProcessingExecutor, self).setUp()
+        self.stdlog = fixtures.StandardLogging()
+        self.useFixture(self.stdlog)
 
     def test_execute_multiple_tasks(self):
         def t1():
@@ -31,16 +36,24 @@ class TestProcessingExecutor(TestCase):
         exe = processing.Executor()
 
         results = exe.run(tasks)
-        assert results == [1, 2, 1, 2, 1]
+        self.assertEqual(results, [1, 2, 1, 2, 1])
 
     def test_execute_single_task(self):
         def t1():
             return 1
 
-        def t2():
-            return 2
-
         exe = processing.Executor()
 
         results = exe.run(t1)
-        assert results == [1]
+        self.assertEqual(results[0], 1)
+
+    def test_execute_bad_task(self):
+        def failed_task():
+            raise exceptions.BadAction('Not Great')
+
+        exe = processing.Executor()
+
+        results = exe.run(failed_task)
+        self.assertEqual(results[0], None)
+
+        self.assertIn('Not Great', self.stdlog.logger.output)

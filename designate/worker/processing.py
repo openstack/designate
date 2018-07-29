@@ -19,6 +19,8 @@ from concurrent import futures
 from oslo_log import log as logging
 from oslo_config import cfg
 
+from designate import exceptions
+
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
 
@@ -39,14 +41,19 @@ class Executor(object):
     executor that can map multiple tasks across a configurable number of
     threads
     """
+
     def __init__(self, executor=None):
         self._executor = executor or default_executor()
 
     @staticmethod
     def do(task):
-        return task()
+        try:
+            return task()
+        except exceptions.BadAction as e:
+            LOG.warning(e)
 
-    def task_name(self, task):
+    @staticmethod
+    def task_name(task):
         if hasattr(task, 'task_name'):
             return str(task.task_name)
         if hasattr(task, 'func_name'):
@@ -63,17 +70,17 @@ class Executor(object):
 
         If a single task is pass
         """
-        self.start_time = time.time()
+        start_time = time.time()
 
         if callable(tasks):
             tasks = [tasks]
         results = [r for r in self._executor.map(self.do, tasks)]
 
-        self.end_time = time.time()
-        self.task_time = self.end_time - self.start_time
+        end_time = time.time()
+        task_time = end_time - start_time
 
         task_names = [self.task_name(t) for t in tasks]
         LOG.debug("Finished Tasks %(tasks)s in %(time)fs",
-                {'tasks': task_names, 'time': self.task_time})
+                  {'tasks': task_names, 'time': task_time})
 
         return results
