@@ -2296,6 +2296,7 @@ class Service(service.RPCService, service.Service):
     @notification('dns.domain.update')
     @notification('dns.zone.update')
     @transaction
+    @synchronized_zone()
     def update_status(self, context, zone_id, status, serial):
         """
         :param context: Security context information.
