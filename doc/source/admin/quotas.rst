@@ -144,3 +144,50 @@ The response would be:
     "zone_recordsets": 500,
     "zones": 100
   }
+
+Tenant Id verification
+~~~~~~~~~~~~~~~~~~~~~~
+
+Although Designate API can accept arbitrary strings as Tenant ID to set the
+quota for, actual enforcement of quota will be performed only when the
+tenant ID that was set is matching the ``project-id`` in the request
+that attempts to create a resource.
+
+To have some guards against possible mistakes when setting quotas,
+the following option can be enabled in the Designate configuration file:
+
+.. code-block:: ini
+
+   [service:api]
+   quotas_verify_project_id = True
+
+Additionally, the ``[keystone]`` section in the configuration file might have
+to be populated with ``keystoneauth`` Session- and Adapter-related options
+specifying how to connect to Keystone and find appropriate Keystone endpoint
+to perform requests against
+(see `keystoneauth documentation <https://docs.openstack.org/keystoneauth/latest>`_
+for more details). Example:
+
+.. code-block:: ini
+
+   [keystone]
+   cafile = /path/to/ca/bundle
+   valid_interfaces = internal,public
+   region_name = RegionWest
+
+With those settings enabled, Designate will use the incoming token of user
+performing the ``PATCH /v2/quotas/tenantX`` request to make a best effort
+attempt to verify that the requested Tenant ID (``tenantX`` part of the request)
+is indeed a valid Project ID in Keystone.
+
+As a result of this verification, the ``PATCH /v2/quotas/tenantX`` request
+may return additional errors in case of:
+
+- when the Keystone V3 endpoint could not be found in the service catalog
+  (as specified in ``[keystone]`` section) - ``504`` error is returned
+- when the authentication with incoming token was successful
+  but the project id was not actually found - ``400`` is returned
+
+The situation when the authorization with incoming token fails is ignored.
+For best results ensure that the user setting quotas is allowed
+to list projects in Keystone.
