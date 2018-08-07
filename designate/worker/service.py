@@ -33,6 +33,13 @@ LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
 
 
+class AlsoNotifyTask(object):
+    """
+    Placeholder to define options for also_notify targets
+    """
+    pass
+
+
 class Service(service.RPCService, service.Service):
     RPC_API_VERSION = '1.0'
 
@@ -119,10 +126,20 @@ class Service(service.RPCService, service.Service):
 
     def _do_zone_action(self, context, zone):
         pool = self.get_pool(zone.pool_id)
-        task = zonetasks.ZoneAction(
+        all_tasks = []
+        all_tasks.append(zonetasks.ZoneAction(
             self.executor, context, pool, zone, zone.action
-        )
-        return self.executor.run(task)
+        ))
+
+        # Send a NOTIFY to each also-notifies
+        for also_notify in pool.also_notifies:
+            notify_target = AlsoNotifyTask()
+            notify_target.options = {'host': also_notify.host,
+                                     'port': also_notify.port}
+            all_tasks.append(zonetasks.SendNotify(self.executor,
+                                                  zone,
+                                                  notify_target))
+        return self.executor.run(all_tasks)
 
     def create_zone(self, context, zone):
         """
