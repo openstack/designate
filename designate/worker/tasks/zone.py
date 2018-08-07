@@ -162,7 +162,7 @@ class ZoneActor(base.Task, ThresholdMixin):
 
     def _validate_action(self, action):
         if action not in ['CREATE', 'UPDATE', 'DELETE']:
-            raise Exception('Bad Action')
+            raise exceptions.BadAction('Unexpected action: %s' % action)
 
     def _execute(self):
         results = self.executor.run([

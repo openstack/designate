@@ -98,7 +98,8 @@ class TestZoneActor(TestCase):
         )
 
     def test_invalid_action(self):
-        with testtools.ExpectedException(Exception, "Bad Action"):
+        with testtools.ExpectedException(exceptions.BadAction,
+                                         'Unexpected action: BAD'):
             self.actor._validate_action('BAD')
 
     def test_threshold_from_config(self):

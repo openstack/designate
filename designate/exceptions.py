@@ -127,6 +127,10 @@ class InvalidObject(Base):
     expected = True
 
 
+class BadAction(Base):
+    error_type = 'bad_action'
+
+
 class BadRequest(Base):
     error_code = 400
     error_type = 'bad_request'
