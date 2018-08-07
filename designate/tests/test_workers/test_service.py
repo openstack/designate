@@ -60,6 +60,8 @@ class TestService(TestCase):
         self.service._pool = mock.Mock()
         self.service.get_pool = mock.Mock()
         pool = mock.Mock()
+        pool.also_notifies = mock.MagicMock()
+        pool.also_notifies.__iter__.return_value = []
         self.service.get_pool.return_value = pool
 
         self.service._do_zone_action(self.context, self.zone)
@@ -72,7 +74,7 @@ class TestService(TestCase):
             self.zone.action
         )
 
-        self.service._executor.run.assert_called_with(ZoneAction())
+        self.service._executor.run.assert_called_with([ZoneAction()])
 
     def test_get_pool(self):
         pool = mock.Mock()
