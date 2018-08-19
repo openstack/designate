@@ -30,7 +30,7 @@ Install and configure components
 
    .. code-block:: console
 
-      # mysql -u root -p
+      # mysql
       mysql> CREATE DATABASE designate CHARACTER SET utf8 COLLATE utf8_general_ci;
       mysql> GRANT ALL PRIVILEGES ON designate.* TO 'designate'@'localhost' \
       IDENTIFIED BY 'DESIGNATE_DBPASS';
