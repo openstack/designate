@@ -140,7 +140,6 @@
       - periodic-stable-jobs
       - check-requirements
       - release-notes-jobs
-      - install-guide-jobs
     check:
       jobs:
         - openstack-tox-cover:
