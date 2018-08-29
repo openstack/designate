@@ -189,7 +189,6 @@
       - periodic-stable-jobs
       - check-requirements
       - release-notes-jobs-python3
-      - install-guide-jobs
     check:
       jobs:
         - neutron-tempest-plugin-designate-scenario
