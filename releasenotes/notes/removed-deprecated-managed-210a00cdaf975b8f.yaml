@@ -1,0 +1,7 @@
+---
+upgrade:
+  - |
+    Custom notification handlers that created unmanaged records will need to be updated,
+    as we no longer support the creation of unmanaged records using the sink.
+
+    See `designate/notification_handler/base.py` for more details.
