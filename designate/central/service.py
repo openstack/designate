@@ -2564,6 +2564,10 @@ class Service(service.RPCService, service.Service):
             if zone.action == 'DELETE':
                 raise exceptions.BadRequest('Can not transfer a deleting zone')
 
+            # Ensure the accepting tenant has enough quota to continue
+            self._enforce_zone_quota(context,
+                                     zone_transfer_accept.tenant_id)
+
             zone.tenant_id = zone_transfer_accept.tenant_id
             self.storage.update_zone(elevated_context, zone)
 
