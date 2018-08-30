@@ -26,6 +26,12 @@ from oslo_log import log
 from oslo_concurrency import lockutils
 import oslo_messaging as messaging
 
+_EXTRA_DEFAULT_LOG_LEVELS = [
+    'eventlet.wsgi.server=WARN',
+    'kazoo.client=WARN',
+    'keystone=INFO',
+    'oslo_service.loopingcall=WARN',
+]
 
 designate_opts = [
     cfg.StrOpt('host', default=socket.gethostname(),
@@ -67,22 +73,8 @@ designate_opts = [
 ]
 
 # Set some Oslo Log defaults
-log.set_defaults(default_log_levels=[
-    'amqplib=WARN',
-    'amqp=WARN',
-    'boto=WARN',
-    'eventlet.wsgi.server=WARN',
-    'iso8601=WARN',
-    'kazoo.client=WARN',
-    'keystone=INFO',
-    'keystonemiddleware.auth_token=INFO',
-    'oslo_messaging=WARN',
-    'oslo.messaging=INFO',
-    'oslo_service.loopingcall=WARN',
-    'sqlalchemy=WARN',
-    'stevedore=WARN',
-    'suds=INFO',
-])
+log.set_defaults(default_log_levels=log.get_default_log_levels() +
+                 _EXTRA_DEFAULT_LOG_LEVELS)
 
 # Set some Oslo RPC defaults
 messaging.set_transport_defaults('designate')
