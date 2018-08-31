@@ -1,0 +1,7 @@
+---
+features:
+  - |
+    Designate can verify validity of the project id when setting quotas for it.
+    This feature is enabled by setting a new configuration option
+    ``[service:api]quotas_verify_project_id`` to ``True`` (default is ``False``
+    for backward compatibility).

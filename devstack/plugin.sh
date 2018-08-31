@@ -119,6 +119,7 @@ function configure_designate {
     if is_service_enabled tls-proxy; then
         # Set the service port for a proxy to take the original
         iniset $DESIGNATE_CONF service:api listen ${DESIGNATE_SERVICE_HOST}:${DESIGNATE_SERVICE_PORT_INT}
+        iniset $DESIGNATE_CONF keystone cafile $SSL_BUNDLE_FILE
     else
         iniset $DESIGNATE_CONF service:api listen ${DESIGNATE_SERVICE_HOST}:${DESIGNATE_SERVICE_PORT}
     fi
@@ -127,6 +128,8 @@ function configure_designate {
     if is_service_enabled keystone; then
         iniset $DESIGNATE_CONF service:api auth_strategy keystone
         configure_auth_token_middleware $DESIGNATE_CONF designate $DESIGNATE_AUTH_CACHE_DIR
+        iniset $DESIGNATE_CONF keystone region_name $REGION_NAME
+        iniset $DESIGNATE_CONF service:api quotas_verify_project_id True
     fi
 
     # Logging Configuration
@@ -161,6 +164,7 @@ function configure_designate_tempest() {
         iniset $TEMPEST_CONFIG dns_feature_enabled api_admin $DESIGNATE_ENABLE_API_ADMIN
         iniset $TEMPEST_CONFIG dns_feature_enabled api_v2_root_recordsets True
         iniset $TEMPEST_CONFIG dns_feature_enabled api_v2_quotas True
+        iniset $TEMPEST_CONFIG dns_feature_enabled api_v2_quotas_verify_project True
         iniset $TEMPEST_CONFIG dns_feature_enabled bug_1573141_fixed True
 
         # Tell tempest where are nameservers are.

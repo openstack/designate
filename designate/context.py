@@ -16,6 +16,8 @@
 import itertools
 import copy
 
+from keystoneauth1.access import service_catalog as ksa_service_catalog
+from keystoneauth1 import plugin
 from oslo_context import context
 from oslo_log import log as logging
 
@@ -40,10 +42,11 @@ class DesignateContext(context.RequestContext):
     def __init__(self, service_catalog=None, all_tenants=False, abandon=None,
                  tsigkey_id=None, original_tenant=None,
                  edit_managed_records=False, hide_counts=False,
-                 client_addr=None, **kwargs):
+                 client_addr=None, user_auth_plugin=None, **kwargs):
 
         super(DesignateContext, self).__init__(**kwargs)
 
+        self.user_auth_plugin = user_auth_plugin
         self.service_catalog = service_catalog
         self.tsigkey_id = tsigkey_id
 
@@ -192,6 +195,49 @@ class DesignateContext(context.RequestContext):
     @client_addr.setter
     def client_addr(self, value):
         self._client_addr = value
+
+    def get_auth_plugin(self):
+        if self.user_auth_plugin:
+            return self.user_auth_plugin
+        else:
+            return _ContextAuthPlugin(self.auth_token, self.service_catalog)
+
+
+class _ContextAuthPlugin(plugin.BaseAuthPlugin):
+    """A keystoneauth auth plugin that uses the values from the Context.
+    Ideally we would use the plugin provided by auth_token middleware however
+    this plugin isn't serialized yet so we construct one from the serialized
+    auth data.
+    """
+    def __init__(self, auth_token, sc):
+        super(_ContextAuthPlugin, self).__init__()
+
+        self.auth_token = auth_token
+        self.service_catalog = ksa_service_catalog.ServiceCatalogV2(sc)
+
+    def get_token(self, *args, **kwargs):
+        return self.auth_token
+
+    def get_endpoint(self, session, **kwargs):
+        endpoint_data = self.get_endpoint_data(session, **kwargs)
+        if not endpoint_data:
+            return None
+        return endpoint_data.url
+
+    def get_endpoint_data(self, session,
+                          endpoint_override=None,
+                          discover_versions=True,
+                          **kwargs):
+        urlkw = {}
+        for k in ('service_type', 'service_name', 'service_id', 'endpoint_id',
+                  'region_name', 'interface'):
+            if k in kwargs:
+                urlkw[k] = kwargs[k]
+
+        endpoint = endpoint_override or self.service_catalog.url_for(**urlkw)
+        return super(_ContextAuthPlugin, self).get_endpoint_data(
+            session, endpoint_override=endpoint,
+            discover_versions=discover_versions, **kwargs)
 
 
 def get_current():
