@@ -31,3 +31,16 @@ directory.
 #. You can generate full sample *designate.conf* (if it does not already exist)::
 
     $ oslo-config-generator --config-file etc/designate/designate-config-generator.conf --output-file /etc/designate/designate.conf
+
+#. You can generate full sample of default policies *policy.yaml* (if it does not already exist)::
+
+    $ oslopolicy-sample-generator --config-file etc/designate/designate-policy-generator.conf --output-file /etc/designate/policy.yaml
+
+For more information on Designate configuration see the following sections
+
+.. toctree::
+  :maxdepth: 1
+
+  Config Documentation <../admin/config>
+  Policy Documentation <../admin/policy>
+  Sample configuration files <../admin/samples/index>
