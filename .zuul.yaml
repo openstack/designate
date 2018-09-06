@@ -182,6 +182,8 @@
 - project:
     templates:
       - designate-devstack-jobs
+      - openstack-cover-jobs
+      - openstack-lower-constraints-jobs
       - openstack-python36-jobs
       - openstack-python-jobs
       - openstack-python35-jobs
@@ -192,13 +194,5 @@
     check:
       jobs:
         - neutron-tempest-plugin-designate-scenario
-        - openstack-tox-lower-constraints
-        - openstack-tox-cover:
-            voting: false
     gate:
       queue: designate
-      jobs:
-        - openstack-tox-lower-constraints
-    post:
-      jobs:
-        - openstack-tox-cover
