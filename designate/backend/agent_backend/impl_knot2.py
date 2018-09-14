@@ -37,6 +37,7 @@ Supported Knot versions: >= 2.1, < 3
 
 Configured in [service:agent:knot2]
 """
+import six
 
 from oslo_concurrency import lockutils
 from oslo_concurrency.processutils import ProcessExecutionError
@@ -199,7 +200,9 @@ class Knot2Backend(base.AgentBackend):
         :param zone: zone to be  created
         :type zone: raw pythondns Zone
         """
-        zone_name = zone.origin.to_text(omit_final_dot=True).decode('utf-8')
+        zone_name = zone.origin.to_text(omit_final_dot=True)
+        if six.PY3 and isinstance(zone_name, bytes):
+            zone_name = zone_name.decode('utf-8')
         LOG.debug("Creating %s", zone_name)
         # The zone might be already in place due to a race condition between
         # checking if the zone is there and creating it across different
@@ -217,7 +220,9 @@ class Knot2Backend(base.AgentBackend):
         :param zone: zone to be  created
         :type zone: raw pythondns Zone
         """
-        zone_name = zone.origin.to_text(omit_final_dot=True).decode('utf-8')
+        zone_name = zone.origin.to_text(omit_final_dot=True)
+        if six.PY3 and isinstance(zone_name, bytes):
+            zone_name = zone_name.decode('utf-8')
         LOG.debug("Triggering AXFR from MiniDNS to Knot for %s", zone_name)
         self._start_minidns_to_knot_axfr(zone_name)
 

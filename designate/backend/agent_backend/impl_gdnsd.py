@@ -45,6 +45,7 @@ import string
 
 import dns
 import dns.resolver
+import six
 from oslo_concurrency.processutils import ProcessExecutionError
 from oslo_config import cfg
 from oslo_log import log as logging
@@ -185,7 +186,9 @@ class GdnsdBackend(base.AgentBackend):
         """Create or update a zone file atomically.
         The zone file is written to a unique temp file and then renamed
         """
-        zone_name = zone.origin.to_text(omit_final_dot=True).decode('utf-8')
+        zone_name = zone.origin.to_text(omit_final_dot=True)
+        if six.PY3 and isinstance(zone_name, bytes):
+            zone_name = zone_name.decode('utf-8')
         zone_base_fname = self._generate_zone_filename(zone_name)
         zone_fname = os.path.join(self._zonedir_path, zone_base_fname)
         try:

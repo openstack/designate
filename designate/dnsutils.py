@@ -156,7 +156,10 @@ class TsigInfoMiddleware(DNSMiddleware):
             return None
 
         try:
-            criterion = {'name': request.keyname.to_text(True).decode('utf-8')}
+            name = request.keyname.to_text(True)
+            if six.PY3 and isinstance(name, bytes):
+                name = name.decode('utf-8')
+            criterion = {'name': name}
             tsigkey = self.storage.find_tsigkey(
                     context.get_current(), criterion)
 
@@ -182,7 +185,10 @@ class TsigKeyring(object):
 
     def get(self, key, default=None):
         try:
-            criterion = {'name': key.to_text(True).decode('utf-8')}
+            name = key.to_text(True)
+            if six.PY3 and isinstance(name, bytes):
+                name = name.decode('utf-8')
+            criterion = {'name': name}
             tsigkey = self.storage.find_tsigkey(
                 context.get_current(), criterion)
 
@@ -249,7 +255,9 @@ class LimitNotifyMiddleware(DNSMiddleware):
         if opcode != dns.opcode.NOTIFY:
             return None
 
-        zone_name = request.question[0].name.to_text().decode('utf-8')
+        zone_name = request.question[0].name.to_text()
+        if six.PY3 and isinstance(zone_name, bytes):
+            zone_name = zone_name.decode('utf-8')
 
         if self.locker.acquire(zone_name):
             time.sleep(self.delay)
@@ -272,10 +280,17 @@ def from_dnspython_zone(dnspython_zone):
         raise exceptions.BadRequest('An SOA record is required')
     if soa.ttl == 0:
         soa.ttl = cfg.CONF['service:central'].min_ttl
-    email = soa[0].rname.to_text(omit_final_dot=True).decode('utf-8')
+    email = soa[0].rname.to_text(omit_final_dot=True)
+    if six.PY3 and isinstance(email, bytes):
+        email = email.decode('utf-8')
     email = email.replace('.', '@', 1)
+
+    name = dnspython_zone.origin.to_text()
+    if six.PY3 and isinstance(name, bytes):
+        name = name.decode('utf-8')
+
     values = {
-        'name': dnspython_zone.origin.to_text().decode('utf-8'),
+        'name': name,
         'email': email,
         'ttl': soa.ttl,
         'serial': soa[0].serial,
@@ -307,12 +322,16 @@ def dnspyrecords_to_recordsetlist(dnspython_records):
 def dnspythonrecord_to_recordset(rname, rdataset):
     record_type = rdatatype.to_text(rdataset.rdtype)
 
+    name = rname.to_text()
+    if six.PY3 and isinstance(name, bytes):
+        name = name.decode('utf-8')
+
     # Create the other recordsets
+
     values = {
-        'name': rname.to_text().decode('utf-8'),
+        'name': name,
         'type': record_type
     }
-
     if rdataset.ttl != 0:
         values['ttl'] = rdataset.ttl
 

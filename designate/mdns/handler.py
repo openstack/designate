@@ -20,6 +20,7 @@ import dns.rcode
 import dns.rdataclass
 import dns.rdatatype
 import dns.message
+import six
 from oslo_config import cfg
 from oslo_log import log as logging
 
@@ -110,8 +111,12 @@ class RequestHandler(xfr.XFRMixin):
         else:
             question = request.question[0]
 
+        name = question.name.to_text()
+        if six.PY3 and isinstance(name, bytes):
+            name = name.decode('utf-8')
+
         criterion = {
-            'name': question.name.to_text().decode('utf-8'),
+            'name': name,
             'type': 'SECONDARY',
             'deleted': False
         }
@@ -223,8 +228,11 @@ class RequestHandler(xfr.XFRMixin):
         # TODO(vinod) once validation is separated from the api,
         # validate the parameters
         try:
+            name = q_rrset.name.to_text()
+            if six.PY3 and isinstance(name, bytes):
+                name = name.decode('utf-8')
             criterion = self._zone_criterion_from_request(
-                request, {'name': q_rrset.name.to_text().decode('utf-8')})
+                request, {'name': name})
             zone = self.storage.find_zone(context, criterion)
 
         except exceptions.ZoneNotFound:
@@ -340,10 +348,13 @@ class RequestHandler(xfr.XFRMixin):
 
         try:
             q_rrset = request.question[0]
+            name = q_rrset.name.to_text()
+            if six.PY3 and isinstance(name, bytes):
+                name = name.decode('utf-8')
             # TODO(vinod) once validation is separated from the api,
             # validate the parameters
             criterion = {
-                'name': q_rrset.name.to_text().decode('utf-8'),
+                'name': name,
                 'type': dns.rdatatype.to_text(q_rrset.rdtype),
                 'zones_deleted': False
             }

@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import eventlet.patcher
+import six
 from oslo_config import cfg
 from oslo_log import log as logging
 
@@ -108,4 +109,7 @@ class NetworkAPI(DriverPlugin):
         """
         Get the name for the address
         """
-        return reversename.from_address(address).to_text().decode('utf-8')
+        name = reversename.from_address(address).to_text()
+        if six.PY3 and isinstance(name, bytes):
+            name = name.decode('utf-8')
+        return name

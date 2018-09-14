@@ -30,6 +30,7 @@ import dns.rcode
 import dns.message
 import dns.flags
 import dns.opcode
+import six
 from oslo_config import cfg
 from oslo_log import log as logging
 
@@ -104,7 +105,9 @@ class RequestHandler(object):
 
         question = request.question[0]
         requester = request.environ['addr'][0]
-        zone_name = question.name.to_text().decode('utf-8')
+        zone_name = question.name.to_text()
+        if six.PY3 and isinstance(zone_name, bytes):
+            zone_name = zone_name.decode('utf-8')
 
         if not self._allowed(request, requester, "CREATE", zone_name):
             response.set_rcode(dns.rcode.from_text("REFUSED"))
@@ -155,7 +158,9 @@ class RequestHandler(object):
 
         question = request.question[0]
         requester = request.environ['addr'][0]
-        zone_name = question.name.to_text().decode('utf-8')
+        zone_name = question.name.to_text()
+        if six.PY3 and isinstance(zone_name, bytes):
+            zone_name = zone_name.decode('utf-8')
 
         if not self._allowed(request, requester, "NOTIFY", zone_name):
             response.set_rcode(dns.rcode.from_text("REFUSED"))
@@ -206,7 +211,9 @@ class RequestHandler(object):
 
         question = request.question[0]
         requester = request.environ['addr'][0]
-        zone_name = question.name.to_text().decode('utf-8')
+        zone_name = question.name.to_text()
+        if six.PY3 and isinstance(zone_name, bytes):
+            zone_name = zone_name.decode('utf-8')
 
         if not self._allowed(request, requester, "DELETE", zone_name):
             response.set_rcode(dns.rcode.from_text("REFUSED"))
