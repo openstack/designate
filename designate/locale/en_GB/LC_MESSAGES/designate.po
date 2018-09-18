@@ -1,19 +1,24 @@
 # Andreas Jaeger <jaegerandi@gmail.com>, 2016. #zanata
 # Andi Chandler <andi@gowling.com>, 2017. #zanata
+# Andi Chandler <andi@gowling.com>, 2018. #zanata
 msgid ""
 msgstr ""
 "Project-Id-Version: designate VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2018-06-14 11:32+0000\n"
+"POT-Creation-Date: 2018-09-06 02:52+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2017-10-21 02:17+0000\n"
+"PO-Revision-Date: 2018-09-07 11:22+0000\n"
 "Last-Translator: Andi Chandler <andi@gowling.com>\n"
 "Language-Team: English (United Kingdom)\n"
 "Language: en_GB\n"
 "X-Generator: Zanata 4.3.3\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
+
+#, python-format
+msgid "%s is not a valid project ID."
+msgstr "%s is not a valid project ID."
 
 #, python-format
 msgid "<%(type)s count:'%(count)s' object:'%(list_type)s'>"
@@ -77,6 +82,9 @@ msgstr "Infoblox backend is misconfigured: '%(option)s' must be defined."
 #, python-format
 msgid "Infoblox object cannot be parsed from dict: %(data)s"
 msgstr "Infoblox object cannot be parsed from dict: %(data)s"
+
+msgid "KeystoneV3 endpoint not found"
+msgstr "KeystoneV3 endpoint not found"
 
 msgid "No Infoblox Member is available."
 msgstr "No Infoblox Member is available."
