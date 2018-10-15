@@ -45,7 +45,7 @@ function configure_designate {
 
     # General Configuration
     iniset_rpc_backend designate $DESIGNATE_CONF DEFAULT
-    iniset $DESIGNATE_CONF DEFAULT rpc_response_timeout 5
+    iniset $DESIGNATE_CONF DEFAULT rpc_response_timeout 60
 
     iniset $DESIGNATE_CONF DEFAULT debug $ENABLE_DEBUG_LOG_LEVEL
     iniset $DESIGNATE_CONF DEFAULT state_path $DESIGNATE_STATE_PATH
