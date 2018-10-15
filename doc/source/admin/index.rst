@@ -18,7 +18,6 @@ Contents:
    multiple-pools
    blacklists
    quotas
-   designate-manage
    policy
    config
    notifications

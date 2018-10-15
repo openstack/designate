@@ -18,6 +18,7 @@ Contents
     user/index
     admin/index
     configuration/index
+    cli/index
 
 For information on the Designate API, see the
 `API Reference <https://developer.openstack.org/api-ref/dns/>`_.
