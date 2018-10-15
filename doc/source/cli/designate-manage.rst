@@ -1,4 +1,4 @@
-    .. _designate-manage:
+.. _designate-manage:
 
 ====================
 Designate Manage CLI

@@ -1,0 +1,1 @@
+redirectmatch 301 ^/designate/([^/]+)/admin/designate-manage.html$ /designate/$1/cli/designate-manage.html
