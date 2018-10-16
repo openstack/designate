@@ -22,16 +22,19 @@ It is used via a single directive in the .rst file
 
 """
 import os
-
-import six
-import six.moves.configparser as config_parser
 import sys
 
 from docutils import nodes
 from docutils.parsers import rst
+from sphinx.util import logging
+from sphinx.util.osutil import copyfile
+import six
+import six.moves.configparser as config_parser
+
 from designate.backend.base import Backend
 from designate.backend.agent_backend.base import AgentBackend
-from sphinx.util.osutil import copyfile
+
+LOG = logging.getLogger(__name__)
 
 
 class SupportMatrix(object):
@@ -434,7 +437,7 @@ def copy_assets(app, exception):
     assets = ['support-matrix.css', 'support-matrix.js']
     if app.builder.name != 'html' or exception:
         return
-    app.info('Copying assets: %s' % ', '.join(assets))
+    LOG.info('Copying assets: %s' % ', '.join(assets))
     for asset in assets:
         dest = os.path.join(app.builder.outdir, '_static', asset)
         source = os.path.abspath(os.path.dirname(__file__))
