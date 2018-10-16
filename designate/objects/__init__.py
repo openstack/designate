@@ -49,6 +49,7 @@ from designate.objects.zone_export import ZoneExport, ZoneExportList  # noqa
 
 from designate.objects.rrdata_a import A, AList  # noqa
 from designate.objects.rrdata_aaaa import AAAA, AAAAList  # noqa
+from designate.objects.rrdata_caa import CAA, CAAList  # noqa
 from designate.objects.rrdata_cname import CNAME, CNAMEList  # noqa
 from designate.objects.rrdata_mx import MX, MXList  # noqa
 from designate.objects.rrdata_naptr import NAPTR, NAPTRList  # noqa

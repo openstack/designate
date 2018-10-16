@@ -186,3 +186,12 @@ Objects NAPTR Record
     :members:
     :undoc-members:
     :show-inheritance:
+
+
+Objects CAA Record
+====================
+.. automodule:: designate.objects.rrdata_caa
+
+    :members:
+    :undoc-members:
+    :show-inheritance:

@@ -69,7 +69,7 @@ designate_opts = [
     # Supported record types
     cfg.ListOpt('supported-record-type', help='Supported record types',
                 default=['A', 'AAAA', 'CNAME', 'MX', 'SRV', 'TXT', 'SPF', 'NS',
-                         'PTR', 'SSHFP', 'SOA', 'NAPTR']),
+                         'PTR', 'SSHFP', 'SOA', 'NAPTR', 'CAA']),
 ]
 
 # Set some Oslo Log defaults
