@@ -51,6 +51,7 @@ from designate.objects.rrdata_a import A, AList  # noqa
 from designate.objects.rrdata_aaaa import AAAA, AAAAList  # noqa
 from designate.objects.rrdata_cname import CNAME, CNAMEList  # noqa
 from designate.objects.rrdata_mx import MX, MXList  # noqa
+from designate.objects.rrdata_naptr import NAPTR, NAPTRList  # noqa
 from designate.objects.rrdata_ns import NS, NSList  # noqa
 from designate.objects.rrdata_ptr import PTR, PTRList  # noqa
 from designate.objects.rrdata_soa import SOA, SOAList  # noqa

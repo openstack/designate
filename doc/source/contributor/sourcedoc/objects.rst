@@ -180,3 +180,9 @@ Objects SSHFP Record
     :show-inheritance:
 
 
+Objects NAPTR Record
+====================
+.. automodule:: designate.objects.rrdata_naptr
+    :members:
+    :undoc-members:
+    :show-inheritance:

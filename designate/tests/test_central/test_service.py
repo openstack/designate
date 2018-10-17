@@ -1823,7 +1823,7 @@ class CentralServiceTest(CentralTestCase):
     def test_update_recordset_immutable_type(self):
         zone = self.create_zone()
         # ['A', 'AAAA', 'CNAME', 'MX', 'SRV', 'TXT', 'SPF', 'NS', 'PTR',
-        #  'SSHFP', 'SOA']
+        #  'SSHFP', 'SOA', 'NAPTR']
         # Create a recordset
         recordset = self.create_recordset(zone)
         cname_recordset = self.create_recordset(zone, type='CNAME')
