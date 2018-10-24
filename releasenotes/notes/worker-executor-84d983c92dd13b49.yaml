@@ -1,0 +1,8 @@
+---
+other:
+  - |
+    To allow for python3.7 support, the `designate-worker` service was changed
+    from a `ThreadPoolExecutor` to a `GreenThreadPoolExecutor`. This should
+    no impact for most deployments, but in some cases it may cause performance
+    degredation. In these cases, tuning `[service:worker].workers` and
+    `[service:worker].threads` alleviate the issues.

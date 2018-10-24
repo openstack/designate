@@ -36,7 +36,7 @@ flake8==2.5.5
 Flask==0.10
 funcparserlib==0.3.6
 future==0.16.0
-futurist==1.6.0
+futurist==1.2.0
 gitdb2==2.0.3
 GitPython==2.1.8
 greenlet==0.4.10
