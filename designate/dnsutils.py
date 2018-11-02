@@ -15,7 +15,6 @@
 # under the License.
 import random
 import socket
-import base64
 import time
 from threading import Lock
 
@@ -25,6 +24,7 @@ import dns.exception
 import dns.zone
 import eventlet
 from dns import rdatatype
+from oslo_serialization import base64
 from oslo_log import log as logging
 from oslo_config import cfg
 
@@ -192,7 +192,7 @@ class TsigKeyring(object):
             tsigkey = self.storage.find_tsigkey(
                 context.get_current(), criterion)
 
-            return base64.decodestring(tsigkey.secret)
+            return base64.decode_as_bytes(tsigkey.secret)
 
         except exceptions.TsigKeyNotFound:
             return default
