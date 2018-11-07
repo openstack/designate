@@ -1,0 +1,6 @@
+---
+features:
+  - |
+    CAA and NAPTR recordset types have been added. All users should be able to use these types 
+    from the API and openstack client. These can be disabled (like other record types) by 
+    setting the `[DEFAULT].supported-record-type` config variable in all designate services.
