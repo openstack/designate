@@ -92,6 +92,7 @@ Execute a single test using py27
 * Release notes: https://docs.openstack.org/releasenotes/designate/
 * Source: https://git.openstack.org/cgit/openstack/designate
 * Bugs: https://bugs.launchpad.net/designate
+* Blueprints: https://blueprints.launchpad.net/designate
 
 
 .. _OpenStack Gerrit Workflow: https://docs.openstack.org/infra/manual/developers.html#development-workflow
