@@ -98,6 +98,9 @@ class StringFields(ovoo_fields.StringField):
     RE_SSHFP_FINGERPRINT = r'^([0-9A-Fa-f]{10,40}|[0-9A-Fa-f]{64})\Z'
     RE_TLDNAME = r'^(?!.{255,})(?:(?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-))' \
                  r'(?:\.(?:(?!\-)[A-Za-z0-9_\-]{1,63}(?<!\-)))*\Z'
+    RE_NAPTR_FLAGS = r'^(?!.*(.).*\1)[APSU]+$'
+    RE_NAPTR_SERVICE = r'^([A-Za-z]([A-Za-z0-9]*)(\+[A-Za-z]([A-Za-z0-9]{0,31}))*)?'  # noqa
+    RE_NAPTR_REGEXP = r'^([^0-9i\\])(.*)\1((.+)|(\\[1-9]))\1(i?)'
 
     def __init__(self, nullable=False, read_only=False,
                  default=ovoo_fields.UnspecifiedDefault, description='',
@@ -288,6 +291,49 @@ class TldField(StringFields):
         value = super(TldField, self).coerce(obj, attr, value)
         if not re.match(self.RE_TLDNAME, value):
             raise ValueError("%s is not an TLD" % value)
+        return value
+
+
+class NaptrFlagsField(StringFields):
+    def __init__(self, **kwargs):
+        super(NaptrFlagsField, self).__init__(**kwargs)
+
+    def coerce(self, obj, attr, value):
+        value = super(NaptrFlagsField, self).coerce(obj, attr, value)
+        if (len(value) > 255):
+            raise ValueError("NAPTR record flags field cannot be longer than"
+                             " 255 characters" % value)
+        if not re.match(self.RE_NAPTR_FLAGS, "%s" % value):
+            raise ValueError("NAPTR record flags can be S, A, U and P" % value)
+        return value
+
+
+class NaptrServiceField(StringFields):
+    def __init__(self, **kwargs):
+        super(NaptrServiceField, self).__init__(**kwargs)
+
+    def coerce(self, obj, attr, value):
+        value = super(NaptrServiceField, self).coerce(obj, attr, value)
+        if (len(value) > 255):
+            raise ValueError("NAPTR record service field cannot be longer than"
+                             " 255 characters" % value)
+        if not re.match(self.RE_NAPTR_SERVICE, "%s" % value):
+            raise ValueError("%s NAPTR record service does not match" % value)
+        return value
+
+
+class NaptrRegexpField(StringFields):
+    def __init__(self, **kwargs):
+        super(NaptrRegexpField, self).__init__(**kwargs)
+
+    def coerce(self, obj, attr, value):
+        value = super(NaptrRegexpField, self).coerce(obj, attr, value)
+        if (len(value) > 255):
+            raise ValueError("NAPTR record regexp field cannot be longer than"
+                             " 255 characters" % value)
+        if value:
+            if not re.match(self.RE_NAPTR_REGEXP, "%s" % value):
+                raise ValueError("%s is not a NAPTR record regexp" % value)
         return value
 
 
