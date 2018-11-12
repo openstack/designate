@@ -63,7 +63,10 @@ rectype2iparectype = {'A': ('arecord', '%(data)s'),
                       'PTR': ('ptrrecord', '%(data)s'),
                       'SPF': ('spfrecord', '%(data)s'),
                       'SSHFP': ('sshfprecord', '%(data)s'),
-                      'NAPTR': ('naptrrecord', '%(data)s')}
+                      'NAPTR': ('naptrrecord', '%(data)s'),
+                      'CAA': ('caarecord', '%(data)s'),
+                      }
+
 
 IPA_INVALID_DATA = 3009
 IPA_NOT_FOUND = 4001

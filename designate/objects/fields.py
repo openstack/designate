@@ -101,6 +101,9 @@ class StringFields(ovoo_fields.StringField):
     RE_NAPTR_FLAGS = r'^(?!.*(.).*\1)[APSU]+$'
     RE_NAPTR_SERVICE = r'^([A-Za-z]([A-Za-z0-9]*)(\+[A-Za-z]([A-Za-z0-9]{0,31}))*)?'  # noqa
     RE_NAPTR_REGEXP = r'^([^0-9i\\])(.*)\1((.+)|(\\[1-9]))\1(i?)'
+    RE_KVP = r'^\s[A-Za-z0-9]+=[A-Za-z0-9]+'
+    RE_URL_MAIL = r'^mailto:[A-Za-z0-9_\-]+@.*'
+    RE_URL_HTTP = r'^http(s)?://.*/'
 
     def __init__(self, nullable=False, read_only=False,
                  default=ovoo_fields.UnspecifiedDefault, description='',
@@ -334,6 +337,57 @@ class NaptrRegexpField(StringFields):
         if value:
             if not re.match(self.RE_NAPTR_REGEXP, "%s" % value):
                 raise ValueError("%s is not a NAPTR record regexp" % value)
+        return value
+
+
+class CaaPropertyField(StringFields):
+    def __init__(self, **kwargs):
+        super(CaaPropertyField, self).__init__(**kwargs)
+
+    def coerce(self, obj, attr, value):
+        value = super(CaaPropertyField, self).coerce(obj, attr, value)
+        prpt = value.split(' ', 1)
+        tag = prpt[0]
+        val = prpt[1]
+        if (tag == 'issue' or tag == 'issuewild'):
+            entries = val.split(';')
+            idn = entries.pop(0)
+            domain = idn.split('.')
+            for host in domain:
+                if len(host) > 63:
+                    raise ValueError("Host %s is too long" % host)
+            idn_with_dot = idn + '.'
+            if not re.match(self.RE_ZONENAME, idn_with_dot):
+                raise ValueError("Domain %s does not match" % idn)
+            for entry in entries:
+                if not re.match(self.RE_KVP, entry):
+                    raise ValueError("%s is not valid key-value pair" % entry)
+        elif tag == 'iodef':
+            if re.match(self.RE_URL_MAIL, val):
+                parts = val.split('@')
+                idn = parts[1]
+                domain = idn.split('.')
+                for host in domain:
+                    if len(host) > 63:
+                        raise ValueError("Host %s is too long" % host)
+                idn_with_dot = idn + '.'
+                if not re.match(self.RE_ZONENAME, idn_with_dot):
+                    raise ValueError("Domain %s does not match" % idn)
+            elif re.match(self.RE_URL_HTTP, val):
+                parts = val.split('/')
+                idn = parts[2]
+                domain = idn.split('.')
+                for host in domain:
+                    if len(host) > 63:
+                        raise ValueError("Host %s is too long" % host)
+                idn_with_dot = idn + '.'
+                if not re.match(self.RE_ZONENAME, idn_with_dot):
+                    raise ValueError("Domain %s does not match" % idn)
+            else:
+                raise ValueError("%s is not valid URL" % val)
+        else:
+            raise ValueError("Property tag %s must be 'issue', 'issuewild'"
+                             " or 'iodef'" % value)
         return value
 
 
