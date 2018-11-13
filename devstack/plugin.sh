@@ -11,17 +11,6 @@ if is_service_enabled designate && [[ -r $DESIGNATE_PLUGINS/backend-$DESIGNATE_B
     source $DESIGNATE_PLUGINS/backend-$DESIGNATE_BACKEND_DRIVER
 fi
 
-# Helper Functions
-# ----------------
-function setup_colorized_logging_designate {
-    local conf_file=$1
-    local conf_section=$2
-    local project_var=${3:-"project_name"}
-    local user_var=${4:-"user_name"}
-
-    setup_colorized_logging $conf_file $conf_section $project_var $user_var
-}
-
 # DevStack Plugin
 # ---------------
 
@@ -139,7 +128,7 @@ function configure_designate {
 
     # Format logging
     if [ "$LOG_COLOR" == "True" ] && [ "$USE_SYSTEMD" == "False" ]; then
-        setup_colorized_logging_designate $DESIGNATE_CONF DEFAULT "tenant" "user"
+        setup_colorized_logging $DESIGNATE_CONF DEFAULT
     fi
 
     # Backend Plugin Configuation
