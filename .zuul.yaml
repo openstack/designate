@@ -41,7 +41,7 @@
         designate-zone-manager: true
 
 - job:
-    name: designate-bind9-py35
+    name: designate-bind9-py36
     parent: designate-bind9
     vars:
       devstack_localrc:
@@ -52,11 +52,6 @@
         s-object: false
         s-proxy: false
         c-bak: false
-
-- job:
-    name: designate-bind9-py36
-    parent: designate-bind9-py35
-    nodeset: openstack-bionic-node
 
 - job:
     name: designate-devstack-base
@@ -158,7 +153,6 @@
       jobs:
         - designate-bind9
         - designate-bind9-manager-model
-        - designate-bind9-py35
         - designate-bind9-py36
         - designate-devstack-pdns4
         - designate-devstack-pdns4-postgres
@@ -168,7 +162,6 @@
       jobs:
         - designate-bind9
         - designate-bind9-manager-model
-        - designate-bind9-py35
         - designate-bind9-py36
         - designate-devstack-pdns4
         - designate-devstack-pdns4-postgres
