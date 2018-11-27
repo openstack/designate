@@ -23,7 +23,7 @@ def upgrade(migrate_engine):
     meta.bind = migrate_engine
 
     RECORD_TYPES = ['A', 'AAAA', 'CNAME', 'MX', 'SRV', 'TXT', 'SPF', 'NS',
-                    'PTR', 'SSHFP', 'SOA', 'CAA']
+                    'PTR', 'SSHFP', 'SOA', 'NAPTR', 'CAA']
 
     records_table = Table('recordsets', meta, autoload=True)
     records_table.columns.type.alter(name='type', type=Enum(*RECORD_TYPES))
@@ -33,7 +33,7 @@ def downgrade(migrate_engine):
     meta.bind = migrate_engine
 
     RECORD_TYPES = ['A', 'AAAA', 'CNAME', 'MX', 'SRV', 'TXT', 'SPF', 'NS',
-                    'PTR', 'SSHFP', 'SOA']
+                    'PTR', 'SSHFP', 'SOA', 'NAPTR']
 
     records_table = Table('recordsets', meta, autoload=True)
 
