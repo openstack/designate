@@ -24,9 +24,11 @@ from designate.tests import TestCase
 
 SAMPLES = {
     ("cname.example.com.", "CNAME"): {
+        "ttl": 10800,
         "records": ["example.com."],
     },
     ("_http._tcp.example.com.", "SRV"): {
+        "ttl": 10800,
         "records": [
             "10 0 80 192.0.0.4.example.com.",
             "10 5 80 192.0.0.5.example.com."
@@ -37,9 +39,11 @@ SAMPLES = {
         "records": ["192.0.0.1"]
     },
     ("delegation.example.com.", "NS"): {
+        "ttl": 10800,
         "records": ["ns1.example.com."]
     },
     ("ipv6.example.com.", "AAAA"): {
+        "ttl": 10800,
         "records": ["fd00::1"],
     },
     ("example.com.", "SOA"): {
@@ -50,18 +54,22 @@ SAMPLES = {
         "ttl": 600
     },
     ("example.com.", "MX"): {
+        "ttl": 10800,
         "records": [
             "5 192.0.0.2.example.com.",
             '10 192.0.0.3.example.com.'
         ]
     },
     ("example.com.", "TXT"): {
+        "ttl": 10800,
         "records": ['"abc" "def"']
     },
     ("example.com.", "SPF"): {
+        "ttl": 10800,
         "records": ['"v=spf1 mx a"']
     },
     ("example.com.", "NS"): {
+        "ttl": 10800,
         "records": [
             'ns1.example.com.',
             'ns2.example.com.'
