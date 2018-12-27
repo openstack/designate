@@ -1094,7 +1094,9 @@ class Service(service.RPCService, service.Service):
         # Prevent deletion of a zone which has child zones
         criterion = {'parent_zone_id': zone_id}
 
-        if self.storage.count_zones(context, criterion) > 0:
+        # Look for child zones across all tenants with elevated context
+        if self.storage.count_zones(context.elevated(all_tenants=True),
+                                    criterion) > 0:
             raise exceptions.ZoneHasSubZone('Please delete any subzones '
                                             'before deleting this zone')
 
