@@ -1,0 +1,7 @@
+---
+features:
+  - |
+    A new ``designate-status upgrade check`` command has been added which can
+    be used to validate a deployment before starting services with new code.
+    See the documentation for details:
+    https://docs.openstack.org/designate/latest/cli/designate-status.html

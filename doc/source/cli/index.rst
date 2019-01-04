@@ -8,3 +8,4 @@ Interface (CLI) can be found in this section.
    :maxdepth: 1
 
    designate-manage
+   designate-status
