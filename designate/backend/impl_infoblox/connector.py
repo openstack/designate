@@ -13,9 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import json as jsonutils
-
 from oslo_log import log
+from oslo_serialization import jsonutils
 from oslo_utils import strutils
 from six.moves.urllib import parse
 import requests
@@ -132,7 +131,7 @@ class Infoblox(object):
 
         headers = {'Content-type': 'application/json'}
 
-        data = jsonutils.dumps(payload)
+        data = jsonutils.dump_as_bytes(payload)
         url = self._construct_url(objtype, query_params, extattrs)
 
         r = self.session.get(url,
@@ -175,7 +174,7 @@ class Infoblox(object):
         headers = {'Content-type': 'application/json'}
 
         r = self.session.post(url,
-                              data=jsonutils.dumps(payload),
+                              data=jsonutils.dump_as_bytes(payload),
                               verify=self.sslverify,
                               headers=headers)
 
@@ -203,7 +202,7 @@ class Infoblox(object):
 
         headers = {'Content-type': 'application/json'}
         r = self.session.post(url,
-                              data=jsonutils.dumps(payload),
+                              data=jsonutils.dump_as_bytes(payload),
                               verify=self.sslverify,
                               headers=headers)
 
@@ -232,7 +231,7 @@ class Infoblox(object):
 
         headers = {'Content-type': 'application/json'}
         r = self.session.put(self._construct_url(ref),
-                             data=jsonutils.dumps(payload),
+                             data=jsonutils.dump_as_bytes(payload),
                              verify=self.sslverify,
                              headers=headers)
 

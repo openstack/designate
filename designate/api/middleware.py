@@ -21,7 +21,7 @@ import oslo_messaging as messaging
 from oslo_log import log as logging
 from oslo_middleware import base
 from oslo_middleware import request_id
-from oslo_serialization import jsonutils as json
+from oslo_serialization import jsonutils
 from oslo_utils import strutils
 
 from designate import exceptions
@@ -130,7 +130,7 @@ class KeystoneContextMiddleware(ContextMiddleware):
             return flask.Response(status=401)
 
         if headers.get('X-Service-Catalog'):
-            catalog = json.loads(headers.get('X-Service-Catalog'))
+            catalog = jsonutils.loads(headers.get('X-Service-Catalog'))
         else:
             catalog = None
 
@@ -301,7 +301,7 @@ class FaultWrapperMiddleware(base.Middleware):
             LOG.error('Missing context in request, please check.')
 
         return flask.Response(status=status, headers=headers,
-                              response=json.dumps(response))
+                              response=jsonutils.dump_as_bytes(response))
 
 
 class ValidationErrorMiddleware(base.Middleware):
@@ -352,7 +352,7 @@ class ValidationErrorMiddleware(base.Middleware):
             LOG.error('Missing context in request, please check.')
 
         return flask.Response(status=exception.error_code, headers=headers,
-                              response=json.dumps(response))
+                              response=jsonutils.dump_as_bytes(response))
 
 
 class APIv2ValidationErrorMiddleware(ValidationErrorMiddleware):
