@@ -1939,7 +1939,9 @@ class Service(service.RPCService, service.Service):
         data = self.network_api.list_floatingips(context, region=region)
         return self._list_to_dict(data, keys=['region', 'id'])
 
-    def _list_to_dict(self, data, keys=['id']):
+    def _list_to_dict(self, data, keys=None):
+        if keys is None:
+            keys = ['id']
         new = {}
         for i in data:
             key = tuple([i[key] for key in keys])

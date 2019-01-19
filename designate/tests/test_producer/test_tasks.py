@@ -28,27 +28,18 @@ from designate.producer import tasks
 LOG = logging.getLogger(__name__)
 
 
-class TaskTest(TestCase):
+class DeletedZonePurgeTest(TestCase):
+    number_of_zones = 20
+    batch_size = 5
+    time_threshold = 24 * 60 * 60
+
     def setUp(self):
-        super(TaskTest, self).setUp()
-
-    def _enable_tasks(self, tasks):
+        super(DeletedZonePurgeTest, self).setUp()
         self.config(
-            enabled_tasks=tasks,
-            group="service:producer")
-
-
-class DeletedzonePurgeTest(TaskTest):
-    def setUp(self):
-        super(DeletedzonePurgeTest, self).setUp()
-
-        self.config(
-            interval=3600,
-            time_threshold=604800,
-            batch_size=100,
+            time_threshold=self.time_threshold,
+            batch_size=self.batch_size,
             group="producer_task:zone_purge"
         )
-
         self.purge_task_fixture = self.useFixture(
             fixtures.ZoneManagerTaskFixture(tasks.DeletedZonePurgeTask)
         )
@@ -57,19 +48,16 @@ class DeletedzonePurgeTest(TaskTest):
         # Create a zone and set it as deleted
         zone = self.create_zone(name=name)
         self._delete_zone(zone, mock_deletion_time)
-        return zone
 
     def _fetch_all_zones(self):
-        # Fetch all zones including deleted ones
+        # Fetch all zones including deleted ones.
         query = tables.zones.select()
         return self.central_service.storage.session.execute(query).fetchall()
 
     def _delete_zone(self, zone, mock_deletion_time):
         # Set a zone as deleted
         zid = zone.id.replace('-', '')
-        query = tables.zones.update().\
-            where(tables.zones.c.id == zid).\
-            values(
+        query = tables.zones.update().where(tables.zones.c.id == zid).values(
                 action='NONE',
                 deleted=zid,
                 deleted_at=mock_deletion_time,
@@ -78,62 +66,63 @@ class DeletedzonePurgeTest(TaskTest):
 
         pxy = self.central_service.storage.session.execute(query)
         self.assertEqual(1, pxy.rowcount)
-        return zone
 
     def _create_deleted_zones(self):
-        # Create a number of deleted zones in the past days
-        zones = []
+        # Create a number of deleted zones in the past days.
         now = timeutils.utcnow()
-        for age in range(18):
-            age *= (24 * 60 * 60)  # seconds
+        for index in range(self.number_of_zones):
+            age = index * (self.time_threshold // self.number_of_zones * 2)
             delta = datetime.timedelta(seconds=age)
             deletion_time = now - delta
-            name = "example%d.org." % len(zones)
-            z = self._create_deleted_zone(name, deletion_time)
-            zones.append(z)
-
-        return zones
+            name = "example%d.org." % index
+            self._create_deleted_zone(name, deletion_time)
 
     def test_purge_zones(self):
-        # Create 18 zones, run producer, check if 7 zones are remaining
-        self.config(quota_zones=1000)
+        # Create X zones, run producer, check if half of the zones
+        # are remaining.
+        self.config(quota_zones=self.number_of_zones)
         self._create_deleted_zones()
 
-        self.purge_task_fixture.task()
+        for remaining in reversed(range(self.number_of_zones // 2,
+                                        self.number_of_zones,
+                                        self.batch_size)):
+            self.purge_task_fixture.task()
 
-        zones = self._fetch_all_zones()
-        LOG.info("Number of zones: %d", len(zones))
-        self.assertEqual(7, len(zones))
+            zones = self._fetch_all_zones()
+            LOG.info("Number of zones: %d", len(zones))
+            self.assertEqual(remaining, len(zones))
+
+        remaning_zones = self._fetch_all_zones()
+        self.assertEqual(len(remaning_zones), self.number_of_zones // 2)
 
 
-class PeriodicGenerateDelayedNotifyTaskTest(TaskTest):
+class PeriodicGenerateDelayedNotifyTaskTest(TestCase):
+    number_of_zones = 20
+    batch_size = 5
 
     def setUp(self):
         super(PeriodicGenerateDelayedNotifyTaskTest, self).setUp()
-
+        self.config(quota_zones=self.number_of_zones)
         self.config(
-            interval=5,
-            batch_size=100,
+            interval=1,
+            batch_size=self.batch_size,
             group="producer_task:delayed_notify"
         )
-
         self.generate_delayed_notify_task_fixture = self.useFixture(
             fixtures.ZoneManagerTaskFixture(
                 tasks.PeriodicGenerateDelayedNotifyTask
             )
         )
 
-    def _fetch_zones(self, query=None):
-        # Fetch zones including deleted ones
-        if query is None:
-            query = tables.zones.select()
+    def _fetch_zones(self, query):
+        # Fetch zones including deleted ones.
         return self.central_service.storage.session.execute(query).fetchall()
 
     def _create_zones(self):
-        # Create a number of zones; half of them with delayed_notify set
-        for age in range(20):
-            name = "example%d.org." % age
-            delayed_notify = (age % 2 == 0)
+        # Create a number of zones; half of them with delayed_notify set.
+        for index in range(self.number_of_zones):
+            name = "example%d.org." % index
+            delayed_notify = (index % 2 == 0)
             self.create_zone(
                 name=name,
                 delayed_notify=delayed_notify,
@@ -141,27 +130,14 @@ class PeriodicGenerateDelayedNotifyTaskTest(TaskTest):
 
     def test_generate_delayed_notify_zones(self):
         # Create zones and set some of them as pending update.
-        self.generate_delayed_notify_task_fixture.task()
-        self.config(quota_zones=1000)
-        self.config(
-            interval=1,
-            batch_size=5,
-            group="producer_task:delayed_notify"
-        )
         self._create_zones()
-        zones = self._fetch_zones(tables.zones.select().where(
-            tables.zones.c.delayed_notify == True))  # nopep8
-        self.assertEqual(10, len(zones))
 
-        self.generate_delayed_notify_task_fixture.task()
+        for remaining in reversed(range(0,
+                                        self.number_of_zones // 2,
+                                        self.batch_size)):
+            self.generate_delayed_notify_task_fixture.task()
 
-        zones = self._fetch_zones(tables.zones.select().where(
-            tables.zones.c.delayed_notify == True))  # nopep8
-        self.assertEqual(5, len(zones))
+            zones = self._fetch_zones(tables.zones.select().where(
+                tables.zones.c.delayed_notify))
 
-        # Run the task and check if it reset the delayed_notify flag
-        self.generate_delayed_notify_task_fixture.task()
-
-        zones = self._fetch_zones(tables.zones.select().where(
-            tables.zones.c.delayed_notify == True))  # nopep8
-        self.assertEqual(0, len(zones))
+            self.assertEqual(remaining, len(zones))
