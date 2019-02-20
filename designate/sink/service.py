@@ -68,11 +68,11 @@ class Service(service.Service):
 
         # TODO(ekarlso): Change this is to endpoint objects rather then
         # ourselves?
-        self._server = rpc.get_listener(
+        self._server = rpc.get_notification_listener(
             targets, [self],
             pool=cfg.CONF['service:sink'].listener_pool_name)
 
-        if len(targets) > 0:
+        if targets:
             self._server.start()
 
     def stop(self):

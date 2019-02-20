@@ -25,17 +25,15 @@ __all__ = [
     'get_notifier',
 ]
 
-
 from oslo_config import cfg
 import oslo_messaging as messaging
-from oslo_messaging.rpc import server as rpc_server
 from oslo_messaging.rpc import dispatcher as rpc_dispatcher
+from oslo_messaging.rpc import server as rpc_server
 from oslo_serialization import jsonutils
 
 import designate.context
 import designate.exceptions
 from designate import objects
-
 
 CONF = cfg.CONF
 TRANSPORT = None
@@ -74,11 +72,15 @@ def initialized():
 
 def cleanup():
     global TRANSPORT, NOTIFIER, NOTIFICATION_TRANSPORT
-    assert TRANSPORT is not None
-    assert NOTIFICATION_TRANSPORT is not None
-    assert NOTIFIER is not None
+    if TRANSPORT is None:
+        raise AssertionError("'TRANSPORT' must not be None")
+    if NOTIFICATION_TRANSPORT is None:
+        raise AssertionError("'NOTIFICATION_TRANSPORT' must not be None")
+    if NOTIFIER is None:
+        raise AssertionError("'NOTIFIER' must not be None")
     TRANSPORT.cleanup()
-    TRANSPORT = NOTIFIER = None
+    NOTIFICATION_TRANSPORT.cleanup()
+    TRANSPORT = NOTIFICATION_TRANSPORT = NOTIFIER = None
 
 
 def set_defaults(control_exchange):
@@ -161,15 +163,13 @@ class RequestContextSerializer(messaging.Serializer):
 
 
 class RPCDispatcher(rpc_dispatcher.RPCDispatcher):
-
     def dispatch(self, *args, **kwds):
         try:
             return super(RPCDispatcher, self).dispatch(*args, **kwds)
-        except Exception as e:
-            if getattr(e, 'expected', False):
+        except designate.exceptions.Base as e:
+            if e.expected:
                 raise rpc_dispatcher.ExpectedException()
-            else:
-                raise
+            raise
 
 
 def get_transport_url(url_str=None):
@@ -177,41 +177,53 @@ def get_transport_url(url_str=None):
 
 
 def get_client(target, version_cap=None, serializer=None):
-    assert TRANSPORT is not None
+    if TRANSPORT is None:
+        raise AssertionError("'TRANSPORT' must not be None")
     if serializer is None:
         serializer = DesignateObjectSerializer()
     serializer = RequestContextSerializer(serializer)
-    return messaging.RPCClient(TRANSPORT,
-                               target,
-                               version_cap=version_cap,
-                               serializer=serializer)
+    return messaging.RPCClient(
+        TRANSPORT,
+        target,
+        version_cap=version_cap,
+        serializer=serializer
+    )
 
 
 def get_server(target, endpoints, serializer=None):
-    assert TRANSPORT is not None
+    if TRANSPORT is None:
+        raise AssertionError("'TRANSPORT' must not be None")
     if serializer is None:
         serializer = DesignateObjectSerializer()
     serializer = RequestContextSerializer(serializer)
     access_policy = rpc_dispatcher.DefaultRPCAccessPolicy
     dispatcher = RPCDispatcher(endpoints, serializer, access_policy)
     return rpc_server.RPCServer(
-        TRANSPORT, target, dispatcher, 'eventlet')
+        TRANSPORT,
+        target,
+        dispatcher=dispatcher,
+        executor='eventlet',
+    )
 
 
-def get_listener(targets, endpoints, serializer=None, pool=None):
-    assert TRANSPORT is not None
+def get_notification_listener(targets, endpoints, serializer=None, pool=None):
+    if NOTIFICATION_TRANSPORT is None:
+        raise AssertionError("'NOTIFICATION_TRANSPORT' must not be None")
     if serializer is None:
         serializer = JsonPayloadSerializer()
-    return messaging.get_notification_listener(TRANSPORT,
-                                               targets,
-                                               endpoints,
-                                               executor='eventlet',
-                                               pool=pool,
-                                               serializer=serializer)
+    return messaging.get_notification_listener(
+        NOTIFICATION_TRANSPORT,
+        targets,
+        endpoints,
+        executor='eventlet',
+        pool=pool,
+        serializer=serializer
+    )
 
 
 def get_notifier(service=None, host=None, publisher_id=None):
-    assert NOTIFIER is not None
+    if NOTIFIER is None:
+        raise AssertionError("'NOTIFIER' must not be None")
     if not publisher_id:
         publisher_id = "%s.%s" % (service, host or CONF.host)
     return NOTIFIER.prepare(publisher_id=publisher_id)

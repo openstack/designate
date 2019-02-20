@@ -17,60 +17,61 @@
 
 """Unit-test MiniDNS service
 """
-import unittest
-
 from oslotest import base
 import mock
 
-from designate.tests.unit import RoObject
+import designate.rpc
 import designate.mdns.service as mdns
+import designate.storage.base as storage
 
-# TODO(Federico): fix skipped tests
 
-
-@mock.patch.object(mdns.utils, 'cache_result')
-@mock.patch.object(mdns.notify, 'NotifyEndpoint')
-@mock.patch.object(mdns.xfr, 'XfrEndpoint')
 class MdnsServiceTest(base.BaseTestCase):
-
-    @mock.patch.object(mdns.storage, 'get_storage', name='get_storage')
-    @mock.patch.object(mdns.Service, '_rpc_endpoints')
-    def setUp(self, *mocks):
-        super(MdnsServiceTest, self).setUp()
-        mdns.CONF = RoObject({
-            'service:mdns': RoObject(storage_driver=None)
-        })
-        # _rpc_endpoints is a property
-        mock_rpc_endpoints = mocks[0]
-        mock_rpc_endpoints.__get__ = mock.Mock(
-            return_value=[mock.MagicMock(), mock.MagicMock()]
-        )
-
+    @mock.patch.object(mdns.service.DNSService, '_start')
+    @mock.patch.object(designate.rpc, 'get_server')
+    def test_service_start(self, mock_service_start, mock_rpc_server):
         self.mdns = mdns.Service()
-        self.mdns.tg = mock.Mock(name='tg')
+        self.mdns.start()
 
-    @unittest.skip("Fails with new oslo.messaging release")
-    def test_service_name(self, mc, mn, mx):
+        self.assertTrue(mock_service_start.called)
+        self.assertTrue(mock_rpc_server.called)
+
+    def test_service_name(self):
+        self.mdns = mdns.Service()
+
         self.assertEqual('mdns', self.mdns.service_name)
 
-    @unittest.skip("Fails when run together with designate/tests/test_mdns/")
-    def test_rpc_endpoints(self, _, mock_notify, mock_xfr):
-        out = self.mdns._rpc_endpoints
-        self.assertEqual(2, len(out))
-        assert isinstance(out[0], mock.MagicMock), out
-        assert isinstance(out[1], mock.MagicMock), out
+    def test_rpc_endpoints(self):
+        self.mdns = mdns.Service()
 
-    @unittest.skip("Fails when run together with designate/tests/test_mdns/")
+        endpoints = self.mdns._rpc_endpoints
+
+        self.assertIsInstance(endpoints[0], mdns.notify.NotifyEndpoint)
+        self.assertIsInstance(endpoints[1], mdns.xfr.XfrEndpoint)
+
+    @mock.patch.object(storage.Storage, 'get_driver')
+    def test_storage_driver(self, mock_get_driver):
+        mock_driver = mock.MagicMock()
+        mock_driver.name = 'noop_driver'
+        mock_get_driver.return_value = mock_driver
+
+        self.mdns = mdns.Service()
+
+        self.assertIsInstance(self.mdns.storage, mock.MagicMock)
+
+        self.assertTrue(mock_get_driver.called)
+
     @mock.patch.object(mdns.handler, 'RequestHandler', name='reqh')
-    @mock.patch.object(mdns.dnsutils, 'TsigInfoMiddleware', name='tsig')
-    @mock.patch.object(mdns.dnsutils, 'SerializationMiddleware')
-    def test_dns_application(self, *mocks):
-        mock_serialization, mock_tsiginf, mock_req_handler = mocks[:3]
-        mock_req_handler.return_value = mock.Mock(name='app')
+    @mock.patch.object(mdns.service.DNSService, '_start')
+    @mock.patch.object(mdns.utils, 'cache_result')
+    @mock.patch.object(storage.Storage, 'get_driver')
+    def test_dns_application(self, mock_req_handler, mock_cache_result,
+                             mock_service_start, mock_get_driver):
+        mock_driver = mock.MagicMock()
+        mock_driver.name = 'noop_driver'
+        mock_get_driver.return_value = mock_driver
+
+        self.mdns = mdns.Service()
 
         app = self.mdns._dns_application
 
-        assert isinstance(app, mock.MagicMock), repr(app)
-        assert mock_req_handler.called
-        assert mock_tsiginf.called
-        assert mock_serialization.called
+        self.assertIsInstance(app, mdns.dnsutils.DNSMiddleware)

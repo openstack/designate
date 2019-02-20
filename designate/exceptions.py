@@ -21,6 +21,7 @@ class Base(Exception):
     error_type = None
     error_message = None
     errors = None
+    expected = False
 
     def __init__(self, *args, **kwargs):
         self.errors = kwargs.pop('errors', None)

@@ -148,7 +148,6 @@ class TsigInfoMiddleware(DNSMiddleware):
 
     def __init__(self, application, storage):
         super(TsigInfoMiddleware, self).__init__(application)
-
         self.storage = storage
 
     def process_request(self, request):

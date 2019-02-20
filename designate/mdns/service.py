@@ -58,6 +58,7 @@ class Service(service.DNSService, service.RPCService, service.Service):
         application = handler.RequestHandler(self.storage, self.tg)
         application = dnsutils.TsigInfoMiddleware(application, self.storage)
         application = dnsutils.SerializationMiddleware(
-            application, dnsutils.TsigKeyring(self.storage))
+            application, dnsutils.TsigKeyring(self.storage)
+        )
 
         return application
