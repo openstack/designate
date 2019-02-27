@@ -40,13 +40,14 @@ from subprocess import check_output
 from subprocess import CalledProcessError
 from tempfile import NamedTemporaryFile
 from threading import Thread
-import json
 import logging
 import os
 import random
 import string
 import time
 import sys
+
+from oslo_serialization import jsonutils
 
 import dns
 import dns.resolver
@@ -123,7 +124,7 @@ class DesignateCLI(object):
         log.debug("  running %s" % cmd)
         out = check_output(cmd, env=self._cli_env, shell=True,
                            executable='/bin/bash')
-        return json.loads(out)
+        return jsonutils.loads(out)
 
     def runcsv(self, cmd):
         """Run a command using the -f csv flag, parse the output

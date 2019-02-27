@@ -29,14 +29,14 @@ and components, see the components below.
     double: architecture; brief
 
 High Level Topology
------------------------
+-------------------
 
 .. image:: ../images/Designate-Arch.png
 
 .. _designate-api:
 
 Designate API
------------------------
+-------------
 designate-api provides the standard OpenStack style REST API service,
 accepting HTTP requests, validating authentication tokens with Keystone and
 passing them to the :ref:`designate-central` service over AMQP.
@@ -51,7 +51,7 @@ terminate HTTPS.
 .. _designate-central:
 
 Designate Central
------------------------
+-----------------
 designate-central is the service that handles RPC requests via the MQ,
 it coordinates the persistent storage of data and applies business logic
 to data from the API. Storage is provided via plugins, typically SQLAlchemy,
@@ -60,7 +60,7 @@ although MongoDB or other storage drivers should be possible.
 .. _designate-mdns:
 
 Designate MiniDNS
------------------------
+-----------------
 designate-mdns is the service that sends DNS NOTIFY and answers
 zone transfer (AXFR) requests. This allows Designate to integrate with
 any DNS server that supports these very standard methods of communicating.
@@ -103,7 +103,7 @@ zones in an error state.
 .. _designate-sink:
 
 Designate Sink
------------------------
+--------------
 designate-sink is an optional service which listens for event
 :ref:`notifications`, such as compute.instance.create.end,
 handlers are available for Nova and Neutron.
@@ -116,7 +116,7 @@ Any field in the event notification can be used to generate a record.
 .. _dns-backend:
 
 DNS Backend
------------------------
+-----------
 Backends are drivers for a particular DNS server.
 Designate supports multiple backend implementations, PowerDNS, BIND, NSD,
 DynECT, you are also free to implement your own backend to fit your needs,
@@ -126,7 +126,7 @@ existing backends.
 .. _message-queue:
 
 Message Queue
------------------------
+-------------
 Designate uses oslo.rpc for messaging between components, therefore it
 inherits a requirement for a supported messaging bus
 (such as RabbitMQ, Qpid or ZeroMQ).  Typically this means a RabbitMQ
@@ -137,7 +137,7 @@ RabbitMQ instances as you see fit.
 .. _database:
 
 Database/Storage
------------------------
+----------------
 Storage drivers are drivers for a particular SQL/NoSQL server.
 Designate needs a SQLAlchemy-supported storage engine for the persistent
 storage of data. The recommended driver is MySQL.
