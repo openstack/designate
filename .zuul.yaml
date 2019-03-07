@@ -56,7 +56,7 @@
 - job:
     name: designate-bind9-py36
     parent: designate-bind9-py35
-    nodeset: openstack-bionic-node
+    nodeset: openstack-single-node-bionic
 
 - job:
     name: designate-devstack-base
