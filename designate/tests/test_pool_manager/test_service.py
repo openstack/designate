@@ -42,7 +42,7 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
             threshold_percentage=100,
             enable_recovery_timer=False,
             enable_sync_timer=False,
-            poll_retry_interval=1,
+            poll_retry_interval=0,
             poll_max_retries=1,
             cache_driver='noop',
             group='service:pool_manager')
@@ -89,7 +89,6 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
     def test_create_zone(
             self, mock_update_status, mock_notify_zone_changed,
             mock_poll_for_serial_number, _):
-
         zone = self._build_zone('example.org.', 'CREATE', 'PENDING')
 
         self.service.create_zone(self.admin_context, zone)
@@ -104,9 +103,9 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
         self.assertEqual(2, mock_poll_for_serial_number.call_count)
         self.assertEqual(
             [call(self.admin_context, zone,
-                  self.service.pool.nameservers[0], 30, 1, 1, 5),
+                  self.service.pool.nameservers[0], 30, 0, 1, 5),
              call(self.admin_context, zone,
-                  self.service.pool.nameservers[1], 30, 1, 1, 5)],
+                  self.service.pool.nameservers[1], 30, 0, 1, 5)],
             mock_poll_for_serial_number.call_args_list)
 
         # Pool manager needs to call into mdns to calculate consensus as
@@ -148,7 +147,7 @@ class PoolManagerServiceNoopTest(PoolManagerTestCase):
 
         zone = self._build_zone('example.org.', 'CREATE', 'PENDING')
 
-        mock_create_zone.side_effect = [None, exceptions.Backend]
+        mock_create_zone.side_effect = [exceptions.Backend, None]
 
         self.service.create_zone(self.admin_context, zone)
 
