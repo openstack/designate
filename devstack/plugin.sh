@@ -77,11 +77,12 @@ function configure_designate {
     iniset $DESIGNATE_CONF service:mdns listen ${DESIGNATE_SERVICE_HOST}:${DESIGNATE_SERVICE_PORT_MDNS}
 
     # Worker Configuration
-    if ! is_service_enabled designate-pool-manager; then
-        iniset $DESIGNATE_CONF service:worker enabled True
+    if is_service_enabled designate-worker; then
         iniset $DESIGNATE_CONF service:worker notify True
         iniset $DESIGNATE_CONF service:worker poll_max_retries $DESIGNATE_POLL_RETRIES
         iniset $DESIGNATE_CONF service:worker poll_retry_interval $DESIGNATE_POLL_INTERVAL
+    else
+        iniset $DESIGNATE_CONF service:worker enabled False
     fi
 
     # Set up Notifications/Ceilometer Integration
