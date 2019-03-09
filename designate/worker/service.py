@@ -21,6 +21,7 @@ import oslo_messaging as messaging
 
 from designate import backend
 from designate import exceptions
+from designate import rpc
 from designate import service
 from designate import storage
 from designate.central import rpcapi as central_api
@@ -141,6 +142,7 @@ class Service(service.RPCService, service.Service):
                                                   notify_target))
         return self.executor.run(all_tasks)
 
+    @rpc.expected_exceptions()
     def create_zone(self, context, zone):
         """
         :param context: Security context information.
@@ -149,6 +151,7 @@ class Service(service.RPCService, service.Service):
         """
         self._do_zone_action(context, zone)
 
+    @rpc.expected_exceptions()
     def update_zone(self, context, zone):
         """
         :param context: Security context information.
@@ -157,6 +160,7 @@ class Service(service.RPCService, service.Service):
         """
         self._do_zone_action(context, zone)
 
+    @rpc.expected_exceptions()
     def delete_zone(self, context, zone):
         """
         :param context: Security context information.
@@ -165,6 +169,7 @@ class Service(service.RPCService, service.Service):
         """
         self._do_zone_action(context, zone)
 
+    @rpc.expected_exceptions()
     def recover_shard(self, context, begin, end):
         """
         :param begin: the beginning of the shards to recover
@@ -175,6 +180,7 @@ class Service(service.RPCService, service.Service):
             self.executor, context, begin, end
         ))
 
+    @rpc.expected_exceptions()
     def start_zone_export(self, context, zone, export):
         """
         :param zone: Zone to be exported

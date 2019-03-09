@@ -99,7 +99,7 @@ class Denominator(object):
             return stdout
         except utils.processutils.ProcessExecutionError as e:
             LOG.debug('Denominator call failure: %s' % e)
-            raise exceptions.Base(e)
+            raise exceptions.DesignateException(e)
 
 
 class DenominatorBackend(base.AgentBackend):

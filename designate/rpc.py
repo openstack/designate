@@ -25,20 +25,22 @@ __all__ = [
     'get_notifier',
 ]
 
+import functools
 from oslo_config import cfg
 import oslo_messaging as messaging
 from oslo_messaging.rpc import dispatcher as rpc_dispatcher
-from oslo_messaging.rpc import server as rpc_server
 from oslo_serialization import jsonutils
+import threading
 
 import designate.context
 import designate.exceptions
 from designate import objects
 
 CONF = cfg.CONF
-TRANSPORT = None
-NOTIFIER = None
+EXPECTED_EXCEPTION = threading.local()
 NOTIFICATION_TRANSPORT = None
+NOTIFIER = None
+TRANSPORT = None
 
 # NOTE: Additional entries to designate.exceptions goes here.
 CONF.register_opts([
@@ -162,16 +164,6 @@ class RequestContextSerializer(messaging.Serializer):
         return designate.context.DesignateContext.from_dict(context)
 
 
-class RPCDispatcher(rpc_dispatcher.RPCDispatcher):
-    def dispatch(self, *args, **kwds):
-        try:
-            return super(RPCDispatcher, self).dispatch(*args, **kwds)
-        except designate.exceptions.Base as e:
-            if e.expected:
-                raise rpc_dispatcher.ExpectedException()
-            raise
-
-
 def get_transport_url(url_str=None):
     return messaging.TransportURL.parse(CONF, url_str)
 
@@ -197,12 +189,13 @@ def get_server(target, endpoints, serializer=None):
         serializer = DesignateObjectSerializer()
     serializer = RequestContextSerializer(serializer)
     access_policy = rpc_dispatcher.DefaultRPCAccessPolicy
-    dispatcher = RPCDispatcher(endpoints, serializer, access_policy)
-    return rpc_server.RPCServer(
+    return messaging.get_rpc_server(
         TRANSPORT,
         target,
-        dispatcher=dispatcher,
+        endpoints,
         executor='eventlet',
+        serializer=serializer,
+        access_policy=access_policy
     )
 
 
@@ -234,3 +227,27 @@ def create_transport(url):
     return messaging.get_rpc_transport(CONF,
                                        url=url,
                                        allowed_remote_exmods=exmods)
+
+
+def expected_exceptions():
+    def outer(f):
+        @functools.wraps(f)
+        def exception_wrapper(self, *args, **kwargs):
+            if not hasattr(EXPECTED_EXCEPTION, 'depth'):
+                EXPECTED_EXCEPTION.depth = 0
+            EXPECTED_EXCEPTION.depth += 1
+
+            # We only want to wrap the first function wrapped.
+            if EXPECTED_EXCEPTION.depth > 1:
+                return f(self, *args, **kwargs)
+
+            try:
+                return f(self, *args, **kwargs)
+            except designate.exceptions.DesignateException as e:
+                if e.expected:
+                    raise rpc_dispatcher.ExpectedException()
+                raise
+            finally:
+                EXPECTED_EXCEPTION.depth = 0
+        return exception_wrapper
+    return outer

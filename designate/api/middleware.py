@@ -233,7 +233,7 @@ class FaultWrapperMiddleware(base.Middleware):
     def __call__(self, request):
         try:
             return request.get_response(self.application)
-        except exceptions.Base as e:
+        except exceptions.DesignateException as e:
             # Handle Designate Exceptions
             status = e.error_code if hasattr(e, 'error_code') else 500
 
