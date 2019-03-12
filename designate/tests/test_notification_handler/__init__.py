@@ -13,8 +13,9 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import json
 import os
+
+from oslo_serialization import jsonutils
 
 from designate.tests import resources
 
@@ -29,5 +30,7 @@ class NotificationHandlerMixin(object):
         if not os.path.exists(filename):
             raise Exception('Invalid notification fixture requested')
 
-        with open(filename, 'r') as fh:
-            return json.load(fh)
+        with open(filename, 'r') as fp:
+            fixture = fp.read()
+
+        return jsonutils.loads(fixture)

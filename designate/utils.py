@@ -14,7 +14,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import copy
-import json
 import functools
 import inspect
 import os
@@ -26,6 +25,7 @@ from jinja2 import Template
 from oslo_config import cfg
 from oslo_concurrency import processutils
 from oslo_log import log as logging
+from oslo_serialization import jsonutils
 from oslo_utils import timeutils
 from oslo_utils import uuidutils
 from oslo_utils.netutils import is_valid_ipv6
@@ -150,7 +150,7 @@ def resource_string(*args):
 def load_schema(version, name):
     schema_string = resource_string('schemas', version, '%s.json' % name)
 
-    return json.loads(schema_string.decode('utf-8'))
+    return jsonutils.loads(schema_string.decode('utf-8'))
 
 
 def load_template(template_name):

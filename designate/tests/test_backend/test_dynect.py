@@ -13,8 +13,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import json as json_
 
+from oslo_serialization import jsonutils
 from requests_mock.contrib import fixture as req_fixture
 import testtools
 
@@ -136,7 +136,7 @@ class DynECTTestsCase(BackendTestCase):
             base_url = 'https://api.dynect.net:443/REST'
 
         if json:
-            kwargs['text'] = json_.dumps(json)
+            kwargs['text'] = jsonutils.dumps(json)
             headers = kwargs.setdefault('headers', {})
             headers['Content-Type'] = 'application/json'
 

@@ -13,12 +13,12 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import json
 import time
 
 from eventlet import Timeout
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_serialization import jsonutils
 import requests
 from requests.adapters import HTTPAdapter
 
@@ -197,7 +197,7 @@ class DynClient(object):
             self._http_log_req(method, url, kwargs)
 
             # NOTE: Set it back to the original data and serialize it.
-            kwargs['data'] = json.dumps(data)
+            kwargs['data'] = jsonutils.dump_as_bytes(data)
         else:
             self._http_log_req(method, url, kwargs)
 
