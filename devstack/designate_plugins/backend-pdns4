@@ -120,6 +120,7 @@ negquery-cache-ttl=0
 out-of-zone-additional-processing=no
 webserver=yes
 webserver-address=$DESIGNATE_SERVICE_HOST
+webserver-allow-from=$DESIGNATE_SERVICE_HOST,127.0.0.1,::1
 api=yes
 api-key=changeme
 EOF
