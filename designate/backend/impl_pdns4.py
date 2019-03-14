@@ -35,6 +35,7 @@ class PDNS4Backend(base.Backend):
 
         self.api_endpoint = self.options.get('api_endpoint')
         self.api_token = self.options.get('api_token')
+        self.tsigkey_name = self.options.get('tsigkey_name', None)
 
     def _build_url(self, zone=''):
         r_url = urllib.parse.urlparse(self.api_endpoint)
@@ -53,6 +54,8 @@ class PDNS4Backend(base.Backend):
             "masters": masters,
 
         }
+        if self.tsigkey_name:
+            data['slave_tsig_key_ids'] = [self.tsigkey_name]
         headers = {
             "X-API-Key": self.api_token
         }
