@@ -29,19 +29,7 @@ from designate import objects
 from designate.common import memorycache
 from designate.pool_manager.cache import base as cache_base
 
-memcache_group = cfg.OptGroup(
-    name='pool_manager_cache:memcache',
-    title="Configuration for memcache Pool Manager Cache"
-)
-
-
-OPTS = [
-    cfg.IntOpt('expiration', default=3600,
-               help='Time in seconds to expire cache.')
-]
-OPTS.extend(memorycache.memcache_opts)
-
-
+CONF = cfg.CONF
 DEFAULT_STATUS = 'NONE'
 
 
@@ -52,8 +40,8 @@ class MemcachePoolManagerCache(cache_base.PoolManagerCache):
         super(MemcachePoolManagerCache, self).__init__()
 
         self.cache = memorycache.get_client(
-            cfg.CONF['pool_manager_cache:memcache'].memcached_servers)
-        self.expiration = cfg.CONF['pool_manager_cache:memcache'].expiration
+            CONF['pool_manager_cache:memcache'].memcached_servers)
+        self.expiration = CONF['pool_manager_cache:memcache'].expiration
 
     def get_name(self):
         return self.name
@@ -125,6 +113,3 @@ class MemcachePoolManagerCache(cache_base.PoolManagerCache):
 
     def _build_status_key(self, pool_manager_status):
         return self._status_key(pool_manager_status, 'status')
-
-cfg.CONF.register_group(memcache_group)
-cfg.CONF.register_opts(OPTS, group=memcache_group)

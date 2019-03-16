@@ -26,20 +26,14 @@ import eventlet
 from dns import rdatatype
 from oslo_serialization import base64
 from oslo_log import log as logging
-from oslo_config import cfg
 
+import designate.conf
 from designate import context
 from designate import exceptions
 from designate import objects
 
+CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
-
-
-util_opts = [
-    cfg.IntOpt('xfr_timeout', help="Timeout in seconds for XFR's.", default=10)
-]
-
-cfg.CONF.register_opts(util_opts)
 
 
 class DNSMiddleware(object):
@@ -246,7 +240,7 @@ class LimitNotifyMiddleware(DNSMiddleware):
     def __init__(self, application):
         super(LimitNotifyMiddleware, self).__init__(application)
 
-        self.delay = cfg.CONF['service:agent'].notify_delay
+        self.delay = CONF['service:agent'].notify_delay
         self.locker = ZoneLock(self.delay)
 
     def process_request(self, request):
@@ -278,7 +272,7 @@ def from_dnspython_zone(dnspython_zone):
     if soa is None:
         raise exceptions.BadRequest('An SOA record is required')
     if soa.ttl == 0:
-        soa.ttl = cfg.CONF['service:central'].min_ttl
+        soa.ttl = CONF['service:central'].min_ttl
     email = soa[0].rname.to_text(omit_final_dot=True)
     if six.PY3 and isinstance(email, bytes):
         email = email.decode('utf-8')
@@ -350,7 +344,7 @@ def do_axfr(zone_name, servers, timeout=None, source=None):
     :returns: Zone instance from dnspython
     """
     random.shuffle(servers)
-    timeout = timeout or cfg.CONF["service:mdns"].xfr_timeout
+    timeout = timeout or CONF["service:mdns"].xfr_timeout
 
     xfr = None
 

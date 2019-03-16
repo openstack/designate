@@ -12,23 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from oslo_config import cfg
-from oslo_log import log as logging
-
 from designate.scheduler import base
-from designate import central
-
-LOG = logging.getLogger(__name__)
-
-scheduler_opts = [
-    cfg.ListOpt(
-        'scheduler_filters',
-        default=['default_pool'],
-        help='Enabled Pool Scheduling filters'),
-]
-
-cfg.CONF.register_group(central.central_group)
-cfg.CONF.register_opts(scheduler_opts, group=central.central_group)
 
 
 def get_scheduler(storage):

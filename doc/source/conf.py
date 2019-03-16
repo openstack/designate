@@ -74,6 +74,7 @@ copyright = u'2012, Managed I.T.'
 # built documents.
 #
 # The short X.Y version.
+import designate.conf  # noqa
 from designate.version import version_info as designate_version
 version = designate_version.canonical_version_string()
 # The full version, including alpha/beta/rc tags.

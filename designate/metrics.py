@@ -37,28 +37,17 @@ Usage examples:
 
 """
 
-from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import importutils
+
+import designate.conf.metrics
 
 stats_client = importutils.import_any('monascastatsd',
                                       'designate.metrics_client.noop')
 
+CFG_GROUP_NAME = 'monasca:statsd'
+CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
-
-CFG_GROUP = 'monasca:statsd'
-metrics_group = cfg.OptGroup(
-    name=CFG_GROUP, title="Configuration for Monasca Statsd"
-)
-
-metrics_opts = [
-    cfg.BoolOpt('enabled', default=False, help='enable'),
-    cfg.IntOpt('port', default=8125, help='UDP port'),
-    cfg.StrOpt('hostname', default='127.0.0.1', help='hostname')
-]
-
-cfg.CONF.register_group(metrics_group)
-cfg.CONF.register_opts(metrics_opts, group=metrics_group)
 
 
 # Global metrics client to be imported by other modules
@@ -84,7 +73,7 @@ class Metrics(object):
         """Setup client connection or disable metrics based on configuration.
         This is called once the cfg.CONF is ready.
         """
-        conf = cfg.CONF[CFG_GROUP]
+        conf = CONF[CFG_GROUP_NAME]
         if conf.enabled:
             LOG.info("Statsd reports to %(host)s %(port)d",
                      {

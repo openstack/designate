@@ -24,7 +24,7 @@ from designate.backend import base
 
 
 LOG = logging.getLogger(__name__)
-CFG_GROUP = 'backend:designate'
+CFG_GROUP_NAME = 'backend:designate'
 
 
 class DesignateBackend(base.Backend):

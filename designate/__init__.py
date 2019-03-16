@@ -19,9 +19,6 @@ import os
 # the /etc/hosts file, causing problems for installs.
 os.environ['EVENTLET_NO_GREENDNS'] = 'yes'
 
-import socket
-
-from oslo_config import cfg
 from oslo_log import log
 from oslo_concurrency import lockutils
 import oslo_messaging as messaging
@@ -32,45 +29,7 @@ _EXTRA_DEFAULT_LOG_LEVELS = [
     'keystone=INFO',
     'oslo_service.loopingcall=WARN',
 ]
-
-designate_opts = [
-    cfg.StrOpt('host', default=socket.gethostname(),
-               sample_default='current_hostname',
-               help='Name of this node'),
-    cfg.StrOpt(
-        'pybasedir',
-        sample_default='<Path>',
-        default=os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                             '../')),
-        help='Directory where the designate python module is installed'
-    ),
-    cfg.StrOpt('state-path', default='/var/lib/designate',
-               help='Top-level directory for maintaining designate\'s state'),
-
-    cfg.StrOpt('central-topic', default='central', help='Central Topic'),
-    cfg.StrOpt('mdns-topic', default='mdns', help='mDNS Topic'),
-    cfg.StrOpt('pool-manager-topic', default='pool_manager',
-               help='Pool Manager Topic'),
-    cfg.StrOpt('worker-topic', default='worker', help='Worker Topic'),
-
-    # Default TTL
-    cfg.IntOpt('default-ttl', default=3600, help='TTL Value'),
-
-    # Default SOA Values
-    cfg.IntOpt('default-soa-refresh-min', default=3500,
-               deprecated_name='default-soa-refresh',
-               help='SOA refresh-min value'),
-    cfg.IntOpt('default-soa-refresh-max', default=3600,
-               help='SOA max value'),
-    cfg.IntOpt('default-soa-retry', default=600, help='SOA retry'),
-    cfg.IntOpt('default-soa-expire', default=86400, help='SOA expire'),
-    cfg.IntOpt('default-soa-minimum', default=3600, help='SOA minimum value'),
-
-    # Supported record types
-    cfg.ListOpt('supported-record-type', help='Supported record types',
-                default=['A', 'AAAA', 'CNAME', 'MX', 'SRV', 'TXT', 'SPF', 'NS',
-                         'PTR', 'SSHFP', 'SOA', 'NAPTR', 'CAA']),
-]
+BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '../'))
 
 # Set some Oslo Log defaults
 log.set_defaults(default_log_levels=log.get_default_log_levels() +
@@ -81,5 +40,3 @@ messaging.set_transport_defaults('designate')
 
 # Set some Oslo Oslo Concurrency defaults
 lockutils.set_defaults(lock_path='$state_path')
-
-cfg.CONF.register_opts(designate_opts)

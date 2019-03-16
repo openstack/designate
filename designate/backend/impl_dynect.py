@@ -22,13 +22,14 @@ from oslo_serialization import jsonutils
 import requests
 from requests.adapters import HTTPAdapter
 
+import designate.conf
 from designate import exceptions
 from designate import utils
 from designate.backend import base
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
-CFG_GROUP = 'backend:dynect'
+CFG_GROUP_NAME = 'backend:dynect'
 
 
 class DynClientError(exceptions.Backend):
@@ -223,7 +224,7 @@ class DynClient(object):
         """
         status = response.status
 
-        timeout = Timeout(CONF[CFG_GROUP].job_timeout)
+        timeout = Timeout(CONF[CFG_GROUP_NAME].job_timeout)
         try:
             while status == 307:
                 time.sleep(1)
@@ -304,20 +305,8 @@ class DynECTBackend(base.Backend):
 
     @classmethod
     def get_cfg_opts(cls):
-        group = cfg.OptGroup(
-            name=CFG_GROUP, title='Backend options for DynECT'
-        )
-
-        opts = [
-            cfg.IntOpt('job_timeout', default=30,
-                       help="Timeout in seconds for pulling a job in DynECT."),
-            cfg.IntOpt('timeout', help="Timeout in seconds for API Requests.",
-                       default=10),
-            cfg.BoolOpt('timings', help="Measure requests timings.",
-                        default=False),
-        ]
-
-        return [(group, opts)]
+        return [(designate.conf.dynect.DYNECT_GROUP,
+                 designate.conf.dynect.DYNECT_OPTS)]
 
     def __init__(self, target):
         super(DynECTBackend, self).__init__(target)
@@ -338,8 +327,8 @@ class DynECTBackend(base.Backend):
             customer_name=self.customer_name,
             user_name=self.username,
             password=self.password,
-            timeout=CONF[CFG_GROUP].timeout,
-            timings=CONF[CFG_GROUP].timings)
+            timeout=CONF[CFG_GROUP_NAME].timeout,
+            timings=CONF[CFG_GROUP_NAME].timings)
 
     def create_zone(self, context, zone):
         LOG.info('Creating zone %(d_id)s / %(d_name)s',

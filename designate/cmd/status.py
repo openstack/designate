@@ -12,10 +12,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from oslo_config import cfg
 from oslo_upgradecheck import upgradecheck
 from sqlalchemy import MetaData, Table, select, func
 
+import designate.conf
 from designate.i18n import _
 from designate.sqlalchemy import session
 # This import is not used, but is needed to register the storage:sqlalchemy
@@ -50,7 +50,7 @@ def main():
     config_files = utils.find_config('designate.conf')
     checker = Checks()
     return upgradecheck.main(
-        conf=cfg.CONF,
+        conf=designate.conf.CONF,
         project='designate',
         upgrade_command=checker,
         default_config_files=config_files,

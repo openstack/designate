@@ -14,7 +14,6 @@
 #    under the License.
 #
 # Copied partially from nova
-
 from neutronclient.v2_0 import client as clientv20
 from neutronclient.common import exceptions as neutron_exceptions
 from oslo_config import cfg
@@ -27,44 +26,6 @@ from designate.network_api import base
 
 CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
-
-
-neutron_group = cfg.OptGroup(
-            name='network_api:neutron', title="Configuration network api"
-        )
-
-neutron_opts = [
-    cfg.ListOpt('endpoints',
-                help='URL to use if None in the ServiceCatalog that is '
-                'passed by the request context. Format: <region>|<url>'),
-    cfg.StrOpt('endpoint_type', default='publicURL',
-               help="Endpoint type to use"),
-    cfg.IntOpt('timeout',
-               default=30,
-               help='timeout value for connecting to neutron in seconds'),
-    cfg.StrOpt('admin_username',
-               help='username for connecting to neutron in admin context'),
-    cfg.StrOpt('admin_password',
-               help='password for connecting to neutron in admin context',
-               secret=True),
-    cfg.StrOpt('admin_tenant_name',
-               help='tenant name for connecting to neutron in admin context'),
-    cfg.StrOpt('auth_url',
-               help='auth url for connecting to neutron in admin context'),
-    cfg.BoolOpt('insecure',
-                default=False,
-                help='if set, ignore any SSL validation issues'),
-    cfg.StrOpt('auth_strategy',
-               default='keystone',
-               help='auth strategy for connecting to '
-                    'neutron in admin context'),
-    cfg.StrOpt('ca_certificates_file',
-               help='Location of ca certificates file to use for '
-                    'neutron client requests.'),
-]
-
-cfg.CONF.register_group(neutron_group)
-cfg.CONF.register_opts(neutron_opts, group=neutron_group)
 
 
 def get_client(context, endpoint):

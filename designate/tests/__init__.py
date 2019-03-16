@@ -20,46 +20,46 @@ import inspect
 import os
 import time
 
-from testtools import testcase
-from oslotest import base
-from oslo_log import log as logging
+import eventlet
 from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
+from oslo_log import log as logging
 from oslo_messaging import conffixture as messaging_fixture
+from oslotest import base
+from testtools import testcase
 
-from designate import policy
-from designate import utils
+import designate.conf
 from designate import exceptions
 from designate import objects
+from designate import policy
 from designate import storage
+from designate import utils
 from designate.context import DesignateContext
+from designate.manage import database as manage_database
 from designate.tests import fixtures
 from designate.tests import resources
-from designate.manage import database as manage_database
-
-import eventlet
 
 eventlet.monkey_patch(os=False)
 
-
+CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
 
-cfg.CONF.import_opt('storage_driver', 'designate.central',
-                    group='service:central')
-cfg.CONF.import_opt('auth_strategy', 'designate.api',
-                    group='service:api')
-cfg.CONF.import_opt('connection', 'designate.storage.impl_sqlalchemy',
-                    group='storage:sqlalchemy')
-cfg.CONF.import_opt('cache_driver', 'designate.pool_manager',
-                    group='service:pool_manager')
-cfg.CONF.import_opt('connection',
-                    'designate.pool_manager.cache.impl_sqlalchemy',
-                    group='pool_manager_cache:sqlalchemy')
-cfg.CONF.import_opt('emitter_type', 'designate.service_status',
-                    group="heartbeat_emitter")
-cfg.CONF.import_opt('scheduler_filters', 'designate.scheduler',
-                    group="service:central")
-default_pool_id = cfg.CONF['service:central'].default_pool_id
+CONF.import_opt('storage_driver', 'designate.central',
+                group='service:central')
+CONF.import_opt('auth_strategy', 'designate.api',
+                group='service:api')
+CONF.import_opt('connection', 'designate.storage.impl_sqlalchemy',
+                group='storage:sqlalchemy')
+CONF.import_opt('cache_driver', 'designate.pool_manager',
+                group='service:pool_manager')
+CONF.import_opt('connection',
+                'designate.pool_manager.cache.impl_sqlalchemy',
+                group='pool_manager_cache:sqlalchemy')
+CONF.import_opt('emitter_type', 'designate.service_status',
+                group="heartbeat_emitter")
+CONF.import_opt('scheduler_filters', 'designate.scheduler',
+                group="service:central")
+default_pool_id = CONF['service:central'].default_pool_id
 
 _TRUE_VALUES = ('true', '1', 'yes', 'y')
 
@@ -327,16 +327,16 @@ class TestCase(base.BaseTestCase):
     def setUp(self):
         super(TestCase, self).setUp()
 
-        self.CONF = self.useFixture(cfg_fixture.Config(cfg.CONF)).conf
+        self.CONF = self.useFixture(cfg_fixture.Config(CONF)).conf
 
-        self.messaging_conf = messaging_fixture.ConfFixture(cfg.CONF)
+        self.messaging_conf = messaging_fixture.ConfFixture(CONF)
         self.messaging_conf.transport_url = 'fake:/'
         self.messaging_conf.response_timeout = 5
         self.useFixture(self.messaging_conf)
 
         self.config(notification_driver=['test'])
 
-        self.useFixture(fixtures.RPCFixture(cfg.CONF))
+        self.useFixture(fixtures.RPCFixture(CONF))
 
         self.config(
             storage_driver='sqlalchemy',
@@ -392,7 +392,7 @@ class TestCase(base.BaseTestCase):
         self.central_service = self.start_service('central')
 
         self.admin_context = self.get_admin_context()
-        storage_driver = cfg.CONF['service:central'].storage_driver
+        storage_driver = CONF['service:central'].storage_driver
         self.storage = storage.get_storage(storage_driver)
 
         # Setup the Default Pool with some useful settings

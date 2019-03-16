@@ -15,10 +15,10 @@
 # under the License.
 import sys
 
-from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_reports import guru_meditation_report as gmr
 
+import designate.conf
 from designate import hookpoints
 from designate import service
 from designate import utils
@@ -26,7 +26,7 @@ from designate import version
 from designate.producer import service as producer_service
 
 LOG = logging.getLogger(__name__)
-CONF = cfg.CONF
+CONF = designate.conf.CONF
 CONF.import_opt('workers', 'designate.producer', group='service:producer')
 CONF.import_opt('threads', 'designate.producer', group='service:producer')
 
@@ -38,7 +38,7 @@ def main():
 
     # NOTE(timsim): This is to ensure people don't start the wrong
     #               services when the worker model is enabled.
-    if not cfg.CONF['service:worker'].enabled:
+    if not CONF['service:worker'].enabled:
         LOG.error('You do not have designate-worker enabled, starting '
                   'designate-producer is not allowed. '
                   'You need to start designate-zone-manager instead.')

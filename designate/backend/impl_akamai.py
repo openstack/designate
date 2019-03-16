@@ -13,12 +13,11 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import os
-
 from oslo_log import log as logging
 from oslo_config import cfg
 from oslo_utils import importutils
 
+import designate.conf
 from designate import exceptions
 from designate import utils
 from designate.backend import base
@@ -38,12 +37,6 @@ except ImportError:
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
-
-WSDL = os.path.join(os.path.dirname(__file__),
-                    '..',
-                    'resources',
-                    'wsdl',
-                    'EnhancedDNS.xml')
 
 
 class EnhancedDNSException(exceptions.Backend):
@@ -245,17 +238,8 @@ class AkamaiBackend(base.Backend):
 
     @classmethod
     def get_cfg_opts(cls):
-        group = cfg.OptGroup(
-            name='backend:akamai', title='Backend options for Akamai'
-        )
-
-        opts = [
-            cfg.StrOpt('enhanceddns_wsdl',
-               default='file://%s' % WSDL,
-               help='Akamai EnhancedDNS WSDL URL'),
-        ]
-
-        return [(group, opts)]
+        return [(designate.conf.akamai.AKAMAI_GROUP,
+                 designate.conf.akamai.AKAMAI_OPTS)]
 
     def __init__(self, target):
         super(AkamaiBackend, self).__init__(target)

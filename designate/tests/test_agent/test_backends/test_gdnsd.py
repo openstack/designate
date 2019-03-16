@@ -37,7 +37,7 @@ import mock
 import testtools
 
 from designate import exceptions
-from designate.backend.agent_backend.impl_gdnsd import CFG_GROUP
+from designate.backend.agent_backend.impl_gdnsd import CFG_GROUP_NAME
 from designate.backend.agent_backend.impl_gdnsd import GdnsdBackend
 from designate.tests import TestCase
 
@@ -62,8 +62,10 @@ class GdnsdAgentBackendTestCase(TestCase):
         self.zones_dir_path = os.path.join(self.conf_dir_path, 'zones')
         os.mkdir(self.zones_dir_path)
         self.CONF = self.useFixture(cfg_fixture.Config(cfg.CONF)).conf
-        cfg.CONF.set_override('confdir_path', self.conf_dir_path, CFG_GROUP)
-        cfg.CONF.set_override('gdnsd_cmd_name', GDNSD_BIN_PATH, CFG_GROUP)
+        cfg.CONF.set_override('confdir_path', self.conf_dir_path,
+                              CFG_GROUP_NAME)
+        cfg.CONF.set_override('gdnsd_cmd_name', GDNSD_BIN_PATH,
+                              CFG_GROUP_NAME)
 
         self.backend = GdnsdBackend('foo')
 

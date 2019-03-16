@@ -61,7 +61,7 @@ class DjbdnsAgentBackendTestCase(TestCase):
         self.CONF.set_override(
             'tinydns_datadir',
             tmp_datafiles_dir,
-            designate.backend.agent_backend.impl_djbdns.CFG_GROUP
+            designate.backend.agent_backend.impl_djbdns.CFG_GROUP_NAME,
         )
         self.useFixture(fixtures.MockPatchObject(
             DjbdnsBackend, '_check_dirs'

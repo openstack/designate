@@ -17,63 +17,6 @@ from oslo_config import cfg
 
 CONF = cfg.CONF
 
-pool_manager_group = cfg.OptGroup(
-    name='service:pool_manager', title="Configuration for Pool Manager Service"
-)
-
-OPTS = [
-    cfg.IntOpt('workers',
-               help='Number of Pool Manager worker processes to spawn'),
-    cfg.IntOpt('threads', default=1000,
-               help='Number of Pool Manager greenthreads to spawn'),
-    cfg.StrOpt('pool-id', default='794ccc2c-d751-44fe-b57f-8894c9f5c842',
-               help='The ID of the pool managed by this instance of the '
-                    'Pool Manager'),
-    cfg.IntOpt('threshold-percentage', default=100,
-               help='The percentage of servers requiring a successful update '
-                    'for a zone change to be considered active',
-                    deprecated_for_removal=True,
-                    deprecated_reason='Migrated to designate-worker'),
-    cfg.IntOpt('poll-timeout', default=30,
-               help='The time to wait for a response from a server',
-               deprecated_for_removal=True,
-               deprecated_reason='Migrated to designate-worker'),
-    cfg.IntOpt('poll-retry-interval', default=15,
-               help='The time between retrying to send a request and '
-                    'waiting for a response from a server',
-               deprecated_for_removal=True,
-               deprecated_reason='Migrated to designate-worker'),
-    cfg.IntOpt('poll-max-retries', default=10,
-               help='The maximum number of times to retry sending a request '
-                    'and wait for a response from a server',
-               deprecated_for_removal=True,
-               deprecated_reason='Migrated to designate-worker'),
-    cfg.IntOpt('poll-delay', default=5,
-               help='The time to wait before sending the first request '
-                    'to a server',
-               deprecated_for_removal=True,
-               deprecated_reason='Migrated to designate-worker'),
-    cfg.BoolOpt('enable-recovery-timer', default=True,
-                help='The flag for the recovery timer'),
-    cfg.IntOpt('periodic-recovery-interval', default=120,
-               help='The time between recovering from failures'),
-    cfg.BoolOpt('enable-sync-timer', default=True,
-                help='The flag for the sync timer'),
-    cfg.IntOpt('periodic-sync-interval', default=1800,
-               help='The time between synchronizing the servers with storage'),
-    cfg.IntOpt('periodic-sync-seconds', default=21600,
-               help='Zones Updated within last N seconds will be syncd.'
-                    'Use an empty value to sync all zones.'),
-    cfg.IntOpt('periodic-sync-max-attempts', default=3,
-               help='Number of attempts to update a zone during sync'),
-    cfg.IntOpt('periodic-sync-retry-interval', default=30,
-               help='Interval between zone update attempts during sync'),
-    cfg.StrOpt('cache-driver', default='memcache',
-               help='The cache driver to use'),
-    cfg.StrOpt('pool_manager_topic', default='pool_manager',
-               help='RPC topic name for pool-manager')
-]
-
 
 def register_dynamic_pool_options():
     # Pool Options Registration Pass One
@@ -126,11 +69,3 @@ def register_dynamic_pool_options():
 
         CONF.register_group(pool_nameserver_group)
         CONF.register_opts(pool_nameserver_opts, group=pool_nameserver_group)
-
-
-cfg.CONF.register_group(pool_manager_group)
-cfg.CONF.register_opts(OPTS, group=pool_manager_group)
-
-
-def list_opts():
-    yield pool_manager_group, OPTS

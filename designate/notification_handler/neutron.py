@@ -21,28 +21,6 @@ from designate.notification_handler import base
 
 LOG = logging.getLogger(__name__)
 
-# TODO(trungnv): update default format for v4 and v6 in these cfg.
-neutron_group = cfg.OptGroup(
-    name='handler:neutron_floatingip',
-    title="Configuration for Neutron Notification Handler"
-)
-
-neutron_opts = [
-    cfg.ListOpt('notification-topics', default=['notifications'],
-                help='notification any events from neutron'),
-    cfg.StrOpt('control-exchange', default='neutron',
-               help='control-exchange for neutron notification'),
-    cfg.StrOpt('zone-id', help='Zone ID with each notification'),
-    cfg.MultiStrOpt('formatv4', help='IPv4 format'),
-    cfg.MultiStrOpt('format', deprecated_for_removal=True,
-                deprecated_reason="Replaced by 'formatv4/formatv6'",
-                help='format which replaced by formatv4/formatv6'),
-    cfg.MultiStrOpt('formatv6', help='IPv6 format')
-]
-
-cfg.CONF.register_group(neutron_group)
-cfg.CONF.register_opts(neutron_opts, group=neutron_group)
-
 
 class NeutronFloatingHandler(base.BaseAddressHandler):
     """Handler for Neutron's notifications"""

@@ -15,10 +15,10 @@
 # under the License.
 import sys
 
-from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_reports import guru_meditation_report as gmr
 
+import designate.conf
 from designate import hookpoints
 from designate import service
 from designate import utils
@@ -26,7 +26,7 @@ from designate import version
 from designate.agent import service as agent_service
 
 
-CONF = cfg.CONF
+CONF = designate.conf.CONF
 CONF.import_opt('workers', 'designate.agent', group='service:agent')
 CONF.import_opt('threads', 'designate.agent', group='service:agent')
 
