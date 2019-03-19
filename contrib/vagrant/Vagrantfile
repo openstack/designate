@@ -8,9 +8,6 @@ VM_RAM_SIZE = "8192"
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.ssh.forward_agent = true
 
-  config.vm.network "forwarded_port", guest: 5354, host: 5354, protocol: "tcp"
-  config.vm.network "forwarded_port", guest: 5354, host: 5354, protocol: "udp"
-
   config.vm.provider "virtualbox" do |vb, override|
     vb.customize ["modifyvm", :id, "--memory", VM_RAM_SIZE]
     if not RUBY_PLATFORM.downcase.include?("mswin")
@@ -95,10 +92,6 @@ set -e
 # Fixup permissions on /opt/stack/
 sudo chown vagrant:vagrant /opt/stack/
 
-# Copy over git config
-cat << EOF > /home/vagrant/.gitconfig
-#{GITCONFIG}
-EOF
 
 # Clone DevStack
 if [ ! -d "/home/vagrant/devstack" ]; then
@@ -123,7 +116,18 @@ ln -s /opt/stack/designate/rally-scenarios/plugins /home/vagrant/.rally/plugins
 
 SCRIPT
 
-  config.vm.define "ubuntu-xenial", primary: true do |ubuntu|
+  config.vm.define "ubuntu-bionic", primary: true do |ubuntu|
+    ubuntu.vm.box = "ubuntu/bionic64"
+
+    ubuntu.vm.network :private_network, ip: "192.168.27.100"
+
+    ubuntu.vm.provision :shell, :privileged => true, :inline => "DEBIAN_FRONTEND=noninteractive apt-get update"
+    ubuntu.vm.provision :shell, :privileged => true, :inline => "DEBIAN_FRONTEND=noninteractive apt-get install --yes git lvm2"
+
+    ubuntu.vm.provision :shell, :privileged => false, :inline => $script
+  end
+
+  config.vm.define "ubuntu-xenial", autostart: false do |ubuntu|
     ubuntu.vm.box = "yk0/ubuntu-xenial"
 
     ubuntu.vm.network :private_network, ip: "192.168.27.100"

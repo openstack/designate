@@ -1,15 +1,20 @@
 - job:
     name: designate-base
     parent: devstack-tempest
-    post-run: playbooks/designate-base/post.yaml
     vars:
       devstack_localrc:
         DESIGNATE_SERVICE_PORT_DNS: 5322
         TEMPEST_PLUGINS: /opt/stack/designate-tempest-plugin
+        USE_PYTHON3: true
       devstack_plugins:
         designate: git://git.openstack.org/openstack/designate
       devstack_services:
         designate: true
+        s-account: false
+        s-container: false
+        s-object: false
+        s-proxy: false
+        c-bak: false
       tox_envlist: all-plugin
       tempest_test_regex: |
         designate_tempest_plugin.*
@@ -28,7 +33,22 @@
 
 - job:
     name: designate-bind9
+    post-run: playbooks/designate-bind9/post.yaml
     parent: designate-base
+
+- job:
+    name: designate-pdns4
+    post-run: playbooks/designate-pdns4/post.yaml
+    parent: designate-base
+    vars:
+      devstack_localrc:
+        DESIGNATE_BACKEND_DRIVER: pdns4
+
+- job:
+    name: designate-pdns4-postgres
+    parent: designate-pdns4
+    vars:
+      database: postgres
 
 - job:
     name: designate-bind9-manager-model
@@ -41,61 +61,31 @@
         designate-zone-manager: true
 
 - job:
-    name: designate-bind9-py36
+    name: designate-bind9-py27
     parent: designate-bind9
     vars:
       devstack_localrc:
-        USE_PYTHON3: true
+        USE_PYTHON3: false
+      devstack_services:
+        s-account: true
+        s-container: true
+        s-object: true
+        s-proxy: true
+        c-bak: true
+
+
+- job:
+    name: designate-pdns4-py27
+    parent: designate-pdns4
+    vars:
+      devstack_localrc:
+        USE_PYTHON3: false
       devstack_services:
         s-account: false
         s-container: false
         s-object: false
         s-proxy: false
         c-bak: false
-
-- job:
-    name: designate-devstack-base
-    parent: legacy-dsvm-base
-    vars:
-      database: mysql
-      python_version: py27
-      identity_v3_only: 0
-      manager_model: 0
-      backend: pdns4
-    required-projects:
-      - openstack-infra/devstack-gate
-      - openstack/designate
-      - openstack/designate-dashboard
-      - openstack/designate-tempest-plugin
-      - openstack/python-designateclient
-      - openstack/tempest
-    run: playbooks/legacy/designate-devstack-base/run.yaml
-    post-run: playbooks/legacy/designate-devstack-base/post.yaml
-    timeout: 4200
-    irrelevant-files:
-      - ^.*\.rst$
-      - ^api-ref/.*$
-      - ^doc/.*$
-      - ^etc/.*$
-
-- job:
-    name: designate-devstack-agent-base
-    parent: legacy-dsvm-base
-    required-projects:
-      - openstack-infra/devstack-gate
-      - openstack/designate
-      - openstack/designate-dashboard
-      - openstack/designate-tempest-plugin
-      - openstack/python-designateclient
-      - openstack/tempest
-    run: playbooks/legacy/designate-devstack-agent-base/run.yaml
-    post-run: playbooks/legacy/designate-devstack-agent-base/post.yaml
-    timeout: 4200
-    irrelevant-files:
-      - ^.*\.rst$
-      - ^api-ref/.*$
-      - ^doc/.*$
-      - ^etc/.*$
 
 - job:
     name: designate-grenade-pdns4
@@ -116,61 +106,27 @@
       - ^doc/.*$
       - ^etc/.*$
 
-- job:
-    name: designate-devstack-agent-djbdns
-    parent: designate-devstack-agent-base
-    vars:
-      backend_driver: djbdns
-
-- job:
-    name: designate-devstack-agent-gdnsd
-    parent: designate-devstack-agent-base
-    vars:
-      backend_driver: gdnsd
-
-- job:
-    name: designate-devstack-agent-knot2
-    parent: designate-devstack-agent-base
-    vars:
-      backend_driver: knot2
-
-- job:
-    name: designate-devstack-pdns4
-    parent: designate-devstack-base
-    vars:
-      backend: pdns4
-
-- job:
-    name: designate-devstack-pdns4-postgres
-    parent: designate-devstack-base
-    vars:
-      backend: pdns4
-      database: postgres
-
 - project-template:
     name: designate-devstack-jobs
     check:
       jobs:
         - designate-bind9
+        - designate-pdns4
         - designate-bind9-manager-model
-        - designate-bind9-py36
-        - designate-devstack-pdns4
-        - designate-devstack-pdns4-postgres
+        - designate-bind9-py27
+        - designate-pdns4-py27
+        - designate-pdns4-postgres
         - designate-grenade-pdns4
     gate:
       queue: designate
       jobs:
         - designate-bind9
+        - designate-pdns4
         - designate-bind9-manager-model
-        - designate-bind9-py36
-        - designate-devstack-pdns4
-        - designate-devstack-pdns4-postgres
+        - designate-bind9-py27
+        - designate-pdns4-py27
+        - designate-pdns4-postgres
         - designate-grenade-pdns4
-    experimental:
-      jobs:
-        - designate-devstack-agent-knot2
-        - designate-devstack-agent-djbdns
-        - designate-devstack-agent-gdnsd
 
 - project:
     templates:
