@@ -7,7 +7,7 @@
         DESIGNATE_SERVICE_PORT_DNS: 5322
         TEMPEST_PLUGINS: /opt/stack/designate-tempest-plugin
       devstack_plugins:
-        designate: git://git.openstack.org/openstack/designate
+        designate: https://git.openstack.org/openstack/designate
       devstack_services:
         designate: true
       tox_envlist: all-plugin
