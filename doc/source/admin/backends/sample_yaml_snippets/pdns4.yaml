@@ -14,3 +14,5 @@
         port: 53
         api_endpoint: http://127.0.0.1:8081
         api_token: changeme
+        # If a tsigkey is needed, uncomment the line below and insert the name
+        # tsigkey_name: <keyname>

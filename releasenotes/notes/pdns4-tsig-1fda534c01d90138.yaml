@@ -1,0 +1,10 @@
+---
+features:
+  - |
+    Adds a new option for pools using the ``pdns4`` backend: ``tsigkey_name``.
+    This allows deployers to specify a tsig key that is installed in powerdns
+    to use for AFXR requests. This key name is the name used to create the key
+    in powerdns, not the Designate UUID based ID for the key.
+
+    .. note:: This is only available in the 4.2.x versions (and above) of pdns.
+
