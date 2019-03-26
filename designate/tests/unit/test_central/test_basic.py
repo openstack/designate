@@ -443,6 +443,32 @@ class CentralServiceTestCase(CentralBasic):
         assert self.service._enforce_record_quota.called
         assert self.service._update_zone_in_storage.called
 
+    def test_create_recordset_checking_DBDeadLock(self):
+        self.service._enforce_recordset_quota = mock.Mock()
+        self.service._enforce_record_quota = mock.Mock()
+        self.service._is_valid_recordset_name = mock.Mock()
+        self.service._is_valid_recordset_placement = mock.Mock()
+        self.service._is_valid_recordset_placement_subzone = mock.Mock()
+        self.service._is_valid_ttl = mock.Mock()
+
+        self.service.storage.create_recordset = mock.Mock(return_value='rs')
+        self.service._update_zone_in_storage = mock.Mock()
+
+        # NOTE(thirose): Since this is a race condition we assume that
+        #  we will hit it if we try to do the operations in a loop 100 times.
+        for num in range(100):
+            recordset = Mock()
+            recordset.name = "b%s".format(num)
+            recordset.obj_attr_is_set.return_value = True
+            recordset.records = [MockRecord()]
+
+            rs, zone = self.service._create_recordset_in_storage(
+                self.context, Mockzone(), recordset
+            )
+            assert not self.service.storage._retry_on_deadlock.called
+            assert self.service._update_zone_in_storage.called
+            assert self.service.storage.create_recordset.called
+
     def test__create_soa(self):
         self.service._create_recordset_in_storage = Mock(
             return_value=(None, None)
