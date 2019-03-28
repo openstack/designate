@@ -70,6 +70,8 @@ service_status = Table("service_statuses", metadata,
     Column('stats', types.JsonEncodedDict, nullable=False),
     Column('capabilities', types.JsonEncodedDict, nullable=False),
 
+    UniqueConstraint('service_name', 'hostname', name="unique_service_status"),
+
     mysql_engine='InnoDB',
     mysql_charset='utf8',
 )
