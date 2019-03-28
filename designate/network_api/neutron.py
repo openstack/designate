@@ -80,7 +80,7 @@ def get_client(context, endpoint):
         params['auth_strategy'] = None
     elif CONF['network_api:neutron'].admin_username is not None:
         params['username'] = CONF['network_api:neutron'].admin_username
-        params['tenant_name'] = CONF['network_api:neutron'].admin_tenant_name
+        params['project_name'] = CONF['network_api:neutron'].admin_tenant_name
         params['password'] = CONF['network_api:neutron'].admin_password
         params['auth_url'] = CONF['network_api:neutron'].auth_url
         params['auth_strategy'] = CONF['network_api:neutron'].auth_strategy
@@ -142,7 +142,7 @@ class NeutronNetworkAPI(base.NetworkAPI):
 
         for endpoint, region in endpoints:
             tg.add_thread(_call, endpoint, region,
-                          tenant_id=context.tenant)
+                          project_id=context.project_id)
         tg.wait()
 
         # NOTE: Sadly tg code doesn't give us a good way to handle failures.
