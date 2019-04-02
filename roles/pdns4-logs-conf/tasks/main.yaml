@@ -1,0 +1,38 @@
+- name: Ensure target directory exists
+  file:
+    path: "{{ stage_dir }}/etc/powerdns"
+    state: directory
+
+- name: Find pdns config files
+  find:
+    path: /etc/powerdns
+    file_type: any
+  register: pdns_configs
+
+- name: Dereference pdns4 configs
+  stat:
+    path: "{{ item.path }}"
+  with_items: "{{ pdns_configs.files }}"
+  register: pdns_configs_deref
+
+- name: Link configurations
+  file:
+    src: "{{ item.stat.lnk_source | default(item.stat.path) }}"
+    dest: "{{ stage_dir }}/etc/powerdns/{{ item.stat.path | basename }}"
+    state: hard
+  with_items: "{{ pdns_configs_deref.results }}"
+  when: item.stat.isreg or item.stat.islnk
+
+# NOTE(frickler) Copied from devstack role export-devstack-journal
+- name: Ensure {{ stage_dir }}/logs exists
+  become: true
+  file:
+    path: "{{ stage_dir }}/logs"
+    state: directory
+    owner: "{{ ansible_user }}"
+
+- name: Collect pdns journal
+  become: true
+  shell:
+    cmd: |
+      journalctl -o short-precise --unit pdns | gzip - > {{ stage_dir }}/logs/pdns.txt.gz
