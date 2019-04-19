@@ -7,7 +7,7 @@
         DESIGNATE_SERVICE_PORT_DNS: 5322
         TEMPEST_PLUGINS: /opt/stack/designate-tempest-plugin
       devstack_plugins:
-        designate: https://git.openstack.org/openstack/designate
+        designate: https://opendev.org/openstack/designate
       devstack_services:
         designate: true
       tox_envlist: all-plugin
@@ -63,7 +63,7 @@
       manager_model: 0
       backend: pdns4
     required-projects:
-      - openstack-infra/devstack-gate
+      - openstack/devstack-gate
       - openstack/designate
       - openstack/designate-dashboard
       - openstack/designate-tempest-plugin
@@ -82,7 +82,7 @@
     name: designate-devstack-agent-base
     parent: legacy-dsvm-base
     required-projects:
-      - openstack-infra/devstack-gate
+      - openstack/devstack-gate
       - openstack/designate
       - openstack/designate-dashboard
       - openstack/designate-tempest-plugin
@@ -101,8 +101,8 @@
     name: designate-grenade-pdns4
     parent: legacy-dsvm-base
     required-projects:
-      - openstack-dev/grenade
-      - openstack-infra/devstack-gate
+      - openstack/grenade
+      - openstack/devstack-gate
       - openstack/designate
       - openstack/designate-dashboard
       - openstack/designate-tempest-plugin
