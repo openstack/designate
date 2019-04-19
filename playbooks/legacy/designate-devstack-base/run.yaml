@@ -13,12 +13,12 @@
           set -x
           cat > clonemap.yaml << EOF
           clonemap:
-            - name: openstack-infra/devstack-gate
+            - name: openstack/devstack-gate
               dest: devstack-gate
           EOF
           /usr/zuul-env/bin/zuul-cloner -m clonemap.yaml --cache-dir /opt/git \
-              https://git.openstack.org \
-              openstack-infra/devstack-gate
+              https://opendev.org \
+              openstack/devstack-gate
         executable: /bin/bash
         chdir: '{{ ansible_user_dir }}/workspace'
       environment: '{{ zuul | zuul_legacy_vars }}'
@@ -43,7 +43,7 @@
           export DEVSTACK_GATE_TEMPEST_ALL_PLUGINS=1
           export DEVSTACK_GATE_TEMPEST_REGEX=designate
 
-          export DEVSTACK_LOCAL_CONFIG="enable_plugin designate https://git.openstack.org/openstack/designate"
+          export DEVSTACK_LOCAL_CONFIG="enable_plugin designate https://opendev.org/openstack/designate"
           export DEVSTACK_LOCAL_CONFIG+=$'\n'"DESIGNATE_SERVICE_PORT_DNS=5322"
           export DEVSTACK_LOCAL_CONFIG+=$'\n'"DESIGNATE_BACKEND_DRIVER={{ backend }}"
 

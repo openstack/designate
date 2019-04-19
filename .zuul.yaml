@@ -8,7 +8,7 @@
       worker_model: 0
       backend: pdns4
     required-projects:
-      - openstack-infra/devstack-gate
+      - openstack/devstack-gate
       - openstack/designate
       - openstack/designate-dashboard
       - openstack/designate-tempest-plugin
@@ -22,7 +22,7 @@
     name: designate-devstack-agent-base
     parent: legacy-dsvm-base
     required-projects:
-      - openstack-infra/devstack-gate
+      - openstack/devstack-gate
       - openstack/designate
       - openstack/designate-dashboard
       - openstack/designate-tempest-plugin
