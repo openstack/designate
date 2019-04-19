@@ -7,7 +7,7 @@
         TEMPEST_PLUGINS: /opt/stack/designate-tempest-plugin
         USE_PYTHON3: true
       devstack_plugins:
-        designate: https://git.openstack.org/openstack/designate
+        designate: https://opendev.org/openstack/designate
       devstack_services:
         designate: true
         s-account: false
@@ -91,8 +91,8 @@
     name: designate-grenade-pdns4
     parent: legacy-dsvm-base
     required-projects:
-      - openstack-dev/grenade
-      - openstack-infra/devstack-gate
+      - openstack/grenade
+      - openstack/devstack-gate
       - openstack/designate
       - openstack/designate-dashboard
       - openstack/designate-tempest-plugin
