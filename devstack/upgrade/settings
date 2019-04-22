@@ -1,8 +1,8 @@
 register_project_for_upgrade designate
 register_db_to_save designate
 
-devstack_localrc base enable_plugin designate https://git.openstack.org/openstack/designate
-devstack_localrc target enable_plugin designate https://git.openstack.org/openstack/designate
+devstack_localrc base enable_plugin designate https://opendev.org/openstack/designate
+devstack_localrc target enable_plugin designate https://opendev.org/openstack/designate
 
 devstack_localrc base enable_service designate-api designate-central designate-producer designate-worker designate-mdns designate-agent designate-sink designate horizon
 devstack_localrc target enable_service designate-api designate-central designate-producer designate-worker designate-mdns designate-agent designate-sink designate horizon

@@ -137,7 +137,7 @@ def check_python3_xrange(logical_line):
 def check_no_log_audit(logical_line):
     """Ensure that we are not using LOG.audit messages
     Plans are in place going forward as discussed in the following
-    spec (https://review.openstack.org/#/c/132552/) to take out
+    spec (https://review.opendev.org/#/c/132552/) to take out
     LOG.audit messages. Given that audit was a concept invented
     for OpenStack we can enforce not using it.
     """

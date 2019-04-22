@@ -40,7 +40,7 @@ Related Projects
 
 .. _Bug Tracker: https://bugs.launchpad.net/designate
 .. _Blueprints: https://blueprints.launchpad.net/designate
-.. _Git: https://git.openstack.org/cgit/openstack/designate
+.. _Git: https://opendev.org/openstack/designate
 .. _Chef Cookbook: https://github.com/moniker-dns/designate-cookbook
 .. _Debian Packaging: https://github.com/moniker-dns/debian-designate
 .. _Launchpad PPA: https://launchpad.net/~designate-ppa/+archive/havana

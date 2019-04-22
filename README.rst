@@ -30,7 +30,7 @@ Setup a working environment:
 
 .. code-block:: bash
 
-    git clone https://git.openstack.org/openstack/designate
+    git clone https://opendev.org/openstack/designate
     cd designate
     virtualenv .venv
     . .venv/bin/activate
@@ -90,7 +90,7 @@ Execute a single test using py27
 * Free software: Apache license
 * Documentation: https://docs.openstack.org/designate/latest/
 * Release notes: https://docs.openstack.org/releasenotes/designate/
-* Source: https://git.openstack.org/cgit/openstack/designate
+* Source: https://opendev.org/openstack/designate
 * Bugs: https://bugs.launchpad.net/designate
 * Blueprints: https://blueprints.launchpad.net/designate
 

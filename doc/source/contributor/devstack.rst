@@ -28,14 +28,14 @@ Instructions
 
     If you want to use local sources for development then you should consider
     using the contrib/vagrant folder in the
-    `repository <https://git.openstack.org/openstack/designate>`_.
+    `repository <https://opendev.org/openstack/designate>`_.
 
 1. Get a clean Ubuntu 16.04 VM or newer. DevStack "takes over". Don't use
    your desktop!
 
 2. Clone DevStack inside the VM::
 
-   $ git clone https://git.openstack.org/openstack-dev/devstack.git
+   $ git clone https://opendev.org/openstack/devstack.git
 
 3. Move to ``devstack`` directory::
 

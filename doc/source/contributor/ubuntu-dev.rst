@@ -60,7 +60,7 @@ Installing Designate
 
    $ mkdir openstack
    $ cd openstack
-   $ git clone https://git.openstack.org/openstack/designate.git
+   $ git clone https://opendev.org/openstack/designate.git
    $ cd designate
 
 
