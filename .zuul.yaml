@@ -191,7 +191,7 @@
       - release-notes-jobs
     check:
       jobs:
-        - neutron-tempest-plugin-designate-scenario
+        - neutron-tempest-plugin-designate-scenario-rocky
         - openstack-tox-lower-constraints
         - openstack-tox-cover:
             voting: false
