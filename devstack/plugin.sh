@@ -147,7 +147,7 @@ function configure_designate_tempest() {
         nameservers=$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT_DNS
         # TODO(kiall): Remove hardcoded list of plugins
         case $DESIGNATE_BACKEND_DRIVER in
-            bind9|powerdns)
+            bind9)
                 nameservers="$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT_DNS"
                 ;;
             akamai)

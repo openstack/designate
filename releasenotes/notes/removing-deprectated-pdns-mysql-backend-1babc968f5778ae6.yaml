@@ -1,0 +1,6 @@
+---
+upgrade:
+  - |
+    The PowerDNS MySQL based backend has been deprecated since the introduction
+    of the PowerDNS 4 driver and is now being removed.
+

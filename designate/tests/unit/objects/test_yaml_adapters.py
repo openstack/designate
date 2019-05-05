@@ -37,7 +37,7 @@ class DesignateYAMLAdapterTest(oslotest.base.BaseTestCase):
             r_pool = adapters.DesignateAdapter.parse(
                 'YAML', xpool, objects.Pool())
             self.assertEqual('default', r_pool.name)
-            self.assertEqual('Default PowerDNS Pool', r_pool.description)
+            self.assertEqual('Default PowerDNS 4 Pool', r_pool.description)
             self.assertEqual(2, len(r_pool.ns_records))
             self.assertEqual(1, r_pool.ns_records[0].priority)
             self.assertEqual(2, r_pool.ns_records[1].priority)
@@ -46,18 +46,22 @@ class DesignateYAMLAdapterTest(oslotest.base.BaseTestCase):
             self.assertEqual(
                 'ns1-2.example.org.', r_pool.ns_records[1].hostname)
             self.assertEqual(1, len(r_pool.targets))
-            self.assertEqual('powerdns', r_pool.targets[0].type)
+            self.assertEqual('pdns4', r_pool.targets[0].type)
             self.assertEqual(
-                'PowerDNS Database Cluster', r_pool.targets[0].description)
+                'PowerDNS 4 Server', r_pool.targets[0].description)
             self.assertEqual(1, len(r_pool.targets[0].masters))
             self.assertEqual('192.0.2.1', r_pool.targets[0].masters[0].host)
             self.assertEqual(DEFAULT_MDNS_PORT,
                              r_pool.targets[0].masters[0].port)
-            self.assertEqual(1, len(r_pool.targets[0].options))
-            self.assertEqual('connection', r_pool.targets[0].options[0].key)
-            self.assertEqual(
-                'mysql+pymysql://designate:password@127.0.0.1/designate_pdns?charset=utf8',  # noqa
-                r_pool.targets[0].options[0].value)
+            self.assertEqual(2, len(r_pool.targets[0].options))
+
+            options = {}
+            for option in r_pool.targets[0].options:
+                options[option.key] = option.value
+
+            self.assertEqual(options['api_endpoint'], 'http://192.0.2.1:8081')
+            self.assertEqual(options['api_token'], 'api_key')
+
             self.assertEqual(1, len(r_pool.also_notifies))
             self.assertEqual('192.0.2.4', r_pool.also_notifies[0].host)
             self.assertEqual(53, r_pool.also_notifies[0].port)
@@ -75,7 +79,7 @@ class DesignateYAMLAdapterTest(oslotest.base.BaseTestCase):
                 }
             ],
             'attributes': [],
-            'description': u'Default PowerDNS Pool',
+            'description': u'Default PowerDNS 4 Pool',
             'id': u'cf2e8eab-76cd-4162-bf76-8aeee3556de0',
             'name': u'default',
             'nameservers': [
@@ -105,7 +109,7 @@ class DesignateYAMLAdapterTest(oslotest.base.BaseTestCase):
             'provisioner': u'UNMANAGED',
             'targets': [
                 {
-                    'description': u'PowerDNS Database Cluster',
+                    'description': u'PowerDNS 4 Server',
                     'masters': [
                         {
                             'host': u'192.0.2.1',
@@ -115,13 +119,18 @@ class DesignateYAMLAdapterTest(oslotest.base.BaseTestCase):
                     ],
                     'options': [
                         {
-                            'key': u'connection',
+                            'key': u'api_endpoint',
                             'pool_target_id': u'd567d569-2d69-41d5-828d-f7054bb10b5c',  # noqa
-                            'value': u'mysql+pymysql://designate:password@127.0.0.1/designate_pdns?charset=utf8',  # noqa
-                        }
+                            'value': u'http://192.0.2.1:8081',  # noqa
+                        },
+                        {
+                            'key': u'api_token',
+                            'pool_target_id': u'd567d569-2d69-41d5-828d-f7054bb10b5c',  # noqa
+                            'value': u'api_key',  # noqa
+                        },
                     ],
                     'pool_id': u'cf2e8eab-76cd-4162-bf76-8aeee3556de0',
-                    'type': u'powerdns',
+                    'type': u'pdns4',
                 }
             ]
         }
