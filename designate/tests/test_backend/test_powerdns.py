@@ -35,11 +35,15 @@ class PowerDNSBackendTestCase(BackendTestCase):
         self.target = objects.PoolTarget.from_dict({
             'id': '4588652b-50e7-46b9-b688-a9bad40a873e',
             'type': 'powerdns',
-            'masters': [{'host': '192.0.2.1', 'port': 53},
-                        {'host': '192.0.2.2', 'port': 35}],
-            'options': [{'key': 'connection', 'value': 'memory://',
-                         'key': 'host', 'value': '192.0.2.3',
-                         'key': 'port', 'value': '53'}],
+            'masters': [
+                {'host': '192.0.2.1', 'port': 53},
+                {'host': '192.0.2.2', 'port': 35},
+            ],
+            'options': [
+                {'key': 'connection', 'value': 'memory://'},
+                {'key': 'host', 'value': '192.0.2.3'},
+                {'key': 'port', 'value': '53'},
+            ],
         })
 
         self.backend = impl_powerdns.PowerDNSBackend(self.target)
