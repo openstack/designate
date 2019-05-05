@@ -47,6 +47,7 @@ class DesignateBackendTestCase(tests.TestCase):
                 {'key': 'project_name', 'value': 'project'},
                 {'key': 'project_zone_name', 'value': 'project_zone'},
                 {'key': 'user_zone_name', 'value': 'user_zone'},
+                {'key': 'region_name', 'value': 'RegionOne'},
             ],
         }
 

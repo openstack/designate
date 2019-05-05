@@ -33,21 +33,13 @@ DESIGNATE_D2D_ALSO_NOTIES=${DESIGNATE_D2D_ALSO_NOTIES:-""}
 # DNS server to check SOA etc against
 DESIGNATE_D2D_NAMESERVERS=${DESIGNATE_D2D_NAMESERVERS:-""}
 
-# Destination openstack credentials
-DESIGNATE_D2D_KS_VERSION=${DESIGNATE_D2D_KS_VERSION:-3}
-
 DESIGNATE_D2D_AUTH_URL=${DESIGNATE_D2D_AUTH_URL:-}
 DESIGNATE_D2D_USERNAME=${DESIGNATE_D2D_USERNAME:-}
 DESIGNATE_D2D_PASSWORD=${DESIGNATE_D2D_PASSWORD:-}
-
-# Keystone V2
-DESIGNATE_D2D_TENANT_NAME=${DESIGNATE_D2D_TENANT_NAME:-}
-DESIGNATE_D2D_TENANT_NAME=${DESIGNATE_D2D_TENANT_ID:-}
-
-# Keystone V3
 DESIGNATE_D2D_PROJECT_NAME=${DESIGNATE_D2D_PROJECT_NAME:-}
 DESIGNATE_D2D_PROJECT_DOMAIN_NAME=${DESIGNATE_D2D_PROJECT_DOMAIN_NAME:-}
 DESIGNATE_D2D_USER_DOMAIN_NAME=${DESIGNATE_D2D_USER_DOMAIN_NAME:-}
+DESIGNATE_D2D_REGION_NAME=${DESIGNATE_D2D_REGION_NAME:-}
 
 
 # Entry Points
@@ -64,21 +56,9 @@ function configure_designate_backend {
     iniset $DESIGNATE_CONF pool_target:$DESIGNATE_TARGET_ID masters $DESIGNATE_D2D_MASTERS
 
     options="auth_url: $DESIGNATE_D2D_AUTH_URL, username: $DESIGNATE_D2D_USERNAME, password: $DESIGNATE_D2D_PASSWORD,"
-    if [ "$DESIGNATE_D2D_KS_VERSION" == "2" ]; then
-        if [ ! -z "$DESIGNATE_D2D_TENANT_NAME" ]; then
-        options="$options tenant_name=$DESIGNATE_D2D_TENANT_NAME,"
-        fi
+    options="$options project_name: $DESIGNATE_D2D_PROJECT_NAME, project_domain_name: $DESIGNATE_D2D_PROJECT_DOMAIN_NAME, user_domain_name: $DESIGNATE_D2D_USER_DOMAIN_NAME, region_name: $DESIGNATE_D2D_REGION_NAME"
 
-        if [ ! -z "$DESIGNATE_D2D_TENANT_ID" ]; then
-            options="$options tenant_id=$DESIGNATE_D2D_TENANT_ID,"
-        fi
-    fi
-
-    if [ ! -z "$DESIGNATE_D2D_KS_VERSION" == "3" ]; then
-        options="$options project_name: $DESIGNATE_D2D_PROJECT_NAME, project_domain_name=$DESIGNATE_D2D_PROJECT_DOMAIN_NAME, user_domain_name=$DESIGNATE_D2D_USER_DOMAIN_NAME"
-    fi
-
-    iniset $DESIGNATE_CONF pool_target:$DESIGNATE_TARGET_ID options $options
+    iniset $DESIGNATE_CONF pool_target:$DESIGNATE_TARGET_ID options "$options"
 
     # Create a Pool Nameserver for each of the Designate nameservers
     local nameserver_ids=""
