@@ -20,6 +20,11 @@ SINK_GROUP = cfg.OptGroup(
     title="Configuration for Sink Service"
 )
 
+SINK_FAKE_GROUP = cfg.OptGroup(
+    name='handler:fake',
+    title="Configuration for the Fake Notification Handler"
+)
+
 SINK_NEUTRON_GROUP = cfg.OptGroup(
     name='handler:neutron_floatingip',
     title="Configuration for Neutron Notification Handler"
@@ -42,6 +47,15 @@ SINK_OPTS = [
                     'notification listener. '
                     'Note that listener pooling is not supported '
                     'by all oslo.messaging drivers.'),
+]
+
+SINK_FAKE_OPTS = [
+    cfg.ListOpt('notification-topics', default=['notifications'],
+                help='notification events for the fake notification handler'),
+    cfg.StrOpt('control-exchange', default='fake',
+               help='control-exchange for fake notifications'),
+    cfg.ListOpt('allowed-event-types', default=[],
+                help='the event types we want the fake handler to accept'),
 ]
 
 SINK_NEUTRON_OPTS = [
@@ -74,6 +88,8 @@ SINK_NOVA_OPTS = [
 def register_opts(conf):
     conf.register_group(SINK_GROUP)
     conf.register_opts(SINK_OPTS, group=SINK_GROUP)
+    conf.register_group(SINK_FAKE_GROUP)
+    conf.register_opts(SINK_FAKE_OPTS, group=SINK_FAKE_GROUP)
     conf.register_group(SINK_NEUTRON_GROUP)
     conf.register_opts(SINK_NEUTRON_OPTS, group=SINK_NEUTRON_GROUP)
     conf.register_group(SINK_NOVA_GROUP)
