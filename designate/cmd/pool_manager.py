@@ -60,4 +60,5 @@ def main():
     hookpoints.log_hook_setup()
 
     service.serve(server, workers=CONF['service:pool_manager'].workers)
+    server.heartbeat_emitter.start()
     service.wait()

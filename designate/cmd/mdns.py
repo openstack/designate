@@ -40,4 +40,5 @@ def main():
 
     server = mdns_service.Service(threads=CONF['service:mdns'].threads)
     service.serve(server, workers=CONF['service:mdns'].workers)
+    server.heartbeat_emitter.start()
     service.wait()

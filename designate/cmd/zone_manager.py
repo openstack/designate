@@ -59,4 +59,5 @@ def main():
     server = producer_service.Service(
         threads=CONF['service:zone_manager'].threads)
     service.serve(server, workers=CONF['service:zone_manager'].workers)
+    server.heartbeat_emitter.start()
     service.wait()

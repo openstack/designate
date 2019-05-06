@@ -48,4 +48,5 @@ def main():
 
     server = worker_service.Service(threads=CONF['service:worker'].threads)
     service.serve(server, workers=CONF['service:worker'].workers)
+    server.heartbeat_emitter.start()
     service.wait()
