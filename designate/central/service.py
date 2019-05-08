@@ -2317,8 +2317,8 @@ class Service(service.RPCService, service.Service):
         """
         # TODO(kiall): If the status is SUCCESS and the zone is already ACTIVE,
         #              we likely don't need to do anything.
-        self._update_record_status(context, zone_id, status, serial)
         zone = self._update_zone_status(context, zone_id, status, serial)
+        self._update_record_status(context, zone_id, status, serial)
         return zone
 
     def _update_zone_status(self, context, zone_id, status, serial):
