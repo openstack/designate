@@ -13,11 +13,9 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
 import os
 import functools
 import tempfile
-import unittest
 
 import six
 import testtools
@@ -133,22 +131,6 @@ class TestUtils(TestCase):
         with testtools.ExpectedException(exceptions.InvalidSortKey):
             utils.get_paging_params(context, {'sort_key': "dsc"},
                                     ['asc', 'desc'])
-
-
-class SocketListenTest(unittest.TestCase):
-
-    def test_listen_tcp(self):
-        # Test listening on TCP on IPv4 and IPv6 addrs
-        # bug 1566036
-        for addr in ('', '0.0.0.0', '127.0.0.1', '::', '::1'):
-            s = utils.bind_tcp(addr, 0, 1)
-            s.close()
-
-    def test_listen_udp(self):
-        # Test listening on UDP on IPv4 and IPv6 addrs
-        for addr in ('', '0.0.0.0', '127.0.0.1', '::', '::1'):
-            s = utils.bind_udp(addr, 0)
-            s.close()
 
 
 def def_method(f, *args, **kwargs):
