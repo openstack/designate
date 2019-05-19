@@ -13,6 +13,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import time
+
 from oslo_config import cfg
 from oslo_utils import timeutils
 from oslo_log import log as logging
@@ -30,24 +32,27 @@ class XFRMixin(object):
     """
     Utility mixin that holds common methods for XFR functionality.
     """
-    @metrics.timed('mdns.xfr.zone_sync')
     def zone_sync(self, context, zone, servers=None):
-        servers = servers or zone.masters
-        servers = servers.to_list()
-
-        timeout = cfg.CONF["service:mdns"].xfr_timeout
+        start_time = time.time()
         try:
-            dnspython_zone = dnsutils.do_axfr(zone.name, servers,
-                                              timeout=timeout)
-        except exceptions.XFRFailure as e:
-            LOG.warning(e)
-            return
+            servers = servers or zone.masters
+            servers = servers.to_list()
 
-        zone.update(dnsutils.from_dnspython_zone(dnspython_zone))
+            timeout = cfg.CONF["service:mdns"].xfr_timeout
+            try:
+                dnspython_zone = dnsutils.do_axfr(zone.name, servers,
+                                                  timeout=timeout)
+            except exceptions.XFRFailure as e:
+                LOG.warning(e)
+                return
 
-        zone.transferred_at = timeutils.utcnow()
+            zone.update(dnsutils.from_dnspython_zone(dnspython_zone))
 
-        self.central_api.update_zone(context, zone, increment_serial=False)
+            zone.transferred_at = timeutils.utcnow()
+
+            self.central_api.update_zone(context, zone, increment_serial=False)
+        finally:
+            metrics.timing('mdns.xfr.zone_sync', time.time() - start_time)
 
 
 class XfrEndpoint(base.BaseEndpoint, XFRMixin):

@@ -64,7 +64,6 @@ class Service(service.Service):
         self._service_config = CONF['service:%s' % self.service_name]
 
         policy.init()
-        metrics.init()
 
         # NOTE(kiall): All services need RPC initialized, as this is used
         #              for clients AND servers. Hence, this is common to
@@ -252,6 +251,8 @@ class DNSService(object):
 
     def __init__(self, *args, **kwargs):
         super(DNSService, self).__init__(*args, **kwargs)
+
+        metrics.init()
 
         # Eventet will complain loudly about our use of multiple greentheads
         # reading/writing to the UDP socket at once. Disable this warning.
