@@ -37,10 +37,21 @@ class PDNS4Backend(base.Backend):
         self.api_token = self.options.get('api_token')
         self.tsigkey_name = self.options.get('tsigkey_name', None)
 
+        self.headers = {
+            "X-API-Key": self.api_token
+        }
+
     def _build_url(self, zone=''):
         r_url = urllib.parse.urlparse(self.api_endpoint)
         return "%s://%s/api/v1/servers/localhost/zones%s%s" % (
             r_url.scheme, r_url.netloc, '/' if zone else '', zone)
+
+    def _check_zone_exists(self, zone):
+        zone = requests.get(
+            self._build_url(zone=zone.name),
+            headers=self.headers,
+        )
+        return zone.status_code is 200
 
     def create_zone(self, context, zone):
         """Create a DNS zone"""
@@ -56,30 +67,46 @@ class PDNS4Backend(base.Backend):
         }
         if self.tsigkey_name:
             data['slave_tsig_key_ids'] = [self.tsigkey_name]
-        headers = {
-            "X-API-Key": self.api_token
-        }
+
+        if self._check_zone_exists(zone):
+            LOG.info(
+                '%s exists on the server. Deleting zone before creation' % zone
+            )
+
+            try:
+                self.delete_zone(context, zone)
+            except exceptions.Backend:
+                LOG.error('Could not delete pre-existing zone %s' % zone)
+                raise
 
         try:
             requests.post(
                 self._build_url(),
                 json=data,
-                headers=headers
+                headers=self.headers
             ).raise_for_status()
         except requests.HTTPError as e:
+            # check if the zone was actually created - even with errors pdns
+            # will create the zone sometimes
+            if self._check_zone_exists(zone):
+                LOG.info("%s was created with an error. Deleting zone" % zone)
+                try:
+                    self.delete_zone(context, zone)
+                except exceptions.Backend:
+                    LOG.error('Could not delete errored zone %s' % zone)
             raise exceptions.Backend(e)
+
+        self.mdns_api.notify_zone_changed(
+            context, zone, self.host, self.port, self.timeout,
+            self.retry_interval, self.max_retries, self.delay)
 
     def delete_zone(self, context, zone):
         """Delete a DNS zone"""
 
-        headers = {
-            "X-API-Key": self.api_token
-        }
-
         try:
             requests.delete(
                 self._build_url(zone.name),
-                headers=headers
+                headers=self.headers
             ).raise_for_status()
         except requests.HTTPError as e:
             raise exceptions.Backend(e)
