@@ -11,15 +11,13 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from six.moves import urllib
-
 import requests
-from oslo_log import log as logging
 from oslo_config import cfg
+from oslo_log import log as logging
+from six.moves import urllib
 
 from designate import exceptions
 from designate.backend import base
-
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
@@ -70,13 +68,13 @@ class PDNS4Backend(base.Backend):
 
         if self._check_zone_exists(zone):
             LOG.info(
-                '%s exists on the server. Deleting zone before creation' % zone
+                '%s exists on the server. Deleting zone before creation', zone
             )
 
             try:
                 self.delete_zone(context, zone)
             except exceptions.Backend:
-                LOG.error('Could not delete pre-existing zone %s' % zone)
+                LOG.error('Could not delete pre-existing zone %s', zone)
                 raise
 
         try:
@@ -89,11 +87,11 @@ class PDNS4Backend(base.Backend):
             # check if the zone was actually created - even with errors pdns
             # will create the zone sometimes
             if self._check_zone_exists(zone):
-                LOG.info("%s was created with an error. Deleting zone" % zone)
+                LOG.info("%s was created with an error. Deleting zone", zone)
                 try:
                     self.delete_zone(context, zone)
                 except exceptions.Backend:
-                    LOG.error('Could not delete errored zone %s' % zone)
+                    LOG.error('Could not delete errored zone %s', zone)
             raise exceptions.Backend(e)
 
         self.mdns_api.notify_zone_changed(

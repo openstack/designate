@@ -12,12 +12,12 @@
 import mock
 import requests_mock
 
+from designate import exceptions
+from designate import objects
+from designate.backend import impl_pdns4
 from designate.mdns import rpcapi as mdns_rpcapi
 from designate.tests import fixtures
 from designate.tests.test_backend import BackendTestCase
-from designate import objects
-from designate import exceptions
-from designate.backend import impl_pdns4
 
 
 class PDNS4BackendTestCase(BackendTestCase):
@@ -28,6 +28,7 @@ class PDNS4BackendTestCase(BackendTestCase):
 
         self.base_address = 'http://localhost:8081/api/v1/servers'
 
+        self.context = self.get_context()
         self.zone = objects.Zone(id='e2bed4dc-9d01-11e4-89d3-123b93f75cba',
                                  name='example.com.',
                                  email='example@example.com')
@@ -52,18 +53,16 @@ class PDNS4BackendTestCase(BackendTestCase):
     @requests_mock.mock()
     @mock.patch.object(mdns_rpcapi.MdnsAPI, 'notify_zone_changed')
     def test_create_zone_success(self, req_mock, mock_notify_zone_changed):
-        context = self.get_context()
-        zone = objects.Zone().from_dict(self.get_zone_fixture())
 
         req_mock.post(
             '%s/localhost/zones' % self.base_address,
         )
         req_mock.get(
-            '%s/localhost/zones/%s' % (self.base_address, zone.name),
+            '%s/localhost/zones/%s' % (self.base_address, self.zone.name),
             status_code=404,
         )
 
-        self.backend.create_zone(context, zone)
+        self.backend.create_zone(self.context, self.zone)
 
         self.assertEqual(
             req_mock.last_request.json(),
@@ -79,25 +78,22 @@ class PDNS4BackendTestCase(BackendTestCase):
         )
 
         mock_notify_zone_changed.assert_called_with(
-            context, zone, '127.0.0.1', 53, 30, 15, 10, 5)
+            self.context, self.zone, '127.0.0.1', 53, 30, 15, 10, 5)
 
     @requests_mock.mock()
     def test_create_zone_already_exists(self, req_mock):
-        context = self.get_context()
-        zone = objects.Zone().from_dict(self.get_zone_fixture())
-
         req_mock.post(
             '%s/localhost/zones' % self.base_address,
         )
         req_mock.get(
-            '%s/localhost/zones/%s' % (self.base_address, zone.name),
+            '%s/localhost/zones/%s' % (self.base_address, self.zone.name),
             status_code=200,
         )
         req_mock.delete(
             '%s/localhost/zones/example.com.' % self.base_address,
         )
 
-        self.backend.create_zone(context, zone)
+        self.backend.create_zone(self.context, self.zone)
 
         self.assertEqual(
             req_mock.last_request.json(),
@@ -114,15 +110,12 @@ class PDNS4BackendTestCase(BackendTestCase):
 
     @requests_mock.mock()
     def test_create_zone_already_exists_and_fails_to_delete(self, req_mock):
-        context = self.get_context()
-        zone = objects.Zone().from_dict(self.get_zone_fixture())
-
         req_mock.post(
             '%s/localhost/zones' % self.base_address,
             status_code=500,
         )
         req_mock.get(
-            '%s/localhost/zones/%s' % (self.base_address, zone.name),
+            '%s/localhost/zones/%s' % (self.base_address, self.zone.name),
             status_code=200,
         )
         req_mock.delete(
@@ -134,25 +127,32 @@ class PDNS4BackendTestCase(BackendTestCase):
             exceptions.Backend,
             '500 Server Error: None for url: '
             '%s/localhost/zones' % self.base_address,
-            self.backend.create_zone, context, zone
+            self.backend.create_zone, self.context, self.zone
         )
 
         self.assertIn(
             "Could not delete pre-existing zone "
-            "<Zone id:'None' type:'PRIMARY' name:'example.com.' "
-            "pool_id:'None' serial:'None' action:'None' status:'None'>",
-            self.stdlog.logger.output)
+            "<Zone id:'e2bed4dc-9d01-11e4-89d3-123b93f75cba' "
+            "type:'None' name:'example.com.' pool_id:'None' serial:'None' "
+            "action:'None' status:'None'>",
+            self.stdlog.logger.output
+        )
+
+        self.assertIn(
+            "<Zone id:'e2bed4dc-9d01-11e4-89d3-123b93f75cba' type:'None' "
+            "name:'example.com.' pool_id:'None' serial:'None' action:'None' "
+            "status:'None'> exists on the server. "
+            "Deleting zone before creation",
+            self.stdlog.logger.output
+        )
 
     @requests_mock.mock()
     def test_create_zone_with_tsigkey(self, req_mock):
-        context = self.get_context()
-        zone = objects.Zone().from_dict(self.get_zone_fixture())
-
         req_mock.post(
             '%s/localhost/zones' % self.base_address,
         )
         req_mock.get(
-            '%s/localhost/zones/%s' % (self.base_address, zone.name),
+            '%s/localhost/zones/%s' % (self.base_address, self.zone.name),
             status_code=404,
         )
 
@@ -164,7 +164,7 @@ class PDNS4BackendTestCase(BackendTestCase):
             objects.PoolTarget.from_dict(target)
         )
 
-        backend.create_zone(context, zone)
+        backend.create_zone(self.context, self.zone)
 
         self.assertEqual(
             req_mock.last_request.json(),
@@ -182,15 +182,12 @@ class PDNS4BackendTestCase(BackendTestCase):
 
     @requests_mock.mock()
     def test_create_zone_fail(self, req_mock):
-        context = self.get_context()
-        zone = objects.Zone().from_dict(self.get_zone_fixture())
-
         req_mock.post(
             '%s/localhost/zones' % self.base_address,
             status_code=500,
         )
         req_mock.get(
-            '%s/localhost/zones/%s' % (self.base_address, zone.name),
+            '%s/localhost/zones/%s' % (self.base_address, self.zone.name),
             status_code=404,
         )
 
@@ -198,7 +195,7 @@ class PDNS4BackendTestCase(BackendTestCase):
             exceptions.Backend,
             '500 Server Error: None for url: '
             '%s/localhost/zones' % self.base_address,
-            self.backend.create_zone, context, zone
+            self.backend.create_zone, self.context, self.zone
         )
 
         self.assertEqual(
@@ -207,15 +204,12 @@ class PDNS4BackendTestCase(BackendTestCase):
 
     @requests_mock.mock()
     def test_create_zone_fail_with_failed_delete(self, req_mock):
-        context = self.get_context()
-        zone = objects.Zone().from_dict(self.get_zone_fixture())
-
         req_mock.post(
             '%s/localhost/zones' % self.base_address,
             status_code=500,
         )
         req_mock.get(
-            '%s/localhost/zones/%s' % (self.base_address, zone.name),
+            '%s/localhost/zones/%s' % (self.base_address, self.zone.name),
             [{'status_code': 404}, {'status_code': 200}],
         )
         req_mock.delete(
@@ -227,7 +221,7 @@ class PDNS4BackendTestCase(BackendTestCase):
             exceptions.Backend,
             '500 Server Error: None for url: '
             '%s/localhost/zones' % self.base_address,
-            self.backend.create_zone, context, zone
+            self.backend.create_zone, self.context, self.zone
         )
 
         self.assertEqual(
@@ -235,27 +229,27 @@ class PDNS4BackendTestCase(BackendTestCase):
         )
 
         self.assertIn(
-            "<Zone id:'None' type:'PRIMARY' name:'example.com.' "
-            "pool_id:'None' serial:'None' action:'None' status:'None'> "
-            "was created with an error. Deleting zone",
-            self.stdlog.logger.output)
+            "<Zone id:'e2bed4dc-9d01-11e4-89d3-123b93f75cba' type:'None' "
+            "name:'example.com.' pool_id:'None' serial:'None' action:'None' "
+            "status:'None'> was created with an error. Deleting zone",
+            self.stdlog.logger.output
+        )
 
         self.assertIn(
             "Could not delete errored zone "
-            "<Zone id:'None' type:'PRIMARY' name:'example.com.' "
-            "pool_id:'None' serial:'None' action:'None' status:'None'>",
-            self.stdlog.logger.output)
+            "<Zone id:'e2bed4dc-9d01-11e4-89d3-123b93f75cba' type:'None' "
+            "name:'example.com.' pool_id:'None' serial:'None' action:'None' "
+            "status:'None'>",
+            self.stdlog.logger.output
+        )
 
     @requests_mock.mock()
     def test_delete_zone_success(self, req_mock):
-        context = self.get_context()
-        zone = objects.Zone().from_dict(self.get_zone_fixture())
-
         req_mock.delete(
             '%s/localhost/zones/example.com.' % self.base_address,
         )
 
-        self.backend.delete_zone(context, zone)
+        self.backend.delete_zone(self.context, self.zone)
 
         self.assertEqual(
             req_mock.last_request.headers.get('X-API-Key'), 'api_key'
@@ -263,9 +257,6 @@ class PDNS4BackendTestCase(BackendTestCase):
 
     @requests_mock.mock()
     def test_delete_zone_fail(self, req_mock):
-        context = self.get_context()
-        zone = objects.Zone().from_dict(self.get_zone_fixture())
-
         req_mock.delete(
             '%s/localhost/zones/example.com.' % self.base_address,
             status_code=500,
@@ -275,7 +266,7 @@ class PDNS4BackendTestCase(BackendTestCase):
             exceptions.Backend,
             '500 Server Error: None for url: '
             '%s/localhost/zones' % self.base_address,
-            self.backend.delete_zone, context, zone
+            self.backend.delete_zone, self.context, self.zone
         )
 
         self.assertEqual(
