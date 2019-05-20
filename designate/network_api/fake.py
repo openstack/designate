@@ -35,17 +35,17 @@ def _format_floatingip(id_, address):
     }
 
 
-def allocate_floatingip(tenant_id, floatingip_id=None):
+def allocate_floatingip(project_id, floatingip_id=None):
     """
-    Allocates a floating ip from the pool to the tenant.
+    Allocates a floating ip from the pool to the project.
     """
-    ALLOCATIONS.setdefault(tenant_id, {})
+    ALLOCATIONS.setdefault(project_id, {})
 
     id_ = floatingip_id or list(six.iterkeys(POOL))[0]
 
-    ALLOCATIONS[tenant_id][id_] = POOL.pop(id_)
-    values = _format_floatingip(id_, ALLOCATIONS[tenant_id][id_])
-    LOG.debug("Allocated to id_ %s to %s - %s", id_, tenant_id, values)
+    ALLOCATIONS[project_id][id_] = POOL.pop(id_)
+    values = _format_floatingip(id_, ALLOCATIONS[project_id][id_])
+    LOG.debug("Allocated to id_ %s to %s - %s", id_, project_id, values)
     return values
 
 
@@ -54,7 +54,7 @@ def deallocate_floatingip(id_):
     Deallocate a floatingip
     """
     LOG.debug('De-allocating %s', id_)
-    for tenant_id, allocated in list(ALLOCATIONS.items()):
+    for project_id, allocated in list(ALLOCATIONS.items()):
         if id_ in allocated:
             POOL[id_] = allocated.pop(id_)
             break
@@ -64,7 +64,7 @@ def deallocate_floatingip(id_):
 
 def reset_floatingips():
     LOG.debug('Resetting any allocations.')
-    for tenant_id, allocated in list(ALLOCATIONS.items()):
+    for project_id, allocated in list(ALLOCATIONS.items()):
         for key, value in list(allocated.items()):
             POOL[key] = allocated.pop(key)
 
@@ -75,10 +75,10 @@ class FakeNetworkAPI(base.NetworkAPI):
     def list_floatingips(self, context, region=None):
         if context.is_admin:
             data = []
-            for tenant_id, allocated in list(ALLOCATIONS.items()):
+            for project_id, allocated in list(ALLOCATIONS.items()):
                 data.extend(list(allocated.items()))
         else:
-            data = list(ALLOCATIONS.get(context.tenant, {}).items())
+            data = list(ALLOCATIONS.get(context.project_id, {}).items())
 
         formatted = [_format_floatingip(k, v) for k, v in data]
         LOG.debug('Returning %i FloatingIPs: %s',
