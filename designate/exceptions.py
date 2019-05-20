@@ -16,7 +16,7 @@
 import six
 
 
-class Base(Exception):
+class DesignateException(Exception):
     error_code = 500
     error_type = None
     error_message = None
@@ -27,9 +27,9 @@ class Base(Exception):
         self.errors = kwargs.pop('errors', None)
         self.object = kwargs.pop('object', None)
 
-        super(Base, self).__init__(*args, **kwargs)
+        super(DesignateException, self).__init__(*args, **kwargs)
 
-        if len(args) > 0 and isinstance(args[0], six.string_types):
+        if args and isinstance(args[0], six.string_types):
             self.error_message = args[0]
 
 
@@ -37,7 +37,7 @@ class Backend(Exception):
     pass
 
 
-class RelationNotLoaded(Base):
+class RelationNotLoaded(DesignateException):
     error_code = 500
     error_type = 'relation_not_loaded'
 
@@ -54,7 +54,7 @@ class RelationNotLoaded(Base):
         return self.error_message
 
 
-class AdapterNotFound(Base):
+class AdapterNotFound(DesignateException):
     error_code = 500
     error_type = 'adapter_not_found'
 
@@ -63,24 +63,24 @@ class NSD4SlaveBackendError(Backend):
     pass
 
 
-class NotImplemented(Base, NotImplementedError):
+class NotImplemented(DesignateException, NotImplementedError):
     pass
 
 
-class XFRFailure(Base):
+class XFRFailure(DesignateException):
     pass
 
 
-class ConfigurationError(Base):
+class ConfigurationError(DesignateException):
     error_type = 'configuration_error'
 
 
-class UnknownFailure(Base):
+class UnknownFailure(DesignateException):
     error_code = 500
     error_type = 'unknown_failure'
 
 
-class CommunicationFailure(Base):
+class CommunicationFailure(DesignateException):
     error_code = 504
     error_type = 'communication_failure'
 
@@ -119,27 +119,27 @@ class NoPoolTargetsConfigured(ConfigurationError):
     error_type = 'no_pool_targets_configured'
 
 
-class OverQuota(Base):
+class OverQuota(DesignateException):
     error_code = 413
     error_type = 'over_quota'
     expected = True
 
 
-class QuotaResourceUnknown(Base):
+class QuotaResourceUnknown(DesignateException):
     error_type = 'quota_resource_unknown'
 
 
-class InvalidObject(Base):
+class InvalidObject(DesignateException):
     error_code = 400
     error_type = 'invalid_object'
     expected = True
 
 
-class BadAction(Base):
+class BadAction(DesignateException):
     error_type = 'bad_action'
 
 
-class BadRequest(Base):
+class BadRequest(DesignateException):
     error_code = 400
     error_type = 'bad_request'
     expected = True
@@ -206,40 +206,40 @@ class UnsupportedContentType(BadRequest):
     error_type = 'unsupported_content_type'
 
 
-class InvalidZoneName(Base):
+class InvalidZoneName(DesignateException):
     error_code = 400
     error_type = 'invalid_zone_name'
     expected = True
 
 
-class InvalidRecordSetName(Base):
+class InvalidRecordSetName(DesignateException):
     error_code = 400
     error_type = 'invalid_recordset_name'
     expected = True
 
 
-class InvalidRecordSetLocation(Base):
+class InvalidRecordSetLocation(DesignateException):
     error_code = 400
     error_type = 'invalid_recordset_location'
     expected = True
 
 
-class InvaildZoneTransfer(Base):
+class InvaildZoneTransfer(DesignateException):
     error_code = 400
     error_type = 'invalid_zone_transfer_request'
 
 
-class InvalidTTL(Base):
+class InvalidTTL(DesignateException):
     error_code = 400
     error_type = 'invalid_ttl'
 
 
-class ZoneHasSubZone(Base):
+class ZoneHasSubZone(DesignateException):
     error_code = 400
     error_type = 'zone_has_sub_zone'
 
 
-class Forbidden(Base):
+class Forbidden(DesignateException):
     error_code = 403
     error_type = 'forbidden'
     expected = True
@@ -257,7 +257,7 @@ class IncorrectZoneTransferKey(Forbidden):
     error_type = 'invalid_key'
 
 
-class Duplicate(Base):
+class Duplicate(DesignateException):
     expected = True
     error_code = 409
     error_type = 'duplicate'
@@ -343,7 +343,7 @@ class DuplicateZoneExport(Duplicate):
     error_type = 'duplicate_zone_export'
 
 
-class MethodNotAllowed(Base):
+class MethodNotAllowed(DesignateException):
     expected = True
     error_code = 405
     error_type = 'method_not_allowed'
@@ -365,7 +365,7 @@ class DuplicateZoneMaster(Duplicate):
     error_type = 'duplicate_zone_attribute'
 
 
-class NotFound(Base):
+class NotFound(DesignateException):
     expected = True
     error_code = 404
     error_type = 'not_found'

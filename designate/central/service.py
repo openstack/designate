@@ -43,10 +43,11 @@ from designate import notifications
 from designate import objects
 from designate import policy
 from designate import quota
+from designate import rpc
 from designate import service
 from designate import scheduler
-from designate import utils
 from designate import storage
+from designate import utils
 from designate.mdns import rpcapi as mdns_rpcapi
 from designate.pool_manager import rpcapi as pool_manager_rpcapi
 from designate.storage import transaction
@@ -654,11 +655,13 @@ class Service(service.RPCService, service.Service):
                                recordset_records=recordset_records)
 
     # Misc Methods
+    @rpc.expected_exceptions()
     def get_absolute_limits(self, context):
         # NOTE(Kiall): Currently, we only have quota based limits..
         return self.quota.get_quotas(context, context.tenant)
 
     # Quota Methods
+    @rpc.expected_exceptions()
     def get_quotas(self, context, tenant_id):
         target = {'tenant_id': tenant_id}
         policy.check('get_quotas', context, target)
@@ -668,12 +671,14 @@ class Service(service.RPCService, service.Service):
 
         return self.quota.get_quotas(context, tenant_id)
 
+    @rpc.expected_exceptions()
     def get_quota(self, context, tenant_id, resource):
         target = {'tenant_id': tenant_id, 'resource': resource}
         policy.check('get_quota', context, target)
 
         return self.quota.get_quota(context, tenant_id, resource)
 
+    @rpc.expected_exceptions()
     @transaction
     def set_quota(self, context, tenant_id, resource, hard_limit):
         target = {
@@ -696,6 +701,7 @@ class Service(service.RPCService, service.Service):
         self.quota.reset_quotas(context, tenant_id)
 
     # TLD Methods
+    @rpc.expected_exceptions()
     @notification('dns.tld.create')
     @transaction
     def create_tld(self, context, tld):
@@ -706,6 +712,7 @@ class Service(service.RPCService, service.Service):
 
         return created_tld
 
+    @rpc.expected_exceptions()
     def find_tlds(self, context, criterion=None, marker=None, limit=None,
                   sort_key=None, sort_dir=None):
         policy.check('find_tlds', context)
@@ -713,11 +720,13 @@ class Service(service.RPCService, service.Service):
         return self.storage.find_tlds(context, criterion, marker, limit,
                                       sort_key, sort_dir)
 
+    @rpc.expected_exceptions()
     def get_tld(self, context, tld_id):
         policy.check('get_tld', context, {'tld_id': tld_id})
 
         return self.storage.get_tld(context, tld_id)
 
+    @rpc.expected_exceptions()
     @notification('dns.tld.update')
     @transaction
     def update_tld(self, context, tld):
@@ -730,6 +739,7 @@ class Service(service.RPCService, service.Service):
 
         return tld
 
+    @rpc.expected_exceptions()
     @notification('dns.tld.delete')
     @transaction
     def delete_tld(self, context, tld_id):
@@ -740,6 +750,7 @@ class Service(service.RPCService, service.Service):
         return tld
 
     # TSIG Key Methods
+    @rpc.expected_exceptions()
     @notification('dns.tsigkey.create')
     @transaction
     def create_tsigkey(self, context, tsigkey):
@@ -751,6 +762,7 @@ class Service(service.RPCService, service.Service):
 
         return created_tsigkey
 
+    @rpc.expected_exceptions()
     def find_tsigkeys(self, context, criterion=None, marker=None, limit=None,
                       sort_key=None, sort_dir=None):
         policy.check('find_tsigkeys', context)
@@ -758,11 +770,13 @@ class Service(service.RPCService, service.Service):
         return self.storage.find_tsigkeys(context, criterion, marker,
                                           limit, sort_key, sort_dir)
 
+    @rpc.expected_exceptions()
     def get_tsigkey(self, context, tsigkey_id):
         policy.check('get_tsigkey', context, {'tsigkey_id': tsigkey_id})
 
         return self.storage.get_tsigkey(context, tsigkey_id)
 
+    @rpc.expected_exceptions()
     @notification('dns.tsigkey.update')
     @transaction
     def update_tsigkey(self, context, tsigkey):
@@ -777,6 +791,7 @@ class Service(service.RPCService, service.Service):
 
         return tsigkey
 
+    @rpc.expected_exceptions()
     @notification('dns.tsigkey.delete')
     @transaction
     def delete_tsigkey(self, context, tsigkey_id):
@@ -789,10 +804,12 @@ class Service(service.RPCService, service.Service):
         return tsigkey
 
     # Tenant Methods
+    @rpc.expected_exceptions()
     def find_tenants(self, context):
         policy.check('find_tenants', context)
         return self.storage.find_tenants(context)
 
+    @rpc.expected_exceptions()
     def get_tenant(self, context, tenant_id):
         target = {
             'tenant_id': tenant_id
@@ -802,6 +819,7 @@ class Service(service.RPCService, service.Service):
 
         return self.storage.get_tenant(context, tenant_id)
 
+    @rpc.expected_exceptions()
     def count_tenants(self, context):
         policy.check('count_tenants', context)
         return self.storage.count_tenants(context)
@@ -831,6 +849,7 @@ class Service(service.RPCService, service.Service):
         pool = self.storage.get_pool(elevated_context, pool_id)
         return pool.ns_records
 
+    @rpc.expected_exceptions()
     @notification('dns.domain.create')
     @notification('dns.zone.create')
     @synchronized_zone(new_zone=True)
@@ -949,6 +968,7 @@ class Service(service.RPCService, service.Service):
 
         return zone
 
+    @rpc.expected_exceptions()
     def get_zone(self, context, zone_id):
         """Get a zone, even if flagged for deletion
         """
@@ -963,6 +983,7 @@ class Service(service.RPCService, service.Service):
 
         return zone
 
+    @rpc.expected_exceptions()
     def get_zone_ns_records(self, context, zone_id=None, criterion=None):
 
         if zone_id is None:
@@ -987,6 +1008,7 @@ class Service(service.RPCService, service.Service):
 
         return pool.ns_records
 
+    @rpc.expected_exceptions()
     def find_zones(self, context, criterion=None, marker=None, limit=None,
                    sort_key=None, sort_dir=None):
         """List existing zones including the ones flagged for deletion.
@@ -997,12 +1019,14 @@ class Service(service.RPCService, service.Service):
         return self.storage.find_zones(context, criterion, marker, limit,
                                        sort_key, sort_dir)
 
+    @rpc.expected_exceptions()
     def find_zone(self, context, criterion=None):
         target = {'tenant_id': context.tenant}
         policy.check('find_zone', context, target)
 
         return self.storage.find_zone(context, criterion)
 
+    @rpc.expected_exceptions()
     @notification('dns.domain.update')
     @notification('dns.zone.update')
     @synchronized_zone()
@@ -1068,6 +1092,7 @@ class Service(service.RPCService, service.Service):
 
         return zone
 
+    @rpc.expected_exceptions()
     @notification('dns.domain.delete')
     @notification('dns.zone.delete')
     @synchronized_zone()
@@ -1122,6 +1147,7 @@ class Service(service.RPCService, service.Service):
 
         return zone
 
+    @rpc.expected_exceptions()
     def purge_zones(self, context, criterion, limit=None):
         """Purge deleted zones.
         :returns: number of purged zones
@@ -1134,6 +1160,7 @@ class Service(service.RPCService, service.Service):
 
         return self.storage.purge_zones(context, criterion, limit)
 
+    @rpc.expected_exceptions()
     def xfr_zone(self, context, zone_id):
         zone = self.storage.get_zone(context, zone_id)
 
@@ -1162,6 +1189,7 @@ class Service(service.RPCService, service.Service):
                      {"srv_serial": serial, "serial": zone.serial})
             self.mdns_api.perform_zone_xfr(context, zone)
 
+    @rpc.expected_exceptions()
     def count_zones(self, context, criterion=None):
         if criterion is None:
             criterion = {}
@@ -1175,6 +1203,7 @@ class Service(service.RPCService, service.Service):
         return self.storage.count_zones(context, criterion)
 
     # Report combining all the count reports based on criterion
+    @rpc.expected_exceptions()
     def count_report(self, context, criterion=None):
         reports = []
 
@@ -1203,6 +1232,7 @@ class Service(service.RPCService, service.Service):
 
         return reports
 
+    @rpc.expected_exceptions()
     @notification('dns.zone.touch')
     @synchronized_zone()
     def touch_zone(self, context, zone_id):
@@ -1230,6 +1260,7 @@ class Service(service.RPCService, service.Service):
         return zone
 
     # RecordSet Methods
+    @rpc.expected_exceptions()
     @notification('dns.recordset.create')
     @synchronized_zone()
     def create_recordset(self, context, zone_id, recordset,
@@ -1319,6 +1350,7 @@ class Service(service.RPCService, service.Service):
         # Return the zone too in case it was updated
         return (recordset, zone)
 
+    @rpc.expected_exceptions()
     def get_recordset(self, context, zone_id, recordset_id):
         recordset = self.storage.get_recordset(context, recordset_id)
 
@@ -1345,6 +1377,7 @@ class Service(service.RPCService, service.Service):
 
         return recordset
 
+    @rpc.expected_exceptions()
     def find_recordsets(self, context, criterion=None, marker=None, limit=None,
                         sort_key=None, sort_dir=None, force_index=False):
         target = {'tenant_id': context.tenant}
@@ -1356,6 +1389,7 @@ class Service(service.RPCService, service.Service):
 
         return recordsets
 
+    @rpc.expected_exceptions()
     def find_recordset(self, context, criterion=None):
         target = {'tenant_id': context.tenant}
         policy.check('find_recordset', context, target)
@@ -1364,6 +1398,7 @@ class Service(service.RPCService, service.Service):
 
         return recordset
 
+    @rpc.expected_exceptions()
     def export_zone(self, context, zone_id):
         zone = self.get_zone(context, zone_id)
 
@@ -1374,6 +1409,7 @@ class Service(service.RPCService, service.Service):
                                      zone=zone,
                                      recordsets=recordsets)
 
+    @rpc.expected_exceptions()
     @notification('dns.recordset.update')
     @synchronized_zone()
     def update_recordset(self, context, recordset, increment_serial=True):
@@ -1447,6 +1483,7 @@ class Service(service.RPCService, service.Service):
 
         return (recordset, zone)
 
+    @rpc.expected_exceptions()
     @notification('dns.recordset.delete')
     @synchronized_zone()
     def delete_recordset(self, context, zone_id, recordset_id,
@@ -1506,6 +1543,7 @@ class Service(service.RPCService, service.Service):
 
         return (recordset, zone)
 
+    @rpc.expected_exceptions()
     def count_recordsets(self, context, criterion=None):
         if criterion is None:
             criterion = {}
@@ -1519,6 +1557,7 @@ class Service(service.RPCService, service.Service):
         return self.storage.count_recordsets(context, criterion)
 
     # Record Methods
+    @rpc.expected_exceptions()
     @notification('dns.record.create')
     @synchronized_zone()
     def create_record(self, context, zone_id, recordset_id, record,
@@ -1571,6 +1610,7 @@ class Service(service.RPCService, service.Service):
 
         return (record, zone)
 
+    @rpc.expected_exceptions()
     def get_record(self, context, zone_id, recordset_id, record_id):
         zone = self.storage.get_zone(context, zone_id)
         recordset = self.storage.get_recordset(context, recordset_id)
@@ -1597,6 +1637,7 @@ class Service(service.RPCService, service.Service):
 
         return record
 
+    @rpc.expected_exceptions()
     def find_records(self, context, criterion=None, marker=None, limit=None,
                      sort_key=None, sort_dir=None):
         target = {'tenant_id': context.tenant}
@@ -1605,12 +1646,14 @@ class Service(service.RPCService, service.Service):
         return self.storage.find_records(context, criterion, marker, limit,
                                          sort_key, sort_dir)
 
+    @rpc.expected_exceptions()
     def find_record(self, context, criterion=None):
         target = {'tenant_id': context.tenant}
         policy.check('find_record', context, target)
 
         return self.storage.find_record(context, criterion)
 
+    @rpc.expected_exceptions()
     @notification('dns.record.update')
     @synchronized_zone()
     def update_record(self, context, record, increment_serial=True):
@@ -1679,6 +1722,7 @@ class Service(service.RPCService, service.Service):
 
         return (record, zone)
 
+    @rpc.expected_exceptions()
     @notification('dns.record.delete')
     @synchronized_zone()
     def delete_record(self, context, zone_id, recordset_id, record_id,
@@ -1739,6 +1783,7 @@ class Service(service.RPCService, service.Service):
 
         return (record, zone)
 
+    @rpc.expected_exceptions()
     def count_records(self, context, criterion=None):
         if criterion is None:
             criterion = {}
@@ -1754,6 +1799,7 @@ class Service(service.RPCService, service.Service):
     def _sync_zone(self, context, zone):
         return self.pool_manager_api.update_zone(context, zone)
 
+    @rpc.expected_exceptions()
     @transaction
     def sync_zones(self, context):
         policy.check('diagnostics_sync_zones', context)
@@ -1766,6 +1812,7 @@ class Service(service.RPCService, service.Service):
 
         return results
 
+    @rpc.expected_exceptions()
     @transaction
     def sync_zone(self, context, zone_id):
         zone = self.storage.get_zone(context, zone_id)
@@ -1780,6 +1827,7 @@ class Service(service.RPCService, service.Service):
 
         return self._sync_zone(context, zone)
 
+    @rpc.expected_exceptions()
     @transaction
     def sync_record(self, context, zone_id, recordset_id, record_id):
         zone = self.storage.get_zone(context, zone_id)
@@ -1798,6 +1846,7 @@ class Service(service.RPCService, service.Service):
 
         self.zone_api.update_zone(context, zone)
 
+    @rpc.expected_exceptions()
     def ping(self, context):
         policy.check('diagnostics_ping', context)
 
@@ -1956,6 +2005,7 @@ class Service(service.RPCService, service.Service):
         return fips[region, floatingip_id]
 
     # PTR ops
+    @rpc.expected_exceptions()
     def list_floatingips(self, context):
         """
         List Floating IPs PTR
@@ -1976,6 +2026,7 @@ class Service(service.RPCService, service.Service):
 
         return self._format_floatingips(context, valid)
 
+    @rpc.expected_exceptions()
     def get_floatingip(self, context, region, floatingip_id):
         """
         Get Floating IP PTR
@@ -2123,6 +2174,7 @@ class Service(service.RPCService, service.Service):
             recordset_id=record['recordset_id'],
             record_id=record['id'])
 
+    @rpc.expected_exceptions()
     @transaction
     def update_floatingip(self, context, region, floatingip_id, values):
         """
@@ -2137,6 +2189,7 @@ class Service(service.RPCService, service.Service):
                 context, region, floatingip_id, values)
 
     # Blacklisted zones
+    @rpc.expected_exceptions()
     @notification('dns.blacklist.create')
     @transaction
     def create_blacklist(self, context, blacklist):
@@ -2146,6 +2199,7 @@ class Service(service.RPCService, service.Service):
 
         return created_blacklist
 
+    @rpc.expected_exceptions()
     def get_blacklist(self, context, blacklist_id):
         policy.check('get_blacklist', context)
 
@@ -2153,6 +2207,7 @@ class Service(service.RPCService, service.Service):
 
         return blacklist
 
+    @rpc.expected_exceptions()
     def find_blacklists(self, context, criterion=None, marker=None,
                         limit=None, sort_key=None, sort_dir=None):
         policy.check('find_blacklists', context)
@@ -2163,6 +2218,7 @@ class Service(service.RPCService, service.Service):
 
         return blacklists
 
+    @rpc.expected_exceptions()
     def find_blacklist(self, context, criterion):
         policy.check('find_blacklist', context)
 
@@ -2170,6 +2226,7 @@ class Service(service.RPCService, service.Service):
 
         return blacklist
 
+    @rpc.expected_exceptions()
     @notification('dns.blacklist.update')
     @transaction
     def update_blacklist(self, context, blacklist):
@@ -2182,6 +2239,7 @@ class Service(service.RPCService, service.Service):
 
         return blacklist
 
+    @rpc.expected_exceptions()
     @notification('dns.blacklist.delete')
     @transaction
     def delete_blacklist(self, context, blacklist_id):
@@ -2192,6 +2250,7 @@ class Service(service.RPCService, service.Service):
         return blacklist
 
     # Server Pools
+    @rpc.expected_exceptions()
     @notification('dns.pool.create')
     @transaction
     def create_pool(self, context, pool):
@@ -2205,6 +2264,7 @@ class Service(service.RPCService, service.Service):
 
         return created_pool
 
+    @rpc.expected_exceptions()
     def find_pools(self, context, criterion=None, marker=None, limit=None,
                    sort_key=None, sort_dir=None):
 
@@ -2213,18 +2273,21 @@ class Service(service.RPCService, service.Service):
         return self.storage.find_pools(context, criterion, marker, limit,
                                        sort_key, sort_dir)
 
+    @rpc.expected_exceptions()
     def find_pool(self, context, criterion=None):
 
         policy.check('find_pool', context)
 
         return self.storage.find_pool(context, criterion)
 
+    @rpc.expected_exceptions()
     def get_pool(self, context, pool_id):
 
         policy.check('get_pool', context)
 
         return self.storage.get_pool(context, pool_id)
 
+    @rpc.expected_exceptions()
     @notification('dns.pool.update')
     @transaction
     def update_pool(self, context, pool):
@@ -2281,6 +2344,7 @@ class Service(service.RPCService, service.Service):
 
         return updated_pool
 
+    @rpc.expected_exceptions()
     @notification('dns.pool.delete')
     @transaction
     def delete_pool(self, context, pool_id):
@@ -2303,6 +2367,7 @@ class Service(service.RPCService, service.Service):
         return pool
 
     # Pool Manager Integration
+    @rpc.expected_exceptions()
     @notification('dns.domain.update')
     @notification('dns.zone.update')
     @transaction
@@ -2434,6 +2499,7 @@ class Service(service.RPCService, service.Service):
         sysrand = SystemRandom()
         return ''.join(sysrand.choice(chars) for _ in range(size))
 
+    @rpc.expected_exceptions()
     @notification('dns.zone_transfer_request.create')
     @transaction
     def create_zone_transfer_request(self, context, zone_transfer_request):
@@ -2461,6 +2527,7 @@ class Service(service.RPCService, service.Service):
 
         return created_zone_transfer_request
 
+    @rpc.expected_exceptions()
     def get_zone_transfer_request(self, context, zone_transfer_request_id):
 
         elevated_context = context.elevated(all_tenants=True)
@@ -2478,6 +2545,7 @@ class Service(service.RPCService, service.Service):
 
         return zone_transfer_request
 
+    @rpc.expected_exceptions()
     def find_zone_transfer_requests(self, context, criterion=None, marker=None,
                                     limit=None, sort_key=None, sort_dir=None):
 
@@ -2490,6 +2558,7 @@ class Service(service.RPCService, service.Service):
 
         return requests
 
+    @rpc.expected_exceptions()
     def find_zone_transfer_request(self, context, criterion):
         target = {
             'tenant_id': context.tenant,
@@ -2497,6 +2566,7 @@ class Service(service.RPCService, service.Service):
         policy.check('find_zone_transfer_request', context, target)
         return self.storage.find_zone_transfer_requests(context, criterion)
 
+    @rpc.expected_exceptions()
     @notification('dns.zone_transfer_request.update')
     @transaction
     def update_zone_transfer_request(self, context, zone_transfer_request):
@@ -2513,6 +2583,7 @@ class Service(service.RPCService, service.Service):
 
         return request
 
+    @rpc.expected_exceptions()
     @notification('dns.zone_transfer_request.delete')
     @transaction
     def delete_zone_transfer_request(self, context, zone_transfer_request_id):
@@ -2527,6 +2598,7 @@ class Service(service.RPCService, service.Service):
             context,
             zone_transfer_request_id)
 
+    @rpc.expected_exceptions()
     @notification('dns.zone_transfer_accept.create')
     @transaction
     def create_zone_transfer_accept(self, context, zone_transfer_accept):
@@ -2590,6 +2662,7 @@ class Service(service.RPCService, service.Service):
 
         return created_zone_transfer_accept
 
+    @rpc.expected_exceptions()
     def get_zone_transfer_accept(self, context, zone_transfer_accept_id):
         # Get zone transfer accept
 
@@ -2603,6 +2676,7 @@ class Service(service.RPCService, service.Service):
 
         return zone_transfer_accept
 
+    @rpc.expected_exceptions()
     def find_zone_transfer_accepts(self, context, criterion=None, marker=None,
                                    limit=None, sort_key=None, sort_dir=None):
         policy.check('find_zone_transfer_accepts', context)
@@ -2610,10 +2684,12 @@ class Service(service.RPCService, service.Service):
                                                        marker, limit,
                                                        sort_key, sort_dir)
 
+    @rpc.expected_exceptions()
     def find_zone_transfer_accept(self, context, criterion):
         policy.check('find_zone_transfer_accept', context)
         return self.storage.find_zone_transfer_accept(context, criterion)
 
+    @rpc.expected_exceptions()
     @notification('dns.zone_transfer_accept.update')
     @transaction
     def update_zone_transfer_accept(self, context, zone_transfer_accept):
@@ -2626,6 +2702,7 @@ class Service(service.RPCService, service.Service):
 
         return accept
 
+    @rpc.expected_exceptions()
     @notification('dns.zone_transfer_accept.delete')
     @transaction
     def delete_zone_transfer_accept(self, context, zone_transfer_accept_id):
@@ -2642,6 +2719,7 @@ class Service(service.RPCService, service.Service):
             zone_transfer_accept_id)
 
     # Zone Import Methods
+    @rpc.expected_exceptions()
     @notification('dns.zone_import.create')
     def create_zone_import(self, context, request_body):
         target = {'tenant_id': context.tenant}
@@ -2737,6 +2815,7 @@ class Service(service.RPCService, service.Service):
 
         self.update_zone_import(context, zone_import)
 
+    @rpc.expected_exceptions()
     def find_zone_imports(self, context, criterion=None, marker=None,
                   limit=None, sort_key=None, sort_dir=None):
         target = {'tenant_id': context.tenant}
@@ -2748,11 +2827,13 @@ class Service(service.RPCService, service.Service):
         return self.storage.find_zone_imports(context, criterion, marker,
                                       limit, sort_key, sort_dir)
 
+    @rpc.expected_exceptions()
     def get_zone_import(self, context, zone_import_id):
         target = {'tenant_id': context.tenant}
         policy.check('get_zone_import', context, target)
         return self.storage.get_zone_import(context, zone_import_id)
 
+    @rpc.expected_exceptions()
     @notification('dns.zone_import.update')
     def update_zone_import(self, context, zone_import):
         target = {
@@ -2762,6 +2843,7 @@ class Service(service.RPCService, service.Service):
 
         return self.storage.update_zone_import(context, zone_import)
 
+    @rpc.expected_exceptions()
     @notification('dns.zone_import.delete')
     @transaction
     def delete_zone_import(self, context, zone_import_id):
@@ -2776,6 +2858,7 @@ class Service(service.RPCService, service.Service):
         return zone_import
 
     # Zone Export Methods
+    @rpc.expected_exceptions()
     @notification('dns.zone_export.create')
     def create_zone_export(self, context, zone_id):
         # Try getting the zone to ensure it exists
@@ -2832,6 +2915,7 @@ class Service(service.RPCService, service.Service):
 
         return created_zone_export
 
+    @rpc.expected_exceptions()
     def find_zone_exports(self, context, criterion=None, marker=None,
                   limit=None, sort_key=None, sort_dir=None):
         target = {'tenant_id': context.tenant}
@@ -2843,12 +2927,14 @@ class Service(service.RPCService, service.Service):
         return self.storage.find_zone_exports(context, criterion, marker,
                                       limit, sort_key, sort_dir)
 
+    @rpc.expected_exceptions()
     def get_zone_export(self, context, zone_export_id):
         target = {'tenant_id': context.tenant}
         policy.check('get_zone_export', context, target)
 
         return self.storage.get_zone_export(context, zone_export_id)
 
+    @rpc.expected_exceptions()
     @notification('dns.zone_export.update')
     def update_zone_export(self, context, zone_export):
         target = {
@@ -2858,6 +2944,7 @@ class Service(service.RPCService, service.Service):
 
         return self.storage.update_zone_export(context, zone_export)
 
+    @rpc.expected_exceptions()
     @notification('dns.zone_export.delete')
     @transaction
     def delete_zone_export(self, context, zone_export_id):
@@ -2871,6 +2958,7 @@ class Service(service.RPCService, service.Service):
 
         return zone_export
 
+    @rpc.expected_exceptions()
     def find_service_statuses(self, context, criterion=None, marker=None,
                               limit=None, sort_key=None, sort_dir=None):
         """List service statuses.
@@ -2880,11 +2968,13 @@ class Service(service.RPCService, service.Service):
         return self.storage.find_service_statuses(
             context, criterion, marker, limit, sort_key, sort_dir)
 
+    @rpc.expected_exceptions()
     def find_service_status(self, context, criterion=None):
         policy.check('find_service_status', context)
 
         return self.storage.find_service_status(context, criterion)
 
+    @rpc.expected_exceptions()
     def update_service_status(self, context, service_status):
         policy.check('update_service_status', context)
 

@@ -19,6 +19,7 @@ import mock
 import testtools
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_messaging.rpc import dispatcher as rpc_dispatcher
 
 from designate import exceptions
 from designate import objects
@@ -375,8 +376,11 @@ class StorageTestCase(object):
         values = self.get_tsigkey_fixture(1)
         values['name'] = tsigkey_one['name']
 
-        with testtools.ExpectedException(exceptions.DuplicateTsigKey):
-            self.create_tsigkey(**values)
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.create_tsigkey,
+                                **values)
+
+        self.assertEqual(exceptions.DuplicateTsigKey, exc.exc_info[0])
 
     def test_find_tsigkeys(self):
         actual = self.storage.find_tsigkeys(self.admin_context)
@@ -599,8 +603,10 @@ class StorageTestCase(object):
         # Create the Initial Zone
         self.create_zone()
 
-        with testtools.ExpectedException(exceptions.DuplicateZone):
-            self.create_zone()
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.create_zone)
+
+        self.assertEqual(exceptions.DuplicateZone, exc.exc_info[0])
 
     def test_find_zones(self):
         self.config(quota_zones=20)
@@ -880,9 +886,11 @@ class StorageTestCase(object):
         # Create the First RecordSet
         self.create_recordset(zone)
 
-        with testtools.ExpectedException(exceptions.DuplicateRecordSet):
-            # Attempt to create the second/duplicate recordset
-            self.create_recordset(zone)
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.create_recordset,
+                                zone)
+
+        self.assertEqual(exceptions.DuplicateRecordSet, exc.exc_info[0])
 
     def test_create_recordset_with_records(self):
         zone = self.create_zone()
@@ -1308,9 +1316,11 @@ class StorageTestCase(object):
         # Create the First Record
         self.create_record(zone, recordset)
 
-        with testtools.ExpectedException(exceptions.DuplicateRecord):
-            # Attempt to create the second/duplicate record
-            self.create_record(zone, recordset)
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.create_record,
+                                zone, recordset)
+
+        self.assertEqual(exceptions.DuplicateRecord, exc.exc_info[0])
 
     def test_find_records(self):
         zone = self.create_zone()
@@ -1603,9 +1613,11 @@ class StorageTestCase(object):
         # Create the First Tld
         self.create_tld(fixture=0)
 
-        with testtools.ExpectedException(exceptions.DuplicateTld):
-            # Attempt to create the second/duplicate Tld
-            self.create_tld(fixture=0)
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.create_tld,
+                                fixture=0)
+
+        self.assertEqual(exceptions.DuplicateTld, exc.exc_info[0])
 
     def test_find_tlds(self):
 
@@ -1759,8 +1771,11 @@ class StorageTestCase(object):
         # Create the initial Blacklist
         self.create_blacklist(fixture=0)
 
-        with testtools.ExpectedException(exceptions.DuplicateBlacklist):
-            self.create_blacklist(fixture=0)
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.create_blacklist,
+                                fixture=0)
+
+        self.assertEqual(exceptions.DuplicateBlacklist, exc.exc_info[0])
 
     def test_find_blacklists(self):
         # Verify that there are no blacklists created
@@ -1935,8 +1950,11 @@ class StorageTestCase(object):
         self.create_pool(fixture=0)
 
         # Create the second pool and should get exception
-        with testtools.ExpectedException(exceptions.DuplicatePool):
-            self.create_pool(fixture=0)
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.create_pool,
+                                fixture=0)
+
+        self.assertEqual(exceptions.DuplicatePool, exc.exc_info[0])
 
     def test_find_pools(self):
         # Verify that there are no pools, except for default pool

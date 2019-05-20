@@ -28,6 +28,7 @@ from oslo_log import log as logging
 from oslo_db import exception as db_exception
 from oslo_versionedobjects import exception as ovo_exc
 from oslo_messaging.notify import notifier
+from oslo_messaging.rpc import dispatcher as rpc_dispatcher
 
 from designate import exceptions
 from designate import objects
@@ -325,10 +326,11 @@ class CentralServiceTest(CentralTestCase):
         self.central_service.delete_tld(self.admin_context, tld['id'])
 
         # Fetch the tld again, ensuring an exception is raised
-        self.assertRaises(
-            exceptions.TldNotFound,
-            self.central_service.get_tld,
-            self.admin_context, tld['id'])
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.get_tld,
+                                self.admin_context, tld['id'])
+
+        self.assertEqual(exceptions.TldNotFound, exc.exc_info[0])
 
     # TsigKey Tests
     def test_create_tsigkey(self):
@@ -404,8 +406,11 @@ class CentralServiceTest(CentralTestCase):
         self.central_service.delete_tsigkey(self.admin_context, tsigkey['id'])
 
         # Fetch the tsigkey again, ensuring an exception is raised
-        with testtools.ExpectedException(exceptions.TsigKeyNotFound):
-            self.central_service.get_tsigkey(self.admin_context, tsigkey['id'])
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.get_tsigkey,
+                                self.admin_context, tsigkey['id'])
+
+        self.assertEqual(exceptions.TsigKeyNotFound, exc.exc_info[0])
 
     # Tenant Tests
     def test_count_tenants(self):
@@ -430,8 +435,11 @@ class CentralServiceTest(CentralTestCase):
         # Set the policy to reject the authz
         self.policy({'count_tenants': '!'})
 
-        with testtools.ExpectedException(exceptions.Forbidden):
-            self.central_service.count_tenants(self.get_context())
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.count_tenants,
+                                self.get_context())
+
+        self.assertEqual(exceptions.Forbidden, exc.exc_info[0])
 
     # Zone Tests
     @mock.patch.object(notifier.Notifier, "info")
@@ -510,8 +518,10 @@ class CentralServiceTest(CentralTestCase):
 
         self.create_zone()
 
-        with testtools.ExpectedException(exceptions.OverQuota):
-            self.create_zone()
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.create_zone)
+
+        self.assertEqual(exceptions.OverQuota, exc.exc_info[0])
 
     def test_create_subzone(self):
         # Create the Parent Zone using fixture 0
@@ -593,9 +603,11 @@ class CentralServiceTest(CentralTestCase):
         values['name'] = 'www.%s' % parent_zone['name']
 
         # Attempt to create the subzone
-        with testtools.ExpectedException(exceptions.IllegalChildZone):
-            self.central_service.create_zone(
-                context, objects.Zone.from_dict(values))
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.create_zone,
+                                context, objects.Zone.from_dict(values))
+
+        self.assertEqual(exceptions.IllegalChildZone, exc.exc_info[0])
 
     def test_create_superzone_failure(self):
         context = self.get_admin_context()
@@ -620,9 +632,11 @@ class CentralServiceTest(CentralTestCase):
         context.tenant = '2'
 
         # Attempt to create the zone
-        with testtools.ExpectedException(exceptions.IllegalParentZone):
-            self.central_service.create_zone(
-                context, objects.Zone.from_dict(zone_values))
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.create_zone,
+                                context, objects.Zone.from_dict(zone_values))
+
+        self.assertEqual(exceptions.IllegalParentZone, exc.exc_info[0])
 
     def test_create_blacklisted_zone_success(self):
         # Create blacklisted zone using default values
@@ -656,10 +670,12 @@ class CentralServiceTest(CentralTestCase):
             email='info@blacklisted.com'
         )
 
-        with testtools.ExpectedException(exceptions.InvalidZoneName):
-            # Create a zone
-            self.central_service.create_zone(
-                self.admin_context, objects.Zone.from_dict(values))
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.create_zone,
+                                self.admin_context,
+                                objects.Zone.from_dict(values))
+
+        self.assertEqual(exceptions.InvalidZoneName, exc.exc_info[0])
 
     def _test_create_zone_fail(self, values, exception):
 
@@ -687,10 +703,13 @@ class CentralServiceTest(CentralTestCase):
         )
 
         # There is no TLD for net so it should fail
-        with testtools.ExpectedException(exceptions.InvalidZoneName):
-            # Create an invalid zone
-            self.central_service.create_zone(
-                self.admin_context, objects.Zone.from_dict(values))
+        # Create an invalid zone
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.create_zone,
+                                self.admin_context,
+                                objects.Zone.from_dict(values))
+
+        self.assertEqual(exceptions.InvalidZoneName, exc.exc_info[0])
 
     def test_create_zone_invalid_ttl_fail(self):
         self.policy({'use_low_ttl': '!'})
@@ -905,8 +924,11 @@ class CentralServiceTest(CentralTestCase):
         zone.name = 'example.net.'
 
         # Perform the update
-        with testtools.ExpectedException(exceptions.BadRequest):
-            self.central_service.update_zone(self.admin_context, zone)
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.update_zone,
+                                self.admin_context, zone)
+
+        self.assertEqual(exceptions.BadRequest, exc.exc_info[0])
 
     def test_update_zone_deadlock_retry(self):
         # Create a zone
@@ -1005,8 +1027,11 @@ class CentralServiceTest(CentralTestCase):
         # Set the policy to reject the authz
         self.policy({'count_zones': '!'})
 
-        with testtools.ExpectedException(exceptions.Forbidden):
-            self.central_service.count_zones(self.get_context())
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.count_zones,
+                                self.get_context())
+
+        self.assertEqual(exceptions.Forbidden, exc.exc_info[0])
 
     def _fetch_all_zones(self):
         """Fetch all zones including deleted ones
@@ -1356,8 +1381,11 @@ class CentralServiceTest(CentralTestCase):
     def test_xfr_zone_invalid_type(self):
         zone = self.create_zone()
 
-        with testtools.ExpectedException(exceptions.BadRequest):
-            self.central_service.xfr_zone(self.admin_context, zone.id)
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.xfr_zone,
+                                self.admin_context, zone.id)
+
+        self.assertEqual(exceptions.BadRequest, exc.exc_info[0])
 
     # RecordSet Tests
     def test_create_recordset(self):
@@ -1424,8 +1452,11 @@ class CentralServiceTest(CentralTestCase):
 
         self.create_recordset(zone)
 
-        with testtools.ExpectedException(exceptions.OverQuota):
-            self.create_recordset(zone)
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.create_recordset,
+                                zone)
+
+        self.assertEqual(exceptions.OverQuota, exc.exc_info[0])
 
     def test_create_invalid_recordset_location_cname_at_apex(self):
         zone = self.create_zone()
@@ -1436,11 +1467,13 @@ class CentralServiceTest(CentralTestCase):
         )
 
         # Attempt to create a CNAME record at the apex
-        with testtools.ExpectedException(exceptions.InvalidRecordSetLocation):
-            self.central_service.create_recordset(
-                self.admin_context,
-                zone['id'],
-                recordset=objects.RecordSet.from_dict(values))
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.create_recordset,
+                                self.admin_context,
+                                zone['id'],
+                                recordset=objects.RecordSet.from_dict(values))
+
+        self.assertEqual(exceptions.InvalidRecordSetLocation, exc.exc_info[0])
 
     def test_create_invalid_recordset_location_cname_sharing(self):
         zone = self.create_zone()
@@ -1452,11 +1485,13 @@ class CentralServiceTest(CentralTestCase):
         )
 
         # Attempt to create a CNAME record alongside another record
-        with testtools.ExpectedException(exceptions.InvalidRecordSetLocation):
-            self.central_service.create_recordset(
-                self.admin_context,
-                zone['id'],
-                recordset=objects.RecordSet.from_dict(values))
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.create_recordset,
+                                self.admin_context,
+                                zone['id'],
+                                recordset=objects.RecordSet.from_dict(values))
+
+        self.assertEqual(exceptions.InvalidRecordSetLocation, exc.exc_info[0])
 
     def test_create_invalid_recordset_location_wrong_zone(self):
         zone = self.create_zone()
@@ -1468,11 +1503,13 @@ class CentralServiceTest(CentralTestCase):
         )
 
         # Attempt to create a record in the incorrect zone
-        with testtools.ExpectedException(exceptions.InvalidRecordSetLocation):
-            self.central_service.create_recordset(
-                self.admin_context,
-                zone['id'],
-                recordset=objects.RecordSet.from_dict(values))
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.create_recordset,
+                                self.admin_context,
+                                zone['id'],
+                                recordset=objects.RecordSet.from_dict(values))
+
+        self.assertEqual(exceptions.InvalidRecordSetLocation, exc.exc_info[0])
 
     def test_create_invalid_recordset_ttl(self):
         self.policy({'use_low_ttl': '!'})
@@ -1487,11 +1524,11 @@ class CentralServiceTest(CentralTestCase):
         )
 
         # Attempt to create a A record under the TTL
-        with testtools.ExpectedException(exceptions.InvalidTTL):
-            self.central_service.create_recordset(
-                self.admin_context,
-                zone['id'],
-                recordset=objects.RecordSet.from_dict(values))
+        self.assertRaises(exceptions.InvalidTTL,
+                          self.central_service.create_recordset,
+                          self.admin_context,
+                          zone['id'],
+                          recordset=objects.RecordSet.from_dict(values))
 
     def test_create_recordset_no_min_ttl(self):
         self.policy({'use_low_ttl': '!'})
@@ -1549,9 +1586,12 @@ class CentralServiceTest(CentralTestCase):
         expected = self.create_recordset(zone)
 
         # Ensure we get a 404 if we use the incorrect zone_id
-        with testtools.ExpectedException(exceptions.RecordSetNotFound):
-            self.central_service.get_recordset(
-                self.admin_context, other_zone['id'], expected['id'])
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.get_recordset,
+                                self.admin_context, other_zone['id'],
+                                expected['id'])
+
+        self.assertEqual(exceptions.RecordSetNotFound, exc.exc_info[0])
 
     def test_find_recordsets(self):
         zone = self.create_zone()
@@ -1843,9 +1883,12 @@ class CentralServiceTest(CentralTestCase):
             self.admin_context, zone['id'], recordset['id'])
 
         # Fetch the recordset again, ensuring an exception is raised
-        with testtools.ExpectedException(exceptions.RecordSetNotFound):
-            self.central_service.get_recordset(
-                self.admin_context, zone['id'], recordset['id'])
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.get_recordset,
+                                self.admin_context, zone['id'],
+                                recordset['id'])
+
+        self.assertEqual(exceptions.RecordSetNotFound, exc.exc_info[0])
 
         # Fetch the zone again to verify serial number increased
         updated_zone = self.central_service.get_zone(self.admin_context,
@@ -1869,9 +1912,12 @@ class CentralServiceTest(CentralTestCase):
             increment_serial=False)
 
         # Fetch the record again, ensuring an exception is raised
-        with testtools.ExpectedException(exceptions.RecordSetNotFound):
-            self.central_service.get_recordset(
-                self.admin_context, zone['id'], recordset['id'])
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.get_recordset,
+                                self.admin_context, zone['id'],
+                                recordset['id'])
+
+        self.assertEqual(exceptions.RecordSetNotFound, exc.exc_info[0])
 
         # Ensure the zones serial number was not updated
         zone_after = self.central_service.get_zone(
@@ -1887,9 +1933,12 @@ class CentralServiceTest(CentralTestCase):
         recordset = self.create_recordset(zone)
 
         # Ensure we get a 404 if we use the incorrect zone_id
-        with testtools.ExpectedException(exceptions.RecordSetNotFound):
-            self.central_service.delete_recordset(
-                self.admin_context, other_zone['id'], recordset['id'])
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.delete_recordset,
+                                self.admin_context, other_zone['id'],
+                                recordset['id'])
+
+        self.assertEqual(exceptions.RecordSetNotFound, exc.exc_info[0])
 
     def test_count_recordsets(self):
         # in the beginning, there should be nothing
@@ -1910,8 +1959,11 @@ class CentralServiceTest(CentralTestCase):
         # Set the policy to reject the authz
         self.policy({'count_recordsets': '!'})
 
-        with testtools.ExpectedException(exceptions.Forbidden):
-            self.central_service.count_recordsets(self.get_context())
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.count_recordsets,
+                                self.get_context())
+
+        self.assertEqual(exceptions.Forbidden, exc.exc_info[0])
 
     # Record Tests
     def test_create_record(self):
@@ -1942,8 +1994,11 @@ class CentralServiceTest(CentralTestCase):
 
         self.create_record(zone, recordset)
 
-        with testtools.ExpectedException(exceptions.OverQuota):
-            self.create_record(zone, recordset)
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.create_record,
+                                zone, recordset)
+
+        self.assertEqual(exceptions.OverQuota, exc.exc_info[0])
 
     def test_create_record_over_zone_quota(self):
         self.config(quota_zone_records=1)
@@ -1960,10 +2015,12 @@ class CentralServiceTest(CentralTestCase):
             ])
         )
 
-        with testtools.ExpectedException(exceptions.OverQuota):
-            # Persist the Object
-            recordset = self.central_service.create_recordset(
-                self.admin_context, zone.id, recordset=recordset)
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.create_recordset,
+                                self.admin_context, zone.id,
+                                recordset=recordset)
+
+        self.assertEqual(exceptions.OverQuota, exc.exc_info[0])
 
     def test_create_record_over_recordset_quota(self):
         self.config(quota_recordset_records=1)
@@ -1974,8 +2031,11 @@ class CentralServiceTest(CentralTestCase):
 
         self.create_record(zone, recordset)
 
-        with testtools.ExpectedException(exceptions.OverQuota):
-            self.create_record(zone, recordset)
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.create_record,
+                                zone, recordset)
+
+        self.assertEqual(exceptions.OverQuota, exc.exc_info[0])
 
     def test_create_record_without_incrementing_serial(self):
         zone = self.create_zone()
@@ -2020,11 +2080,13 @@ class CentralServiceTest(CentralTestCase):
         # Create a record
         expected = self.create_record(zone, recordset)
 
-        # Ensure we get a 404 if we use the incorrect zone_id
-        with testtools.ExpectedException(exceptions.RecordNotFound):
-            self.central_service.get_record(
-                self.admin_context, other_zone['id'], recordset['id'],
-                expected['id'])
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.get_record,
+                                self.admin_context, other_zone['id'],
+                                recordset['id'],
+                                expected['id'])
+
+        self.assertEqual(exceptions.RecordNotFound, exc.exc_info[0])
 
     def test_get_record_incorrect_recordset_id(self):
         zone = self.create_zone()
@@ -2034,11 +2096,14 @@ class CentralServiceTest(CentralTestCase):
         # Create a record
         expected = self.create_record(zone, recordset)
 
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.get_record,
+                                self.admin_context, zone['id'],
+                                other_recordset['id'],
+                                expected['id'])
+
         # Ensure we get a 404 if we use the incorrect recordset_id
-        with testtools.ExpectedException(exceptions.RecordNotFound):
-            self.central_service.get_record(
-                self.admin_context, zone['id'], other_recordset['id'],
-                expected['id'])
+        self.assertEqual(exceptions.RecordNotFound, exc.exc_info[0])
 
     def test_find_records(self):
         zone = self.create_zone()
@@ -2162,8 +2227,11 @@ class CentralServiceTest(CentralTestCase):
         record.zone_id = other_zone.id
 
         # Ensure we get a BadRequest if we change the zone_id
-        with testtools.ExpectedException(exceptions.BadRequest):
-            self.central_service.update_record(self.admin_context, record)
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.update_record,
+                                self.admin_context, record)
+
+        self.assertEqual(exceptions.BadRequest, exc.exc_info[0])
 
     def test_update_record_immutable_recordset_id(self):
         zone = self.create_zone()
@@ -2177,8 +2245,11 @@ class CentralServiceTest(CentralTestCase):
         record.recordset_id = other_recordset.id
 
         # Ensure we get a BadRequest if we change the recordset_id
-        with testtools.ExpectedException(exceptions.BadRequest):
-            self.central_service.update_record(self.admin_context, record)
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.update_record,
+                                self.admin_context, record)
+
+        self.assertEqual(exceptions.BadRequest, exc.exc_info[0])
 
     def test_delete_record(self):
         zone = self.create_zone()
@@ -2260,10 +2331,13 @@ class CentralServiceTest(CentralTestCase):
         record = self.create_record(zone, recordset)
 
         # Ensure we get a 404 if we use the incorrect zone_id
-        with testtools.ExpectedException(exceptions.RecordNotFound):
-            self.central_service.delete_record(
-                self.admin_context, other_zone['id'], recordset['id'],
-                record['id'])
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.delete_record,
+                                self.admin_context, other_zone['id'],
+                                recordset['id'],
+                                record['id'])
+
+        self.assertEqual(exceptions.RecordNotFound, exc.exc_info[0])
 
     def test_delete_record_incorrect_recordset_id(self):
         zone = self.create_zone()
@@ -2274,10 +2348,13 @@ class CentralServiceTest(CentralTestCase):
         record = self.create_record(zone, recordset)
 
         # Ensure we get a 404 if we use the incorrect recordset_id
-        with testtools.ExpectedException(exceptions.RecordNotFound):
-            self.central_service.delete_record(
-                self.admin_context, zone['id'], other_recordset['id'],
-                record['id'])
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.delete_record,
+                                self.admin_context, zone['id'],
+                                other_recordset['id'],
+                                record['id'])
+
+        self.assertEqual(exceptions.RecordNotFound, exc.exc_info[0])
 
     def test_count_records(self):
         # in the beginning, there should be nothing
@@ -2299,8 +2376,11 @@ class CentralServiceTest(CentralTestCase):
         # Set the policy to reject the authz
         self.policy({'count_records': '!'})
 
-        with testtools.ExpectedException(exceptions.Forbidden):
-            self.central_service.count_records(self.get_context())
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.count_records,
+                                self.get_context())
+
+        self.assertEqual(exceptions.Forbidden, exc.exc_info[0])
 
     def test_get_floatingip_no_record(self):
         context = self.get_context(tenant='a')
@@ -2351,9 +2431,11 @@ class CentralServiceTest(CentralTestCase):
         fip = self.network_api.fake.allocate_floatingip(context.tenant)
         self.network_api.fake.deallocate_floatingip(fip['id'])
 
-        with testtools.ExpectedException(exceptions.NotFound):
-            self.central_service.get_floatingip(
-                context, fip['region'], fip['id'])
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.get_floatingip,
+                                context, fip['region'], fip['id'])
+
+        self.assertEqual(exceptions.NotFound, exc.exc_info[0])
 
     def test_get_floatingip_deallocated_and_invalidate(self):
         context_a = self.get_context(tenant='a')
@@ -2384,9 +2466,11 @@ class CentralServiceTest(CentralTestCase):
 
         self.network_api.fake.deallocate_floatingip(fip['id'])
 
-        with testtools.ExpectedException(exceptions.NotFound):
-            self.central_service.get_floatingip(
-                context_a, fip['region'], fip['id'])
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.get_floatingip,
+                                context_a, fip['region'], fip['id'])
+
+        self.assertEqual(exceptions.NotFound, exc.exc_info[0])
 
         # Ensure that the record is still in DB (No invalidation)
         self.central_service.find_record(elevated_a, criterion)
@@ -2408,8 +2492,11 @@ class CentralServiceTest(CentralTestCase):
 
         # Ensure that the old record for tenant a for the fip now owned by
         # tenant b is gone
-        with testtools.ExpectedException(exceptions.RecordNotFound):
-            self.central_service.find_record(elevated_a, criterion)
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.find_record,
+                                elevated_a, criterion)
+
+        self.assertEqual(exceptions.RecordNotFound, exc.exc_info[0])
 
     def test_list_floatingips_no_allocations(self):
         context = self.get_context(tenant='a')
@@ -2481,7 +2568,7 @@ class CentralServiceTest(CentralTestCase):
         self.network_api.fake.deallocate_floatingip(fip['id'])
 
         fips = self.central_service.list_floatingips(context_a)
-        assert(len(fips) == 0)
+        self.assertEqual(len(fips), 0)
 
         # Ensure that the record is still in DB (No invalidation)
         self.central_service.find_record(elevated_a, criterion)
@@ -2503,8 +2590,11 @@ class CentralServiceTest(CentralTestCase):
 
         # Ensure that the old record for tenant a for the fip now owned by
         # tenant b is gone
-        with testtools.ExpectedException(exceptions.RecordNotFound):
-            self.central_service.find_record(elevated_a, criterion)
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.find_record,
+                                elevated_a, criterion)
+
+        self.assertEqual(exceptions.RecordNotFound, exc.exc_info[0])
 
     def test_set_floatingip(self):
         context = self.get_context(tenant='a')
@@ -2609,9 +2699,11 @@ class CentralServiceTest(CentralTestCase):
 
         # If one attempts to assign a de-allocated FIP or not-owned it should
         # fail with BadRequest
-        with testtools.ExpectedException(exceptions.NotFound):
-            fixture = self.central_service.update_floatingip(
-                context, fip['region'], fip['id'], fixture)
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.update_floatingip,
+                                context, fip['region'], fip['id'], fixture)
+
+        self.assertEqual(exceptions.NotFound, exc.exc_info[0])
 
     def test_unset_floatingip(self):
         context = self.get_context(tenant='a')
@@ -2726,9 +2818,13 @@ class CentralServiceTest(CentralTestCase):
                                               blacklist['id'])
 
         # Try to fetch the blacklist to verify an exception is raised
-        with testtools.ExpectedException(exceptions.BlacklistNotFound):
-            self.central_service.get_blacklist(self.admin_context,
-                                               blacklist['id'])
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.get_blacklist,
+                                self.admin_context,
+                                blacklist['id']
+                                )
+
+        self.assertEqual(exceptions.BlacklistNotFound, exc.exc_info[0])
 
     # SOA recordset tests
     def test_create_SOA(self):
@@ -3005,8 +3101,11 @@ class CentralServiceTest(CentralTestCase):
         self.central_service.delete_pool(self.admin_context, pool['id'])
 
         # Verify that the pool has been deleted
-        with testtools.ExpectedException(exceptions.PoolNotFound):
-            self.central_service.get_pool(self.admin_context, pool['id'])
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.get_pool,
+                                self.admin_context, pool['id'])
+
+        self.assertEqual(exceptions.PoolNotFound, exc.exc_info[0])
 
     def test_update_status_delete_zone(self):
         # Create a zone
@@ -3029,8 +3128,11 @@ class CentralServiceTest(CentralTestCase):
             self.admin_context, zone['id'], "SUCCESS", zone_serial)
 
         # Fetch the zone again, ensuring an exception is raised
-        with testtools.ExpectedException(exceptions.ZoneNotFound):
-            self.central_service.get_zone(self.admin_context, zone['id'])
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.get_zone,
+                                self.admin_context, zone['id'])
+
+        self.assertEqual(exceptions.ZoneNotFound, exc.exc_info[0])
 
     def test_update_status_delete_last_record(self):
         zone = self.create_zone()
@@ -3050,10 +3152,13 @@ class CentralServiceTest(CentralTestCase):
             self.admin_context, zone['id'], "SUCCESS", zone_serial)
 
         # Fetch the record again, ensuring an exception is raised
-        with testtools.ExpectedException(exceptions.RecordSetNotFound):
-            self.central_service.get_record(
-                self.admin_context, zone['id'], recordset['id'],
-                record['id'])
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.get_record,
+                                self.admin_context, zone['id'],
+                                recordset['id'],
+                                record['id'])
+
+        self.assertEqual(exceptions.RecordSetNotFound, exc.exc_info[0])
 
     @mock.patch.object(notifier.Notifier, "info")
     def test_update_status_send_notification(self, mock_notifier):
@@ -3114,10 +3219,12 @@ class CentralServiceTest(CentralTestCase):
             self.admin_context, zone['id'], "SUCCESS", zone_serial)
 
         # Fetch the record again, ensuring an exception is raised
-        with testtools.ExpectedException(exceptions.RecordSetNotFound):
-            self.central_service.get_record(
-                self.admin_context, zone['id'], recordset['id'],
-                record['id'])
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.get_record,
+                                self.admin_context, zone['id'],
+                                recordset['id'], record['id'])
+
+        self.assertEqual(exceptions.RecordSetNotFound, exc.exc_info[0])
 
         # Ensure the zones serial number was not updated
         new_zone_serial = self.central_service.get_zone(
@@ -3180,9 +3287,14 @@ class CentralServiceTest(CentralTestCase):
     def test_create_zone_transfer_request_duplicate(self):
         zone = self.create_zone()
         self.create_zone_transfer_request(zone)
-        with testtools.ExpectedException(
-                exceptions.DuplicateZoneTransferRequest):
-            self.create_zone_transfer_request(zone)
+
+        exc = self.assertRaises(
+            rpc_dispatcher.ExpectedException,
+            self.create_zone_transfer_request,
+            zone)
+
+        self.assertEqual(exceptions.DuplicateZoneTransferRequest,
+                         exc.exc_info[0])
 
     def test_create_scoped_zone_transfer_request(self):
         zone = self.create_zone()
@@ -3225,9 +3337,11 @@ class CentralServiceTest(CentralTestCase):
         self.central_service.get_zone_transfer_request(
             tenant_1_context, zt_request.id)
 
-        with testtools.ExpectedException(exceptions.Forbidden):
-            self.central_service.get_zone_transfer_request(
-                tenant_3_context, zt_request.id)
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.get_zone_transfer_request,
+                                tenant_3_context, zt_request.id)
+
+        self.assertEqual(exceptions.Forbidden, exc.exc_info[0])
 
     def test_update_zone_transfer_request(self):
         zone = self.create_zone()
@@ -3250,11 +3364,13 @@ class CentralServiceTest(CentralTestCase):
         self.central_service.delete_zone_transfer_request(
             self.admin_context, zone_transfer_request.id)
 
-        with testtools.ExpectedException(
-                exceptions.ZoneTransferRequestNotFound):
-                self.central_service.get_zone_transfer_request(
-                    self.admin_context,
-                    zone_transfer_request.id)
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.get_zone_transfer_request,
+                                self.admin_context,
+                                zone_transfer_request.id)
+
+        self.assertEqual(exceptions.ZoneTransferRequestNotFound,
+                         exc.exc_info[0])
 
     def test_create_zone_transfer_accept(self):
         tenant_1_context = self.get_context(tenant=1)
@@ -3380,10 +3496,12 @@ class CentralServiceTest(CentralTestCase):
         zone_transfer_accept.key = 'WRONG KEY'
         zone_transfer_accept.zone_id = zone.id
 
-        with testtools.ExpectedException(exceptions.IncorrectZoneTransferKey):
-            zone_transfer_accept = \
-                self.central_service.create_zone_transfer_accept(
-                    tenant_2_context, zone_transfer_accept)
+        exc = self.assertRaises(
+            rpc_dispatcher.ExpectedException,
+            self.central_service.create_zone_transfer_accept,
+            tenant_2_context, zone_transfer_accept)
+
+        self.assertEqual(exceptions.IncorrectZoneTransferKey, exc.exc_info[0])
 
     def test_create_zone_tarnsfer_accept_out_of_tenant_scope(self):
         tenant_1_context = self.get_context(tenant=1)
@@ -3405,10 +3523,13 @@ class CentralServiceTest(CentralTestCase):
         zone_transfer_accept.key = zone_transfer_request.key
         zone_transfer_accept.zone_id = zone.id
 
-        with testtools.ExpectedException(exceptions.Forbidden):
-            zone_transfer_accept = \
-                self.central_service.create_zone_transfer_accept(
-                    tenant_3_context, zone_transfer_accept)
+        exc = self.assertRaises(
+            rpc_dispatcher.ExpectedException,
+            self.central_service.create_zone_transfer_accept,
+            tenant_3_context, zone_transfer_accept
+        )
+
+        self.assertEqual(exceptions.Forbidden, exc.exc_info[0])
 
     # Zone Import Tests
     def test_create_zone_import(self):
@@ -3517,7 +3638,8 @@ class CentralServiceTest(CentralTestCase):
                                                 zone_import['id'])
 
         # Fetch the zone_import again, ensuring an exception is raised
-        self.assertRaises(
-            exceptions.ZoneImportNotFound,
-            self.central_service.get_zone_import,
-            context, zone_import['id'])
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.get_zone_import,
+                                context, zone_import['id'])
+
+        self.assertEqual(exceptions.ZoneImportNotFound, exc.exc_info[0])
