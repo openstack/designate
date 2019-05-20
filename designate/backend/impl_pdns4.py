@@ -28,7 +28,7 @@ CONF = cfg.CONF
 class PDNS4Backend(base.Backend):
     __plugin_name__ = 'pdns4'
 
-    __backend_status__ = 'release-compatible'
+    __backend_status__ = 'integrated'
 
     def __init__(self, target):
         super(PDNS4Backend, self).__init__(target)

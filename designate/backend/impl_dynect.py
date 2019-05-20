@@ -300,7 +300,7 @@ class DynECTBackend(base.Backend):
     """
     __plugin_name__ = 'dynect'
 
-    __backend_status__ = 'release-compatible'
+    __backend_status__ = 'untested'
 
     @classmethod
     def get_cfg_opts(cls):

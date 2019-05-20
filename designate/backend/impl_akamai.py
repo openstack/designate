@@ -241,7 +241,7 @@ def build_zone(client, target, zone):
 class AkamaiBackend(base.Backend):
     __plugin_name__ = 'akamai'
 
-    __backend_status__ = 'release-compatible'
+    __backend_status__ = 'untested'
 
     @classmethod
     def get_cfg_opts(cls):

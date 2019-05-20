@@ -26,7 +26,7 @@ LOG = logging.getLogger(__name__)
 class InfobloxBackend(base.Backend):
     """Provides a Designate Backend for Infoblox"""
 
-    __backend_status__ = 'release-compatible'
+    __backend_status__ = 'untested'
 
     __plugin_name__ = 'infoblox'
 

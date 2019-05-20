@@ -32,7 +32,7 @@ class DesignateBackend(base.Backend):
     Support for Designate to Designate using Secondary zones.
     """
     __plugin_name__ = 'designate'
-    __backend_status__ = 'release-compatible'
+    __backend_status__ = 'untested'
 
     def __init__(self, target):
         super(DesignateBackend, self).__init__(target)
