@@ -187,10 +187,8 @@ class RecordSet(base.DesignateObject, base.DictObjectMixin,
                 error_indexes.append(i)
 
             except Exception as e:
-                error_message = str.format(
-                    'Provided object is not valid. '
-                    'Got a %s error with message %s' %
-                    (type(e).__name__, six.text_type(e)))
+                error_message = ('Provided object is not valid. Got a %s error'
+                    ' with message %s' % (type(e).__name__, six.text_type(e)))
                 raise exceptions.InvalidObject(error_message)
 
             else:

@@ -16,6 +16,7 @@ from designate.objects.record import Record
 from designate.objects.record import RecordList
 from designate.objects import base
 from designate.objects import fields
+from designate.exceptions import InvalidObject
 
 
 @base.DesignateRegistry.register
@@ -32,6 +33,23 @@ class TXT(Record):
         return self.txt_data
 
     def _from_string(self, value):
+        if (not value.startswith('"') and not value.endswith('"')):
+            # value with spaces should be quoted as per RFC1035 5.1
+            for element in value:
+                if element.isspace():
+                    err = ("Empty spaces are not allowed in TXT record, "
+                           "unless wrapped in double quotes.")
+                    raise InvalidObject(err)
+        else:
+            # quotes within value should be escaped with backslash
+            strip_value = value.strip('"')
+            for index, char in enumerate(strip_value):
+                if char == '"':
+                    if strip_value[index - 1] != "\\":
+                        err = ("Quotation marks should be escaped with "
+                               "backslash.")
+                        raise InvalidObject(err)
+
         self.txt_data = value
 
     # The record type is defined in the RFC. This will be used when the record

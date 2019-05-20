@@ -1,0 +1,7 @@
+---
+fixes:
+  - |
+    TXT and SPF records are now validated for empty spaces in the values.
+    If record value has empty space it should use "" quotation according to
+    RFC-1035 section 5.1. Use of single quotation mark within record value
+    requires quote symbol to be escaped with backslash. Bug-1755788 
