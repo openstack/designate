@@ -13,18 +13,18 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.mport threading
-from unittest import TestCase
+import oslotest.base
 
 from designate.worker.tasks import base
 
 
-class TestTask(TestCase):
-
+class TestTask(oslotest.base.BaseTestCase):
     def setUp(self):
+        super(TestTask, self).setUp()
         self.task = base.Task(None)
 
     def test_constructor(self):
-        assert self.task
+        self.assertTrue(self.task)
 
     def test_call(self):
         self.assertRaises(NotImplementedError, self.task)

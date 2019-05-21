@@ -13,16 +13,15 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.mport threading
-from unittest import TestCase
-
 import mock
+import oslotest.base
 
 from designate.worker import service
 
 
-class TestService(TestCase):
-
+class TestService(oslotest.base.BaseTestCase):
     def setUp(self):
+        super(TestService, self).setUp()
         self.context = mock.Mock()
         self.zone = mock.Mock()
         self.service = service.Service()
@@ -82,8 +81,8 @@ class TestService(TestCase):
         self.service.load_pool.return_value = pool
         self.service._pools_map = {'1': pool}
 
-        assert self.service.get_pool('1') == pool
-        assert self.service.get_pool('2') == pool
+        self.assertEqual(self.service.get_pool('1'), pool)
+        self.assertEqual(self.service.get_pool('2'), pool)
 
     @mock.patch.object(service.zonetasks, 'RecoverShard')
     def test_recover_shard(self, RecoverShard):
