@@ -13,21 +13,12 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-
-from oslo_log import log as logging
 import oslotest.base
+from oslo_log import log as logging
 
 from designate import objects
 
 LOG = logging.getLogger(__name__)
-
-
-def debug(*a, **kw):
-    for v in a:
-        LOG.debug(repr(v))
-
-    for k in sorted(kw):
-        LOG.debug("%s: %s", k, repr(kw[k]))
 
 
 class CAARecordTest(oslotest.base.BaseTestCase):

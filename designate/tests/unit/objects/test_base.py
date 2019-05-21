@@ -13,15 +13,14 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
-from operator import attrgetter
 import copy
+from operator import attrgetter
 
-from oslo_log import log as logging
 import mock
-from oslo_serialization import jsonutils
 import oslotest.base
 import testtools
+from oslo_log import log as logging
+from oslo_serialization import jsonutils
 
 from designate import exceptions
 from designate import objects
@@ -141,7 +140,7 @@ class DesignateObjectTest(oslotest.base.BaseTestCase):
         self.assertFalse(obj.obj_attr_is_set('name'))
 
         # Ensure the changes list has one entry for the id field
-        self.assertEqual(set(['id']), obj.obj_what_changed())
+        self.assertEqual({'id'}, obj.obj_what_changed())
 
     def test_from_dict_recursive(self):
         obj = TestObject.from_dict({
@@ -157,10 +156,10 @@ class DesignateObjectTest(oslotest.base.BaseTestCase):
 
         # Ensure the changes list has two entries, one for the id field and the
         # other for the nested field
-        self.assertEqual(set(['id', 'nested']), obj.obj_what_changed())
+        self.assertEqual({'id', 'nested'}, obj.obj_what_changed())
 
         # Ensure the changes list has one entry for the id field
-        self.assertEqual(set(['id']), obj.nested.obj_what_changed())
+        self.assertEqual({'id'}, obj.nested.obj_what_changed())
 
     def test_from_dict_nested_list(self):
         obj = TestObject.from_dict({
@@ -179,7 +178,7 @@ class DesignateObjectTest(oslotest.base.BaseTestCase):
 
         # Ensure the changes list has two entries, one for the id field and the
         # other for the nested field
-        self.assertEqual(set(['id', 'nested_list']), obj.obj_what_changed())
+        self.assertEqual({'id', 'nested_list'}, obj.obj_what_changed())
 
     def test_from_list(self):
         with testtools.ExpectedException(NotImplementedError):
@@ -373,7 +372,7 @@ class DesignateObjectTest(oslotest.base.BaseTestCase):
 
         obj.name = "My Name"
 
-        self.assertEqual(set(['name']), obj.obj_what_changed())
+        self.assertEqual({'name'}, obj.obj_what_changed())
 
     def test_obj_get_changes(self):
         obj = TestObject()
@@ -700,7 +699,7 @@ class ListObjectMixinTest(oslotest.base.BaseTestCase):
         obj_two.id = "Two"
 
         changes = obj.obj_what_changed()
-        expected = set(['objects'])
+        expected = {'objects'}
 
         self.assertEqual(expected, changes)
 

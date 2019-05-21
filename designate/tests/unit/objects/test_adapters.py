@@ -15,15 +15,14 @@
 # under the License.
 import datetime
 
+import oslotest.base
 from mock import Mock
 from oslo_log import log as logging
-import oslotest.base
 from oslo_utils import timeutils
 
 from designate import objects
-from designate.objects import base
 from designate.objects import adapters
-
+from designate.objects import base
 
 LOG = logging.getLogger(__name__)
 
@@ -39,8 +38,8 @@ class DesignateTestAdapter(adapters.DesignateAdapter):
 
 
 @base.DesignateRegistry.register
-class DesignateTestPersistentObject(
-        objects.DesignateObject, objects.base.PersistentObjectMixin):
+class DesignateTestPersistentObject(objects.DesignateObject,
+                                    objects.base.PersistentObjectMixin):
     pass
 
 
@@ -73,8 +72,8 @@ class DesignateAdapterTest(oslotest.base.BaseTestCase):
         test_dict = adapters.DesignateAdapter.render('TEST_API', test_obj)
 
         datetime.datetime.strptime(
-            test_dict['created_at'],
-            '%Y-%m-%dT%H:%M:%S.%f')
+            test_dict['created_at'], '%Y-%m-%dT%H:%M:%S.%f'
+        )
 
 
 class RecordSetAPIv2AdapterTest(oslotest.base.BaseTestCase):
