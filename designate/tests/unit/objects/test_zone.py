@@ -13,36 +13,38 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
 import unittest
 
-from oslo_log import log as logging
 import oslotest.base
-import testtools
+from oslo_log import log as logging
 
 from designate import exceptions
 from designate import objects
+from designate import utils
 
 LOG = logging.getLogger(__name__)
 
 
 def create_test_zone():
     return objects.Zone(
+        id=utils.generate_uuid(),
         name='www.example.org.',
         email='foo@example.com',
     )
 
 
-class zoneTest(oslotest.base.BaseTestCase):
-
+class ZoneTest(oslotest.base.BaseTestCase):
     def test_init(self):
         zone = create_test_zone()
         self.assertEqual('www.example.org.', zone.name)
 
     def test_masters_none(self):
         zone = objects.Zone()
-        with testtools.ExpectedException(exceptions.RelationNotLoaded):
-            self.assertIsNone(zone.masters)
+        self.assertRaisesRegex(
+            exceptions.RelationNotLoaded,
+            'masters is not loaded on Zone',
+            lambda: zone.masters
+        )
 
     def test_masters(self):
         zone = objects.Zone(
@@ -76,8 +78,8 @@ class zoneTest(oslotest.base.BaseTestCase):
     @unittest.expectedFailure  # bug: zone.masters is not iterable
     def test_get_master_by_ip_none(self):
         zone = objects.Zone()
-        m = zone.get_master_by_ip('2.0.0.0')
-        self.assertFalse(m)
+        master = zone.get_master_by_ip('2.0.0.0')
+        self.assertFalse(master)
 
     def test_validate(self):
         zone = create_test_zone()
@@ -87,8 +89,11 @@ class zoneTest(oslotest.base.BaseTestCase):
         zone = objects.Zone(
             type='SECONDARY',
         )
-        with testtools.ExpectedException(exceptions.InvalidObject):
-            zone.validate()
+        self.assertRaisesRegex(
+            exceptions.InvalidObject,
+            'Provided object does not match schema',
+            zone.validate
+        )
 
     def test_validate_primary_with_masters(self):
         masters = objects.ZoneMasterList()
@@ -99,16 +104,22 @@ class zoneTest(oslotest.base.BaseTestCase):
             email="foo@example.com",
             masters=masters
         )
-        with testtools.ExpectedException(exceptions.InvalidObject):
-            zone.validate()
+        self.assertRaisesRegex(
+            exceptions.InvalidObject,
+            'Provided object does not match schema',
+            zone.validate
+        )
 
     def test_validate_primary_no_email(self):
         zone = objects.Zone(
             name='example.com.',
             type='PRIMARY',
         )
-        with testtools.ExpectedException(exceptions.InvalidObject):
-            zone.validate()
+        self.assertRaisesRegex(
+            exceptions.InvalidObject,
+            'Provided object does not match schema',
+            zone.validate
+        )
 
     def test_validate_secondary_with_email(self):
         masters = objects.ZoneMasterList()
@@ -119,8 +130,11 @@ class zoneTest(oslotest.base.BaseTestCase):
             email="foo@example.com",
             masters=masters
         )
-        with testtools.ExpectedException(exceptions.InvalidObject):
-            zone.validate()
+        self.assertRaisesRegex(
+            exceptions.InvalidObject,
+            'Provided object does not match schema',
+            zone.validate
+        )
 
     def test_validate_secondary_with_ttl(self):
         masters = objects.ZoneMasterList()
@@ -131,8 +145,11 @@ class zoneTest(oslotest.base.BaseTestCase):
             ttl=600,
             masters=masters
         )
-        with testtools.ExpectedException(exceptions.InvalidObject):
-            zone.validate()
+        self.assertRaisesRegex(
+            exceptions.InvalidObject,
+            'Provided object does not match schema',
+            zone.validate
+        )
 
     def test_validate_secondary_with_masters_empty_list(self):
         masters = objects.ZoneMasterList()
@@ -141,8 +158,11 @@ class zoneTest(oslotest.base.BaseTestCase):
             type='SECONDARY',
             masters=masters
         )
-        with testtools.ExpectedException(exceptions.InvalidObject):
-            zone.validate()
+        self.assertRaisesRegex(
+            exceptions.InvalidObject,
+            'Provided object does not match schema',
+            zone.validate
+        )
 
     def test_validate_secondary_with_masters_none(self):
         zone = objects.Zone(
@@ -150,5 +170,9 @@ class zoneTest(oslotest.base.BaseTestCase):
             type='SECONDARY',
             masters=None
         )
-        with testtools.ExpectedException(exceptions.InvalidObject):
-            zone.validate()
+
+        self.assertRaisesRegex(
+            exceptions.InvalidObject,
+            'Provided object does not match schema',
+            zone.validate
+        )

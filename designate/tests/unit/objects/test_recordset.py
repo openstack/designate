@@ -13,32 +13,22 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
 import itertools
 import unittest
 
-from oslo_log import log as logging
 import mock
 import oslotest.base
-import testtools
+from oslo_log import log as logging
 
 from designate import exceptions
-from designate.objects.adapters import DesignateAdapter
 from designate import objects
+from designate.objects.adapters import DesignateAdapter
 
 LOG = logging.getLogger(__name__)
 
 
-def debug(*a, **kw):
-    for v in a:
-        LOG.debug(repr(v))
-
-    for k in sorted(kw):
-        LOG.debug("%s: %s", k, repr(kw[k]))
-
-
 def create_test_recordset():
-    rs = objects.RecordSet(
+    record_set = objects.RecordSet(
         name='www.example.org.',
         type='A',
         records=objects.RecordList(objects=[
@@ -46,22 +36,22 @@ def create_test_recordset():
             objects.Record(data='192.0.2.2'),
         ])
     )
-    return rs
+    return record_set
 
 
 class RecordSetTest(oslotest.base.BaseTestCase):
 
     def test_init(self):
-        rs = create_test_recordset()
-        self.assertEqual('www.example.org.', rs.name)
-        self.assertEqual('A', rs.type)
+        record_set = create_test_recordset()
+        self.assertEqual('www.example.org.', record_set.name)
+        self.assertEqual('A', record_set.type)
 
     def test_not_managed(self):
-        rs = create_test_recordset()
-        self.assertFalse(rs.managed)
+        record_set = create_test_recordset()
+        self.assertFalse(record_set.managed)
 
     def test_managed(self):
-        rs = objects.RecordSet(
+        record_set = objects.RecordSet(
             name='www.example.org.',
             type='A',
             records=objects.RecordList(objects=[
@@ -69,64 +59,63 @@ class RecordSetTest(oslotest.base.BaseTestCase):
                 objects.Record(data='192.0.2.2'),
             ])
         )
-        self.assertTrue(rs.managed)
+        self.assertTrue(record_set.managed)
 
     def test_action(self):
         action = 'CREATE'
-        rs = objects.RecordSet(
+        record_set = objects.RecordSet(
             name='www.example.org.',
             type='A',
             records=objects.RecordList(objects=[
                 objects.Record(data='192.0.2.1', action=action),
             ])
         )
-        self.assertEqual(action, rs.action)
+        self.assertEqual(action, record_set.action)
 
     def test_action_create(self):
-        rs = objects.RecordSet(
+        record_set = objects.RecordSet(
             name='www.example.org.', type='A',
             records=objects.RecordList(objects=[
                 objects.Record(data='192.0.2.1', action='CREATE'),
             ])
         )
-        self.assertEqual('CREATE', rs.action)
+        self.assertEqual('CREATE', record_set.action)
 
     def test_action_create_plus_update(self):
-        rs = objects.RecordSet(
+        record_set = objects.RecordSet(
             name='www.example.org.', type='A',
             records=objects.RecordList(objects=[
                 objects.Record(data='192.0.2.1', action='CREATE'),
                 objects.Record(data='192.0.2.2', action='UPDATE'),
             ])
         )
-        self.assertEqual('UPDATE', rs.action)
+        self.assertEqual('UPDATE', record_set.action)
 
     def test_action_delete_plus_update(self):
-        rs = objects.RecordSet(
+        record_set = objects.RecordSet(
             name='www.example.org.', type='A',
             records=objects.RecordList(objects=[
                 objects.Record(data='192.0.2.1', action='DELETE'),
                 objects.Record(data='192.0.2.2', action='UPDATE'),
             ])
         )
-        self.assertEqual('UPDATE', rs.action)
+        self.assertEqual('UPDATE', record_set.action)
 
     def test_action_delete_only(self):
-        rs = objects.RecordSet(
+        record_set = objects.RecordSet(
             name='www.example.org.', type='A',
             records=objects.RecordList(objects=[
                 objects.Record(data='192.0.2.1', action='DELETE'),
                 objects.Record(data='192.0.2.2', action='DELETE'),
             ])
         )
-        self.assertEqual('DELETE', rs.action)
+        self.assertEqual('DELETE', record_set.action)
 
     @unittest.expectedFailure  # bug
     def test_status_error(self):
         statuses = ('ERROR', 'PENDING', 'ACTIVE')
-        failed = False
         for s1, s2, s3 in itertools.permutations(statuses):
-            rs = objects.RecordSet(
+            record_set = objects.RecordSet(
                 name='www.example.org.', type='A',
                 records=objects.RecordList(objects=[
                     objects.Record(data='192.0.2.1', status=s1),
@@ -134,64 +123,62 @@ class RecordSetTest(oslotest.base.BaseTestCase):
                     objects.Record(data='192.0.2.3', status=s3),
                 ])
             )
-            if rs.status != 'ERROR':
-                failed = True
-                print("test_status_error failed for %s %s %s: %s" % (
-                    s1, s2, s3, rs.status))
-
-        self.assertFalse(failed)
+            self.assertEqual(record_set.status, 'ERROR')
 
     def test_status_pending(self):
-        rs = objects.RecordSet(
+        record_set = objects.RecordSet(
             name='www.example.org.', type='A',
             records=objects.RecordList(objects=[
                 objects.Record(data='192.0.2.2', status='PENDING'),
                 objects.Record(data='192.0.2.3', status='ACTIVE'),
             ])
         )
-        self.assertEqual('PENDING', rs.status)
+        self.assertEqual('PENDING', record_set.status)
 
     def test_status_pending2(self):
-        rs = objects.RecordSet(
+        record_set = objects.RecordSet(
             name='www.example.org.', type='A',
             records=objects.RecordList(objects=[
                 objects.Record(data='192.0.2.3', status='ACTIVE'),
                 objects.Record(data='192.0.2.2', status='PENDING'),
             ])
         )
-        self.assertEqual('PENDING', rs.status)
+        self.assertEqual('PENDING', record_set.status)
 
     def test_status_active(self):
-        rs = objects.RecordSet(
+        record_set = objects.RecordSet(
             name='www.example.org.', type='A',
             records=objects.RecordList(objects=[
                 objects.Record(data='192.0.2.3', status='ACTIVE'),
             ])
         )
-        self.assertEqual('ACTIVE', rs.status)
+        self.assertEqual('ACTIVE', record_set.status)
 
     def test_status_deleted(self):
-        rs = objects.RecordSet(
+        record_set = objects.RecordSet(
             name='www.example.org.', type='A',
             records=objects.RecordList(objects=[
                 objects.Record(data='192.0.2.2', status='DELETED'),
             ])
         )
-        self.assertEqual('DELETED', rs.status)
+        self.assertEqual('DELETED', record_set.status)
 
     def test_validate(self):
-        rs = create_test_recordset()
-        rs.validate()
+        record_set = create_test_recordset()
+        record_set.validate()
 
     def test_validate_handle_exception(self):
-        rs = create_test_recordset()
-        rs_module = rs.__class__.__bases__[0].__module__
+        record_set = create_test_recordset()
+        rs_module = record_set.__class__.__bases__[0].__module__
         fn_name = '{}.DesignateObject.obj_cls_from_name'.format(rs_module)
+
         with mock.patch(fn_name) as patched:
             patched.side_effect = KeyError
-            with testtools.ExpectedException(exceptions.InvalidObject):
-                # TODO(Federico): check the attributes of the exception
-                rs.validate()
+            self.assertRaisesRegex(
+                exceptions.InvalidObject,
+                'Provided object does not match schema',
+                record_set.validate
+            )
 
     def test_parse_rrset_object_preserves_changes(self):
         old_ip = '1.1.1.1'
@@ -202,9 +189,9 @@ class RecordSetTest(oslotest.base.BaseTestCase):
             ]
         )
 
-        rs = objects.RecordSet(
-                name='www.example.org.', type='A',
-                records=original_records
+        record_set = objects.RecordSet(
+            name='www.example.org.', type='A',
+            records=original_records
         )
 
         body = {
@@ -213,17 +200,21 @@ class RecordSetTest(oslotest.base.BaseTestCase):
             ]
         }
 
-        rs = DesignateAdapter.parse('API_v2', body, rs)
-        self.assertIn('records', rs.obj_what_changed())
+        record_set = DesignateAdapter.parse('API_v2', body, record_set)
+        self.assertIn('records', record_set.obj_what_changed())
 
         def get_data(record_list):
             return set([r.data for r in record_list])
 
-        self.assertEqual(set([old_ip]),
-            get_data(rs.obj_get_original_value('records')))
+        self.assertEqual(
+            {old_ip},
+            get_data(record_set.obj_get_original_value('records'))
+        )
 
-        self.assertEqual(set([new_ip]),
-            get_data(rs.obj_get_changes()['records']))
+        self.assertEqual(
+            {new_ip},
+            get_data(record_set.obj_get_changes()['records'])
+        )
 
     def test_parse_rrset_object_preserves_changes_multiple_rrs(self):
         old_ips = ['1.1.1.1', '2.2.2.2']
@@ -234,23 +225,27 @@ class RecordSetTest(oslotest.base.BaseTestCase):
             ]
         )
 
-        rs = objects.RecordSet(
-                name='www.example.org.', type='A',
-                records=original_records
+        record_set = objects.RecordSet(
+            name='www.example.org.', type='A',
+            records=original_records
         )
 
         body = {
             'records': new_ips
         }
 
-        rs = DesignateAdapter.parse('API_v2', body, rs)
-        self.assertIn('records', rs.obj_what_changed())
+        record_set = DesignateAdapter.parse('API_v2', body, record_set)
+        self.assertIn('records', record_set.obj_what_changed())
 
         def get_data(record_list):
             return set([r.data for r in record_list])
 
-        self.assertEqual(set(old_ips),
-            get_data(rs.obj_get_original_value('records')))
+        self.assertEqual(
+            set(old_ips),
+            get_data(record_set.obj_get_original_value('records'))
+        )
 
-        self.assertEqual(set(new_ips),
-            get_data(rs.obj_get_changes()['records']))
+        self.assertEqual(
+            set(new_ips),
+            get_data(record_set.obj_get_changes()['records'])
+        )

@@ -9,25 +9,28 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from oslo_log import log as logging
 import oslotest.base
-import testtools
+from oslo_log import log as logging
 
 from designate import exceptions
-
 from designate import objects
 
 LOG = logging.getLogger(__name__)
 
 
-class RRDataSPFTest(oslotest.base.BaseTestCase):
-
+class RRDataTXTTest(oslotest.base.BaseTestCase):
     def test_reject_non_quoted_spaces(self):
-        record = objects.SPF(data='foo bar')
-        with testtools.ExpectedException(exceptions.InvalidObject):
-            record.validate()
+        record = objects.TXT(data='foo bar')
+        self.assertRaisesRegex(
+            exceptions.InvalidObject,
+            'Provided object does not match schema',
+            record.validate
+        )
 
     def test_reject_non_escaped_quotes(self):
-        record = objects.SPF(data='foo"bar')
-        with testtools.ExpectedException(exceptions.InvalidObject):
-            record.validate()
+        record = objects.TXT(data='foo"bar')
+        self.assertRaisesRegex(
+            exceptions.InvalidObject,
+            'Provided object does not match schema',
+            record.validate
+        )

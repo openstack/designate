@@ -13,29 +13,19 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-
-from oslo_log import log as logging
 import oslotest.base
+from oslo_log import log as logging
 
 from designate import objects
 
 LOG = logging.getLogger(__name__)
 
 
-def debug(*a, **kw):
-    for v in a:
-        LOG.debug(repr(v))
-
-    for k in sorted(kw):
-        LOG.debug("%s: %s", k, repr(kw[k]))
-
-
 class NAPTRRecordTest(oslotest.base.BaseTestCase):
-
     def test_parse_naptr(self):
         naptr_record = objects.NAPTR()
         naptr_record._from_string(
-                '0 0 S SIP+D2U !^.*$!sip:customer-service@example.com! _sip._udp.example.com.')  # noqa
+            '0 0 S SIP+D2U !^.*$!sip:customer-service@example.com! _sip._udp.example.com.')  # noqa
 
         self.assertEqual(0, naptr_record.order)
         self.assertEqual(0, naptr_record.preference)

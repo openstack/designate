@@ -13,9 +13,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
-from oslo_log import log as logging
 import oslotest.base
+from oslo_log import log as logging
 
 from designate import objects
 from designate.exceptions import InvalidObject
@@ -23,20 +22,11 @@ from designate.exceptions import InvalidObject
 LOG = logging.getLogger(__name__)
 
 
-def debug(*a, **kw):
-    for v in a:
-        LOG.debug(repr(v))
-
-    for k in sorted(kw):
-        LOG.debug("%s: %s", k, repr(kw[k]))
-
-
 class SSHFPecordTest(oslotest.base.BaseTestCase):
-
     def test_parse_sshfp(self):
         sshfp_record = objects.SSHFP()
         sshfp_record._from_string(
-                '0 0 72d30d211ce8c464de2811e534de23b9be9b4dc4')
+            '0 0 72d30d211ce8c464de2811e534de23b9be9b4dc4')
 
         self.assertEqual(0, sshfp_record.algorithm)
         self.assertEqual(0, sshfp_record.fp_type)
@@ -44,25 +34,25 @@ class SSHFPecordTest(oslotest.base.BaseTestCase):
                          sshfp_record.fingerprint)
 
     def test_validate_sshfp_signed_zero_alg(self):
-        rs = objects.RecordSet(
-                name='www.example.org.', type='SSHFP',
-                records=objects.RecordList(objects=[
-                    objects.Record(
-                        data='-0 0 72d30d211ce8c464de2811e534de23b9be9b4dc4',
-                        status='ACTIVE'),
-                ])
+        record_set = objects.RecordSet(
+            name='www.example.org.', type='SSHFP',
+            records=objects.RecordList(objects=[
+                objects.Record(
+                    data='-0 0 72d30d211ce8c464de2811e534de23b9be9b4dc4',
+                    status='ACTIVE'),
+            ])
         )
 
-        self.assertRaises(InvalidObject, rs.validate)
+        self.assertRaises(InvalidObject, record_set.validate)
 
     def test_validate_sshfp_signed_zero_fptype(self):
-        rs = objects.RecordSet(
-                name='www.example.org.', type='SSHFP',
-                records=objects.RecordList(objects=[
-                    objects.Record(
-                        data='0 -0 72d30d211ce8c464de2811e534de23b9be9b4dc4',
-                        status='ACTIVE'),
-                ])
+        record_set = objects.RecordSet(
+            name='www.example.org.', type='SSHFP',
+            records=objects.RecordList(objects=[
+                objects.Record(
+                    data='0 -0 72d30d211ce8c464de2811e534de23b9be9b4dc4',
+                    status='ACTIVE'),
+            ])
         )
 
-        self.assertRaises(InvalidObject, rs.validate)
+        self.assertRaises(InvalidObject, record_set.validate)

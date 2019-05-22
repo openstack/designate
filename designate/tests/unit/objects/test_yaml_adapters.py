@@ -15,38 +15,20 @@
 # under the License.
 import os
 
+import oslotest.base
 import yaml
 from oslo_log import log as logging
-import oslotest.base
 
 from designate import objects
 from designate.objects import adapters
 from designate.tests import resources
 from designate.utils import DEFAULT_MDNS_PORT
 
-
 LOG = logging.getLogger(__name__)
 
 
 class DesignateYAMLAdapterTest(oslotest.base.BaseTestCase):
-
-    def assertNestedDictContainsSubset(self, expected, actual):
-        for key, value in expected.items():
-            if isinstance(value, dict):
-                self.assertNestedDictContainsSubset(value, actual.get(key, {}))
-
-            elif isinstance(value, list):
-                self.assertEqual(len(value), len(actual[key]))
-
-                for index, item in enumerate(value):
-                    self.assertNestedDictContainsSubset(
-                        item, actual[key][index])
-
-            else:
-                self.assertEqual(value, actual[key])
-
     def test_yaml_parsing(self):
-
         file = os.path.join(resources.path, 'pools_yaml/pools.yaml')
         with open(file, 'r') as stream:
             xpools = yaml.safe_load(stream)
@@ -84,7 +66,6 @@ class DesignateYAMLAdapterTest(oslotest.base.BaseTestCase):
             self.assertEqual('internal', r_pool.attributes[0].value)
 
     def test_yaml_rendering(self):
-
         pool_dict = {
             'also_notifies': [
                 {
@@ -149,7 +130,7 @@ class DesignateYAMLAdapterTest(oslotest.base.BaseTestCase):
         with open(file, 'r') as stream:
             self.assertEqual(
                 stream.read(),
-                yaml.dump(
+                yaml.safe_dump(
                     adapters.DesignateAdapter.render(
                         'YAML', objects.PoolList.from_list([pool_dict])
                     ),
