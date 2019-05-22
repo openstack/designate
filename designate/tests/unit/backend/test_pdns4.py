@@ -14,24 +14,25 @@ import requests_mock
 
 from designate import exceptions
 from designate import objects
+from designate import tests
 from designate.backend import impl_pdns4
 from designate.mdns import rpcapi as mdns_rpcapi
 from designate.tests import fixtures
-from designate.tests.test_backend import BackendTestCase
 
 
-class PDNS4BackendTestCase(BackendTestCase):
+class PDNS4BackendTestCase(tests.TestCase):
     def setUp(self):
         super(PDNS4BackendTestCase, self).setUp()
         self.stdlog = fixtures.StandardLogging()
         self.useFixture(self.stdlog)
 
         self.base_address = 'http://localhost:8081/api/v1/servers'
-
         self.context = self.get_context()
-        self.zone = objects.Zone(id='e2bed4dc-9d01-11e4-89d3-123b93f75cba',
-                                 name='example.com.',
-                                 email='example@example.com')
+        self.zone = objects.Zone(
+            id='e2bed4dc-9d01-11e4-89d3-123b93f75cba',
+            name='example.com.',
+            email='example@example.com',
+        )
 
         self.target = {
             'id': '4588652b-50e7-46b9-b688-a9bad40a873e',
@@ -53,7 +54,6 @@ class PDNS4BackendTestCase(BackendTestCase):
     @requests_mock.mock()
     @mock.patch.object(mdns_rpcapi.MdnsAPI, 'notify_zone_changed')
     def test_create_zone_success(self, req_mock, mock_notify_zone_changed):
-
         req_mock.post(
             '%s/localhost/zones' % self.base_address,
         )
