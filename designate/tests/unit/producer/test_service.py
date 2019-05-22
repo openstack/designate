@@ -21,15 +21,14 @@ Unit-test Producer service
 import mock
 from oslotest import base as test
 
+from designate.producer import service
 from designate.tests.unit import RoObject
-import designate.producer.service as ps
 
 
-@mock.patch.object(ps.rpcapi.CentralAPI, 'get_instance')
+@mock.patch.object(service.rpcapi.CentralAPI, 'get_instance')
 class ProducerTest(test.BaseTestCase):
-
     def setUp(self):
-        ps.CONF = RoObject({
+        service.CONF = RoObject({
             'service:producer': RoObject({
                 'enabled_tasks': None,  # enable all tasks
             }),
@@ -41,20 +40,20 @@ class ProducerTest(test.BaseTestCase):
             'producer_task:zone_purge': '',
         })
         super(ProducerTest, self).setUp()
-        self.tm = ps.Service()
-        self.tm._storage = mock.Mock()
-        self.tm._rpc_server = mock.Mock()
-        self.tm._quota = mock.Mock()
-        self.tm.quota.limit_check = mock.Mock()
+        self.service = service.Service()
+        self.service._storage = mock.Mock()
+        self.service._rpc_server = mock.Mock()
+        self.service._quota = mock.Mock()
+        self.service.quota.limit_check = mock.Mock()
 
     def test_service_name(self, _):
-        self.assertEqual('producer', self.tm.service_name)
+        self.assertEqual('producer', self.service.service_name)
 
     def test_central_api(self, _):
-        capi = self.tm.central_api
-        assert isinstance(capi, mock.MagicMock)
+        capi = self.service.central_api
+        self.assertIsInstance(capi, mock.MagicMock)
 
-    @mock.patch.object(ps.tasks, 'PeriodicTask')
-    @mock.patch.object(ps.coordination, 'Partitioner')
+    @mock.patch.object(service.tasks, 'PeriodicTask')
+    @mock.patch.object(service.coordination, 'Partitioner')
     def test_stark(self, _, mock_partitioner, mock_PeriodicTask):
-        self.tm.start()
+        self.service.start()

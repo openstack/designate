@@ -19,18 +19,17 @@ Unit test Producer tasks
 """
 import datetime
 
-from oslo_utils import timeutils
-from oslotest import base as test
 import fixtures
 import mock
-import testtools
+import oslotest.base
+from oslo_utils import timeutils
 
-from designate.utils import generate_uuid
-from designate.central import rpcapi as central_api
 from designate import context
 from designate import rpc
+from designate.central import rpcapi as central_api
 from designate.producer import tasks
 from designate.tests.unit import RoObject
+from designate.utils import generate_uuid
 
 
 class DummyTask(tasks.PeriodicTask):
@@ -38,7 +37,7 @@ class DummyTask(tasks.PeriodicTask):
     __plugin_name__ = 'dummy'
 
 
-class TaskTest(test.BaseTestCase):
+class TaskTest(oslotest.base.BaseTestCase):
     def setup_opts(self, config):
         opts = RoObject(**config)
 
@@ -75,8 +74,7 @@ class PeriodicTest(TaskTest):
 
         central.find_zones.return_value = []
 
-        with testtools.ExpectedException(StopIteration):
-            next(iterer)
+        self.assertRaises(StopIteration, next, iterer)
 
     @mock.patch.object(central_api.CentralAPI, 'get_instance')
     def test_iter_zones(self, get_central):
@@ -100,14 +98,14 @@ class PeriodicTest(TaskTest):
         # Call next on the iterator and see it trying to load a new page.
         # Also this will raise a StopIteration since there are no more items.
         central.find_zones.return_value = []
-        with testtools.ExpectedException(StopIteration):
-            next(iterer)
+        self.assertRaises(StopIteration, next, iterer)
 
         central.find_zones.assert_called_once_with(
             ctxt,
             {"shard": "BETWEEN 0,9"},
             marker=items[-1].id,
-            limit=100)
+            limit=100
+        )
 
     def test_my_range(self):
         self.assertEqual((0, 9), self.task._my_range())
@@ -155,8 +153,7 @@ class PeriodicExistsTest(TaskTest):
         ))
 
     def test_emit_exists(self):
-        zone = RoObject(
-            id=generate_uuid())
+        zone = RoObject(id=generate_uuid())
 
         with mock.patch.object(self.task, '_iter_zones') as iter_:
             iter_.return_value = [zone]
@@ -181,13 +178,13 @@ class PeriodicExistsTest(TaskTest):
         self.assertFalse(self.mock_notifier.info.called)
 
     def test_emit_exists_multiple_zones(self):
-        zones = [RoObject() for i in range(0, 10)]
+        zones = [RoObject()] * 10
         with mock.patch.object(self.task, '_iter_zones') as iter_:
             iter_.return_value = zones
             self.task()
 
-        for z in zones:
-            data = dict(z)
+        for zone in zones:
+            data = dict(zone)
             data.update(self.period_data)
 
             # Ensure both the old (domain) and new (zone) events are fired
@@ -253,7 +250,8 @@ class PeriodicSecondaryRefreshTest(TaskTest):
         zone = RoObject(
             id=generate_uuid(),
             transferred_at=datetime.datetime.isoformat(transferred),
-            refresh=3600)
+            refresh=3600
+        )
 
         with mock.patch.object(self.task, '_iter') as _iter:
             _iter.return_value = [zone]
