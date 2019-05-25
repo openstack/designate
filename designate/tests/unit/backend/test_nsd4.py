@@ -13,7 +13,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
 import socket
 import ssl
 
@@ -22,34 +21,43 @@ import mock
 
 from designate import exceptions
 from designate import objects
-from designate.tests.test_backend import BackendTestCase
+from designate import tests
 from designate.backend import impl_nsd4
 
 
-# NOTE: We'll only test the specifics to the nsd4 backend here.
-# Rest is handled via scenarios
-class NSD4BackendTestCase(BackendTestCase):
+class NSD4BackendTestCase(tests.TestCase):
     def setUp(self):
         super(NSD4BackendTestCase, self).setUp()
 
-        # NOTE(hieulq): we mock out NSD4 back-end with random port
-
         keyfile = mock.sentinel.key
         certfile = mock.sentinel.cert
+
+        self.context = self.get_context()
+        self.zone = objects.Zone(
+            id='e2bed4dc-9d01-11e4-89d3-123b93f75cba',
+            name='example.com.',
+            email='example@example.com',
+        )
+
         self.port = 6969
-        self.target = objects.PoolTarget.from_dict({
+        self.target = {
             'id': '4588652b-50e7-46b9-b688-a9bad40a873e',
             'type': 'nsd4',
-            'masters': [{'host': '192.0.2.1', 'port': 53},
-                        {'host': '192.0.2.2', 'port': 35}],
+            'masters': [
+                {'host': '192.0.2.1', 'port': 53},
+                {'host': '192.0.2.2', 'port': 35},
+            ],
             'options': [
                 {'key': 'keyfile', 'value': keyfile.name},
                 {'key': 'certfile', 'value': certfile.name},
                 {'key': 'pattern', 'value': 'test-pattern'},
-                {'key': 'port', 'value': str(self.port)}
+                {'key': 'port', 'value': str(self.port)},
             ],
-        })
-        self.backend = impl_nsd4.NSD4Backend(self.target)
+        }
+
+        self.backend = impl_nsd4.NSD4Backend(
+            objects.PoolTarget.from_dict(self.target)
+        )
 
     @mock.patch.object(eventlet, 'connect')
     @mock.patch.object(eventlet, 'wrap_ssl')
@@ -64,20 +72,17 @@ class NSD4BackendTestCase(BackendTestCase):
         else:
             stream.read.return_value = 'ok'
 
-        context = self.get_context()
-        zone = self.get_zone_fixture()
-
         if command_context is 'create':
-            self.backend.create_zone(context, zone)
-            command = 'NSDCT1 addzone %s test-pattern\n' % zone['name']
+            self.backend.create_zone(self.context, self.zone)
+            command = 'NSDCT1 addzone %s test-pattern\n' % self.zone.name
         elif command_context is 'delete':
-            self.backend.delete_zone(context, zone)
-            command = 'NSDCT1 delzone %s\n' % zone['name']
+            self.backend.delete_zone(self.context, self.zone)
+            command = 'NSDCT1 delzone %s\n' % self.zone.name
         elif command_context is 'create_fail':
             self.assertRaises(exceptions.Backend,
                               self.backend.create_zone,
-                              context, zone)
-            command = 'NSDCT1 addzone %s test-pattern\n' % zone['name']
+                              self.context, self.zone)
+            command = 'NSDCT1 addzone %s test-pattern\n' % self.zone.name
 
         stream.write.assert_called_once_with(command)
         mock_ssl.assert_called_once_with(mock.sentinel.client,
@@ -101,16 +106,12 @@ class NSD4BackendTestCase(BackendTestCase):
 
     def test_ssl_error(self):
         self.backend._command = mock.MagicMock(side_effect=ssl.SSLError)
-        context = self.get_context()
-        zone = self.get_zone_fixture()
         self.assertRaises(exceptions.Backend,
                           self.backend.create_zone,
-                          context, zone)
+                          self.context, self.zone)
 
     def test_socket_error(self):
         self.backend._command = mock.MagicMock(side_effect=socket.error)
-        context = self.get_context()
-        zone = self.get_zone_fixture()
         self.assertRaises(exceptions.Backend,
                           self.backend.create_zone,
-                          context, zone)
+                          self.context, self.zone)

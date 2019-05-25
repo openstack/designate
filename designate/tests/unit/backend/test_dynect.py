@@ -13,18 +13,14 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
-from oslo_serialization import jsonutils
-from requests_mock.contrib import fixture as req_fixture
-import testtools
+import requests_mock
 
 from designate import objects
+from designate import tests
 from designate.backend import impl_dynect
-from designate.tests.test_backend import BackendTestCase
 
 MASTERS = ["10.0.0.1"]
 CONTACT = 'jdoe@myco.biz'
-
 
 LOGIN_SUCCESS = {
     "status": "success",
@@ -93,7 +89,6 @@ TARGET_EXISTS = {
     ]
 }
 
-
 ACTIVATE_SUCCESS = {
     "status": "success",
     "data": {
@@ -115,73 +110,74 @@ ACTIVATE_SUCCESS = {
 }
 
 
-class DynECTTestsCase(BackendTestCase):
+class DynECTTestsCase(tests.TestCase):
     def setUp(self):
         super(DynECTTestsCase, self).setUp()
-        self.target = objects.PoolTarget.from_dict({
+
+        self.base_address = 'https://api.dynect.net:443/REST'
+        self.context = self.get_context()
+        self.zone = objects.Zone(
+            id='e2bed4dc-9d01-11e4-89d3-123b93f75cba',
+            name='example.com.',
+            email='example@example.com',
+        )
+
+        self.target = {
             'id': '4588652b-50e7-46b9-b688-a9bad40a873e',
             'type': 'dyndns',
-            'masters': [{'host': '192.0.2.1', 'port': 53}],
+            'masters': [
+                {'host': '192.0.2.1', 'port': 53}
+            ],
             'options': [
                 {'key': 'username', 'value': 'example'},
                 {'key': 'password', 'value': 'secret'},
                 {'key': 'customer_name', 'value': 'customer'}],
-        })
+        }
 
-        self.backend = impl_dynect.DynECTBackend(self.target)
-        self.requests = self.useFixture(req_fixture.Fixture())
+        self.backend = impl_dynect.DynECTBackend(
+            objects.PoolTarget.from_dict(self.target)
+        )
 
-    def stub_url(self, method, parts=None, base_url=None, json=None, **kwargs):
-        if not base_url:
-            base_url = 'https://api.dynect.net:443/REST'
+    @requests_mock.mock()
+    def test_create_zone_raise_dynclienterror(self, req_mock):
+        # https://api.dynect.net:443/REST/Session
+        req_mock.post(
+            '%s/Session' % self.base_address,
+            json=LOGIN_SUCCESS,
+        )
 
-        if json:
-            kwargs['text'] = jsonutils.dumps(json)
-            headers = kwargs.setdefault('headers', {})
-            headers['Content-Type'] = 'application/json'
-
-        if parts:
-            url = '/'.join([p.strip('/') for p in [base_url] + parts])
-        else:
-            url = base_url
-
-        url = url.replace("/?", "?")
-
-        return self.requests.register_uri(method, url, **kwargs)
-
-    def _stub_login(self):
-        self.stub_url('POST', ['/Session'], json=LOGIN_SUCCESS)
-        self.stub_url('DELETE', ['/Session'], json=LOGIN_SUCCESS)
-
-    def test_create_zone_raise_dynclienterror(self):
-        context = self.get_context()
-        zone = self.create_zone()
-
-        self._stub_login()
-
-        self.stub_url(
-            'POST', ['/Secondary/example.com'],
+        req_mock.post(
+            '%s/Secondary/example.com' % self.base_address,
             json=INVALID_MASTER_DATA,
-            status_code=400)
+            status_code=400,
+        )
 
-        with testtools.ExpectedException(impl_dynect.DynClientError):
-            self.backend.create_zone(context, zone)
+        self.assertRaisesRegex(
+            impl_dynect.DynClientError, 'Zone not created',
+            self.backend.create_zone, self.context, self.zone,
+        )
 
-    def test_create_zone_duplicate_updates_existing(self):
-        context = self.get_context()
-        zone = self.create_zone()
+    @requests_mock.mock()
+    def test_create_zone_duplicate_updates_existing(self, req_mock):
+        req_mock.post(
+            '%s/Session' % self.base_address,
+            json=LOGIN_SUCCESS,
+        )
 
-        self._stub_login()
+        req_mock.delete(
+            '%s/Session' % self.base_address,
+            json=LOGIN_SUCCESS,
+        )
 
-        parts = ['/Secondary', '/%s' % zone['name'].rstrip('.')]
-
-        self.stub_url(
-            'POST', parts,
+        req_mock.post(
+            '%s/Secondary/example.com' % self.base_address,
             json=TARGET_EXISTS,
-            status_code=400)
+            status_code=400,
+        )
 
-        update = self.stub_url('PUT', parts, json=ACTIVATE_SUCCESS)
+        req_mock.put(
+            '%s/Secondary/example.com' % self.base_address,
+            json=ACTIVATE_SUCCESS,
+        )
 
-        self.backend.create_zone(context, zone)
-
-        self.assertTrue(update.called)
+        self.backend.create_zone(self.context, self.zone)
