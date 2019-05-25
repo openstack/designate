@@ -28,13 +28,16 @@ import tempfile
 from contextlib import contextmanager
 
 import fixtures
+import mock
+import tooz.coordination
+from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import importutils
-from oslo_config import cfg
-import tooz.coordination
 
-from designate import policy
+import designate.service
+import designate.utils
 from designate import network_api
+from designate import policy
 from designate import rpc
 from designate.network_api import fake as fake_network_api
 from designate.sqlalchemy import utils as sqlalchemy_utils
@@ -81,7 +84,8 @@ class ServiceFixture(fixtures.Fixture):
         self.svc = cls()
         self.svc_name = svc_name
 
-    def setUp(self):
+    @mock.patch.object(designate.service.DNSService, '_start')
+    def setUp(self, mock_start):
         super(ServiceFixture, self).setUp()
         LOG.info('Starting service %s (%s)', self.svc_name, id(self.svc))
         self.svc.start()

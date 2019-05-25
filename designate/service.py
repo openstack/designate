@@ -311,6 +311,7 @@ class DNSService(object):
     def _dns_handle_tcp(self, sock_tcp):
         LOG.info("_handle_tcp thread started")
 
+        client = None
         while True:
             try:
                 # handle a new TCP connection
@@ -332,18 +333,21 @@ class DNSService(object):
             # ending unexpectedly. Ensure proper ordering of blocks, and
             # ensure no exceptions are generated from within.
             except socket.timeout:
-                client.close()
+                if client:
+                    client.close()
                 LOG.warning("TCP Timeout from: %(host)s:%(port)d",
                             {'host': addr[0], 'port': addr[1]})
 
             except socket.error as e:
-                client.close()
+                if client:
+                    client.close()
                 errname = errno.errorcode[e.args[0]]
                 LOG.warning("Socket error %(err)s from: %(host)s:%(port)d",
                             {'host': addr[0], 'port': addr[1], 'err': errname})
 
             except Exception:
-                client.close()
+                if client:
+                    client.close()
                 LOG.exception("Unknown exception handling TCP request from: "
                               "%(host)s:%(port)d",
                               {'host': addr[0], 'port': addr[1]})
@@ -418,7 +422,8 @@ class DNSService(object):
             LOG.exception("Unknown exception handling TCP request from: "
                           "%(host)s:%(port)d", {'host': host, 'port': port})
         finally:
-            client.close()
+            if client:
+                client.close()
 
     def _dns_handle_udp(self, sock_udp):
         """Handle a DNS Query over UDP in a dedicated thread
