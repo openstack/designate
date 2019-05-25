@@ -76,13 +76,10 @@ def synchronized_zone(zone_arg=1, new_zone=False):
 
             if 'zone_id' in kwargs:
                 zone_id = kwargs['zone_id']
-
             elif 'zone' in kwargs:
                 zone_id = kwargs['zone'].id
-
             elif 'recordset' in kwargs:
                 zone_id = kwargs['recordset'].zone_id
-
             elif 'record' in kwargs:
                 zone_id = kwargs['record'].zone_id
 
@@ -92,43 +89,41 @@ def synchronized_zone(zone_arg=1, new_zone=False):
                 for arg in itertools.chain(kwargs.values(), args):
                     if isinstance(arg, objects.Zone):
                         zone_id = arg.id
-                        if zone_id is not None:
+                        if zone_id:
                             break
-
                     elif (isinstance(arg, objects.RecordSet) or
                           isinstance(arg, objects.Record) or
                           isinstance(arg, objects.ZoneTransferRequest) or
                           isinstance(arg, objects.ZoneTransferAccept)):
-
                         zone_id = arg.zone_id
-                        if zone_id is not None:
+                        if zone_id:
                             break
 
             # If we still don't have an ID, find the Nth argument as
             # defined by the zone_arg decorator option.
-            if zone_id is None and len(args) > zone_arg:
+            if not zone_id and len(args) > zone_arg:
                 zone_id = args[zone_arg]
-
                 if isinstance(zone_id, objects.Zone):
                     # If the value is a Zone object, extract it's ID.
                     zone_id = zone_id.id
 
-            if not new_zone and zone_id is None:
+            if new_zone and not zone_id:
+                lock_name = 'create-new-zone'
+            elif not new_zone and zone_id:
+                lock_name = 'zone-%s' % zone_id
+            else:
                 raise Exception('Failed to determine zone id for '
                                 'synchronized operation')
 
             if zone_id in ZONE_LOCKS.held:
-                # Call the wrapped function
                 return f(self, *args, **kwargs)
-            else:
-                with lockutils.lock('zone-%s' % zone_id):
+
+            with lockutils.lock(lock_name):
+                try:
                     ZONE_LOCKS.held.add(zone_id)
-
-                    # Call the wrapped function
-                    result = f(self, *args, **kwargs)
-
+                    return f(self, *args, **kwargs)
+                finally:
                     ZONE_LOCKS.held.remove(zone_id)
-                    return result
 
         sync_wrapper.__wrapped_function = f
         sync_wrapper.__wrapper_name = 'synchronized_zone'
