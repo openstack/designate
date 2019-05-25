@@ -13,14 +13,23 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import mock
-from dns import zone as dnszone
-import dns.message
-import dns.rdatatype
-import dns.rcode
+import socket
 
+import dns
+import dns.exception
+import dns.message
+import dns.rcode
+import dns.rdatatype
+import dns.zone
+import eventlet
+import mock
+import oslotest.base
+from dns import zone as dnszone
+
+import designate.tests
 from designate import dnsutils
-from designate.tests import TestCase
+from designate import exceptions
+from designate import objects
 
 SAMPLES = {
     ("cname.example.com.", "CNAME"): {
@@ -78,7 +87,38 @@ SAMPLES = {
 }
 
 
-class TestUtils(TestCase):
+class TestUtils(designate.tests.TestCase):
+    def setUp(self):
+        super(TestUtils, self).setUp()
+
+    def test_from_dnspython_zone(self):
+        zone_file = self.get_zonefile_fixture()
+
+        dnspython_zone = dnszone.from_text(
+            zone_file,
+            relativize=False,
+            check_origin=False
+        )
+
+        zone = dnsutils.from_dnspython_zone(dnspython_zone)
+
+        self.assertIsInstance(zone, objects.zone.Zone)
+
+    def test_from_dnspython_zone_no_soa(self):
+        zone_file = self.get_zonefile_fixture(variant='nosoa')
+
+        dnspython_zone = dnszone.from_text(
+            zone_file,
+            relativize=False,
+            check_origin=False
+        )
+
+        self.assertRaisesRegex(
+            exceptions.BadRequest,
+            'An SOA record is required',
+            dnsutils.from_dnspython_zone, dnspython_zone,
+        )
+
     def test_parse_zone(self):
         zone_file = self.get_zonefile_fixture()
 
@@ -88,7 +128,8 @@ class TestUtils(TestCase):
             relativize=False,
             # Dont check origin, we allow missing NS records (missing SOA
             # records are taken care of in _create_zone).
-            check_origin=False)
+            check_origin=False
+        )
 
         zone = dnsutils.from_dnspython_zone(dnspython_zone)
 
@@ -98,12 +139,12 @@ class TestUtils(TestCase):
 
             sample_ttl = SAMPLES[k].get('ttl', None)
             if rrset.obj_attr_is_set('ttl') or sample_ttl is not None:
-                self.assertEqual(rrset.ttl, sample_ttl)
+                self.assertEqual(sample_ttl, rrset.ttl)
 
-            self.assertEqual(len(SAMPLES[k]['records']), len(rrset.records))
+            self.assertEqual(len(rrset.records), len(SAMPLES[k]['records']))
 
-            for r in rrset.records:
-                self.assertIn(r.data, SAMPLES[k]['records'])
+            for record in rrset.records:
+                self.assertIn(record.data, SAMPLES[k]['records'])
 
         self.assertEqual(len(SAMPLES), len(zone.recordsets))
         self.assertEqual('example.com.', zone.name)
@@ -126,9 +167,7 @@ class TestUtils(TestCase):
         self.assertTrue(lock.acquire('example3.com.'))
 
     def test_limit_notify_middleware(self):
-        # Set the delay
-        self.config(notify_delay=.1,
-                    group='service:agent')
+        self.CONF.set_override('notify_delay', 0.1, 'service:agent')
 
         # Initialize the middlware
         placeholder_app = None
@@ -146,10 +185,8 @@ class TestUtils(TestCase):
         self.assertIsNone(middleware.process_request(notify))
 
     @mock.patch('designate.dnsutils.ZoneLock.acquire', return_value=False)
-    def test_limit_notify_middleware_no_acquire(self, acquire):
-        # Set the delay
-        self.config(notify_delay=.1,
-                    group='service:agent')
+    def test_limit_notify_middleware_no_acquire(self, mock_acquire):
+        self.CONF.set_override('notify_delay', 0.1, 'service:agent')
 
         # Initialize the middlware
         placeholder_app = None
@@ -172,3 +209,114 @@ class TestUtils(TestCase):
         # so just return what would have come back for a successful NOTIFY
         # This needs to be a one item tuple for the serialization middleware
         self.assertEqual(middleware.process_request(notify), (response,))
+
+
+class TestDoAfxr(oslotest.base.BaseTestCase):
+    def setUp(self):
+        super(TestDoAfxr, self).setUp()
+
+    @mock.patch.object(dns.query, 'xfr')
+    @mock.patch.object(dns.zone, 'from_xfr')
+    def test_do_afxr(self, mock_from_xfr_impl, mock_xfr):
+        mock_from_xfr = mock.MagicMock()
+        mock_from_xfr_impl.return_value = mock_from_xfr
+
+        mock_from_xfr.origin.to_text.return_value = 'raw_zone'
+        mock_from_xfr.return_value = 'raw_zone'
+
+        masters = [
+            {'host': '192.168.0.1', 'port': 53},
+            {'host': '192.168.0.2', 'port': 53},
+        ]
+
+        self.assertEqual(
+            mock_from_xfr,
+            dnsutils.do_axfr('example.com', masters)
+        )
+
+        self.assertTrue(mock_xfr.called)
+        self.assertTrue(mock_from_xfr_impl.called)
+
+    def test_do_afxr_no_masters(self):
+        masters = [
+        ]
+
+        self.assertRaisesRegex(
+            exceptions.XFRFailure,
+            'XFR failed for example.com. No servers in \[\] was reached.',
+            dnsutils.do_axfr, 'example.com', masters,
+        )
+
+    @mock.patch.object(dns.query, 'xfr')
+    @mock.patch.object(dns.zone, 'from_xfr')
+    @mock.patch.object(eventlet.Timeout, 'cancel')
+    def test_do_afxr_fails_with_timeout(self, mock_cancel, mock_from_xfr,
+                                        mock_xfr):
+        mock_from_xfr.side_effect = eventlet.Timeout()
+
+        masters = [
+            {'host': '192.168.0.1', 'port': 53},
+            {'host': '192.168.0.2', 'port': 53},
+            {'host': '192.168.0.3', 'port': 53},
+            {'host': '192.168.0.4', 'port': 53},
+        ]
+
+        self.assertRaises(
+            exceptions.XFRFailure,
+            dnsutils.do_axfr, 'example.com.', masters,
+        )
+
+        self.assertTrue(mock_xfr.called)
+        self.assertTrue(mock_from_xfr.called)
+        self.assertTrue(mock_cancel.called)
+
+    @mock.patch.object(dns.query, 'xfr')
+    @mock.patch.object(dns.zone, 'from_xfr')
+    def test_do_afxr_fails_with_form_error(self, mock_from_xfr, mock_xfr):
+        mock_from_xfr.side_effect = dns.exception.FormError()
+
+        masters = [
+            {'host': '192.168.0.1', 'port': 53},
+        ]
+
+        self.assertRaises(
+            exceptions.XFRFailure,
+            dnsutils.do_axfr, 'example.com.', masters,
+        )
+
+        self.assertTrue(mock_xfr.called)
+        self.assertTrue(mock_from_xfr.called)
+
+    @mock.patch.object(dns.query, 'xfr')
+    @mock.patch.object(dns.zone, 'from_xfr')
+    def test_do_afxr_fails_with_socket_error(self, mock_from_xfr, mock_xfr):
+        mock_from_xfr.side_effect = socket.error()
+
+        masters = [
+            {'host': '192.168.0.1', 'port': 53},
+        ]
+
+        self.assertRaises(
+            exceptions.XFRFailure,
+            dnsutils.do_axfr, 'example.com.', masters,
+        )
+
+        self.assertTrue(mock_xfr.called)
+        self.assertTrue(mock_from_xfr.called)
+
+    @mock.patch.object(dns.query, 'xfr')
+    @mock.patch.object(dns.zone, 'from_xfr')
+    def test_do_afxr_fails_with_exception(self, mock_from_xfr, mock_xfr):
+        mock_from_xfr.side_effect = Exception()
+
+        masters = [
+            {'host': '192.168.0.1', 'port': 53},
+        ]
+
+        self.assertRaises(
+            exceptions.XFRFailure,
+            dnsutils.do_axfr, 'example.com.', masters,
+        )
+
+        self.assertTrue(mock_xfr.called)
+        self.assertTrue(mock_from_xfr.called)
