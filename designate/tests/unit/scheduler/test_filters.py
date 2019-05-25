@@ -11,32 +11,24 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
-"""Unit-test Pool Scheduler
-"""
 import fixtures
-import testtools
 from mock import Mock
-from oslotest import base as test
 
+from designate import exceptions
+from designate import objects
+from designate import policy
+from designate import tests
+from designate.scheduler.filters import attribute_filter
 from designate.scheduler.filters import default_pool_filter
 from designate.scheduler.filters import fallback_filter
-from designate.scheduler.filters import pool_id_attribute_filter
-from designate.scheduler.filters import attribute_filter
 from designate.scheduler.filters import in_doubt_default_pool_filter
-from designate import objects
-from designate import context
-from designate import policy
-from designate import exceptions
+from designate.scheduler.filters import pool_id_attribute_filter
 
 
-class SchedulerFilterTest(test.BaseTestCase):
-
+class SchedulerFilterTest(tests.TestCase):
     def setUp(self):
         super(SchedulerFilterTest, self).setUp()
-
-        self.context = context.DesignateContext()
-
+        self.context = self.get_context()
         self.zone = objects.Zone(
             name="example.com.",
             type="PRIMARY",
@@ -49,12 +41,10 @@ class SchedulerFilterTest(test.BaseTestCase):
         }
 
         mock_storage = Mock(**attrs)
-
         self.test_filter = self.FILTER(storage=mock_storage)
 
 
 class SchedulerDefaultPoolFilterTest(SchedulerFilterTest):
-
     FILTER = default_pool_filter.DefaultPoolFilter
 
     def test_default_operation(self):
@@ -84,7 +74,6 @@ class SchedulerDefaultPoolFilterTest(SchedulerFilterTest):
 
 
 class SchedulerFallbackFilterTest(SchedulerFilterTest):
-
     FILTER = fallback_filter.FallbackFilter
 
     def test_default_operation(self):
@@ -123,12 +112,10 @@ class SchedulerFallbackFilterTest(SchedulerFilterTest):
 
 
 class SchedulerPoolIDAttributeFilterTest(SchedulerFilterTest):
-
     FILTER = pool_id_attribute_filter.PoolIDAttributeFilter
 
     def setUp(self):
         super(SchedulerPoolIDAttributeFilterTest, self).setUp()
-
         self.zone = objects.Zone(
             name="example.com.",
             type="PRIMARY",
@@ -197,8 +184,10 @@ class SchedulerPoolIDAttributeFilterTest(SchedulerFilterTest):
             side_effect=exceptions.Forbidden
         ))
 
-        with testtools.ExpectedException(exceptions.Forbidden):
-            self.test_filter.filter(self.context, pools, self.zone)
+        self.assertRaises(
+            exceptions.Forbidden,
+            self.test_filter.filter, self.context, pools, self.zone,
+        )
 
         policy.check.assert_called_once_with(
             'zone_create_forced_pool',
@@ -207,12 +196,10 @@ class SchedulerPoolIDAttributeFilterTest(SchedulerFilterTest):
 
 
 class SchedulerAttributeFilterTest(SchedulerFilterTest):
-
     FILTER = attribute_filter.AttributeFilter
 
     def setUp(self):
         super(SchedulerAttributeFilterTest, self).setUp()
-
         self.zone = objects.Zone(
             name="example.com.",
             type="PRIMARY",
@@ -425,7 +412,6 @@ class SchedulerAttributeFilterTest(SchedulerFilterTest):
 
 
 class SchedulerInDoubtDefaultPoolFilterTest(SchedulerFilterTest):
-
     FILTER = in_doubt_default_pool_filter.InDoubtDefaultPoolFilter
 
     def test_pools_with_default(self):

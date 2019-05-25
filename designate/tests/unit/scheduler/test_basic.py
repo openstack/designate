@@ -11,36 +11,26 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
-"""Unit-test Pool Scheduler
-"""
-import testtools
 from mock import Mock
-from oslotest import base as test
-from oslo_config import cfg
-from oslo_config import fixture as cfg_fixture
 
-from designate import scheduler
-from designate import objects
-from designate import context
 from designate import exceptions
+from designate import objects
+from designate import scheduler
+from designate import tests
 
 
-class SchedulerTest(test.BaseTestCase):
+class SchedulerTest(tests.TestCase):
 
     def setUp(self):
         super(SchedulerTest, self).setUp()
-
-        self.context = context.DesignateContext()
-        self.CONF = self.useFixture(cfg_fixture.Config(cfg.CONF)).conf
-
-    def test_default_operation(self):
-        zone = objects.Zone(
+        self.context = self.get_context()
+        self.zone = objects.Zone(
             name="example.com.",
             type="PRIMARY",
             email="hostmaster@example.com"
         )
 
+    def test_default_operation(self):
         attrs = {
             'find_pools.return_value': objects.PoolList.from_list(
                 [{"id": "794ccc2c-d751-44fe-b57f-8894c9f5c842"}])
@@ -49,17 +39,13 @@ class SchedulerTest(test.BaseTestCase):
 
         test_scheduler = scheduler.get_scheduler(storage=mock_storage)
 
-        zone.pool_id = test_scheduler.schedule_zone(self.context, zone)
+        self.zone.pool_id = test_scheduler.schedule_zone(self.context,
+                                                         self.zone)
 
-        self.assertEqual(zone.pool_id, "794ccc2c-d751-44fe-b57f-8894c9f5c842")
+        self.assertEqual(self.zone.pool_id,
+                         "794ccc2c-d751-44fe-b57f-8894c9f5c842")
 
     def test_multiple_pools(self):
-        zone = objects.Zone(
-            name="example.com.",
-            type="PRIMARY",
-            email="hostmaster@example.com"
-        )
-
         attrs = {
             'find_pools.return_value': objects.PoolList.from_list(
                 [
@@ -73,10 +59,11 @@ class SchedulerTest(test.BaseTestCase):
 
         test_scheduler = scheduler.get_scheduler(storage=mock_storage)
 
-        zone.pool_id = test_scheduler.schedule_zone(self.context, zone)
+        self.zone.pool_id = test_scheduler.schedule_zone(self.context,
+                                                         self.zone)
 
         self.assertIn(
-            zone.pool_id,
+            self.zone.pool_id,
             [
                 "794ccc2c-d751-44fe-b57f-8894c9f5c842",
                 "5fabcd37-262c-4cf3-8625-7f419434b6df",
@@ -84,10 +71,26 @@ class SchedulerTest(test.BaseTestCase):
         )
 
     def test_no_pools(self):
-        zone = objects.Zone(
-            name="example.com.",
-            type="PRIMARY",
-            email="hostmaster@example.com"
+        attrs = {
+            'find_pools.return_value': objects.PoolList()
+        }
+        mock_storage = Mock(**attrs)
+
+        self.CONF.set_override(
+            'scheduler_filters', ['random'], 'service:central'
+        )
+
+        test_scheduler = scheduler.get_scheduler(storage=mock_storage)
+
+        self.assertRaisesRegex(
+            exceptions.NoValidPoolFound,
+            'There are no pools that matched your request',
+            test_scheduler.schedule_zone, self.context, self.zone,
+        )
+
+    def test_no_filters_enabled(self):
+        self.CONF.set_override(
+            'scheduler_filters', [], 'service:central'
         )
 
         attrs = {
@@ -95,25 +98,8 @@ class SchedulerTest(test.BaseTestCase):
         }
         mock_storage = Mock(**attrs)
 
-        cfg.CONF.set_override(
-            'scheduler_filters',
-            ['random'],
-            'service:central')
-
-        test_scheduler = scheduler.get_scheduler(storage=mock_storage)
-
-        with testtools.ExpectedException(exceptions.NoValidPoolFound):
-            test_scheduler.schedule_zone(self.context, zone)
-
-    def test_no_filters_enabled(self):
-
-        cfg.CONF.set_override(
-            'scheduler_filters', [], 'service:central')
-
-        attrs = {
-            'find_pools.return_value': objects.PoolList()
-        }
-        mock_storage = Mock(**attrs)
-
-        with testtools.ExpectedException(exceptions.NoFiltersConfigured):
-            scheduler.get_scheduler(storage=mock_storage)
+        self.assertRaisesRegex(
+            exceptions.NoFiltersConfigured,
+            'There are no scheduling filters configured',
+            scheduler.get_scheduler, mock_storage,
+        )
