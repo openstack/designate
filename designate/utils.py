@@ -502,7 +502,7 @@ def bind_tcp(host, port, tcp_backlog, tcp_keepidle=None):
     sock_tcp.bind((host, port))
     if port == 0:
         newport = sock_tcp.getsockname()[1]
-        LOG.info('Listening on TCP port %(port)d'), {'port': newport}
+        LOG.info('Listening on TCP port %(port)d', {'port': newport})
 
     sock_tcp.listen(tcp_backlog)
 
