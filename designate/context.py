@@ -13,11 +13,11 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import itertools
 import copy
+import itertools
 
-from keystoneauth1.access import service_catalog as ksa_service_catalog
 from keystoneauth1 import plugin
+from keystoneauth1.access import service_catalog as ksa_service_catalog
 from oslo_context import context
 from oslo_log import log as logging
 
@@ -43,7 +43,6 @@ class DesignateContext(context.RequestContext):
                  tsigkey_id=None, original_tenant=None,
                  edit_managed_records=False, hide_counts=False,
                  client_addr=None, user_auth_plugin=None, **kwargs):
-
         super(DesignateContext, self).__init__(**kwargs)
 
         self.user_auth_plugin = user_auth_plugin
@@ -69,17 +68,19 @@ class DesignateContext(context.RequestContext):
         # Override the user_identity field to account for TSIG. When a TSIG key
         # is used as authentication e.g. via MiniDNS, it will act as a form
         # of "user",
-        user = self.user or '-'
+        user = self.user_id or '-'
 
-        if self.tsigkey_id and not self.user:
+        if self.tsigkey_id and not self.user_id:
             user = 'TSIG:%s' % self.tsigkey_id
 
         user_idt = (
-            self.user_idt_format.format(user=user,
-                                        tenant=self.tenant or '-',
-                                        domain=self.domain or '-',
-                                        user_domain=self.user_domain or '-',
-                                        p_domain=self.project_domain or '-'))
+            self.user_idt_format.format(
+                user=user,
+                tenant=self.project_id or '-',
+                domain=self.domain_id or '-',
+                user_domain=self.user_domain_id or '-',
+                p_domain=self.project_domain_id or '-')
+        )
 
         # Update the dict with Designate specific extensions and overrides
         d.update({
@@ -123,7 +124,7 @@ class DesignateContext(context.RequestContext):
         policy.check('use_sudo', self)
 
         LOG.info('Accepted sudo from user %(user)s to tenant %(tenant)s',
-                 {'user': self.user, 'tenant': tenant})
+                 {'user': self.user_id, 'tenant': tenant})
         self.original_tenant = self.tenant
         self.tenant = tenant
 

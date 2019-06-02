@@ -127,7 +127,7 @@ class PowerDNSBackend(base.Backend):
                 'name': zone['name'].rstrip('.'),
                 'master': ','.join(masters),
                 'type': 'SLAVE',
-                'account': context.tenant
+                'account': context.project_id
             }
 
             self._create(sess, tables.domains, domain_values)

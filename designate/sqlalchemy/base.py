@@ -156,10 +156,12 @@ class SQLAlchemy(object):
                 # so I had to force flake8 to skip the check
                 if include_null_tenant:
                     query = query.where(or_(
-                            table.c.tenant_id == context.tenant,
+                            table.c.tenant_id == context.project_id,
                             table.c.tenant_id == None))  # NOQA
                 else:
-                    query = query.where(table.c.tenant_id == context.tenant)
+                    query = query.where(
+                        table.c.tenant_id == context.project_id
+                    )
 
         return query
 

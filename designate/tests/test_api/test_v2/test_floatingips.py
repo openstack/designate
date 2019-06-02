@@ -23,13 +23,13 @@ NOTE: Record invalidation is tested in Central tests
 
 class ApiV2ReverseFloatingIPTest(ApiV2TestCase):
     def test_get_floatingip_no_record(self):
-        context = self.get_context(tenant='a')
+        context = self.get_context(project_id='a')
 
-        fip = self.network_api.fake.allocate_floatingip(context.tenant)
+        fip = self.network_api.fake.allocate_floatingip(context.project_id)
 
         response = self.client.get(
             '/reverse/floatingips/%s' % ":".join([fip['region'], fip['id']]),
-            headers={'X-Test-Tenant-Id': context.tenant})
+            headers={'X-Test-Tenant-Id': context.project_id})
 
         self.assertEqual(200, response.status_int)
         self.assertEqual('application/json', response.content_type)
@@ -47,17 +47,17 @@ class ApiV2ReverseFloatingIPTest(ApiV2TestCase):
     def test_get_floatingip_with_record(self):
         fixture = self.get_ptr_fixture()
 
-        context = self.get_context(tenant='a')
+        context = self.get_context(project_id='a')
 
         fip = self.network_api.fake.allocate_floatingip(
-            context.tenant)
+            context.project_id)
 
         self.central_service.update_floatingip(
             context, fip['region'], fip['id'], fixture)
 
         response = self.client.get(
             '/reverse/floatingips/%s' % ":".join([fip['region'], fip['id']]),
-            headers={'X-Test-Tenant-Id': context.tenant})
+            headers={'X-Test-Tenant-Id': context.project_id})
 
         self.assertEqual(200, response.status_int)
         self.assertEqual('application/json', response.content_type)
@@ -90,13 +90,13 @@ class ApiV2ReverseFloatingIPTest(ApiV2TestCase):
         self.assertEqual(0, len(response.json['floatingips']))
 
     def test_list_floatingip_no_record(self):
-        context = self.get_context(tenant='a')
+        context = self.get_context(project_id='a')
 
-        fip = self.network_api.fake.allocate_floatingip(context.tenant)
+        fip = self.network_api.fake.allocate_floatingip(context.project_id)
 
         response = self.client.get(
             '/reverse/floatingips',
-            headers={'X-Test-Tenant-Id': context.tenant})
+            headers={'X-Test-Tenant-Id': context.project_id})
 
         self.assertIn('floatingips', response.json)
         self.assertIn('links', response.json)
@@ -114,16 +114,16 @@ class ApiV2ReverseFloatingIPTest(ApiV2TestCase):
     def test_list_floatingip_with_record(self):
         fixture = self.get_ptr_fixture()
 
-        context = self.get_context(tenant='a')
+        context = self.get_context(project_id='a')
 
-        fip = self.network_api.fake.allocate_floatingip(context.tenant)
+        fip = self.network_api.fake.allocate_floatingip(context.project_id)
 
         self.central_service.update_floatingip(
             context, fip['region'], fip['id'], fixture)
 
         response = self.client.get(
             '/reverse/floatingips',
-            headers={'X-Test-Tenant-Id': context.tenant})
+            headers={'X-Test-Tenant-Id': context.project_id})
 
         self.assertIn('floatingips', response.json)
         self.assertIn('links', response.json)
@@ -187,11 +187,11 @@ class ApiV2ReverseFloatingIPTest(ApiV2TestCase):
 
     def test_unset_floatingip(self):
         fixture = self.get_ptr_fixture()
-        context = self.get_context(tenant='a')
+        context = self.get_context(project_id='a')
         elevated_context = context.elevated()
         elevated_context.all_tenants = True
 
-        fip = self.network_api.fake.allocate_floatingip(context.tenant)
+        fip = self.network_api.fake.allocate_floatingip(context.project_id)
 
         # Unsetting via "None"
         self.central_service.update_floatingip(
@@ -199,7 +199,7 @@ class ApiV2ReverseFloatingIPTest(ApiV2TestCase):
 
         criterion = {
             'managed_resource_id': fip['id'],
-            'managed_tenant_id': context.tenant
+            'managed_tenant_id': context.project_id
         }
         zone_id = self.central_service.find_record(
             elevated_context, criterion=criterion).zone_id
@@ -214,7 +214,7 @@ class ApiV2ReverseFloatingIPTest(ApiV2TestCase):
         response = self.client.patch_json(
             '/reverse/floatingips/%s' % ":".join([fip['region'], fip['id']]),
             {'ptrdname': None},
-            headers={'X-Test-Tenant-Id': context.tenant})
+            headers={'X-Test-Tenant-Id': context.project_id})
         self.assertIsNone(response.json)
         self.assertEqual(202, response.status_int)
 
@@ -230,9 +230,9 @@ class ApiV2ReverseFloatingIPTest(ApiV2TestCase):
 
     def test_unset_floatingip_not_allocated(self):
         fixture = self.get_ptr_fixture()
-        context = self.get_context(tenant='a')
+        context = self.get_context(project_id='a')
 
-        fip = self.network_api.fake.allocate_floatingip(context.tenant)
+        fip = self.network_api.fake.allocate_floatingip(context.project_id)
 
         self.central_service.update_floatingip(
             context, fip['region'], fip['id'], fixture)

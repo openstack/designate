@@ -37,7 +37,7 @@ class NeutronAPITest(TestCase):
     @patch.object(clientv20.Client, 'list_floatingips',
                   side_effect=neutron_exceptions.Unauthorized)
     def test_unauthorized_returns_empty(self, _):
-        context = self.get_context(tenant='a', auth_token='test')
+        context = self.get_context(project_id='a', auth_token='test')
 
         fips = self.api.list_floatingips(context)
         self.assertEqual(0, len(fips))
@@ -45,7 +45,7 @@ class NeutronAPITest(TestCase):
     @patch.object(clientv20.Client, 'list_floatingips',
                   side_effect=neutron_exceptions.NeutronException)
     def test_communication_failure(self, _):
-        context = self.get_context(tenant='a', auth_token='test')
+        context = self.get_context(project_id='a', auth_token='test')
 
         with testtools.ExpectedException(
                 exceptions.NeutronCommunicationFailure):

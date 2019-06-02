@@ -1489,8 +1489,8 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
 
         if not context.all_tenants:
             query = query.where(or_(
-                table.c.tenant_id == context.tenant,
-                table.c.target_tenant_id == context.tenant))
+                table.c.tenant_id == context.project_id,
+                table.c.target_tenant_id == context.project_id))
 
         return self._find(
             context, table, objects.ZoneTransferRequest,

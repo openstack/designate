@@ -62,7 +62,7 @@ class StorageTestCase(object):
         values = self.get_quota_fixture(fixture=fixture, values=kwargs)
 
         if 'tenant_id' not in values:
-            values['tenant_id'] = context.tenant
+            values['tenant_id'] = context.project_id
 
         return self.storage.create_quota(context, values)
 
@@ -184,7 +184,7 @@ class StorageTestCase(object):
     # Quota Tests
     def test_create_quota(self):
         values = self.get_quota_fixture()
-        values['tenant_id'] = self.admin_context.tenant
+        values['tenant_id'] = self.admin_context.project_id
 
         result = self.storage.create_quota(self.admin_context, values)
 
@@ -192,7 +192,7 @@ class StorageTestCase(object):
         self.assertIsNotNone(result['created_at'])
         self.assertIsNone(result['updated_at'])
 
-        self.assertEqual(self.admin_context.tenant, result['tenant_id'])
+        self.assertEqual(self.admin_context.project_id, result['tenant_id'])
         self.assertEqual(values['resource'], result['resource'])
         self.assertEqual(values['hard_limit'], result['hard_limit'])
 
@@ -495,9 +495,9 @@ class StorageTestCase(object):
     def test_find_tenants(self):
         context = self.get_admin_context()
         one_context = context
-        one_context.tenant = 'One'
+        one_context.project_id = 'One'
         two_context = context
-        two_context.tenant = 'Two'
+        two_context.project_id = 'Two'
         context.all_tenants = True
 
         # create 3 zones in 2 tenants
@@ -526,7 +526,7 @@ class StorageTestCase(object):
     def test_get_tenant(self):
         context = self.get_admin_context()
         one_context = context
-        one_context.tenant = 1
+        one_context.project_id = 1
         context.all_tenants = True
 
         # create 2 zones in a tenant
@@ -547,9 +547,9 @@ class StorageTestCase(object):
     def test_count_tenants(self):
         context = self.get_admin_context()
         one_context = context
-        one_context.tenant = 1
+        one_context.project_id = 1
         two_context = context
-        two_context.tenant = 2
+        two_context.project_id = 2
         context.all_tenants = True
 
         # in the beginning, there should be nothing
@@ -580,7 +580,7 @@ class StorageTestCase(object):
     def test_create_zone(self):
         pool_id = cfg.CONF['service:central'].default_pool_id
         values = {
-            'tenant_id': self.admin_context.tenant,
+            'tenant_id': self.admin_context.project_id,
             'name': 'example.net.',
             'email': 'example@example.net',
             'pool_id': pool_id
@@ -593,7 +593,7 @@ class StorageTestCase(object):
         self.assertIsNotNone(result['created_at'])
         self.assertIsNone(result['updated_at'])
 
-        self.assertEqual(self.admin_context.tenant, result['tenant_id'])
+        self.assertEqual(self.admin_context.project_id, result['tenant_id'])
         self.assertEqual(values['name'], result['name'])
         self.assertEqual(values['email'], result['email'])
         self.assertEqual(pool_id, result['pool_id'])
@@ -662,9 +662,9 @@ class StorageTestCase(object):
     def test_find_zones_all_tenants(self):
         # Create two contexts with different tenant_id's
         one_context = self.get_admin_context()
-        one_context.tenant = 1
+        one_context.project_id = 1
         two_context = self.get_admin_context()
-        two_context.tenant = 2
+        two_context.project_id = 2
 
         # Create normal and all_tenants context objects
         nm_context = self.get_admin_context()
@@ -1305,7 +1305,7 @@ class StorageTestCase(object):
         self.assertIsNotNone(result['hash'])
         self.assertIsNone(result['updated_at'])
 
-        self.assertEqual(self.admin_context.tenant, result['tenant_id'])
+        self.assertEqual(self.admin_context.project_id, result['tenant_id'])
         self.assertEqual(values['data'], result['data'])
         self.assertIn('status', result)
 
@@ -1411,9 +1411,9 @@ class StorageTestCase(object):
     def test_find_records_all_tenants(self):
         # Create two contexts with different tenant_id's
         one_context = self.get_admin_context()
-        one_context.tenant = 1
+        one_context.project_id = 1
         two_context = self.get_admin_context()
-        two_context.tenant = 2
+        two_context.project_id = 2
 
         # Create normal and all_tenants context objects
         nm_context = self.get_admin_context()
@@ -1904,7 +1904,7 @@ class StorageTestCase(object):
     def test_create_pool(self):
         values = {
             'name': 'test1',
-            'tenant_id': self.admin_context.tenant,
+            'tenant_id': self.admin_context.project_id,
             'provisioner': 'UNMANAGED'
         }
 
@@ -2915,7 +2915,7 @@ class StorageTestCase(object):
         zone = self.create_zone()
 
         values = {
-            'tenant_id': self.admin_context.tenant,
+            'tenant_id': self.admin_context.project_id,
             'zone_id': zone.id,
             'key': 'qwertyuiop'
         }
@@ -2923,19 +2923,19 @@ class StorageTestCase(object):
         result = self.storage.create_zone_transfer_request(
             self.admin_context, objects.ZoneTransferRequest.from_dict(values))
 
-        self.assertEqual(self.admin_context.tenant, result['tenant_id'])
+        self.assertEqual(self.admin_context.project_id, result['tenant_id'])
         self.assertIn('status', result)
 
     def test_create_zone_transfer_request_scoped(self):
         zone = self.create_zone()
-        tenant_2_context = self.get_context(tenant='2')
-        tenant_3_context = self.get_context(tenant='3')
+        tenant_2_context = self.get_context(project_id='2')
+        tenant_3_context = self.get_context(project_id='3')
 
         values = {
-            'tenant_id': self.admin_context.tenant,
+            'tenant_id': self.admin_context.project_id,
             'zone_id': zone.id,
             'key': 'qwertyuiop',
-            'target_tenant_id': tenant_2_context.tenant,
+            'target_tenant_id': tenant_2_context.project_id,
         }
 
         result = self.storage.create_zone_transfer_request(
@@ -2945,14 +2945,18 @@ class StorageTestCase(object):
         self.assertIsNotNone(result['created_at'])
         self.assertIsNone(result['updated_at'])
 
-        self.assertEqual(self.admin_context.tenant, result['tenant_id'])
-        self.assertEqual(tenant_2_context.tenant, result['target_tenant_id'])
+        self.assertEqual(self.admin_context.project_id, result['tenant_id'])
+        self.assertEqual(
+            tenant_2_context.project_id, result['target_tenant_id']
+        )
         self.assertIn('status', result)
 
         stored_ztr = self.storage.get_zone_transfer_request(
             tenant_2_context, result.id)
 
-        self.assertEqual(self.admin_context.tenant, stored_ztr['tenant_id'])
+        self.assertEqual(
+            self.admin_context.project_id, stored_ztr['tenant_id']
+        )
         self.assertEqual(stored_ztr['id'], result['id'])
 
         with testtools.ExpectedException(
@@ -2964,7 +2968,7 @@ class StorageTestCase(object):
         zone = self.create_zone()
 
         values = {
-            'tenant_id': self.admin_context.tenant,
+            'tenant_id': self.admin_context.project_id,
             'zone_id': zone.id,
             'key': 'qwertyuiop'
         }
@@ -2973,7 +2977,7 @@ class StorageTestCase(object):
             self.admin_context, objects.ZoneTransferRequest.from_dict(values))
 
         requests = self.storage.find_zone_transfer_requests(
-            self.admin_context, {"tenant_id": self.admin_context.tenant})
+            self.admin_context, {"tenant_id": self.admin_context.project_id})
         self.assertEqual(1, len(requests))
 
     def test_delete_zone_transfer_request(self):
@@ -3011,7 +3015,7 @@ class StorageTestCase(object):
         zone = self.create_zone()
         zt_request = self.create_zone_transfer_request(zone)
         values = {
-            'tenant_id': self.admin_context.tenant,
+            'tenant_id': self.admin_context.project_id,
             'zone_transfer_request_id': zt_request.id,
             'zone_id': zone.id,
             'key': zt_request.key
@@ -3024,14 +3028,14 @@ class StorageTestCase(object):
         self.assertIsNotNone(result['created_at'])
         self.assertIsNone(result['updated_at'])
 
-        self.assertEqual(self.admin_context.tenant, result['tenant_id'])
+        self.assertEqual(self.admin_context.project_id, result['tenant_id'])
         self.assertIn('status', result)
 
     def test_find_zone_transfer_accepts(self):
         zone = self.create_zone()
         zt_request = self.create_zone_transfer_request(zone)
         values = {
-            'tenant_id': self.admin_context.tenant,
+            'tenant_id': self.admin_context.project_id,
             'zone_transfer_request_id': zt_request.id,
             'zone_id': zone.id,
             'key': zt_request.key
@@ -3041,14 +3045,14 @@ class StorageTestCase(object):
             self.admin_context, objects.ZoneTransferAccept.from_dict(values))
 
         accepts = self.storage.find_zone_transfer_accepts(
-            self.admin_context, {"tenant_id": self.admin_context.tenant})
+            self.admin_context, {"tenant_id": self.admin_context.project_id})
         self.assertEqual(1, len(accepts))
 
     def test_find_zone_transfer_accept(self):
         zone = self.create_zone()
         zt_request = self.create_zone_transfer_request(zone)
         values = {
-            'tenant_id': self.admin_context.tenant,
+            'tenant_id': self.admin_context.project_id,
             'zone_transfer_request_id': zt_request.id,
             'zone_id': zone.id,
             'key': zt_request.key
@@ -3062,8 +3066,8 @@ class StorageTestCase(object):
         self.assertEqual(result.id, accept.id)
 
     def test_transfer_zone_ownership(self):
-        tenant_1_context = self.get_context(tenant='1')
-        tenant_2_context = self.get_context(tenant='2')
+        tenant_1_context = self.get_context(project_id='1')
+        tenant_2_context = self.get_context(project_id='2')
         admin_context = self.get_admin_context()
         admin_context.all_tenants = True
 
@@ -3074,7 +3078,7 @@ class StorageTestCase(object):
 
         updated_zone = zone
 
-        updated_zone.tenant_id = tenant_2_context.tenant
+        updated_zone.tenant_id = tenant_2_context.project_id
 
         self.storage.update_zone(
             admin_context, updated_zone)
@@ -3086,9 +3090,11 @@ class StorageTestCase(object):
         saved_record = self.storage.get_record(
             admin_context, record.id)
 
-        self.assertEqual(tenant_2_context.tenant, saved_zone.tenant_id)
-        self.assertEqual(tenant_2_context.tenant, saved_recordset.tenant_id)
-        self.assertEqual(tenant_2_context.tenant, saved_record.tenant_id)
+        self.assertEqual(tenant_2_context.project_id, saved_zone.tenant_id)
+        self.assertEqual(
+            tenant_2_context.project_id, saved_recordset.tenant_id
+        )
+        self.assertEqual(tenant_2_context.project_id, saved_record.tenant_id)
 
     def test_delete_zone_transfer_accept(self):
         zone = self.create_zone()

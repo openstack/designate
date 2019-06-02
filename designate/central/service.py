@@ -653,7 +653,7 @@ class Service(service.RPCService, service.Service):
     @rpc.expected_exceptions()
     def get_absolute_limits(self, context):
         # NOTE(Kiall): Currently, we only have quota based limits..
-        return self.quota.get_quotas(context, context.tenant)
+        return self.quota.get_quotas(context, context.project_id)
 
     # Quota Methods
     @rpc.expected_exceptions()
@@ -661,7 +661,7 @@ class Service(service.RPCService, service.Service):
         target = {'tenant_id': tenant_id}
         policy.check('get_quotas', context, target)
 
-        if tenant_id != context.tenant and not context.all_tenants:
+        if tenant_id != context.project_id and not context.all_tenants:
             raise exceptions.Forbidden()
 
         return self.quota.get_quotas(context, tenant_id)
@@ -683,7 +683,7 @@ class Service(service.RPCService, service.Service):
         }
 
         policy.check('set_quota', context, target)
-        if tenant_id != context.tenant and not context.all_tenants:
+        if tenant_id != context.project_id and not context.all_tenants:
             raise exceptions.Forbidden()
 
         return self.quota.set_quota(context, tenant_id, resource, hard_limit)
@@ -853,7 +853,7 @@ class Service(service.RPCService, service.Service):
         """
 
         # Default to creating in the current users tenant
-        zone.tenant_id = zone.tenant_id or context.tenant
+        zone.tenant_id = zone.tenant_id or context.project_id
 
         target = {
             'tenant_id': zone.tenant_id,
@@ -1008,7 +1008,7 @@ class Service(service.RPCService, service.Service):
                    sort_key=None, sort_dir=None):
         """List existing zones including the ones flagged for deletion.
         """
-        target = {'tenant_id': context.tenant}
+        target = {'tenant_id': context.project_id}
         policy.check('find_zones', context, target)
 
         return self.storage.find_zones(context, criterion, marker, limit,
@@ -1016,7 +1016,7 @@ class Service(service.RPCService, service.Service):
 
     @rpc.expected_exceptions()
     def find_zone(self, context, criterion=None):
-        target = {'tenant_id': context.tenant}
+        target = {'tenant_id': context.project_id}
         policy.check('find_zone', context, target)
 
         return self.storage.find_zone(context, criterion)
@@ -1375,7 +1375,7 @@ class Service(service.RPCService, service.Service):
     @rpc.expected_exceptions()
     def find_recordsets(self, context, criterion=None, marker=None, limit=None,
                         sort_key=None, sort_dir=None, force_index=False):
-        target = {'tenant_id': context.tenant}
+        target = {'tenant_id': context.project_id}
         policy.check('find_recordsets', context, target)
 
         recordsets = self.storage.find_recordsets(context, criterion, marker,
@@ -1386,7 +1386,7 @@ class Service(service.RPCService, service.Service):
 
     @rpc.expected_exceptions()
     def find_recordset(self, context, criterion=None):
-        target = {'tenant_id': context.tenant}
+        target = {'tenant_id': context.project_id}
         policy.check('find_recordset', context, target)
 
         recordset = self.storage.find_recordset(context, criterion)
@@ -1635,7 +1635,7 @@ class Service(service.RPCService, service.Service):
     @rpc.expected_exceptions()
     def find_records(self, context, criterion=None, marker=None, limit=None,
                      sort_key=None, sort_dir=None):
-        target = {'tenant_id': context.tenant}
+        target = {'tenant_id': context.project_id}
         policy.check('find_records', context, target)
 
         return self.storage.find_records(context, criterion, marker, limit,
@@ -1643,7 +1643,7 @@ class Service(service.RPCService, service.Service):
 
     @rpc.expected_exceptions()
     def find_record(self, context, criterion=None):
-        target = {'tenant_id': context.tenant}
+        target = {'tenant_id': context.project_id}
         policy.check('find_record', context, target)
 
         return self.storage.find_record(context, criterion)
@@ -1877,7 +1877,7 @@ class Service(service.RPCService, service.Service):
 
         Returns a list of tuples with FloatingIPs and it's Record.
         """
-        tenant_id = tenant_id or context.tenant
+        tenant_id = tenant_id or context.project_id
 
         elevated_context = context.elevated(all_tenants=True,
                                             edit_managed_records=True)
@@ -1995,7 +1995,7 @@ class Service(service.RPCService, service.Service):
     def _get_floatingip(self, context, region, floatingip_id, fips):
         if (region, floatingip_id) not in fips:
             msg = 'FloatingIP %s in %s is not associated for tenant "%s"' % \
-                (floatingip_id, region, context.tenant)
+                (floatingip_id, region, context.project_id)
             raise exceptions.NotFound(msg)
         return fips[region, floatingip_id]
 
@@ -2127,7 +2127,7 @@ class Service(service.RPCService, service.Service):
             'managed_resource_id': floatingip_id,
             'managed_resource_region': region,
             'managed_resource_type': 'ptr:floatingip',
-            'managed_tenant_id': context.tenant
+            'managed_tenant_id': context.project_id
         }
 
         record = self.create_record(
@@ -2153,7 +2153,7 @@ class Service(service.RPCService, service.Service):
                                             edit_managed_records=True)
         criterion = {
             'managed_resource_id': floatingip_id,
-            'managed_tenant_id': context.tenant
+            'managed_tenant_id': context.project_id
         }
 
         try:
@@ -2251,7 +2251,7 @@ class Service(service.RPCService, service.Service):
     def create_pool(self, context, pool):
         # Verify that there is a tenant_id
         if pool.tenant_id is None:
-            pool.tenant_id = context.tenant
+            pool.tenant_id = context.project_id
 
         policy.check('create_pool', context)
 
@@ -2514,7 +2514,7 @@ class Service(service.RPCService, service.Service):
         zone_transfer_request.key = self._transfer_key_generator()
 
         if zone_transfer_request.tenant_id is None:
-            zone_transfer_request.tenant_id = context.tenant
+            zone_transfer_request.tenant_id = context.project_id
 
         created_zone_transfer_request = \
             self.storage.create_zone_transfer_request(
@@ -2556,7 +2556,7 @@ class Service(service.RPCService, service.Service):
     @rpc.expected_exceptions()
     def find_zone_transfer_request(self, context, criterion):
         target = {
-            'tenant_id': context.tenant,
+            'tenant_id': context.project_id,
         }
         policy.check('find_zone_transfer_request', context, target)
         return self.storage.find_zone_transfer_requests(context, criterion)
@@ -2620,7 +2620,7 @@ class Service(service.RPCService, service.Service):
         policy.check('create_zone_transfer_accept', context, target)
 
         if zone_transfer_accept.tenant_id is None:
-            zone_transfer_accept.tenant_id = context.tenant
+            zone_transfer_accept.tenant_id = context.project_id
 
         created_zone_transfer_accept = \
             self.storage.create_zone_transfer_accept(
@@ -2717,14 +2717,14 @@ class Service(service.RPCService, service.Service):
     @rpc.expected_exceptions()
     @notification('dns.zone_import.create')
     def create_zone_import(self, context, request_body):
-        target = {'tenant_id': context.tenant}
+        target = {'tenant_id': context.project_id}
         policy.check('create_zone_import', context, target)
 
         values = {
             'status': 'PENDING',
             'message': None,
             'zone_id': None,
-            'tenant_id': context.tenant,
+            'tenant_id': context.project_id,
             'task_type': 'IMPORT'
         }
         zone_import = objects.ZoneImport(**values)
@@ -2813,7 +2813,7 @@ class Service(service.RPCService, service.Service):
     @rpc.expected_exceptions()
     def find_zone_imports(self, context, criterion=None, marker=None,
                   limit=None, sort_key=None, sort_dir=None):
-        target = {'tenant_id': context.tenant}
+        target = {'tenant_id': context.project_id}
         policy.check('find_zone_imports', context, target)
 
         criterion = {
@@ -2824,7 +2824,7 @@ class Service(service.RPCService, service.Service):
 
     @rpc.expected_exceptions()
     def get_zone_import(self, context, zone_import_id):
-        target = {'tenant_id': context.tenant}
+        target = {'tenant_id': context.project_id}
         policy.check('get_zone_import', context, target)
         return self.storage.get_zone_import(context, zone_import_id)
 
@@ -2844,7 +2844,7 @@ class Service(service.RPCService, service.Service):
     def delete_zone_import(self, context, zone_import_id):
         target = {
             'zone_import_id': zone_import_id,
-            'tenant_id': context.tenant
+            'tenant_id': context.project_id
         }
         policy.check('delete_zone_import', context, target)
 
@@ -2859,14 +2859,14 @@ class Service(service.RPCService, service.Service):
         # Try getting the zone to ensure it exists
         zone = self.storage.get_zone(context, zone_id)
 
-        target = {'tenant_id': context.tenant}
+        target = {'tenant_id': context.project_id}
         policy.check('create_zone_export', context, target)
 
         values = {
             'status': 'PENDING',
             'message': None,
             'zone_id': zone_id,
-            'tenant_id': context.tenant,
+            'tenant_id': context.project_id,
             'task_type': 'EXPORT'
         }
         zone_export = objects.ZoneExport(**values)
@@ -2886,7 +2886,7 @@ class Service(service.RPCService, service.Service):
             if synchronous:
                 try:
                     self.quota.limit_check(
-                            context, context.tenant, api_export_size=count)
+                            context, context.project_id, api_export_size=count)
                 except exceptions.OverQuota:
                     LOG.debug('Zone Export too large to perform synchronously')
                     export.status = 'ERROR'
@@ -2913,7 +2913,7 @@ class Service(service.RPCService, service.Service):
     @rpc.expected_exceptions()
     def find_zone_exports(self, context, criterion=None, marker=None,
                   limit=None, sort_key=None, sort_dir=None):
-        target = {'tenant_id': context.tenant}
+        target = {'tenant_id': context.project_id}
         policy.check('find_zone_exports', context, target)
 
         criterion = {
@@ -2924,7 +2924,7 @@ class Service(service.RPCService, service.Service):
 
     @rpc.expected_exceptions()
     def get_zone_export(self, context, zone_export_id):
-        target = {'tenant_id': context.tenant}
+        target = {'tenant_id': context.project_id}
         policy.check('get_zone_export', context, target)
 
         return self.storage.get_zone_export(context, zone_export_id)
@@ -2945,7 +2945,7 @@ class Service(service.RPCService, service.Service):
     def delete_zone_export(self, context, zone_export_id):
         target = {
             'zone_export_id': zone_export_id,
-            'tenant_id': context.tenant
+            'tenant_id': context.project_id
         }
         policy.check('delete_zone_export', context, target)
 
