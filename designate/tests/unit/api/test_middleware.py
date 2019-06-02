@@ -13,14 +13,9 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
-"""
-Test API middleware
-"""
-
 import fixtures
-import oslotest.base
 import mock
+import oslotest.base
 
 from designate.api import middleware
 
@@ -160,10 +155,10 @@ class SSLMiddlewareTest(oslotest.base.BaseTestCase):
     def test_bogus_header(self):
         self.request.environ['wsgi.url_scheme'] = 'http'
         # If someone sends something bogus, it will infect their self links
-        self.request.environ['HTTP_X_FORWARDED_PROTO'] = 'poo'
+        self.request.environ['HTTP_X_FORWARDED_PROTO'] = 'test'
         self.app(self.request)
 
-        self.assertEqual('poo', self.request.environ['wsgi.url_scheme'])
+        self.assertEqual('test', self.request.environ['wsgi.url_scheme'])
 
     def test_http_header(self):
         self.request.environ['wsgi.url_scheme'] = ''
@@ -182,8 +177,8 @@ class SSLMiddlewareTest(oslotest.base.BaseTestCase):
     def test_override_proto(self):
         self.request.environ['wsgi.url_scheme'] = 'http'
         self.request.environ['HTTP_X_FORWARDED_PROTO'] = 'https'
-        self.app.override = 'poo'
+        self.app.override = 'test'
 
         self.app(self.request)
 
-        self.assertEqual('poo', self.request.environ['wsgi.url_scheme'])
+        self.assertEqual('test', self.request.environ['wsgi.url_scheme'])

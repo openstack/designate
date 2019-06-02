@@ -13,55 +13,44 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
 import mock
 
-from designate.tests import TestCase
+import designate.tests
 from designate import exceptions
-
-from oslo_config import cfg
-from oslo_config import fixture as cfg_fixture
-
-from designate.api.admin.views import base
+from designate.objects.adapters.api_v2 import base
 
 
 class MockRequest(object):
-
     def __init__(self, GET=None):
         self.GET = GET
 
 
-class TestAdminAPI(TestCase):
+class TestAPIv2(designate.tests.TestCase):
 
     def setUp(self):
-        super(TestCase, self).setUp()
-        self.CONF = self.useFixture(cfg_fixture.Config(cfg.CONF)).conf
+        super(TestAPIv2, self).setUp()
 
-    @mock.patch.object(base.BaseView, '_get_collection_href')
-    @mock.patch.object(base.BaseView, '_get_next_href')
+    @mock.patch.object(base.APIv2Adapter, '_get_collection_href')
+    @mock.patch.object(base.APIv2Adapter, '_get_next_href')
     def test_limit_max(self, mock_coll_href, mock_next_href):
-        # Bug 1494799
-        # The code being tested should be deduplicated, see bug 1498432
+        # Bug 1494799 bug:1494799
         mock_coll_href.return_value = None
         mock_next_href.return_value = None
         item_list = range(200)
-
-        bv = base.BaseView()
-
         request = MockRequest(GET=dict(limit="max"))
-        links = bv._get_collection_links(request, item_list)
-        self.assertEqual(links, dict(self=None))
+        links = base.APIv2Adapter._get_collection_links(item_list, request)
+        self.assertEqual(dict(self=None), links)
 
         request = MockRequest(GET=dict(limit="MAX"))
-        links = bv._get_collection_links(request, item_list)
-        self.assertEqual(links, dict(self=None))
+        links = base.APIv2Adapter._get_collection_links(item_list, request)
+        self.assertEqual(dict(self=None), links, dict(self=None))
 
         request = MockRequest(GET=dict(limit="200"))
-        links = bv._get_collection_links(request, item_list)
-        self.assertEqual(links, dict(self=None, next=None))
+        links = base.APIv2Adapter._get_collection_links(item_list, request)
+        self.assertEqual(dict(self=None, next=None), links)
 
         request = MockRequest(GET=dict(limit="BOGUS_STRING"))
         self.assertRaises(
             exceptions.ValueError,
-            bv._get_collection_links, request, item_list
+            base.APIv2Adapter._get_collection_links, item_list, request
         )
