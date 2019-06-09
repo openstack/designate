@@ -15,7 +15,6 @@
 # under the License.
 from designateclient.v2 import client
 from designateclient import exceptions
-from keystoneauth1.identity import v2 as v2_auth
 from keystoneauth1.identity import v3 as v3_auth
 from keystoneauth1 import session as ks_session
 from oslo_log import log as logging
@@ -41,16 +40,12 @@ class DesignateBackend(base.Backend):
         self.username = self.options.get('username')
         self.password = self.options.get('password')
 
-        # ks v2
-        self.tenant_name = self.options.get('tenant_name')
-        self.tenant_id = self.options.get('tenant_id')
-
-        # ks v3
         self.project_name = self.options.get('project_name')
         self.project_domain_name = self.options.get(
             'project_domain_name', 'default')
         self.user_domain_name = self.options.get('user_domain_name', 'default')
         self.service_type = self.options.get('service_type', 'dns')
+        self.region_name = self.options.get('region_name')
 
     @property
     def client(self):
@@ -60,27 +55,21 @@ class DesignateBackend(base.Backend):
         if self._client is not None:
             return self._client
 
-        if (self.tenant_id is not None or self.tenant_name is not None):
-            auth = v2_auth.Password(
-                auth_url=self.auth_url,
-                username=self.username,
-                password=self.password,
-                tenant_id=self.tenant_id,
-                tenant_name=self.tenant_name)
-        elif self.project_name is not None:
-            auth = v3_auth.Password(
-                auth_url=self.auth_url,
-                username=self.username,
-                password=self.password,
-                project_name=self.project_name,
-                project_domain_name=self.project_domain_name,
-                user_domain_name=self.user_domain_name)
-        else:
-            auth = None
+        auth = v3_auth.Password(
+            auth_url=self.auth_url,
+            username=self.username,
+            password=self.password,
+            project_name=self.project_name,
+            project_domain_name=self.project_domain_name,
+            user_domain_name=self.user_domain_name,
+        )
 
         session = ks_session.Session(auth=auth)
         self._client = client.Client(
-            session=session, service_type=self.service_type)
+            session=session,
+            service_type=self.service_type,
+            region_name=self.region_name,
+        )
         return self._client
 
     def create_zone(self, context, zone):
