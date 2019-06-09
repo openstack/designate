@@ -43,13 +43,6 @@ NOTIFIER = None
 TRANSPORT = None
 
 # NOTE: Additional entries to designate.exceptions goes here.
-CONF.register_opts([
-    cfg.ListOpt(
-        'allowed_remote_exmods',
-        default=[],
-        help="Additional modules that contains allowed RPC exceptions.",
-        deprecated_name='allowed_rpc_exception_modules')
-])
 ALLOWED_EXMODS = [
     designate.exceptions.__name__,
     'designate.backend.impl_dynect'

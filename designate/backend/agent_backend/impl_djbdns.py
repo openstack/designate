@@ -52,14 +52,14 @@ from oslo_concurrency.processutils import ProcessExecutionError
 from oslo_config import cfg
 from oslo_log import log as logging
 
+import designate.conf
 from designate import exceptions
 from designate import utils
 from designate.backend.agent_backend import base
 from designate.utils import execute
 
-
 LOG = logging.getLogger(__name__)
-CFG_GROUP = 'backend:agent:djbdns'
+CFG_GROUP_NAME = 'backend:agent:djbdns'
 # rootwrap requires a command name instead of full path
 TCPCLIENT_DEFAULT_PATH = 'tcpclient'
 AXFR_GET_DEFAULT_PATH = 'axfr-get'
@@ -67,39 +67,6 @@ TINYDNS_DATA_DEFAULT_PATH = 'tinydns-data'
 
 TINYDNS_DATADIR_DEFAULT_PATH = '/var/lib/djbdns'
 SOA_QUERY_TIMEOUT = 1
-
-"""GROUP = backend:agent:djbdns"""
-djbdns_group = cfg.OptGroup(
-            name='backend:agent:djbdns',
-            title="Configuration for Djbdns backend"
-        )
-djbdns_opts = [
-    cfg.StrOpt(
-        'tcpclient-cmd-name',
-        help='tcpclient executable path or rootwrap command name',
-        default='tcpclient'
-    ),
-    cfg.StrOpt(
-        'axfr-get-cmd-name',
-        help='axfr-get executable path or rootwrap command name',
-        default='axfr-get'
-    ),
-    cfg.StrOpt(
-        'tinydns-data-cmd-name',
-        help='tinydns-data executable path or rootwrap command name',
-        default='tinydns-data'
-    ),
-    cfg.StrOpt(
-        'tinydns-datadir',
-        help='TinyDNS data directory',
-        default='/var/lib/djbdns'
-    ),
-    cfg.StrOpt('query-destination', default='127.0.0.1',
-               help='Host to query when finding zones')
-]
-
-cfg.CONF.register_group(djbdns_group)
-cfg.CONF.register_opts(djbdns_opts, group=djbdns_group)
 
 
 # TODO(Federico) on zone creation and update, agent.handler unnecessarily
@@ -128,16 +95,18 @@ class DjbdnsBackend(base.AgentBackend):
 
     @classmethod
     def get_cfg_opts(cls):
-        return [(djbdns_group, djbdns_opts)]
+        return [(designate.conf.djbdns.DJBDNS_GROUP,
+                 designate.conf.djbdns.DJDNS_OPTS)]
 
     def __init__(self, *a, **kw):
         """Configure the backend"""
         super(DjbdnsBackend, self).__init__(*a, **kw)
+        conf = cfg.CONF[CFG_GROUP_NAME]
 
         self._resolver = dns.resolver.Resolver(configure=False)
         self._resolver.timeout = SOA_QUERY_TIMEOUT
         self._resolver.lifetime = SOA_QUERY_TIMEOUT
-        self._resolver.nameservers = [cfg.CONF[CFG_GROUP].query_destination]
+        self._resolver.nameservers = [conf.query_destination]
         self._masters = [utils.split_host_port(ns)
                          for ns in cfg.CONF['service:agent'].masters]
         LOG.info("Resolvers: %r", self._resolver.nameservers)
@@ -145,12 +114,11 @@ class DjbdnsBackend(base.AgentBackend):
         if not self._masters:
             raise exceptions.Backend("Missing agent AXFR masters")
 
-        self._tcpclient_cmd_name = cfg.CONF[CFG_GROUP].tcpclient_cmd_name
-        self._axfr_get_cmd_name = cfg.CONF[CFG_GROUP].axfr_get_cmd_name
+        self._tcpclient_cmd_name = conf.tcpclient_cmd_name
+        self._axfr_get_cmd_name = conf.axfr_get_cmd_name
 
         # Directory where data.cdb lives, usually /var/lib/djbdns/root
-        tinydns_root_dir = os.path.join(cfg.CONF[CFG_GROUP].tinydns_datadir,
-                                        'root')
+        tinydns_root_dir = os.path.join(conf.tinydns_datadir, 'root')
 
         # Usually /var/lib/djbdns/root/data.cdb
         self._tinydns_cdb_filename = os.path.join(tinydns_root_dir, 'data.cdb')
@@ -159,7 +127,7 @@ class DjbdnsBackend(base.AgentBackend):
         # Where the agent puts the zone datafiles,
         # usually /var/lib/djbdns/datafiles
         self._datafiles_dir = datafiles_dir = os.path.join(
-            cfg.CONF[CFG_GROUP].tinydns_datadir,
+            conf.tinydns_datadir,
             'datafiles')
         self._datafiles_tmp_path_tpl = os.path.join(datafiles_dir, "%s.ztmp")
         self._datafiles_path_tpl = os.path.join(datafiles_dir, "%s.zonedata")
@@ -229,7 +197,7 @@ class DjbdnsBackend(base.AgentBackend):
             LOG.debug("Convert %s to %s", data_fn, tmp_cdb_fn)
             try:
                 out, err = execute(
-                    cfg.CONF[CFG_GROUP].tinydns_data_cmd_name,
+                    cfg.CONF[CFG_GROUP_NAME].tinydns_data_cmd_name,
                     cwd=tmpdir
                 )
             except ProcessExecutionError as e:

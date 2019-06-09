@@ -13,32 +13,17 @@
 # under the License.
 import abc
 
-from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import timeutils
 
+import designate.conf
 from designate import context
 from designate import objects
 from designate import plugin
 from designate.central import rpcapi as central_rpcapi
 
-heartbeat_group = cfg.OptGroup(
-            name='heartbeat_emitter',
-            title="Configuration for heartbeat_emitter"
-        )
 
-heartbeat_opts = [
-    cfg.FloatOpt('heartbeat_interval',
-                 default=5.0,
-                 help='Number of seconds between heartbeats for reporting '
-                      'state'),
-    cfg.StrOpt('emitter_type', default="rpc", help="Emitter to use")
-]
-
-CONF = cfg.CONF
-CONF.register_group(heartbeat_group)
-CONF.register_opts(heartbeat_opts, group=heartbeat_group)
-
+CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
 
 
@@ -55,7 +40,7 @@ class HeartBeatEmitter(plugin.DriverPlugin):
         self._running = False
         self._tg = threadgroup
         self._tg.add_timer(
-            cfg.CONF.heartbeat_emitter.heartbeat_interval,
+            CONF.heartbeat_emitter.heartbeat_interval,
             self._emit_heartbeat)
 
         self._status_factory = status_factory

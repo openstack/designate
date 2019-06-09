@@ -50,36 +50,18 @@ from oslo_concurrency.processutils import ProcessExecutionError
 from oslo_config import cfg
 from oslo_log import log as logging
 
+import designate.conf
 from designate import utils
 from designate import exceptions
 from designate.backend.agent_backend import base
 
+CFG_GROUP_NAME = 'backend:agent:gdnsd'
 LOG = logging.getLogger(__name__)
-CFG_GROUP = 'backend:agent:gdnsd'
 # rootwrap requires a command name instead of full path
 GDNSD_DEFAULT_PATH = 'gdnsd'
 CONFDIR_PATH = '/etc/gdnsd'
 SOA_QUERY_TIMEOUT = 1
 ZONE_FILE_PERMISSIONS = 0o0644
-
-
-"""GROUP = backend:agent:gdnsd"""
-gdnsd_group = cfg.OptGroup(
-            name='backend:agent:gdnsd', title="Configuration for gdnsd backend"
-        )
-gdnsd_opts = [
-    cfg.StrOpt('gdnsd-cmd-name',
-               help='gdnsd executable path or rootwrap command name',
-               default='gdnsd'),
-    cfg.StrOpt('confdir-path',
-               help='gdnsd configuration directory path',
-               default='/etc/gdnsd'),
-    cfg.StrOpt('query-destination', default='127.0.0.1',
-               help='Host to query when finding zones')
-]
-
-cfg.CONF.register_group(gdnsd_group)
-cfg.CONF.register_opts(gdnsd_opts, group=gdnsd_group)
 
 
 def filter_exceptions(fn):
@@ -103,21 +85,24 @@ class GdnsdBackend(base.AgentBackend):
 
     @classmethod
     def get_cfg_opts(cls):
-        return [(gdnsd_group, gdnsd_opts)]
+        return [(designate.conf.gdnsd.GDNSD_GROUP,
+                 designate.conf.gdnsd.GDNSD_OPTS)]
 
     def __init__(self, *a, **kw):
         """Configure the backend"""
         super(GdnsdBackend, self).__init__(*a, **kw)
 
-        self._gdnsd_cmd_name = cfg.CONF[CFG_GROUP].gdnsd_cmd_name
+        self._gdnsd_cmd_name = cfg.CONF[CFG_GROUP_NAME].gdnsd_cmd_name
         LOG.info("gdnsd command: %r", self._gdnsd_cmd_name)
-        self._confdir_path = cfg.CONF[CFG_GROUP].confdir_path
+        self._confdir_path = cfg.CONF[CFG_GROUP_NAME].confdir_path
         self._zonedir_path = os.path.join(self._confdir_path, 'zones')
         LOG.info("gdnsd conf directory: %r", self._confdir_path)
         self._resolver = dns.resolver.Resolver(configure=False)
         self._resolver.timeout = SOA_QUERY_TIMEOUT
         self._resolver.lifetime = SOA_QUERY_TIMEOUT
-        self._resolver.nameservers = [cfg.CONF[CFG_GROUP].query_destination]
+        self._resolver.nameservers = [
+            cfg.CONF[CFG_GROUP_NAME].query_destination
+        ]
         LOG.info("Resolvers: %r", self._resolver.nameservers)
         self._check_dirs(self._zonedir_path)
 
@@ -134,7 +119,7 @@ class GdnsdBackend(base.AgentBackend):
         """
         try:
             out, err = utils.execute(
-                cfg.CONF[CFG_GROUP].gdnsd_cmd_name,
+                cfg.CONF[CFG_GROUP_NAME].gdnsd_cmd_name,
                 '-D', '-x', 'checkconf', '-c', self._confdir_path,
                 run_as_root=False,
             )

@@ -29,6 +29,7 @@ from designate.backend import base
 from designate.backend.impl_powerdns import tables
 from designate.sqlalchemy import session
 
+CFG_GROUP_NAME = 'backend:powerdns'
 LOG = logging.getLogger(__name__)
 
 
@@ -43,7 +44,7 @@ class PowerDNSBackend(base.Backend):
 
     @classmethod
     def get_cfg_opts(cls):
-        group = cfg.OptGroup('backend:powerdns')
+        group = cfg.OptGroup(CFG_GROUP_NAME)
         opts = copy.deepcopy(options.database_opts)
 
         # Strip connection options

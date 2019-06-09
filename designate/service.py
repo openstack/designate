@@ -25,13 +25,14 @@ import errno
 import six
 import eventlet.wsgi
 import eventlet.debug
-import oslo_messaging as messaging
 from oslo_config import cfg
+import oslo_messaging as messaging
 from oslo_log import log as logging
 from oslo_service import service
 from oslo_service import sslutils
 from oslo_utils import netutils
 
+import designate.conf
 from designate.i18n import _
 from designate.metrics import metrics
 from designate import policy
@@ -43,19 +44,9 @@ from designate import utils
 
 # TODO(kiall): These options have been cut+paste from the old WSGI code, and
 #              should be moved into service:api etc..
-wsgi_socket_opts = [
-    cfg.IntOpt('backlog',
-               default=4096,
-               help="Number of backlog requests to configure the socket with"),
-    cfg.IntOpt('tcp_keepidle',
-               default=600,
-               help="Sets the value of TCP_KEEPIDLE in seconds for each "
-                    "server socket. Not supported on OS X."),
-]
 
-CONF = cfg.CONF
-CONF.register_opts(wsgi_socket_opts)
 
+CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
 
 
@@ -145,7 +136,7 @@ class RPCService(object):
             self._rpc_endpoints)
 
         emitter_cls = service_status.HeartBeatEmitter.get_driver(
-            cfg.CONF.heartbeat_emitter.emitter_type
+            CONF.heartbeat_emitter.emitter_type
         )
         self.heartbeat_emitter = emitter_cls(
             self.service_name, self.tg, status_factory=self._get_status

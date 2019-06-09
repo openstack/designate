@@ -16,9 +16,7 @@
 import time
 import hashlib
 
-from oslo_config import cfg
 from oslo_log import log as logging
-from oslo_db import options
 from sqlalchemy import select, distinct, func
 from sqlalchemy.sql.expression import or_
 
@@ -32,13 +30,6 @@ from designate.storage.impl_sqlalchemy import tables
 LOG = logging.getLogger(__name__)
 
 MAXIMUM_SUBZONE_DEPTH = 128
-
-storage_group = cfg.OptGroup(
-    name='storage:sqlalchemy', title="Configuration for SQLAlchemy Storage"
-)
-
-cfg.CONF.register_group(storage_group)
-cfg.CONF.register_opts(options.database_opts, group=storage_group)
 
 
 class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):

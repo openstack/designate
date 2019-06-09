@@ -19,39 +19,15 @@
 import math
 import time
 
-from oslo_config import cfg
 from oslo_log import log
 import tenacity
 import tooz.coordination
 
+import designate.conf
 from designate.utils import generate_uuid
 
+CONF = designate.conf.CONF
 LOG = log.getLogger(__name__)
-
-coordination_group = cfg.OptGroup(
-    name='coordination', title="Configuration for coordination"
-)
-
-coordination_opts = [
-    cfg.StrOpt('backend_url',
-               help='The backend URL to use for distributed coordination. If '
-                    'unset services that need coordination will function as '
-                    'a standalone service. This is a `tooz` url - see '
-                    'https://docs.openstack.org/tooz/latest/user/compatibility.html'),  # noqa
-    cfg.FloatOpt('heartbeat_interval',
-                 default=1.0,
-                 help='Number of seconds between heartbeats for distributed '
-                      'coordination.'),
-    cfg.FloatOpt('run_watchers_interval',
-                 default=10.0,
-                 help='Number of seconds between checks to see if group '
-                      'membership has changed')
-
-]
-cfg.CONF.register_group(coordination_group)
-cfg.CONF.register_opts(coordination_opts, group=coordination_group)
-
-CONF = cfg.CONF
 
 
 def _retry_if_tooz_error(exception):
@@ -69,15 +45,15 @@ class CoordinationMixin(object):
         self._coordination_id = ":".join([CONF.host, generate_uuid()])
 
         if CONF.coordination.backend_url is not None:
-            backend_url = cfg.CONF.coordination.backend_url
+            backend_url = CONF.coordination.backend_url
 
             self._coordinator = tooz.coordination.get_coordinator(
                 backend_url, self._coordination_id)
             self._coordination_started = False
 
-            self.tg.add_timer(cfg.CONF.coordination.heartbeat_interval,
+            self.tg.add_timer(CONF.coordination.heartbeat_interval,
                               self._coordinator_heartbeat)
-            self.tg.add_timer(cfg.CONF.coordination.run_watchers_interval,
+            self.tg.add_timer(CONF.coordination.run_watchers_interval,
                               self._coordinator_run_watchers)
 
         else:

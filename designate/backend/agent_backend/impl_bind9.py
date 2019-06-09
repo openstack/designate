@@ -22,43 +22,23 @@ from oslo_concurrency import lockutils
 from oslo_config import cfg
 from oslo_log import log as logging
 
+import designate.conf
 from designate.backend.agent_backend import base
 from designate import exceptions
 from designate import utils
 
+CFG_GROUP_NAME = 'backend:agent:bind9'
 LOG = logging.getLogger(__name__)
-CFG_GROUP = 'backend:agent:bind9'
-
-"""GROUP = backend:agent:bind9"""
-bind9_group = cfg.OptGroup(
-    name='backend:agent:bind9', title="Configuration for bind9 backend"
-)
-
-bind9_opts = [
-    cfg.StrOpt('rndc-host', default='127.0.0.1', help='RNDC Host'),
-    cfg.IntOpt('rndc-port', default=953, help='RNDC Port'),
-    cfg.StrOpt('rndc-config-file',
-               help='RNDC Config File'),
-    cfg.StrOpt('rndc-key-file', help='RNDC Key File'),
-    cfg.StrOpt('zone-file-path', default='$state_path/zones',
-               help='Path where zone files are stored'),
-    cfg.StrOpt('query-destination', default='127.0.0.1',
-               help='Host to query when finding zones')
-]
-
-
-cfg.CONF.register_group(bind9_group)
-cfg.CONF.register_opts(bind9_opts, group=bind9_group)
 
 
 class Bind9Backend(base.AgentBackend):
     __plugin_name__ = 'bind9'
-
     __backend_status__ = 'untested'
 
     @classmethod
     def get_cfg_opts(cls):
-        return [(bind9_group, bind9_opts)]
+        return [(designate.conf.bind9.BIND9_GROUP,
+                 designate.conf.bind9.BINS9_OPTS)]
 
     def start(self):
         LOG.info("Started bind9 backend")
@@ -66,7 +46,7 @@ class Bind9Backend(base.AgentBackend):
     def find_zone_serial(self, zone_name):
         LOG.debug("Finding %s", zone_name)
         resolver = dns.resolver.Resolver()
-        resolver.nameservers = [cfg.CONF[CFG_GROUP].query_destination]
+        resolver.nameservers = [cfg.CONF[CFG_GROUP_NAME].query_destination]
         try:
             rdata = resolver.query(zone_name, 'SOA')[0]
         except Exception:
@@ -93,17 +73,17 @@ class Bind9Backend(base.AgentBackend):
     def _rndc_base(self):
         rndc_call = [
             'rndc',
-            '-s', cfg.CONF[CFG_GROUP].rndc_host,
-            '-p', str(cfg.CONF[CFG_GROUP].rndc_port),
+            '-s', cfg.CONF[CFG_GROUP_NAME].rndc_host,
+            '-p', str(cfg.CONF[CFG_GROUP_NAME].rndc_port),
         ]
 
-        if cfg.CONF[CFG_GROUP].rndc_config_file:
+        if cfg.CONF[CFG_GROUP_NAME].rndc_config_file:
             rndc_call.extend(['-c',
-                             cfg.CONF[CFG_GROUP].rndc_config_file])
+                              cfg.CONF[CFG_GROUP_NAME].rndc_config_file])
 
-        if cfg.CONF[CFG_GROUP].rndc_key_file:
+        if cfg.CONF[CFG_GROUP_NAME].rndc_key_file:
             rndc_call.extend(['-k',
-                             cfg.CONF[CFG_GROUP].rndc_key_file])
+                              cfg.CONF[CFG_GROUP_NAME].rndc_key_file])
 
         return rndc_call
 
@@ -122,7 +102,7 @@ class Bind9Backend(base.AgentBackend):
         with lockutils.lock('bind9-%s' % zone_name):
             LOG.debug('Synchronising Zone: %s' % zone_name)
 
-            zone_path = cfg.CONF[CFG_GROUP].zone_file_path
+            zone_path = cfg.CONF[CFG_GROUP_NAME].zone_file_path
 
             output_path = os.path.join(zone_path,
                                        '%s.zone' % zone_name)

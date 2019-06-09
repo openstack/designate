@@ -21,21 +21,13 @@ from oslo_config import cfg
 from oslo_log import log as logging
 import six
 
+import designate.conf
 from designate.plugin import DriverPlugin
 from designate import objects
 from designate import rpc
 
 LOG = logging.getLogger(__name__)
-
-notify_opts = [
-    cfg.BoolOpt('notify_api_faults', default=False,
-                help='Send notifications if there\'s a failure in the API.'),
-    cfg.StrOpt('notification-plugin', default='default',
-               help='The notification plugin to use'),
-]
-
-CONF = cfg.CONF
-CONF.register_opts(notify_opts)
+CONF = designate.conf.CONF
 NOTIFICATION_PLUGIN = None
 
 

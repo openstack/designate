@@ -23,22 +23,6 @@ from designate.i18n import _
 CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
 
-keystone_group = cfg.OptGroup(
-    name='keystone', title='Access to Keystone API')
-
-
-def register_keystone_opts(conf):
-    conf.register_group(keystone_group)
-    ksa_loading.register_adapter_conf_options(conf, keystone_group)
-    ksa_loading.register_session_conf_options(conf, keystone_group)
-    conf.set_default('service_type', 'identity', group=keystone_group)
-
-
-def list_opts():
-    opts = ksa_loading.get_adapter_conf_options()
-    opts.extend(ksa_loading.get_session_conf_options())
-    return opts
-
 
 def verify_project_id(context, project_id):
     """verify that a project_id exists.

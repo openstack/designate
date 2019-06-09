@@ -23,14 +23,14 @@ from oslo_log import log as logging
 from oslo_reports import guru_meditation_report as gmr
 from stevedore.extension import ExtensionManager
 
+import designate.conf
 from designate import hookpoints
 from designate import utils
 from designate import version
 
 eventlet.monkey_patch(os=False)
 
-
-CONF = cfg.CONF
+CONF = designate.conf.CONF
 
 
 def methods_of(obj):

@@ -22,23 +22,11 @@ from os_win import utilsfactory
 from os_win import constants
 from os_win import exceptions as os_win_exc
 
+import designate.conf
 from designate.backend.agent_backend import base
 from designate import exceptions
 
 LOG = logging.getLogger(__name__)
-CFG_GROUP = 'backend:agent:msdns'
-
-"""GROUP = backend:agent:msdns"""
-msdns_group = cfg.OptGroup(
-    name='backend:agent:msdns',
-    title="Configuration for Microsoft DNS Server"
-)
-msdns_opts = [
-
-]
-
-cfg.CONF.register_group(msdns_group)
-cfg.CONF.register_opts(msdns_opts, group=msdns_group)
 
 
 class MSDNSBackend(base.AgentBackend):
@@ -62,7 +50,8 @@ class MSDNSBackend(base.AgentBackend):
 
     @classmethod
     def get_cfg_opts(cls):
-        return [(msdns_group, msdns_opts)]
+        return [(designate.conf.msdns.MSDNS_GROUP,
+                 designate.conf.msdns.MSDNS_OPTS)]
 
     def start(self):
         """Start the backend"""

@@ -12,17 +12,17 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-
+from oslo_config import cfg
 from oslo_log import log
 from oslo_serialization import jsonutils
 from oslo_utils import strutils
 from six.moves.urllib import parse
 import requests
 
-from designate.backend.impl_infoblox.config import cfg
 from designate.backend.impl_infoblox import ibexceptions as exc
 
-
+CFG_GROUP_NAME = 'backend:infoblox'
+CONF = cfg.CONF
 LOG = log.getLogger(__name__)
 
 
@@ -39,8 +39,7 @@ class Infoblox(object):
         Args:
             options (dict): Target options dictionary
         """
-
-        config = cfg.CONF['backend:infoblox']
+        config = CONF[CFG_GROUP_NAME]
 
         reqd_opts = ['wapi_url', 'username', 'password', 'ns_group']
         other_opts = ['sslverify', 'network_view', 'dns_view', 'multi_tenant']

@@ -44,43 +44,19 @@ from oslo_concurrency.processutils import ProcessExecutionError
 from oslo_config import cfg
 from oslo_log import log as logging
 
+import designate.conf
 from designate import exceptions
 from designate.backend.agent_backend import base
 from designate.utils import execute
 
-
+CFG_GROUP_NAME = 'backend:agent:knot2'
 LOG = logging.getLogger(__name__)
-CFG_GROUP = 'backend:agent:knot2'
 # rootwrap requires a command name instead of full path
 KNOTC_DEFAULT_PATH = 'knotc'
 
 # TODO(Federico) on zone creation and update, agent.handler unnecessarily
 # perfors AXFR from MiniDNS to the Agent to populate the `zone` argument
 # (needed by the Bind backend)
-
-"""GROUP = backend:agent:knot2"""
-knot2_group = cfg.OptGroup(
-            name='backend:agent:knot2', title="Configuration for Knot2 backend"
-        )
-knot2_opts = [
-    cfg.StrOpt('knotc-cmd-name',
-               help='knotc executable path or rootwrap command name',
-               default='knotc'),
-    cfg.StrOpt('query-destination', default='127.0.0.1',
-               help='Host to query when finding zones')
-]
-
-"""GROUP = backend:agent:msdns"""
-msdns_group = cfg.OptGroup(
-    name='backend:agent:msdns',
-    title="Configuration for Microsoft DNS Server"
-)
-msdns_opts = [
-
-]
-
-cfg.CONF.register_group(knot2_group)
-cfg.CONF.register_opts(knot2_opts, group=knot2_group)
 
 
 class Knot2Backend(base.AgentBackend):
@@ -90,13 +66,14 @@ class Knot2Backend(base.AgentBackend):
 
     @classmethod
     def get_cfg_opts(cls):
-        return [(knot2_group, knot2_opts)]
+        return [(designate.conf.knot2.KNOT2_GROUP,
+                 designate.conf.knot2.KNOT2_OPTS)]
 
     def __init__(self, *a, **kw):
         """Configure the backend"""
         super(Knot2Backend, self).__init__(*a, **kw)
 
-        self._knotc_cmd_name = cfg.CONF[CFG_GROUP].knotc_cmd_name
+        self._knotc_cmd_name = cfg.CONF[CFG_GROUP_NAME].knotc_cmd_name
 
     def start(self):
         """Start the backend"""

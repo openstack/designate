@@ -14,7 +14,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from oslo_config import cfg
-from oslo_db import options
 from oslo_log import log as logging
 
 from designate import exceptions
@@ -23,13 +22,8 @@ from designate.pool_manager.cache import base as cache_base
 from designate.sqlalchemy import base as sqlalchemy_base
 from designate.pool_manager.cache.impl_sqlalchemy import tables
 
-
+CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
-
-sqlalchemy_group = cfg.OptGroup(
-    name='pool_manager_cache:sqlalchemy',
-    title="Configuration for SQLAlchemy Pool Manager Cache"
-)
 
 
 class SQLAlchemyPoolManagerCache(sqlalchemy_base.SQLAlchemy,
@@ -73,6 +67,3 @@ class SQLAlchemyPoolManagerCache(sqlalchemy_base.SQLAlchemy,
             context, tables.pool_manager_statuses, objects.PoolManagerStatus,
             objects.PoolManagerStatusList,
             exceptions.PoolManagerStatusNotFound, criterion, one=True)
-
-cfg.CONF.register_group(sqlalchemy_group)
-cfg.CONF.register_opts(options.database_opts, group=sqlalchemy_group)
