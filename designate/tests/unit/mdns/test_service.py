@@ -13,65 +13,60 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
-
-"""Unit-test MiniDNS service
-"""
-from oslotest import base
 import mock
+import oslotest.base
 
+import designate.dnsutils
 import designate.rpc
-import designate.mdns.service as mdns
-import designate.storage.base as storage
+import designate.service
+import designate.storage.base
+import designate.utils
+from designate.mdns import handler
+from designate.mdns import service
 
 
-class MdnsServiceTest(base.BaseTestCase):
-    @mock.patch.object(mdns.service.DNSService, '_start')
+class MdnsServiceTest(oslotest.base.BaseTestCase):
     @mock.patch.object(designate.rpc, 'get_server')
-    def test_service_start(self, mock_service_start, mock_rpc_server):
-        self.mdns = mdns.Service()
-        self.mdns.start()
+    def setUp(self, mock_rpc_server):
+        super(MdnsServiceTest, self).setUp()
+
+        self.service = service.Service()
+
+    @mock.patch.object(designate.service.DNSService, '_start')
+    def test_service_start(self, mock_service_start):
+        self.service.start()
 
         self.assertTrue(mock_service_start.called)
-        self.assertTrue(mock_rpc_server.called)
 
     def test_service_name(self):
-        self.mdns = mdns.Service()
-
-        self.assertEqual('mdns', self.mdns.service_name)
+        self.assertEqual('mdns', self.service.service_name)
 
     def test_rpc_endpoints(self):
-        self.mdns = mdns.Service()
+        endpoints = self.service._rpc_endpoints
 
-        endpoints = self.mdns._rpc_endpoints
+        self.assertIsInstance(endpoints[0], service.notify.NotifyEndpoint)
+        self.assertIsInstance(endpoints[1], service.xfr.XfrEndpoint)
 
-        self.assertIsInstance(endpoints[0], mdns.notify.NotifyEndpoint)
-        self.assertIsInstance(endpoints[1], mdns.xfr.XfrEndpoint)
-
-    @mock.patch.object(storage.Storage, 'get_driver')
+    @mock.patch.object(designate.storage.base.Storage, 'get_driver')
     def test_storage_driver(self, mock_get_driver):
         mock_driver = mock.MagicMock()
         mock_driver.name = 'noop_driver'
         mock_get_driver.return_value = mock_driver
 
-        self.mdns = mdns.Service()
-
-        self.assertIsInstance(self.mdns.storage, mock.MagicMock)
+        self.assertIsInstance(self.service.storage, mock.MagicMock)
 
         self.assertTrue(mock_get_driver.called)
 
-    @mock.patch.object(mdns.handler, 'RequestHandler', name='reqh')
-    @mock.patch.object(mdns.service.DNSService, '_start')
-    @mock.patch.object(mdns.utils, 'cache_result')
-    @mock.patch.object(storage.Storage, 'get_driver')
+    @mock.patch.object(handler, 'RequestHandler', name='reqh')
+    @mock.patch.object(designate.service.DNSService, '_start')
+    @mock.patch.object(designate.utils, 'cache_result')
+    @mock.patch.object(designate.storage.base.Storage, 'get_driver')
     def test_dns_application(self, mock_req_handler, mock_cache_result,
                              mock_service_start, mock_get_driver):
         mock_driver = mock.MagicMock()
         mock_driver.name = 'noop_driver'
         mock_get_driver.return_value = mock_driver
 
-        self.mdns = mdns.Service()
+        app = self.service._dns_application
 
-        app = self.mdns._dns_application
-
-        self.assertIsInstance(app, mdns.dnsutils.DNSMiddleware)
+        self.assertIsInstance(app, designate.dnsutils.DNSMiddleware)
