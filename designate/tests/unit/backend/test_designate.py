@@ -13,22 +13,25 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import testtools
 from designateclient import exceptions
+from designateclient.v2 import client
 from mock import NonCallableMagicMock
-from mock import patch
 from oslo_log import log as logging
 
+import designate.tests
 from designate import objects
-from designate import tests
 from designate.backend import impl_designate
+from designate.tests import fixtures
 
 LOG = logging.getLogger(__name__)
 
 
-class DesignateBackendTestCase(tests.TestCase):
+class DesignateBackendTestCase(designate.tests.TestCase):
     def setUp(self):
         super(DesignateBackendTestCase, self).setUp()
+        self.stdlog = fixtures.StandardLogging()
+        self.useFixture(self.stdlog)
+
         self.zone = objects.Zone(
             id='e2bed4dc-9d01-11e4-89d3-123b93f75cba',
             name='example.com.',
@@ -42,11 +45,12 @@ class DesignateBackendTestCase(tests.TestCase):
                 {'host': '192.0.2.1', 'port': 53},
             ],
             'options': [
+                {'key': 'auth_url', 'value': 'auth_url'},
                 {'key': 'username', 'value': 'user'},
                 {'key': 'password', 'value': 'secret'},
                 {'key': 'project_name', 'value': 'project'},
-                {'key': 'project_zone_name', 'value': 'project_zone'},
-                {'key': 'user_zone_name', 'value': 'user_zone'},
+                {'key': 'project_domain_name', 'value': 'project_domain'},
+                {'key': 'user_domain_name', 'value': 'user_domain'},
                 {'key': 'region_name', 'value': 'RegionOne'},
             ],
         }
@@ -57,36 +61,70 @@ class DesignateBackendTestCase(tests.TestCase):
 
         # Mock client
         self.client = NonCallableMagicMock()
-        zones = NonCallableMagicMock(spec_set=[
-            'create', 'delete'])
+        zones = NonCallableMagicMock(spec_set=['create', 'delete'])
 
         self.client.configure_mock(zones=zones)
 
+        self.backend._client = self.client
+
+    def test_get_options(self):
+        self.assertEqual('auth_url', self.backend.auth_url)
+        self.assertEqual('user', self.backend.username)
+        self.assertEqual('secret', self.backend.password)
+        self.assertEqual('project', self.backend.project_name)
+        self.assertEqual('project_domain', self.backend.project_domain_name)
+        self.assertEqual('user_domain', self.backend.user_domain_name)
+        self.assertEqual('dns', self.backend.service_type)
+        self.assertEqual('RegionOne', self.backend.region_name)
+
+    def test_get_client(self):
+        self.backend._client = None
+
+        self.assertIsInstance(self.backend.client, client.Client)
+
     def test_create_zone(self):
         masters = ["%(host)s:%(port)s" % self.target['masters'][0]]
-        with patch.object(self.backend, '_get_client',
-                          return_value=self.client):
-            self.backend.create_zone(self.admin_context, self.zone)
+        self.backend.create_zone(self.admin_context, self.zone)
         self.client.zones.create.assert_called_once_with(
             self.zone.name, 'SECONDARY', masters=masters)
 
+        self.assertIn(
+            'Creating zone e2bed4dc-9d01-11e4-89d3-123b93f75cba / '
+            'example.com.',
+            self.stdlog.logger.output
+        )
+
     def test_delete_zone(self):
-        with patch.object(self.backend, '_get_client',
-                          return_value=self.client):
-            self.backend.delete_zone(self.admin_context, self.zone)
+        self.backend.delete_zone(self.admin_context, self.zone)
         self.client.zones.delete.assert_called_once_with(self.zone.name)
+
+        self.assertIn(
+            'Deleting zone e2bed4dc-9d01-11e4-89d3-123b93f75cba / '
+            'example.com.',
+            self.stdlog.logger.output
+        )
 
     def test_delete_zone_notfound(self):
         self.client.delete.side_effect = exceptions.NotFound
-        with patch.object(self.backend, '_get_client',
-                          return_value=self.client):
-            self.backend.delete_zone(self.admin_context, self.zone)
+        self.backend.delete_zone(self.admin_context, self.zone)
         self.client.zones.delete.assert_called_once_with(self.zone.name)
 
     def test_delete_zone_exc(self):
-        self.client.zones.delete.side_effect = Exception
-        with testtools.ExpectedException(Exception):
-            with patch.object(self.backend, '_get_client',
-                              return_value=self.client):
-                self.backend.delete_zone(self.admin_context, self.zone)
+        self.client.zones.delete.side_effect = exceptions.RemoteError
+
+        self.assertRaises(
+            exceptions.RemoteError,
+            self.backend.delete_zone, self.admin_context, self.zone,
+        )
         self.client.zones.delete.assert_called_once_with(self.zone.name)
+
+    def test_delete_zone_exc_not_found(self):
+        self.client.zones.delete.side_effect = exceptions.NotFound
+
+        self.backend.delete_zone(self.admin_context, self.zone)
+
+        self.assertIn(
+            'Zone e2bed4dc-9d01-11e4-89d3-123b93f75cba not found on remote '
+            'Designate, Ignoring',
+            self.stdlog.logger.output
+        )
