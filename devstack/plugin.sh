@@ -86,8 +86,8 @@ function configure_designate {
     fi
 
     # Set up Notifications/Ceilometer Integration
-    iniset $DESIGNATE_CONF DEFAULT notification_driver "$DESIGNATE_NOTIFICATION_DRIVER"
-    iniset $DESIGNATE_CONF DEFAULT notification_topics "$DESIGNATE_NOTIFICATION_TOPICS"
+    iniset $DESIGNATE_CONF oslo_messaging_notifications driver "$DESIGNATE_NOTIFICATION_DRIVER"
+    iniset $DESIGNATE_CONF oslo_messaging_notifications topics "$DESIGNATE_NOTIFICATION_TOPICS"
 
     # Root Wrap
     sudo cp $DESIGNATE_DIR/etc/designate/rootwrap.conf.sample $DESIGNATE_ROOTWRAP_CONF
