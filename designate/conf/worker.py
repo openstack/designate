@@ -32,26 +32,26 @@ WORKER_OPTS = [
                help='Number of Worker threads to spawn per process'),
     # cfg.ListOpt('enabled_tasks',
     #             help='Enabled tasks to run'),
-    cfg.StrOpt('storage-driver', default='sqlalchemy',
+    cfg.StrOpt('storage_driver', default='sqlalchemy',
                help='The storage driver to use'),
     cfg.IntOpt('threshold-percentage', default=100,
                help='The percentage of servers requiring a successful update '
                     'for a domain change to be considered active'),
-    cfg.IntOpt('poll-timeout', default=30,
+    cfg.IntOpt('poll_timeout', default=30,
                help='The time to wait for a response from a server'),
-    cfg.IntOpt('poll-retry-interval', default=15,
+    cfg.IntOpt('poll_retry_interval', default=15,
                help='The time between retrying to send a request and '
                     'waiting for a response from a server'),
-    cfg.IntOpt('poll-max-retries', default=10,
+    cfg.IntOpt('poll_max_retries', default=10,
                help='The maximum number of times to retry sending a request '
                     'and wait for a response from a server'),
-    cfg.IntOpt('poll-delay', default=5,
+    cfg.IntOpt('poll_delay', default=5,
                help='The time to wait before sending the first request '
                     'to a server'),
     cfg.BoolOpt('notify', default=True,
                 help='Whether to allow worker to send NOTIFYs, this will '
                      'noop NOTIFYs in mdns if true'),
-    cfg.BoolOpt('export-synchronous', default=True,
+    cfg.BoolOpt('export_synchronous', default=True,
                 help='Whether to allow synchronous zone exports'),
     cfg.StrOpt('topic', default='worker',
                help='RPC topic name for worker'),

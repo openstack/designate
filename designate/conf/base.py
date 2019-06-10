@@ -29,7 +29,7 @@ DESIGNATE_OPTS = [
         default=designate.BASE_PATH,
         help='Directory where the designate python module is installed'
     ),
-    cfg.StrOpt('state-path', default='/var/lib/designate',
+    cfg.StrOpt('state_path', default='/var/lib/designate',
                help='Top-level directory for maintaining designate\'s state'),
 
     cfg.ListOpt(
@@ -39,20 +39,20 @@ DESIGNATE_OPTS = [
         deprecated_name='allowed_rpc_exception_modules'),
 
     # Default TTL
-    cfg.IntOpt('default-ttl', default=3600, help='TTL Value'),
+    cfg.IntOpt('default_ttl', default=3600, help='TTL Value'),
 
     # Default SOA Values
-    cfg.IntOpt('default-soa-refresh-min', default=3500,
-               deprecated_name='default-soa-refresh',
+    cfg.IntOpt('default_soa_refresh_min', default=3500,
+               deprecated_name='default_soa_refresh',
                help='SOA refresh-min value'),
-    cfg.IntOpt('default-soa-refresh-max', default=3600,
+    cfg.IntOpt('default_soa_refresh_max', default=3600,
                help='SOA max value'),
-    cfg.IntOpt('default-soa-retry', default=600, help='SOA retry'),
-    cfg.IntOpt('default-soa-expire', default=86400, help='SOA expire'),
-    cfg.IntOpt('default-soa-minimum', default=3600, help='SOA minimum value'),
+    cfg.IntOpt('default_soa_retry', default=600, help='SOA retry'),
+    cfg.IntOpt('default_soa_expire', default=86400, help='SOA expire'),
+    cfg.IntOpt('default_soa_minimum', default=3600, help='SOA minimum value'),
 
     # Supported record types
-    cfg.ListOpt('supported-record-type', help='Supported record types',
+    cfg.ListOpt('supported_record_type', help='Supported record types',
                 default=['A', 'AAAA', 'CNAME', 'MX', 'SRV', 'TXT', 'SPF', 'NS',
                          'PTR', 'SSHFP', 'SOA', 'NAPTR', 'CAA']),
 
@@ -66,7 +66,7 @@ DESIGNATE_OPTS = [
                     "server socket. Not supported on OS X."),
 
     # Root Helper
-    cfg.StrOpt('root-helper',
+    cfg.StrOpt('root_helper',
                default='sudo designate-rootwrap /etc/designate/rootwrap.conf',
                help='designate-rootwrap configuration'),
 
@@ -79,20 +79,20 @@ DESIGNATE_OPTS = [
     # Notifications
     cfg.BoolOpt('notify_api_faults', default=False,
                 help='Send notifications if there\'s a failure in the API.'),
-    cfg.StrOpt('notification-plugin', default='default',
+    cfg.StrOpt('notification_plugin', default='default',
                help='The notification plugin to use'),
 
     # Quota
-    cfg.StrOpt('quota-driver', default='storage', help='Quota driver to use'),
-    cfg.IntOpt('quota-zones', default=10,
+    cfg.StrOpt('quota_driver', default='storage', help='Quota driver to use'),
+    cfg.IntOpt('quota_zones', default=10,
                help='Number of zones allowed per tenant'),
-    cfg.IntOpt('quota-zone-recordsets', default=500,
+    cfg.IntOpt('quota_zone_recordsets', default=500,
                help='Number of recordsets allowed per zone'),
-    cfg.IntOpt('quota-zone-records', default=500,
+    cfg.IntOpt('quota_zone_records', default=500,
                help='Number of records allowed per zone'),
-    cfg.IntOpt('quota-recordset-records', default=20,
+    cfg.IntOpt('quota_recordset_records', default=20,
                help='Number of records allowed per recordset'),
-    cfg.IntOpt('quota-api-export-size', default=1000,
+    cfg.IntOpt('quota_api_export_size', default=1000,
                help='Number of recordsets allowed in a zone export'),
 ]
 

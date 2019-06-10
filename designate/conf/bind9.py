@@ -21,14 +21,14 @@ BIND9_GROUP = cfg.OptGroup(
 )
 
 BINS9_OPTS = [
-    cfg.StrOpt('rndc-host', default='127.0.0.1', help='RNDC Host'),
-    cfg.IntOpt('rndc-port', default=953, help='RNDC Port'),
-    cfg.StrOpt('rndc-config-file',
+    cfg.StrOpt('rndc_host', default='127.0.0.1', help='RNDC Host'),
+    cfg.IntOpt('rndc_port', default=953, help='RNDC Port'),
+    cfg.StrOpt('rndc_config_file',
                help='RNDC Config File'),
-    cfg.StrOpt('rndc-key-file', help='RNDC Key File'),
-    cfg.StrOpt('zone-file-path', default='$state_path/zones',
+    cfg.StrOpt('rndc_key_file', help='RNDC Key File'),
+    cfg.StrOpt('zone_file_path', default='$state_path/zones',
                help='Path where zone files are stored'),
-    cfg.StrOpt('query-destination', default='127.0.0.1',
+    cfg.StrOpt('query_destination', default='127.0.0.1',
                help='Host to query when finding zones'),
 ]
 
