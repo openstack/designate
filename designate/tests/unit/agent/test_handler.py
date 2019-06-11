@@ -20,29 +20,44 @@ import dns.resolver
 import mock
 
 import designate
+import designate.tests
 from designate.agent import handler
-from designate.tests.test_agent import AgentTestCase
 
 
-class AgentRequestHandlerTest(AgentTestCase):
+class AgentRequestHandlerTest(designate.tests.TestCase):
     def setUp(self):
         super(AgentRequestHandlerTest, self).setUp()
-        self.config(allow_notify=["0.0.0.0"],
-                    backend_driver="fake",
-                    transfer_source="1.2.3.4",
-                    group='service:agent')
+
+        self.CONF.set_override('allow_notify', ['0.0.0.0'], 'service:agent')
+        self.CONF.set_override('backend_driver', 'fake', 'service:agent')
+        self.CONF.set_override('transfer_source', '1.2.3.4', 'service:agent')
+
         self.handler = handler.RequestHandler()
-        self.addr = ["0.0.0.0", 5558]
+        self.addr = ['0.0.0.0', 5558]
+
+    def test_init(self):
+        self.CONF.set_override('masters', ['192.168.0.1', '192.168.0.2'],
+                               'service:agent')
+
+        hndlr = handler.RequestHandler()
+
+        self.assertEqual(
+            [
+                {'host': '192.168.0.1', 'port': 53},
+                {'host': '192.168.0.2', 'port': 53}
+            ],
+            hndlr.masters
+        )
 
     @mock.patch.object(dns.resolver.Resolver, 'query')
     @mock.patch('designate.dnsutils.do_axfr')
-    def test_receive_notify(self, doaxfr, query):
+    def test_receive_notify(self, mock_doaxfr, mock_query):
         """
         Get a NOTIFY and ensure the response is right,
         and an AXFR is triggered
         """
-        payload = ("1a7220000001000000000000076578616d706c6503636f6d000006"
-                  "0001")
+        payload = ('1a7220000001000000000000076578616d706c6503636f6d000006'
+                   '0001')
         # expected response is NOERROR, other fields are
         # opcode NOTIFY
         # rcode NOERROR
@@ -52,18 +67,15 @@ class AgentRequestHandlerTest(AgentTestCase):
         # ;ANSWER
         # ;AUTHORITY
         # ;ADDITIONAL
-        expected_response = (b"1a72a4000001000000000000076578616d706c6503"
-                            b"636f6d0000060001")
+        expected_response = (b'1a72a4000001000000000000076578616d706c6503'
+                             b'636f6d0000060001')
         request = dns.message.from_wire(binascii.a2b_hex(payload))
-        request.environ = {'addr': ["0.0.0.0", 1234]}
+        request.environ = {'addr': ['0.0.0.0', 1234]}
         response = next(self.handler(request)).to_wire()
         self.assertEqual(expected_response, binascii.b2a_hex(response))
 
     def test_receive_notify_bad_notifier(self):
-        """
-        Get a NOTIFY from a bad master and refuse it
-        """
-        payload = "243520000001000000000000076578616d706c6503636f6d0000060001"
+        payload = '243520000001000000000000076578616d706c6503636f6d0000060001'
         # expected response is REFUSED, other fields are
         # opcode NOTIFY
         # rcode REFUSED
@@ -73,24 +85,19 @@ class AgentRequestHandlerTest(AgentTestCase):
         # ;ANSWER
         # ;AUTHORITY
         # ;ADDITIONAL
-        expected_response = (b"2435a0050001000000000000076578616d706c6503636f"
-                            b"6d0000060001")
+        expected_response = (b'2435a0050001000000000000076578616d706c6503636f'
+                             b'6d0000060001')
         request = dns.message.from_wire(binascii.a2b_hex(payload))
         # Bad 'requester'
-        request.environ = {'addr': ["6.6.6.6", 1234]}
+        request.environ = {'addr': ['6.6.6.6', 1234]}
         response = next(self.handler(request)).to_wire()
 
         self.assertEqual(expected_response, binascii.b2a_hex(response))
 
     @mock.patch.object(dns.resolver.Resolver, 'query')
     @mock.patch('designate.dnsutils.do_axfr')
-    def test_receive_create(self, doaxfr, query):
-        """
-        Get a CREATE and ensure the response is right,
-        and an AXFR is triggered, and the proper backend
-        call is made
-        """
-        payload = "735d70000001000000000000076578616d706c6503636f6d00ff02ff00"
+    def test_receive_create(self, mock_doaxfr, mock_query):
+        payload = '735d70000001000000000000076578616d706c6503636f6d00ff02ff00'
         # Expected NOERROR other fields are
         # opcode 14
         # rcode NOERROR
@@ -100,22 +107,18 @@ class AgentRequestHandlerTest(AgentTestCase):
         # ;ANSWER
         # ;AUTHORITY
         # ;ADDITIONAL
-        expected_response = (b"735df4000001000000000000076578616d706c6503636f"
-                             b"6d00ff02ff00")
+        expected_response = (b'735df4000001000000000000076578616d706c6503636f'
+                             b'6d00ff02ff00')
         request = dns.message.from_wire(binascii.a2b_hex(payload))
-        request.environ = {'addr': ["0.0.0.0", 1234]}
+        request.environ = {'addr': ['0.0.0.0', 1234]}
         with mock.patch.object(
-            designate.backend.agent_backend.impl_fake.FakeBackend,
+                designate.backend.agent_backend.impl_fake.FakeBackend,
                 'find_zone_serial', return_value=None):
-
             response = next(self.handler(request)).to_wire()
             self.assertEqual(expected_response, binascii.b2a_hex(response))
 
     def test_receive_create_bad_notifier(self):
-        """
-        Get a NOTIFY from a bad master and refuse it
-        """
-        payload = "8dfd70000001000000000000076578616d706c6503636f6d00ff02ff00"
+        payload = '8dfd70000001000000000000076578616d706c6503636f6d00ff02ff00'
         # expected response is REFUSED, other fields are
         # opcode 14
         # rcode REFUSED
@@ -125,22 +128,18 @@ class AgentRequestHandlerTest(AgentTestCase):
         # ;ANSWER
         # ;AUTHORITY
         # ;ADDITIONAL
-        expected_response = (b"8dfdf0050001000000000000076578616d706c6503636f"
-                             b"6d00ff02ff00")
+        expected_response = (b'8dfdf0050001000000000000076578616d706c6503636f'
+                             b'6d00ff02ff00')
         request = dns.message.from_wire(binascii.a2b_hex(payload))
         # Bad 'requester'
-        request.environ = {'addr': ["6.6.6.6", 1234]}
+        request.environ = {'addr': ['6.6.6.6', 1234]}
         response = next(self.handler(request)).to_wire()
 
-        self.assertEqual(expected_response, binascii.b2a_hex(response))
+        self.assertEqual(binascii.b2a_hex(response), expected_response)
 
     @mock.patch('designate.utils.execute')
-    def test_receive_delete(self, func):
-        """
-        Get a DELETE and ensure the response is right,
-        and that the proper backend call is made
-        """
-        payload = "3b9970000001000000000000076578616d706c6503636f6d00ff03ff00"
+    def test_receive_delete(self, mock_execute):
+        payload = '3b9970000001000000000000076578616d706c6503636f6d00ff03ff00'
         # Expected NOERROR other fields are
         # opcode 14
         # rcode NOERROR
@@ -150,20 +149,16 @@ class AgentRequestHandlerTest(AgentTestCase):
         # ;ANSWER
         # ;AUTHORITY
         # ;ADDITIONAL
-        expected_response = (b"3b99f4000001000000000000076578616d706c6503636f"
-                             b"6d00ff03ff00")
+        expected_response = (b'3b99f4000001000000000000076578616d706c6503636f'
+                             b'6d00ff03ff00')
         request = dns.message.from_wire(binascii.a2b_hex(payload))
-        request.environ = {'addr': ["0.0.0.0", 1234]}
+        request.environ = {'addr': ['0.0.0.0', 1234]}
         response = next(self.handler(request)).to_wire()
 
         self.assertEqual(expected_response, binascii.b2a_hex(response))
 
     def test_receive_delete_bad_notifier(self):
-        """
-        Get a message with an unsupported OPCODE and make
-        sure that it is refused
-        """
-        payload = "e6da70000001000000000000076578616d706c6503636f6d00ff03ff00"
+        payload = 'e6da70000001000000000000076578616d706c6503636f6d00ff03ff00'
         # expected response is REFUSED, other fields are
         # opcode 14
         # rcode REFUSED
@@ -173,23 +168,19 @@ class AgentRequestHandlerTest(AgentTestCase):
         # ;ANSWER
         # ;AUTHORITY
         # ;ADDITIONAL
-        expected_response = (b"e6daf0050001000000000000076578616d706c6503636f"
-                             b"6d00ff03ff00")
+        expected_response = (b'e6daf0050001000000000000076578616d706c6503636f'
+                             b'6d00ff03ff00')
         request = dns.message.from_wire(binascii.a2b_hex(payload))
         # Bad 'requester'
-        request.environ = {'addr': ["6.6.6.6", 1234]}
+        request.environ = {'addr': ['6.6.6.6', 1234]}
         response = next(self.handler(request)).to_wire()
 
         self.assertEqual(expected_response, binascii.b2a_hex(response))
 
     @mock.patch.object(dns.resolver.Resolver, 'query')
     @mock.patch.object(designate.dnsutils, 'do_axfr')
-    def test_transfer_source(self, doaxfr, query):
-        """
-        Get a CREATE and ensure the response is right,
-        and an AXFR is triggered with the right source IP
-        """
-        payload = "735d70000001000000000000076578616d706c6503636f6d00ff02ff00"
+    def test_transfer_source(self, mock_doaxfr, mock_query):
+        payload = '735d70000001000000000000076578616d706c6503636f6d00ff02ff00'
         # Expected NOERROR other fields are
         # opcode 14
         # rcode NOERROR
@@ -199,13 +190,15 @@ class AgentRequestHandlerTest(AgentTestCase):
         # ;ANSWER
         # ;AUTHORITY
         # ;ADDITIONAL
-        expected_response = (b"735df4000001000000000000076578616d706c6503636f"
-                             b"6d00ff02ff00")
+        expected_response = (b'735df4000001000000000000076578616d706c6503636f'
+                             b'6d00ff02ff00')
         request = dns.message.from_wire(binascii.a2b_hex(payload))
-        request.environ = {'addr': ["0.0.0.0", 1234]}
+        request.environ = {'addr': ['0.0.0.0', 1234]}
         with mock.patch.object(
-            designate.backend.agent_backend.impl_fake.FakeBackend,
+                designate.backend.agent_backend.impl_fake.FakeBackend,
                 'find_zone_serial', return_value=None):
             response = next(self.handler(request)).to_wire()
-            doaxfr.assert_called_with('example.com.', [], source="1.2.3.4")
+            mock_doaxfr.assert_called_with(
+                'example.com.', [], source='1.2.3.4'
+            )
             self.assertEqual(expected_response, binascii.b2a_hex(response))
