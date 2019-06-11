@@ -13,6 +13,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.mport threading
+import mock
+
 from designate import exceptions
 from designate.tests import TestCase
 from designate.tests import fixtures
@@ -36,7 +38,7 @@ class TestProcessingExecutor(TestCase):
         exe = processing.Executor()
 
         results = exe.run(tasks)
-        self.assertEqual(results, [1, 2, 1, 2, 1])
+        self.assertEqual([1, 2, 1, 2, 1], results)
 
     def test_execute_single_task(self):
         def t1():
@@ -45,7 +47,7 @@ class TestProcessingExecutor(TestCase):
         exe = processing.Executor()
 
         results = exe.run(t1)
-        self.assertEqual(results[0], 1)
+        self.assertEqual(1, results[0])
 
     def test_execute_bad_task(self):
         def failed_task():
@@ -54,6 +56,26 @@ class TestProcessingExecutor(TestCase):
         exe = processing.Executor()
 
         results = exe.run(failed_task)
-        self.assertEqual(results[0], None)
+        self.assertIsNone(results[0])
 
         self.assertIn('Not Great', self.stdlog.logger.output)
+
+    def test_executor_name_with_task(self):
+        mock_task = mock.NonCallableMock(spec_set=[
+            'task_name',
+        ])
+        mock_task.task_name = 'task_name'
+
+        exe = processing.Executor()
+
+        self.assertEqual('task_name', exe.task_name(mock_task))
+
+    def test_executor_name_with_func(self):
+        mock_task = mock.NonCallableMock(spec_set=[
+            'func_name',
+        ])
+        mock_task.func_name = 'func_name'
+
+        exe = processing.Executor()
+
+        self.assertEqual('func_name', exe.task_name(mock_task))
