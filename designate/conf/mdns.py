@@ -50,8 +50,8 @@ MDNS_OPTS = [
                help='The storage driver to use'),
     cfg.IntOpt('max-message-size', default=65535,
                help='Maximum message size to emit'),
-    cfg.StrOpt('mdns_topic', default='mdns',
-               help='RPC topic name for mini-DNS'),
+    cfg.StrOpt('topic', default='mdns',
+               help='RPC topic name for mdns'),
     cfg.IntOpt('xfr_timeout', help="Timeout in seconds for XFR's.",
                default=10),
 ]

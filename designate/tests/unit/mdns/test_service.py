@@ -15,6 +15,8 @@
 # under the License.
 import mock
 import oslotest.base
+from oslo_config import cfg
+from oslo_config import fixture as cfg_fixture
 
 import designate.dnsutils
 import designate.rpc
@@ -24,11 +26,14 @@ import designate.utils
 from designate.mdns import handler
 from designate.mdns import service
 
+CONF = cfg.CONF
+
 
 class MdnsServiceTest(oslotest.base.BaseTestCase):
     @mock.patch.object(designate.rpc, 'get_server')
     def setUp(self, mock_rpc_server):
         super(MdnsServiceTest, self).setUp()
+        self.useFixture(cfg_fixture.Config(CONF))
 
         self.service = service.Service()
 
@@ -39,6 +44,14 @@ class MdnsServiceTest(oslotest.base.BaseTestCase):
         self.assertTrue(mock_service_start.called)
 
     def test_service_name(self):
+        self.assertEqual('mdns', self.service.service_name)
+
+    def test_mdns_rpc_topic(self):
+        CONF.set_override('topic', 'test-topic', 'service:mdns')
+
+        self.service = service.Service()
+
+        self.assertEqual('test-topic', self.service._rpc_topic)
         self.assertEqual('mdns', self.service.service_name)
 
     def test_rpc_endpoints(self):

@@ -15,16 +15,33 @@
 # under the License.mport threading
 import mock
 import oslotest.base
+from oslo_config import cfg
+from oslo_config import fixture as cfg_fixture
 
 from designate.worker import service
+
+CONF = cfg.CONF
 
 
 class TestService(oslotest.base.BaseTestCase):
     def setUp(self):
         super(TestService, self).setUp()
+        self.useFixture(cfg_fixture.Config(CONF))
+
         self.context = mock.Mock()
         self.zone = mock.Mock()
         self.service = service.Service()
+
+    def test_service_name(self):
+        self.assertEqual('worker', self.service.service_name)
+
+    def test_worker_rpc_topic(self):
+        CONF.set_override('topic', 'test-topic', 'service:worker')
+
+        self.service = service.Service()
+
+        self.assertEqual('test-topic', self.service._rpc_topic)
+        self.assertEqual('worker', self.service.service_name)
 
     def test_create_zone(self):
         self.service._do_zone_action = mock.Mock()

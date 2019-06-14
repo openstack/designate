@@ -128,7 +128,7 @@ class Service(service.RPCService, coordination.CoordinationMixin,
 
     @property
     def service_name(self):
-        return cfg.CONF['service:pool_manager'].pool_manager_topic
+        return 'pool_manager'
 
     @property
     def _rpc_topic(self):

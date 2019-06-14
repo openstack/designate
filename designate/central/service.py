@@ -222,10 +222,9 @@ class Service(service.RPCService, service.Service):
 
     @property
     def service_name(self):
-        return cfg.CONF['service:central'].central_topic
+        return 'central'
 
     def start(self):
-
         if (cfg.CONF['service:central'].managed_resource_tenant_id ==
                 "00000000-0000-0000-0000-000000000000"):
             LOG.warning("Managed Resource Tenant ID is not properly "

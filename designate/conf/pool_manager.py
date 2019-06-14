@@ -80,7 +80,7 @@ POOL_MANAGER_OPTS = [
                help='Interval between zone update attempts during sync'),
     cfg.StrOpt('cache-driver', default='memcache',
                help='The cache driver to use'),
-    cfg.StrOpt('pool_manager_topic', default='pool_manager',
+    cfg.StrOpt('topic', default='pool_manager',
                help='RPC topic name for pool-manager'),
 ]
 

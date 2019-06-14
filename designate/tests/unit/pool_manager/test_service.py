@@ -17,11 +17,15 @@ import time
 from datetime import datetime
 
 import mock
+from oslo_config import cfg
+from oslo_config import fixture as cfg_fixture
 
 from designate import exceptions
 from designate import objects
 from designate import tests
 from designate.pool_manager import service
+
+CONF = cfg.CONF
 
 POOL_DICT = {
     'also_notifies': [
@@ -75,6 +79,8 @@ POOL_DICT = {
 class PoolManagerInitTest(tests.TestCase):
     def setUp(self):
         super(PoolManagerInitTest, self).setUp()
+        self.useFixture(cfg_fixture.Config(CONF))
+
         self.service = service.Service()
 
     def test_init_no_pool_targets(self):
@@ -88,6 +94,15 @@ class PoolManagerInitTest(tests.TestCase):
         )
 
     def test_service_name(self):
+        self.assertEqual('pool_manager', self.service.service_name)
+
+    def test_pool_manager_rpc_topic(self):
+        CONF.set_override('topic', 'test-topic', 'service:pool_manager')
+
+        self.service = service.Service()
+
+        self.assertEqual('test-topic.794ccc2c-d751-44fe-b57f-8894c9f5c842',
+                         self.service._rpc_topic)
         self.assertEqual('pool_manager', self.service.service_name)
 
     @mock.patch('designate.service.RPCService.start')

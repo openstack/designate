@@ -39,6 +39,8 @@ PRODUCER_OPTS = [
                 help='Whether to allow synchronous zone exports',
                 deprecated_for_removal=True,
                 deprecated_reason='Migrated to designate-worker'),
+    cfg.StrOpt('topic', default='producer',
+               help='RPC topic name for producer'),
 ]
 
 ZONE_MANAGER_OPTS = [
