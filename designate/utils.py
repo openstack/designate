@@ -82,10 +82,6 @@ def read_config(prog, argv):
              default_config_files=config_files)
     config.set_defaults()
 
-    # Avoid circular dependency imports
-    from designate import pool_manager
-    pool_manager.register_dynamic_pool_options()
-
 
 def resource_string(*args):
     if len(args) == 0:

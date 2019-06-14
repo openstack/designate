@@ -66,6 +66,11 @@ class PoolCommands(base.Commands):
                default='/etc/designate/pools.yaml')
     def export_from_config(self, file):
         self._startup()
+
+        # Avoid circular dependency imports
+        from designate import pool_manager
+        pool_manager.register_dynamic_pool_options()
+
         try:
             pools = self.central_api.find_pools(self.context)
         except messaging.exceptions.MessagingTimeout:
