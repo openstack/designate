@@ -40,11 +40,6 @@ class ProducerTest(oslotest.base.BaseTestCase):
             'service:producer': RoObject({
                 'enabled_tasks': None,  # enable all tasks
             }),
-            # TODO(timsim): Remove this
-            'service:zone_manager': RoObject({
-                'enabled_tasks': None,  # enable all tasks
-                'export_synchronous': True
-            }),
             'producer_task:zone_purge': '',
         })
         super(ProducerTest, self).setUp()

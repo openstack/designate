@@ -54,10 +54,7 @@ class Service(service.RPCService):
     @property
     def storage(self):
         if not self._storage:
-            # TODO(timsim): Remove this when zone_mgr goes away
-            storage_driver = cfg.CONF['service:zone_manager'].storage_driver
-            if cfg.CONF['service:producer'].storage_driver != storage_driver:
-                storage_driver = cfg.CONF['service:producer'].storage_driver
+            storage_driver = cfg.CONF['service:producer'].storage_driver
             self._storage = storage.get_storage(storage_driver)
         return self._storage
 
@@ -88,14 +85,8 @@ class Service(service.RPCService):
         self._partitioner.start()
         self._partitioner.watch_partition_change(self._rebalance)
 
-        # TODO(timsim): Remove this when zone_mgr goes away
-        zmgr_enabled_tasks = CONF['service:zone_manager'].enabled_tasks
-        producer_enabled_tasks = CONF['service:producer'].enabled_tasks
-        enabled = zmgr_enabled_tasks
-        if producer_enabled_tasks:
-            enabled = producer_enabled_tasks
-
-        for task in tasks.PeriodicTask.get_extensions(enabled):
+        enabled_tasks = CONF['service:producer'].enabled_tasks
+        for task in tasks.PeriodicTask.get_extensions(enabled_tasks):
             LOG.debug("Registering task %s", task)
 
             # Instantiate the task

@@ -16,9 +16,7 @@ The DNS service consists of the following components:
   them to the ``designate-central`` over Remote Procedure Call (RPC).
 
 ``designate-central`` component
-  Orchestrates the creation, deletion and update of Zones and RecordSets, and
-  delegates work to ``designate-pool-manager`` for interaction with the DNS
-  servers
+  Orchestrates the creation, deletion and update of Zones and RecordSets.
 
 ``designate-producer`` component
   Orchestrates periodic tasks that are run by designate.

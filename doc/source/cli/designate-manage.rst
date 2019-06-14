@@ -127,27 +127,6 @@ designate optional arguments
 designate-manage pool
 =====================
 
-.. _designate_manage_pool_export_from_config:
-
-designate-manage pool export_from_config
-----------------------------------------
-
-.. code-block:: console
-
-    usage: designate-manage pool export_from_config [-h] [--file FILE]
-
-
-Export a YAML copy of a Kilo/Liberty pool config.
-
-**Optional arguments:**
-
-``-h, --help``
-  show this help message and exit
-
-``--file FILE``
-  The path to the file the yaml output should be written to
-  (Defaults to /etc/designate/pools.yaml)
-
 .. _designate_manage_pool_generate_file:
 
 designate-manage pool generate_file
@@ -243,52 +222,6 @@ Show what version of the database schema is currently in place
 ``-h, --help``
   show this help message and exit
 
-.. _designate_manage_pool_manager_cache:
-
-designate-manage pool_manager_cache
-===================================
-
-.. _designate_manage_pool_manager_cache_sync:
-
-designate-manage pool_manager_cache sync
-----------------------------------------
-
-.. code-block:: console
-
-    usage: designate-manage pool_manager_cache sync [-h] [--revision REVISION]
-
-
-Update the designate pool manager cache database schema
-
-**Optional arguments:**
-
-``-h, --help``
-  show this help message and exit
-
-``--revision REVISION``
-  The version that the designate pool manager cache database
-  should be synced to.
-  (Defaults to latest version)
-
-
-.. _designate_manage_pool_manager_cache_version:
-
-designate-manage pool_manager_cache version
--------------------------------------------
-
-.. code-block:: console
-
-    usage: designate-manage pool_manager_cache version [-h]
-
-
-Show what version of the pool manager cache database schema
-is currently in place
-
-**Optional arguments:**
-
-``-h, --help``
-  show this help message and exit
-
 .. _designate_manage_powerdns:
 
 designate-manage powerdns
@@ -316,12 +249,8 @@ Update the designate powerdns database schema
   show this help message and exit
 
 ``--revision REVISION``
-  The version that the designate pool manager cache database
-  should be synced to.
+  The version that the designate powerdns database should be synced to.
   (Defaults to latest version)
-
-
-
 
 .. _designate_manage_powerdns_version:
 
@@ -344,5 +273,3 @@ Show what version of the powerdns database schema is currently in place
 
 ``-h, --help``
   show this help message and exit
-
-

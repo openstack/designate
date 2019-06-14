@@ -28,11 +28,11 @@ from designate.tests.unit import RoObject
 class AgentBackendTestCase(tests.TestCase):
     def setUp(self):
         super(AgentBackendTestCase, self).setUp()
-        self.CONF.set_override('poll_timeout', 1, 'service:pool_manager')
+        self.CONF.set_override('poll_timeout', 1, 'service:worker')
         self.CONF.set_override('poll_retry_interval', 4,
-                               'service:pool_manager')
-        self.CONF.set_override('poll_max_retries', 5, 'service:pool_manager')
-        self.CONF.set_override('poll_delay', 6, 'service:pool_manager')
+                               'service:worker')
+        self.CONF.set_override('poll_max_retries', 5, 'service:worker')
+        self.CONF.set_override('poll_delay', 6, 'service:worker')
 
         self.context = self.get_context()
         self.zone = objects.Zone(

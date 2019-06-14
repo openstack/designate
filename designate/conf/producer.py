@@ -20,11 +20,6 @@ PRODUCER_GROUP = cfg.OptGroup(
     title='Configuration for Producer Service'
 )
 
-ZONE_MANAGER_GROUP = cfg.OptGroup(
-    name='service:zone_manager',
-    title='Configuration for Zone Manager Service'
-)
-
 PRODUCER_TASK_DELAYED_NOTIFY_GROUP = cfg.OptGroup(
     name='producer_task:delayed_notify',
     title='Configuration for Producer Task: Delayed Notify'
@@ -65,29 +60,6 @@ PRODUCER_OPTS = [
                 deprecated_reason='Migrated to designate-worker'),
     cfg.StrOpt('topic', default='producer',
                help='RPC topic name for producer'),
-]
-
-ZONE_MANAGER_OPTS = [
-    cfg.IntOpt('workers',
-               help='Number of Zone Manager worker processes to spawn',
-               deprecated_for_removal=True,
-               deprecated_reason='Migrated to designate-worker'),
-    cfg.IntOpt('threads', default=1000,
-               help='Number of Zone Manager greenthreads to spawn',
-               deprecated_for_removal=True,
-               deprecated_reason='Migrated to designate-worker'),
-    cfg.ListOpt('enabled_tasks',
-                help='Enabled tasks to run',
-                deprecated_for_removal=True,
-                deprecated_reason='Migrated to designate-worker'),
-    cfg.StrOpt('storage_driver', default='sqlalchemy',
-               help='The storage driver to use',
-               deprecated_for_removal=True,
-               deprecated_reason='Migrated to designate-worker'),
-    cfg.BoolOpt('export_synchronous', default=True,
-                help='Whether to allow synchronous zone exports',
-                deprecated_for_removal=True,
-                deprecated_reason='Migrated to designate-worker'),
 ]
 
 PRODUCER_TASK_DELAYED_NOTIFY_OPTS = [
@@ -136,8 +108,6 @@ PRODUCER_TASK_ZONE_PURGE_OPTS = [
 def register_opts(conf):
     conf.register_group(PRODUCER_GROUP)
     conf.register_opts(PRODUCER_OPTS, group=PRODUCER_GROUP)
-    conf.register_group(ZONE_MANAGER_GROUP)
-    conf.register_opts(ZONE_MANAGER_OPTS, group=ZONE_MANAGER_GROUP)
     conf.register_group(PRODUCER_TASK_DELAYED_NOTIFY_GROUP)
     conf.register_opts(PRODUCER_TASK_DELAYED_NOTIFY_OPTS,
                        group=PRODUCER_TASK_DELAYED_NOTIFY_GROUP)
@@ -158,7 +128,6 @@ def register_opts(conf):
 def list_opts():
     return {
         PRODUCER_GROUP: PRODUCER_OPTS,
-        ZONE_MANAGER_GROUP: ZONE_MANAGER_OPTS,
         PRODUCER_TASK_DELAYED_NOTIFY_GROUP:
             PRODUCER_TASK_DELAYED_NOTIFY_OPTS,
         PRODUCER_TASK_PERIODIC_EXISTS_GROUP:

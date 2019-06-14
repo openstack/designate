@@ -64,16 +64,6 @@
 
 
 - job:
-    name: designate-bind9-manager-model
-    parent: designate-bind9
-    vars:
-      devstack_services:
-        designate-worker: false
-        designate-producer: false
-        designate-pool-manager: true
-        designate-zone-manager: true
-
-- job:
     name: designate-bind9-py27
     parent: designate-bind9
     vars:
@@ -139,7 +129,6 @@
       jobs:
         - designate-bind9
         - designate-pdns4
-        - designate-bind9-manager-model
         - designate-bind9-py27
         - designate-pdns4-py27
         - designate-pdns4-postgres
@@ -152,7 +141,6 @@
       jobs:
         - designate-bind9
         - designate-pdns4
-        - designate-bind9-manager-model
         - designate-bind9-py27
         - designate-pdns4-py27
         - designate-grenade-pdns4

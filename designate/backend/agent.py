@@ -57,9 +57,9 @@ class AgentPoolBackend(base.Backend):
         super(AgentPoolBackend, self).__init__(target)
         self.host = self.options.get('host', '127.0.0.1')
         self.port = int(self.options.get('port', DEFAULT_AGENT_PORT))
-        self.timeout = CONF['service:pool_manager'].poll_timeout
-        self.retry_interval = CONF['service:pool_manager'].poll_retry_interval
-        self.max_retries = CONF['service:pool_manager'].poll_max_retries
+        self.timeout = CONF['service:worker'].poll_timeout
+        self.retry_interval = CONF['service:worker'].poll_retry_interval
+        self.max_retries = CONF['service:worker'].poll_max_retries
 
         # FIXME: the agent retries creating zones without any interval
 

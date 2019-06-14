@@ -208,15 +208,6 @@ mdns_api = mock.PropertyMock(
     ])
 )
 
-fx_pool_manager = fixtures.MockPatch(
-    'designate.central.service.pool_manager_rpcapi.Pool'
-    'ManagerAPI.get_instance',
-    mock.MagicMock(spec_set=[
-        'create_zone',
-        'update_zone',
-        'delete_zone'
-    ])
-)
 
 fx_worker = fixtures.MockPatch(
     'designate.central.service.worker_rpcapi.WorkerAPI.get_instance',
@@ -277,7 +268,6 @@ class CentralBasic(TestCase):
             'get_storage',
         ])
         designate.central.service.rpcapi = mock.Mock()
-        designate.central.service.pool_manager_rpcapi = mock.Mock()
         designate.central.service.worker_rpcapi = mock.Mock()
         self.context = mock.NonCallableMock(spec_set=[
             'elevated',
@@ -1013,8 +1003,7 @@ class CentralZoneTestCase(CentralBasic):
         self.service.delete_zone(self.context,
                                  CentralZoneTestCase.zone__id)
         self.assertTrue(self.service.storage.delete_zone.called)
-        self.assertFalse(
-            self.service.pool_manager_api.delete_zone.called)
+        self.assertFalse(self.service.zone_api.delete_zone.called)
         pcheck, _, _ = designate.central.service.policy.check.call_args[0]
         self.assertEqual('abandon_zone', pcheck)
 
@@ -1141,39 +1130,21 @@ class CentralZoneTestCase(CentralBasic):
 
         self.assertEqual(exceptions.ReportNotFound, exc.exc_info[0])
 
-    def _test_touch_zone(self, worker_enabled=True):
-        if not worker_enabled:
-            self.config(
-                enabled="False",
-                group="service:worker"
-            )
-
+    def test_touch_zone_with_worker_model(self):
         self.service._touch_zone_in_storage = Mock()
         self.service.storage.get_zone.return_value = RoObject(
             name='example.org.',
             tenant_id='2',
         )
 
-        if worker_enabled:
-            with fx_worker:
-                self.service.touch_zone(self.context,
-                    CentralZoneTestCase.zone__id)
-        else:
-            with fx_pool_manager:
-                self.service.touch_zone(self.context,
-                    CentralZoneTestCase.zone__id)
-
+        with fx_worker:
+            self.service.touch_zone(self.context,
+                                    CentralZoneTestCase.zone__id)
             self.assertTrue(designate.central.service.policy.check.called)
         self.assertEqual(
             'touch_zone',
             designate.central.service.policy.check.call_args[0][0]
         )
-
-    def test_touch_zone_with_worker_model(self):
-        self._test_touch_zone(worker_enabled=True)
-
-    def test_touch_zone_with_pool_manager_model(self):
-        self._test_touch_zone(worker_enabled=False)
 
     def test_get_recordset_not_found(self):
         self.service.storage.get_zone.return_value = RoObject(
@@ -1301,12 +1272,7 @@ class CentralZoneTestCase(CentralBasic):
 
         self.assertEqual(exceptions.BadRequest, exc.exc_info[0])
 
-    def _test_update_recordset(self, worker_enabled=True):
-        if not worker_enabled:
-            self.config(
-                enabled="False",
-                group="service:worker"
-            )
+    def test_update_recordset_worker_model(self):
         self.service.storage.get_zone.return_value = RoObject(
             type='foo',
             name='example.org.',
@@ -1322,12 +1288,8 @@ class CentralZoneTestCase(CentralBasic):
             return_value=('x', 'y')
         )
 
-        if worker_enabled:
-            with fx_worker:
-                self.service.update_recordset(self.context, recordset)
-        else:
-            with fx_pool_manager:
-                self.service.update_recordset(self.context, recordset)
+        with fx_worker:
+            self.service.update_recordset(self.context, recordset)
         self.assertTrue(
             self.service._update_recordset_in_storage.called)
 
@@ -1339,12 +1301,6 @@ class CentralZoneTestCase(CentralBasic):
             'zone_type': 'foo',
             'recordset_id': '9c85d9b0-1e9d-4e99-aede-a06664f1af2e',
             'tenant_id': '2'}, target)
-
-    def test_update_recordset_worker_model(self):
-        self._test_update_recordset(worker_enabled=True)
-
-    def test_update_recordset_pool_manager_model(self):
-        self._test_update_recordset(worker_enabled=False)
 
     def test__update_recordset_in_storage(self):
         recordset = Mock()
@@ -1500,12 +1456,7 @@ class CentralZoneTestCase(CentralBasic):
 
         self.assertEqual(exceptions.BadRequest, exc.exc_info[0])
 
-    def _test_delete_recordset(self, worker_enabled=True):
-        if not worker_enabled:
-            self.config(
-                enabled="False",
-                group="service:worker"
-            )
+    def test_delete_recordset_worker(self):
         mock_zone = RoObject(
             action='foo',
             id=CentralZoneTestCase.zone__id_2,
@@ -1528,29 +1479,15 @@ class CentralZoneTestCase(CentralBasic):
             return_value=(mock_rs, mock_zone)
         )
 
-        if worker_enabled:
-            with fx_worker:
-                self.service.delete_recordset(self.context,
-                    CentralZoneTestCase.zone__id_2,
-                    CentralZoneTestCase.recordset__id)
-                self.assertTrue(
-                    self.service.zone_api.update_zone.called)
-        else:
-            with fx_pool_manager:
-                self.service.delete_recordset(self.context,
-                    CentralZoneTestCase.zone__id_2,
-                    CentralZoneTestCase.recordset__id)
-                self.assertTrue(
-                    self.service.zone_api.update_zone.called)
-
+        with fx_worker:
+            self.service.delete_recordset(self.context,
+                CentralZoneTestCase.zone__id_2,
+                CentralZoneTestCase.recordset__id)
             self.assertTrue(
-                self.service._delete_recordset_in_storage.called)
+                self.service.zone_api.update_zone.called)
 
-    def test_delete_recordset_worker(self):
-        self._test_delete_recordset(worker_enabled=True)
-
-    def test_delete_recordset_pool_manager(self):
-        self._test_delete_recordset(worker_enabled=False)
+        self.assertTrue(
+            self.service._delete_recordset_in_storage.called)
 
     def test__delete_recordset_in_storage(self):
         def mock_uds(c, zone, inc):
@@ -1620,9 +1557,7 @@ class CentralZoneTestCase(CentralBasic):
 
         self.assertEqual(exceptions.BadRequest, exc.exc_info[0])
 
-    def _test_create_record(self, worker_enabled=True):
-        if not worker_enabled:
-            self.config(enabled="False", group="service:worker")
+    def _test_create_record(self):
         self.service._create_record_in_storage = Mock(
             return_value=(None, None)
         )
@@ -1637,24 +1572,14 @@ class CentralZoneTestCase(CentralBasic):
             name='rs',
         )
 
-        if worker_enabled:
-            with fx_worker:
-                self.service.create_record(
-                    self.context,
-                    CentralZoneTestCase.zone__id,
-                    CentralZoneTestCase.recordset__id,
-                    RoObject())
-                self.assertTrue(
-                    self.service.zone_api.update_zone.called)
-        else:
-            with fx_pool_manager:
-                self.service.create_record(
-                    self.context,
-                    CentralZoneTestCase.zone__id,
-                    CentralZoneTestCase.recordset__id,
-                    RoObject())
-                self.assertTrue(
-                    self.service.zone_api.update_zone.called)
+        with fx_worker:
+            self.service.create_record(
+                self.context,
+                CentralZoneTestCase.zone__id,
+                CentralZoneTestCase.recordset__id,
+                RoObject())
+            self.assertTrue(
+                self.service.zone_api.update_zone.called)
 
         n, ctx, target = designate.central.service.policy.check.call_args[0]
         self.assertEqual('create_record', n)
@@ -1667,10 +1592,7 @@ class CentralZoneTestCase(CentralBasic):
             'tenant_id': '2'}, target)
 
     def test_create_record_worker(self):
-        self._test_create_record(worker_enabled=True)
-
-    def test_create_record_pool_manager(self):
-        self._test_create_record(worker_enabled=False)
+        self._test_create_record()
 
     def test__create_record_in_storage(self):
         self.service._enforce_record_quota = Mock()
@@ -1835,9 +1757,7 @@ class CentralZoneTestCase(CentralBasic):
 
         self.assertEqual(exceptions.BadRequest, exc.exc_info[0])
 
-    def _test_update_record(self, worker_enabled=True):
-        if not worker_enabled:
-            self.config(enabled="False", group="service:worker")
+    def test_update_record_worker(self):
         self.service.storage.get_zone.return_value = RoObject(
             action='a',
             name='n',
@@ -1857,12 +1777,9 @@ class CentralZoneTestCase(CentralBasic):
             return_value=('x', 'y')
         )
 
-        if worker_enabled:
-            with fx_worker:
-                self.service.update_record(self.context, record)
-        else:
-            with fx_pool_manager:
-                self.service.update_record(self.context, record)
+        with fx_worker:
+            self.service.update_record(self.context, record)
+
         self.assertTrue(self.service._update_record_in_storage.called)
 
         n, ctx, target = designate.central.service.policy.check.call_args[0]
@@ -1875,12 +1792,6 @@ class CentralZoneTestCase(CentralBasic):
             'recordset_id': 'abc12a-1e9d-4e99-aede-a06664f1af2e',
             'recordset_name': 'rsn',
             'tenant_id': 'tid'}, target)
-
-    def test_update_record_worker(self):
-        self._test_update_record(worker_enabled=True)
-
-    def test_update_record_pool_manager(self):
-        self._test_update_record(worker_enabled=False)
 
     def test__update_record_in_storage(self):
         self.service._update_zone_in_storage = Mock()
@@ -1947,9 +1858,7 @@ class CentralZoneTestCase(CentralBasic):
 
         self.assertEqual(exceptions.RecordNotFound, exc.exc_info[0])
 
-    def _test_delete_record(self, worker_enabled=True):
-        if not worker_enabled:
-            self.config(enabled="False", group="service:worker")
+    def test_delete_record_worker(self):
         self.service._delete_record_in_storage = Mock(
             return_value=(None, None)
         )
@@ -1971,18 +1880,11 @@ class CentralZoneTestCase(CentralBasic):
             managed=False,
         )
 
-        if worker_enabled:
-            with fx_worker:
-                self.service.delete_record(self.context,
-                    CentralZoneTestCase.zone__id_2,
-                    CentralZoneTestCase.recordset__id_2,
-                    CentralZoneTestCase.record__id)
-        else:
-            with fx_pool_manager:
-                self.service.delete_record(self.context,
-                    CentralZoneTestCase.zone__id_2,
-                    CentralZoneTestCase.recordset__id_2,
-                    CentralZoneTestCase.record__id)
+        with fx_worker:
+            self.service.delete_record(self.context,
+                CentralZoneTestCase.zone__id_2,
+                CentralZoneTestCase.recordset__id_2,
+                CentralZoneTestCase.record__id)
 
         t, ctx, target = designate.central.service.policy.check.call_args[0]
         self.assertEqual('delete_record', t)
@@ -1994,46 +1896,6 @@ class CentralZoneTestCase(CentralBasic):
             'recordset_id': CentralZoneTestCase.recordset__id_2,
             'recordset_name': 'rsn',
             'tenant_id': 'tid'}, target)
-
-    def test_delete_record_worker(self):
-        self._test_delete_record(worker_enabled=True)
-
-    def test_delete_record_pool_manager(self):
-        self._test_delete_record(worker_enabled=False)
-
-    def test_delete_record_fail_on_managed(self):
-        self.service._delete_record_in_storage = Mock(
-            return_value=(None, None)
-        )
-        self.service.storage.get_zone.return_value = RoObject(
-            action='a',
-            id=CentralZoneTestCase.zone__id,
-            name='dn',
-            tenant_id='tid',
-            type='t',
-        )
-        self.service.storage.get_record.return_value = RoObject(
-            id=CentralZoneTestCase.record__id,
-            zone_id=CentralZoneTestCase.zone__id,
-            recordset_id=CentralZoneTestCase.recordset__id,
-        )
-        self.service.storage.get_recordset.return_value = RoObject(
-            name='rsn',
-            id=CentralZoneTestCase.recordset__id,
-            managed=True,
-        )
-        self.context = Mock()
-        self.context.edit_managed_records = False
-
-        with fx_pool_manager:
-            exc = self.assertRaises(rpc_dispatcher.ExpectedException,
-                                    self.service.delete_record,
-                                    self.context,
-                                    CentralZoneTestCase.zone__id_2,
-                                    CentralZoneTestCase.recordset__id_2,
-                                    CentralZoneTestCase.record__id_2)
-
-            self.assertEqual(exceptions.BadRequest, exc.exc_info[0])
 
     def test_delete_record_in_storage(self):
         self.service._delete_record_in_storage(

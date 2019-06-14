@@ -70,10 +70,6 @@ DESIGNATE_OPTS = [
                default='sudo designate-rootwrap /etc/designate/rootwrap.conf',
                help='designate-rootwrap configuration'),
 
-    # Memcached
-    cfg.ListOpt('memcached_servers',
-                help='Memcached servers or None for in process cache.'),
-
     cfg.StrOpt('network_api', default='neutron', help='Which API to use.'),
 
     # Notifications

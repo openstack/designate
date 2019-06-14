@@ -299,10 +299,6 @@ class DuplicateBlacklist(Duplicate):
     error_type = 'duplicate_blacklist'
 
 
-class DuplicatePoolManagerStatus(Duplicate):
-    error_type = 'duplication_pool_manager_status'
-
-
 class DuplicatePool(Duplicate):
     error_type = 'duplicate_pool'
 
@@ -417,10 +413,6 @@ class RecordNotFound(NotFound):
 
 class ReportNotFound(NotFound):
     error_type = 'report_not_found'
-
-
-class PoolManagerStatusNotFound(NotFound):
-    error_type = 'pool_manager_status_not_found'
 
 
 class PoolNotFound(NotFound):

@@ -52,19 +52,6 @@ function configure_designate {
         iniset $DESIGNATE_CONF coordination backend_url $DESIGNATE_COORDINATION_URL
     fi
 
-    if is_service_enabled designate-pool-manager; then
-        # Pool Manager Configuration
-        iniset $DESIGNATE_CONF service:pool_manager pool_id $DESIGNATE_POOL_ID
-        iniset $DESIGNATE_CONF service:pool_manager cache_driver $DESIGNATE_POOL_MANAGER_CACHE_DRIVER
-        iniset $DESIGNATE_CONF service:pool_manager periodic_recovery_interval $DESIGNATE_PERIODIC_RECOVERY_INTERVAL
-        iniset $DESIGNATE_CONF service:pool_manager periodic_sync_interval $DESIGNATE_PERIODIC_SYNC_INTERVAL
-
-        # Pool Manager Cache
-        if [ "$DESIGNATE_POOL_MANAGER_CACHE_DRIVER" == "sqlalchemy" ]; then
-            iniset $DESIGNATE_CONF pool_manager_cache:sqlalchemy connection `database_connection_url designate_pool_manager`
-        fi
-    fi
-
     # API Configuration
     sudo cp $DESIGNATE_DIR/etc/designate/api-paste.ini $DESIGNATE_APIPASTE_CONF
     iniset $DESIGNATE_CONF service:api enabled_extensions_v2 $DESIGNATE_ENABLED_EXTENSIONS_V2
@@ -226,14 +213,6 @@ function init_designate {
     # Init and migrate designate database
     $DESIGNATE_BIN_DIR/designate-manage database sync
 
-    if [ "$DESIGNATE_POOL_MANAGER_CACHE_DRIVER" == "sqlalchemy" ]; then
-        # (Re)create designate_pool_manager cache
-        recreate_database designate_pool_manager utf8
-
-        # Init and migrate designate pool-manager-cache
-        $DESIGNATE_BIN_DIR/designate-manage pool-manager-cache sync
-    fi
-
     init_designate_backend
 }
 
@@ -290,15 +269,9 @@ function start_designate {
     run_process designate-mdns "$DESIGNATE_BIN_DIR/designate-mdns --config-file $DESIGNATE_CONF"
     run_process designate-agent "$DESIGNATE_BIN_DIR/designate-agent --config-file $DESIGNATE_CONF"
     run_process designate-sink "$DESIGNATE_BIN_DIR/designate-sink --config-file $DESIGNATE_CONF"
-    if is_service_enabled designate-pool-manager; then
-        run_process designate-pool-manager "$DESIGNATE_BIN_DIR/designate-pool-manager --config-file $DESIGNATE_CONF"
-        run_process designate-zone-manager "$DESIGNATE_BIN_DIR/designate-zone-manager --config-file $DESIGNATE_CONF"
-    else
-        run_process designate-worker "$DESIGNATE_BIN_DIR/designate-worker --config-file $DESIGNATE_CONF"
-        run_process designate-producer "$DESIGNATE_BIN_DIR/designate-producer --config-file $DESIGNATE_CONF"
-    fi
 
-
+    run_process designate-worker "$DESIGNATE_BIN_DIR/designate-worker --config-file $DESIGNATE_CONF"
+    run_process designate-producer "$DESIGNATE_BIN_DIR/designate-producer --config-file $DESIGNATE_CONF"
 
     # Start proxies if enabled
     if is_service_enabled designate-api && is_service_enabled tls-proxy; then
@@ -314,8 +287,6 @@ function start_designate {
 function stop_designate {
     stop_process designate-central
     stop_process designate-api
-    stop_process designate-pool-manager
-    stop_process designate-zone-manager
     stop_process designate-mdns
     stop_process designate-agent
     stop_process designate-sink

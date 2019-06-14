@@ -1,0 +1,11 @@
+---
+prelude: >
+    Pool-Manager removal is complete in this version of designate.
+upgrade:
+  - |
+    The pool-manager has been removed and can no longer be used. Instead
+    the worker and producer service should be used.
+
+    Because of this the ``[service:worker]`` option ``enabled`` has been
+    permanently removed, and in addition the ``notify`` option under the same
+    section has been deprecated for removal.

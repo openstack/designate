@@ -25,9 +25,6 @@ from designate.mdns import rpcapi as mdns_api
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
 
-CONF.import_opt('pool_id', 'designate.pool_manager',
-                group='service:pool_manager')
-
 
 class Backend(DriverPlugin):
     """Base class for backend implementations"""
@@ -50,10 +47,10 @@ class Backend(DriverPlugin):
         self.admin_context.all_tenants = True
 
         # Options for sending NOTIFYs
-        self.timeout = CONF['service:pool_manager'].poll_timeout
-        self.retry_interval = CONF['service:pool_manager'].poll_retry_interval
-        self.max_retries = CONF['service:pool_manager'].poll_max_retries
-        self.delay = CONF['service:pool_manager'].poll_delay
+        self.timeout = CONF['service:worker'].poll_timeout
+        self.retry_interval = CONF['service:worker'].poll_retry_interval
+        self.max_retries = CONF['service:worker'].poll_max_retries
+        self.delay = CONF['service:worker'].poll_delay
 
     def start(self):
         LOG.info('Starting %s backend', self.get_canonical_name())

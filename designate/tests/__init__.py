@@ -50,11 +50,6 @@ CONF.import_opt('auth_strategy', 'designate.api',
                 group='service:api')
 CONF.import_opt('connection', 'designate.storage.impl_sqlalchemy',
                 group='storage:sqlalchemy')
-CONF.import_opt('cache_driver', 'designate.pool_manager',
-                group='service:pool_manager')
-CONF.import_opt('connection',
-                'designate.pool_manager.cache.impl_sqlalchemy',
-                group='pool_manager_cache:sqlalchemy')
 CONF.import_opt('emitter_type', 'designate.service_status',
                 group="heartbeat_emitter")
 CONF.import_opt('scheduler_filters', 'designate.scheduler',
@@ -377,8 +372,6 @@ class TestCase(base.BaseTestCase):
             group='storage:sqlalchemy'
         )
 
-        self._setup_pool_manager_cache()
-
         self.config(network_api='fake')
 
         self.config(
@@ -399,31 +392,6 @@ class TestCase(base.BaseTestCase):
 
         # Setup the Default Pool with some useful settings
         self._setup_default_pool()
-
-    def _setup_pool_manager_cache(self):
-
-        self.config(
-            cache_driver='sqlalchemy',
-            group='service:pool_manager')
-
-        repository = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                                  '..',
-                                                  'pool_manager',
-                                                  'cache',
-                                                  'impl_sqlalchemy',
-                                                  'migrate_repo'))
-        db_fixture = self.useFixture(
-            fixtures.DatabaseFixture.get_fixture(repository))
-
-        if os.getenv('DESIGNATE_SQL_DEBUG', "False").lower() in _TRUE_VALUES:
-            connection_debug = 50
-        else:
-            connection_debug = 0
-
-        self.config(
-            connection=db_fixture.url,
-            connection_debug=connection_debug,
-            group='pool_manager_cache:sqlalchemy')
 
     def _setup_default_pool(self):
         # Fetch the default pool

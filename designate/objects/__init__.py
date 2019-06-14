@@ -21,7 +21,6 @@ from designate.objects.zone import Zone, ZoneList  # noqa
 from designate.objects.zone_attribute import ZoneAttribute, ZoneAttributeList  # noqa
 from designate.objects.zone_master import ZoneMaster, ZoneMasterList  # noqa
 from designate.objects.floating_ip import FloatingIP, FloatingIPList  # noqa
-from designate.objects.pool_manager_status import PoolManagerStatus, PoolManagerStatusList  # noqa
 from designate.objects.pool import Pool, PoolList  # noqa
 from designate.objects.pool_also_notify import PoolAlsoNotify, PoolAlsoNotifyList  # noqa
 from designate.objects.pool_attribute import PoolAttribute, PoolAttributeList  # noqa

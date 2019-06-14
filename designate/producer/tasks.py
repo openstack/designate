@@ -20,7 +20,6 @@ from designate import plugin
 from designate import rpc
 from designate.central import rpcapi
 from designate.worker import rpcapi as worker_rpcapi
-from designate.pool_manager import rpcapi as pool_manager_rpcapi
 
 from oslo_config import cfg
 from oslo_log import log as logging
@@ -49,15 +48,8 @@ class PeriodicTask(plugin.ExtensionPlugin):
         return worker_rpcapi.WorkerAPI.get_instance()
 
     @property
-    def pool_manager_api(self):
-        return pool_manager_rpcapi.PoolManagerAPI.get_instance()
-
-    @property
     def zone_api(self):
-        # TODO(timsim): Remove this when pool_manager_api is gone
-        if cfg.CONF['service:worker'].enabled:
-            return self.worker_api
-        return self.pool_manager_api
+        return self.worker_api
 
     def on_partition_change(self, my_partitions, members, event):
         """Refresh partitions attribute
@@ -276,10 +268,6 @@ class WorkerPeriodicRecovery(PeriodicTask):
     __plugin_name__ = 'worker_periodic_recovery'
 
     def __call__(self):
-        # TODO(timsim): Remove this when worker is always on
-        if not cfg.CONF['service:worker'].enabled:
-            return
-
         pstart, pend = self._my_range()
         LOG.info(
             "Recovering zones for shards %(start)s to %(end)s",
