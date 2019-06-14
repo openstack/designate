@@ -29,10 +29,9 @@ class NoopConnection(object):
         pass
 
     def connect(self, *a, **kw):
-        LOG.error('Using noop metrics client. Metrics will be ignored.')
         pass
 
-    def open_buffer(self):
+    def open_buffer(self, *a, **kw):
         pass
 
 
@@ -65,10 +64,8 @@ class NoopTimer(object):
     def __init__(self):
         pass
 
-    def timed(self, *a, **kw):
-        def wrapper(func):
-            return func
-        return wrapper
+    def timing(self, *a, **kw):
+        pass
 
 
 class Client(object):
@@ -77,7 +74,6 @@ class Client(object):
         self._gauge = NoopGauge()
         self._timer = NoopTimer()
         self.connection = NoopConnection()
-        pass
 
     def get_counter(self, *a, **kw):
         return self._counter

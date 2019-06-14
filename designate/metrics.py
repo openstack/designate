@@ -11,96 +11,70 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
-"""
-Monasca-Statsd based metrics
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Based on metrics-and-stats blueprint
-
-Usage examples:
-
-.. code-block:: python
-
-    from designate.metrics import metrics
-
-    @metrics.timed('dot.separated.name')
-    def your_function():
-        pass
-
-    with metrics.time('dot.separated.name'):
-        pass
-
-    # Increment and decrement a counter.
-    metrics.counter(name='foo.bar').increment()
-    metrics.counter(name='foo.bar') -= 10
-
-"""
-
+from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import importutils
 
-import designate.conf.metrics
+import designate.conf
+from designate.metrics_client import noop
 
-stats_client = importutils.import_any('monascastatsd',
-                                      'designate.metrics_client.noop')
+monascastatsd = importutils.try_import('monascastatsd')
 
 CFG_GROUP_NAME = 'monasca:statsd'
 CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
-
 
 # Global metrics client to be imported by other modules
 metrics = None
 
 
 class Metrics(object):
-
     def __init__(self):
-        """Initialize Monasca-Statsd client with its default configuration.
-        Do not start sending metrics yet.
-        """
-        self._client = stats_client.Client(dimensions={
-            'service_name': 'dns'
-        })
-        # cfg.CONF is not available at this time
-        # Buffer all metrics until init() is called
-        # https://bugs.launchpad.net/monasca/+bug/1616060
-        self._client.connection.open_buffer()
-        self._client.connection.max_buffer_size = 50000
+        self._client = None
 
     def init(self):
-        """Setup client connection or disable metrics based on configuration.
-        This is called once the cfg.CONF is ready.
-        """
-        conf = CONF[CFG_GROUP_NAME]
-        if conf.enabled:
-            LOG.info("Statsd reports to %(host)s %(port)d",
-                     {
-                         'host': conf.hostname,
-                         'port': conf.port
-                     })
-            self._client.connection._flush_buffer()
-            self._client.connection.close_buffer()
-            self._client.connection.connect(conf.hostname, conf.port)
+        conf = cfg.CONF[CFG_GROUP_NAME]
+        if conf.enabled and monascastatsd:
+            LOG.info(
+                'Statsd reports to %(host)s:%(port)d',
+                {
+                    'host': conf.hostname,
+                    'port': conf.port
+                }
+            )
+            self._client = monascastatsd.Client(
+                host=conf.hostname, port=conf.port,
+                dimensions={
+                    'service_name': 'dns'
+                })
+            return
+
+        if conf.enabled and not monascastatsd:
+            LOG.error('monasca-statsd client not installed. '
+                      'Metrics will be ignored.')
         else:
-            LOG.info("Statsd disabled")
-            # The client cannot be disabled: mock out report()
-            self._client.connection.report = lambda *a, **kw: None
-            # There's no clean way to drain the outgoing buffer
+            LOG.info('Statsd disabled')
+
+        self._client = noop.Client()
 
     def counter(self, *a, **kw):
-        return self._client.get_counter(*a, **kw)
+        return self.client.get_counter(*a, **kw)
 
     def gauge(self, *a, **kw):
-        return self._client.get_gauge(*a, **kw)
+        return self.client.get_gauge(*a, **kw)
 
     @property
-    def timed(self):
-        return self._client.get_timer().timed
+    def timing(self):
+        return self.client.get_timer().timing
 
     def timer(self):
-        return self._client.get_timer()
+        return self.client.get_timer()
+
+    @property
+    def client(self):
+        if not self._client:
+            self.init()
+        return self._client
 
 
 metrics = Metrics()

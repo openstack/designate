@@ -41,7 +41,6 @@ class NotifyEndpoint(base.BaseEndpoint):
     RPC_API_VERSION = '2.0'
     RPC_API_NAMESPACE = 'notify'
 
-    @metrics.timed('mdns.notify_zone_changed')
     def notify_zone_changed(self, context, zone, host, port, timeout,
                             retry_interval, max_retries, delay):
         """
@@ -61,10 +60,15 @@ class NotifyEndpoint(base.BaseEndpoint):
             current_retry is the current retry number.
             The return value is just used for testing and not by pool manager.
         """
-        time.sleep(delay)
-        return self._make_and_send_dns_message(
-            zone, host, port, timeout, retry_interval, max_retries,
-            notify=True)
+        start_time = time.time()
+        try:
+            time.sleep(delay)
+            return self._make_and_send_dns_message(
+                zone, host, port, timeout, retry_interval, max_retries,
+                notify=True)
+        finally:
+            metrics.timing('mdns.notify_zone_changed',
+                           time.time() - start_time)
 
     def poll_for_serial_number(self, context, zone, nameserver, timeout,
                                retry_interval, max_retries, delay):
