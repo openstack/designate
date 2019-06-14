@@ -27,6 +27,7 @@ from oslo_log import log as logging
 from oslo_utils import timeutils
 
 LOG = logging.getLogger(__name__)
+CONF = cfg.CONF
 
 
 class PeriodicTask(plugin.ExtensionPlugin):
@@ -34,24 +35,10 @@ class PeriodicTask(plugin.ExtensionPlugin):
     """
     __plugin_ns__ = 'designate.producer_tasks'
     __plugin_type__ = 'producer_task'
-    __interval__ = None
 
     def __init__(self):
+        super(PeriodicTask, self).__init__()
         self.my_partitions = None
-        self.options = cfg.CONF[self.get_canonical_name()]
-
-    @classmethod
-    def get_base_opts(cls):
-        options = [
-            cfg.IntOpt(
-                'interval',
-                default=cls.__interval__,
-                help='Run interval in seconds'
-            ),
-            cfg.IntOpt('per_page', default=100,
-                help='Default amount of results returned per page'),
-        ]
-        return options
 
     @property
     def central_api(self):
@@ -69,7 +56,7 @@ class PeriodicTask(plugin.ExtensionPlugin):
     def zone_api(self):
         # TODO(timsim): Remove this when pool_manager_api is gone
         if cfg.CONF['service:worker'].enabled:
-                return self.worker_api
+            return self.worker_api
         return self.pool_manager_api
 
     def on_partition_change(self, my_partitions, members, event):
@@ -88,7 +75,7 @@ class PeriodicTask(plugin.ExtensionPlugin):
         return {col: "BETWEEN %s,%s" % self._my_range()}
 
     def _iter(self, method, *args, **kwargs):
-        kwargs.setdefault("limit", self.options.per_page)
+        kwargs.setdefault("limit", CONF[self.name].per_page)
         while True:
             items = method(*args, **kwargs)
 
@@ -112,30 +99,10 @@ class DeletedZonePurgeTask(PeriodicTask):
     Deleted zones have values in the deleted_at column.
     Purging means removing them from the database entirely.
     """
-
     __plugin_name__ = 'zone_purge'
-    __interval__ = 3600
 
     def __init__(self):
         super(DeletedZonePurgeTask, self).__init__()
-
-    @classmethod
-    def get_cfg_opts(cls):
-        group = cfg.OptGroup(cls.get_canonical_name())
-        options = cls.get_base_opts() + [
-            cfg.IntOpt(
-                'time_threshold',
-                default=604800,
-                help="How old deleted zones should be (deleted_at) to be "
-                "purged, in seconds"
-            ),
-            cfg.IntOpt(
-                'batch_size',
-                default=100,
-                help='How many zones to be purged on each run'
-            ),
-        ]
-        return [(group, options)]
 
     def __call__(self):
         """Call the Central API to perform a purge of deleted zones based on
@@ -149,7 +116,7 @@ class DeletedZonePurgeTask(PeriodicTask):
                 "end": pend
             })
 
-        delta = datetime.timedelta(seconds=self.options.time_threshold)
+        delta = datetime.timedelta(seconds=CONF[self.name].time_threshold)
         time_threshold = timeutils.utcnow() - delta
         LOG.debug("Filtering deleted zones before %s", time_threshold)
 
@@ -163,23 +130,16 @@ class DeletedZonePurgeTask(PeriodicTask):
         self.central_api.purge_zones(
             ctxt,
             criterion,
-            limit=self.options.batch_size,
+            limit=CONF[self.name].batch_size,
         )
 
 
 class PeriodicExistsTask(PeriodicTask):
     __plugin_name__ = 'periodic_exists'
-    __interval__ = 3600
 
     def __init__(self):
         super(PeriodicExistsTask, self).__init__()
         self.notifier = rpc.get_notifier('producer')
-
-    @classmethod
-    def get_cfg_opts(cls):
-        group = cfg.OptGroup(cls.get_canonical_name())
-        options = cls.get_base_opts()
-        return [(group, options)]
 
     @staticmethod
     def _get_period(seconds):
@@ -200,7 +160,7 @@ class PeriodicExistsTask(PeriodicTask):
         ctxt = context.DesignateContext.get_admin_context()
         ctxt.all_tenants = True
 
-        start, end = self._get_period(self.options.interval)
+        start, end = self._get_period(CONF[self.name].interval)
 
         extra_data = {
             "audit_period_beginning": start,
@@ -230,13 +190,6 @@ class PeriodicExistsTask(PeriodicTask):
 
 class PeriodicSecondaryRefreshTask(PeriodicTask):
     __plugin_name__ = 'periodic_secondary_refresh'
-    __interval__ = 3600
-
-    @classmethod
-    def get_cfg_opts(cls):
-        group = cfg.OptGroup(cls.get_canonical_name())
-        options = cls.get_base_opts()
-        return [(group, options)]
 
     def __call__(self):
         pstart, pend = self._my_range()
@@ -275,29 +228,10 @@ class PeriodicGenerateDelayedNotifyTask(PeriodicTask):
     """Generate delayed NOTIFY transactions
     Scan the database for zones with the delayed_notify flag set.
     """
-
     __plugin_name__ = 'delayed_notify'
-    __interval__ = 5
 
     def __init__(self):
         super(PeriodicGenerateDelayedNotifyTask, self).__init__()
-
-    @classmethod
-    def get_cfg_opts(cls):
-        group = cfg.OptGroup(cls.get_canonical_name())
-        options = cls.get_base_opts() + [
-            cfg.IntOpt(
-                'interval',
-                default=cls.__interval__,
-                help='Run interval in seconds'
-            ),
-            cfg.IntOpt(
-                'batch_size',
-                default=100,
-                help='How many zones to receive NOTIFY on each run'
-            ),
-        ]
-        return [(group, options)]
 
     def __call__(self):
         """Fetch a list of zones with the delayed_notify flag set up to
@@ -318,7 +252,7 @@ class PeriodicGenerateDelayedNotifyTask(PeriodicTask):
         zones = self.central_api.find_zones(
             ctxt,
             criterion,
-            limit=self.options.batch_size,
+            limit=CONF[self.name].batch_size,
             sort_key='updated_at',
             sort_dir='asc',
         )
@@ -339,24 +273,11 @@ class PeriodicGenerateDelayedNotifyTask(PeriodicTask):
 
 class WorkerPeriodicRecovery(PeriodicTask):
     __plugin_name__ = 'worker_periodic_recovery'
-    __interval__ = 120
-
-    @classmethod
-    def get_cfg_opts(cls):
-        group = cfg.OptGroup(cls.get_canonical_name())
-        options = cls.get_base_opts() + [
-            cfg.IntOpt(
-                'interval',
-                default=cls.__interval__,
-                help='Run interval in seconds'
-            ),
-        ]
-        return [(group, options)]
 
     def __call__(self):
         # TODO(timsim): Remove this when worker is always on
         if not cfg.CONF['service:worker'].enabled:
-                return
+            return
 
         pstart, pend = self._my_range()
         LOG.info(

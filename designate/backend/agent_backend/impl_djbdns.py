@@ -52,7 +52,6 @@ from oslo_concurrency.processutils import ProcessExecutionError
 from oslo_config import cfg
 from oslo_log import log as logging
 
-import designate.conf
 from designate import exceptions
 from designate import utils
 from designate.backend.agent_backend import base
@@ -92,11 +91,6 @@ def filter_exceptions(fn):
 class DjbdnsBackend(base.AgentBackend):
     __plugin_name__ = 'djbdns'
     __backend_status__ = 'experimental'
-
-    @classmethod
-    def get_cfg_opts(cls):
-        return [(designate.conf.djbdns.DJBDNS_GROUP,
-                 designate.conf.djbdns.DJDNS_OPTS)]
 
     def __init__(self, *a, **kw):
         """Configure the backend"""

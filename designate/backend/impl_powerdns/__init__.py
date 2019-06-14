@@ -13,12 +13,10 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import copy
 import threading
 
 import six
 from oslo_config import cfg
-from oslo_db import options
 from oslo_db.exception import DBDuplicateEntry
 from oslo_log import log as logging
 from oslo_utils import excutils
@@ -41,17 +39,6 @@ class PowerDNSBackend(base.Backend):
     __plugin_name__ = 'powerdns'
 
     __backend_status__ = 'deprecated'
-
-    @classmethod
-    def get_cfg_opts(cls):
-        group = cfg.OptGroup(CFG_GROUP_NAME)
-        opts = copy.deepcopy(options.database_opts)
-
-        # Strip connection options
-        discard_opts = ('sqlite_db', 'connection', 'slave_connection')
-        opts = [opt for opt in opts if opt.name not in discard_opts]
-
-        return [(group, opts,)]
 
     def __init__(self, target):
         super(PowerDNSBackend, self).__init__(target)

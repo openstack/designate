@@ -15,15 +15,39 @@
 # under the License.
 from oslo_config import cfg
 
-from designate.producer import tasks
-
 PRODUCER_GROUP = cfg.OptGroup(
     name='service:producer',
-    title="Configuration for Producer Service"
+    title='Configuration for Producer Service'
 )
 
 ZONE_MANAGER_GROUP = cfg.OptGroup(
-    name='service:zone_manager', title="Configuration for Zone Manager Service"
+    name='service:zone_manager',
+    title='Configuration for Zone Manager Service'
+)
+
+PRODUCER_TASK_DELAYED_NOTIFY_GROUP = cfg.OptGroup(
+    name='producer_task:delayed_notify',
+    title='Configuration for Producer Task: Delayed Notify'
+)
+
+PRODUCER_TASK_PERIODIC_EXISTS_GROUP = cfg.OptGroup(
+    name='producer_task:periodic_exists',
+    title='Configuration for Producer Task: Periodic Exists'
+)
+
+PRODUCER_TASK_PERIODIC_SECONDARY_REFRESH_GROUP = cfg.OptGroup(
+    name='producer_task:periodic_secondary_refresh',
+    title='Configuration for Producer Task: Periodic Secondary Refresh'
+)
+
+PRODUCER_TASK_WORKER_PERIODIC_RECOVERY_GROUP = cfg.OptGroup(
+    name='producer_task:worker_periodic_recovery',
+    title='Configuration for Producer Task: Worker Periodic Recovery'
+)
+
+PRODUCER_TASK_ZONE_PURGE_GROUP = cfg.OptGroup(
+    name='producer_task:zone_purge',
+    title='Configuration for Producer Task: Zone Purge'
 )
 
 PRODUCER_OPTS = [
@@ -66,32 +90,47 @@ ZONE_MANAGER_OPTS = [
                 deprecated_reason='Migrated to designate-worker'),
 ]
 
-# NOTE(trungnv): Get [producer_task:zone_purge] config
-zone_purge_opts = tasks.DeletedZonePurgeTask.get_cfg_opts()[0][1]
-zone_purge_old_group = tasks.DeletedZonePurgeTask.get_cfg_opts()[0][0].name
-zone_purge_group = cfg.OptGroup(zone_purge_old_group)
+PRODUCER_TASK_DELAYED_NOTIFY_OPTS = [
+    cfg.IntOpt('interval', default=5,
+               help='Run interval in seconds'),
+    cfg.IntOpt('per_page', default=100,
+               help='Default amount of results returned per page'),
+    cfg.IntOpt('batch_size', default=100,
+               help='How many zones to receive NOTIFY on each run'),
+]
 
-# NOTE(trungnv): Get [producer_task:periodic_exists] config
-periodic_exists_opts = tasks.PeriodicExistsTask.get_cfg_opts()[0][1]
-periodic_exists_old_group = tasks.PeriodicExistsTask.get_cfg_opts()[0][0].name
-periodic_exists_group = cfg.OptGroup(periodic_exists_old_group)
+PRODUCER_TASK_PERIODIC_EXISTS_OPTS = [
+    cfg.IntOpt('interval', default=3600,
+               help='Run interval in seconds'),
+    cfg.IntOpt('per_page', default=100,
+               help='Default amount of results returned per page'),
+]
 
-# NOTE(trungnv): Get [producer_task:periodic_secondary_refresh] config
-psr_opts = tasks.PeriodicSecondaryRefreshTask.get_cfg_opts()[0][1]
-psr_old_group = tasks.PeriodicSecondaryRefreshTask.get_cfg_opts()[0][0].name
-psr_group = cfg.OptGroup(psr_old_group)
+PRODUCER_TASK_PERIODIC_SECONDARY_REFRESH_OPTS = [
+    cfg.IntOpt('interval', default=3600,
+               help='Run interval in seconds'),
+    cfg.IntOpt('per_page', default=100,
+               help='Default amount of results returned per page'),
+]
 
-# NOTE(trungnv): Get [producer_task:delayed_notify] config
-delayed_notify_opts = \
-    tasks.PeriodicGenerateDelayedNotifyTask.get_cfg_opts()[0][1]
-delayed_notify_old_group = \
-    tasks.PeriodicGenerateDelayedNotifyTask.get_cfg_opts()[0][0].name
-delayed_notify_group = cfg.OptGroup(delayed_notify_old_group)
+PRODUCER_TASK_WORKER_PERIODIC_RECOVERY_OPTS = [
+    cfg.IntOpt('interval', default=120,
+               help='Run interval in seconds'),
+    cfg.IntOpt('per_page', default=100,
+               help='Default amount of results returned per page'),
+]
 
-# NOTE(trungnv): Get [producer_task:worker_periodic_recovery] config
-wpr_opts = tasks.WorkerPeriodicRecovery.get_cfg_opts()[0][1]
-wpr_old_group = tasks.WorkerPeriodicRecovery.get_cfg_opts()[0][0].name
-wpr_group = cfg.OptGroup(wpr_old_group)
+PRODUCER_TASK_ZONE_PURGE_OPTS = [
+    cfg.IntOpt('interval', default=3600,
+               help='Run interval in seconds'),
+    cfg.IntOpt('per_page', default=100,
+               help='Default amount of results returned per page'),
+    cfg.IntOpt('time_threshold', default=604800,
+               help='How old deleted zones should be (deleted_at) to be '
+                    'purged, in seconds'),
+    cfg.IntOpt('batch_size', default=100,
+               help='How many zones to be purged on each run'),
+]
 
 
 def register_opts(conf):
@@ -99,25 +138,34 @@ def register_opts(conf):
     conf.register_opts(PRODUCER_OPTS, group=PRODUCER_GROUP)
     conf.register_group(ZONE_MANAGER_GROUP)
     conf.register_opts(ZONE_MANAGER_OPTS, group=ZONE_MANAGER_GROUP)
-    conf.register_group(zone_purge_group)
-    conf.register_opts(zone_purge_opts, group=zone_purge_group)
-    conf.register_group(periodic_exists_group)
-    conf.register_opts(periodic_exists_opts, group=periodic_exists_group)
-    conf.register_group(psr_group)
-    conf.register_opts(psr_opts, group=psr_group)
-    conf.register_group(delayed_notify_group)
-    conf.register_opts(delayed_notify_opts, group=delayed_notify_group)
-    conf.register_group(wpr_group)
-    conf.register_opts(wpr_opts, group=wpr_group)
+    conf.register_group(PRODUCER_TASK_DELAYED_NOTIFY_GROUP)
+    conf.register_opts(PRODUCER_TASK_DELAYED_NOTIFY_OPTS,
+                       group=PRODUCER_TASK_DELAYED_NOTIFY_GROUP)
+    conf.register_group(PRODUCER_TASK_PERIODIC_EXISTS_GROUP)
+    conf.register_opts(PRODUCER_TASK_PERIODIC_EXISTS_OPTS,
+                       group=PRODUCER_TASK_PERIODIC_EXISTS_GROUP)
+    conf.register_group(PRODUCER_TASK_PERIODIC_SECONDARY_REFRESH_GROUP)
+    conf.register_opts(PRODUCER_TASK_PERIODIC_SECONDARY_REFRESH_OPTS,
+                       group=PRODUCER_TASK_PERIODIC_SECONDARY_REFRESH_GROUP)
+    conf.register_group(PRODUCER_TASK_WORKER_PERIODIC_RECOVERY_GROUP)
+    conf.register_opts(PRODUCER_TASK_WORKER_PERIODIC_RECOVERY_OPTS,
+                       group=PRODUCER_TASK_WORKER_PERIODIC_RECOVERY_GROUP)
+    conf.register_group(PRODUCER_TASK_ZONE_PURGE_GROUP)
+    conf.register_opts(PRODUCER_TASK_ZONE_PURGE_OPTS,
+                       group=PRODUCER_TASK_ZONE_PURGE_GROUP)
 
 
 def list_opts():
     return {
         PRODUCER_GROUP: PRODUCER_OPTS,
         ZONE_MANAGER_GROUP: ZONE_MANAGER_OPTS,
-        zone_purge_group: zone_purge_opts,
-        periodic_exists_group: periodic_exists_opts,
-        psr_group: psr_opts,
-        delayed_notify_group: delayed_notify_opts,
-        wpr_group: wpr_opts,
+        PRODUCER_TASK_DELAYED_NOTIFY_GROUP:
+            PRODUCER_TASK_DELAYED_NOTIFY_OPTS,
+        PRODUCER_TASK_PERIODIC_EXISTS_GROUP:
+            PRODUCER_TASK_PERIODIC_EXISTS_OPTS,
+        PRODUCER_TASK_PERIODIC_SECONDARY_REFRESH_GROUP:
+            PRODUCER_TASK_PERIODIC_SECONDARY_REFRESH_OPTS,
+        PRODUCER_TASK_WORKER_PERIODIC_RECOVERY_GROUP:
+            PRODUCER_TASK_WORKER_PERIODIC_RECOVERY_OPTS,
+        PRODUCER_TASK_ZONE_PURGE_GROUP: PRODUCER_TASK_ZONE_PURGE_OPTS,
     }

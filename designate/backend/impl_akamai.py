@@ -17,7 +17,6 @@ from oslo_log import log as logging
 from oslo_config import cfg
 from oslo_utils import importutils
 
-import designate.conf
 from designate import exceptions
 from designate import utils
 from designate.backend import base
@@ -235,11 +234,6 @@ class AkamaiBackend(base.Backend):
     __plugin_name__ = 'akamai'
 
     __backend_status__ = 'untested'
-
-    @classmethod
-    def get_cfg_opts(cls):
-        return [(designate.conf.akamai.AKAMAI_GROUP,
-                 designate.conf.akamai.AKAMAI_OPTS)]
 
     def __init__(self, target):
         super(AkamaiBackend, self).__init__(target)

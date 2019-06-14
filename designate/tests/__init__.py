@@ -384,7 +384,6 @@ class TestCase(base.BaseTestCase):
 
         # "Read" Configuration
         self.CONF([], project='designate')
-        utils.register_plugin_opts()
 
         self.useFixture(fixtures.PolicyFixture())
         self.network_api = fixtures.NetworkAPIFixture()

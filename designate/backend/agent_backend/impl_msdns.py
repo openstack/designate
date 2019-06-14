@@ -22,7 +22,6 @@ from os_win import utilsfactory
 from os_win import constants
 from os_win import exceptions as os_win_exc
 
-import designate.conf
 from designate.backend.agent_backend import base
 from designate import exceptions
 
@@ -47,11 +46,6 @@ class MSDNSBackend(base.AgentBackend):
         self._masters = [ns.split(":")[0] for ns in masters]
 
         LOG.info("AXFR masters: %r", self._masters)
-
-    @classmethod
-    def get_cfg_opts(cls):
-        return [(designate.conf.msdns.MSDNS_GROUP,
-                 designate.conf.msdns.MSDNS_OPTS)]
 
     def start(self):
         """Start the backend"""

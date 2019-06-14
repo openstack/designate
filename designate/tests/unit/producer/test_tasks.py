@@ -22,6 +22,8 @@ import datetime
 import fixtures
 import mock
 import oslotest.base
+from oslo_config import cfg
+from oslo_config import fixture as cfg_fixture
 from oslo_utils import timeutils
 
 from designate import context
@@ -31,34 +33,29 @@ from designate.producer import tasks
 from designate.tests.unit import RoObject
 from designate.utils import generate_uuid
 
+DUMMY_TASK_GROUP = cfg.OptGroup(
+    name='producer_task:dummy',
+    title='Configuration for Producer Task: Dummy Task'
+)
+DUMMY_TASK_OPTS = [
+    cfg.IntOpt('per_page', default=100,
+               help='Default amount of results returned per page'),
+]
+
+CONF = cfg.CONF
+CONF.register_group(DUMMY_TASK_GROUP)
+CONF.register_opts(DUMMY_TASK_OPTS, group=DUMMY_TASK_GROUP)
+
 
 class DummyTask(tasks.PeriodicTask):
     """Dummy task used to test helper functions"""
     __plugin_name__ = 'dummy'
 
 
-class TaskTest(oslotest.base.BaseTestCase):
-    def setup_opts(self, config):
-        opts = RoObject(**config)
-
-        self.opts = opts
-        self.opts_patcher = mock.patch('oslo_config.cfg.CONF')
-        self.addCleanup(self.opts_patcher.stop)
-
-        self.opts_mock = self.opts_patcher.start()
-        self.opts_mock.__getitem__.side_effect = lambda n: opts[n]
-
-
-class PeriodicTest(TaskTest):
+class PeriodicTest(oslotest.base.BaseTestCase):
     def setUp(self):
         super(PeriodicTest, self).setUp()
-
-        opts = {
-            "producer_task:dummy": RoObject({
-                "per_page": 100,
-            })
-        }
-        self.setup_opts(opts)
+        self.useFixture(cfg_fixture.Config(CONF))
 
         self.task = DummyTask()
         self.task.my_partitions = range(0, 10)
@@ -111,17 +108,12 @@ class PeriodicTest(TaskTest):
         self.assertEqual((0, 9), self.task._my_range())
 
 
-class PeriodicExistsTest(TaskTest):
+class PeriodicExistsTest(oslotest.base.BaseTestCase):
     def setUp(self):
         super(PeriodicExistsTest, self).setUp()
+        self.useFixture(cfg_fixture.Config(CONF))
 
-        opts = {
-            "producer_task:periodic_exists": RoObject({
-                "per_page": 100,
-                "interval": 5
-            })
-        }
-        self.setup_opts(opts)
+        CONF.set_override('interval', 5, 'producer_task:periodic_exists')
 
         # Mock a ctxt...
         self.ctxt = mock.Mock()
@@ -196,16 +188,10 @@ class PeriodicExistsTest(TaskTest):
                 self.ctxt, "dns.zone.exists", data)
 
 
-class PeriodicSecondaryRefreshTest(TaskTest):
+class PeriodicSecondaryRefreshTest(oslotest.base.BaseTestCase):
     def setUp(self):
         super(PeriodicSecondaryRefreshTest, self).setUp()
-
-        opts = {
-            "producer_task:periodic_secondary_refresh": RoObject({
-                "per_page": 100
-            })
-        }
-        self.setup_opts(opts)
+        self.useFixture(cfg_fixture.Config(CONF))
 
         # Mock a ctxt...
         self.ctxt = mock.Mock()
