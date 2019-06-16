@@ -53,7 +53,7 @@ Get Quotas
 
     **Example response:**
 
-    .. sourcecode:: guess
+    .. sourcecode:: none
 
         HTTP/1.1 201 Created
         Content-Type: application/json
@@ -104,7 +104,7 @@ Update Quotas
 
     **Example response:**
 
-    .. sourcecode:: guess
+    .. sourcecode:: none
 
         HTTP/1.1 200 OK
         Content-Type: application/json
