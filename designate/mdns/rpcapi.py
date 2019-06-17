@@ -49,14 +49,14 @@ class MdnsAPI(object):
     RPC_XFR_API_VERSION = '1.0'
 
     def __init__(self, topic=None):
-        topic = topic if topic else cfg.CONF['service:mdns'].mdns_topic
+        self.topic = topic if topic else cfg.CONF['service:mdns'].topic
 
-        notify_target = messaging.Target(topic=topic,
+        notify_target = messaging.Target(topic=self.topic,
                                          namespace='notify',
                                          version=self.RPC_NOTIFY_API_VERSION)
         self.notify_client = rpc.get_client(notify_target, version_cap='2.0')
 
-        xfr_target = messaging.Target(topic=topic,
+        xfr_target = messaging.Target(topic=self.topic,
                                       namespace='xfr',
                                       version=self.RPC_XFR_API_VERSION)
         self.xfr_client = rpc.get_client(xfr_target, version_cap='1.0')

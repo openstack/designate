@@ -43,7 +43,7 @@ class Service(service.DNSService, service.RPCService, service.Service):
 
     @property
     def service_name(self):
-        return cfg.CONF['service:mdns'].mdns_topic
+        return 'mdns'
 
     @property
     @utils.cache_result

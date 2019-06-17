@@ -93,7 +93,7 @@ class Service(service.RPCService, service.Service):
 
     @property
     def service_name(self):
-        return cfg.CONF['service:worker'].worker_topic
+        return 'worker'
 
     @property
     def storage(self):

@@ -19,15 +19,21 @@ Unit-test Producer service
 """
 
 import mock
+from oslo_config import cfg
+from oslo_config import fixture as cfg_fixture
 from oslotest import base as test
 
 from designate.producer import service
 from designate.tests.unit import RoObject
 
+CONF = cfg.CONF
+
 
 @mock.patch.object(service.rpcapi.CentralAPI, 'get_instance')
 class ProducerTest(test.BaseTestCase):
     def setUp(self):
+        self.useFixture(cfg_fixture.Config(CONF))
+
         service.CONF = RoObject({
             'service:producer': RoObject({
                 'enabled_tasks': None,  # enable all tasks
@@ -47,6 +53,14 @@ class ProducerTest(test.BaseTestCase):
         self.service.quota.limit_check = mock.Mock()
 
     def test_service_name(self, _):
+        self.assertEqual('producer', self.service.service_name)
+
+    def test_producer_rpc_topic(self, _):
+        CONF.set_override('topic', 'test-topic', 'service:producer')
+
+        self.service = service.Service()
+
+        self.assertEqual('test-topic', self.service._rpc_topic)
         self.assertEqual('producer', self.service.service_name)
 
     def test_central_api(self, _):

@@ -53,8 +53,8 @@ WORKER_OPTS = [
                      'noop NOTIFYs in mdns if true'),
     cfg.BoolOpt('export-synchronous', default=True,
                 help='Whether to allow synchronous zone exports'),
-    cfg.StrOpt('worker_topic', default='worker',
-               help='RPC topic for worker component'),
+    cfg.StrOpt('topic', default='worker',
+               help='RPC topic name for worker'),
 ]
 
 

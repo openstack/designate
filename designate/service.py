@@ -153,7 +153,7 @@ class RPCService(object):
 
     @property
     def _rpc_topic(self):
-        return self.service_name
+        return CONF['service:%s' % self.service_name].topic
 
     def start(self):
         super(RPCService, self).start()

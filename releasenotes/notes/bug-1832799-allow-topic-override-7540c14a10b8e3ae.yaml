@@ -1,0 +1,15 @@
+---
+fixes:
+  - |
+    It was previously not possible to override the topics for various serivces (e.g. mdns),
+    due to `bug 1832799`_. This has been fixed, and these services now use a common option name to
+    override the topic.
+
+    e.g.
+
+    .. code-block:: ini
+
+      [service:mdns]
+      topic = mdns
+
+    .. _bug 1832799: https://bugs.launchpad.net/designate/+bug/1832799
