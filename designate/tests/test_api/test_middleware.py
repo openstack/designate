@@ -64,8 +64,8 @@ class KeystoneContextMiddlewareTest(ApiTestCase):
 
         self.assertFalse(context.is_admin)
         self.assertEqual('AuthToken', context.auth_token)
-        self.assertEqual('UserID', context.user)
-        self.assertEqual('TenantID', context.tenant)
+        self.assertEqual('UserID', context.user_id)
+        self.assertEqual('TenantID', context.project_id)
         self.assertEqual(['admin', 'Member'], context.roles)
 
     def test_process_request_invalid_keystone_token(self):
@@ -118,8 +118,8 @@ class NoAuthContextMiddlewareTest(ApiTestCase):
         ctxt = request.environ['context']
 
         self.assertIsNone(ctxt.auth_token)
-        self.assertEqual('noauth-user', ctxt.user)
-        self.assertEqual('noauth-project', ctxt.tenant)
+        self.assertEqual('noauth-user', ctxt.user_id)
+        self.assertEqual('noauth-project', ctxt.project_id)
         self.assertEqual(['admin'], ctxt.roles)
 
 

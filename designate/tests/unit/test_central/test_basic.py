@@ -237,7 +237,6 @@ class NotMockedError(NotImplementedError):
 @patch('designate.central.service.storage',
        mock.NonCallableMock(side_effect=NotMockedError))
 class CentralBasic(TestCase):
-
     def setUp(self):
         super(CentralBasic, self).setUp()
         self.CONF = self.useFixture(cfg_fixture.Config(cfg.CONF)).conf
@@ -963,7 +962,7 @@ class CentralZoneTestCase(CentralBasic):
         self.assertEqual(CentralZoneTestCase.pool__id, pool_id)
 
     def test_find_zones(self):
-        self.context = RoObject(tenant='t')
+        self.context = RoObject(project_id='t')
         self.service.storage.find_zones = Mock()
         self.service.find_zones(self.context)
         self.assertTrue(self.service.storage.find_zones.called)
@@ -972,7 +971,7 @@ class CentralZoneTestCase(CentralBasic):
         self.assertEqual('find_zones', pcheck)
 
     def test_find_zone(self):
-        self.context = RoObject(tenant='t')
+        self.context = RoObject(project_id='t')
         self.service.storage.find_zone = Mock()
         self.service.find_zone(self.context)
         self.assertTrue(self.service.storage.find_zone.called)
@@ -1223,7 +1222,7 @@ class CentralZoneTestCase(CentralBasic):
 
     def test_find_recordsets(self):
         self.context = Mock()
-        self.context.tenant = 't'
+        self.context.project_id = 't'
         self.service.find_recordsets(self.context)
         self.assertTrue(self.service.storage.find_recordsets.called)
         n, ctx, target = designate.central.service.policy.check.call_args[0]
@@ -1232,7 +1231,7 @@ class CentralZoneTestCase(CentralBasic):
 
     def test_find_recordset(self):
         self.context = Mock()
-        self.context.tenant = 't'
+        self.context.project_id = 't'
         self.service.find_recordset(self.context)
         self.assertTrue(self.service.storage.find_recordset.called)
         n, ctx, target = designate.central.service.policy.check.call_args[0]
@@ -2124,7 +2123,7 @@ class CentralZoneTestCase(CentralBasic):
 
     def test_determine_floatingips(self):
         self.context = Mock()
-        self.context.tenant = 'tnt'
+        self.context.project_id = 'tnt'
         self.service.find_records = Mock(return_value=[
             RoObject(managed_extra='')
         ])
@@ -2137,7 +2136,7 @@ class CentralZoneTestCase(CentralBasic):
 
     def test_determine_floatingips_with_data(self):
         self.context = Mock()
-        self.context.tenant = 2
+        self.context.project_id = 2
         self.service.find_records = Mock(return_value=[
             RoObject(managed_extra=1, managed_tenant_id=1),
             RoObject(managed_extra=2, managed_tenant_id=2),
@@ -2209,7 +2208,7 @@ class CentralZoneExportTests(CentralBasic):
 
     def test_create_zone_export(self):
         self.context = Mock()
-        self.context.tenant = 't'
+        self.context.project_id = 't'
 
         self.service.storage.get_zone.return_value = RoObject(
             name='example.com.',
@@ -2242,7 +2241,7 @@ class CentralZoneExportTests(CentralBasic):
 
     def test_get_zone_export(self):
         self.context = Mock()
-        self.context.tenant = 't'
+        self.context.project_id = 't'
 
         self.service.storage.get_zone_export.return_value = RoObject(
                 zone_id=CentralZoneTestCase.zone__id,
@@ -2270,7 +2269,7 @@ class CentralZoneExportTests(CentralBasic):
 
     def test_find_zone_exports(self):
         self.context = Mock()
-        self.context.tenant = 't'
+        self.context.project_id = 't'
         self.service.storage.find_zone_exports = Mock()
 
         self.service.find_zone_exports(self.context)
@@ -2282,7 +2281,7 @@ class CentralZoneExportTests(CentralBasic):
 
     def test_delete_zone_export(self):
         self.context = Mock()
-        self.context.tenant = 't'
+        self.context.project_id = 't'
 
         self.service.storage.delete_zone_export = Mock(
             return_value=RoObject(

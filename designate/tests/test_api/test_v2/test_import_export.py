@@ -41,8 +41,8 @@ class APIV2ZoneImportExportTest(ApiV2TestCase):
         adminapp = middleware.FaultWrapperMiddleware(adminapp)
         # Inject the TestContext middleware
         adminapp = middleware.TestContextMiddleware(
-            adminapp, self.admin_context.tenant,
-            self.admin_context.tenant)
+            adminapp, self.admin_context.project_id,
+            self.admin_context.project_id)
         # Obtain a test client
         self.adminclient = TestApp(adminapp)
 

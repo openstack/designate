@@ -417,8 +417,8 @@ class CentralServiceTest(CentralTestCase):
         admin_context = self.get_admin_context()
         admin_context.all_tenants = True
 
-        tenant_one_context = self.get_context(tenant=1)
-        tenant_two_context = self.get_context(tenant=2)
+        tenant_one_context = self.get_context(project_id=1)
+        tenant_two_context = self.get_context(project_id=2)
 
         # in the beginning, there should be nothing
         tenants = self.central_service.count_tenants(admin_context)
@@ -588,7 +588,7 @@ class CentralServiceTest(CentralTestCase):
         context = self.get_admin_context()
 
         # Explicitly set a tenant_id
-        context.tenant = '1'
+        context.project_id = '1'
 
         # Create the Parent Zone using fixture 0
         parent_zone = self.create_zone(fixture=0, context=context)
@@ -596,7 +596,7 @@ class CentralServiceTest(CentralTestCase):
         context = self.get_admin_context()
 
         # Explicitly use a different tenant_id
-        context.tenant = '2'
+        context.project_id = '2'
 
         # Prepare values for the subzone using fixture 1 as a base
         values = self.get_zone_fixture(fixture=1)
@@ -613,7 +613,7 @@ class CentralServiceTest(CentralTestCase):
         context = self.get_admin_context()
 
         # Explicitly set a tenant_id
-        context.tenant = '1'
+        context.project_id = '1'
 
         # Set up zone and subzone values
         zone_values = self.get_zone_fixture(fixture=1)
@@ -629,7 +629,7 @@ class CentralServiceTest(CentralTestCase):
         context = self.get_admin_context()
 
         # Explicitly use a different tenant_id
-        context.tenant = '2'
+        context.project_id = '2'
 
         # Attempt to create the zone
         exc = self.assertRaises(rpc_dispatcher.ExpectedException,
@@ -792,8 +792,8 @@ class CentralServiceTest(CentralTestCase):
         admin_context = self.get_admin_context()
         admin_context.all_tenants = True
 
-        tenant_one_context = self.get_context(tenant=1)
-        tenant_two_context = self.get_context(tenant=2)
+        tenant_one_context = self.get_context(project_id=1)
+        tenant_two_context = self.get_context(project_id=2)
 
         # Ensure we have no zones to start with.
         zones = self.central_service.find_zones(admin_context)
@@ -807,12 +807,12 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(1, len(zones))
         self.assertEqual(zone['name'], zones[0]['name'])
 
-        # Ensure tenant=1 can retrieve the newly created zone
+        # Ensure project_id=1 can retrieve the newly created zone
         zones = self.central_service.find_zones(tenant_one_context)
         self.assertEqual(1, len(zones))
         self.assertEqual(zone['name'], zones[0]['name'])
 
-        # Ensure tenant=2 can NOT retrieve the newly created zone
+        # Ensure project_id=2 can NOT retrieve the newly created zone
         zones = self.central_service.find_zones(tenant_two_context)
         self.assertEqual(0, len(zones))
 
@@ -2383,9 +2383,9 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(exceptions.Forbidden, exc.exc_info[0])
 
     def test_get_floatingip_no_record(self):
-        context = self.get_context(tenant='a')
+        context = self.get_context(project_id='a')
 
-        fip = self.network_api.fake.allocate_floatingip(context.tenant)
+        fip = self.network_api.fake.allocate_floatingip(context.project_id)
 
         fip_ptr = self.central_service.get_floatingip(
             context, fip['region'], fip['id'])
@@ -2396,10 +2396,10 @@ class CentralServiceTest(CentralTestCase):
         self.assertIsNone(fip_ptr['ptrdname'])
 
     def test_get_floatingip_dual_no_record(self):
-        context = self.get_context(tenant='a')
+        context = self.get_context(project_id='a')
 
-        self.network_api.fake.allocate_floatingip(context.tenant)
-        fip = self.network_api.fake.allocate_floatingip(context.tenant)
+        self.network_api.fake.allocate_floatingip(context.project_id)
+        fip = self.network_api.fake.allocate_floatingip(context.project_id)
 
         fip_ptr = self.central_service.get_floatingip(
             context, fip['region'], fip['id'])
@@ -2410,11 +2410,11 @@ class CentralServiceTest(CentralTestCase):
         self.assertIsNone(fip_ptr['ptrdname'])
 
     def test_get_floatingip_with_record(self):
-        context = self.get_context(tenant='a')
+        context = self.get_context(project_id='a')
 
         fixture = self.get_ptr_fixture()
 
-        fip = self.network_api.fake.allocate_floatingip(context.tenant)
+        fip = self.network_api.fake.allocate_floatingip(context.project_id)
 
         expected = self.central_service.update_floatingip(
             context, fip['region'], fip['id'], fixture)
@@ -2426,9 +2426,9 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(expected, actual)
 
     def test_get_floatingip_not_allocated(self):
-        context = self.get_context(tenant='a')
+        context = self.get_context(project_id='a')
 
-        fip = self.network_api.fake.allocate_floatingip(context.tenant)
+        fip = self.network_api.fake.allocate_floatingip(context.project_id)
         self.network_api.fake.deallocate_floatingip(fip['id'])
 
         exc = self.assertRaises(rpc_dispatcher.ExpectedException,
@@ -2438,23 +2438,23 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(exceptions.NotFound, exc.exc_info[0])
 
     def test_get_floatingip_deallocated_and_invalidate(self):
-        context_a = self.get_context(tenant='a')
+        context_a = self.get_context(project_id='a')
         elevated_a = context_a.elevated()
         elevated_a.all_tenants = True
 
-        context_b = self.get_context(tenant='b')
+        context_b = self.get_context(project_id='b')
 
         fixture = self.get_ptr_fixture()
 
         # First allocate and create a FIP as tenant a
-        fip = self.network_api.fake.allocate_floatingip(context_a.tenant)
+        fip = self.network_api.fake.allocate_floatingip(context_a.project_id)
 
         self.central_service.update_floatingip(
             context_a, fip['region'], fip['id'], fixture)
 
         criterion = {
             'managed_resource_id': fip['id'],
-            'managed_tenant_id': context_a.tenant}
+            'managed_tenant_id': context_a.project_id}
         zone_id = self.central_service.find_record(
             elevated_a, criterion).zone_id
 
@@ -2477,7 +2477,7 @@ class CentralServiceTest(CentralTestCase):
 
         # Now give the fip id to tenant 'b' and see that it get's deleted
         self.network_api.fake.allocate_floatingip(
-            context_b.tenant, fip['id'])
+            context_b.project_id, fip['id'])
 
         # There should be a fip returned with ptrdname of None
         fip_ptr = self.central_service.get_floatingip(
@@ -2499,16 +2499,16 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(exceptions.RecordNotFound, exc.exc_info[0])
 
     def test_list_floatingips_no_allocations(self):
-        context = self.get_context(tenant='a')
+        context = self.get_context(project_id='a')
 
         fips = self.central_service.list_floatingips(context)
 
         self.assertEqual(0, len(fips))
 
     def test_list_floatingips_no_record(self):
-        context = self.get_context(tenant='a')
+        context = self.get_context(project_id='a')
 
-        fip = self.network_api.fake.allocate_floatingip(context.tenant)
+        fip = self.network_api.fake.allocate_floatingip(context.project_id)
 
         fips = self.central_service.list_floatingips(context)
 
@@ -2520,11 +2520,11 @@ class CentralServiceTest(CentralTestCase):
         self.assertIsNone(fips[0]['description'])
 
     def test_list_floatingips_with_record(self):
-        context = self.get_context(tenant='a')
+        context = self.get_context(project_id='a')
 
         fixture = self.get_ptr_fixture()
 
-        fip = self.network_api.fake.allocate_floatingip(context.tenant)
+        fip = self.network_api.fake.allocate_floatingip(context.project_id)
 
         fip_ptr = self.central_service.update_floatingip(
             context, fip['region'], fip['id'], fixture)
@@ -2539,23 +2539,23 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(fip_ptr['description'], fips[0]['description'])
 
     def test_list_floatingips_deallocated_and_invalidate(self):
-        context_a = self.get_context(tenant='a')
+        context_a = self.get_context(project_id='a')
         elevated_a = context_a.elevated()
         elevated_a.all_tenants = True
 
-        context_b = self.get_context(tenant='b')
+        context_b = self.get_context(project_id='b')
 
         fixture = self.get_ptr_fixture()
 
         # First allocate and create a FIP as tenant a
-        fip = self.network_api.fake.allocate_floatingip(context_a.tenant)
+        fip = self.network_api.fake.allocate_floatingip(context_a.project_id)
 
         self.central_service.update_floatingip(
             context_a, fip['region'], fip['id'], fixture)
 
         criterion = {
             'managed_resource_id': fip['id'],
-            'managed_tenant_id': context_a.tenant}
+            'managed_tenant_id': context_a.project_id}
         zone_id = self.central_service.find_record(
             elevated_a, criterion).zone_id
 
@@ -2575,7 +2575,7 @@ class CentralServiceTest(CentralTestCase):
 
         # Now give the fip id to tenant 'b' and see that it get's deleted
         self.network_api.fake.allocate_floatingip(
-            context_b.tenant, fip['id'])
+            context_b.project_id, fip['id'])
 
         # There should be a fip returned with ptrdname of None
         fips = self.central_service.list_floatingips(context_b)
@@ -2597,11 +2597,11 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(exceptions.RecordNotFound, exc.exc_info[0])
 
     def test_set_floatingip(self):
-        context = self.get_context(tenant='a')
+        context = self.get_context(project_id='a')
 
         fixture = self.get_ptr_fixture()
 
-        fip = self.network_api.fake.allocate_floatingip(context.tenant)
+        fip = self.network_api.fake.allocate_floatingip(context.project_id)
 
         fip_ptr = self.central_service.update_floatingip(
             context, fip['region'], fip['id'], fixture)
@@ -2612,11 +2612,11 @@ class CentralServiceTest(CentralTestCase):
         self.assertIsNotNone(fip_ptr['ttl'])
 
     def test_set_floatingip_no_managed_resource_tenant_id(self):
-        context = self.get_context(tenant='a')
+        context = self.get_context(project_id='a')
 
         fixture = self.get_ptr_fixture()
 
-        fip = self.network_api.fake.allocate_floatingip(context.tenant)
+        fip = self.network_api.fake.allocate_floatingip(context.project_id)
 
         self.central_service.update_floatingip(
             context, fip['region'], fip['id'], fixture)
@@ -2633,24 +2633,24 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(tenant_id, zone.tenant_id)
 
     def test_set_floatingip_removes_old_record(self):
-        context_a = self.get_context(tenant='a')
+        context_a = self.get_context(project_id='a')
         elevated_a = context_a.elevated()
         elevated_a.all_tenants = True
 
-        context_b = self.get_context(tenant='b')
+        context_b = self.get_context(project_id='b')
 
         fixture = self.get_ptr_fixture()
 
         # Test that re-setting as tenant 'a' an already set floatingip leaves
         # only 1 record
-        fip = self.network_api.fake.allocate_floatingip(context_a.tenant)
+        fip = self.network_api.fake.allocate_floatingip(context_a.project_id)
 
         self.central_service.update_floatingip(
             context_a, fip['region'], fip['id'], fixture)
 
         criterion = {
             'managed_resource_id': fip['id'],
-            'managed_tenant_id': context_a.tenant}
+            'managed_tenant_id': context_a.project_id}
         zone_id = self.central_service.find_record(
             elevated_a, criterion).zone_id
 
@@ -2674,7 +2674,7 @@ class CentralServiceTest(CentralTestCase):
         # Now test that tenant b allocating the same fip and setting a ptr
         # deletes any records
         fip = self.network_api.fake.allocate_floatingip(
-            context_b.tenant, fip['id'])
+            context_b.project_id, fip['id'])
 
         self.central_service.update_floatingip(
             context_b, fip['region'], fip['id'], fixture)
@@ -2691,10 +2691,10 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(1, count)
 
     def test_set_floatingip_not_allocated(self):
-        context = self.get_context(tenant='a')
+        context = self.get_context(project_id='a')
         fixture = self.get_ptr_fixture()
 
-        fip = self.network_api.fake.allocate_floatingip(context.tenant)
+        fip = self.network_api.fake.allocate_floatingip(context.project_id)
         self.network_api.fake.deallocate_floatingip(fip['id'])
 
         # If one attempts to assign a de-allocated FIP or not-owned it should
@@ -2706,11 +2706,11 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(exceptions.NotFound, exc.exc_info[0])
 
     def test_unset_floatingip(self):
-        context = self.get_context(tenant='a')
+        context = self.get_context(project_id='a')
 
         fixture = self.get_ptr_fixture()
 
-        fip = self.network_api.fake.allocate_floatingip(context.tenant)
+        fip = self.network_api.fake.allocate_floatingip(context.project_id)
 
         fip_ptr = self.central_service.update_floatingip(
             context, fip['region'], fip['id'], fixture)
@@ -3322,9 +3322,9 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(zt_request.key, retrived_zt.key)
 
     def test_get_zone_transfer_request_scoped(self):
-        tenant_1_context = self.get_context(tenant=1)
-        tenant_2_context = self.get_context(tenant=2)
-        tenant_3_context = self.get_context(tenant=3)
+        tenant_1_context = self.get_context(project_id=1)
+        tenant_2_context = self.get_context(project_id=2)
+        tenant_3_context = self.get_context(project_id=3)
         zone = self.create_zone(context=tenant_1_context)
         zt_request = self.create_zone_transfer_request(
             zone,
@@ -3373,8 +3373,8 @@ class CentralServiceTest(CentralTestCase):
                          exc.exc_info[0])
 
     def test_create_zone_transfer_accept(self):
-        tenant_1_context = self.get_context(tenant=1)
-        tenant_2_context = self.get_context(tenant=2)
+        tenant_1_context = self.get_context(project_id=1)
+        tenant_2_context = self.get_context(project_id=2)
         admin_context = self.get_admin_context()
         admin_context.all_tenants = True
 
@@ -3413,19 +3413,19 @@ class CentralServiceTest(CentralTestCase):
             admin_context, zone_transfer_request.id)
 
         self.assertEqual(
-            str(tenant_2_context.tenant), result['zone'].tenant_id)
+            str(tenant_2_context.project_id), result['zone'].tenant_id)
         self.assertEqual(
-            str(tenant_2_context.tenant), result['recordset'].tenant_id)
+            str(tenant_2_context.project_id), result['recordset'].tenant_id)
         self.assertEqual(
-            str(tenant_2_context.tenant), result['record'].tenant_id)
+            str(tenant_2_context.project_id), result['record'].tenant_id)
         self.assertEqual(
             'COMPLETE', result['zt_accept'].status)
         self.assertEqual(
             'COMPLETE', result['zt_request'].status)
 
     def test_create_zone_transfer_accept_scoped(self):
-        tenant_1_context = self.get_context(tenant=1)
-        tenant_2_context = self.get_context(tenant=2)
+        tenant_1_context = self.get_context(project_id=1)
+        tenant_2_context = self.get_context(project_id=2)
         admin_context = self.get_admin_context()
         admin_context.all_tenants = True
 
@@ -3466,19 +3466,19 @@ class CentralServiceTest(CentralTestCase):
             admin_context, zone_transfer_request.id)
 
         self.assertEqual(
-            str(tenant_2_context.tenant), result['zone'].tenant_id)
+            str(tenant_2_context.project_id), result['zone'].tenant_id)
         self.assertEqual(
-            str(tenant_2_context.tenant), result['recordset'].tenant_id)
+            str(tenant_2_context.project_id), result['recordset'].tenant_id)
         self.assertEqual(
-            str(tenant_2_context.tenant), result['record'].tenant_id)
+            str(tenant_2_context.project_id), result['record'].tenant_id)
         self.assertEqual(
             'COMPLETE', result['zt_accept'].status)
         self.assertEqual(
             'COMPLETE', result['zt_request'].status)
 
     def test_create_zone_transfer_accept_failed_key(self):
-        tenant_1_context = self.get_context(tenant=1)
-        tenant_2_context = self.get_context(tenant=2)
+        tenant_1_context = self.get_context(project_id=1)
+        tenant_2_context = self.get_context(project_id=2)
         admin_context = self.get_admin_context()
         admin_context.all_tenants = True
 
@@ -3504,8 +3504,8 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(exceptions.IncorrectZoneTransferKey, exc.exc_info[0])
 
     def test_create_zone_tarnsfer_accept_out_of_tenant_scope(self):
-        tenant_1_context = self.get_context(tenant=1)
-        tenant_3_context = self.get_context(tenant=3)
+        tenant_1_context = self.get_context(project_id=1)
+        tenant_3_context = self.get_context(project_id=3)
         admin_context = self.get_admin_context()
         admin_context.all_tenants = True
 

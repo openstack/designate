@@ -140,10 +140,11 @@ class KeystoneContextMiddleware(ContextMiddleware):
             self.make_context(
                 request,
                 auth_token=headers.get('X-Auth-Token'),
-                user=headers.get('X-User-ID'),
-                tenant=tenant_id,
+                user_id=headers.get('X-User-ID'),
+                project_id=tenant_id,
                 roles=roles,
-                service_catalog=catalog)
+                service_catalog=catalog
+            )
         except exceptions.Forbidden:
             return flask.Response(status=403)
 
@@ -160,8 +161,8 @@ class NoAuthContextMiddleware(ContextMiddleware):
         self.make_context(
             request,
             auth_token=headers.get('X-Auth-Token', None),
-            user=headers.get('X-Auth-User-ID', 'noauth-user'),
-            tenant=headers.get('X-Auth-Project-ID', 'noauth-project'),
+            user_id=headers.get('X-Auth-User-ID', 'noauth-user'),
+            project_id=headers.get('X-Auth-Project-ID', 'noauth-project'),
             roles=headers.get('X-Roles', 'admin').split(',')
         )
 
@@ -184,9 +185,10 @@ class TestContextMiddleware(ContextMiddleware):
 
         self.make_context(
             request,
-            user=headers.get('X-Test-User-ID', self.default_user_id),
-            tenant=headers.get('X-Test-Tenant-ID', self.default_tenant_id),
-            all_tenants=all_tenants)
+            user_id=headers.get('X-Test-User-ID', self.default_user_id),
+            project_id=headers.get('X-Test-Tenant-ID', self.default_tenant_id),
+            all_tenants=all_tenants
+        )
 
 
 class MaintenanceMiddleware(base.Middleware):

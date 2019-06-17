@@ -468,8 +468,8 @@ class TestCase(base.BaseTestCase):
 
     def get_admin_context(self):
         return DesignateContext.get_admin_context(
-            tenant=utils.generate_uuid(),
-            user=utils.generate_uuid())
+            project_id=utils.generate_uuid(),
+            user_id=utils.generate_uuid())
 
     # Fixture methods
     def get_quota_fixture(self, fixture=0, values=None):
@@ -692,7 +692,7 @@ class TestCase(base.BaseTestCase):
                                        fixture=fixture, values=kwargs)
 
         if 'tenant_id' not in values:
-            values['tenant_id'] = context.tenant
+            values['tenant_id'] = context.project_id
 
         return self.central_service.create_zone(
             context, objects.Zone.from_dict(values))
@@ -739,7 +739,7 @@ class TestCase(base.BaseTestCase):
         values = self.get_pool_fixture(fixture=fixture, values=kwargs)
 
         if 'tenant_id' not in values:
-            values['tenant_id'] = context.tenant
+            values['tenant_id'] = context.project_id
 
         return self.central_service.create_pool(
             context, objects.Pool.from_dict(values))
@@ -778,7 +778,7 @@ class TestCase(base.BaseTestCase):
         values = {}
 
         if 'tenant_id' not in values:
-            values['tenant_id'] = context.tenant
+            values['tenant_id'] = context.project_id
 
         if 'zone_transfer_request_id' not in values:
             values['zone_transfer_request_id'] = zone_transfer_request.id
@@ -797,7 +797,7 @@ class TestCase(base.BaseTestCase):
         fixture = kwargs.pop('fixture', 0)
 
         zone_import = self.get_zone_import_fixture(fixture=fixture,
-                                               values=kwargs)
+                                                   values=kwargs)
 
         return self.storage.create_zone_import(
             context, objects.ZoneImport.from_dict(zone_import))
@@ -807,7 +807,7 @@ class TestCase(base.BaseTestCase):
         fixture = kwargs.pop('fixture', 0)
 
         zone_export = self.get_zone_export_fixture(fixture=fixture,
-                                               values=kwargs)
+                                                   values=kwargs)
 
         return self.storage.create_zone_export(
             context, objects.ZoneExport.from_dict(zone_export))

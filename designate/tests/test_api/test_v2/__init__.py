@@ -54,8 +54,8 @@ class ApiV2TestCase(ApiTestCase):
 
         # Inject the TestContext middleware
         self.app = middleware.TestContextMiddleware(
-            self.app, self.admin_context.tenant,
-            self.admin_context.tenant)
+            self.app, self.admin_context.project_id,
+            self.admin_context.project_id)
 
         # Obtain a test client
         self.client = TestApp(self.app)

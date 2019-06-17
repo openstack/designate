@@ -31,7 +31,7 @@ class ZoneExportController(rest.RestController):
     @utils.validate_uuid('export_id')
     def get_all(self, export_id):
         context = pecan.request.environ['context']
-        target = {'tenant_id': context.tenant}
+        target = {'tenant_id': context.project_id}
         policy.check('zone_export', context, target)
 
         export = self.central_api.get_zone_export(context, export_id)

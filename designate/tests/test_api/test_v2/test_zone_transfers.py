@@ -22,8 +22,8 @@ class ApiV2ZoneTransfersTest(ApiV2TestCase):
         super(ApiV2ZoneTransfersTest, self).setUp()
 
         self.zone = self.create_zone()
-        self.tenant_1_context = self.get_context(tenant=1)
-        self.tenant_2_context = self.get_context(tenant=2)
+        self.tenant_1_context = self.get_context(project_id=1)
+        self.tenant_2_context = self.get_context(project_id=2)
         self.policy({'admin': '@'})
 
     def test_create_zone_transfer_request(self):
@@ -54,7 +54,7 @@ class ApiV2ZoneTransfersTest(ApiV2TestCase):
     def test_create_zone_transfer_request_scoped(self):
         response = self.client.post_json(
             '/zones/%s/tasks/transfer_requests' % (self.zone.id),
-            {'target_project_id': str(self.tenant_1_context.tenant)})
+            {'target_project_id': str(self.tenant_1_context.project_id)})
 
         # Check the headers are what we expect
         self.assertEqual(201, response.status_int)
@@ -69,7 +69,7 @@ class ApiV2ZoneTransfersTest(ApiV2TestCase):
         self.assertIn('created_at', response.json)
         self.assertEqual('ACTIVE', response.json['status'])
         self.assertEqual(
-            str(self.tenant_1_context.tenant),
+            str(self.tenant_1_context.project_id),
             response.json['target_project_id'])
         self.assertEqual(
             self.zone.id,

@@ -154,9 +154,9 @@ class AdminApiReportsTest(AdminApiTestCase):
     def test_get_tenant(self):
         self.policy({'find_tenants': '@'})
         zone = self.create_zone()
-        tenant = zone.tenant_id
+        project_id = zone.tenant_id
 
-        response = self.client.get('/reports/tenants/%s' % tenant)
+        response = self.client.get('/reports/tenants/%s' % project_id)
         self.assertEqual(200, response.status_int)
         self.assertEqual('application/json', response.content_type)
 

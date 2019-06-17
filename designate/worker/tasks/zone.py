@@ -614,7 +614,7 @@ class ExportZone(base.Task):
         if synchronous:
             try:
                 self.quota.limit_check(
-                        context, context.tenant, api_export_size=size)
+                        context, context.project_id, api_export_size=size)
             except exceptions.OverQuota:
                 LOG.debug('Zone Export too large to perform synchronously')
                 export.status = 'ERROR'

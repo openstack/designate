@@ -31,7 +31,7 @@ class QuotasController(rest.RestController):
     def get_all(self):
         context = pecan.request.environ['context']
 
-        quotas = self.central_api.get_quotas(context, context.tenant)
+        quotas = self.central_api.get_quotas(context, context.project_id)
 
         quotas = QuotaList.from_dict(quotas)
 
