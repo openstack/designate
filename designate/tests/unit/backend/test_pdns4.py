@@ -12,15 +12,15 @@
 import mock
 import requests_mock
 
+import designate.tests
 from designate import exceptions
 from designate import objects
-from designate import tests
 from designate.backend import impl_pdns4
 from designate.mdns import rpcapi as mdns_rpcapi
 from designate.tests import fixtures
 
 
-class PDNS4BackendTestCase(tests.TestCase):
+class PDNS4BackendTestCase(designate.tests.TestCase):
     def setUp(self):
         super(PDNS4BackendTestCase, self).setUp()
         self.stdlog = fixtures.StandardLogging()

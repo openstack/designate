@@ -15,15 +15,15 @@
 import mock
 import requests_mock
 
+import designate.tests
 from designate import exceptions
 from designate import objects
-from designate import tests
 from designate.backend import impl_infoblox
 from designate.backend.impl_infoblox import ibexceptions
 from designate.mdns import rpcapi as mdns_rpcapi
 
 
-class InfobloxBackendTestCase(tests.TestCase):
+class InfobloxBackendTestCase(designate.tests.TestCase):
     def setUp(self):
         super(InfobloxBackendTestCase, self).setUp()
         self.base_address = 'https://localhost/wapi'

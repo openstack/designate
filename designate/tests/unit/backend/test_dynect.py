@@ -15,8 +15,8 @@
 # under the License.
 import requests_mock
 
+import designate.tests
 from designate import objects
-from designate import tests
 from designate.backend import impl_dynect
 
 MASTERS = ["10.0.0.1"]
@@ -110,7 +110,7 @@ ACTIVATE_SUCCESS = {
 }
 
 
-class DynECTTestsCase(tests.TestCase):
+class DynECTTestsCase(designate.tests.TestCase):
     def setUp(self):
         super(DynECTTestsCase, self).setUp()
 

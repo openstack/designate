@@ -19,13 +19,13 @@ import ssl
 import eventlet
 import mock
 
+import designate.tests
 from designate import exceptions
 from designate import objects
-from designate import tests
 from designate.backend import impl_nsd4
 
 
-class NSD4BackendTestCase(tests.TestCase):
+class NSD4BackendTestCase(designate.tests.TestCase):
     def setUp(self):
         super(NSD4BackendTestCase, self).setUp()
 
