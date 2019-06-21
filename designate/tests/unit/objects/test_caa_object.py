@@ -22,7 +22,6 @@ LOG = logging.getLogger(__name__)
 
 
 class CAARecordTest(oslotest.base.BaseTestCase):
-
     def test_parse_caa_issue(self):
         caa_record = objects.CAA()
         caa_record._from_string('0 issue ca.example.net')
@@ -44,3 +43,87 @@ class CAARecordTest(oslotest.base.BaseTestCase):
 
         self.assertEqual(0, caa_record.flags)
         self.assertEqual('iodef https://example.net/', caa_record.prpt)
+
+        caa_record = objects.CAA()
+        caa_record._from_string('0 iodef mailto:security@example.net')
+
+        self.assertEqual(0, caa_record.flags)
+        self.assertEqual('iodef mailto:security@example.net', caa_record.prpt)
+
+    def test_parse_caa_invalid(self):
+        caa_record = objects.CAA()
+        self.assertRaisesRegex(
+            ValueError,
+            "Property tag 1 2 must be 'issue', 'issuewild' or 'iodef'",
+            caa_record._from_string, '0 1 2'
+        )
+
+    def test_parse_caa_issue_host_too_long(self):
+        hostname = 'a' * 64
+        caa_record = objects.CAA()
+        self.assertRaisesRegex(
+            ValueError,
+            'Host aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+            'aaaaaaaaaa is too long',
+            caa_record._from_string, '0 issue %s.net' % hostname
+        )
+
+    def test_parse_caa_issue_domain_not_valid(self):
+        caa_record = objects.CAA()
+        self.assertRaisesRegex(
+            ValueError,
+            'Domain abc. does not match',
+            caa_record._from_string, '0 issue abc.'
+        )
+
+    def test_parse_caa_issue_key_value_not_valid(self):
+        caa_record = objects.CAA()
+        self.assertRaisesRegex(
+            ValueError,
+            'def is not valid key-value pair',
+            caa_record._from_string, '0 issue abc;def'
+        )
+
+    def test_parse_caa_iodef_mail_host_too_long(self):
+        hostname = 'a' * 64
+        caa_record = objects.CAA()
+        self.assertRaisesRegex(
+            ValueError,
+            'Host aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+            'aaaaaaaaaa is too long',
+            caa_record._from_string, '0 iodef mailto:me@%s.net' % hostname
+        )
+
+    def test_parse_caa_iodef_mail_domain_not_valid(self):
+        caa_record = objects.CAA()
+        self.assertRaisesRegex(
+            ValueError,
+            'Domain example.net. does not match',
+            caa_record._from_string, '0 iodef mailto:me@example.net.'
+        )
+
+    def test_parse_caa_iodef_http_host_too_long(self):
+        hostname = 'a' * 64
+        caa_record = objects.CAA()
+        self.assertRaisesRegex(
+            ValueError,
+            'Host aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+            'aaaaaaaaaa is too long',
+            caa_record._from_string, '0 iodef https://%s.net/' % hostname
+        )
+
+    def test_parse_caa_iodef_http_domain_not_valid(self):
+        caa_record = objects.CAA()
+        self.assertRaisesRegex(
+            ValueError,
+            'Domain example.net. does not match',
+            caa_record._from_string, '0 iodef https://example.net./'
+        )
+
+    def test_parse_caa_iodef_not_valid_url(self):
+        caa_record = objects.CAA()
+        self.assertRaisesRegex(
+            ValueError,
+            'https:// is not valid URL',
+            caa_record._from_string, '0 iodef https://'
+        )
