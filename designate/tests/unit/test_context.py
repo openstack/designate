@@ -13,47 +13,73 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import mock
 import testtools
-from oslo_log import log as logging
 
-from designate.tests import TestCase
+import designate.tests
 from designate import context
 from designate import exceptions
+from designate import policy
 
-LOG = logging.getLogger(__name__)
 
-
-class TestDesignateContext(TestCase):
+class TestDesignateContext(designate.tests.TestCase):
     def test_deepcopy(self):
-        orig = context.DesignateContext(user_id='12345', project_id='54321')
+        orig = context.DesignateContext(
+            user_id='12345', project_id='54321'
+        )
         copy = orig.deepcopy()
 
         self.assertEqual(orig.to_dict(), copy.to_dict())
 
+    def test_tsigkey_id_override(self):
+        orig = context.DesignateContext(
+            tsigkey_id='12345', project_id='54321'
+        )
+        copy = orig.to_dict()
+
+        self.assertEqual('TSIG:12345 54321 - - -', copy['user_identity'])
+
     def test_elevated(self):
-        ctxt = context.DesignateContext(user_id='12345', project_id='54321')
+        ctxt = context.DesignateContext(
+            user_id='12345', project_id='54321'
+        )
         admin_ctxt = ctxt.elevated()
 
         self.assertFalse(ctxt.is_admin)
         self.assertTrue(admin_ctxt.is_admin)
         self.assertEqual(0, len(ctxt.roles))
 
-    def test_all_tenants(self):
-        ctxt = context.DesignateContext(user_id='12345', project_id='54321')
-        admin_ctxt = ctxt.elevated()
+    def test_elevated_with_show_deleted(self):
+        ctxt = context.DesignateContext(
+            user_id='12345', project_id='54321'
+        )
+        admin_ctxt = ctxt.elevated(show_deleted=True)
 
+        self.assertTrue(admin_ctxt.show_deleted)
+
+    def test_all_tenants(self):
+        ctxt = context.DesignateContext(
+            user_id='12345', project_id='54321'
+        )
+        admin_ctxt = ctxt.elevated()
         admin_ctxt.all_tenants = True
+
         self.assertFalse(ctxt.is_admin)
         self.assertTrue(admin_ctxt.is_admin)
         self.assertTrue(admin_ctxt.all_tenants)
 
     def test_all_tenants_policy_failure(self):
-        ctxt = context.DesignateContext(user_id='12345', project_id='54321')
+        ctxt = context.DesignateContext(
+            user_id='12345', project_id='54321'
+        )
+
         with testtools.ExpectedException(exceptions.Forbidden):
             ctxt.all_tenants = True
 
     def test_edit_managed_records(self):
-        ctxt = context.DesignateContext(user_id='12345', project_id='54321')
+        ctxt = context.DesignateContext(
+            user_id='12345', project_id='54321'
+        )
         admin_ctxt = ctxt.elevated()
 
         admin_ctxt.edit_managed_records = True
@@ -63,6 +89,19 @@ class TestDesignateContext(TestCase):
         self.assertTrue(admin_ctxt.edit_managed_records)
 
     def test_edit_managed_records_failure(self):
-        ctxt = context.DesignateContext(user_id='12345', project_id='54321')
+        ctxt = context.DesignateContext(
+            user_id='12345', project_id='54321'
+        )
         with testtools.ExpectedException(exceptions.Forbidden):
             ctxt.edit_managed_records = True
+
+    @mock.patch.object(policy, 'check')
+    def test_sudo(self, mock_policy_check):
+        ctxt = context.DesignateContext(
+            user_id='12345', project_id='old_tenant'
+        )
+        ctxt.sudo('new_tenant')
+
+        self.assertTrue(mock_policy_check.called)
+        self.assertEqual('new_tenant', ctxt.tenant)
+        self.assertEqual('old_tenant', ctxt.original_tenant)
