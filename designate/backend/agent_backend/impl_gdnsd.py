@@ -50,7 +50,6 @@ from oslo_concurrency.processutils import ProcessExecutionError
 from oslo_config import cfg
 from oslo_log import log as logging
 
-import designate.conf
 from designate import utils
 from designate import exceptions
 from designate.backend.agent_backend import base
@@ -82,11 +81,6 @@ def filter_exceptions(fn):
 class GdnsdBackend(base.AgentBackend):
     __plugin_name__ = 'gdnsd'
     __backend_status__ = 'experimental'
-
-    @classmethod
-    def get_cfg_opts(cls):
-        return [(designate.conf.gdnsd.GDNSD_GROUP,
-                 designate.conf.gdnsd.GDNSD_OPTS)]
 
     def __init__(self, *a, **kw):
         """Configure the backend"""

@@ -23,7 +23,6 @@ from oslo_config import cfg
 from oslo_concurrency import lockutils
 from oslo_log import log as logging
 
-import designate.conf
 from designate.backend.agent_backend import base
 from designate import exceptions
 from designate import utils
@@ -96,11 +95,6 @@ class DenominatorBackend(base.AgentBackend):
         super(DenominatorBackend, self).__init__(agent_service)
         self.denominator = Denominator(
             cfg.CONF[CFG_GROUP_NAME])
-
-    @classmethod
-    def get_cfg_opts(cls):
-        return [(designate.conf.denominator.DENOMINATOR_GROUP,
-                 designate.conf.denominator.DENOMINATOR_OPTS)]
 
     def start(self):
         LOG.info("Started Denominator backend")

@@ -82,28 +82,9 @@ def read_config(prog, argv):
              default_config_files=config_files)
     config.set_defaults()
 
-    register_plugin_opts()
-
     # Avoid circular dependency imports
     from designate import pool_manager
     pool_manager.register_dynamic_pool_options()
-
-
-def register_plugin_opts():
-    # Avoid circular dependency imports
-    from designate import plugin
-
-    # Register Producer Tasks
-    plugin.Plugin.register_cfg_opts('designate.producer_tasks')
-    plugin.Plugin.register_extra_cfg_opts('designate.producer_tasks')
-
-    # Register Backend Plugin Config Options
-    plugin.Plugin.register_cfg_opts('designate.backend')
-    plugin.Plugin.register_extra_cfg_opts('designate.backend')
-
-    # Register Agent Backend Plugin Config Options
-    plugin.Plugin.register_cfg_opts('designate.backend.agent_backend')
-    plugin.Plugin.register_extra_cfg_opts('designate.backend.agent_backend')
 
 
 def resource_string(*args):

@@ -22,7 +22,6 @@ from oslo_serialization import jsonutils
 import requests
 from requests.adapters import HTTPAdapter
 
-import designate.conf
 from designate import exceptions
 from designate import utils
 from designate.backend import base
@@ -302,11 +301,6 @@ class DynECTBackend(base.Backend):
     __plugin_name__ = 'dynect'
 
     __backend_status__ = 'untested'
-
-    @classmethod
-    def get_cfg_opts(cls):
-        return [(designate.conf.dynect.DYNECT_GROUP,
-                 designate.conf.dynect.DYNECT_OPTS)]
 
     def __init__(self, target):
         super(DynECTBackend, self).__init__(target)

@@ -44,7 +44,6 @@ from oslo_concurrency.processutils import ProcessExecutionError
 from oslo_config import cfg
 from oslo_log import log as logging
 
-import designate.conf
 from designate import exceptions
 from designate.backend.agent_backend import base
 from designate.utils import execute
@@ -63,11 +62,6 @@ class Knot2Backend(base.AgentBackend):
     __plugin_name__ = 'knot2'
     __backend_status__ = 'untested'
     _lock_name = 'knot2.lock'
-
-    @classmethod
-    def get_cfg_opts(cls):
-        return [(designate.conf.knot2.KNOT2_GROUP,
-                 designate.conf.knot2.KNOT2_OPTS)]
 
     def __init__(self, *a, **kw):
         """Configure the backend"""

@@ -21,7 +21,6 @@ from oslo_db.sqlalchemy.migration_cli import manager as migration_manager
 
 from designate.manage import base
 from designate import rpc
-from designate import utils
 from designate.central import rpcapi as central_rpcapi
 
 
@@ -29,7 +28,6 @@ REPOSITORY = os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
                                           'backend', 'impl_powerdns',
                                           'migrate_repo'))
 CONF = cfg.CONF
-utils.register_plugin_opts()
 
 
 def get_manager(pool_target):

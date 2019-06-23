@@ -22,7 +22,6 @@ from oslo_concurrency import lockutils
 from oslo_config import cfg
 from oslo_log import log as logging
 
-import designate.conf
 from designate.backend.agent_backend import base
 from designate import exceptions
 from designate import utils
@@ -34,11 +33,6 @@ LOG = logging.getLogger(__name__)
 class Bind9Backend(base.AgentBackend):
     __plugin_name__ = 'bind9'
     __backend_status__ = 'untested'
-
-    @classmethod
-    def get_cfg_opts(cls):
-        return [(designate.conf.bind9.BIND9_GROUP,
-                 designate.conf.bind9.BINS9_OPTS)]
 
     def start(self):
         LOG.info("Started bind9 backend")
