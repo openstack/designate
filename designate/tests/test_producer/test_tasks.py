@@ -114,6 +114,10 @@ class PeriodicGenerateDelayedNotifyTaskTest(TestCase):
             )
         )
 
+    def _fetch_all_zones(self):
+        # Fetch all zones including deleted ones.
+        return self._fetch_zones(tables.zones.select())
+
     def _fetch_zones(self, query):
         # Fetch zones including deleted ones.
         return self.central_service.storage.session.execute(query).fetchall()
@@ -132,6 +136,9 @@ class PeriodicGenerateDelayedNotifyTaskTest(TestCase):
         # Create zones and set some of them as pending update.
         self._create_zones()
 
+        zones = self._fetch_all_zones()
+        self.assertEqual(self.number_of_zones, len(zones))
+
         for remaining in reversed(range(0,
                                         self.number_of_zones // 2,
                                         self.batch_size)):
@@ -140,4 +147,7 @@ class PeriodicGenerateDelayedNotifyTaskTest(TestCase):
             zones = self._fetch_zones(tables.zones.select().where(
                 tables.zones.c.delayed_notify))
 
-            self.assertEqual(remaining, len(zones))
+            self.assertEqual(
+                remaining, len(zones),
+                message='Remaining zones: %s' % zones
+            )

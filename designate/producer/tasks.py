@@ -263,12 +263,13 @@ class PeriodicGenerateDelayedNotifyTask(PeriodicTask):
                 'start': pstart,
                 'end': pend,
                 'n': len(zones)
-            })
+            }
+        )
 
-        for z in zones:
-            self.zone_api.update_zone(ctxt, z)
-            z.delayed_notify = False
-            self.central_api.update_zone(ctxt, z)
+        for zone in zones:
+            self.zone_api.update_zone(ctxt, zone)
+            zone.delayed_notify = False
+            self.central_api.update_zone(ctxt, zone)
 
 
 class WorkerPeriodicRecovery(PeriodicTask):
