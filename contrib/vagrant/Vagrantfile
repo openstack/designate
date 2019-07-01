@@ -92,7 +92,6 @@ set -e
 # Fixup permissions on /opt/stack/
 sudo chown vagrant:vagrant /opt/stack/
 
-
 # Clone DevStack
 if [ ! -d "/home/vagrant/devstack" ]; then
     git clone https://opendev.org/openstack/devstack.git /home/vagrant/devstack
@@ -127,17 +126,6 @@ SCRIPT
     ubuntu.vm.provision :shell, :privileged => false, :inline => $script
   end
 
-  config.vm.define "ubuntu-xenial", autostart: false do |ubuntu|
-    ubuntu.vm.box = "yk0/ubuntu-xenial"
-
-    ubuntu.vm.network :private_network, ip: "192.168.27.100"
-
-    ubuntu.vm.provision :shell, :privileged => true, :inline => "DEBIAN_FRONTEND=noninteractive apt-get update"
-    ubuntu.vm.provision :shell, :privileged => true, :inline => "DEBIAN_FRONTEND=noninteractive apt-get install --yes git lvm2"
-
-    ubuntu.vm.provision :shell, :privileged => false, :inline => $script
-  end
-
   config.vm.define "centos-7", autostart: false do |centos|
     centos.vm.box = "centos/7"
 
@@ -147,5 +135,15 @@ SCRIPT
     centos.vm.provision :shell, :privileged => true, :inline => "yum install -y git-core"
 
     centos.vm.provision :shell, :privileged => false, :inline => $script
+  end
+
+  config.vm.define "openSUSE-15", autostart: false do |opensuse|
+    opensuse.vm.box = "opensuse/openSUSE-15.0-x86_64"
+
+    opensuse.vm.network :private_network, ip: "192.168.27.102"
+
+    opensuse.vm.provision :shell, :privileged => true, :inline => "zypper install -y git-core libcap-progs"
+
+    opensuse.vm.provision :shell, :privileged => false, :inline => $script
   end
 end
