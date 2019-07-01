@@ -22,26 +22,26 @@ DJBDNS_GROUP = cfg.OptGroup(
 
 DJDNS_OPTS = [
     cfg.StrOpt(
-        'tcpclient-cmd-name',
+        'tcpclient_cmd_name',
         help='tcpclient executable path or rootwrap command name',
         default='tcpclient'
     ),
     cfg.StrOpt(
-        'axfr-get-cmd-name',
+        'axfr_get_cmd_name',
         help='axfr-get executable path or rootwrap command name',
         default='axfr-get'
     ),
     cfg.StrOpt(
-        'tinydns-data-cmd-name',
+        'tinydns_data_cmd_name',
         help='tinydns-data executable path or rootwrap command name',
         default='tinydns-data'
     ),
     cfg.StrOpt(
-        'tinydns-datadir',
+        'tinydns_datadir',
         help='TinyDNS data directory',
         default='/var/lib/djbdns'
     ),
-    cfg.StrOpt('query-destination', default='127.0.0.1',
+    cfg.StrOpt('query_destination', default='127.0.0.1',
                help='Host to query when finding zones'),
 ]
 

@@ -25,9 +25,9 @@ API_OPTS = [
                help='Number of api worker processes to spawn'),
     cfg.IntOpt('threads', default=1000,
                help='Number of api greenthreads to spawn'),
-    cfg.BoolOpt('enable-host-header', default=False,
+    cfg.BoolOpt('enable_host_header', default=False,
                 help='Enable host request headers'),
-    cfg.StrOpt('api-base-uri', default='http://127.0.0.1:9001/',
+    cfg.StrOpt('api_base_uri', default='http://127.0.0.1:9001/',
                help='the url used as the base for all API responses,'
                     'This should consist of the scheme (http/https),'
                     'the hostname, port, and any paths that are added'
@@ -49,9 +49,9 @@ API_OPTS = [
     cfg.StrOpt('auth_strategy', default='keystone',
                help='The strategy to use for auth. Supports noauth or '
                     'keystone'),
-    cfg.BoolOpt('enable-api-v2', default=True,
+    cfg.BoolOpt('enable_api_v2', default=True,
                 help='enable-api-v2 which enable in a future'),
-    cfg.BoolOpt('enable-api-admin', default=False,
+    cfg.BoolOpt('enable_api_admin', default=False,
                 help='enable-api-admin'),
     cfg.IntOpt('max_header_line', default=16384,
                help="Maximum line size of message headers to be accepted. "
@@ -61,39 +61,39 @@ API_OPTS = [
 ]
 
 APT_V2_OPTS = [
-    cfg.ListOpt('enabled-extensions-v2', default=[],
+    cfg.ListOpt('enabled_extensions_v2', default=[],
                 help='Enabled API Extensions for the V2 API'),
-    cfg.IntOpt('default-limit-v2', default=20,
+    cfg.IntOpt('default_limit_v2', default=20,
                help='Default per-page limit for the V2 API, a value of None '
                     'means show all results by default'),
-    cfg.IntOpt('max-limit-v2', default=1000,
+    cfg.IntOpt('max_limit_v2', default=1000,
                help='Max per-page limit for the V2 API'),
-    cfg.BoolOpt('quotas-verify-project-id', default=False,
+    cfg.BoolOpt('quotas_verify_project_id', default=False,
                 help='Verify that the requested Project ID for quota target '
                      'is a valid project in Keystone.'),
 ]
 
 API_ADMIN_OPTS = [
-    cfg.ListOpt('enabled-extensions-admin', default=[],
+    cfg.ListOpt('enabled_extensions_admin', default=[],
                 help='Enabled Admin API Extensions'),
-    cfg.IntOpt('default-limit-admin', default=20,
+    cfg.IntOpt('default_limit_admin', default=20,
                help='Default per-page limit for the Admin API, a value of None'
                     ' means show all results by default'),
-    cfg.IntOpt('max-limit-admin', default=1000,
+    cfg.IntOpt('max_limit_admin', default=1000,
                help='Max per-page limit for the Admin API'),
 ]
 
 API_MIDDLEWARE_OPTS = [
-    cfg.BoolOpt('maintenance-mode', default=False,
+    cfg.BoolOpt('maintenance_mode', default=False,
                 help='Enable API Maintenance Mode'),
-    cfg.StrOpt('maintenance-mode-role', default='admin',
+    cfg.StrOpt('maintenance_mode_role', default='admin',
                help='Role allowed to bypass maintaince mode'),
-    cfg.StrOpt('secure-proxy-ssl-header',
+    cfg.StrOpt('secure_proxy_ssl_header',
                default='X-Forwarded-Proto',
                help="The HTTP Header that will be used to determine which "
                     "the original request protocol scheme was, even if it was "
                     "removed by an SSL terminating proxy."),
-    cfg.StrOpt('override-proto',
+    cfg.StrOpt('override_proto',
                help="A scheme that will be used to override "
                     "the request protocol scheme, even if it was "
                     "set by an SSL terminating proxy."),

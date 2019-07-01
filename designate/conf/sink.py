@@ -40,9 +40,9 @@ SINK_OPTS = [
                help='Number of sink worker processes to spawn'),
     cfg.IntOpt('threads', default=1000,
                help='Number of sink greenthreads to spawn'),
-    cfg.ListOpt('enabled-notification-handlers', default=[],
+    cfg.ListOpt('enabled_notification_handlers', default=[],
                 help='Enabled Notification Handlers'),
-    cfg.StrOpt('listener-pool-name',
+    cfg.StrOpt('listener_pool_name',
                help='pool name to use for oslo.messaging '
                     'notification listener. '
                     'Note that listener pooling is not supported '
@@ -50,20 +50,20 @@ SINK_OPTS = [
 ]
 
 SINK_FAKE_OPTS = [
-    cfg.ListOpt('notification-topics', default=['notifications'],
+    cfg.ListOpt('notification_topics', default=['notifications'],
                 help='notification events for the fake notification handler'),
-    cfg.StrOpt('control-exchange', default='fake',
+    cfg.StrOpt('control_exchange', default='fake',
                help='control-exchange for fake notifications'),
-    cfg.ListOpt('allowed-event-types', default=[],
+    cfg.ListOpt('allowed_event_types', default=[],
                 help='the event types we want the fake handler to accept'),
 ]
 
 SINK_NEUTRON_OPTS = [
-    cfg.ListOpt('notification-topics', default=['notifications'],
+    cfg.ListOpt('notification_topics', default=['notifications'],
                 help='notification any events from neutron'),
-    cfg.StrOpt('control-exchange', default='neutron',
+    cfg.StrOpt('control_exchange', default='neutron',
                help='control-exchange for neutron notification'),
-    cfg.StrOpt('zone-id', help='Zone ID with each notification'),
+    cfg.StrOpt('zone_id', help='Zone ID with each notification'),
     cfg.MultiStrOpt('formatv4', help='IPv4 format'),
     cfg.MultiStrOpt('format', deprecated_for_removal=True,
                     deprecated_reason="Replaced by 'formatv4/formatv6'",
@@ -72,11 +72,11 @@ SINK_NEUTRON_OPTS = [
 ]
 
 SINK_NOVA_OPTS = [
-    cfg.ListOpt('notification-topics', default=['notifications'],
+    cfg.ListOpt('notification_topics', default=['notifications'],
                 help='notification any events from nova'),
-    cfg.StrOpt('control-exchange', default='nova',
+    cfg.StrOpt('control_exchange', default='nova',
                help='control-exchange for nova notification'),
-    cfg.StrOpt('zone-id', help='Zone ID with each notification'),
+    cfg.StrOpt('zone_id', help='Zone ID with each notification'),
     cfg.MultiStrOpt('formatv4', help='IPv4 format'),
     cfg.MultiStrOpt('format', deprecated_for_removal=True,
                     deprecated_reason="Replaced by 'formatv4/formatv6'",

@@ -20,13 +20,13 @@ GDNSD_GROUP = cfg.OptGroup(
     title="Configuration for gdnsd backend"
 )
 GDNSD_OPTS = [
-    cfg.StrOpt('gdnsd-cmd-name',
+    cfg.StrOpt('gdnsd_cmd_name',
                help='gdnsd executable path or rootwrap command name',
                default='gdnsd'),
-    cfg.StrOpt('confdir-path',
+    cfg.StrOpt('confdir_path',
                help='gdnsd configuration directory path',
                default='/etc/gdnsd'),
-    cfg.StrOpt('query-destination', default='127.0.0.1',
+    cfg.StrOpt('query_destination', default='127.0.0.1',
                help='Host to query when finding zones'),
 ]
 

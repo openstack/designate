@@ -21,10 +21,10 @@ KNOT2_GROUP = cfg.OptGroup(
 )
 
 KNOT2_OPTS = [
-    cfg.StrOpt('knotc-cmd-name',
+    cfg.StrOpt('knotc_cmd_name',
                help='knotc executable path or rootwrap command name',
                default='knotc'),
-    cfg.StrOpt('query-destination', default='127.0.0.1',
+    cfg.StrOpt('query_destination', default='127.0.0.1',
                help='Host to query when finding zones'),
 ]
 
