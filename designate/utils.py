@@ -140,55 +140,6 @@ def execute(*cmd, **kw):
                                 root_helper=root_helper, **kw)
 
 
-def get_item_properties(item, fields, mixed_case_fields=None, formatters=None):
-    """Return a tuple containing the item properties.
-
-    :param item: a single item resource (e.g. Server, Tenant, etc)
-    :param fields: tuple of strings with the desired field names
-    :param mixed_case_fields: tuple of field names to preserve case
-    :param formatters: dictionary mapping field names to callables
-        to format the values
-    """
-    row = []
-    mixed_case_fields = mixed_case_fields or []
-    formatters = formatters or {}
-
-    for field in fields:
-        if field in formatters:
-            row.append(formatters[field](item))
-        else:
-            if field in mixed_case_fields:
-                field_name = field.replace(' ', '_')
-            else:
-                field_name = field.lower().replace(' ', '_')
-            if not hasattr(item, field_name) and \
-                    (isinstance(item, dict) and field_name in item):
-                data = item[field_name]
-            else:
-                data = getattr(item, field_name, '')
-            if data is None:
-                data = ''
-            row.append(data)
-    return tuple(row)
-
-
-def get_columns(data):
-    """
-    Some row's might have variable count of columns, ensure that we have the
-    same.
-
-    :param data: Results in [{}, {]}]
-    """
-    columns = set()
-
-    def _seen(col):
-        columns.add(str(col))
-
-    six.moves.map(lambda item: six.moves.map(_seen,
-        list(six.iterkeys(item))), data)
-    return list(columns)
-
-
 def increment_serial(serial=0):
     # This provides for *roughly* unix timestamp based serial numbers
     new_serial = timeutils.utcnow_ts()
@@ -197,44 +148,6 @@ def increment_serial(serial=0):
         new_serial = serial + 1
 
     return new_serial
-
-
-def quote_string(string):
-    inparts = string.split(' ')
-    outparts = []
-    tmp = None
-
-    for part in inparts:
-        if part == '':
-            continue
-        elif part[0] == '"' and part[-1:] == '"' and part[-2:] != '\\"':
-            # Handle Quoted Words
-            outparts.append(part.strip('"'))
-        elif part[0] == '"':
-            # Handle Start of Quoted Sentance
-            tmp = part[1:]
-        elif tmp is not None and part[-1:] == '"' and part[-2:] != '\\"':
-            # Handle End of Quoted Sentance
-            tmp += " " + part.strip('"')
-            outparts.append(tmp)
-            tmp = None
-        elif tmp is not None:
-            # Handle Middle of Quoted Sentance
-            tmp += " " + part
-        else:
-            # Handle Standalone words
-            outparts.append(part)
-
-    if tmp is not None:
-        # Handle unclosed quoted strings
-        outparts.append(tmp)
-
-    # This looks odd, but both calls are necessary to ensure the end results
-    # is always consistent.
-    outparts = [o.replace('\\"', '"') for o in outparts]
-    outparts = [o.replace('"', '\\"') for o in outparts]
-
-    return '"' + '" "'.join(outparts) + '"'
 
 
 def deep_dict_merge(a, b):
@@ -322,14 +235,6 @@ def get_proxies():
         proxies['https'] = proxies['http']
 
     return proxies
-
-
-def extract_priority_from_data(recordset_type, record):
-    priority, data = None, record['data']
-    if recordset_type in ('MX', 'SRV'):
-        priority, _, data = record['data'].partition(" ")
-        priority = int(priority)
-    return priority, data
 
 
 def cache_result(function):
