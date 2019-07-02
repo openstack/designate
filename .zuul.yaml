@@ -48,7 +48,11 @@
     name: designate-pdns4-postgres
     parent: designate-pdns4
     vars:
-      database: postgres
+      devstack_services:
+        mysql: False
+        postgresql: True
+    voting: false
+
 
 - job:
     name: designate-bind9-manager-model
@@ -125,7 +129,6 @@
         - designate-bind9-manager-model
         - designate-bind9-py27
         - designate-pdns4-py27
-        - designate-pdns4-postgres
         - designate-grenade-pdns4
 
 - project:
