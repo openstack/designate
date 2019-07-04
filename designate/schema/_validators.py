@@ -23,8 +23,8 @@ def type_draft3(validator, types, instance, schema):
     types = _utils.ensure_list(types)
 
     # NOTE(kiall): A datetime object is not a string, but is still valid.
-    if ('format' in schema and schema['format'] == 'date-time'
-            and isinstance(instance, datetime.datetime)):
+    if ('format' in schema and schema['format'] == 'date-time' and
+            isinstance(instance, datetime.datetime)):
         return
 
     all_errors = []
@@ -71,8 +71,8 @@ def type_draft4(validator, types, instance, schema):
     types = _utils.ensure_list(types)
 
     # NOTE(kiall): A datetime object is not a string, but is still valid.
-    if ('format' in schema and schema['format'] == 'date-time'
-            and isinstance(instance, datetime.datetime)):
+    if ('format' in schema and schema['format'] == 'date-time' and
+            isinstance(instance, datetime.datetime)):
         return
 
     if not any(validator.is_type(instance, type) for type in types):
