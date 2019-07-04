@@ -17,11 +17,11 @@ import os
 
 from oslo_config import cfg
 
-WSDL = os.path.join(os.path.dirname(__file__),
-                    '..',
-                    'resources',
-                    'wsdl',
-                    'EnhancedDNS.xml')
+WSDL_PATH = os.path.abspath(
+    os.path.join(
+        os.path.dirname(__file__), '..', 'resources', 'wsdl', 'EnhancedDNS.xml'
+    )
+)
 
 AKAMAI_GROUP = cfg.OptGroup(
     name='backend:akamai',
@@ -30,7 +30,7 @@ AKAMAI_GROUP = cfg.OptGroup(
 
 AKAMAI_OPTS = [
     cfg.StrOpt('enhanceddns_wsdl',
-               default='file://%s' % WSDL,
+               default='file://%s' % WSDL_PATH,
                help='Akamai EnhancedDNS WSDL URL'),
 ]
 
