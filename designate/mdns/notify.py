@@ -127,9 +127,10 @@ class NotifyEndpoint(base.BaseEndpoint):
             response, retry_cnt = self._make_and_send_dns_message(
                 zone, host, port, timeout, retry_interval, retries_left)
 
-            if response and (response.rcode() in (
-                    dns.rcode.NXDOMAIN, dns.rcode.REFUSED, dns.rcode.SERVFAIL)
-                    or not bool(response.answer)):
+            if response and (response.rcode() in (dns.rcode.NXDOMAIN,
+                                                  dns.rcode.REFUSED,
+                                                  dns.rcode.SERVFAIL) or
+                             not bool(response.answer)):
                 status = 'NO_ZONE'
                 if zone.serial == 0 and zone.action in ('DELETE', 'NONE'):
                     actual_serial = 0

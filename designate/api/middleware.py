@@ -207,8 +207,8 @@ class MaintenanceMiddleware(base.Middleware):
             return None
 
         # If the caller has the bypass role, let them through
-        if ('context' in request.environ
-                and self.role in request.environ['context'].roles):
+        if ('context' in request.environ and
+                self.role in request.environ['context'].roles):
             LOG.warning('Request authorized to bypass maintenance mode')
             return None
 

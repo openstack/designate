@@ -17,7 +17,7 @@ import os
 
 # Eventlet's GreenDNS Patching will prevent the resolution of names in
 # the /etc/hosts file, causing problems for installs.
-os.environ['EVENTLET_NO_GREENDNS'] = 'yes'
+os.environ['EVENTLET_NO_GREENDNS'] = 'yes'  # noqa
 
 from oslo_log import log
 from oslo_concurrency import lockutils

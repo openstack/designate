@@ -11,15 +11,9 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-
 from oslo_config import cfg
 
-CONF = cfg.CONF
-
 from designate.conf import base  # noqa
-
-base.register_opts(CONF)  # noqa
-
 from designate.conf import akamai
 from designate.conf import agent
 from designate.conf import api
@@ -45,6 +39,9 @@ from designate.conf import sink
 from designate.conf import storage
 from designate.conf import worker
 
+CONF = cfg.CONF
+
+base.register_opts(CONF)
 akamai.register_opts(CONF)
 agent.register_opts(CONF)
 api.register_opts(CONF)

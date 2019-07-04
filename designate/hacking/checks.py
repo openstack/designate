@@ -14,8 +14,7 @@
 # under the License.
 import re
 
-import pep8
-
+import pycodestyle
 
 # D701: Default parameter value is a mutable type
 # D702: Log messages require translation
@@ -26,7 +25,6 @@ import pep8
 # D707: basestring is not Python3-compatible, use six.string_types instead.
 # D708: Do not use xrange. Use range, or six.moves.range for large loops.
 # D709: LOG.audit is deprecated, please use LOG.info!
-
 
 UNDERSCORE_IMPORT_FILES = []
 
@@ -47,7 +45,7 @@ graduated_oslo_libraries_import_re = re.compile(
 
 
 def mutable_default_arguments(logical_line, physical_line, filename):
-    if pep8.noqa(physical_line):
+    if pycodestyle.noqa(physical_line):
         return
 
     if mutable_default_argument_check.match(logical_line):

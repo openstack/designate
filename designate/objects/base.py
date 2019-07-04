@@ -128,13 +128,13 @@ class DesignateObject(base.VersionedObject):
 
     def __setattr__(self, name, value):
         """Enforces all object attributes are private or well defined"""
-        if not (name[0:5] == '_obj_'
-                or name[0:7] == '_change'
-                or name == '_context'
-                or name in list(six.iterkeys(self.fields))
-                or name == 'FIELDS'
-                or name == 'VERSION'
-                or name == 'fields'):
+        if not (name[0:5] == '_obj_' or
+                name[0:7] == '_change' or
+                name == '_context' or
+                name in list(six.iterkeys(self.fields)) or
+                name == 'FIELDS' or
+                name == 'VERSION' or
+                name == 'fields'):
             raise AttributeError(
                 "Designate object '%(type)s' has no"
                 "attribute '%(name)s'" % {
@@ -507,9 +507,9 @@ class DesignateRegistry(base.VersionedObjectRegistry):
                 self._changed_fields.add(name)
                 # TODO(daidv): _obj_original_values shoud be removed
                 # after OVO migration completed.
-                if (self.obj_attr_is_set(name) and value != getattr(self, name)
-                    and name not in list(six.iterkeys(
-                        self._obj_original_values))):
+                if (self.obj_attr_is_set(name) and
+                        value != getattr(self, name) and
+                        name not in list(six.iterkeys(self._obj_original_values))):  # noqa
                     self._obj_original_values[name] = getattr(self, name)
                 try:
                     return setattr(self, attrname, field_value)

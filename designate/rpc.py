@@ -11,6 +11,17 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import functools
+import threading
+
+from oslo_config import cfg
+import oslo_messaging as messaging
+from oslo_messaging.rpc import dispatcher as rpc_dispatcher
+from oslo_serialization import jsonutils
+
+from designate import objects
+import designate.context
+import designate.exceptions
 
 __all__ = [
     'init',
@@ -24,17 +35,6 @@ __all__ = [
     'get_server',
     'get_notifier',
 ]
-
-import functools
-from oslo_config import cfg
-import oslo_messaging as messaging
-from oslo_messaging.rpc import dispatcher as rpc_dispatcher
-from oslo_serialization import jsonutils
-import threading
-
-import designate.context
-import designate.exceptions
-from designate import objects
 
 CONF = cfg.CONF
 EXPECTED_EXCEPTION = threading.local()

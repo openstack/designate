@@ -317,8 +317,8 @@ class Service(service.RPCService, service.Service):
             raise exceptions.InvalidRecordSetName('Name too long')
 
         # RecordSets must be contained in the parent zone
-        if (recordset_name != zone['name']
-                and not recordset_name.endswith("." + zone['name'])):
+        if (recordset_name != zone['name'] and
+                not recordset_name.endswith("." + zone['name'])):
             raise exceptions.InvalidRecordSetLocation(
                 'RecordSet is not contained within it\'s parent zone')
 
@@ -340,8 +340,8 @@ class Service(service.RPCService, service.Service):
 
         recordsets = self.storage.find_recordsets(context, criterion)
 
-        if ((len(recordsets) == 1 and recordsets[0].id != recordset_id)
-                or len(recordsets) > 1):
+        if ((len(recordsets) == 1 and recordsets[0].id != recordset_id) or
+                len(recordsets) > 1):
             raise exceptions.InvalidRecordSetLocation(
                 'CNAME recordsets may not share a name with any other records')
 
