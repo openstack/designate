@@ -73,4 +73,4 @@ Admin API
 
        rest/admin/quotas
 
-.. _api site: http://developer.openstack.org/api-ref/dns/
+.. _api site: https://docs.openstack.org/api-ref/dns/

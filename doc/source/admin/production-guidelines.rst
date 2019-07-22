@@ -107,4 +107,4 @@ In the main PowerDNS configuration file, include the following statement::
 .. _IANA TLD list: https://data.iana.org/TLD/tlds-alpha-by-domain.txt
 .. _Public Suffix list: https://publicsuffix.org/
 .. _Bug 1471159: https://bugs.launchpad.net/designate/+bug/1471159
-.. _TLD API: http://developer.openstack.org/api-ref/dns/#tld
+.. _TLD API: https://docs.openstack.org/api-ref/dns/#tld

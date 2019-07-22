@@ -93,11 +93,11 @@ New Features
   djbdns tools.
 - An experimental agent backend to support Knot DNS 2
 - A new recordset api ``/v2/recordsets`` is exposed, docs can be found
-  `here <https://developer.openstack.org/api-ref/dns/#list-all-recordsets-owned-by-project>`_.
+  `here <https://docs.openstack.org/api-ref/dns/#list-all-recordsets-owned-by-project>`_.
 - Designate services now report running status. The information is exposed via
-  `api <https://developer.openstack.org/api-ref/dns/#service-statuses>`_.
+  `api <https://docs.openstack.org/api-ref/dns/#service-statuses>`_.
 - The quotas API from the admin API has been ported to /v2 with some changes
-  and is now `stable <https://developer.openstack.org/api-ref/dns/#quotas>`_.
+  and is now `stable <https://docs.openstack.org/api-ref/dns/#quotas>`_.
 
 Deprecation Notices
 -------------------

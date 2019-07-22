@@ -361,4 +361,4 @@ the ``auth_strategy = keystone`` in the ``service:api`` section.
 This will make it easier to use clients like the ``openstack``
 CLI that expect Keystone.
 
-.. _api-ref: https://developer.openstack.org/api-ref/dns/
+.. _api-ref: https://docs.openstack.org/api-ref/dns/
