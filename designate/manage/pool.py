@@ -139,9 +139,10 @@ class PoolCommands(base.Commands):
                     try:
                         pool = self.central_api.get_pool(
                             self.context, xpool['id'])
-                    except Exception:
-                        LOG.critical("Bad ID Supplied for pool %s",
-                                     xpool['name'])
+                    except Exception as e:
+                        msg = ("Bad ID Supplied for pool. pool_id: "
+                            "%(pool)s message: %(res)s")
+                        LOG.critical(msg, {'pool': xpool['id'], 'res': e})
                         continue
                 else:
                     pool = self.central_api.find_pool(
