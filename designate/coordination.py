@@ -48,7 +48,7 @@ class CoordinationMixin(object):
             backend_url = CONF.coordination.backend_url
 
             self._coordinator = tooz.coordination.get_coordinator(
-                backend_url, self._coordination_id)
+                backend_url, self._coordination_id.encode())
             self._coordination_started = False
 
             self.tg.add_timer(CONF.coordination.heartbeat_interval,

@@ -1,0 +1,12 @@
+---
+upgrade:
+  - |
+    While this patch fixes upgrades from patched Python 2 to patched
+    Python 3 designate releases, the issue will still be present on
+    upgrade from unpatched Python 3 to patched Python 3 designate
+    releases.
+fixes:
+  - |
+    This fixes an issue when upgrading to Python 3 (where bytes and str are
+    different types) and _update_partitions() attempts to sort types of 'str'
+    and 'bytes', causing designate-producer to crash.
