@@ -44,7 +44,8 @@ class InfobloxBackend(base.Backend):
     def create_zone(self, context, zone):
         LOG.info('Create Zone %r', zone)
 
-        dns_net_view = self.infoblox.get_dns_view(context.project_id)
+        project_id = context.project_id or zone.tenant_id
+        dns_net_view = self.infoblox.get_dns_view(project_id)
         self.infoblox.create_zone_auth(
             fqdn=zone['name'][0:-1],
             dns_view=dns_net_view
