@@ -24,7 +24,7 @@ gdnsd utility.
 
 Supported Knot versions: >= 2.1, < 3
 
-`User documentation <backends/gdnsd_agent.html>`_
+`User documentation <../../admin/backends/gdnsd_agent.html>`_
 
 .. WARNING::
 

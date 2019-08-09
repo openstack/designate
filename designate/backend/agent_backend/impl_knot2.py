@@ -24,7 +24,7 @@ knotc utility.
 
 Supported Knot versions: >= 2.1, < 3
 
-`Knot DNS 2 User documentation <backends/knot2_agent.html>`_
+`Knot DNS 2 User documentation <../../admin/backends/knot2_agent.html>`_
 
 .. WARNING::
 

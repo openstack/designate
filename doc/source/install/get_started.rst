@@ -42,8 +42,6 @@ The DNS service consists of the following components:
 
 ``Customer Facing DNS Servers``
   Serves DNS requests to end users. They are orchestreated by the
-  ``designate-worker``, and the supported list is maintained `here`_
-
-
-  .. _here: https://docs.openstack.org/designate/latest/admin/support-matrix.html
+  ``designate-worker``, and the supported list is maintained
+  :ref:`here <driver_matrix>`.
 

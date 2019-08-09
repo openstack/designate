@@ -22,7 +22,7 @@ Djbdns DNS agent backend
 Create, update, delete zones locally on a Djbdns DNS resolver using the
 axfr-get utility.
 
-`Djbdns User documentation <backends/djbdns_agent.html>`_
+`Djbdns User documentation <../../admin/backends/djbdns_agent.html>`_
 
 .. WARNING::
 
