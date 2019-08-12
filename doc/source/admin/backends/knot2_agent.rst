@@ -32,24 +32,10 @@ from MiniDNS when a zone is created or updated.
 Support matrix:
 
 * 2.0 and older: not supported
-* 2.1.1: supported, tested
 * 2.2.0: `affected by a bug <https://gitlab.labs.nic.cz/labs/knot/issues/460>`_
 
 
-`Knot DNS 2.x documentation <https://www.knot-dns.cz/docs/2.x/singlehtml/>`_
-
-Setting up Knot DNS on Ubuntu Trusty
-------------------------------------
-
-Knot DNS 2.1 is not part of Ubuntu Trusty. You can ues the CZ.NIC PPA with:
-
-.. code-block:: bash
-
-    service pdns stop
-    add-apt-repository ppa:cz.nic-labs/knot-dns
-    apt-get update
-    apt-get install knot
-
+`Knot DNS documentation <https://www.knot-dns.cz/documentation/>`_
 
 Configuring Knot DNS
 --------------------
@@ -201,4 +187,3 @@ Knotd configuration example (sudo knotc conf-export <filename>):
         master: "minidns"
         acl: "acl_minidns"
         semantic-checks: "on"
-
