@@ -97,7 +97,7 @@ function configure_designate_backend {
       priority: 1
 
   nameservers:
-    - host: $DESIGNATE_SERVICE_HOST
+    - host: $(ipv6_unquote $DESIGNATE_SERVICE_HOST)
       port: $DESIGNATE_SERVICE_PORT_DNS
 
   targets:
@@ -105,13 +105,13 @@ function configure_designate_backend {
       description: BIND Instance
 
       masters:
-        - host: $DESIGNATE_SERVICE_HOST
+        - host: $(ipv6_unquote $DESIGNATE_SERVICE_HOST)
           port: $DESIGNATE_SERVICE_PORT_MDNS
 
       options:
-        host: $DESIGNATE_SERVICE_HOST
+        host: $(ipv6_unquote $DESIGNATE_SERVICE_HOST)
         port: $DESIGNATE_SERVICE_PORT_DNS
-        rndc_host: $DESIGNATE_SERVICE_HOST
+        rndc_host: $(ipv6_unquote $DESIGNATE_SERVICE_HOST)
         rndc_port: $DESIGNATE_SERVICE_PORT_RNDC
         rndc_config_file: $BIND_CFG_DIR/rndc.conf
         rndc_key_file: $BIND_CFG_DIR/rndc.key
@@ -133,13 +133,14 @@ options {
     allow-new-zones yes;
     dnssec-validation auto;
     auth-nxdomain no;    # conform to RFC1035
-    listen-on port $DESIGNATE_SERVICE_PORT_DNS { $DESIGNATE_SERVICE_HOST; };
+    listen-on port $DESIGNATE_SERVICE_PORT_DNS { $HOST_IP; };
+    listen-on-v6 port $DESIGNATE_SERVICE_PORT_DNS { $HOST_IPV6; };
     recursion no;
     minimal-responses yes;
 };
 
 controls {
-    inet $DESIGNATE_SERVICE_HOST port $DESIGNATE_SERVICE_PORT_RNDC allow { $DESIGNATE_SERVICE_HOST; } keys { "rndc-key"; };
+    inet $(ipv6_unquote $DESIGNATE_SERVICE_HOST) port $DESIGNATE_SERVICE_PORT_RNDC allow { $(ipv6_unquote $DESIGNATE_SERVICE_HOST); } keys { "rndc-key"; };
 };
 EOF
 
@@ -149,7 +150,7 @@ include "$BIND_CFG_DIR/rndc.key";
 
 options {
     default-key "rndc-key";
-    default-server $DESIGNATE_SERVICE_HOST;
+    default-server $(ipv6_unquote $DESIGNATE_SERVICE_HOST);
     default-port $DESIGNATE_SERVICE_PORT_RNDC;
 };
 EOF

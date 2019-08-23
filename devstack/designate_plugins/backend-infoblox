@@ -84,7 +84,7 @@ function configure_designate_backend {
       description: InfoBlox Cluster API
 
       masters:
-        - host: $DESIGNATE_SERVICE_HOST
+        - host: $(ipv6_unquote $DESIGNATE_SERVICE_HOST)
           port: $DESIGNATE_SERVICE_PORT_MDNS
 
       options:

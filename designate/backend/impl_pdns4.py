@@ -11,6 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import netaddr
 import requests
 from oslo_config import cfg
 from oslo_log import log as logging
@@ -54,8 +55,12 @@ class PDNS4Backend(base.Backend):
     def create_zone(self, context, zone):
         """Create a DNS zone"""
 
-        masters = \
-            ['%s:%d' % (master.host, master.port) for master in self.masters]
+        masters = []
+        for master in self.masters:
+            host = master.host
+            if netaddr.IPAddress(host).version == 6:
+                host = '[%s]' % host
+            masters.append('%s:%d' % (host, master.port))
 
         data = {
             "name": zone.name,

@@ -72,12 +72,12 @@ EOF
     sudo test -f /var/lib/knot/confdb/data.mdb
 
     # Create the configuration
-    MINIDNS_IPADDR=$DESIGNATE_SERVICE_HOST
+    MINIDNS_IPADDR=$(ipv6_unquote $DESIGNATE_SERVICE_HOST)
 
     sudo knotc conf-begin
-    sudo knotc conf-set server.listen $DESIGNATE_SERVICE_HOST@$DESIGNATE_SERVICE_PORT_DNS
+    sudo knotc conf-set server.listen $(ipv6_unquote $DESIGNATE_SERVICE_HOST)@$DESIGNATE_SERVICE_PORT_DNS
     sudo knotc conf-set remote[minidns]
-    sudo knotc conf-set remote[minidns].address $DESIGNATE_SERVICE_HOST@$DESIGNATE_SERVICE_PORT_MDNS
+    sudo knotc conf-set remote[minidns].address $(ipv6_unquote $DESIGNATE_SERVICE_HOST)@$DESIGNATE_SERVICE_PORT_MDNS
     sudo knotc conf-set template[default]
     sudo knotc conf-set template[default].master minidns
     sudo knotc conf-set template[default].acl acl_minidns
@@ -103,7 +103,7 @@ EOF
     sudo knotc zone-status localdomain
 
     echo "Testing Knot: this should return the daemon version"
-    dig @$DESIGNATE_SERVICE_HOST -p$DESIGNATE_SERVICE_PORT_DNS version.server CH TXT
+    dig @$(ipv6_unquote $DESIGNATE_SERVICE_HOST) -p$DESIGNATE_SERVICE_PORT_DNS version.server CH TXT
 }
 
 # init_designate_agent_backend - initialize databases, etc.

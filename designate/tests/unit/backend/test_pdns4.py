@@ -12,11 +12,11 @@
 import mock
 import requests_mock
 
-import designate.tests
 from designate import exceptions
 from designate import objects
 from designate.backend import impl_pdns4
 from designate.mdns import rpcapi as mdns_rpcapi
+import designate.tests
 from designate.tests import fixtures
 
 
@@ -69,6 +69,43 @@ class PDNS4BackendTestCase(designate.tests.TestCase):
             {
                 'kind': u'slave',
                 'masters': ['192.0.2.1:53', '192.0.2.2:35'],
+                'name': u'example.com.',
+            }
+        )
+
+        self.assertEqual(
+            req_mock.last_request.headers.get('X-API-Key'), 'api_key'
+        )
+
+        mock_notify_zone_changed.assert_called_with(
+            self.context, self.zone, '127.0.0.1', 53, 30, 15, 10, 5)
+
+    @requests_mock.mock()
+    @mock.patch.object(mdns_rpcapi.MdnsAPI, 'notify_zone_changed')
+    def test_create_zone_ipv6(self, req_mock, mock_notify_zone_changed):
+        self.target['masters'] = [
+            {'host': '2001:db8::9abc', 'port': 53},
+        ]
+
+        self.backend = impl_pdns4.PDNS4Backend(
+            objects.PoolTarget.from_dict(self.target)
+        )
+
+        req_mock.post(
+            '%s/localhost/zones' % self.base_address,
+        )
+        req_mock.get(
+            '%s/localhost/zones/%s' % (self.base_address, self.zone.name),
+            status_code=404,
+        )
+
+        self.backend.create_zone(self.context, self.zone)
+
+        self.assertEqual(
+            req_mock.last_request.json(),
+            {
+                'kind': u'slave',
+                'masters': ['[2001:db8::9abc]:53'],
                 'name': u'example.com.',
             }
         )
