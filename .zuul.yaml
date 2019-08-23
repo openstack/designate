@@ -1,7 +1,7 @@
 - job:
     name: designate-base
     parent: devstack-tempest
-    vars:
+    vars: &base_vars
       devstack_localrc:
         DESIGNATE_SERVICE_PORT_DNS: 5322
         TEMPEST_PLUGINS: /opt/stack/designate-tempest-plugin
@@ -18,18 +18,27 @@
       tox_envlist: all-plugin
       tempest_test_regex: |
         designate_tempest_plugin.*
-    required-projects:
+    required-projects: &base_required_projects
       - openstack/designate
       - openstack/designate-dashboard
       - openstack/designate-tempest-plugin
       - openstack/python-designateclient
     timeout: 4200
-    irrelevant-files:
+    irrelevant-files: &base_irrelevant_files
       - ^.*\.rst$
       - ^api-ref/.*$
       - ^doc/.*$
       - ^etc/.*$
       - ^releasenotes/.*$
+
+- job:
+    name: designate-base-ipv6-only
+    parent: devstack-tempest-ipv6
+    description: |
+      Designate devstack-tempest base job for IPv6-only deployment
+    irrelevant-files: *base_irrelevant_files
+    required-projects: *base_required_projects
+    vars: *base_vars
 
 - job:
     name: designate-bind9
@@ -92,6 +101,19 @@
         c-bak: false
 
 - job:
+    name: designate-ipv6-only-bind9
+    post-run: playbooks/designate-bind9/post.yaml
+    parent: designate-base-ipv6-only
+
+- job:
+    name: designate-ipv6-only-pdns4
+    post-run: playbooks/designate-pdns4/post.yaml
+    parent: designate-base-ipv6-only
+    vars:
+      devstack_localrc:
+        DESIGNATE_BACKEND_DRIVER: pdns4
+
+- job:
     name: designate-grenade-pdns4
     parent: legacy-dsvm-base
     required-projects:
@@ -121,6 +143,11 @@
         - designate-pdns4-py27
         - designate-pdns4-postgres
         - designate-grenade-pdns4
+        - designate-ipv6-only-pdns4:
+            voting: false
+        - designate-ipv6-only-bind9:
+            voting: false
+
     gate:
       queue: designate
       jobs:
