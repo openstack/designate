@@ -37,14 +37,33 @@ from designate.utils import DEFAULT_AGENT_PORT
 CONF = cfg.CONF
 
 
-class Service(service.DNSService, service.Service):
+class Service(service.Service):
     _dns_default_port = DEFAULT_AGENT_PORT
 
-    def __init__(self, threads=None):
-        super(Service, self).__init__(threads=threads)
+    def __init__(self):
+        super(Service, self).__init__(
+            self.service_name, threads=cfg.CONF['service:agent'].threads
+        )
+
+        self.dns_service = service.DNSService(
+            self.dns_application, self.tg,
+            cfg.CONF['service:agent'].listen,
+            cfg.CONF['service:agent'].tcp_backlog,
+            cfg.CONF['service:agent'].tcp_recv_timeout,
+        )
 
         backend_driver = cfg.CONF['service:agent'].backend_driver
         self.backend = agent_backend.get_backend(backend_driver, self)
+
+    def start(self):
+        super(Service, self).start()
+        self.dns_service.start()
+        self.backend.start()
+
+    def stop(self, graceful=False):
+        self.dns_service.stop()
+        self.backend.stop()
+        super(Service, self).stop(graceful)
 
     @property
     def service_name(self):
@@ -52,7 +71,7 @@ class Service(service.DNSService, service.Service):
 
     @property
     @utils.cache_result
-    def _dns_application(self):
+    def dns_application(self):
         # Create an instance of the RequestHandler class
         application = handler.RequestHandler()
         if cfg.CONF['service:agent'].notify_delay > 0.0:
@@ -60,12 +79,3 @@ class Service(service.DNSService, service.Service):
         application = dnsutils.SerializationMiddleware(application)
 
         return application
-
-    def start(self):
-        super(Service, self).start()
-        self.backend.start()
-
-    def stop(self):
-        super(Service, self).stop()
-        # TODO(kiall): Shouldn't we be stppping the backend here too? To fix
-        #              in another review.

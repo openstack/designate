@@ -41,25 +41,38 @@ class AlsoNotifyTask(object):
     pass
 
 
-class Service(service.RPCService, service.Service):
+class Service(service.RPCService):
     RPC_API_VERSION = '1.0'
 
     target = messaging.Target(version=RPC_API_VERSION)
 
+    def __init__(self):
+        self._central_api = None
+        self._storage = None
+
+        self._executor = None
+        self._pools_map = None
+
+        super(Service, self).__init__(
+            self.service_name, cfg.CONF['service:worker'].topic,
+            threads=cfg.CONF['service:worker'].threads,
+        )
+
     @property
     def central_api(self):
-        if not hasattr(self, '_central_api'):
+        if not self._central_api:
             self._central_api = central_api.CentralAPI.get_instance()
         return self._central_api
 
-    def _setup_target_backends(self, pool):
+    @staticmethod
+    def _setup_target_backends(pool):
         for target in pool.targets:
             # Fetch an instance of the Backend class
             target.backend = backend.get_backend(target)
 
         LOG.info('%d targets setup', len(pool.targets))
 
-        if len(pool.targets) == 0:
+        if not pool.targets:
             raise exceptions.NoPoolTargetsConfigured()
 
         return pool
@@ -97,21 +110,21 @@ class Service(service.RPCService, service.Service):
 
     @property
     def storage(self):
-        if not hasattr(self, '_storage'):
+        if not self._storage:
             storage_driver = cfg.CONF['service:worker'].storage_driver
             self._storage = storage.get_storage(storage_driver)
         return self._storage
 
     @property
     def executor(self):
-        if not hasattr(self, '_executor'):
+        if not self._executor:
             # TODO(elarson): Create this based on config
             self._executor = processing.Executor()
         return self._executor
 
     @property
     def pools_map(self):
-        if not hasattr(self, '_pools_map'):
+        if self._pools_map is None:
             self._pools_map = {}
         return self._pools_map
 
@@ -124,6 +137,9 @@ class Service(service.RPCService, service.Service):
     def start(self):
         super(Service, self).start()
         LOG.info('Started worker')
+
+    def stop(self, graceful=True):
+        super(Service, self).stop(graceful)
 
     def _do_zone_action(self, context, zone):
         pool = self.get_pool(zone.pool_id)

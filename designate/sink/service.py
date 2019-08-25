@@ -27,8 +27,10 @@ LOG = logging.getLogger(__name__)
 
 
 class Service(service.Service):
-    def __init__(self, threads=None):
-        super(Service, self).__init__(threads=threads)
+    def __init__(self):
+        super(Service, self).__init__(
+            self.service_name, threads=cfg.CONF['service:sink'].threads
+        )
 
         # Initialize extensions
         self.handlers = self._init_extensions()
@@ -38,7 +40,8 @@ class Service(service.Service):
     def service_name(self):
         return 'sink'
 
-    def _init_extensions(self):
+    @staticmethod
+    def _init_extensions():
         """Loads and prepares all enabled extensions"""
 
         enabled_notification_handlers = \
@@ -75,7 +78,7 @@ class Service(service.Service):
         if targets:
             self._server.start()
 
-    def stop(self):
+    def stop(self, graceful=True):
         # Try to shut the connection down, but if we get any sort of
         # errors, go ahead and ignore them.. as we're shutting down anyway
         try:
@@ -83,7 +86,7 @@ class Service(service.Service):
         except Exception:
             pass
 
-        super(Service, self).stop()
+        super(Service, self).stop(graceful)
 
     def _get_targets(self):
         """

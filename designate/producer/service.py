@@ -31,15 +31,29 @@ CONF = cfg.CONF
 NS = 'designate.periodic_tasks'
 
 
-class Service(service.RPCService, coordination.CoordinationMixin,
-              service.Service):
+class Service(service.RPCService):
     RPC_API_VERSION = '1.0'
 
     target = messaging.Target(version=RPC_API_VERSION)
 
+    def __init__(self):
+        self._partitioner = None
+
+        self._storage = None
+        self._quota = None
+
+        super(Service, self).__init__(
+            self.service_name, cfg.CONF['service:producer'].topic,
+            threads=cfg.CONF['service:producer'].threads,
+        )
+
+        self.coordination = coordination.Coordination(
+            self.service_name, self.tg
+        )
+
     @property
     def storage(self):
-        if not hasattr(self, '_storage'):
+        if not self._storage:
             # TODO(timsim): Remove this when zone_mgr goes away
             storage_driver = cfg.CONF['service:zone_manager'].storage_driver
             if cfg.CONF['service:producer'].storage_driver != storage_driver:
@@ -49,7 +63,7 @@ class Service(service.RPCService, coordination.CoordinationMixin,
 
     @property
     def quota(self):
-        if not hasattr(self, '_quota'):
+        if not self._quota:
             # Get a quota manager instance
             self._quota = quota.get_quota()
         return self._quota
@@ -64,10 +78,12 @@ class Service(service.RPCService, coordination.CoordinationMixin,
 
     def start(self):
         super(Service, self).start()
+        self.coordination.start()
 
         self._partitioner = coordination.Partitioner(
-            self._coordinator, self.service_name,
-            self._coordination_id.encode(), range(0, 4095))
+            self.coordination.coordinator, self.service_name,
+            self.coordination.coordination_id.encode(), range(0, 4095)
+        )
 
         self._partitioner.start()
         self._partitioner.watch_partition_change(self._rebalance)
@@ -76,7 +92,7 @@ class Service(service.RPCService, coordination.CoordinationMixin,
         zmgr_enabled_tasks = CONF['service:zone_manager'].enabled_tasks
         producer_enabled_tasks = CONF['service:producer'].enabled_tasks
         enabled = zmgr_enabled_tasks
-        if producer_enabled_tasks != []:
+        if producer_enabled_tasks:
             enabled = producer_enabled_tasks
 
         for task in tasks.PeriodicTask.get_extensions(enabled):
@@ -90,6 +106,10 @@ class Service(service.RPCService, coordination.CoordinationMixin,
 
             interval = CONF[task.get_canonical_name()].interval
             self.tg.add_timer(interval, task)
+
+    def stop(self, graceful=True):
+        super(Service, self).stop(graceful)
+        self.coordination.stop()
 
     def _rebalance(self, my_partitions, members, event):
         LOG.info("Received rebalance event %s", event)

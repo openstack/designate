@@ -21,29 +21,39 @@ from designate import utils
 from designate.agent import service
 from designate.backend import agent_backend
 from designate.backend.agent_backend import impl_fake
+from designate.tests import fixtures
 
 
 class AgentServiceTest(designate.tests.TestCase):
     def setUp(self):
         super(AgentServiceTest, self).setUp()
+        self.stdlog = fixtures.StandardLogging()
+        self.useFixture(self.stdlog)
 
-        self.CONF.set_override('port', 0, 'service:agent')
+        self.CONF.set_override('listen', ['0.0.0.0:0'], 'service:agent')
         self.CONF.set_override('notify_delay', 0, 'service:agent')
 
         self.service = service.Service()
-        self.service._start = mock.Mock()
-        self.service._rpc_server = mock.Mock()
+        self.service.dns_service._start = mock.Mock()
+
+    def test_service_start(self):
+        self.service.start()
+
+        self.assertTrue(self.service.dns_service._start.called)
+
+    def test_service_stop(self):
+        self.service.dns_service.stop = mock.Mock()
+        self.service.backend.stop = mock.Mock()
+
+        self.service.stop()
+
+        self.assertTrue(self.service.dns_service.stop.called)
+        self.assertTrue(self.service.backend.stop.called)
+
+        self.assertIn('Stopping agent service', self.stdlog.logger.output)
 
     def test_service_name(self):
         self.assertEqual('agent', self.service.service_name)
-
-    def test_start(self):
-        self.service.start()
-
-        self.assertTrue(self.service._start.called)
-
-    def test_stop(self):
-        self.service.stop()
 
     def test_get_backend(self):
         backend = agent_backend.get_backend('fake', agent_service=self.service)
@@ -52,17 +62,15 @@ class AgentServiceTest(designate.tests.TestCase):
     @mock.patch.object(utils, 'cache_result')
     def test_get_dns_application(self, mock_cache_result):
         self.assertIsInstance(
-            self.service._dns_application, dnsutils.SerializationMiddleware
+            self.service.dns_application, dnsutils.SerializationMiddleware
         )
 
     @mock.patch.object(utils, 'cache_result')
     def test_get_dns_application_with_notify_delay(self, mock_cache_result):
         self.service = service.Service()
-        self.service._start = mock.Mock()
-        self.service._rpc_server = mock.Mock()
 
         self.CONF.set_override('notify_delay', 1.0, 'service:agent')
 
         self.assertIsInstance(
-            self.service._dns_application, dnsutils.SerializationMiddleware
+            self.service.dns_application, dnsutils.SerializationMiddleware
         )

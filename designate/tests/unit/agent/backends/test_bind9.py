@@ -27,7 +27,7 @@ class Bind9AgentBackendTestCase(designate.tests.TestCase):
     def setUp(self):
         super(Bind9AgentBackendTestCase, self).setUp()
 
-        self.CONF.set_override('port', 0, 'service:agent')
+        self.CONF.set_override('listen', ['0.0.0.0:0'], 'service:agent')
 
         self.backend = impl_bind9.Bind9Backend('foo')
 

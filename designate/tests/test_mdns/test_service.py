@@ -34,7 +34,6 @@ def hex_wire(response):
 
 
 class MdnsServiceTest(MdnsTestCase):
-
     # DNS packet with IQUERY opcode
     query_payload = binascii.a2b_hex(
         "271209000001000000000000076578616d706c6503636f6d0000010001"
@@ -42,6 +41,7 @@ class MdnsServiceTest(MdnsTestCase):
     expected_response = binascii.a2b_hex(
         b"271289050001000000000000076578616d706c6503636f6d0000010001"
     )
+
     # expected response is an error code REFUSED.  The other fields are
     # id 10002
     # opcode IQUERY
@@ -58,10 +58,10 @@ class MdnsServiceTest(MdnsTestCase):
     def setUp(self):
         super(MdnsServiceTest, self).setUp()
 
-        # Use a random port for MDNS
-        self.config(port=0, group='service:mdns')
+        self.config(listen=['0.0.0.0:0'], group='service:mdns')
 
         self.service = self.start_service('mdns')
+        self.dns_service = self.service.dns_service
         self.addr = ['0.0.0.0', 5556]
 
     @staticmethod
@@ -77,14 +77,14 @@ class MdnsServiceTest(MdnsTestCase):
     @mock.patch.object(dns.message, 'make_query')
     def test_handle_empty_payload(self, query_mock):
         mock_socket = mock.Mock()
-        self.service._dns_handle_udp_query(mock_socket, self.addr,
-                                           ' '.encode('utf-8'))
+        self.dns_service._dns_handle_udp_query(mock_socket, self.addr,
+                                               ' '.encode('utf-8'))
         query_mock.assert_called_once_with('unknown', dns.rdatatype.A)
 
     def test_handle_udp_payload(self):
         mock_socket = mock.Mock()
-        self.service._dns_handle_udp_query(mock_socket, self.addr,
-                                           self.query_payload)
+        self.dns_service._dns_handle_udp_query(mock_socket, self.addr,
+                                               self.query_payload)
         mock_socket.sendto.assert_called_once_with(self.expected_response,
                                                    self.addr)
 
@@ -93,7 +93,7 @@ class MdnsServiceTest(MdnsTestCase):
         mock_socket = mock.Mock()
         mock_socket.recv.side_effect = ['X', 'boo']  # X will fail unpack
 
-        self.service._dns_handle_tcp_conn(('1.2.3.4', 42), mock_socket)
+        self.dns_service._dns_handle_tcp_conn(('1.2.3.4', 42), mock_socket)
         self.assertEqual(1, mock_socket.recv.call_count)
         self.assertEqual(1, mock_socket.close.call_count)
 
@@ -103,14 +103,14 @@ class MdnsServiceTest(MdnsTestCase):
         pay_len = struct.pack("!H", len(payload))
         mock_socket.recv.side_effect = [pay_len, payload, socket.timeout]
 
-        self.service._dns_handle_tcp_conn(('1.2.3.4', 42), mock_socket)
+        self.dns_service._dns_handle_tcp_conn(('1.2.3.4', 42), mock_socket)
 
         self.assertEqual(3, mock_socket.recv.call_count)
         self.assertEqual(1, mock_socket.sendall.call_count)
         self.assertEqual(1, mock_socket.close.call_count)
         wire = mock_socket.sendall.call_args[0][0]
         expected_length_raw = wire[:2]
-        (expected_length, ) = struct.unpack('!H', expected_length_raw)
+        (expected_length,) = struct.unpack('!H', expected_length_raw)
         self.assertEqual(len(wire), expected_length + 2)
         self.assertEqual(self.expected_response, wire[2:])
 
@@ -130,7 +130,7 @@ class MdnsServiceTest(MdnsTestCase):
             pay_len, payload,
             pay_len, payload,
         ]
-        self.service._dns_handle_tcp_conn(('1.2.3.4', 42), mock_socket)
+        self.dns_service._dns_handle_tcp_conn(('1.2.3.4', 42), mock_socket)
 
         self.assertEqual(11, mock_socket.recv.call_count)
         self.assertEqual(5, mock_socket.sendall.call_count)
@@ -152,7 +152,7 @@ class MdnsServiceTest(MdnsTestCase):
             pay_len, payload,
             pay_len, payload,
         ]
-        self.service._dns_handle_tcp_conn(('1.2.3.4', 42), mock_socket)
+        self.dns_service._dns_handle_tcp_conn(('1.2.3.4', 42), mock_socket)
 
         self.assertEqual(11, mock_socket.recv.call_count)
         self.assertEqual(5, mock_socket.sendall.call_count)
@@ -171,7 +171,7 @@ class MdnsServiceTest(MdnsTestCase):
             pay_len, payload,
             pay_len, payload,
         ]
-        self.service._dns_handle_tcp_conn(('1.2.3.4', 42), mock_socket)
+        self.dns_service._dns_handle_tcp_conn(('1.2.3.4', 42), mock_socket)
 
         self.assertEqual(11, mock_socket.recv.call_count)
         self.assertEqual(4, mock_socket.sendall.call_count)

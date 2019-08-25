@@ -30,8 +30,6 @@ LOG = logging.getLogger(__name__)
 CONF = designate.conf.CONF
 CONF.import_opt('workers', 'designate.pool_manager',
                 group='service:pool_manager')
-CONF.import_opt('threads', 'designate.pool_manager',
-                group='service:pool_manager')
 
 
 def main():
@@ -53,12 +51,11 @@ def main():
                             'designate-worker', version='newton',
                             removal_version='rocky')
 
-    server = pool_manager_service.Service(
-        threads=CONF['service:pool_manager'].threads
-    )
+    server = pool_manager_service.Service()
+    heartbeat = service.Heartbeat(server.service_name, server.tg)
 
     hookpoints.log_hook_setup()
 
     service.serve(server, workers=CONF['service:pool_manager'].workers)
-    server.heartbeat_emitter.start()
+    heartbeat.start()
     service.wait()

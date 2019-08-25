@@ -19,18 +19,20 @@ Unit-test Producer service
 """
 
 import mock
+import oslotest.base
 from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
-from oslotest import base as test
 
 from designate.producer import service
+import designate.service
+from designate.tests import fixtures
 from designate.tests.unit import RoObject
 
 CONF = cfg.CONF
 
 
-@mock.patch.object(service.rpcapi.CentralAPI, 'get_instance')
-class ProducerTest(test.BaseTestCase):
+@mock.patch.object(service.rpcapi.CentralAPI, 'get_instance', mock.Mock())
+class ProducerTest(oslotest.base.BaseTestCase):
     def setUp(self):
         self.useFixture(cfg_fixture.Config(CONF))
 
@@ -46,28 +48,45 @@ class ProducerTest(test.BaseTestCase):
             'producer_task:zone_purge': '',
         })
         super(ProducerTest, self).setUp()
-        self.service = service.Service()
-        self.service._storage = mock.Mock()
-        self.service._rpc_server = mock.Mock()
-        self.service._quota = mock.Mock()
-        self.service.quota.limit_check = mock.Mock()
+        self.stdlog = fixtures.StandardLogging()
+        self.useFixture(self.stdlog)
 
-    def test_service_name(self, _):
+        self.service = service.Service()
+        self.service.rpc_server = mock.Mock()
+        self.service._storage = mock.Mock()
+        self.service._quota = mock.Mock()
+        self.service._quota.limit_check = mock.Mock()
+
+    @mock.patch.object(service.tasks, 'PeriodicTask')
+    @mock.patch.object(service.coordination, 'Partitioner')
+    @mock.patch.object(designate.service.RPCService, 'start')
+    def test_service_start(self, mock_rpc_start, mock_partitioner,
+                           mock_periodic_task):
+        self.service.coordination = mock.Mock()
+
+        self.service.start()
+
+        self.assertTrue(mock_rpc_start.called)
+
+    def test_service_stop(self):
+        self.service.coordination.stop = mock.Mock()
+
+        self.service.stop()
+
+        self.assertTrue(self.service.coordination.stop.called)
+
+        self.assertIn('Stopping producer service', self.stdlog.logger.output)
+
+    def test_service_name(self):
         self.assertEqual('producer', self.service.service_name)
 
-    def test_producer_rpc_topic(self, _):
+    def test_producer_rpc_topic(self):
         CONF.set_override('topic', 'test-topic', 'service:producer')
 
         self.service = service.Service()
 
-        self.assertEqual('test-topic', self.service._rpc_topic)
+        self.assertEqual('test-topic', self.service.rpc_topic)
         self.assertEqual('producer', self.service.service_name)
 
-    def test_central_api(self, _):
-        capi = self.service.central_api
-        self.assertIsInstance(capi, mock.MagicMock)
-
-    @mock.patch.object(service.tasks, 'PeriodicTask')
-    @mock.patch.object(service.coordination, 'Partitioner')
-    def test_stark(self, _, mock_partitioner, mock_PeriodicTask):
-        self.service.start()
+    def test_central_api(self):
+        self.assertIsInstance(self.service.central_api, mock.Mock)

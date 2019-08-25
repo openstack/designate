@@ -29,7 +29,6 @@ from designate.api import service as api_service
 
 CONF = designate.conf.CONF
 CONF.import_opt('workers', 'designate.api', group='service:api')
-CONF.import_opt('threads', 'designate.api', group='service:api')
 cfg.CONF.import_group('keystone_authtoken', 'keystonemiddleware.auth_token')
 
 
@@ -40,7 +39,8 @@ def main():
 
     hookpoints.log_hook_setup()
 
-    server = api_service.Service(threads=CONF['service:api'].threads)
+    server = api_service.Service()
+    heartbeat = service.Heartbeat(server.service_name, server.tg)
     service.serve(server, workers=CONF['service:api'].workers)
-    server.heartbeat_emitter.start()
+    heartbeat.start()
     service.wait()

@@ -28,7 +28,6 @@ from designate.mdns import service as mdns_service
 
 CONF = designate.conf.CONF
 CONF.import_opt('workers', 'designate.mdns', group='service:mdns')
-CONF.import_opt('threads', 'designate.mdns', group='service:mdns')
 
 
 def main():
@@ -38,7 +37,8 @@ def main():
 
     hookpoints.log_hook_setup()
 
-    server = mdns_service.Service(threads=CONF['service:mdns'].threads)
+    server = mdns_service.Service()
+    heartbeat = service.Heartbeat(server.service_name, server.tg)
     service.serve(server, workers=CONF['service:mdns'].workers)
-    server.heartbeat_emitter.start()
+    heartbeat.start()
     service.wait()

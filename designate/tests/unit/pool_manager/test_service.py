@@ -102,7 +102,7 @@ class PoolManagerInitTest(tests.TestCase):
         self.service = service.Service()
 
         self.assertEqual('test-topic.794ccc2c-d751-44fe-b57f-8894c9f5c842',
-                         self.service._rpc_topic)
+                         self.service.rpc_topic)
         self.assertEqual('pool_manager', self.service.service_name)
 
     @mock.patch('designate.service.RPCService.start')

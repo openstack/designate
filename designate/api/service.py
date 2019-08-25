@@ -18,41 +18,32 @@ from oslo_log import log as logging
 from paste import deploy
 
 from designate import exceptions
-from designate import utils
 from designate import service
-from designate import service_status
-
+from designate import utils
 
 LOG = logging.getLogger(__name__)
 
 
-class Service(service.WSGIService, service.Service):
-    def __init__(self, threads=None):
-        super(Service, self).__init__(threads=threads)
-
-        emitter_cls = service_status.HeartBeatEmitter.get_driver(
-            cfg.CONF.heartbeat_emitter.emitter_type
-        )
-        self.heartbeat_emitter = emitter_cls(
-            self.service_name, self.tg, status_factory=self._get_status
+class Service(service.WSGIService):
+    def __init__(self):
+        super(Service, self).__init__(
+            self.wsgi_application,
+            self.service_name,
+            cfg.CONF['service:api'].listen,
         )
 
     def start(self):
         super(Service, self).start()
-        self.heartbeat_emitter.start()
 
-    def _get_status(self):
-        status = "UP"
-        stats = {}
-        capabilities = {}
-        return status, stats, capabilities
+    def stop(self, graceful=True):
+        super(Service, self).stop(graceful)
 
     @property
     def service_name(self):
         return 'api'
 
     @property
-    def _wsgi_application(self):
+    def wsgi_application(self):
         api_paste_config = cfg.CONF['service:api'].api_paste_config
         config_paths = utils.find_config(api_paste_config)
 
