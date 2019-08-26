@@ -194,8 +194,6 @@ function create_designate_accounts {
         get_or_create_service "designate" "dns" "Designate DNS Service"
         get_or_create_endpoint "dns" \
             "$REGION_NAME" \
-            "$DESIGNATE_SERVICE_PROTOCOL://$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT/" \
-            "$DESIGNATE_SERVICE_PROTOCOL://$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT/" \
             "$DESIGNATE_SERVICE_PROTOCOL://$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT/"
     fi
 }
