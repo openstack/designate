@@ -271,11 +271,10 @@ class SupportMatrixDirective(rst.Directive):
     def _build_backend_detail(self, matrix, content):
 
         detailstitle = nodes.subtitle(text="Backend Details")
-
         content.append(detailstitle)
+        content.append(nodes.paragraph())
 
         for key in six.iterkeys(matrix.backends):
-
             content.append(
                 nodes.subtitle(text=matrix.backends[key].title))
             content.append(
@@ -283,7 +282,7 @@ class SupportMatrixDirective(rst.Directive):
                     matrix.backends[key],
                     matrix))
 
-            content.append(nodes.line())
+            content.append(nodes.paragraph())
 
         return content
 
@@ -343,13 +342,11 @@ class SupportMatrixDirective(rst.Directive):
         summary = nodes.table()
         summary.set_class("table")
         summary.set_class("table-condensed")
-        cols = len(list(six.iterkeys(matrix.backends)))
-        cols += 2
-        summarygroup = nodes.tgroup(cols=cols)
+        summarygroup = nodes.tgroup(cols=5)
         summarybody = nodes.tbody()
         summaryhead = nodes.thead()
 
-        for i in range(cols):
+        for i in range(5):
             summarygroup.append(nodes.colspec(colwidth=1))
         summarygroup.append(summaryhead)
         summarygroup.append(summarybody)
@@ -377,6 +374,7 @@ class SupportMatrixDirective(rst.Directive):
         blank = nodes.entry()
         blank.append(nodes.strong(text="Notes"))
         header.append(blank)
+
         summaryhead.append(header)
 
         grades = matrix.grades
