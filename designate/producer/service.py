@@ -66,8 +66,8 @@ class Service(service.RPCService, coordination.CoordinationMixin,
         super(Service, self).start()
 
         self._partitioner = coordination.Partitioner(
-            self._coordinator, self.service_name, self._coordination_id,
-            range(0, 4095))
+            self._coordinator, self.service_name,
+            self._coordination_id.encode(), range(0, 4095))
 
         self._partitioner.start()
         self._partitioner.watch_partition_change(self._rebalance)
