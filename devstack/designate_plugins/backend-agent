@@ -49,7 +49,7 @@ function configure_designate_backend {
       priority: 1
 
   nameservers:
-    - host: $DESIGNATE_SERVICE_HOST
+    - host: $(ipv6_unquote $DESIGNATE_SERVICE_HOST)
       port: $DESIGNATE_SERVICE_PORT_DNS
 
   targets:
@@ -57,17 +57,17 @@ function configure_designate_backend {
       description: Agent Instance
 
       masters:
-        - host: $DESIGNATE_SERVICE_HOST
+        - host: $(ipv6_unquote $DESIGNATE_SERVICE_HOST)
           port: $DESIGNATE_SERVICE_PORT_MDNS
 
       options:
-        host: $DESIGNATE_SERVICE_HOST
+        host: $(ipv6_unquote $DESIGNATE_SERVICE_HOST)
         port: $DESIGNATE_SERVICE_PORT_AGENT
 EOF
 
     # Configure Agent Settings
     iniset $DESIGNATE_CONF service:agent backend_driver $DESIGNATE_AGENT_BACKEND_DRIVER
-    iniset $DESIGNATE_CONF service:agent host $DESIGNATE_SERVICE_HOST
+    iniset $DESIGNATE_CONF service:agent host $(ipv6_unquote $DESIGNATE_SERVICE_HOST)
     iniset $DESIGNATE_CONF service:agent port $DESIGNATE_SERVICE_PORT_AGENT
     iniset $DESIGNATE_CONF service:agent masters "$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT_MDNS"
 

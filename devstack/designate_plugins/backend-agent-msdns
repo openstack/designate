@@ -75,7 +75,7 @@ function configure_designate_agent_backend {
       description: MSDNS Agent Instance
 
       masters:
-        - host: $DESIGNATE_SERVICE_HOST
+        - host: $(ipv6_unquote $DESIGNATE_SERVICE_HOST)
           port: $DESIGNATE_SERVICE_PORT_MDNS
 
       options:

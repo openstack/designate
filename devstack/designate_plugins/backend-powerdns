@@ -65,7 +65,7 @@ function configure_designate_backend {
       priority: 1
 
   nameservers:
-    - host: $DESIGNATE_SERVICE_HOST
+    - host: $(ipv6_unquote $DESIGNATE_SERVICE_HOST)
       port: $DESIGNATE_SERVICE_PORT_DNS
 
   targets:
@@ -73,11 +73,11 @@ function configure_designate_backend {
       description: PowerDNS Database Cluster
 
       masters:
-        - host: $DESIGNATE_SERVICE_HOST
+        - host: $(ipv6_unquote $DESIGNATE_SERVICE_HOST)
           port: $DESIGNATE_SERVICE_PORT_MDNS
 
       options:
-        host: $DESIGNATE_SERVICE_HOST
+        host: $(ipv6_unquote $DESIGNATE_SERVICE_HOST)
         port: $DESIGNATE_SERVICE_PORT_DNS
         connection: '`database_connection_url designate_pdns`'
 EOF
@@ -92,7 +92,7 @@ socket-dir=/var/run
 guardian=yes
 daemon=yes
 disable-axfr=no
-local-address=$DESIGNATE_SERVICE_HOST
+local-address=$(ipv6_unquote $DESIGNATE_SERVICE_HOST)
 local-port=$DESIGNATE_SERVICE_PORT_DNS
 master=no
 slave=yes
@@ -108,7 +108,7 @@ EOF
 launch=gmysql
 
 # gmysql parameters
-gmysql-host=$DATABASE_HOST
+gmysql-host=$MYSQL_HOST
 gmysql-user=$DATABASE_USER
 gmysql-password=$DATABASE_PASSWORD
 gmysql-dbname=designate_pdns
@@ -119,7 +119,7 @@ EOF
 # Launch gpgsql backend
 launch=gpgsql
 
-# gmysql parameters
+# gpgsql parameters
 gpgsql-host=$DATABASE_HOST
 gpgsql-user=$DATABASE_USER
 gpgsql-password=$DATABASE_PASSWORD
