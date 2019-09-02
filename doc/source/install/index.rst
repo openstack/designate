@@ -21,5 +21,5 @@ Quickstart with Kolla
 ---------------------
 
 Following the `Designate in Kolla
-<https://docs.openstack.org/kolla-ansible/latest/reference/designate-guide.html>`_
+<https://docs.openstack.org/kolla-ansible/latest/reference/networking/designate-guide.html>`_
 to quickly install and setup Designate.
