@@ -1,12 +1,18 @@
 ---
 upgrade:
   - |
-    While this patch fixes upgrades from patched Python 2 to patched
-    Python 3 designate releases, the issue will still be present on
-    upgrade from unpatched Python 3 to patched Python 3 designate
-    releases.
+    A bug that prevented Designate from starting up when services
+    are running a mixture of Python 2 and 3 has been fixed, but there is
+    still an issue when running a mixture of a patched and unpatched
+    versions of Designate under Python 3.
+
+    See `bug 1828534`_ for more information.
+
+    .. _bug 1828534: https://bugs.launchpad.net/designate/+bug/1828534
 fixes:
   - |
-    This fixes an issue when upgrading to Python 3 (where bytes and str are
+    Fixed an `issue`_ when upgrading to Python 3 (where bytes and str are
     different types) and _update_partitions() attempts to sort types of 'str'
     and 'bytes', causing designate-producer to crash.
+
+    .. _issue: https://bugs.launchpad.net/designate/+bug/1828534

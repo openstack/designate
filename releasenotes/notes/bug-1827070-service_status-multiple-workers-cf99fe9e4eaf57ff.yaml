@@ -1,0 +1,9 @@
+---
+fixes:
+  - |
+    Fixed a bug preventing `service_statuses` from properly updating
+    when Designate services were configured with multiple workers.
+
+    See `bug 1827070`_ for more information.
+
+    .. _bug 1827070: https://bugs.launchpad.net/designate/+bug/1827070
