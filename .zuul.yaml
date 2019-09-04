@@ -131,6 +131,7 @@
       - ^api-ref/.*$
       - ^doc/.*$
       - ^etc/.*$
+      - ^releasenotes/.*$
 
 - project-template:
     name: designate-devstack-jobs
