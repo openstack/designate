@@ -102,16 +102,10 @@ Install and configure components
         user_domain_name = Default
         www_authenticate_uri = http://controller:5000/
         auth_url = http://controller:5000/
+        memcached_servers = controller:11211
 
      Replace ``DESIGNATE_PASS`` with the password you chose for the
      ``designate`` user in the Identity service.
-
-   * In the ``[service:worker]`` section, enable the worker model:
-
-     .. code-block:: ini
-
-        enabled = True
-        notify = True
 
    * In the ``[storage:sqlalchemy]`` section, configure database access:
 
