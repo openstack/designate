@@ -47,7 +47,7 @@ Install and configure components
 
    .. code-block:: console
 
-      # rndc-confgen -a -k designate -c /etc/designate/rndc.key
+      # rndc-confgen -a -k designate -c /etc/designate/rndc.key -r /dev/urandom
 
 #. Add the following options in the ``/etc/bind/named.conf.options`` file::
 
@@ -123,12 +123,12 @@ Install and configure components
 
         # su -s /bin/sh -c "designate-manage database sync" designate
 
-#. Restart the designate central and API services and configure them
+#. Start the designate central and API services and configure them
    to start when the system boots:
 
    .. code-block:: console
 
-      # systemctl restart designate-central designate-api
+      # systemctl start designate-central designate-api
 
       # systemctl enable designate-central designate-api
 
@@ -191,9 +191,7 @@ Install and configure components
 
    .. code-block:: console
 
-      # apt install designate-worker
-      # apt install designate-producer
-      # apt install designate-mdns
+      # apt install designate-worker designate-producer designate-mdns
 
 #. Start the designate and mDNS services and configure them to start when the
    system boots:

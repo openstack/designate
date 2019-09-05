@@ -43,7 +43,16 @@ Install and configure components
 
       # zypper install bind bind-utils
 
+#. Create an RNDC Key:
+
+   .. code-block:: console
+
+      # rndc-confgen -a -k designate -c /etc/designate/rndc.key -r /dev/urandom
+
 #. Add the following options in the ``/etc/named.conf`` file::
+
+      ...
+      include "/etc/designate/rndc.key";
 
       options {
           ...
@@ -54,22 +63,10 @@ Install and configure components
           allow-query { 127.0.0.1; };
       };
 
-#. Create an RNDC Key:
-
-   .. code-block:: console
-
-      # rndc-confgen -a -k designate -c /etc/designate/rndc.key -r /dev/urandom
-
-#. Add the key to ``/etc/named.conf``::
-
-      ...
-      include "/etc/designate/rndc.key";
-
       controls {
         inet 127.0.0.1 port 953
           allow { 127.0.0.1; } keys { "designate"; };
       };
-
 
 #. Start the DNS service and configure it to start when the system boots:
 
@@ -133,9 +130,9 @@ Install and configure components
 
    .. code-block:: console
 
-      # systemctl enable openstack-designate-central openstack-designate-api
-
       # systemctl start openstack-designate-central openstack-designate-api
+
+      # systemctl enable openstack-designate-central openstack-designate-api
 
 #. Create a pools.yaml file in ``/etc/designate/pools.yaml`` with the following
    contents:
@@ -197,6 +194,6 @@ Install and configure components
 
    .. code-block:: console
 
-      # systemctl enable openstack-designate-worker openstack-designate-producer openstack-designate-mdns
-
       # systemctl start openstack-designate-worker openstack-designate-producer openstack-designate-mdns
+
+      # systemctl enable openstack-designate-worker openstack-designate-producer openstack-designate-mdns
