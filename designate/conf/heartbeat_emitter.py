@@ -20,7 +20,7 @@ HEARTBEAT_GROUP = cfg.OptGroup(
 
 HEARTBEAT_OPTS = [
     cfg.FloatOpt('heartbeat_interval',
-                 default=5.0,
+                 default=10.0,
                  help='Number of seconds between heartbeats for reporting '
                       'state'),
     cfg.StrOpt('emitter_type', default="rpc", help="Emitter to use"),

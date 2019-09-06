@@ -24,6 +24,7 @@ from designate.conf import denominator
 from designate.conf import djbdns
 from designate.conf import dynect
 from designate.conf import gdnsd
+from designate.conf import heartbeat_emitter
 from designate.conf import infoblox
 from designate.conf import keystone
 from designate.conf import knot2
@@ -34,7 +35,6 @@ from designate.conf import network_api
 from designate.conf import pool_manager
 from designate.conf import producer
 from designate.conf import proxy
-from designate.conf import service_status
 from designate.conf import sink
 from designate.conf import storage
 from designate.conf import worker
@@ -52,6 +52,7 @@ denominator.register_opts(CONF)
 djbdns.register_opts(CONF)
 dynect.register_opts(CONF)
 gdnsd.register_opts(CONF)
+heartbeat_emitter.register_opts(CONF)
 infoblox.register_opts(CONF)
 keystone.register_opts(CONF)
 knot2.register_opts(CONF)
@@ -62,7 +63,6 @@ network_api.register_opts(CONF)
 pool_manager.register_opts(CONF)
 producer.register_opts(CONF)
 proxy.register_opts(CONF)
-service_status.register_opts(CONF)
 sink.register_opts(CONF)
 storage.register_opts(CONF)
 worker.register_opts(CONF)
