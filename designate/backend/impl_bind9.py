@@ -97,6 +97,7 @@ class Bind9Backend(base.Backend):
         except exceptions.Backend as e:
             # If create fails because the zone exists, don't reraise
             if "already exists" not in six.text_type(e):
+                LOG.warning('RNDC call failure: %s', e)
                 raise
 
         self.mdns_api.notify_zone_changed(
@@ -123,6 +124,7 @@ class Bind9Backend(base.Backend):
         except exceptions.Backend as e:
             # If zone is already deleted, don't reraise
             if "not found" not in six.text_type(e):
+                LOG.warning('RNDC call failure: %s', e)
                 raise
 
     def _execute_rndc(self, rndc_op):
@@ -138,5 +140,4 @@ class Bind9Backend(base.Backend):
             LOG.debug('Executing RNDC call: %r', rndc_call)
             utils.execute(*rndc_call)
         except utils.processutils.ProcessExecutionError as e:
-            LOG.info('RNDC call failure: %s', e)
             raise exceptions.Backend(e)
