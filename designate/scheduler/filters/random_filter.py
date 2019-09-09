@@ -22,7 +22,8 @@ LOG = logging.getLogger(__name__)
 
 
 class RandomFilter(base.Filter):
-    """Randomly chooses one of the input pools if there is multiple supplied.
+    """Randomly chooses one of the input pools if there are multiple
+    ones supplied.
 
     .. note::
 
@@ -35,9 +36,8 @@ class RandomFilter(base.Filter):
     """
 
     def filter(self, context, pools, zone):
-        new_list = PoolList()
-        if len(pools):
-            new_list.append(random.choice(pools))
-            return new_list
-        else:
-            return pools
+        if pools:
+            new_pool_list = PoolList()
+            new_pool_list.append(random.choice(pools))
+            return new_pool_list
+        return pools
