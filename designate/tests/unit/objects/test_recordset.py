@@ -14,7 +14,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import itertools
-import unittest
 
 import mock
 import oslotest.base
@@ -111,16 +110,16 @@ class RecordSetTest(oslotest.base.BaseTestCase):
         )
         self.assertEqual('DELETE', record_set.action)
 
-    @unittest.expectedFailure  # bug
     def test_status_error(self):
-        statuses = ('ERROR', 'PENDING', 'ACTIVE')
-        for s1, s2, s3 in itertools.permutations(statuses):
+        statuses = ('ERROR', 'PENDING', 'ACTIVE', 'DELETED')
+        for s1, s2, s3, s4 in itertools.permutations(statuses):
             record_set = objects.RecordSet(
                 name='www.example.org.', type='A',
                 records=objects.RecordList(objects=[
                     objects.Record(data='192.0.2.1', status=s1),
                     objects.Record(data='192.0.2.2', status=s2),
                     objects.Record(data='192.0.2.3', status=s3),
+                    objects.Record(data='192.0.2.4', status=s4),
                 ])
             )
             self.assertEqual(record_set.status, 'ERROR')
@@ -162,6 +161,57 @@ class RecordSetTest(oslotest.base.BaseTestCase):
             ])
         )
         self.assertEqual('DELETED', record_set.status)
+
+    def test_status_many_expect_error(self):
+        rs = objects.RecordSet(
+            name='www.example.org.', type='A',
+            records=objects.RecordList(objects=[
+                objects.Record(data='192.0.2.2', status='ACTIVE'),
+                objects.Record(data='192.0.2.3', status='DELETED'),
+                objects.Record(data='192.0.2.4', status='DELETED'),
+                objects.Record(data='192.0.2.5', status='DELETED'),
+                objects.Record(data='192.0.2.6', status='ACTIVE'),
+                objects.Record(data='192.0.2.7', status='ACTIVE'),
+                objects.Record(data='192.0.2.8', status='ERROR'),
+                objects.Record(data='192.0.2.9', status='ACTIVE'),
+                objects.Record(data='192.0.2.10', status='ACTIVE'),
+            ])
+        )
+        self.assertEqual('ERROR', rs.status)
+
+    def test_status_many_expect_pending(self):
+        rs = objects.RecordSet(
+            name='www.example.org.', type='A',
+            records=objects.RecordList(objects=[
+                objects.Record(data='192.0.2.2', status='ACTIVE'),
+                objects.Record(data='192.0.2.3', status='DELETED'),
+                objects.Record(data='192.0.2.4', status='PENDING'),
+                objects.Record(data='192.0.2.5', status='DELETED'),
+                objects.Record(data='192.0.2.6', status='PENDING'),
+                objects.Record(data='192.0.2.7', status='ACTIVE'),
+                objects.Record(data='192.0.2.8', status='DELETED'),
+                objects.Record(data='192.0.2.9', status='PENDING'),
+                objects.Record(data='192.0.2.10', status='ACTIVE'),
+            ])
+        )
+        self.assertEqual('PENDING', rs.status)
+
+    def test_status_many_expect_active(self):
+        rs = objects.RecordSet(
+            name='www.example.org.', type='A',
+            records=objects.RecordList(objects=[
+                objects.Record(data='192.0.2.2', status='ACTIVE'),
+                objects.Record(data='192.0.2.3', status='DELETED'),
+                objects.Record(data='192.0.2.4', status='DELETED'),
+                objects.Record(data='192.0.2.5', status='DELETED'),
+                objects.Record(data='192.0.2.6', status='ACTIVE'),
+                objects.Record(data='192.0.2.7', status='ACTIVE'),
+                objects.Record(data='192.0.2.8', status='DELETED'),
+                objects.Record(data='192.0.2.9', status='ACTIVE'),
+                objects.Record(data='192.0.2.10', status='ACTIVE'),
+            ])
+        )
+        self.assertEqual('ACTIVE', rs.status)
 
     def test_validate(self):
         record_set = create_test_recordset()

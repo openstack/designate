@@ -1,0 +1,13 @@
+---
+fixes:
+  - |
+    Fixed a bug with the recordset status implementation to make it report
+    its status more accurately.
+
+    A recordset will now always report its highest priority state when it
+    contains multiple records. The order of priority is,
+    `ERROR`, `PENDING`, `ACTIVE` and `DELETED`.
+
+    See `bug 1842994`_ for more information.
+
+    .. _bug 1842994: https://bugs.launchpad.net/designate/+bug/1842994

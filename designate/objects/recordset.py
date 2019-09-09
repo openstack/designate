@@ -69,14 +69,18 @@ class RecordSet(base.DesignateObject, base.DictObjectMixin,
 
     @property
     def status(self):
-        # Return the worst status in order of ERROR, PENDING, ACTIVE
-        status = 'ACTIVE'
+        # Return the worst status in order of ERROR, PENDING, ACTIVE, DELETED.
+        status = None
+        statuses = {
+            'ERROR': 0,
+            'PENDING': 1,
+            'ACTIVE': 2,
+            'DELETED': 3,
+        }
         for record in self.records:
-            if (record.status == 'ERROR') or \
-                    (record.status == 'PENDING' and status != 'ERROR') or \
-                    (status != 'PENDING'):
+            if not status or statuses[record.status] < statuses[status]:
                 status = record.status
-        return status
+        return status or 'ACTIVE'
 
     fields = {
         'shard': fields.IntegerFields(nullable=True, minimum=0, maximum=4095),
