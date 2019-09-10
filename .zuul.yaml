@@ -144,10 +144,8 @@
         - designate-pdns4-py27
         - designate-pdns4-postgres
         - designate-grenade-pdns4
-        - designate-ipv6-only-pdns4:
-            voting: false
-        - designate-ipv6-only-bind9:
-            voting: false
+        - designate-ipv6-only-pdns4
+        - designate-ipv6-only-bind9
 
     gate:
       queue: designate
@@ -158,6 +156,8 @@
         - designate-bind9-py27
         - designate-pdns4-py27
         - designate-grenade-pdns4
+        - designate-ipv6-only-pdns4
+        - designate-ipv6-only-bind9
 
 - project:
     templates:
