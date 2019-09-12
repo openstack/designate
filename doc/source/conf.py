@@ -248,8 +248,10 @@ latex_use_xindy = False
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-#    ('index', 'designate', u'Designate Documentation',
-#     [u'Managed I.T.'], 1)
+    ('cli/designate-manage', 'designate-manage', 'OpenStack DNSaaS',
+     ['OpenStack'], 1),
+    ('cli/designate-status', 'designate-status', 'OpenStack DNSaaS',
+     ['OpenStack'], 1),
 ]
 
 # If true, show URL addresses after external links.
