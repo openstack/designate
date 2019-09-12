@@ -252,21 +252,29 @@ class NotifyEndpoint(base.BaseEndpoint):
             # recover by retrying
             break
 
+        if not response:
+            return None, retry
+
         # Check that we actually got a NOERROR in the rcode and and an
         # authoritative answer
-        if response is None:
-            pass
-
-        elif (response.rcode() in
-                (dns.rcode.NXDOMAIN, dns.rcode.REFUSED,
-                    dns.rcode.SERVFAIL)) or \
+        refused_statuses = (
+            dns.rcode.NXDOMAIN, dns.rcode.REFUSED, dns.rcode.SERVFAIL
+        )
+        if (response.rcode() in refused_statuses or
                 (response.rcode() == dns.rcode.NOERROR and
-                    not bool(response.answer)):
-            LOG.info("%(zone)s not found on %(server)s:%(port)d",
-                     {'zone': zone.name, 'server': host, 'port': port})
-
-        elif not (response.flags & dns.flags.AA) or dns.rcode.from_flags(
-                response.flags, response.ednsflags) != dns.rcode.NOERROR:
+                 not bool(response.answer))):
+            if notify:
+                LOG.info(
+                    '%(zone)s not found on %(server)s:%(port)d',
+                    {
+                        'zone': zone.name,
+                        'server': host,
+                        'port': port
+                    }
+                )
+        elif (not (response.flags & dns.flags.AA) or
+                dns.rcode.from_flags(response.flags,
+                                     response.ednsflags) != dns.rcode.NOERROR):
             LOG.warning("Failed to get expected response while trying to "
                         "send '%(msg)s' for '%(zone)s' to '%(server)s:"
                         "%(port)d'.\nResponse message:\n%(resp)s\n",
