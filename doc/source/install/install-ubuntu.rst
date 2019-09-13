@@ -107,6 +107,18 @@ Install and configure components
      Replace ``DESIGNATE_PASS`` with the password you chose for the
      ``designate`` user in the Identity service.
 
+   * In the ``[DEFAULT]`` section, configure ``RabbitMQ``
+     message queue access:
+
+     .. code-block:: ini
+
+        [DEFAULT]
+        # ...
+        transport_url = rabbit://openstack:RABBIT_PASS@controller:5672/
+
+     Replace ``RABBIT_PASS`` with the password you chose for the
+     ``openstack`` account in RabbitMQ.
+
    * In the ``[storage:sqlalchemy]`` section, configure database access:
 
      .. code-block:: ini
