@@ -16,6 +16,7 @@
 import pecan
 from oslo_log import log as logging
 
+from designate import utils
 from designate.api.v2.controllers import rest
 from designate.objects.adapters import DesignateAdapter
 
@@ -25,6 +26,7 @@ LOG = logging.getLogger(__name__)
 class NameServersController(rest.RestController):
 
     @pecan.expose(template='json:', content_type='application/json')
+    @utils.validate_uuid("zone_id")
     def get_all(self, zone_id):
         """List NameServers for Zone"""
         request = pecan.request
