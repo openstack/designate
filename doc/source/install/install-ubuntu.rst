@@ -84,9 +84,9 @@ Install and configure components
         [service:api]
         listen = 0.0.0.0:9001
         auth_strategy = keystone
-        api_base_uri = http://controller:9001/
         enable_api_v2 = True
         enable_api_admin = True
+        enable_host_header = True
         enabled_extensions_admin = quotas, reports
 
    * In the ``[keystone_authtoken]`` section, configure the following options:
