@@ -18,7 +18,7 @@
 Bind9 Backend
 =============
 
-This page documents using the Pool Manager Bind 9 backend.
+This page documents using the Bind 9 backend.
 The backend uses the rndc utility to create and delete zones remotely.
 
 The traffic between rndc and Bind is authenticated with a key.
@@ -32,7 +32,7 @@ One section for each pool target
    .. literalinclude:: sample_yaml_snippets/bind.yaml
        :language: yaml
 
-The key and config files are relative to the host running Pool Manager
+The key and config files are relative to the host running Designate
 (and can be different from the hosts running Bind)
 
 Then update the pools in designate - see :ref:`designate_manage_pool`
@@ -46,7 +46,7 @@ Bind9 Configuration
 -------------------
 
 Ensure Bind can access the /etc/bind/rndc.conf and /etc/bind/rndc.key files and
-receive rndc traffic from Pool Manager.
+receive rndc traffic from Designate.
 
 Enable rndc addzone/delzone functionality by editing named.conf.options
 or named.conf and add this line under options

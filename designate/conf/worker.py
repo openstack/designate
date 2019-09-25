@@ -20,12 +20,6 @@ WORKER_GROUP = cfg.OptGroup(
 )
 
 WORKER_OPTS = [
-    cfg.BoolOpt('enabled', default=True,
-                help='Whether to send events to worker instead of '
-                     'Pool Manager',
-                deprecated_for_removal=True,
-                deprecated_reason='In Train, this option will disappear'
-                                  'because pool manager will be removed'),
     cfg.IntOpt('workers',
                help='Number of Worker worker processes to spawn'),
     cfg.IntOpt('threads', default=200,
@@ -49,6 +43,9 @@ WORKER_OPTS = [
                help='The time to wait before sending the first request '
                     'to a server'),
     cfg.BoolOpt('notify', default=True,
+                deprecated_for_removal=True,
+                deprecated_reason='This option is being removed to reduce '
+                                  'complexity',
                 help='Whether to allow worker to send NOTIFYs, this will '
                      'noop NOTIFYs in mdns if true'),
     cfg.BoolOpt('export_synchronous', default=True,

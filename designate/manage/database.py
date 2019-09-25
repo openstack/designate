@@ -18,7 +18,6 @@ import os
 from migrate.versioning import api as versioning_api
 from oslo_config import cfg
 from oslo_log import log as logging
-from oslo_db import exception
 
 from designate.manage import base
 from designate.sqlalchemy import utils
@@ -31,26 +30,13 @@ REPOSITORY = os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
                                           'migrate_repo'))
 cfg.CONF.import_opt('connection', 'designate.storage.impl_sqlalchemy',
                     group='storage:sqlalchemy')
-cfg.CONF.import_opt('connection',
-                    'designate.pool_manager.cache.impl_sqlalchemy',
-                    group='pool_manager_cache:sqlalchemy')
-
 CONF = cfg.CONF
 INIT_VERSION = 69
 
 
 def get_manager():
-    storage_db = CONF['storage:sqlalchemy'].connection
-    pool_manager_cache_db = CONF['pool_manager_cache:sqlalchemy'].connection
-    if storage_db == pool_manager_cache_db:
-        raise exception.DBMigrationError(
-            message=(
-                "Storage requires its own database. "
-                "Please check your config file."
-            ))
-    else:
-        return utils.get_migration_manager(
-            REPOSITORY, CONF['storage:sqlalchemy'].connection, INIT_VERSION)
+    return utils.get_migration_manager(
+        REPOSITORY, CONF['storage:sqlalchemy'].connection, INIT_VERSION)
 
 
 class DatabaseCommands(base.Commands):

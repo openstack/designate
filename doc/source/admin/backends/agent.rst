@@ -16,14 +16,13 @@
 Agent Backend
 =============
 
-This page documents using the Pool Manager Agent backend, and it's accompanying
+This page documents using the various Agent backends, and it's accompanying
 service, `designate-agent`. This backend uses an extension of the DNS protocol
 itself to send management requests to the remote agent processes, where the
 requests will be actioned.
 
-The traffic between `designate-pool-manager`, and `designate-agent` is both
-unauthenticated and unencrypted. Do not run this traffic over unsecured
-networks.
+The `rpc` traffic between designate and the `agent` is both unauthenticated and
+unencrypted. Do not run this traffic over unsecured networks.
 
 Designate Configuration
 -----------------------

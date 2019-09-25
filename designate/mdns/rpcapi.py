@@ -77,7 +77,7 @@ class MdnsAPI(object):
 
     def notify_zone_changed(self, context, zone, host, port, timeout,
                             retry_interval, max_retries, delay):
-        if CONF['service:worker'].notify and CONF['service:worker'].enabled:
+        if CONF['service:worker'].notify:
             LOG.debug('Letting worker send NOTIFYs instead')
             return True
 

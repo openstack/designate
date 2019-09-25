@@ -49,7 +49,6 @@ from designate import scheduler
 from designate import storage
 from designate import utils
 from designate.mdns import rpcapi as mdns_rpcapi
-from designate.pool_manager import rpcapi as pool_manager_rpcapi
 from designate.storage import transaction
 from designate.worker import rpcapi as worker_rpcapi
 
@@ -243,19 +242,12 @@ class Service(service.RPCService):
         return mdns_rpcapi.MdnsAPI.get_instance()
 
     @property
-    def pool_manager_api(self):
-        return pool_manager_rpcapi.PoolManagerAPI.get_instance()
-
-    @property
     def worker_api(self):
         return worker_rpcapi.WorkerAPI.get_instance()
 
     @property
     def zone_api(self):
-        # TODO(timsim): Remove this when pool_manager_api is gone
-        if cfg.CONF['service:worker'].enabled:
-            return self.worker_api
-        return self.pool_manager_api
+        return self.worker_api
 
     def _is_valid_zone_name(self, context, zone_name):
         # Validate zone name length
@@ -1794,7 +1786,7 @@ class Service(service.RPCService):
 
     # Diagnostics Methods
     def _sync_zone(self, context, zone):
-        return self.pool_manager_api.update_zone(context, zone)
+        return self.zone_api.update_zone(context, zone)
 
     @rpc.expected_exceptions()
     @transaction
@@ -2875,40 +2867,9 @@ class Service(service.RPCService):
 
         created_zone_export = self.storage.create_zone_export(context,
                                                               zone_export)
-        if not cfg.CONF['service:worker'].enabled:
-            # So that we can maintain asynch behavior during the time that this
-            # lives in central, we'll return the 'PENDING' object, and then the
-            # 'COMPLETE'/'ERROR' status will be available on the first poll.
-            export = copy.deepcopy(created_zone_export)
 
-            synchronous = cfg.CONF['service:zone_manager'].export_synchronous
-            criterion = {'zone_id': zone_id}
-            count = self.storage.count_recordsets(context, criterion)
-
-            if synchronous:
-                try:
-                    self.quota.limit_check(
-                            context, context.project_id, api_export_size=count)
-                except exceptions.OverQuota:
-                    LOG.debug('Zone Export too large to perform synchronously')
-                    export.status = 'ERROR'
-                    export.message = 'Zone is too large to export'
-                    return export
-
-                export.location = \
-                    "designate://v2/zones/tasks/exports/%(eid)s/export" % \
-                    {'eid': export.id}
-
-                export.status = 'COMPLETE'
-            else:
-                LOG.debug('No method found to export zone')
-                export.status = 'ERROR'
-                export.message = 'No suitable method for export'
-
-            self.update_zone_export(context, export)
-        else:
-            export = copy.deepcopy(created_zone_export)
-            self.worker_api.start_zone_export(context, zone, export)
+        export = copy.deepcopy(created_zone_export)
+        self.worker_api.start_zone_export(context, zone, export)
 
         return created_zone_export
 

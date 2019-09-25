@@ -35,14 +35,6 @@ def main():
     logging.setup(CONF, 'designate')
     gmr.TextGuruMeditation.setup_autorun(version)
 
-    # NOTE(timsim): This is to ensure people don't start the wrong
-    #               services when the worker model is enabled.
-    if not CONF['service:worker'].enabled:
-        LOG.error('You do not have designate-worker enabled, starting '
-                  'designate-worker is not allowed. '
-                  'You need to start designate-pool-manager instead.')
-        sys.exit(1)
-
     hookpoints.log_hook_setup()
 
     server = worker_service.Service()

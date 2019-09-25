@@ -31,7 +31,6 @@ from designate.conf import mdns
 from designate.conf import metrics
 from designate.conf import msdns
 from designate.conf import network_api
-from designate.conf import pool_manager
 from designate.conf import producer
 from designate.conf import proxy
 from designate.conf import service_status
@@ -59,7 +58,6 @@ mdns.register_opts(CONF)
 metrics.register_opts(CONF)
 msdns.register_opts(CONF)
 network_api.register_opts(CONF)
-pool_manager.register_opts(CONF)
 producer.register_opts(CONF)
 proxy.register_opts(CONF)
 service_status.register_opts(CONF)

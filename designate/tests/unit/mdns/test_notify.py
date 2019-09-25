@@ -20,7 +20,6 @@ import dns.rdataclass
 import dns.rdatatype
 import mock
 
-import designate.mdns.base as mdnsbase
 import designate.mdns.notify as notify
 import designate.tests
 from designate.tests.unit import RoObject
@@ -40,24 +39,6 @@ class MdnsNotifyTest(designate.tests.TestCase):
 
         self.notify._make_and_send_dns_message.assert_called_with(
             1, 2, 3, 4, 5, 6, notify=True
-        )
-
-    @mock.patch.object(mdnsbase.pool_mngr_api.PoolManagerAPI, 'get_instance')
-    def test_poll_for_serial_number(self, mock_get_instance):
-        self.notify.get_serial_number = mock.Mock(
-            return_value=('status', 99, 9)
-        )
-        ns = RoObject(host='host', port=1234)
-
-        self.notify.poll_for_serial_number(
-            'c', 'z', ns, 1, 2, 3, 4
-        )
-
-        self.notify.get_serial_number.assert_called_with(
-            'c', 'z', 'host', 1234, 1, 2, 3, 4
-        )
-        self.notify.pool_manager_api.update_status.assert_called_with(
-            'c', 'z', ns, 'status', 99
         )
 
     @mock.patch('time.sleep')

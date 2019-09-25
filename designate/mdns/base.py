@@ -16,7 +16,6 @@
 import oslo_messaging as messaging
 from oslo_log import log as logging
 
-from designate.pool_manager import rpcapi as pool_mngr_api
 from designate.central import rpcapi as central_api
 
 LOG = logging.getLogger(__name__)
@@ -37,7 +36,3 @@ class BaseEndpoint(object):
     @property
     def central_api(self):
         return central_api.CentralAPI.get_instance()
-
-    @property
-    def pool_manager_api(self):
-        return pool_mngr_api.PoolManagerAPI.get_instance()

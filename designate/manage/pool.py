@@ -61,36 +61,6 @@ class PoolCommands(base.Commands):
                 default_flow_style=False
             )
 
-    @base.args('--file', help='The path to the file the yaml output should be '
-               'writen to',
-               default='/etc/designate/pools.yaml')
-    def export_from_config(self, file):
-        self._startup()
-
-        # Avoid circular dependency imports
-        from designate import pool_manager
-        pool_manager.register_dynamic_pool_options()
-
-        try:
-            pools = self.central_api.find_pools(self.context)
-        except messaging.exceptions.MessagingTimeout:
-            LOG.critical("No response received from designate-central. "
-                         "Check it is running, and retry")
-            sys.exit(1)
-        r_pools = objects.PoolList()
-        for pool in pools:
-            r_pool = objects.Pool.from_config(CONF, pool.id)
-            r_pool.id = pool.id
-            r_pool.ns_records = pool.ns_records
-            r_pool.attributes = pool.attributes
-            r_pools.append(r_pool)
-        with open(file, 'w') as stream:
-            yaml.dump(
-                DesignateAdapter.render('YAML', r_pools),
-                stream,
-                default_flow_style=False
-            )
-
     @base.args('--pool_id', help='ID of the pool to be examined',
                default=CONF['service:central'].default_pool_id)
     def show_config(self, pool_id):

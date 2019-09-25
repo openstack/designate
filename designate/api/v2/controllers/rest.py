@@ -32,7 +32,6 @@ import pecan.routing
 
 from designate import exceptions
 from designate.central import rpcapi as central_rpcapi
-from designate.pool_manager import rpcapi as pool_mgr_rpcapi
 
 
 class RestController(pecan.rest.RestController):
@@ -49,10 +48,6 @@ class RestController(pecan.rest.RestController):
     @property
     def central_api(self):
         return central_rpcapi.CentralAPI.get_instance()
-
-    @property
-    def pool_mgr_api(self):
-        return pool_mgr_rpcapi.PoolManagerAPI.get_instance()
 
     def _apply_filter_params(self, params, accepted_filters, criterion):
         invalid = []
