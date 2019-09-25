@@ -32,7 +32,7 @@ class NoopEmitterTest(oslotest.base.BaseTestCase):
         emitter.start()
 
         self.mock_tg.add_timer.assert_called_once_with(
-            5.0, emitter._emit_heartbeat)
+            10.0, emitter._emit_heartbeat)
 
     def test_stop(self):
         mock_pulse = mock.Mock()
