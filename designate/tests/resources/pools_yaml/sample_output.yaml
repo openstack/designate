@@ -2,7 +2,7 @@
   - host: 192.0.2.4
     port: 53
   attributes: {}
-  description: Default PowerDNS Pool
+  description: Default PowerDNS 4 Pool
   id: cf2e8eab-76cd-4162-bf76-8aeee3556de0
   name: default
   nameservers:
@@ -16,10 +16,11 @@
   - hostname: ns1-2.example.org.
     priority: 2
   targets:
-  - description: PowerDNS Database Cluster
+  - description: PowerDNS 4 Server
     masters:
     - host: 192.0.2.1
       port: 5354
     options:
-      connection: mysql+pymysql://designate:password@127.0.0.1/designate_pdns?charset=utf8
-    type: powerdns
+      api_endpoint: http://192.0.2.1:8081
+      api_token: api_key
+    type: pdns4

@@ -4,7 +4,7 @@ set -ex
 
 pushd $BASE/new/devstack
 
-DEVSTACK_GATE_DESIGNATE_DRIVER=${DEVSTACK_GATE_DESIGNATE_DRIVER:-powerdns}
+DEVSTACK_GATE_DESIGNATE_DRIVER=${DEVSTACK_GATE_DESIGNATE_DRIVER:-pdns4}
 
 export KEEP_LOCALRC=1
 export ENABLED_SERVICES=designate,designate-api,designate-central,designate-sink,designate-mdns,designate-worker,designate-producer

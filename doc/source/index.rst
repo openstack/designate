@@ -5,7 +5,7 @@ Designate, a DNSaaS component for OpenStack
 Designate is a multi-tenant DNSaaS service for OpenStack. It provides a REST
 API with integrated Keystone authentication. It can be configured to
 auto-generate records based on Nova and Neutron actions. Designate supports
-a variety of DNS servers including Bind9 and PowerDNS.
+a variety of DNS servers including Bind9 and PowerDNS 4.
 
 Contents
 ~~~~~~~~

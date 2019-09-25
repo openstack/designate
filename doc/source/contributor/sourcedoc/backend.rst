@@ -69,10 +69,10 @@ Backend Fake
     :undoc-members:
     :show-inheritance:
 
-Backend Powerdns
-================
+Backend PowerDNS 4
+==================
 
-.. automodule:: designate.backend.impl_powerdns
+.. automodule:: designate.backend.impl_pdns4
     :members:
     :undoc-members:
     :show-inheritance:

@@ -1,6 +1,6 @@
 ---
 - name: pool-1
-  description: Default PowerDNS Pool
+  description: Default PowerDNS 4 Pool
   attributes:
     internal: true
   ns_records:
@@ -14,13 +14,14 @@
     - host: 192.0.2.3
       port: 53
   targets:
-    - type: powerdns
-      description: PowerDNS Database Cluster
+    - type: pdns4
+      description: PowerDNS 4 Server
       masters:
         - host: 192.0.2.1
           port: 5354
       options:
-        connection: 'mysql+pymysql://designate:password@127.0.0.1/designate_pdns?charset=utf8'
+        api_endpoint: http://192.0.2.1:8081
+        api_token: api_key
   also_notifies:
    - host: 192.0.2.4
      port: 53
