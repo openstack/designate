@@ -1,0 +1,27 @@
+<Directory %DESIGNATE_BIN_DIR%>
+    Require all granted
+</Directory>
+
+<VirtualHost *:9001>
+    WSGIDaemonProcess designate-api processes=%APIWORKERS% threads=1 user=%USER% display-name=%{GROUP} %VIRTUALENV%
+    WSGIProcessGroup designate-api
+    WSGIScriptAlias / %DESIGNATE_BIN_DIR%/designate-api-wsgi
+    WSGIApplicationGroup %{GLOBAL}
+    WSGIPassAuthorization On
+    <IfVersion >= 2.4>
+      ErrorLogFormat "%M"
+    </IfVersion>
+    ErrorLog /var/log/%APACHE_NAME%/designate-api.log
+    %SSLENGINE%
+    %SSLCERTFILE%
+    %SSLKEYFILE%
+</VirtualHost>
+
+Alias /dns %DESIGNATE_BIN_DIR%/designate-api-wsgi
+<Location /dns>
+    SetHandler wsgi-script
+    Options +ExecCGI
+    WSGIProcessGroup designate-api
+    WSGIApplicationGroup %{GLOBAL}
+    WSGIPassAuthorization On
+</Location>

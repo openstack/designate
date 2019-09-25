@@ -18,6 +18,8 @@ fi
 # runs that a clean run would need to clean up
 function cleanup_designate {
     sudo rm -rf $DESIGNATE_STATE_PATH
+    sudo rm -f $(apache_site_config_for designate-api)
+    remove_uwsgi_config "$DESIGNATE_UWSGI_CONF" "$DESIGNATE_UWSGI"
     cleanup_designate_backend
 }
 
@@ -62,7 +64,6 @@ function configure_designate {
     iniset $DESIGNATE_CONF service:api enable_host_header True
     iniset $DESIGNATE_CONF service:api enable_api_v2 $DESIGNATE_ENABLE_API_V2
     iniset $DESIGNATE_CONF service:api enable_api_admin $DESIGNATE_ENABLE_API_ADMIN
-    iniset $DESIGNATE_CONF service:api workers $API_WORKERS
 
     # Central Configuration
     iniset $DESIGNATE_CONF service:central workers $API_WORKERS
@@ -101,13 +102,8 @@ function configure_designate {
     sudo chown root:root $tempfile
     sudo mv $tempfile /etc/sudoers.d/designate-rootwrap
 
-    # TLS Proxy Configuration
     if is_service_enabled tls-proxy; then
-        # Set the service port for a proxy to take the original
-        iniset $DESIGNATE_CONF service:api listen ${DESIGNATE_SERVICE_HOST}:${DESIGNATE_SERVICE_PORT_INT}
         iniset $DESIGNATE_CONF keystone cafile $SSL_BUNDLE_FILE
-    else
-        iniset $DESIGNATE_CONF service:api listen ${DESIGNATE_SERVICE_HOST}:${DESIGNATE_SERVICE_PORT}
     fi
 
     # Setup the Keystone Integration
@@ -130,6 +126,37 @@ function configure_designate {
 
     # Backend Plugin Configuation
     configure_designate_backend
+
+    if [[ "$DESIGNATE_WSGI_MODE" == "uwsgi" ]]; then
+        write_uwsgi_config "$DESIGNATE_UWSGI_CONF" "$DESIGNATE_UWSGI" "/dns"
+    else
+        _config_designate_apache_wsgi
+    fi
+}
+
+function _config_designate_apache_wsgi {
+    local designate_api_apache_conf
+    local venv_path=""
+    local designate_bin_dir=""
+    designate_bin_dir=$(get_python_exec_prefix)
+    designate_api_apache_conf=$(apache_site_config_for designate-api)
+
+    if [[ ${USE_VENV} = True ]]; then
+        venv_path="python-path=${PROJECT_VENV["designate"]}/lib/$(python_version)/site-packages"
+        designate_bin_dir=${PROJECT_VENV["designate"]}/bin
+    fi
+
+    sudo cp $DESIGNATE_DIR/devstack/files/apache-designate-api.template $designate_api_apache_conf
+    sudo sed -e "
+        s|%APACHE_NAME%|$APACHE_NAME|g;
+        s|%DESIGNATE_BIN_DIR%|$designate_bin_dir|g;
+        s|%SSLENGINE%|$designate_ssl|g;
+        s|%SSLCERTFILE%|$designate_certfile|g;
+        s|%SSLKEYFILE%|$designate_keyfile|g;
+        s|%USER%|$STACK_USER|g;
+        s|%VIRTUALENV%|$venv_path|g;
+        s|%APIWORKERS%|$API_WORKERS|g;
+    " -i $designate_api_apache_conf
 }
 
 function configure_designatedashboard {
@@ -188,10 +215,13 @@ function create_designate_accounts {
     if is_service_enabled designate-api; then
         create_service_user "designate"
 
+        local designate_api_url="$DESIGNATE_SERVICE_PROTOCOL://$DESIGNATE_SERVICE_HOST/dns"
+
         get_or_create_service "designate" "dns" "Designate DNS Service"
-        get_or_create_endpoint "dns" \
+        get_or_create_endpoint \
+            "dns" \
             "$REGION_NAME" \
-            "$DESIGNATE_SERVICE_PROTOCOL://$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT/"
+            "$designate_api_url"
     fi
 }
 
@@ -223,6 +253,13 @@ function init_designate {
 
 # install_designate - Collect source and prepare
 function install_designate {
+    if [[ "$DESIGNATE_WSGI_MODE" == "uwsgi" ]]; then
+        install_apache_uwsgi
+    else
+        install_apache_wsgi
+    fi
+
+
     if is_ubuntu; then
         install_package libcap2-bin
     elif is_fedora; then
@@ -269,7 +306,6 @@ function start_designate {
     start_designate_backend
 
     run_process designate-central "$DESIGNATE_BIN_DIR/designate-central --config-file $DESIGNATE_CONF"
-    run_process designate-api "$DESIGNATE_BIN_DIR/designate-api --config-file $DESIGNATE_CONF"
     run_process designate-mdns "$DESIGNATE_BIN_DIR/designate-mdns --config-file $DESIGNATE_CONF"
     run_process designate-agent "$DESIGNATE_BIN_DIR/designate-agent --config-file $DESIGNATE_CONF"
     run_process designate-sink "$DESIGNATE_BIN_DIR/designate-sink --config-file $DESIGNATE_CONF"
@@ -277,20 +313,32 @@ function start_designate {
     run_process designate-worker "$DESIGNATE_BIN_DIR/designate-worker --config-file $DESIGNATE_CONF"
     run_process designate-producer "$DESIGNATE_BIN_DIR/designate-producer --config-file $DESIGNATE_CONF"
 
-    # Start proxies if enabled
-    if is_service_enabled designate-api && is_service_enabled tls-proxy; then
-        start_tls_proxy designate-api '*' $DESIGNATE_SERVICE_PORT $DESIGNATE_SERVICE_HOST $DESIGNATE_SERVICE_PORT_INT &
+
+
+    if [[ "$DESIGNATE_WSGI_MODE" == "uwsgi" ]]; then
+        run_process "designate-api" "$DESIGNATE_BIN_DIR/uwsgi --procname-prefix designate-api --ini $DESIGNATE_UWSGI_CONF"
+    else
+        enable_apache_site designate-api
+        restart_apache_server
+        tail_log designate-api /var/log/$APACHE_NAME/designate-api.log
     fi
 
-    if ! timeout $SERVICE_TIMEOUT sh -c "while ! wget --no-proxy -q -O- $DESIGNATE_SERVICE_PROTOCOL://$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT; do sleep 1; done"; then
-        die $LINENO "Designate did not start"
+    echo "Waiting for designate-api to start..."
+    if ! wait_for_service $SERVICE_TIMEOUT $DESIGNATE_SERVICE_PROTOCOL://$DESIGNATE_SERVICE_HOST/dns; then
+        die $LINENO "designate-api did not start"
     fi
 }
 
 # stop_designate - Stop running processes
 function stop_designate {
+    if [[ "$DESIGNATE_WSGI_MODE" == "uwsgi" ]]; then
+        stop_process "designate-api"
+    else
+        disable_apache_site designate-api
+        restart_apache_server
+    fi
+
     stop_process designate-central
-    stop_process designate-api
     stop_process designate-mdns
     stop_process designate-agent
     stop_process designate-sink
