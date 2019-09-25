@@ -18,6 +18,8 @@ from oslo_versionedobjects import exception
 from oslo_utils import excutils
 from designate.i18n import _
 from oslo_versionedobjects import base
+from oslo_versionedobjects import fields as ovoo_fields
+
 from oslo_versionedobjects.base import VersionedObjectDictCompat as DictObjectMixin  # noqa
 
 from designate.objects import fields
@@ -226,10 +228,10 @@ class DesignateObject(base.VersionedObject):
                     continue
 
                 # Reset straight Object and ListOfObjects fields
-                if isinstance(self.fields[field], self.obj_fields.ObjectField):
+                if isinstance(self.fields[field], ovoo_fields.ObjectField):
                     value.obj_reset_changes(recursive=True)
                 elif isinstance(self.fields[field],
-                                self.obj_fields.ListOfObjectsField):
+                                ovoo_fields.ListOfObjectsField):
                     for thing in value:
                         thing.obj_reset_changes(recursive=True)
 

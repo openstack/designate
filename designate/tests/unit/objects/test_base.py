@@ -405,6 +405,21 @@ class DesignateObjectTest(oslotest.base.BaseTestCase):
         self.assertEqual(1, len(obj.obj_what_changed()))
         self.assertEqual({'name': "My Name"}, obj.obj_get_changes())
 
+    def test_obj_reset_changes_recursive(self):
+        obj = TestObject()
+        obj.id = "My ID"
+        obj.name = "My Name"
+        obj.nested = TestObject()
+        obj.nested.id = "My ID"
+
+        self.assertEqual(3, len(obj.obj_what_changed()))
+
+        obj.obj_reset_changes()
+        self.assertEqual(1, len(obj.obj_what_changed()))
+
+        obj.obj_reset_changes(recursive=True)
+        self.assertEqual(0, len(obj.obj_what_changed()))
+
     def test_obj_get_original_value(self):
         # Create an object
         obj = TestObject()
