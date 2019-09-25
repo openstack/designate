@@ -1,0 +1,18 @@
+---
+upgrade:
+  - |
+    The previously deprecated options ``api_host``, ``api_port``, ``host`` and
+    ``port`` have been permanently removed and are replaced by ``listen``.
+
+    e.g.
+
+    .. code-block:: ini
+
+      [service:api]
+      listen = 0.0.0.0:9001
+
+    ..
+  - |
+    The Designate ``sink`` service will now use the heartbeat reporting system to
+    report its status. This was already the case for all other Designate
+    services.

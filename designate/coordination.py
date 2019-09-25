@@ -35,21 +35,31 @@ def _retry_if_tooz_error(exception):
     return isinstance(exception, tooz.coordination.ToozError)
 
 
-class CoordinationMixin(object):
-    def __init__(self, *args, **kwargs):
-        super(CoordinationMixin, self).__init__(*args, **kwargs)
-
+class Coordination(object):
+    def __init__(self, name, tg):
+        self.name = name
+        self.tg = tg
+        self.coordination_id = None
         self._coordinator = None
+        self._started = False
+
+    @property
+    def coordinator(self):
+        return self._coordinator
+
+    @property
+    def started(self):
+        return self._started
 
     def start(self):
-        self._coordination_id = ":".join([CONF.host, generate_uuid()])
+        self.coordination_id = ":".join([CONF.host, generate_uuid()])
 
         if CONF.coordination.backend_url is not None:
             backend_url = CONF.coordination.backend_url
 
             self._coordinator = tooz.coordination.get_coordinator(
-                backend_url, self._coordination_id.encode())
-            self._coordination_started = False
+                backend_url, self.coordination_id.encode())
+            self._started = False
 
             self.tg.add_timer(CONF.coordination.heartbeat_interval,
                               self._coordinator_heartbeat)
@@ -61,25 +71,22 @@ class CoordinationMixin(object):
                         "coordination functionality will be disabled. "
                         "Please configure a coordination backend.")
 
-        super(CoordinationMixin, self).start()
-
         if self._coordinator is not None:
-            while not self._coordination_started:
+            while not self._started:
                 try:
                     self._coordinator.start()
 
                     try:
                         create_group_req = self._coordinator.create_group(
-                            self.service_name)
+                            self.name)
                         create_group_req.get()
                     except tooz.coordination.GroupAlreadyExist:
                         pass
 
-                    join_group_req = self._coordinator.join_group(
-                        self.service_name)
+                    join_group_req = self._coordinator.join_group(self.name)
                     join_group_req.get()
 
-                    self._coordination_started = True
+                    self._started = True
 
                 except Exception:
                     LOG.warning("Failed to start Coordinator:", exc_info=True)
@@ -87,18 +94,16 @@ class CoordinationMixin(object):
 
     def stop(self):
         if self._coordinator is not None:
-            self._coordination_started = False
+            self._started = False
 
-            leave_group_req = self._coordinator.leave_group(self.service_name)
+            leave_group_req = self._coordinator.leave_group(self.name)
             leave_group_req.get()
             self._coordinator.stop()
-
-        super(CoordinationMixin, self).stop()
 
         self._coordinator = None
 
     def _coordinator_heartbeat(self):
-        if not self._coordination_started:
+        if not self._started:
             return
 
         try:
@@ -107,7 +112,7 @@ class CoordinationMixin(object):
             LOG.exception('Error sending a heartbeat to coordination backend.')
 
     def _coordinator_run_watchers(self):
-        if not self._coordination_started:
+        if not self._started:
             return
 
         self._coordinator.run_watchers()

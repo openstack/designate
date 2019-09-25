@@ -28,7 +28,6 @@ from designate.agent import service as agent_service
 
 CONF = designate.conf.CONF
 CONF.import_opt('workers', 'designate.agent', group='service:agent')
-CONF.import_opt('threads', 'designate.agent', group='service:agent')
 
 
 def main():
@@ -38,6 +37,8 @@ def main():
 
     hookpoints.log_hook_setup()
 
-    server = agent_service.Service(threads=CONF['service:agent'].threads)
+    server = agent_service.Service()
+    heartbeat = service.Heartbeat(server.service_name, server.tg)
     service.serve(server, workers=CONF['service:agent'].workers)
+    heartbeat.start()
     service.wait()

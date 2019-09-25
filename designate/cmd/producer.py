@@ -28,7 +28,6 @@ from designate.producer import service as producer_service
 LOG = logging.getLogger(__name__)
 CONF = designate.conf.CONF
 CONF.import_opt('workers', 'designate.producer', group='service:producer')
-CONF.import_opt('threads', 'designate.producer', group='service:producer')
 
 
 def main():
@@ -46,7 +45,8 @@ def main():
 
     hookpoints.log_hook_setup()
 
-    server = producer_service.Service(threads=CONF['service:producer'].threads)
+    server = producer_service.Service()
+    heartbeat = service.Heartbeat(server.service_name, server.tg)
     service.serve(server, workers=CONF['service:producer'].workers)
-    server.heartbeat_emitter.start()
+    heartbeat.start()
     service.wait()

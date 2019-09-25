@@ -24,7 +24,6 @@ from oslo_concurrency import lockutils
 import oslo_messaging as messaging
 
 _EXTRA_DEFAULT_LOG_LEVELS = [
-    'eventlet.wsgi.server=WARN',
     'kazoo.client=WARN',
     'keystone=INFO',
     'oslo_service.loopingcall=WARN',

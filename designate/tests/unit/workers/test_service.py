@@ -24,6 +24,7 @@ import designate.tests
 from designate import backend
 from designate import exceptions
 from designate import objects
+from designate.tests import fixtures
 from designate.worker import processing
 from designate.worker import service
 
@@ -33,6 +34,8 @@ CONF = cfg.CONF
 class TestService(oslotest.base.BaseTestCase):
     def setUp(self):
         super(TestService, self).setUp()
+        self.stdlog = fixtures.StandardLogging()
+        self.useFixture(self.stdlog)
         self.useFixture(cfg_fixture.Config(CONF))
 
         self.context = mock.Mock()
@@ -40,10 +43,16 @@ class TestService(oslotest.base.BaseTestCase):
         self.service = service.Service()
 
     @mock.patch.object(designate.service.RPCService, 'start')
-    def test_service_start(self, mock_service_start):
+    def test_service_start(self, mock_rpc_start):
         self.service.start()
 
-        self.assertTrue(mock_service_start.called)
+        self.assertTrue(mock_rpc_start.called)
+
+    @mock.patch.object(designate.rpc, 'get_notification_listener')
+    def test_service_stop(self, mock_notification_listener):
+        self.service.stop()
+
+        self.assertIn('Stopping worker service', self.stdlog.logger.output)
 
     def test_service_name(self):
         self.assertEqual('worker', self.service.service_name)
@@ -53,7 +62,7 @@ class TestService(oslotest.base.BaseTestCase):
 
         self.service = service.Service()
 
-        self.assertEqual('test-topic', self.service._rpc_topic)
+        self.assertEqual('test-topic', self.service.rpc_topic)
         self.assertEqual('worker', self.service.service_name)
 
     def test_central_api(self):

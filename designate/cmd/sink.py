@@ -28,7 +28,6 @@ from designate.sink import service as sink_service
 
 CONF = designate.conf.CONF
 CONF.import_opt('workers', 'designate.sink', group='service:sink')
-CONF.import_opt('threads', 'designate.sink', group='service:sink')
 
 
 def main():
@@ -38,6 +37,8 @@ def main():
 
     hookpoints.log_hook_setup()
 
-    server = sink_service.Service(threads=CONF['service:sink'].threads)
+    server = sink_service.Service()
+    heartbeat = service.Heartbeat(server.service_name, server.tg)
     service.serve(server, workers=CONF['service:sink'].workers)
+    heartbeat.start()
     service.wait()

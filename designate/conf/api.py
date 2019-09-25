@@ -33,14 +33,6 @@ API_OPTS = [
                     'the hostname, port, and any paths that are added'
                     'to the base of Designate is URLs,'
                     'For example http://dns.openstack.example.com/dns'),
-    cfg.IPOpt('api_host',
-              deprecated_for_removal=True,
-              deprecated_reason="Replaced by 'listen' option",
-              help='API Bind Host'),
-    cfg.PortOpt('api_port',
-                deprecated_for_removal=True,
-                deprecated_reason="Replaced by 'listen' option",
-                help='API Port Number'),
     cfg.ListOpt('listen',
                 default=['0.0.0.0:9001'],
                 help='API host:port pairs to listen on'),

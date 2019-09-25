@@ -23,12 +23,11 @@ from designate import hookpoints
 from designate import service
 from designate import utils
 from designate import version
-from designate.central import service as central
+from designate.central import service as central_service
 
 
 CONF = designate.conf.CONF
 CONF.import_opt('workers', 'designate.central', group='service:central')
-CONF.import_opt('threads', 'designate.central', group='service:central')
 
 
 def main():
@@ -38,7 +37,9 @@ def main():
 
     hookpoints.log_hook_setup()
 
-    server = central.Service(threads=CONF['service:central'].threads)
+    server = central_service.Service()
+    heartbeat = service.Heartbeat(server.service_name, server.tg,
+                                  rpc_api=server)
     service.serve(server, workers=CONF['service:central'].workers)
-    server.heartbeat_emitter.start()
+    heartbeat.start()
     service.wait()

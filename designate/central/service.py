@@ -184,37 +184,40 @@ def notification(notification_type):
     return outer
 
 
-class Service(service.RPCService, service.Service):
+class Service(service.RPCService):
     RPC_API_VERSION = '6.2'
 
     target = messaging.Target(version=RPC_API_VERSION)
 
-    def __init__(self, threads=None):
-        super(Service, self).__init__(threads=threads)
+    def __init__(self):
+        self._scheduler = None
+        self._storage = None
+        self._quota = None
+
+        super(Service, self).__init__(
+            self.service_name, cfg.CONF['service:central'].topic,
+            threads=cfg.CONF['service:central'].threads,
+        )
 
         self.network_api = network_api.get_network_api(cfg.CONF.network_api)
 
-        # update_service_status needs is called by the emitter so we pass
-        # ourselves as the rpc_api.
-        self.heartbeat_emitter.rpc_api = self
-
     @property
     def scheduler(self):
-        if not hasattr(self, '_scheduler'):
+        if not self._scheduler:
             # Get a scheduler instance
             self._scheduler = scheduler.get_scheduler(storage=self.storage)
         return self._scheduler
 
     @property
     def quota(self):
-        if not hasattr(self, '_quota'):
+        if not self._quota:
             # Get a quota manager instance
             self._quota = quota.get_quota()
         return self._quota
 
     @property
     def storage(self):
-        if not hasattr(self, '_storage'):
+        if not self._storage:
             # Get a storage connection
             storage_driver = cfg.CONF['service:central'].storage_driver
             self._storage = storage.get_storage(storage_driver)
@@ -232,8 +235,8 @@ class Service(service.RPCService, service.Service):
 
         super(Service, self).start()
 
-    def stop(self):
-        super(Service, self).stop()
+    def stop(self, graceful=True):
+        super(Service, self).stop(graceful)
 
     @property
     def mdns_api(self):
@@ -251,7 +254,7 @@ class Service(service.RPCService, service.Service):
     def zone_api(self):
         # TODO(timsim): Remove this when pool_manager_api is gone
         if cfg.CONF['service:worker'].enabled:
-                return self.worker_api
+            return self.worker_api
         return self.pool_manager_api
 
     def _is_valid_zone_name(self, context, zone_name):

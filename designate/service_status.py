@@ -31,14 +31,15 @@ class HeartBeatEmitter(plugin.DriverPlugin):
     __plugin_ns__ = 'designate.heartbeat_emitter'
     __plugin_type__ = 'heartbeat_emitter'
 
-    def __init__(self, service, threadgroup, status_factory=None):
+    def __init__(self, service, thread_group, status_factory=None,
+                 *args, **kwargs):
         super(HeartBeatEmitter, self).__init__()
 
         self._service = service
         self._hostname = CONF.host
 
         self._running = False
-        self._tg = threadgroup
+        self._tg = thread_group
         self._tg.add_timer(
             CONF.heartbeat_emitter.heartbeat_interval,
             self._emit_heartbeat)

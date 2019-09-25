@@ -21,27 +21,42 @@ from oslo_config import fixture as cfg_fixture
 import designate.dnsutils
 import designate.rpc
 import designate.service
-import designate.storage.base
+from designate import storage
 import designate.utils
 from designate.mdns import handler
 from designate.mdns import service
+from designate.tests import fixtures
 
 CONF = cfg.CONF
 
 
 class MdnsServiceTest(oslotest.base.BaseTestCase):
-    @mock.patch.object(designate.rpc, 'get_server')
-    def setUp(self, mock_rpc_server):
+    @mock.patch.object(storage, 'get_storage', mock.Mock())
+    def setUp(self):
         super(MdnsServiceTest, self).setUp()
+        self.stdlog = fixtures.StandardLogging()
+        self.useFixture(self.stdlog)
+
         self.useFixture(cfg_fixture.Config(CONF))
 
         self.service = service.Service()
 
-    @mock.patch.object(designate.service.DNSService, '_start')
-    def test_service_start(self, mock_service_start):
+    @mock.patch.object(designate.service.DNSService, 'start')
+    @mock.patch.object(designate.service.RPCService, 'start')
+    def test_service_start(self, mock_rpc_start, mock_dns_start):
         self.service.start()
 
-        self.assertTrue(mock_service_start.called)
+        self.assertTrue(mock_dns_start.called)
+        self.assertTrue(mock_rpc_start.called)
+
+    def test_service_stop(self):
+        self.service.dns_service.stop = mock.Mock()
+
+        self.service.stop()
+
+        self.assertTrue(self.service.dns_service.stop.called)
+
+        self.assertIn('Stopping mdns service', self.stdlog.logger.output)
 
     def test_service_name(self):
         self.assertEqual('mdns', self.service.service_name)
@@ -51,17 +66,13 @@ class MdnsServiceTest(oslotest.base.BaseTestCase):
 
         self.service = service.Service()
 
-        self.assertEqual('test-topic', self.service._rpc_topic)
+        self.assertEqual('test-topic', self.service.rpc_topic)
         self.assertEqual('mdns', self.service.service_name)
 
-    def test_rpc_endpoints(self):
-        endpoints = self.service._rpc_endpoints
-
-        self.assertIsInstance(endpoints[0], service.notify.NotifyEndpoint)
-        self.assertIsInstance(endpoints[1], service.xfr.XfrEndpoint)
-
-    @mock.patch.object(designate.storage.base.Storage, 'get_driver')
+    @mock.patch.object(storage, 'get_storage')
     def test_storage_driver(self, mock_get_driver):
+        self.service._storage = None
+
         mock_driver = mock.MagicMock()
         mock_driver.name = 'noop_driver'
         mock_get_driver.return_value = mock_driver
@@ -70,16 +81,12 @@ class MdnsServiceTest(oslotest.base.BaseTestCase):
 
         self.assertTrue(mock_get_driver.called)
 
-    @mock.patch.object(handler, 'RequestHandler', name='reqh')
-    @mock.patch.object(designate.service.DNSService, '_start')
+    @mock.patch.object(handler, 'RequestHandler')
+    @mock.patch.object(designate.service.DNSService, 'start')
     @mock.patch.object(designate.utils, 'cache_result')
-    @mock.patch.object(designate.storage.base.Storage, 'get_driver')
-    def test_dns_application(self, mock_req_handler, mock_cache_result,
-                             mock_service_start, mock_get_driver):
-        mock_driver = mock.MagicMock()
-        mock_driver.name = 'noop_driver'
-        mock_get_driver.return_value = mock_driver
+    def test_dns_application(self, mock_cache_result, mock_dns_start,
+                             mock_request_handler):
 
-        app = self.service._dns_application
+        app = self.service.dns_application
 
         self.assertIsInstance(app, designate.dnsutils.DNSMiddleware)

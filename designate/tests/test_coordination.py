@@ -27,45 +27,57 @@ cfg.CONF.register_opts([
 ], group="service:dummy")
 
 
-class CoordinatedService(coordination.CoordinationMixin, service.Service):
+class CoordinatedService(service.Service):
+    def __init__(self):
+        super(CoordinatedService, self).__init__()
+        self.coordination = coordination.Coordination(
+            self.service_name, self.tg
+        )
+
+    def start(self):
+        super(CoordinatedService, self).start()
+        self.coordination.start()
+
     @property
     def service_name(self):
         return "dummy"
 
 
-class TestCoordinationMixin(TestCase):
+class TestCoordination(TestCase):
     def setUp(self):
-        super(TestCoordinationMixin, self).setUp()
+        super(TestCoordination, self).setUp()
+        self.name = 'coordination'
+        self.tg = mock.Mock()
         self.config(backend_url="zake://", group="coordination")
 
     def test_start(self):
-        service = CoordinatedService()
+        service = coordination.Coordination(self.name, self.tg)
         service.start()
 
-        self.assertTrue(service._coordination_started)
-        self.assertIn(service.service_name.encode('utf-8'),
-                      service._coordinator.get_groups().get())
-        self.assertIn(service._coordination_id.encode('utf-8'),
-                      service._coordinator.get_members(
-                          service.service_name).get())
+        self.assertTrue(service.started)
+        self.assertIn(self.name.encode('utf-8'),
+                      service.coordinator.get_groups().get())
+        self.assertIn(service.coordination_id.encode('utf-8'),
+                      service.coordinator.get_members(
+                          self.name.encode('utf-8')).get())
         service.stop()
 
     def test_stop(self):
-        service = CoordinatedService()
+        service = coordination.Coordination(self.name, self.tg)
         service.start()
         service.stop()
-        self.assertFalse(service._coordination_started)
+        self.assertFalse(service.started)
 
     def test_start_no_coordination(self):
         self.config(backend_url=None, group="coordination")
-        service = CoordinatedService()
+        service = coordination.Coordination(self.name, self.tg)
         service.start()
-        self.assertIsNone(service._coordinator)
+        self.assertIsNone(service.coordinator)
 
     def test_stop_no_coordination(self):
         self.config(backend_url=None, group="coordination")
-        service = CoordinatedService()
-        self.assertIsNone(service._coordinator)
+        service = coordination.Coordination(self.name, self.tg)
+        self.assertIsNone(service.coordinator)
         service.start()
         service.stop()
 

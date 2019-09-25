@@ -30,8 +30,6 @@ LOG = logging.getLogger(__name__)
 CONF = designate.conf.CONF
 CONF.import_opt('workers', 'designate.producer',
                 group='service:zone_manager')
-CONF.import_opt('threads', 'designate.producer',
-                group='service:zone_manager')
 
 
 def main():
@@ -56,8 +54,8 @@ def main():
 
     LOG.warning('Starting designate-producer under the zone-manager name')
 
-    server = producer_service.Service(
-        threads=CONF['service:zone_manager'].threads)
+    server = producer_service.Service()
+    heartbeat = service.Heartbeat(server.service_name, server.tg)
     service.serve(server, workers=CONF['service:zone_manager'].workers)
-    server.heartbeat_emitter.start()
+    heartbeat.start()
     service.wait()

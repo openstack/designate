@@ -16,10 +16,10 @@
 from oslo_config import cfg
 from oslo_log import log as logging
 
-from designate import utils
+from designate import dnsutils
 from designate import service
 from designate import storage
-from designate import dnsutils
+from designate import utils
 from designate.mdns import handler
 from designate.mdns import notify
 from designate.mdns import xfr
@@ -29,13 +29,38 @@ LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
 
 
-class Service(service.DNSService, service.RPCService, service.Service):
+class Service(service.RPCService):
     _dns_default_port = DEFAULT_MDNS_PORT
+
+    def __init__(self):
+        self._storage = None
+
+        super(Service, self).__init__(
+            self.service_name, cfg.CONF['service:mdns'].topic,
+            threads=cfg.CONF['service:mdns'].threads,
+        )
+        self.override_endpoints(
+            [notify.NotifyEndpoint(self.tg), xfr.XfrEndpoint(self.tg)]
+        )
+
+        self.dns_service = service.DNSService(
+            self.dns_application, self.tg,
+            cfg.CONF['service:mdns'].listen,
+            cfg.CONF['service:mdns'].tcp_backlog,
+            cfg.CONF['service:mdns'].tcp_recv_timeout,
+        )
+
+    def start(self):
+        super(Service, self).start()
+        self.dns_service.start()
+
+    def stop(self, graceful=False):
+        self.dns_service.stop()
+        super(Service, self).stop(graceful)
 
     @property
     def storage(self):
-        if not hasattr(self, '_storage'):
-            # Get a storage connection
+        if not self._storage:
             self._storage = storage.get_storage(
                 CONF['service:mdns'].storage_driver
             )
@@ -47,12 +72,7 @@ class Service(service.DNSService, service.RPCService, service.Service):
 
     @property
     @utils.cache_result
-    def _rpc_endpoints(self):
-        return [notify.NotifyEndpoint(self.tg), xfr.XfrEndpoint(self.tg)]
-
-    @property
-    @utils.cache_result
-    def _dns_application(self):
+    def dns_application(self):
         # Create an instance of the RequestHandler class and wrap with
         # necessary middleware.
         application = handler.RequestHandler(self.storage, self.tg)

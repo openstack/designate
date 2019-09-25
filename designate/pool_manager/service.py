@@ -76,8 +76,7 @@ def _constant_retries(num_attempts, sleep_interval):
             yield True
 
 
-class Service(service.RPCService, coordination.CoordinationMixin,
-              service.Service):
+class Service(service.RPCService):
     """
     Service side of the Pool Manager RPC API.
 
@@ -91,8 +90,30 @@ class Service(service.RPCService, coordination.CoordinationMixin,
 
     target = messaging.Target(version=RPC_API_VERSION)
 
-    def __init__(self, threads=None):
-        super(Service, self).__init__(threads=threads)
+    def __init__(self):
+        self._scheduler = None
+        self._storage = None
+        self._quota = None
+
+        self._pool_election = None
+
+        self._central_api = None
+        self._mdns_api = None
+        self._pool_manager_api = None
+
+        topic = '%s.%s' % (
+            cfg.CONF['service:pool_manager'].topic,
+            CONF['service:pool_manager'].pool_id
+        )
+
+        super(Service, self).__init__(
+            self.service_name, topic,
+            threads=cfg.CONF['service:worker'].threads,
+        )
+
+        self.coordination = coordination.Coordination(
+            self.service_name, self.tg
+        )
 
         # Get a pool manager cache connection.
         self.cache = cache.get_pool_manager_cache(
@@ -110,8 +131,9 @@ class Service(service.RPCService, coordination.CoordinationMixin,
             CONF['service:pool_manager'].periodic_sync_retry_interval
 
         # Compute a time (seconds) by which things should have propagated
-        self.max_prop_time = utils.max_prop_time(self.timeout,
-            self.max_retries, self.retry_interval, self.delay)
+        self.max_prop_time = utils.max_prop_time(
+            self.timeout, self.max_retries, self.retry_interval, self.delay
+        )
 
     def _setup_target_backends(self):
         self.target_backends = {}
@@ -129,17 +151,6 @@ class Service(service.RPCService, coordination.CoordinationMixin,
     @property
     def service_name(self):
         return 'pool_manager'
-
-    @property
-    def _rpc_topic(self):
-        # Modify the default topic so it's pool manager instance specific.
-        topic = super(Service, self)._rpc_topic
-
-        topic = '%s.%s' % (topic, CONF['service:pool_manager'].pool_id)
-        LOG.info('Using topic %(topic)s for this pool manager instance.',
-                 {'topic': topic})
-
-        return topic
 
     def start(self):
         # Build the Pool (and related) Object from Config
@@ -182,11 +193,13 @@ class Service(service.RPCService, coordination.CoordinationMixin,
             self.target_backends[target.id].start()
 
         super(Service, self).start()
+        self.coordination.start()
 
         # Setup a Leader Election, use for ensuring certain tasks are executed
         # on exactly one pool-manager instance at a time]
         self._pool_election = coordination.LeaderElection(
-            self._coordinator, '%s:%s' % (self.service_name, self.pool.id))
+            self.coordination.coordinator,
+            '%s:%s' % (self.service_name, self.pool.id))
         self._pool_election.start()
 
         if CONF['service:pool_manager'].enable_recovery_timer:
@@ -201,29 +214,30 @@ class Service(service.RPCService, coordination.CoordinationMixin,
                      ' %(interval)s s', {'interval': interval})
             self.tg.add_timer(interval, self.periodic_sync, interval)
 
-    def stop(self):
+    def stop(self, graceful=True):
         self._pool_election.stop()
+        # self.coordination.stop()
 
-        super(Service, self).stop()
+        super(Service, self).stop(graceful)
 
         for target in self.pool.targets:
             self.target_backends[target.id].stop()
 
     @property
     def central_api(self):
-        if not hasattr(self, '_central_api'):
+        if not self._central_api:
             self._central_api = central_api.CentralAPI.get_instance()
         return self._central_api
 
     @property
     def mdns_api(self):
-        if not hasattr(self, '_mdns_adpi'):
+        if not self._mdns_api:
             self._mdns_api = mdns_api.MdnsAPI.get_instance()
         return self._mdns_api
 
     @property
     def pool_manager_api(self):
-        if not hasattr(self, '_pool_manager_api'):
+        if not self._pool_manager_api:
             pool_mgr_api = pool_manager_rpcapi.PoolManagerAPI
             self._pool_manager_api = pool_mgr_api.get_instance()
         return self._pool_manager_api

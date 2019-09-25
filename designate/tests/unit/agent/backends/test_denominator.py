@@ -28,7 +28,7 @@ class DenominatorAgentBackendTestCase(designate.tests.TestCase):
     def setUp(self):
         super(DenominatorAgentBackendTestCase, self).setUp()
 
-        self.CONF.set_override('port', 0, 'service:agent')
+        self.CONF.set_override('listen', ['0.0.0.0:0'], 'service:agent')
 
         self.backend = impl_denominator.DenominatorBackend('foo')
 

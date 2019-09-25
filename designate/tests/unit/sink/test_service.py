@@ -11,14 +11,13 @@
 # under the License.mport threading
 import mock
 
+import designate.tests
 import designate.rpc
-from designate import tests
 from designate.sink import service
 from designate.tests import fixtures
 
 
-class TestSinkService(tests.TestCase):
-
+class TestSinkService(designate.tests.TestCase):
     def setUp(self):
         super(TestSinkService, self).setUp()
         self.stdlog = fixtures.StandardLogging()
@@ -35,8 +34,7 @@ class TestSinkService(tests.TestCase):
 
         self.assertTrue(mock_notification_listener.called)
 
-    @mock.patch.object(designate.rpc, 'get_notification_listener')
-    def test_service_stop(self, mock_notification_listener):
+    def test_service_stop(self):
         self.service.stop()
 
         self.assertIn('Stopping sink service', self.stdlog.logger.output)

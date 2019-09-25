@@ -22,7 +22,7 @@ class FakeAgentBackendTestCase(designate.tests.TestCase):
     def setUp(self):
         super(FakeAgentBackendTestCase, self).setUp()
 
-        self.CONF.set_override('port', 0, 'service:agent')
+        self.CONF.set_override('listen', ['0.0.0.0:0'], 'service:agent')
 
         self.backend = impl_fake.FakeBackend('foo')
 
