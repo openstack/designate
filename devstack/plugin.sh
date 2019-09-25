@@ -52,25 +52,35 @@ function configure_designate {
         iniset $DESIGNATE_CONF coordination backend_url $DESIGNATE_COORDINATION_URL
     fi
 
+    # Agent Configuration
+    iniset $DESIGNATE_CONF service:agent workers $API_WORKERS
+
     # API Configuration
     sudo cp $DESIGNATE_DIR/etc/designate/api-paste.ini $DESIGNATE_APIPASTE_CONF
     iniset $DESIGNATE_CONF service:api enabled_extensions_v2 $DESIGNATE_ENABLED_EXTENSIONS_V2
     iniset $DESIGNATE_CONF service:api enabled_extensions_admin $DESIGNATE_ENABLED_EXTENSIONS_ADMIN
-    iniset $DESIGNATE_CONF service:api api_base_uri $DESIGNATE_SERVICE_PROTOCOL://$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT/
+    iniset $DESIGNATE_CONF service:api enable_host_header True
     iniset $DESIGNATE_CONF service:api enable_api_v2 $DESIGNATE_ENABLE_API_V2
     iniset $DESIGNATE_CONF service:api enable_api_admin $DESIGNATE_ENABLE_API_ADMIN
+    iniset $DESIGNATE_CONF service:api workers $API_WORKERS
+
+    # Central Configuration
+    iniset $DESIGNATE_CONF service:central workers $API_WORKERS
 
     # mDNS Configuration
     iniset $DESIGNATE_CONF service:mdns listen ${DESIGNATE_SERVICE_HOST}:${DESIGNATE_SERVICE_PORT_MDNS}
+    iniset $DESIGNATE_CONF service:mdns workers $API_WORKERS
+
+    # Producer Configuration
+    iniset $DESIGNATE_CONF service:producer workers $API_WORKERS
+
+    # Sink Configuration
+    iniset $DESIGNATE_CONF service:sink workers $API_WORKERS
 
     # Worker Configuration
-    if is_service_enabled designate-worker; then
-        iniset $DESIGNATE_CONF service:worker notify True
-        iniset $DESIGNATE_CONF service:worker poll_max_retries $DESIGNATE_POLL_RETRIES
-        iniset $DESIGNATE_CONF service:worker poll_retry_interval $DESIGNATE_POLL_INTERVAL
-    else
-        iniset $DESIGNATE_CONF service:worker enabled False
-    fi
+    iniset $DESIGNATE_CONF service:worker poll_max_retries $DESIGNATE_POLL_RETRIES
+    iniset $DESIGNATE_CONF service:worker poll_retry_interval $DESIGNATE_POLL_INTERVAL
+    iniset $DESIGNATE_CONF service:worker workers $API_WORKERS
 
     # Set up Notifications/Ceilometer Integration
     iniset $DESIGNATE_CONF oslo_messaging_notifications driver "$DESIGNATE_NOTIFICATION_DRIVER"
