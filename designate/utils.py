@@ -352,7 +352,7 @@ def bind_tcp(host, port, tcp_backlog, tcp_keepidle=None):
                             socket.TCP_KEEPIDLE,
                             tcp_keepidle)
 
-    sock_tcp.setblocking(True)
+    sock_tcp.settimeout(1)
     sock_tcp.bind((host, port))
     if port == 0:
         newport = sock_tcp.getsockname()[1]
@@ -385,7 +385,7 @@ def bind_udp(host, port):
     except Exception:
         LOG.info('SO_REUSEPORT not available, ignoring.')
 
-    sock_udp.setblocking(True)
+    sock_udp.settimeout(1)
     sock_udp.bind((host, port))
     if port == 0:
         newport = sock_udp.getsockname()[1]

@@ -60,7 +60,7 @@ class Service(service.Service):
         self.dns_service.start()
         self.backend.start()
 
-    def stop(self, graceful=False):
+    def stop(self, graceful=True):
         self.dns_service.stop()
         self.backend.stop()
         super(Service, self).stop(graceful)

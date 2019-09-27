@@ -54,7 +54,7 @@ class Service(service.RPCService):
         super(Service, self).start()
         self.dns_service.start()
 
-    def stop(self, graceful=False):
+    def stop(self, graceful=True):
         self.dns_service.stop()
         super(Service, self).stop(graceful)
 
