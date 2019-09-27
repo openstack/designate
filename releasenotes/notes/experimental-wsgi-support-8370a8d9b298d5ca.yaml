@@ -1,0 +1,4 @@
+---
+features:
+  - |
+    Added an experimental entrypoint for wsgi called ``designate-api-wsgi``.
