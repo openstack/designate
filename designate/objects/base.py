@@ -331,7 +331,7 @@ class ListObjectMixin(base.ObjectListBase):
             else:
                 setattr(instance, field, value)
 
-        instance._obj_changes = set(
+        instance._changed_fields = set(
             primitive.get('designate_object.changes', []))
         instance._obj_original_values = \
             primitive.get('designate_object.original_values', {})
