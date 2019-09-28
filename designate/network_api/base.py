@@ -14,13 +14,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import eventlet.patcher
-import six
 from oslo_config import cfg
 from oslo_log import log as logging
+import six
 
 from designate import exceptions
 from designate.plugin import DriverPlugin
-
 
 LOG = logging.getLogger(__name__)
 # NOTE(kiall): This is a workaround for bug #1424621, a broken reimplementation
@@ -38,49 +37,82 @@ class NetworkAPI(DriverPlugin):
     def _endpoints(self, service_catalog=None, service_type=None,
                    endpoint_type='publicURL', config_section=None,
                    region=None):
-        if service_catalog is not None and len(service_catalog):
-            endpoints = self._endpoints_from_catalog(
+        configured_endpoints = self.get_configured_endpoints(config_section)
+        if configured_endpoints:
+            endpoints = self.endpoints_from_config(
+                configured_endpoints,
+                region=region,
+            )
+        elif service_catalog:
+            endpoints = self.endpoints_from_catalog(
                 service_catalog, service_type, endpoint_type,
-                region=region)
-        elif config_section is not None:
-            endpoints = []
-            for u in cfg.CONF[config_section].endpoints:
-                e_region, e = u.split('|')
-                # Filter if region is given
-                if (e_region and region) and e_region != region:
-                    continue
-                endpoints.append((e, e_region))
-
-            if not endpoints:
-                msg = 'Endpoints are not configured'
-                raise exceptions.ConfigurationError(msg)
+                region=region,
+            )
         else:
-            msg = 'No service_catalog and no configured endpoints'
-            raise exceptions.ConfigurationError(msg)
+            raise exceptions.ConfigurationError(
+                'No service_catalog and no configured endpoints'
+            )
 
         LOG.debug('Returning endpoints: %s', endpoints)
         return endpoints
 
-    def _endpoints_from_catalog(self, service_catalog, service_type,
-                                endpoint_type, region=None):
+    @staticmethod
+    def endpoints_from_config(configured_endpoints, region=None):
+        """
+        Return the endpoints for the given service from the configuration.
+
+        return [('http://endpoint', 'region')]
+        """
+        endpoints = []
+        for endpoint_data in configured_endpoints:
+            if not endpoint_data:
+                continue
+            endpoint_region, endpoint = endpoint_data.split('|')
+            if region and endpoint_region != region:
+                continue
+            endpoints.append((endpoint, endpoint_region))
+        if not endpoints:
+            raise exceptions.ConfigurationError(
+                'Endpoints are not correctly configured'
+            )
+        return endpoints
+
+    @staticmethod
+    def endpoints_from_catalog(service_catalog, service_type, endpoint_type,
+                               region=None):
         """
         Return the endpoints for the given service from the context's sc
         or lookup towards the configured keystone.
 
         return [('http://endpoint', 'region')]
         """
-        urls = []
+        endpoints = []
         for svc in service_catalog:
             if svc['type'] != service_type:
                 continue
-            for url in svc['endpoints']:
-                if endpoint_type in url:
-                    if region is not None and url['region'] != region:
-                        continue
-                    urls.append((url[endpoint_type], url['region']))
-        if not urls:
-            raise exceptions.NetworkEndpointNotFound
-        return urls
+            for endpoint_data in svc['endpoints']:
+                if endpoint_type not in endpoint_data:
+                    continue
+                endpoint = endpoint_data[endpoint_type]
+                endpoint_region = endpoint_data['region']
+                if region and endpoint_region != region:
+                    continue
+                endpoints.append((endpoint, endpoint_region))
+        if not endpoints:
+            raise exceptions.NetworkEndpointNotFound()
+        return endpoints
+
+    @staticmethod
+    def get_configured_endpoints(config_section):
+        """
+        Returns endpoints from a specific section in the configuration.
+
+        return ['region|http://endpoint']
+        """
+        if not config_section:
+            return None
+        cfg_group = cfg.CONF[config_section]
+        return cfg_group.endpoints
 
     def list_floatingips(self, context, region=None):
         """
