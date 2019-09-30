@@ -32,7 +32,7 @@ COORDINATION_OPTS = [
             'https://docs.openstack.org/tooz/latest/user/compatibility.html')
     ),
     cfg.FloatOpt('heartbeat_interval',
-                 default=1.0,
+                 default=5.0,
                  help='Number of seconds between heartbeats for distributed '
                       'coordination.'),
     cfg.FloatOpt('run_watchers_interval',

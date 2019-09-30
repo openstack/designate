@@ -67,9 +67,9 @@ class Coordination(object):
                               self._coordinator_run_watchers)
 
         else:
-            LOG.warning("No coordination backend configured, distributed "
-                        "coordination functionality will be disabled. "
-                        "Please configure a coordination backend.")
+            LOG.warning('No coordination backend configured, distributed '
+                        'coordination functionality will be disabled. '
+                        'Please configure a coordination backend.')
 
         if self._coordinator is not None:
             while not self._started:
@@ -89,7 +89,7 @@ class Coordination(object):
                     self._started = True
 
                 except Exception:
-                    LOG.warning("Failed to start Coordinator:", exc_info=True)
+                    LOG.warning('Failed to start Coordinator', exc_info=True)
                     time.sleep(15)
 
     def stop(self):
@@ -109,7 +109,7 @@ class Coordination(object):
         try:
             self._coordinator.heartbeat()
         except tooz.coordination.ToozError:
-            LOG.exception('Error sending a heartbeat to coordination backend.')
+            LOG.warning('Error sending a heartbeat to coordination backend.')
 
     def _coordinator_run_watchers(self):
         if not self._started:
@@ -154,7 +154,7 @@ class Partitioner(object):
             raise
 
     def _on_group_change(self, event):
-        LOG.debug("Received member change %s", event)
+        LOG.debug('Received member change %s', event)
         members, self._my_partitions = self._update_partitions()
 
         self._run_callbacks(members, event)
@@ -191,7 +191,7 @@ class Partitioner(object):
         """Allow the partitioner to start timers after the coordinator has
         gotten it's connections up.
         """
-        LOG.debug("Starting partitioner")
+        LOG.debug('Starting partitioner')
         if self._coordinator:
             self._coordinator.watch_join_group(
                 self._group_id, self._on_group_change)
@@ -209,7 +209,7 @@ class Partitioner(object):
         self._started = True
 
     def watch_partition_change(self, callback):
-        LOG.debug("Watching for change %s", self._group_id)
+        LOG.debug('Watching for change %s', self._group_id)
         self._callbacks.append(callback)
         if self._started:
             if not self._coordinator:
