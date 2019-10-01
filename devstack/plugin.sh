@@ -17,7 +17,7 @@ fi
 # cleanup_designate - Remove residual data files, anything left over from previous
 # runs that a clean run would need to clean up
 function cleanup_designate {
-    sudo rm -rf $DESIGNATE_STATE_PATH $DESIGNATE_AUTH_CACHE_DIR
+    sudo rm -rf $DESIGNATE_STATE_PATH
     cleanup_designate_backend
 }
 
@@ -113,7 +113,7 @@ function configure_designate {
     # Setup the Keystone Integration
     if is_service_enabled keystone; then
         iniset $DESIGNATE_CONF service:api auth_strategy keystone
-        configure_auth_token_middleware $DESIGNATE_CONF designate $DESIGNATE_AUTH_CACHE_DIR
+        configure_keystone_authtoken_middleware $DESIGNATE_CONF designate
         iniset $DESIGNATE_CONF keystone region_name $REGION_NAME
         iniset $DESIGNATE_CONF service:api quotas_verify_project_id True
     fi
@@ -208,11 +208,6 @@ function create_designate_pool_configuration {
 
 # init_designate - Initialize etc.
 function init_designate {
-    # Create cache dir
-    sudo mkdir -p $DESIGNATE_AUTH_CACHE_DIR
-    sudo chown $STACK_USER $DESIGNATE_AUTH_CACHE_DIR
-    rm -f $DESIGNATE_AUTH_CACHE_DIR/*
-
     # Some Designate Backends require mdns be bound to port 53, make that
     # doable.
     sudo setcap 'cap_net_bind_service=+ep' $(readlink -f /usr/bin/python)
