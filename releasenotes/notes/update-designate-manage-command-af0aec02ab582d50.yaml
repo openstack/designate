@@ -1,0 +1,12 @@
+---
+upgrade:
+  - |
+    Update command ``designate-manage pool update``, change ``--dry_run`` to
+    ``--dry-run``, and change ``--delete`` and ``--dry-run`` as switchs not
+    key value pair.
+    e.g.
+
+    .. code-block:: bash
+
+       $ designate-manage pool update --file pools.yml --delete --dry-run
+

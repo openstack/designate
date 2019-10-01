@@ -150,7 +150,7 @@ the pool configuration.
 .. code-block:: bash
 
    # Do a dry run
-   $ designate-manage pool update --file pools.yml --dry_run
+   $ designate-manage pool update --file pools.yml --dry-run
    $ designate-manage pool update --file pools.yml
 
 Designate now has two pools to work with. The next step will be to
