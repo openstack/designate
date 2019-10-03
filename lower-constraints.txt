@@ -27,6 +27,7 @@ doc8==0.6.0
 docutils==0.14
 dogpile.cache==0.6.5
 dulwich==0.19.0
+edgegrid-python==1.1.1
 enum-compat==0.0.2
 eventlet==0.18.2
 extras==1.0.0

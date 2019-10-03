@@ -1,0 +1,161 @@
+# Configure the Akamai v2 backend
+
+# Requirements:
+# An active Akamai account / contract will be requied to use this DevStack
+# plugin.
+
+# Enable with:
+# DESIGNATE_BACKEND_DRIVER=akamai_v2
+
+# Dependencies:
+# ``functions`` file
+# ``designate`` configuration
+
+# install_designate_backend - install any external requirements
+# configure_designate_backend - make configuration changes, including those to other services
+# init_designate_backend - initialize databases, etc.
+# start_designate_backend - start any external services
+# stop_designate_backend - stop any external services
+# cleanup_designate_backend - remove transient data and cache
+
+# Save trace setting
+DP_AKAMAI_XTRACE=$(set +o | grep xtrace)
+set +o xtrace
+
+# Defaults
+# --------
+
+# DESIGNATE_HOST is IP address of the one of AKAMAI_NAMESERVERS
+DESIGNATE_HOST=${DESIGNATE_HOST:-"193.108.91.197"}
+DESIGNATE_AKAMAI_CLIENT_SECRET=${DESIGNATE_AKAMAI_CLIENT_SECRET:-"client_secret_string"}
+DESIGNATE_AKAMAI_HOST=${DESIGNATE_AKAMAI_HOST:-"akamai_host_string"}
+DESIGNATE_AKAMAI_ACCESS_TOKEN=${DESIGNATE_AKAMAI_ACCESS_TOKEN:-"access_token_string"}
+DESIGNATE_AKAMAI_CLIENT_TOKEN=${DESIGNATE_AKAMAI_CLIENT_TOKEN:-"client_token_string"}
+DESIGNATE_AKAMAI_CONTRACT_ID=${DESIGNATE_AKAMAI_CONTRACT_ID:-"contract_id"}
+DESIGNATE_AKAMAI_GID=${DESIGNATE_AKAMAI_GID:-"group_id"}
+DESIGNATE_AKAMAI_MASTERS=${DESIGNATE_AKAMAI_MASTERS:-"$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT_MDNS"}
+DESIGNATE_AKAMAI_NAMESERVERS=${DESIGNATE_AKAMAI_NAMESERVERS:-""}
+DESIGNATE_AKAMAI_ALSO_NOTIFIES=${DESIGNATE_AKAMAI_ALSO_NOTIFIES:-"23.14.128.185,23.207.197.166,23.205.121.134,104.122.95.88,72.247.124.98"}
+
+# Sanity Checks
+# -------------
+if [ -z "$DESIGNATE_AKAMAI_NAMESERVERS" ]; then
+    die $LINENO "You must configure DESIGNATE_AKAMAI_NAMESERVERS"
+fi
+
+if [ "$DESIGNATE_SERVICE_PORT_MDNS" != "53" ]; then
+    die $LINENO "Akamai requires DESIGNATE_SERVICE_PORT_MDNS is set to '53'"
+fi
+
+# Entry Points
+# ------------
+
+# install_designate_backend - install any external requirements
+function install_designate_backend {
+    :
+}
+
+# configure_designate_backend - make configuration changes, including those to other services
+function configure_designate_backend {
+    # Generate Designate pool.yaml file
+    sudo tee $DESIGNATE_CONF_DIR/pools.yaml > /dev/null <<EOF
+---
+- name: default
+  description: DevStack Akamai Pool
+  attributes: {}
+
+  targets:
+    - type: akamai
+      description: Akamai API
+      options:
+        host: $DESIGNATE_HOST
+        port: 53
+        akamai_client_secret: $DESIGNATE_AKAMAI_CLIENT_SECRET
+        akamai_host: $DESIGNATE_AKAMAI_HOST
+        akamai_access_token: $DESIGNATE_AKAMAI_ACCESS_TOKEN
+        akamai_client_token: $DESIGNATE_AKAMAI_CLIENT_TOKEN
+        akamai_contract_id: $DESIGNATE_AKAMAI_CONTRACT_ID
+        akamai_gid: $DESIGNATE_AKAMAI_GID
+
+        # NOTE: TSIG key has to be set manully if it's necessary
+        #tsig_key_name: key_test
+        #tsig_key_algorithm: hmac-sha512
+        #tsig_key_secret: test_ley_secret
+
+
+      masters:
+EOF
+
+    # Create a Pool Master for each of the Akamai Masters
+    IFS=',' read -a masters <<< "$DESIGNATE_AKAMAI_MASTERS"
+
+    for master in "${masters[@]}"; do
+        sudo tee -a $DESIGNATE_CONF_DIR/pools.yaml > /dev/null <<EOF
+        - host: $master
+          port: 53
+EOF
+    done
+
+    # Create a Pool NS Record for each of the Akamai Nameservers
+    IFS=',' read -a nameservers <<< "$DESIGNATE_AKAMAI_NAMESERVERS"
+
+    sudo tee -a $DESIGNATE_CONF_DIR/pools.yaml > /dev/null <<EOF
+  ns_records:
+EOF
+
+    for nameserver in "${nameservers[@]}"; do
+        sudo tee -a $DESIGNATE_CONF_DIR/pools.yaml > /dev/null <<EOF
+    - hostname: $nameserver
+      priority: 1
+EOF
+    done
+
+    # Create a Pool Nameserver for each of the Akamai Nameservers
+    sudo tee -a $DESIGNATE_CONF_DIR/pools.yaml > /dev/null <<EOF
+  nameservers:
+EOF
+
+    for nameserver in "${nameservers[@]}"; do
+        sudo tee -a $DESIGNATE_CONF_DIR/pools.yaml > /dev/null <<EOF
+    - host: `dig +short A $nameserver | head -n 1`
+      port: 53
+EOF
+    done
+
+    # Create a Pool Also Notifies for each of the Akamai Also Notifies
+    IFS=',' read -a also_notifies <<< "$DESIGNATE_AKAMAI_ALSO_NOTIFIES"
+
+    sudo tee -a $DESIGNATE_CONF_DIR/pools.yaml > /dev/null <<EOF
+  also_notifies:
+EOF
+
+    for also_notify in "${also_notifies[@]}"; do
+        sudo tee -a $DESIGNATE_CONF_DIR/pools.yaml > /dev/null <<EOF
+    - host: $also_notify
+      port: 53
+EOF
+    done
+}
+
+# init_designate_backend - initialize databases, etc.
+function init_designate_backend {
+    :
+}
+
+# start_designate_backend - start any external services
+function start_designate_backend {
+    :
+}
+
+# stop_designate_backend - stop any external services
+function stop_designate_backend {
+    :
+}
+
+# cleanup_designate_backend - remove transient data and cache
+function cleanup_designate_backend {
+    :
+}
+
+# Restore xtrace
+$DP_AKAMAI_XTRACE
