@@ -13,7 +13,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from debtcollector import removals
 import flask
 import webob.dec
 from oslo_config import cfg
@@ -361,28 +360,3 @@ class APIv2ValidationErrorMiddleware(ValidationErrorMiddleware):
     def __init__(self, application):
         super(APIv2ValidationErrorMiddleware, self).__init__(application)
         self.api_version = 'API_v2'
-
-
-class SSLMiddleware(base.Middleware):
-    """A middleware that replaces the request wsgi.url_scheme environment
-    variable with the value of HTTP header configured in
-    secure_proxy_ssl_header if exists in the incoming request.
-    This is useful if the server is behind a SSL termination proxy.
-
-    Code nabbed from Heat.
-    """
-    # Replaced by oslo.middleware's http_proxy_to_wsgi middleware
-    @removals.remove
-    def __init__(self, application):
-        super(SSLMiddleware, self).__init__(application)
-        LOG.info('Starting designate ssl middleware')
-        self.secure_proxy_ssl_header = 'HTTP_{0}'.format(
-            cfg.CONF['service:api'].secure_proxy_ssl_header.upper().
-            replace('-', '_'))
-        self.override = cfg.CONF['service:api'].override_proto
-
-    def process_request(self, request):
-        request.environ['wsgi.url_scheme'] = request.environ.get(
-            self.secure_proxy_ssl_header, request.environ['wsgi.url_scheme'])
-        if self.override:
-            request.environ['wsgi.url_scheme'] = self.override
