@@ -2190,13 +2190,20 @@ class CentralStatusTests(CentralBasic):
 class CentralQuotaTest(unittest.TestCase):
 
     def setUp(self):
+        self.CONF = cfg_fixture.Config(cfg.CONF)
+        cfg.CONF([], project='designate')
+        self.CONF.config(quota_driver="noop")
         self.context = mock.Mock()
         self.zone = mock.Mock()
+        self.quotas_of_one = {'zones': 1,
+                              'zone_recordsets': 1,
+                              'zone_records': 1,
+                              'recordset_records': 1,
+                              'api_export_size': 1}
 
     @patch('designate.central.service.storage')
     @patch('designate.central.service.quota')
     def test_zone_record_quota_allows_lowering_value(self, quota, storage):
-        cfg.CONF([], project='designate')
         service = Service()
         service.storage.count_records.return_value = 10
 
@@ -2220,6 +2227,100 @@ class CentralQuotaTest(unittest.TestCase):
 
         # Check the recordset limit as well
         check_recordset_records = mock.call(
-            self.context, self.zone.tenant_id, recordset_records=10
+            self.context, self.zone.tenant_id, recordset_records=5
         )
         assert check_recordset_records in service.quota.limit_check.mock_calls
+
+    @patch('designate.quota.base.Quota.get_quotas')
+    @patch('designate.central.service.storage')
+    def test_enforce_zone_quota(self, storage, mock_get_quotas):
+        service = Service()
+        mock_get_quotas.return_value = self.quotas_of_one
+
+        # Test creating one zone, 1 quota, no existing zones
+        service.storage.count_zones.return_value = 0
+        self.assertIsNone(service._enforce_zone_quota(self.context,
+                                                      'fake_project_id'))
+
+        # Test creating one zone, 1 quota, one existing zone
+        service.storage.count_zones.return_value = 1
+        self.assertRaises(exceptions.OverQuota, service._enforce_zone_quota,
+                          self.context, 'fake_project_id')
+
+    @patch('designate.quota.base.Quota.get_quotas')
+    @patch('designate.central.service.storage')
+    def test_enforce_recordset_quota(self, storage, mock_get_quotas):
+        service = Service()
+        mock_get_quotas.return_value = self.quotas_of_one
+
+        # Test creating one recordset, 1 quota, no existing recordsets
+        service.storage.count_recordsets.return_value = 0
+        self.assertIsNone(service._enforce_recordset_quota(self.context,
+                                                           self.zone))
+
+        # Test creating one recordset, 1 quota, one existing recordset
+        service.storage.count_recordsets.return_value = 1
+        self.assertRaises(exceptions.OverQuota,
+                          service._enforce_recordset_quota,
+                          self.context, self.zone)
+
+    @patch('designate.quota.base.Quota.get_quotas')
+    @patch('designate.central.service.storage')
+    def test_enforce_record_quota(self, storage, mock_get_quotas):
+        service = Service()
+        mock_get_quotas.return_value = self.quotas_of_one
+
+        service.storage.count_records.side_effect = [
+            0, 0,
+            1, 0,
+            0, 1,
+            1, 1,
+            1, 1,
+        ]
+
+        managed_recordset = mock.Mock()
+        managed_recordset.managed = True
+
+        recordset_one_record = mock.Mock()
+        recordset_one_record.managed = False
+        recordset_one_record.records = ['192.0.2.1']
+
+        # Test that managed recordsets have no quota limit
+        self.assertIsNone(service._enforce_record_quota(self.context,
+                                                        self.zone,
+                                                        managed_recordset))
+        service.storage.count_records.assert_not_called()
+
+        # Test creating recordset with one record, no existing zone records,
+        # no existing recordsets
+        self.assertIsNone(service._enforce_record_quota(self.context,
+                                                        self.zone,
+                                                        recordset_one_record))
+
+        # Test creating recordset with one record, one existing zone record,
+        # no exiting recordsets
+        self.assertRaises(exceptions.OverQuota, service._enforce_record_quota,
+                          self.context, self.zone, recordset_one_record)
+
+        # Test creating recordset with one record, one existing zone record,
+        # no exiting recordsets
+        # Note: Recordsets replace the existing recordset
+        self.assertIsNone(service._enforce_record_quota(self.context,
+                                                        self.zone,
+                                                        recordset_one_record))
+
+        # Test creating recordset with one record, no existing zone record,
+        # one exiting recordsets
+        # Note: Recordsets replace the existing recordset
+        self.assertIsNone(service._enforce_record_quota(self.context,
+                                                        self.zone,
+                                                        recordset_one_record))
+
+        recordset_two_record = mock.Mock()
+        recordset_two_record.managed = False
+        recordset_two_record.records = ['192.0.2.1', '192.0.2.2']
+
+        # Test creating recordset with two records, one existing zone record,
+        # one exiting recordsets
+        self.assertRaises(exceptions.OverQuota, service._enforce_record_quota,
+                          self.context, self.zone, recordset_two_record)
