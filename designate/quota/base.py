@@ -35,7 +35,7 @@ class Quota(DriverPlugin):
             if resource in quotas:
                 # Setting the resource quota to a negative value will make
                 # the resource unlimited
-                if quotas[resource] >= 0 and value >= quotas[resource]:
+                if quotas[resource] >= 0 and value > quotas[resource]:
                     raise exceptions.OverQuota()
             else:
                 raise exceptions.QuotaResourceUnknown("%s is not a valid quota"

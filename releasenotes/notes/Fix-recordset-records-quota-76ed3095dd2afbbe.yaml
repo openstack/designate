@@ -1,0 +1,4 @@
+---
+fixes:
+  - |
+    Fixed an issue that caused the recordset_records quota to not be enforced.
