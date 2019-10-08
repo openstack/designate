@@ -617,15 +617,17 @@ class Service(service.RPCService):
         criterion = {'tenant_id': tenant_id}
         count = self.storage.count_zones(context, criterion)
 
-        self.quota.limit_check(context, tenant_id, zones=count)
+        # Check if adding one more zone would exceed the quota
+        self.quota.limit_check(context, tenant_id, zones=count + 1)
 
     def _enforce_recordset_quota(self, context, zone):
         # Ensure the recordsets per zone quota is OK
         criterion = {'zone_id': zone.id}
         count = self.storage.count_recordsets(context, criterion)
 
+        # Check if adding one more recordset would exceed the quota
         self.quota.limit_check(
-            context, zone.tenant_id, zone_recordsets=count)
+            context, zone.tenant_id, zone_recordsets=count + 1)
 
     def _enforce_record_quota(self, context, zone, recordset):
         # Quotas don't apply to managed records.
@@ -658,7 +660,7 @@ class Service(service.RPCService):
 
         # Ensure the records per recordset quota is OK
         self.quota.limit_check(context, zone.tenant_id,
-                               recordset_records=recordset_records)
+                               recordset_records=len(recordset.records))
 
     # Misc Methods
     @rpc.expected_exceptions()

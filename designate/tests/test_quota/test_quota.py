@@ -82,13 +82,13 @@ class QuotaTestCase(tests.TestCase):
 
         with testtools.ExpectedException(exceptions.OverQuota):
             self.quota.limit_check(context, 'tenant_id',
-                                   zones=cfg.CONF.quota_zones)
+                                   zones=cfg.CONF.quota_zones + 1)
 
         with testtools.ExpectedException(exceptions.OverQuota):
             self.quota.limit_check(
                 context,
                 'tenant_id',
-                zone_records=cfg.CONF.quota_zone_records)
+                zone_records=cfg.CONF.quota_zone_records + 1)
 
     def test_limit_check_unlimited(self):
         context = self.get_admin_context()
@@ -119,16 +119,16 @@ class QuotaTestCase(tests.TestCase):
         }
         self.quota.get_quotas.return_value = ret
         with testtools.ExpectedException(exceptions.OverQuota):
-            self.quota.limit_check(context, 'tenant_id', zones=0)
+            self.quota.limit_check(context, 'tenant_id', zones=1)
         with testtools.ExpectedException(exceptions.OverQuota):
-            self.quota.limit_check(context, 'tenant_id', zone_recordsets=0)
+            self.quota.limit_check(context, 'tenant_id', zone_recordsets=1)
         with testtools.ExpectedException(exceptions.OverQuota):
-            self.quota.limit_check(context, 'tenant_id', zone_records=0)
+            self.quota.limit_check(context, 'tenant_id', zone_records=1)
         with testtools.ExpectedException(exceptions.OverQuota):
             self.quota.limit_check(context, 'tenant_id',
-                                   recordset_records=0)
+                                   recordset_records=1)
         with testtools.ExpectedException(exceptions.OverQuota):
-            self.quota.limit_check(context, 'tenant_id', api_export_size=0)
+            self.quota.limit_check(context, 'tenant_id', api_export_size=1)
 
     def test_limit_check_over(self):
         context = self.get_admin_context()

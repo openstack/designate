@@ -1990,7 +1990,7 @@ class CentralServiceTest(CentralTestCase):
 
     def test_create_record_and_update_over_zone_quota(self):
         # SOA and NS Records exist
-        self.config(quota_zone_records=1)
+        self.config(quota_zone_records=0)
 
         # Creating the zone automatically creates SOA & NS records
         zone = self.create_zone()
@@ -2027,7 +2027,7 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(exceptions.OverQuota, exc.exc_info[0])
 
     def test_create_record_over_recordset_quota(self):
-        self.config(quota_recordset_records=1)
+        self.config(quota_recordset_records=0)
 
         # Creating the zone automatically creates SOA & NS records
         zone = self.create_zone()
