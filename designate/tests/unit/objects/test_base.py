@@ -608,6 +608,76 @@ class ListObjectMixinTest(oslotest.base.BaseTestCase):
         self.assertEqual('One', obj[0].id)
         self.assertEqual('Two', obj[1].id)
 
+    def test_from_primitive_with_changes(self):
+        primitive = {
+            'designate_object.name': 'TestObjectList',
+            'designate_object.data': {
+                'objects': [
+                    {'designate_object.changes': ['id'],
+                     'designate_object.data': {'id': 'One'},
+                     'designate_object.name': 'TestObject',
+                     'designate_object.namespace': 'designate',
+                     'designate_object.version': '1.0'},
+                    {'designate_object.changes': ['id'],
+                     'designate_object.data': {'id': 'Two'},
+                     'designate_object.name': 'TestObject',
+                     'designate_object.namespace': 'designate',
+                     'designate_object.version': '1.0'},
+                ],
+            },
+            'designate_object.changes': ['objects'],
+            'designate_object.namespace': 'designate',
+            'designate_object.version': '1.0',
+        }
+
+        obj = objects.DesignateObject.from_primitive(primitive)
+
+        self.assertEqual(2, len(obj))
+        self.assertEqual(2, len(obj.objects))
+
+        self.assertIsInstance(obj[0], TestObject)
+        self.assertIsInstance(obj[1], TestObject)
+
+        self.assertEqual('One', obj[0].id)
+        self.assertEqual('Two', obj[1].id)
+
+        self.assertEqual(1, len(obj.obj_what_changed()))
+
+    def test_from_primitive_no_changes(self):
+        primitive = {
+            'designate_object.name': 'TestObjectList',
+            'designate_object.data': {
+                'objects': [
+                    {'designate_object.changes': [],
+                     'designate_object.data': {'id': 'One'},
+                     'designate_object.name': 'TestObject',
+                     'designate_object.namespace': 'designate',
+                     'designate_object.version': '1.0'},
+                    {'designate_object.changes': [],
+                     'designate_object.data': {'id': 'Two'},
+                     'designate_object.name': 'TestObject',
+                     'designate_object.namespace': 'designate',
+                     'designate_object.version': '1.0'},
+                ],
+            },
+            'designate_object.changes': [],
+            'designate_object.namespace': 'designate',
+            'designate_object.version': '1.0',
+        }
+
+        obj = objects.DesignateObject.from_primitive(primitive)
+
+        self.assertEqual(2, len(obj))
+        self.assertEqual(2, len(obj.objects))
+
+        self.assertIsInstance(obj[0], TestObject)
+        self.assertIsInstance(obj[1], TestObject)
+
+        self.assertEqual('One', obj[0].id)
+        self.assertEqual('Two', obj[1].id)
+
+        self.assertEqual(0, len(obj.obj_what_changed()))
+
     def test_cast_to_list(self):
         # Create a few objects
         obj_one = TestObject()
