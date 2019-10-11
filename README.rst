@@ -13,10 +13,23 @@ OpenStack Designate
 
 Designate is an OpenStack project, providing DNSaaS.
 
-IRC: #openstack-dns
+IRC: #openstack-dns @ freenode
 
 Installation: https://docs.openstack.org/designate/latest/
 
+API
+---
+
+To learn how to use Designate's API, consult the documentation available
+online at:
+
+- `DNS API Reference <https://docs.openstack.org/api-ref/dns/>`__
+
+For more information on OpenStack APIs, SDKs and CLIs in general, refer to:
+
+- `OpenStack for App Developers <https://www.openstack.org/appdev/>`__
+- `Development resources for OpenStack clouds
+  <https://developer.openstack.org/>`__
 
 Development
 ===========
@@ -35,7 +48,7 @@ Setup a working environment:
     virtualenv .venv
     . .venv/bin/activate
     pip install -r requirements.txt -r test-requirements.txt
-    python setup.py develop
+    pip install -e .
 
 Building Docs
 -------------
@@ -44,13 +57,32 @@ To build the documentation from the restructured text source, do the following:
 
 .. code-block:: bash
 
-    cd doc
-    pip install -r requirements.txt
-    sphinx-build  source/ build/html/
+    tox -e docs
 
-now point your browser at html/index.html
+Now point your browser at doc/build/html/index.html
 (the official documentation is published to `docs.openstack.org`_  by the
 maintainers.
+
+Testing
+-------
+
+Execute all unit tests
+
+.. code-block:: shell
+
+    tox -e py36
+
+Execute only backend tests
+
+.. code-block:: shell
+
+    tox -e py36 -- unit.backend
+
+Execute only a single test
+
+.. code-block:: shell
+
+    tox -e py36 -- unit.backend.test_pdns4.PDNS4BackendTestCase.test_create_zone_success
 
 Contributing
 ------------
@@ -75,17 +107,8 @@ Branch, work, & submit:
     # submit
     git-review
 
-Testing
--------
-
-Execute a single test using py27
-(test is CentralServiceTest.test_count_domains)
-
-.. code-block:: shell
-
-    tox -e py27 -- designate.tests.test_central.test_service.CentralServiceTest.test_count_zones_policy_check
-
-
+Other Information
+-----------------
 
 * Free software: Apache license
 * Documentation: https://docs.openstack.org/designate/latest/
