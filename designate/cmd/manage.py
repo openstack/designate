@@ -89,7 +89,7 @@ def get_arg_string(args):
     else:
         arg = args
 
-    return arg
+    return arg.replace('-', '_')
 
 
 def fetch_func_args(func):

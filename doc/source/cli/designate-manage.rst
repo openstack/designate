@@ -155,8 +155,8 @@ designate-manage pool update
 
 .. code-block:: console
 
-    usage: designate-manage pool update [-h] [--file FILE] [--delete DELETE]
-                                        [--dry_run DRY_RUN]
+    usage: designate-manage pool update [-h] [--file FILE] [--delete]
+                                        [--dry-run]
 
 
 Update the running pool config from a YAML file
@@ -170,11 +170,11 @@ Update the running pool config from a YAML file
   The path to the file that should be used to update the pools config
   (Defaults to /etc/designate/pools.yaml)
 
-``--delete DELETE``
+``--delete``
   Any Pools not listed in the config file will be deleted.
   .. warning::  This will delete any zones left in this pool
 
-``--dry_run DRY_RUN``
+``--dry-run``
   This will simulate what will happen when you run this command
 
 

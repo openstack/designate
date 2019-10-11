@@ -85,10 +85,12 @@ class PoolCommands(base.Commands):
         '--delete',
         help='Any Pools not listed in the config file will be deleted. '
              ' WARNING: This will delete any zones left in this pool',
+        action="store_true",
         default=False)
     @base.args(
-        '--dry_run',
+        '--dry-run',
         help='This will simulate what will happen when you run this command',
+        action="store_true",
         default=False)
     def update(self, file, delete, dry_run):
         self._startup()

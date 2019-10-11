@@ -102,16 +102,16 @@ Options:
 """"""""
 
   --file        Input file (Default: ``/etc/designate/pools.yaml``)
-  --dry_run     Simulate an update. (Default: False)
-  --delete      Delete Pools that are not in the input file (Defaults: False)
+  --dry-run     This will simulate what will happen when you run this command
+  --delete      Any Pools not listed in the config file will be deleted
 
 .. warning::
 
-  | Running with ``--delete True`` can be **extremely** dangerous.
+  | Running with ``--delete`` can be **extremely** dangerous.
   | It will delete any pools that are not in the supplied YAML file, and any
   | zones that are in that Pool.
-  | Before running with ``--delete True`` we recommend operators run with
-  | ``--delete True --dry_run True`` to view the outcome.
+  | Before running with ``--delete`` we recommend operators run with
+  | ``--delete --dry-run`` to view the outcome.
 
 
 
