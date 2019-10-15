@@ -247,7 +247,6 @@ function install_designatedashboard {
     setup_dev_lib "designate-dashboard"
 
     for panel in _1710_project_dns_panel_group.py \
-                 _1720_project_dns_panel.py \
                  _1721_dns_zones_panel.py \
                  _1722_dns_reversedns_panel.py; do
         ln -fs $DESIGNATEDASHBOARD_DIR/designatedashboard/enabled/$panel $HORIZON_DIR/openstack_dashboard/local/enabled/$panel
