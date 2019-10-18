@@ -50,6 +50,7 @@ class XFRMixin(object):
 
             zone.transferred_at = timeutils.utcnow()
 
+            zone.obj_reset_changes(["name"])
             self.central_api.update_zone(context, zone, increment_serial=False)
         finally:
             metrics.timing('mdns.xfr.zone_sync', time.time() - start_time)
