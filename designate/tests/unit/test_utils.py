@@ -419,7 +419,7 @@ class TestUtils(oslotest.base.BaseTestCase):
 
         utils.bind_tcp('127.0.0.1', 53, 100, 1)
 
-        mock_sock.setblocking.assert_called_once_with(True)
+        mock_sock.settimeout.assert_called_once_with(1)
 
         mock_sock.bind.assert_called_once_with(('127.0.0.1', 53))
 
@@ -465,7 +465,7 @@ class TestUtils(oslotest.base.BaseTestCase):
 
         utils.bind_udp('127.0.0.1', 53)
 
-        mock_sock.setblocking.assert_called_once_with(True)
+        mock_sock.settimeout.assert_called_once_with(1)
 
         mock_sock.bind.assert_called_once_with(('127.0.0.1', 53))
 

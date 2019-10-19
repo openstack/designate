@@ -20,6 +20,7 @@
 import errno
 import socket
 import struct
+import threading
 
 import eventlet.debug
 from oslo_log import log as logging
@@ -167,6 +168,7 @@ class DNSService(object):
     _TCP_RECV_MAX_SIZE = 65535
 
     def __init__(self, app, tg, listen, tcp_backlog, tcp_recv_timeout):
+        self._running = threading.Event()
         self.app = app
         self.tg = tg
         self.tcp_backlog = tcp_backlog
@@ -182,6 +184,8 @@ class DNSService(object):
         self._dns_socks_udp = []
 
     def start(self):
+        self._running.set()
+
         addresses = map(
             netutils.parse_host_port,
             set(self.listen)
@@ -204,6 +208,8 @@ class DNSService(object):
         self.tg.add_thread(self._dns_handle_udp, sock_udp)
 
     def stop(self):
+        self._running.clear()
+
         for sock_tcp in self._dns_socks_tcp:
             sock_tcp.close()
 
@@ -214,7 +220,7 @@ class DNSService(object):
         LOG.info('_handle_tcp thread started')
 
         client = None
-        while True:
+        while self._running.is_set():
             try:
                 # handle a new TCP connection
                 client, addr = sock_tcp.accept()
@@ -235,18 +241,13 @@ class DNSService(object):
             # ending unexpectedly. Ensure proper ordering of blocks, and
             # ensure no exceptions are generated from within.
             except socket.timeout:
-                if client:
-                    client.close()
-                LOG.warning('TCP Timeout from: %(host)s:%(port)d',
-                            {'host': addr[0], 'port': addr[1]})
-
+                pass
             except socket.error as e:
                 if client:
                     client.close()
                 errname = errno.errorcode[e.args[0]]
                 LOG.warning('Socket error %(err)s from: %(host)s:%(port)d',
                             {'host': addr[0], 'port': addr[1], 'err': errname})
-
             except Exception:
                 if client:
                     client.close()
@@ -310,7 +311,6 @@ class DNSService(object):
         except socket.timeout:
             LOG.info('TCP Timeout from: %(host)s:%(port)d',
                      {'host': host, 'port': port})
-
         except socket.error as e:
             errname = errno.errorcode[e.args[0]]
             LOG.warning('Socket error %(err)s from: %(host)s:%(port)d',
@@ -336,7 +336,7 @@ class DNSService(object):
         """
         LOG.info('_handle_udp thread started')
 
-        while True:
+        while self._running.is_set():
             try:
                 # TODO(kiall): Determine the appropriate default value for
                 #              UDP recvfrom.
@@ -348,12 +348,12 @@ class DNSService(object):
                 # Dispatch a thread to handle the query
                 self.tg.add_thread(self._dns_handle_udp_query, sock_udp, addr,
                                    payload)
-
+            except socket.timeout:
+                pass
             except socket.error as e:
                 errname = errno.errorcode[e.args[0]]
                 LOG.warning('Socket error %(err)s from: %(host)s:%(port)d',
                             {'host': addr[0], 'port': addr[1], 'err': errname})
-
             except Exception:
                 LOG.exception('Unknown exception handling UDP request from: '
                               '%(host)s:%(port)d',
