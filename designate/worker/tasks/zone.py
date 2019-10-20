@@ -155,7 +155,7 @@ class ZoneActor(base.Task, ThresholdMixin):
              of targets (bool)
     """
     def __init__(self, executor, context, pool, zone):
-        self.executor = executor
+        super(ZoneActor, self).__init__(executor)
         self.context = context
         self.pool = pool
         self.zone = zone
@@ -365,7 +365,7 @@ class ZonePoller(base.Task, ThresholdMixin):
              number of nameservers in the pool
     """
     def __init__(self, executor, context, pool, zone):
-        self.executor = executor
+        super(ZonePoller, self).__init__(executor)
         self.context = context
         self.pool = pool
         self.zone = zone

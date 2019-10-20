@@ -41,12 +41,14 @@ TSIG_RRSIZE = 10 + 64 + 160 + 1
 
 class RequestHandler(xfr.XFRMixin):
     def __init__(self, storage, tg):
+        self._central_api = None
+
         self.storage = storage
         self.tg = tg
 
     @property
     def central_api(self):
-        if not hasattr(self, '_central_api'):
+        if not self._central_api:
             self._central_api = central_api.CentralAPI.get_instance()
         return self._central_api
 

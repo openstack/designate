@@ -32,46 +32,55 @@ class TaskConfig(object):
     Configuration mixin for the various configuration settings that
     a task may want to access
     """
+    def __init__(self):
+        self._config = None
+        self._delay = None
+        self._max_prop_time = None
+        self._max_retries = None
+        self._retry_interval = None
+        self._timeout = None
+        self._threshold_percentage = None
+
     @property
     def config(self):
-        if not hasattr(self, '_config'):
+        if not self._config:
             self._config = CONF['service:worker']
         return self._config
 
     @property
     def threshold_percentage(self):
-        if not hasattr(self, '_threshold_percentage'):
+        if self._threshold_percentage is None:
             self._threshold_percentage = self.config.threshold_percentage
         return self._threshold_percentage
 
     @property
     def timeout(self):
-        if not hasattr(self, '_timeout'):
+        if self._timeout is None:
             self._timeout = self.config.poll_timeout
         return self._timeout
 
     @property
     def retry_interval(self):
-        if not hasattr(self, '_retry_interval'):
+        if self._retry_interval is None:
             self._retry_interval = self.config.poll_retry_interval
         return self._retry_interval
 
     @property
     def max_retries(self):
-        if not hasattr(self, '_max_retries'):
+        if self._max_retries is None:
             self._max_retries = self.config.poll_max_retries
         return self._max_retries
 
     @property
     def delay(self):
-        if not hasattr(self, '_delay'):
+        if self._delay is None:
             self._delay = self.config.poll_delay
         return self._delay
 
     @property
     def max_prop_time(self):
         # Compute a time (seconds) by which things should have propagated
-        if not hasattr(self, '_max_prop_time'):
+        if self._max_prop_time is None:
             self._max_prop_time = utils.max_prop_time(
                 self.timeout,
                 self.max_retries,
@@ -92,13 +101,20 @@ class Task(TaskConfig):
         - Can optionally return something
     """
     def __init__(self, executor, **kwargs):
+        super(Task, self).__init__()
+
+        self._storage = None
+        self._quota = None
+        self._central_api = None
+        self._worker_api = None
+
         self.executor = executor
         self.task_name = self.__class__.__name__
         self.options = {}
 
     @property
     def storage(self):
-        if not hasattr(self, '_storage'):
+        if not self._storage:
             # Get a storage connection
             storage_driver = cfg.CONF['service:central'].storage_driver
             self._storage = storage.get_storage(storage_driver)
@@ -106,20 +122,20 @@ class Task(TaskConfig):
 
     @property
     def quota(self):
-        if not hasattr(self, '_quota'):
+        if not self._quota:
             # Get a quota manager instance
             self._quota = quota.get_quota()
         return self._quota
 
     @property
     def central_api(self):
-        if not hasattr(self, '_central_api'):
+        if not self._central_api:
             self._central_api = central_rpcapi.CentralAPI.get_instance()
         return self._central_api
 
     @property
     def worker_api(self):
-        if not hasattr(self, '_worker_api'):
+        if not self._worker_api:
             self._worker_api = worker_rpcapi.WorkerAPI.get_instance()
         return self._worker_api
 
