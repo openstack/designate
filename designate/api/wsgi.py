@@ -11,10 +11,6 @@
 #    under the License.
 """WSGI script for Designate API."""
 
-import eventlet  # noqa
-
-eventlet.monkey_patch(os=False)  # noqa
-
 import os
 
 from oslo_config import cfg
@@ -52,7 +48,9 @@ def init_application():
     if not rpc.initialized():
         rpc.init(CONF)
 
-    heartbeat = service.Heartbeat('api', threadgroup.ThreadGroup())
+    heartbeat = service.Heartbeat(
+        'api', threadgroup.ThreadGroup(thread_pool_size=1)
+    )
     heartbeat.start()
 
     conf = conf_files[0]
