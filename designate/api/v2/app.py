@@ -20,12 +20,6 @@ from oslo_config import cfg
 from designate.api.v2 import patches
 
 
-cfg.CONF.register_opts([
-    cfg.BoolOpt('pecan_debug', default=False,
-                help='Pecan HTML Debug Interface'),
-], group='service:api')
-
-
 def setup_app(pecan_config):
     config = dict(pecan_config)
 
