@@ -51,42 +51,45 @@ def auth_pipeline_factory(loader, global_conf, **local_conf):
 
 
 class ContextMiddleware(base.Middleware):
-    def _extract_sudo(self, ctxt, request):
-        if request.headers.get('X-Auth-Sudo-Tenant-ID') or \
-                request.headers.get('X-Auth-Sudo-Project-ID'):
-            ctxt.sudo(
-                request.headers.get('X-Auth-Sudo-Tenant-ID') or
-                request.headers.get('X-Auth-Sudo-Project-ID')
-            )
+    @staticmethod
+    def _extract_sudo(ctxt, request):
+        if request.headers.get('X-Auth-Sudo-Project-ID'):
+            ctxt.sudo(request.headers.get('X-Auth-Sudo-Project-ID'))
+        elif request.headers.get('X-Auth-Sudo-Tenant-ID'):
+            ctxt.sudo(request.headers.get('X-Auth-Sudo-Tenant-ID'))
 
-    def _extract_all_projects(self, ctxt, request):
+    @staticmethod
+    def _extract_all_projects(ctxt, request):
         ctxt.all_tenants = False
         if request.headers.get('X-Auth-All-Projects'):
             value = request.headers.get('X-Auth-All-Projects')
             ctxt.all_tenants = strutils.bool_from_string(value)
 
-        for i in ('all_projects', 'all_tenants', ):
-            if i in request.GET:
-                value = request.GET.pop(i)
+        for name in ('all_projects', 'all_tenants', ):
+            if name in request.GET:
+                value = request.GET.pop(name)
                 ctxt.all_tenants = strutils.bool_from_string(value)
 
-    def _extract_dns_hide_counts(self, ctxt, request):
+    @staticmethod
+    def _extract_dns_hide_counts(ctxt, request):
         ctxt.hide_counts = False
         value = request.headers.get('OpenStack-DNS-Hide-Counts')
         if value:
             ctxt.hide_counts = strutils.bool_from_string(value)
 
-    def _extract_edit_managed_records(self, ctxt, request):
+    @staticmethod
+    def _extract_edit_managed_records(ctxt, request):
         ctxt.edit_managed_records = False
         if 'edit_managed_records' in request.GET:
             value = request.GET.pop('edit_managed_records')
             ctxt.edit_managed_records = strutils.bool_from_string(value)
         elif request.headers.get('X-Designate-Edit-Managed-Records'):
-            ctxt.edit_managed_records = \
-                strutils.bool_from_string(
-                    request.headers.get('X-Designate-Edit-Managed-Records'))
+            ctxt.edit_managed_records = strutils.bool_from_string(
+                request.headers.get('X-Designate-Edit-Managed-Records')
+            )
 
-    def _extract_client_addr(self, ctxt, request):
+    @staticmethod
+    def _extract_client_addr(ctxt, request):
         if hasattr(request, 'client_addr'):
             ctxt.client_addr = request.client_addr
 
@@ -117,7 +120,7 @@ class KeystoneContextMiddleware(ContextMiddleware):
         headers = request.headers
 
         try:
-            if headers['X-Identity-Status'] is 'Invalid':
+            if headers['X-Identity-Status'] == 'Invalid':
                 # TODO(graham) fix the return to use non-flask resources
                 return flask.Response(status=401)
         except KeyError:
@@ -128,10 +131,9 @@ class KeystoneContextMiddleware(ContextMiddleware):
         if tenant_id is None:
             return flask.Response(status=401)
 
+        catalog = None
         if headers.get('X-Service-Catalog'):
             catalog = jsonutils.loads(headers.get('X-Service-Catalog'))
-        else:
-            catalog = None
 
         roles = headers.get('X-Roles').split(',')
 
@@ -159,7 +161,7 @@ class NoAuthContextMiddleware(ContextMiddleware):
 
         self.make_context(
             request,
-            auth_token=headers.get('X-Auth-Token', None),
+            auth_token=headers.get('X-Auth-Token'),
             user_id=headers.get('X-Auth-User-ID', 'noauth-user'),
             project_id=headers.get('X-Auth-Project-ID', 'noauth-project'),
             roles=headers.get('X-Roles', 'admin').split(',')
@@ -305,11 +307,11 @@ class FaultWrapperMiddleware(base.Middleware):
                               response=jsonutils.dump_as_bytes(response))
 
 
-class ValidationErrorMiddleware(base.Middleware):
+class APIv2ValidationErrorMiddleware(base.Middleware):
 
     def __init__(self, application):
-        super(ValidationErrorMiddleware, self).__init__(application)
-
+        super(APIv2ValidationErrorMiddleware, self).__init__(application)
+        self.api_version = 'API_v2'
         LOG.info('Starting designate validation middleware')
 
     @webob.dec.wsgify
@@ -323,7 +325,6 @@ class ValidationErrorMiddleware(base.Middleware):
             return self._handle_errors(request, e)
 
     def _handle_errors(self, request, exception):
-
         response = {}
 
         headers = [
@@ -331,14 +332,13 @@ class ValidationErrorMiddleware(base.Middleware):
         ]
 
         rendered_errors = DesignateAdapter.render(
-            self.api_version, exception.errors, failed_object=exception.object)
+            self.api_version, exception.errors, failed_object=exception.object
+        )
 
         url = getattr(request, 'url', None)
 
         response['code'] = exception.error_code
-
         response['type'] = exception.error_type or 'unknown'
-
         response['errors'] = rendered_errors
 
         # Return the new response
@@ -354,9 +354,3 @@ class ValidationErrorMiddleware(base.Middleware):
 
         return flask.Response(status=exception.error_code, headers=headers,
                               response=jsonutils.dump_as_bytes(response))
-
-
-class APIv2ValidationErrorMiddleware(ValidationErrorMiddleware):
-    def __init__(self, application):
-        super(APIv2ValidationErrorMiddleware, self).__init__(application)
-        self.api_version = 'API_v2'
