@@ -1,0 +1,5 @@
+---
+upgrade:
+  - |
+    The ``[service:api]`` option ``enable_host_header`` is now enabled by
+    default.
