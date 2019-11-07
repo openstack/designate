@@ -31,6 +31,7 @@ AKAMAI_GROUP = cfg.OptGroup(
 AKAMAI_OPTS = [
     cfg.StrOpt('enhanceddns_wsdl',
                default='file://%s' % WSDL_PATH,
+               sample_default=os.path.join('/path', 'to', 'EnhancedDNS.xml'),
                help='Akamai EnhancedDNS WSDL URL'),
 ]
 
