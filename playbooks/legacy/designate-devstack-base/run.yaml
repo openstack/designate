@@ -72,9 +72,7 @@
               export DEVSTACK_GATE_POSTGRES=1
           fi
 
-          if [ "{{ python_version }}" == "py35" ] ; then
-             export DEVSTACK_GATE_USE_PYTHON3=True
-          fi
+          export DEVSTACK_GATE_USE_PYTHON3=True
 
           cp devstack-gate/devstack-vm-gate-wrap.sh ./safe-devstack-vm-gate-wrap.sh
           ./safe-devstack-vm-gate-wrap.sh

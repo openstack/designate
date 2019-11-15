@@ -62,34 +62,6 @@
         postgresql: True
     voting: false
 
-
-- job:
-    name: designate-bind9-py27
-    parent: designate-bind9
-    vars:
-      devstack_localrc:
-        USE_PYTHON3: false
-      devstack_services:
-        s-account: true
-        s-container: true
-        s-object: true
-        s-proxy: true
-        c-bak: true
-
-
-- job:
-    name: designate-pdns4-py27
-    parent: designate-pdns4
-    vars:
-      devstack_localrc:
-        USE_PYTHON3: false
-      devstack_services:
-        s-account: false
-        s-container: false
-        s-object: false
-        s-proxy: false
-        c-bak: false
-
 - job:
     name: designate-ipv6-only-bind9
     post-run: playbooks/designate-bind9/post.yaml
@@ -129,8 +101,6 @@
       jobs:
         - designate-bind9
         - designate-pdns4
-        - designate-bind9-py27
-        - designate-pdns4-py27
         - designate-pdns4-postgres
         - designate-grenade-pdns4
         - designate-ipv6-only-pdns4
@@ -141,8 +111,6 @@
       jobs:
         - designate-bind9
         - designate-pdns4
-        - designate-bind9-py27
-        - designate-pdns4-py27
         - designate-grenade-pdns4
         - designate-ipv6-only-pdns4
         - designate-ipv6-only-bind9
@@ -152,7 +120,6 @@
       - designate-devstack-jobs
       - openstack-cover-jobs
       - openstack-lower-constraints-jobs
-      - openstack-python-jobs
       - openstack-python3-ussuri-jobs
       - publish-openstack-docs-pti
       - periodic-stable-jobs

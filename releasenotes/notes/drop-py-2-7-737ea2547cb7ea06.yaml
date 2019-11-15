@@ -1,0 +1,8 @@
+---
+prelude: >
+    Drop the Python 2.7 support.
+upgrade:
+  - |
+    Python 2.7 support has been dropped. Last release of Designate
+    to support python 2.7 is OpenStack Train. The minimum version of Python now
+    supported by Designate is Python 3.6.

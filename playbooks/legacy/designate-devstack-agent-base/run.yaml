@@ -48,6 +48,7 @@
           export DEVSTACK_GATE_TEMPEST=1
           export DEVSTACK_GATE_TEMPEST_ALL_PLUGINS=1
           export DEVSTACK_GATE_TEMPEST_REGEX=designate
+          export DEVSTACK_GATE_USE_PYTHON3=True
 
           export PROJECTS="openstack/designate $PROJECTS"
           export PROJECTS="openstack/python-designateclient $PROJECTS"
