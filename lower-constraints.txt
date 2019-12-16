@@ -33,7 +33,7 @@ extras==1.0.0
 fasteners==0.14.1
 fixtures==3.0.0
 flake8==2.5.5
-Flask==0.10
+Flask==1.0
 funcparserlib==0.3.6
 future==0.16.0
 futurist==1.2.0
