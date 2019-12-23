@@ -14,6 +14,7 @@
 import mock
 import oslotest.base
 from oslo_config import cfg
+from oslo_service import loopingcall
 
 from designate import objects
 from designate import service_status
@@ -22,39 +23,45 @@ from designate import service_status
 class NoopEmitterTest(oslotest.base.BaseTestCase):
     def setUp(self):
         super(NoopEmitterTest, self).setUp()
-        self.mock_tg = mock.Mock()
 
-    def test_init(self):
-        service_status.NoopEmitter("svc", self.mock_tg)
+    @mock.patch.object(loopingcall, 'FixedIntervalLoopingCall')
+    def test_start(self, mock_looping):
+        mock_timer = mock.Mock()
+        mock_looping.return_value = mock_timer
 
-    def test_start(self):
-        emitter = service_status.NoopEmitter("svc", self.mock_tg)
+        emitter = service_status.NoopEmitter("svc")
         emitter.start()
 
-        self.mock_tg.add_timer.assert_called_once_with(
-            10.0, emitter._emit_heartbeat)
+        mock_timer.start.assert_called_once()
 
-    def test_stop(self):
-        mock_pulse = mock.Mock()
-        self.mock_tg.add_timer.return_value = mock_pulse
+    @mock.patch.object(loopingcall, 'FixedIntervalLoopingCall')
+    def test_stop(self, mock_looping):
+        mock_timer = mock.Mock()
+        mock_looping.return_value = mock_timer
 
-        emitter = service_status.NoopEmitter("svc", self.mock_tg)
+        emitter = service_status.NoopEmitter("svc")
         emitter.start()
         emitter.stop()
 
-        self.assertFalse(emitter._running)
+        mock_timer.stop.assert_called_once()
 
 
 class RpcEmitterTest(oslotest.base.BaseTestCase):
     def setUp(self):
         super(RpcEmitterTest, self).setUp()
-        self.mock_tg = mock.Mock()
 
     @mock.patch.object(objects, "ServiceStatus")
     @mock.patch("designate.context.DesignateContext.get_admin_context")
-    def test_emit_no_status_factory(self, mock_context, mock_service_status):
-        emitter = service_status.RpcEmitter("svc", self.mock_tg)
+    @mock.patch.object(loopingcall, 'FixedIntervalLoopingCall')
+    def test_emit_no_status_factory(self, mock_looping, mock_context,
+                                    mock_service_status):
+        mock_timer = mock.Mock()
+        mock_looping.return_value = mock_timer
+
+        emitter = service_status.RpcEmitter("svc")
         emitter.start()
+
+        mock_timer.start.assert_called_once()
 
         central = mock.Mock()
         with mock.patch("designate.central.rpcapi.CentralAPI.get_instance",
@@ -76,15 +83,22 @@ class RpcEmitterTest(oslotest.base.BaseTestCase):
 
     @mock.patch.object(objects, "ServiceStatus")
     @mock.patch("designate.context.DesignateContext.get_admin_context")
-    def test_emit_status_factory(self, mock_context, mock_service_status):
+    @mock.patch.object(loopingcall, 'FixedIntervalLoopingCall')
+    def test_emit_status_factory(self, mock_looping, mock_context,
+                                 mock_service_status):
+        mock_timer = mock.Mock()
+        mock_looping.return_value = mock_timer
+
         status = False
         stats = {"a": 1}
         capabilities = {"b": 2}
 
         status_factory = mock.Mock(return_value=(status, stats, capabilities,))
-        emitter = service_status.RpcEmitter("svc", self.mock_tg,
+        emitter = service_status.RpcEmitter("svc",
                                             status_factory=status_factory)
         emitter.start()
+
+        mock_timer.start.assert_called_once()
 
         central = mock.Mock()
         with mock.patch("designate.central.rpcapi.CentralAPI.get_instance",
