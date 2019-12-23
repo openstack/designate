@@ -38,7 +38,7 @@ def main():
     hookpoints.log_hook_setup()
 
     server = worker_service.Service()
-    heartbeat = service.Heartbeat(server.service_name, server.tg)
+    heartbeat = service.Heartbeat(server.service_name)
     service.serve(server, workers=CONF['service:worker'].workers)
     heartbeat.start()
     service.wait()
