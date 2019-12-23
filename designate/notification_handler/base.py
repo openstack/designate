@@ -25,6 +25,7 @@ from designate import exceptions
 from designate.central import rpcapi as central_rpcapi
 from designate.context import DesignateContext
 from designate.objects import Record
+from designate.objects import RecordList
 from designate.objects import RecordSet
 from designate.plugin import ExtensionPlugin
 
@@ -64,28 +65,35 @@ class NotificationHandler(ExtensionPlugin):
         context = DesignateContext.get_admin_context(all_tenants=True)
         return self.central_api.get_zone(context, zone_id)
 
-    def _find_or_create_recordset(self, context, zone_id, name, type,
-                                  ttl=None):
+    def _create_or_update_recordset(self, context, records, zone_id, name,
+                                    type, ttl=None):
         name = name.encode('idna').decode('utf-8')
 
         try:
-            # Attempt to create an empty recordset
+            # Attempt to create a new recordset.
             values = {
                 'name': name,
                 'type': type,
                 'ttl': ttl,
             }
+            recordset = RecordSet(**values)
+            recordset.records = RecordList(objects=records)
             recordset = self.central_api.create_recordset(
-                context, zone_id, RecordSet(**values))
-
+                context, zone_id, recordset
+            )
         except exceptions.DuplicateRecordSet:
-            # Fetch the existing recordset
+            # Fetch and update the existing recordset.
             recordset = self.central_api.find_recordset(context, {
                 'zone_id': zone_id,
                 'name': name,
                 'type': type,
             })
-
+            for record in records:
+                recordset.records.append(record)
+            recordset = self.central_api.update_recordset(
+                context, recordset
+            )
+        LOG.debug('Creating record in %s / %s', zone_id, recordset['id'])
         return recordset
 
 
@@ -164,9 +172,6 @@ class BaseAddressHandler(NotificationHandler):
                     'name': fmt % event_data,
                     'type': 'A' if addr['version'] == 4 else 'AAAA'}
 
-                recordset = self._find_or_create_recordset(
-                    context, **recordset_values)
-
                 record_values = {
                     'data': addr['address'],
                     'managed': True,
@@ -175,13 +180,9 @@ class BaseAddressHandler(NotificationHandler):
                     'managed_resource_type': resource_type,
                     'managed_resource_id': resource_id
                 }
-
-                LOG.debug('Creating record in %s / %s with values %r',
-                          zone['id'], recordset['id'], record_values)
-                self.central_api.create_record(context,
-                                               zone['id'],
-                                               recordset['id'],
-                                               Record(**record_values))
+                self._create_or_update_recordset(
+                    context, [Record(**record_values)], **recordset_values
+                )
 
     def _delete(self, zone_id, resource_id=None, resource_type='instance',
                 criterion=None):

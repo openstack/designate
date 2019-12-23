@@ -78,8 +78,6 @@ class SampleHandler(NotificationHandler):
                 'data': fixed_ip['address'],
             }
 
-            recordset = self._find_or_create_recordset(context,
-                                                       **recordset_values)
-
-            self.central_api.create_record(context, zone_id, recordset['id'],
-                                           Record(**record_values))
+            self._create_or_update_recordset(
+                context, [Record(**record_values)], **recordset_values
+            )
