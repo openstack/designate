@@ -1,15 +1,16 @@
 # Andreas Jaeger <jaegerandi@gmail.com>, 2016. #zanata
 # Andi Chandler <andi@gowling.com>, 2017. #zanata
 # Andi Chandler <andi@gowling.com>, 2018. #zanata
+# Andi Chandler <andi@gowling.com>, 2019. #zanata
 msgid ""
 msgstr ""
 "Project-Id-Version: designate VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2018-09-06 02:52+0000\n"
+"POT-Creation-Date: 2019-12-25 00:24+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2018-09-07 11:22+0000\n"
+"PO-Revision-Date: 2019-12-21 01:05+0000\n"
 "Last-Translator: Andi Chandler <andi@gowling.com>\n"
 "Language-Team: English (United Kingdom)\n"
 "Language: en_GB\n"
@@ -43,6 +44,12 @@ msgstr "Cannot search '%(objtype)s' object(s): %(content)s [code %(code)s]"
 msgid "Cannot update object with ref %(ref)s: %(content)s [code %(code)s]"
 msgstr "Cannot update object with ref %(ref)s: %(content)s [code %(code)s]"
 
+msgid "Duplicate service status"
+msgstr "Duplicate service status"
+
+msgid "Duplicated services found in service_statuses table."
+msgstr "Duplicated services found in service_statuses table."
+
 #, python-format
 msgid ""
 "Error occurred during function's '%(func_name)s' call: ref %(ref)s: "
@@ -50,14 +57,6 @@ msgid ""
 msgstr ""
 "Error occurred during function's '%(func_name)s' call: ref %(ref)s: "
 "%(content)s [code %(code)s]"
-
-#, python-format
-msgid "Failed to find target with ID %s"
-msgstr "Failed to find target with ID %s"
-
-#, python-format
-msgid "Found multiple targets with ID %s"
-msgstr "Found multiple targets with ID %s"
 
 #, python-format
 msgid ""
