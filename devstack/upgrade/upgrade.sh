@@ -49,6 +49,11 @@ set -o xtrace
 # Save current config files for posterity
 [[ -d $SAVE_DIR/etc.designate ]] || cp -pr $DESIGNATE_CONF_DIR $SAVE_DIR/etc.designate
 
+# Hack: uninstall link to removed dashboard panel in order to avoid horizon from failing
+if [ -L $DEST/horizon/openstack_dashboard/local/enabled/_1720_project_dns_panel.py ]; then
+    rm $DEST/horizon/openstack_dashboard/local/enabled/_1720_project_dns_panel.py
+fi
+
 # install_designate()
 if is_ubuntu; then
     install_package libcap2-bin
