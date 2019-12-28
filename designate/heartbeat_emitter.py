@@ -28,49 +28,30 @@ CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)
 
 
-class HeartBeatEmitter(plugin.DriverPlugin):
+def get_heartbeat_emitter(service_name, **kwargs):
+    cls = HeartbeatEmitter.get_driver(
+        CONF.heartbeat_emitter.emitter_type
+    )
+    return cls(service_name, **kwargs)
+
+
+class HeartbeatEmitter(plugin.DriverPlugin):
     __plugin_ns__ = 'designate.heartbeat_emitter'
     __plugin_type__ = 'heartbeat_emitter'
 
-    def __init__(self, service, status_factory=None, *args, **kwargs):
-        super(HeartBeatEmitter, self).__init__()
+    def __init__(self, service_name, **kwargs):
+        super(HeartbeatEmitter, self).__init__()
 
-        self._service = service
+        self._status = 'UP'
+        self._stats = {}
+        self._capabilities = {}
+
+        self._service_name = service_name
         self._hostname = CONF.host
 
         self._timer = loopingcall.FixedIntervalLoopingCall(
             self._emit_heartbeat
         )
-        self._status_factory = status_factory
-
-    def _get_status(self):
-        if self._status_factory is not None:
-            return self._status_factory()
-
-        return True, {}, {}
-
-    def _emit_heartbeat(self):
-        """
-        Returns Status, Stats, Capabilities
-        """
-        status, stats, capabilities = self._get_status()
-
-        service_status = objects.ServiceStatus(
-            service_name=self._service,
-            hostname=self._hostname,
-            status=status,
-            stats=stats,
-            capabilities=capabilities,
-            heartbeated_at=timeutils.utcnow()
-        )
-
-        LOG.trace("Emitting %s", service_status)
-
-        self._transmit(service_status)
-
-    @abc.abstractmethod
-    def _transmit(self, status):
-        pass
 
     def start(self):
         self._timer.start(
@@ -81,22 +62,48 @@ class HeartBeatEmitter(plugin.DriverPlugin):
     def stop(self):
         self._timer.stop()
 
+    def get_status(self):
+        return self._status, self._stats, self._capabilities
 
-class NoopEmitter(HeartBeatEmitter):
+    @abc.abstractmethod
+    def transmit(self, status):
+        pass
+
+    def _emit_heartbeat(self):
+        """
+        Returns Status, Stats, Capabilities
+        """
+        status, stats, capabilities = self.get_status()
+
+        service_status = objects.ServiceStatus(
+            service_name=self._service_name,
+            hostname=self._hostname,
+            status=status,
+            stats=stats,
+            capabilities=capabilities,
+            heartbeated_at=timeutils.utcnow()
+        )
+
+        LOG.trace('Emitting %s', service_status)
+
+        self.transmit(service_status)
+
+
+class NoopEmitter(HeartbeatEmitter):
     __plugin_name__ = 'noop'
 
-    def _transmit(self, status):
-        LOG.debug(status)
+    def transmit(self, status):
+        LOG.info(status)
 
 
-class RpcEmitter(HeartBeatEmitter):
+class RpcEmitter(HeartbeatEmitter):
     __plugin_name__ = 'rpc'
 
-    def __init__(self, service, rpc_api=None, *args, **kwargs):
-        super(RpcEmitter, self).__init__(service, *args, **kwargs)
+    def __init__(self, service_name, rpc_api=None, **kwargs):
+        super(RpcEmitter, self).__init__(service_name, **kwargs)
         self.rpc_api = rpc_api
 
-    def _transmit(self, status):
+    def transmit(self, status):
         admin_context = context.DesignateContext.get_admin_context()
         api = self.rpc_api or central_rpcapi.CentralAPI.get_instance()
         api.update_service_status(admin_context, status)

@@ -32,7 +32,6 @@ from oslo_utils import netutils
 
 from designate import policy
 from designate import rpc
-from designate import service_status
 from designate import utils
 from designate import version
 import designate.conf
@@ -66,32 +65,6 @@ class Service(service.Service):
     def stop(self, graceful=True):
         LOG.info('Stopping %(name)s service', {'name': self.name})
         super(Service, self).stop(graceful)
-
-
-class Heartbeat(object):
-    def __init__(self, name, rpc_api=None):
-        self.name = name
-
-        self._status = 'UP'
-        self._stats = {}
-        self._capabilities = {}
-
-        emitter_cls = service_status.HeartBeatEmitter.get_driver(
-            CONF.heartbeat_emitter.emitter_type
-        )
-        self.heartbeat_emitter = emitter_cls(
-            self.name,
-            status_factory=self.get_status, rpc_api=rpc_api
-        )
-
-    def get_status(self):
-        return self._status, self._stats, self._capabilities
-
-    def start(self):
-        self.heartbeat_emitter.start()
-
-    def stop(self):
-        self.heartbeat_emitter.stop()
 
 
 class RPCService(Service):

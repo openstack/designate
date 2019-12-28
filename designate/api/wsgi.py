@@ -18,9 +18,9 @@ from oslo_log import log as logging
 from paste import deploy
 
 from designate import conf
+from designate import heartbeat_emitter
 from designate import policy
 from designate import rpc
-from designate import service
 from designate.common import config
 
 CONF = conf.CONF
@@ -47,7 +47,7 @@ def init_application():
     if not rpc.initialized():
         rpc.init(CONF)
 
-    heartbeat = service.Heartbeat('api')
+    heartbeat = heartbeat_emitter.get_heartbeat_emitter('api')
     heartbeat.start()
 
     conf = conf_files[0]
