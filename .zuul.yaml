@@ -187,6 +187,6 @@
       - release-notes-jobs-python3
     check:
       jobs:
-        - neutron-tempest-plugin-designate-scenario
+        - neutron-tempest-plugin-designate-scenario-stein
     gate:
       queue: designate
