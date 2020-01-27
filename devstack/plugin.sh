@@ -115,14 +115,7 @@ function configure_designate {
     fi
 
     # Logging Configuration
-    if [ "$USE_SYSTEMD" != "False" ]; then
-        setup_systemd_logging $DESIGNATE_CONF
-    fi
-
-    # Format logging
-    if [ "$LOG_COLOR" == "True" ] && [ "$USE_SYSTEMD" == "False" ]; then
-        setup_colorized_logging $DESIGNATE_CONF DEFAULT
-    fi
+    setup_systemd_logging $DESIGNATE_CONF
 
     # Backend Plugin Configuation
     configure_designate_backend
