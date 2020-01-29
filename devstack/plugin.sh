@@ -238,10 +238,6 @@ function create_designate_pool_configuration {
 
 # init_designate - Initialize etc.
 function init_designate {
-    # Some Designate Backends require mdns be bound to port 53, make that
-    # doable.
-    sudo setcap 'cap_net_bind_service=+ep' $(readlink -f /usr/bin/python)
-
     # (Re)create designate database
     recreate_database designate utf8
 
@@ -259,12 +255,9 @@ function install_designate {
         install_apache_wsgi
     fi
 
-
-    if is_ubuntu; then
-        install_package libcap2-bin
-    elif is_fedora; then
+    if is_fedora; then
         # bind-utils package provides `dig`
-        install_package libcap bind-utils
+        install_package bind-utils
     fi
 
     git_clone $DESIGNATE_REPO $DESIGNATE_DIR $DESIGNATE_BRANCH
