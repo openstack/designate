@@ -15,7 +15,6 @@ import os
 
 from oslo_config import cfg
 from oslo_log import log as logging
-from oslo_service import threadgroup
 from paste import deploy
 
 from designate import conf
@@ -48,9 +47,7 @@ def init_application():
     if not rpc.initialized():
         rpc.init(CONF)
 
-    heartbeat = service.Heartbeat(
-        'api', threadgroup.ThreadGroup(thread_pool_size=1)
-    )
+    heartbeat = service.Heartbeat('api')
     heartbeat.start()
 
     conf = conf_files[0]

@@ -69,9 +69,8 @@ class Service(service.Service):
 
 
 class Heartbeat(object):
-    def __init__(self, name, tg, rpc_api=None):
+    def __init__(self, name, rpc_api=None):
         self.name = name
-        self.tg = tg
 
         self._status = 'UP'
         self._stats = {}
@@ -81,7 +80,7 @@ class Heartbeat(object):
             CONF.heartbeat_emitter.emitter_type
         )
         self.heartbeat_emitter = emitter_cls(
-            self.name, self.tg,
+            self.name,
             status_factory=self.get_status, rpc_api=rpc_api
         )
 

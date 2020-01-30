@@ -13,6 +13,7 @@ import mock
 import oslotest.base
 from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
+from oslo_service import loopingcall
 
 from designate import service
 
@@ -20,14 +21,18 @@ CONF = cfg.CONF
 
 
 class HeartbeatTest(oslotest.base.BaseTestCase):
-    def setUp(self):
+    @mock.patch.object(loopingcall, 'FixedIntervalLoopingCall')
+    def setUp(self, mock_looping):
         super(HeartbeatTest, self).setUp()
+
+        self.mock_timer = mock.Mock()
+        mock_looping.return_value = self.mock_timer
+
         self.useFixture(cfg_fixture.Config(CONF))
 
         CONF.set_override('emitter_type', 'noop', 'heartbeat_emitter')
 
-        self.mock_tg = mock.Mock()
-        self.heartbeat = service.Heartbeat('test', self.mock_tg)
+        self.heartbeat = service.Heartbeat('test')
 
     def test_get_status(self):
         self.assertEqual(('UP', {}, {},), self.heartbeat.get_status())
@@ -38,16 +43,13 @@ class HeartbeatTest(oslotest.base.BaseTestCase):
         )
 
     def test_start_heartbeat(self):
-        self.assertFalse(self.heartbeat.heartbeat_emitter._running)
-
         self.heartbeat.start()
 
-        self.assertTrue(self.heartbeat.heartbeat_emitter._running)
+        self.mock_timer.start.assert_called_once()
 
     def test_stop_heartbeat(self):
-        self.assertFalse(self.heartbeat.heartbeat_emitter._running)
 
         self.heartbeat.start()
         self.heartbeat.stop()
 
-        self.assertFalse(self.heartbeat.heartbeat_emitter._running)
+        self.mock_timer.stop.assert_called_once()

@@ -14,6 +14,7 @@
 import abc
 
 from oslo_log import log as logging
+from oslo_service import loopingcall
 from oslo_utils import timeutils
 
 import designate.conf
@@ -31,19 +32,15 @@ class HeartBeatEmitter(plugin.DriverPlugin):
     __plugin_ns__ = 'designate.heartbeat_emitter'
     __plugin_type__ = 'heartbeat_emitter'
 
-    def __init__(self, service, thread_group, status_factory=None,
-                 *args, **kwargs):
+    def __init__(self, service, status_factory=None, *args, **kwargs):
         super(HeartBeatEmitter, self).__init__()
 
         self._service = service
         self._hostname = CONF.host
 
-        self._running = False
-        self._tg = thread_group
-        self._tg.add_timer(
-            CONF.heartbeat_emitter.heartbeat_interval,
-            self._emit_heartbeat)
-
+        self._timer = loopingcall.FixedIntervalLoopingCall(
+            self._emit_heartbeat
+        )
         self._status_factory = status_factory
 
     def _get_status(self):
@@ -56,9 +53,6 @@ class HeartBeatEmitter(plugin.DriverPlugin):
         """
         Returns Status, Stats, Capabilities
         """
-        if not self._running:
-            return
-
         status, stats, capabilities = self._get_status()
 
         service_status = objects.ServiceStatus(
@@ -79,10 +73,13 @@ class HeartBeatEmitter(plugin.DriverPlugin):
         pass
 
     def start(self):
-        self._running = True
+        self._timer.start(
+            CONF.heartbeat_emitter.heartbeat_interval,
+            stop_on_exception=False
+        )
 
     def stop(self):
-        self._running = False
+        self._timer.stop()
 
 
 class NoopEmitter(HeartBeatEmitter):
@@ -95,9 +92,8 @@ class NoopEmitter(HeartBeatEmitter):
 class RpcEmitter(HeartBeatEmitter):
     __plugin_name__ = 'rpc'
 
-    def __init__(self, service, thread_group, rpc_api=None, *args, **kwargs):
-        super(RpcEmitter, self).__init__(
-            service, thread_group, *args, **kwargs)
+    def __init__(self, service, rpc_api=None, *args, **kwargs):
+        super(RpcEmitter, self).__init__(service, *args, **kwargs)
         self.rpc_api = rpc_api
 
     def _transmit(self, status):
