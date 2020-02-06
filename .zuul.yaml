@@ -15,7 +15,7 @@
         s-object: false
         s-proxy: false
         c-bak: false
-      tox_envlist: all-plugin
+      tox_envlist: all
       tempest_test_regex: |
         designate_tempest_plugin.*
     required-projects: &base_required_projects
