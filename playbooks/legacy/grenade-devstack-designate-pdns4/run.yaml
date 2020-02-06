@@ -31,6 +31,7 @@
           [[local|localrc]]
           DESIGNATE_SERVICE_PORT_DNS=5322
           DESIGNATE_BACKEND_DRIVER=pdns4
+          TEMPEST_PLUGINS=' ../designate-tempest-plugin'
 
           EOF
         executable: /bin/bash
@@ -45,7 +46,6 @@
 
           export DEVSTACK_GATE_USE_PYTHON3=True
           export DEVSTACK_GATE_TEMPEST=1
-          export DEVSTACK_GATE_TEMPEST_ALL_PLUGINS=1
           export DEVSTACK_GATE_GRENADE=pullup
           export DEVSTACK_GATE_TEMPEST_REGEX="designate_tempest_plugin(?!\.tests.api.v1).*"
           export DEVSTACK_GATE_HORIZON=1
