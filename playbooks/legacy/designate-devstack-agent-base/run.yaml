@@ -33,6 +33,7 @@
           DESIGNATE_SERVICE_PORT_DNS=5322
           DESIGNATE_BACKEND_DRIVER=agent
           DESIGNATE_AGENT_BACKEND_DRIVER={{ backend_driver }}
+          TEMPEST_PLUGINS='/opt/stack/new/designate-tempest-plugin'
 
           EOF
         executable: /bin/bash
@@ -46,7 +47,6 @@
           export PYTHONUNBUFFERED=true
 
           export DEVSTACK_GATE_TEMPEST=1
-          export DEVSTACK_GATE_TEMPEST_ALL_PLUGINS=1
           export DEVSTACK_GATE_TEMPEST_REGEX=designate
 
           export PROJECTS="openstack/designate $PROJECTS"
