@@ -10,7 +10,7 @@
         designate: https://opendev.org/openstack/designate
       devstack_services:
         designate: true
-      tox_envlist: all-plugin
+      tox_envlist: all
       tempest_test_regex: |
         designate_tempest_plugin.*
     required-projects:
