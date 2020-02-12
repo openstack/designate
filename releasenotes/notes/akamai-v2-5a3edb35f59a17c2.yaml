@@ -1,0 +1,8 @@
+---
+features:
+  - |
+    Added new backend driver to support the Akamai FastDNS V2 API
+upgrade:
+  - |
+    The Akamai eDNS API endpoint has been removed, users should migrate to
+    the Akamai v2 driver for the FastDNS V2 API.
