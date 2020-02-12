@@ -1,0 +1,40 @@
+- name: default-akamai-v2
+  # The name is immutable. There will be no option to change the name after
+  # creation and the only way will to change it will be to delete it
+  # (and all zones associated with it) and recreate it.
+  description: Akamai v2
+
+  attributes: {}
+
+  # List out the NS records for zones hosted within this pool
+  ns_records:
+    - hostname: ns1-1.example.org.
+      priority: 1
+
+  # List out the nameservers for this pool. These are the actual Akamai servers.
+  # We use these to verify changes have propagated to all nameservers.
+  nameservers:
+    - host: 192.0.2.2
+      port: 53
+
+  # List out the targets for this pool. For Akamai, most often, there will be
+  # one entry for each Akamai server.
+  targets:
+    - type: akamai_v2
+      description: Akamai v2 server
+
+      # List out the designate-mdns servers from which Akamai servers should
+      # request zone transfers (AXFRs) from.
+      masters:
+        - host: 192.0.2.1
+          port: 5354
+
+      options:
+        host: 192.0.2.2
+        port: 53
+        akamai_host: 192.0.2.2
+        akamai_client_token: client_token_string
+        akamai_access_token: access_token_string
+        akamai_client_secret: client_secret_string
+        akamai_contract_id: contract_id
+        akamai_gid: group_id
