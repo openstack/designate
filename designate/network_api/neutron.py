@@ -15,6 +15,7 @@
 #
 # Copied partially from nova
 import concurrent.futures
+import futurist
 from neutronclient.common import exceptions as neutron_exceptions
 from neutronclient.v2_0 import client as clientv20
 from oslo_config import cfg
@@ -66,7 +67,7 @@ class NeutronNetworkAPI(base.NetworkAPI):
         )
 
         floating_ips = []
-        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        with futurist.GreenThreadPoolExecutor(max_workers=5) as executor:
             executors = [
                 executor.submit(
                     self._get_floating_ips,
