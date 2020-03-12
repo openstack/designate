@@ -101,7 +101,6 @@
       jobs:
         - designate-bind9
         - designate-pdns4
-        - designate-pdns4-postgres
         - designate-grenade-pdns4
         - designate-ipv6-only-pdns4
         - designate-ipv6-only-bind9
@@ -130,3 +129,6 @@
         - neutron-tempest-plugin-designate-scenario
     gate:
       queue: designate
+    experimental:
+      jobs:
+        - designate-pdns4-postgres
