@@ -50,7 +50,7 @@ CONF.import_opt('auth_strategy', 'designate.api',
                 group='service:api')
 CONF.import_opt('connection', 'designate.storage.impl_sqlalchemy',
                 group='storage:sqlalchemy')
-CONF.import_opt('emitter_type', 'designate.service_status',
+CONF.import_opt('emitter_type', 'designate.heartbeat_emitter',
                 group="heartbeat_emitter")
 CONF.import_opt('scheduler_filters', 'designate.scheduler',
                 group="service:central")
