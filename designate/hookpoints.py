@@ -52,6 +52,7 @@ class HookLog(object):
         if name in self.LVLS:
             return functools.partial(self.capture, self.LVLS[name])
 
+
 LOG = HookLog()
 
 

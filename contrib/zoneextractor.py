@@ -39,7 +39,7 @@ class Zone:
         self.to_file(sys.stdout)
 
     def to_file(self, f):
-        if type(f) is 'file':
+        if type(f) == 'file':
             fd = f
         elif type(f) is str:
             if os.path.isdir(f):
@@ -202,6 +202,7 @@ def main():
                 zone.to_stdout()
     except IOError as e:
         LOG.error(e)
+
 
 if __name__ == '__main__':
     sys.exit(main())

@@ -20,7 +20,8 @@ from designate import objects
 class NotSpecifiedSential:
     pass
 
-REQUIRED_RE = re.compile("\'([\w]*)\' is a required property")
+
+REQUIRED_RE = re.compile(r"\'([\w]*)\' is a required property")
 
 
 class ValidationErrorAPIv2Adapter(base.APIv2Adapter):

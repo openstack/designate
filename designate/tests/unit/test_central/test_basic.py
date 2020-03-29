@@ -198,8 +198,8 @@ class MockRecord(object):
 class MockPool(object):
     ns_records = [MockRecord(), ]
 
-# Fixtures
 
+# Fixtures
 fx_mdns_api = fixtures.MockPatch('designate.central.service.mdns_rpcapi')
 
 mdns_api = mock.PropertyMock(

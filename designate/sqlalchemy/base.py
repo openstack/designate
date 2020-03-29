@@ -49,18 +49,18 @@ def _set_object_from_model(obj, model, **extra):
 
 
 def _set_listobject_from_models(obj, models, map_=None):
-        for model in models:
-            extra = {}
+    for model in models:
+        extra = {}
 
-            if map_ is not None:
-                extra = map_(model)
+        if map_ is not None:
+            extra = map_(model)
 
-            obj.objects.append(
-                _set_object_from_model(obj.LIST_ITEM_TYPE(), model, **extra))
+        obj.objects.append(
+            _set_object_from_model(obj.LIST_ITEM_TYPE(), model, **extra))
 
-        obj.obj_reset_changes()
+    obj.obj_reset_changes()
 
-        return obj
+    return obj
 
 
 @six.add_metaclass(abc.ABCMeta)

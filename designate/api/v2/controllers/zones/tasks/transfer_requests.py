@@ -121,7 +121,7 @@ class TransferRequestsController(rest.RestController):
         response = pecan.response
 
         if request.content_type == 'application/json-patch+json':
-            raise NotImplemented('json-patch not implemented')
+            raise NotImplementedError('json-patch not implemented')
 
         # Fetch the existing zone_transfer_request
         zone_transfer_request = self.central_api.get_zone_transfer_request(

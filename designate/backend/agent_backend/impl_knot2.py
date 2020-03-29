@@ -160,7 +160,7 @@ class Knot2Backend(base.AgentBackend):
         try:
             serial = out.split('|')[1].split()[1]
             return int(serial)
-        except Exception as e:
+        except Exception:
             LOG.error("Unable to parse knotc output: %r", out)
             raise exceptions.Backend("Unexpected knotc zone-status output")
 

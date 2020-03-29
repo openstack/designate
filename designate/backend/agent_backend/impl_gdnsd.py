@@ -149,7 +149,7 @@ class GdnsdBackend(base.AgentBackend):
     def _generate_zone_filename(self, zone_name):
         """Generate a filename for a zone file
         "/" is traslated into "@"
-        Non-valid characters are translated into \ NNN
+        Non-valid characters are translated into \\ NNN
         where NNN is a decimal integer in the range 0 - 255
         The filename is lowercase
 

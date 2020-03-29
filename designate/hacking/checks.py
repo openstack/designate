@@ -14,6 +14,7 @@
 # under the License.
 import re
 
+from hacking import core
 import pycodestyle
 
 # D701: Default parameter value is a mutable type
@@ -34,17 +35,18 @@ mutable_default_argument_check = re.compile(
 string_translation = re.compile(r"[^_]*_\(\s*('|\")")
 translated_log = re.compile(
     r"(.)*LOG\.(audit|error|info|warn|warning|critical|exception)"
-    "\(\s*_\(\s*('|\")")
+    r"\(\s*_\(\s*('|\")")
 underscore_import_check = re.compile(r"(.)*import _(.)*")
 # We need this for cases where they have created their own _ function.
 custom_underscore_check = re.compile(r"(.)*_\s*=\s*(.)*")
 graduated_oslo_libraries_import_re = re.compile(
     r"^\s*(?:import|from) designate\.openstack\.common\.?.*?"
-    "(gettextutils|rpc)"
-    ".*?")
+    r"(gettextutils|rpc)"
+    r".*?")
 
 
-def mutable_default_arguments(logical_line, physical_line, filename):
+@core.flake8ext
+def mutable_default_arguments(physical_line, logical_line, filename):
     if pycodestyle.noqa(physical_line):
         return
 
@@ -52,6 +54,7 @@ def mutable_default_arguments(logical_line, physical_line, filename):
         yield (0, "D701: Default parameter value is a mutable type")
 
 
+@core.flake8ext
 def no_translate_debug_logs(logical_line, filename):
     """Check for 'LOG.debug(_('
     As per our translation policy,
@@ -66,6 +69,7 @@ def no_translate_debug_logs(logical_line, filename):
         yield(0, "D706: Don't translate debug level logs")
 
 
+@core.flake8ext
 def check_explicit_underscore_import(logical_line, filename):
     """Check for explicit import of the _ function
 
@@ -86,6 +90,7 @@ def check_explicit_underscore_import(logical_line, filename):
         yield(0, "D703: Found use of _() without explicit import of _!")
 
 
+@core.flake8ext
 def no_import_graduated_oslo_libraries(logical_line, filename):
     """Check that we don't continue to use o.c. oslo libraries after graduation
 
@@ -105,6 +110,7 @@ def no_import_graduated_oslo_libraries(logical_line, filename):
                  "graduated!" % matches.group(1))
 
 
+@core.flake8ext
 def use_timeutils_utcnow(logical_line, filename):
     # tools are OK to use the standard datetime module
     if "/tools/" in filename:
@@ -119,6 +125,7 @@ def use_timeutils_utcnow(logical_line, filename):
             yield (pos, msg % f)
 
 
+@core.flake8ext
 def check_no_basestring(logical_line):
     if re.search(r"\bbasestring\b", logical_line):
         msg = ("D707: basestring is not Python3-compatible, use "
@@ -126,12 +133,14 @@ def check_no_basestring(logical_line):
         yield(0, msg)
 
 
+@core.flake8ext
 def check_python3_xrange(logical_line):
     if re.search(r"\bxrange\s*\(", logical_line):
         yield(0, "D708: Do not use xrange. Use range, or six.moves.range for "
                  "large loops.")
 
 
+@core.flake8ext
 def check_no_log_audit(logical_line):
     """Ensure that we are not using LOG.audit messages
     Plans are in place going forward as discussed in the following
@@ -141,14 +150,3 @@ def check_no_log_audit(logical_line):
     """
     if "LOG.audit(" in logical_line:
         yield(0, "D709: LOG.audit is deprecated, please use LOG.info!")
-
-
-def factory(register):
-    register(mutable_default_arguments)
-    register(no_translate_debug_logs)
-    register(check_explicit_underscore_import)
-    register(no_import_graduated_oslo_libraries)
-    register(use_timeutils_utcnow)
-    register(check_no_basestring)
-    register(check_python3_xrange)
-    register(check_no_log_audit)

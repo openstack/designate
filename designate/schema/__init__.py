@@ -108,7 +108,7 @@ class Schema(object):
             schema = schema['properties']
 
             with self.resolver.resolving(schema['$ref']) as ischema:
-                    schema = ischema
+                schema = ischema
 
             return [self.filter(i, schema) for i in instance]
 

@@ -121,7 +121,7 @@ class RecordSet(base.DesignateObject, base.DictObjectMixin,
         try:
             record_list_cls = self.obj_cls_from_name('%sList' % self.type)
             record_cls = self.obj_cls_from_name(self.type)
-        except (KeyError, ovo_exc.UnsupportedObjectError) as e:
+        except (KeyError, ovo_exc.UnsupportedObjectError):
             err_msg = ("'%(type)s' is not a valid record type"
                        % {'type': self.type})
             self._validate_fail(errors, err_msg)

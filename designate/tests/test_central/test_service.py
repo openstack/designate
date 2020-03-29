@@ -248,8 +248,8 @@ class CentralServiceTest(CentralTestCase):
         values['ttl'] = 0
 
         with testtools.ExpectedException(exceptions.InvalidTTL):
-                    self.central_service._is_valid_ttl(
-                        context, values['ttl'])
+            self.central_service._is_valid_ttl(
+                context, values['ttl'])
 
     # TLD Tests
     def test_create_tld(self):
@@ -721,8 +721,8 @@ class CentralServiceTest(CentralTestCase):
         values['ttl'] = 0
 
         with testtools.ExpectedException(ValueError):
-                    self.central_service.create_zone(
-                        context, objects.Zone.from_dict(values))
+            self.central_service.create_zone(
+                context, objects.Zone.from_dict(values))
 
     def test_create_zone_below_zero_ttl(self):
         self.policy({'use_low_ttl': '!'})

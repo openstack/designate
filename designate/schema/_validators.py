@@ -46,25 +46,25 @@ def type_draft3(validator, types, instance, schema):
 
 
 def oneOf_draft3(validator, oneOf, instance, schema):
-        # Backported from Draft4 to Draft3
-        subschemas = iter(oneOf)
-        first_valid = next(
-            (s for s in subschemas if validator.is_valid(instance, s)), None,
-        )
+    # Backported from Draft4 to Draft3
+    subschemas = iter(oneOf)
+    first_valid = next(
+        (s for s in subschemas if validator.is_valid(instance, s)), None,
+    )
 
-        if first_valid is None:
+    if first_valid is None:
+        yield jsonschema.ValidationError(
+            "%r is not valid under any of the given schemas." % (instance,)
+        )
+    else:
+        more_valid = [s for s in subschemas
+                      if validator.is_valid(instance, s)]
+        if more_valid:
+            more_valid.append(first_valid)
+            reprs = ", ".join(repr(schema) for schema in more_valid)
             yield jsonschema.ValidationError(
-                "%r is not valid under any of the given schemas." % (instance,)
+                "%r is valid under each of %s" % (instance, reprs)
             )
-        else:
-            more_valid = [s for s in subschemas
-                          if validator.is_valid(instance, s)]
-            if more_valid:
-                more_valid.append(first_valid)
-                reprs = ", ".join(repr(schema) for schema in more_valid)
-                yield jsonschema.ValidationError(
-                    "%r is valid under each of %s" % (instance, reprs)
-                )
 
 
 def type_draft4(validator, types, instance, schema):

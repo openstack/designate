@@ -1798,5 +1798,5 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
     def _rname_check(self, criterion):
         # If the criterion has 'name' in it, switch it out for reverse_name
         if criterion is not None and criterion.get('name', "").startswith('*'):
-                criterion['reverse_name'] = criterion.pop('name')[::-1]
+            criterion['reverse_name'] = criterion.pop('name')[::-1]
         return criterion

@@ -67,18 +67,18 @@ class NSD4BackendTestCase(designate.tests.TestCase):
         mock_connect.return_value = mock.sentinel.client
         mock_ssl.return_value = sock
         sock.makefile.return_value = stream
-        if command_context is 'create_fail':
+        if command_context == 'create_fail':
             stream.read.return_value = 'goat'
         else:
             stream.read.return_value = 'ok'
 
-        if command_context is 'create':
+        if command_context == 'create':
             self.backend.create_zone(self.context, self.zone)
             command = 'NSDCT1 addzone %s test-pattern\n' % self.zone.name
-        elif command_context is 'delete':
+        elif command_context == 'delete':
             self.backend.delete_zone(self.context, self.zone)
             command = 'NSDCT1 delzone %s\n' % self.zone.name
-        elif command_context is 'create_fail':
+        elif command_context == 'create_fail':
             self.assertRaises(exceptions.Backend,
                               self.backend.create_zone,
                               self.context, self.zone)

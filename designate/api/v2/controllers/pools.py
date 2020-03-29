@@ -108,7 +108,7 @@ class PoolsController(rest.RestController):
         response = pecan.response
 
         if request.content_type == 'application/json-patch+json':
-            raise NotImplemented('json-patch not implemented')
+            raise NotImplementedError('json-patch not implemented')
 
         # Fetch the existing pool
         pool = self.central_api.get_pool(context, pool_id)

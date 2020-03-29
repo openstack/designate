@@ -36,7 +36,7 @@ class ZoneMasterAPIv2Adapter(base.APIv2Adapter):
 
     @classmethod
     def _render_object(cls, object, *arg, **kwargs):
-        if object.port is 53:
+        if object.port == 53:
             return object.host
         else:
             return "%(host)s:%(port)d" % object.to_dict()

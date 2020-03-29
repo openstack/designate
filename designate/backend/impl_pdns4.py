@@ -50,7 +50,7 @@ class PDNS4Backend(base.Backend):
             self._build_url(zone=zone.name),
             headers=self.headers,
         )
-        return zone.status_code is 200
+        return zone.status_code == 200
 
     def create_zone(self, context, zone):
         """Create a DNS zone"""

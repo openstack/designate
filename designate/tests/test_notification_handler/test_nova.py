@@ -148,15 +148,15 @@ class NovaFixedHandlerTest(TestCase, NotificationHandlerMixin):
         fixture = self.get_notification_fixture('nova', event_type)
         with mock.patch.object(
                 self.plugin, '_create_or_update_recordset') as finder:
-                with mock.patch.object(self.plugin.central_api,
-                                       'create_record'):
-                    finder.return_value = {'id': 'fakeid'}
-                    self.plugin.process_notification(
-                        self.admin_context.to_dict(),
-                        event_type, fixture['payload'])
-                    finder.assert_called_once_with(
-                        mock.ANY, mock.ANY, type='A', zone_id=self.zone_id,
-                        name='private.example.com.')
+            with mock.patch.object(self.plugin.central_api,
+                                   'create_record'):
+                finder.return_value = {'id': 'fakeid'}
+                self.plugin.process_notification(
+                    self.admin_context.to_dict(),
+                    event_type, fixture['payload'])
+                finder.assert_called_once_with(
+                    mock.ANY, mock.ANY, type='A', zone_id=self.zone_id,
+                    name='private.example.com.')
 
     def test_formatv4(self):
         event_type = 'compute.instance.create.end'
@@ -165,15 +165,15 @@ class NovaFixedHandlerTest(TestCase, NotificationHandlerMixin):
         fixture = self.get_notification_fixture('nova', event_type)
         with mock.patch.object(
                 self.plugin, '_create_or_update_recordset') as finder:
-                with mock.patch.object(self.plugin.central_api,
-                                       'create_record'):
-                    finder.return_value = {'id': 'fakeid'}
-                    self.plugin.process_notification(
-                        self.admin_context.to_dict(),
-                        event_type, fixture['payload'])
-                    finder.assert_called_once_with(
-                        mock.ANY, mock.ANY, type='A', zone_id=self.zone_id,
-                        name='private-v4.example.com.')
+            with mock.patch.object(self.plugin.central_api,
+                                   'create_record'):
+                finder.return_value = {'id': 'fakeid'}
+                self.plugin.process_notification(
+                    self.admin_context.to_dict(),
+                    event_type, fixture['payload'])
+                finder.assert_called_once_with(
+                    mock.ANY, mock.ANY, type='A', zone_id=self.zone_id,
+                    name='private-v4.example.com.')
 
     def test_formatv6(self):
         event_type = 'compute.instance.create.end'
@@ -182,12 +182,12 @@ class NovaFixedHandlerTest(TestCase, NotificationHandlerMixin):
         fixture = self.get_notification_fixture('nova', event_type)
         with mock.patch.object(
                 self.plugin, '_create_or_update_recordset') as finder:
-                with mock.patch.object(self.plugin.central_api,
-                                       'create_record'):
-                    finder.return_value = {'id': 'fakeid'}
-                    self.plugin.process_notification(
-                        self.admin_context.to_dict(),
-                        event_type, fixture['payload_v6'])
-                    finder.assert_called_once_with(
-                        mock.ANY, mock.ANY, type='AAAA', zone_id=self.zone_id,
-                        name='private-v6.example.com.')
+            with mock.patch.object(self.plugin.central_api,
+                                   'create_record'):
+                finder.return_value = {'id': 'fakeid'}
+                self.plugin.process_notification(
+                    self.admin_context.to_dict(),
+                    event_type, fixture['payload_v6'])
+                finder.assert_called_once_with(
+                    mock.ANY, mock.ANY, type='AAAA', zone_id=self.zone_id,
+                    name='private-v6.example.com.')

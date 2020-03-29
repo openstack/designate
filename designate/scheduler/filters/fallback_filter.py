@@ -40,7 +40,7 @@ class FallbackFilter(base.Filter):
     """
 
     def filter(self, context, pools, zone):
-        if len(pools) is 0:
+        if len(pools) == 0:
             pools = objects.PoolList()
             pools.append(
                 objects.Pool(id=cfg.CONF['service:central'].default_pool_id))

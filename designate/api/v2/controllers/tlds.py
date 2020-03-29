@@ -98,7 +98,7 @@ class TldsController(rest.RestController):
         body = request.body_dict
         response = pecan.response
         if request.content_type == 'application/json-patch+json':
-            raise NotImplemented('json-patch not implemented')
+            raise NotImplementedError('json-patch not implemented')
 
         # Fetch the existing tld
         tld = self.central_api.get_tld(context, tld_id)

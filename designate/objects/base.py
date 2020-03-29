@@ -288,7 +288,7 @@ class DesignateObject(base.VersionedObject):
                 else:
                     try:
                         field.coerce(self, name, value)  # Check value
-                    except Exception as e:
+                    except Exception:
                         raise exceptions.InvalidObject(
                             "{} is invalid".format(name))
             elif not field.nullable:

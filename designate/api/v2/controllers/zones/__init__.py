@@ -155,7 +155,7 @@ class ZonesController(rest.RestController):
             # 1) "Nested" resources? records inside a recordset.
             # 2) What to do when a zone doesn't exist in the first place?
             # 3) ...?
-            raise NotImplemented('json-patch not implemented')
+            raise NotImplementedError('json-patch not implemented')
         else:
             # Update the zone object with the new values
             zone = DesignateAdapter.parse('API_v2', body, zone)

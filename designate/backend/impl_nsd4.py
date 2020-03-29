@@ -52,17 +52,17 @@ class NSD4Backend(base.Backend):
         self.pattern = self.options.get('pattern', 'slave')
 
     def _command(self, command):
-            sock = eventlet.wrap_ssl(
-                eventlet.connect((self.host, self.port)),
-                keyfile=self.keyfile,
-                certfile=self.certfile)
-            stream = sock.makefile()
-            stream.write('%s %s\n' % (self.NSDCT_VERSION, command))
-            stream.flush()
-            result = stream.read()
-            stream.close()
-            sock.close()
-            return result
+        sock = eventlet.wrap_ssl(
+            eventlet.connect((self.host, self.port)),
+            keyfile=self.keyfile,
+            certfile=self.certfile)
+        stream = sock.makefile()
+        stream.write('%s %s\n' % (self.NSDCT_VERSION, command))
+        stream.flush()
+        result = stream.read()
+        stream.close()
+        sock.close()
+        return result
 
     def _execute_nsd4(self, command):
         try:

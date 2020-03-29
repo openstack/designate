@@ -243,7 +243,7 @@ class TestDoAfxr(oslotest.base.BaseTestCase):
 
         self.assertRaisesRegex(
             exceptions.XFRFailure,
-            'XFR failed for example.com. No servers in \[\] was reached.',
+            r'XFR failed for example.com. No servers in \[\] was reached.',
             dnsutils.do_axfr, 'example.com', masters,
         )
 

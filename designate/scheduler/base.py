@@ -61,7 +61,7 @@ class Scheduler(object):
         """
         pools = self.storage.find_pools(context)
 
-        if len(self.filters) is 0:
+        if len(self.filters) == 0:
             raise exceptions.NoFiltersConfigured('There are no scheduling '
                                                  'filters configured')
 
@@ -75,7 +75,7 @@ class Scheduler(object):
 
         if len(pools) > 1:
             raise exceptions.MultiplePoolsFound()
-        if len(pools) is 0:
+        if len(pools) == 0:
             raise exceptions.NoValidPoolFound('There are no pools that '
                                               'matched your request')
         return pools[0].id
