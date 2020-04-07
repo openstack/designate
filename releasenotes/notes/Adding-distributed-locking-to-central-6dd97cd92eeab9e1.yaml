@@ -1,0 +1,13 @@
+---
+fixes:
+  - |
+    Adding distributed locking to central
+
+    The central service was not using a global lock which can lead to
+    a race condition in a high availability setup leading to missing
+    recordsets in the DNS backend. This release includes a partial
+    backport of a distributed locking mechanism to central.
+
+    Fixes `bug 1871332`_
+
+    .. _Bug 1871332: https://bugs.launchpad.net/designate/+bug/1871332

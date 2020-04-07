@@ -251,6 +251,11 @@ function install_designate {
     git_clone $DESIGNATE_REPO $DESIGNATE_DIR $DESIGNATE_BRANCH
     setup_develop $DESIGNATE_DIR
 
+    # Install reqs for tooz driver
+    if [[ "$DESIGNATE_COORDINATION_URL" =~ "memcached" ]]; then
+        pip_install_gr "pymemcache"
+    fi
+
     install_designate_backend
 }
 

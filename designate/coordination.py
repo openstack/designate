@@ -20,6 +20,7 @@ import math
 import time
 
 from oslo_config import cfg
+from oslo_concurrency import lockutils
 from oslo_log import log
 import tenacity
 import tooz.coordination
@@ -57,6 +58,99 @@ CONF = cfg.CONF
 def _retry_if_tooz_error(exception):
     """Return True if we should retry, False otherwise"""
     return isinstance(exception, tooz.coordination.ToozError)
+
+
+class Coordination(object):
+    def __init__(self, name, tg, grouping_enabled=False):
+        # NOTE(eandersson): Workaround until tooz handles the conversion.
+        if not isinstance(name, bytes):
+            name = name.encode('ascii')
+        self.name = name
+        self.tg = tg
+        self.coordination_id = None
+        self._grouping_enabled = grouping_enabled
+        self._coordinator = None
+        self._started = False
+
+    @property
+    def coordinator(self):
+        return self._coordinator
+
+    @property
+    def started(self):
+        return self._started
+
+    def get_lock(self, name):
+        if self._coordinator:
+            # NOTE(eandersson): Workaround until tooz handles the conversion.
+            if not isinstance(name, bytes):
+                name = name.encode('ascii')
+            return self._coordinator.get_lock(name)
+        return lockutils.lock(name)
+
+    def start(self):
+        self.coordination_id = ":".join([CONF.host, generate_uuid()])
+        self._started = False
+
+        backend_url = CONF.coordination.backend_url
+        if backend_url is None:
+            LOG.warning('No coordination backend configured, distributed '
+                        'coordination functionality will be disabled. '
+                        'Please configure a coordination backend.')
+            return
+
+        self._coordinator = tooz.coordination.get_coordinator(
+            backend_url, self.coordination_id.encode()
+        )
+        while not self._coordinator.is_started:
+            self._coordinator.start(start_heart=True)
+
+        self._started = True
+
+        if self._grouping_enabled:
+            self._enable_grouping()
+
+    def stop(self):
+        if self._coordinator is None:
+            return
+
+        try:
+            if self._grouping_enabled:
+                self._disable_grouping()
+            self._coordinator.stop()
+            self._coordinator = None
+        finally:
+            self._started = False
+
+    def _coordinator_run_watchers(self):
+        if not self._started:
+            return
+        self._coordinator.run_watchers()
+
+    def _create_group(self):
+        try:
+            create_group_req = self._coordinator.create_group(
+                self.name
+            )
+            create_group_req.get()
+        except tooz.coordination.GroupAlreadyExist:
+            pass
+        join_group_req = self._coordinator.join_group(self.name)
+        join_group_req.get()
+
+    def _disable_grouping(self):
+        try:
+            leave_group_req = self._coordinator.leave_group(self.name)
+            leave_group_req.get()
+        except tooz.coordination.GroupNotCreated:
+            pass
+
+    def _enable_grouping(self):
+        self._create_group()
+        self.tg.add_timer(
+            CONF.coordination.run_watchers_interval,
+            self._coordinator_run_watchers
+        )
 
 
 class CoordinationMixin(object):
