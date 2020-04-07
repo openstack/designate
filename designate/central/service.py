@@ -33,9 +33,9 @@ from dns import exception as dnsexception
 from oslo_config import cfg
 import oslo_messaging as messaging
 from oslo_log import log as logging
-from oslo_concurrency import lockutils
 
 from designate import context as dcontext
+from designate import coordination
 from designate import exceptions
 from designate import dnsutils
 from designate import network_api
@@ -117,7 +117,7 @@ def synchronized_zone(zone_arg=1, new_zone=False):
             if zone_id in ZONE_LOCKS.held:
                 return f(self, *args, **kwargs)
 
-            with lockutils.lock(lock_name):
+            with self.coordination.get_lock(lock_name):
                 try:
                     ZONE_LOCKS.held.add(zone_id)
                     return f(self, *args, **kwargs)
@@ -198,6 +198,10 @@ class Service(service.RPCService):
             threads=cfg.CONF['service:central'].threads,
         )
 
+        self.coordination = coordination.Coordination(
+            self.service_name, self.tg
+        )
+
         self.network_api = network_api.get_network_api(cfg.CONF.network_api)
 
     @property
@@ -233,8 +237,10 @@ class Service(service.RPCService):
                         "configured")
 
         super(Service, self).start()
+        self.coordination.start()
 
     def stop(self, graceful=True):
+        self.coordination.stop()
         super(Service, self).stop(graceful)
 
     @property
