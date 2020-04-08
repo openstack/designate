@@ -1,15 +1,16 @@
 # Andi Chandler <andi@gowling.com>, 2017. #zanata
 # Andi Chandler <andi@gowling.com>, 2018. #zanata
 # Andi Chandler <andi@gowling.com>, 2019. #zanata
+# Andi Chandler <andi@gowling.com>, 2020. #zanata
 msgid ""
 msgstr ""
 "Project-Id-Version: designate\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-03-08 23:30+0000\n"
+"POT-Creation-Date: 2020-04-07 07:49+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2019-12-21 01:07+0000\n"
+"PO-Revision-Date: 2020-04-07 07:46+0000\n"
 "Last-Translator: Andi Chandler <andi@gowling.com>\n"
 "Language-Team: English (United Kingdom)\n"
 "Language: en_GB\n"
@@ -43,14 +44,20 @@ msgstr "6.0.0"
 msgid "7.0.0"
 msgstr "7.0.0"
 
-msgid "7.0.0-19"
-msgstr "7.0.0-19"
+msgid "7.0.1"
+msgstr "7.0.1"
 
 msgid "8.0.0"
 msgstr "8.0.0"
 
+msgid "8.0.0-14"
+msgstr "8.0.0-14"
+
 msgid "9.0.0"
 msgstr "9.0.0"
+
+msgid "9.0.0-47"
+msgstr "9.0.0-47"
 
 msgid ""
 "A bug that prevented Designate from starting up when services are running a "
@@ -118,6 +125,9 @@ msgid ""
 "Added an experimental entrypoint for wsgi called ``designate-api-wsgi``."
 msgstr ""
 "Added an experimental entrypoint for wsgi called ``designate-api-wsgi``."
+
+msgid "Added new backend driver to support the Akamai FastDNS V2 API"
+msgstr "Added new backend driver to support the Akamai FastDNS V2 API"
 
 msgid "Added zone_name in zone trasfer request response. Closed bug#1580014"
 msgstr "Added zone_name in zone transfer request response. Closed bug#1580014"
@@ -467,6 +477,13 @@ msgstr ""
 "Python 2.7 is OpenStack Train. The minimum version of Python now supported "
 "by Designate is Python 3.6."
 
+msgid ""
+"Python 2.7 will not be maintained past 2020 and because of that we are "
+"dropping Python 2 support."
+msgstr ""
+"Python 2.7 will not be maintained past 2020 and because of that we are "
+"dropping Python 2 support."
+
 msgid "Queens Series Release Notes"
 msgstr "Queens Series Release Notes"
 
@@ -520,6 +537,13 @@ msgstr ""
 "record value has empty space it should use \"\" quotation according to "
 "RFC-1035 section 5.1. Use of single quotation mark within record value "
 "requires quote symbol to be escaped with backslash."
+
+msgid ""
+"The Akamai eDNS API endpoint has been removed, users should migrate to the "
+"Akamai v2 driver for the FastDNS V2 API."
+msgstr ""
+"The Akamai eDNS API endpoint has been removed, users should migrate to the "
+"Akamai v2 driver for the FastDNS V2 API."
 
 msgid ""
 "The Designate ``sink`` service will now use the heartbeat reporting system "
