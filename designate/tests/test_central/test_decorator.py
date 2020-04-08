@@ -9,6 +9,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import mock
+from oslo_concurrency import lockutils
 from oslo_log import log as logging
 
 from designate import exceptions
@@ -21,6 +23,11 @@ from designate.tests.test_central import CentralTestCase
 LOG = logging.getLogger(__name__)
 
 
+class FakeCoordination(object):
+    def get_lock(self, name):
+        return lockutils.lock(name)
+
+
 class CentralDecoratorTests(CentralTestCase):
     def test_synchronized_zone_exception_raised(self):
         @service.synchronized_zone()
@@ -31,7 +38,8 @@ class CentralDecoratorTests(CentralTestCase):
 
         for index in range(9):
             try:
-                mock_get_zone(object, index,
+                mock_get_zone(mock.Mock(coordination=FakeCoordination()),
+                              index,
                               zone.Zone(id=utils.generate_uuid()))
             except exceptions.ZoneNotFound:
                 pass
@@ -46,9 +54,11 @@ class CentralDecoratorTests(CentralTestCase):
         def mock_get_zone(cls, context, zone):
             self.assertEqual(service.ZONE_LOCKS.held, {zone.id})
 
-        mock_create_record(object, self.get_context(),
+        mock_create_record(mock.Mock(coordination=FakeCoordination()),
+                           self.get_context(),
                            record=record.Record(zone_id=utils.generate_uuid()))
-        mock_get_zone(object, self.get_context(),
+        mock_get_zone(mock.Mock(coordination=FakeCoordination()),
+                      self.get_context(),
                       zone=zone.Zone(id=utils.generate_uuid()))
 
     def test_synchronized_zone_raises_exception_when_no_zone_provided(self):
