@@ -199,7 +199,7 @@ class Service(service.RPCService):
         )
 
         self.coordination = coordination.Coordination(
-            self.service_name, self.tg
+            self.service_name, self.tg, grouping_enabled=False
         )
 
         self.network_api = network_api.get_network_api(cfg.CONF.network_api)

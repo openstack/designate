@@ -53,7 +53,14 @@ class TestCoordination(TestCase):
     def test_start(self):
         service = coordination.Coordination(self.name, self.tg)
         service.start()
+        self.assertTrue(service.started)
+        service.stop()
 
+    def test_start_with_grouping_enabled(self):
+        service = coordination.Coordination(
+            self.name, self.tg, grouping_enabled=True
+        )
+        service.start()
         self.assertTrue(service.started)
         self.assertIn(self.name.encode('utf-8'),
                       service.coordinator.get_groups().get())
@@ -64,6 +71,14 @@ class TestCoordination(TestCase):
 
     def test_stop(self):
         service = coordination.Coordination(self.name, self.tg)
+        service.start()
+        service.stop()
+        self.assertFalse(service.started)
+
+    def test_stop_with_grouping_enabled(self):
+        service = coordination.Coordination(
+            self.name, self.tg, grouping_enabled=True
+        )
         service.start()
         service.stop()
         self.assertFalse(service.started)
