@@ -9,12 +9,14 @@ Getting Involved
 
 #openstack-dns
 --------------
+
 There is an active IRC channel at irc://freenode.net/#openstack-dns,
 where many of the designate contributors can be found, as
 well as users from various organisations.
 
 Weekly meetings
 ---------------
+
 There is a weekly irc meet. The agenda and other details are listed at
 `Designate meetings wiki page`_. Currently the meeting is
 held every Wednesday at 17:00 UTC on the IRC channel
@@ -22,11 +24,37 @@ irc://freenode.net/#openstack-meeting-alt
 
 Contributing
 ------------
+
+For general information on contributing to OpenStack please see the
+`contributor guide <https://docs.openstack.org/contributors/>`_ to get
+started. It covers all the basics that are common to all OpenStack
+projects: the accounts you need, the basics of interacting with our
+Gerrit review system, how we communicate as a community, etc.
+
 We welcome fixes, extensions, documentation, pretty much anything that
 helps improve Designate, contributing is easy & follows
 the standard OpenStack `Gerrit workflow`_, if you're looking for
 something to do, you could always checkout the blueprint_ & bug_
 lists.
+
+Task Tracking
+-------------
+
+We track our tasks in Launchpad
+
+   https://bugs.launchpad.net/designate
+
+If you're looking for some smaller, easier work item to pick up and get started
+on, search for the 'low-hanging-fruit' tag.
+
+Reporting a Bug
+---------------
+
+You found an issue and want to make sure we are aware of it? You can
+do so on `Launchpad <https://bugs.launchpad.net/designate>`_.
+
+Development Environment and Developer Workflow
+----------------------------------------------
 
 Assuming you've already got a working :ref:`Development Environment`,
 here's a quick summary:
@@ -53,6 +81,7 @@ Branch, work, & submit:
 
 Coding Standards
 ----------------
+
 Designate uses the OpenStack flake8 coding standards guidelines.
 These are stricter than pep8, and are run by gerrit on every commit.
 
@@ -158,7 +187,7 @@ Example:
     ~~~~~~~~~~~~~~~~~~~
     Akamai backend. Create and delete zones on Akamai. Blah Blah...
 
-    `Specs: Keystone Session <https://github.com/openstack/designate-specs/blob/master/specs/kilo/switch-to-keystone-session.rst>`_
+    `Specs: Keystone Session <https://opendev.org/openstack/designate-specs/src/branch/master/specs/kilo/switch-to-keystone-session.rst>`_
 
     `User documentation <backend.html>`_
 
