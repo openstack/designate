@@ -14,8 +14,8 @@
 # under the License.
 #
 import time
+from unittest import mock
 
-import mock
 import monascastatsd
 from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture

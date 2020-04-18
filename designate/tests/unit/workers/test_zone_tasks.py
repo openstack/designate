@@ -13,8 +13,9 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.mport threading
+from unittest import mock
+
 import dns.exception
-import mock
 import oslotest.base
 from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture

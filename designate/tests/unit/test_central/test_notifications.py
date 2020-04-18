@@ -14,8 +14,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import unittest
+from unittest import mock
 
-import mock
 from oslo_log import log as logging
 
 from designate import objects

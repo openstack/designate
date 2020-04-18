@@ -15,9 +15,9 @@
 # under the License.
 import socket
 import ssl
+from unittest import mock
 
 import eventlet
-import mock
 
 import designate.tests
 from designate import exceptions

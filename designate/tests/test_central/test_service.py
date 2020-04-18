@@ -19,8 +19,8 @@ import datetime
 import copy
 import random
 from collections import namedtuple
+from unittest import mock
 
-import mock
 import testtools
 from testtools.matchers import GreaterThan
 from oslo_config import cfg

@@ -14,13 +14,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import binascii
+from unittest import mock
 
 import dns
 import dns.rdataclass
 import dns.rdatatype
 import dns.resolver
 import dns.rrset
-import mock
 import testtools
 from oslo_config import cfg
 

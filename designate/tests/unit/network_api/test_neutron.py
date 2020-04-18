@@ -13,7 +13,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import mock
+from unittest import mock
+
 from neutronclient.common import exceptions as neutron_exceptions
 from neutronclient.v2_0 import client as clientv20
 from oslo_config import cfg
@@ -47,7 +48,7 @@ class NeutronNetworkAPITest(oslotest.base.BaseTestCase):
     def test_get_client(self, mock_client):
         neutron.get_client(self.context, 'http://localhost:9696')
 
-        kwargs = mock_client.call_args.kwargs
+        _, kwargs = mock_client.call_args
 
         self.assertIn('endpoint_url', kwargs)
         self.assertIn('timeout', kwargs)
@@ -67,14 +68,14 @@ class NeutronNetworkAPITest(oslotest.base.BaseTestCase):
 
         neutron.get_client(self.context, 'http://localhost:9696')
 
-        kwargs = mock_client.call_args.kwargs
+        _, kwargs = mock_client.call_args
 
         self.assertIn('token', kwargs)
         self.assertIn('auth_strategy', kwargs)
         self.assertNotIn('username', kwargs)
 
         self.assertEqual('http://localhost:9696', kwargs['endpoint_url'])
-        self.assertEqual(kwargs['token'], self.context.auth_token)
+        self.assertEqual(self.context.auth_token, kwargs['token'])
 
     @mock.patch.object(clientv20, 'Client')
     def test_get_client_using_admin(self, mock_client):
@@ -85,7 +86,7 @@ class NeutronNetworkAPITest(oslotest.base.BaseTestCase):
 
         neutron.get_client(self.context, 'http://localhost:9696')
 
-        kwargs = mock_client.call_args.kwargs
+        _, kwargs = mock_client.call_args
 
         self.assertIn('auth_strategy', kwargs)
         self.assertIn('username', kwargs)

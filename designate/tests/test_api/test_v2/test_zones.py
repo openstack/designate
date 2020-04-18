@@ -13,8 +13,9 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import mock
-from mock import patch
+from unittest.mock import patch
+from unittest import mock
+
 from oslo_config import cfg
 import oslo_messaging as messaging
 
