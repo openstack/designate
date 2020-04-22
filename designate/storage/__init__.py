@@ -46,7 +46,7 @@ def _retry_on_deadlock(exc):
     return False
 
 
-def retry(cb=None, retries=50, delay=150):
+def retry(cb=None, retries=150, delay=50, deep_copy=True):
     """A retry decorator that ignores attempts at creating nested retries"""
     def outer(f):
         @functools.wraps(f)
@@ -63,8 +63,13 @@ def retry(cb=None, retries=50, delay=150):
                 try:
                     while True:
                         try:
-                            result = f(self, *copy.deepcopy(args),
-                                       **copy.deepcopy(kwargs))
+                            if deep_copy:
+                                result = f(self, *copy.deepcopy(args),
+                                           **copy.deepcopy(kwargs))
+                            else:
+                                # perform shallow copy
+                                result = f(self, *copy.copy(args),
+                                           **copy.copy(kwargs))
                             break
                         except Exception as exc:
                             RETRY_STATE.retries += 1
@@ -84,7 +89,13 @@ def retry(cb=None, retries=50, delay=150):
 
             else:
                 # We're an inner retry decorator, just pass on through.
-                result = f(self, *copy.deepcopy(args), **copy.deepcopy(kwargs))
+                if deep_copy:
+                    result = f(self, *copy.deepcopy(args),
+                               **copy.deepcopy(kwargs))
+                else:
+                    # perform shallow copy
+                    result = f(self, *copy.copy(args),
+                               **copy.copy(kwargs))
 
             return result
         retry_wrapper.__wrapped_function = f
@@ -111,4 +122,25 @@ def transaction(f):
 
     transaction_wrapper.__wrapped_function = f
     transaction_wrapper.__wrapper_name = 'transaction'
+    return transaction_wrapper
+
+
+def transaction_shallow_copy(f):
+    """Transaction decorator, to be used on class instances with a
+    self.storage attribute where shallow copy of args, kwargs is used
+    """
+    @retry(cb=_retry_on_deadlock, deep_copy=False)
+    @functools.wraps(f)
+    def transaction_wrapper(self, *args, **kwargs):
+        self.storage.begin()
+        try:
+            result = f(self, *args, **kwargs)
+            self.storage.commit()
+            return result
+        except Exception:
+            with excutils.save_and_reraise_exception():
+                self.storage.rollback()
+
+    transaction_wrapper.__wrapped_function = f
+    transaction_wrapper.__wrapper_name = 'transaction_shallow_copy'
     return transaction_wrapper
