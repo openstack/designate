@@ -37,6 +37,7 @@ class ZoneAPIv2Adapter(base.APIv2Adapter):
                 'read_only': False
             },
             "serial": {},
+            "shared": {},
             "status": {},
             "action": {},
             "version": {},

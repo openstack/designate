@@ -28,9 +28,20 @@ RULE_ZONE_PRIMARY_OR_ADMIN = (
     "('PRIMARY':%(zone_type)s and rule:admin_or_owner) "
     "OR ('SECONDARY':%(zone_type)s AND is_admin:True)")
 
+RULE_ZONE_PRIMARY_OR_ADMIN_OR_SHARED = (
+    "('PRIMARY':%(zone_type)s AND (rule:admin_or_owner OR "
+    "'True':%(zone_shared)s)) "
+    "OR ('SECONDARY':%(zone_type)s AND is_admin:True)")
+
+RULE_ADMIN_OR_OWNER_PRIMARY = (
+    "rule:admin or (\'PRIMARY\':%(zone_type)s and "
+    "(rule:owner or project_id:%(recordset_project_id)s))"
+)
+
+
 deprecated_create_recordset = policy.DeprecatedRule(
     name="create_recordset",
-    check_str=RULE_ZONE_PRIMARY_OR_ADMIN,
+    check_str=RULE_ZONE_PRIMARY_OR_ADMIN_OR_SHARED,
     deprecated_reason=DEPRECATED_REASON,
     deprecated_since=versionutils.deprecated.WALLABY
 )
@@ -42,7 +53,7 @@ deprecated_get_recordsets = policy.DeprecatedRule(
 )
 deprecated_get_recordset = policy.DeprecatedRule(
     name="get_recordset",
-    check_str=base.RULE_ADMIN_OR_OWNER,
+    check_str=base.RULE_ADMIN_OR_OWNER_OR_SHARED,
     deprecated_reason=DEPRECATED_REASON,
     deprecated_since=versionutils.deprecated.WALLABY
 )
@@ -60,13 +71,13 @@ deprecated_find_recordsets = policy.DeprecatedRule(
 )
 deprecated_update_recordset = policy.DeprecatedRule(
     name="update_recordset",
-    check_str=RULE_ZONE_PRIMARY_OR_ADMIN,
+    check_str=RULE_ADMIN_OR_OWNER_PRIMARY,
     deprecated_reason=DEPRECATED_REASON,
     deprecated_since=versionutils.deprecated.WALLABY
 )
 deprecated_delete_recordset = policy.DeprecatedRule(
     name="delete_recordset",
-    check_str=RULE_ZONE_PRIMARY_OR_ADMIN,
+    check_str=RULE_ADMIN_OR_OWNER_PRIMARY,
     deprecated_reason=DEPRECATED_REASON,
     deprecated_since=versionutils.deprecated.WALLABY
 )
@@ -86,11 +97,27 @@ SYSTEM_ADMIN_AND_PRIMARY_ZONE = (
 SYSTEM_ADMIN_AND_SECONDARY_ZONE = (
     '(' + base.SYSTEM_ADMIN + ') and (\'SECONDARY\':%(zone_type)s)'
 )
+SHARED_AND_PRIMARY_ZONE = (
+    '("True":%(zone_shared)s) and (\'PRIMARY\':%(zone_type)s)'
+)
+RECORDSET_MEMBER_AND_PRIMARY_ZONE = (
+    'role:member and (project_id:%(recordset_project_id)s) and '
+    '(\'PRIMARY\':%(zone_type)s)'
+)
+
 
 SYSTEM_ADMIN_OR_PROJECT_MEMBER_ZONE_TYPE = ' or '.join(
     [PROJECT_MEMBER_AND_PRIMARY_ZONE,
      SYSTEM_ADMIN_AND_PRIMARY_ZONE,
-     SYSTEM_ADMIN_AND_SECONDARY_ZONE]
+     SYSTEM_ADMIN_AND_SECONDARY_ZONE,
+     SHARED_AND_PRIMARY_ZONE]
+)
+
+SYSTEM_ADMIN_OR_PROJECT_MEMBER_RECORD_OWNER_ZONE_TYPE = ' or '.join(
+    [PROJECT_MEMBER_AND_PRIMARY_ZONE,
+     SYSTEM_ADMIN_AND_PRIMARY_ZONE,
+     SYSTEM_ADMIN_AND_SECONDARY_ZONE,
+     RECORDSET_MEMBER_AND_PRIMARY_ZONE]
 )
 
 
@@ -116,7 +143,7 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name="get_recordset",
-        check_str=base.SYSTEM_OR_PROJECT_READER,
+        check_str=base.SYSTEM_OR_PROJECT_READER_OR_SHARED,
         scope_types=['system', 'project'],
         description="Get recordset",
         operations=[
@@ -149,7 +176,7 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name="update_recordset",
-        check_str=SYSTEM_ADMIN_OR_PROJECT_MEMBER_ZONE_TYPE,
+        check_str=SYSTEM_ADMIN_OR_PROJECT_MEMBER_RECORD_OWNER_ZONE_TYPE,
         scope_types=['system', 'project'],
         description="Update recordset",
         operations=[
@@ -162,7 +189,7 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name="delete_recordset",
-        check_str=SYSTEM_ADMIN_OR_PROJECT_MEMBER_ZONE_TYPE,
+        check_str=SYSTEM_ADMIN_OR_PROJECT_MEMBER_RECORD_OWNER_ZONE_TYPE,
         scope_types=['system', 'project'],
         description="Delete RecordSet",
         operations=[
@@ -178,7 +205,7 @@ rules = [
         check_str=base.SYSTEM_OR_PROJECT_READER,
         scope_types=['system', 'project'],
         description="Count recordsets",
-        deprecated_rule=deprecated_count_recordset
+        deprecated_rule=deprecated_count_recordset,
     )
 ]
 

@@ -66,6 +66,10 @@ SYSTEM_OR_PROJECT_READER_OR_ALL_TENANTS_READER = (
     ALL_TENANTS_READER + ')'
 )
 
+SYSTEM_OR_PROJECT_READER_OR_SHARED = (
+        SYSTEM_OR_PROJECT_READER + ' or ("True":%(zone_shared)s)'
+)
+
 RULE_ZONE_TRANSFER = (
     '(' + SYSTEM_ADMIN_OR_PROJECT_MEMBER + ') or '
     'project_id:%(target_project_id)s or '
@@ -79,6 +83,9 @@ RULE_ADMIN_OR_OWNER = 'rule:admin_or_owner'
 LEGACY_RULE_ZONE_TRANSFER = "rule:admin_or_owner OR " \
                             "project_id:%(target_tenant_id)s " \
                             "OR None:%(target_tenant_id)s"
+RULE_ADMIN_OR_OWNER_OR_SHARED = (
+        RULE_ADMIN_OR_OWNER + ' or ("True":%(zone_shared)s)'
+)
 
 deprecated_default = policy.DeprecatedRule(
     name="default",

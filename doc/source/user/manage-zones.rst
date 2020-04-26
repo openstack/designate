@@ -200,3 +200,8 @@ A zone can be deleted using either its name or ID:
       +----------------+--------------------------------------+
 
 Any records present in the zone are also deleted and will no longer resolve.
+
+.. note::
+
+   Zones that have shares cannot be deleted without removing the shares or
+   using the `delete-shares` modifier.

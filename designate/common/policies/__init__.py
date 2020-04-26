@@ -25,6 +25,7 @@ from designate.common.policies import quota
 from designate.common.policies import record
 from designate.common.policies import recordset
 from designate.common.policies import service_status
+from designate.common.policies import shared_zones
 from designate.common.policies import tenant
 from designate.common.policies import tld
 from designate.common.policies import tsigkey
@@ -45,6 +46,7 @@ def list_rules():
         record.list_rules(),
         recordset.list_rules(),
         service_status.list_rules(),
+        shared_zones.list_rules(),
         tenant.list_rules(),
         tld.list_rules(),
         tsigkey.list_rules(),

@@ -67,8 +67,9 @@ class CentralAPI(object):
         6.3 - Changed 'update_status' method args
         6.4 - Removed unused record and diagnostic methods
         6.5 - Removed additional unused methods
+        6.6 - Add methods for shared zones
     """
-    RPC_API_VERSION = '6.5'
+    RPC_API_VERSION = '6.6'
 
     # This allows us to mark some methods as not logged.
     # This can be for a few reasons - some methods my not actually call over
@@ -81,7 +82,7 @@ class CentralAPI(object):
 
         target = messaging.Target(topic=self.topic,
                                   version=self.RPC_API_VERSION)
-        self.client = rpc.get_client(target, version_cap='6.5')
+        self.client = rpc.get_client(target, version_cap='6.6')
 
     @classmethod
     def get_instance(cls):
@@ -166,6 +167,27 @@ class CentralAPI(object):
     def purge_zones(self, context, criterion, limit=None):
         return self.client.call(context, 'purge_zones',
                                 criterion=criterion, limit=limit)
+
+    # Shared Zone methods
+    def share_zone(self, context, zone_id, shared_zone):
+        return self.client.call(context, 'share_zone', zone_id=zone_id,
+                                shared_zone=shared_zone)
+
+    def unshare_zone(self, context, zone_id, zone_share_id):
+        return self.client.call(context, 'unshare_zone',
+                                zone_id=zone_id, zone_share_id=zone_share_id)
+
+    def find_shared_zones(self, context, criterion=None, marker=None,
+                          limit=None, sort_key=None, sort_dir=None):
+        return self.client.call(
+            context, 'find_shared_zones', criterion=criterion, marker=marker,
+            limit=limit, sort_key=sort_key, sort_dir=sort_dir)
+
+    def get_shared_zone(self, context, zone_id, zone_share_id):
+        return self.client.call(
+            context, 'get_shared_zone', zone_id=zone_id,
+            zone_share_id=zone_share_id
+        )
 
     # TLD Methods
     def create_tld(self, context, tld):

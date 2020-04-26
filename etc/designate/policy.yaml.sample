@@ -1,355 +1,918 @@
-#
 #"admin": "role:admin or is_admin:True"
 
-#
-#"primary_zone": "target.zone_type:SECONDARY"
+#"owner": "project_id:%(tenant_id)s"
 
-#
-#"owner": "tenant:%(tenant_id)s"
-
-#
 #"admin_or_owner": "rule:admin or rule:owner"
 
-#
-#"default": "rule:admin_or_owner"
+#"default": "(role:admin and system_scope:all) or (role:member and project_id:%(project_id)s)"
 
-#
-#"target": "tenant:%(target_tenant_id)s"
-
-#
-#"owner_or_target": "rule:target or rule:owner"
-
-#
-#"admin_or_owner_or_target": "rule:owner_or_target or rule:admin"
-
-#
-#"admin_or_target": "rule:admin or rule:target"
-
-#
-#"zone_primary_or_admin": "('PRIMARY':%(zone_type)s and rule:admin_or_owner) OR ('SECONDARY':%(zone_type)s AND is_admin:True)"
+# DEPRECATED
+# "default":"rule:admin_or_owner" has been deprecated since W in favor
+# of "default":"(role:admin and system_scope:all) or (role:member and
+# project_id:%(project_id)s)".
+# The designate API now supports system scope and default roles.
 
 # Create blacklist.
 # POST  /v2/blacklists
-#"create_blacklist": "rule:admin"
+# Intended scope(s): system
+#"create_blacklist": "role:admin and system_scope:all"
 
-# Find blacklist.
-# GET  /v2/blacklists
-#"find_blacklist": "rule:admin"
+# DEPRECATED
+# "create_blacklist":"rule:admin" has been deprecated since W in favor
+# of "create_blacklist":"role:admin and system_scope:all".
+# The blacklist API now supports system scope and default roles.
 
 # Find blacklists.
 # GET  /v2/blacklists
-#"find_blacklists": "rule:admin"
+# Intended scope(s): system
+#"find_blacklists": "role:reader and system_scope:all"
+
+# DEPRECATED
+# "find_blacklists":"rule:admin" has been deprecated since W in favor
+# of "find_blacklists":"role:reader and system_scope:all".
+# The blacklist API now supports system scope and default roles.
 
 # Get blacklist.
 # GET  /v2/blacklists/{blacklist_id}
-#"get_blacklist": "rule:admin"
+# Intended scope(s): system
+#"get_blacklist": "role:reader and system_scope:all"
+
+# DEPRECATED
+# "get_blacklist":"rule:admin" has been deprecated since W in favor of
+# "get_blacklist":"role:reader and system_scope:all".
+# The blacklist API now supports system scope and default roles.
 
 # Update blacklist.
 # PATCH  /v2/blacklists/{blacklist_id}
-#"update_blacklist": "rule:admin"
+# Intended scope(s): system
+#"update_blacklist": "role:admin and system_scope:all"
+
+# DEPRECATED
+# "update_blacklist":"rule:admin" has been deprecated since W in favor
+# of "update_blacklist":"role:admin and system_scope:all".
+# The blacklist API now supports system scope and default roles.
 
 # Delete blacklist.
 # DELETE  /v2/blacklists/{blacklist_id}
-#"delete_blacklist": "rule:admin"
+# Intended scope(s): system
+#"delete_blacklist": "role:admin and system_scope:all"
+
+# DEPRECATED
+# "delete_blacklist":"rule:admin" has been deprecated since W in favor
+# of "delete_blacklist":"role:admin and system_scope:all".
+# The blacklist API now supports system scope and default roles.
 
 # Allowed bypass the blacklist.
 # POST  /v2/zones
-#"use_blacklisted_zone": "rule:admin"
+# Intended scope(s): system
+#"use_blacklisted_zone": "role:admin and system_scope:all"
+
+# DEPRECATED
+# "use_blacklisted_zone":"rule:admin" has been deprecated since W in
+# favor of "use_blacklisted_zone":"role:admin and system_scope:all".
+# The blacklist API now supports system scope and default roles.
 
 # Action on all tenants.
-#"all_tenants": "rule:admin"
+# Intended scope(s): system
+#"all_tenants": "role:admin and system_scope:all"
+
+# DEPRECATED
+# "all_tenants":"rule:admin" has been deprecated since W in favor of
+# "all_tenants":"role:admin and system_scope:all".
+# The designate API now supports system scope and default roles.
 
 # Edit managed records.
-#"edit_managed_records": "rule:admin"
+# Intended scope(s): system
+#"edit_managed_records": "role:admin and system_scope:all"
+
+# DEPRECATED
+# "edit_managed_records":"rule:admin" has been deprecated since W in
+# favor of "edit_managed_records":"role:admin and system_scope:all".
+# The designate API now supports system scope and default roles.
 
 # Use low TTL.
-#"use_low_ttl": "rule:admin"
+# Intended scope(s): system
+#"use_low_ttl": "role:admin and system_scope:all"
+
+# DEPRECATED
+# "use_low_ttl":"rule:admin" has been deprecated since W in favor of
+# "use_low_ttl":"role:admin and system_scope:all".
+# The designate API now supports system scope and default roles.
 
 # Accept sudo from user to tenant.
-#"use_sudo": "rule:admin"
+# Intended scope(s): system
+#"use_sudo": "role:admin and system_scope:all"
 
-# Diagnose ping.
-#"diagnostics_ping": "rule:admin"
+# DEPRECATED
+# "use_sudo":"rule:admin" has been deprecated since W in favor of
+# "use_sudo":"role:admin and system_scope:all".
+# The designate API now supports system scope and default roles.
 
-# Diagnose sync zones.
-#"diagnostics_sync_zones": "rule:admin"
+# Clean backend resources associated with zone
+# Intended scope(s): system
+#"hard_delete": "role:admin and system_scope:all"
 
-# Diagnose sync zone.
-#"diagnostics_sync_zone": "rule:admin"
-
-# Diagnose sync record.
-#"diagnostics_sync_record": "rule:admin"
+# DEPRECATED
+# "hard_delete":"rule:admin" has been deprecated since W in favor of
+# "hard_delete":"role:admin and system_scope:all".
+# The designate API now supports system scope and default roles.
 
 # Create pool.
-#"create_pool": "rule:admin"
+# Intended scope(s): system
+#"create_pool": "role:admin and system_scope:all"
+
+# DEPRECATED
+# "create_pool":"rule:admin" has been deprecated since W in favor of
+# "create_pool":"role:admin and system_scope:all".
+# The pool API now supports system scope and default roles.
 
 # Find pool.
 # GET  /v2/pools
-#"find_pools": "rule:admin"
+# Intended scope(s): system
+#"find_pools": "role:reader and system_scope:all"
+
+# DEPRECATED
+# "find_pools":"rule:admin" has been deprecated since W in favor of
+# "find_pools":"role:reader and system_scope:all".
+# The pool API now supports system scope and default roles.
 
 # Find pools.
 # GET  /v2/pools
-#"find_pool": "rule:admin"
+# Intended scope(s): system
+#"find_pool": "role:reader and system_scope:all"
+
+# DEPRECATED
+# "find_pool":"rule:admin" has been deprecated since W in favor of
+# "find_pool":"role:reader and system_scope:all".
+# The pool API now supports system scope and default roles.
 
 # Get pool.
 # GET  /v2/pools/{pool_id}
-#"get_pool": "rule:admin"
+# Intended scope(s): system
+#"get_pool": "role:reader and system_scope:all"
+
+# DEPRECATED
+# "get_pool":"rule:admin" has been deprecated since W in favor of
+# "get_pool":"role:reader and system_scope:all".
+# The pool API now supports system scope and default roles.
 
 # Update pool.
-#"update_pool": "rule:admin"
+# Intended scope(s): system
+#"update_pool": "role:admin and system_scope:all"
+
+# DEPRECATED
+# "update_pool":"rule:admin" has been deprecated since W in favor of
+# "update_pool":"role:admin and system_scope:all".
+# The pool API now supports system scope and default roles.
 
 # Delete pool.
-#"delete_pool": "rule:admin"
+# Intended scope(s): system
+#"delete_pool": "role:admin and system_scope:all"
+
+# DEPRECATED
+# "delete_pool":"rule:admin" has been deprecated since W in favor of
+# "delete_pool":"role:admin and system_scope:all".
+# The pool API now supports system scope and default roles.
 
 # load and set the pool to the one provided in the Zone attributes.
 # POST  /v2/zones
-#"zone_create_forced_pool": "rule:admin"
+# Intended scope(s): system
+#"zone_create_forced_pool": "role:admin and system_scope:all"
+
+# DEPRECATED
+# "zone_create_forced_pool":"rule:admin" has been deprecated since W
+# in favor of "zone_create_forced_pool":"role:admin and
+# system_scope:all".
+# The pool API now supports system scope and default roles.
 
 # View Current Project's Quotas.
 # GET  /v2/quotas
-#"get_quotas": "rule:admin_or_owner"
+# Intended scope(s): system, project
+#"get_quotas": "(role:reader and system_scope:all) or (role:reader and project_id:%(project_id)s) or (True:%(all_tenants)s and role:reader)"
 
-#
-#"get_quota": "rule:admin_or_owner"
+# DEPRECATED
+# "get_quotas":"rule:admin_or_owner" has been deprecated since W in
+# favor of "get_quotas":"(role:reader and system_scope:all) or
+# (role:reader and project_id:%(project_id)s) or (True:%(all_tenants)s
+# and role:reader)".
+# The quota API now supports system scope and default roles.
 
 # Set Quotas.
 # PATCH  /v2/quotas/{project_id}
-#"set_quota": "rule:admin"
+# Intended scope(s): system
+#"set_quota": "role:admin and system_scope:all"
+
+# DEPRECATED
+# "set_quota":"rule:admin" has been deprecated since W in favor of
+# "set_quota":"role:admin and system_scope:all".
+# The quota API now supports system scope and default roles.
 
 # Reset Quotas.
 # DELETE  /v2/quotas/{project_id}
-#"reset_quotas": "rule:admin"
+# Intended scope(s): system
+#"reset_quotas": "role:admin and system_scope:all"
+
+# DEPRECATED
+# "reset_quotas":"rule:admin" has been deprecated since W in favor of
+# "reset_quotas":"role:admin and system_scope:all".
+# The quota API now supports system scope and default roles.
 
 # Find records.
 # GET  /v2/reverse/floatingips/{region}:{floatingip_id}
 # GET  /v2/reverse/floatingips
-#"find_records": "rule:admin_or_owner"
+# Intended scope(s): system, project
+#"find_records": "(role:reader and system_scope:all) or (role:reader and project_id:%(project_id)s)"
 
-#
-#"count_records": "rule:admin_or_owner"
+# DEPRECATED
+# "find_records":"rule:admin_or_owner" has been deprecated since W in
+# favor of "find_records":"(role:reader and system_scope:all) or
+# (role:reader and project_id:%(project_id)s)".
+# The records API now supports system scope and default roles.
+
+# Intended scope(s): system, project
+#"count_records": "(role:reader and system_scope:all) or (role:reader and project_id:%(project_id)s)"
+
+# DEPRECATED
+# "count_records":"rule:admin_or_owner" has been deprecated since W in
+# favor of "count_records":"(role:reader and system_scope:all) or
+# (role:reader and project_id:%(project_id)s)".
+# The records API now supports system scope and default roles.
 
 # Create Recordset
 # POST  /v2/zones/{zone_id}/recordsets
-# PATCH  /v2/reverse/floatingips/{region}:{floatingip_id}
-#"create_recordset": "('PRIMARY':%(zone_type)s and rule:admin_or_owner) OR ('SECONDARY':%(zone_type)s AND is_admin:True)"
+# Intended scope(s): system, project
+#"create_recordset": "(role:member and project_id:%(project_id)s) and ('PRIMARY':%(zone_type)s) or (role:admin and system_scope:all) and ('PRIMARY':%(zone_type)s) or (role:admin and system_scope:all) and ('SECONDARY':%(zone_type)s) or ("True":%(zone_shared)s) and ('PRIMARY':%(zone_type)s)"
 
-#
-#"get_recordsets": "rule:admin_or_owner"
+# DEPRECATED
+# "create_recordset":"('PRIMARY':%(zone_type)s AND
+# (rule:admin_or_owner OR 'True':%(zone_shared)s)) OR
+# ('SECONDARY':%(zone_type)s AND is_admin:True)" has been deprecated
+# since W in favor of "create_recordset":"(role:member and
+# project_id:%(project_id)s) and ('PRIMARY':%(zone_type)s) or
+# (role:admin and system_scope:all) and ('PRIMARY':%(zone_type)s) or
+# (role:admin and system_scope:all) and ('SECONDARY':%(zone_type)s) or
+# ("True":%(zone_shared)s) and ('PRIMARY':%(zone_type)s)".
+# The record set API now supports system scope and default roles.
+
+# Intended scope(s): system, project
+#"get_recordsets": "(role:reader and system_scope:all) or (role:reader and project_id:%(project_id)s)"
+
+# DEPRECATED
+# "get_recordsets":"rule:admin_or_owner" has been deprecated since W
+# in favor of "get_recordsets":"(role:reader and system_scope:all) or
+# (role:reader and project_id:%(project_id)s)".
+# The record set API now supports system scope and default roles.
 
 # Get recordset
 # GET  /v2/zones/{zone_id}/recordsets/{recordset_id}
-# DELETE  /v2/zones/{zone_id}/recordsets/{recordset_id}
-# PUT  /v2/zones/{zone_id}/recordsets/{recordset_id}
-#"get_recordset": "rule:admin_or_owner"
+# Intended scope(s): system, project
+#"get_recordset": "(role:reader and system_scope:all) or (role:reader and project_id:%(project_id)s) or ("True":%(zone_shared)s)"
+
+# DEPRECATED
+# "get_recordset":"rule:admin_or_owner or ("True":%(zone_shared)s)"
+# has been deprecated since W in favor of
+# "get_recordset":"(role:reader and system_scope:all) or (role:reader
+# and project_id:%(project_id)s) or ("True":%(zone_shared)s)".
+# The record set API now supports system scope and default roles.
+
+# List a Recordset in a Zone
+# Intended scope(s): system, project
+#"find_recordset": "(role:reader and system_scope:all) or (role:reader and project_id:%(project_id)s)"
+
+# DEPRECATED
+# "find_recordset":"rule:admin_or_owner" has been deprecated since W
+# in favor of "find_recordset":"(role:reader and system_scope:all) or
+# (role:reader and project_id:%(project_id)s)".
+# The record set API now supports system scope and default roles.
+
+# List Recordsets in a Zone
+# GET  /v2/zones/{zone_id}/recordsets
+# Intended scope(s): system, project
+#"find_recordsets": "(role:reader and system_scope:all) or (role:reader and project_id:%(project_id)s)"
+
+# DEPRECATED
+# "find_recordsets":"rule:admin_or_owner" has been deprecated since W
+# in favor of "find_recordsets":"(role:reader and system_scope:all) or
+# (role:reader and project_id:%(project_id)s)".
+# The record set API now supports system scope and default roles.
 
 # Update recordset
 # PUT  /v2/zones/{zone_id}/recordsets/{recordset_id}
-# PATCH  /v2/reverse/floatingips/{region}:{floatingip_id}
-#"update_recordset": "('PRIMARY':%(zone_type)s and rule:admin_or_owner) OR ('SECONDARY':%(zone_type)s AND is_admin:True)"
+# Intended scope(s): system, project
+#"update_recordset": "(role:member and project_id:%(project_id)s) and ('PRIMARY':%(zone_type)s) or (role:admin and system_scope:all) and ('PRIMARY':%(zone_type)s) or (role:admin and system_scope:all) and ('SECONDARY':%(zone_type)s) or role:member and (project_id::%(recordset_project_id)s) and ('PRIMARY':%(zone_type)s)"
+
+# DEPRECATED
+# "update_recordset":"rule:admin or ('PRIMARY':%(zone_type)s and
+# (rule:owner or project_id:%(recordset_project_id)s))" has been
+# deprecated since W in favor of "update_recordset":"(role:member and
+# project_id:%(project_id)s) and ('PRIMARY':%(zone_type)s) or
+# (role:admin and system_scope:all) and ('PRIMARY':%(zone_type)s) or
+# (role:admin and system_scope:all) and ('SECONDARY':%(zone_type)s) or
+# role:member and (project_id::%(recordset_project_id)s) and
+# ('PRIMARY':%(zone_type)s)".
+# The record set API now supports system scope and default roles.
 
 # Delete RecordSet
 # DELETE  /v2/zones/{zone_id}/recordsets/{recordset_id}
-#"delete_recordset": "('PRIMARY':%(zone_type)s and rule:admin_or_owner) OR ('SECONDARY':%(zone_type)s AND is_admin:True)"
+# Intended scope(s): system, project
+#"delete_recordset": "(role:member and project_id:%(project_id)s) and ('PRIMARY':%(zone_type)s) or (role:admin and system_scope:all) and ('PRIMARY':%(zone_type)s) or (role:admin and system_scope:all) and ('SECONDARY':%(zone_type)s) or role:member and (project_id::%(recordset_project_id)s) and ('PRIMARY':%(zone_type)s)"
+
+# DEPRECATED
+# "delete_recordset":"rule:admin or ('PRIMARY':%(zone_type)s and
+# (rule:owner or project_id:%(recordset_project_id)s))" has been
+# deprecated since W in favor of "delete_recordset":"(role:member and
+# project_id:%(project_id)s) and ('PRIMARY':%(zone_type)s) or
+# (role:admin and system_scope:all) and ('PRIMARY':%(zone_type)s) or
+# (role:admin and system_scope:all) and ('SECONDARY':%(zone_type)s) or
+# role:member and (project_id::%(recordset_project_id)s) and
+# ('PRIMARY':%(zone_type)s)".
+# The record set API now supports system scope and default roles.
 
 # Count recordsets
-#"count_recordset": "rule:admin_or_owner"
+# Intended scope(s): system, project
+#"count_recordset": "(role:reader and system_scope:all) or (role:reader and project_id:%(project_id)s)"
+
+# DEPRECATED
+# "count_recordset":"rule:admin_or_owner" has been deprecated since W
+# in favor of "count_recordset":"(role:reader and system_scope:all) or
+# (role:reader and project_id:%(project_id)s)".
+# The record set API now supports system scope and default roles.
 
 # Find a single Service Status
 # GET  /v2/service_status/{service_id}
-#"find_service_status": "rule:admin"
+# Intended scope(s): system
+#"find_service_status": "role:reader and system_scope:all"
+
+# DEPRECATED
+# "find_service_status":"rule:admin" has been deprecated since W in
+# favor of "find_service_status":"role:reader and system_scope:all".
+# The service status API now supports system scope and default roles.
 
 # List service statuses.
 # GET  /v2/service_status
-#"find_service_statuses": "rule:admin"
+# Intended scope(s): system
+#"find_service_statuses": "role:reader and system_scope:all"
 
-#
-#"update_service_status": "rule:admin"
+# DEPRECATED
+# "find_service_statuses":"rule:admin" has been deprecated since W in
+# favor of "find_service_statuses":"role:reader and system_scope:all".
+# The service status API now supports system scope and default roles.
+
+# Intended scope(s): system
+#"update_service_status": "role:admin and system_scope:all"
+
+# DEPRECATED
+# "update_service_status":"rule:admin" has been deprecated since W in
+# favor of "update_service_status":"role:admin and system_scope:all".
+# The service status API now supports system scope and default roles.
+
+# Get a Zone Share
+# GET  /v2/zones/{zone_id}/shares/{zone_share_id}
+# Intended scope(s): system, project
+#"get_zone_share": "(role:admin and system_scope:all) or (role:member and project_id:%(project_id)s)"
+
+# DEPRECATED
+# "get_zone_share":"rule:admin_or_owner" has been deprecated since W
+# in favor of "get_zone_share":"(role:admin and system_scope:all) or
+# (role:member and project_id:%(project_id)s)".
+# The shared zones API now supports system scope and default roles.
+
+# Share a Zone
+# POST  /v2/zones/{zone_id}/shares
+# Intended scope(s): system, project
+#"share_zone": "(role:admin and system_scope:all) or (role:member and project_id:%(project_id)s)"
+
+# DEPRECATED
+# "share_zone":"rule:admin_or_owner" has been deprecated since W in
+# favor of "share_zone":"(role:admin and system_scope:all) or
+# (role:member and project_id:%(project_id)s)".
+# The shared zones API now supports system scope and default roles.
+
+# List Shared Zones
+# GET  /v2/zones/{zone_id}/shares
+#"find_zone_shares": "@"
+
+# Check the can query for a specific projects shares.
+# Intended scope(s): system, project
+#"find_project_zone_share": "(role:admin and system_scope:all) or (role:member and project_id:%(project_id)s)"
+
+# DEPRECATED
+# "find_project_zone_share":"rule:admin_or_owner" has been deprecated
+# since W in favor of "find_project_zone_share":"(role:admin and
+# system_scope:all) or (role:member and project_id:%(project_id)s)".
+# The shared zones API now supports system scope and default roles.
+
+# Unshare Zone
+# DELETE  /v2/zones/{zone_id}/shares/{shared_zone_id}
+# Intended scope(s): system, project
+#"unshare_zone": "(role:admin and system_scope:all) or (role:member and project_id:%(project_id)s)"
+
+# DEPRECATED
+# "unshare_zone":"rule:admin_or_owner" has been deprecated since W in
+# favor of "unshare_zone":"(role:admin and system_scope:all) or
+# (role:member and project_id:%(project_id)s)".
+# The shared zones API now supports system scope and default roles.
 
 # Find all Tenants.
-#"find_tenants": "rule:admin"
+# Intended scope(s): system
+#"find_tenants": "role:reader and system_scope:all"
+
+# DEPRECATED
+# "find_tenants":"rule:admin" has been deprecated since W in favor of
+# "find_tenants":"role:reader and system_scope:all".
+# The tenant API now supports system scope and default roles.
 
 # Get all Tenants.
-#"get_tenant": "rule:admin"
+# Intended scope(s): system
+#"get_tenant": "role:reader and system_scope:all"
+
+# DEPRECATED
+# "get_tenant":"rule:admin" has been deprecated since W in favor of
+# "get_tenant":"role:reader and system_scope:all".
+# The tenant API now supports system scope and default roles.
 
 # Count tenants
-#"count_tenants": "rule:admin"
+# Intended scope(s): system
+#"count_tenants": "role:reader and system_scope:all"
+
+# DEPRECATED
+# "count_tenants":"rule:admin" has been deprecated since W in favor of
+# "count_tenants":"role:reader and system_scope:all".
+# The tenant API now supports system scope and default roles.
 
 # Create Tld
 # POST  /v2/tlds
-#"create_tld": "rule:admin"
+# Intended scope(s): system
+#"create_tld": "role:admin and system_scope:all"
+
+# DEPRECATED
+# "create_tld":"rule:admin" has been deprecated since W in favor of
+# "create_tld":"role:admin and system_scope:all".
+# The top-level domain API now supports system scope and default
+# roles.
 
 # List Tlds
 # GET  /v2/tlds
-#"find_tlds": "rule:admin"
+# Intended scope(s): system
+#"find_tlds": "role:reader and system_scope:all"
+
+# DEPRECATED
+# "find_tlds":"rule:admin" has been deprecated since W in favor of
+# "find_tlds":"role:reader and system_scope:all".
+# The top-level domain API now supports system scope and default
+# roles.
 
 # Show Tld
 # GET  /v2/tlds/{tld_id}
-#"get_tld": "rule:admin"
+# Intended scope(s): system
+#"get_tld": "role:reader and system_scope:all"
+
+# DEPRECATED
+# "get_tld":"rule:admin" has been deprecated since W in favor of
+# "get_tld":"role:reader and system_scope:all".
+# The top-level domain API now supports system scope and default
+# roles.
 
 # Update Tld
 # PATCH  /v2/tlds/{tld_id}
-#"update_tld": "rule:admin"
+# Intended scope(s): system
+#"update_tld": "role:admin and system_scope:all"
+
+# DEPRECATED
+# "update_tld":"rule:admin" has been deprecated since W in favor of
+# "update_tld":"role:admin and system_scope:all".
+# The top-level domain API now supports system scope and default
+# roles.
 
 # Delete Tld
 # DELETE  /v2/tlds/{tld_id}
-#"delete_tld": "rule:admin"
+# Intended scope(s): system
+#"delete_tld": "role:admin and system_scope:all"
+
+# DEPRECATED
+# "delete_tld":"rule:admin" has been deprecated since W in favor of
+# "delete_tld":"role:admin and system_scope:all".
+# The top-level domain API now supports system scope and default
+# roles.
 
 # Create Tsigkey
 # POST  /v2/tsigkeys
-#"create_tsigkey": "rule:admin"
+# Intended scope(s): system
+#"create_tsigkey": "role:admin and system_scope:all"
+
+# DEPRECATED
+# "create_tsigkey":"rule:admin" has been deprecated since W in favor
+# of "create_tsigkey":"role:admin and system_scope:all".
+# The tsigkey API now supports system scope and default roles.
 
 # List Tsigkeys
 # GET  /v2/tsigkeys
-#"find_tsigkeys": "rule:admin"
+# Intended scope(s): system
+#"find_tsigkeys": "role:reader and system_scope:all"
+
+# DEPRECATED
+# "find_tsigkeys":"rule:admin" has been deprecated since W in favor of
+# "find_tsigkeys":"role:reader and system_scope:all".
+# The tsigkey API now supports system scope and default roles.
 
 # Show a Tsigkey
-# PATCH  /v2/tsigkeys/{tsigkey_id}
 # GET  /v2/tsigkeys/{tsigkey_id}
-#"get_tsigkey": "rule:admin"
+# Intended scope(s): system
+#"get_tsigkey": "role:reader and system_scope:all"
+
+# DEPRECATED
+# "get_tsigkey":"rule:admin" has been deprecated since W in favor of
+# "get_tsigkey":"role:reader and system_scope:all".
+# The tsigkey API now supports system scope and default roles.
 
 # Update Tsigkey
 # PATCH  /v2/tsigkeys/{tsigkey_id}
-#"update_tsigkey": "rule:admin"
+# Intended scope(s): system
+#"update_tsigkey": "role:admin and system_scope:all"
+
+# DEPRECATED
+# "update_tsigkey":"rule:admin" has been deprecated since W in favor
+# of "update_tsigkey":"role:admin and system_scope:all".
+# The tsigkey API now supports system scope and default roles.
 
 # Delete a Tsigkey
 # DELETE  /v2/tsigkeys/{tsigkey_id}
-#"delete_tsigkey": "rule:admin"
+# Intended scope(s): system
+#"delete_tsigkey": "role:admin and system_scope:all"
+
+# DEPRECATED
+# "delete_tsigkey":"rule:admin" has been deprecated since W in favor
+# of "delete_tsigkey":"role:admin and system_scope:all".
+# The tsigkey API now supports system scope and default roles.
 
 # Create Zone
 # POST  /v2/zones
-#"create_zone": "rule:admin_or_owner"
+# Intended scope(s): system, project
+#"create_zone": "(role:admin and system_scope:all) or (role:member and project_id:%(project_id)s)"
 
-#
-#"get_zones": "rule:admin_or_owner"
+# DEPRECATED
+# "create_zone":"rule:admin_or_owner" has been deprecated since W in
+# favor of "create_zone":"(role:admin and system_scope:all) or
+# (role:member and project_id:%(project_id)s)".
+# The zone API now supports system scope and default roles.
+
+# Intended scope(s): system, project
+#"get_zones": "(role:reader and system_scope:all) or (role:reader and project_id:%(project_id)s)"
+
+# DEPRECATED
+# "get_zones":"rule:admin_or_owner" has been deprecated since W in
+# favor of "get_zones":"(role:reader and system_scope:all) or
+# (role:reader and project_id:%(project_id)s)".
+# The zone API now supports system scope and default roles.
 
 # Get Zone
 # GET  /v2/zones/{zone_id}
-# PATCH  /v2/zones/{zone_id}
-# PUT  /v2/zones/{zone_id}/recordsets/{recordset_id}
-#"get_zone": "rule:admin_or_owner"
+# Intended scope(s): system, project
+#"get_zone": "(role:reader and system_scope:all) or (role:reader and project_id:%(project_id)s) or ("True":%(zone_shared)s)"
 
-#
-#"get_zone_servers": "rule:admin_or_owner"
+# DEPRECATED
+# "get_zone":"rule:admin_or_owner or ("True":%(zone_shared)s)" has
+# been deprecated since W in favor of "get_zone":"(role:reader and
+# system_scope:all) or (role:reader and project_id:%(project_id)s) or
+# ("True":%(zone_shared)s)".
+# The zone API now supports system scope and default roles.
+
+# Intended scope(s): system, project
+#"get_zone_servers": "(role:reader and system_scope:all) or (role:reader and project_id:%(project_id)s)"
+
+# DEPRECATED
+# "get_zone_servers":"rule:admin_or_owner" has been deprecated since W
+# in favor of "get_zone_servers":"(role:reader and system_scope:all)
+# or (role:reader and project_id:%(project_id)s)".
+# The zone API now supports system scope and default roles.
+
+# Get the Name Servers for a Zone
+# GET  /v2/zones/{zone_id}/nameservers
+# Intended scope(s): system, project
+#"get_zone_ns_records": "(role:reader and system_scope:all) or (role:reader and project_id:%(project_id)s)"
+
+# DEPRECATED
+# "get_zone_ns_records":"rule:admin_or_owner" has been deprecated
+# since W in favor of "get_zone_ns_records":"(role:reader and
+# system_scope:all) or (role:reader and project_id:%(project_id)s)".
+# The zone API now supports system scope and default roles.
 
 # List existing zones
 # GET  /v2/zones
-#"find_zones": "rule:admin_or_owner"
+# Intended scope(s): system, project
+#"find_zones": "(role:reader and system_scope:all) or (role:reader and project_id:%(project_id)s)"
+
+# DEPRECATED
+# "find_zones":"rule:admin_or_owner" has been deprecated since W in
+# favor of "find_zones":"(role:reader and system_scope:all) or
+# (role:reader and project_id:%(project_id)s)".
+# The zone API now supports system scope and default roles.
 
 # Update Zone
 # PATCH  /v2/zones/{zone_id}
-#"update_zone": "rule:admin_or_owner"
+# Intended scope(s): system, project
+#"update_zone": "(role:admin and system_scope:all) or (role:member and project_id:%(project_id)s)"
+
+# DEPRECATED
+# "update_zone":"rule:admin_or_owner" has been deprecated since W in
+# favor of "update_zone":"(role:admin and system_scope:all) or
+# (role:member and project_id:%(project_id)s)".
+# The zone API now supports system scope and default roles.
 
 # Delete Zone
 # DELETE  /v2/zones/{zone_id}
-#"delete_zone": "rule:admin_or_owner"
+# Intended scope(s): system, project
+#"delete_zone": "(role:admin and system_scope:all) or (role:member and project_id:%(project_id)s)"
+
+# DEPRECATED
+# "delete_zone":"rule:admin_or_owner" has been deprecated since W in
+# favor of "delete_zone":"(role:admin and system_scope:all) or
+# (role:member and project_id:%(project_id)s)".
+# The zone API now supports system scope and default roles.
 
 # Manually Trigger an Update of a Secondary Zone
 # POST  /v2/zones/{zone_id}/tasks/xfr
-#"xfr_zone": "rule:admin_or_owner"
+# Intended scope(s): system, project
+#"xfr_zone": "(role:admin and system_scope:all) or (role:member and project_id:%(project_id)s)"
+
+# DEPRECATED
+# "xfr_zone":"rule:admin_or_owner" has been deprecated since W in
+# favor of "xfr_zone":"(role:admin and system_scope:all) or
+# (role:member and project_id:%(project_id)s)".
+# The zone API now supports system scope and default roles.
 
 # Abandon Zone
 # POST  /v2/zones/{zone_id}/tasks/abandon
-#"abandon_zone": "rule:admin"
+# Intended scope(s): system
+#"abandon_zone": "role:admin and system_scope:all"
 
-#
-#"count_zones": "rule:admin_or_owner"
+# DEPRECATED
+# "abandon_zone":"rule:admin" has been deprecated since W in favor of
+# "abandon_zone":"role:admin and system_scope:all".
+# The zone API now supports system scope and default roles.
 
-#
-#"count_zones_pending_notify": "rule:admin_or_owner"
+# Intended scope(s): system, project
+#"count_zones": "(role:reader and system_scope:all) or (role:reader and project_id:%(project_id)s)"
 
-#
-#"purge_zones": "rule:admin"
+# DEPRECATED
+# "count_zones":"rule:admin_or_owner" has been deprecated since W in
+# favor of "count_zones":"(role:reader and system_scope:all) or
+# (role:reader and project_id:%(project_id)s)".
+# The zone API now supports system scope and default roles.
 
-#
-#"touch_zone": "rule:admin_or_owner"
+# Intended scope(s): system, project
+#"count_zones_pending_notify": "(role:reader and system_scope:all) or (role:reader and project_id:%(project_id)s)"
+
+# DEPRECATED
+# "count_zones_pending_notify":"rule:admin_or_owner" has been
+# deprecated since W in favor of
+# "count_zones_pending_notify":"(role:reader and system_scope:all) or
+# (role:reader and project_id:%(project_id)s)".
+# The zone API now supports system scope and default roles.
+
+# Intended scope(s): system
+#"purge_zones": "role:admin and system_scope:all"
+
+# DEPRECATED
+# "purge_zones":"rule:admin" has been deprecated since W in favor of
+# "purge_zones":"role:admin and system_scope:all".
+# The zone API now supports system scope and default roles.
 
 # Retrive a Zone Export from the Designate Datastore
 # GET  /v2/zones/tasks/exports/{zone_export_id}/export
-#"zone_export": "rule:admin_or_owner"
+# Intended scope(s): system, project
+#"zone_export": "(role:admin and system_scope:all) or (role:member and project_id:%(project_id)s)"
+
+# DEPRECATED
+# "zone_export":"rule:admin_or_owner" has been deprecated since W in
+# favor of "zone_export":"(role:admin and system_scope:all) or
+# (role:member and project_id:%(project_id)s)".
+# The zone export API now supports system scope and default roles.
 
 # Create Zone Export
 # POST  /v2/zones/{zone_id}/tasks/export
-#"create_zone_export": "rule:admin_or_owner"
+# Intended scope(s): system, project
+#"create_zone_export": "(role:admin and system_scope:all) or (role:member and project_id:%(project_id)s)"
+
+# DEPRECATED
+# "create_zone_export":"rule:admin_or_owner" has been deprecated since
+# W in favor of "create_zone_export":"(role:admin and
+# system_scope:all) or (role:member and project_id:%(project_id)s)".
+# The zone export API now supports system scope and default roles.
 
 # List Zone Exports
 # GET  /v2/zones/tasks/exports
-#"find_zone_exports": "rule:admin_or_owner"
+# Intended scope(s): system, project
+#"find_zone_exports": "(role:reader and system_scope:all) or (role:reader and project_id:%(project_id)s)"
+
+# DEPRECATED
+# "find_zone_exports":"rule:admin_or_owner" has been deprecated since
+# W in favor of "find_zone_exports":"(role:reader and
+# system_scope:all) or (role:reader and project_id:%(project_id)s)".
+# The zone export API now supports system scope and default roles.
 
 # Get Zone Exports
 # GET  /v2/zones/tasks/exports/{zone_export_id}
-# GET  /v2/zones/tasks/exports/{zone_export_id}/export
-#"get_zone_export": "rule:admin_or_owner"
+# Intended scope(s): system, project
+#"get_zone_export": "(role:reader and system_scope:all) or (role:reader and project_id:%(project_id)s)"
+
+# DEPRECATED
+# "get_zone_export":"rule:admin_or_owner" has been deprecated since W
+# in favor of "get_zone_export":"(role:reader and system_scope:all) or
+# (role:reader and project_id:%(project_id)s)".
+# The zone export API now supports system scope and default roles.
 
 # Update Zone Exports
 # POST  /v2/zones/{zone_id}/tasks/export
-#"update_zone_export": "rule:admin_or_owner"
+# Intended scope(s): system, project
+#"update_zone_export": "(role:admin and system_scope:all) or (role:member and project_id:%(project_id)s)"
+
+# DEPRECATED
+# "update_zone_export":"rule:admin_or_owner" has been deprecated since
+# W in favor of "update_zone_export":"(role:admin and
+# system_scope:all) or (role:member and project_id:%(project_id)s)".
+# The zone export API now supports system scope and default roles.
+
+# Delete a zone export
+# DELETE  /v2/zones/tasks/exports/{zone_export_id}
+# Intended scope(s): system, project
+#"delete_zone_export": "(role:admin and system_scope:all) or (role:member and project_id:%(project_id)s)"
+
+# DEPRECATED
+# "delete_zone_export":"rule:admin_or_owner" has been deprecated since
+# W in favor of "delete_zone_export":"(role:admin and
+# system_scope:all) or (role:member and project_id:%(project_id)s)".
+# The zone export API now supports system scope and default roles.
 
 # Create Zone Import
 # POST  /v2/zones/tasks/imports
-#"create_zone_import": "rule:admin_or_owner"
+# Intended scope(s): system, project
+#"create_zone_import": "(role:admin and system_scope:all) or (role:member and project_id:%(project_id)s)"
+
+# DEPRECATED
+# "create_zone_import":"rule:admin_or_owner" has been deprecated since
+# W in favor of "create_zone_import":"(role:admin and
+# system_scope:all) or (role:member and project_id:%(project_id)s)".
+# The zone import API now supports system scope and default roles.
 
 # List all Zone Imports
 # GET  /v2/zones/tasks/imports
-#"find_zone_imports": "rule:admin_or_owner"
+# Intended scope(s): system, project
+#"find_zone_imports": "(role:reader and system_scope:all) or (role:reader and project_id:%(project_id)s)"
+
+# DEPRECATED
+# "find_zone_imports":"rule:admin_or_owner" has been deprecated since
+# W in favor of "find_zone_imports":"(role:reader and
+# system_scope:all) or (role:reader and project_id:%(project_id)s)".
+# The zone import API now supports system scope and default roles.
 
 # Get Zone Imports
 # GET  /v2/zones/tasks/imports/{zone_import_id}
-#"get_zone_import": "rule:admin_or_owner"
+# Intended scope(s): system, project
+#"get_zone_import": "(role:reader and system_scope:all) or (role:reader and project_id:%(project_id)s)"
+
+# DEPRECATED
+# "get_zone_import":"rule:admin_or_owner" has been deprecated since W
+# in favor of "get_zone_import":"(role:reader and system_scope:all) or
+# (role:reader and project_id:%(project_id)s)".
+# The zone import API now supports system scope and default roles.
 
 # Update Zone Imports
 # POST  /v2/zones/tasks/imports
-#"update_zone_import": "rule:admin_or_owner"
+# Intended scope(s): system, project
+#"update_zone_import": "(role:admin and system_scope:all) or (role:member and project_id:%(project_id)s)"
+
+# DEPRECATED
+# "update_zone_import":"rule:admin_or_owner" has been deprecated since
+# W in favor of "update_zone_import":"(role:admin and
+# system_scope:all) or (role:member and project_id:%(project_id)s)".
+# The zone import API now supports system scope and default roles.
 
 # Delete a Zone Import
-# GET  /v2/zones/tasks/imports/{zone_import_id}
-#"delete_zone_import": "rule:admin_or_owner"
+# DELETE  /v2/zones/tasks/imports/{zone_import_id}
+# Intended scope(s): system, project
+#"delete_zone_import": "(role:admin and system_scope:all) or (role:member and project_id:%(project_id)s)"
+
+# DEPRECATED
+# "delete_zone_import":"rule:admin_or_owner" has been deprecated since
+# W in favor of "delete_zone_import":"(role:admin and
+# system_scope:all) or (role:member and project_id:%(project_id)s)".
+# The zone import API now supports system scope and default roles.
 
 # Create Zone Transfer Accept
 # POST  /v2/zones/tasks/transfer_accepts
-#"create_zone_transfer_accept": "rule:admin_or_owner OR tenant:%(target_tenant_id)s OR None:%(target_tenant_id)s"
+# Intended scope(s): system, project
+#"create_zone_transfer_accept": "((role:admin and system_scope:all) or (role:member and project_id:%(project_id)s)) or project_id:%(target_project_id)s or None:%(target_project_id)s"
+
+# DEPRECATED
+# "create_zone_transfer_accept":"rule:admin_or_owner OR
+# project_id:%(target_tenant_id)s OR None:%(target_tenant_id)s" has
+# been deprecated since W in favor of
+# "create_zone_transfer_accept":"((role:admin and system_scope:all) or
+# (role:member and project_id:%(project_id)s)) or
+# project_id:%(target_project_id)s or None:%(target_project_id)s".
+# The zone transfer accept API now supports system scope and default
+# roles.
 
 # Get Zone Transfer Accept
 # GET  /v2/zones/tasks/transfer_requests/{zone_transfer_accept_id}
-#"get_zone_transfer_accept": "rule:admin_or_owner"
+# Intended scope(s): system, project
+#"get_zone_transfer_accept": "(role:reader and system_scope:all) or (role:reader and project_id:%(project_id)s)"
+
+# DEPRECATED
+# "get_zone_transfer_accept":"rule:admin_or_owner" has been deprecated
+# since W in favor of "get_zone_transfer_accept":"(role:reader and
+# system_scope:all) or (role:reader and project_id:%(project_id)s)".
+# The zone transfer accept API now supports system scope and default
+# roles.
 
 # List Zone Transfer Accepts
 # GET  /v2/zones/tasks/transfer_accepts
-#"find_zone_transfer_accepts": "rule:admin"
+# Intended scope(s): system
+#"find_zone_transfer_accepts": "role:reader and system_scope:all"
 
-#
-#"find_zone_transfer_accept": "rule:admin"
-
-# Update a Zone Transfer Accept
-# POST  /v2/zones/tasks/transfer_accepts
-#"update_zone_transfer_accept": "rule:admin"
-
-#
-#"delete_zone_transfer_accept": "rule:admin"
+# DEPRECATED
+# "find_zone_transfer_accepts":"rule:admin" has been deprecated since
+# W in favor of "find_zone_transfer_accepts":"role:reader and
+# system_scope:all".
+# The zone transfer accept API now supports system scope and default
+# roles.
 
 # Create Zone Transfer Accept
 # POST  /v2/zones/{zone_id}/tasks/transfer_requests
-#"create_zone_transfer_request": "rule:admin_or_owner"
+# Intended scope(s): system, project
+#"create_zone_transfer_request": "(role:admin and system_scope:all) or (role:member and project_id:%(project_id)s)"
+
+# DEPRECATED
+# "create_zone_transfer_request":"rule:admin_or_owner" has been
+# deprecated since W in favor of
+# "create_zone_transfer_request":"(role:admin and system_scope:all) or
+# (role:member and project_id:%(project_id)s)".
+# The zone transfer request API now supports system scope and default
+# roles.
 
 # Show a Zone Transfer Request
 # GET  /v2/zones/tasks/transfer_requests/{zone_transfer_request_id}
-# PATCH  /v2/zones/tasks/transfer_requests/{zone_transfer_request_id}
-#"get_zone_transfer_request": "rule:admin_or_owner OR tenant:%(target_tenant_id)s OR None:%(target_tenant_id)s"
+# Intended scope(s): system, project
+#"get_zone_transfer_request": "((role:admin and system_scope:all) or (role:member and project_id:%(project_id)s)) or project_id:%(target_project_id)s or None:%(target_project_id)s"
 
-#
-#"get_zone_transfer_request_detailed": "rule:admin_or_owner"
+# DEPRECATED
+# "get_zone_transfer_request":"rule:admin_or_owner OR
+# project_id:%(target_tenant_id)s OR None:%(target_tenant_id)s" has
+# been deprecated since W in favor of
+# "get_zone_transfer_request":"((role:admin and system_scope:all) or
+# (role:member and project_id:%(project_id)s)) or
+# project_id:%(target_project_id)s or None:%(target_project_id)s".
+# The zone transfer request API now supports system scope and default
+# roles.
+
+# Intended scope(s): system, project
+#"get_zone_transfer_request_detailed": "(role:reader and system_scope:all) or (role:reader and project_id:%(project_id)s)"
+
+# DEPRECATED
+# "create_zone_transfer_request":"rule:admin_or_owner" has been
+# deprecated since W in favor of
+# "get_zone_transfer_request_detailed":"(role:reader and
+# system_scope:all) or (role:reader and project_id:%(project_id)s)".
+# The zone transfer request API now supports system scope and default
+# roles.
+# WARNING: A rule name change has been identified.
+#          This may be an artifact of new rules being
+#          included which require legacy fallback
+#          rules to ensure proper policy behavior.
+#          Alternatively, this may just be an alias.
+#          Please evaluate on a case by case basis
+#          keeping in mind the format for aliased
+#          rules is:
+#          "old_rule_name": "new_rule_name".
+# "create_zone_transfer_request": "rule:get_zone_transfer_request_detailed"
 
 # List Zone Transfer Requests
 # GET  /v2/zones/tasks/transfer_requests
 #"find_zone_transfer_requests": "@"
 
-#
-#"find_zone_transfer_request": "@"
-
 # Update a Zone Transfer Request
 # PATCH  /v2/zones/tasks/transfer_requests/{zone_transfer_request_id}
-#"update_zone_transfer_request": "rule:admin_or_owner"
+# Intended scope(s): system, project
+#"update_zone_transfer_request": "(role:admin and system_scope:all) or (role:member and project_id:%(project_id)s)"
+
+# DEPRECATED
+# "update_zone_transfer_request":"rule:admin_or_owner" has been
+# deprecated since W in favor of
+# "update_zone_transfer_request":"(role:admin and system_scope:all) or
+# (role:member and project_id:%(project_id)s)".
+# The zone transfer request API now supports system scope and default
+# roles.
 
 # Delete a Zone Transfer Request
 # DELETE  /v2/zones/tasks/transfer_requests/{zone_transfer_request_id}
-#"delete_zone_transfer_request": "rule:admin_or_owner"
+# Intended scope(s): system, project
+#"delete_zone_transfer_request": "(role:admin and system_scope:all) or (role:member and project_id:%(project_id)s)"
 
+# DEPRECATED
+# "delete_zone_transfer_request":"rule:admin_or_owner" has been
+# deprecated since W in favor of
+# "delete_zone_transfer_request":"(role:admin and system_scope:all) or
+# (role:member and project_id:%(project_id)s)".
+# The zone transfer request API now supports system scope and default
+# roles.

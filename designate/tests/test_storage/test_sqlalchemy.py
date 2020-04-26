@@ -43,6 +43,7 @@ class SqlalchemyStorageTest(StorageTestCase, TestCase):
             'records',
             'recordsets',
             'service_statuses',
+            'shared_zones',
             'tlds',
             'tsigkeys',
             'zone_attributes',

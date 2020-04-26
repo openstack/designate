@@ -15,8 +15,8 @@
 # under the License.
 from oslo_log import log as logging
 from oslo_utils.secretutils import md5
-from sqlalchemy import select, distinct, func
-from sqlalchemy.sql.expression import or_
+from sqlalchemy import case, select, distinct, func
+from sqlalchemy.sql.expression import or_, literal_column
 
 from designate import exceptions
 from designate import objects
@@ -213,14 +213,23 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
     # Zone Methods
     ##
     def _find_zones(self, context, criterion, one=False, marker=None,
-                    limit=None, sort_key=None, sort_dir=None):
+                    limit=None, sort_key=None, sort_dir=None,
+                    apply_tenant_criteria=True):
         # Check to see if the criterion can use the reverse_name column
         criterion = self._rname_check(criterion)
+
+        # Create a virtual column showing if the zone is shared or not.
+        shared_case = case((tables.shared_zones.c.target_project_id.is_(None),
+                            literal_column('False')),
+                           else_=literal_column('True')).label('shared')
+        query = select(
+            [tables.zones, shared_case]).outerjoin(tables.shared_zones)
 
         zones = self._find(
             context, tables.zones, objects.Zone, objects.ZoneList,
             exceptions.ZoneNotFound, criterion, one, marker, limit,
-            sort_key, sort_dir)
+            sort_key, sort_dir, query=query,
+            apply_tenant_criteria=apply_tenant_criteria)
 
         def _load_relations(zone):
             if zone.type == 'SECONDARY':
@@ -274,8 +283,9 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
 
         return zone
 
-    def get_zone(self, context, zone_id):
-        zone = self._find_zones(context, {'id': zone_id}, one=True)
+    def get_zone(self, context, zone_id, apply_tenant_criteria=True):
+        zone = self._find_zones(context, {'id': zone_id}, one=True,
+                                apply_tenant_criteria=apply_tenant_criteria)
         return zone
 
     def find_zones(self, context, criterion=None, marker=None, limit=None,
@@ -504,6 +514,76 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
 
         return result[0]
 
+    # Shared zones methods
+    def _find_shared_zones(self, context, criterion, one=False, marker=None,
+                           limit=None, sort_key=None, sort_dir=None):
+
+        table = tables.shared_zones
+
+        query = select(table)
+
+        if not context.all_tenants:
+            query = query.where(or_(
+                table.c.project_id == context.project_id,
+                table.c.target_project_id == context.project_id))
+
+        return self._find(
+            context, tables.shared_zones, objects.SharedZone,
+            objects.SharedZoneList, exceptions.SharedZoneNotFound, criterion,
+            one, marker, limit, sort_key, sort_dir, query=query,
+            apply_tenant_criteria=False)
+
+    def _find_zone_share(self, context, zone):
+        criterion = {
+            "target_project_id": context.project_id,
+            "zone_id": zone.id
+        }
+
+        try:
+            return self._find(
+                context, tables.shared_zones, objects.SharedZone,
+                objects.SharedZoneList, exceptions.SharedZoneNotFound,
+                criterion,
+                one=True
+            )
+        except exceptions.SharedZoneNotFound:
+            return None
+
+    def share_zone(self, context, shared_zone):
+        return self._create(tables.shared_zones, shared_zone,
+                            exceptions.DuplicateSharedZone)
+
+    def unshare_zone(self, context, zone_id, shared_zone_id):
+        shared_zone = self._find_shared_zones(
+            context, {'id': shared_zone_id, 'zone_id': zone_id}, one=True
+        )
+        return self._delete(context, tables.shared_zones, shared_zone,
+                            exceptions.SharedZoneNotFound)
+
+    def find_shared_zones(self, context, criterion=None, marker=None,
+                          limit=None, sort_key=None, sort_dir=None):
+        return self._find_shared_zones(
+            context, criterion, marker=marker,
+            limit=limit, sort_key=sort_key, sort_dir=sort_dir
+        )
+
+    def get_shared_zone(self, context, zone_id, shared_zone_id):
+        return self._find_shared_zones(
+            context, {'id': shared_zone_id, 'zone_id': zone_id}, one=True
+        )
+
+    def is_zone_shared_with_project(self, zone_id, project_id):
+        query = select(literal_column('true'))
+        query = query.where(tables.shared_zones.c.zone_id == zone_id)
+        query = query.where(
+            tables.shared_zones.c.target_project_id == project_id)
+        return self.session.scalar(query) is not None
+
+    def delete_zone_shares(self, zone_id):
+        query = tables.shared_zones.delete().where(
+            tables.shared_zones.c.zone_id == zone_id)
+        self.session.execute(query)
+
     # Zone attribute methods
     def _find_zone_attributes(self, context, criterion, one=False,
                               marker=None, limit=None, sort_key=None,
@@ -576,7 +656,7 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
     # RecordSet Methods
     def _find_recordsets(self, context, criterion, one=False, marker=None,
                          limit=None, sort_key=None, sort_dir=None,
-                         force_index=False):
+                         force_index=False, apply_tenant_criteria=True):
 
         # Check to see if the criterion can use the reverse_name column
         criterion = self._rname_check(criterion)
@@ -598,10 +678,14 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             recordsets = self._find(
                 context, tables.recordsets, objects.RecordSet,
                 objects.RecordSetList, exceptions.RecordSetNotFound, criterion,
-                one, marker, limit, sort_key, sort_dir, query)
+                one, marker, limit, sort_key, sort_dir, query,
+                apply_tenant_criteria=apply_tenant_criteria,
+            )
 
             recordsets.records = self._find_records(
-                context, {'recordset_id': recordsets.id})
+                context, {'recordset_id': recordsets.id},
+                apply_tenant_criteria=apply_tenant_criteria,
+            )
 
             recordsets.obj_reset_changes(['records'])
 
@@ -610,7 +694,9 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
                     context, criterion, tables.zones, tables.recordsets,
                     tables.records, limit=limit, marker=marker,
                     sort_key=sort_key, sort_dir=sort_dir,
-                    force_index=force_index)
+                    force_index=force_index,
+                    apply_tenant_criteria=apply_tenant_criteria,
+            )
 
             recordsets.total_count = tc
 
@@ -641,10 +727,7 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
         return raw_rows
 
     def create_recordset(self, context, zone_id, recordset):
-        # Fetch the zone as we need the tenant_id
-        zone = self._find_zones(context, {'id': zone_id}, one=True)
-
-        recordset.tenant_id = zone.tenant_id
+        recordset.tenant_id = context.project_id
         recordset.zone_id = zone_id
 
         # Patch in the reverse_name column
@@ -687,17 +770,18 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
 
         return raw_rows
 
-    def get_recordset(self, context, recordset_id):
-        return self._find_recordsets(context, {'id': recordset_id}, one=True)
-
     def find_recordsets(self, context, criterion=None, marker=None, limit=None,
-                        sort_key=None, sort_dir=None, force_index=False):
-        return self._find_recordsets(context, criterion, marker=marker,
-                                     sort_dir=sort_dir, sort_key=sort_key,
-                                     limit=limit, force_index=force_index)
+                        sort_key=None, sort_dir=None, force_index=False,
+                        apply_tenant_criteria=True):
+        return self._find_recordsets(
+            context, criterion, marker=marker, sort_dir=sort_dir,
+            sort_key=sort_key, limit=limit, force_index=force_index,
+            apply_tenant_criteria=apply_tenant_criteria)
 
-    def find_recordset(self, context, criterion):
-        return self._find_recordsets(context, criterion, one=True)
+    def find_recordset(self, context, criterion, apply_tenant_criteria=True):
+        return self._find_recordsets(
+            context, criterion, one=True,
+            apply_tenant_criteria=apply_tenant_criteria)
 
     def update_recordset(self, context, recordset):
         recordset = self._update(
@@ -779,11 +863,14 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
 
     # Record Methods
     def _find_records(self, context, criterion, one=False, marker=None,
-                      limit=None, sort_key=None, sort_dir=None):
+                      limit=None, sort_key=None, sort_dir=None,
+                      apply_tenant_criteria=True):
         return self._find(
             context, tables.records, objects.Record, objects.RecordList,
             exceptions.RecordNotFound, criterion, one, marker, limit,
-            sort_key, sort_dir)
+            sort_key, sort_dir,
+            apply_tenant_criteria=apply_tenant_criteria,
+        )
 
     def _recalculate_record_hash(self, record):
         """
@@ -796,10 +883,7 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
         return md5sum.hexdigest()
 
     def create_record(self, context, zone_id, recordset_id, record):
-        # Fetch the zone as we need the tenant_id
-        zone = self._find_zones(context, {'id': zone_id}, one=True)
-
-        record.tenant_id = zone.tenant_id
+        record.tenant_id = context.project_id
         record.zone_id = zone_id
         record.recordset_id = recordset_id
         record.hash = self._recalculate_record_hash(record)

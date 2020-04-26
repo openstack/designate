@@ -1049,41 +1049,6 @@ class StorageTestCase(object):
             self.assertNotIn(record, records)
             records.append(record)
 
-    def test_get_recordset(self):
-        zone = self.create_zone()
-        expected = self.create_recordset(zone)
-
-        actual = self.storage.get_recordset(self.admin_context, expected['id'])
-
-        self.assertEqual(expected['name'], actual['name'])
-        self.assertEqual(expected['type'], actual['type'])
-
-    def test_get_recordset_with_records(self):
-        zone = self.create_zone()
-
-        records = [
-            objects.Record.from_dict(self.get_record_fixture('A', fixture=0)),
-            objects.Record.from_dict(self.get_record_fixture('A', fixture=1))
-        ]
-        recordset = self.create_recordset(zone, records=records)
-
-        # Fetch the RecordSet again
-        recordset = self.storage.get_recordset(
-            self.admin_context, recordset.id)
-
-        # Ensure recordset.records is a RecordList instance
-        self.assertIsInstance(recordset.records, objects.RecordList)
-
-        # Ensure two Records are attached to the RecordSet correctly
-        self.assertEqual(2, len(recordset.records))
-        self.assertIsInstance(recordset.records[0], objects.Record)
-        self.assertIsInstance(recordset.records[1], objects.Record)
-
-    def test_get_recordset_missing(self):
-        with testtools.ExpectedException(exceptions.RecordSetNotFound):
-            uuid = 'caf771fc-6b05-4891-bee1-c2a48621f57b'
-            self.storage.get_recordset(self.admin_context, uuid)
-
     def test_find_recordset_criterion(self):
         zone = self.create_zone()
         expected = self.create_recordset(zone)
@@ -1189,8 +1154,8 @@ class StorageTestCase(object):
         self.storage.update_recordset(self.admin_context, recordset)
 
         # Fetch the RecordSet again
-        recordset = self.storage.get_recordset(
-            self.admin_context, recordset.id)
+        recordset = self.storage.find_recordset(self.admin_context,
+                                                {'id': recordset.id})
 
         # Ensure two Records are attached to the RecordSet correctly
         self.assertEqual(2, len(recordset.records))
@@ -1212,8 +1177,8 @@ class StorageTestCase(object):
         recordset = self.create_recordset(zone, records=records)
 
         # Fetch the RecordSet again
-        recordset = self.storage.get_recordset(
-            self.admin_context, recordset.id)
+        recordset = self.storage.find_recordset(self.admin_context,
+                                                {'id': recordset.id})
 
         # Remove one of the Records
         recordset.records.pop(0)
@@ -1225,8 +1190,8 @@ class StorageTestCase(object):
         self.storage.update_recordset(self.admin_context, recordset)
 
         # Fetch the RecordSet again
-        recordset = self.storage.get_recordset(
-            self.admin_context, recordset.id)
+        recordset = self.storage.find_recordset(self.admin_context,
+                                                {'id': recordset.id})
 
         # Ensure only one Record is attached to the RecordSet
         self.assertEqual(1, len(recordset.records))
@@ -1243,8 +1208,8 @@ class StorageTestCase(object):
         recordset = self.create_recordset(zone, records=records)
 
         # Fetch the RecordSet again
-        recordset = self.storage.get_recordset(
-            self.admin_context, recordset.id)
+        recordset = self.storage.find_recordset(self.admin_context,
+                                                {'id': recordset.id})
 
         # Update one of the Records
         updated_record_id = recordset.records[0].id
@@ -1254,8 +1219,8 @@ class StorageTestCase(object):
         self.storage.update_recordset(self.admin_context, recordset)
 
         # Fetch the RecordSet again
-        recordset = self.storage.get_recordset(
-            self.admin_context, recordset.id)
+        recordset = self.storage.find_recordset(self.admin_context,
+                                                {'id': recordset.id})
 
         # Ensure the Record has been updated
         for record in recordset.records:
@@ -1276,7 +1241,8 @@ class StorageTestCase(object):
         self.storage.delete_recordset(self.admin_context, recordset['id'])
 
         with testtools.ExpectedException(exceptions.RecordSetNotFound):
-            self.storage.get_recordset(self.admin_context, recordset['id'])
+            self.storage.find_recordset(self.admin_context,
+                                        criterion={'id': recordset['id']})
 
     def test_delete_recordset_missing(self):
         with testtools.ExpectedException(exceptions.RecordSetNotFound):
@@ -3033,8 +2999,8 @@ class StorageTestCase(object):
 
         saved_zone = self.storage.get_zone(
             admin_context, zone.id)
-        saved_recordset = self.storage.get_recordset(
-            admin_context, recordset.id)
+        saved_recordset = self.storage.find_recordset(
+            admin_context, criterion={'id': recordset.id})
         saved_record = self.storage.get_record(
             admin_context, record.id)
 

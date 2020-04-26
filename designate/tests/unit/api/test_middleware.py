@@ -163,3 +163,32 @@ class KeystoneContextMiddlewareTest(oslotest.base.BaseTestCase):
 
         self.app(self.request)
         self.assertFalse(self.ctxt.hard_delete)
+
+    def test_delete_shares_not_set(self):
+        self.request.headers.update({
+            'X-Tenant-ID': 'TenantID',
+            'X-Roles': 'admin',
+        })
+
+        self.app(self.request)
+        self.assertFalse(self.ctxt.delete_shares)
+
+    def test_delete_shares_false(self):
+        self.request.headers.update({
+            'X-Tenant-ID': 'TenantID',
+            'X-Roles': 'admin',
+            'X-Designate-Delete-Shares': 'false'
+        })
+
+        self.app(self.request)
+        self.assertFalse(self.ctxt.delete_shares)
+
+    def test_delete_shares_true(self):
+        self.request.headers.update({
+            'X-Tenant-ID': 'TenantID',
+            'X-Roles': 'admin',
+            'X-Designate-Delete-Shares': 'True'
+        })
+
+        self.app(self.request)
+        self.assertTrue(self.ctxt.delete_shares)

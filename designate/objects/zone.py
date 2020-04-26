@@ -59,6 +59,7 @@ class Zone(base.DesignateObject, base.DictObjectMixin,
         'recordsets': fields.ObjectField('RecordSetList', nullable=True),
         'attributes': fields.ObjectField('ZoneAttributeList', nullable=True),
         'masters': fields.ObjectField('ZoneMasterList', nullable=True),
+        'shared': fields.BooleanField(default=False, nullable=True),
         'type': fields.EnumField(nullable=True,
                                  valid_values=['SECONDARY', 'PRIMARY'],
                                  read_only=False

@@ -75,6 +75,7 @@ Response Parameters
    - created_at: created_at
    - updated_at: updated_at
    - attributes: zone_attributes
+   - shared: shared
    - links: links
 
 
@@ -152,6 +153,7 @@ Response Parameters
    - created_at: created_at
    - updated_at: updated_at
    - attributes: zone_attributes
+   - shared: shared
    - links: links
    - metadata: metadata
 
@@ -221,6 +223,7 @@ Response Parameters
    - created_at: created_at
    - updated_at: updated_at
    - attributes: zone_attributes
+   - shared: shared
    - links: links
 
 
@@ -352,6 +355,7 @@ Response Parameters
    - created_at: created_at
    - updated_at: updated_at
    - attributes: zone_attributes
+   - shared: shared
    - links: links
 
 
@@ -395,6 +399,7 @@ Request
    - x-auth-all-projects: x-auth-all-projects
    - x-auth-sudo-project-id: x-auth-sudo-project-id
    - x-designate-hard-delete: x-designate-hard-delete
+   - x-designate-delete-shares: x-designate-delete-shares
    - zone_id: path_zone_id
 
 
@@ -421,6 +426,7 @@ Response Parameters
    - created_at: created_at
    - updated_at: updated_at
    - attributes: zone_attributes
+   - shared: shared
    - links: links
 
 

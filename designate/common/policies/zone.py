@@ -36,7 +36,7 @@ deprecated_get_zones = policy.DeprecatedRule(
 )
 deprecated_get_zone = policy.DeprecatedRule(
     name="get_zone",
-    check_str=base.RULE_ADMIN_OR_OWNER,
+    check_str=base.RULE_ADMIN_OR_OWNER_OR_SHARED,
     deprecated_reason=DEPRECATED_REASON,
     deprecated_since=versionutils.deprecated.WALLABY
 )
@@ -124,7 +124,7 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name="get_zone",
-        check_str=base.SYSTEM_OR_PROJECT_READER,
+        check_str=base.SYSTEM_OR_PROJECT_READER_OR_SHARED,
         scope_types=['system', 'project'],
         description="Get Zone",
         operations=[

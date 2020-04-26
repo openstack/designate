@@ -51,7 +51,7 @@ LOG = logging.getLogger(__name__)
 
 
 class Service(service.RPCService):
-    RPC_API_VERSION = '6.5'
+    RPC_API_VERSION = '6.6'
 
     target = messaging.Target(version=RPC_API_VERSION)
 
@@ -858,21 +858,37 @@ class Service(service.RPCService):
         return zone
 
     @rpc.expected_exceptions()
-    def get_zone(self, context, zone_id):
+    def get_zone(self, context, zone_id, apply_tenant_criteria=True):
         """Get a zone, even if flagged for deletion
         """
-        zone = self.storage.get_zone(context, zone_id)
+        zone = self.storage.get_zone(
+            context, zone_id, apply_tenant_criteria=apply_tenant_criteria)
 
+        # Save a DB round trip if we don't need to check for shared
+        zone_shared = False
+        if (context.project_id != zone.tenant_id) and not context.all_tenants:
+            zone_shared = self.storage.is_zone_shared_with_project(
+                zone_id, context.project_id)
+            if not zone_shared:
+                # Maintain consistency with the previous API and _find_zones()
+                # and _find() when apply_tenant_criteria is True.
+                raise exceptions.ZoneNotFound(
+                    "Could not find %s" % zone.obj_name())
+
+        # TODO(johnsom) This should account for all-projects context
+        # it passes today due to ADMIN
         if policy.enforce_new_defaults():
             target = {
                 'zone_id': zone_id,
                 'zone_name': zone.name,
+                'zone_shared': zone_shared,
                 constants.RBAC_PROJECT_ID: zone.tenant_id
             }
         else:
             target = {
                 'zone_id': zone_id,
                 'zone_name': zone.name,
+                'zone_shared': zone_shared,
                 'tenant_id': zone.tenant_id
             }
 
@@ -1033,6 +1049,14 @@ class Service(service.RPCService):
         else:
             policy.check('delete_zone', context, target)
 
+        # Prevent the deletion of a shared zone if the delete-shares modifier
+        # is not specified.
+        if zone.shared and not context.delete_shares:
+            raise exceptions.ZoneShared(
+                'This zone is shared with other projects, please remove these '
+                'shares before deletion or use the delete-shares modifier to '
+                'override this warning.')
+
         # Prevent deletion of a zone which has child zones
         criterion = {'parent_zone_id': zone_id}
 
@@ -1041,6 +1065,11 @@ class Service(service.RPCService):
                                     criterion) > 0:
             raise exceptions.ZoneHasSubZone('Please delete any subzones '
                                             'before deleting this zone')
+
+        # If the zone is shared and delete_shares was specified, remove all
+        # of the zone shares in preparation for the zone delete.
+        if zone.shared and context.delete_shares:
+            self.storage.delete_zone_shares(zone.id)
 
         if hasattr(context, 'abandon') and context.abandon:
             LOG.info("Abandoning zone '%(zone)s'", {'zone': zone.name})
@@ -1165,13 +1194,150 @@ class Service(service.RPCService):
 
         return reports
 
+    # Shared zones
+    @rpc.expected_exceptions()
+    @notification.notify_type('dns.zone.share')
+    @transaction
+    def share_zone(self, context, zone_id, shared_zone):
+        # Ensure that zone exists and get the zone owner
+        zone = self.storage.get_zone(context, zone_id)
+
+        if policy.enforce_new_defaults():
+            target = {constants.RBAC_PROJECT_ID: zone.tenant_id}
+        else:
+            target = {'tenant_id': zone.tenant_id}
+
+        policy.check('share_zone', context, target)
+
+        shared_zone['project_id'] = context.project_id
+        shared_zone['zone_id'] = zone_id
+
+        shared_zone = self.storage.share_zone(context, shared_zone)
+
+        return shared_zone
+
+    @rpc.expected_exceptions()
+    @notification.notify_type('dns.zone.unshare')
+    @transaction
+    def unshare_zone(self, context, zone_id, zone_share_id):
+        # Ensure the share exists and get the share owner
+        shared_zone = self.get_shared_zone(context, zone_id, zone_share_id)
+
+        if policy.enforce_new_defaults():
+            target = {constants.RBAC_PROJECT_ID: shared_zone.project_id}
+        else:
+            target = {'tenant_id': shared_zone.project_id}
+
+        policy.check('unshare_zone', context, target)
+
+        # Prevent unsharing of a zone which has child zones in other tenants
+        criterion = {
+            'parent_zone_id': shared_zone.zone_id,
+            'tenant_id': "%s" % shared_zone.target_project_id,
+        }
+
+        # Look for child zones across all tenants with elevated context
+        if self.storage.count_zones(context.elevated(all_tenants=True),
+                                    criterion) > 0:
+            raise exceptions.SharedZoneHasSubZone(
+                'Please delete all subzones owned by project %s '
+                'before unsharing this zone' % shared_zone.target_project_id
+            )
+
+        # Prevent unsharing of a zone which has recordsets in other tenants
+        criterion = {
+            'zone_id': shared_zone.zone_id,
+            'tenant_id': "%s" % shared_zone.target_project_id,
+        }
+
+        # Look for recordsets across all tenants with elevated context
+        if self.storage.count_recordsets(
+                context.elevated(all_tenants=True), criterion) > 0:
+            raise exceptions.SharedZoneHasRecordSets(
+                'Please delete all recordsets owned by project %s '
+                'before unsharing this zone.' % shared_zone.target_project_id
+            )
+
+        shared_zone = self.storage.unshare_zone(
+            context, zone_id, zone_share_id
+        )
+
+        return shared_zone
+
+    @rpc.expected_exceptions()
+    def find_shared_zones(self, context, criterion=None, marker=None,
+                          limit=None, sort_key=None, sort_dir=None):
+
+        # By default we will let any valid token through as the filter
+        # criteria below will limit the scope of the results.
+        policy.check('find_zone_shares', context)
+
+        if not context.all_tenants and criterion:
+            # Check that they are asking for another projects shares
+            if policy.enforce_new_defaults():
+                target = {constants.RBAC_PROJECT_ID: criterion.get(
+                    'target_project_id', context.project_id)}
+            else:
+                target = {'tenant_id': criterion.get('target_project_id',
+                                                     context.project_id)}
+
+            policy.check('find_project_zone_share', context, target)
+
+        shared_zones = self.storage.find_shared_zones(
+            context, criterion, marker, limit, sort_key, sort_dir
+        )
+
+        return shared_zones
+
+    @rpc.expected_exceptions()
+    def get_shared_zone(self, context, zone_id, zone_share_id):
+        # Ensure that share exists and get the share owner
+        zone_share = self.storage.get_shared_zone(
+            context, zone_id, zone_share_id)
+
+        if policy.enforce_new_defaults():
+            target = {constants.RBAC_PROJECT_ID: zone_share.project_id}
+        else:
+            target = {'tenant_id': zone_share.project_id}
+
+        policy.check('get_zone_share', context, target)
+
+        return zone_share
+
+    def _check_zone_share_permission(self, context, zone):
+        """
+        Check if a request is acceptable for the requesting project ID.
+        If the requestor is not the zone owner and the zone is not shared
+        with them, return a 404 Not Found to match previous API versions.
+        Otherwise, the later RBAC check will raise a 403 Forbidden.
+
+        :param context: The security context for the request.
+        :param zone: The zone the request is against.
+        :return: If the zone is shared with the requesting project ID or not.
+        """
+        zone_shared = False
+        if (context.project_id != zone.tenant_id) and not context.all_tenants:
+            zone_shared = self.storage.is_zone_shared_with_project(
+                zone.id, context.project_id)
+            if not zone_shared:
+                # Maintain consistency with the previous API and _find_zones()
+                # and _find() when apply_tenant_criteria is True.
+                raise exceptions.ZoneNotFound(
+                    "Could not find %s" % zone.obj_name())
+        return zone_shared
+
     # RecordSet Methods
     @rpc.expected_exceptions()
     @notification.notify_type('dns.recordset.create')
     @lock.synchronized_zone()
     def create_recordset(self, context, zone_id, recordset,
                          increment_serial=True):
-        zone = self.storage.get_zone(context, zone_id)
+        zone = self.storage.get_zone(context, zone_id,
+                                     apply_tenant_criteria=False)
+
+        # Note this call must follow the get_zone call to maintain API response
+        # code behavior.
+        zone_shared = self._check_zone_share_permission(context, zone)
 
         # Don't allow updates to zones that are being deleted
         if zone.action == 'DELETE':
@@ -1182,6 +1348,7 @@ class Service(service.RPCService):
                 'zone_id': zone_id,
                 'zone_name': zone.name,
                 'zone_type': zone.type,
+                'zone_shared': zone_shared,
                 'recordset_name': recordset.name,
                 constants.RBAC_PROJECT_ID: zone.tenant_id,
             }
@@ -1190,11 +1357,19 @@ class Service(service.RPCService):
                 'zone_id': zone_id,
                 'zone_name': zone.name,
                 'zone_type': zone.type,
+                'zone_shared': zone_shared,
                 'recordset_name': recordset.name,
                 'tenant_id': zone.tenant_id,
             }
 
         policy.check('create_recordset', context, target)
+
+        # Override the context to be all_tenants here as we have already
+        # passed the RBAC check for this call and context checks in lower
+        # layers will fail for shared zones.
+        # TODO(johnsom) Remove once context checking is removed from the lower
+        #               code layers.
+        context = context.elevated(all_tenants=True)
 
         recordset, zone = self._create_recordset_in_storage(
             context, zone, recordset, increment_serial=increment_serial)
@@ -1267,20 +1442,35 @@ class Service(service.RPCService):
 
     @rpc.expected_exceptions()
     def get_recordset(self, context, zone_id, recordset_id):
-        recordset = self.storage.get_recordset(context, recordset_id)
-
+        # apply_tenant_criteria=False here as we will gate visibility
+        # with the RBAC rules below. This allows project that share the zone
+        # to see all of the records of the zone.
         if zone_id:
-            zone = self.storage.get_zone(context, zone_id)
+            recordset = self.storage.find_recordset(
+                context, criterion={'id': recordset_id, 'zone_id': zone_id},
+                apply_tenant_criteria=False)
+            zone = self.storage.get_zone(context, zone_id,
+                                         apply_tenant_criteria=False)
             # Ensure the zone_id matches the record's zone_id
             if zone.id != recordset.zone_id:
                 raise exceptions.RecordSetNotFound()
         else:
-            zone = self.storage.get_zone(context, recordset.zone_id)
+            recordset = self.storage.find_recordset(
+                context, criterion={'id': recordset_id},
+                apply_tenant_criteria=False)
+            zone = self.storage.get_zone(context, recordset.zone_id,
+                                         apply_tenant_criteria=False)
 
+        # Note this call must follow the get_zone call to maintain API response
+        # code behavior.
+        zone_shared = self._check_zone_share_permission(context, zone)
+
+        # TODO(johnsom) This should account for all_projects
         if policy.enforce_new_defaults():
             target = {
                 'zone_id': zone.id,
                 'zone_name': zone.name,
+                'zone_shared': zone_shared,
                 'recordset_id': recordset.id,
                 constants.RBAC_PROJECT_ID: zone.tenant_id,
             }
@@ -1288,6 +1478,7 @@ class Service(service.RPCService):
             target = {
                 'zone_id': zone.id,
                 'zone_name': zone.name,
+                'zone_shared': zone_shared,
                 'recordset_id': recordset.id,
                 'tenant_id': zone.tenant_id,
             }
@@ -1303,6 +1494,19 @@ class Service(service.RPCService):
     @rpc.expected_exceptions()
     def find_recordsets(self, context, criterion=None, marker=None, limit=None,
                         sort_key=None, sort_dir=None, force_index=False):
+        zone = None
+        zone_shared = False
+
+        if criterion and criterion.get('zone_id', None):
+            # NOTE: We need to ensure the zone actually exists, otherwise
+            # we may return deleted recordsets instead of a zone not found
+            zone = self.get_zone(context, criterion['zone_id'],
+                                 apply_tenant_criteria=False)
+            # Note this call must follow the get_zone call to maintain API
+            # response code behavior.
+            zone_shared = self._check_zone_share_permission(context, zone)
+
+        # TODO(johnsom) Fix this to be useful
         if policy.enforce_new_defaults():
             target = {constants.RBAC_PROJECT_ID: context.project_id}
         else:
@@ -1310,14 +1514,22 @@ class Service(service.RPCService):
 
         policy.check('find_recordsets', context, target)
 
-        recordsets = self.storage.find_recordsets(context, criterion, marker,
-                                                  limit, sort_key, sort_dir,
-                                                  force_index)
+        apply_tenant_criteria = True
+        # NOTE(imalinovskiy): Show all recordsets for zone owner or if the zone
+        #                     is shared with this project.
+        if (zone and zone.tenant_id == context.project_id) or zone_shared:
+            apply_tenant_criteria = False
+
+        recordsets = self.storage.find_recordsets(
+            context, criterion, marker, limit, sort_key, sort_dir, force_index,
+            apply_tenant_criteria=apply_tenant_criteria)
 
         return recordsets
 
     @rpc.expected_exceptions()
     def find_recordset(self, context, criterion=None):
+
+        # TODO(johnsom) Fix this to be useful
         if policy.enforce_new_defaults():
             target = {constants.RBAC_PROJECT_ID: context.project_id}
         else:
@@ -1344,8 +1556,6 @@ class Service(service.RPCService):
     @lock.synchronized_zone()
     def update_recordset(self, context, recordset, increment_serial=True):
         zone_id = recordset.obj_get_original_value('zone_id')
-        zone = self.storage.get_zone(context, zone_id)
-
         changes = recordset.obj_get_changes()
 
         # Ensure immutable fields are not changed
@@ -1361,24 +1571,39 @@ class Service(service.RPCService):
             raise exceptions.BadRequest('Changing a recordsets type is not '
                                         'allowed')
 
+        zone = self.storage.get_zone(context, zone_id,
+                                     apply_tenant_criteria=False)
+
+        # Note this call must follow the get_zone call to maintain API response
+        # code behavior.
+        zone_shared = self._check_zone_share_permission(context, zone)
+
         # Don't allow updates to zones that are being deleted
         if zone.action == 'DELETE':
             raise exceptions.BadRequest('Can not update a deleting zone')
 
+        # TODO(johnsom) This should account for all-projects context
+        # it passes today due to ADMIN
         if policy.enforce_new_defaults():
             target = {
-                'zone_id': recordset.obj_get_original_value('zone_id'),
-                'zone_type': zone.type,
                 'recordset_id': recordset.obj_get_original_value('id'),
+                'recordset_project_id': recordset.obj_get_original_value(
+                    'tenant_id'),
+                'zone_id': recordset.obj_get_original_value('zone_id'),
                 'zone_name': zone.name,
+                'zone_shared': zone_shared,
+                'zone_type': zone.type,
                 constants.RBAC_PROJECT_ID: zone.tenant_id
             }
         else:
             target = {
-                'zone_id': recordset.obj_get_original_value('zone_id'),
-                'zone_type': zone.type,
                 'recordset_id': recordset.obj_get_original_value('id'),
+                'recordset_project_id': recordset.obj_get_original_value(
+                    'tenant_id'),
+                'zone_id': recordset.obj_get_original_value('zone_id'),
                 'zone_name': zone.name,
+                'zone_shared': zone_shared,
+                'zone_type': zone.type,
                 'tenant_id': zone.tenant_id
             }
 
@@ -1386,6 +1611,13 @@ class Service(service.RPCService):
 
         if recordset.managed and not context.edit_managed_records:
             raise exceptions.BadRequest('Managed records may not be updated')
+
+        # Override the context to be all_tenants here as we have already
+        # passed the RBAC check for this call and context checks in lower
+        # layers will fail for shared zones.
+        # TODO(johnsom) Remove once context checking is removed from the lower
+        #               code layers.
+        context = context.elevated(all_tenants=True)
 
         recordset, zone = self._update_recordset_in_storage(
             context, zone, recordset, increment_serial=increment_serial)
@@ -1427,23 +1659,29 @@ class Service(service.RPCService):
     @lock.synchronized_zone()
     def delete_recordset(self, context, zone_id, recordset_id,
                          increment_serial=True):
-        zone = self.storage.get_zone(context, zone_id)
-        recordset = self.storage.get_recordset(context, recordset_id)
-
-        # Ensure the zone_id matches the recordset's zone_id
-        if zone.id != recordset.zone_id:
-            raise exceptions.RecordSetNotFound()
+        # apply_tenant_criteria=False here as we will gate this delete
+        # with the RBAC rules below. This allows the zone owner to delete
+        # all of the recordsets of the zone.
+        recordset = self.storage.find_recordset(
+            context,
+            {"id": recordset_id, "zone_id": zone_id},
+            apply_tenant_criteria=False
+        )
+        zone = self.storage.get_zone(context, zone_id,
+                                     apply_tenant_criteria=False)
 
         # Don't allow updates to zones that are being deleted
         if zone.action == 'DELETE':
             raise exceptions.BadRequest('Can not update a deleting zone')
 
+        # TODO(johnsom) should handle all_projects
         if policy.enforce_new_defaults():
             target = {
                 'zone_id': zone_id,
                 'zone_name': zone.name,
                 'zone_type': zone.type,
                 'recordset_id': recordset.id,
+                'recordset_project_id': recordset.tenant_id,
                 constants.RBAC_PROJECT_ID: zone.tenant_id
             }
         else:
@@ -1452,6 +1690,7 @@ class Service(service.RPCService):
                 'zone_name': zone.name,
                 'zone_type': zone.type,
                 'recordset_id': recordset.id,
+                'recordset_project_id': recordset.tenant_id,
                 'tenant_id': zone.tenant_id
             }
 
@@ -1459,6 +1698,12 @@ class Service(service.RPCService):
 
         if recordset.managed and not context.edit_managed_records:
             raise exceptions.BadRequest('Managed records may not be deleted')
+
+        # Override the context to be all_tenants here as we have already
+        # passed the RBAC check for this call.
+        # TODO(johnsom) Remove once context checking is removed from the lower
+        #               code layers.
+        context = context.elevated(all_tenants=True)
 
         recordset, zone = self._delete_recordset_in_storage(
             context, zone, recordset, increment_serial=increment_serial)
@@ -1797,8 +2042,8 @@ class Service(service.RPCService):
 
         if not recordset:
             try:
-                recordset = self.storage.get_recordset(
-                    elevated_context, record.recordset_id
+                recordset = self.storage.find_recordset(
+                    elevated_context, criterion={'id': record.recordset_id}
                 )
             except exceptions.RecordSetNotFound:
                 LOG.debug('No recordset found for %s', fip['id'])
