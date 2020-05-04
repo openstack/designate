@@ -7,5 +7,8 @@ devstack_localrc target enable_plugin designate https://git.openstack.org/openst
 devstack_localrc base enable_service designate-api designate-central designate-producer designate-worker designate-mdns designate-agent designate-sink designate horizon
 devstack_localrc target enable_service designate-api designate-central designate-producer designate-worker designate-mdns designate-agent designate-sink designate horizon
 
+devstack_localrc base USE_PYTHON3=False
+devstack_localrc target USE_PYTHON3=False
+
 BASE_RUN_SMOKE=False
 TARGET_RUN_SMOKE=False
