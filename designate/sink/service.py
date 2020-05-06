@@ -33,6 +33,7 @@ class Service(service.Service):
         )
 
         # Initialize extensions
+        self._server = None
         self.handlers = self._init_extensions()
         self.subscribers = self._get_subscribers()
 
@@ -71,20 +72,23 @@ class Service(service.Service):
 
         # TODO(ekarlso): Change this is to endpoint objects rather then
         # ourselves?
-        self._server = rpc.get_notification_listener(
-            targets, [self],
-            pool=cfg.CONF['service:sink'].listener_pool_name)
-
         if targets:
+            self._server = rpc.get_notification_listener(
+                targets, [self],
+                pool=cfg.CONF['service:sink'].listener_pool_name
+            )
             self._server.start()
 
     def stop(self, graceful=True):
         # Try to shut the connection down, but if we get any sort of
         # errors, go ahead and ignore them.. as we're shutting down anyway
         try:
-            self._server.stop()
-        except Exception:
-            pass
+            if self._server:
+                self._server.stop()
+        except Exception as e:
+            LOG.warning(
+                'Unable to gracefully stop the notification listener: %s', e
+            )
 
         super(Service, self).stop(graceful)
 
