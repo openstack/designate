@@ -1,0 +1,5 @@
+---
+features:
+  - |
+    Allow the user to set resource quota to unlimited by assigning
+    a negative value to the resource quota value.
