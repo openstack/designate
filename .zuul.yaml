@@ -119,7 +119,7 @@
       - designate-devstack-jobs
       - openstack-cover-jobs
       - openstack-lower-constraints-jobs
-      - openstack-python3-ussuri-jobs
+      - openstack-python3-victoria-jobs
       - publish-openstack-docs-pti
       - periodic-stable-jobs
       - check-requirements
