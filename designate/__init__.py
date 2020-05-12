@@ -19,9 +19,9 @@ import os
 # the /etc/hosts file, causing problems for installs.
 os.environ['EVENTLET_NO_GREENDNS'] = 'yes'  # noqa
 
-from oslo_log import log
-from oslo_concurrency import lockutils
-import oslo_messaging as messaging
+from oslo_log import log  # noqa
+from oslo_concurrency import lockutils  # noqa
+import oslo_messaging as messaging  # noqa
 
 _EXTRA_DEFAULT_LOG_LEVELS = [
     'kazoo.client=WARN',

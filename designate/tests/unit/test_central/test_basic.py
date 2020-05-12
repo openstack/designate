@@ -458,7 +458,7 @@ class CentralServiceTestCase(CentralBasic):
         #  we will hit it if we try to do the operations in a loop 100 times.
         for num in range(100):
             recordset = Mock()
-            recordset.name = "b%s".format(num)
+            recordset.name = "b{}".format(num)
             recordset.obj_attr_is_set.return_value = True
             recordset.records = [MockRecord()]
 

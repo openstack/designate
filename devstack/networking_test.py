@@ -61,10 +61,10 @@ designate_cli_path = '/usr/local/bin/designate'
 openstack_cli = 'openstack'
 
 
-def gen_random_name(l):
+def gen_random_name(length):
     return "".join(
         random.choice(string.ascii_lowercase + string.digits)
-        for n in range(l)
+        for n in range(length)
     )
 
 
