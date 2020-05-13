@@ -50,6 +50,7 @@ from designate import storage
 from designate import utils
 from designate.mdns import rpcapi as mdns_rpcapi
 from designate.storage import transaction
+from designate.storage import transaction_shallow_copy
 from designate.worker import rpcapi as worker_rpcapi
 
 
@@ -1314,7 +1315,7 @@ class Service(service.RPCService):
         # Validate the records
         self._is_valid_recordset_records(recordset)
 
-    @transaction
+    @transaction_shallow_copy
     def _create_recordset_in_storage(self, context, zone, recordset,
                                      increment_serial=True):
 
