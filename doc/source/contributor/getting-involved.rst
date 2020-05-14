@@ -7,20 +7,12 @@ Getting Involved
 
     devstack
 
-#openstack-dns
---------------
+#openstack-dns IRC channel
+--------------------------
 
 There is an active IRC channel at irc://freenode.net/#openstack-dns,
 where many of the designate contributors can be found, as
 well as users from various organisations.
-
-Weekly meetings
----------------
-
-There is a weekly irc meet. The agenda and other details are listed at
-`Designate meetings wiki page`_. Currently the meeting is
-held every Wednesday at 17:00 UTC on the IRC channel
-irc://freenode.net/#openstack-meeting-alt
 
 Contributing
 ------------
@@ -59,7 +51,8 @@ Development Environment and Developer Workflow
 Assuming you've already got a working :ref:`Development Environment`,
 here's a quick summary:
 
-Install the git-review package to make life easier
+Install the git-review package to make life easier, some distros have
+it as native package, otherwise use pip
 
 .. code-block:: shell-session
 
@@ -134,9 +127,9 @@ Several common reserved IP blocks:
 * 203.0.113.0/24
 * 2001:db8::/32
 
-.. _IANA Special Use Domain Names: http://www.iana.org/assignments/special-use-domain-names/special-use-domain-names.xhtml
-.. _IANA IPv4 Special Registry: http://www.iana.org/assignments/iana-ipv4-special-registry/iana-ipv4-special-registry.xhtml
-.. _IANA IPv6 Special Registry: http://www.iana.org/assignments/iana-ipv6-special-registry/iana-ipv6-special-registry.xhtml
+.. _IANA Special Use Domain Names: https://www.iana.org/assignments/special-use-domain-names/special-use-domain-names.xhtml
+.. _IANA IPv4 Special Registry: https://www.iana.org/assignments/iana-ipv4-special-registry/iana-ipv4-special-registry.xhtml
+.. _IANA IPv6 Special Registry: https://www.iana.org/assignments/iana-ipv6-special-registry/iana-ipv6-special-registry.xhtml
 
 Style Guide
 '''''''''''
@@ -240,7 +233,6 @@ See https://docs.openstack.org/oslo.i18n/latest/user/guidelines.html
     LOG.error("... %(key)s", {'key': 'value'})
     LOG.critical("... %(key)s", {'key': 'value'})
 
-.. _Gerrit workflow: http://docs.openstack.org/infra/manual/developers.html#development-workflow
+.. _Gerrit workflow: https://docs.openstack.org/infra/manual/developers.html#development-workflow
 .. _blueprint: https://blueprints.launchpad.net/designate
 .. _bug: https://bugs.launchpad.net/designate
-.. _Designate meetings wiki page: https://wiki.openstack.org/wiki/Meetings/Designate
