@@ -13,6 +13,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import mock
+
 from testscenarios import load_tests_apply_scenarios as load_tests  # noqa
 import testtools
 from oslo_config import cfg
@@ -87,6 +89,46 @@ class QuotaTestCase(tests.TestCase):
                 context,
                 'tenant_id',
                 zone_records=cfg.CONF.quota_zone_records)
+
+    def test_limit_check_unlimited(self):
+        context = self.get_admin_context()
+        self.quota.get_quotas = mock.Mock()
+        ret = {
+                'zones': -1,
+                'zone_recordsets': -1,
+                'zone_records': -1,
+                'recordset_records': -1,
+                'api_export_size': -1,
+        }
+        self.quota.get_quotas.return_value = ret
+        self.quota.limit_check(context, 'tenant_id', zones=99999)
+        self.quota.limit_check(context, 'tenant_id', zone_recordsets=99999)
+        self.quota.limit_check(context, 'tenant_id', zone_records=99999)
+        self.quota.limit_check(context, 'tenant_id', recordset_records=99999)
+        self.quota.limit_check(context, 'tenant_id', api_export_size=99999)
+
+    def test_limit_check_zero(self):
+        context = self.get_admin_context()
+        self.quota.get_quotas = mock.Mock()
+        ret = {
+                'zones': 0,
+                'zone_recordsets': 0,
+                'zone_records': 0,
+                'recordset_records': 0,
+                'api_export_size': 0,
+        }
+        self.quota.get_quotas.return_value = ret
+        with testtools.ExpectedException(exceptions.OverQuota):
+            self.quota.limit_check(context, 'tenant_id', zones=0)
+        with testtools.ExpectedException(exceptions.OverQuota):
+            self.quota.limit_check(context, 'tenant_id', zone_recordsets=0)
+        with testtools.ExpectedException(exceptions.OverQuota):
+            self.quota.limit_check(context, 'tenant_id', zone_records=0)
+        with testtools.ExpectedException(exceptions.OverQuota):
+            self.quota.limit_check(context, 'tenant_id',
+                                   recordset_records=0)
+        with testtools.ExpectedException(exceptions.OverQuota):
+            self.quota.limit_check(context, 'tenant_id', api_export_size=0)
 
     def test_limit_check_over(self):
         context = self.get_admin_context()

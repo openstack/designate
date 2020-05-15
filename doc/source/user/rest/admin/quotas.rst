@@ -84,6 +84,7 @@ Update Quotas
 .. http:patch:: /quotas/TENANT_ID
 
     Updates the specified quota(s) to their new values.
+    Negative quota values mean unlimited.
 
     **Example request:**
 
