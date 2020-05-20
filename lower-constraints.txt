@@ -67,7 +67,6 @@ msgpack==0.5.6
 munch==2.2.0
 netaddr==0.7.18
 netifaces==0.10.6
-openstackdocstheme==1.31.2
 openstacksdk==0.12.0
 os-api-ref==1.5.0
 os-client-config==1.29.0
@@ -125,7 +124,6 @@ python-neutronclient==6.7.0
 python-subunit==1.2.0
 pytz==2018.3
 PyYAML==3.12
-reno==2.7.0
 repoze.lru==0.7
 requests-mock==1.2.0
 requests==2.14.2
@@ -137,10 +135,6 @@ simplejson==3.13.2
 six==1.10.0
 smmap2==2.0.3
 snowballstemmer==1.2.1
-Sphinx==1.6.5
-sphinxcontrib-blockdiag==1.5.5
-sphinxcontrib-httpdomain==1.6.1
-sphinxcontrib-websupport==1.0.1
 sqlalchemy-migrate==0.11.0
 SQLAlchemy==1.0.10
 sqlparse==0.2.4
