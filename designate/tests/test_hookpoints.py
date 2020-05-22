@@ -16,7 +16,6 @@
 from unittest.mock import Mock
 from unittest.mock import patch
 
-import six
 from oslo_config import cfg
 from stevedore.hook import HookManager
 from stevedore.extension import Extension
@@ -104,7 +103,7 @@ class TestHookpointsConfigOpts(TestCase):
         hp = hook_point('foo')
         hp.hook_manager = Mock(return_value=get_hook_manager())
         hp(inc)
-        assert hp.group in list(six.iterkeys(self.CONF))
+        assert hp.group in self.CONF.keys()
 
 
 class TestHookpointsEnabling(TestCase):

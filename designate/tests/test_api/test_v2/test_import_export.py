@@ -13,7 +13,6 @@
 # under the License.
 import unittest
 
-import six
 from dns import zone as dnszone
 from webtest import TestApp
 from oslo_config import cfg
@@ -113,10 +112,7 @@ class APIV2ZoneImportExportTest(ApiV2TestCase):
         get_response = self.adminclient.get('/zones/export/%s' %
                                        response.json['zone_id'],
                                        headers={'Accept': 'text/dns'})
-        if six.PY2:
-            exported_zonefile = get_response.body
-        else:
-            exported_zonefile = get_response.body.decode('utf-8')
+        exported_zonefile = get_response.body.decode('utf-8')
 
         imported = dnszone.from_text(self.get_zonefile_fixture())
         exported = dnszone.from_text(exported_zonefile)

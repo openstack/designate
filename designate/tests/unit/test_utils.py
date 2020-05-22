@@ -213,7 +213,7 @@ class TestUtils(oslotest.base.BaseTestCase):
 
         self.assertEqual('Hello World', result)
 
-    @mock.patch('six.moves.builtins.open', new_callable=mock.mock_open)
+    @mock.patch('builtins.open', new_callable=mock.mock_open)
     @mock.patch('os.path.exists')
     def test_render_template_to_file(self, mock_exists, mock_open):
         mock_exists.return_value = True
@@ -229,7 +229,7 @@ class TestUtils(oslotest.base.BaseTestCase):
         mock_open.assert_called_once_with(output_path, 'w')
         mock_open().write.assert_called_once_with('Hello World')
 
-    @mock.patch('six.moves.builtins.open', new_callable=mock.mock_open)
+    @mock.patch('builtins.open', new_callable=mock.mock_open)
     @mock.patch('os.path.exists')
     @mock.patch('os.makedirs')
     def test_render_template_to_file_with_makedirs(self, mock_makedirs,

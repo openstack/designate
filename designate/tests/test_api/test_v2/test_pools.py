@@ -12,7 +12,6 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-import six
 from oslo_config import cfg
 from oslo_log import log as logging
 
@@ -191,7 +190,7 @@ class ApiV2PoolsTest(ApiV2TestCase):
         correct_results = [1, 1, 0]
 
         for get_url, correct_result in \
-                six.moves.zip(get_urls, correct_results):
+                zip(get_urls, correct_results):
 
             response = self.client.get(get_url)
 
