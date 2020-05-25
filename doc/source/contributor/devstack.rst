@@ -19,7 +19,8 @@
 How to install DNS with DevStack
 ================================
 
-The Designate team maintains a fork of devstack with Designate integration.
+The Designate source code contains a DevStack plugin that allows to deploy
+an OpenStack installation with the DNS service enabled.
 
 Instructions
 ~~~~~~~~~~~~
@@ -30,7 +31,7 @@ Instructions
     using the contrib/vagrant folder in the
     `repository <https://opendev.org/openstack/designate>`_.
 
-1. Get a clean Ubuntu 16.04 VM or newer. DevStack "takes over". Don't use
+1. Get a clean Ubuntu 18.04 VM or newer. DevStack "takes over". Don't use
    your desktop!
 
 2. Clone DevStack inside the VM::
@@ -97,7 +98,7 @@ Instructions
        | version        | 1                                    |
        +----------------+--------------------------------------+
 
-       $ openstack recordset create --records '127.0.0.1'  --type A example.net. www
+       $ openstack recordset create --record '127.0.0.1'  --type A example.net. www
        +-------------+--------------------------------------+
        | Field       | Value                                |
        +-------------+--------------------------------------+
