@@ -127,6 +127,43 @@ class Bind9Backend(base.Backend):
                 LOG.warning('RNDC call failure: %s', e)
                 raise
 
+    def update_zone(self, context, zone):
+        """
+        Update a DNS zone.
+
+        This will execute a rndc modzone as the zone
+        already exists but masters might need to be refreshed.
+
+        :param context: Security context information.
+        :param zone: the DNS zone.
+        """
+        LOG.debug('Update Zone')
+
+        masters = []
+        for master in self.masters:
+            host = master['host']
+            port = master['port']
+            masters.append('%s port %s' % (host, port))
+
+        # Ensure different MiniDNS instances are targeted for AXFRs
+        random.shuffle(masters)
+
+        view = 'in %s' % self._view if self._view else ''
+
+        rndc_op = [
+            'modzone',
+            '%s %s { type slave; masters { %s;}; file "slave.%s%s"; };' %
+            (zone['name'].rstrip('.'), view, '; '.join(masters), zone['name'],
+             zone['id']),
+        ]
+
+        try:
+            self._execute_rndc(rndc_op)
+        except exceptions.Backend as e:
+            LOG.warning("Error updating zone: %s", e)
+            pass
+        super().update_zone(context, zone)
+
     def _execute_rndc(self, rndc_op):
         """Execute rndc
 
