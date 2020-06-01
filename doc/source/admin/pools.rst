@@ -25,7 +25,7 @@ Overview
 In designate we support the concept of multiple "pools" of DNS Servers.
 
 This allows operators to scale out their DNS Service by adding more pools,
-avoiding the scalling problems that some DNS servers have for number of zones,
+avoiding the scaling problems that some DNS servers have for number of zones,
 and the total number of records hosted by a single server.
 
 This also allows providers to have tiers of service (i.e. the difference

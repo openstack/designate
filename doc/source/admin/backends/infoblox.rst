@@ -32,7 +32,7 @@ Infoblox Configuration
 ----------------------
 
 * Create a user for use by Designate.
-* Set up one or more name server groups to be used to serve Designate zones.
+* Set up one or more nameserver groups to be used to serve Designate zones.
 
   * Set the Designate mDNS servers as external primaries
   * Add a grid member as a grid secondary; select the "Lead Secondary" option
