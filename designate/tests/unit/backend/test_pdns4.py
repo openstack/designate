@@ -285,6 +285,28 @@ class PDNS4BackendTestCase(designate.tests.TestCase):
         req_mock.delete(
             '%s/localhost/zones/example.com.' % self.base_address,
         )
+        req_mock.get(
+            '%s/localhost/zones/%s' % (self.base_address, self.zone.name),
+            status_code=200,
+        )
+
+        self.backend.delete_zone(self.context, self.zone)
+
+        self.assertEqual(
+            req_mock.last_request.headers.get('X-API-Key'), 'api_key'
+        )
+
+    @requests_mock.mock()
+    def test_delete_zone_missing(self, req_mock):
+        req_mock.delete(
+            '%s/localhost/zones/example.com.' % self.base_address,
+        )
+
+        # pdns returns 422 if asked about a zone that doesn't exist.
+        req_mock.get(
+            '%s/localhost/zones/%s' % (self.base_address, self.zone.name),
+            status_code=422,
+        )
 
         self.backend.delete_zone(self.context, self.zone)
 
@@ -297,6 +319,10 @@ class PDNS4BackendTestCase(designate.tests.TestCase):
         req_mock.delete(
             '%s/localhost/zones/example.com.' % self.base_address,
             status_code=500,
+        )
+        req_mock.get(
+            '%s/localhost/zones/%s' % (self.base_address, self.zone.name),
+            status_code=200,
         )
 
         self.assertRaisesRegexp(
