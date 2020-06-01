@@ -106,10 +106,17 @@ class PDNS4Backend(base.Backend):
     def delete_zone(self, context, zone):
         """Delete a DNS zone"""
 
-        try:
-            requests.delete(
-                self._build_url(zone.name),
-                headers=self.headers
-            ).raise_for_status()
-        except requests.HTTPError as e:
-            raise exceptions.Backend(e)
+        # First verify that the zone exists -- If it's not present
+        #  in the backend then we can just declare victory.
+        if self._check_zone_exists(zone):
+            try:
+                requests.delete(
+                    self._build_url(zone.name),
+                    headers=self.headers
+                ).raise_for_status()
+            except requests.HTTPError as e:
+                raise exceptions.Backend(e)
+        else:
+            LOG.warning("Trying to delete zone %s but that zone is not "
+                        "present in the pdns backend. Assuming success.",
+                        zone)
