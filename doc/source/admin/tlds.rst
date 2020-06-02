@@ -22,7 +22,7 @@ Designate allows management of the Top-Level Domains (TLDs) that users are
 allowed to create zones within.
 
 For example, it's simple to only allow users to create zones that end in
-``.com.``.
+``.com.`` TLD.
 
 By default, all TLDs are allowed in Designate, this is ok for most scenarios.
 
@@ -31,49 +31,95 @@ the following API call.
 
 .. code-block:: http
 
-  POST /v2/tlds/ HTTP/1.1
-  Accept: application/json
-  Content-Type: application/json
+    POST /v2/tlds HTTP/1.1
+    Accept: application/json
+    Content-Type: application/json
 
-  {
-    "name" : "com"
-  }
+    {
+      "name": "com"
+    }
 
 Response:
 
 .. code-block:: http
 
-  HTTP/1.1 201 CREATED
-  Content-Type: application/json; charset=UTF-8
-  X-Openstack-Request-Id: req-bfcd0723-624c-4ec2-bbd5-99e985efe8db
+    HTTP/1.1 201 CREATED
+    Content-Type: application/json
+    X-Openstack-Request-Id: req-432e72b4-f4e1-4f9c-8e35-53decc752260
 
-  {
-   "name": "com",
-   "links": {
-     "self": "http://127.0.0.1:9001/v2/tlds/cfee7486-7ce4-4851-9c38-7b0fe3d42ee9"
-   },
-   "created_at": "2016-05-18 05:07:58",
-   "updated_at": null,
-   "id": "cfee7486-7ce4-4851-9c38-7b0fe3d42ee9",
-   "description": "tld description"
-  }
+    {
+      "id": "2f8bc76d-1701-4323-a101-248e09471342",
+      "name": "com",
+      "description": null,
+      "created_at": "2020-06-01T16:25:44.000000",
+      "updated_at": null,
+      "links": {
+        "self": "http://127.0.0.1:9001/v2/tlds/2f8bc76d-1701-4323-a101-248e09471342"
+      }
+    }
 
+Using the command line client:
+
+.. code-block:: console
+
+    $ openstack tld create --name com
+    +-------------+--------------------------------------+
+    | Field       | Value                                |
+    +-------------+--------------------------------------+
+    | created_at  | 2020-06-01T16:25:44.000000           |
+    | description | None                                 |
+    | id          | 2f8bc76d-1701-4323-a101-248e09471342 |
+    | name        | com                                  |
+    | updated_at  | None                                 |
+    +-------------+--------------------------------------+
 
 Now, if someone were to try and create ``example.net.``, they would encounter
 an error:
 
 .. code-block:: http
 
-  HTTP/1.1 400 BAD REQUEST
-  Content-Type: application/json
-  X-Openstack-Request-Id: req-f841013b-c6cd-4f0b-a9ea-bdb65db7a334"
+    POST /v2/zones HTTP/1.1
+    Accept: application/json
+    Content-Type: application/json
 
-  {
-    "message": "Invalid TLD",
-    "code": 400,
-    "type": "invalid_zone_name",
-    "request_id": "req-f841013b-c6cd-4f0b-a9ea-bdb65db7a334"
-  }
+    {
+      "name": "example.net.",
+      "type": "PRIMARY",
+      "email": "admin@example.net"
+    }
 
-TLDs can be deleted, just like an other resource in the API,
-``DELETE /v2/tlds/<id>``.
+.. code-block:: http
+
+    HTTP/1.1 400 BAD REQUEST
+    Content-Type: application/json
+    X-Openstack-Request-Id: req-3a8985fd-0155-4dd4-a7fb-584b140f1f59
+
+    {
+      "code": 400,
+      "type": "invalid_zone_name",
+      "message": "Invalid TLD",
+      "request_id": "req-3a8985fd-0155-4dd4-a7fb-584b140f1f59"
+    }
+
+Using the command line client:
+
+.. code-block:: console
+
+    $ openstack zone create --email admin@example.net example.net.
+    Invalid TLD
+
+TLDs can be deleted, just like many other resources in the API, using
+``DELETE /v2/tlds/<id>``:
+
+.. code-block:: http
+
+    DELETE /v2/tlds/2f8bc76d-1701-4323-a101-248e09471342 HTTP/1.1
+    Accept: application/json
+    Content-Type: application/json
+
+Or by using the command line client:
+
+.. code-block:: console
+
+    $ openstack tld delete com
+    TLD com was deleted
