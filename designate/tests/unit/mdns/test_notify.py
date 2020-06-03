@@ -14,11 +14,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import socket
+from unittest import mock
 
 import dns
 import dns.rdataclass
 import dns.rdatatype
-import mock
 
 import designate.mdns.notify as notify
 import designate.tests

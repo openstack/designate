@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import socket
+from unittest import mock
 
 import dns
 import dns.exception
@@ -22,7 +23,6 @@ import dns.rcode
 import dns.rdatatype
 import dns.zone
 import eventlet
-import mock
 import oslotest.base
 from dns import zone as dnszone
 

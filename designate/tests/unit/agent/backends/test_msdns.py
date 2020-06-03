@@ -14,7 +14,8 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-import mock
+from unittest import mock
+
 from os_win import constants
 from os_win import exceptions as os_win_exc
 from os_win import utilsfactory

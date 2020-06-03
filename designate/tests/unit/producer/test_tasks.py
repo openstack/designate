@@ -18,9 +18,9 @@
 Unit test Producer tasks
 """
 import datetime
+from unittest import mock
 
 import fixtures
-import mock
 import oslotest.base
 from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture

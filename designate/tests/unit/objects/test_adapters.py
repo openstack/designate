@@ -14,9 +14,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import datetime
+from unittest.mock import Mock
 
 import oslotest.base
-from mock import Mock
 from oslo_log import log as logging
 from oslo_utils import timeutils
 

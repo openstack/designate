@@ -18,10 +18,10 @@ import binascii
 import errno
 import socket
 import struct
+from unittest import mock
 
 import dns
 import dns.message
-import mock
 from oslo_log import log as logging
 
 from designate.tests.test_mdns import MdnsTestCase

@@ -15,7 +15,8 @@
 # under the License.
 
 import json
-import mock
+from unittest import mock
+
 import requests
 
 import designate.tests

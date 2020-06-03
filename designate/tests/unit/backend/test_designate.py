@@ -13,9 +13,10 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from unittest.mock import NonCallableMagicMock
+
 from designateclient import exceptions
 from designateclient.v2 import client
-from mock import NonCallableMagicMock
 from oslo_log import log as logging
 
 import designate.tests

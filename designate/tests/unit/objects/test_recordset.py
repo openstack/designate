@@ -14,8 +14,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import itertools
+from unittest import mock
 
-import mock
 import oslotest.base
 from oslo_log import log as logging
 

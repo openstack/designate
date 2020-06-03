@@ -10,9 +10,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import random
+from unittest import mock
 
 import jinja2
-import mock
 import oslotest.base
 from oslo_concurrency import processutils
 from oslo_config import cfg

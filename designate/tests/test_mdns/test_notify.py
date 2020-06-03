@@ -13,13 +13,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 import binascii
+from unittest import mock
+from unittest.mock import patch
 
 import dns
 import dns.message
 import dns.query
 import dns.exception
-import mock
-from mock import patch
 
 from designate.tests.test_mdns import MdnsTestCase
 from designate.mdns import notify

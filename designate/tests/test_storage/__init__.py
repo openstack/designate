@@ -14,8 +14,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import math
+from unittest import mock
 
-import mock
 import testtools
 from oslo_config import cfg
 from oslo_log import log as logging

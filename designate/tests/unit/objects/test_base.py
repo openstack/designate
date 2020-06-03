@@ -15,8 +15,8 @@
 # under the License.
 import copy
 from operator import attrgetter
+from unittest import mock
 
-import mock
 import oslotest.base
 import testtools
 from oslo_log import log as logging

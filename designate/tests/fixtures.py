@@ -19,6 +19,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import absolute_import
+from unittest import mock
 
 import logging as std_logging
 import os
@@ -28,7 +29,6 @@ import tempfile
 from contextlib import contextmanager
 
 import fixtures
-import mock
 import tooz.coordination
 from oslo_config import cfg
 from oslo_log import log as logging

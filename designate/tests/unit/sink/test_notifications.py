@@ -10,7 +10,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.mport threading
 
-import mock
+from unittest import mock
+
 import oslotest.base
 from oslo_config import cfg
 
