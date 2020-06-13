@@ -307,7 +307,7 @@ function start_designate {
 
 
     if [[ "$DESIGNATE_WSGI_MODE" == "uwsgi" ]]; then
-        run_process "designate-api" "$DESIGNATE_BIN_DIR/uwsgi --procname-prefix designate-api --ini $DESIGNATE_UWSGI_CONF"
+        run_process "designate-api" "$(which uwsgi) --procname-prefix designate-api --ini $DESIGNATE_UWSGI_CONF"
     else
         enable_apache_site designate-api
         restart_apache_server
