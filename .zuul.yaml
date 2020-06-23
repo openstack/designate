@@ -16,7 +16,8 @@
     required-projects:
       - openstack/designate
       - openstack/designate-dashboard
-      - openstack/designate-tempest-plugin
+      - name: openstack/designate-tempest-plugin
+        override-checkout: 0.7.0
       - openstack/python-designateclient
     timeout: 4200
     irrelevant-files:
@@ -66,7 +67,8 @@
       - openstack/devstack-gate
       - openstack/designate
       - openstack/designate-dashboard
-      - openstack/designate-tempest-plugin
+      - name: openstack/designate-tempest-plugin
+        override-checkout: 0.7.0
       - openstack/python-designateclient
       - openstack/tempest
     run: playbooks/legacy/designate-devstack-base/run.yaml
@@ -85,7 +87,8 @@
       - openstack/devstack-gate
       - openstack/designate
       - openstack/designate-dashboard
-      - openstack/designate-tempest-plugin
+      - name: openstack/designate-tempest-plugin
+        override-checkout: 0.7.0
       - openstack/python-designateclient
       - openstack/tempest
     run: playbooks/legacy/designate-devstack-agent-base/run.yaml
@@ -105,7 +108,8 @@
       - openstack/devstack-gate
       - openstack/designate
       - openstack/designate-dashboard
-      - openstack/designate-tempest-plugin
+      - name: openstack/designate-tempest-plugin
+        override-checkout: 0.7.0
       - openstack/python-designateclient
     run: playbooks/legacy/grenade-devstack-designate-pdns4/run.yaml
     post-run: playbooks/legacy/grenade-devstack-designate-pdns4/post.yaml
@@ -156,7 +160,8 @@
         - designate-bind9-py36
         - designate-devstack-pdns4
         - designate-devstack-pdns4-postgres
-        - designate-grenade-pdns4
+        - designate-grenade-pdns4:
+            voting: false
     gate:
       queue: designate
       jobs:
@@ -165,7 +170,6 @@
         - designate-bind9-py36
         - designate-devstack-pdns4
         - designate-devstack-pdns4-postgres
-        - designate-grenade-pdns4
     experimental:
       jobs:
         - designate-devstack-agent-knot2
