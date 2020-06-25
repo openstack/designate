@@ -19,6 +19,7 @@
 import math
 import time
 
+from oslo_concurrency import lockutils
 from oslo_log import log
 import tenacity
 import tooz.coordination
@@ -50,6 +51,14 @@ class Coordination(object):
     @property
     def started(self):
         return self._started
+
+    def get_lock(self, name):
+        if self._coordinator:
+            # NOTE(eandersson): Workaround until tooz handles the conversion.
+            if not isinstance(name, bytes):
+                name = name.encode('ascii')
+            return self._coordinator.get_lock(name)
+        return lockutils.lock(name)
 
     def start(self):
         self.coordination_id = ":".join([CONF.host, generate_uuid()])
