@@ -31,11 +31,3 @@ Other modules
     designate-dashboard <https://docs.openstack.org/designate-dashboard/latest/>
     designate-tempest-plugin <https://docs.openstack.org/designate-tempest-plugin/>
     designate-specs <https://specs.openstack.org/openstack/designate-specs/>
-
-Other resources
-~~~~~~~~~~~~~~~
-
-.. toctree::
-    :maxdepth: 1
-
-    related
