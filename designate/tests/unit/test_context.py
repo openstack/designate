@@ -99,10 +99,10 @@ class TestDesignateContext(designate.tests.TestCase):
     @mock.patch.object(policy, 'check')
     def test_sudo(self, mock_policy_check):
         ctxt = context.DesignateContext(
-            user_id='12345', project_id='old_tenant'
+            user_id='12345', project_id='old_project'
         )
-        ctxt.sudo('new_tenant')
+        ctxt.sudo('new_project')
 
         self.assertTrue(mock_policy_check.called)
-        self.assertEqual('new_tenant', ctxt.tenant)
-        self.assertEqual('old_tenant', ctxt.original_tenant)
+        self.assertEqual('new_project', ctxt.project_id)
+        self.assertEqual('old_project', ctxt.original_project_id)
