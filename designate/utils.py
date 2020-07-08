@@ -190,7 +190,7 @@ def validate_uuid(*check):
     """
     def inner(f):
         def wrapper(*args, **kwargs):
-            arg_spec = inspect.getargspec(f).args
+            arg_spec = inspect.getfullargspec(f).args
 
             # Ensure that we have the exact number of parameters that the
             # function expects.  This handles URLs like
