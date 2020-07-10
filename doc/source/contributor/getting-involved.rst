@@ -29,6 +29,9 @@ the standard OpenStack `Gerrit workflow`_, if you're looking for
 something to do, you could always checkout the blueprint_ & bug_
 lists.
 
+The designate git repo is available at https://opendev.org/openstack/designate,
+though all contributions should be done via the Gerrit review system.
+
 Task Tracking
 -------------
 
