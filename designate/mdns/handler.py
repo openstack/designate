@@ -239,6 +239,10 @@ class RequestHandler(xfr.XFRMixin):
         records.insert(0, soa_records[0])
         records.append(soa_records[0])
 
+        # Handle multi message response with tsig
+        multi_messages = False
+        multi_messages_context = None
+
         # Render the results, yielding a packet after each TooBig exception.
         renderer = None
         while records:
@@ -260,6 +264,9 @@ class RequestHandler(xfr.XFRMixin):
                     renderer.add_rrset(dns.renderer.ANSWER, rrset)
                     break
                 except dns.exception.TooBig:
+                    # The response will span multiple messages since one
+                    # message is not enough
+                    multi_messages = True
                     if renderer.counts[dns.renderer.ANSWER] == 0:
                         # We've received a TooBig from the first attempted
                         # RRSet in this packet. Log a warning and abort the
@@ -280,11 +287,16 @@ class RequestHandler(xfr.XFRMixin):
                         )
                         return
 
-                    yield self._finalize_packet(renderer, request)
+                    renderer, multi_messages_context = self._finalize_packet(
+                        renderer, request, multi_messages,
+                        multi_messages_context)
+                    yield renderer
                     renderer = None
 
         if renderer:
-            yield self._finalize_packet(renderer, request)
+            renderer, multi_messages_context = self._finalize_packet(
+                renderer, request, multi_messages, multi_messages_context)
+            yield renderer
         return
 
     def _handle_record_query(self, request):
@@ -396,22 +408,26 @@ class RequestHandler(xfr.XFRMixin):
             recordset.name, ttl, dns.rdataclass.IN, recordset.type, rdata)
 
     @staticmethod
-    def _finalize_packet(renderer, request):
+    def _finalize_packet(renderer, request, multi_messages=False,
+                         multi_messages_context=None):
         renderer.write_header()
         if request.had_tsig:
             # Make the space we reserved for TSIG available for use
             renderer.max_size += TSIG_RRSIZE
-            renderer.add_tsig(
-                request.keyname,
-                request.keyring[request.keyname],
-                request.fudge,
-                request.original_id,
-                request.tsig_error,
-                request.other_data,
-                request.mac,
-                request.keyalgorithm
-            )
-        return renderer
+            if multi_messages:
+                # The first message context will be None then the
+                # context for the prev message is used for the next
+                multi_messages_context = renderer.add_multi_tsig(
+                    multi_messages_context, request.keyname,
+                    request.keyring[request.keyname], request.fudge,
+                    request.original_id, request.tsig_error,
+                    request.other_data, request.mac, request.keyalgorithm)
+            else:
+                renderer.add_tsig(request.keyname,
+                    request.keyring[request.keyname], request.fudge,
+                    request.original_id, request.tsig_error,
+                    request.other_data, request.mac, request.keyalgorithm)
+        return renderer, multi_messages_context
 
     @staticmethod
     def _get_max_message_size(had_tsig):

@@ -642,6 +642,84 @@ class MdnsRequestHandlerTest(MdnsTestCase):
                 self.assertEqual(
                     expected_response[1], binascii.b2a_hex(response_two))
 
+    @mock.patch.object(dns.renderer.Renderer, 'add_multi_tsig')
+    def test_dispatch_opcode_query_AXFR_multiple_messages_with_tsig(self,
+            mock_multi_tsig):
+        # Query is for example.com. IN AXFR
+        # id 18883
+        # opcode QUERY
+        # rcode NOERROR
+        # flags AD
+        # edns 0
+        # payload 4096
+        # ;QUESTION
+        # example.com. IN AXFR
+        # ;ANSWER
+        # ;AUTHORITY
+        # ;ADDITIONAL
+        payload = ("49c300200001000000000001076578616d706c6503636f6d0000fc0001"
+                   "0000291000000000000000")
+
+        expected_response = [
+            (b"49c384000001000300000000076578616d706c6503636f6d0000fc0001c00c"
+             b"0006000100000e10002f036e7331076578616d706c65036f726700076578616"
+             b"d706c65c00c551c063900000e10000002580001518000000e10c00c0002000"
+             b"100000e100002c029046d61696cc00c0001000100000e100004c0000201"),
+
+            (b"49c384000001000100000000076578616d706c6503636f6d0000fc0001c00c"
+             b"0006000100000e10002f036e7331076578616d706c65036f72670007657861"
+             b"6d706c65c00c551c063900000e10000002580001518000000e10"),
+        ]
+
+        # Set the max-message-size to 363
+        self.config(max_message_size=363, group='service:mdns')
+
+        zone = objects.Zone.from_dict({
+            'name': 'example.com.',
+            'ttl': 3600,
+            'serial': 1427899961,
+            'email': 'example@example.com',
+        })
+
+        def _find_recordsets_axfr(context, criterion):
+            if criterion['type'] == 'SOA':
+                return [['UUID1', 'SOA', '3600', 'example.com.',
+                         'ns1.example.org. example.example.com. 1427899961 '
+                         '3600 600 86400 3600', 'ACTION']]
+
+            elif criterion['type'] == '!SOA':
+                return [
+                    ['UUID2', 'NS', '3600', 'example.com.', 'ns1.example.org.',
+                     'ACTION'],
+                    ['UUID3', 'A', '3600', 'mail.example.com.', '192.0.2.1',
+                     'ACTION'],
+                ]
+
+        with mock.patch.object(self.storage, 'find_zone',
+                               return_value=zone):
+            with mock.patch.object(self.storage, 'find_recordsets_axfr',
+                                   side_effect=_find_recordsets_axfr):
+                request = dns.message.from_wire(binascii.a2b_hex(payload))
+                request.environ = {'addr': self.addr, 'context': self.context}
+                request.keyring = {request.keyname: ''}
+                request.had_tsig = True
+                args = [request.keyname, request.keyring[request.keyname],
+                        request.fudge, request.original_id, request.tsig_error,
+                        request.other_data, request.mac, request.keyalgorithm]
+                response_generator = self.handler(request)
+                # Validate the first response
+                response_one = next(response_generator).get_wire()
+                mock_multi_tsig.assert_called_with(None, *args)
+                self.assertEqual(
+                    expected_response[0], binascii.b2a_hex(response_one))
+
+                # Validate the second response
+                response_two = next(response_generator).get_wire()
+                first_msg_ctx = mock_multi_tsig.return_value
+                mock_multi_tsig.assert_called_with(first_msg_ctx, *args)
+                self.assertEqual(
+                    expected_response[1], binascii.b2a_hex(response_two))
+
     def test_dispatch_opcode_query_AXFR_rrset_over_max_size(self):
         # Query is for example.com. IN AXFR
         # id 18883
