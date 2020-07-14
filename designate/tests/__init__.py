@@ -812,8 +812,8 @@ class TestCase(base.BaseTestCase):
 
     def _ensure_interface(self, interface, implementation):
         for name in interface.__abstractmethods__:
-            in_arginfo = inspect.getargspec(getattr(interface, name))
-            im_arginfo = inspect.getargspec(getattr(implementation, name))
+            in_arginfo = inspect.getfullargspec(getattr(interface, name))
+            im_arginfo = inspect.getfullargspec(getattr(implementation, name))
 
             self.assertEqual(
                 in_arginfo, im_arginfo,
