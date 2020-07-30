@@ -122,14 +122,16 @@ class InfobloxObjectManipulator(object):
                 'zone_auth',
                 {'fqdn': fqdn, 'view': dns_view},
                 {'ns_group': self.connector.ns_group,
-                 'restart_if_needed': True, 'zone_format': zone_format},
+                 'zone_format': zone_format},
                 check_if_exists=True)
+            self._restart_if_needed()
         except exc.InfobloxCannotCreateObject as e:
             LOG.warning(e)
 
     def delete_zone_auth(self, fqdn):
         self._delete_infoblox_object(
             'zone_auth', {'fqdn': fqdn})
+        self._restart_if_needed()
 
     def _create_infoblox_object(self, obj_type, payload,
                                 additional_create_kwargs=None,
@@ -205,3 +207,25 @@ class InfobloxObjectManipulator(object):
         if ib_object_ref:
             self.connector.delete_object(ib_object_ref)
             LOG.info('Infoblox object was deleted: %s', ib_object_ref)
+
+    def _restart_if_needed(self):
+        ib_object_ref = None
+        obj_type = 'grid'
+        warn_msg = ('Infoblox %(obj_type)s will not be restarted because'
+                    ' the API object reference cannot be found')
+        try:
+            ib_object_ref = self._get_infoblox_object_or_none(obj_type)
+            if not ib_object_ref:
+                LOG.warning(warn_msg, {'obj_type': obj_type})
+        except exc.InfobloxSearchError as e:
+            LOG.warning(warn_msg, {'obj_type': obj_type})
+            LOG.info(e)
+
+        if ib_object_ref:
+            payload = {
+                "restart_option": "RESTART_IF_NEEDED",
+                "mode": "GROUPED",
+                "services": ["DNS"],
+            }
+            self.connector.call_func(
+                'restartservices', ib_object_ref, payload)

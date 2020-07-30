@@ -88,6 +88,11 @@ class InfobloxBackendTestCase(oslotest.base.BaseTestCase):
             json={},
         )
 
+        req_mock.get(
+            '%s/v2.0/grid' % self.base_address,
+            json={},
+        )
+
         self.backend.create_zone(self.context, self.zone)
         self.backend.delete_zone(self.context, self.zone)
 

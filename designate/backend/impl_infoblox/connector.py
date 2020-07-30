@@ -131,7 +131,10 @@ class Infoblox(object):
 
         headers = {'Content-type': 'application/json'}
 
-        data = jsonutils.dump_as_bytes(payload)
+        # NOTE (scottsol): This can trigger an internal error in Infoblox if
+        # jsonutils sets it to 'null' (a string with quotes). Setting to None
+        # works around this and returns a valid response from Infoblox
+        data = jsonutils.dump_as_bytes(payload) if payload else None
         url = self._construct_url(objtype, query_params, extattrs)
 
         r = self.session.get(url,
