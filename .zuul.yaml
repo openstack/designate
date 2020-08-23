@@ -77,17 +77,42 @@
 
 - job:
     name: designate-grenade-pdns4
-    parent: legacy-dsvm-base
+    parent: grenade
     required-projects:
-      - openstack/grenade
-      - openstack/devstack-gate
-      - openstack/designate
-      - openstack/designate-dashboard
-      - openstack/designate-tempest-plugin
-      - openstack/python-designateclient
-    run: playbooks/legacy/grenade-devstack-designate-pdns4/run.yaml
-    post-run: playbooks/legacy/grenade-devstack-designate-pdns4/post.yaml
-    timeout: 10800
+      - opendev.org/openstack/horizon
+      - opendev.org/openstack/designate
+      - opendev.org/openstack/designate-dashboard
+      - opendev.org/openstack/designate-tempest-plugin
+      - opendev.org/openstack/python-designateclient
+    post-run: playbooks/designate-pdns4/post.yaml
+    vars:
+      devstack_plugins:
+        designate: https://opendev.org/openstack/designate
+      devstack_services:
+        designate: true
+        designate-api: true
+        designate-central: true
+        designate-producer: true
+        designate-worker: true
+        designate-mdns: true
+        designate-agent: true
+        designate-sink: true
+        horizon: true
+        s-account: false
+        s-container: false
+        s-object: false
+        s-proxy: false
+        c-bak: false
+      grenade_devstack_localrc:
+        shared:
+          DESIGNATE_BACKEND_DRIVER: pdns4
+          DESIGNATE_SERVICE_PORT_DNS: 5322
+      grenade_localrc:
+        BASE_RUN_SMOKE: False
+      tox_envlist: all
+      tempest_plugins:
+        - designate-tempest-plugin
+      tempest_test_regex: designate_tempest_plugin(?!\.tests.api.v1).*
     irrelevant-files:
       - ^.*\.rst$
       - ^api-ref/.*$
