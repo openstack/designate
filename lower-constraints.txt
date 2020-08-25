@@ -3,7 +3,6 @@ alembic==0.9.8
 amqp==2.2.2
 appdirs==1.4.3
 asn1crypto==0.24.0
-Babel==2.3.4
 bandit==1.1.0
 bcrypt==3.1.4
 beautifulsoup4==4.6.0
