@@ -2,9 +2,9 @@
 # of appearance. Changing the order has an impact on the overall integration
 # process, which may cause wedges in the gate later.
 
-eventlet>=0.25.1 # MIT
+eventlet>=0.26.1 # MIT
 Flask!=0.11,>=0.10 # BSD
-greenlet>=0.4.10 # MIT
+greenlet>=0.4.15 # MIT
 Jinja2>=2.10 # BSD License (3 clause)
 jsonschema>=3.2.0 # MIT
 keystoneauth1>=3.4.0 # Apache-2.0
@@ -12,7 +12,7 @@ keystonemiddleware>=4.17.0 # Apache-2.0
 netaddr>=0.7.18 # BSD
 oslo.config>=5.2.0 # Apache-2.0
 oslo.concurrency>=3.26.0 # Apache-2.0
-oslo.messaging>=9.5.0 # Apache-2.0
+oslo.messaging>=12.4.0 # Apache-2.0
 oslo.middleware>=3.31.0 # Apache-2.0
 oslo.log>=3.36.0 # Apache-2.0
 oslo.reports>=1.18.0 # Apache-2.0
@@ -29,15 +29,15 @@ pecan!=1.0.2,!=1.0.3,!=1.0.4,!=1.2,>=1.0.0 # BSD
 python-designateclient>=2.7.0 # Apache-2.0
 python-neutronclient>=6.7.0 # Apache-2.0
 requests>=2.14.2 # Apache-2.0
-tenacity>=4.4.0 # Apache-2.0
+tenacity>=6.0.0 # Apache-2.0
 six>=1.10.0 # MIT
-SQLAlchemy!=1.1.5,!=1.1.6,!=1.1.7,!=1.1.8,>=1.0.10 # MIT
+SQLAlchemy>=1.2.19 # MIT
 sqlalchemy-migrate>=0.11.0 # Apache-2.0
 stevedore>=1.20.0 # Apache-2.0
 suds-jurko>=0.6 # LGPLv3+
 WebOb>=1.7.1 # MIT
 dnspython>=1.16.0  # http://www.dnspython.org/LICENSE
-oslo.db>=4.27.0 # Apache-2.0
+oslo.db>=8.3.0 # Apache-2.0
 oslo.i18n>=3.15.3 # Apache-2.0
 oslo.context>=2.19.2 # Apache-2.0
 oslo.policy>=1.30.0 # Apache-2.0
