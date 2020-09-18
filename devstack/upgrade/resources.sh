@@ -85,7 +85,7 @@ function create {
 
     resource_save designate zone_id $id
 
-    eval $(openstack recordset create --records $DESIGNATE_RRSET_RECORD \
+    eval $(openstack recordset create --record $DESIGNATE_RRSET_RECORD \
         --type $DESIGNATE_RRSET_TYPE \
         $DESIGNATE_ZONE_NAME \
         $DESIGNATE_RRSET_NAME \
