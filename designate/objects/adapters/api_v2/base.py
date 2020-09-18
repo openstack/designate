@@ -76,14 +76,18 @@ class APIv2Adapter(base.DesignateAdapter):
     #####################
 
     @classmethod
-    def _get_resource_links(cls, obj, request):
+    def _get_base_url(cls, request):
         if cfg.CONF['service:api'].enable_host_header:
             try:
-                base_uri = request.host_url
+                return request.host_url
             except Exception:
-                base_uri = cls.BASE_URI
+                return cls.BASE_URI
         else:
-            base_uri = cls.BASE_URI
+            return cls.BASE_URI
+
+    @classmethod
+    def _get_resource_links(cls, obj, request):
+        base_uri = cls._get_base_url(request)
 
         path = cls._get_path(request, obj)
         return {'self': '%s%s/%s' % (base_uri, path, obj.id)}
@@ -135,13 +139,7 @@ class APIv2Adapter(base.DesignateAdapter):
         if extra_params is not None:
             params.update(extra_params)
 
-        if cfg.CONF['service:api'].enable_host_header:
-            try:
-                base_uri = request.host_url
-            except Exception:
-                base_uri = cls.BASE_URI
-        else:
-            base_uri = cls.BASE_URI
+        base_uri = cls._get_base_url(request)
 
         href = "%s%s?%s" % (
             base_uri,
