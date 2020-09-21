@@ -21,10 +21,12 @@ from sqlalchemy import (Table, MetaData, Column, String, Text, Integer,
 from oslo_config import cfg
 from oslo_utils import timeutils
 
+from designate.conf import central
 from designate.sqlalchemy.types import UUID
 
 
 CONF = cfg.CONF
+central.register_opts(CONF)
 
 RESOURCE_STATUSES = ['ACTIVE', 'PENDING', 'DELETED', 'ERROR']
 RECORD_TYPES = ['A', 'AAAA', 'CNAME', 'MX', 'SRV', 'TXT', 'SPF', 'NS', 'PTR',
@@ -367,7 +369,7 @@ def default_shard(context, id_col):
 def upgrade(migrate_engine):
     metadata.bind = migrate_engine
 
-    default_pool_id = cfg.CONF['service:central'].default_pool_id
+    default_pool_id = CONF['service:central'].default_pool_id
 
     with migrate_engine.begin() as conn:
         if migrate_engine.name == "mysql":
