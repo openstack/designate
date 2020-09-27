@@ -32,25 +32,6 @@ fi
 # install_designate_backend - install any external requirements
 function install_designate_backend {
     if is_ubuntu; then
-        GetOSVersion
-        if  [ "$os_CODENAME" = "trusty" ]; then
-            sudo tee /etc/apt/sources.list.d/pdns.list > /dev/null <<EOF
-deb [arch=amd64] http://repo.powerdns.com/ubuntu trusty-auth-40 main
-EOF
-            sudo tee /etc/apt/preferences.d/pdns > /dev/null <<EOF
-Package: pdns-*
-Pin: origin repo.powerdns.com
-Pin-Priority: 600
-EOF
-            curl https://repo.powerdns.com/FD380FBB-pub.asc | sudo apt-key add - &&
-            sudo apt-get update
-        elif [ "$os_CODENAME" = "xenial" ]; then
-            echo "Use PDNS4 from apt repo"
-        elif [ "$os_CODENAME" = "bionic" ]; then
-            echo "Use PDNS4 from apt repo"
-        else
-            die $LINENO "PDNS4 backend only supports bionic, trusty or xenial"
-        fi
         PDNS=pdns-server
     else
         die $LINENO "PDNS4 Backend plugin backend only supports Ubuntu"
@@ -118,7 +99,6 @@ slave=yes
 cache-ttl=0
 query-cache-ttl=0
 negquery-cache-ttl=0
-out-of-zone-additional-processing=no
 webserver=yes
 webserver-address=$(ipv6_unquote $DESIGNATE_SERVICE_HOST)
 webserver-allow-from=$(ipv6_unquote $DESIGNATE_SERVICE_HOST),127.0.0.1,::1
@@ -167,7 +147,7 @@ function init_designate_backend {
     # (Re)create designate_pdns database
     recreate_database designate_pdns utf8
     if is_service_enabled mysql; then
-            sudo mysql -u root designate_pdns < $DESIGNATE_PLUGINS/backend-pdns4-mysql-db.sql
+            sudo mysql -u$DATABASE_USER -p$DATABASE_PASSWORD -h$MYSQL_HOST designate_pdns < $DESIGNATE_PLUGINS/backend-pdns4-mysql-db.sql
     elif is_service_enabled postgresql; then
             sudo psql -U root -d designate_pdns -f $DESIGNATE_PLUGINS/backend-pdns4-pgsql-db.sql
     else
