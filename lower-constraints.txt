@@ -31,7 +31,6 @@ eventlet==0.26.1
 extras==1.0.0
 fasteners==0.14.1
 fixtures==3.0.0
-flake8==2.5.5
 Flask==0.10
 funcparserlib==0.3.6
 future==0.16.0
@@ -39,7 +38,6 @@ futurist==1.2.0
 gitdb2==2.0.3
 GitPython==2.1.8
 greenlet==0.4.15
-hacking==0.12.0
 idna==2.6
 imagesize==1.0.0
 iso8601==0.1.12
