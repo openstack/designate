@@ -14,7 +14,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import six
 
 from designate.tests.test_api.test_v2 import ApiV2TestCase
 
@@ -150,7 +149,7 @@ class ApiV2BlacklistsTest(ApiV2TestCase):
         correct_results = [1, 2]
 
         for get_url, correct_result in \
-                six.moves.zip(get_urls, correct_results):
+                zip(get_urls, correct_results):
 
             self.policy({'find_blacklists': '@'})
             response = self.client.get(get_url)

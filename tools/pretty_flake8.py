@@ -19,7 +19,7 @@ import linecache
 from prettytable import PrettyTable
 
 PEP8_LINE = r'^((?P<file>.*):(?P<line>\d*):(?P<col>\d*):) ' \
-            '(?P<error>(?P<error_code>\w\d{1,3})(?P<error_desc>.*$))'
+            r'(?P<error>(?P<error_code>\w\d{1,3})(?P<error_desc>.*$))'
 
 HTML = True
 

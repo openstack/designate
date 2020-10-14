@@ -15,7 +15,6 @@
 # under the License.
 from unittest.mock import patch
 
-import six
 import oslo_messaging as messaging
 from oslo_log import log as logging
 
@@ -348,7 +347,7 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         correct_results = [1, 1, 2, 1, 1, 2, 1, 1]
 
         for get_url, correct_result in \
-                six.moves.zip(get_urls, correct_results):
+                zip(get_urls, correct_results):
 
             response = self.client.get(get_url)
 

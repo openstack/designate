@@ -11,8 +11,6 @@
 # under the License.
 import functools
 
-import six
-
 
 def def_method(f, *args, **kwargs):
     @functools.wraps(f)
@@ -52,7 +50,7 @@ def parameterized_class(cls):
 
             # To add a method to a class, available for all instances:
             #   MyClass.method = types.MethodType(f, None, MyClass)
-            setattr(cls, new_name, six.create_unbound_method(new_method, cls))
+            setattr(cls, new_name, new_method)
     return cls
 
 

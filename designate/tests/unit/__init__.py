@@ -18,8 +18,6 @@
 Unit test utilities
 """
 
-import six
-
 
 class RoObject(object):
     """Read-only object: raise exception on unexpected
@@ -50,7 +48,7 @@ class RoObject(object):
         self.__setitem__(k, v)
 
     def __iter__(self):
-        for k in six.iterkeys(self.__dict__):
+        for k in self.__dict__:
             yield k, self.__dict__[k]
 
     def to_dict(self):
