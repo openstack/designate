@@ -311,7 +311,6 @@ function start_designate {
     else
         enable_apache_site designate-api
         restart_apache_server
-        tail_log designate-api /var/log/$APACHE_NAME/designate-api.log
     fi
 
     echo "Waiting for designate-api to start..."
