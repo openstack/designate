@@ -37,7 +37,7 @@ make the following API calls.
 
   {
     "pattern" : "^([A-Za-z0-9_\\-]+\\.)*example\\.com\\.$",
-    "description" : "This blacklists \*.example.com."
+    "description" : "This blacklists *.example.com."
   }
 
 Response:
@@ -49,7 +49,7 @@ Response:
   X-Openstack-Request-Id: req-bfcd0723-624c-4ec2-bbd5-99e985efe8db
 
   {
-     "description": "This blacklists \*.example.com.",
+     "description": "This blacklists *.example.com.",
      "links": {
        "self": "http://127.0.0.1:9001/v2/blacklists/af91edb5-ede8-453f-af13-feabdd088f9c"
      },
