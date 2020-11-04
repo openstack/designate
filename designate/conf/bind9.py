@@ -26,6 +26,7 @@ BINS9_OPTS = [
     cfg.StrOpt('rndc_config_file',
                help='RNDC Config File'),
     cfg.StrOpt('rndc_key_file', help='RNDC Key File'),
+    cfg.IntOpt('rndc_timeout', default=0, min=0, help='RNDC command timeout'),
     cfg.StrOpt('zone_file_path', default='$state_path/zones',
                help='Path where zone files are stored'),
     cfg.StrOpt('query_destination', default='127.0.0.1',
