@@ -51,8 +51,13 @@ class FloatingIPAPIv2Adapter(base.APIv2Adapter):
 
     @classmethod
     def _get_resource_links(cls, object, request):
-        return {'self': '%s%s/%s' %
-                (cls.BASE_URI, cls._get_path(request), object.key)}
+        return {
+            'self': '%s%s/%s' % (
+                cls._get_base_url(request),
+                cls._get_path(request),
+                object.key
+            )
+        }
 
 
 class FloatingIPListAPIv2Adapter(base.APIv2Adapter):

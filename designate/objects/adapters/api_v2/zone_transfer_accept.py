@@ -49,8 +49,10 @@ class ZoneTransferAcceptAPIv2Adapter(base.APIv2Adapter):
         obj = super(ZoneTransferAcceptAPIv2Adapter, cls)._render_object(
             object, *args, **kwargs)
 
-        obj['links']['zone'] = \
-            '%s/v2/%s/%s' % (cls.BASE_URI, 'zones', obj['zone_id'])
+        obj['links']['zone'] = (
+            '%s/v2/%s/%s' % (cls._get_base_url(kwargs['request']), 'zones',
+                             obj['zone_id'])
+        )
 
         return obj
 
