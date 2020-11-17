@@ -20,6 +20,8 @@ from designate import utils
 from designate.backend import impl_bind9
 from designate.tests import fixtures
 
+import subprocess
+
 
 class Bind9BackendTestCase(designate.tests.TestCase):
     def setUp(self):
@@ -223,7 +225,36 @@ class Bind9BackendTestCase(designate.tests.TestCase):
         mock_execute.assert_called_with(
             '/usr/sbin/rndc', '-s', '192.168.2.4', '-p', '953',
             '-c', '/etc/rndc.conf', '-k', '/etc/rndc.key',
-            'delzone', 'example.com '
+            'delzone', 'example.com ', timeout=None
+        )
+
+    @mock.patch('designate.utils.execute')
+    def test_execute_rndc_timeout(self, mock_execute):
+        rndc_op = ['delzone', 'example.com ']
+
+        self.backend._rndc_timeout = 10
+        self.backend._execute_rndc(rndc_op)
+
+        mock_execute.assert_called_with(
+            '/usr/sbin/rndc', '-s', '192.168.2.4', '-p', '953',
+            '-c', '/etc/rndc.conf', '-k', '/etc/rndc.key',
+            'delzone', 'example.com ', timeout=10
+        )
+
+    @mock.patch('designate.utils.execute')
+    def test_execute_rndc_timeout_exception(self, mock_execute):
+        rndc_op = ['delzone', 'example.com ']
+
+        self.backend._rndc_timeout = 10
+
+        mock_execute.side_effect = subprocess.TimeoutExpired([
+            '/usr/sbin/rndc', '-s', '192.168.2.4', '-p', '953',
+            '-c', '/etc/rndc.conf', '-k', '/etc/rndc.key',
+            'delzone', 'example.com '], 10)
+
+        self.assertRaises(
+            exceptions.Backend,
+            self.backend._execute_rndc, rndc_op
         )
 
     @mock.patch('designate.utils.execute')

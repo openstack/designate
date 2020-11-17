@@ -21,6 +21,8 @@ Bind 9 backend. Create and delete zones by executing rndc
 import random
 
 import six
+import subprocess
+
 from oslo_log import log as logging
 from oslo_utils import strutils
 
@@ -51,6 +53,9 @@ class Bind9Backend(base.Backend):
                                   self.options.get('clean_zonefile', 'false'))
 
         self._rndc_call_base = self._generate_rndc_base_call()
+        self._rndc_timeout = self.options.get('rndc_timeout', None)
+        if self._rndc_timeout == 0:
+            self._rndc_timeout = None
 
     def _generate_rndc_base_call(self):
         """Generate argument list to execute rndc"""
@@ -174,7 +179,9 @@ class Bind9Backend(base.Backend):
         """
         try:
             rndc_call = self._rndc_call_base + rndc_op
-            LOG.debug('Executing RNDC call: %r', rndc_call)
-            utils.execute(*rndc_call)
-        except utils.processutils.ProcessExecutionError as e:
+            LOG.debug('Executing RNDC call: %r with timeout %s',
+                rndc_call, self._rndc_timeout)
+            utils.execute(*rndc_call, timeout=self._rndc_timeout)
+        except (utils.processutils.ProcessExecutionError,
+                subprocess.TimeoutExpired) as e:
             raise exceptions.Backend(e)
