@@ -13,26 +13,56 @@
 #    under the License.
 
 
+from oslo_log import versionutils
 from oslo_policy import policy
 
 from designate.common.policies import base
+
+DEPRECATED_REASON = """
+The tenant API now supports system scope and default roles.
+"""
+
+deprecated_find_tenants = policy.DeprecatedRule(
+    name="find_tenants",
+    check_str=base.RULE_ADMIN
+)
+deprecated_get_tenant = policy.DeprecatedRule(
+    name="get_tenant",
+    check_str=base.RULE_ADMIN
+)
+deprecated_count_tenants = policy.DeprecatedRule(
+    name="count_tenants",
+    check_str=base.RULE_ADMIN
+)
 
 
 rules = [
     policy.RuleDefault(
         name="find_tenants",
-        check_str=base.RULE_ADMIN,
-        description="Find all Tenants."
+        check_str=base.SYSTEM_READER,
+        scope_types=['system'],
+        description="Find all Tenants.",
+        deprecated_rule=deprecated_find_tenants,
+        deprecated_reason=DEPRECATED_REASON,
+        deprecated_since=versionutils.deprecated.WALLABY
     ),
     policy.RuleDefault(
         name="get_tenant",
-        check_str=base.RULE_ADMIN,
-        description="Get all Tenants."
+        check_str=base.SYSTEM_READER,
+        scope_types=['system'],
+        description="Get all Tenants.",
+        deprecated_rule=deprecated_get_tenant,
+        deprecated_reason=DEPRECATED_REASON,
+        deprecated_since=versionutils.deprecated.WALLABY
     ),
     policy.RuleDefault(
         name="count_tenants",
-        check_str=base.RULE_ADMIN,
-        description="Count tenants"
+        check_str=base.SYSTEM_READER,
+        scope_types=['system'],
+        description="Count tenants",
+        deprecated_rule=deprecated_count_tenants,
+        deprecated_reason=DEPRECATED_REASON,
+        deprecated_since=versionutils.deprecated.WALLABY
     )
 ]
 
