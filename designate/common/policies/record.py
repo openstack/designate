@@ -13,14 +13,30 @@
 #    under the License.
 
 
+from oslo_log import versionutils
 from oslo_policy import policy
 
 from designate.common.policies import base
 
+DEPRECATED_REASON = """
+The records API now supports system scope and default roles.
+"""
+
+deprecated_find_records = policy.DeprecatedRule(
+    name="find_records",
+    check_str=base.RULE_ADMIN_OR_OWNER
+)
+deprecated_count_records = policy.DeprecatedRule(
+    name="count_records",
+    check_str=base.RULE_ADMIN_OR_OWNER
+)
+
+
 rules = [
     policy.DocumentedRuleDefault(
         name="find_records",
-        check_str=base.RULE_ADMIN_OR_OWNER,
+        check_str=base.SYSTEM_OR_PROJECT_READER,
+        scope_types=['system', 'project'],
         description='Find records.',
         operations=[
             {
@@ -30,11 +46,19 @@ rules = [
                 'path': '/v2/reverse/floatingips',
                 'method': 'GET'
             }
-        ]
+        ],
+        deprecated_rule=deprecated_find_records,
+        deprecated_reason=DEPRECATED_REASON,
+        deprecated_since=versionutils.deprecated.WALLABY
     ),
     policy.RuleDefault(
         name="count_records",
-        check_str=base.RULE_ADMIN_OR_OWNER)
+        check_str=base.SYSTEM_OR_PROJECT_READER,
+        scope_types=['system', 'project'],
+        deprecated_rule=deprecated_find_records,
+        deprecated_reason=DEPRECATED_REASON,
+        deprecated_since=versionutils.deprecated.WALLABY
+    )
 ]
 
 
