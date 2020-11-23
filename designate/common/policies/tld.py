@@ -13,65 +13,112 @@
 #    under the License.
 
 
+from oslo_log import versionutils
 from oslo_policy import policy
 
 from designate.common.policies import base
 
+DEPRECATED_REASON = """
+The top-level domain API now supports system scope and default roles.
+"""
+
+deprecated_create_tld = policy.DeprecatedRule(
+    name="create_tld",
+    check_str=base.RULE_ADMIN
+)
+deprecated_find_tlds = policy.DeprecatedRule(
+    name="find_tlds",
+    check_str=base.RULE_ADMIN
+)
+deprecated_get_tld = policy.DeprecatedRule(
+    name="get_tld",
+    check_str=base.RULE_ADMIN
+)
+deprecated_update_tld = policy.DeprecatedRule(
+    name="update_tld",
+    check_str=base.RULE_ADMIN
+)
+deprecated_delete_tld = policy.DeprecatedRule(
+    name="delete_tld",
+    check_str=base.RULE_ADMIN
+)
+
+
 rules = [
     policy.DocumentedRuleDefault(
         name="create_tld",
-        check_str=base.RULE_ADMIN,
+        check_str=base.SYSTEM_ADMIN,
+        scope_types=['system'],
         description="Create Tld",
         operations=[
             {
                 'path': '/v2/tlds',
                 'method': 'POST'
             }
-        ]
+        ],
+        deprecated_rule=deprecated_create_tld,
+        deprecated_reason=DEPRECATED_REASON,
+        deprecated_since=versionutils.deprecated.WALLABY
     ),
     policy.DocumentedRuleDefault(
         name="find_tlds",
-        check_str=base.RULE_ADMIN,
+        check_str=base.SYSTEM_READER,
+        scope_types=['system'],
         description="List Tlds",
         operations=[
             {
                 'path': '/v2/tlds',
                 'method': 'GET'
             }
-        ]
+        ],
+        deprecated_rule=deprecated_find_tlds,
+        deprecated_reason=DEPRECATED_REASON,
+        deprecated_since=versionutils.deprecated.WALLABY
     ),
     policy.DocumentedRuleDefault(
         name="get_tld",
-        check_str=base.RULE_ADMIN,
+        check_str=base.SYSTEM_READER,
+        scope_types=['system'],
         description="Show Tld",
         operations=[
             {
                 'path': '/v2/tlds/{tld_id}',
                 'method': 'GET'
             }
-        ]
+        ],
+        deprecated_rule=deprecated_get_tld,
+        deprecated_reason=DEPRECATED_REASON,
+        deprecated_since=versionutils.deprecated.WALLABY
     ),
     policy.DocumentedRuleDefault(
         name="update_tld",
-        check_str=base.RULE_ADMIN,
+        check_str=base.SYSTEM_ADMIN,
+        scope_types=['system'],
         description="Update Tld",
         operations=[
             {
                 'path': '/v2/tlds/{tld_id}',
                 'method': 'PATCH'
             }
-        ]
+        ],
+        deprecated_rule=deprecated_update_tld,
+        deprecated_reason=DEPRECATED_REASON,
+        deprecated_since=versionutils.deprecated.WALLABY
     ),
     policy.DocumentedRuleDefault(
         name="delete_tld",
-        check_str=base.RULE_ADMIN,
+        check_str=base.SYSTEM_ADMIN,
+        scope_types=['system'],
         description="Delete Tld",
         operations=[
             {
                 'path': '/v2/tlds/{tld_id}',
                 'method': 'DELETE'
             }
-        ]
+        ],
+        deprecated_rule=deprecated_delete_tld,
+        deprecated_reason=DEPRECATED_REASON,
+        deprecated_since=versionutils.deprecated.WALLABY
     )
 ]
 
