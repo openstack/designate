@@ -13,6 +13,7 @@ Contents
 .. toctree::
     :maxdepth: 1
 
+    intro/index
     install/index
     contributor/index
     user/index
