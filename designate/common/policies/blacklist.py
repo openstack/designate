@@ -13,88 +13,150 @@
 #    under the License.
 
 
+from oslo_log import versionutils
 from oslo_policy import policy
 
 from designate.common.policies import base
+
+DEPRECATED_REASON = """
+The blacklist API now supports system scope and default roles.
+"""
+
+deprecated_create_blacklist = policy.DeprecatedRule(
+    name="create_blacklist",
+    check_str=base.RULE_ADMIN
+)
+deprecated_find_blacklist = policy.DeprecatedRule(
+    name="find_blacklist",
+    check_str=base.RULE_ADMIN
+)
+deprecated_find_blacklists = policy.DeprecatedRule(
+    name="find_blacklists",
+    check_str=base.RULE_ADMIN
+)
+deprecated_get_blacklist = policy.DeprecatedRule(
+    name="get_blacklist",
+    check_str=base.RULE_ADMIN
+)
+deprecated_update_blacklist = policy.DeprecatedRule(
+    name="update_blacklist",
+    check_str=base.RULE_ADMIN
+)
+deprecated_delete_blacklist = policy.DeprecatedRule(
+    name="delete_blacklist",
+    check_str=base.RULE_ADMIN
+)
+deprecated_use_blacklisted_zone = policy.DeprecatedRule(
+    name="use_blacklisted_zone",
+    check_str=base.RULE_ADMIN
+)
 
 
 rules = [
     policy.DocumentedRuleDefault(
         name="create_blacklist",
-        check_str=base.RULE_ADMIN,
+        check_str=base.SYSTEM_ADMIN,
+        scope_types=['system'],
         description='Create blacklist.',
         operations=[
             {
                 'path': '/v2/blacklists',
                 'method': 'POST'
             }
-        ]
+        ],
+        deprecated_rule=deprecated_create_blacklist,
+        deprecated_reason=DEPRECATED_REASON,
+        deprecated_since=versionutils.deprecated.WALLABY
     ),
     policy.DocumentedRuleDefault(
         name="find_blacklist",
-        check_str=base.RULE_ADMIN,
+        check_str=base.SYSTEM_READER,
+        scope_types=['system'],
         description='Find blacklist.',
         operations=[
             {
                 'path': '/v2/blacklists',
                 'method': 'GET'
             }
-        ]
+        ],
+        deprecated_rule=deprecated_find_blacklist,
+        deprecated_reason=DEPRECATED_REASON,
+        deprecated_since=versionutils.deprecated.WALLABY
     ),
     policy.DocumentedRuleDefault(
         name="find_blacklists",
-        check_str=base.RULE_ADMIN,
+        check_str=base.SYSTEM_READER,
+        scope_types=['system'],
         description='Find blacklists.',
         operations=[
             {
                 'path': '/v2/blacklists',
                 'method': 'GET'
             }
-        ]
+        ],
+        deprecated_rule=deprecated_find_blacklists,
+        deprecated_reason=DEPRECATED_REASON,
+        deprecated_since=versionutils.deprecated.WALLABY
     ),
     policy.DocumentedRuleDefault(
         name="get_blacklist",
-        check_str=base.RULE_ADMIN,
+        check_str=base.SYSTEM_READER,
+        scope_types=['system'],
         description='Get blacklist.',
         operations=[
             {
                 'path': '/v2/blacklists/{blacklist_id}',
                 'method': 'GET'
             }
-        ]
+        ],
+        deprecated_rule=deprecated_get_blacklist,
+        deprecated_reason=DEPRECATED_REASON,
+        deprecated_since=versionutils.deprecated.WALLABY
     ),
     policy.DocumentedRuleDefault(
         name="update_blacklist",
-        check_str=base.RULE_ADMIN,
+        check_str=base.SYSTEM_ADMIN,
+        scope_types=['system'],
         description='Update blacklist.',
         operations=[
             {
                 'path': '/v2/blacklists/{blacklist_id}',
                 'method': 'PATCH'
             }
-        ]
+        ],
+        deprecated_rule=deprecated_get_blacklist,
+        deprecated_reason=DEPRECATED_REASON,
+        deprecated_since=versionutils.deprecated.WALLABY
     ),
     policy.DocumentedRuleDefault(
         name="delete_blacklist",
-        check_str=base.RULE_ADMIN,
+        check_str=base.SYSTEM_ADMIN,
+        scope_types=['system'],
         description='Delete blacklist.',
         operations=[
             {
                 'path': '/v2/blacklists/{blacklist_id}',
                 'method': 'DELETE'
             }
-        ]
+        ],
+        deprecated_rule=deprecated_delete_blacklist,
+        deprecated_reason=DEPRECATED_REASON,
+        deprecated_since=versionutils.deprecated.WALLABY
     ),
     policy.DocumentedRuleDefault(
         name="use_blacklisted_zone",
-        check_str=base.RULE_ADMIN,
+        check_str=base.SYSTEM_ADMIN,
+        scope_types=['system'],
         description='Allowed bypass the blacklist.',
         operations=[
             {
                 'path': '/v2/zones',
                 'method': 'POST'
             }
-        ]
+        ],
+        deprecated_rule=deprecated_use_blacklisted_zone,
+        deprecated_reason=DEPRECATED_REASON,
+        deprecated_since=versionutils.deprecated.WALLABY
     )
 ]
 
