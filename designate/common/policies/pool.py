@@ -13,70 +13,132 @@
 #    under the License.
 
 
+from oslo_log import versionutils
 from oslo_policy import policy
 
 from designate.common.policies import base
+
+DEPRECATED_REASON = """
+The pool API now supports system scope and default roles.
+"""
+
+deprecated_create_pool = policy.DeprecatedRule(
+    name="create_pool",
+    check_str=base.RULE_ADMIN
+)
+deprecated_find_pools = policy.DeprecatedRule(
+    name="find_pools",
+    check_str=base.RULE_ADMIN
+)
+deprecated_find_pool = policy.DeprecatedRule(
+    name="find_pools",
+    check_str=base.RULE_ADMIN
+)
+deprecated_get_pool = policy.DeprecatedRule(
+    name="get_pool",
+    check_str=base.RULE_ADMIN
+)
+deprecated_update_pool = policy.DeprecatedRule(
+    name="update_pool",
+    check_str=base.RULE_ADMIN
+)
+deprecated_delete_pool = policy.DeprecatedRule(
+    name="delete_pool",
+    check_str=base.RULE_ADMIN
+)
+deprecated_zone_created_forced_pool = policy.DeprecatedRule(
+    name="zone_create_forced_pool",
+    check_str=base.RULE_ADMIN
+)
 
 
 rules = [
     policy.RuleDefault(
         name="create_pool",
-        check_str=base.RULE_ADMIN,
-        description='Create pool.'
+        check_str=base.SYSTEM_ADMIN,
+        scope_types=['system'],
+        description='Create pool.',
+        deprecated_rule=deprecated_create_pool,
+        deprecated_reason=DEPRECATED_REASON,
+        deprecated_since=versionutils.deprecated.WALLABY
     ),
     policy.DocumentedRuleDefault(
         name="find_pools",
-        check_str=base.RULE_ADMIN,
+        check_str=base.SYSTEM_READER,
+        scope_types=['system'],
         description='Find pool.',
         operations=[
             {
                 'path': '/v2/pools',
                 'method': 'GET'
             }
-        ]
+        ],
+        deprecated_rule=deprecated_find_pools,
+        deprecated_reason=DEPRECATED_REASON,
+        deprecated_since=versionutils.deprecated.WALLABY
     ),
     policy.DocumentedRuleDefault(
         name="find_pool",
-        check_str=base.RULE_ADMIN,
+        check_str=base.SYSTEM_READER,
+        scope_types=['system'],
         description='Find pools.',
         operations=[
             {
                 'path': '/v2/pools',
                 'method': 'GET'
             }
-        ]
+        ],
+        deprecated_rule=deprecated_find_pool,
+        deprecated_reason=DEPRECATED_REASON,
+        deprecated_since=versionutils.deprecated.WALLABY
     ),
     policy.DocumentedRuleDefault(
         name="get_pool",
-        check_str=base.RULE_ADMIN,
+        check_str=base.SYSTEM_READER,
+        scope_types=['system'],
         description='Get pool.',
         operations=[
             {
                 'path': '/v2/pools/{pool_id}',
                 'method': 'GET'
             }
-        ]
+        ],
+        deprecated_rule=deprecated_get_pool,
+        deprecated_reason=DEPRECATED_REASON,
+        deprecated_since=versionutils.deprecated.WALLABY
     ),
     policy.RuleDefault(
         name="update_pool",
-        check_str=base.RULE_ADMIN,
-        description='Update pool.'
+        check_str=base.SYSTEM_ADMIN,
+        scope_types=['system'],
+        description='Update pool.',
+        deprecated_rule=deprecated_update_pool,
+        deprecated_reason=DEPRECATED_REASON,
+        deprecated_since=versionutils.deprecated.WALLABY
     ),
     policy.RuleDefault(
         name="delete_pool",
-        check_str=base.RULE_ADMIN,
-        description='Delete pool.'
+        check_str=base.SYSTEM_ADMIN,
+        scope_types=['system'],
+        description='Delete pool.',
+        deprecated_rule=deprecated_delete_pool,
+        deprecated_reason=DEPRECATED_REASON,
+        deprecated_since=versionutils.deprecated.WALLABY
     ),
     policy.DocumentedRuleDefault(
         name="zone_create_forced_pool",
-        check_str=base.RULE_ADMIN,
+        check_str=base.SYSTEM_ADMIN,
+        scope_types=['system'],
         description='load and set the pool to the one provided in the Zone attributes.',  # noqa
         operations=[
             {
                 'path': '/v2/zones',
                 'method': 'POST'
             }
-        ]
+        ],
+        deprecated_rule=deprecated_zone_created_forced_pool,
+        deprecated_reason=DEPRECATED_REASON,
+        deprecated_since=versionutils.deprecated.WALLABY
     )
 ]
 
