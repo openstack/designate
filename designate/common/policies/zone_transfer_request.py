@@ -13,21 +13,56 @@
 #    under the License.
 
 
+from oslo_log import versionutils
 from oslo_policy import policy
 
 from designate.common.policies import base
 
+DEPRECATED_REASON = """
+The zone transfer request API now supports system scope and default roles.
+"""
+
+deprecated_create_zone_transfer_request = policy.DeprecatedRule(
+        name="create_zone_transfer_request",
+        check_str=base.RULE_ADMIN_OR_OWNER
+)
+deprecated_get_zone_transfer_request = policy.DeprecatedRule(
+    name="get_zone_transfer_request",
+    check_str=base.RULE_ZONE_TRANSFER
+)
+deprecated_get_zone_transfer_request_detailed = policy.DeprecatedRule(
+    name="get_zone_transfer_request_detailed",
+    check_str=base.RULE_ADMIN_OR_OWNER
+)
+deprecated_find_zone_transfer_requests = policy.DeprecatedRule(
+    name="find_zone_transfer_requests",
+    check_str=base.RULE_ANY
+)
+deprecated_update_zone_transfer_request = policy.DeprecatedRule(
+    name="update_zone_transfer_request",
+    check_str=base.RULE_ADMIN_OR_OWNER
+)
+deprecated_delete_zone_transfer_request = policy.DeprecatedRule(
+    name="delete_zone_transfer_request",
+    check_str=base.RULE_ADMIN_OR_OWNER
+)
+
+
 rules = [
     policy.DocumentedRuleDefault(
         name="create_zone_transfer_request",
-        check_str=base.RULE_ADMIN_OR_OWNER,
+        check_str=base.SYSTEM_ADMIN_OR_PROJECT_MEMBER,
+        scope_types=['system', 'project'],
         description="Create Zone Transfer Accept",
         operations=[
             {
                 'path': '/v2/zones/{zone_id}/tasks/transfer_requests',
                 'method': 'POST'
             }
-        ]
+        ],
+        deprecated_rule=deprecated_create_zone_transfer_request,
+        deprecated_reason=DEPRECATED_REASON,
+        deprecated_since=versionutils.deprecated.WALLABY
     ),
     policy.DocumentedRuleDefault(
         name="get_zone_transfer_request",
@@ -45,7 +80,11 @@ rules = [
     ),
     policy.RuleDefault(
         name="get_zone_transfer_request_detailed",
-        check_str=base.RULE_ADMIN_OR_OWNER
+        check_str=base.SYSTEM_OR_PROJECT_READER,
+        scope_types=['system', 'project'],
+        deprecated_rule=deprecated_create_zone_transfer_request,
+        deprecated_reason=DEPRECATED_REASON,
+        deprecated_since=versionutils.deprecated.WALLABY
     ),
     policy.DocumentedRuleDefault(
         name="find_zone_transfer_requests",
@@ -64,25 +103,33 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name="update_zone_transfer_request",
-        check_str=base.RULE_ADMIN_OR_OWNER,
+        check_str=base.SYSTEM_ADMIN_OR_PROJECT_MEMBER,
+        scope_types=['system', 'project'],
         description="Update a Zone Transfer Request",
         operations=[
             {
                 'path': '/v2/zones/tasks/transfer_requests/{zone_transfer_request_id}',  # noqa
                 'method': 'PATCH'
             }
-        ]
+        ],
+        deprecated_rule=deprecated_update_zone_transfer_request,
+        deprecated_reason=DEPRECATED_REASON,
+        deprecated_since=versionutils.deprecated.WALLABY
     ),
     policy.DocumentedRuleDefault(
         name="delete_zone_transfer_request",
-        check_str=base.RULE_ADMIN_OR_OWNER,
+        check_str=base.SYSTEM_ADMIN_OR_PROJECT_MEMBER,
+        scope_types=['system', 'project'],
         description="Delete a Zone Transfer Request",
         operations=[
             {
                 'path': '/v2/zones/tasks/transfer_requests/{zone_transfer_request_id}',  # noqa
                 'method': 'DELETE'
             }
-        ]
+        ],
+        deprecated_rule=deprecated_delete_zone_transfer_request,
+        deprecated_reason=DEPRECATED_REASON,
+        deprecated_since=versionutils.deprecated.WALLABY
     )
 ]
 
