@@ -25,6 +25,40 @@ RULE_ZONE_TRANSFER = "rule:admin_or_owner OR tenant:%(target_tenant_id)s " \
                      "OR None:%(target_tenant_id)s"
 RULE_ANY = "@"
 
+# Generic policy check string for system administrators. These are the people
+# who need the highest level of authorization to operate the deployment.
+# They're allowed to create, read, update, or delete any system-specific
+# resource. They can also operate on project-specific resources where
+# applicable (e.g., cleaning up blacklists)
+SYSTEM_ADMIN = 'role:admin and system_scope:all'
+
+# Generic policy check string for read-only access to system-level resources.
+# This persona is useful for someone who needs access for auditing or even
+# support. These uses are also able to view project-specific resources where
+# applicable (e.g., listing all pools)
+SYSTEM_READER = 'role:reader and system_scope:all'
+
+# This check string is reserved for actions that require the highest level of
+# authorization on a project or resources within the project
+PROJECT_ADMIN = 'role:admin and project_id:%(project_id)s'
+
+# This check string is the primary use case for typical end-users, who are
+# working with resources that belong to a project (e.g., creating DNS zones)
+PROJECT_MEMBER = 'role:member and project_id:%(project_id)s'
+
+# This check string should only be used to protect read-only project-specific
+# resources. It should not be used to protect APIs that make writable changes.
+PROJECT_READER = 'role:reader and project_id:%(project_id)s'
+
+# The following are common composite check strings that are useful for
+# protecting APIs designed to operate with multiple scopes
+SYSTEM_ADMIN_OR_PROJECT_MEMBER = (
+    '(' + SYSTEM_ADMIN + ') or (' + PROJECT_MEMBER + ')'
+)
+SYSTEM_OR_PROJECT_READER = (
+    '(' + SYSTEM_READER + ') or (' + PROJECT_READER + ')'
+)
+
 rules = [
     policy.RuleDefault(
         name="admin",
