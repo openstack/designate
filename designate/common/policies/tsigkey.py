@@ -13,36 +13,72 @@
 #    under the License.
 
 
+from oslo_log import versionutils
 from oslo_policy import policy
 
 from designate.common.policies import base
 
+DEPERCATED_REASON = """
+The tsigkey API now supports system scope and default roles.
+"""
+
+deprecated_create_tsigkey = policy.DeprecatedRule(
+    name="create_tsigkey",
+    check_str=base.RULE_ADMIN
+)
+deprecated_find_tsigkeys = policy.DeprecatedRule(
+    name="find_tsigkeys",
+    check_str=base.RULE_ADMIN
+)
+deprecated_get_tsigkey = policy.DeprecatedRule(
+    name="get_tsigkey",
+    check_str=base.RULE_ADMIN
+)
+deprecated_update_tsigkey = policy.DeprecatedRule(
+    name="update_tsigkey",
+    check_str=base.RULE_ADMIN
+)
+deprecated_delete_tsigkey = policy.DeprecatedRule(
+    name="delete_tsigkey",
+    check_str=base.RULE_ADMIN
+)
+
+
 rules = [
     policy.DocumentedRuleDefault(
         name="create_tsigkey",
-        check_str=base.RULE_ADMIN,
+        check_str=base.SYSTEM_ADMIN,
+        scope_types=['system'],
         description="Create Tsigkey",
         operations=[
             {
                 'path': '/v2/tsigkeys',
                 'method': 'POST'
             }
-        ]
+        ],
+        deprecated_rule=deprecated_create_tsigkey,
+        deprecated_reason=DEPERCATED_REASON,
+        deprecated_since=versionutils.deprecated.WALLABY
     ),
     policy.DocumentedRuleDefault(
         name="find_tsigkeys",
-        check_str=base.RULE_ADMIN,
+        check_str=base.SYSTEM_READER,
+        scope_types=['system'],
         description="List Tsigkeys",
         operations=[
             {
                 'path': '/v2/tsigkeys',
                 'method': 'GET'
             }
-        ]
+        ],
+        deprecated_rule=deprecated_find_tsigkeys,
+        deprecated_reason=DEPERCATED_REASON,
+        deprecated_since=versionutils.deprecated.WALLABY
     ),
     policy.DocumentedRuleDefault(
         name="get_tsigkey",
-        check_str=base.RULE_ADMIN,
+        check_str=base.SYSTEM_READER,
+        scope_types=['system'],
         description="Show a Tsigkey",
         operations=[
             {
@@ -52,29 +88,40 @@ rules = [
                 'path': '/v2/tsigkeys/{tsigkey_id}',
                 'method': 'GET'
             }
-        ]
+        ],
+        deprecated_rule=deprecated_get_tsigkey,
+        deprecated_reason=DEPERCATED_REASON,
+        deprecated_since=versionutils.deprecated.WALLABY
     ),
     policy.DocumentedRuleDefault(
         name="update_tsigkey",
-        check_str=base.RULE_ADMIN,
+        check_str=base.SYSTEM_ADMIN,
+        scope_types=['system'],
         description="Update Tsigkey",
         operations=[
             {
                 'path': '/v2/tsigkeys/{tsigkey_id}',
                 'method': 'PATCH'
             }
-        ]
+        ],
+        deprecated_rule=deprecated_update_tsigkey,
+        deprecated_reason=DEPERCATED_REASON,
+        deprecated_since=versionutils.deprecated.WALLABY
     ),
     policy.DocumentedRuleDefault(
         name="delete_tsigkey",
-        check_str=base.RULE_ADMIN,
+        check_str=base.SYSTEM_ADMIN,
+        scope_types=['system'],
         description="Delete a Tsigkey",
         operations=[
             {
                 'path': '/v2/tsigkeys/{tsigkey_id}',
                 'method': 'DELETE'
             }
-        ]
+        ],
+        deprecated_rule=deprecated_delete_tsigkey,
+        deprecated_reason=DEPERCATED_REASON,
+        deprecated_since=versionutils.deprecated.WALLABY
     )
 ]
 
