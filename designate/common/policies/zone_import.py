@@ -13,66 +13,112 @@
 #    under the License.
 
 
+from oslo_log import versionutils
 from oslo_policy import policy
 
 from designate.common.policies import base
+
+DEPRECATED_REASON = """
+The zone import API now supports system scope and default roles.
+"""
+
+deprecated_create_zone_import = policy.DeprecatedRule(
+    name="create_zone_import",
+    check_str=base.RULE_ADMIN_OR_OWNER
+)
+deprecated_find_zone_imports = policy.DeprecatedRule(
+    name="find_zone_imports",
+    check_str=base.RULE_ADMIN_OR_OWNER
+)
+deprecated_get_zone_import = policy.DeprecatedRule(
+    name="get_zone_import",
+    check_str=base.RULE_ADMIN_OR_OWNER
+)
+deprecated_update_zone_import = policy.DeprecatedRule(
+    name="update_zone_import",
+    check_str=base.RULE_ADMIN_OR_OWNER
+)
+deprecated_delete_zone_import = policy.DeprecatedRule(
+    name="delete_zone_import",
+    check_str=base.RULE_ADMIN_OR_OWNER
+)
 
 
 rules = [
     policy.DocumentedRuleDefault(
         name="create_zone_import",
-        check_str=base.RULE_ADMIN_OR_OWNER,
+        check_str=base.SYSTEM_ADMIN_OR_PROJECT_MEMBER,
+        scope_types=['system', 'project'],
         description="Create Zone Import",
         operations=[
             {
                 'path': '/v2/zones/tasks/imports',
                 'method': 'POST'
             }
-        ]
+        ],
+        deprecated_rule=deprecated_create_zone_import,
+        deprecated_reason=DEPRECATED_REASON,
+        deprecated_since=versionutils.deprecated.WALLABY
     ),
     policy.DocumentedRuleDefault(
         name="find_zone_imports",
-        check_str=base.RULE_ADMIN_OR_OWNER,
+        check_str=base.SYSTEM_OR_PROJECT_READER,
+        scope_types=['system', 'project'],
         description="List all Zone Imports",
         operations=[
             {
                 'path': '/v2/zones/tasks/imports',
                 'method': 'GET'
             }
-        ]
+        ],
+        deprecated_rule=deprecated_find_zone_imports,
+        deprecated_reason=DEPRECATED_REASON,
+        deprecated_since=versionutils.deprecated.WALLABY
     ),
     policy.DocumentedRuleDefault(
         name="get_zone_import",
-        check_str=base.RULE_ADMIN_OR_OWNER,
+        check_str=base.SYSTEM_OR_PROJECT_READER,
+        scope_types=['system', 'project'],
         description="Get Zone Imports",
         operations=[
             {
                 'path': '/v2/zones/tasks/imports/{zone_import_id}',
                 'method': 'GET'
             }
-        ]
+        ],
+        deprecated_rule=deprecated_get_zone_import,
+        deprecated_reason=DEPRECATED_REASON,
+        deprecated_since=versionutils.deprecated.WALLABY
     ),
     policy.DocumentedRuleDefault(
         name="update_zone_import",
-        check_str=base.RULE_ADMIN_OR_OWNER,
+        check_str=base.SYSTEM_ADMIN_OR_PROJECT_MEMBER,
+        scope_types=['system', 'project'],
         description="Update Zone Imports",
         operations=[
             {
                 'path': '/v2/zones/tasks/imports',
                 'method': 'POST'
             }
-        ]
+        ],
+        deprecated_rule=deprecated_update_zone_import,
+        deprecated_reason=DEPRECATED_REASON,
+        deprecated_since=versionutils.deprecated.WALLABY
     ),
     policy.DocumentedRuleDefault(
         name="delete_zone_import",
-        check_str=base.RULE_ADMIN_OR_OWNER,
+        check_str=base.SYSTEM_ADMIN_OR_PROJECT_MEMBER,
+        scope_types=['system', 'project'],
         description="Delete a Zone Import",
         operations=[
             {
                 'path': '/v2/zones/tasks/imports/{zone_import_id}',
                 'method': 'GET'
             }
-        ]
+        ],
+        deprecated_rule=deprecated_delete_zone_import,
+        deprecated_reason=DEPRECATED_REASON,
+        deprecated_since=versionutils.deprecated.WALLABY
     )
 ]
 
