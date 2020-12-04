@@ -21,6 +21,7 @@ It is used via a single directive in the .rst file
   .. support_matrix::
 
 """
+import configparser as config_parser
 import os
 import sys
 
@@ -28,8 +29,6 @@ from docutils import nodes
 from docutils.parsers import rst
 from sphinx.util import logging
 from sphinx.util.osutil import copyfile
-import six
-import six.moves.configparser as config_parser
 
 from designate.backend.base import Backend
 from designate.backend.agent_backend.base import AgentBackend
@@ -83,7 +82,7 @@ class SupportMatrixBackend(object):
 class SupportMatrixDirective(rst.Directive):
 
     option_spec = {
-        'support-matrix': six.text_type,
+        'support-matrix': str,
     }
 
     def run(self):
@@ -274,7 +273,7 @@ class SupportMatrixDirective(rst.Directive):
         content.append(detailstitle)
         content.append(nodes.paragraph())
 
-        for key in six.iterkeys(matrix.backends):
+        for key in matrix.backends.keys():
             content.append(
                 nodes.subtitle(text=matrix.backends[key].title))
             content.append(
@@ -378,7 +377,7 @@ class SupportMatrixDirective(rst.Directive):
         summaryhead.append(header)
 
         grades = matrix.grades
-        impls = list(six.iterkeys(matrix.backends))
+        impls = list(matrix.backends.keys())
         impls.sort()
         for grade in grades:
             for backend in impls:

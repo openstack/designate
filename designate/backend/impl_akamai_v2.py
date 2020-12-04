@@ -15,11 +15,11 @@
 # under the License.
 
 import time
+from urllib import parse as urlparse
 
 import requests
 from akamai import edgegrid
 from oslo_log import log as logging
-import six.moves.urllib.parse as urlparse
 
 from designate import exceptions
 from designate.backend import base

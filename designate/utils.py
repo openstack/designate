@@ -18,8 +18,8 @@ import functools
 import inspect
 import os
 import socket
+import sys
 
-import six
 import pkg_resources
 from jinja2 import Template
 from oslo_config import cfg
@@ -273,7 +273,7 @@ def get_paging_params(context, params, sort_keys):
     sort_dir = params.pop('sort_dir', None)
     max_limit = cfg.CONF['service:api'].max_limit_v2
 
-    if isinstance(limit, six.string_types) and limit.lower() == "max":
+    if isinstance(limit, str) and limit.lower() == "max":
         # Support for retrieving the max results at once. If set to "max",
         # the configured max limit will be used.
         limit = max_limit
@@ -287,7 +287,7 @@ def get_paging_params(context, params, sort_keys):
                                  '%(max)s' % {'max': max_limit})
         try:
             int_limit = int(limit)
-            if int_limit <= 0 or int_limit > six.MAXSIZE:
+            if int_limit <= 0 or int_limit > sys.maxsize:
                 raise exceptions.InvalidLimit(invalid_limit_message)
         # This exception is raised for non ints when int(limit) is called
         except ValueError:

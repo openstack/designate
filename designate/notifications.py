@@ -19,7 +19,6 @@ import abc
 
 from oslo_config import cfg
 from oslo_log import log as logging
-import six
 
 import designate.conf
 from designate.plugin import DriverPlugin
@@ -152,7 +151,7 @@ class Audit(NotificationPlugin):
                         # Just in case something odd makes it here
                         if any(not isinstance(val,
                                               (int, float, bool,
-                                               six.string_types, type(None)))
+                                               str, type(None)))
                                for val in (old_value, new_value)):
                             LOG.warning("Nulling notification values after "
                                         "unexpected values (%s, %s)",

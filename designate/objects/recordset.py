@@ -17,7 +17,6 @@ from copy import deepcopy
 
 from oslo_config import cfg
 from oslo_log import log
-import six
 from oslo_versionedobjects import exception as ovo_exc
 
 from designate import exceptions
@@ -192,7 +191,7 @@ class RecordSet(base.DesignateObject, base.DictObjectMixin,
 
             except Exception as e:
                 error_message = ('Provided object is not valid. Got a %s error'
-                    ' with message %s' % (type(e).__name__, six.text_type(e)))
+                    ' with message %s' % (type(e).__name__, str(e)))
                 raise exceptions.InvalidObject(error_message)
 
             else:

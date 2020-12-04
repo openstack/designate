@@ -14,7 +14,6 @@
 import datetime
 
 from oslo_log import log
-import six
 from oslo_versionedobjects import fields
 
 from designate import objects
@@ -43,8 +42,7 @@ class DesignateObjectAdapterMetaclass(type):
             )
 
 
-@six.add_metaclass(DesignateObjectAdapterMetaclass)
-class DesignateAdapter(object):
+class DesignateAdapter(object, metaclass=DesignateObjectAdapterMetaclass):
     """docstring for DesignateObjectAdapter"""
 
     ADAPTER_OBJECT = objects.DesignateObject
@@ -66,7 +64,7 @@ class DesignateAdapter(object):
         try:
             return cls._adapter_classes[key]
         except KeyError as e:
-            keys = six.text_type(e).split(':')
+            keys = str(e).split(':')
             msg = "Adapter for %(object)s to format %(format)s not found" % {
                 "object": keys[1],
                 "format": keys[0]
@@ -196,7 +194,7 @@ class DesignateAdapter(object):
                 })
             error_message = (u'Provided object is not valid. '
                              u'Got a TypeError with message {}'.format(
-                                                            six.text_type(e)))
+                                                            str(e)))
             raise exceptions.InvalidObject(error_message)
 
         except AttributeError as e:
@@ -208,7 +206,7 @@ class DesignateAdapter(object):
                 })
             error_message = (u'Provided object is not valid. '
                              u'Got an AttributeError with message {}'.format(
-                                                            six.text_type(e)))
+                                                            str(e)))
             raise exceptions.InvalidObject(error_message)
 
         except exceptions.InvalidObject:
@@ -229,7 +227,7 @@ class DesignateAdapter(object):
                 })
             error_message = (u'Provided object is not valid. '
                              u'Got a {} error with message {}'.format(
-                                        type(e).__name__, six.text_type(e)))
+                                        type(e).__name__, str(e)))
             raise exceptions.InvalidObject(error_message)
 
     @classmethod

@@ -16,7 +16,6 @@
 import eventlet.patcher
 from oslo_config import cfg
 from oslo_log import log as logging
-import six
 
 from designate import exceptions
 from designate.plugin import DriverPlugin
@@ -142,6 +141,6 @@ class NetworkAPI(DriverPlugin):
         Get the name for the address
         """
         name = reversename.from_address(address).to_text()
-        if six.PY3 and isinstance(name, bytes):
+        if isinstance(name, bytes):
             name = name.decode('utf-8')
         return name

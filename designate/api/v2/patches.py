@@ -13,7 +13,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import six
 from oslo_serialization import jsonutils
 import pecan.core
 
@@ -46,4 +45,4 @@ class Request(pecan.core.Request):
             if not self.body:
                 raise exceptions.EmptyRequestBody('Request Body is empty')
             else:
-                raise exceptions.InvalidJson(six.text_type(e))
+                raise exceptions.InvalidJson(str(e))

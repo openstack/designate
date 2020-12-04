@@ -12,11 +12,12 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+from urllib import parse
+
 from oslo_config import cfg
 from oslo_log import log
 from oslo_serialization import jsonutils
 from oslo_utils import strutils
-from six.moves.urllib import parse
 import requests
 
 from designate.backend.impl_infoblox import ibexceptions as exc

@@ -13,7 +13,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import six
 
 
 class DesignateException(Exception):
@@ -29,7 +28,7 @@ class DesignateException(Exception):
 
         super(DesignateException, self).__init__(*args, **kwargs)
 
-        if args and isinstance(args[0], six.string_types):
+        if args and isinstance(args[0], str):
             self.error_message = args[0]
 
 

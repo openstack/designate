@@ -23,8 +23,8 @@ import pycodestyle
 # D704: Found import of %s. This oslo library has been graduated!
 # D705: timeutils.utcnow() must be used instead of datetime.%s()
 # D706: Don't translate debug level logs
-# D707: basestring is not Python3-compatible, use six.string_types instead.
-# D708: Do not use xrange. Use range, or six.moves.range for large loops.
+# D707: basestring is not Python3-compatible, use str instead.
+# D708: Do not use xrange. Use range for large loops.
 # D709: LOG.audit is deprecated, please use LOG.info!
 
 UNDERSCORE_IMPORT_FILES = []
@@ -129,14 +129,14 @@ def use_timeutils_utcnow(logical_line, filename):
 def check_no_basestring(logical_line):
     if re.search(r"\bbasestring\b", logical_line):
         msg = ("D707: basestring is not Python3-compatible, use "
-               "six.string_types instead.")
+               "str instead.")
         yield(0, msg)
 
 
 @core.flake8ext
 def check_python3_xrange(logical_line):
     if re.search(r"\bxrange\s*\(", logical_line):
-        yield(0, "D708: Do not use xrange. Use range, or six.moves.range for "
+        yield(0, "D708: Do not use xrange. Use range for "
                  "large loops.")
 
 

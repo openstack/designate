@@ -12,7 +12,6 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-import six
 from oslo_log import log as logging
 from oslo_versionedobjects import exception
 from oslo_utils import excutils
@@ -133,7 +132,7 @@ class DesignateObject(base.VersionedObject):
         if not (name[0:5] == '_obj_' or
                 name[0:7] == '_change' or
                 name == '_context' or
-                name in list(six.iterkeys(self.fields)) or
+                name in list(self.fields.keys()) or
                 name == 'FIELDS' or
                 name == 'VERSION' or
                 name == 'fields'):
@@ -245,7 +244,7 @@ class DesignateObject(base.VersionedObject):
 
     def obj_get_original_value(self, field):
         """Returns the original value of a field."""
-        if field in list(six.iterkeys(self._obj_original_values)):
+        if field in list(self._obj_original_values.keys()):
             return self._obj_original_values[field]
         elif self.obj_attr_is_set(field):
             return getattr(self, field)
@@ -487,7 +486,7 @@ class PagedListObjectMixin(object):
 
 class DesignateRegistry(base.VersionedObjectRegistry):
     def registration_hook(self, cls, index):
-        for name, field in six.iteritems(cls.fields):
+        for name, field in cls.fields.items():
             attr = get_dict_attr(cls, name)
 
             def getter(self, name=name):
@@ -511,7 +510,7 @@ class DesignateRegistry(base.VersionedObjectRegistry):
                 # after OVO migration completed.
                 if (self.obj_attr_is_set(name) and
                         value != getattr(self, name) and
-                        name not in list(six.iterkeys(self._obj_original_values))):  # noqa
+                        name not in list(self._obj_original_values.keys())):  # noqa
                     self._obj_original_values[name] = getattr(self, name)
                 try:
                     return setattr(self, attrname, field_value)

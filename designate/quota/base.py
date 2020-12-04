@@ -15,15 +15,13 @@
 # under the License.
 import abc
 
-import six
 from oslo_config import cfg
 
 from designate import exceptions
 from designate.plugin import DriverPlugin
 
 
-@six.add_metaclass(abc.ABCMeta)
-class Quota(DriverPlugin):
+class Quota(DriverPlugin, metaclass=abc.ABCMeta):
     """Base class for quota plugins"""
     __plugin_ns__ = 'designate.quota'
     __plugin_type__ = 'quota'

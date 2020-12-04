@@ -11,7 +11,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import six
 from oslo_log import log as logging
 from oslo_utils.strutils import bool_from_string
 
@@ -81,7 +80,7 @@ class AttributeFilter(base.Filter):
                 return True
 
             # Check if the keys requested exist in this pool
-            if not {key for key in six.iterkeys(pool_attributes)}.issuperset(
+            if not {key for key in pool_attributes.keys()}.issuperset(
                     zone_attributes):
                 msg = "%(pool)s did not match list of requested attribute "\
                       "keys - removing from list. Requested: %(r_key)s. Pool:"\
@@ -98,7 +97,7 @@ class AttributeFilter(base.Filter):
                 # Missing required keys - remove from the list
                 return False
 
-            for key in six.iterkeys(zone_attributes):
+            for key in zone_attributes.keys():
                 LOG.debug("Checking value of %s for %s", key, pool)
 
                 pool_attr = bool_from_string(pool_attributes[key],

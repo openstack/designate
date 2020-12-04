@@ -26,7 +26,6 @@ import random
 from random import SystemRandom
 import time
 
-import six
 from eventlet import tpool
 from dns import zone as dnszone
 from dns import exception as dnsexception
@@ -2180,7 +2179,7 @@ class Service(service.RPCService):
         if 'ptrdname' in values.obj_what_changed() and\
                 values['ptrdname'] is None:
             self._unset_floatingip_reverse(context, region, floatingip_id)
-        elif isinstance(values['ptrdname'], six.string_types):
+        elif isinstance(values['ptrdname'], str):
             return self._set_floatingip_reverse(
                 context, region, floatingip_id, values)
 
@@ -2742,8 +2741,6 @@ class Service(service.RPCService):
 
         def _import(self, context, zone_import, request_body):
             # Dnspython needs a str instead of a unicode object
-            if six.PY2:
-                request_body = str(request_body)
             zone = None
             try:
                 dnspython_zone = dnszone.from_text(
@@ -2777,7 +2774,7 @@ class Service(service.RPCService):
             except Exception as e:
                 LOG.exception('An undefined error occurred during zone import')
                 msg = 'An undefined error occurred. %s'\
-                      % six.text_type(e)[:130]
+                      % str(e)[:130]
                 zone_import.message = msg
                 zone_import.status = 'ERROR'
 
@@ -2800,12 +2797,12 @@ class Service(service.RPCService):
                 zone_import.message = 'Duplicate zone.'
             except exceptions.InvalidTTL as e:
                 zone_import.status = 'ERROR'
-                zone_import.message = six.text_type(e)
+                zone_import.message = str(e)
             except Exception as e:
                 LOG.exception('An undefined error occurred during zone '
                               'import creation')
                 msg = 'An undefined error occurred. %s'\
-                      % six.text_type(e)[:130]
+                      % str(e)[:130]
                 zone_import.message = msg
                 zone_import.status = 'ERROR'
 

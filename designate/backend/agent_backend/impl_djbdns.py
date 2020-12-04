@@ -46,7 +46,6 @@ import tempfile
 
 import dns
 import dns.resolver
-import six
 from oslo_concurrency import lockutils
 from oslo_concurrency.processutils import ProcessExecutionError
 from oslo_config import cfg
@@ -274,7 +273,7 @@ class DjbdnsBackend(base.AgentBackend):
         :raises: exceptions.Backend on error
         """
         zone_name = zone.origin.to_text(omit_final_dot=True)
-        if six.PY3 and isinstance(zone_name, bytes):
+        if isinstance(zone_name, bytes):
             zone_name = zone_name.decode('utf-8')
         LOG.debug("Creating %s", zone_name)
         # The zone might be already in place due to a race condition between
@@ -295,7 +294,7 @@ class DjbdnsBackend(base.AgentBackend):
         :raises: exceptions.Backend on error
         """
         zone_name = zone.origin.to_text(omit_final_dot=True)
-        if six.PY3 and isinstance(zone_name, bytes):
+        if isinstance(zone_name, bytes):
             zone_name = zone_name.decode('utf-8')
         LOG.debug("Triggering AXFR from MiniDNS to Djbdns for %s", zone_name)
         self._perform_axfr_from_minidns(zone_name)
