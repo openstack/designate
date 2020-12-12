@@ -17,20 +17,20 @@ oslo.middleware>=3.31.0 # Apache-2.0
 oslo.log>=4.3.0 # Apache-2.0
 oslo.reports>=1.18.0 # Apache-2.0
 oslo.rootwrap>=5.8.0 # Apache-2.0
-oslo.serialization!=2.19.1,>=2.18.0 # Apache-2.0
-oslo.service!=1.28.1,>=1.24.0 # Apache-2.0
+oslo.serialization>=2.25.0 # Apache-2.0
+oslo.service>=1.31.0 # Apache-2.0
 oslo.upgradecheck>=0.1.0
-oslo.utils>=3.33.0 # Apache-2.0
+oslo.utils>=3.37.0 # Apache-2.0
 oslo.versionedobjects>=1.31.2 # Apache-2.0
 Paste>=2.0.2 # MIT
 PasteDeploy>=1.5.0 # MIT
-pbr!=2.1.0,>=2.0.0 # Apache-2.0
+pbr>=3.1.1 # Apache-2.0
 pecan!=1.0.2,!=1.0.3,!=1.0.4,!=1.2,>=1.0.0 # BSD
-python-designateclient>=2.7.0 # Apache-2.0
+python-designateclient>=2.12.0 # Apache-2.0
 python-neutronclient>=6.7.0 # Apache-2.0
 requests>=2.14.2 # Apache-2.0
 tenacity>=6.0.0 # Apache-2.0
-six>=1.10.0 # MIT
+six>=1.11.0 # MIT
 SQLAlchemy>=1.2.19 # MIT
 sqlalchemy-migrate>=0.11.0 # Apache-2.0
 stevedore>=1.20.0 # Apache-2.0
@@ -38,14 +38,14 @@ suds-jurko>=0.6 # LGPLv3+
 WebOb>=1.7.1 # MIT
 dnspython>=1.16.0  # http://www.dnspython.org/LICENSE
 oslo.db>=8.3.0 # Apache-2.0
-oslo.i18n>=3.15.3 # Apache-2.0
-oslo.context>=2.19.2 # Apache-2.0
+oslo.i18n>=3.20.0 # Apache-2.0
+oslo.context>=2.22.0 # Apache-2.0
 oslo.policy>=2.1.0 # Apache-2.0
 Werkzeug>=0.9 # BSD License
 python-memcached>=1.56 # PSF
 tooz>=1.58.0 # Apache-2.0
-debtcollector>=1.2.0 # Apache-2.0
-os-win>=3.0.0 # Apache-2.0
+debtcollector>=1.19.0 # Apache-2.0
+os-win>=4.1.0 # Apache-2.0
 monasca-statsd>=1.4.0 # Apache-2.0
 futurist>=1.2.0 # Apache-2.0
 edgegrid-python>=1.1.1 # Apache-2.0
