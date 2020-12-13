@@ -89,7 +89,7 @@ Ensure that "policy_file" under the [default] section is set:
 
 .. code-block:: ini
 
-    policy_file = C:\\etc\\designate\\policy.json
+    policy_file = C:\\etc\\designate\\policy.yaml
 
 Start the designate agent using
 (Python 2.7 was installed in the default location C:\\Python27):

@@ -35,7 +35,8 @@ CONF = cfg.CONF
 @mock.patch.object(service.rpcapi.CentralAPI, 'get_instance', mock.Mock())
 class ProducerTest(oslotest.base.BaseTestCase):
     def setUp(self):
-        self.useFixture(cfg_fixture.Config(CONF))
+        conf = self.useFixture(cfg_fixture.Config(CONF))
+        conf.conf([], project='designate')
 
         service.CONF = RoObject({
             'service:producer': RoObject({

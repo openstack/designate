@@ -37,8 +37,8 @@ class TestService(oslotest.base.BaseTestCase):
         super(TestService, self).setUp()
         self.stdlog = fixtures.StandardLogging()
         self.useFixture(self.stdlog)
-        self.useFixture(cfg_fixture.Config(CONF))
-
+        conf = self.useFixture(cfg_fixture.Config(CONF))
+        conf.conf([], project='designate')
         self.context = mock.Mock()
         self.zone = mock.Mock()
         self.service = service.Service()

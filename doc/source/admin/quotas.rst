@@ -115,7 +115,7 @@ Per-Tenant via API
 These quotas can be edited via API on a per-tenant basis. An administrator
 can edit quotas for any tenant, but they must supply the
 ``X-Auth-All-Projects`` header, and have permission to use it, they'll also
-need the ``set-quotas`` permission in ``policy.json``. For example, an
+need the ``set-quotas`` permission in ``policy.yaml``. For example, an
 admin setting the zones quota for tenant X would look like:
 
 .. code-block:: http
