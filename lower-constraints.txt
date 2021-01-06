@@ -32,7 +32,7 @@ eventlet==0.18.2
 extras==1.0.0
 fasteners==0.14.1
 fixtures==3.0.0
-flake8==2.5.5
+flake8==2.6.0
 Flask==0.10
 funcparserlib==0.3.6
 future==0.16.0
@@ -40,7 +40,7 @@ futurist==1.2.0
 gitdb2==2.0.3
 GitPython==2.1.8
 greenlet==0.4.10
-hacking==0.12.0
+hacking==1.1.0
 idna==2.6
 imagesize==1.0.0
 iso8601==0.1.12
@@ -118,7 +118,8 @@ python-dateutil==2.7.0
 python-designateclient==2.7.0
 python-editor==1.0.3
 python-keystoneclient==3.15.0
-python-memcached==1.56
+python-memcached==1.56;python_version=='2.7'
+python-memcached==1.58;python_version>='3.4'
 python-mimeparse==1.6.0
 python-neutronclient==6.7.0
 python-subunit==1.2.0
