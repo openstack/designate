@@ -16,17 +16,44 @@
 
 """Session Handling for SQLAlchemy backend."""
 
+import sqlalchemy
+import threading
+
 from oslo_config import cfg
 from oslo_db.sqlalchemy import session
 from oslo_log import log as logging
+from oslo_utils import importutils
 
+osprofiler_sqlalchemy = importutils.try_import('osprofiler.sqlalchemy')
 
 LOG = logging.getLogger(__name__)
 
 CONF = cfg.CONF
+try:
+    CONF.import_group("profiler", "designate.service")
+except cfg.NoSuchGroupError:
+    pass
 
 
 _FACADES = {}
+_LOCK = threading.Lock()
+
+
+def add_db_tracing(cache_name):
+    global _LOCK
+
+    if not osprofiler_sqlalchemy:
+        return
+    if not hasattr(CONF, 'profiler'):
+        return
+    if not CONF.profiler.enabled or not CONF.profiler.trace_sqlalchemy:
+        return
+    with _LOCK:
+        osprofiler_sqlalchemy.add_tracing(
+            sqlalchemy,
+            _FACADES[cache_name].get_engine(),
+            "db"
+        )
 
 
 def _create_facade_lazily(cfg_group, connection=None, discriminator=None):
@@ -39,6 +66,7 @@ def _create_facade_lazily(cfg_group, connection=None, discriminator=None):
             connection,
             **conf
         )
+        add_db_tracing(cache_name)
 
     return _FACADES[cache_name]
 

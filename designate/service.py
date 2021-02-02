@@ -30,6 +30,7 @@ from oslo_service import sslutils
 from oslo_service import wsgi
 from oslo_utils import netutils
 
+from designate.common import profiler
 import designate.conf
 from designate.i18n import _
 from designate.metrics import metrics
@@ -53,6 +54,9 @@ class Service(service.Service):
 
         if not rpc.initialized():
             rpc.init(CONF)
+
+        profiler.setup_profiler((''.join(('designate-', self.name))),
+                                self.host)
 
     def start(self):
         LOG.info('Starting %(name)s service (version: %(version)s)',

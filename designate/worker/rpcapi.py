@@ -17,6 +17,7 @@ from oslo_config import cfg
 from oslo_log import log as logging
 import oslo_messaging as messaging
 
+from designate.common import profiler
 from designate.loggingutils import rpc_logging
 from designate import rpc
 
@@ -25,6 +26,7 @@ LOG = logging.getLogger(__name__)
 WORKER_API = None
 
 
+@profiler.trace_cls("rpc")
 @rpc_logging(LOG, 'worker')
 class WorkerAPI(object):
     """
