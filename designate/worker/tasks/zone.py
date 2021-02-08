@@ -771,7 +771,8 @@ class UpdateStatus(base.Task):
     def __init__(self, executor, context, zone):
         super().__init__(executor)
         self.zone = zone
-        self.context = context
+        # use elevated context to be able to update the zone after transfer
+        self.context = context.elevated(all_tenants=True)
 
     def __call__(self):
         LOG.debug(
