@@ -70,7 +70,8 @@
       - name: openstack/designate-tempest-plugin
         override-checkout: 0.7.0
       - openstack/python-designateclient
-      - openstack/tempest
+      - name: openstack/tempest
+        override-checkout: stein-last
     run: playbooks/legacy/designate-devstack-base/run.yaml
     post-run: playbooks/legacy/designate-devstack-base/post.yaml
     timeout: 4200
@@ -180,7 +181,6 @@
     templates:
       - designate-devstack-jobs
       - openstack-cover-jobs
-      - openstack-lower-constraints-jobs
       - openstack-python-jobs
       - openstack-python35-jobs
       - openstack-python36-jobs
