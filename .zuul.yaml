@@ -153,7 +153,6 @@
     templates:
       - designate-devstack-jobs
       - openstack-cover-jobs
-      - openstack-lower-constraints-jobs
       - openstack-python-jobs
       - openstack-python3-train-jobs
       - publish-openstack-docs-pti
