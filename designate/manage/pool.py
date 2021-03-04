@@ -23,6 +23,7 @@ import oslo_messaging as messaging
 from designate import exceptions
 from designate import rpc
 from designate import objects
+from designate import policy
 from designate.central import rpcapi as central_rpcapi
 from designate.manage import base
 from designate.objects.adapters import DesignateAdapter
@@ -42,6 +43,30 @@ class PoolCommands(base.Commands):
     def _startup(self):
         rpc.init(cfg.CONF)
         self.central_api = central_rpcapi.CentralAPI()
+
+    def _update_zones(self, pool):
+        LOG.info("Updating zone masters for pool: {}".format(pool.id))
+
+        def __get_masters_from_pool(pool):
+            masters = []
+            for target in pool.targets:
+                for master in target.get("masters", []):
+                    masters.append({'host': master['host'],
+                                    'port': master['port']})
+            return masters
+
+        policy.init()
+
+        self.context.all_tenants = True
+        zones = self.central_api.find_zones(
+            self.context,
+            criterion={'pool_id': pool.id})
+
+        for zone in zones:
+            zone.masters = objects.ZoneMasterList().from_list(
+                __get_masters_from_pool(pool))
+            self.central_api.update_zone(self.context,
+                                         zone)
 
     @base.args('--file', help='The path to the file the yaml output should be '
                'written to',
@@ -138,6 +163,9 @@ class PoolCommands(base.Commands):
                     output_msg.append("Update Pool: %s" % pool)
                 else:
                     pool = self.central_api.update_pool(self.context, pool)
+                    # Bug: Changes in the pool targets should trigger a
+                    # zone masters update LP: #1879798.
+                    self._update_zones(pool)
 
             except exceptions.PoolNotFound:
                 pool = DesignateAdapter.parse('YAML', xpool, objects.Pool())

@@ -66,6 +66,18 @@ class Bind9BackendTestCase(designate.tests.TestCase):
         )
 
     @mock.patch.object(impl_bind9.Bind9Backend, '_execute_rndc')
+    def test_update_zone(self, mock_execute):
+        with fixtures.random_seed(0):
+            self.backend.update_zone(self.admin_context, self.zone)
+
+        mock_execute.assert_called_with(
+            [
+                'modzone',
+                'example.com  { type slave; masters { 192.168.1.1 port 53; 192.168.1.2 port 35;}; file "slave.example.com.cca7908b-dad4-4c50-adba-fb67d4c556e8"; };'  # noqa
+            ]
+        )
+
+    @mock.patch.object(impl_bind9.Bind9Backend, '_execute_rndc')
     def test_create_zone_with_view(self, mock_execute):
         self.target['options'].append(
             {'key': 'view', 'value': 'guest'},
