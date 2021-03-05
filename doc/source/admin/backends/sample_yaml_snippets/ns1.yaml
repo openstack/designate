@@ -1,0 +1,25 @@
+  targets:
+    - type: ns1
+      description: NS1 DNS Server
+
+      # List out the designate-mdns servers from which NS1 servers should
+      # request zone transfers (AXFRs) from.
+      masters:
+        - host: 192.0.2.1
+          port: 5354
+
+      # NS1 Configuration options
+      options:
+        #NS1 XFR container ip and port
+        host: 192.0.2.2
+        port: 5302
+        #NS1 API enpoint IP address or name (Core container). Enter only base address or name.
+        #Plugin will generate full api address, e.g. https://192.0.2.2/v1/zones/<zone name>
+        api_endpoint: 192.0.2.2
+        #NS1 API key
+        api_token: changeme
+        # If a tsigkey is needed, uncomment the line below and insert the key name, algorithm and value
+        # NOTE: TSIG key has to be set manually
+        #tsigkey_name: testkey
+        #tsigkey_hash: hmac-sha512
+        #tsigkey_value: 4EJz00m4ZWe005HjLiXRedJbSnCUx5Dt+4wVYsBweG5HKAV6cqSVJ/oem/6mLgDNFAlLP3Jg0npbg1SkP7RMDg==

@@ -1,0 +1,107 @@
+# Configure the NS1 backend
+
+# Requirements:
+# A working NS1 managed DNS / DDI environment is needed to use this DevStack plugin.
+
+# Enable with:
+# DESIGNATE_BACKEND_DRIVER=ns1
+
+# Dependencies:
+# ``functions`` file
+# ``designate`` configuration
+
+# install_designate_backend - install any external requirements
+# configure_designate_backend - make configuration changes, including those to other services
+# init_designate_backend - initialize databases, etc.
+# start_designate_backend - start any external services
+# stop_designate_backend - stop any external services
+# cleanup_designate_backend - remove transient data and cache
+
+# Save trace setting
+DP_NS1_XTRACE=$(set +o | grep xtrace)
+set +o xtrace
+
+# Defaults
+# --------
+
+DESIGNATE_NS1_DNS_IP=${DESIGNATE_NS1_DNS_IP:-172.31.45.104}
+DESIGNATE_NS1_DNS_PORT=${DESIGNATE_NS1_DNS_PORT:-5333}
+DESIGNATE_NS1_XFR_IP=${DESIGNATE_NS1_XFR_IP:-172.31.45.104}
+DESIGNATE_NS1_XFR_PORT=${DESIGNATE_NS1_XFR_PORT:-5400}
+DESIGNATE_NS1_API_IP=${DESIGNATE_NS1_API_IP:-172.31.45.104}
+DESIGNATE_NS1_API_TOKEN=${DESIGNATE_NS1_API_TOKEN:-default}
+
+
+# Entry Points
+# ------------
+
+
+# install_designate_backend - install any external requirements
+function install_designate_backend {
+    if is_ubuntu; then
+        install_package python-dev libxslt1-dev libxslt1.1 libxml2-dev libxml2 libssl-dev
+    elif is_fedora; then
+        install_package python-devel libxslt1-devel libxslt1.1 libxml2-devel libxml2 libssl-devel
+    fi
+}
+
+# configure_designate_backend - make configuration changes, including those to other services
+function configure_designate_backend {
+
+    # Generate Designate pool.yaml file
+    sudo tee $DESIGNATE_CONF_DIR/pools.yaml > /dev/null <<EOF
+---
+- name: default
+  description: DevStack NS1 Pool
+  attributes: {}
+
+  ns_records:
+    - hostname: $DESIGNATE_DEFAULT_NS_RECORD
+      priority: 1
+
+  nameservers:
+    - host: $DESIGNATE_NS1_DNS_IP
+      port: $DESIGNATE_NS1_DNS_PORT
+
+  targets:
+    - type: ns1
+      description: NS1 Managed DNS
+
+      masters:
+        - host: $(ipv6_unquote $DESIGNATE_SERVICE_HOST)
+          port: $DESIGNATE_SERVICE_PORT_MDNS
+
+      options:
+        host: $DESIGNATE_NS1_XFR_IP
+        port: $DESIGNATE_NS1_XFR_PORT
+        api_endpoint: $DESIGNATE_NS1_API_IP
+        api_token: $DESIGNATE_NS1_API_TOKEN
+        # NOTE: TSIG key has to be set manually if it's necessary
+        #tsigkey_name: testkey
+        #tsigkey_hash: hmac-sha512
+        #tsigkey_value: 4EJz00m4ZWe005HjLiXRedJbSnCUx5Dt+4wVYsBweG5HKAV6cqSVJ/oem/6mLgDNFAlLP3Jg0npbg1SkP7RMDg==
+EOF
+}
+
+# init_designate_backend - initialize databases, etc.
+function init_designate_backend {
+    :
+}
+
+# start_designate_backend - start any external services
+function start_designate_backend {
+    :
+}
+
+# stop_designate_backend - stop any external services
+function stop_designate_backend {
+    :
+}
+
+# cleanup_designate_backend - remove transient data and cache
+function cleanup_designate_backend {
+    :
+}
+
+# Restore xtrace
+$DP_NS1_XTRACE
