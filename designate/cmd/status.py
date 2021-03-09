@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from oslo_upgradecheck import common_checks
 from oslo_upgradecheck import upgradecheck
 from sqlalchemy import MetaData, Table, select, func
 
@@ -43,6 +44,9 @@ class Checks(upgradecheck.UpgradeCommands):
 
     _upgrade_checks = ((_('Duplicate service status'),
                         _duplicate_service_status),
+                       (_('Policy File JSON to YAML Migration'),
+                        (common_checks.check_policy_json,
+                         {'conf': designate.conf.CONF})),
                        )
 
 

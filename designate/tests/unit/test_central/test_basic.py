@@ -229,7 +229,7 @@ class CentralBasic(TestCase):
     def setUp(self):
         super(CentralBasic, self).setUp()
         self.CONF = self.useFixture(cfg_fixture.Config(cfg.CONF)).conf
-
+        self.CONF([], project='designate')
         mock_storage = mock.Mock(spec=designate.storage.base.Storage)
 
         pool_list = objects.PoolList.from_list(
@@ -2196,6 +2196,7 @@ class CentralQuotaTest(unittest.TestCase):
     @patch('designate.central.service.storage')
     @patch('designate.central.service.quota')
     def test_zone_record_quota_allows_lowering_value(self, quota, storage):
+        cfg.CONF([], project='designate')
         service = Service()
         service.storage.count_records.return_value = 10
 

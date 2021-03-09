@@ -41,6 +41,7 @@ class TestSinkNotification(oslotest.base.BaseTestCase,
             'allowed_event_types', ['compute.instance.create.end'],
             'handler:fake'
         )
+        CONF([], project='designate')
 
         self.context = mock.Mock()
         self.service = service.Service()

@@ -345,7 +345,7 @@ GMR Example
       policy_default_rule = default
       policy_dirs =
         policy.d
-      policy_file = /etc/designate/policy.json
+      policy_file = /etc/designate/policy.yaml
       pool-manager-topic = pool_manager
       publish_errors = False
       pybasedir = /opt/stack/designate
