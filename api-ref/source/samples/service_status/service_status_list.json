@@ -2,7 +2,7 @@
     "service_statuses": [
         {
             "links": {
-              "self": "http://127.0.0.1:9001/v2/service_status/af91edb5-ede8-453f-af13-feabdd088f9c"
+              "self": "http://127.0.0.1:9001/v2/service_statuses/af91edb5-ede8-453f-af13-feabdd088f9c"
             },
             "hostname": "dns-2.example.com.",
             "status": "UP",
@@ -15,6 +15,6 @@
         }
      ],
      "links": {
-       "self": "http://127.0.0.1:9001/v2/service_status"
+       "self": "http://127.0.0.1:9001/v2/service_statuses"
      }
 }

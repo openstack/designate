@@ -10,7 +10,7 @@ using HTTP.
 List Statuses
 =============
 
-.. rest_method::  GET /v2/service_status
+.. rest_method::  GET /v2/service_statuses
 
 List all Services and statuses.
 

@@ -1,0 +1,6 @@
+---
+fixes:
+  - |
+    Fixed an issue with the API reference using the wrong path for list
+    service statuses. In addition a compatibility workaround was added
+    for the incorrect /v2/service_status path.
