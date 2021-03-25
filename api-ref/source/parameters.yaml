@@ -85,6 +85,13 @@ path_recordset_id:
   required: true
   type: uuid
 
+path_service_id:
+  description: |
+    ID for the service.
+  in: path
+  required: true
+  type: uuid
+
 path_zone_export_id:
   description: |
     ID for this zone export
@@ -392,9 +399,16 @@ blacklist_pattern:
   required: true
   type: string
 
+capabilities:
+  description: |
+    Capabilities for the service.
+  in: body
+  required: true
+  type: dict
+
 created_at:
   description: |
-    Date / Time when resource was created
+    Date / Time when resource was created.
   in: body
   required: true
   type: datestamp
@@ -437,6 +451,20 @@ fptr_ttl:
 fptrd_name:
   description: |
     Domain name for this PTR record
+  in: body
+  required: true
+  type: string
+
+heartbeated_at:
+  description: |
+    The timestamp when the last heartbeat was received.
+  in: body
+  required: true
+  type: datestamp
+
+hostname:
+  description: |
+    The hostname of the host with the service instance.
   in: body
   required: true
   type: string
@@ -613,9 +641,30 @@ resource_id:
   required: true
   type: string
 
+service_name:
+  description: |
+    The name of the Designate service instance.
+  in: body
+  required: true
+  type: string
+
+service_statuses:
+  description: |
+    A list of ``service_statuses`` objects.
+  in: body
+  required: true
+  type: array
+
+stats:
+  description: |
+    Statistics for the service.
+  in: body
+  required: true
+  type: dict
+
 status:
   description: |
-    status of the resource
+    The status of the resource.
   in: body
   required: true
   type: enum
@@ -664,7 +713,7 @@ tsigkey_secret:
 
 updated_at:
   description: |
-    Date / Time when resource last updated
+    Date / Time when resource last updated.
   in: body
   required: false
   type: datestamp
