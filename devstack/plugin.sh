@@ -122,6 +122,11 @@ function configure_designate {
 
     if [[ "$DESIGNATE_WSGI_MODE" == "uwsgi" ]]; then
         write_uwsgi_config "$DESIGNATE_UWSGI_CONF" "$DESIGNATE_UWSGI" "/dns"
+        # We are using the http transport to work around an issue with
+        # broken connections when using the uwsgi protocol of a local socket
+        # See bug: https://github.com/unbit/uwsgi/issues/2368
+        echo 'ProxyPass "/dns" "http://127.0.0.1:60053" retry=0' | sudo tee /etc/apache2/sites-available/designate-api-wsgi.conf
+        iniset $DESIGNATE_UWSGI_CONF uwsgi http-socket 127.0.0.1:60053
     else
         _config_designate_apache_wsgi
     fi

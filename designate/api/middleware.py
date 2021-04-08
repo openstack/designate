@@ -237,6 +237,7 @@ class FaultWrapperMiddleware(base.Middleware):
         try:
             return request.get_response(self.application)
         except exceptions.DesignateException as e:
+            LOG.exception(e)
             # Handle Designate Exceptions
             status = e.error_code if hasattr(e, 'error_code') else 500
 
@@ -256,6 +257,7 @@ class FaultWrapperMiddleware(base.Middleware):
 
             return self._handle_exception(request, e, status, response)
         except messaging.MessagingTimeout as e:
+            LOG.exception(e)
             # Special case for RPC timeout's
             response = {
                 'code': 504,
@@ -264,6 +266,7 @@ class FaultWrapperMiddleware(base.Middleware):
 
             return self._handle_exception(request, e, 504, response)
         except Exception as e:
+            LOG.exception(e)
             # Handle all other exception types
             return self._handle_exception(request, e)
 
