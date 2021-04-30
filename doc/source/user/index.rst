@@ -11,6 +11,7 @@ Contents:
    :maxdepth: 2
 
    manage-zones
+   manage-recordsets
    rest
    manage-ptr-records
    secondary-zones
