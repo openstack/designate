@@ -151,7 +151,7 @@
       - release-notes-jobs-python3
     check:
       jobs:
-        - neutron-tempest-plugin-designate-scenario
+        - neutron-tempest-plugin-designate-scenario-wallaby
     gate:
       queue: designate
     experimental:
