@@ -2816,9 +2816,13 @@ class Service(service.RPCService):
         target = {'tenant_id': context.project_id}
         policy.check('find_zone_imports', context, target)
 
-        criterion = {
-            'task_type': 'IMPORT'
-        }
+        if not criterion:
+            criterion = {
+                'task_type': 'IMPORT'
+            }
+        else:
+            criterion['task_type'] = 'IMPORT'
+
         return self.storage.find_zone_imports(context, criterion, marker,
                                       limit, sort_key, sort_dir)
 
@@ -2885,9 +2889,13 @@ class Service(service.RPCService):
         target = {'tenant_id': context.project_id}
         policy.check('find_zone_exports', context, target)
 
-        criterion = {
-            'task_type': 'EXPORT'
-        }
+        if not criterion:
+            criterion = {
+                'task_type': 'EXPORT'
+            }
+        else:
+            criterion['task_type'] = 'EXPORT'
+
         return self.storage.find_zone_exports(context, criterion, marker,
                                       limit, sort_key, sort_dir)
 
