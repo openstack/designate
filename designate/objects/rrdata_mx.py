@@ -38,6 +38,9 @@ class MX(Record):
         if repr(int(priority)) != priority:
             raise ValueError('Value is not an integer')
 
+        if not exchange.endswith('.'):
+            raise ValueError('Domain %s does not end with a dot' % exchange)
+
         self.priority = int(priority)
         self.exchange = exchange
 
