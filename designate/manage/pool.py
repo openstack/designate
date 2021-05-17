@@ -51,8 +51,13 @@ class PoolCommands(base.Commands):
             masters = []
             for target in pool.targets:
                 for master in target.get("masters", []):
-                    masters.append({'host': master['host'],
-                                    'port': master['port']})
+                    master = {'host': master['host'], 'port': master['port']}
+                    found = False
+                    for existing_master in masters:
+                        if master == existing_master:
+                            found = True
+                    if not found:
+                        masters.append(master)
             return masters
 
         policy.init()
