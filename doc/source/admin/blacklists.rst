@@ -18,16 +18,98 @@
 Blacklisting Domain Names
 =========================
 
-Zone and recordset names can be blacklisted in Designate, disallowing
-the creation of certain names, specified by regular expressions.
+.. note::
 
-The simple use case here could be "I don't want anyone to be able to
-create anything with ``mycompany.com.`` in it!", or maybe disallowing
-subzones on a certain zone. Or simply disallowing the creation of a single
-zone, like ``google.com.``.
+    The blacklist feature will be renamed and moved to
+    denylist in the near future.
 
-If wanted to blacklist ``example.com.`` and all of it's subdomains, we could
-make the following API calls.
+You can prevent users from creating zones with names that match a particular
+regular expression using blacklists. For example, you might use a blacklist to
+prevent users from:
+
+- creating a specific zone.
+- creating zones that contain a certain string,
+- creating subzones of a certain zone.
+
+Managing Blacklists
+-------------------
+
+You can create blacklists using the ``zone blacklist create`` command with
+`System Administrator`_ privileges. For example, to blacklist ``example.com.``
+and all of its subdomains:
+
+.. code-block:: console
+
+  $ openstack zone blacklist create --pattern ".*example.com."
+  +-------------+--------------------------------------+
+  | Field       | Value                                |
+  +-------------+--------------------------------------+
+  | created_at  | 2021-05-27T04:06:42.000000           |
+  | description | None                                 |
+  | id          | 7622e241-8c3d-4c03-a692-8747e3cf2658 |
+  | pattern     | .*example.com.                       |
+  | updated_at  | None                                 |
+  +-------------+--------------------------------------+
+
+If a `Domain or Project Persona`_ attempts to create ``foo.example.com.``, or
+``example.com.``, they encounter an error:
+
+.. code-block:: console
+
+  $ openstack zone create --email admin@example.com example.com.
+  Blacklisted zone name
+  $ openstack zone create --email admin@example.com foo.example.com.
+  Blacklisted zone name
+
+.. note::
+
+   Users who satisfy the ``use_blacklisted_zone`` policy can create zones with
+   names that are on a blacklist. By default, the only users who have this
+   override are `System Administrators`_.
+
+You can update a blacklist using ``zone blacklist set`` to modify its pattern
+or description;
+
+.. code-block:: console
+
+  $ openstack zone blacklist set 81fbfe02-6bf9-4812-a40e-1522ab6862ca --pattern ".*web.example.com"
+  +-------------+--------------------------------------+
+  | Field       | Value                                |
+  +-------------+--------------------------------------+
+  | created_at  | 2021-05-27T04:14:14.000000           |
+  | description | None                                 |
+  | id          | 81fbfe02-6bf9-4812-a40e-1522ab6862ca |
+  | pattern     | .*web.example.com                    |
+  | updated_at  | 2021-05-27T04:14:48.000000           |
+  +-------------+--------------------------------------+
+
+You can delete a blacklist using `zone blacklist delete`:
+
+.. code-block:: console
+
+  $ openstack zone blacklist delete 7622e241-8c3d-4c03-a692-8747e3cf2658
+
+There is no output when this command is successful.
+
+
+Using the REST API
+-------------------
+
+The regular expressions used for blacklists are similar to Python regular
+expressions, but you must escape certain characters when making HTTP calls.
+
+For examples, this refex restricts using ``example.com.`` and its ASCII
+subdomains:
+
+``^([A-Za-z0-9_\\-]+\.)*example\.com\.$``
+
+However, you must insert the escape character (backslash, \) before the
+instances of dot (.) and .com:
+
+``^([A-Za-z0-9_\\-]+\\.)*example\\.com\\.$``
+
+
+Here is the API call and the regex with the HTTP characters escaped:
 
 .. code-block:: http
 
@@ -40,59 +122,17 @@ make the following API calls.
     "description" : "This blacklists *.example.com."
   }
 
-Response:
-
-.. code-block:: http
-
-  HTTP/1.1 201 CREATED
-  Content-Type: application/json; charset=UTF-8
-  X-Openstack-Request-Id: req-bfcd0723-624c-4ec2-bbd5-99e985efe8db
-
-  {
-     "description": "This blacklists *.example.com.",
-     "links": {
-       "self": "http://127.0.0.1:9001/v2/blacklists/af91edb5-ede8-453f-af13-feabdd088f9c"
-     },
-     "pattern": "^([A-Za-z0-9_\\-]+\\.)*example\\.com\\.$",
-     "created_at": "2016-05-20 06:15:42",
-     "updated_at": null,
-     "id": "af91edb5-ede8-453f-af13-feabdd088f9c"
-  }
-
-
-Now, if someone were to try and create ``foo.example.com.``,
-or ``example.com.`` they would encounter an error:
-
-.. code-block:: http
-
-  HTTP/1.1 400 BAD REQUEST
-  Content-Type: application/json
-  X-Openstack-Request-Id: req-b7be7770-ec4f-4573-b4db-70f95475f691
-
-  {
-    "message": "Blacklisted zone name",
-    "code": 400,
-    "type": "invalid_zone_name",
-     "request_id": "req-b7be7770-ec4f-4573-b4db-70f95475f691"
-  }
-
-Blacklists can be deleted, just like an other resource in the API,
-``DELETE /v2/blacklists/<id>``.
 
 Regular Expressions
 -------------------
 
-The regular expressions used here can be a bit difficult to wrap your mind
-around at first. Try using a tool like https://www.debuggex.com/
+Regular Expressions can be difficult to work with. The
+`Python Regex Documentation`_ may serve as a useful introduction, and online
+regular expression tools can assist when building and testing regexes for use
+with the blacklist API.
 
-It's important to note that the regular expressions we enter are similar
-to Python regular expressions, but we need to escape certain characters
-when we make HTTP calls.
-
-This means that if you wanted to debug this regex:
-
-``^([A-Za-z0-9_\\-]+\\.)*example\\.com\\.$``
-
-you're really working with this regex:
-
-``^([A-Za-z0-9_\\-]+\.)*example\.com\.$``
+.. _System Administrator: personas_
+.. _System Administrators: personas_
+.. _Domain or Project Persona: personas_
+.. _Python Regex Documentation: https://docs.python.org/3/howto/regex.html#regex-howto
+.. _personas: https://docs.openstack.org/keystone/latest/admin/service-api-protection.html#system-personas
