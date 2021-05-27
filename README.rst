@@ -13,7 +13,7 @@ OpenStack Designate
 
 Designate is an OpenStack project, providing DNSaaS.
 
-IRC: #openstack-dns @ freenode
+IRC: #openstack-dns @ oftc
 
 Installation: https://docs.openstack.org/designate/latest/
 

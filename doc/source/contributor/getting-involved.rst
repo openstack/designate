@@ -10,7 +10,7 @@ Getting Involved
 #openstack-dns IRC channel
 --------------------------
 
-There is an active IRC channel at irc://freenode.net/#openstack-dns,
+There is an active IRC channel at irc://oftc.net/#openstack-dns,
 where many of the designate contributors can be found, as
 well as users from various organisations.
 
