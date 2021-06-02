@@ -15,7 +15,7 @@
 # under the License.
 from oslo_config import cfg
 
-from designate.utils import DEFAULT_AGENT_PORT
+DEFAULT_AGENT_PORT = 5358
 
 AGENT_GROUP = cfg.OptGroup(
     name='service:agent',

@@ -20,10 +20,10 @@ from designate import dnsutils
 from designate import service
 from designate import storage
 from designate import utils
+from designate.conf.mdns import DEFAULT_MDNS_PORT
 from designate.mdns import handler
 from designate.mdns import notify
 from designate.mdns import xfr
-from designate.utils import DEFAULT_MDNS_PORT
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF

@@ -15,7 +15,7 @@
 # under the License.
 from oslo_config import cfg
 
-from designate.utils import DEFAULT_MDNS_PORT
+DEFAULT_MDNS_PORT = 5354
 
 MDNS_GROUP = cfg.OptGroup(
     name='service:mdns', title="Configuration for mDNS Service"

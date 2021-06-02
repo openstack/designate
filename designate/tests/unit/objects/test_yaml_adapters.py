@@ -20,9 +20,9 @@ import yaml
 from oslo_log import log as logging
 
 from designate import objects
+from designate.conf.mdns import DEFAULT_MDNS_PORT
 from designate.objects import adapters
 from designate.tests import resources
-from designate.utils import DEFAULT_MDNS_PORT
 
 LOG = logging.getLogger(__name__)
 

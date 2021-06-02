@@ -31,7 +31,7 @@ from designate import dnsutils
 from designate import service
 from designate.agent import handler
 from designate.backend import agent_backend
-from designate.utils import DEFAULT_AGENT_PORT
+from designate.conf.agent import DEFAULT_AGENT_PORT
 
 
 CONF = cfg.CONF
