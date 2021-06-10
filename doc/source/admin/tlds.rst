@@ -18,108 +18,66 @@
 Managing Top Level Domain Names
 ===============================
 
-Designate allows management of the Top-Level Domains (TLDs) that users are
-allowed to create zones within.
+`System Administrators`_ can use top level domains (TLDs) to restrict the
+domains under which users can create zones. While in the Domain Name System
+the term "TLD" refers specifically to the set of domains that lie directly
+below the root, such as ``.org``, in Designate a TLD can be any domain.
 
-For example, it's simple to only allow users to create zones that end in
-``.com.`` TLD.
-
-By default, all TLDs are allowed in Designate, this is ok for most scenarios.
-
-If for example you wanted to restrict to only ``.com.`` though, you could make
-the following API call.
-
-.. code-block:: http
-
-    POST /v2/tlds HTTP/1.1
-    Accept: application/json
-    Content-Type: application/json
-
-    {
-      "name": "com"
-    }
-
-Response:
-
-.. code-block:: http
-
-    HTTP/1.1 201 CREATED
-    Content-Type: application/json
-    X-Openstack-Request-Id: req-432e72b4-f4e1-4f9c-8e35-53decc752260
-
-    {
-      "id": "2f8bc76d-1701-4323-a101-248e09471342",
-      "name": "com",
-      "description": null,
-      "created_at": "2020-06-01T16:25:44.000000",
-      "updated_at": null,
-      "links": {
-        "self": "http://127.0.0.1:9001/v2/tlds/2f8bc76d-1701-4323-a101-248e09471342"
-      }
-    }
-
-Using the command line client:
+For example, if you want to require that users create zones ending in
+``.org.``, this can be achieved by creating a single ``.org`` TLD:
 
 .. code-block:: console
 
-    $ openstack tld create --name com
+    $ openstack tld create --name org
     +-------------+--------------------------------------+
     | Field       | Value                                |
     +-------------+--------------------------------------+
-    | created_at  | 2020-06-01T16:25:44.000000           |
+    | created_at  | 2021-06-10T05:20:16.000000           |
     | description | None                                 |
-    | id          | 2f8bc76d-1701-4323-a101-248e09471342 |
-    | name        | com                                  |
+    | id          | 9fd0a12d-511e-4024-bf76-6ec2e3e71edd |
+    | name        | org                                  |
     | updated_at  | None                                 |
     +-------------+--------------------------------------+
 
-Now, if someone were to try and create ``example.net.``, they would encounter
-an error:
+.. note:: When using the `openstack tld` command, ensure that the FQDN that
+   you enter has no trailing dot (`example.net.`).
 
-.. code-block:: http
-
-    POST /v2/zones HTTP/1.1
-    Accept: application/json
-    Content-Type: application/json
-
-    {
-      "name": "example.net.",
-      "type": "PRIMARY",
-      "email": "admin@example.net"
-    }
-
-.. code-block:: http
-
-    HTTP/1.1 400 BAD REQUEST
-    Content-Type: application/json
-    X-Openstack-Request-Id: req-3a8985fd-0155-4dd4-a7fb-584b140f1f59
-
-    {
-      "code": 400,
-      "type": "invalid_zone_name",
-      "message": "Invalid TLD",
-      "request_id": "req-3a8985fd-0155-4dd4-a7fb-584b140f1f59"
-    }
-
-Using the command line client:
+If you now attempt to create a zone that does not lie within the ``.org`` TLD,
+it will fail:
 
 .. code-block:: console
 
-    $ openstack zone create --email admin@example.net example.net.
+    $ openstack zone create --email admin@test.net test.net.
     Invalid TLD
 
-TLDs can be deleted, just like many other resources in the API, using
-``DELETE /v2/tlds/<id>``:
+TLDs are much like an allowlist: if there are many TLDs then the
+zone must exist within one of the TLDs. If no TLDs have been created in
+Designate, then users can create any zone. Unlike the blacklists feature, TLDs
+do not have a policy that allows priviliged users to create zones outside the
+allowed TLDs.
 
-.. code-block:: http
-
-    DELETE /v2/tlds/2f8bc76d-1701-4323-a101-248e09471342 HTTP/1.1
-    Accept: application/json
-    Content-Type: application/json
-
-Or by using the command line client:
+You can modify the values for a TLD using the `set` command. You can use either
+the name or the ID to specify which TLD to set:
 
 .. code-block:: console
 
-    $ openstack tld delete com
-    TLD com was deleted
+    $ openstack tld set org --name example.net
+    +-------------+--------------------------------------+
+    | Field       | Value                                |
+    +-------------+--------------------------------------+
+    | created_at  | 2021-06-10T05:20:16.000000           |
+    | description |                                      |
+    | id          | 9fd0a12d-511e-4024-bf76-6ec2e3e71edd |
+    | name        | example.net                          |
+    | updated_at  | 2021-06-10T07:09:45.000000           |
+    +-------------+--------------------------------------+
+
+You can delete a TLD by providing either the ID or the current name:
+
+.. code-block:: console
+
+    $ openstack tld delete org
+
+This command has no output when completed successfully.
+
+.. _System Administrators: https://docs.openstack.org/keystone/latest/admin/service-api-protection.html#system-personas
