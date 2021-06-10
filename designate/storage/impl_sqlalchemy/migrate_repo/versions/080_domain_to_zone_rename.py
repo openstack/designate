@@ -16,7 +16,7 @@
 #
 # See https://blueprints.launchpad.net/nova/+spec/backportable-db-migrations
 # http://lists.openstack.org/pipermail/openstack-dev/2013-March/006827.html
-from sqlalchemy.schema import MetaData, Table, Index
+from sqlalchemy.schema import MetaData, Table
 from migrate.changeset.constraint import UniqueConstraint, \
     ForeignKeyConstraint, PathNotFoundError
 
@@ -31,25 +31,9 @@ from migrate.changeset.constraint import UniqueConstraint, \
 meta = MetaData()
 
 
-def index_exists(index):
-    table = index[1]._get_table()
-    cols = sorted([str(x).split('.')[1] for x in index[1:]])
-
-    for idx in table.indexes:
-        if sorted(idx.columns.keys()) == cols:
-            return True
-    return False
-
-
-def drop_index(index):
-    if index_exists(index):
-        index = Index(*index)
-        index.drop()
-
-
 def drop_foreign_key(fk_def):
 
-    table = fk_def[0]._get_table()
+    table = fk_def[0].table
 
     col = fk_def[0]
     ref_col = fk_def[1]
