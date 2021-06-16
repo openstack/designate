@@ -38,8 +38,8 @@ from oslo_log import log as logging
 
 from designate.backend import base
 from designate import exceptions
+from designate.conf.agent import DEFAULT_AGENT_PORT
 from designate.mdns import rpcapi as mdns_api
-from designate.utils import DEFAULT_AGENT_PORT
 import designate.backend.private_codes as pcodes
 
 dns_query = eventlet.import_patched('dns.query')

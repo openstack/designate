@@ -23,9 +23,9 @@ from oslo_messaging.rpc import dispatcher as rpc_dispatcher
 
 from designate import exceptions
 from designate import objects
+from designate.conf.mdns import DEFAULT_MDNS_PORT
 from designate.utils import generate_uuid
 from designate.storage.base import Storage as StorageBase
-from designate.utils import DEFAULT_MDNS_PORT
 
 
 LOG = logging.getLogger(__name__)

@@ -36,12 +36,6 @@ from designate.i18n import _
 
 LOG = logging.getLogger(__name__)
 
-# Default TCP/UDP ports
-
-DEFAULT_AGENT_PORT = 5358
-DEFAULT_MDNS_PORT = 5354
-
-
 # Default datetime format
 
 DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%S.%f'
