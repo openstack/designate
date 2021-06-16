@@ -4240,6 +4240,66 @@ class CentralServiceTest(designate.tests.TestCase):
         self.assertEqual(shared_zone.project_id,
                          retrived_shared_zone.project_id)
 
+    def test_pool_move_zone(self):
+        pool = self.create_pool(fixture=0)
+        zone = self.create_zone(context=self.admin_context, pool_id=pool.id)
+
+        # create second pool
+        second_pool = self.create_pool(fixture=1)
+        new_ns_record = objects.PoolNsRecord(hostname='ns-new.example.org.')
+        second_pool.ns_records.append(new_ns_record)
+
+        moved_zone = self.central_service.pool_move_zone(
+            self.admin_context,
+            zone.id, second_pool['id'])
+        self.assertEqual(zone.id, moved_zone.id)
+        self.assertEqual(moved_zone.pool_id, second_pool['id'])
+
+    def test_pool_move_zone_without_target_pool(self):
+        pool = self.create_pool(fixture=0)
+        zone = self.create_zone(context=self.admin_context, pool_id=pool.id)
+
+        # create second pool
+        second_pool = self.create_pool(fixture=1)
+        new_ns_record = objects.PoolNsRecord(hostname='ns-new.example.org.')
+        second_pool.ns_records.append(new_ns_record)
+
+        zone.pool_id = None
+        with mock.patch.object(self.central_service.scheduler, 'schedule_zone',
+                               return_value=second_pool['id']):
+            moved_zone = self.central_service.pool_move_zone(
+                self.admin_context,
+                zone.id)
+            self.assertEqual(zone.id, moved_zone.id)
+            self.assertEqual(moved_zone.pool_id, second_pool['id'])
+
+    def test_pool_move_zone_exception_no_ns_records(self):
+        pool = self.create_pool(fixture=0)
+        zone = self.create_zone(context=self.admin_context, pool_id=pool.id)
+
+        # create second pool
+        second_pool = self.create_pool(fixture=1)
+
+        zone.pool_id = second_pool['id']
+        with mock.patch.object(self.central_service, '_get_pool_ns_records',
+                               return_value=[]):
+            self.assertRaises(exceptions.NoServersConfigured,
+                              self.central_service.pool_move_zone,
+                              self.admin_context,
+                              zone.id, second_pool['id'])
+
+    def test_pool_move_zone_exception_invalid_pool_id(self):
+        pool = self.create_pool(fixture=0)
+        zone = self.create_zone(context=self.admin_context, pool_id=pool.id)
+
+        # Use fake pool ID
+        pool_id = '521935cf-d5be-44a2-9f64-fb5a316a61d2'
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.pool_move_zone,
+                                self.admin_context,
+                                zone.id, target_pool_id=pool_id)
+        self.assertEqual(exceptions.BadRequest, exc.exc_info[0])
+
     def test_create_managed_records(self):
         zone = self.create_zone()
 

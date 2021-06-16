@@ -20,7 +20,9 @@ class ZoneAPIv2Adapter(base.APIv2Adapter):
     MODIFICATIONS = {
         'fields': {
             "id": {},
-            "pool_id": {},
+            "pool_id": {
+                'read_only': False
+            },
             "project_id": {
                 'rename': 'tenant_id'
             },

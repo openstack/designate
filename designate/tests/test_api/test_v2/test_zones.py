@@ -517,6 +517,56 @@ class ApiV2ZonesTest(ApiV2TestCase):
         self._assert_exception('not_found', 404, self.client.get, url,
                                headers={'X-Test-Role': 'member'})
 
+    def test_post_pool_zone_move_invalid_pool_id(self):
+        zone = self.create_zone()
+        body = {'pool_id': zone.pool_id}
+        self._assert_exception('bad_request', 400, self.client.post_json,
+                               '/zones/%s/tasks/pool_move' % zone['id'],
+                               body, headers={'X-Test-Role': 'admin'})
+
+    def test_post_pool_zone_move_invalid_action(self):
+        # Create a zone
+        zone = self.create_zone()
+        body = {'pool_id': '12345'}
+        zone.action = 'DELETE'
+        with mock.patch.object(central_service.Service, 'get_zone',
+                               return_value=zone):
+            self._assert_exception('bad_request', 400,
+                                   self.client.post_json,
+                                   '/zones/%s/tasks/pool_move' % zone['id'],
+                                   body, headers={'X-Test-Role': 'admin'})
+
+    def test_post_pool_zone_move_non_admin_user(self):
+        # Create a zone
+        zone = self.create_zone()
+        body = {'pool_id': '12345'}
+        self._assert_exception('forbidden', 403, self.client.post_json,
+                               '/zones/%s/tasks/pool_move' % zone['id'], body)
+
+    def test_post_pool_zone_move_admin_user_status_500(self):
+        # Create a zone
+        zone = self.create_zone()
+        body = {'pool_id': '12345'}
+        response = self.client.post_json(
+            '/zones/%s/tasks/pool_move' % zone['id'],
+            body, status=500, headers={'X-Test-Role': 'admin'})
+
+        # Check the headers are what we expect
+        self.assertEqual(500, response.status_int)
+        self.assertEqual('application/json', response.content_type)
+
+    def test_post_pool_zone_move_admin_user_status_202(self):
+        # Create a zone
+        zone = self.create_zone()
+        body = {'pool_id': '12345'}
+        zone.status = 'PENDING'
+        with mock.patch.object(central_service.Service, 'pool_move_zone',
+                               return_value=zone):
+            response = self.client.post_json(
+                '/zones/%s/tasks/pool_move' % zone['id'], body,
+                headers={'X-Test-Role': 'admin'})
+            self.assertEqual(202, response.status_int)
+
     def test_get_zone_tasks(self):
         # This is an invalid endpoint - should return 404
         zone = self.create_zone()

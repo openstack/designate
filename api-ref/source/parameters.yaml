@@ -953,6 +953,13 @@ zone_pool_id:
   required: true
   type: uuid
 
+zone_pool_target_id:
+  description: |
+    The target pool ID to move the zone into
+  in: body
+  required: false
+  type: uuid
+
 zone_serial:
   description: |
     current serial number for the zone

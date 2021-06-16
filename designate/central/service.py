@@ -54,7 +54,7 @@ LOG = logging.getLogger(__name__)
 
 
 class Service(service.RPCService):
-    RPC_API_VERSION = '6.9'
+    RPC_API_VERSION = '6.10'
 
     target = messaging.Target(version=RPC_API_VERSION)
 
@@ -1328,6 +1328,81 @@ class Service(service.RPCService):
                 raise exceptions.ZoneNotFound(
                     "Could not find %s" % zone.obj_name())
         return zone_shared
+
+    @rpc.expected_exceptions()
+    @notification.notify_type('dns.domain.update')
+    @notification.notify_type('dns.zone.update')
+    def pool_move_zone(self, context, zone_id, target_pool_id=None):
+        """Move zone. Perform checks and then create zone in destination pool
+
+        :returns: moved zone
+        """
+        if policy.enforce_new_defaults():
+            target = {
+                'zone_id': zone_id,
+                constants.RBAC_PROJECT_ID: context.project_id,
+            }
+        else:
+            target = {
+                'zone_id': zone_id,
+                'tenant_id': context.project_id,
+            }
+
+        policy.check('pool_move_zone', context, target)
+
+        # Get the destination pool
+        zone = self.storage.get_zone(context, zone_id)
+        orig_pool_id = zone.pool_id
+
+        if target_pool_id is None:
+            target_pool_id = self.scheduler.schedule_zone(context, zone)
+            if target_pool_id == orig_pool_id:
+                raise exceptions.BadRequest('No valid pool selected')
+            # Update the orignal zone with new pool_id
+            zone.pool_id = target_pool_id
+
+        # Need elevated context to get the pool
+        elevated_context = context.elevated(all_tenants=True)
+        try:
+            self.storage.get_pool(elevated_context, target_pool_id)
+        except exceptions.PoolNotFound:
+            raise exceptions.BadRequest('Target pool does not exist')
+
+        target_pool_ns_records = self._get_pool_ns_records(context,
+                                                           target_pool_id)
+        if len(target_pool_ns_records) == 0:
+            LOG.critical('No nameservers configured. Please create at least '
+                         'one nameserver on target pool')
+            raise exceptions.NoServersConfigured()
+
+        orig_pool_ns_records = self._get_pool_ns_records(context,
+                                                         orig_pool_id)
+
+        target_ns = {n.hostname for n in target_pool_ns_records}
+        orig_ns = {n.hostname for n in orig_pool_ns_records}
+        create_ns = target_ns.difference(orig_ns)
+        delete_ns = orig_ns.difference(target_ns)
+
+        # Update target NS servers for the zone
+        for ns_record in create_ns:
+            self._add_ns(elevated_context, zone, ns_record)
+
+        # Then handle the ns_records to delete
+        for ns_record in delete_ns:
+            self._delete_ns(elevated_context, zone, ns_record)
+
+        zone = self._update_zone_in_storage(
+                context, zone, increment_serial=False)
+
+        LOG.info("Moving zone '%(zone)s' to pool '%(pool)s'",
+                 {'zone': zone.name, 'pool': target_pool_id})
+        zone.pool_id = target_pool_id
+        zone.refresh = self._generate_soa_refresh_interval()
+        zone.action = 'CREATE'
+        zone.status = 'PENDING'
+        self.worker_api.create_zone(context, zone)
+
+        return zone
 
     # RecordSet Methods
     @rpc.expected_exceptions()

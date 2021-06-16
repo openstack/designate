@@ -22,6 +22,8 @@ from designate.api.v2.controllers.zones.tasks.exports import (
     ZoneExportsController)
 from designate.api.v2.controllers.zones.tasks.imports import (
     ZoneImportController)
+from designate.api.v2.controllers.zones.tasks.pool_move import (
+    PoolMoveController)
 from designate.api.v2.controllers.zones.tasks.transfer_accepts import (
     TransferAcceptsController as TRA)
 from designate.api.v2.controllers.zones.tasks.transfer_requests import (
@@ -37,6 +39,7 @@ class TasksController:
     transfer_requests = TRC()
     abandon = abandon.AbandonController()
     xfr = XfrController()
+    pool_move = PoolMoveController()
     imports = ZoneImportController()
     exports = ZoneExportsController()
     export = ZoneExportCreateController()

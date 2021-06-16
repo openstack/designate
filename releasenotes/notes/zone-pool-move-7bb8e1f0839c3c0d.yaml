@@ -1,0 +1,10 @@
+---
+features:
+  - |
+    Added zone pool move command which allows admin user to move zone from
+    pool A to specified pool B. This command overcome the issues observed in
+    zone export-import thereby reducing hours of time of large zone imports
+    (e.g. 20-30k records). Please note, if you have moved a zone to a
+    different pool, the pool must be configured with a proper tsig key for
+    mini-DNS query operations. Without this, you cannot have overlapping zones
+    in different pools.

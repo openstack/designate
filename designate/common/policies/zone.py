@@ -101,6 +101,12 @@ deprecated_purge_zones = policy.DeprecatedRule(
     deprecated_reason=DEPRECATED_REASON,
     deprecated_since=versionutils.deprecated.WALLABY
 )
+deprecated_pool_move_zone = policy.DeprecatedRule(
+    name="pool_move_zone",
+    check_str=base.RULE_ADMIN,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
+)
 
 
 rules = [
@@ -238,6 +244,19 @@ rules = [
         scope_types=[constants.PROJECT],
         deprecated_rule=deprecated_purge_zones
     ),
+    policy.DocumentedRuleDefault(
+        name="pool_move_zone",
+        check_str=base.SYSTEM_ADMIN,
+        scope_types=[constants.PROJECT],
+        description="Pool Move Zone",
+        operations=[
+            {
+                'path': '/v2/zones/{zone_id}/tasks/pool_move',
+                'method': 'POST'
+            }
+        ],
+        deprecated_rule=deprecated_pool_move_zone,
+    )
 ]
 
 
