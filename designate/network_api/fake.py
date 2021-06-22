@@ -13,7 +13,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import six
 from oslo_log import log as logging
 
 from designate.utils import generate_uuid
@@ -41,7 +40,7 @@ def allocate_floatingip(project_id, floatingip_id=None):
     """
     ALLOCATIONS.setdefault(project_id, {})
 
-    id_ = floatingip_id or list(six.iterkeys(POOL))[0]
+    id_ = floatingip_id or list(POOL.keys())[0]
 
     ALLOCATIONS[project_id][id_] = POOL.pop(id_)
     values = _format_floatingip(id_, ALLOCATIONS[project_id][id_])

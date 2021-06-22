@@ -14,7 +14,6 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-import six
 
 from oslo_config import cfg
 from oslo_log import log as logging
@@ -64,7 +63,7 @@ class MSDNSBackend(base.AgentBackend):
     def create_zone(self, zone):
         """Create a new DNS Zone"""
         zone_name = zone.origin.to_text(omit_final_dot=True)
-        if six.PY3 and isinstance(zone_name, bytes):
+        if isinstance(zone_name, bytes):
             zone_name = zone_name.decode('utf-8')
         LOG.debug("Creating zone: %s", zone_name)
         try:
@@ -91,7 +90,7 @@ class MSDNSBackend(base.AgentBackend):
         """Instruct MSDNS to request an AXFR from MiniDNS.
         """
         zone_name = zone.origin.to_text(omit_final_dot=True)
-        if six.PY3 and isinstance(zone_name, bytes):
+        if isinstance(zone_name, bytes):
             zone_name = zone_name.decode('utf-8')
         LOG.debug("Updating zone: %s", zone_name)
         self._dnsutils.zone_update(zone_name)

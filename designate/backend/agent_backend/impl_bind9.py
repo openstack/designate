@@ -17,7 +17,6 @@ import os
 
 import dns
 import dns.resolver
-import six
 from oslo_concurrency import lockutils
 from oslo_config import cfg
 from oslo_log import log as logging
@@ -87,7 +86,7 @@ class Bind9Backend(base.AgentBackend):
         # NOTE: Different versions of BIND9 behave differently with a trailing
         #       dot, so we're just going to take it off.
         zone_name = zone.origin.to_text(omit_final_dot=True)
-        if six.PY3 and isinstance(zone_name, bytes):
+        if isinstance(zone_name, bytes):
             zone_name = zone_name.decode('utf-8')
 
         # NOTE: Only one thread should be working with the Zonefile at a given

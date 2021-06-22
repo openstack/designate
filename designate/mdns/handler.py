@@ -22,7 +22,6 @@ import dns.rdataclass
 import dns.rdatatype
 from oslo_config import cfg
 from oslo_log import log as logging
-import six
 
 from designate import exceptions
 from designate.central import rpcapi as central_api
@@ -111,7 +110,7 @@ class RequestHandler(xfr.XFRMixin):
             question = request.question[0]
 
         name = question.name.to_text()
-        if six.PY3 and isinstance(name, bytes):
+        if isinstance(name, bytes):
             name = name.decode('utf-8')
 
         criterion = {
@@ -209,7 +208,7 @@ class RequestHandler(xfr.XFRMixin):
         # validate the parameters
         try:
             name = q_rrset.name.to_text()
-            if six.PY3 and isinstance(name, bytes):
+            if isinstance(name, bytes):
                 name = name.decode('utf-8')
             criterion = self._zone_criterion_from_request(
                 request, {'name': name})
@@ -307,7 +306,7 @@ class RequestHandler(xfr.XFRMixin):
         try:
             q_rrset = request.question[0]
             name = q_rrset.name.to_text()
-            if six.PY3 and isinstance(name, bytes):
+            if isinstance(name, bytes):
                 name = name.decode('utf-8')
             # TODO(vinod) once validation is separated from the api,
             # validate the parameters

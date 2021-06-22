@@ -13,14 +13,12 @@
 # under the License.
 import abc
 
-import six
 from oslo_log import log as logging
 
 LOG = logging.getLogger(__name__)
 
 
-@six.add_metaclass(abc.ABCMeta)
-class Filter():
+class Filter(metaclass=abc.ABCMeta):
     """This is the base class used for filtering Pools.
 
     This class should implement a single public function

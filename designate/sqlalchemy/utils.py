@@ -16,7 +16,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import six
 import sqlalchemy
 from sqlalchemy import exc as sqlalchemy_exc
 from sqlalchemy import select
@@ -111,7 +110,7 @@ def sort_query(query, table, sort_keys, sort_dir=None, sort_dirs=None):
     assert(len(sort_dirs) == len(sort_keys))
 
     for current_sort_key, current_sort_dir in \
-            six.moves.zip(sort_keys, sort_dirs):
+            zip(sort_keys, sort_dirs):
         try:
             sort_dir_func = {
                 'asc': sqlalchemy.asc,

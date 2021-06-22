@@ -15,8 +15,6 @@
 
 import gettext
 
-import six
-
 from designate import exceptions
 
 _ = gettext.gettext
@@ -43,7 +41,7 @@ class InfobloxExceptionBase(exceptions.Backend):
                 super(InfobloxExceptionBase, self).__init__(self.message)
 
     def __unicode__(self):
-        return six.text_type(self.msg)
+        return str(self.msg)
 
     def use_fatal_exceptions(self):
         return False

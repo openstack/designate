@@ -18,7 +18,6 @@ import socket
 import time
 from threading import Lock
 
-import six
 import dns
 import dns.exception
 import dns.zone
@@ -150,7 +149,7 @@ class TsigInfoMiddleware(DNSMiddleware):
 
         try:
             name = request.keyname.to_text(True)
-            if six.PY3 and isinstance(name, bytes):
+            if isinstance(name, bytes):
                 name = name.decode('utf-8')
             criterion = {'name': name}
             tsigkey = self.storage.find_tsigkey(
@@ -179,7 +178,7 @@ class TsigKeyring(object):
     def get(self, key, default=None):
         try:
             name = key.to_text(True)
-            if six.PY3 and isinstance(name, bytes):
+            if isinstance(name, bytes):
                 name = name.decode('utf-8')
             criterion = {'name': name}
             tsigkey = self.storage.find_tsigkey(
@@ -249,7 +248,7 @@ class LimitNotifyMiddleware(DNSMiddleware):
             return None
 
         zone_name = request.question[0].name.to_text()
-        if six.PY3 and isinstance(zone_name, bytes):
+        if isinstance(zone_name, bytes):
             zone_name = zone_name.decode('utf-8')
 
         if self.locker.acquire(zone_name):
@@ -274,12 +273,12 @@ def from_dnspython_zone(dnspython_zone):
     if soa.ttl == 0:
         soa.ttl = CONF['service:central'].min_ttl
     email = soa[0].rname.to_text(omit_final_dot=True)
-    if six.PY3 and isinstance(email, bytes):
+    if isinstance(email, bytes):
         email = email.decode('utf-8')
     email = email.replace('.', '@', 1)
 
     name = dnspython_zone.origin.to_text()
-    if six.PY3 and isinstance(name, bytes):
+    if isinstance(name, bytes):
         name = name.decode('utf-8')
 
     values = {
@@ -301,7 +300,7 @@ def from_dnspython_zone(dnspython_zone):
 def dnspyrecords_to_recordsetlist(dnspython_records):
     rrsets = objects.RecordSetList()
 
-    for rname in six.iterkeys(dnspython_records):
+    for rname in dnspython_records.keys():
         for rdataset in dnspython_records[rname]:
             rrset = dnspythonrecord_to_recordset(rname, rdataset)
 
@@ -316,7 +315,7 @@ def dnspythonrecord_to_recordset(rname, rdataset):
     record_type = rdatatype.to_text(rdataset.rdtype)
 
     name = rname.to_text()
-    if six.PY3 and isinstance(name, bytes):
+    if isinstance(name, bytes):
         name = name.decode('utf-8')
 
     # Create the other recordsets

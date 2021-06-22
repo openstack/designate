@@ -15,7 +15,6 @@
 # under the License.
 import abc
 
-import six
 from stevedore import driver
 from stevedore import enabled
 from oslo_config import cfg
@@ -26,8 +25,7 @@ LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
 
 
-@six.add_metaclass(abc.ABCMeta)
-class Plugin(object):
+class Plugin(object, metaclass=abc.ABCMeta):
     __plugin_ns__ = None
 
     __plugin_name__ = None

@@ -17,7 +17,6 @@ import abc
 import operator
 import threading
 
-import six
 from oslo_db.sqlalchemy import utils as oslodb_utils
 from oslo_db import exception as oslo_db_exception
 from oslo_log import log as logging
@@ -36,9 +35,9 @@ LOG = logging.getLogger(__name__)
 def _set_object_from_model(obj, model, **extra):
     """Update a DesignateObject with the values from a SQLA Model"""
 
-    for fieldname in six.iterkeys(obj.FIELDS):
+    for fieldname in obj.FIELDS.keys():
         if hasattr(model, fieldname):
-            if fieldname in six.iterkeys(extra):
+            if fieldname in extra.keys():
                 obj[fieldname] = extra[fieldname]
             else:
                 obj[fieldname] = getattr(model, fieldname)
@@ -63,8 +62,7 @@ def _set_listobject_from_models(obj, models, map_=None):
     return obj
 
 
-@six.add_metaclass(abc.ABCMeta)
-class SQLAlchemy(object):
+class SQLAlchemy(object, metaclass=abc.ABCMeta):
 
     def __init__(self):
         super(SQLAlchemy, self).__init__()
@@ -105,35 +103,35 @@ class SQLAlchemy(object):
                 column = getattr(table.c, name)
 
                 # Wildcard value: '%'
-                if isinstance(value, six.string_types) and '%' in value:
+                if isinstance(value, str) and '%' in value:
                     query = query.where(column.like(value))
 
-                elif (isinstance(value, six.string_types) and
+                elif (isinstance(value, str) and
                         value.startswith('!')):
                     queryval = value[1:]
                     query = query.where(column != queryval)
 
-                elif (isinstance(value, six.string_types) and
+                elif (isinstance(value, str) and
                         value.startswith('<=')):
                     queryval = value[2:]
                     query = query.where(column <= queryval)
 
-                elif (isinstance(value, six.string_types) and
+                elif (isinstance(value, str) and
                         value.startswith('<')):
                     queryval = value[1:]
                     query = query.where(column < queryval)
 
-                elif (isinstance(value, six.string_types) and
+                elif (isinstance(value, str) and
                         value.startswith('>=')):
                     queryval = value[2:]
                     query = query.where(column >= queryval)
 
-                elif (isinstance(value, six.string_types) and
+                elif (isinstance(value, str) and
                         value.startswith('>')):
                     queryval = value[1:]
                     query = query.where(column > queryval)
 
-                elif (isinstance(value, six.string_types) and
+                elif (isinstance(value, str) and
                         value.startswith('BETWEEN')):
                     elements = [i.strip(" ") for i in
                                 value.split(" ", 1)[1].strip(" ").split(",")]
@@ -265,13 +263,13 @@ class SQLAlchemy(object):
 
                 return _set_listobject_from_models(list_cls(), results)
             except oslodb_utils.InvalidSortKey as sort_key_error:
-                raise exceptions.InvalidSortKey(six.text_type(sort_key_error))
+                raise exceptions.InvalidSortKey(str(sort_key_error))
             # Any ValueErrors are propagated back to the user as is.
             # Limits, sort_dir and sort_key are checked at the API layer.
             # If however central or storage is called directly, invalid values
             # show up as ValueError
             except ValueError as value_error:
-                raise exceptions.ValueError(six.text_type(value_error))
+                raise exceptions.ValueError(str(value_error))
 
     def _find_recordsets_with_records(self, context, criterion, zones_table,
                                       recordsets_table, records_table,
@@ -322,13 +320,13 @@ class SQLAlchemy(object):
                 sort_dir=sort_dir)
 
         except oslodb_utils.InvalidSortKey as sort_key_error:
-            raise exceptions.InvalidSortKey(six.text_type(sort_key_error))
+            raise exceptions.InvalidSortKey(str(sort_key_error))
         # Any ValueErrors are propagated back to the user as is.
         # Limits, sort_dir and sort_key are checked at the API layer.
         # If however central or storage is called directly, invalid values
         # show up as ValueError
         except ValueError as value_error:
-            raise exceptions.ValueError(six.text_type(value_error))
+            raise exceptions.ValueError(str(value_error))
 
         if apply_tenant_criteria:
             inner_q = self._apply_tenant_criteria(
@@ -365,7 +363,7 @@ class SQLAlchemy(object):
         id_zname_map = {}
         for r in rows:
             id_zname_map[r[0]] = r[1]
-        formatted_ids = six.moves.map(operator.itemgetter(0), rows)
+        formatted_ids = map(operator.itemgetter(0), rows)
 
         # Count query does not scale well for large amount of recordsets,
         # don't do it if the header 'OpenStack-DNS-Hide-Counts: True' exists
@@ -470,7 +468,7 @@ class SQLAlchemy(object):
         # If however central or storage is called directly, invalid values
         # show up as ValueError
         except ValueError as value_error:
-            raise exceptions.ValueError(six.text_type(value_error))
+            raise exceptions.ValueError(str(value_error))
 
         rrsets = objects.RecordSetList()
         rrset_id = None
@@ -621,4 +619,4 @@ class SQLAlchemy(object):
         # If however central or storage is called directly, invalid values
         # show up as ValueError
         except ValueError as value_error:
-            raise exceptions.ValueError(six.text_type(value_error))
+            raise exceptions.ValueError(str(value_error))

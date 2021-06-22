@@ -11,8 +11,6 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-import six
-
 from designate.objects.adapters.yaml import base
 from designate import objects
 
@@ -38,7 +36,7 @@ class PoolAttributeYAMLAdapter(base.YAMLAdapter):
 
     @classmethod
     def _parse_object(cls, values, object, *args, **kwargs):
-        for key in six.iterkeys(values):
+        for key in values.keys():
             object.key = key
             object.value = values[key]
 
@@ -60,7 +58,7 @@ class PoolAttributeListYAMLAdapter(base.YAMLAdapter):
             value = cls.get_object_adapter(
                 cls.ADAPTER_FORMAT,
                 object).render(cls.ADAPTER_FORMAT, object, *args, **kwargs)
-            for key in six.iterkeys(value):
+            for key in value.keys():
                 r_list[key] = value[key]
 
         return r_list

@@ -20,7 +20,6 @@ Bind 9 backend. Create and delete zones by executing rndc
 
 import random
 
-import six
 import subprocess
 
 from oslo_log import log as logging
@@ -101,7 +100,7 @@ class Bind9Backend(base.Backend):
             self._execute_rndc(rndc_op)
         except exceptions.Backend as e:
             # If create fails because the zone exists, don't reraise
-            if "already exists" not in six.text_type(e):
+            if "already exists" not in str(e):
                 LOG.warning('RNDC call failure: %s', e)
                 raise
 
@@ -128,7 +127,7 @@ class Bind9Backend(base.Backend):
             self._execute_rndc(rndc_op)
         except exceptions.Backend as e:
             # If zone is already deleted, don't reraise
-            if "not found" not in six.text_type(e):
+            if "not found" not in str(e):
                 LOG.warning('RNDC call failure: %s', e)
                 raise
 

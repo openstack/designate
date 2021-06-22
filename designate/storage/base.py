@@ -15,13 +15,10 @@
 # under the License.
 import abc
 
-import six
-
 from designate.plugin import DriverPlugin
 
 
-@six.add_metaclass(abc.ABCMeta)
-class Storage(DriverPlugin):
+class Storage(DriverPlugin, metaclass=abc.ABCMeta):
 
     """Base class for storage plugins"""
     __plugin_ns__ = 'designate.storage'

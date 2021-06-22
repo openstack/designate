@@ -22,7 +22,6 @@ import random
 import socket
 import ssl
 
-import six
 import eventlet
 from oslo_log import log as logging
 
@@ -92,7 +91,7 @@ class NSD4Backend(base.Backend):
             self._execute_nsd4(command)
         except exceptions.Backend as e:
             # If create fails because the zone exists, don't reraise
-            if "already exists" not in six.text_type(e):
+            if "already exists" not in str(e):
                 raise
 
     def delete_zone(self, context, zone):
@@ -103,5 +102,5 @@ class NSD4Backend(base.Backend):
             self._execute_nsd4(command)
         except exceptions.Backend as e:
             # If zone is already deleted, don't reraise
-            if "not found" not in six.text_type(e):
+            if "not found" not in str(e):
                 raise
