@@ -14,9 +14,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import time
-import hashlib
 
 from oslo_log import log as logging
+from oslo_utils.secretutils import md5
 from sqlalchemy import select, distinct, func
 from sqlalchemy.sql.expression import or_
 
@@ -799,11 +799,11 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
         """
         Calculates the hash of the record, used to ensure record uniqueness.
         """
-        md5 = hashlib.md5()
-        md5.update(("%s:%s" % (record.recordset_id,
-                               record.data)).encode('utf-8'))
+        md5sum = md5(usedforsecurity=False)
+        md5sum.update(("%s:%s" % (record.recordset_id,
+                                  record.data)).encode('utf-8'))
 
-        return md5.hexdigest()
+        return md5sum.hexdigest()
 
     def create_record(self, context, zone_id, recordset_id, record):
         # Fetch the zone as we need the tenant_id
