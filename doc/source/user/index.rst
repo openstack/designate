@@ -11,6 +11,7 @@ Contents:
    :maxdepth: 2
 
    manage-zones
+   importexport
    manage-recordsets
    rest
    manage-ptr-records
