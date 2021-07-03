@@ -24,27 +24,39 @@ The record set API now supports system scope and default roles.
 
 deprecated_create_recordset = policy.DeprecatedRule(
     name="create_recordset",
-    check_str=base.RULE_ZONE_PRIMARY_OR_ADMIN
+    check_str=base.RULE_ZONE_PRIMARY_OR_ADMIN,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 deprecated_get_recordsets = policy.DeprecatedRule(
     name="get_recordsets",
-    check_str=base.RULE_ADMIN_OR_OWNER
+    check_str=base.RULE_ADMIN_OR_OWNER,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 deprecated_get_recordset = policy.DeprecatedRule(
     name="get_recordset",
-    check_str=base.RULE_ADMIN_OR_OWNER
+    check_str=base.RULE_ADMIN_OR_OWNER,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 deprecated_update_recordset = policy.DeprecatedRule(
     name="update_recordset",
-    check_str=base.RULE_ZONE_PRIMARY_OR_ADMIN
+    check_str=base.RULE_ZONE_PRIMARY_OR_ADMIN,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 deprecated_delete_recordset = policy.DeprecatedRule(
     name="delete_recordset",
-    check_str=base.RULE_ZONE_PRIMARY_OR_ADMIN
+    check_str=base.RULE_ZONE_PRIMARY_OR_ADMIN,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 deprecated_count_recordset = policy.DeprecatedRule(
     name="count_recordset",
-    check_str=base.RULE_ADMIN_OR_OWNER
+    check_str=base.RULE_ADMIN_OR_OWNER,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 
 PROJECT_MEMBER_AND_PRIMARY_ZONE = (
@@ -79,17 +91,13 @@ rules = [
                 'method': 'PATCH'
             }
         ],
-        deprecated_rule=deprecated_create_recordset,
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_create_recordset
     ),
     policy.RuleDefault(
         name="get_recordsets",
         check_str=base.SYSTEM_OR_PROJECT_READER,
         scope_types=['system', 'project'],
-        deprecated_rule=deprecated_get_recordsets,
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_get_recordsets
     ),
     policy.DocumentedRuleDefault(
         name="get_recordset",
@@ -108,9 +116,7 @@ rules = [
                 'method': 'PUT'
             }
         ],
-        deprecated_rule=deprecated_get_recordset,
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_get_recordset
     ),
     policy.DocumentedRuleDefault(
         name="update_recordset",
@@ -126,9 +132,7 @@ rules = [
                 'method': 'PATCH'
             }
         ],
-        deprecated_rule=deprecated_update_recordset,
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_update_recordset
     ),
     policy.DocumentedRuleDefault(
         name="delete_recordset",
@@ -141,18 +145,14 @@ rules = [
                 'method': 'DELETE'
             }
         ],
-        deprecated_rule=deprecated_delete_recordset,
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_delete_recordset
     ),
     policy.RuleDefault(
         name="count_recordset",
         check_str=base.SYSTEM_OR_PROJECT_READER,
         scope_types=['system', 'project'],
         description="Count recordsets",
-        deprecated_rule=deprecated_count_recordset,
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_count_recordset
     )
 ]
 

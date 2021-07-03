@@ -24,19 +24,27 @@ The quota API now supports system scope and default roles.
 
 deprecated_get_quotas = policy.DeprecatedRule(
     name="get_quotas",
-    check_str=base.RULE_ADMIN_OR_OWNER
+    check_str=base.RULE_ADMIN_OR_OWNER,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 deprecated_get_quota = policy.DeprecatedRule(
     name="get_quota",
-    check_str=base.RULE_ADMIN_OR_OWNER
+    check_str=base.RULE_ADMIN_OR_OWNER,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 deprecated_set_quota = policy.DeprecatedRule(
     name="set_quota",
-    check_str=base.RULE_ADMIN
+    check_str=base.RULE_ADMIN,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 deprecated_reset_quotas = policy.DeprecatedRule(
     name="reset_quotas",
-    check_str=base.RULE_ADMIN
+    check_str=base.RULE_ADMIN,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 
 rules = [
@@ -51,17 +59,13 @@ rules = [
                 'method': 'GET'
             }
         ],
-        deprecated_rule=deprecated_get_quotas,
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_get_quotas
     ),
     policy.RuleDefault(
         name="get_quota",
         check_str=base.SYSTEM_OR_PROJECT_READER,
         scope_types=['system', 'project'],
-        deprecated_rule=deprecated_get_quota,
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_get_quota
     ),
     policy.DocumentedRuleDefault(
         name="set_quota",
@@ -74,9 +78,7 @@ rules = [
                 'method': 'PATCH'
             }
         ],
-        deprecated_rule=deprecated_set_quota,
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_set_quota
     ),
     policy.DocumentedRuleDefault(
         name="reset_quotas",
@@ -89,9 +91,7 @@ rules = [
                 'method': 'DELETE'
             }
         ],
-        deprecated_rule=deprecated_reset_quotas,
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_reset_quotas
     ),
 ]
 

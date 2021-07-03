@@ -24,23 +24,33 @@ The top-level domain API now supports system scope and default roles.
 
 deprecated_create_tld = policy.DeprecatedRule(
     name="create_tld",
-    check_str=base.RULE_ADMIN
+    check_str=base.RULE_ADMIN,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 deprecated_find_tlds = policy.DeprecatedRule(
     name="find_tlds",
-    check_str=base.RULE_ADMIN
+    check_str=base.RULE_ADMIN,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 deprecated_get_tld = policy.DeprecatedRule(
     name="get_tld",
-    check_str=base.RULE_ADMIN
+    check_str=base.RULE_ADMIN,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 deprecated_update_tld = policy.DeprecatedRule(
     name="update_tld",
-    check_str=base.RULE_ADMIN
+    check_str=base.RULE_ADMIN,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 deprecated_delete_tld = policy.DeprecatedRule(
     name="delete_tld",
-    check_str=base.RULE_ADMIN
+    check_str=base.RULE_ADMIN,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 
 
@@ -56,9 +66,7 @@ rules = [
                 'method': 'POST'
             }
         ],
-        deprecated_rule=deprecated_create_tld,
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_create_tld
     ),
     policy.DocumentedRuleDefault(
         name="find_tlds",
@@ -71,9 +79,7 @@ rules = [
                 'method': 'GET'
             }
         ],
-        deprecated_rule=deprecated_find_tlds,
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_find_tlds
     ),
     policy.DocumentedRuleDefault(
         name="get_tld",
@@ -86,9 +92,7 @@ rules = [
                 'method': 'GET'
             }
         ],
-        deprecated_rule=deprecated_get_tld,
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_get_tld
     ),
     policy.DocumentedRuleDefault(
         name="update_tld",
@@ -101,9 +105,7 @@ rules = [
                 'method': 'PATCH'
             }
         ],
-        deprecated_rule=deprecated_update_tld,
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_update_tld
     ),
     policy.DocumentedRuleDefault(
         name="delete_tld",
@@ -116,9 +118,7 @@ rules = [
                 'method': 'DELETE'
             }
         ],
-        deprecated_rule=deprecated_delete_tld,
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_delete_tld
     )
 ]
 

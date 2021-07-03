@@ -24,23 +24,33 @@ The zone export API now supports system scope and default roles.
 
 deprecated_zone_export = policy.DeprecatedRule(
     name="zone_export",
-    check_str=base.RULE_ADMIN_OR_OWNER
+    check_str=base.RULE_ADMIN_OR_OWNER,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 deprecated_create_zone_export = policy.DeprecatedRule(
     name="create_zone_export",
-    check_str=base.RULE_ADMIN_OR_OWNER
+    check_str=base.RULE_ADMIN_OR_OWNER,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 deprecated_find_zone_exports = policy.DeprecatedRule(
     name="find_zone_exports",
-    check_str=base.RULE_ADMIN_OR_OWNER
+    check_str=base.RULE_ADMIN_OR_OWNER,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 deprecated_get_zone_export = policy.DeprecatedRule(
     name="get_zone_export",
-    check_str=base.RULE_ADMIN_OR_OWNER
+    check_str=base.RULE_ADMIN_OR_OWNER,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 deprecated_update_zone_export = policy.DeprecatedRule(
     name="update_zone_export",
-    check_str=base.RULE_ADMIN_OR_OWNER
+    check_str=base.RULE_ADMIN_OR_OWNER,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 
 
@@ -56,9 +66,7 @@ rules = [
                 'method': 'GET'
             }
         ],
-        deprecated_rule=deprecated_zone_export,
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_zone_export
     ),
     policy.DocumentedRuleDefault(
         name="create_zone_export",
@@ -71,9 +79,7 @@ rules = [
                 'method': 'POST'
             }
         ],
-        deprecated_rule=deprecated_create_zone_export,
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_create_zone_export
     ),
     policy.DocumentedRuleDefault(
         name="find_zone_exports",
@@ -86,9 +92,7 @@ rules = [
                 'method': 'GET'
             }
         ],
-        deprecated_rule=deprecated_find_zone_exports,
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_find_zone_exports
     ),
     policy.DocumentedRuleDefault(
         name="get_zone_export",
@@ -104,9 +108,7 @@ rules = [
                 'method': 'GET'
             }
         ],
-        deprecated_rule=deprecated_get_zone_export,
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_get_zone_export
     ),
     policy.DocumentedRuleDefault(
         name="update_zone_export",
@@ -119,9 +121,7 @@ rules = [
                 'method': 'POST'
             }
         ],
-        deprecated_rule=deprecated_update_zone_export,
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_update_zone_export
     )
 ]
 
