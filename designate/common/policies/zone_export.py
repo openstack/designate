@@ -52,6 +52,12 @@ deprecated_update_zone_export = policy.DeprecatedRule(
     deprecated_reason=DEPRECATED_REASON,
     deprecated_since=versionutils.deprecated.WALLABY
 )
+deprecated_delete_zone_export = policy.DeprecatedRule(
+    name="delete_zone_export",
+    check_str=base.RULE_ADMIN_OR_OWNER,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
+)
 
 
 rules = [
@@ -103,9 +109,6 @@ rules = [
             {
                 'path': '/v2/zones/tasks/exports/{zone_export_id}',
                 'method': 'GET'
-            }, {
-                'path': '/v2/zones/tasks/exports/{zone_export_id}/export',
-                'method': 'GET'
             }
         ],
         deprecated_rule=deprecated_get_zone_export
@@ -122,7 +125,20 @@ rules = [
             }
         ],
         deprecated_rule=deprecated_update_zone_export
-    )
+    ),
+    policy.DocumentedRuleDefault(
+        name="delete_zone_export",
+        check_str=base.SYSTEM_ADMIN_OR_PROJECT_MEMBER,
+        scope_types=['system', 'project'],
+        description="Delete a zone export",
+        operations=[
+            {
+                'path': '/v2/zones/tasks/exports/{zone_export_id}',
+                'method': 'DELETE'
+            }
+        ],
+        deprecated_rule=deprecated_delete_zone_export
+    ),
 ]
 
 
