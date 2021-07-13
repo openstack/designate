@@ -24,23 +24,33 @@ The tsigkey API now supports system scope and default roles.
 
 deprecated_create_tsigkey = policy.DeprecatedRule(
     name="create_tsigkey",
-    check_str=base.RULE_ADMIN
+    check_str=base.RULE_ADMIN,
+    deprecated_reason=DEPERCATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 deprecated_find_tsigkeys = policy.DeprecatedRule(
     name="find_tsigkeys",
-    check_str=base.RULE_ADMIN
+    check_str=base.RULE_ADMIN,
+    deprecated_reason=DEPERCATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 deprecated_get_tsigkey = policy.DeprecatedRule(
     name="get_tsigkey",
-    check_str=base.RULE_ADMIN
+    check_str=base.RULE_ADMIN,
+    deprecated_reason=DEPERCATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 deprecated_update_tsigkey = policy.DeprecatedRule(
     name="update_tsigkey",
-    check_str=base.RULE_ADMIN
+    check_str=base.RULE_ADMIN,
+    deprecated_reason=DEPERCATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 deprecated_delete_tsigkey = policy.DeprecatedRule(
     name="delete_tsigkey",
-    check_str=base.RULE_ADMIN
+    check_str=base.RULE_ADMIN,
+    deprecated_reason=DEPERCATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 
 
@@ -56,9 +66,7 @@ rules = [
                 'method': 'POST'
             }
         ],
-        deprecated_rule=deprecated_create_tsigkey,
-        deprecated_reason=DEPERCATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_create_tsigkey
     ),
     policy.DocumentedRuleDefault(
         name="find_tsigkeys",
@@ -71,9 +79,7 @@ rules = [
                 'method': 'GET'
             }
         ],
-        deprecated_rule=deprecated_find_tsigkeys,
-        deprecated_reason=DEPERCATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_find_tsigkeys
     ),
     policy.DocumentedRuleDefault(
         name="get_tsigkey",
@@ -83,15 +89,10 @@ rules = [
         operations=[
             {
                 'path': '/v2/tsigkeys/{tsigkey_id}',
-                'method': 'PATCH'
-            }, {
-                'path': '/v2/tsigkeys/{tsigkey_id}',
                 'method': 'GET'
             }
         ],
-        deprecated_rule=deprecated_get_tsigkey,
-        deprecated_reason=DEPERCATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_get_tsigkey
     ),
     policy.DocumentedRuleDefault(
         name="update_tsigkey",
@@ -104,9 +105,7 @@ rules = [
                 'method': 'PATCH'
             }
         ],
-        deprecated_rule=deprecated_update_tsigkey,
-        deprecated_reason=DEPERCATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_update_tsigkey
     ),
     policy.DocumentedRuleDefault(
         name="delete_tsigkey",
@@ -119,9 +118,7 @@ rules = [
                 'method': 'DELETE'
             }
         ],
-        deprecated_rule=deprecated_delete_tsigkey,
-        deprecated_reason=DEPERCATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_delete_tsigkey
     )
 ]
 

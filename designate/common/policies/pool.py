@@ -24,31 +24,45 @@ The pool API now supports system scope and default roles.
 
 deprecated_create_pool = policy.DeprecatedRule(
     name="create_pool",
-    check_str=base.RULE_ADMIN
+    check_str=base.RULE_ADMIN,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 deprecated_find_pools = policy.DeprecatedRule(
     name="find_pools",
-    check_str=base.RULE_ADMIN
+    check_str=base.RULE_ADMIN,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 deprecated_find_pool = policy.DeprecatedRule(
     name="find_pools",
-    check_str=base.RULE_ADMIN
+    check_str=base.RULE_ADMIN,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 deprecated_get_pool = policy.DeprecatedRule(
     name="get_pool",
-    check_str=base.RULE_ADMIN
+    check_str=base.RULE_ADMIN,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 deprecated_update_pool = policy.DeprecatedRule(
     name="update_pool",
-    check_str=base.RULE_ADMIN
+    check_str=base.RULE_ADMIN,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 deprecated_delete_pool = policy.DeprecatedRule(
     name="delete_pool",
-    check_str=base.RULE_ADMIN
+    check_str=base.RULE_ADMIN,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 deprecated_zone_created_forced_pool = policy.DeprecatedRule(
     name="zone_create_forced_pool",
-    check_str=base.RULE_ADMIN
+    check_str=base.RULE_ADMIN,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 
 
@@ -58,9 +72,7 @@ rules = [
         check_str=base.SYSTEM_ADMIN,
         scope_types=['system'],
         description='Create pool.',
-        deprecated_rule=deprecated_create_pool,
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_create_pool
     ),
     policy.DocumentedRuleDefault(
         name="find_pools",
@@ -73,9 +85,7 @@ rules = [
                 'method': 'GET'
             }
         ],
-        deprecated_rule=deprecated_find_pools,
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_find_pools
     ),
     policy.DocumentedRuleDefault(
         name="find_pool",
@@ -88,9 +98,7 @@ rules = [
                 'method': 'GET'
             }
         ],
-        deprecated_rule=deprecated_find_pool,
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_find_pool
     ),
     policy.DocumentedRuleDefault(
         name="get_pool",
@@ -103,27 +111,21 @@ rules = [
                 'method': 'GET'
             }
         ],
-        deprecated_rule=deprecated_get_pool,
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_get_pool
     ),
     policy.RuleDefault(
         name="update_pool",
         check_str=base.SYSTEM_ADMIN,
         scope_types=['system'],
         description='Update pool.',
-        deprecated_rule=deprecated_update_pool,
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_update_pool
     ),
     policy.RuleDefault(
         name="delete_pool",
         check_str=base.SYSTEM_ADMIN,
         scope_types=['system'],
         description='Delete pool.',
-        deprecated_rule=deprecated_delete_pool,
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_delete_pool
     ),
     policy.DocumentedRuleDefault(
         name="zone_create_forced_pool",
@@ -136,9 +138,7 @@ rules = [
                 'method': 'POST'
             }
         ],
-        deprecated_rule=deprecated_zone_created_forced_pool,
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_zone_created_forced_pool
     )
 ]
 

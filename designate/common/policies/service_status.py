@@ -24,15 +24,21 @@ The service status API now supports system scope and default roles.
 
 deprecated_find_service_status = policy.DeprecatedRule(
     name="find_service_status",
-    check_str=base.RULE_ADMIN
+    check_str=base.RULE_ADMIN,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 deprecated_find_service_statuses = policy.DeprecatedRule(
     name="find_service_statuses",
-    check_str=base.RULE_ADMIN
+    check_str=base.RULE_ADMIN,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 deprecated_update_service_status = policy.DeprecatedRule(
     "update_service_status",
-    base.RULE_ADMIN
+    base.RULE_ADMIN,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 
 
@@ -48,9 +54,7 @@ rules = [
                 'method': 'GET'
             }
         ],
-        deprecated_rule=deprecated_find_service_status,
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_find_service_status
     ),
     policy.DocumentedRuleDefault(
         name="find_service_statuses",
@@ -63,17 +67,13 @@ rules = [
                 'method': 'GET'
             }
         ],
-        deprecated_rule=deprecated_find_service_statuses,
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_find_service_statuses
     ),
     policy.RuleDefault(
         name="update_service_status",
         check_str=base.SYSTEM_ADMIN,
         scope_types=['system'],
-        deprecated_rule=deprecated_update_service_status,
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_update_service_status
     )
 ]
 

@@ -257,6 +257,10 @@ class IncorrectZoneTransferKey(Forbidden):
     error_type = 'invalid_key'
 
 
+class InvalidTokenScope(Forbidden):
+    error_type = 'invalid_token_scope'
+
+
 class Duplicate(DesignateException):
     expected = True
     error_code = 409
@@ -474,3 +478,12 @@ class LastServerDeleteNotAllowed(BadRequest):
 class ResourceNotFound(NotFound):
     # TODO(kiall): Should this be extending NotFound??
     pass
+
+
+class MissingProjectID(BadRequest):
+    # Note: This should be 400, but is 401 for compatibility with
+    #       previous versions of the API.
+    # https://github.com/openstack/designate/blob/stable/wallaby/ \
+    # designate/api/middleware.py#L132
+    error_code = 401
+    error_type = 'missing_project_id'

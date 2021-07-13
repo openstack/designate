@@ -24,23 +24,33 @@ The zone import API now supports system scope and default roles.
 
 deprecated_create_zone_import = policy.DeprecatedRule(
     name="create_zone_import",
-    check_str=base.RULE_ADMIN_OR_OWNER
+    check_str=base.RULE_ADMIN_OR_OWNER,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 deprecated_find_zone_imports = policy.DeprecatedRule(
     name="find_zone_imports",
-    check_str=base.RULE_ADMIN_OR_OWNER
+    check_str=base.RULE_ADMIN_OR_OWNER,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 deprecated_get_zone_import = policy.DeprecatedRule(
     name="get_zone_import",
-    check_str=base.RULE_ADMIN_OR_OWNER
+    check_str=base.RULE_ADMIN_OR_OWNER,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 deprecated_update_zone_import = policy.DeprecatedRule(
     name="update_zone_import",
-    check_str=base.RULE_ADMIN_OR_OWNER
+    check_str=base.RULE_ADMIN_OR_OWNER,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 deprecated_delete_zone_import = policy.DeprecatedRule(
     name="delete_zone_import",
-    check_str=base.RULE_ADMIN_OR_OWNER
+    check_str=base.RULE_ADMIN_OR_OWNER,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 
 
@@ -56,9 +66,7 @@ rules = [
                 'method': 'POST'
             }
         ],
-        deprecated_rule=deprecated_create_zone_import,
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_create_zone_import
     ),
     policy.DocumentedRuleDefault(
         name="find_zone_imports",
@@ -71,9 +79,7 @@ rules = [
                 'method': 'GET'
             }
         ],
-        deprecated_rule=deprecated_find_zone_imports,
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_find_zone_imports
     ),
     policy.DocumentedRuleDefault(
         name="get_zone_import",
@@ -86,9 +92,7 @@ rules = [
                 'method': 'GET'
             }
         ],
-        deprecated_rule=deprecated_get_zone_import,
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_get_zone_import
     ),
     policy.DocumentedRuleDefault(
         name="update_zone_import",
@@ -101,9 +105,7 @@ rules = [
                 'method': 'POST'
             }
         ],
-        deprecated_rule=deprecated_update_zone_import,
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_update_zone_import
     ),
     policy.DocumentedRuleDefault(
         name="delete_zone_import",
@@ -113,12 +115,10 @@ rules = [
         operations=[
             {
                 'path': '/v2/zones/tasks/imports/{zone_import_id}',
-                'method': 'GET'
+                'method': 'DELETE'
             }
         ],
-        deprecated_rule=deprecated_delete_zone_import,
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_delete_zone_import
     )
 ]
 

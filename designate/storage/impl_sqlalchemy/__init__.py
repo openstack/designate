@@ -1488,6 +1488,12 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
         ).select_from(ljoin)
 
         if not context.all_tenants:
+            # If we have a system scoped token with no project_id and
+            # all_tenants was not used, we don't know what records to return,
+            # so return an empty list.
+            if not context.project_id:
+                return objects.ZoneTransferRequestList()
+
             query = query.where(or_(
                 table.c.tenant_id == context.project_id,
                 table.c.target_tenant_id == context.project_id))
@@ -1498,7 +1504,8 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             exceptions.ZoneTransferRequestNotFound,
             criterion,
             one=one, marker=marker, limit=limit, sort_dir=sort_dir,
-            sort_key=sort_key, query=query, apply_tenant_criteria=False
+            sort_key=sort_key, query=query,
+            apply_tenant_criteria=False
         )
 
     def create_zone_transfer_request(self, context, zone_transfer_request):

@@ -24,11 +24,15 @@ The records API now supports system scope and default roles.
 
 deprecated_find_records = policy.DeprecatedRule(
     name="find_records",
-    check_str=base.RULE_ADMIN_OR_OWNER
+    check_str=base.RULE_ADMIN_OR_OWNER,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 deprecated_count_records = policy.DeprecatedRule(
     name="count_records",
-    check_str=base.RULE_ADMIN_OR_OWNER
+    check_str=base.RULE_ADMIN_OR_OWNER,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
 )
 
 
@@ -47,17 +51,13 @@ rules = [
                 'method': 'GET'
             }
         ],
-        deprecated_rule=deprecated_find_records,
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_find_records
     ),
     policy.RuleDefault(
         name="count_records",
         check_str=base.SYSTEM_OR_PROJECT_READER,
         scope_types=['system', 'project'],
-        deprecated_rule=deprecated_find_records,
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY
+        deprecated_rule=deprecated_find_records
     )
 ]
 
