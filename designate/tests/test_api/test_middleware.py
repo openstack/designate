@@ -102,7 +102,8 @@ class KeystoneContextMiddlewareTest(ApiTestCase):
         # Process the request
         response = app(request)
 
-        self.assertEqual(401, response.status_code)
+        # Ensure request was not blocked
+        self.assertEqual(response, 'FakeResponse')
 
 
 class NoAuthContextMiddlewareTest(ApiTestCase):

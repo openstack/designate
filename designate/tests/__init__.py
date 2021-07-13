@@ -387,6 +387,8 @@ class TestCase(base.BaseTestCase):
         self.central_service = self.start_service('central')
 
         self.admin_context = self.get_admin_context()
+        self.admin_context_all_tenants = self.get_admin_context(
+            all_tenants=True)
         storage_driver = CONF['service:central'].storage_driver
         self.storage = storage.get_storage(storage_driver)
 
@@ -436,10 +438,11 @@ class TestCase(base.BaseTestCase):
     def get_context(self, **kwargs):
         return DesignateContext(**kwargs)
 
-    def get_admin_context(self):
+    def get_admin_context(self, **kwargs):
         return DesignateContext.get_admin_context(
             project_id=utils.generate_uuid(),
-            user_id=utils.generate_uuid())
+            user_id=utils.generate_uuid(),
+            **kwargs)
 
     # Fixture methods
     def get_quota_fixture(self, fixture=0, values=None):
@@ -794,7 +797,7 @@ class TestCase(base.BaseTestCase):
 
             # Retrieve it, and ensure it's the same
             zone_import = self.central_service.get_zone_import(
-                self.admin_context, zone_import_id)
+                self.admin_context_all_tenants, zone_import_id)
 
             # If the import is done, we're done
             if zone_import.status == 'COMPLETE':

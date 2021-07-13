@@ -17,6 +17,7 @@ from oslo_log import log as logging
 import pecan
 
 from designate.api.v2.controllers import rest
+from designate.common import constants
 from designate import exceptions
 from designate.objects.adapters import DesignateAdapter
 from designate import policy
@@ -31,7 +32,11 @@ class ZoneExportController(rest.RestController):
     @utils.validate_uuid('export_id')
     def get_all(self, export_id):
         context = pecan.request.environ['context']
-        target = {'tenant_id': context.project_id}
+        if policy.enforce_new_defaults():
+            target = {constants.RBAC_PROJECT_ID: context.project_id}
+        else:
+            target = {'tenant_id': context.project_id}
+
         policy.check('zone_export', context, target)
 
         export = self.central_api.get_zone_export(context, export_id)

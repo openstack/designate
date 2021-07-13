@@ -12,17 +12,14 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-
+from oslo_log import versionutils
 from oslo_policy import policy
 
 
-RULE_ADMIN_OR_OWNER = 'rule:admin_or_owner'
-RULE_ADMIN = 'rule:admin'
-RULE_ZONE_PRIMARY_OR_ADMIN = \
-    "('PRIMARY':%(zone_type)s and rule:admin_or_owner) "\
-    "OR ('SECONDARY':%(zone_type)s AND is_admin:True)"
-RULE_ZONE_TRANSFER = "rule:admin_or_owner OR tenant:%(target_tenant_id)s " \
-                     "OR None:%(target_tenant_id)s"
+DEPRECATED_REASON = """
+The designate API now supports system scope and default roles.
+"""
+
 RULE_ANY = "@"
 
 # Generic policy check string for system administrators. These are the people
@@ -59,37 +56,56 @@ SYSTEM_OR_PROJECT_READER = (
     '(' + SYSTEM_READER + ') or (' + PROJECT_READER + ')'
 )
 
+# Designate specific "secure RBAC" rules
+ALL_TENANTS = 'True:%(all_tenants)s'
+
+ALL_TENANTS_READER = ALL_TENANTS + ' and role:reader'
+
+SYSTEM_OR_PROJECT_READER_OR_ALL_TENANTS_READER = (
+    '(' + SYSTEM_READER + ') or (' + PROJECT_READER + ') or (' +
+    ALL_TENANTS_READER + ')'
+)
+
+RULE_ZONE_TRANSFER = (
+    '(' + SYSTEM_ADMIN_OR_PROJECT_MEMBER + ') or '
+    'project_id:%(target_project_id)s or '
+    'None:%(target_project_id)s')
+
+
+# Deprecated in Wallaby as part of the "secure RBAC" work.
+# TODO(johnsom) remove when the deprecated RBAC rules are removed.
+RULE_ADMIN = 'rule:admin'
+RULE_ADMIN_OR_OWNER = 'rule:admin_or_owner'
+LEGACY_RULE_ZONE_TRANSFER = "rule:admin_or_owner OR " \
+                            "tenant:%(target_tenant_id)s " \
+                            "OR None:%(target_tenant_id)s"
+
+deprecated_default = policy.DeprecatedRule(
+    name="default",
+    check_str=RULE_ADMIN_OR_OWNER,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
+)
+
 rules = [
+    # TODO(johnsom) remove when the deprecated RBAC rules are removed.
     policy.RuleDefault(
         name="admin",
         check_str="role:admin or is_admin:True"),
-    policy.RuleDefault(
-        name="primary_zone",
-        check_str="target.zone_type:SECONDARY"),
+    # TODO(johnsom) remove when the deprecated RBAC rules are removed.
     policy.RuleDefault(
         name="owner",
         check_str="tenant:%(tenant_id)s"),
+    # TODO(johnsom) remove when the deprecated RBAC rules are removed.
     policy.RuleDefault(
         name="admin_or_owner",
         check_str="rule:admin or rule:owner"),
+
+    # Default policy
     policy.RuleDefault(
         name="default",
-        check_str="rule:admin_or_owner"),
-    policy.RuleDefault(
-        name="target",
-        check_str="tenant:%(target_tenant_id)s"),
-    policy.RuleDefault(
-        name="owner_or_target",
-        check_str="rule:target or rule:owner"),
-    policy.RuleDefault(
-        name="admin_or_owner_or_target",
-        check_str="rule:owner_or_target or rule:admin"),
-    policy.RuleDefault(
-        name="admin_or_target",
-        check_str="rule:admin or rule:target"),
-    policy.RuleDefault(
-        name="zone_primary_or_admin",
-        check_str=RULE_ZONE_PRIMARY_OR_ADMIN)
+        check_str=SYSTEM_ADMIN_OR_PROJECT_MEMBER,
+        deprecated_rule=deprecated_default),
 ]
 
 

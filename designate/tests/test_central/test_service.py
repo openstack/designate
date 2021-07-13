@@ -36,6 +36,7 @@ from designate import objects
 from designate.storage.impl_sqlalchemy import tables
 from designate.tests import fixtures
 from designate.tests.test_central import CentralTestCase
+from designate import utils
 
 LOG = logging.getLogger(__name__)
 
@@ -3537,7 +3538,7 @@ class CentralServiceTest(CentralTestCase):
     # Zone Import Tests
     def test_create_zone_import(self):
         # Create a Zone Import
-        context = self.get_context()
+        context = self.get_context(project_id=utils.generate_uuid())
         request_body = self.get_zonefile_fixture()
         zone_import = self.central_service.create_zone_import(context,
                                                               request_body)
@@ -3551,7 +3552,7 @@ class CentralServiceTest(CentralTestCase):
         self.wait_for_import(zone_import.id)
 
     def test_find_zone_imports(self):
-        context = self.get_context()
+        context = self.get_context(project_id=utils.generate_uuid())
 
         # Ensure we have no zone_imports to start with.
         zone_imports = self.central_service.find_zone_imports(
@@ -3568,7 +3569,7 @@ class CentralServiceTest(CentralTestCase):
 
         # Ensure we can retrieve the newly created zone_import
         zone_imports = self.central_service.find_zone_imports(
-                         self.admin_context)
+                         self.admin_context_all_tenants)
         self.assertEqual(1, len(zone_imports))
 
         # Create a second zone_import
@@ -3581,14 +3582,14 @@ class CentralServiceTest(CentralTestCase):
 
         # Ensure we can retrieve both zone_imports
         zone_imports = self.central_service.find_zone_imports(
-                         self.admin_context)
+                         self.admin_context_all_tenants)
         self.assertEqual(2, len(zone_imports))
         self.assertEqual('COMPLETE', zone_imports[0].status)
         self.assertEqual('COMPLETE', zone_imports[1].status)
 
     def test_get_zone_import(self):
         # Create a Zone Import
-        context = self.get_context()
+        context = self.get_context(project_id=utils.generate_uuid())
         request_body = self.get_zonefile_fixture()
         zone_import = self.central_service.create_zone_import(
                     context, request_body)
@@ -3598,7 +3599,7 @@ class CentralServiceTest(CentralTestCase):
 
         # Retrieve it, and ensure it's the same
         zone_import = self.central_service.get_zone_import(
-            self.admin_context, zone_import.id)
+            self.admin_context_all_tenants, zone_import.id)
 
         self.assertEqual(zone_import.id, zone_import['id'])
         self.assertEqual(zone_import.status, zone_import['status'])
@@ -3606,7 +3607,7 @@ class CentralServiceTest(CentralTestCase):
 
     def test_update_zone_import(self):
         # Create a Zone Import
-        context = self.get_context()
+        context = self.get_context(project_id=utils.generate_uuid())
         request_body = self.get_zonefile_fixture()
         zone_import = self.central_service.create_zone_import(
                     context, request_body)
@@ -3618,7 +3619,7 @@ class CentralServiceTest(CentralTestCase):
 
         # Perform the update
         zone_import = self.central_service.update_zone_import(
-                self.admin_context, zone_import)
+                self.admin_context_all_tenants, zone_import)
 
         # Fetch the zone_import again
         zone_import = self.central_service.get_zone_import(context,
@@ -3629,7 +3630,7 @@ class CentralServiceTest(CentralTestCase):
 
     def test_delete_zone_import(self):
         # Create a Zone Import
-        context = self.get_context()
+        context = self.get_context(project_id=utils.generate_uuid())
         request_body = self.get_zonefile_fixture()
         zone_import = self.central_service.create_zone_import(
                     context, request_body)

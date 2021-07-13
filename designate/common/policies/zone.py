@@ -46,6 +46,12 @@ deprecated_get_zone_servers = policy.DeprecatedRule(
     deprecated_reason=DEPRECATED_REASON,
     deprecated_since=versionutils.deprecated.WALLABY
 )
+deprecated_get_zone_ns_records = policy.DeprecatedRule(
+    name="get_zone_ns_records",
+    check_str=base.RULE_ADMIN_OR_OWNER,
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
+)
 deprecated_find_zones = policy.DeprecatedRule(
     name="find_zones",
     check_str=base.RULE_ADMIN_OR_OWNER,
@@ -131,12 +137,6 @@ rules = [
             {
                 'path': '/v2/zones/{zone_id}',
                 'method': 'GET'
-            }, {
-                'path': '/v2/zones/{zone_id}',
-                'method': 'PATCH'
-            }, {
-                'path': '/v2/zones/{zone_id}/recordsets/{recordset_id}',
-                'method': 'PUT'
             }
         ],
         deprecated_rule=deprecated_get_zone
@@ -146,6 +146,19 @@ rules = [
         check_str=base.SYSTEM_OR_PROJECT_READER,
         scope_types=['system', 'project'],
         deprecated_rule=deprecated_get_zone_servers
+    ),
+    policy.DocumentedRuleDefault(
+        name="get_zone_ns_records",
+        check_str=base.SYSTEM_OR_PROJECT_READER,
+        scope_types=['system', 'project'],
+        description="Get the Name Servers for a Zone",
+        operations=[
+            {
+                'path': '/v2/zones/{zone_id}/nameservers',
+                'method': 'GET'
+            }
+        ],
+        deprecated_rule=deprecated_get_zone_ns_records
     ),
     policy.DocumentedRuleDefault(
         name="find_zones",
