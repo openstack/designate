@@ -195,3 +195,11 @@ Objects CAA Record
     :members:
     :undoc-members:
     :show-inheritance:
+
+Objects CERT Record
+====================
+.. automodule:: designate.objects.rrdata_cert
+
+    :members:
+    :undoc-members:
+    :show-inheritance:
