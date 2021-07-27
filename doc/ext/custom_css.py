@@ -13,4 +13,4 @@
 # under the License.
 
 def setup(app):
-    app.add_stylesheet('designate-docs.css')
+    app.add_css_file('designate-docs.css')

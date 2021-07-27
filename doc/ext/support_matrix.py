@@ -442,8 +442,8 @@ def copy_assets(app, exception):
 
 
 def add_assets(app):
-    app.add_stylesheet('support-matrix.css')
-    app.add_javascript('support-matrix.js')
+    app.add_css_file('support-matrix.css')
+    app.add_js_file('support-matrix.js')
 
 
 def setup(app):
