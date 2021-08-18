@@ -312,7 +312,7 @@ class TestZoneActor(oslotest.base.BaseTestCase):
         )
 
     def test_invalid_action(self):
-        self.assertRaisesRegexp(
+        self.assertRaisesRegex(
             exceptions.BadAction, 'Unexpected action: BAD',
             self.actor._validate_action, 'BAD'
         )

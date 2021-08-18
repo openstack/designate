@@ -158,7 +158,7 @@ class NS1BackendTestCase(designate.tests.TestCase):
             status_code=404,
         )
 
-        self.assertRaisesRegexp(
+        self.assertRaisesRegex(
             exceptions.Backend,
             '500 Server Error: None for url: '
             '%s' % self.api_address,
@@ -206,7 +206,7 @@ class NS1BackendTestCase(designate.tests.TestCase):
         req_mock.delete(self.api_address, status_code=500)
         req_mock.get(self.api_address, status_code=200)
 
-        self.assertRaisesRegexp(
+        self.assertRaisesRegex(
             exceptions.Backend,
             '500 Server Error: None for url: '
             '%s' % self.api_address,
