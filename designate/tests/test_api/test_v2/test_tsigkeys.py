@@ -49,7 +49,7 @@ class ApiV2TsigKeysTest(ApiV2TestCase):
         self.assertIsNone(response.json['updated_at'])
 
         # Check the supplied values returned are what we expect
-        self.assertDictContainsSubset(fixture, response.json)
+        self.assertLessEqual(fixture.items(), response.json.items())
 
     def test_create_tsigkey_validation(self):
         # NOTE: The schemas should be tested separately to the API. So we

@@ -2903,15 +2903,18 @@ class CentralServiceTest(CentralTestCase):
 
         # Compare the actual values of attributes and ns_records
         for k in range(0, len(values['attributes'])):
-            self.assertDictContainsSubset(
-                values['attributes'][k],
+            self.assertLessEqual(
+                values['attributes'][k].items(),
                 pool['attributes'][k].to_primitive()['designate_object.data']
+                .items()
             )
 
         for k in range(0, len(values['ns_records'])):
-            self.assertDictContainsSubset(
-                values['ns_records'][k],
-                pool['ns_records'][k].to_primitive()['designate_object.data'])
+            self.assertLessEqual(
+                values['ns_records'][k].items(),
+                pool['ns_records'][k].to_primitive()['designate_object.data']
+                .items()
+            )
 
     def test_get_pool(self):
         # Create a server pool
