@@ -65,6 +65,7 @@ rectype2iparectype = {'A': ('arecord', '%(data)s'),
                       'SSHFP': ('sshfprecord', '%(data)s'),
                       'NAPTR': ('naptrrecord', '%(data)s'),
                       'CAA': ('caarecord', '%(data)s'),
+                      'CERT': ('certrecord', '%(data)s'),
                       }
 
 

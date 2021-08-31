@@ -102,6 +102,8 @@ class StringFields(ovoo_fields.StringField):
     RE_KVP = r'^\s[A-Za-z0-9]+=[A-Za-z0-9]+'
     RE_URL_MAIL = r'^mailto:[A-Za-z0-9_\-]+@.*'
     RE_URL_HTTP = r'^http(s)?://.*/'
+    RE_CERT_TYPE = r'(^[A-Z]+$)|(^[0-9]+$)'
+    RE_CERT_ALGO = r'(^[A-Z]+[A-Z0-9\-]+[A-Z0-9]$)|(^[0-9]+$)'
 
     def __init__(self, nullable=False, read_only=False,
                  default=ovoo_fields.UnspecifiedDefault, description='',
@@ -386,6 +388,30 @@ class CaaPropertyField(StringFields):
         else:
             raise ValueError("Property tag %s must be 'issue', 'issuewild'"
                              " or 'iodef'" % value)
+        return value
+
+
+class CertTypeField(StringFields):
+    def __init__(self, **kwargs):
+        super(CertTypeField, self).__init__(**kwargs)
+
+    def coerce(self, obj, attr, value):
+        value = super(CertTypeField, self).coerce(obj, attr, value)
+        if not re.match(self.RE_CERT_TYPE, "%s" % value):
+            raise ValueError("Cert type %s is not a valid Mnemonic or "
+                             "value" % value)
+        return value
+
+
+class CertAlgoField(StringFields):
+    def __init__(self, **kwargs):
+        super(CertAlgoField, self).__init__(**kwargs)
+
+    def coerce(self, obj, attr, value):
+        value = super(CertAlgoField, self).coerce(obj, attr, value)
+        if not re.match(self.RE_CERT_ALGO, "%s" % value):
+            raise ValueError("Cert Algo %s is not a valid Mnemonic or "
+                             "value" % value)
         return value
 
 

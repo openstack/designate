@@ -54,7 +54,7 @@ DESIGNATE_OPTS = [
     # Supported record types
     cfg.ListOpt('supported_record_type', help='Supported record types',
                 default=['A', 'AAAA', 'CNAME', 'MX', 'SRV', 'TXT', 'SPF', 'NS',
-                         'PTR', 'SSHFP', 'SOA', 'NAPTR', 'CAA']),
+                         'PTR', 'SSHFP', 'SOA', 'NAPTR', 'CAA', 'CERT']),
 
     # TCP Settings
     cfg.IntOpt('backlog',
