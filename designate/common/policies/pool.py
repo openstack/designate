@@ -35,7 +35,7 @@ deprecated_find_pools = policy.DeprecatedRule(
     deprecated_since=versionutils.deprecated.WALLABY
 )
 deprecated_find_pool = policy.DeprecatedRule(
-    name="find_pools",
+    name="find_pool",
     check_str=base.RULE_ADMIN,
     deprecated_reason=DEPRECATED_REASON,
     deprecated_since=versionutils.deprecated.WALLABY
