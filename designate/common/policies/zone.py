@@ -158,7 +158,7 @@ rules = [
                 'method': 'GET'
             }
         ],
-        deprecated_rule=deprecated_get_zone_servers
+        deprecated_rule=deprecated_find_zones
     ),
     policy.DocumentedRuleDefault(
         name="update_zone",
@@ -234,7 +234,7 @@ rules = [
         name="touch_zone",
         check_str=base.SYSTEM_ADMIN_OR_PROJECT_MEMBER,
         scope_types=['system', 'project'],
-        deprecated_rule=deprecated_purge_zones
+        deprecated_rule=deprecated_touch_zone
     )
 ]
 
