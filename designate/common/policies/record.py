@@ -57,7 +57,7 @@ rules = [
         name="count_records",
         check_str=base.SYSTEM_OR_PROJECT_READER,
         scope_types=['system', 'project'],
-        deprecated_rule=deprecated_find_records
+        deprecated_rule=deprecated_count_records
     )
 ]
 
