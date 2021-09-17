@@ -130,7 +130,7 @@ rules = [
                 'method': 'PATCH'
             }
         ],
-        deprecated_rule=deprecated_get_blacklist
+        deprecated_rule=deprecated_update_blacklist
     ),
     policy.DocumentedRuleDefault(
         name="delete_blacklist",
