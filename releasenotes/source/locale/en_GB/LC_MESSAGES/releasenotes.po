@@ -7,11 +7,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Designate Release Notes\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-08-31 00:58+0000\n"
+"POT-Creation-Date: 2021-09-17 22:37+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2021-03-21 10:19+0000\n"
+"PO-Revision-Date: 2021-09-18 07:36+0000\n"
 "Last-Translator: Andi Chandler <andi@gowling.com>\n"
 "Language-Team: English (United Kingdom)\n"
 "Language: en_GB\n"
@@ -29,6 +29,9 @@ msgstr "10.0.0"
 
 msgid "11.0.0"
 msgstr "11.0.0"
+
+msgid "12.0.0"
+msgstr "12.0.0"
 
 msgid "2.0.0"
 msgstr "2.0.0"
@@ -59,6 +62,9 @@ msgstr "8.0.0"
 
 msgid "8.0.1"
 msgstr "8.0.1"
+
+msgid "8.0.1-5"
+msgstr "8.0.1-5"
 
 msgid "9.0.0"
 msgstr "9.0.0"
@@ -809,6 +815,9 @@ msgstr "V1 API removal is complete in this version of designate."
 
 msgid "Victoria Series Release Notes"
 msgstr "Victoria Series Release Notes"
+
+msgid "Wallaby Series Release Notes"
+msgstr "Wallaby Series Release Notes"
 
 msgid ""
 "We fixed this by introducing a new unique constraint to the service_statuses "
