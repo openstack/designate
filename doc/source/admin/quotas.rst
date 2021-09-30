@@ -19,13 +19,33 @@
 View and Manage Quotas
 ======================
 
-Quotas exist in Designate for various resources, these are configurable by an
-operator globally, as well as on a per-tenant basis.
+Quotas exist in Designate for various resources. You can configure quotas
+globally or on a per-project basis.
 
-View Quotas
------------
+Viewing Quotas
+--------------
 
-Users can view their quotas with a simple API call:
+.. _Designate plugin: https://docs.openstack.org/python-designateclient/latest/user/shell-v2.html
+.. _OpenStack Client: https://docs.openstack.org/python-openstackclient/latest/
+
+The `Designate plugin`_ for the `OpenStack Client`_ allows users to query their
+current quota using the ``dns quota list`` command.
+
+.. code-block:: console
+
+    $ openstack dns quota list
+    +-------------------+-------+
+    | Field             | Value |
+    +-------------------+-------+
+    | api_export_size   | 1000  |
+    | recordset_records | 20    |
+    | zone_records      | 500   |
+    | zone_recordsets   | 500   |
+    | zones             | 10    |
+    +-------------------+-------+
+
+Users can also view their quotas with a simple
+`View Current Project's Quotas Designate API <https://docs.openstack.org/api-ref/dns/#view-current-project-s-quotas>`_ call:
 
 .. code-block:: http
 
@@ -46,24 +66,130 @@ Response:
     "recordset_records": 20,
     "zone_records": 500,
     "zone_recordsets": 500,
-    "zones": 500
+    "zones": 10
   }
 
-Administrators with the ability to use the ``X-Auth-All-Projects`` header
-can view the quotas of any user by making a similar API call to
-``/v2/quotas/tenant``.
+Administrators with a cross-project read role can query the quotas for other
+projects using the ``--project-id`` option to the ``dns quota list`` command or by
+specifying a project_id when making the
+`View Quotas Designate API <https://docs.openstack.org/api-ref/dns/#view-quotas>`_ call.
+
+.. code-block:: console
+
+    $ openstack dns quota list --project-id ecd4341280d645e5959d32a4b7659da1
+    +-------------------+-------+
+    | Field             | Value |
+    +-------------------+-------+
+    | api_export_size   | 1000  |
+    | recordset_records | 20    |
+    | zone_records      | 500   |
+    | zone_recordsets   | 500   |
+    | zones             | 20    |
+    +-------------------+-------+
+
+.. code-block:: http
+
+  GET /v2/quotas/ecd4341280d645e5959d32a4b7659da1 HTTP/1.1
+  Accept: application/json
+  Content-Type: application/json
+
+Modifying Quotas
+----------------
+
+You can edit Designate quotas on a per-project basis. An administrator
+can edit quotas for any project, but they must have an `all_tenants` role or
+use a system scoped admin token.
+
+Administrators can set a custom quota for a project using the
+`OpenStack Client`_ ``dns quota set`` command.
+
+.. code-block:: console
+
+    $ openstack dns quota set --project-id ecd4341280d645e5959d32a4b7659da1 --zones 30
+    +-------------------+-------+
+    | Field             | Value |
+    +-------------------+-------+
+    | api_export_size   | 1000  |
+    | recordset_records | 20    |
+    | zone_records      | 500   |
+    | zone_recordsets   | 500   |
+    | zones             | 30    |
+    +-------------------+-------+
+
+Below is an example of setting a quota using the
+`Set Quotas Designate API <https://docs.openstack.org/api-ref/dns/#set-quotas>`_.
+
+.. code-block:: http
+
+  PATCH /v2/quotas/ecd4341280d645e5959d32a4b7659da1 HTTP/1.1
+  Accept: application/json
+  Content-Type: application/json
+  X-Auth-All-Projects: True
+
+  {
+    "zones": 30
+  }
+
+The response would be:
+
+.. code-block:: http
+
+  HTTP/1.1 200 OK
+  Content-Type: application/json; charset=UTF-8
+  X-Openstack-Request-Id: req-ee264c7d-d9f3-4de8-92ec-7de4dc93a255
+
+  {
+    "api_export_size": 1000,
+    "recordset_records": 20,
+    "zone_records": 500,
+    "zone_recordsets": 500,
+    "zones": 30
+  }
+
+Resetting Quotas
+----------------
+
+You can reset custom quotas for a project to their default values by using the
+``dns quota reset`` command. Administrators can reset quotas for any project, but
+they must have an `all_tenants` role or use a system scoped admin token.
+
+.. code-block:: console
+
+    $ openstack dns quota reset --project-id ecd4341280d645e5959d32a4b7659da1
+
+.. note:: There is no output from a successful ``dns quota reset`` command.
+
+Below is an example of resetting a project's quota via the
+`Reset Quota Designate API <https://docs.openstack.org/api-ref/dns/#reset-quotas>`_.
+
+.. code-block:: http
+
+  DELETE /v2/quotas/ecd4341280d645e5959d32a4b7659da1 HTTP/1.1
+  Accept: application/json
+  Content-Type: application/json
+  X-Auth-All-Projects: True
+
+The response would be:
+
+.. code-block:: http
+
+  HTTP/1.1 204 No Content
+  X-Openstack-Request-Id: req-82b85853-145d-4253-be86-b9aa3116b975
 
 Available Quotas
 ----------------
 
+The quotas available in Designate are listed below with a short description
+and the default values.
+
 Zones
 ^^^^^
 
-+---------+---------------------------------------+---------+
-| Quota   | Description                           | Default |
-+---------+---------------------------------------+---------+
-| zones   | The number of zone allowed per tenant | 10      |
-+---------+---------------------------------------+---------+
++---------+----------------------------------------+---------+
+| Quota   | Description                            | Default |
++---------+----------------------------------------+---------+
+| zones   | The number of zone allowed per project | 10      |
++---------+----------------------------------------+---------+
 
 Recordsets/Records
 ^^^^^^^^^^^^^^^^^^
@@ -78,7 +204,6 @@ Recordsets/Records
 | recordset_records| Number of records allowed per recordset  | 20      |
 +------------------+------------------------------------------+---------+
 
-
 Zone Exports
 ^^^^^^^^^^^^
 
@@ -88,85 +213,45 @@ Zone Exports
 | api_export_size | Number of recordsets allowed in a zone export   | 1000    |
 +-----------------+-------------------------------------------------+---------+
 
-
-Editing Quotas
+Default Quotas
 --------------
 
-Global Configuration
-^^^^^^^^^^^^^^^^^^^^
-
-All of the quotas above can be set as a default for all users by editing the
-``[DEFAULT]`` configuration section, and setting each quota with
-``quota_$name``. for example::
+You can set a default value for each quota that applies to all users by editing
+the ``[DEFAULT]`` configuration section of the ``designate.conf`` file, for
+example::
 
     [DEFAULT]
     ########################
     ## General Configuration
     ########################
-    quota_zones = 500
+    quota_zones = 10
     quota_zone_recordsets = 500
     quota_zone_records = 500
     quota_recordset_records = 20
     quota_api_export_size = 1000
 
-Per-Tenant via API
-^^^^^^^^^^^^^^^^^^
+Project ID Verification
+-----------------------
 
-These quotas can be edited via API on a per-tenant basis. An administrator
-can edit quotas for any tenant, but they must supply the
-``X-Auth-All-Projects`` header, and have permission to use it, they'll also
-need the ``set-quotas`` permission in ``policy.yaml``. For example, an
-admin setting the zones quota for tenant X would look like:
+Although Designate API can accept arbitrary strings as the Project ID to set
+the quota for, actual enforcement of quota will be performed only when the
+project ID of the quota matches the ``project-id`` in the request that
+attempts to create a resource.
 
-.. code-block:: http
-
-  PATCH /v2/quotas/tenantX HTTP/1.1
-  Accept: application/json
-  Content-Type: application/json
-  X-Auth-All-Projects: True
-
-  {
-    "zones": 100
-  }
-
-The response would be:
-
-.. code-block:: http
-
-  HTTP/1.1 200 OK
-  Content-Type: application/json; charset=UTF-8
-  X-Openstack-Request-Id: req-bfcd0723-624c-4ec2-bbd5-99e985efe8db
-
-  {
-    "api_export_size": 1000,
-    "recordset_records": 20,
-    "zone_records": 500,
-    "zone_recordsets": 500,
-    "zones": 100
-  }
-
-Tenant Id verification
-~~~~~~~~~~~~~~~~~~~~~~
-
-Although Designate API can accept arbitrary strings as Tenant ID to set the
-quota for, actual enforcement of quota will be performed only when the
-tenant ID that was set is matching the ``project-id`` in the request
-that attempts to create a resource.
-
-To have some guards against possible mistakes when setting quotas,
-the following option can be enabled in the Designate configuration file:
+To prevent mistakes when specifying the ``project-id`` for a quota, you can
+turn on project ID verification in the Designate configuration file:
 
 .. code-block:: ini
 
    [service:api]
    quotas_verify_project_id = True
 
-Additionally, the ``[keystone]`` section in the configuration file might have
-to be populated with ``keystoneauth`` Session- and Adapter-related options
-specifying how to connect to Keystone and find appropriate Keystone endpoint
-to perform requests against
-(see `keystoneauth documentation <https://docs.openstack.org/keystoneauth/latest>`_
-for more details). Example:
+You must also specify how Designate connects to Keystone and locates the
+appropriate Keystone endpoint with which to perform requests. In the
+``[keystone]`` section, ensure that the Session- and Adapter-related options
+are set.
+
+Here is an example:
 
 .. code-block:: ini
 
@@ -175,19 +260,20 @@ for more details). Example:
    valid_interfaces = internal,public
    region_name = RegionWest
 
-With those settings enabled, Designate will use the incoming token of user
-performing the ``PATCH /v2/quotas/tenantX`` request to make a best effort
-attempt to verify that the requested Tenant ID (``tenantX`` part of the request)
-is indeed a valid Project ID in Keystone.
+See `keystoneauth documentation <https://docs.openstack.org/keystoneauth/latest>`_ for more details.
 
-As a result of this verification, the ``PATCH /v2/quotas/tenantX`` request
-may return additional errors in case of:
+With project ID verification enabled, Designate will use the credentials
+provided with the request to attempt to verify that the project ID is valid in
+Keystone.
+
+As a result of this verification, the request might return additional errors in
+these cases:
 
 - when the Keystone V3 endpoint could not be found in the service catalog
   (as specified in ``[keystone]`` section) - ``504`` error is returned
 - when the authentication with incoming token was successful
   but the project id was not actually found - ``400`` is returned
 
-The situation when the authorization with incoming token fails is ignored.
-For best results ensure that the user setting quotas is allowed
-to list projects in Keystone.
+For project ID validation to be successful, the user setting quotas should have
+permission to list projects in Keystone. If the user does not have permission
+to list projects in Keystone, the validation will be skipped.
