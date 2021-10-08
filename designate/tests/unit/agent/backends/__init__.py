@@ -14,6 +14,8 @@ import dns.zone
 
 
 def create_dnspy_zone(name):
+    if not name.endswith('.'):
+        name = name + '.'
     zone_text = (
         '$ORIGIN %(name)s\n%(name)s 3600 IN SOA %(ns)s email.email.com. '
         '1421777854 3600 600 86400 3600\n%(name)s 3600 IN NS %(ns)s\n'

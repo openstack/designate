@@ -126,7 +126,8 @@ class DenominatorBackend(base.AgentBackend):
 
         # Use SOA TTL as zone default TTL
         soa_record = zone.find_rrset(zone.origin, dns.rdatatype.SOA)
-        rname = soa_record.items[0].rname.derelativize(origin=zone.origin)
+        rname = list(soa_record.items)[0].rname.derelativize(
+                                                    origin=zone.origin)
 
         # Lock zone to prevent concurrent changes.
         with self._sync_zone(zone.origin):
@@ -159,7 +160,8 @@ class DenominatorBackend(base.AgentBackend):
             zone_name = zone_name.decode('utf-8')
 
         soa_record = zone.find_rrset(zone.origin, dns.rdatatype.SOA)
-        rname = soa_record.items[0].rname.derelativize(origin=zone.origin)
+        rname = list(soa_record.items)[0].rname.derelativize(
+                                                    origin=zone.origin)
 
         with self._sync_zone(zone.origin):
             # Update zone with a new parameters

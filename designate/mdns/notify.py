@@ -122,7 +122,7 @@ class NotifyEndpoint(base.BaseEndpoint):
                     and response.answer[0].rdtype == dns.rdatatype.SOA:
                 # parse the SOA response and get the serial number
                 rrset = response.answer[0]
-                actual_serial = rrset.to_rdataset().items[0].serial
+                actual_serial = list(rrset.to_rdataset().items)[0].serial
 
             # TODO(vinod): Account for serial number wrap around. Unix
             # timestamps are used where Designate is primary, but secondary
