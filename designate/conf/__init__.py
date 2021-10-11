@@ -14,7 +14,6 @@
 from oslo_config import cfg
 
 from designate.conf import base  # noqa
-from designate.conf import akamai
 from designate.conf import agent
 from designate.conf import api
 from designate.conf import bind9
@@ -41,7 +40,6 @@ from designate.conf import worker
 CONF = cfg.CONF
 
 base.register_opts(CONF)
-akamai.register_opts(CONF)
 agent.register_opts(CONF)
 api.register_opts(CONF)
 bind9.register_opts(CONF)

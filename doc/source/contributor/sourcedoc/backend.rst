@@ -12,15 +12,6 @@ Backend Base
     :undoc-members:
     :show-inheritance:
 
-
-Backend Akamai
-==============
-
-.. automodule:: designate.backend.impl_akamai
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 Backend Bind9
 =============
 

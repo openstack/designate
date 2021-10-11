@@ -1,0 +1,5 @@
+---
+deprecations:
+  - |
+    The Akamai eDNS backend has reached it's end of life and has been removed.
+    Please upgrade to the Akamai v2 backend.

@@ -180,9 +180,6 @@ function configure_designate_tempest() {
             bind9)
                 nameservers="$DESIGNATE_SERVICE_HOST:$DESIGNATE_SERVICE_PORT_DNS"
                 ;;
-            akamai)
-                nameservers="$DESIGNATE_AKAMAI_NAMESERVERS"
-                ;;
             dynect)
                 nameservers="$DESIGNATE_DYNECT_NAMESERVERS"
                 ;;

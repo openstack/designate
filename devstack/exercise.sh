@@ -47,11 +47,6 @@ source $SCRIPT_DIR/settings
 # Used with dig to look up in DNS
 DIG_TIMEOUT=30
 
-if [ "$DESIGNATE_BACKEND_DRIVER" == "akamai" ]; then
-    # Akamai can be slow to propagate changes out
-    DIG_TIMEOUT=300
-fi
-
 # used with dig to look up in DNS
 DIG_FLAGS="-p $DESIGNATE_SERVICE_PORT_DNS @$DESIGNATE_SERVICE_HOST"
 
