@@ -20,11 +20,11 @@ import oslotest.base
 from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
 
+from designate import dnsutils
 from designate import exceptions
 from designate import objects
 from designate.tests.unit import utils
 from designate.worker import processing
-from designate.worker import utils as wutils
 from designate.worker.tasks import zone
 
 CONF = cfg.CONF
@@ -167,7 +167,7 @@ class TestZoneActionOnTarget(oslotest.base.BaseTestCase):
         self.context = mock.Mock()
         self.executor = mock.Mock()
 
-    @mock.patch.object(wutils, 'notify')
+    @mock.patch.object(dnsutils, 'notify')
     def test_call_create(self, mock_notify):
         self.zone = objects.Zone(name='example.org.', action='CREATE')
         self.actor = zone.ZoneActionOnTarget(
@@ -185,7 +185,7 @@ class TestZoneActionOnTarget(oslotest.base.BaseTestCase):
             port=53
         )
 
-    @mock.patch.object(wutils, 'notify')
+    @mock.patch.object(dnsutils, 'notify')
     def test_call_update(self, mock_notify):
         self.zone = objects.Zone(name='example.org.', action='UPDATE')
         self.actor = zone.ZoneActionOnTarget(
@@ -203,7 +203,7 @@ class TestZoneActionOnTarget(oslotest.base.BaseTestCase):
             port=53
         )
 
-    @mock.patch.object(wutils, 'notify')
+    @mock.patch.object(dnsutils, 'notify')
     def test_call_delete(self, mock_notify):
         self.zone = objects.Zone(name='example.org.', action='DELETE')
         self.actor = zone.ZoneActionOnTarget(
@@ -217,7 +217,7 @@ class TestZoneActionOnTarget(oslotest.base.BaseTestCase):
 
         mock_notify.assert_not_called()
 
-    @mock.patch.object(wutils, 'notify')
+    @mock.patch.object(dnsutils, 'notify')
     @mock.patch('time.sleep', mock.Mock())
     def test_call_exception_raised(self, mock_notify):
         self.backend.create_zone.side_effect = exceptions.BadRequest()
@@ -250,7 +250,7 @@ class TestSendNotify(oslotest.base.BaseTestCase):
 
         self.executor = mock.Mock()
 
-    @mock.patch.object(wutils, 'notify')
+    @mock.patch.object(dnsutils, 'notify')
     def test_call_notify(self, mock_notify):
         self.zone = objects.Zone(name='example.org.')
         self.actor = zone.SendNotify(
@@ -267,7 +267,7 @@ class TestSendNotify(oslotest.base.BaseTestCase):
             port=53
         )
 
-    @mock.patch.object(wutils, 'notify')
+    @mock.patch.object(dnsutils, 'notify')
     def test_call_notify_timeout(self, mock_notify):
         mock_notify.side_effect = dns.exception.Timeout()
         self.zone = objects.Zone(name='example.org.')
@@ -282,7 +282,7 @@ class TestSendNotify(oslotest.base.BaseTestCase):
             self.actor
         )
 
-    @mock.patch.object(wutils, 'notify')
+    @mock.patch.object(dnsutils, 'notify')
     def test_call_dont_notify(self, mock_notify):
         CONF.set_override('notify', False, 'service:worker')
 
@@ -668,11 +668,11 @@ class TestPollForZone(oslotest.base.BaseTestCase):
         self.task._max_retries = 3
         self.task._retry_interval = 2
 
-    @mock.patch.object(zone.wutils, 'get_serial', mock.Mock(return_value=10))
+    @mock.patch.object(dnsutils, 'get_serial', mock.Mock(return_value=10))
     def test_get_serial(self):
         self.assertEqual(10, self.task._get_serial())
 
-        zone.wutils.get_serial.assert_called_with(
+        dnsutils.get_serial.assert_called_with(
             'example.org.',
             'ns.example.org',
             port=53

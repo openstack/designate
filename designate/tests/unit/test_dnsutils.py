@@ -23,6 +23,7 @@ import dns.rcode
 import dns.rdatatype
 import dns.zone
 import eventlet
+from oslo_config import cfg
 import oslotest.base
 from dns import zone as dnszone
 
@@ -30,6 +31,8 @@ import designate.tests
 from designate import dnsutils
 from designate import exceptions
 from designate import objects
+
+CONF = cfg.CONF
 
 SAMPLES = {
     ("cname.example.com.", "CNAME"): {
@@ -320,3 +323,19 @@ class TestDoAfxr(oslotest.base.BaseTestCase):
 
         self.assertTrue(mock_xfr.called)
         self.assertTrue(mock_from_xfr.called)
+
+    @mock.patch.object(dns.query, 'udp')
+    def test_send_udp_dns_message(self, mock_udp):
+        CONF.set_override('all_tcp', False, 'service:mdns')
+        dnsutils.send_dns_message('msg', '192.0.2.1', 1234, 1)
+        mock_udp.assert_called_with(
+            'msg', '192.0.2.1', port=1234, timeout=1
+        )
+
+    @mock.patch.object(dns.query, 'tcp')
+    def test_send_tcp_dns_message(self, mock_tcp):
+        CONF.set_override('all_tcp', True, 'service:mdns')
+        dnsutils.send_dns_message('msg', '192.0.2.1', 1234, 1)
+        mock_tcp.assert_called_with(
+            'msg', '192.0.2.1', port=1234, timeout=1
+        )

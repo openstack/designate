@@ -28,6 +28,7 @@ import dns.opcode
 from oslo_config import cfg
 from oslo_log import log as logging
 
+from designate import dnsutils
 from designate.mdns import base
 from designate.metrics import metrics
 
@@ -186,8 +187,9 @@ class NotifyEndpoint(base.BaseEndpoint):
                       'zone': zone.name, 'server': host,
                       'port': port})
             try:
-                response = self._send_dns_message(dns_message, host, port,
-                                                  timeout)
+                response = dnsutils.send_dns_message(
+                    dns_message, host, port, timeout=timeout
+                )
 
             except socket.error as e:
                 if e.errno != socket.errno.EAGAIN:
@@ -285,21 +287,3 @@ class NotifyEndpoint(base.BaseEndpoint):
             dns_message.flags |= dns.flags.RD
 
         return dns_message
-
-    def _send_dns_message(self, dns_message, host, port, timeout):
-        """
-        Send DNS Message over TCP or UDP, return response.
-
-        :param dns_message: The dns message that needs to be sent.
-        :param host: The destination ip of dns_message.
-        :param port: The destination port of dns_message.
-        :param timeout: The timeout in seconds to wait for a response.
-        :return: response
-        """
-        send = dns_query.tcp if CONF['service:mdns'].all_tcp else dns_query.udp
-        return send(
-            dns_message,
-            socket.gethostbyname(host),
-            port=port,
-            timeout=timeout
-        )
