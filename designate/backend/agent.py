@@ -24,25 +24,23 @@
     Configured in the [service:pool_manager] section
 """
 
-import eventlet
 import dns
-import dns.rdataclass
-import dns.rdatatype
 import dns.exception
 import dns.flags
-import dns.rcode
 import dns.message
 import dns.opcode
+import dns.rcode
+import dns.rdataclass
+import dns.rdatatype
 from oslo_config import cfg
 from oslo_log import log as logging
 
 from designate.backend import base
+from designate.backend import private_codes
+from designate.conf.agent import DEFAULT_AGENT_PORT
+from designate import dnsutils
 from designate import exceptions
 from designate.mdns import rpcapi as mdns_api
-from designate.utils import DEFAULT_AGENT_PORT
-import designate.backend.private_codes as pcodes
-
-dns_query = eventlet.import_patched('dns.query')
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
@@ -72,9 +70,9 @@ class AgentPoolBackend(base.Backend):
         response, retry = self._make_and_send_dns_message(
             zone.name,
             self.timeout,
-            pcodes.CC,
-            pcodes.CREATE,
-            pcodes.CLASSCC,
+            private_codes.CC,
+            private_codes.CREATE,
+            private_codes.CLASSCC,
             self.host,
             self.port
         )
@@ -100,9 +98,9 @@ class AgentPoolBackend(base.Backend):
         response, retry = self._make_and_send_dns_message(
             zone.name,
             self.timeout,
-            pcodes.CC,
-            pcodes.DELETE,
-            pcodes.CLASSCC,
+            private_codes.CC,
+            private_codes.DELETE,
+            private_codes.CLASSCC,
             self.host,
             self.port
         )
@@ -134,7 +132,7 @@ class AgentPoolBackend(base.Backend):
                       'port': dest_port, 'timeout': timeout,
                       'retry': retry})
             response = None
-        elif isinstance(response, dns_query.BadResponse):
+        elif isinstance(response, dns.query.BadResponse):
             LOG.warning("Got BadResponse while trying to send '%(msg)s' for "
                         "'%(zone)s' to '%(server)s:%(port)d'. "
                         "Timeout='%(timeout)d' seconds. Retry='%(retry)d'",
@@ -173,14 +171,10 @@ class AgentPoolBackend(base.Backend):
 
     def _send_dns_message(self, dns_message, dest_ip, dest_port, timeout):
         try:
-            if not CONF['service:mdns'].all_tcp:
-                response = dns_query.udp(
-                    dns_message, dest_ip, port=dest_port, timeout=timeout)
-            else:
-                response = dns_query.tcp(
-                    dns_message, dest_ip, port=dest_port, timeout=timeout)
-            return response
+            return dnsutils.send_dns_message(
+                dns_message, dest_ip, port=dest_port, timeout=timeout
+            )
         except dns.exception.Timeout as timeout:
             return timeout
-        except dns_query.BadResponse as badResponse:
+        except dns.query.BadResponse as badResponse:
             return badResponse

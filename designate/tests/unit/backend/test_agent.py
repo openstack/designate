@@ -14,11 +14,13 @@
 from unittest import mock
 
 import dns
+import dns.query
 import dns.rdataclass
 import dns.rdatatype
 
 import designate.backend.agent as agent
 import designate.backend.private_codes as pcodes
+from designate import dnsutils
 from designate import exceptions
 from designate import objects
 from designate import tests
@@ -130,7 +132,7 @@ class AgentBackendTestCase(tests.TestCase):
     def test_make_and_send_dns_message_bad_response(self):
         self.backend._make_dns_message = mock.Mock(return_value='')
         self.backend._send_dns_message = mock.Mock(
-            return_value=agent.dns_query.BadResponse())
+            return_value=dns.query.BadResponse())
 
         out = self.backend._make_and_send_dns_message('h', 123, 1, 2, 3, 4, 5)
 
@@ -176,50 +178,16 @@ class AgentBackendTestCase(tests.TestCase):
 
         self.assertEqual((response, 0), out)
 
-    @mock.patch.object(agent.dns_query, 'tcp')
-    @mock.patch.object(agent.dns_query, 'udp')
-    def test_send_dns_message(self, mock_udp, mock_tcp):
+    @mock.patch.object(dnsutils, 'get_ip_address')
+    @mock.patch.object(dns.query, 'tcp')
+    @mock.patch.object(dns.query, 'udp')
+    def test_send_dns_message(self, mock_udp, mock_tcp, mock_get_ip_address):
         mock_udp.return_value = 'mock udp resp'
+        mock_get_ip_address.return_value = '10.0.1.39'
 
-        out = self.backend._send_dns_message('msg', 'host', 123, 1)
+        out = self.backend._send_dns_message('msg', '10.0.1.39', 123, 1)
 
-        self.assertFalse(agent.dns_query.tcp.called)
-        agent.dns_query.udp.assert_called_with('msg', 'host', port=123,
-                                               timeout=1)
+        self.assertFalse(mock_tcp.called)
+        mock_udp.assert_called_with('msg', '10.0.1.39', port=123,
+                                    timeout=1)
         self.assertEqual('mock udp resp', out)
-
-    @mock.patch.object(agent.dns_query, 'tcp')
-    @mock.patch.object(agent.dns_query, 'udp')
-    def test_send_dns_message_timeout(self, mock_udp, mock_tcp):
-        mock_udp.side_effect = dns.exception.Timeout
-
-        out = self.backend._send_dns_message('msg', 'host', 123, 1)
-
-        agent.dns_query.udp.assert_called_with('msg', 'host', port=123,
-                                               timeout=1)
-        self.assertIsInstance(out, dns.exception.Timeout)
-
-    @mock.patch.object(agent.dns_query, 'tcp')
-    @mock.patch.object(agent.dns_query, 'udp')
-    def test_send_dns_message_bad_response(self, mock_udp, mock_tcp):
-        mock_udp.side_effect = agent.dns_query.BadResponse
-
-        out = self.backend._send_dns_message('msg', 'host', 123, 1)
-
-        agent.dns_query.udp.assert_called_with('msg', 'host', port=123,
-                                               timeout=1)
-        self.assertIsInstance(out, agent.dns_query.BadResponse)
-
-    @mock.patch.object(agent.dns_query, 'tcp')
-    @mock.patch.object(agent.dns_query, 'udp')
-    def test_send_dns_message_tcp(self, mock_udp, mock_tcp):
-        self.CONF.set_override('all_tcp', True, 'service:mdns')
-
-        mock_tcp.return_value = 'mock tcp resp'
-
-        out = self.backend._send_dns_message('msg', 'host', 123, 1)
-
-        self.assertFalse(agent.dns_query.udp.called)
-        agent.dns_query.tcp.assert_called_with('msg', 'host', port=123,
-                                               timeout=1)
-        self.assertEqual('mock tcp resp', out)
