@@ -20,10 +20,10 @@ import dns
 from oslo_config import cfg
 from oslo_log import log as logging
 
+from designate import dnsutils
 from designate import exceptions
 from designate import utils
 from designate.worker.tasks import base
-from designate.worker import utils as wutils
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
@@ -124,7 +124,7 @@ class SendNotify(base.Task):
         port = int(self.target.options.get('port'))
 
         try:
-            wutils.notify(self.zone.name, host, port=port)
+            dnsutils.notify(self.zone.name, host, port=port)
             LOG.debug('Sent NOTIFY to %(host)s:%(port)s for zone %(zone)s',
                       {
                           'host': host,
@@ -311,7 +311,7 @@ class PollForZone(base.Task):
         self.ns = ns
 
     def _get_serial(self):
-        return wutils.get_serial(
+        return dnsutils.get_serial(
             self.zone.name,
             self.ns.host,
             port=self.ns.port

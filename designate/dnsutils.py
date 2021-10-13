@@ -20,7 +20,8 @@ import time
 
 import dns
 import dns.exception
-from dns import rdatatype
+import dns.query
+import dns.rdatatype
 import dns.zone
 import eventlet
 from oslo_log import log as logging
@@ -312,7 +313,7 @@ def dnspyrecords_to_recordsetlist(dnspython_records):
 
 
 def dnspythonrecord_to_recordset(rname, rdataset):
-    record_type = rdatatype.to_text(rdataset.rdtype)
+    record_type = dns.rdatatype.to_text(rdataset.rdtype)
 
     name = rname.to_text()
     if isinstance(name, bytes):
@@ -346,39 +347,122 @@ def do_axfr(zone_name, servers, timeout=None, source=None):
     timeout = timeout or CONF["service:mdns"].xfr_timeout
 
     xfr = None
-
     for srv in servers:
-        to = eventlet.Timeout(timeout)
-        log_info = {'name': zone_name, 'host': srv}
-        try:
-            LOG.info("Doing AXFR for %(name)s from %(host)s", log_info)
-
-            xfr = dns.query.xfr(srv['host'], zone_name, relativize=False,
-                                timeout=1, port=srv['port'], source=source)
-            raw_zone = dns.zone.from_xfr(xfr, relativize=False)
-            break
-        except eventlet.Timeout as t:
-            if t == to:
-                LOG.error("AXFR timed out for %(name)s from %(host)s",
-                          log_info)
-                continue
-        except dns.exception.FormError:
-            LOG.error("Zone %(name)s is not present on %(host)s."
-                      "Trying next server.", log_info)
-        except socket.error:
-            LOG.error("Connection error when doing AXFR for %(name)s from "
-                      "%(host)s", log_info)
-        except Exception:
-            LOG.exception("Problem doing AXFR %(name)s from %(host)s. "
+        for address in get_ip_addresses(srv['host']):
+            to = eventlet.Timeout(timeout)
+            log_info = {'name': zone_name, 'host': srv, 'address': address}
+            try:
+                LOG.info(
+                    'Doing AXFR for %(name)s from %(host)s %(address)s',
+                    log_info
+                )
+                xfr = dns.query.xfr(
+                    address, zone_name, relativize=False, timeout=1,
+                    port=srv['port'], source=source
+                )
+                raw_zone = dns.zone.from_xfr(xfr, relativize=False)
+                LOG.debug("AXFR Successful for %s", raw_zone.origin.to_text())
+                return raw_zone
+            except eventlet.Timeout as t:
+                if t == to:
+                    LOG.error("AXFR timed out for %(name)s from %(host)s",
+                              log_info)
+                    continue
+            except dns.exception.FormError:
+                LOG.error("Zone %(name)s is not present on %(host)s."
                           "Trying next server.", log_info)
-        finally:
-            to.cancel()
-        continue
-    else:
-        raise exceptions.XFRFailure(
-            "XFR failed for %(name)s. No servers in %(servers)s was reached." %
-            {"name": zone_name, "servers": servers})
+            except socket.error:
+                LOG.error("Connection error when doing AXFR for %(name)s from "
+                          "%(host)s", log_info)
+            except Exception:
+                LOG.exception("Problem doing AXFR %(name)s from %(host)s. "
+                              "Trying next server.", log_info)
+            finally:
+                to.cancel()
 
-    LOG.debug("AXFR Successful for %s", raw_zone.origin.to_text())
+    raise exceptions.XFRFailure(
+        "XFR failed for %(name)s. No servers in %(servers)s was reached." %
+        {"name": zone_name, "servers": servers}
+    )
 
-    return raw_zone
+
+def prepare_msg(zone_name, rdatatype=dns.rdatatype.SOA,
+                dns_opcode=dns.opcode.QUERY):
+    """
+    Do the needful to set up a dns packet with dnspython
+    """
+    dns_message = dns.message.make_query(zone_name, rdatatype)
+    dns_message.set_opcode(dns_opcode)
+
+    return dns_message
+
+
+def dig(zone_name, host, rdatatype, port=53):
+    """
+    Set up and send a regular dns query, datatype configurable
+    """
+    query = prepare_msg(zone_name, rdatatype=rdatatype)
+
+    return send_dns_message(query, host, port=port)
+
+
+def notify(zone_name, host, port=53):
+    """
+    Set up a notify packet and send it
+    """
+    msg = prepare_msg(zone_name, dns_opcode=dns.opcode.NOTIFY)
+
+    return send_dns_message(msg, host, port=port)
+
+
+def send_dns_message(dns_message, host, port=53, timeout=10):
+    """
+    Send the dns message and return the response
+
+    :return: dns.Message of the response to the dns query
+    """
+    ip_address = get_ip_address(host)
+    # This can raise some exceptions, but we'll catch them elsewhere
+    if not CONF['service:mdns'].all_tcp:
+        return dns.query.udp(
+            dns_message, ip_address, port=port, timeout=timeout)
+    return dns.query.tcp(
+        dns_message, ip_address, port=port, timeout=timeout)
+
+
+def get_serial(zone_name, host, port=53):
+    """
+    Possibly raises dns.exception.Timeout or dns.query.BadResponse.
+    Possibly returns 0 if, e.g., the answer section is empty.
+    """
+    resp = dig(zone_name, host, dns.rdatatype.SOA, port=port)
+    if not resp.answer:
+        return 0
+    rdataset = resp.answer[0].to_rdataset()
+    if not rdataset:
+        return 0
+    return rdataset[0].serial
+
+
+def get_ip_address(ip_address_or_hostname):
+    """
+    Provide an ip or hostname and return a valid ip4 or ipv6 address.
+
+    :return: ip address
+    """
+    addresses = get_ip_addresses(ip_address_or_hostname)
+    if not addresses:
+        return None
+    return addresses[0]
+
+
+def get_ip_addresses(ip_address_or_hostname):
+    """
+    Provide an ip or hostname and return all valid ip4 or ipv6 addresses.
+
+    :return: ip addresses
+    """
+    addresses = []
+    for res in socket.getaddrinfo(ip_address_or_hostname, 0):
+        addresses.append(res[4][0])
+    return list(set(addresses))
