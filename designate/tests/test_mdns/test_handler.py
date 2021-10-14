@@ -310,10 +310,9 @@ class MdnsRequestHandlerTest(MdnsTestCase):
         assert not self.mock_tg.add_thread.called
         self.assertEqual(expected_response, binascii.b2a_hex(response))
 
-    @expectedFailure
     def test_dispatch_opcode_update(self):
         # DNS packet with UPDATE opcode
-        payload = "271429000001000000000000076578616d706c6503636f6d0000010001"
+        payload = "271429000001000000000000076578616d706c6503636f6d0000060001"
 
         # expected response is an error code REFUSED.  The other fields are
         # id 10004
@@ -321,12 +320,12 @@ class MdnsRequestHandlerTest(MdnsTestCase):
         # rcode REFUSED
         # flags QR RD
         # ;ZONE
-        # example.com. IN A
+        # example.com. IN SOA
         # ;PREREQ
         # ;UPDATE
         # ;ADDITIONAL
         expected_response = (b"2714a9050001000000000000076578616d706c6503636f"
-                             b"6d0000010001")
+                             b"6d0000060001")
 
         request = dns.message.from_wire(binascii.a2b_hex(payload))
         request.environ = {'addr': self.addr, 'context': self.context}
