@@ -78,6 +78,7 @@ class NotificationHandler(ExtensionPlugin):
             }
             recordset = RecordSet(**values)
             recordset.records = RecordList(objects=records)
+            recordset.validate()
             recordset = self.central_api.create_recordset(
                 context, zone_id, recordset
             )
@@ -90,11 +91,50 @@ class NotificationHandler(ExtensionPlugin):
             })
             for record in records:
                 recordset.records.append(record)
+            recordset.validate()
             recordset = self.central_api.update_recordset(
                 context, recordset
             )
         LOG.debug('Creating record in %s / %s', zone_id, recordset['id'])
         return recordset
+
+    def _update_or_delete_recordset(self, context, zone_id, recordset_id,
+                                    record_to_delete):
+        LOG.debug(
+            'Deleting record in %s / %s',
+            zone_id, record_to_delete['id']
+        )
+        try:
+            recordset = self.central_api.get_recordset(
+                context, zone_id, recordset_id
+            )
+
+            # Record not longer in recordset. Lets abort.
+            if record_to_delete not in recordset.records:
+                LOG.debug(
+                    'Record %s not found in recordset %s',
+                    record_to_delete['id'], recordset_id
+                )
+                return
+
+            # Remove the record from the recordset.
+            recordset.records.remove(record_to_delete)
+
+            if not recordset.records:
+                # Recordset is now empty. Remove it.
+                self.central_api.delete_recordset(
+                    context, zone_id, recordset_id
+                )
+                return
+
+            # Recordset still has records, validate it and update it.
+            recordset.validate()
+            self.central_api.update_recordset(context, recordset)
+        except exceptions.RecordSetNotFound:
+            LOG.info(
+                'Recordset %s for record %s was already removed',
+                recordset_id, record_to_delete['id']
+            )
 
 
 class BaseAddressHandler(NotificationHandler):
@@ -210,11 +250,7 @@ class BaseAddressHandler(NotificationHandler):
         })
 
         records = self.central_api.find_records(context, criterion)
-
         for record in records:
-            LOG.debug('Deleting record %s', record['id'])
-
-            self.central_api.delete_record(context,
-                                           zone_id,
-                                           record['recordset_id'],
-                                           record['id'])
+            self._update_or_delete_recordset(
+                context, zone_id, record['recordset_id'], record
+            )
