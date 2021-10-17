@@ -54,11 +54,11 @@ class NeutronFloatingHandlerTest(TestCase, NotificationHandlerMixin):
         self.plugin.process_notification(
             self.admin_context.to_dict(), event_type, fixture['payload'])
 
-        # Ensure we now have exactly 1 record, plus SOA & NS
-        records = self.central_service.find_records(self.admin_context,
-                                                    criterion)
+        # Ensure we now have exactly 2 records, plus SOA & NS
+        recordsets = self.central_service.find_recordsets(self.admin_context,
+                                                         criterion)
 
-        self.assertEqual(4, len(records))
+        self.assertEqual(4, len(recordsets))
 
     def test_floatingip_disassociate(self):
         start_event_type = 'floatingip.update.end'
@@ -76,7 +76,7 @@ class NeutronFloatingHandlerTest(TestCase, NotificationHandlerMixin):
 
         criterion = {'zone_id': self.zone_id}
 
-        # Ensure we start with at least 1 record, plus NS and SOA
+        # Ensure we start with exactly 2 records, plus NS and SOA
         records = self.central_service.find_records(self.admin_context,
                                                     criterion)
 
@@ -85,17 +85,11 @@ class NeutronFloatingHandlerTest(TestCase, NotificationHandlerMixin):
         self.plugin.process_notification(
             self.admin_context.to_dict(), event_type, fixture['payload'])
 
-        # Simulate the record having been deleted on the backend
-        zone_serial = self.central_service.get_zone(
-            self.admin_context, self.zone_id).serial
-        self.central_service.update_status(
-            self.admin_context, self.zone_id, "SUCCESS", zone_serial)
+        # Ensure we now have exactly 0 recordsets, plus NS and SOA
+        recordsets = self.central_service.find_recordsets(self.admin_context,
+                                                          criterion)
 
-        # Ensure we now have exactly 0 records, plus NS and SOA
-        records = self.central_service.find_records(self.admin_context,
-                                                    criterion)
-
-        self.assertEqual(2, len(records))
+        self.assertEqual(2, len(recordsets))
 
     def test_floatingip_delete(self):
         start_event_type = 'floatingip.update.end'
@@ -113,7 +107,7 @@ class NeutronFloatingHandlerTest(TestCase, NotificationHandlerMixin):
 
         criterion = {'zone_id': self.zone_id}
 
-        # Ensure we start with at least 1 record, plus NS and SOA
+        # Ensure we start with exactly 2 records, plus NS and SOA
         records = self.central_service.find_records(self.admin_context,
                                                     criterion)
         self.assertEqual(4, len(records))
@@ -121,14 +115,8 @@ class NeutronFloatingHandlerTest(TestCase, NotificationHandlerMixin):
         self.plugin.process_notification(
             self.admin_context.to_dict(), event_type, fixture['payload'])
 
-        # Simulate the record having been deleted on the backend
-        zone_serial = self.central_service.get_zone(
-            self.admin_context, self.zone_id).serial
-        self.central_service.update_status(
-            self.admin_context, self.zone_id, "SUCCESS", zone_serial)
+        # Ensure we now have exactly 0 recordsets, plus NS and SOA
+        recordsets = self.central_service.find_recordsets(self.admin_context,
+                                                          criterion)
 
-        # Ensure we now have exactly 0 records, plus NS and SOA
-        records = self.central_service.find_records(self.admin_context,
-                                                    criterion)
-
-        self.assertEqual(2, len(records))
+        self.assertEqual(2, len(recordsets))
