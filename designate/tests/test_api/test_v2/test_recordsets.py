@@ -567,6 +567,17 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         self._assert_exception('invalid_object', 400,
                                self.client.put_json, url, body)
 
+    def test_create_txt_record_multiple_strings(self):
+        # create TXT record with string split in 2
+        new_zone = self.create_zone(name='example.net.')
+        recordset = self.create_recordset(new_zone, 'TXT')
+        self.create_record(new_zone, recordset)
+        record = '"{}" "{}"'.format('a' * 250, 'a' * 250)
+        body = {'description': 'Tester', 'records': [record]}
+        url = '/zones/%s/recordsets/%s' % (recordset['zone_id'],
+                                           recordset['id'])
+        self.client.put_json(url, body, status=202)
+
     def test_update_recordset_with_record_clear(self):
         # Create a recordset with one record
         recordset = self.create_recordset(self.zone, 'A')
