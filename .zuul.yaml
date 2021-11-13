@@ -154,6 +154,8 @@
         - neutron-tempest-plugin-designate-scenario
     gate:
       queue: designate
+      jobs:
+        - neutron-tempest-plugin-designate-scenario
     experimental:
       jobs:
         - designate-pdns4-postgres
