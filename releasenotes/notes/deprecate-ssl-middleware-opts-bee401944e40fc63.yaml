@@ -1,0 +1,8 @@
+---
+deprecations:
+  - |
+    The following parameters have been deprecated. These parameters have had
+    no effect since SSLMiddleware was removed during Ussuri cycle.
+
+    - ``[service:api] secure_proxy_ssl_header``
+    - ``[service:api] override_proto``
