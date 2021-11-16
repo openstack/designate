@@ -84,10 +84,18 @@ API_MIDDLEWARE_OPTS = [
                help='Role allowed to bypass maintaince mode'),
     cfg.StrOpt('secure_proxy_ssl_header',
                default='X-Forwarded-Proto',
+               deprecated_for_removal=True,
+               deprecated_reason='This parameter has had no effect since '
+                                 'SSLMiddleware was replaced by '
+                                 'http_proxy_to_wsgi',
                help="The HTTP Header that will be used to determine which "
                     "the original request protocol scheme was, even if it was "
                     "removed by an SSL terminating proxy."),
     cfg.StrOpt('override_proto',
+               deprecated_for_removal=True,
+               deprecated_reason='This parameter has had no effect since '
+                                 'SSLMiddleware was replaced by '
+                                 'http_proxy_to_wsgi',
                help="A scheme that will be used to override "
                     "the request protocol scheme, even if it was "
                     "set by an SSL terminating proxy."),
