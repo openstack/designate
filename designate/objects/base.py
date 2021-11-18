@@ -13,16 +13,16 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 from oslo_log import log as logging
-from oslo_versionedobjects import exception
 from oslo_utils import excutils
-from designate.i18n import _
 from oslo_versionedobjects import base
+from oslo_versionedobjects.base import VersionedObjectDictCompat as DictObjectMixin  # noqa
+from oslo_versionedobjects import exception
 from oslo_versionedobjects import fields as ovoo_fields
 
-from oslo_versionedobjects.base import VersionedObjectDictCompat as DictObjectMixin  # noqa
 
-from designate.objects import fields
 from designate import exceptions
+from designate.i18n import _
+from designate.objects import fields
 
 LOG = logging.getLogger(__name__)
 

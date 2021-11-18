@@ -15,9 +15,9 @@
 # under the License.
 from oslo_versionedobjects import base as ovoo_base
 
-from designate import utils
 from designate.objects import base
 from designate.objects import fields
+from designate import utils
 
 
 @base.DesignateRegistry.register

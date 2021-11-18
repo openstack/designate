@@ -13,12 +13,12 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import requests
 from oslo_config import cfg
 from oslo_log import log as logging
+import requests
 
-from designate import exceptions
 from designate.backend import base
+from designate import exceptions
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF

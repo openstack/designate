@@ -13,8 +13,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from designate.tests import TestCase
 from designate.notification_handler import base
+from designate.tests import TestCase
 
 
 class InheritFormBaseAddressHandler(base.BaseAddressHandler):

@@ -17,11 +17,11 @@ from oslo_config import cfg
 from oslo_log import log as logging
 from paste import deploy
 
+from designate.common import config
 from designate import conf
 from designate import heartbeat_emitter
 from designate import policy
 from designate import rpc
-from designate.common import config
 
 CONF = conf.CONF
 

@@ -16,8 +16,8 @@
 import time
 
 import futurist
-from oslo_log import log as logging
 from oslo_config import cfg
+from oslo_log import log as logging
 
 from designate import exceptions
 

@@ -17,8 +17,8 @@ from oslo_config import cfg
 from oslo_log import log as logging
 
 from designate.context import DesignateContext
-from designate.objects import Record
 from designate.notification_handler.base import NotificationHandler
+from designate.objects import Record
 
 
 LOG = logging.getLogger(__name__)

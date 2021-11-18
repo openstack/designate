@@ -15,11 +15,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from oslo_config import cfg
-from oslo_log import log as logging
-from os_win import utilsfactory
 from os_win import constants
 from os_win import exceptions as os_win_exc
+from os_win import utilsfactory
+from oslo_config import cfg
+from oslo_log import log as logging
 
 from designate.backend.agent_backend import base
 from designate import exceptions

@@ -11,9 +11,9 @@
 # under the License.mport threading
 from unittest import mock
 
-import designate.tests
 import designate.rpc
 from designate.sink import service
+import designate.tests
 from designate.tests import fixtures
 
 

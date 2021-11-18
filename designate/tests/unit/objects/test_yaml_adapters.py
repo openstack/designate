@@ -15,12 +15,12 @@
 # under the License.
 import os
 
+from oslo_log import log as logging
 import oslotest.base
 import yaml
-from oslo_log import log as logging
 
-from designate import objects
 from designate.conf.mdns import DEFAULT_MDNS_PORT
+from designate import objects
 from designate.objects import adapters
 from designate.tests import resources
 

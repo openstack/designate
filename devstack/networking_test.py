@@ -36,16 +36,16 @@
 from argparse import ArgumentParser
 from collections import OrderedDict
 from itertools import product
-from subprocess import check_output
-from subprocess import CalledProcessError
-from tempfile import NamedTemporaryFile
-from threading import Thread
 import logging
 import os
 import random
 import string
-import time
+from subprocess import CalledProcessError
+from subprocess import check_output
 import sys
+from tempfile import NamedTemporaryFile
+from threading import Thread
+import time
 
 from oslo_serialization import jsonutils
 

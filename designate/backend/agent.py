@@ -24,23 +24,23 @@
     Configured in the [service:pool_manager] section
 """
 
-import eventlet
 import dns
-import dns.rdataclass
-import dns.rdatatype
 import dns.exception
 import dns.flags
-import dns.rcode
 import dns.message
 import dns.opcode
+import dns.rcode
+import dns.rdataclass
+import dns.rdatatype
+import eventlet
 from oslo_config import cfg
 from oslo_log import log as logging
 
 from designate.backend import base
-from designate import exceptions
-from designate.conf.agent import DEFAULT_AGENT_PORT
-from designate.mdns import rpcapi as mdns_api
 import designate.backend.private_codes as pcodes
+from designate.conf.agent import DEFAULT_AGENT_PORT
+from designate import exceptions
+from designate.mdns import rpcapi as mdns_api
 
 dns_query = eventlet.import_patched('dns.query')
 

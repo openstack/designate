@@ -14,9 +14,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import requests_mock
+
+from designate.backend import impl_ns1
 from designate import exceptions
 from designate import objects
-from designate.backend import impl_ns1
 import designate.tests
 from designate.tests import fixtures
 

@@ -18,11 +18,11 @@ import os
 from oslo_config import cfg
 from oslo_log import log as logging
 
+from designate.central import rpcapi as central_rpcapi
 from designate import exceptions
+from designate.manage import base
 from designate import objects
 from designate import rpc
-from designate.central import rpcapi as central_rpcapi
-from designate.manage import base
 from designate.schema import format
 
 

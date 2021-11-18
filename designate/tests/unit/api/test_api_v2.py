@@ -15,9 +15,9 @@
 # under the License.
 from unittest import mock
 
-import designate.tests
 from designate import exceptions
 from designate.objects.adapters.api_v2 import base
+import designate.tests
 
 
 class MockRequest(object):

@@ -19,11 +19,11 @@ from unittest import mock
 from oslo_config import cfg
 from oslo_messaging.notify import notifier
 
-from designate.tests.test_api import ApiTestCase
+from designate.api import middleware
 from designate import context
 from designate import exceptions
 from designate import rpc
-from designate.api import middleware
+from designate.tests.test_api import ApiTestCase
 
 
 class FakeRequest(object):

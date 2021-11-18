@@ -23,8 +23,8 @@ import dns.rdatatype
 from oslo_config import cfg
 from oslo_log import log as logging
 
-from designate import exceptions
 from designate.central import rpcapi as central_api
+from designate import exceptions
 from designate.mdns import xfr
 
 LOG = logging.getLogger(__name__)

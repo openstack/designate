@@ -15,9 +15,9 @@
 # under the License.
 import requests_mock
 
-import designate.tests
-from designate import objects
 from designate.backend import impl_dynect
+from designate import objects
+import designate.tests
 
 MASTERS = ["10.0.0.1"]
 CONTACT = 'jdoe@myco.biz'

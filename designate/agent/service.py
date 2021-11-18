@@ -26,12 +26,12 @@
 
 from oslo_config import cfg
 
-from designate import utils
-from designate import dnsutils
-from designate import service
 from designate.agent import handler
 from designate.backend import agent_backend
 from designate.conf.agent import DEFAULT_AGENT_PORT
+from designate import dnsutils
+from designate import service
+from designate import utils
 
 
 CONF = cfg.CONF

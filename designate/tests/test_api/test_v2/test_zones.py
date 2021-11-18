@@ -13,16 +13,16 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from unittest.mock import patch
 from unittest import mock
+from unittest.mock import patch
 
 from oslo_config import cfg
 import oslo_messaging as messaging
 
-from designate import exceptions
-from designate import objects
 from designate.central import service as central_service
+from designate import exceptions
 from designate.mdns import rpcapi as mdns_api
+from designate import objects
 from designate.tests.test_api.test_v2 import ApiV2TestCase
 
 

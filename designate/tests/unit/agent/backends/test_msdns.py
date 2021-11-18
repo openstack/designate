@@ -20,9 +20,9 @@ from os_win import constants
 from os_win import exceptions as os_win_exc
 from os_win import utilsfactory
 
-import designate.tests
-from designate import exceptions
 from designate.backend.agent_backend import impl_msdns
+from designate import exceptions
+import designate.tests
 from designate.tests.unit.agent import backends
 
 

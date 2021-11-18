@@ -17,8 +17,8 @@ from unittest.mock import patch
 
 import oslo_messaging as messaging
 
-from designate import exceptions
 from designate.central import service as central_service
+from designate import exceptions
 from designate.tests.test_api.test_v2 import ApiV2TestCase
 
 

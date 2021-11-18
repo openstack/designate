@@ -17,10 +17,10 @@ from unittest import mock
 
 import testtools
 
-import designate.tests
 from designate import context
 from designate import exceptions
 from designate import policy
+import designate.tests
 
 
 class TestDesignateContext(designate.tests.TestCase):

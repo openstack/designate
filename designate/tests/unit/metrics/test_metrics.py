@@ -22,8 +22,8 @@ from oslo_config import fixture as cfg_fixture
 
 from designate import metrics
 from designate.metrics_client import noop
-from designate.tests import TestCase
 from designate.tests import fixtures
+from designate.tests import TestCase
 
 
 class TestNoopMetrics(TestCase):

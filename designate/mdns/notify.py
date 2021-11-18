@@ -13,18 +13,18 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import time
 import socket
+import time
 
-import eventlet
 import dns
-import dns.rdataclass
-import dns.rdatatype
 import dns.exception
 import dns.flags
-import dns.rcode
 import dns.message
 import dns.opcode
+import dns.rcode
+import dns.rdataclass
+import dns.rdatatype
+import eventlet
 from oslo_config import cfg
 from oslo_log import log as logging
 

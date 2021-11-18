@@ -15,8 +15,8 @@
 # under the License.
 from oslo_log import log as logging
 
-from designate.utils import generate_uuid
 from designate.network_api import base
+from designate.utils import generate_uuid
 
 
 LOG = logging.getLogger(__name__)

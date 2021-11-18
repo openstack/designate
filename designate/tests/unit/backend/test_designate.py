@@ -19,9 +19,9 @@ from designateclient import exceptions
 from designateclient.v2 import client
 from oslo_log import log as logging
 
-import designate.tests
-from designate import objects
 from designate.backend import impl_designate
+from designate import objects
+import designate.tests
 from designate.tests import fixtures
 
 LOG = logging.getLogger(__name__)

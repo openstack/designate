@@ -20,15 +20,15 @@ import os
 import socket
 import sys
 
-import pkg_resources
 from jinja2 import Template
-from oslo_config import cfg
 from oslo_concurrency import processutils
+from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
+from oslo_utils.netutils import is_valid_ipv6
 from oslo_utils import timeutils
 from oslo_utils import uuidutils
-from oslo_utils.netutils import is_valid_ipv6
+import pkg_resources
 
 from designate.common import config
 from designate import exceptions

@@ -16,16 +16,16 @@
 import math
 from unittest import mock
 
-import testtools
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_messaging.rpc import dispatcher as rpc_dispatcher
+import testtools
 
+from designate.conf.mdns import DEFAULT_MDNS_PORT
 from designate import exceptions
 from designate import objects
-from designate.conf.mdns import DEFAULT_MDNS_PORT
-from designate.utils import generate_uuid
 from designate.storage.base import Storage as StorageBase
+from designate.utils import generate_uuid
 
 
 LOG = logging.getLogger(__name__)

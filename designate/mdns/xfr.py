@@ -16,8 +16,8 @@
 import time
 
 from oslo_config import cfg
-from oslo_utils import timeutils
 from oslo_log import log as logging
+from oslo_utils import timeutils
 
 from designate import dnsutils
 from designate import exceptions

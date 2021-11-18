@@ -19,10 +19,10 @@ import datetime
 from oslo_log import log as logging
 from oslo_utils import timeutils
 
-from designate.storage.impl_sqlalchemy import tables
-from designate.tests import TestCase
-from designate.tests import fixtures
 from designate.producer import tasks
+from designate.storage.impl_sqlalchemy import tables
+from designate.tests import fixtures
+from designate.tests import TestCase
 
 
 LOG = logging.getLogger(__name__)

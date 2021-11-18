@@ -15,16 +15,16 @@
 # under the License.
 import random
 import socket
-import time
 from threading import Lock
+import time
 
 import dns
 import dns.exception
+from dns import rdatatype
 import dns.zone
 import eventlet
-from dns import rdatatype
-from oslo_serialization import base64
 from oslo_log import log as logging
+from oslo_serialization import base64
 
 import designate.conf
 from designate import context

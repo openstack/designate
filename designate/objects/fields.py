@@ -14,8 +14,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from dns import ipv4
 import dns.exception
+from dns import ipv4
 import re
 import uuid
 

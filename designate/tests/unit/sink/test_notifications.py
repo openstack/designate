@@ -12,8 +12,8 @@
 
 from unittest import mock
 
-import oslotest.base
 from oslo_config import cfg
+import oslotest.base
 
 from designate.notification_handler import fake
 from designate.sink import service

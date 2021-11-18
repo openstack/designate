@@ -15,11 +15,11 @@
 # under the License.
 from oslo_config import cfg
 from oslo_log import log as logging
-from oslo_policy import policy
 from oslo_policy import opts
+from oslo_policy import policy
 
-from designate import exceptions
 from designate.common import policies
+from designate import exceptions
 
 
 CONF = cfg.CONF

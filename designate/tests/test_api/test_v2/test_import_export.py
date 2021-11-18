@@ -14,8 +14,8 @@
 import unittest
 
 from dns import zone as dnszone
-from webtest import TestApp
 from oslo_config import cfg
+from webtest import TestApp
 
 from designate.api import admin as admin_api
 from designate.api import middleware

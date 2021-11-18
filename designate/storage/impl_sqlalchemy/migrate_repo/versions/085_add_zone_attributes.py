@@ -18,11 +18,11 @@ attributes table"""
 from migrate.changeset.constraint import UniqueConstraint
 from oslo_log import log as logging
 from oslo_utils import timeutils
-from sqlalchemy.schema import MetaData, Table, Column, ForeignKeyConstraint
 from sqlalchemy import DateTime, Integer, String, select
+from sqlalchemy.schema import MetaData, Table, Column, ForeignKeyConstraint
 
-from designate import utils
 from designate.sqlalchemy.types import UUID
+from designate import utils
 
 LOG = logging.getLogger()
 

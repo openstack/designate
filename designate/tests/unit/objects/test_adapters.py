@@ -16,9 +16,9 @@
 import datetime
 from unittest.mock import Mock
 
-import oslotest.base
 from oslo_log import log as logging
 from oslo_utils import timeutils
+import oslotest.base
 
 from designate import objects
 from designate.objects import adapters

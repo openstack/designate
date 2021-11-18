@@ -13,10 +13,10 @@ from unittest import mock
 
 import requests_mock
 
-from designate import exceptions
-from designate import objects
 from designate.backend import impl_pdns4
+from designate import exceptions
 from designate.mdns import rpcapi as mdns_rpcapi
+from designate import objects
 import designate.tests
 from designate.tests import fixtures
 

@@ -16,8 +16,8 @@
 import itertools
 from unittest import mock
 
-import oslotest.base
 from oslo_log import log as logging
+import oslotest.base
 
 from designate import exceptions
 from designate import objects

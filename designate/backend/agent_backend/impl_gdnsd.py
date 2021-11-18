@@ -40,8 +40,8 @@ Configured in [service:agent:gdnsd]
 
 import errno
 import os
-import tempfile
 import string
+import tempfile
 
 import dns
 import dns.resolver
@@ -49,9 +49,9 @@ from oslo_concurrency.processutils import ProcessExecutionError
 from oslo_config import cfg
 from oslo_log import log as logging
 
-from designate import utils
-from designate import exceptions
 from designate.backend.agent_backend import base
+from designate import exceptions
+from designate import utils
 
 CFG_GROUP_NAME = 'backend:agent:gdnsd'
 LOG = logging.getLogger(__name__)

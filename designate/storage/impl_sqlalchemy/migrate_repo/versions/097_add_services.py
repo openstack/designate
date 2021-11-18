@@ -16,11 +16,11 @@
 
 
 from oslo_log import log as logging
-from sqlalchemy import String, DateTime, Enum, Text
 from sqlalchemy.schema import Table, Column, MetaData
+from sqlalchemy import String, DateTime, Enum, Text
 
-from designate import utils
 from designate.sqlalchemy.types import UUID
+from designate import utils
 
 LOG = logging.getLogger()
 

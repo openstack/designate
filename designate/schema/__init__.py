@@ -16,10 +16,10 @@
 from oslo_log import log as logging
 
 from designate import exceptions
-from designate import utils
-from designate.schema import validators
-from designate.schema import resolvers
 from designate.schema import format
+from designate.schema import resolvers
+from designate.schema import validators
+from designate import utils
 
 LOG = logging.getLogger(__name__)
 

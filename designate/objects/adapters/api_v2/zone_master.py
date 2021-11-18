@@ -12,8 +12,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from designate.objects.adapters.api_v2 import base
 from designate import objects
+from designate.objects.adapters.api_v2 import base
 from designate import utils
 
 

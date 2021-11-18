@@ -24,12 +24,11 @@ import dns.rdatatype
 import dns.zone
 import eventlet
 import oslotest.base
-from dns import zone as dnszone
 
-import designate.tests
 from designate import dnsutils
 from designate import exceptions
 from designate import objects
+import designate.tests
 
 SAMPLES = {
     ("cname.example.com.", "CNAME"): {
@@ -94,7 +93,7 @@ class TestUtils(designate.tests.TestCase):
     def test_from_dnspython_zone(self):
         zone_file = self.get_zonefile_fixture()
 
-        dnspython_zone = dnszone.from_text(
+        dnspython_zone = dns.zone.from_text(
             zone_file,
             relativize=False,
             check_origin=False
@@ -107,7 +106,7 @@ class TestUtils(designate.tests.TestCase):
     def test_from_dnspython_zone_no_soa(self):
         zone_file = self.get_zonefile_fixture(variant='nosoa')
 
-        dnspython_zone = dnszone.from_text(
+        dnspython_zone = dns.zone.from_text(
             zone_file,
             relativize=False,
             check_origin=False
@@ -122,7 +121,7 @@ class TestUtils(designate.tests.TestCase):
     def test_parse_zone(self):
         zone_file = self.get_zonefile_fixture()
 
-        dnspython_zone = dnszone.from_text(
+        dnspython_zone = dns.zone.from_text(
             zone_file,
             # Don't relativize, otherwise we end up with '@' record names.
             relativize=False,

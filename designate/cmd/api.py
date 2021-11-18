@@ -19,13 +19,13 @@ from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_reports import guru_meditation_report as gmr
 
+from designate.api import service as api_service
 import designate.conf
 from designate import heartbeat_emitter
 from designate import hookpoints
 from designate import service
 from designate import utils
 from designate import version
-from designate.api import service as api_service
 
 
 CONF = designate.conf.CONF

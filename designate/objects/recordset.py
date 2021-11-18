@@ -20,11 +20,11 @@ from oslo_log import log
 from oslo_versionedobjects import exception as ovo_exc
 
 from designate import exceptions
-from designate import utils
 from designate.objects import base
 from designate.objects import fields
 from designate.objects.validation_error import ValidationError
 from designate.objects.validation_error import ValidationErrorList
+from designate import utils
 
 
 LOG = log.getLogger(__name__)

@@ -14,11 +14,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import sys
-import re
-import os
 import argparse
 import logging
+import os
+import re
+import sys
 
 import dns.zone
 

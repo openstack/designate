@@ -11,10 +11,9 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-
-from designate.objects.adapters.api_v2 import base
-from designate import objects
 from designate import exceptions
+from designate import objects
+from designate.objects.adapters.api_v2 import base
 
 
 class RecordSetAPIv2Adapter(base.APIv2Adapter):

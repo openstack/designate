@@ -19,9 +19,9 @@ import oslo_messaging as messaging
 from oslo_messaging.rpc import dispatcher as rpc_dispatcher
 from oslo_serialization import jsonutils
 
-from designate import objects
 import designate.context
 import designate.exceptions
+from designate import objects
 
 __all__ = [
     'init',

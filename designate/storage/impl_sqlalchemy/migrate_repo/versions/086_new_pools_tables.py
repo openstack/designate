@@ -19,8 +19,8 @@ from sqlalchemy import (Integer, String, Unicode, DateTime,
                         ForeignKeyConstraint, UniqueConstraint)
 from sqlalchemy.schema import Table, Column, MetaData
 
-from designate import utils
 from designate.sqlalchemy.types import UUID
+from designate import utils
 
 meta = MetaData()
 

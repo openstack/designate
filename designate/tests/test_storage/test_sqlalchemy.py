@@ -18,8 +18,8 @@ from unittest import mock
 from oslo_log import log as logging
 
 from designate import storage
-from designate.tests import TestCase
 from designate.tests.test_storage import StorageTestCase
+from designate.tests import TestCase
 
 LOG = logging.getLogger(__name__)
 

@@ -11,9 +11,8 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-
-from designate.objects.adapters.yaml import base
 from designate import objects
+from designate.objects.adapters.yaml import base
 
 
 class PoolTargetYAMLAdapter(base.YAMLAdapter):

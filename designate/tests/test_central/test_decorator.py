@@ -14,12 +14,12 @@ from unittest import mock
 from oslo_concurrency import lockutils
 from oslo_log import log as logging
 
-from designate import exceptions
-from designate import utils
 from designate.central import service
+from designate import exceptions
 from designate.objects import record
 from designate.objects import zone
 from designate.tests.test_central import CentralTestCase
+from designate import utils
 
 LOG = logging.getLogger(__name__)
 

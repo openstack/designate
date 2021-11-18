@@ -15,10 +15,10 @@
 # under the License.
 import datetime
 
+from designate.central import rpcapi
 from designate import context
 from designate import plugin
 from designate import rpc
-from designate.central import rpcapi
 from designate.worker import rpcapi as worker_rpcapi
 
 from oslo_config import cfg

@@ -19,10 +19,10 @@ from unittest import mock
 
 import requests
 
-import designate.tests
+from designate.backend import impl_akamai_v2 as akamai
 from designate import exceptions
 from designate import objects
-from designate.backend import impl_akamai_v2 as akamai
+import designate.tests
 from designate.tests import fixtures
 
 

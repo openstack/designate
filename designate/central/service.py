@@ -14,42 +14,42 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import re
 import collections
 import copy
 import functools
-import threading
 import itertools
-import string
-import signal
 import random
 from random import SystemRandom
+import re
+import signal
+import string
+import threading
 import time
 
-from eventlet import tpool
-from dns import zone as dnszone
 from dns import exception as dnsexception
+from dns import zone as dnszone
+from eventlet import tpool
 from oslo_config import cfg
-import oslo_messaging as messaging
 from oslo_log import log as logging
+import oslo_messaging as messaging
 
 from designate import context as dcontext
 from designate import coordination
-from designate import exceptions
 from designate import dnsutils
+from designate import exceptions
+from designate.mdns import rpcapi as mdns_rpcapi
 from designate import network_api
 from designate import notifications
 from designate import objects
 from designate import policy
 from designate import quota
 from designate import rpc
-from designate import service
 from designate import scheduler
+from designate import service
 from designate import storage
-from designate import utils
-from designate.mdns import rpcapi as mdns_rpcapi
 from designate.storage import transaction
 from designate.storage import transaction_shallow_copy
+from designate import utils
 from designate.worker import rpcapi as worker_rpcapi
 
 

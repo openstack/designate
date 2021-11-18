@@ -16,8 +16,8 @@
 from unittest import mock
 
 from designate import exceptions
-from designate.tests import TestCase
 from designate.tests import fixtures
+from designate.tests import TestCase
 from designate.worker import processing
 
 

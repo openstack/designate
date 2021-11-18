@@ -30,13 +30,13 @@ from oslo_service import sslutils
 from oslo_service import wsgi
 from oslo_utils import netutils
 
+import designate.conf
+from designate.i18n import _
+from designate.metrics import metrics
 from designate import policy
 from designate import rpc
 from designate import utils
 from designate import version
-import designate.conf
-from designate.i18n import _
-from designate.metrics import metrics
 
 CONF = designate.conf.CONF
 LOG = logging.getLogger(__name__)

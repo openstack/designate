@@ -15,9 +15,9 @@
 # under the License.
 from unittest import mock
 
-import designate.tests
-from designate import exceptions
 from designate.backend.agent_backend import impl_djbdns
+from designate import exceptions
+import designate.tests
 from designate.tests.unit.agent import backends
 
 

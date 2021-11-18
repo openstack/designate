@@ -20,9 +20,9 @@ from oslo_config import fixture as cfg_fixture
 import oslotest.base
 
 
-from designate import objects
 from designate import dnsutils
 from designate.mdns import xfr
+from designate import objects
 from designate.tests import fixtures
 
 

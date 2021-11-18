@@ -16,17 +16,17 @@
 from oslo_config import cfg
 from stevedore import named
 
-from designate.api.v2.controllers import limits
-from designate.api.v2.controllers import reverse
-from designate.api.v2.controllers import tlds
 from designate.api.v2.controllers import blacklists
 from designate.api.v2.controllers import errors
+from designate.api.v2.controllers import limits
 from designate.api.v2.controllers import pools
-from designate.api.v2.controllers import service_status
-from designate.api.v2.controllers import zones
-from designate.api.v2.controllers import tsigkeys
-from designate.api.v2.controllers import recordsets
 from designate.api.v2.controllers import quotas
+from designate.api.v2.controllers import recordsets
+from designate.api.v2.controllers import reverse
+from designate.api.v2.controllers import service_status
+from designate.api.v2.controllers import tlds
+from designate.api.v2.controllers import tsigkeys
+from designate.api.v2.controllers import zones
 
 
 class RootController(object):

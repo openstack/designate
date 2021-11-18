@@ -18,8 +18,8 @@ from sqlalchemy.schema import MetaData
 from sqlalchemy.schema import Table
 
 from designate.cmd import status
-from designate import tests
 from designate.sqlalchemy import session
+from designate import tests
 
 
 class TestDuplicateServiceStatus(tests.TestCase):

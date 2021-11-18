@@ -13,14 +13,14 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from unittest.mock import call
 from unittest import mock
+from unittest.mock import call
 
 from oslo_concurrency import processutils
 
-import designate.tests
-from designate import exceptions
 from designate.backend.agent_backend import impl_knot2
+from designate import exceptions
+import designate.tests
 from designate.tests.unit.agent import backends
 
 

@@ -15,27 +15,27 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import datetime
-import copy
-import random
 from collections import namedtuple
+import copy
+import datetime
+import random
 from unittest import mock
 
-import testtools
-from testtools.matchers import GreaterThan
 from oslo_config import cfg
-from oslo_log import log as logging
 from oslo_db import exception as db_exception
-from oslo_versionedobjects import exception as ovo_exc
+from oslo_log import log as logging
 from oslo_messaging.notify import notifier
 from oslo_messaging.rpc import dispatcher as rpc_dispatcher
+from oslo_versionedobjects import exception as ovo_exc
+import testtools
+from testtools.matchers import GreaterThan
 
 from designate import exceptions
-from designate import objects
 from designate.mdns import rpcapi as mdns_api
+from designate import objects
+from designate.storage.impl_sqlalchemy import tables
 from designate.tests import fixtures
 from designate.tests.test_central import CentralTestCase
-from designate.storage.impl_sqlalchemy import tables
 
 LOG = logging.getLogger(__name__)
 

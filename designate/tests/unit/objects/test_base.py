@@ -17,10 +17,10 @@ import copy
 from operator import attrgetter
 from unittest import mock
 
-import oslotest.base
-import testtools
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
+import oslotest.base
+import testtools
 
 from designate import exceptions
 from designate import objects

@@ -20,8 +20,8 @@ import dns
 import dns.resolver
 
 import designate
-import designate.tests
 from designate.agent import handler
+import designate.tests
 
 
 class AgentRequestHandlerTest(designate.tests.TestCase):

@@ -13,17 +13,17 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import time
 from collections import namedtuple
+import time
 
 import dns
 from oslo_config import cfg
 from oslo_log import log as logging
 
-from designate.worker import utils as wutils
-from designate.worker.tasks import base
 from designate import exceptions
 from designate import utils
+from designate.worker.tasks import base
+from designate.worker import utils as wutils
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF

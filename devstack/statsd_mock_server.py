@@ -19,10 +19,10 @@ Log to stdout or to a file.
 """
 
 from argparse import ArgumentParser
+import SocketServer
 import sys
 from time import gmtime
 from time import strftime
-import SocketServer
 
 
 def parse_args():

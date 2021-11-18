@@ -20,9 +20,9 @@ import dns.rdatatype
 import designate.backend.agent as agent
 import designate.backend.private_codes as pcodes
 from designate import exceptions
+from designate.mdns import rpcapi as mdns_api
 from designate import objects
 from designate import tests
-from designate.mdns import rpcapi as mdns_api
 from designate.tests.unit import RoObject
 
 

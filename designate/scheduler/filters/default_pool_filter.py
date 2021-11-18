@@ -13,8 +13,8 @@
 # under the License.
 from oslo_config import cfg
 
-from designate.scheduler.filters import base
 from designate import objects
+from designate.scheduler.filters import base
 
 
 class DefaultPoolFilter(base.Filter):

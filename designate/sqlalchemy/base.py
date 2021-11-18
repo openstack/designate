@@ -17,8 +17,8 @@ import abc
 import operator
 import threading
 
-from oslo_db.sqlalchemy import utils as oslodb_utils
 from oslo_db import exception as oslo_db_exception
+from oslo_db.sqlalchemy import utils as oslodb_utils
 from oslo_log import log as logging
 from oslo_utils import timeutils
 from sqlalchemy import select, or_, between, func, distinct

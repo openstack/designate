@@ -16,14 +16,14 @@
 import pprint
 import time
 
-import requests
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_serialization import jsonutils as json
 from oslo_utils import importutils
+import requests
 
-from designate import exceptions
 from designate.backend import base
+from designate import exceptions
 from designate.i18n import _LE
 
 

@@ -21,9 +21,9 @@ import sys
 
 from migrate.changeset.constraint import UniqueConstraint
 from oslo_log import log as logging
-from sqlalchemy.schema import MetaData, Table
-from sqlalchemy import exc
 from sqlalchemy.engine.reflection import Inspector
+from sqlalchemy import exc
+from sqlalchemy.schema import MetaData, Table
 
 LOG = logging.getLogger()
 

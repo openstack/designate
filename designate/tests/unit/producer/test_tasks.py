@@ -21,15 +21,15 @@ import datetime
 from unittest import mock
 
 import fixtures
-import oslotest.base
 from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
 from oslo_utils import timeutils
+import oslotest.base
 
-from designate import context
-from designate import rpc
 from designate.central import rpcapi as central_api
+from designate import context
 from designate.producer import tasks
+from designate import rpc
 from designate.tests.unit import RoObject
 from designate.utils import generate_uuid
 

@@ -21,8 +21,8 @@ from oslo_config import fixture as cfg_fixture
 import oslotest.base
 
 from designate import exceptions
-from designate import objects
 from designate.mdns import handler
+from designate import objects
 from designate.tests import fixtures
 
 CONF = cfg.CONF

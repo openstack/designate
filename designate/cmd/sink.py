@@ -22,9 +22,9 @@ import designate.conf
 from designate import heartbeat_emitter
 from designate import hookpoints
 from designate import service
+from designate.sink import service as sink_service
 from designate import utils
 from designate import version
-from designate.sink import service as sink_service
 
 
 CONF = designate.conf.CONF

@@ -14,19 +14,18 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
-import sys
 import argparse
 import logging
+import sys
+
 import dns.exception
 from dns.ipv4 import inet_aton
-import netaddr
-
-from designateclient.v2 import client
-from designateclient import shell
-
 from keystoneauth1.identity import generic
 from keystoneauth1 import session as keystone_session
+import netaddr
+
+from designateclient import shell
+from designateclient.v2 import client
 
 
 auth = generic.Password(

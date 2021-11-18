@@ -17,10 +17,10 @@
 import base64
 
 from designate.exceptions import InvalidObject
-from designate.objects.record import Record
-from designate.objects.record import RecordList
 from designate.objects import base
 from designate.objects import fields
+from designate.objects.record import Record
+from designate.objects.record import RecordList
 
 
 @base.DesignateRegistry.register

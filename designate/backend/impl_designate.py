@@ -13,8 +13,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from designateclient.v2 import client
 from designateclient import exceptions
+from designateclient.v2 import client
 from keystoneauth1.identity import v3 as v3_auth
 from keystoneauth1 import session as ks_session
 from oslo_log import log as logging

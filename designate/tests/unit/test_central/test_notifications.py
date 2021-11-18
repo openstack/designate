@@ -18,8 +18,8 @@ from unittest import mock
 
 from oslo_log import log as logging
 
-from designate import objects
 from designate import notifications
+from designate import objects
 
 LOG = logging.getLogger(__name__)
 

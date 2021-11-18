@@ -19,10 +19,10 @@ from unittest import mock
 
 import eventlet
 
-import designate.tests
+from designate.backend import impl_nsd4
 from designate import exceptions
 from designate import objects
-from designate.backend import impl_nsd4
+import designate.tests
 
 
 class NSD4BackendTestCase(designate.tests.TestCase):

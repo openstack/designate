@@ -14,12 +14,12 @@
 import urllib
 
 import netaddr
-import requests
 from oslo_config import cfg
 from oslo_log import log as logging
+import requests
 
-from designate import exceptions
 from designate.backend import base
+from designate import exceptions
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF

@@ -15,18 +15,18 @@
 # under the License.
 import sys
 
-import yaml
 from oslo_config import cfg
 from oslo_log import log as logging
 import oslo_messaging as messaging
+import yaml
 
-from designate import exceptions
-from designate import rpc
-from designate import objects
-from designate import policy
 from designate.central import rpcapi as central_rpcapi
+from designate import exceptions
 from designate.manage import base
+from designate import objects
 from designate.objects.adapters import DesignateAdapter
+from designate import policy
+from designate import rpc
 
 LOG = logging.getLogger(__name__)
 

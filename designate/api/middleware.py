@@ -14,18 +14,18 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import flask
-import webob.dec
 from oslo_config import cfg
-import oslo_messaging as messaging
 from oslo_log import log as logging
+import oslo_messaging as messaging
 from oslo_middleware import base
 from oslo_middleware import request_id
 from oslo_serialization import jsonutils
 from oslo_utils import strutils
+import webob.dec
 
+from designate import context
 from designate import exceptions
 from designate import notifications
-from designate import context
 from designate import objects
 from designate.objects.adapters import DesignateAdapter
 

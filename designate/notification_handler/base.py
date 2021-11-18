@@ -21,9 +21,9 @@ from oslo_log import log as logging
 
 import re
 
-from designate import exceptions
 from designate.central import rpcapi as central_rpcapi
 from designate.context import DesignateContext
+from designate import exceptions
 from designate.objects import Record
 from designate.objects import RecordList
 from designate.objects import RecordSet

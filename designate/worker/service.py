@@ -20,14 +20,14 @@ from oslo_log import log as logging
 import oslo_messaging as messaging
 
 from designate import backend
+from designate.central import rpcapi as central_api
+from designate.context import DesignateContext
 from designate import exceptions
 from designate import rpc
 from designate import service
 from designate import storage
-from designate.central import rpcapi as central_api
-from designate.context import DesignateContext
-from designate.worker.tasks import zone as zonetasks
 from designate.worker import processing
+from designate.worker.tasks import zone as zonetasks
 
 
 LOG = logging.getLogger(__name__)

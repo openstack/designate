@@ -16,8 +16,8 @@
 import copy
 import itertools
 
-from keystoneauth1 import plugin
 from keystoneauth1.access import service_catalog as ksa_service_catalog
+from keystoneauth1 import plugin
 from oslo_context import context
 from oslo_log import log as logging
 

@@ -9,13 +9,14 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from unittest import mock
+
 from oslo_log import log as logging
 
-from unittest import mock
-from designate.tests.test_manage import DesignateManageTestCase
 from designate.manage.pool import PoolCommands
-from designate.tests import fixtures
 from designate import objects
+from designate.tests import fixtures
+from designate.tests.test_manage import DesignateManageTestCase
 
 LOG = logging.getLogger(__name__)
 

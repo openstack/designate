@@ -16,9 +16,9 @@
 from oslo_log import log as logging
 
 from designate.backend import base
-from designate import exceptions
 from designate.backend.impl_infoblox import connector
 from designate.backend.impl_infoblox import object_manipulator
+from designate import exceptions
 
 LOG = logging.getLogger(__name__)
 

@@ -17,15 +17,14 @@ from unittest import mock
 
 from oslo_config import cfg
 
-import designate.tests
+from designate.backend.agent_backend import impl_denominator
 from designate import exceptions
 from designate import tests
-from designate import utils
-from designate.backend.agent_backend import impl_denominator
 from designate.tests.unit.agent import backends
+from designate import utils
 
 
-class DenominatorAgentBackendTestCase(designate.tests.TestCase):
+class DenominatorAgentBackendTestCase(tests.TestCase):
     def setUp(self):
         super(DenominatorAgentBackendTestCase, self).setUp()
 

@@ -16,10 +16,10 @@
 import itertools
 
 import dns.rdata
-import dns.rdatatype
 import dns.rdataclass
-from oslo_config import cfg
+import dns.rdatatype
 from oslo_concurrency import lockutils
+from oslo_config import cfg
 from oslo_log import log as logging
 
 from designate.backend.agent_backend import base

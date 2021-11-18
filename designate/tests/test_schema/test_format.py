@@ -15,8 +15,8 @@
 # under the License.
 from oslo_log import log as logging
 
-from designate.tests import TestCase
 from designate.schema import format
+from designate.tests import TestCase
 
 
 LOG = logging.getLogger(__name__)

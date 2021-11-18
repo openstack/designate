@@ -14,8 +14,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import socket
 import binascii
+import socket
 
 # Bind to UDP 5355
 sock_udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

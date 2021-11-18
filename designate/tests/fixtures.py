@@ -20,26 +20,26 @@
 # under the License.
 from unittest import mock
 
+from contextlib import contextmanager
 import logging as std_logging
 import os
 import random
 import shutil
 import tempfile
-from contextlib import contextmanager
 
 import fixtures
-import tooz.coordination
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import importutils
+import tooz.coordination
 
-import designate.service
-import designate.utils
 from designate import network_api
+from designate.network_api import fake as fake_network_api
 from designate import policy
 from designate import rpc
-from designate.network_api import fake as fake_network_api
+import designate.service
 from designate.sqlalchemy import utils as sqlalchemy_utils
+import designate.utils
 
 """Test fixtures
 """

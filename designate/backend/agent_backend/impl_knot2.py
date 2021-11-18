@@ -43,8 +43,8 @@ from oslo_concurrency.processutils import ProcessExecutionError
 from oslo_config import cfg
 from oslo_log import log as logging
 
-from designate import exceptions
 from designate.backend.agent_backend import base
+from designate import exceptions
 from designate.utils import execute
 
 CFG_GROUP_NAME = 'backend:agent:knot2'

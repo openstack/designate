@@ -13,16 +13,16 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import os
 import logging
+import os
 
-from requests import auth
 import kerberos
+from requests import auth
 
-from designate.utils import generate_uuid
 from designate.backend.impl_ipa import IPAAuthError
-from designate.i18n import _LW
 from designate.i18n import _LE
+from designate.i18n import _LW
+from designate.utils import generate_uuid
 
 
 LOG = logging.getLogger(__name__)

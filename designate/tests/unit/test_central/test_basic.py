@@ -18,19 +18,19 @@ from unittest import mock
 from unittest.mock import patch
 
 import fixtures
-import testtools
 from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
 from oslo_log import log as logging
 from oslo_messaging.rpc import dispatcher as rpc_dispatcher
 from oslotest import base
+import testtools
 
 import designate.central.service
+from designate.central.service import Service
 from designate import exceptions
 from designate import objects
-from designate.central.service import Service
-from designate.tests import TestCase
 from designate.tests.fixtures import random_seed
+from designate.tests import TestCase
 
 LOG = logging.getLogger(__name__)
 

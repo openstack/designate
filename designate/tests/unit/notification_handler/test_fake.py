@@ -11,8 +11,8 @@
 # under the License.mport threading
 from unittest import mock
 
-import oslotest.base
 from oslo_config import cfg
+import oslotest.base
 
 from designate.notification_handler import fake
 from designate.tests import test_notification_handler

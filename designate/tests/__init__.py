@@ -29,15 +29,15 @@ from oslotest import base
 from testtools import testcase
 
 import designate.conf
+from designate.context import DesignateContext
 from designate import exceptions
+from designate.manage import database as manage_database
 from designate import objects
 from designate import policy
 from designate import storage
-from designate import utils
-from designate.context import DesignateContext
-from designate.manage import database as manage_database
 from designate.tests import fixtures
 from designate.tests import resources
+from designate import utils
 
 eventlet.monkey_patch(os=False)
 

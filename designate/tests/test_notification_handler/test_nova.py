@@ -18,10 +18,10 @@ from unittest import mock
 
 from oslo_log import log as logging
 
-from designate.tests import TestCase
 from designate.notification_handler.nova import NovaFixedHandler
 from designate.tests.test_notification_handler import \
     NotificationHandlerMixin
+from designate.tests import TestCase
 
 LOG = logging.getLogger(__name__)
 

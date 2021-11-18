@@ -15,18 +15,18 @@
 # under the License.
 from unittest import mock
 
-import oslotest.base
 from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
+import oslotest.base
 
 import designate.dnsutils
+from designate.mdns import handler
+from designate.mdns import service
 import designate.rpc
 import designate.service
 from designate import storage
-import designate.utils
-from designate.mdns import handler
-from designate.mdns import service
 from designate.tests import fixtures
+import designate.utils
 
 CONF = cfg.CONF
 

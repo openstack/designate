@@ -15,13 +15,13 @@
 # under the License.
 import re
 
-import pecan
 from oslo_log import log as logging
+import pecan
 
+from designate.api.v2.controllers import rest
 from designate import exceptions
 from designate import objects
 from designate.objects.adapters import DesignateAdapter
-from designate.api.v2.controllers import rest
 
 LOG = logging.getLogger(__name__)
 

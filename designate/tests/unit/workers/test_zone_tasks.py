@@ -16,16 +16,16 @@
 from unittest import mock
 
 import dns.exception
-import oslotest.base
 from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
+import oslotest.base
 
 from designate import exceptions
 from designate import objects
 from designate.tests.unit import utils
 from designate.worker import processing
-from designate.worker import utils as wutils
 from designate.worker.tasks import zone
+from designate.worker import utils as wutils
 
 CONF = cfg.CONF
 

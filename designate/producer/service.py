@@ -17,12 +17,12 @@ from oslo_config import cfg
 from oslo_log import log as logging
 import oslo_messaging as messaging
 
+from designate.central import rpcapi
 from designate import coordination
+from designate.producer import tasks
 from designate import quota
 from designate import service
 from designate import storage
-from designate.central import rpcapi
-from designate.producer import tasks
 
 
 LOG = logging.getLogger(__name__)

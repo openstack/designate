@@ -12,13 +12,13 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-import pecan
 from oslo_log import log as logging
+import pecan
 
-from designate import utils
 from designate.api.v2.controllers import rest
-from designate.objects import Pool
 from designate.objects.adapters import DesignateAdapter
+from designate.objects import Pool
+from designate import utils
 
 
 LOG = logging.getLogger(__name__)

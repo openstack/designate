@@ -18,12 +18,12 @@ import fixtures
 from designate import exceptions
 from designate import objects
 from designate import policy
-from designate import tests
 from designate.scheduler.filters import attribute_filter
 from designate.scheduler.filters import default_pool_filter
 from designate.scheduler.filters import fallback_filter
 from designate.scheduler.filters import in_doubt_default_pool_filter
 from designate.scheduler.filters import pool_id_attribute_filter
+from designate import tests
 
 
 class SchedulerFilterTest(tests.TestCase):

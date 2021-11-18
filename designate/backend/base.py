@@ -19,8 +19,8 @@ from oslo_config import cfg
 from oslo_log import log as logging
 
 from designate.context import DesignateContext
-from designate.plugin import DriverPlugin
 from designate.mdns import rpcapi as mdns_api
+from designate.plugin import DriverPlugin
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF

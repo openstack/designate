@@ -15,8 +15,8 @@ import random
 
 from oslo_log import log as logging
 
-from designate.scheduler.filters import base
 from designate.objects import PoolList
+from designate.scheduler.filters import base
 
 LOG = logging.getLogger(__name__)
 

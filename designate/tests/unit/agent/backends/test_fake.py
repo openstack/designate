@@ -13,8 +13,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import designate.tests
 from designate.backend.agent_backend import impl_fake
+import designate.tests
 from designate.tests.unit.agent import backends
 
 

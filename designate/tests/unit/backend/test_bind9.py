@@ -13,12 +13,12 @@
 # under the License.
 from unittest import mock
 
-import designate.tests
+from designate.backend import impl_bind9
 from designate import exceptions
 from designate import objects
-from designate import utils
-from designate.backend import impl_bind9
+import designate.tests
 from designate.tests import fixtures
+from designate import utils
 
 import subprocess
 

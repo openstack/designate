@@ -17,13 +17,13 @@ from unittest import mock
 from unittest.mock import patch
 
 import dns
+import dns.exception
 import dns.message
 import dns.query
-import dns.exception
 
-from designate.tests.test_mdns import MdnsTestCase
 from designate.mdns import notify
 from designate import objects
+from designate.tests.test_mdns import MdnsTestCase
 
 
 class MdnsNotifyTest(MdnsTestCase):

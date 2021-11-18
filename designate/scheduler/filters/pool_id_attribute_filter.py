@@ -13,10 +13,10 @@
 # under the License.
 from oslo_log import log as logging
 
-from designate.scheduler.filters import base
 from designate import exceptions
 from designate import objects
 from designate import policy
+from designate.scheduler.filters import base
 
 LOG = logging.getLogger(__name__)
 

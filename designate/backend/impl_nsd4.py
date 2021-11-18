@@ -25,8 +25,8 @@ import ssl
 import eventlet
 from oslo_log import log as logging
 
-from designate import exceptions
 from designate.backend import base
+from designate import exceptions
 
 
 LOG = logging.getLogger(__name__)

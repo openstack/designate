@@ -16,12 +16,12 @@ from unittest import mock
 
 import requests_mock
 
-import designate.tests
-from designate import exceptions
-from designate import objects
 from designate.backend import impl_infoblox
 from designate.backend.impl_infoblox import ibexceptions
+from designate import exceptions
 from designate.mdns import rpcapi as mdns_rpcapi
+from designate import objects
+import designate.tests
 
 
 class InfobloxBackendTestCase(designate.tests.TestCase):

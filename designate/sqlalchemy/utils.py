@@ -16,16 +16,16 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo_db import exception as oslo_db_exception
+from oslo_db.sqlalchemy.migration_cli import manager
+from oslo_db.sqlalchemy import utils
+from oslo_log import log
 import sqlalchemy
 from sqlalchemy import exc as sqlalchemy_exc
 from sqlalchemy import select
-from oslo_db.sqlalchemy import utils
-from oslo_db import exception as oslo_db_exception
-from oslo_db.sqlalchemy.migration_cli import manager
-from oslo_log import log
 
-from designate.i18n import _
 from designate import exceptions
+from designate.i18n import _
 
 
 LOG = log.getLogger(__name__)

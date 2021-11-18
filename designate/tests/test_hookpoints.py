@@ -17,11 +17,11 @@ from unittest.mock import Mock
 from unittest.mock import patch
 
 from oslo_config import cfg
-from stevedore.hook import HookManager
 from stevedore.extension import Extension
+from stevedore.hook import HookManager
 
-from designate.hookpoints import hook_point
 from designate.hookpoints import BaseHook
+from designate.hookpoints import hook_point
 from designate.tests import TestCase
 
 

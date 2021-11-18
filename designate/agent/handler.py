@@ -25,18 +25,17 @@
 """
 
 import dns
+import dns.flags
+import dns.message
 import dns.opcode
 import dns.rcode
-import dns.message
-import dns.flags
-import dns.opcode
 from oslo_config import cfg
 from oslo_log import log as logging
 
-from designate import utils
-from designate import dnsutils
 from designate.backend import agent_backend
 import designate.backend.private_codes as pcodes
+from designate import dnsutils
+from designate import utils
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF

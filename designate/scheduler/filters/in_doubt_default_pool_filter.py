@@ -14,8 +14,8 @@
 
 from oslo_config import cfg
 
-from designate.scheduler.filters import base
 from designate import objects
+from designate.scheduler.filters import base
 
 cfg.CONF.register_opts([
     cfg.StrOpt('default_pool_id',

@@ -14,10 +14,10 @@
 import time
 from unittest import mock
 
-import oslotest.base
 from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
 from oslo_service import loopingcall
+import oslotest.base
 
 from designate import heartbeat_emitter
 from designate import objects

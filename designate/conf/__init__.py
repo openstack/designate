@@ -13,9 +13,9 @@
 #    under the License.
 from oslo_config import cfg
 
-from designate.conf import base  # noqa
 from designate.conf import agent
 from designate.conf import api
+from designate.conf import base  # noqa
 from designate.conf import bind9
 from designate.conf import central
 from designate.conf import coordination

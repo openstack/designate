@@ -51,9 +51,9 @@ from oslo_concurrency.processutils import ProcessExecutionError
 from oslo_config import cfg
 from oslo_log import log as logging
 
+from designate.backend.agent_backend import base
 from designate import exceptions
 from designate import utils
-from designate.backend.agent_backend import base
 from designate.utils import execute
 
 LOG = logging.getLogger(__name__)

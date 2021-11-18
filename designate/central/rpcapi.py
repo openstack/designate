@@ -18,8 +18,8 @@ from oslo_config import cfg
 from oslo_log import log as logging
 import oslo_messaging as messaging
 
-from designate import rpc
 from designate.loggingutils import rpc_logging
+from designate import rpc
 
 LOG = logging.getLogger(__name__)
 

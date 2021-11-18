@@ -17,11 +17,11 @@ from unittest import mock
 
 import dns.resolver
 
-import designate.tests
-from designate import exceptions
-from designate import utils
 from designate.backend.agent_backend import impl_bind9
+from designate import exceptions
+import designate.tests
 from designate.tests.unit.agent import backends
+from designate import utils
 
 
 class Bind9AgentBackendTestCase(designate.tests.TestCase):

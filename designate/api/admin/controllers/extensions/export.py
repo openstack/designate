@@ -12,12 +12,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import pecan
 from oslo_log import log as logging
+import pecan
 
 from designate.api.v2.controllers import rest
-from designate import utils
 from designate import policy
+from designate import utils
 
 LOG = logging.getLogger(__name__)
 

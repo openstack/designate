@@ -21,8 +21,8 @@ from oslo_config import cfg
 from oslo_log import log as logging
 
 import designate.conf
-from designate.plugin import DriverPlugin
 from designate import objects
+from designate.plugin import DriverPlugin
 from designate import rpc
 
 LOG = logging.getLogger(__name__)

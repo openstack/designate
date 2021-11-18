@@ -22,9 +22,9 @@ from oslo_serialization import jsonutils
 import requests
 from requests.adapters import HTTPAdapter
 
+from designate.backend import base
 from designate import exceptions
 from designate import utils
-from designate.backend import base
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF

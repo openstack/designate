@@ -15,8 +15,8 @@
 # under the License.
 import unittest
 
-import oslotest.base
 from oslo_log import log as logging
+import oslotest.base
 
 from designate import exceptions
 from designate import objects

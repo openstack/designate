@@ -21,10 +21,10 @@ from oslo_reports import guru_meditation_report as gmr
 import designate.conf
 from designate import heartbeat_emitter
 from designate import hookpoints
+from designate.mdns import service as mdns_service
 from designate import service
 from designate import utils
 from designate import version
-from designate.mdns import service as mdns_service
 
 
 CONF = designate.conf.CONF

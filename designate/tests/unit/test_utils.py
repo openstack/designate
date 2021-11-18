@@ -13,15 +13,15 @@ import random
 from unittest import mock
 
 import jinja2
-import oslotest.base
 from oslo_concurrency import processutils
 from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
 from oslo_utils import timeutils
+import oslotest.base
 
 from designate import exceptions
-from designate import utils
 from designate.tests import fixtures
+from designate import utils
 
 CONF = cfg.CONF
 

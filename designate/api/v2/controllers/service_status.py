@@ -14,9 +14,9 @@
 
 import pecan
 
-from designate import utils
 from designate.api.v2.controllers import rest
 from designate.objects.adapters import DesignateAdapter
+from designate import utils
 
 
 class ServiceStatusController(rest.RestController):

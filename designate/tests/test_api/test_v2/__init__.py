@@ -18,8 +18,8 @@ import itertools
 from oslo_log import log as logging
 from webtest import TestApp
 
-from designate.api import v2 as api_v2
 from designate.api import middleware
+from designate.api import v2 as api_v2
 from designate.tests.test_api import ApiTestCase
 
 

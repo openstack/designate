@@ -22,13 +22,13 @@ import dns.rdataclass
 import dns.rdatatype
 import dns.resolver
 import dns.rrset
-import testtools
 from oslo_config import cfg
+import testtools
 
 from designate import context
+from designate.mdns import handler
 from designate import objects
 from designate.tests.test_mdns import MdnsTestCase
-from designate.mdns import handler
 
 CONF = cfg.CONF
 default_pool_id = CONF['service:central'].default_pool_id

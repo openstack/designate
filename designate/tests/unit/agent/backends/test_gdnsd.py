@@ -15,8 +15,8 @@
 # under the License.
 from unittest import mock
 
-import designate.tests
 from designate.backend.agent_backend import impl_gdnsd
+import designate.tests
 
 
 class GdnsdAgentBackendTestCase(designate.tests.TestCase):

@@ -13,8 +13,9 @@
 #    under the License.
 from oslo_log import log as logging
 
-from designate.objects.adapters.yaml import base
 from designate import objects
+from designate.objects.adapters.yaml import base
+
 LOG = logging.getLogger(__name__)
 
 

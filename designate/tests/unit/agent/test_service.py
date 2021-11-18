@@ -15,13 +15,13 @@
 # under the License.
 from unittest import mock
 
-import designate.tests
-from designate import dnsutils
-from designate import utils
 from designate.agent import service
 from designate.backend import agent_backend
 from designate.backend.agent_backend import impl_fake
+from designate import dnsutils
+import designate.tests
 from designate.tests import fixtures
+from designate import utils
 
 
 class AgentServiceTest(designate.tests.TestCase):

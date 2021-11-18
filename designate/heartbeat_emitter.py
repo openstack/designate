@@ -17,11 +17,11 @@ from oslo_log import log as logging
 from oslo_service import loopingcall
 from oslo_utils import timeutils
 
+from designate.central import rpcapi as central_rpcapi
 import designate.conf
 from designate import context
 from designate import objects
 from designate import plugin
-from designate.central import rpcapi as central_rpcapi
 
 
 CONF = designate.conf.CONF

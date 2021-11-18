@@ -16,9 +16,9 @@ import datetime
 from oslo_log import log
 from oslo_versionedobjects import fields
 
+from designate import exceptions
 from designate import objects
 from designate import utils
-from designate import exceptions
 
 LOG = log.getLogger(__name__)
 

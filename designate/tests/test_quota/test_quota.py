@@ -15,14 +15,14 @@
 # under the License.
 from unittest import mock
 
-from testscenarios import load_tests_apply_scenarios as load_tests  # noqa
-import testtools
 from oslo_config import cfg
 from oslo_log import log as logging
+from testscenarios import load_tests_apply_scenarios as load_tests  # noqa
+import testtools
 
+from designate import exceptions
 from designate import quota
 from designate import tests
-from designate import exceptions
 
 
 LOG = logging.getLogger(__name__)
