@@ -161,7 +161,7 @@ class PDNS4BackendTestCase(designate.tests.TestCase):
             status_code=500,
         )
 
-        self.assertRaisesRegexp(
+        self.assertRaisesRegex(
             exceptions.Backend,
             '500 Server Error: None for url: '
             '%s/localhost/zones' % self.base_address,
@@ -229,7 +229,7 @@ class PDNS4BackendTestCase(designate.tests.TestCase):
             status_code=404,
         )
 
-        self.assertRaisesRegexp(
+        self.assertRaisesRegex(
             exceptions.Backend,
             '500 Server Error: None for url: '
             '%s/localhost/zones' % self.base_address,
@@ -255,7 +255,7 @@ class PDNS4BackendTestCase(designate.tests.TestCase):
             status_code=500,
         )
 
-        self.assertRaisesRegexp(
+        self.assertRaisesRegex(
             exceptions.Backend,
             '500 Server Error: None for url: '
             '%s/localhost/zones' % self.base_address,
@@ -326,7 +326,7 @@ class PDNS4BackendTestCase(designate.tests.TestCase):
             status_code=200,
         )
 
-        self.assertRaisesRegexp(
+        self.assertRaisesRegex(
             exceptions.Backend,
             '500 Server Error: None for url: '
             '%s/localhost/zones' % self.base_address,

@@ -67,7 +67,7 @@ class CentralDecoratorTests(CentralTestCase):
         def mock_not_creating_new_zone(cls, context, record):
             pass
 
-        self.assertRaisesRegexp(
+        self.assertRaisesRegex(
             Exception,
             'Failed to determine zone id for '
             'synchronized operation',
