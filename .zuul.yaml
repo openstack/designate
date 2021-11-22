@@ -47,6 +47,14 @@
     parent: designate-base
 
 - job:
+    name: designate-bind9-centos8stream-fips
+    parent: designate-bind9
+    nodeset: devstack-single-node-centos-8-stream
+    description: |
+      Functional testing for a FIPS enabled Centos 8 stream system
+    pre-run: playbooks/enable-fips.yaml
+
+- job:
     name: designate-pdns4
     post-run: playbooks/designate-pdns4/post.yaml
     parent: designate-base
@@ -126,6 +134,8 @@
     check:
       jobs:
         - designate-bind9
+        - designate-bind9-centos8stream-fips:
+            voting: false
         - designate-pdns4
         - designate-grenade-pdns4
         - designate-ipv6-only-pdns4
