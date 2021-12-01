@@ -72,7 +72,7 @@ class CAARecordTest(oslotest.base.BaseTestCase):
         caa_record = objects.CAA()
         self.assertRaisesRegex(
             ValueError,
-            'Domain abc. does not match',
+            'Domain abc. is invalid',
             caa_record._from_string, '0 issue abc.'
         )
 
@@ -80,7 +80,7 @@ class CAARecordTest(oslotest.base.BaseTestCase):
         caa_record = objects.CAA()
         self.assertRaisesRegex(
             ValueError,
-            'def is not valid key-value pair',
+            'def is not a valid key-value pair',
             caa_record._from_string, '0 issue abc;def'
         )
 
@@ -98,7 +98,7 @@ class CAARecordTest(oslotest.base.BaseTestCase):
         caa_record = objects.CAA()
         self.assertRaisesRegex(
             ValueError,
-            'Domain example.net. does not match',
+            'Domain example.net. is invalid',
             caa_record._from_string, '0 iodef mailto:me@example.net.'
         )
 
@@ -116,7 +116,7 @@ class CAARecordTest(oslotest.base.BaseTestCase):
         caa_record = objects.CAA()
         self.assertRaisesRegex(
             ValueError,
-            'Domain example.net. does not match',
+            'Domain example.net. is invalid',
             caa_record._from_string, '0 iodef https://example.net./'
         )
 
@@ -124,6 +124,6 @@ class CAARecordTest(oslotest.base.BaseTestCase):
         caa_record = objects.CAA()
         self.assertRaisesRegex(
             ValueError,
-            'https:// is not valid URL',
+            'https:// is not a valid URL',
             caa_record._from_string, '0 iodef https://'
         )

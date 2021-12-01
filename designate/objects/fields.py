@@ -206,9 +206,9 @@ class DomainField(StringFields):
             if len(host) > 63:
                 raise ValueError("Host %s is too long" % host)
         if not value.endswith('.'):
-            raise ValueError("Domain %s is not end with a dot" % value)
+            raise ValueError("Domain %s does not end with a dot" % value)
         if not re.match(self.RE_ZONENAME, value):
-            raise ValueError("Domain %s is not match" % value)
+            raise ValueError("Domain %s is invalid" % value)
         return value
 
 
@@ -222,7 +222,7 @@ class EmailField(StringFields):
             raise ValueError("%s is not an email" % value)
         email = value.replace('@', '.')
         if not re.match(self.RE_ZONENAME, "%s." % email):
-            raise ValueError("Email %s is not match" % value)
+            raise ValueError("Email %s is invalid" % value)
         return value
 
 
@@ -239,9 +239,9 @@ class HostField(StringFields):
             if len(host) > 63:
                 raise ValueError("Host %s is too long" % host)
         if value.endswith('.') is False:
-            raise ValueError("Host name %s is not end with a dot" % value)
+            raise ValueError("Host name %s does not end with a dot" % value)
         if not re.match(self.RE_HOSTNAME, value):
-            raise ValueError("Host name %s is not match" % value)
+            raise ValueError("Host name %s is invalid" % value)
         return value
 
 
@@ -258,7 +258,7 @@ class SRVField(StringFields):
             if len(host) > 63:
                 raise ValueError("Host %s is too long" % host)
         if value.endswith('.') is False:
-            raise ValueError("Host name %s is not end with a dot" % value)
+            raise ValueError("Host name %s does not end with a dot" % value)
         if not re.match(self.RE_SRV_HOST_NAME, value):
             raise ValueError("Host name %s is not a SRV record" % value)
         return value
@@ -293,7 +293,7 @@ class TldField(StringFields):
     def coerce(self, obj, attr, value):
         value = super(TldField, self).coerce(obj, attr, value)
         if not re.match(self.RE_TLDNAME, value):
-            raise ValueError("%s is not an TLD" % value)
+            raise ValueError("%s is not a TLD" % value)
         return value
 
 
@@ -321,7 +321,7 @@ class NaptrServiceField(StringFields):
             raise ValueError("NAPTR record service field cannot be longer than"
                              " 255 characters" % value)
         if not re.match(self.RE_NAPTR_SERVICE, "%s" % value):
-            raise ValueError("%s NAPTR record service does not match" % value)
+            raise ValueError("%s NAPTR record service is invalid" % value)
         return value
 
 
@@ -336,7 +336,7 @@ class NaptrRegexpField(StringFields):
                              " 255 characters" % value)
         if value:
             if not re.match(self.RE_NAPTR_REGEXP, "%s" % value):
-                raise ValueError("%s is not a NAPTR record regexp" % value)
+                raise ValueError("%s NAPTR record is invalid" % value)
         return value
 
 
@@ -358,10 +358,11 @@ class CaaPropertyField(StringFields):
                     raise ValueError("Host %s is too long" % host)
             idn_with_dot = idn + '.'
             if not re.match(self.RE_ZONENAME, idn_with_dot):
-                raise ValueError("Domain %s does not match" % idn)
+                raise ValueError("Domain %s is invalid" % idn)
             for entry in entries:
                 if not re.match(self.RE_KVP, entry):
-                    raise ValueError("%s is not valid key-value pair" % entry)
+                    raise ValueError("%s is not a valid key-value pair" %
+                                     entry)
         elif tag == 'iodef':
             if re.match(self.RE_URL_MAIL, val):
                 parts = val.split('@')
@@ -372,7 +373,7 @@ class CaaPropertyField(StringFields):
                         raise ValueError("Host %s is too long" % host)
                 idn_with_dot = idn + '.'
                 if not re.match(self.RE_ZONENAME, idn_with_dot):
-                    raise ValueError("Domain %s does not match" % idn)
+                    raise ValueError("Domain %s is invalid" % idn)
             elif re.match(self.RE_URL_HTTP, val):
                 parts = val.split('/')
                 idn = parts[2]
@@ -382,9 +383,9 @@ class CaaPropertyField(StringFields):
                         raise ValueError("Host %s is too long" % host)
                 idn_with_dot = idn + '.'
                 if not re.match(self.RE_ZONENAME, idn_with_dot):
-                    raise ValueError("Domain %s does not match" % idn)
+                    raise ValueError("Domain %s is invalid" % idn)
             else:
-                raise ValueError("%s is not valid URL" % val)
+                raise ValueError("%s is not a valid URL" % val)
         else:
             raise ValueError("Property tag %s must be 'issue', 'issuewild'"
                              " or 'iodef'" % value)
