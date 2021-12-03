@@ -26,6 +26,7 @@ import pycodestyle
 # D707: basestring is not Python3-compatible, use str instead.
 # D708: Do not use xrange. Use range for large loops.
 # D709: LOG.audit is deprecated, please use LOG.info!
+# D710: LOG.warn() is not allowed. Use LOG.warning()
 
 UNDERSCORE_IMPORT_FILES = []
 
@@ -150,3 +151,13 @@ def check_no_log_audit(logical_line):
     """
     if "LOG.audit(" in logical_line:
         yield(0, "D709: LOG.audit is deprecated, please use LOG.info!")
+
+
+@core.flake8ext
+def check_no_log_warn(logical_line):
+    """Disallow 'LOG.warn('
+
+    D710
+    """
+    if logical_line.startswith('LOG.warn('):
+        yield(0, "D710:Use LOG.warning() rather than LOG.warn()")
