@@ -789,13 +789,13 @@ class CentralZoneTestCase(CentralBasic):
     def test_add_ns_creation(self):
         self.service._create_ns = mock.Mock()
 
-        self.service.find_recordsets = mock.Mock(
-            return_value=[]
+        self.service.find_recordset = mock.Mock(
+            side_effect=exceptions.RecordSetNotFound()
         )
 
         self.service._add_ns(
             self.context,
-            RoObject(id=CentralZoneTestCase.zone__id),
+            RoObject(name='foo', id=CentralZoneTestCase.zone__id),
             RoObject(name='bar')
         )
         ctx, zone, records = self.service._create_ns.call_args[0]
@@ -804,44 +804,20 @@ class CentralZoneTestCase(CentralBasic):
     def test_add_ns(self):
         self.service._update_recordset_in_storage = mock.Mock()
 
-        recordsets = [
-            RoObject(records=objects.RecordList.from_list([]), managed=True)
-        ]
-        self.service.find_recordsets = mock.Mock(
-            return_value=recordsets
+        self.service.find_recordset = mock.Mock(
+            return_value=RoObject(
+                records=objects.RecordList.from_list([]), managed=True
+            )
         )
 
         self.service._add_ns(
             self.context,
-            RoObject(id=CentralZoneTestCase.zone__id),
+            RoObject(name='foo', id=CentralZoneTestCase.zone__id),
             RoObject(name='bar')
         )
         ctx, zone, rset = \
             self.service._update_recordset_in_storage.call_args[0]
         self.assertEqual(len(rset.records), 1)
-        self.assertTrue(rset.records[0].managed)
-        self.assertEqual('bar', rset.records[0].data.name)
-
-    def test_add_ns_with_other_ns_rs(self):
-        self.service._update_recordset_in_storage = mock.Mock()
-
-        recordsets = [
-            RoObject(records=objects.RecordList.from_list([]), managed=True),
-            RoObject(records=objects.RecordList.from_list([]), managed=False)
-        ]
-
-        self.service.find_recordsets = mock.Mock(
-            return_value=recordsets
-        )
-
-        self.service._add_ns(
-            self.context,
-            RoObject(id=CentralZoneTestCase.zone__id),
-            RoObject(name='bar')
-        )
-        ctx, zone, rset = \
-            self.service._update_recordset_in_storage.call_args[0]
-        self.assertEqual(1, len(rset.records))
         self.assertTrue(rset.records[0].managed)
         self.assertEqual('bar', rset.records[0].data.name)
 
