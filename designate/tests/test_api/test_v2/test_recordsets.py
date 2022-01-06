@@ -370,6 +370,32 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
 
     def test_get_deleted_recordsets(self):
         zone = self.create_zone(fixture=1)
+        recordset = self.create_recordset(zone)
+        url = '/zones/%s/recordsets' % zone['id']
+
+        response = self.client.get(url)
+
+        # Check the headers are what we expect
+        self.assertEqual(200, response.status_int)
+
+        # Now delete the recordset
+        url = '/zones/%s/recordsets/%s' % (zone['id'], recordset.id)
+        self.client.delete(url, status=202)
+
+        # Simulate the zone having been deleted on the backend
+        zone_serial = self.central_service.get_zone(
+            self.admin_context, zone['id']).serial
+        self.central_service.update_status(
+            self.admin_context, zone['id'], 'SUCCESS', zone_serial, 'UPDATE'
+        )
+
+        # Try to get the record and ensure that we get a
+        # recordset_not_found error
+        self._assert_exception('recordset_not_found', 404, self.client.get,
+                               url)
+
+    def test_get_deleted_recordset_after_deleting_zone(self):
+        zone = self.create_zone(fixture=1)
         self.create_recordset(zone)
         url = '/zones/%s/recordsets' % zone['id']
 
@@ -378,16 +404,18 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         # Check the headers are what we expect
         self.assertEqual(200, response.status_int)
 
-        # now delete the zone and get the recordsets
+        # Now delete the zone
         self.client.delete('/zones/%s' % zone['id'], status=202)
 
         # Simulate the zone having been deleted on the backend
         zone_serial = self.central_service.get_zone(
             self.admin_context, zone['id']).serial
         self.central_service.update_status(
-            self.admin_context, zone['id'], "SUCCESS", zone_serial)
+            self.admin_context, zone['id'], 'SUCCESS', zone_serial, 'DELETE'
+        )
 
-        # Check that we get a zone_not_found error
+        # Try to get the record and ensure that we get a
+        # zone_not_found error
         self._assert_exception('zone_not_found', 404, self.client.get, url)
 
     def test_get_recordset(self):

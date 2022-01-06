@@ -2151,18 +2151,39 @@ class CentralZoneExportTests(CentralBasic):
 
 
 class CentralStatusTests(CentralBasic):
-
     def test_update_zone_or_record_status_no_zone(self):
         zone = RwObject(
-                    action='UPDATE',
+                    id='uuid',
+                    action='CREATE',
                     status='SUCCESS',
                     serial=0,
                 )
-        dom, deleted = self.service._update_zone_or_record_status(
-            zone, 'NO_ZONE', 0)
 
-        self.assertEqual(dom.action, 'CREATE')
-        self.assertEqual(dom.status, 'ERROR')
+        self.service.storage.get_zone.return_value = zone
+        self.service.storage.find_records.return_value = []
+
+        new_zone = self.service.update_status(
+            self.context, zone.id, 'NO_ZONE', 0, 'CREATE')
+
+        self.assertEqual(new_zone.action, 'CREATE')
+        self.assertEqual(new_zone.status, 'ERROR')
+
+    def test_update_zone_or_record_status_handle_update_after_create(self):
+        zone = RwObject(
+                    id='uuid',
+                    action='UPDATE',
+                    status='PENDING',
+                    serial=0,
+                )
+
+        self.service.storage.get_zone.return_value = zone
+        self.service.storage.find_records.return_value = []
+
+        new_zone = self.service.update_status(
+            self.context, zone.id, 'PENDING', 0, 'CREATE')
+
+        self.assertEqual(new_zone.action, 'UPDATE')
+        self.assertEqual(new_zone.status, 'PENDING')
 
 
 class CentralQuotaTest(unittest.TestCase):

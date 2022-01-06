@@ -311,12 +311,6 @@ class TestZoneActor(oslotest.base.BaseTestCase):
             mock.Mock(action='CREATE'),
         )
 
-    def test_invalid_action(self):
-        self.assertRaisesRegex(
-            exceptions.BadAction, 'Unexpected action: BAD',
-            self.actor._validate_action, 'BAD'
-        )
-
     def test_threshold_from_config(self):
         actor = zone.ZoneActor(
             self.executor, self.context, self.pool, mock.Mock(action='CREATE')
@@ -598,19 +592,21 @@ class TestUpdateStatus(oslotest.base.BaseTestCase):
 
     def test_call_on_delete(self):
         self.task.zone.action = 'DELETE'
-
-        self.task()
-
-        self.assertEqual('NONE', self.task.zone.action)
-        self.assertEqual('NO_ZONE', self.task.zone.status)
-        self.assertTrue(self.task.central_api.update_status.called)
-
-    def test_call_on_success(self):
         self.task.zone.status = 'SUCCESS'
 
         self.task()
 
-        self.assertEqual('NONE', self.task.zone.action)
+        self.assertEqual('DELETE', self.task.zone.action)
+        self.assertEqual('SUCCESS', self.task.zone.status)
+        self.assertTrue(self.task.central_api.update_status.called)
+
+    def test_call_on_success(self):
+        self.task.zone.action = 'UPDATE'
+        self.task.zone.status = 'SUCCESS'
+
+        self.task()
+
+        self.assertEqual('UPDATE', self.task.zone.action)
         self.assertTrue(self.task.central_api.update_status.called)
 
     def test_call_central_call(self):
@@ -623,6 +619,7 @@ class TestUpdateStatus(oslotest.base.BaseTestCase):
             self.task.zone.id,
             self.task.zone.status,
             self.task.zone.serial,
+            self.task.zone.action,
         )
 
     def test_call_on_delete_error(self):

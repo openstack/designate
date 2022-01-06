@@ -62,8 +62,9 @@ class CentralAPI(object):
         6.0 - Renamed domains to zones
         6.1 - Add ServiceStatus methods
         6.2 - Changed 'find_recordsets' method args
+        6.3 - Changed 'update_status' method args
     """
-    RPC_API_VERSION = '6.2'
+    RPC_API_VERSION = '6.3'
 
     # This allows us to mark some methods as not logged.
     # This can be for a few reasons - some methods my not actually call over
@@ -76,7 +77,7 @@ class CentralAPI(object):
 
         target = messaging.Target(topic=self.topic,
                                   version=self.RPC_API_VERSION)
-        self.client = rpc.get_client(target, version_cap='6.2')
+        self.client = rpc.get_client(target, version_cap='6.3')
 
     @classmethod
     def get_instance(cls):
@@ -351,10 +352,9 @@ class CentralAPI(object):
     def delete_pool(self, context, pool_id):
         return self.client.call(context, 'delete_pool', pool_id=pool_id)
 
-    # Pool Manager Integration Methods
-    def update_status(self, context, zone_id, status, serial):
+    def update_status(self, context, zone_id, status, serial, action=None):
         self.client.cast(context, 'update_status', zone_id=zone_id,
-                         status=status, serial=serial)
+                         status=status, serial=serial, action=action)
 
     # Zone Ownership Transfers
     def create_zone_transfer_request(self, context, zone_transfer_request):

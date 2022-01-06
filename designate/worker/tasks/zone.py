@@ -78,11 +78,11 @@ class ZoneActionOnTarget(base.Task):
                 if self.action == 'CREATE':
                     self.target.backend.create_zone(self.context, self.zone)
                     SendNotify(self.executor, self.zone, self.target)()
-                elif self.action == 'UPDATE':
-                    self.target.backend.update_zone(self.context, self.zone)
-                    SendNotify(self.executor, self.zone, self.target)()
                 elif self.action == 'DELETE':
                     self.target.backend.delete_zone(self.context, self.zone)
+                else:
+                    self.target.backend.update_zone(self.context, self.zone)
+                    SendNotify(self.executor, self.zone, self.target)()
 
                 LOG.debug("Successful %s zone %s on %s",
                           self.action, self.zone.name, self.target)
@@ -160,10 +160,6 @@ class ZoneActor(base.Task, ThresholdMixin):
         self.pool = pool
         self.zone = zone
 
-    def _validate_action(self, action):
-        if action not in ['CREATE', 'UPDATE', 'DELETE']:
-            raise exceptions.BadAction('Unexpected action: %s' % action)
-
     def _execute(self):
         results = self.executor.run([
             ZoneActionOnTarget(self.executor, self.context, self.zone, target)
@@ -193,7 +189,6 @@ class ZoneActor(base.Task, ThresholdMixin):
         return True
 
     def __call__(self):
-        self._validate_action(self.zone.action)
         results = self._execute()
         return self._threshold_met(results)
 
@@ -496,25 +491,20 @@ class UpdateStatus(base.Task):
         self.context = context
 
     def __call__(self):
-        # TODO(timsim): Fix this when central's logic is sane
-        if self.zone.action == 'DELETE' and self.zone.status != 'ERROR':
-            self.zone.action = 'NONE'
-            self.zone.status = 'NO_ZONE'
-
-        if self.zone.status == 'SUCCESS':
-            self.zone.action = 'NONE'
-
-        # This log message will always have action as NONE and then we
-        # don't use the action in the update_status call.
-        LOG.debug('Updating status for %(zone)s to %(status)s:%(action)s',
-                  {'zone': self.zone.name, 'status': self.zone.status,
-                   'action': self.zone.action})
+        LOG.debug(
+            'Updating status for %(zone)s to %(status)s:%(action)s', {
+                'zone': self.zone.name,
+                'status': self.zone.status,
+                'action': self.zone.action,
+            }
+        )
 
         self.central_api.update_status(
             self.context,
             self.zone.id,
             self.zone.status,
-            self.zone.serial
+            self.zone.serial,
+            self.zone.action,
         )
 
 

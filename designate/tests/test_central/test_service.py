@@ -28,6 +28,7 @@ from oslo_db import exception as db_exception
 from oslo_log import log as logging
 from oslo_messaging.notify import notifier
 from oslo_messaging.rpc import dispatcher as rpc_dispatcher
+from oslo_utils import timeutils
 from oslo_versionedobjects import exception as ovo_exc
 import testtools
 from testtools.matchers import GreaterThan
@@ -2550,7 +2551,7 @@ class CentralServiceTest(CentralTestCase):
         zone_serial = self.central_service.get_zone(
             elevated_a, zone_id).serial
         self.central_service.update_status(
-            elevated_a, zone_id, "SUCCESS", zone_serial)
+            elevated_a, zone_id, 'SUCCESS', zone_serial, 'UPDATE')
 
         self.network_api.fake.deallocate_floatingip(fip['id'])
 
@@ -2661,7 +2662,7 @@ class CentralServiceTest(CentralTestCase):
         zone_serial = self.central_service.get_zone(
             elevated_a, zone_id).serial
         self.central_service.update_status(
-            elevated_a, zone_id, "SUCCESS", zone_serial)
+            elevated_a, zone_id, 'SUCCESS', zone_serial, 'UPDATE')
 
         count = self.central_service.count_records(
             elevated_a, {'managed_resource_id': fip['id']})
@@ -2682,7 +2683,7 @@ class CentralServiceTest(CentralTestCase):
         zone_serial = self.central_service.get_zone(
             elevated_a, zone_id).serial
         self.central_service.update_status(
-            elevated_a, zone_id, "SUCCESS", zone_serial)
+            elevated_a, zone_id, 'SUCCESS', zone_serial, 'UPDATE')
 
         count = self.central_service.count_records(
             elevated_a, {'managed_resource_id': fip['id']})
@@ -3127,7 +3128,7 @@ class CentralServiceTest(CentralTestCase):
             self.admin_context, zone['id']).serial
 
         self.central_service.update_status(
-            self.admin_context, zone['id'], "SUCCESS", zone_serial)
+            self.admin_context, zone['id'], 'SUCCESS', zone_serial, 'DELETE')
 
         # Fetch the zone again, ensuring an exception is raised
         exc = self.assertRaises(rpc_dispatcher.ExpectedException,
@@ -3151,7 +3152,7 @@ class CentralServiceTest(CentralTestCase):
         zone_serial = self.central_service.get_zone(
             self.admin_context, zone['id']).serial
         self.central_service.update_status(
-            self.admin_context, zone['id'], "SUCCESS", zone_serial)
+            self.admin_context, zone['id'], 'SUCCESS', zone_serial, 'UPDATE')
 
         # Fetch the record again, ensuring an exception is raised
         exc = self.assertRaises(rpc_dispatcher.ExpectedException,
@@ -3161,6 +3162,131 @@ class CentralServiceTest(CentralTestCase):
                                 record['id'])
 
         self.assertEqual(exceptions.RecordSetNotFound, exc.exc_info[0])
+
+    def test_update_status_create_zone(self):
+        zone = self.create_zone()
+
+        updated_zone = self.central_service.get_zone(
+            self.admin_context, zone['id']
+        )
+        self.assertEqual('CREATE', updated_zone.action)
+        self.assertEqual('PENDING', updated_zone.status)
+
+        ns_recordsets = self.central_service.find_recordset(
+            self.admin_context,
+            criterion={'zone_id': updated_zone.id, 'type': 'NS'}
+        )
+
+        self.assertEqual('CREATE', ns_recordsets.action)
+        self.assertEqual('PENDING', ns_recordsets.status)
+
+        soa_recordsets = self.central_service.find_recordset(
+            self.admin_context,
+            criterion={'zone_id': updated_zone.id, 'type': 'SOA'}
+        )
+
+        self.assertEqual('CREATE', soa_recordsets.action)
+        self.assertEqual('PENDING', soa_recordsets.status)
+
+        self.central_service.update_status(
+            self.admin_context, zone['id'], 'SUCCESS',
+            timeutils.utcnow_ts() + 1, 'CREATE',
+        )
+
+        updated_zone = self.central_service.get_zone(
+            self.admin_context, zone['id']
+        )
+        self.assertEqual('NONE', updated_zone.action)
+        self.assertEqual('ACTIVE', updated_zone.status)
+
+        ns_recordsets = self.central_service.find_recordset(
+            self.admin_context,
+            criterion={'zone_id': updated_zone.id, 'type': 'NS'}
+        )
+
+        self.assertEqual('NONE', ns_recordsets.action)
+        self.assertEqual('ACTIVE', ns_recordsets.status)
+
+        soa_recordsets = self.central_service.find_recordset(
+            self.admin_context,
+            criterion={'zone_id': updated_zone.id, 'type': 'SOA'}
+        )
+
+        self.assertEqual('NONE', soa_recordsets.action)
+        self.assertEqual('ACTIVE', soa_recordsets.status)
+
+    def test_update_status_create_record_before_zone_finished(self):
+        zone = self.create_zone()
+        self.assertEqual('CREATE', zone.action)
+        self.assertEqual('PENDING', zone.status)
+
+        updated_zone = self.central_service.get_zone(
+            self.admin_context, zone['id']
+        )
+        self.assertEqual('CREATE', updated_zone.action)
+        self.assertEqual('PENDING', updated_zone.status)
+
+        recordset = objects.RecordSet(
+            name='www.%s' % zone.name,
+            type='A',
+            records=objects.RecordList(objects=[
+                objects.Record(data='127.0.0.1'),
+                objects.Record(data='127.0.0.2'),
+            ]),
+        )
+
+        # Create a recordset before the zone is properly setup.
+        updated_recordset = self.central_service.create_recordset(
+            self.admin_context, zone['id'], recordset
+        )
+        self.assertEqual('CREATE', updated_recordset.action)
+        self.assertEqual('PENDING', updated_recordset.status)
+
+        # Finish setting up the zone.
+        self.central_service.update_status(
+            self.admin_context, zone['id'], 'SUCCESS',
+            timeutils.utcnow_ts() + 1, 'CREATE',
+        )
+
+        # Check that we are still waiting for the zone to be updated
+        # with the new recordset.
+        # It's likely that the DNS server already knows about the recordset,
+        # but there is also a chance that the recordset wasn't ready yet
+        # and is missing from the upstream DNS servers.
+        updated_zone = self.central_service.get_zone(
+            self.admin_context, zone['id']
+        )
+        self.assertEqual('UPDATE', updated_zone.action)
+        self.assertEqual('PENDING', updated_zone.status)
+
+        updated_recordset = self.central_service.get_recordset(
+            self.admin_context, zone['id'], recordset['id']
+        )
+        # The recordset is already marked as ACTIVE, since we cannot
+        # tell if the record was created / updated successfully or not at this
+        # stage, also Zone NS and SOA records always needs to be marked ACTIVE.
+        # Safer to just mark all records as ACTIVE.
+        self.assertEqual('NONE', updated_recordset.action)
+        self.assertEqual('ACTIVE', updated_recordset.status)
+
+        # We just got the word from the worker that both the zone and the
+        # recordset are known to the upstream DNS servers now.
+        self.central_service.update_status(
+            self.admin_context, zone['id'], 'SUCCESS',
+            timeutils.utcnow_ts() + 2, 'UPDATE',
+        )
+
+        updated_zone = self.central_service.get_zone(
+            self.admin_context, zone['id']
+        )
+        self.assertEqual('NONE', updated_zone.action)
+        self.assertEqual('ACTIVE', updated_zone.status)
+
+        updated_recordset = self.central_service.get_recordset(
+            self.admin_context, zone['id'], recordset['id']
+        )
+        self.assertEqual('NONE', updated_recordset.action)
+        self.assertEqual('ACTIVE', updated_recordset.status)
 
     @mock.patch.object(notifier.Notifier, "info")
     def test_update_status_send_notification(self, mock_notifier):
@@ -3184,7 +3310,7 @@ class CentralServiceTest(CentralTestCase):
         # have been sent and the zone is now in ACTIVE status
         mock_notifier.reset_mock()
         self.central_service.update_status(
-            self.admin_context, zone['id'], "SUCCESS", zone.serial)
+            self.admin_context, zone['id'], 'SUCCESS', zone.serial, 'CREATE')
 
         self.assertEqual(2, mock_notifier.call_count)
         notify_string, notified_zone = mock_notifier.call_args_list[0][0][1:]
@@ -3218,7 +3344,7 @@ class CentralServiceTest(CentralTestCase):
         zone_serial = self.central_service.get_zone(
             self.admin_context, zone['id']).serial
         self.central_service.update_status(
-            self.admin_context, zone['id'], "SUCCESS", zone_serial)
+            self.admin_context, zone['id'], 'SUCCESS', zone_serial, 'UPDATE')
 
         # Fetch the record again, ensuring an exception is raised
         exc = self.assertRaises(rpc_dispatcher.ExpectedException,
