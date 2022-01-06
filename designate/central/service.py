@@ -2247,19 +2247,7 @@ class Service(service.RPCService):
                     'zonename': zone_name
                 })
 
-            email = cfg.CONF['service:central'].managed_resource_email
-            tenant_id = cfg.CONF['service:central'].managed_resource_tenant_id
-
-            zone_values = {
-                'type': 'PRIMARY',
-                'name': zone_name,
-                'email': email,
-                'tenant_id': tenant_id
-            }
-
-            zone = self.create_zone(
-                elevated_context, objects.Zone(**zone_values)
-            )
+            zone = self._create_ptr_zone(elevated_context, zone_name)
 
         record_name = self.network_api.address_name(fip['address'])
         recordset_values = {
@@ -2286,6 +2274,27 @@ class Service(service.RPCService):
         return self._create_floating_ip(
             context, fip, record, zone=zone, recordset=recordset
         )
+
+    def _create_ptr_zone(self, elevated_context, zone_name):
+        zone_values = {
+            'type': 'PRIMARY',
+            'name': zone_name,
+            'email': cfg.CONF['service:central'].managed_resource_email,
+            'tenant_id': cfg.CONF['service:central'].managed_resource_tenant_id
+        }
+        try:
+            zone = self.create_zone(
+                elevated_context, objects.Zone(**zone_values)
+            )
+        except exceptions.DuplicateZone:
+            # NOTE(eandersson): This code is prone to race conditions, and
+            #                   it does not hurt to try to handle this if it
+            #                   fails.
+            zone = self.storage.find_zone(
+                elevated_context, {'name': zone_name}
+            )
+
+        return zone
 
     def _unset_floatingip_reverse(self, context, region, floatingip_id):
         """
@@ -2367,6 +2376,7 @@ class Service(service.RPCService):
             fips.append(fip_ptr)
         return fips
 
+    @transaction
     def _delete_ptr_record(self, context, record):
         try:
             recordset = self.get_recordset(
@@ -2393,10 +2403,11 @@ class Service(service.RPCService):
         except exceptions.RecordSetNotFound:
             pass
 
+    @transaction
     def _replace_or_create_ptr_recordset(self, context, record, zone_id,
                                          name, type, ttl=None):
         try:
-            recordset = self.find_recordset(context, {
+            recordset = self.storage.find_recordset(context, {
                 'zone_id': zone_id,
                 'name': name,
                 'type': type,
@@ -2422,7 +2433,6 @@ class Service(service.RPCService):
         return recordset
 
     @rpc.expected_exceptions()
-    @transaction
     def update_floatingip(self, context, region, floatingip_id, values):
         """
         We strictly see if values['ptrdname'] is str or None and set / unset
