@@ -211,7 +211,11 @@ class TestCase(base.BaseTestCase):
 
     ptr_fixtures = [
         {'ptrdname': 'srv1.example.com.'},
-        {'ptrdname': 'srv1.example.net.'}
+        {'ptrdname': 'srv1.example.net.'},
+        {'ptrdname': 'srv2.example.com.'},
+        {'ptrdname': 'srv3.example.com.'},
+        {'ptrdname': 'srv4.example.com.'},
+        {'ptrdname': 'srv5.example.com.'},
     ]
 
     blacklist_fixtures = [{
