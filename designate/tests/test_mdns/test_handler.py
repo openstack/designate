@@ -403,8 +403,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
 
         # This creates an A record for mail.example.com
         zone = self.create_zone()
-        recordset = self.create_recordset(zone, 'A')
-        self.create_record(zone, recordset)
+        self.create_recordset(zone, 'A')
 
         request = dns.message.from_wire(binascii.a2b_hex(payload))
         request.environ = {'addr': self.addr, 'context': self.context}
@@ -434,8 +433,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
 
         # This creates an TXT record for mail.example.com
         zone = self.create_zone()
-        recordset = self.create_recordset(zone, 'TXT')
-        self.create_record(zone, recordset)
+        self.create_recordset(zone, 'TXT')
 
         request = dns.message.from_wire(binascii.a2b_hex(payload))
         request.environ = {'addr': self.addr, 'context': self.context}
@@ -462,7 +460,8 @@ class MdnsRequestHandlerTest(MdnsTestCase):
         # ;ADDITIONAL
 
         zone = self.create_zone()
-        recordset = self.create_recordset(zone, type='TXT')
+        recordset = self.create_recordset(zone, recordset_type='TXT',
+                                          records=[])
         values = {'data': '"foo" "bar" "blah"'}
         self.storage.create_record(
             self.admin_context, zone['id'], recordset['id'],
@@ -495,8 +494,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
 
         # This creates an MX record for mail.example.com
         zone = self.create_zone()
-        recordset = self.create_recordset(zone, 'MX')
-        self.create_record(zone, recordset)
+        self.create_recordset(zone, 'MX')
 
         request = dns.message.from_wire(binascii.a2b_hex(payload))
         request.environ = {'addr': self.addr, 'context': self.context}
@@ -901,8 +899,7 @@ class MdnsRequestHandlerTest(MdnsTestCase):
         # This creates an MX record for mail.example.com
         # But we query for a CNAME record
         zone = self.create_zone()
-        recordset = self.create_recordset(zone, 'MX')
-        self.create_record(zone, recordset)
+        self.create_recordset(zone, 'MX')
 
         request = dns.message.from_wire(binascii.a2b_hex(payload))
         request.environ = {'addr': self.addr, 'context': self.context}
@@ -936,10 +933,9 @@ class MdnsRequestHandlerTest(MdnsTestCase):
     def test_dispatch_opcode_query_tsig_scope_pool(self):
         # Create a zone/recordset/record to query
         zone = self.create_zone(name='example.com.')
-        recordset = self.create_recordset(
-            zone, name='example.com.', type='A')
-        self.create_record(
-            zone, recordset, data='192.0.2.5')
+        self.create_recordset(
+            zone, name='example.com.', recordset_type='A'
+        )
 
         # DNS packet with QUERY opcode for A example.com.
         payload = ("c28901200001000000000001076578616d706c6503636f6d0000010001"
@@ -965,9 +961,10 @@ class MdnsRequestHandlerTest(MdnsTestCase):
         # example.com. 3600 IN A 192.0.2.5
         # ;AUTHORITY
         # ;ADDITIONAL
-        expected_response = (b"c28985000001000100000001076578616d706c6503636f"
-                             b"6d0000010001c00c0001000100000e100004c000020500"
-                             b"00292000000000000000")
+        expected_response = (
+            b'c28985000001000100000001076578616d706c6503636f6d0000010001c00c00'
+            b'01000100000e100004c00002010000292000000000000000'
+        )
 
         response = next(self.handler(request)).to_wire()
 
@@ -996,10 +993,12 @@ class MdnsRequestHandlerTest(MdnsTestCase):
     def test_dispatch_opcode_query_tsig_scope_zone(self):
         # Create a zone/recordset/record to query
         zone = self.create_zone(name='example.com.')
-        recordset = self.create_recordset(
-            zone, name='example.com.', type='A')
-        self.create_record(
-            zone, recordset, data='192.0.2.5')
+        records = [
+            objects.Record.from_dict({'data': '192.0.2.5'}),
+        ]
+        self.create_recordset(
+            zone, name='example.com.', recordset_type='A', records=records
+        )
 
         # Create a TSIG Key Matching the zone
         tsigkey_zone_known = self.create_tsigkey(

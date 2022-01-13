@@ -54,6 +54,3 @@ class InfobloxBackend(base.Backend):
     def delete_zone(self, context, zone):
         LOG.info('Delete Zone %r', zone)
         self.infoblox.delete_zone_auth(zone['name'][0:-1])
-
-    def ping(self, context):
-        LOG.info('Ping')

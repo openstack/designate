@@ -20,7 +20,6 @@ import itertools
 from designate.common.policies import base
 from designate.common.policies import blacklist
 from designate.common.policies import context
-from designate.common.policies import diagnostics
 from designate.common.policies import pool
 from designate.common.policies import quota
 from designate.common.policies import record
@@ -41,7 +40,6 @@ def list_rules():
         base.list_rules(),
         blacklist.list_rules(),
         context.list_rules(),
-        diagnostics.list_rules(),
         pool.list_rules(),
         quota.list_rules(),
         record.list_rules(),

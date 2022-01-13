@@ -20,6 +20,7 @@ import oslo_messaging as messaging
 
 from designate.central import service as central_service
 from designate import exceptions
+from designate import objects
 from designate.tests.test_api.test_v2 import ApiV2TestCase
 
 LOG = logging.getLogger(__name__)
@@ -370,7 +371,7 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
 
     def test_get_deleted_recordsets(self):
         zone = self.create_zone(fixture=1)
-        recordset = self.create_recordset(zone)
+        recordset = self.create_recordset(zone, records=[])
         url = '/zones/%s/recordsets' % zone['id']
 
         response = self.client.get(url)
@@ -420,7 +421,7 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
 
     def test_get_recordset(self):
         # Create a recordset
-        recordset = self.create_recordset(self.zone)
+        recordset = self.create_recordset(self.zone, records=[])
 
         url = '/zones/%s/recordsets/%s' % (self.zone['id'], recordset['id'])
         response = self.client.get(url)
@@ -466,7 +467,7 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
 
     def test_update_recordset(self):
         # Create a recordset
-        recordset = self.create_recordset(self.zone)
+        recordset = self.create_recordset(self.zone, records=[])
 
         # Prepare an update body
         body = {'description': 'Tester'}
@@ -503,7 +504,7 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
 
     def test_update_recordset_with_record_create(self):
         # Create a recordset
-        recordset = self.create_recordset(self.zone, 'A')
+        recordset = self.create_recordset(self.zone, 'A', records=[])
 
         # The action and status are NONE and ACTIVE as there are no records
         self.assertEqual('NONE', recordset['action'])
@@ -543,7 +544,6 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
     def test_update_recordset_with_record_replace(self):
         # Create a recordset with one record
         recordset = self.create_recordset(self.zone, 'A')
-        self.create_record(self.zone, recordset)
 
         # Prepare an update body
         body = {'description': 'Tester',
@@ -577,7 +577,6 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         # See bug #1474012
         new_zone = self.create_zone(name='example.net.')
         recordset = self.create_recordset(new_zone, 'TXT')
-        self.create_record(new_zone, recordset)
         body = {'description': 'Tester', 'records': ['a' * 255]}
 
         url = '/zones/%s/recordsets/%s' % (recordset['zone_id'],
@@ -588,7 +587,6 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         # See bug #1474012
         new_zone = self.create_zone(name='example.net.')
         recordset = self.create_recordset(new_zone, 'TXT')
-        self.create_record(new_zone, recordset)
         body = {'description': 'Tester', 'records': ['a' * 512]}
         url = '/zones/%s/recordsets/%s' % (recordset['zone_id'],
                                            recordset['id'])
@@ -599,7 +597,6 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
         # create TXT record with string split in 2
         new_zone = self.create_zone(name='example.net.')
         recordset = self.create_recordset(new_zone, 'TXT')
-        self.create_record(new_zone, recordset)
         record = '"{}" "{}"'.format('a' * 250, 'a' * 250)
         body = {'description': 'Tester', 'records': [record]}
         url = '/zones/%s/recordsets/%s' % (recordset['zone_id'],
@@ -609,7 +606,6 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
     def test_update_recordset_with_record_clear(self):
         # Create a recordset with one record
         recordset = self.create_recordset(self.zone, 'A')
-        self.create_record(self.zone, recordset)
 
         # Prepare an update body
         body = {'description': 'Tester', 'records': []}
@@ -745,7 +741,7 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
                                self.client.put_json, url, body)
 
     def test_delete_recordset(self):
-        recordset = self.create_recordset(self.zone)
+        recordset = self.create_recordset(self.zone, records=[])
 
         url = '/zones/%s/recordsets/%s' % (recordset['zone_id'],
                                            recordset['id'])
@@ -770,7 +766,6 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
     def test_delete_recordset_with_records(self):
         # Create a recordset with one record
         recordset = self.create_recordset(self.zone, 'A')
-        self.create_record(self.zone, recordset)
 
         url = '/zones/%s/recordsets/%s' % (recordset['zone_id'],
                                            recordset['id'])
@@ -854,11 +849,16 @@ class ApiV2RecordSetsTest(ApiV2TestCase):
 
         # Test paging
         new_zone = self.create_zone(name='example.net.')
-        recordset = self.create_recordset(new_zone, 'A')
-        self.create_record(new_zone, recordset, data='nyan')
-
-        recordset = self.create_recordset(new_zone, 'CNAME')
-        self.create_record(new_zone, recordset, data='nyan')
+        record_1 = objects.Record.from_dict({'data': 'nyan'})
+        self.create_recordset(
+            new_zone, 'A',
+            records=[record_1],
+        )
+        record_2 = objects.Record.from_dict({'data': 'nyan'})
+        self.create_recordset(
+            new_zone, 'CNAME',
+            records=[record_2],
+        )
 
         # Even with paging enabled, total_count is still the total number of
         # recordsets matching the "data" filter

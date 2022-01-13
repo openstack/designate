@@ -13,8 +13,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import time
-
 from oslo_log import log as logging
 from oslo_utils.secretutils import md5
 from sqlalchemy import select, distinct, func
@@ -1784,22 +1782,6 @@ class SQLAlchemyStorage(sqlalchemy_base.SQLAlchemy, storage_base.Storage):
             context, tables.service_status, service_status,
             exceptions.DuplicateServiceStatus,
             exceptions.ServiceStatusNotFound)
-
-    # diagnostics
-    def ping(self, context):
-        start_time = time.time()
-
-        try:
-            result = self.engine.execute('SELECT 1').first()
-        except Exception:
-            status = False
-        else:
-            status = True if result[0] == 1 else False
-
-        return {
-            'status': status,
-            'rtt': "%f" % (time.time() - start_time)
-        }
 
     # Reverse Name utils
     def _rname_check(self, criterion):

@@ -231,7 +231,7 @@ class NovaFixedHandlerTest(TestCase, NotificationHandlerMixin):
         with mock.patch.object(
                 self.plugin, '_create_or_update_recordset') as finder:
             with mock.patch.object(self.plugin.central_api,
-                                   'create_record'):
+                                   'create_recordset'):
                 finder.return_value = {'id': 'fakeid'}
                 self.plugin.process_notification(
                     self.admin_context.to_dict(),
@@ -248,7 +248,7 @@ class NovaFixedHandlerTest(TestCase, NotificationHandlerMixin):
         with mock.patch.object(
                 self.plugin, '_create_or_update_recordset') as finder:
             with mock.patch.object(self.plugin.central_api,
-                                   'create_record'):
+                                   'create_recordset'):
                 finder.return_value = {'id': 'fakeid'}
                 self.plugin.process_notification(
                     self.admin_context.to_dict(),
@@ -265,7 +265,7 @@ class NovaFixedHandlerTest(TestCase, NotificationHandlerMixin):
         with mock.patch.object(
                 self.plugin, '_create_or_update_recordset') as finder:
             with mock.patch.object(self.plugin.central_api,
-                                   'create_record'):
+                                   'create_recordset'):
                 finder.return_value = {'id': 'fakeid'}
                 self.plugin.process_notification(
                     self.admin_context.to_dict(),

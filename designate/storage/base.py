@@ -758,12 +758,6 @@ class Storage(DriverPlugin, metaclass=abc.ABCMeta):
         :param zone_export_id: Delete a Zone Export via ID
         """
 
-    def ping(self, context):
-        """Ping the Storage connection"""
-        return {
-            'status': None
-        }
-
     @abc.abstractmethod
     def find_service_statuses(self, context, criterion=None, marker=None,
                             limit=None, sort_key=None, sort_dir=None):

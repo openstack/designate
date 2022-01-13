@@ -1003,9 +1003,9 @@ class StorageTestCase(object):
         zone = self.create_zone()
 
         records = [
-            {"data": "10.0.0.1"},
-            {"data": "10.0.0.2"},
-            {"data": "10.0.0.3"}
+            objects.Record.from_dict({"data": "10.0.0.1"}),
+            objects.Record.from_dict({"data": "10.0.0.2"}),
+            objects.Record.from_dict({"data": "10.0.0.3"})
         ]
 
         recordset = self.create_recordset(zone, records=records)
@@ -1045,11 +1045,12 @@ class StorageTestCase(object):
 
     def test_get_recordset_with_records(self):
         zone = self.create_zone()
-        recordset = self.create_recordset(zone)
 
-        # Create two Records in the RecordSet
-        self.create_record(zone, recordset)
-        self.create_record(zone, recordset, fixture=1)
+        records = [
+            objects.Record.from_dict(self.get_record_fixture('A', fixture=0)),
+            objects.Record.from_dict(self.get_record_fixture('A', fixture=1))
+        ]
+        recordset = self.create_recordset(zone, records=records)
 
         # Fetch the RecordSet again
         recordset = self.storage.get_recordset(
@@ -1095,11 +1096,12 @@ class StorageTestCase(object):
 
     def test_find_recordset_criterion_with_records(self):
         zone = self.create_zone()
-        recordset = self.create_recordset(zone)
 
-        # Create two Records in the RecordSet
-        self.create_record(zone, recordset)
-        self.create_record(zone, recordset, fixture=1)
+        records = [
+            objects.Record.from_dict(self.get_record_fixture('A', fixture=0)),
+            objects.Record.from_dict(self.get_record_fixture('A', fixture=1))
+        ]
+        recordset = self.create_recordset(zone, records=records)
 
         criterion = dict(
             id=recordset.id,
@@ -1162,7 +1164,7 @@ class StorageTestCase(object):
         zone = self.create_zone()
 
         # Create a RecordSet
-        recordset = self.create_recordset(zone, 'A')
+        recordset = self.create_recordset(zone, 'A', records=[])
 
         # Append two new Records
         recordset.records.append(objects.Record(data='192.0.2.1'))
@@ -1188,9 +1190,11 @@ class StorageTestCase(object):
         zone = self.create_zone()
 
         # Create a RecordSet and two Records
-        recordset = self.create_recordset(zone, 'A')
-        self.create_record(zone, recordset)
-        self.create_record(zone, recordset, fixture=1)
+        records = [
+            objects.Record.from_dict(self.get_record_fixture('A', fixture=0)),
+            objects.Record.from_dict(self.get_record_fixture('A', fixture=1))
+        ]
+        recordset = self.create_recordset(zone, records=records)
 
         # Fetch the RecordSet again
         recordset = self.storage.get_recordset(
@@ -1217,9 +1221,11 @@ class StorageTestCase(object):
         zone = self.create_zone()
 
         # Create a RecordSet and two Records
-        recordset = self.create_recordset(zone, 'A')
-        self.create_record(zone, recordset)
-        self.create_record(zone, recordset, fixture=1)
+        records = [
+            objects.Record.from_dict(self.get_record_fixture('A', fixture=0)),
+            objects.Record.from_dict(self.get_record_fixture('A', fixture=1))
+        ]
+        recordset = self.create_recordset(zone, records=records)
 
         # Fetch the RecordSet again
         recordset = self.storage.get_recordset(
@@ -1288,43 +1294,9 @@ class StorageTestCase(object):
             recordsets = self.storage.count_recordsets(self.admin_context)
             self.assertEqual(0, recordsets)
 
-    def test_create_record(self):
-        zone = self.create_zone()
-        recordset = self.create_recordset(zone, type='A')
-
-        values = {
-            'data': '192.0.2.1',
-        }
-
-        result = self.storage.create_record(
-            self.admin_context, zone['id'], recordset['id'],
-            objects.Record.from_dict(values))
-
-        self.assertIsNotNone(result['id'])
-        self.assertIsNotNone(result['created_at'])
-        self.assertIsNotNone(result['hash'])
-        self.assertIsNone(result['updated_at'])
-
-        self.assertEqual(self.admin_context.project_id, result['tenant_id'])
-        self.assertEqual(values['data'], result['data'])
-        self.assertIn('status', result)
-
-    def test_create_record_duplicate(self):
-        zone = self.create_zone()
-        recordset = self.create_recordset(zone)
-
-        # Create the First Record
-        self.create_record(zone, recordset)
-
-        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
-                                self.create_record,
-                                zone, recordset)
-
-        self.assertEqual(exceptions.DuplicateRecord, exc.exc_info[0])
-
     def test_find_records(self):
         zone = self.create_zone()
-        recordset = self.create_recordset(zone)
+        recordset = self.create_recordset(zone, records=[])
 
         criterion = {
             'zone_id': zone['id'],
@@ -1335,21 +1307,33 @@ class StorageTestCase(object):
         self.assertEqual(0, len(actual))
 
         # Create a single record
-        record = self.create_record(zone, recordset)
+        records = [
+            objects.Record.from_dict(self.get_record_fixture('A', fixture=0)),
+        ]
+        recordset.records = records
+
+        self.central_service.update_recordset(self.admin_context, recordset)
+
+        recordset = self.central_service.get_recordset(
+            self.admin_context, zone['id'], recordset['id']
+        )
+        record = recordset.records[0]
 
         actual = self.storage.find_records(self.admin_context, criterion)
         self.assertEqual(1, len(actual))
 
         self.assertEqual(record['data'], actual[0]['data'])
-        self.assertIn('status', record)
 
     def test_find_records_paging(self):
         zone = self.create_zone()
-        recordset = self.create_recordset(zone, type='A')
 
-        # Create 10 Records
-        created = [self.create_record(zone, recordset, data='192.0.2.%d' % i)
-                   for i in range(10)]
+        records = []
+        for i in range(10):
+            records.append(
+                objects.Record.from_dict(({'data': '192.0.2.%d' % i}))
+            )
+
+        self.create_recordset(zone, type='A', records=records)
 
         # Add in the SOA and NS records that are automatically created
         soa = self.storage.find_recordset(self.admin_context,
@@ -1359,18 +1343,22 @@ class StorageTestCase(object):
                                          criterion={'zone_id': zone['id'],
                                                     'type': "NS"})
         for r in ns['records']:
-            created.insert(0, r)
-        created.insert(0, soa['records'][0])
+            records.insert(0, r)
+        records.insert(0, soa['records'][0])
 
         # Ensure we can page through the results.
-        self._ensure_paging(created, self.storage.find_records)
+        self._ensure_paging(records, self.storage.find_records)
 
     def test_find_records_criterion(self):
         zone = self.create_zone()
-        recordset = self.create_recordset(zone, type='A')
-
-        record_one = self.create_record(zone, recordset)
-        self.create_record(zone, recordset, fixture=1)
+        record_one = objects.Record.from_dict(
+            self.get_record_fixture('A', fixture=0)
+        )
+        records = [
+            record_one,
+            objects.Record.from_dict(self.get_record_fixture('A', fixture=1))
+        ]
+        recordset = self.create_recordset(zone, records=records)
 
         criterion = dict(
             data=record_one['data'],
@@ -1392,11 +1380,9 @@ class StorageTestCase(object):
 
     def test_find_records_criterion_wildcard(self):
         zone = self.create_zone()
-        recordset = self.create_recordset(zone, type='A')
 
-        values = {'data': '127.0.0.1'}
-
-        self.create_record(zone, recordset, **values)
+        records = [objects.Record.from_dict({'data': '127.0.0.1'})]
+        recordset = self.create_recordset(zone, type='A', records=records)
 
         criterion = dict(
             zone_id=zone['id'],
@@ -1408,52 +1394,10 @@ class StorageTestCase(object):
 
         self.assertEqual(1, len(results))
 
-    def test_find_records_all_tenants(self):
-        # Create two contexts with different tenant_id's
-        one_context = self.get_admin_context()
-        one_context.project_id = 1
-        two_context = self.get_admin_context()
-        two_context.project_id = 2
-
-        # Create normal and all_tenants context objects
-        nm_context = self.get_admin_context()
-        at_context = self.get_admin_context()
-        at_context.all_tenants = True
-
-        # Create two zones in different tenants, and 1 record in each
-        zone_one = self.create_zone(fixture=0, context=one_context)
-        recordset_one = self.create_recordset(zone_one, fixture=0,
-                                              context=one_context)
-        self.create_record(zone_one, recordset_one, context=one_context)
-
-        zone_two = self.create_zone(fixture=1, context=two_context)
-        recordset_one = self.create_recordset(zone_two, fixture=1,
-                                              context=two_context)
-
-        self.create_record(zone_two, recordset_one, context=two_context)
-
-        # Ensure the all_tenants context see's two records
-        # Plus the SOA & NS in each of 2 zones = 6 records total
-        results = self.storage.find_records(at_context)
-        self.assertEqual(6, len(results))
-
-        # Ensure the normal context see's no records
-        results = self.storage.find_records(nm_context)
-        self.assertEqual(0, len(results))
-
-        # Ensure the tenant 1 context see's 1 record + SOA & NS
-        results = self.storage.find_records(one_context)
-        self.assertEqual(3, len(results))
-
-        # Ensure the tenant 2 context see's 1 record + SOA & NS
-        results = self.storage.find_records(two_context)
-        self.assertEqual(3, len(results))
-
     def test_get_record(self):
         zone = self.create_zone()
         recordset = self.create_recordset(zone)
-
-        expected = self.create_record(zone, recordset)
+        expected = recordset.records[0]
 
         actual = self.storage.get_record(self.admin_context, expected['id'])
 
@@ -1468,8 +1412,7 @@ class StorageTestCase(object):
     def test_find_record_criterion(self):
         zone = self.create_zone()
         recordset = self.create_recordset(zone)
-
-        expected = self.create_record(zone, recordset)
+        expected = recordset.records[0]
 
         criterion = dict(
             zone_id=zone['id'],
@@ -1485,8 +1428,7 @@ class StorageTestCase(object):
     def test_find_record_criterion_missing(self):
         zone = self.create_zone()
         recordset = self.create_recordset(zone)
-
-        expected = self.create_record(zone, recordset)
+        expected = recordset.records[0]
 
         criterion = dict(
             zone_id=zone['id'],
@@ -1499,9 +1441,7 @@ class StorageTestCase(object):
     def test_update_record(self):
         zone = self.create_zone()
         recordset = self.create_recordset(zone, type='A')
-
-        # Create a record
-        record = self.create_record(zone, recordset)
+        record = recordset.records[0]
 
         # Update the Object
         record.data = '192.0.2.255'
@@ -1517,11 +1457,20 @@ class StorageTestCase(object):
 
     def test_update_record_duplicate(self):
         zone = self.create_zone()
-        recordset = self.create_recordset(zone)
 
-        # Create two records
-        record_one = self.create_record(zone, recordset)
-        record_two = self.create_record(zone, recordset, fixture=1)
+        record_one = objects.Record.from_dict(
+            self.get_record_fixture('A', fixture=0)
+        )
+        record_two = objects.Record.from_dict(
+            self.get_record_fixture('A', fixture=1)
+        )
+
+        records = [
+            record_one,
+            record_two
+        ]
+
+        self.create_recordset(zone, records=records)
 
         # Update the R2 object to be a duplicate of R1
         record_two.data = record_one.data
@@ -1538,9 +1487,7 @@ class StorageTestCase(object):
     def test_delete_record(self):
         zone = self.create_zone()
         recordset = self.create_recordset(zone)
-
-        # Create a record
-        record = self.create_record(zone, recordset)
+        record = recordset.records[0]
 
         self.storage.delete_record(self.admin_context, record['id'])
 
@@ -1559,8 +1506,7 @@ class StorageTestCase(object):
 
         # Create a single zone & record
         zone = self.create_zone()
-        recordset = self.create_recordset(zone)
-        self.create_record(zone, recordset)
+        self.create_recordset(zone)
 
         # we should have 3 records now, including NS and SOA
         records = self.storage.count_records(self.admin_context)
@@ -1578,19 +1524,6 @@ class StorageTestCase(object):
                                return_value=rp):
             records = self.storage.count_records(self.admin_context)
             self.assertEqual(0, records)
-
-    def test_ping(self):
-        pong = self.storage.ping(self.admin_context)
-
-        self.assertTrue(pong['status'])
-        self.assertIsNotNone(pong['rtt'])
-
-    def test_ping_fail(self):
-        with mock.patch.object(self.storage.engine, "execute",
-                               side_effect=Exception):
-            result = self.storage.ping(self.admin_context)
-            self.assertFalse(result['status'])
-            self.assertIsNotNone(result['rtt'])
 
     # TLD Tests
     def test_create_tld(self):
@@ -3073,8 +3006,7 @@ class StorageTestCase(object):
 
         zone = self.create_zone(context=tenant_1_context)
         recordset = self.create_recordset(zone, context=tenant_1_context)
-        record = self.create_record(
-            zone, recordset, context=tenant_1_context)
+        record = recordset.records[0]
 
         updated_zone = zone
 

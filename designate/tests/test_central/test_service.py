@@ -1314,21 +1314,6 @@ class CentralServiceTest(CentralTestCase):
             else:
                 raise Exception("Unexpected zone %r" % z)
 
-    def test_touch_zone(self):
-        # Create a zone
-        expected_zone = self.create_zone()
-
-        # Touch the zone
-        self.central_service.touch_zone(
-            self.admin_context, expected_zone['id'])
-
-        # Fetch the zone again
-        zone = self.central_service.get_zone(
-            self.admin_context, expected_zone['id'])
-
-        # Ensure the serial was incremented
-        self.assertGreater(zone['serial'], expected_zone['serial'])
-
     def test_xfr_zone(self):
         # Create a zone
         fixture = self.get_zone_fixture('SECONDARY', 0)
@@ -1569,10 +1554,13 @@ class CentralServiceTest(CentralTestCase):
     def test_get_recordset_with_records(self):
         zone = self.create_zone()
 
+        records = [
+            objects.Record.from_dict(self.get_record_fixture('A', fixture=0)),
+            objects.Record.from_dict(self.get_record_fixture('A', fixture=1))
+        ]
+
         # Create a recordset and two records
-        recordset = self.create_recordset(zone)
-        self.create_record(zone, recordset)
-        self.create_record(zone, recordset, fixture=1)
+        recordset = self.create_recordset(zone, records=records)
 
         # Retrieve it, and ensure it's the same
         recordset = self.central_service.get_recordset(
@@ -1649,9 +1637,12 @@ class CentralServiceTest(CentralTestCase):
         zone = self.create_zone()
 
         # Create a recordset
-        recordset = self.create_recordset(zone)
-        self.create_record(zone, recordset)
-        self.create_record(zone, recordset, fixture=1)
+        records = [
+            objects.Record.from_dict(self.get_record_fixture('A', fixture=0)),
+            objects.Record.from_dict(self.get_record_fixture('A', fixture=1))
+        ]
+
+        recordset = self.create_recordset(zone, records=records)
 
         # Retrieve it, and ensure it's the same
         criterion = {'zone_id': zone.id, 'name': recordset.name}
@@ -1729,7 +1720,7 @@ class CentralServiceTest(CentralTestCase):
         zone = self.create_zone()
 
         # Create a recordset
-        recordset = self.create_recordset(zone)
+        recordset = self.create_recordset(zone, records=[])
 
         # Append two new Records
         recordset.records.append(objects.Record(data='192.0.2.1'))
@@ -1753,13 +1744,12 @@ class CentralServiceTest(CentralTestCase):
         original_serial = zone.serial
 
         # Create a recordset and two records
-        recordset = self.create_recordset(zone)
-        self.create_record(zone, recordset)
-        self.create_record(zone, recordset, fixture=1)
+        records = [
+            objects.Record.from_dict(self.get_record_fixture('A', fixture=0)),
+            objects.Record.from_dict(self.get_record_fixture('A', fixture=1))
+        ]
 
-        # Append two new Records
-        recordset.records.append(objects.Record(data='192.0.2.1'))
-        recordset.records.append(objects.Record(data='192.0.2.2'))
+        recordset = self.create_recordset(zone, records=records)
 
         # Remove one of the Records
         recordset.records.pop(0)
@@ -1769,7 +1759,8 @@ class CentralServiceTest(CentralTestCase):
 
         # Fetch the RecordSet again
         recordset = self.central_service.get_recordset(
-            self.admin_context, zone.id, recordset.id)
+            self.admin_context, zone.id, recordset.id
+        )
 
         # Fetch the Zone again
         updated_zone = self.central_service.get_zone(self.admin_context,
@@ -1786,9 +1777,11 @@ class CentralServiceTest(CentralTestCase):
         zone = self.create_zone()
 
         # Create a recordset and two records
-        recordset = self.create_recordset(zone, 'A')
-        self.create_record(zone, recordset)
-        self.create_record(zone, recordset, fixture=1)
+        records = [
+            objects.Record.from_dict(self.get_record_fixture('A', fixture=0)),
+            objects.Record.from_dict(self.get_record_fixture('A', fixture=1))
+        ]
+        recordset = self.create_recordset(zone, records=records)
 
         # Fetch the RecordSet again
         recordset = self.central_service.get_recordset(
@@ -1870,7 +1863,7 @@ class CentralServiceTest(CentralTestCase):
         #  'SSHFP', 'SOA', 'NAPTR', 'CAA', 'CERT']
         # Create a recordset
         recordset = self.create_recordset(zone)
-        cname_recordset = self.create_recordset(zone, type='CNAME')
+        cname_recordset = self.create_recordset(zone, recordset_type='CNAME')
 
         self.assertRaises(ovo_exc.ReadOnlyFieldError, setattr,
                           recordset, 'type', cname_recordset.type)
@@ -1970,37 +1963,23 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(exceptions.Forbidden, exc.exc_info[0])
 
     # Record Tests
-    def test_create_record(self):
-        zone = self.create_zone()
-        recordset = self.create_recordset(zone, type='A')
-
-        values = dict(
-            data='127.0.0.1'
-        )
-
-        # Create a record
-        record = self.central_service.create_record(
-            self.admin_context, zone['id'], recordset['id'],
-            objects.Record.from_dict(values))
-
-        # Ensure all values have been set correctly
-        self.assertIsNotNone(record['id'])
-        self.assertEqual(values['data'], record['data'])
-        self.assertIn('status', record)
-
     def test_create_record_and_update_over_zone_quota(self):
         # SOA and NS Records exist
         self.config(quota_zone_records=0)
 
         # Creating the zone automatically creates SOA & NS records
         zone = self.create_zone()
-        recordset = self.create_recordset(zone)
+        recordset = self.create_recordset(zone, records=[])
 
-        self.create_record(zone, recordset)
+        recordset.records.append(
+            objects.Record.from_dict(self.get_record_fixture('A', fixture=1))
+        )
 
-        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
-                                self.create_record,
-                                zone, recordset)
+        exc = self.assertRaises(
+            rpc_dispatcher.ExpectedException,
+            self.central_service.update_recordset,
+            self.admin_context, recordset
+        )
 
         self.assertEqual(exceptions.OverQuota, exc.exc_info[0])
 
@@ -2031,42 +2010,22 @@ class CentralServiceTest(CentralTestCase):
 
         # Creating the zone automatically creates SOA & NS records
         zone = self.create_zone()
-        recordset = self.create_recordset(zone)
+        recordset = self.create_recordset(zone, records=[])
 
-        self.create_record(zone, recordset)
-
-        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
-                                self.create_record,
-                                zone, recordset)
-
-        self.assertEqual(exceptions.OverQuota, exc.exc_info[0])
-
-    def test_create_record_without_incrementing_serial(self):
-        zone = self.create_zone()
-        recordset = self.create_recordset(zone, type='A')
-
-        values = dict(
-            data='127.0.0.1'
+        recordset.records.append(
+            objects.Record.from_dict(self.get_record_fixture('A', fixture=1))
         )
 
-        # Create a record
-        self.central_service.create_record(
-            self.admin_context, zone['id'], recordset['id'],
-            objects.Record.from_dict(values),
-            increment_serial=False)
+        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
+                                self.central_service.update_recordset,
+                                self.admin_context, recordset)
 
-        # Ensure the zones serial number was not updated
-        updated_zone = self.central_service.get_zone(
-            self.admin_context, zone['id'])
-
-        self.assertEqual(zone['serial'], updated_zone['serial'])
+        self.assertEqual(exceptions.OverQuota, exc.exc_info[0])
 
     def test_get_record(self):
         zone = self.create_zone()
         recordset = self.create_recordset(zone)
-
-        # Create a record
-        expected = self.create_record(zone, recordset)
+        expected = recordset.records[0]
 
         # Retrieve it, and ensure it's the same
         record = self.central_service.get_record(
@@ -2080,9 +2039,7 @@ class CentralServiceTest(CentralTestCase):
         zone = self.create_zone()
         recordset = self.create_recordset(zone)
         other_zone = self.create_zone(fixture=1)
-
-        # Create a record
-        expected = self.create_record(zone, recordset)
+        expected = recordset.records[0]
 
         exc = self.assertRaises(rpc_dispatcher.ExpectedException,
                                 self.central_service.get_record,
@@ -2096,9 +2053,7 @@ class CentralServiceTest(CentralTestCase):
         zone = self.create_zone()
         recordset = self.create_recordset(zone)
         other_recordset = self.create_recordset(zone, fixture=1)
-
-        # Create a record
-        expected = self.create_record(zone, recordset)
+        expected = recordset.records[0]
 
         exc = self.assertRaises(rpc_dispatcher.ExpectedException,
                                 self.central_service.get_record,
@@ -2111,7 +2066,7 @@ class CentralServiceTest(CentralTestCase):
 
     def test_find_records(self):
         zone = self.create_zone()
-        recordset = self.create_recordset(zone)
+        recordset = self.create_recordset(zone, records=[])
 
         criterion = {
             'zone_id': zone['id'],
@@ -2124,8 +2079,12 @@ class CentralServiceTest(CentralTestCase):
 
         self.assertEqual(0, len(records))
 
-        # Create a single record (using default values)
-        expected_one = self.create_record(zone, recordset)
+        records = [
+            objects.Record.from_dict(self.get_record_fixture('A', fixture=0)),
+        ]
+        recordset.records = records
+        expected_one = recordset.records[0]
+        self.central_service.update_recordset(self.admin_context, recordset)
 
         # Ensure we can retrieve the newly created record
         records = self.central_service.find_records(
@@ -2135,22 +2094,21 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(expected_one['data'], records[0]['data'])
 
         # Create a second record
-        expected_two = self.create_record(zone, recordset, fixture=1)
+        recordset.records.append(
+            objects.Record.from_dict(self.get_record_fixture('A', fixture=1))
+        )
+        self.central_service.update_recordset(self.admin_context, recordset)
 
         # Ensure we can retrieve both records
         records = self.central_service.find_records(
             self.admin_context, criterion)
 
         self.assertEqual(2, len(records))
-        self.assertEqual(expected_one['data'], records[0]['data'])
-        self.assertEqual(expected_two['data'], records[1]['data'])
 
     def test_find_record(self):
         zone = self.create_zone()
         recordset = self.create_recordset(zone)
-
-        # Create a record
-        expected = self.create_record(zone, recordset)
+        expected = recordset.records[0]
 
         # Retrieve it, and ensure it's the same
         criterion = {
@@ -2166,200 +2124,6 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual(expected['data'], record['data'])
         self.assertIn('status', record)
 
-    def test_update_record(self):
-        zone = self.create_zone()
-        recordset = self.create_recordset(zone, 'A')
-
-        # Create a record
-        record = self.create_record(zone, recordset)
-
-        # Update the Object
-        record.data = '192.0.2.255'
-
-        # Perform the update
-        self.central_service.update_record(self.admin_context, record)
-
-        # Fetch the resource again
-        record = self.central_service.get_record(
-            self.admin_context, record.zone_id, record.recordset_id,
-            record.id)
-
-        # Ensure the new value took
-        self.assertEqual('192.0.2.255', record.data)
-
-    def test_update_record_without_incrementing_serial(self):
-        zone = self.create_zone()
-        recordset = self.create_recordset(zone, 'A')
-
-        # Create a record
-        record = self.create_record(zone, recordset)
-
-        # Fetch the zone so we have the latest serial number
-        zone_before = self.central_service.get_zone(
-            self.admin_context, zone.id)
-
-        # Update the Object
-        record.data = '192.0.2.255'
-
-        # Perform the update
-        self.central_service.update_record(
-            self.admin_context, record, increment_serial=False)
-
-        # Fetch the resource again
-        record = self.central_service.get_record(
-            self.admin_context, record.zone_id, record.recordset_id,
-            record.id)
-
-        # Ensure the new value took
-        self.assertEqual('192.0.2.255', record.data)
-
-        # Ensure the zones serial number was not updated
-        zone_after = self.central_service.get_zone(
-            self.admin_context, zone.id)
-
-        self.assertEqual(zone_before.serial, zone_after.serial)
-
-    def test_update_record_immutable_zone_id(self):
-        zone = self.create_zone()
-        recordset = self.create_recordset(zone)
-        other_zone = self.create_zone(fixture=1)
-
-        # Create a record
-        record = self.create_record(zone, recordset)
-
-        # Update the record
-        record.zone_id = other_zone.id
-
-        # Ensure we get a BadRequest if we change the zone_id
-        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
-                                self.central_service.update_record,
-                                self.admin_context, record)
-
-        self.assertEqual(exceptions.BadRequest, exc.exc_info[0])
-
-    def test_update_record_immutable_recordset_id(self):
-        zone = self.create_zone()
-        recordset = self.create_recordset(zone)
-        other_recordset = self.create_recordset(zone, fixture=1)
-
-        # Create a record
-        record = self.create_record(zone, recordset)
-
-        # Update the record
-        record.recordset_id = other_recordset.id
-
-        # Ensure we get a BadRequest if we change the recordset_id
-        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
-                                self.central_service.update_record,
-                                self.admin_context, record)
-
-        self.assertEqual(exceptions.BadRequest, exc.exc_info[0])
-
-    def test_delete_record(self):
-        zone = self.create_zone()
-        recordset = self.create_recordset(zone)
-
-        # Create a record
-        record = self.create_record(zone, recordset)
-
-        # Fetch the zone serial number
-        zone_serial = self.central_service.get_zone(
-            self.admin_context, zone['id']).serial
-
-        # Delete the record
-        self.central_service.delete_record(
-            self.admin_context, zone['id'], recordset['id'], record['id'])
-
-        # Ensure the zone serial number was updated
-        new_zone_serial = self.central_service.get_zone(
-            self.admin_context, zone['id']).serial
-        self.assertNotEqual(new_zone_serial, zone_serial)
-
-        # Fetch the record
-        deleted_record = self.central_service.get_record(
-            self.admin_context, zone['id'], recordset['id'],
-            record['id'])
-
-        # Ensure the record is marked for deletion
-        self.assertEqual(record.id, deleted_record.id)
-        self.assertEqual(record.data, deleted_record.data)
-        self.assertEqual(record.zone_id, deleted_record.zone_id)
-        self.assertEqual('PENDING', deleted_record.status)
-        self.assertEqual(record.tenant_id, deleted_record.tenant_id)
-        self.assertEqual(record.recordset_id, deleted_record.recordset_id)
-        self.assertEqual('DELETE', deleted_record.action)
-        self.assertEqual(new_zone_serial, deleted_record.serial)
-
-    def test_delete_record_without_incrementing_serial(self):
-        zone = self.create_zone()
-        recordset = self.create_recordset(zone)
-
-        # Create a record
-        record = self.create_record(zone, recordset)
-
-        # Fetch the zone serial number
-        zone_serial = self.central_service.get_zone(
-            self.admin_context, zone['id']).serial
-
-        # Delete the record
-        self.central_service.delete_record(
-            self.admin_context, zone['id'], recordset['id'], record['id'],
-            increment_serial=False)
-
-        # Ensure the zones serial number was not updated
-        new_zone_serial = self.central_service.get_zone(
-            self.admin_context, zone['id'])['serial']
-        self.assertEqual(zone_serial, new_zone_serial)
-
-        # Fetch the record
-        deleted_record = self.central_service.get_record(
-            self.admin_context, zone['id'], recordset['id'],
-            record['id'])
-
-        # Ensure the record is marked for deletion
-        self.assertEqual(record.id, deleted_record.id)
-        self.assertEqual(record.data, deleted_record.data)
-        self.assertEqual(record.zone_id, deleted_record.zone_id)
-        self.assertEqual('PENDING', deleted_record.status)
-        self.assertEqual(record.tenant_id, deleted_record.tenant_id)
-        self.assertEqual(record.recordset_id, deleted_record.recordset_id)
-        self.assertEqual('DELETE', deleted_record.action)
-        self.assertEqual(new_zone_serial, deleted_record.serial)
-
-    def test_delete_record_incorrect_zone_id(self):
-        zone = self.create_zone()
-        recordset = self.create_recordset(zone)
-        other_zone = self.create_zone(fixture=1)
-
-        # Create a record
-        record = self.create_record(zone, recordset)
-
-        # Ensure we get a 404 if we use the incorrect zone_id
-        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
-                                self.central_service.delete_record,
-                                self.admin_context, other_zone['id'],
-                                recordset['id'],
-                                record['id'])
-
-        self.assertEqual(exceptions.RecordNotFound, exc.exc_info[0])
-
-    def test_delete_record_incorrect_recordset_id(self):
-        zone = self.create_zone()
-        recordset = self.create_recordset(zone)
-        other_recordset = self.create_recordset(zone, fixture=1)
-
-        # Create a record
-        record = self.create_record(zone, recordset)
-
-        # Ensure we get a 404 if we use the incorrect recordset_id
-        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
-                                self.central_service.delete_record,
-                                self.admin_context, zone['id'],
-                                other_recordset['id'],
-                                record['id'])
-
-        self.assertEqual(exceptions.RecordNotFound, exc.exc_info[0])
-
     def test_count_records(self):
         # in the beginning, there should be nothing
         records = self.central_service.count_records(self.admin_context)
@@ -2367,10 +2131,7 @@ class CentralServiceTest(CentralTestCase):
 
         # Create a zone and recordset to put our record in
         zone = self.create_zone()
-        recordset = self.create_recordset(zone)
-
-        # Create a record
-        self.create_record(zone, recordset)
+        self.create_recordset(zone)
 
         # we should have 1 record now, plus SOA & NS records
         records = self.central_service.count_records(self.admin_context)
@@ -3140,13 +2901,11 @@ class CentralServiceTest(CentralTestCase):
     def test_update_status_delete_last_record(self):
         zone = self.create_zone()
         recordset = self.create_recordset(zone)
-
-        # Create a record
-        record = self.create_record(zone, recordset)
+        record = recordset.records[0]
 
         # Delete the record
-        self.central_service.delete_record(
-            self.admin_context, zone['id'], recordset['id'], record['id'])
+        recordset.records = []
+        self.central_service.update_recordset(self.admin_context, recordset)
 
         # Simulate the record having been deleted on the backend
         zone_serial = self.central_service.get_zone(
@@ -3161,7 +2920,7 @@ class CentralServiceTest(CentralTestCase):
                                 recordset['id'],
                                 record['id'])
 
-        self.assertEqual(exceptions.RecordSetNotFound, exc.exc_info[0])
+        self.assertEqual(exceptions.RecordNotFound, exc.exc_info[0])
 
     def test_update_status_create_zone(self):
         zone = self.create_zone()
@@ -3323,43 +3082,6 @@ class CentralServiceTest(CentralTestCase):
         self.assertEqual('example.com.', notified_zone.name)
         self.assertEqual('ACTIVE', notified_zone.status)
 
-    def test_update_status_delete_last_record_without_incrementing_serial(
-            self):
-        zone = self.create_zone()
-        recordset = self.create_recordset(zone)
-
-        # Create a record
-        record = self.create_record(zone, recordset)
-
-        # Fetch the zone serial number
-        zone_serial = self.central_service.get_zone(
-            self.admin_context, zone['id']).serial
-
-        # Delete the record
-        self.central_service.delete_record(
-            self.admin_context, zone['id'], recordset['id'], record['id'],
-            increment_serial=False)
-
-        # Simulate the record having been deleted on the backend
-        zone_serial = self.central_service.get_zone(
-            self.admin_context, zone['id']).serial
-        self.central_service.update_status(
-            self.admin_context, zone['id'], 'SUCCESS', zone_serial, 'UPDATE')
-
-        # Fetch the record again, ensuring an exception is raised
-        exc = self.assertRaises(rpc_dispatcher.ExpectedException,
-                                self.central_service.get_record,
-                                self.admin_context, zone['id'],
-                                recordset['id'], record['id'])
-
-        self.assertEqual(exceptions.RecordSetNotFound, exc.exc_info[0])
-
-        # Ensure the zones serial number was not updated
-        new_zone_serial = self.central_service.get_zone(
-            self.admin_context, zone['id']).serial
-
-        self.assertEqual(zone_serial, new_zone_serial)
-
     def test_create_new_service_status_entry(self):
         values = self.get_service_status_fixture()
 
@@ -3508,8 +3230,7 @@ class CentralServiceTest(CentralTestCase):
 
         zone = self.create_zone(context=tenant_1_context)
         recordset = self.create_recordset(zone, context=tenant_1_context)
-        record = self.create_record(
-            zone, recordset, context=tenant_1_context)
+        record = recordset.records[0]
 
         zone_transfer_request = self.create_zone_transfer_request(
             zone, context=tenant_1_context)
@@ -3559,8 +3280,7 @@ class CentralServiceTest(CentralTestCase):
 
         zone = self.create_zone(context=tenant_1_context)
         recordset = self.create_recordset(zone, context=tenant_1_context)
-        record = self.create_record(
-            zone, recordset, context=tenant_1_context)
+        record = recordset.records[0]
 
         zone_transfer_request = self.create_zone_transfer_request(
             zone,

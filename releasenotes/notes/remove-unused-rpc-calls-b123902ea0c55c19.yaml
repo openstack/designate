@@ -1,0 +1,15 @@
+---
+upgrade:
+  - |
+    Removed the following unused central rpc calls. This should not impact
+    normal installations, but if these are used in any custom written backends
+    or plugins that you are using, you will need to update your code before
+    upgrading.
+
+    - ``create_record``
+    - ``update_record``
+    - ``delete_record``
+    - ``sync_record``
+    - ``sync_zone``
+    - ``sync_zones``
+    - ``touch_zone``

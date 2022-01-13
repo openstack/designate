@@ -13,8 +13,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from unittest import mock
-
 from oslo_log import log as logging
 
 from designate import storage
@@ -29,14 +27,6 @@ class SqlalchemyStorageTest(StorageTestCase, TestCase):
         super(SqlalchemyStorageTest, self).setUp()
 
         self.storage = storage.get_storage('sqlalchemy')
-
-    def test_ping_negative(self):
-        with mock.patch.object(self.storage.engine, 'execute',
-                               return_value=0):
-            pong = self.storage.ping(self.admin_context)
-
-            self.assertFalse(pong['status'])
-            self.assertIsNotNone(pong['rtt'])
 
     def test_schema_table_names(self):
         table_names = [

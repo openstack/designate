@@ -65,8 +65,9 @@ class CentralAPI(object):
         6.1 - Add ServiceStatus methods
         6.2 - Changed 'find_recordsets' method args
         6.3 - Changed 'update_status' method args
+        6.4 - Removed unused record and diagnostic methods
     """
-    RPC_API_VERSION = '6.3'
+    RPC_API_VERSION = '6.4'
 
     # This allows us to mark some methods as not logged.
     # This can be for a few reasons - some methods my not actually call over
@@ -79,7 +80,7 @@ class CentralAPI(object):
 
         target = messaging.Target(topic=self.topic,
                                   version=self.RPC_API_VERSION)
-        self.client = rpc.get_client(target, version_cap='6.3')
+        self.client = rpc.get_client(target, version_cap='6.4')
 
     @classmethod
     def get_instance(cls):
@@ -178,9 +179,6 @@ class CentralAPI(object):
     def count_zones(self, context, criterion=None):
         return self.client.call(context, 'count_zones', criterion=criterion)
 
-    def touch_zone(self, context, zone_id):
-        return self.client.call(context, 'touch_zone', zone_id=zone_id)
-
     # TLD Methods
     def create_tld(self, context, tld):
         return self.client.call(context, 'create_tld', tld=tld)
@@ -239,14 +237,6 @@ class CentralAPI(object):
                                 criterion=criterion)
 
     # Record Methods
-    def create_record(self, context, zone_id, recordset_id, record,
-                      increment_serial=True):
-        return self.client.call(context, 'create_record',
-                                zone_id=zone_id,
-                                recordset_id=recordset_id,
-                                record=record,
-                                increment_serial=increment_serial)
-
     def get_record(self, context, zone_id, recordset_id, record_id):
         return self.client.call(context, 'get_record',
                                 zone_id=zone_id,
@@ -262,38 +252,12 @@ class CentralAPI(object):
     def find_record(self, context, criterion=None):
         return self.client.call(context, 'find_record', criterion=criterion)
 
-    def update_record(self, context, record, increment_serial=True):
-        return self.client.call(context, 'update_record',
-                                record=record,
-                                increment_serial=increment_serial)
-
-    def delete_record(self, context, zone_id, recordset_id, record_id,
-                      increment_serial=True):
-        return self.client.call(context, 'delete_record',
-                                zone_id=zone_id,
-                                recordset_id=recordset_id,
-                                record_id=record_id,
-                                increment_serial=increment_serial)
-
     def count_records(self, context, criterion=None):
         return self.client.call(context, 'count_records', criterion=criterion)
 
     # Misc. Report combining counts for tenants, zones and records
     def count_report(self, context, criterion=None):
         return self.client.call(context, 'count_report', criterion=criterion)
-
-    # Sync Methods
-    def sync_zones(self, context):
-        return self.client.call(context, 'sync_zones')
-
-    def sync_zone(self, context, zone_id):
-        return self.client.call(context, 'sync_zone', zone_id=zone_id)
-
-    def sync_record(self, context, zone_id, recordset_id, record_id):
-        return self.client.call(context, 'sync_record',
-                                zone_id=zone_id,
-                                recordset_id=recordset_id,
-                                record_id=record_id)
 
     def list_floatingips(self, context):
         return self.client.call(context, 'list_floatingips')

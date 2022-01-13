@@ -93,10 +93,3 @@ class Backend(DriverPlugin):
         :param context: Security context information.
         :param zone: the DNS zone.
         """
-
-    def ping(self, context):
-        """Ping the Backend service"""
-
-        return {
-            'status': None
-        }

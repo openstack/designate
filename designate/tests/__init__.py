@@ -512,11 +512,11 @@ class TestCase(base.BaseTestCase):
 
         return _values
 
-    def get_recordset_fixture(self, zone_name, type='A', fixture=0,
+    def get_recordset_fixture(self, zone_name, recordset_type='A', fixture=0,
                               values=None):
         values = values or {}
 
-        _values = copy.copy(self.recordset_fixtures[type][fixture])
+        _values = copy.copy(self.recordset_fixtures[recordset_type][fixture])
         _values.update(values)
 
         try:
@@ -693,31 +693,30 @@ class TestCase(base.BaseTestCase):
         return self.central_service.create_zone(
             context, objects.Zone.from_dict(values))
 
-    def create_recordset(self, zone, type='A', increment_serial=True,
-                         **kwargs):
+    def create_recordset(self, zone, recordset_type='A', records=None,
+                         increment_serial=True, **kwargs):
         context = kwargs.pop('context', self.admin_context)
         fixture = kwargs.pop('fixture', 0)
 
-        values = self.get_recordset_fixture(zone['name'], type=type,
-                                            fixture=fixture,
-                                            values=kwargs)
+        values = self.get_recordset_fixture(
+            zone['name'],
+            recordset_type=recordset_type, fixture=fixture, values=kwargs
+        )
+
+        recordset = objects.RecordSet.from_dict(values)
+        if records is None:
+            recordset.records = [
+                objects.Record.from_dict(
+                    self.get_record_fixture(recordset_type=recordset_type)
+                )
+            ]
+        else:
+            recordset.records = records
 
         return self.central_service.create_recordset(
-            context, zone['id'], objects.RecordSet.from_dict(values),
-            increment_serial=increment_serial)
-
-    def create_record(self, zone, recordset, increment_serial=True,
-                      **kwargs):
-        context = kwargs.pop('context', self.admin_context)
-        fixture = kwargs.pop('fixture', 0)
-
-        values = self.get_record_fixture(recordset['type'], fixture=fixture,
-                                         values=kwargs)
-
-        return self.central_service.create_record(
-            context, zone['id'], recordset['id'],
-            objects.Record.from_dict(values),
-            increment_serial=increment_serial)
+            context, zone['id'], recordset,
+            increment_serial=increment_serial
+        )
 
     def create_blacklist(self, **kwargs):
         context = kwargs.pop('context', self.admin_context)
