@@ -2386,21 +2386,6 @@ class Service(service.RPCService):
                           record.action, record.status)
                 self.storage.update_record(context, record)
 
-            # TODO(Ron): Including this to retain the current logic.
-            # We should NOT be deleting records.  The record status should
-            # be used to indicate the record has been deleted.
-            if record.status == 'DELETED':
-                LOG.debug('Deleting record %s, serial %s: action %s, '
-                          'status %s', record.id, record.serial,
-                          record.action, record.status)
-
-                self.storage.delete_record(context, record.id)
-
-                recordset = self.storage.get_recordset(
-                    context, record.recordset_id)
-                if len(recordset.records) == 0:
-                    self.storage.delete_recordset(context, recordset.id)
-
         return records
 
     @staticmethod
