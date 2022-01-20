@@ -20,8 +20,8 @@ from designate.objects import fields
 class Blacklist(base.DictObjectMixin, base.PersistentObjectMixin,
                 base.DesignateObject):
     fields = {
-        'pattern': fields.StringFields(maxLength=255),
-        'description': fields.StringFields(maxLength=160, nullable=True),
+        'pattern': fields.DenylistFields(maxLength=255),
+        'description': fields.DenylistFields(maxLength=160, nullable=True),
     }
 
     STRING_KEYS = [
