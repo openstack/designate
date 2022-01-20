@@ -50,6 +50,13 @@ class CAARecordTest(oslotest.base.BaseTestCase):
         self.assertEqual(0, caa_record.flags)
         self.assertEqual('iodef mailto:security@example.net', caa_record.prpt)
 
+        caa_record = objects.CAA()
+        caa_record._from_string('0 iodef mailto:security+caa@example.net')
+
+        self.assertEqual(0, caa_record.flags)
+        self.assertEqual('iodef mailto:security+caa@example.net',
+                         caa_record.prpt)
+
     def test_parse_caa_invalid(self):
         caa_record = objects.CAA()
         self.assertRaisesRegex(
