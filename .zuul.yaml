@@ -147,6 +147,14 @@
       - ^etc/.*$
       - ^releasenotes/.*$
 
+- job:
+    name: designate-tox-dnspython-latest
+    parent: openstack-tox
+    description: |
+      Run the Designate unit tests with the latest release of dnspython.
+    vars:
+      tox_envlist: dnspython-latest
+
 - project-template:
     name: designate-devstack-jobs
     check:
@@ -183,6 +191,8 @@
     check:
       jobs:
         - neutron-tempest-plugin-designate-scenario
+        - designate-tox-dnspython-latest:
+            voting: false
     gate:
       queue: designate
       jobs:
