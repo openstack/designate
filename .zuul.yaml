@@ -1,3 +1,13 @@
+- nodeset:
+    name: designate-single-node-centos-9-stream
+    nodes:
+      - name: controller
+        label: centos-9-stream
+    groups:
+      - name: tempest
+        nodes:
+          - controller
+
 - job:
     name: designate-base
     parent: devstack-tempest
@@ -71,6 +81,11 @@
               designate: True
             dns_feature_enabled:
               enforce_new_defaults: True
+
+- job:
+    name: designate-bind9-centos-9-stream
+    parent: designate-bind9
+    nodeset: designate-single-node-centos-9-stream
 
 - job:
     name: designate-pdns4
@@ -154,6 +169,7 @@
         - designate-bind9
         - designate-bind9-centos8stream-fips:
             voting: false
+        - designate-bind9-centos-9-stream
         - designate-bind9-scoped-tokens
         - designate-pdns4
         - designate-grenade-pdns4
@@ -164,6 +180,7 @@
       queue: designate
       jobs:
         - designate-bind9
+        - designate-bind9-centos-9-stream
         - designate-bind9-scoped-tokens
         - designate-pdns4
         - designate-grenade-pdns4
