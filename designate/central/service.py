@@ -28,7 +28,6 @@ import time
 
 from dns import exception as dnsexception
 from dns import zone as dnszone
-from eventlet import tpool
 from oslo_config import cfg
 from oslo_log import log as logging
 import oslo_messaging as messaging
@@ -2698,7 +2697,6 @@ class Service(service.RPCService):
     @rpc.expected_exceptions()
     @notification('dns.zone_import.create')
     def create_zone_import(self, context, request_body):
-
         if policy.enforce_new_defaults():
             target = {constants.RBAC_PROJECT_ID: context.project_id}
         else:
@@ -2718,59 +2716,49 @@ class Service(service.RPCService):
         zone_import = objects.ZoneImport(**values)
 
         created_zone_import = self.storage.create_zone_import(context,
-                                                            zone_import)
+                                                              zone_import)
 
         self.tg.add_thread(self._import_zone, context, created_zone_import,
-                    request_body)
+                           request_body)
 
         return created_zone_import
 
     def _import_zone(self, context, zone_import, request_body):
-
-        def _import(self, context, zone_import, request_body):
-            # Dnspython needs a str instead of a unicode object
-            zone = None
-            try:
-                dnspython_zone = dnszone.from_text(
-                    request_body,
-                    # Don't relativize, or we end up with '@' record names.
-                    relativize=False,
-                    # Don't check origin, we allow missing NS records
-                    # (missing SOA records are taken care of in _create_zone).
-                    check_origin=False)
-                zone = dnsutils.from_dnspython_zone(dnspython_zone)
-                zone.type = 'PRIMARY'
-
-                for rrset in list(zone.recordsets):
-                    if rrset.type == 'SOA':
-                        zone.recordsets.remove(rrset)
-                    # subdomain NS records should be kept
-                    elif rrset.type == 'NS' and rrset.name == zone.name:
-                        zone.recordsets.remove(rrset)
-
-            except dnszone.UnknownOrigin:
-                zone_import.message = ('The $ORIGIN statement is required and'
-                                      ' must be the first statement in the'
-                                      ' zonefile.')
-                zone_import.status = 'ERROR'
-            except dnsexception.SyntaxError:
-                zone_import.message = 'Malformed zonefile.'
-                zone_import.status = 'ERROR'
-            except exceptions.BadRequest:
-                zone_import.message = 'An SOA record is required.'
-                zone_import.status = 'ERROR'
-            except Exception as e:
-                LOG.exception('An undefined error occurred during zone import')
-                msg = 'An undefined error occurred. %s'\
-                      % str(e)[:130]
-                zone_import.message = msg
-                zone_import.status = 'ERROR'
-
-            return zone, zone_import
-
-        # Execute the import in a real Python thread
-        zone, zone_import = tpool.execute(_import, self, context,
-            zone_import, request_body)
+        zone = None
+        try:
+            dnspython_zone = dnszone.from_text(
+                request_body,
+                # Don't relativize, or we end up with '@' record names.
+                relativize=False,
+                # Don't check origin, we allow missing NS records
+                # (missing SOA records are taken care of in _create_zone).
+                check_origin=False)
+            zone = dnsutils.from_dnspython_zone(dnspython_zone)
+            zone.type = 'PRIMARY'
+            for rrset in list(zone.recordsets):
+                if rrset.type == 'SOA':
+                    zone.recordsets.remove(rrset)
+                # subdomain NS records should be kept
+                elif rrset.type == 'NS' and rrset.name == zone.name:
+                    zone.recordsets.remove(rrset)
+        except dnszone.UnknownOrigin:
+            zone_import.message = (
+                'The $ORIGIN statement is required and must be the first '
+                'statement in the zonefile.'
+            )
+            zone_import.status = 'ERROR'
+        except dnsexception.SyntaxError:
+            zone_import.message = 'Malformed zonefile.'
+            zone_import.status = 'ERROR'
+        except exceptions.BadRequest:
+            zone_import.message = 'An SOA record is required.'
+            zone_import.status = 'ERROR'
+        except Exception as e:
+            LOG.exception('An undefined error occurred during zone import')
+            zone_import.message = (
+                'An undefined error occurred. %s' % str(e)[:130]
+            )
+            zone_import.status = 'ERROR'
 
         # If the zone import was valid, create the zone
         if zone_import.status != 'ERROR':
@@ -2778,8 +2766,9 @@ class Service(service.RPCService):
                 zone = self.create_zone(context, zone)
                 zone_import.status = 'COMPLETE'
                 zone_import.zone_id = zone.id
-                zone_import.message = '%(name)s imported' % {'name':
-                                                             zone.name}
+                zone_import.message = (
+                    '%(name)s imported' % {'name': zone.name}
+                )
             except exceptions.DuplicateZone:
                 zone_import.status = 'ERROR'
                 zone_import.message = 'Duplicate zone.'
@@ -2787,18 +2776,19 @@ class Service(service.RPCService):
                 zone_import.status = 'ERROR'
                 zone_import.message = str(e)
             except Exception as e:
-                LOG.exception('An undefined error occurred during zone '
-                              'import creation')
-                msg = 'An undefined error occurred. %s'\
-                      % str(e)[:130]
-                zone_import.message = msg
+                LOG.exception(
+                    'An undefined error occurred during zone import creation'
+                )
+                zone_import.message = (
+                    'An undefined error occurred. %s' % str(e)[:130]
+                )
                 zone_import.status = 'ERROR'
 
         self.update_zone_import(context, zone_import)
 
     @rpc.expected_exceptions()
     def find_zone_imports(self, context, criterion=None, marker=None,
-                  limit=None, sort_key=None, sort_dir=None):
+                          limit=None, sort_key=None, sort_dir=None):
 
         if policy.enforce_new_defaults():
             target = {constants.RBAC_PROJECT_ID: context.project_id}
