@@ -1,0 +1,7 @@
+---
+upgrade:
+  - |
+    The Designate Central RPC API version was updated and may not be backwards
+    compatible with an older version of the Designate RPC API. When upgrading
+    a multi-controller deployment make sure that all designate-central services
+    are upgraded before starting the designate-worker service.

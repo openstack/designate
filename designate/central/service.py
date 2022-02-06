@@ -185,7 +185,7 @@ def notification(notification_type):
 
 
 class Service(service.RPCService):
-    RPC_API_VERSION = '6.2'
+    RPC_API_VERSION = '6.3'
 
     target = messaging.Target(version=RPC_API_VERSION)
 
@@ -2637,38 +2637,58 @@ class Service(service.RPCService):
     @notification('dns.zone.update')
     @transaction
     @synchronized_zone()
-    def update_status(self, context, zone_id, status, serial):
+    def update_status(self, context, zone_id, status, serial, action=None):
         """
         :param context: Security context information.
         :param zone_id: The ID of the designate zone.
         :param status: The status, 'SUCCESS' or 'ERROR'.
         :param serial: The consensus serial number for the zone.
-        :return: updated zone
-        """
-        # TODO(kiall): If the status is SUCCESS and the zone is already ACTIVE,
-        #              we likely don't need to do anything.
-        zone = self._update_zone_status(context, zone_id, status, serial)
-        self._update_record_status(context, zone_id, status, serial)
-        return zone
-
-    def _update_zone_status(self, context, zone_id, status, serial):
-        """Update zone status in storage
-
+        :param action: The action, 'CREATE', 'UPDATE', 'DELETE' or 'NONE'.
         :return: updated zone
         """
         zone = self.storage.get_zone(context, zone_id)
+        if action is None or zone.action == action:
+            if zone.action == 'DELETE' and zone.status != 'ERROR':
+                status = 'NO_ZONE'
+            zone = self._update_zone_or_record_status(
+                zone, status, serial
+            )
+        else:
+            LOG.debug(
+                'Updated action different from current action. '
+                '%(previous_action)s != %(current_action)s '
+                '(%(status)s). Keeping current action %(current_action)s '
+                'for %(zone_id)s',
+                {
+                    'previous_action': action,
+                    'current_action': zone.action,
+                    'status': zone.status,
+                    'zone_id': zone.id,
+                }
+            )
 
-        zone, deleted = self._update_zone_or_record_status(
-            zone, status, serial)
-
-        if zone.status != 'DELETED':
-            LOG.debug('Setting zone %s, serial %s: action %s, status %s',
-                      zone.id, zone.serial, zone.action, zone.status)
+        if zone.status == 'DELETED':
+            LOG.debug(
+                'Updated Status: Deleting %(zone_id)s',
+                {
+                    'zone_id': zone.id,
+                }
+            )
+            self.storage.delete_zone(context, zone.id)
+        else:
+            LOG.debug(
+                'Setting Zone: %(zone_id)s action: %(action)s '
+                'status: %(status)s serial: %(serial)s',
+                {
+                    'zone_id': zone.id,
+                    'action': zone.action,
+                    'status': zone.status,
+                    'serial': zone.serial,
+                }
+            )
             self.storage.update_zone(context, zone)
 
-        if deleted:
-            LOG.debug('update_status: deleting %s', zone.name)
-            self.storage.delete_zone(context, zone.id)
+        self._update_record_status(context, zone_id, status, serial)
 
         return zone
 
@@ -2700,8 +2720,7 @@ class Service(service.RPCService):
         records = self.storage.find_records(context, criterion=criterion)
 
         for record in records:
-            record, deleted = self._update_zone_or_record_status(
-                record, status, serial)
+            record = self._update_zone_or_record_status(record, status, serial)
 
             if record.obj_what_changed():
                 LOG.debug('Setting record %s, serial %s: action %s, '
@@ -2712,7 +2731,7 @@ class Service(service.RPCService):
             # TODO(Ron): Including this to retain the current logic.
             # We should NOT be deleting records.  The record status should
             # be used to indicate the record has been deleted.
-            if deleted:
+            if record.status == 'DELETED':
                 LOG.debug('Deleting record %s, serial %s: action %s, '
                           'status %s', record.id, record.serial,
                           record.action, record.status)
@@ -2728,23 +2747,19 @@ class Service(service.RPCService):
 
     @staticmethod
     def _update_zone_or_record_status(zone_or_record, status, serial):
-        deleted = False
         if status == 'SUCCESS':
-            if zone_or_record.action in ['CREATE', 'UPDATE'] \
-                    and zone_or_record.status in ['PENDING', 'ERROR'] \
-                    and serial >= zone_or_record.serial:
-                zone_or_record.action = 'NONE'
-                zone_or_record.status = 'ACTIVE'
-            elif zone_or_record.action == 'DELETE' \
-                    and zone_or_record.status in ['PENDING', 'ERROR'] \
-                    and serial >= zone_or_record.serial:
-                zone_or_record.action = 'NONE'
-                zone_or_record.status = 'DELETED'
-                deleted = True
+            if (zone_or_record.status in ['PENDING', 'ERROR'] and
+                    serial >= zone_or_record.serial):
+                if zone_or_record.action in ['CREATE', 'UPDATE']:
+                    zone_or_record.action = 'NONE'
+                    zone_or_record.status = 'ACTIVE'
+                elif zone_or_record.action == 'DELETE':
+                    zone_or_record.action = 'NONE'
+                    zone_or_record.status = 'DELETED'
 
         elif status == 'ERROR':
-            if zone_or_record.status == 'PENDING' \
-                    and (serial >= zone_or_record.serial or serial == 0):
+            if (zone_or_record.status == 'PENDING' and
+                    (serial >= zone_or_record.serial or serial == 0)):
                 zone_or_record.status = 'ERROR'
 
         elif status == 'NO_ZONE':
@@ -2754,9 +2769,8 @@ class Service(service.RPCService):
             elif zone_or_record.action == 'DELETE':
                 zone_or_record.action = 'NONE'
                 zone_or_record.status = 'DELETED'
-                deleted = True
 
-        return zone_or_record, deleted
+        return zone_or_record
 
     # Zone Transfers
     def _transfer_key_generator(self, size=8):

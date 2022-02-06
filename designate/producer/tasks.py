@@ -249,19 +249,16 @@ class PeriodicGenerateDelayedNotifyTask(PeriodicTask):
             sort_dir='asc',
         )
 
-        LOG.debug(
-            "Performing delayed NOTIFY for %(start)s to %(end)s: %(n)d",
-            {
-                'start': pstart,
-                'end': pend,
-                'n': len(zones)
-            }
-        )
-
         for zone in zones:
             self.zone_api.update_zone(ctxt, zone)
             zone.delayed_notify = False
             self.central_api.update_zone(ctxt, zone)
+            LOG.debug(
+                'Performed delayed NOTIFY for %(id)s',
+                {
+                    'id': zone.id,
+                }
+            )
 
 
 class WorkerPeriodicRecovery(PeriodicTask):
