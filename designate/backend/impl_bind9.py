@@ -104,6 +104,28 @@ class Bind9Backend(base.Backend):
             context, zone, self._host, self._port, self.timeout,
             self.retry_interval, self.max_retries, self.delay)
 
+    def get_zone(self, context, zone):
+        """Returns True if zone exists and False if not"""
+        LOG.debug('Get Zone')
+
+        view = 'in %s' % self._view if self._view else ''
+
+        rndc_op = [
+            'showzone',
+            '%s %s' % (zone['name'].rstrip('.'), view),
+        ]
+        try:
+            self._execute_rndc(rndc_op)
+        except exceptions.Backend as e:
+            if "not found" in str(e):
+                LOG.debug('Zone %s not found on the backend', zone['name'])
+                return False
+            else:
+                LOG.warning('RNDC call failure: %s', e)
+                raise e
+
+        return True
+
     def delete_zone(self, context, zone):
         """Delete a new Zone by executin rndc
         Do not raise exceptions if the zone does not exist.
@@ -131,13 +153,20 @@ class Bind9Backend(base.Backend):
         """
         Update a DNS zone.
 
-        This will execute a rndc modzone as the zone
+        This will execute a rndc modzone if the zone
         already exists but masters might need to be refreshed.
+        Or, will create the zone if it does not exist.
 
         :param context: Security context information.
         :param zone: the DNS zone.
         """
         LOG.debug('Update Zone')
+
+        if not self.get_zone(context, zone):
+            # If zone does not exist yet, create it
+            self.create_zone(context, zone)
+            # Newly created zone won't require an update
+            return
 
         masters = []
         for master in self.masters:
