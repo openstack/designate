@@ -78,6 +78,15 @@ class Bind9BackendTestCase(designate.tests.TestCase):
         )
 
     @mock.patch.object(impl_bind9.Bind9Backend, '_execute_rndc')
+    def test_get_zone(self, mock_execute):
+        with fixtures.random_seed(0):
+            self.backend.get_zone(self.admin_context, self.zone)
+
+        mock_execute.assert_called_with(
+            ['showzone', 'example.com ']
+        )
+
+    @mock.patch.object(impl_bind9.Bind9Backend, '_execute_rndc')
     def test_create_zone_with_view(self, mock_execute):
         self.target['options'].append(
             {'key': 'view', 'value': 'guest'},
