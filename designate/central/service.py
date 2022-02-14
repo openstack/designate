@@ -2775,6 +2775,9 @@ class Service(service.RPCService):
             except exceptions.InvalidTTL as e:
                 zone_import.status = 'ERROR'
                 zone_import.message = str(e)
+            except exceptions.OverQuota:
+                zone_import.status = 'ERROR'
+                zone_import.message = 'Quota exceeded during zone import.'
             except Exception as e:
                 LOG.exception(
                     'An undefined error occurred during zone import creation'
