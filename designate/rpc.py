@@ -18,10 +18,13 @@ from oslo_config import cfg
 import oslo_messaging as messaging
 from oslo_messaging.rpc import dispatcher as rpc_dispatcher
 from oslo_serialization import jsonutils
+from oslo_utils import importutils
 
 import designate.context
 import designate.exceptions
 from designate import objects
+
+profiler = importutils.try_import('osprofiler.profiler')
 
 __all__ = [
     'init',
@@ -151,9 +154,23 @@ class RequestContextSerializer(messaging.Serializer):
         return self._base.deserialize_entity(context, entity)
 
     def serialize_context(self, context):
-        return context.to_dict()
+        _context = context.to_dict()
+        if profiler is not None:
+            prof = profiler.get()
+            if prof is not None:
+                trace_info = {
+                    "hmac_key": prof.hmac_key,
+                    "base_id": prof.get_base_id(),
+                    "parent_id": prof.get_id()
+                }
+                _context.update({"trace_info": trace_info})
+        return _context
 
     def deserialize_context(self, context):
+        trace_info = context.pop("trace_info", None)
+        if trace_info is not None:
+            if profiler is not None:
+                profiler.init(**trace_info)
         return designate.context.DesignateContext.from_dict(context)
 
 

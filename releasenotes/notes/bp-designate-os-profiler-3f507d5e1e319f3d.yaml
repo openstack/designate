@@ -1,0 +1,13 @@
+---
+features:
+  - |
+    OSprofiler support was introduced. To allow its usage, the api-paste.ini
+    file needs to be modified to contain osprofiler middleware. Also
+    `[profiler]` section needs to be added to the designate.conf file with
+    `enabled`, `hmac_keys` and `trace_sqlalchemy` flags defined.
+security:
+  - OSprofiler support requires passing of trace information
+    between various OpenStack services. This information is
+    securely signed by one of HMAC keys, defined in designate.conf
+    configuration file. To allow cross-project tracing user should use the key,
+    that is common among all OpenStack services they want to trace.

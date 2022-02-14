@@ -19,6 +19,7 @@ import functools
 import inspect
 import os
 import time
+from unittest import mock
 
 import eventlet
 from oslo_config import cfg
@@ -355,6 +356,8 @@ class TestCase(base.BaseTestCase):
             group='service:api'
         )
 
+        self._disable_osprofiler()
+
         # The database fixture needs to be set up here (as opposed to isolated
         # in a storage test case) because many tests end up using storage.
         REPOSITORY = os.path.abspath(os.path.join(os.path.dirname(__file__),
@@ -398,6 +401,22 @@ class TestCase(base.BaseTestCase):
 
         # Setup the Default Pool with some useful settings
         self._setup_default_pool()
+
+    def _disable_osprofiler(self):
+        """Disable osprofiler.
+
+        osprofiler should not run for unit tests.
+        """
+
+        def side_effect(value):
+            return value
+        mock_decorator = mock.MagicMock(side_effect=side_effect)
+        try:
+            p = mock.patch("osprofiler.profiler.trace_cls",
+                           return_value=mock_decorator)
+            p.start()
+        except ModuleNotFoundError:
+            pass
 
     def _setup_default_pool(self):
         # Fetch the default pool
