@@ -786,33 +786,35 @@ class TestCase(base.BaseTestCase):
         return self.storage.create_zone_export(
             context, objects.ZoneExport.from_dict(zone_export))
 
-    def wait_for_import(self, zone_import_id, errorok=False):
+    def wait_for_import(self, zone_import_id, error_is_ok=False, max_wait=10):
         """
            Zone imports spawn a thread to parse the zone file and
            insert the data. This waits for this process before continuing
         """
-        attempts = 0
-        while attempts < 20:
-            # Give the import a half second to complete
-            time.sleep(.5)
-
+        start_time = time.time()
+        while True:
             # Retrieve it, and ensure it's the same
             zone_import = self.central_service.get_zone_import(
-                self.admin_context_all_tenants, zone_import_id)
+                self.admin_context_all_tenants, zone_import_id
+            )
 
             # If the import is done, we're done
             if zone_import.status == 'COMPLETE':
                 break
 
             # If errors are allowed, just make sure that something completed
-            if errorok:
-                if zone_import.status != 'PENDING':
-                    break
+            if error_is_ok and zone_import.status != 'PENDING':
+                break
 
-            attempts += 1
+            if (time.time() - start_time) > max_wait:
+                break
 
-        if not errorok:
+            time.sleep(0.5)
+
+        if not error_is_ok:
             self.assertEqual('COMPLETE', zone_import.status)
+
+        return zone_import
 
     def _ensure_interface(self, interface, implementation):
         for name in interface.__abstractmethods__:
