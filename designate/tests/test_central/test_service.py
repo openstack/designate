@@ -3522,6 +3522,30 @@ class CentralServiceTest(CentralTestCase):
 
         self.wait_for_import(zone_import.id)
 
+    def test_create_zone_import_overquota(self):
+        self.config(
+            quota_zone_records=5,
+            quota_zone_recordsets=5,
+        )
+
+        # Create a Zone Import
+        context = self.get_context(project_id=utils.generate_uuid())
+        request_body = self.get_zonefile_fixture()
+        zone_import = self.central_service.create_zone_import(context,
+                                                              request_body)
+
+        # Ensure all values have been set correctly
+        self.assertIsNotNone(zone_import['id'])
+        self.assertEqual('PENDING', zone_import.status)
+        self.assertIsNone(zone_import.message)
+        self.assertIsNone(zone_import.zone_id)
+
+        zone_import = self.wait_for_import(zone_import.id, error_is_ok=True)
+
+        self.assertEqual('Quota exceeded during zone import.',
+                         zone_import.message)
+        self.assertEqual('ERROR', zone_import.status)
+
     def test_find_zone_imports(self):
         context = self.get_context(project_id=utils.generate_uuid())
 
