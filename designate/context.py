@@ -31,16 +31,16 @@ class DesignateContext(context.RequestContext):
     _all_tenants = False
     _hide_counts = False
     _abandon = None
-    original_tenant = None
+    original_project_id = None
     _edit_managed_records = False
     _client_addr = None
     FROM_DICT_EXTRA_KEYS = [
-        'original_tenant', 'service_catalog', 'all_tenants', 'abandon',
+        'original_project_id', 'service_catalog', 'all_tenants', 'abandon',
         'edit_managed_records', 'tsigkey_id', 'hide_counts', 'client_addr',
     ]
 
     def __init__(self, service_catalog=None, all_tenants=False, abandon=None,
-                 tsigkey_id=None, original_tenant=None,
+                 tsigkey_id=None, original_project_id=None,
                  edit_managed_records=False, hide_counts=False,
                  client_addr=None, user_auth_plugin=None, **kwargs):
         super(DesignateContext, self).__init__(**kwargs)
@@ -49,7 +49,7 @@ class DesignateContext(context.RequestContext):
         self.service_catalog = service_catalog
         self.tsigkey_id = tsigkey_id
 
-        self.original_tenant = original_tenant
+        self.original_project_id = original_project_id
 
         self.all_tenants = all_tenants
         self.abandon = abandon
@@ -85,7 +85,7 @@ class DesignateContext(context.RequestContext):
         # Update the dict with Designate specific extensions and overrides
         d.update({
             'user_identity': user_idt,
-            'original_tenant': self.original_tenant,
+            'original_project_id': self.original_project_id,
             'service_catalog': self.service_catalog,
             'all_tenants': self.all_tenants,
             'abandon': self.abandon,
@@ -121,14 +121,14 @@ class DesignateContext(context.RequestContext):
 
         return context
 
-    def sudo(self, tenant):
+    def sudo(self, project_id):
 
         policy.check('use_sudo', self)
 
-        LOG.info('Accepted sudo from user %(user)s to tenant %(tenant)s',
-                 {'user': self.user_id, 'tenant': tenant})
-        self.original_tenant = self.tenant
-        self.tenant = tenant
+        LOG.info('Accepted sudo from user %(user)s to project_id %(project)s',
+                 {'user': self.user_id, 'project': project_id})
+        self.original_project_id = self.project_id
+        self.project_id = project_id
 
     @classmethod
     def get_admin_context(cls, **kwargs):
