@@ -34,7 +34,7 @@ What is DNS?
 -----------------------------
 
 The Domain Name System (DNS) is a system for naming resources connected to a
-network, and works by storing various types of *record*, such as an IP adress
+network, and works by storing various types of *record*, such as an IP address
 associated with a domain name. In practice, this is implemented by
 *authoritative name servers* which contain these records and *resolvers* which
 query name servers for records. Names are divided up into a hierarchy of zones,
