@@ -46,6 +46,42 @@ class ApiV2ServiceStatusTest(ApiV2TestCase):
 
         self._assert_paging(data, '/service_statuses', key='service_statuses')
 
+    def test_legacy_list_service_status(self):
+        """Test the legacy list service status path.
+
+        Historically the Designate API reference showed the list
+        service status URL path as /v2/service_status where the actual
+        path was /v2/service_statuses.
+
+        https://bugs.launchpad.net/designate/+bug/1919183
+
+        A compatibility workaround was added as this was a published
+        API reference. This test covers that alternate URL path.
+        """
+
+        # Set the policy file as this is an admin-only API
+        self.policy({'find_service_statuses': '@'})
+
+        response = self.client.get('/service_status/')
+
+        # Check the headers are what we expect
+        self.assertEqual(200, response.status_int)
+        self.assertEqual('application/json', response.content_type)
+
+        # Check the body structure is what we expect
+        self.assertIn('service_statuses', response.json)
+        self.assertIn('links', response.json)
+        self.assertIn('self', response.json['links'])
+
+        # Test with 0 service_statuses
+        # Seeing that Central is started there will be 1 here already..
+        self.assertEqual(0, len(response.json['service_statuses']))
+
+        data = [self.update_service_status(
+            hostname="foo%s" % i, service_name="bar") for i in range(0, 10)]
+
+        self._assert_paging(data, '/service_status', key='service_statuses')
+
     def test_get_service_status(self):
         service_status = self.update_service_status(fixture=0)
 

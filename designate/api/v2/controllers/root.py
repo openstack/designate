@@ -58,6 +58,13 @@ class RootController(object):
     errors = errors.ErrorsController()
     pools = pools.PoolsController()
     service_statuses = service_status.ServiceStatusController()
+
+    # This is a compatibility workaround for a mistake published in the
+    # Designate API reference that listed the URL path as /v2/service_status
+    # instead of /v2/service_statuses as it was implemented.
+    # https://bugs.launchpad.net/designate/+bug/1919183
+    service_status = service_statuses
+
     tsigkeys = tsigkeys.TsigKeysController()
     recordsets = recordsets.RecordSetsViewController()
     quotas = quotas.QuotasController()
